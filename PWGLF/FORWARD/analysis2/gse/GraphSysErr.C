@@ -376,13 +376,17 @@ public:
 
     TIter nextC(&other.fCommon);
     HolderCommon* common = 0;
-    while ((common = static_cast<HolderCommon*>(nextC()))) 
+    while ((common = static_cast<HolderCommon*>(nextC()))) {
       fCommon.Add(new HolderCommon(*common));
+      fCounter++;
+    }
 
     TIter nextP(&other.fPoint2Point);
     HolderP2P* p2p = 0;
-    while ((p2p = static_cast<HolderP2P*>(nextP()))) 
-      fPoint2Point.Add(new HolderP2P(*p2p));    
+    while ((p2p = static_cast<HolderP2P*>(nextP()))) {
+      fPoint2Point.Add(new HolderP2P(*p2p));
+      fCounter++;
+    }
 
     CopyKeys(&other, "ar");
     // Print("all");
@@ -4242,10 +4246,10 @@ public:
 	TObjLink* last  = fMap->LastLink();
 	while (cur) { //  != last) {
 	  if (!k.EqualTo(cur->GetObject()->GetName())) {
-	    cur = cur->fNext;
+	    cur = cur->Next();
 	    continue;
 	  }
-	  TObjLink* tmp = cur->fNext;
+	  TObjLink* tmp = cur->Next();
 	  fMap->Remove(cur);
 	  cur = tmp;
 	}
@@ -6600,15 +6604,24 @@ protected:
 	Double_t mxl   = Round(exl,nsign,pxl);
 	Double_t mxh   = Round(exh,nsign,pxh);
 	exl            = mxl*TMath::Power(10, pxl);
-	exl            = mxh*TMath::Power(10, pxh);
+	exh            = mxh*TMath::Power(10, pxh);
 	Int_t    mp    = TMath::Min(pxl,pxh);
 	pp             = nsign;
 	ppp            = TMath::Ceil(TMath::Log10(TMath::Abs(x)))-mp;
 	// Info("","pxl=%d pxh=%d mp=%d ppp=%d", pxl, pxh, mp, ppp);
       }
       
-      if (TMath::Abs(exl) < 1e-10 && TMath::Abs(exh) < 1e-10)
-	out << ' ' << x;
+      if (TMath::Abs(exl) < 1e-10 && TMath::Abs(exh) < 1e-10) {
+	if (nsign <= 0) out << ' ' << x;
+	else {
+	  Int_t    px;
+	  Double_t mx = Round(x, nsign, px);
+	  Double_t xx = mx*TMath::Power(10,px);
+	  // Printf("round %f -> %f (%d) -> %.*g", x, mx, px, nsign, xx);
+	  out.precision(nsign);
+	  out << ' ' << xx;
+	}
+      }
       else {
 	if (TMath::Abs(exh-exl) < 1e-10) {
 	  out.precision(ppp);
