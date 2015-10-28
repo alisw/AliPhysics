@@ -644,7 +644,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitEnergyCalibrationFactors()
 {
   if ( !fRecoUtils->IsRecalibrationOn() || fCalibFilePath == "" ) return ;
   
-  TFile * calibFactorsFile = TFile::Open(fCalibFilePath);
+  TFile * calibFactorsFile = TFile::Open(fCalibFilePath.Data());
   
   if ( !calibFactorsFile ) AliFatal("Cannot recover the calibration factors");
   
