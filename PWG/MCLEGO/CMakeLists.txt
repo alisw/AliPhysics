@@ -11,20 +11,20 @@
 # * appear in the supporting documentation. The authors make no claims     *
 # * about the suitability of this software for any purpose. It is          *
 # * provided "as is" without express or implied warranty.                  *
-# **************************************************************************
+# **************************************************************************/
 
-# Include the libraries
-add_subdirectory(CaloTrackCorrBase)
-add_subdirectory(DevNanoAOD)
-add_subdirectory(EMCAL)
-add_subdirectory(FLOW)
-add_subdirectory(Glauber)
-add_subdirectory(mftmuondep)
-add_subdirectory(muon)
-add_subdirectory(muondep)
-add_subdirectory(Tools)
-add_subdirectory(TRD)
-add_subdirectory(HMTF)
-add_subdirectory(MCLEGO)
+#Module
+set (MODULE PWGMCLEGO)
 
-message(STATUS "PWG enabled")
+# install all executable scripts
+install(DIRECTORY .
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.sh"
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+  )
+
+# install ThePEG configurations
+install(DIRECTORY ThePEG
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.in"
+  )

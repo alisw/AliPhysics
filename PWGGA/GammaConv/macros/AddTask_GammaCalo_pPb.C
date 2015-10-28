@@ -1,16 +1,16 @@
 void AddTask_GammaCalo_pPb(  
-                            Int_t      trainConfig                = 1,                  // change different set of cuts
-                            Int_t      isMC                       = 0,                 // run MC
-                            Int_t      enableQAMesonTask          = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
-                            Int_t      enableQAClusterTask        = 0,                 // enable additional QA task
+                            Int_t      trainConfig                = 1,                // change different set of cuts
+                            Int_t      isMC                       = 0,                // run MC
+                            Int_t      enableQAMesonTask          = 0,                // enable QA in AliAnalysisTaskGammaConvV1
+                            Int_t      enableQAClusterTask        = 0,                // enable additional QA task
                             TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input
-                            Int_t      doWeightingPart            = 0,                  // enable Weighting
+                            Int_t      doWeightingPart            = 0,                // enable Weighting
                             TString    generatorName              = "DPMJET",
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
-                            Bool_t     isUsingTHnSparse           = kTRUE,               // enable or disable usage of THnSparses for background estimation
+                            Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
                             Int_t      enableExtMatchAndQA        = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                            Bool_t     enableTriggerMimicking     = kFALSE,              // enable trigger mimicking
-                            Bool_t     enableTriggerOverlapRej    = kFALSE,              // enable trigger overlap rejection
+                            Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
+                            Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
                             TString    periodNameV0Reader         = ""
                            ) {
@@ -119,17 +119,18 @@ void AddTask_GammaCalo_pPb(
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
   // change to 1 cuts per cutselection
-  if (  trainConfig == 7   || trainConfig == 8   || trainConfig == 32   || trainConfig == 33  ||
-        trainConfig == 44  || trainConfig == 54  || trainConfig == 64   || trainConfig == 74)
+  if (  trainConfig == 7   || trainConfig == 8   || trainConfig == 32   || trainConfig == 33  )
       numberOfCuts = 1;
   // change to 3 cuts per cutselection
   if (trainConfig == 14)
       numberOfCuts = 3;
   // change to 4 cuts per cutselection
   if (  trainConfig == 9   || trainConfig == 10  || trainConfig == 11  || trainConfig == 12   || trainConfig == 13    || trainConfig == 15  ||
-        trainConfig == 40  || trainConfig == 41  || trainConfig == 43  || trainConfig == 50   || trainConfig == 51    ||
-        trainConfig == 53  || trainConfig == 60  || trainConfig == 61  || trainConfig == 63   || trainConfig == 70    ||
-        trainConfig == 71  || trainConfig == 73)
+        trainConfig == 40  || trainConfig == 41  || trainConfig == 43  || trainConfig == 44   || 
+        trainConfig == 50  || trainConfig == 51  || trainConfig == 53  || trainConfig == 54   ||
+        trainConfig == 60  || trainConfig == 61  || trainConfig == 63  || trainConfig == 64   ||
+        trainConfig == 70  || trainConfig == 71  || trainConfig == 73  || trainConfig == 74   ||
+        trainConfig == 80 )
       numberOfCuts = 4;
   // change to 5 cuts per cutselection
   if (  trainConfig == 5   || trainConfig == 6   || trainConfig == 42  || trainConfig == 52   || trainConfig == 62    ||
@@ -232,7 +233,11 @@ void AddTask_GammaCalo_pPb(
     eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1   0<alpha<0.8
     eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2  0<alpha<0.75
   } else if(trainConfig == 44){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
+    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
+    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
+    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+  
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity
     eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
@@ -253,10 +258,14 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 53){ // third set of variations MESON
     eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
     eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1   0<alpha<0.8
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2  0<alpha<0.75
+    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
+    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 54){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
+    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111181051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
+    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
+    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+
   //EG1
   } else if(trainConfig == 60){ // default cutstring and first set of variations nonlinearity
     eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
@@ -277,11 +286,14 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 63){ // third set of variations MESON
     eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
     eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1   0<alpha<0.8
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2  0<alpha<0.75
+    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 64){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
-  //EG2
+    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111181051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
+    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111181055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
+    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+   //EG2
   } else if(trainConfig == 70){ // default cutstring and first set of variations nonlinearity
     eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
     eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111182050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
@@ -301,11 +313,21 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 73){ // third set of variations MESON
     eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
     eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1   0<alpha<0.8
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2  0<alpha<0.75
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
+    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 74){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
+    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111181051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
+    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111181055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
+    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
 
+  //all default triggers
+  } else if(trainConfig == 80){
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default MB
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163403100000050"; // default EMC7
+    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000050"; // default EG1
+    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000050"; // default EG2
+    
 
   //************************************************ PHOS clusters *************************************************
   } else if (trainConfig == 31) {  // min energy = 0.3 GeV/c
@@ -358,7 +380,7 @@ void AddTask_GammaCalo_pPb(
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
-	analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
+    analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
@@ -367,6 +389,7 @@ void AddTask_GammaCalo_pPb(
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
@@ -377,7 +400,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-    task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetDoTHnSparse(isUsingTHnSparse);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

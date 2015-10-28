@@ -242,6 +242,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
