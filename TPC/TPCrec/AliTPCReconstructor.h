@@ -52,10 +52,12 @@ public:
   static  const Double_t * GetSystematicError()  { return (fSystematicErrors)? fSystematicErrors->GetMatrixArray():0;}
   static  const Double_t * GetSystematicErrorCluster() { return (fSystematicErrorClusters) ? fSystematicErrorClusters->GetMatrixArray():0;}
   static  const Double_t * GetExtendedRoads()  { return (fExtendedRoads)? fExtendedRoads->GetMatrixArray():0; }
+  static  const Double_t * GetPrimaryDCACut()  { return (fPrimaryDCACut)? fPrimaryDCACut->GetMatrixArray():0; }
 
   static  void SetSystematicError( TVectorD *vec)  { fSystematicErrors=vec;}
   static  void SetSystematicErrorCluster( TVectorD *vec ) { fSystematicErrorClusters=vec;}
   static  void SetExtendedRoads( TVectorD *extendedRoads ) { fExtendedRoads=extendedRoads;}
+  static  void SetPrimaryDCACut( TVectorD *dcacut )        { fPrimaryDCACut=dcacut;}
   
 
 private:
@@ -72,6 +74,7 @@ private:
   static TVectorD            * fSystematicErrors;    // systematic errors for the TPC tracks
   static TVectorD            * fSystematicErrorClusters;    // systematic errors for the TPC tracks
   static TVectorD            * fExtendedRoads;       // extended roads for clusters
+  static TVectorD            * fPrimaryDCACut;       // only primaries passing DCAYZ cut are reconstructed
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);

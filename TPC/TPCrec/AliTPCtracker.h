@@ -249,7 +249,14 @@ private:
    //
    Double_t fClExtraRoadY;              //! extra additiom to Y road for FindCluster
    Double_t fClExtraRoadZ;              //! extra addition Z road for FindCluster
-  
+   Double_t fExtraClErrYZ2;             //! extra cl.error Y^2+Z^2
+   Double_t fExtraClErrY2;              //! extra cl.error Y^2
+   Double_t fExtraClErrZ2;              //! extra cl.error Z^2
+   //
+   Double_t fPrimaryDCAZCut;            //! special cut on DCAz for primaries tracking only, disables secondaries seeding
+   Double_t fPrimaryDCAYCut;            //! special cut on DCAy for primaries tracking only, disables secondaries seeding
+   Bool_t   fDisableSecondaries;        //! special flag to disable secondaries seeding
+   //
    TObjArray * fCrossTalkSignalArray;  // for 36 sectors    
    TClonesArray* fSeedsPool;            //! pool of seeds
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds

@@ -48,6 +48,8 @@ set(SRCS
     AliHLTEMCALRawAnalyzerLMSComponent.cxx
     AliHLTEMCALRawAnalyzerNNComponent.cxx
     AliHLTEMCALRawAnalyzerPeakFinderComponent.cxx
+    AliHLTEMCALRawHistoMaker.cxx
+    AliHLTEMCALRawHistoMakerComponent.cxx
     AliHLTEMCALRecoParamHandler.cxx
    )
 

@@ -166,6 +166,12 @@ AliTPCtracker::AliTPCtracker()
 		 fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
+  fPrimaryDCAZCut(-1),
+  fPrimaryDCAYCut(-1),
+  fDisableSecondaries(kFALSE),
          fCrossTalkSignalArray(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -311,7 +317,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     cluster->GetGlobalXYZ(gclf);
     gcl[0]=gclf[0];    gcl[1]=gclf[1];    gcl[2]=gclf[2];
     Int_t nclSeed=seed->GetNumberOfClusters();
-    
+    int seedType = seed->GetSeedType();
     if (AliTPCReconstructor::StreamLevel()&kStreamErrParam) { // flag:stream in debug mode cluster and track extrapolation at given row together with error nad shape estimate
       Int_t eventNr = fEvent->GetEventNumberInFile();
 	
@@ -320,6 +326,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
       "eventNr="<<eventNr<<
       "Cl.="<<cluster<<
       "nclSeed="<<nclSeed<<
+      "seedType="<<seedType<<
       "T.="<<&param<<
       "dy="<<dy<<
       "dz="<<dz<<
@@ -400,6 +407,12 @@ AliTracker(),
          fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
+  fPrimaryDCAZCut(-1),
+  fPrimaryDCAYCut(-1),
+  fDisableSecondaries(kFALSE),
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -482,6 +495,12 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
          fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
+  fPrimaryDCAZCut(-1),
+  fPrimaryDCAYCut(-1),
+  fDisableSecondaries(kFALSE),
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -2712,7 +2731,7 @@ Int_t AliTPCtracker::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
  
   } else {
     if (fIteration==0){
-      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16)) t.SetRemoval(10);      
+      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16 + fExtraClErrYZ2 )) t.SetRemoval(10);      
       if ( t.GetNumberOfClusters()>18 && t.GetChi2()/t.GetNumberOfClusters()>6 ) t.SetRemoval(10);      
 
       if (( (t.GetNFoundable()*0.5 > t.GetNumberOfClusters()) || t.GetNoCluster()>15)) t.SetRemoval(10);
@@ -4034,7 +4053,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	  FollowProlongation(*track, (i1+i2)/2,1);
 	  Int_t foundable,found,shared;
 	  track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
-	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
+	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5+fExtraClErrYZ2){
 	    MarkSeedFree(seed); seed = 0;
 	    continue;
 	  }
@@ -4057,9 +4076,18 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	  continue;
 	}
 	nout1++;
-        // Z VERTEX CONDITION
 	Double_t zv, bz=GetBz();
-        if ( !track->GetZAt(0.,bz,zv) ) continue;
+        if ( !track->GetZAt(0.,bz,zv) )       { MarkSeedFree( seed ); seed = 0; continue; }
+	//
+	if (fDisableSecondaries) {
+	  if (TMath::Abs(zv)>fPrimaryDCAZCut) { MarkSeedFree( seed ); seed = 0; continue; }
+	  double yv; 
+	  if ( !track->GetZAt(0.,bz,yv) )     { MarkSeedFree( seed ); seed = 0; continue; }
+	  if (TMath::Abs(zv)>fPrimaryDCAZCut) { MarkSeedFree( seed ); seed = 0; continue; }
+	}
+	
+	//
+        // Z VERTEX CONDITION
 	if (TMath::Abs(zv-z3)>cuts[2]) {
 	  FollowProlongation(*track, TMath::Max(i2-20,0));
           if ( !track->GetZAt(0.,bz,zv) ) continue;
@@ -4328,7 +4356,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       nin++;      
       FollowProlongation(*track, i1-7,1);
       if (track->GetNumberOfClusters() < track->GetNFoundable()*0.75 || 
-	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6){
+	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6+fExtraClErrYZ2){
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
@@ -4342,7 +4370,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       
       if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
 	  track->GetNumberOfClusters()<track->GetNFoundable()*0.7 || 
-	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5 ) {
+	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5+fExtraClErrYZ2) {
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
@@ -7439,7 +7467,21 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
     fClExtraRoadZ = AliTPCReconstructor::GetExtendedRoads()[1];
     AliInfoF("Additional errors for roads: Y:%f Z:%f",fClExtraRoadY,fClExtraRoadZ);
   }
-
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  
+    AliTPCReconstructor::GetSystematicErrorCluster() : 
+    AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  //
+  fExtraClErrY2 = errCluster[0]*errCluster[0];
+  fExtraClErrZ2 = errCluster[1]*errCluster[1];
+  fExtraClErrYZ2 = fExtraClErrY2 + fExtraClErrZ2;
+  AliInfoF("Additional errors for clusters: Y:%f Z:%f",errCluster[0],errCluster[1]);
+  //
+  if (AliTPCReconstructor::GetPrimaryDCACut()) {
+    fPrimaryDCAYCut = AliTPCReconstructor::GetPrimaryDCACut()[0];
+    fPrimaryDCAZCut = AliTPCReconstructor::GetPrimaryDCACut()[1];
+    fDisableSecondaries = kTRUE;
+    AliInfoF("Only primaries will be tracked with DCAY=%f and DCAZ=%f cuts",fPrimaryDCAYCut,fPrimaryDCAZCut);
+  }
   //
   Clusters2Tracks();
   fEventHLT = 0;
@@ -7755,6 +7797,8 @@ TObjArray * AliTPCtracker::Tracking()
   //UnsignClusters();
   //SignClusters(seeds,fnumber,fdensity);
   
+  if (fDisableSecondaries) return seeds;
+
   // find secondaries
 
   cuts[0] = 0.3;
