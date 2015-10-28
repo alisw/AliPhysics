@@ -134,12 +134,13 @@ struct PluginRailway : public Railway
       TString fullName(MakeLibraryName(name));
       Int_t ret = gSystem->Load(fullName);
       if (ret < 0) return false;
-      if (slaves) {
+      if (slaves) {	
 	fHandler->AddAdditionalLibrary(fullName);
 	fExtraLibs.Add(new TObjString(fullName));
       }
     }
     else {
+      if (fExtraPars.FindObject(name)) return true;
       Info("LoadLibrary", "Looking for PAR %s", name.Data());
       if (!ParUtilities::Find(name)) { 
 	Error("PluginRailway::LoadLibrary", "Failed to find PAR file %s", 
