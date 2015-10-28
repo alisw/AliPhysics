@@ -108,7 +108,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     cout<<" * Input File.....: "<<fInputFileName.Data()<<endl;
     cout<<" * Output File....: "<<fOutputFileName.Data()<<endl;
     cout<<endl;
-    cout<<" Event Selection Peformed: "<<endl;
+    cout<<" * Event Selection Peformed: "<<endl;
     fMultSelectionCuts -> Print();
     cout<<endl;
 
@@ -252,9 +252,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
     Long64_t lNEv = fTree->GetEntries();
     cout<<"(1) File opened, event count is "<<lNEv<<endl;
-
-    cout<<"Cross-check event selection criteria: "<<endl; 
-    fMultSelectionCuts->Print(); 
     
     cout<<"(2) Creating buffer, computing averages"<<endl;
     const int lMax = 1000;
@@ -400,7 +397,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     cout<<"(4) Look at average values"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
-        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<", with "<<ntot<<" events..."<<endl;
+        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<"/"<<lNRuns<<", with "<<ntot<<" events..."<<endl;
         sTree[iRun]->SetEstimate(ntot+1);
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
@@ -429,7 +426,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     cout<<"(5) Generate Boundaries through a loop in all desired estimators"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
-        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<", with "<<ntot<<" events..."<<endl;
+        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<"/"<<lNRuns<<", with "<<ntot<<" events..."<<endl;
         sTree[iRun]->SetEstimate(ntot+1);
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
