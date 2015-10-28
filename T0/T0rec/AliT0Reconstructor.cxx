@@ -45,6 +45,7 @@
 #include <TGraph.h>
 #include <TMath.h>
 #include <Riostream.h>
+#include <TBits.h>
 
 ClassImp(AliT0Reconstructor)
 
@@ -560,16 +561,15 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        triggername[0] = (TMath::Abs(meanTVDC)<2147483647)?(Int_t)meanTVDC:0;
        triggername[1] = (TMath::Abs(meanOrA) <2147483647)?(Int_t)meanOrA:0;
        triggername[2] = (TMath::Abs(meanOrC) <2147483647)?(Int_t)meanOrC:0;
-
+       
        for (Int_t itr=0; itr<5; itr++) {
          for (Int_t iHit=0; iHit<5; iHit++) 
            {
              Int_t trr=trchan[itr];
              if(itr<3 ) { 
-               if( (alldata[trr][iHit] - triggername[itr]) > -800 &&
+              if( (alldata[trr][iHit] - triggername[itr]) > -800 &&
                    (alldata[trr][iHit] - triggername[itr]) < 800)  tr[itr]=true;
-               break;
-             }
+            }
              else 
             if( alldata[trr][iHit] > 0)  tr[itr]=true;
              AliDebug(5,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
@@ -739,6 +739,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   fESDTZERO->SetBackgroundFlag(background);
   Bool_t pileup =  PileupFlag();
   fESDTZERO->SetPileupFlag(pileup);
+  TBits pileupbits = SetPileupBits();
+  fESDTZERO->SetPileupBits(pileupbits);
+  TBits pileout =fESDTZERO-> GetT0PileupBits();
+  pileout.Print();
+
   for (Int_t i=0; i<5; i++) {
     fESDTZERO->SetPileupTime(i, frecpoints.GetTVDC(i) ) ;
     //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints.GetTVDC(i));
@@ -746,11 +751,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Bool_t sat  = SatelliteFlag();
   fESDTZERO->SetSatelliteFlag(sat);
   
+  
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if (pESD) {
+  if (pESD) 
    pESD->SetTZEROData(fESDTZERO);
-   //   fESDTZERO->Print();
-  }
+ 
+  
 
 } // vertex in 3 sigma
 
@@ -777,6 +783,37 @@ Bool_t AliT0Reconstructor::PileupFlag() const
 
 }
 
+ //____________________________________________________________
+  
+TBits AliT0Reconstructor::SetPileupBits() const
+{
+  TBits pileup ;
+  Float_t tvdc[5];
+  Int_t pos, bc[21];
+  UInt_t ibc;
+  pileup.ResetAllBits();
+  for ( Int_t nbc=0; nbc<21; nbc++) bc[nbc]=0;
+  for (Int_t ih=0; ih<5; ih++) 
+    {
+      tvdc[ih] =  fESDTZERO->GetTVDC(ih);
+      if(tvdc[ih]!=0 && tvdc[ih]>-290 &&tvdc[ih]<290 ) {
+	if( tvdc[ih]>0) pos = Int_t (tvdc[ih]+6)/25;
+	if(tvdc[ih]<0&&tvdc[ih]>-290)  pos = Int_t (tvdc[ih]-6)/25;	
+	//	printf("AliT0Reconstructor::PileupFlag():: hit %i tvdc %f pos %i bc %i\n",ih,tvdc[ih],pos, bc[pos+10]);
+
+	bc[pos+10] = 1;
+      }
+    }
+  for ( Int_t nbc=0; nbc<21; nbc++) {
+    if(bc[10]>0) {
+      ibc=UInt_t(nbc);
+      if (bc[nbc]>0)  pileup.SetBitNumber(ibc,kTRUE);
+    }
+  }
+  
+  //  pileup.Print();
+  return pileup;
+  }
  //____________________________________________________________
   
 Bool_t AliT0Reconstructor::BackgroundFlag() const
@@ -825,7 +862,7 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
      a[i] = GetRecoParam() -> GetLow(i+130);
      b[i] = GetRecoParam() -> GetLow(i+156);
     
-     qt11mean[i] =qt01mean[i] = 18500;
+     qt11mean[i] =qt01mean[i] =fTime0vertex[i] + 15500;
      if(i<26) amplitude[i]=0;
      //    printf(":ReadNewQT pmt %i Qt01mean %i QT11mean %i \n",i, qt01mean[i],   qt11mean[i]); 
   }

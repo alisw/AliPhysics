@@ -16,6 +16,7 @@
 
 
 #include <TObject.h>
+#include <TBits.h>
 
 class AliESDTZERO: public TObject {
 public:
@@ -75,6 +76,9 @@ public:
 
   void SetPileupTime (Int_t hit, Float_t time) { fPileupTime[hit] = time;}
   Float_t GetPileupTime(Int_t hit) const  {return fPileupTime[hit];}
+
+  void SetPileupBits(TBits pileup) {fPileupBits=pileup;}
+  TBits GetT0PileupBits() const {return fPileupBits;}
   //new QTC
   const  Double32_t* GetT0NewAmplitude() const {return fT0NewAmplitude;}
   void SetT0NewAmplitude( Double32_t newamp[24]) {
@@ -106,7 +110,9 @@ private:
   Float_t fPileupTime[6];
   Double32_t   fT0TOFbest[3]; // interaction time in ps ( A&C, A, C) with best time
   Double32_t fT0NewAmplitude[24]; //new QTC
-  ClassDef(AliESDTZERO,8)
+  TBits fPileupBits;     //BC number
+
+  ClassDef(AliESDTZERO,9)
 };
 
 

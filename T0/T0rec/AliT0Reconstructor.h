@@ -38,6 +38,7 @@ class AliT0Reconstructor: public AliReconstructor {
   void ReadOldQTC( Int_t alldata[220][5], Int_t amplitude[26]) const;
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TBits  SetPileupBits() const;
   Bool_t  PileupFlag() const;
   Bool_t  BackgroundFlag() const;
   Bool_t  SatelliteFlag() const;
