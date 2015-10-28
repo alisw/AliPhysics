@@ -23,16 +23,18 @@
 // Author: andreas.morsch@cern.ch
 //---------------------------------------------------------------------
 
+#include "AliLog.h"
 #include "AliGenEventHeader.h"
 ClassImp(AliGenEventHeader)
-
 
 //_______________________________________________________________________
 AliGenEventHeader::AliGenEventHeader():
   fNProduced(-1),
   fVertex(3),
   fInteractionTime(0.),
-  fEventWeight(1.)
+  fEventWeight(1.),
+  fEventWeights(),
+  fEventWeightNameGenerator("gen")
 {
   //
   // Constructor
@@ -75,3 +77,31 @@ void  AliGenEventHeader::PrimaryVertex(TArrayF &o) const
     o[2] = fVertex.At(2);    
 }
 
+Float_t AliGenEventHeader::GetEventWeight(const TString &name)
+{
+  // return weight associated to name,
+  // if not found return 1
+
+  // for compatibility we return fEventWeight
+  // when generator weight is requested but map is empty
+  if (fEventWeights.empty() && (name == fEventWeightNameGenerator))
+    return fEventWeight;
+  else if (fEventWeights.find(name.Data()) != fEventWeights.end())
+    return fEventWeights[name.Data()];
+  else
+    return 1.;
+}
+ 
+void AliGenEventHeader::AddEventWeight(const TString &name, Float_t w)
+{
+  // add new event name
+
+  if (fEventWeights.find(name.Data()) != fEventWeights.end()) {
+    AliWarning(Form("Updating already existing event weight <%s>", name.Data()));
+    fEventWeights[name.Data()] *= w;
+  } else {
+    fEventWeights[name.Data()] = w;
+  }
+  
+  fEventWeight *= w;
+}
