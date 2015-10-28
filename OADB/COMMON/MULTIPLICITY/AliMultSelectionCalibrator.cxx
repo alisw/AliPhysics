@@ -58,6 +58,14 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const 
 
     // Create Event Selector
     fMultSelectionCuts = new AliMultSelectionCuts();
+    
+    //Set Standard Cuts (warning: this is pp-like!) 
+    fMultSelectionCuts -> SetVzCut (10.0);
+    fMultSelectionCuts -> SetTriggerCut(kTRUE);
+    fMultSelectionCuts -> SetINELgtZEROCut(kTRUE);
+    fMultSelectionCuts -> SetTrackletsVsClustersCut(kTRUE);
+    fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
+    fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
 
     //Basic I/O for MultSelection framework
     fInput     = new AliMultInput();
@@ -245,15 +253,10 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Long64_t lNEv = fTree->GetEntries();
     cout<<"(1) File opened, event count is "<<lNEv<<endl;
 
-    cout<<"(2) Setting up Event Selection Criteria"<<endl;
-    fMultSelectionCuts -> SetVzCut (10.0);
-    fMultSelectionCuts -> SetTriggerCut(kTRUE);
-    fMultSelectionCuts -> SetINELgtZEROCut(kTRUE);
-    fMultSelectionCuts -> SetTrackletsVsClustersCut(kTRUE);
-    fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
-    fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
-
-    cout<<"(3) Creating buffer, computing averages"<<endl;
+    cout<<"Cross-check event selection criteria: "<<endl; 
+    fMultSelectionCuts->Print(); 
+    
+    cout<<"(2) Creating buffer, computing averages"<<endl;
     const int lMax = 1000;
     const int lMaxQuantiles = 10000;
     Int_t lRunNumbers[lMaxQuantiles];
@@ -328,7 +331,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             }
         }
         if( lNewRun == kTRUE ) {
-            cout<<"(3) New Run Found: "<<fRunNumber<<", added as #"<<lNRuns<<" (so far: "<<lNRuns<<" runs)"<<endl;
+            cout<<"(2) New Run Found: "<<fRunNumber<<", added as #"<<lNRuns<<" (so far: "<<lNRuns<<" runs)"<<endl;
             lRunNumbers[lNRuns] = fRunNumber;
             lThisRunIndex = lNRuns;
             lNRuns++;
@@ -372,7 +375,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //Write buffer to file
     for(Int_t iRun=0; iRun<lNRuns; iRun++) sTree[iRun]->Write();
 
-    cout<<"(4) Inspect List of Runs and their corresponding statistics passing cuts: "<<endl;
+    cout<<"(3) Inspect List of Runs and their corresponding statistics passing cuts: "<<endl;
     for(Int_t iRun = 0; iRun<lNRuns; iRun++) {
         cout<<" --- "<<lRunNumbers[iRun]<<", N(events) = "<<sTree[iRun]->GetEntries()<<endl;
     }
@@ -394,7 +397,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //Histograms to store calibration information
     TH1F *hCalib[1000][lNEstimators];
 
-    cout<<"(4bis) Look at average values"<<endl;
+    cout<<"(4) Look at average values"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
         cout<<"--- Processing run number "<<lRunNumbers[iRun]<<", with "<<ntot<<" events..."<<endl;

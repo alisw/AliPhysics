@@ -62,7 +62,12 @@ Bool_t AliMultSelectionCuts::IsEventSelected(AliESDEvent * esd) {
 
 void AliMultSelectionCuts::Print(Option_t *option) const {
   Printf("Value of Cuts:");
-  Printf(" - Vz: [%f]", fVzCut);
+  Printf(" Vertex Z position.................: [%f]", fVzCut);
+  Printf(" Physics Selection.................: [%i]", fEvSel_Trig_kMB);
+  Printf(" INEL > 0..........................: [%i]", fEvSel_INELgtZERO);
+  Printf(" Tracklets vs Clusters.............: [%i]", fEvSel_TrackletsVsClusters);
+  Printf(" Reject Pileup SPD (mult bins).....: [%i]", fEvSel_RejectPileupInMultBins);
+  Printf(" SPD and Track vertex consistency..: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
 }
 
 Bool_t AliMultSelectionCuts::IsMinBias(){
