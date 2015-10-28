@@ -70,6 +70,7 @@ class AliCorrelation3p : public TNamed {
   AliCorrelation3p& operator+=(const AliCorrelation3p& other);
   void SetMixedEvent(AliCorrelation3p* pME) {fMixedEvent=pME;}
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
+  void SetBinningVersion(int ver){fbinver = ver;}
 
   TH1 * GetHistogram(Int_t khist, Int_t Mbin, Int_t ZBin, const char* histname){return PrepareHist(GetNumberHist(khist,Mbin,ZBin),histname,"","","");}
   enum {
@@ -147,10 +148,11 @@ class AliCorrelation3p : public TNamed {
   float fVZ; //z Vertex in this event
   int fMBin;
   int fVzBin;
+  int fbinver;
   CollisionType fCollisionType;
   TriggerType fTriggerType;
 
   //Class definition.
-  ClassDef(AliCorrelation3p, 5)
+  ClassDef(AliCorrelation3p, 6)
 };
 #endif

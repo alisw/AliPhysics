@@ -252,7 +252,7 @@ class AliThreeParticleCorrelator : public TNamed {
 
     //Fill the associated vector
 //     TObjArray* associatedTracks=
-    MakeAssociated(arrayParticles, fAssociated);
+    MakeAssociated(arrayParticles, fAssociated,true);
 //     if (!associatedTracks) return -1;//The function failed somehow.
     //Process the signal 3p and 2p correlations for all workers.
     int iResult=ProcessEvent(factiveTriggers, fAssociated);
@@ -421,7 +421,7 @@ class AliThreeParticleCorrelator : public TNamed {
     return ;
   }
   
-  void MakeAssociated(const TObjArray* arrayParticles,std::vector<AliVParticle*>& associated) {
+  void MakeAssociated(const TObjArray* arrayParticles,std::vector<AliVParticle*>& associated, bool makehist=kFALSE) {
     /// Create clone of particle array using a reduced track class and
     if (!arrayParticles) return ;
     associated.clear();
@@ -433,7 +433,7 @@ class AliThreeParticleCorrelator : public TNamed {
       if (!associatedp) continue;
       // scope for local iterators
       typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();//fine, since mixed events has the same function for ass selection as at least one signal.
-      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, false)) break;
+      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, makehist)) break;
       if (o==e) continue;// next particle if current one does not pass cuts (no break anywhere).
       associated.push_back(associatedp);	
     } // loop over particle

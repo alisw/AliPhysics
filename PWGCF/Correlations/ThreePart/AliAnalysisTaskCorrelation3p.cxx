@@ -90,6 +90,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , ftrigger(AliAnalysisTaskCorrelation3p::tracks)
   , fCentralityPercentile(0)
   , fMultiplicity(0)
+  , fBinVer(0)
   , fMaxVz(10.0)
   , fMaxMult(0)
   , fMaxNumberOfTracksInPPConsidered(200)
@@ -159,6 +160,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , ftrigger(AliAnalysisTaskCorrelation3p::tracks)
   , fCentralityPercentile(0)
   , fMultiplicity(0)
+  , fBinVer(0)
   , fMaxVz(10.0)
   , fMaxMult(0)
   , fMaxNumberOfTracksInPPConsidered(200)
@@ -263,6 +265,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     TString triggerinit = Form("minTriggerPt=%.1f maxTriggerPt=%.1f minAssociatedPt=%.1f maxAssociatedPt=%.1f collisiontype=%s triggertype=%s", fMinTriggerPt, fMaxTriggerPt, fMinAssociatedPt, fMaxAssociatedPt,collisiontype.Data(),triggertype.Data());
     AliCorrelation3p* workertracktrigger =new AliCorrelation3p(tracksname, fMBinEdges, fZBinEdges);
     workertracktrigger->SetAcceptanceCut(fAcceptancecut);
+    workertracktrigger->SetBinningVersion(fBinVer);
     workertracktrigger->Init(triggerinit);
     correlator->Add(workertracktrigger);
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));

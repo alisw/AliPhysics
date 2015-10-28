@@ -74,6 +74,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
   void SetQA(){fQA=kTRUE;}
+  void SetBinVer(int binver){fBinVer=binver;}
   void SetWeights(const char* file){
     TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
@@ -177,6 +178,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Trigger 	    ftrigger;
   Double_t 	    fCentralityPercentile;	
   Double_t 	    fMultiplicity;
+  Int_t 	    fBinVer;
   //cut variables:
   ////event:
   Double_t	    fMaxVz; //Vertex cut variable.
@@ -212,7 +214,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   static const Int_t fNRunsP11a = 58;
   static const Int_t fNRunsP11h = 108;
   //Class definition.
-  ClassDef(AliAnalysisTaskCorrelation3p, 4);
+  ClassDef(AliAnalysisTaskCorrelation3p, 5);
 };
 
 #endif

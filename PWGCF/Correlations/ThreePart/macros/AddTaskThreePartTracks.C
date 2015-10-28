@@ -11,8 +11,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 						      const Double_t MaxNumberOfTracks = 300,
 						      const char* period = "11a",
 						      UInt_t offlineTriggerMask = AliVEvent::kMB,
-						      const Int_t MaxNEventsMix = 1000,
-						      const Int_t MinNTracksMix = 100,
+						      const Int_t MaxNEventsMix = 100,
+						      const Int_t MinNTracksMix = 1000,
 						      const Int_t NMBins = 7,
 						      const Double_t Mbin0 = 0.,
 						      const Double_t Mbin1 = 5.,
@@ -23,7 +23,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 						      const Double_t Mbin6 = 80.,
 						      const Double_t Mbin7 = 90.,
 						      const char * file = "",
-						      const char * cutmask = "GlobalHybrid"
+						      const char * cutmask = "GlobalHybrid",
+						      const Int_t binver = 1
  						    )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for pp data 
@@ -58,6 +59,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
   task->SetAcceptanceCut(Acceptancecut);
   task->SetMaxNumberOfTracks(MaxNumberOfTracks);
   task->SetTrackCut(cutmask);
+  task->SetBinVer(binver);
   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
