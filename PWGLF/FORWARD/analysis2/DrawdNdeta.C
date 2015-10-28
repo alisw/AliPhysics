@@ -395,7 +395,61 @@ struct dNdetaDrawer
     fTriggerEff = eff; 
     fExtTriggerEff = false;
   }
+  /** 
+   * Try to get empirical correction from a path or prefix path 
+   * 
+   * @param prx     Path or prefix 
+   * @param fwdEmp  On return, pounter to the objects or null 
+   * @param cenEmp  On return, pounter to the objects or null 
+   * @param empName On return, the full path
+   * 
+   * @return true on success 
+   */
+  Bool_t GetEmpirical(const TString& prx,
+		      TObject*& fwdEmp,
+		      TObject*& cenEmp,
+		      TString&  empname)   
+  {
+    empName = "";
+    TString path(prx);
+    if (!path.Contains("empirical.root")) {
+      path = gSystem->ConcatFileName(gSystem->ExpandPathName(prx.Data()),
+				     "empirical.root");
+      path.Append("#default");
+    }
+    TUrl   empUrl(path);
+    TFile* empirical = TFile::Open(empUrl.GetUrl(), "READ");
+    if (!empirical) return false;
 
+    const char* empPath = empUrl.GetAnchor();
+    TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
+    TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
+    if (!(fwdObj &&
+	  (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
+	   fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+      Warning("Run", "Didn't get the object Forward/%s from %s", 
+	      empPath, empUrl.GetUrl());
+    }
+    if (useCen &&
+	!(cenObj &&
+	  (cenObj->IsA()->InheritsFrom(TH1::Class()) || 
+	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+      Warning("Run", "Didn't get the object Central/%s from %s", 
+	      empPath, empUrl.GetUrl());
+    }
+    else {
+      fwdEmp  = fwdObj;
+      cenEmp  = fwdObj;
+      empName = empUrl.GetUrl();
+      if (fwdEmp->IsA()->InheritsFrom(TH1::Class()))
+	static_cast<TH1*>(fwdEmp)->SetDirectory(0);
+      if (cenEmp->IsA()->InheritsFrom(TH1::Class()))
+	static_cast<TH1*>(cenEmp)->SetDirectory(0);
+    }
+    empirical->Close();
+    return !empName.IsNull();    
+  }
+  
   //==================================================================
   /** 
    * @{ 
@@ -671,40 +725,23 @@ struct dNdetaDrawer
     // --- Try to get the emperical correction -----------------------
     TObject* fwdEmp = 0;
     TObject* cenEmp = 0;
+    TUrl     empUrl(fEmpirical);
+    TFile*   empirical = 0;
     if (!fEmpirical.IsNull() && !fEmpirical.EqualTo("__task__")) {
-      TUrl empUrl(fEmpirical);
-      TFile* empirical = TFile::Open(empUrl.GetUrl(), "READ");
-      if (!empirical) { 
-	Warning("Run", "couldn't open empirical correction file: %s",
-		empUrl.GetUrl());
-	fEmpirical = "";
-      }
-      else {
-	const char* empPath = empUrl.GetAnchor();
-	TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
-	TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
-	if (!(fwdObj &&
-	      (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
-	       fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	  Warning("Run", "Didn't get the object Forward/%s from %s", 
-		  empPath, empUrl.GetUrl());
-	  fEmpirical = "";
-	}
-	if (useCen && !(cenObj &&
-			(cenObj->IsA()->InheritsFrom(TH1::Class()) || 
-	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
-	  Warning("Run", "Didn't get the object Central/%s from %s", 
-		  empPath, empUrl.GetUrl());
-	  fEmpirical = "";
-	}
-	else {
-	  fwdEmp = fwdObj;
-	  cenEmp = fwdObj;
-	}
+      // Try some other locations
+      const char* test[] = {
+	fEmpirical.Data(),
+	"file://${ANA_SRC}",
+	"file://${FWD}",
+	"file://${OADB_PATH}/PWGLF/FORWARD/EMPIRICAL",
+	"file://${ALICE_PHYSICS}/OADB/PWGLF/FORWARD/EMPIRICAL",
+	0 };
+      const char** ptr = test;
+      while (*ptr) {
+	if (GetEmpirical(*ptr, fwdEmp, cenEmp, fEmpirical)) break;
+	ptr++;
       }
     }
-    if (!fEmpCorr && !fEmpirical.EqualTo("__task__")) 
-      fEmpirical = "";
 
     // --- Loop over input data --------------------------------------
     TObjArray truths;
