@@ -582,7 +582,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){      
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       if (cluster.GetDetector()==0) continue;
-      Bool_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
+      Double_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
       if (zsignSector*cluster.GetZ()<0.) continue;
 
       if (trackArrayITS[iPoint].GetUniqueID()>0){
@@ -860,7 +860,7 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
       Double_t deltaY=param->GetY();
       Double_t deltaZ=param->GetZ()-cl->GetZ();
       Double_t localX = cl->GetX();
-      Bool_t   zsignSector=((cl->GetDetector()%36)<18) ? 1.:-1.;
+      Double_t   zsignSector=((cl->GetDetector()%36)<18) ? 1.:-1.;
       if (zsignSector*cl->GetZ()<0.) continue;
       Double_t xxx[5]={deltaY, sector, localX,   cl->GetZ()/cl->GetX(), param->GetParameter()[4] };
       hisToFill[iter]->Fill(xxx);	  
