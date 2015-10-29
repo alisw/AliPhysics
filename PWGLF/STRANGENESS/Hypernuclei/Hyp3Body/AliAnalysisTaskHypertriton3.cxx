@@ -880,7 +880,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t dcad[2] = {0.,0.}; // dca between the candidate d,p,pi
   Double_t dcap[2] = {0.,0.}; // and the candidate decay vertex
   Double_t dcapi[2] = {0.,0.}; // dcad[0]= transverse plane coordinate; dcad[1]= z coordinate
-  Double_t decayLengthH3L, normalizedDecayL, pTmom, rapidity, pointingAngleH, ctau= 0.;
+  Double_t decayLengthH3L, normalizedDecayL, rapidity, pointingAngleH, ctau= 0.;
   Double_t lD, lP, lPi = 0;
   Double_t decVt[3] = {0.,0.,0.};
   Bool_t brotherHood = kFALSE;
@@ -1373,14 +1373,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
 	
-	
-	pTmom = TMath::Sqrt((trackD->Pt()*trackD->Pt())+(trackP->Pt()*trackP->Pt())+(trackNPi->Pt()*trackNPi->Pt()));
-	pTotHyper = TMath::Sqrt((Hypertriton.Px()*Hypertriton.Px())+(Hypertriton.Py()*Hypertriton.Py())+(Hypertriton.Pz()*Hypertriton.Pz()));
-	if(pTmom < fMinPtMother || pTmom > fMaxPtMother) continue;
-
-	
 	Hypertriton=posD+posP+negPi;
 	
+	pTotHyper = Hypertriton.P();
+	if(Hypertriton.Pt() < fMinPtMother || Hypertriton.Pt() > fMaxPtMother) continue;
+
 	if(fSideBand == kTRUE && (Hypertriton.M() < 3.08 || Hypertriton.M() > 3.18)) continue;
 	ctau = (Hypertriton.M()*decayLengthH3L)/pTotHyper;
 	fHistLifetime->Fill(ctau);
@@ -1460,10 +1457,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  TParticle *tparticleMother = stack->Particle(TMath::Abs(labelM));
 	  ndau = tparticleMother->GetNDaughters();
 	  
-	  if(TMath::Abs(tparticleMother->GetPdgCode()) == 1010010030 && ndau == 3){
-	    Int_t labelFirstDau = tparticleMother->GetDaughter(0);
-	    Int_t labelSecondDau = labelFirstDau + 1;
-	    Int_t labelThirdDau = tparticleMother->GetDaughter(1);
+	  if(TMath::Abs(tparticleMother->GetPdgCode()) == 1010010030){
+	    Int_t labelThirdDau = tparticleMother->GetLastDaughter();
+	    Int_t labelFirstDau = labelThirdDau - 2;
+	    Int_t labelSecondDau = labelThirdDau - 1;
+	    
 	    if(labelFirstDau == lD && labelSecondDau == lP && labelThirdDau == lPi){
 	      
 	      brotherHood = kTRUE;
