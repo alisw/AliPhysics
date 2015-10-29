@@ -644,6 +644,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitEnergyCalibrationFactors()
 {
   if ( !fRecoUtils->IsRecalibrationOn() || fCalibFilePath == "" ) return ;
   
+  if(!fEMCALGeo)fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
+  
   TFile * calibFactorsFile = TFile::Open(fCalibFilePath.Data());
   
   if ( !calibFactorsFile ) AliFatal("Cannot recover the calibration factors");
@@ -651,6 +653,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitEnergyCalibrationFactors()
   for(Int_t ism = 0; ism < fEMCALGeo->GetNumberOfSuperModules(); ism++)
   {
     TH2F * histo = (TH2F*) calibFactorsFile->Get(Form("EMCALRecalFactors_SM%d",ism));
+    printf("In AliAnalysisTaskEMCALPi0CalibSelection::InitEnergyCalibrationFactors \n ---Recover calibration factor for : EMCALRecalFactors_SM%d %p\n",ism,histo);
     
     if ( histo ) 
       fRecoUtils->SetEMCALChannelRecalibrationFactors(ism,histo);
@@ -848,7 +851,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
 //___________________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 {
-  fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
+  if(!fEMCALGeo)fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
   Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
   
   fOutputContainer = new TList();
@@ -1168,9 +1171,9 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
   Int_t icol = ieta;
   Int_t irow = iphi;
   
-  printf("SM = %i\n",iSupMod);
-  printf("icol = %i\n",icol);
-  printf("irow = %i\n",irow);
+//  printf("SM = %i\n",iSupMod);
+//  printf("icol = %i\n",icol);
+//  printf("irow = %i\n",irow);
   
   if(iSupMod%2) //Odd SM
   {
@@ -1178,7 +1181,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
     {
       if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
       {
-        printf("zone 1\n");
+//        printf("zone 1\n");
         return kTRUE;
       }
       else
@@ -1193,7 +1196,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
     {
       if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
       {
-        printf("zone 1\n");
+//        printf("zone 1\n");
         return kTRUE;
       }
       else
@@ -1217,9 +1220,9 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t iet
   Int_t icol = ieta;
   Int_t irow = iphi;
   
-  printf("SM = %i\n",iSupMod);
-  printf("icol = %i\n",icol);
-  printf("irow = %i\n",irow);
+//  printf("SM = %i\n",iSupMod);
+//  printf("icol = %i\n",icol);
+//  printf("irow = %i\n",irow);
   
   if(iSupMod%2) //Odd SM
   {
@@ -1231,7 +1234,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t iet
       }
       else
       {
-        printf("zone 2\n");
+//        printf("zone 2\n");
         return kTRUE;
       }
     }
@@ -1246,7 +1249,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t iet
       }
       else
       {
-        printf("zone 2\n");
+//        printf("zone 2\n");
         return kTRUE;
       }
     }
@@ -1266,9 +1269,9 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
   Int_t icol = ieta;
   Int_t irow = iphi;
   
-  printf("SM = %i\n",iSupMod);
-  printf("icol = %i\n",icol);
-  printf("irow = %i\n",irow);
+//  printf("SM = %i\n",iSupMod);
+//  printf("icol = %i\n",icol);
+//  printf("irow = %i\n",irow);
   
   if(iSupMod%2) //Odd SM
   {
@@ -1276,7 +1279,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
     {
       if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
       {
-        printf("zone 3\n");
+//        printf("zone 3\n");
         return kTRUE;
       }
       else
@@ -1291,7 +1294,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
     {
       if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
       {
-        printf("zone 3\n");
+//        printf("zone 3\n");
         return kTRUE;
       }
       else
@@ -1315,9 +1318,9 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t iet
   Int_t icol = ieta;
   Int_t irow = iphi;
   
-  printf("SM = %i\n",iSupMod);
-  printf("icol = %i\n",icol);
-  printf("irow = %i\n",irow);
+//  printf("SM = %i\n",iSupMod);
+//  printf("icol = %i\n",icol);
+//  printf("irow = %i\n",irow);
   
   if(iSupMod%2) //Odd SM
   {
@@ -1329,7 +1332,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t iet
       }
       else
       {
-        printf("zone 4\n");
+//        printf("zone 4\n");
         return kTRUE;
       }
     }
@@ -1344,7 +1347,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t iet
       }
       else
       {
-        printf("zone 4\n");
+//        printf("zone 4\n");
         return kTRUE;
       }
     }
@@ -1512,7 +1515,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
 
     InitTemperatureCorrections();
 
-    InitEnergyCalibrationFactors();
+//    InitEnergyCalibrationFactors();
   }
   
   //Get the list of clusters and cells

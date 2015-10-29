@@ -106,7 +106,8 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
   // If previous pass not available (first) avoid recalculate clusters
   //---------------------
   
-  pi0calib->SetCalibrationFilePath(calibPath); 
+  pi0calib->SetCalibrationFilePath(calibPath);
+  pi0calib->InitEnergyCalibrationFactors();
   
   if(recalE && calibPath == "")
   {
