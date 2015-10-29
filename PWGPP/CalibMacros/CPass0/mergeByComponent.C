@@ -70,8 +70,6 @@ void MergeCPass(const Char_t *list, TString component, TString outputFileName="C
   else
     merger.AddAccept(component.Data());
   //
-  /* 
-  // RS: commenting this to sync with working version from alidaq
   // temporary solution: reject THn and THnSparse of  TPCAlign directory, since they
   // will be merged using their owner AliTPCcalibAlign object
   {
@@ -82,7 +80,6 @@ void MergeCPass(const Char_t *list, TString component, TString outputFileName="C
     merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_2");
     merger.AddReject("AliTPCcalibAlign.alignTPC.fTrackletDelta_3");
   }
-  */
   //
   /* merge */
   merger.IterTXT(list, outputFileName.Data(), kFALSE);
