@@ -121,7 +121,7 @@ fPack(0)
     pack->SetShowTitleBar(kFALSE);
     
     pack->NewSlotWithWeight(2)->MakeCurrent(); // new slot is created from pack
-    f3DView = gEve->SpawnNewViewer("3D View", "");
+    f3DView = gEve->SpawnNewViewer("3D View MV", "");
     f3DView->AddScene(gEve->GetGlobalScene());
     f3DView->AddScene(gEve->GetEventScene());
     
