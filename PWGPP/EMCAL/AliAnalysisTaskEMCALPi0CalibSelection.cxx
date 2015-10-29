@@ -1160,7 +1160,9 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(Int_t iSM, Int_t 
 
 
 ///
-/// Check if cell is in zone 1 defined regardind Pi0 calibration first plots. rows 2-3 et 20-21. In all zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 1 defined regardind Pi0 calibration first plots. rows 2-3 et 20-21. 
+/// In all zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1184,10 +1186,6 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
 //        printf("zone 1\n");
         return kTRUE;
       }
-      else
-      {
-        return kFALSE;
-      }
     }
   }
   else      //Even SM
@@ -1199,17 +1197,17 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t iet
 //        printf("zone 1\n");
         return kTRUE;
       }
-      else
-      {
-        return kFALSE;
-      }
     }
   }
+  
+  return kFALSE;
 }
 
 
 ///
-/// Check if cell is in zone 2 defined regardind Pi0 calibration first plots. Zone 2 other rows. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 2 defined regardind Pi0 calibration first plots. Zone 2 other rows. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1254,11 +1252,15 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t iet
       }
     }
   }
+  
+  return kFALSE;
 }
 
 
 ///
-/// Check if cell is in zone 3 defined regardind Pi0 calibration first plots. Zone 3 cols 1-2-3 et 44-45-46. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 3 defined regardind Pi0 calibration first plots. Zone 3 cols 1-2-3 et 44-45-46. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1282,10 +1284,6 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
 //        printf("zone 3\n");
         return kTRUE;
       }
-      else
-      {
-        return kFALSE;
-      }
     }
   }
   else      //Even SM
@@ -1297,17 +1295,17 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t iet
 //        printf("zone 3\n");
         return kTRUE;
       }
-      else
-      {
-        return kFALSE;
-      }
     }
   }
+  
+  return kFALSE;
 }
 
 
 ///
-/// Check if cell is in zone 4 defined regardind Pi0 calibration first plots. Zone 4 other cols. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 4 defined regardind Pi0 calibration first plots. Zone 4 other cols. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1352,11 +1350,16 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t iet
       }
     }
   }
+  
+  return kFALSE;
 }
 
 
 ///
-/// Check if cell is in zone 5 defined regardind Pi0 calibration first plots. Outside of the biggest ellipse where there is little statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 5 defined regardind Pi0 calibration first plots. 
+/// Outside of the biggest ellipse where there is little statisitc. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1371,7 +1374,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone5(Int_t iSupMod, Int_t iet
   Float_t col0 = 47/2;
   Float_t row0 = 23/2;
   
-  //Paramters
+  //Parameters
   Float_t a = 3-col0;
   Float_t b = 2-row0;
   
@@ -1387,7 +1390,10 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone5(Int_t iSupMod, Int_t iet
 
 
 ///
-/// Check if cell is in zone 6 defined regardind Pi0 calibration first plots. Between the two ellipses where there average statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 6 defined regardind Pi0 calibration first plots. 
+/// Between the two ellipses where there average statisitc. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 except cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
@@ -1416,12 +1422,14 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone6(Int_t iSupMod, Int_t iet
   {
     return kFALSE;
   }
-  
 }
 
 
 ///
-/// Check if cell is in zone 7 defined regardind Pi0 calibration first plots. Inside the smallest ellipse where there is large statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// Check if cell is in zone 7 defined regardind Pi0 calibration first plots. 
+/// Inside the smallest ellipse where there is large statisitc. 
+/// In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 
+/// for even SM (carreful when transfer to odd SM)
 /// \return True if this cell is in zone 1
 /// \param iSM: supermodule number of the cell.
 /// \param ieta: column index of the cell.
