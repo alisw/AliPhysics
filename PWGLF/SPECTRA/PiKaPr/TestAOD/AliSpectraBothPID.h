@@ -45,7 +45,7 @@ using namespace AliSpectraNameSpaceBoth;
 class AliSpectraBothPID : public TNamed
 {
 public:
-   enum BothPIDType_t {kNSigmaTPC,kNSigmaTOF,kNSigmacircleTPCTOF,kNSigmasquareTPCTOF};
+   enum BothPIDType_t {kNSigmaTPC,kNSigmaTOF,kNSigmacircleTPCTOF,kNSigmasquareTPCTOF,kNSigmaTPCorTOF};
 
   AliSpectraBothPID() ;
   AliSpectraBothPID(BothPIDType_t pidType);

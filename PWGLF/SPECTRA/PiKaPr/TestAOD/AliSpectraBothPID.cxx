@@ -81,18 +81,18 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
     //TOF	 	 
 		if(ycut[0])
     		{
-    			hman->GetPtHistogram(kHistNSigPionTOF)->Fill(track->P(),nsigmaTOFkPion );
-    			hman->GetPtHistogram(kHistNSigPionPtTOF)->Fill(track->Pt(),nsigmaTOFkPion );
+    			hman->GetPtHistogram(kHistNSigPionTOF)->Fill(track->P()*track->Charge(),nsigmaTOFkPion );
+    			hman->GetPtHistogram(kHistNSigPionPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkPion );
     		}
     		if(ycut[1])
   	 	{	
-    			hman->GetPtHistogram(kHistNSigKaonTOF)->Fill(track->P(),nsigmaTOFkKaon);
-   	 		hman->GetPtHistogram(kHistNSigKaonPtTOF)->Fill(track->Pt(),nsigmaTOFkKaon );	 
+    			hman->GetPtHistogram(kHistNSigKaonTOF)->Fill(track->P()*track->Charge(),nsigmaTOFkKaon);
+   	 		hman->GetPtHistogram(kHistNSigKaonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkKaon );	 
    		}
 		if(ycut[2])
 		{					
-   			hman->GetPtHistogram(kHistNSigProtonTOF)->Fill(track->P(),nsigmaTOFkProton ); 
-    			hman->GetPtHistogram(kHistNSigProtonPtTOF)->Fill(track->Pt(),nsigmaTOFkProton );
+   			hman->GetPtHistogram(kHistNSigProtonTOF)->Fill(track->P()*track->Charge(),nsigmaTOFkProton ); 
+    			hman->GetPtHistogram(kHistNSigProtonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkProton );
 		}
 	
     
@@ -104,25 +104,25 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
 
    	if(ycut[0])
     	{
-    		hman->GetPtHistogram(kHistNSigPionTPC)->Fill(track->P(),nsigmaTPCkPion );
-    		hman->GetPtHistogram(kHistNSigPionPtTPC)->Fill(track->Pt(),nsigmaTPCkPion );
-  		hman->GetPtHistogram(kHistNSigPionTPCTOF)->Fill(track->P(),nsigmaTPCTOFkPion);
-  		hman->GetPtHistogram(kHistNSigPionPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkPion);
+    		hman->GetPtHistogram(kHistNSigPionTPC)->Fill(track->P()*track->Charge(),nsigmaTPCkPion );
+    		hman->GetPtHistogram(kHistNSigPionPtTPC)->Fill(track->Pt()*track->Charge(),nsigmaTPCkPion );
+  		hman->GetPtHistogram(kHistNSigPionTPCTOF)->Fill(track->P()*track->Charge(),nsigmaTPCTOFkPion);
+  		hman->GetPtHistogram(kHistNSigPionPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkPion);
 	}
     	if(ycut[1])
   	 {	
-    		hman->GetPtHistogram(kHistNSigKaonTPC)->Fill(track->P(),nsigmaTPCkKaon );
-   	 	hman->GetPtHistogram(kHistNSigKaonPtTPC)->Fill(track->Pt(),nsigmaTPCkKaon );	 
-  		hman->GetPtHistogram(kHistNSigKaonTPCTOF)->Fill(track->P(),nsigmaTPCTOFkKaon);
-  		hman->GetPtHistogram(kHistNSigKaonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkKaon);
+    		hman->GetPtHistogram(kHistNSigKaonTPC)->Fill(track->P()*track->Charge(),nsigmaTPCkKaon );
+   	 	hman->GetPtHistogram(kHistNSigKaonPtTPC)->Fill(track->Pt()*track->Charge(),nsigmaTPCkKaon );	 
+  		hman->GetPtHistogram(kHistNSigKaonTPCTOF)->Fill(track->P()*track->Charge(),nsigmaTPCTOFkKaon);
+  		hman->GetPtHistogram(kHistNSigKaonPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkKaon);
 		
 	}
 	if(ycut[2])
 	{					
-   		hman->GetPtHistogram(kHistNSigProtonTPC)->Fill(track->P(),nsigmaTPCkProton ); 
-    		hman->GetPtHistogram(kHistNSigProtonPtTPC)->Fill(track->Pt(),nsigmaTPCkProton );
-  		hman->GetPtHistogram(kHistNSigProtonTPCTOF)->Fill(track->P(),nsigmaTPCTOFkProton);
-  		hman->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt(),nsigmaTPCTOFkProton);
+   		hman->GetPtHistogram(kHistNSigProtonTPC)->Fill(track->P()*track->Charge(),nsigmaTPCkProton ); 
+    		hman->GetPtHistogram(kHistNSigProtonPtTPC)->Fill(track->Pt()*track->Charge(),nsigmaTPCkProton );
+  		hman->GetPtHistogram(kHistNSigProtonTPCTOF)->Fill(track->P()*track->Charge(),nsigmaTPCTOFkProton);
+  		hman->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkProton);
 	}
 
 }
@@ -208,7 +208,7 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
   	Double_t nsigmaTPCTOFkProton = TMath::Abs(nsigmaTPCkProton);
   	Double_t nsigmaTPCTOFkKaon   = TMath::Abs(nsigmaTPCkKaon);
   	Double_t nsigmaTPCTOFkPion   = TMath::Abs(nsigmaTPCkPion);
-	if(fPIDType==kNSigmaTOF)
+	if(fPIDType==kNSigmaTOF||fPIDType==kNSigmaTPCorTOF)
 	{
 		nsigmaTPCTOFkProton = 10000.0;
   		nsigmaTPCTOFkKaon   = 10000.0;
@@ -303,6 +303,42 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
 		nsigmaProton  =  TMath::Max(nsigmaTPCkProton,nsigmaTOFkProton);
     		nsigmaKaon	  =  TMath::Max(nsigmaTPCkKaon,nsigmaTOFkKaon);
     		nsigmaPion    =  TMath::Max(nsigmaTPCkPion,nsigmaTOFkPion)  ;
+		break;
+		case kNSigmaTPCorTOF:
+		if(trackCuts->GetUseTypeDependedTOFCut())
+		{
+			if(trk->Pt()>=trackCuts->GetPtTOFMatchingPion())
+				nsigmaPion    =  nsigmaTOFkPion ;
+			else
+				nsigmaPion = nsigmaTPCkPion ;
+			if(trk->Pt()>=trackCuts->GetPtTOFMatchingKaon())
+				nsigmaKaon    =  nsigmaTOFkKaon ;
+			else
+				nsigmaKaon = nsigmaTPCkKaon ;
+			if(trk->Pt()>=trackCuts->GetPtTOFMatchingKaon())
+				nsigmaProton    =  nsigmaTOFkProton ;
+			else
+				nsigmaProton = nsigmaTPCkProton ;
+
+			
+		}
+		else
+		{ 
+			if(trk->Pt()>=trackCuts->GetPtTOFMatching())
+			{
+				nsigmaProton  =  nsigmaTOFkProton;
+    				nsigmaKaon	  =  nsigmaTOFkKaon  ;
+    				nsigmaPion    =  nsigmaTOFkPion  ;
+
+			}
+			else
+			{
+				nsigmaProton  =  nsigmaTPCkProton;
+    				nsigmaKaon	  =  nsigmaTPCkKaon  ;
+    				nsigmaPion    =  nsigmaTPCkPion  ;
+
+			}		
+		}
     		break;
 
   	}	

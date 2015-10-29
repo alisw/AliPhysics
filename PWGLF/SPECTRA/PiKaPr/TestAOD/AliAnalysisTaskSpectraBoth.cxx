@@ -427,27 +427,41 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  		if (isPrimary&&irec==kSpPion)
 					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of reconstrutsed primaries in defined eta
 		  
-		  	//nsigma cut (reconstructed nsigma)
-		  		if(idRec == kSpUndefined) 
-					continue;
-		  
+		  	//nsigma cut (reconstructed nsigma	
+				if(fUseMinSigma)
+				{
+					if(idRec == kSpUndefined)
+						continue;
+					if(!fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec)) 
+						continue;
+				}			  
+				else
+				{
+					if(!fTrackCuts->CheckYCut ((BothParticleSpecies_t)irec)) 
+						continue;
+
+				}
+				
 		  	// rapidity cut (reconstructed pt and identity)
-		 		 if(!fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec)) continue;
+		 		// if(!fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec)) continue;
 		  
 		  // Get true ID
 		  		 	
 		  
-		 		 if (idRec == idGen) fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),dca); 
+		 		 if ((idRec == idGen)&&(idGen != kSpUndefined)) 
+					fHistMan->GetHistogram2D(kHistPtRecTrue,  idGen, charge)->Fill(track->Pt(),dca); 
 		  
 		  		if (isPrimary) 
 				{
-					fHistMan->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),dca); 
-					if(idGen != kSpUndefined) 
-					{
+					if(idRec!= kSpUndefined)
+						fHistMan->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),dca); 
+					//if(idGen != kSpUndefined) 
+					//{
+					 if((idGen != kSpUndefined) &&(irec == idGen))
 		  				fHistMan->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),dca);
-		  				if (idRec == idGen) 
-							fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),dca); 
-					}
+		  			if ((idGen != kSpUndefined) &&(idRec == idGen)) 
+						fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),dca); 
+					//}
 		  		}
 		 		 //25th Apr - Muons are added to Pions -- FIXME
 		 		if ( pdgcode == 13 && idRec == kSpPion) 
@@ -464,8 +478,12 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  				fHistMan->GetPtHistogram(kHistPtRecTruePrimaryMuonMinus)->Fill(track->Pt(),dca); 
 					}
 		  		}
-		  
-		 		 ///..... END FIXME
+		  		
+				if(idRec == kSpUndefined)
+					continue;
+
+				
+		 		 //here we can use idGen in case of fit approach
 		  
 		  		// Fill secondaries
 		  		if(isSecondaryWeak)
