@@ -1032,7 +1032,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	PostData(4,fNtupleDplus);
       }
         
-      if(fFillNtuple==2){
+      if(fFillNtuple==2 && passTightCuts){
 	Float_t tmp[5];
 	tmp[0]=pdgCode;
 	if(isFeeddown) tmp[0]+=5000.;
