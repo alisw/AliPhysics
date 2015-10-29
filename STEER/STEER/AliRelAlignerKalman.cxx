@@ -264,6 +264,7 @@ AliRelAlignerKalman::~AliRelAlignerKalman()
   delete fPH;
   delete fPMeasurement;
   delete fPMeasurementCov;
+  delete fPMeasurementPrediction;
   for (Int_t i=0;i<4;i++) 
   {
     delete [] (fResArrSigma2Median[i]);
