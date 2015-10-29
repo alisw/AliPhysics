@@ -99,7 +99,6 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
 
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
   
-  
   //---------------------
   // Pass recalibration factors
   // Do it here or inside the task
@@ -107,38 +106,23 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
   //---------------------
   
   pi0calib->SetCalibrationFilePath(calibPath);
-  pi0calib->InitEnergyCalibrationFactors();
   
-  if(calibPath == "")
+  if(calibPath != "" && recalE)
   {
-    if(recalE)
-    {
-      printf("Get the calibration file from AddTask!!!\n");
-      
-      TFile * calibFile = TFile::Open("RecalibrationFactors.root");
-      if(!calibFile)
-      {
-        printf("File %d not found!\n",calibPath.Data());
-        return;
-      }
-      
-      for(Int_t ism = 0; ism < 20; ism++)
-      {
-        TH2F * h = (TH2F*)calibFile->Get(Form("EMCALRecalFactors_SM%d",ism));
-        
-        if(h) reco->SetEMCALChannelRecalibrationFactors(ism,h);
-        else  printf("Null histogram with calibration factors for SM%d, 1 will be used in the full SM\n",ism);
-      }
-    }
-    else
-    {
-      // First iteration, just fill histograms, switch off recalculation
-      reco->SwitchOffRecalibration();
-      reco->SwitchOffRunDepCorrection(); // Careful!!!, activate when T corrections are available.
-      pi0calib->SwitchOffLoadOwnGeometryMatrices();
-      pi0calib->SwitchOffRecalculatePosition();
-      printf("Pi0 Calibration: Do not recalculate the clusters! First iteration. \n");
-    }
+    printf("AddTaskEMCALPi0Calibration - Get the energy calibration factors from: \n %s \n",calibPath.Data());
+    pi0calib->InitEnergyCalibrationFactors();
+  }
+   
+  if(!recalE)
+  {
+    // Do not calibrate anything
+    // First iteration, just fill histograms, switch off recalculation
+    reco->SwitchOffRecalibration();
+    reco->SwitchOffRunDepCorrection(); // Careful!!!, activate when T corrections are available.
+    pi0calib->SwitchOffLoadOwnGeometryMatrices();
+    pi0calib->SwitchOffRecalculatePosition();
+    printf("AddTaskEMCALPi0Calibration - Pi0 Calibration: Do not recalculate the clusters! First iteration. \n");
+    // check if time is corrected in case of calibration available!!!
   }
   
   pi0calib->PrintInfo();
