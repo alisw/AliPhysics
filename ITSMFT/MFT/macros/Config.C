@@ -52,7 +52,8 @@ enum PDCProc_t {kGenBox,
 		kHijing, 
 		kHijing2500,
 		kHijing2500Cocktail,
-		kCocktailSignals};
+		kCocktailSignals,
+		kCocktailJPsi};
 
 const Char_t* pprRunName[] = {"kGenBox",
 			      "kGenMuonLMR",
@@ -66,7 +67,8 @@ const Char_t* pprRunName[] = {"kGenBox",
 			      "kHijing", 
 			      "kHijing2500", 
 			      "kHijing2500Cocktail",
-			      "kCocktailSignals"};
+			      "kCocktailSignals",
+			      "kCocktailJPsi"};
 
 enum Mag_t { kNoField, k5kG, kFieldMax };
 
@@ -75,7 +77,7 @@ const Char_t* pprField[] = { "kNoField", "k5kG", "kFieldMax" };
 void LoadLibs();
 
 // ----------------------- Generator, field, beam energy,... ------------------------------------------------------------
-static PDCProc_t     proc     = kGenBox;
+static PDCProc_t     proc     = kCocktailJPsi;
 static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 5500.; // energy in CMS
@@ -164,6 +166,7 @@ void Config() {
   else if (proc == kGenPionKaon)               gener = GenParamPionKaon();
   else if (proc == kPythiaPerugia0BtoJpsi2mu)  gener = MbPythiaTunePerugia0BtoJpsi2mu();
   else if (proc == kCocktailSignals)           gener = CocktailSignals();
+  else if (proc == kCocktailJPsi)              gener = CocktailJPsi();
 
   // Size of the interaction diamond
   Float_t sigmaz  = 5.4 / TMath::Sqrt(2.);     // [cm]
@@ -211,7 +214,6 @@ void Config() {
   Int_t iTRD   = 0;
   Int_t iZDC   = 0;
   
-
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 
   if (iMAG)       AliMAG    *MAG    = new AliMAG("MAG", "Magnet");
@@ -219,7 +221,8 @@ void Config() {
   if (iDIPO)      AliDIPO   *DIPO   = new AliDIPOv3("DIPO", "Dipole version 3");
   if (iHALL)      AliHALL   *HALL   = new AliHALLv3("HALL", "Alice Hall");
   if (iSHIL)      AliSHIL   *SHIL   = new AliSHILv3("SHIL", "Shielding Version 3");
-  if (iITS)       gROOT->ProcessLine(".x $ALICE_ROOT/ITS/UPGRADE/testITSU/CreateITSU.C");
+  //if (iITS)       gROOT->ProcessLine(".x $ALICE_ROOT/ITS/UPGRADE/testITSU/CreateITSU.C");
+  if (iITS)       AliITS    *ITS    = new AliITSv11("ITS","ITS v11");
   if (iTPC)       AliTPC    *TPC    = new AliTPCv2("TPC", "Default");
   if (iTOF)       AliTOF    *TOF    = new AliTOFv6T0("TOF", "normal TOF");
   if (iHMPID)     AliHMPID  *HMPID  = new AliHMPIDv3("HMPID", "normal HMPID");
@@ -266,16 +269,77 @@ void Config() {
 //====================================================================================================================================================
 
 AliGenerator* GenBox() {
-
-  AliGenBox *gener = new AliGenBox(100);
-  gener->SetMomentumRange(20, 50);
+  
+  AliGenBox *gener = new AliGenBox(10);
+  gener->SetMomentumRange(10, 20);
   gener->SetPhiRange(0., 360.);
-  gener->SetThetaRange(170.0,178.0);
+  gener->SetThetaRange(170.0,177.0);
   Bool_t isMuPlus = gRandom->Integer(2);
   if (isMuPlus) gener->SetPart(kMuonPlus);           // Muons
   else          gener->SetPart(kMuonMinus);          // Muons
-  
+
   return gener;
+  
+}
+
+//====================================================================================================================================================
+
+AliGenerator* CocktailJPsi() {
+
+  // muons in the MFT acceptance
+
+  AliGenCocktail *cocktail = new AliGenCocktail();
+
+  AliGenBox *gener1 = new AliGenBox(10);
+  gener1->SetMomentumRange(4, 20);
+  gener1->SetPhiRange(0., 360.);
+  gener1->SetThetaRange(170.0,177.0);
+  gener1->SetPart(kMuonPlus);
+
+  AliGenBox *gener2 = new AliGenBox(10);
+  gener2->SetMomentumRange(4, 20);
+  gener2->SetPhiRange(0., 360.);
+  gener2->SetThetaRange(170.0,177.0);
+  gener2->SetPart(kMuonMinus);
+
+  // pions and kaons in the MFT acceptance
+
+  Int_t nTracks = 10;
+  if (gSystem->Getenv("NTRACKS")) {
+    nTracks = atoi(gSystem->Getenv("NTRACKS"));
+  }
+
+  AliGenParamPionsKaons *gener3 = new AliGenParamPionsKaons(nTracks,"$ALICE_ROOT/ITSMFT/MFT/data/PionKaonKinematics.root");
+  gener3->SetPtRange(0, 5.);
+  gener3->SetPhiRange(0., 360.);
+  gener3->SetThetaRange(170.,177.);
+
+  // pions and kaons in the ITS acceptance
+
+  nTracks = 100;
+  AliGenParamPionsKaons *gener4 = new AliGenParamPionsKaons(nTracks,"$ALICE_ROOT/ITSMFT/MFT/data/PionKaonKinematics.root");
+  gener4->SetPtRange(0, 5.);
+  gener4->SetPhiRange(0., 360.);
+  gener4->SetThetaRange(45.,135.);
+
+  AliGenParam *gener5 = new AliGenParam(10, AliGenMUONlib::kJpsi);
+  gener5->SetMomentumRange(0,999);
+  gener5->SetPtRange(0,100.);
+  gener5->SetYRange(-4.0, -2.5);
+  gener5->SetPhiRange(0., 360.);
+  gener5->SetChildThetaRange(170.0,177.0);
+  gener5->SetChildMomentumRange(4.0, 999.);
+  gener5->SetForceDecay(kDiMuon);
+  gener5->SetTrackingFlag(1);
+  gener5->SetCutOnChild(1);
+
+  //cocktail->AddGenerator(gener1,"GenBoxMuPlus",1);
+  //cocktail->AddGenerator(gener2,"GenBoxMuMinus",1);
+  cocktail->AddGenerator(gener5,"JPsi to muons",1);
+  cocktail->AddGenerator(gener3,"GenParamPionsKaonsMFT",1);
+  cocktail->AddGenerator(gener4,"GenParamPionsKaonsITS",1);
+
+  return cocktail;
   
 }
 
@@ -320,11 +384,15 @@ AliGenerator* GenParamJpsi() {
 
 AliGenerator* GenParamPionKaon() {
   
-  AliGenParamPionsKaons *gener = new AliGenParamPionsKaons(100,"$ALICE_ROOT/MFT/PionKaonKinematics.root");
+  Int_t nTracks = 10;
+  if (gSystem->Getenv("NTRACKS")) {
+    nTracks = atoi(gSystem->Getenv("NTRACKS"));
+  }
+
+  AliGenParamPionsKaons *gener = new AliGenParamPionsKaons(nTracks,"$ALICE_ROOT/ITSMFT/MFT/data/PionKaonKinematics.root");
   gener->SetPtRange(0, 5.);
   gener->SetPhiRange(0., 360.);
-  gener->SetYRange(-10., 0.);
-  //  gener->SetCutOnChild(1);
+  gener->SetThetaRange(170.,177.);
 
   return gener;
 
@@ -597,7 +665,7 @@ void LoadLibs() {
     gSystem->Load("libAliPythia6");     // ALICE specific implementations
   } 
   else {
-    gSystem->Load("libpythia6_4_25");   // Pythia 6.4
+    gSystem->Load("libpythia6.4.21");   // Pythia 6.4
     gSystem->Load("libAliPythia6");     // ALICE specific implementations	
   }
   
