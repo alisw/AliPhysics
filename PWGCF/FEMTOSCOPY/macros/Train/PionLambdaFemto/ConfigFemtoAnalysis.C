@@ -98,11 +98,11 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       continue;
     }
 
-    // Update the particle types 
+    // Update the particle types
     // This currently uses the fact that there are only two states : lam/antilam plus/minus
     // that happen to correlate with both 0/1 integers and true/false booleans. We take
     // advantage of this because ROOT doesn't like enums in macros. If this becomes compiled
-    // it should be re-written to set to real enum values. 
+    // it should be re-written to set to real enum values.
     // If first bit is set, use antilambda (1) else lambda (0)
     analysis_config.lambda_type = (bit & 1) == 1; // kAntiLambda: kLambda;
 
@@ -197,7 +197,7 @@ void BuildConfiguration(const TString &text,
            antilambda = line.Contains('a');
       // one or the other of each
       if ((plus ^ minus) && (lambda ^ antilambda)) {
-        // Code : 0b00 : minus,antilambda 
+        // Code : 0b00 : minus,antilambda
         //          01 : minus,lambda
         //          10 : plus,antilambda
         //          11 : plus,lambda
