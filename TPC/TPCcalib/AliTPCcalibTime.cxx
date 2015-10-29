@@ -318,14 +318,22 @@ AliTPCcalibTime::~AliTPCcalibTime(){
 
   if (fAlignITSTPC){
     fAlignITSTPC->SetOwner(kTRUE);
-    fAlignTRDTPC->SetOwner(kTRUE);
-    fAlignTOFTPC->SetOwner(kTRUE);
     
     fAlignITSTPC->Delete();
-    fAlignTRDTPC->Delete();
-    fAlignTOFTPC->Delete();
     delete fAlignITSTPC;
+  }
+
+  if (fAlignTRDTPC){
+    fAlignTRDTPC->SetOwner(kTRUE);
+    
+    fAlignTRDTPC->Delete();
     delete fAlignTRDTPC;
+  }
+
+  if (fAlignTOFTPC){
+    fAlignTOFTPC->SetOwner(kTRUE);
+    
+    fAlignTOFTPC->Delete();
     delete fAlignTOFTPC;
   }
 
@@ -335,7 +343,7 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     delete fArrayLaserA;
   }
 
-  if (fArrayLaserA) {
+  if (fArrayLaserC) {
     fArrayLaserC->SetOwner(); 
     fArrayLaserC->Delete();
     delete fArrayLaserC;
