@@ -24,6 +24,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
   )
 
@@ -91,7 +92,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase)
+set(LIBDEPS ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJEEMCALJetTasks)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note: the extra path has a variable that is NOT
