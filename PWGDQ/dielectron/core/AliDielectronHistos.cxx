@@ -429,7 +429,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
@@ -485,7 +485,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
@@ -524,7 +524,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
@@ -578,7 +578,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
