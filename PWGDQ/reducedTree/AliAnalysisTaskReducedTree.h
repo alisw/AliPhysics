@@ -8,6 +8,7 @@
 #include "TList.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliDielectron.h"
 
 class AliAnalysisCuts;
 class TTree;
@@ -18,7 +19,8 @@ class AliKFVertex;
 class AliReducedEvent;
 class AliReducedEventFriend;
 class AliReducedPair;
-class AliDielectron;
+class AliDielectronHistos;
+class AliESDtrack;
 
 //_________________________________________________________________________
 class AliAnalysisTaskReducedTree : public AliAnalysisTaskSE {
