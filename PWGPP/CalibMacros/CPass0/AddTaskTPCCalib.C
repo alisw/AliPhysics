@@ -317,7 +317,7 @@ void SetupCalibTaskTrainAlign(TObject* task){
   //
   // Setup tasks for calibration train
   //
-  AddCalibAlign(task);
+  //AddCalibAlign(task);
   AddCalibLaser(task);
   //AddCalibCosmic(task);
 }
