@@ -598,7 +598,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                 = 1,          
     eventCutArray[ 2] = "02300113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; // 5 -10
     eventCutArray[ 3] = "03500113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; // 10-30
     eventCutArray[ 4] = "05700113"; photonCutArray[ 4] = "00200009227302008250400000"; mesonCutArray[4] = "0152103500000000"; // 30-100
-
+  } else if (trainConfig == 101) {  // like trainConfig 71, just with special trigger kINT7
+    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
+    eventCutArray[ 1] = "00010113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
+    eventCutArray[ 2] = "00010113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
+    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; ///variation alpha opan max
   }	else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
