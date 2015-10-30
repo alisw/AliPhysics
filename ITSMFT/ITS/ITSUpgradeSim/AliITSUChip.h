@@ -16,9 +16,12 @@
 #include <TObject.h>
 #include <TObjArray.h>
 #include "AliITSUHit.h"
+#include "AliITSMFTChip.h"
+
+
 class AliITSUGeomTGeo;
 
-class AliITSUChip: public TObject {
+class AliITSUChip: public AliITSMFTChip {
 
  public:
   AliITSUChip();             // default constructor

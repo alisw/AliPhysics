@@ -10,18 +10,28 @@
 #include <TRandom3.h>
 #include <TObjArray.h>
 #include "AliITSUSimulation.h"
-#include "AliITSUSegmentationPix.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTSegmentationPix.h"
+
 
 class TH1F;
 class AliITSUChip;
-class AliITSUSimuParam;
-class AliITSUParamList;
+class AliITSMFTSimuParam;
+class AliITSMFTParamList;
 class TH2;
 
 //-------------------------------------------------------------------
 
 class AliITSUSimulationPix : public AliITSUSimulation {
 public:
+     //
+    AliITSUSimulationPix();
+    AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map);
+    virtual ~AliITSUSimulationPix();
+    AliITSUSimulationPix(const AliITSUSimulationPix &source);
+    AliITSUSimulationPix& operator=(const AliITSUSimulationPix &s);
+    
+    //
     enum {kCellX1,kCellX2,kCellZ1,kCellZ2,kCellYDepth,kNDtSpread}; // data used for ch. spread integral calc.
     //
     // charge spread functions defined
@@ -30,47 +40,17 @@ public:
         ,kSpreadFunHisto                    // use 2D histo from the object stored in fResponseParam
         ,kNSpreadFuns
     };
-    // These are enums for interpretation of the entries in the AliITSUParamList*fResponseParam :
+    // These are enums for interpretation of the entries in the AliITSMFTParamList*fResponseParam :
     // object to holding the sensor-specific response data
     // fist kParamStart entries of spread fun params are reserved for common parameters
-    enum {kChargeSpreadType                  // charge spread function type, one of kNSpreadFuns types
-        ,kSpreadFunParamNXoffs               // number of pixels to consider +- from injection point (in X)
-        ,kSpreadFunParamNZoffs               // number of pixels to consider +- from injection point (in Z)
-        ,kSpreadFunMinSteps                  // the single hit charge is divided into kSpreadFunMinSteps (minimum is 3)
-        ,kReadOutSchemeType                  // readout type strobe, rolling shutter etc
-        ,kReadOutCycleLength                 // full readout cycle window
-        ,kSpreadFunGlobalQScale              // Global charge scaling factor to match tes beam results to simu (Geant3)
-        ,kPixSNDisrcCut                      // S/N cut applied at discrimination level
-        ,kPixMinElToAdd                      // Min number of electrons to add to sdig
-        ,kPixNoiseIsOn                       // Turn Pixel Noise on
-        ,kPixNoiseInAllMod                   // To apply pixel noise in all chips, if not only on ones where there is a hit
-        ,kPixNoiseMPV                        // Pixel noise MPV
-        ,kPixNoiseSigma                      // Pixel noise sigma
-        ,kPixFakeRate                        // Pixel fake rate
-        ,kDigitalSim                         //Digital pixel simulation
-        //
-        ,kNReservedParams=20                 // some reserved slots
-        ,kParamStart = kNReservedParams      // user parameters must start from this slot
-    };
     //___ Noisy pixel type
     enum { kNoisyPixOCDB = 9990, kNoisyPixRnd = 9991 };
-    
-    //
-    // defined readout types:
-    enum {kReadOutStrobe                      // hits in static time window fReadOutCycleLength wrt offset fReadOOutCycleOffset (global for sensor) are seen
-        ,kReadOutRollingShutter             // hits in rolling (row-wise) window are seen (see GetReadOutCycleRollingShutter)
-        ,kNReadOutTypes
-    };
     // elements of the SpreadFunGauss2D parameterization (offsetted by kParamStart)
-    enum {kG1MeanX=kParamStart,kG1SigX,kG1MeanZ,kG1SigZ,kNG1Par};
+    enum {kG1MeanX=AliITSMFTSimuParam::kParamStart,kG1SigX,kG1MeanZ,kG1SigZ,kNG1Par};
     // elements of the SpreadFunDoubleGauss2D parameterization (offsetted by kParamStart)
-    enum {kG2MeanX0=kParamStart,kG2SigX0,kG2MeanZ0,kG2SigZ0,kG2MeanX1,kG2SigX1,kG2MeanZ1,kG2SigZ1,kG2ScaleG2,kNG2Par};
-    //
-    AliITSUSimulationPix();
-    AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap* map);
-    virtual ~AliITSUSimulationPix();
-    AliITSUSimulationPix(const AliITSUSimulationPix &source);
-    AliITSUSimulationPix& operator=(const AliITSUSimulationPix &s);
+    enum {kG2MeanX0=AliITSMFTSimuParam::kParamStart,kG2SigX0,kG2MeanZ0,kG2SigZ0,kG2MeanX1,kG2SigX1,kG2MeanZ1,kG2SigZ1,kG2ScaleG2,kNG2Par};
+
+    
     void Init();
     //
     void FinishSDigitiseChip();
@@ -96,7 +76,7 @@ public:
     Double_t SpreadFunGauss2D(const Double_t *dtIn);
     Double_t SpreadFrom2DHisto(const Double_t *dtIn);
     //
-    virtual void SetResponseParam(AliITSUParamList* resp);
+    virtual void SetResponseParam(AliITSMFTParamList* resp);
     //
     Int_t GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime);
     Int_t GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime);
@@ -109,8 +89,8 @@ private:
     void PlaceDigitalPixels(Double_t x0,Double_t z0, Double_t el, Double_t tof, Int_t tID, Int_t hID);
     
     //
-    void SetCoupling(AliITSUSDigit* old);     // "New" coupling routine  Tiziano Virgili
-    void SetCouplingOld(AliITSUSDigit* old);  // "Old" coupling routine  Rocco Caliandro
+    void SetCoupling(AliITSMFTSDigit* old);     // "New" coupling routine  Tiziano Virgili
+    void SetCouplingOld(AliITSMFTSDigit* old);  // "Old" coupling routine  Rocco Caliandro
     //
 protected:
     Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)

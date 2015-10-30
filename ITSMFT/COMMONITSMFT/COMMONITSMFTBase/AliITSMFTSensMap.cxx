@@ -12,12 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliITSUSensMap.cxx 39464 2010-03-09 14:59:19Z masera $ */
+/* $Id: AliITSMFTSensMap.cxx 39464 2010-03-09 14:59:19Z masera $ */
 
 //***********************************************************************
 //
 // It consist of a TClonesArray of 
-// AliITSUSensMapItem objects
+// AliITSMFTSensMapItem objects
 // This array can be accessed via 2 indexed
 // it is used at digitization level by 
 // all the 3 ITS subdetectors
@@ -27,17 +27,17 @@
 // map->RegisterItem( new(map->GetFree()) ItemConstructor(...) );
 //
 // The items must be sortable with the same sorting algorithm like 
-// for AliITSUSensMap::IsSortable,IsEqual,Compare
+// for AliITSMFTSensMap::IsSortable,IsEqual,Compare
 //
 // ***********************************************************************
 
-#include "AliITSUSensMap.h"
+#include "AliITSMFTSensMap.h"
 #include "AliLog.h"
 //______________________________________________________________________
 
-ClassImp(AliITSUSensMap)
+ClassImp(AliITSMFTSensMap)
 //______________________________________________________________________
-AliITSUSensMap::AliITSUSensMap() 
+AliITSMFTSensMap::AliITSMFTSensMap() 
 :  fDimCol(0)
   ,fDimRow(0)
   ,fDimCycle(0)
@@ -48,7 +48,7 @@ AliITSUSensMap::AliITSUSensMap()
 }
 
 //______________________________________________________________________
-AliITSUSensMap::AliITSUSensMap(const char* className, UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle)
+AliITSMFTSensMap::AliITSMFTSensMap(const char* className, UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle)
   :fDimCol(dimCol)
   ,fDimRow(dimRow)
   ,fDimCycle(dimCycle)
@@ -59,7 +59,7 @@ AliITSUSensMap::AliITSUSensMap(const char* className, UInt_t dimCol,UInt_t dimRo
 }
 
 //______________________________________________________________________
-AliITSUSensMap::~AliITSUSensMap() 
+AliITSMFTSensMap::~AliITSMFTSensMap() 
 {
   // Default destructor
   delete fItems;
@@ -68,7 +68,7 @@ AliITSUSensMap::~AliITSUSensMap()
 
 
 //______________________________________________________________________
-AliITSUSensMap::AliITSUSensMap(const AliITSUSensMap &source)
+AliITSMFTSensMap::AliITSMFTSensMap(const AliITSMFTSensMap &source)
   :TObject(source)
   ,fDimCol(source.fDimCol)
   ,fDimRow(source.fDimRow)
@@ -89,18 +89,18 @@ AliITSUSensMap::AliITSUSensMap(const AliITSUSensMap &source)
 }
 
 //______________________________________________________________________
-AliITSUSensMap& AliITSUSensMap::operator=(const AliITSUSensMap &source)
+AliITSMFTSensMap& AliITSMFTSensMap::operator=(const AliITSMFTSensMap &source)
 {
   // = operator
   if (this!=&source) {
-    this->~AliITSUSensMap();
-    new(this) AliITSUSensMap(source);
+    this->~AliITSMFTSensMap();
+    new(this) AliITSMFTSensMap(source);
   }
   return *this;
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::Clear(Option_t*) 
+void AliITSMFTSensMap::Clear(Option_t*) 
 {
   // clean everything
   if (fItems) fItems->Clear();
@@ -108,9 +108,9 @@ void AliITSUSensMap::Clear(Option_t*)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::DeleteItem(UInt_t col,UInt_t row,Int_t cycle)
+void AliITSMFTSensMap::DeleteItem(UInt_t col,UInt_t row,Int_t cycle)
 {
-  // Delete a particular AliITSUSensMapItems.
+  // Delete a particular AliITSMFTSensMapItems.
   SetUniqueID( GetIndex(col,row,cycle) );
   TObject* fnd = fBTree->FindObject(this);
   if (!fnd) return;
@@ -119,9 +119,9 @@ void AliITSUSensMap::DeleteItem(UInt_t col,UInt_t row,Int_t cycle)
 }
 
 //______________________________________________________________________
-void AliITSUSensMap::DeleteItem(TObject* obj)
+void AliITSMFTSensMap::DeleteItem(TObject* obj)
 {
-  // Delete a particular AliITSUSensMapItems.
+  // Delete a particular AliITSMFTSensMapItems.
   TObject* fnd = fBTree->FindObject(obj);
   if (!fnd) return;
   Disable(fnd);
@@ -129,7 +129,7 @@ void AliITSUSensMap::DeleteItem(TObject* obj)
 }
 
 //______________________________________________________________________
-void  AliITSUSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle) 
+void  AliITSMFTSensMap::SetDimensions(UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle) 
 {
   // set dimensions for current sensor
   const UInt_t kMaxPackDim = 0xffffffff;

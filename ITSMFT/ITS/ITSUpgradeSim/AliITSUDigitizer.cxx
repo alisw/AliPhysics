@@ -38,7 +38,7 @@
 #include "AliITSUDigitizer.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUSimulation.h"
-#include "AliITSUSDigit.h"
+#include "AliITSMFTSDigit.h"
 
 ClassImp(AliITSUDigitizer)
 
@@ -125,7 +125,7 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
   int mask = 1;
   for (int id=0;id<nfiles;id++) if(id!=fRoiifile) fl[mask++] = id;
   //
-  TClonesArray * sdig = new TClonesArray( "AliITSUSDigit",1000 );
+  TClonesArray * sdig = new TClonesArray( "AliITSMFTSDigit",1000 );
   //
   AliRunLoader *inRL = 0x0, *outRL = 0x0;
   AliLoader *ingime = 0x0, *outgime = 0x0;    
@@ -227,7 +227,7 @@ void AliITSUDigitizer::SetByRegionOfInterest(TTree *ts)
   if (fRoif==0) return;
   if (ts==0)    return;
   TBranch *brchSDigits = ts->GetBranch(fITS->GetName());
-  TClonesArray * sdig = new TClonesArray( "AliITSUSDigit",1000 );
+  TClonesArray * sdig = new TClonesArray( "AliITSMFTSDigit",1000 );
   //
   if( brchSDigits ) brchSDigits->SetAddress( &sdig );
   else  {AliError("Branch ITS not found in TreeS"); return;}
@@ -240,7 +240,7 @@ void AliITSUDigitizer::SetByRegionOfInterest(TTree *ts)
     int ndig = sdig->GetEntries();
     for(int i=0;i<ndig;i++) {
       // activate the necessary chips
-      if ( ((AliITSUSDigit*)sdig->At(m))->GetSumSignal()>0.0 ) { // Must have non zero signal.
+      if ( ((AliITSMFTSDigit*)sdig->At(m))->GetSumSignal()>0.0 ) { // Must have non zero signal.
 	fModActive[m] = kTRUE;
 	break;
       } // end if

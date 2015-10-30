@@ -40,7 +40,7 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliLog.h"
 #include "AliAlignObj.h"
-#include "AliITSUSegmentationPix.h"
+#include "AliITSMFTSegmentationPix.h"
 using namespace TMath;
 
 ClassImp(AliITSUGeomTGeo)
@@ -54,7 +54,7 @@ TString AliITSUGeomTGeo::fgITSModuleName = "ITSUModule";
 TString AliITSUGeomTGeo::fgITSChipName = "ITSUChip";
 TString AliITSUGeomTGeo::fgITSSensName = "ITSUSensor";
 TString AliITSUGeomTGeo::fgITSWrapVolName = "ITSUWrapVol";
-TString AliITSUGeomTGeo::fgITSChipTypeName[AliITSUGeomTGeo::kNChipTypes] = {"Pix"};
+TString AliITSUGeomTGeo::fgITSChipTypeName[AliITSMFTAux::kNChipTypes] = {"Pix"};
 //
 TString AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
 
@@ -78,7 +78,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build, Bool_t loadSegm)
   ,fSegm(0)
 {
   // default c-tor
-  for (int i=AliITSUAux::kMaxLayers;i--;) fLr2Wrapper[i] = -1;
+  for (int i=AliITSMFTAux::kMaxLayers;i--;) fLr2Wrapper[i] = -1;
   if (build) BuildITS(loadSegm);
 }
 
@@ -146,13 +146,13 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
       fSegm = new TObjArray(sz);
       fSegm->SetOwner(kTRUE);
       for (int i=0;i<sz;i++) {
-	AliITSUSegmentationPix* sg = (AliITSUSegmentationPix*)src.fSegm->UncheckedAt(i);
+	AliITSMFTSegmentationPix* sg = (AliITSMFTSegmentationPix*)src.fSegm->UncheckedAt(i);
 	if (!sg) continue;
 	fSegm->AddAt(sg->Clone(),i);
       }
     }
   }
-  for (int i=AliITSUAux::kMaxLayers;i--;) fLr2Wrapper[i] = src.fLr2Wrapper[i];
+  for (int i=AliITSMFTAux::kMaxLayers;i--;) fLr2Wrapper[i] = src.fLr2Wrapper[i];
 }
 
 //______________________________________________________________________
@@ -217,7 +217,7 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
       fSegm = new TObjArray(sz);
       fSegm->SetOwner(kTRUE);
       for (int i=0;i<sz;i++) {
-	AliITSUSegmentationPix* sg = (AliITSUSegmentationPix*)src.fSegm->UncheckedAt(i);
+	AliITSMFTSegmentationPix* sg = (AliITSMFTSegmentationPix*)src.fSegm->UncheckedAt(i);
 	if (!sg) continue;
 	fSegm->AddAt(sg->Clone(),i);
       }
@@ -722,7 +722,7 @@ void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
   //
   if (loadSegm) {  // fetch segmentations
     fSegm = new TObjArray();
-    AliITSUSegmentationPix::LoadSegmentations(fSegm,GetITSsegmentationFileName());
+    AliITSMFTSegmentationPix::LoadSegmentations(fSegm,GetITSsegmentationFileName());
   }
   //
 }
@@ -956,12 +956,13 @@ Int_t AliITSUGeomTGeo::ExtractLayerChipType(Int_t lay)  const
 }
 
 //______________________________________________________________________
+/*
 UInt_t AliITSUGeomTGeo::ComposeChipTypeID(UInt_t segmId)
 {
-  if (segmId>=kMaxSegmPerChipType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,kMaxSegmPerChipType));
-  return segmId + kChipTypePix*kMaxSegmPerChipType;
+  if (segmId>=AliITSMFTSimuParam::kMaxSegmPerChipType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,AliITSMFTSimuParam::kMaxSegmPerChipType));
+  return segmId + AliITSMFTSimuParam::kChipTypePix*AliITSMFTSimuParam::kMaxSegmPerChipType;
 }
-
+*/
 //______________________________________________________________________
 void AliITSUGeomTGeo::Print(Option_t *) const
 {

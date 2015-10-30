@@ -1,12 +1,12 @@
 #include <TClonesArray.h>
 #include "AliITSURecoLayer.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTAux.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliLog.h"
 
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 using namespace TMath;
 
 ClassImp(AliITSURecoLayer)
@@ -104,7 +104,7 @@ void AliITSURecoLayer::Build()
   //
   fSensors = new TObjArray(fNSensors);
   fSensVIDtoMatrixID = new Int_t[fNSensors];
-  const AliITSUSegmentationPix* kSegm = fITSGeom->GetSegmentation(fActiveID);
+  const AliITSMFTSegmentationPix* kSegm = fITSGeom->GetSegmentation(fActiveID);
   //
   TGeoHMatrix mmod;
   const TGeoHMatrix* mt2l;

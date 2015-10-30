@@ -1,5 +1,5 @@
-#ifndef ALIITSUHIT_H
-#define ALIITSUHIT_H
+#ifndef AliITSMFTHit_H
+#define AliITSMFTHit_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -13,19 +13,19 @@
 
 #include "TLorentzVector.h"
 
-#include "AliITSMFTHit.h" 
+#include "AliHit.h" 
 #include "AliRun.h"
 
-class AliITSUHit : public AliITSMFTHit {
+class AliITSMFTHit : public AliHit {
 
  public:
   //
-  AliITSUHit();
-  AliITSUHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  AliITSUHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
-  AliITSUHit(const AliITSUHit &h);
-  AliITSUHit& operator=(const AliITSUHit &h);
-  virtual ~AliITSUHit() {}
+  AliITSMFTHit();
+  AliITSMFTHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
+  AliITSMFTHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
+  AliITSMFTHit(const AliITSMFTHit &h);
+  AliITSMFTHit& operator=(const AliITSMFTHit &h);
+  virtual ~AliITSMFTHit() {}
 
   void SetModule(Int_t mod){fModule=mod;};
   void SetShunt(Int_t shunt);
@@ -39,19 +39,19 @@ class AliITSUHit : public AliITSMFTHit {
   void SetMomentum(TLorentzVector &p){fPx=p.Px();fPy=p.Py();fPz=p.Pz();}
 
   void SetChip(Int_t chip) {SetModule(chip);}
-  Int_t GetChip()          {return GetModule();}
-
-  Int_t GetLayer() const;
-  Int_t GetStave() const;
-  Int_t GetHalfStave() const;
-  Int_t GetModule() const;  
-  Int_t GetChipInModule() const;
-  void  GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod, Int_t &det) const;
-  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
-  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z) {Float_t tf;GetPositionL(x,y,z,tf);}
-  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;}
-  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;}
-  void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
+  
+  virtual Int_t GetChip()          {return GetModule();}
+  virtual Int_t GetLayer() const;
+  virtual Int_t GetStave() const;
+  virtual Int_t GetHalfStave() const;
+  virtual Int_t GetModule() const;
+  virtual Int_t GetChipInModule() const;
+  virtual void  GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod, Int_t &det) const;
+  virtual void  GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
+  virtual void  GetPositionL(Float_t &x,Float_t &y,Float_t &z) {Float_t tf;GetPositionL(x,y,z,tf);}
+  virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;}
+  virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;}
+  virtual void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
   //
   void Print(Option_t *option="") const;
   
@@ -72,7 +72,7 @@ class AliITSUHit : public AliITSMFTHit {
 
  protected:
 //  Int_t GetModule(){return fModule;};
-/*
+
    Int_t     fStatus; // Track Status
    Int_t     fModule; // Module number 
    Float_t   fPx;     // PX of particle at the point of the hit
@@ -85,8 +85,8 @@ class AliITSUHit : public AliITSMFTHit {
    Float_t   fy0;     // Starting point of this step
    Float_t   fz0;     // Starting point of this step
    Float_t   ft0;     // Starting point of this step
-*/
-  ClassDef(AliITSUHit,3)  //Hits object
+
+  ClassDef(AliITSMFTHit,1)  //Hits object
 	 
 }; 
 

@@ -2,10 +2,10 @@
 #define ALIITSUSEED_H
 
 #include "AliExternalTrackParam.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 class AliESDtrack;
 
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 
 
 class AliITSUSeed: public AliExternalTrackParam
@@ -103,7 +103,7 @@ class AliITSUSeed: public AliExternalTrackParam
   //
   UShort_t              fHitsPattern;       // bit pattern of hits
   UShort_t              fNChildren;         // number of children (prolongations)
-  UInt_t                fClID;              // packed cluster info (see AliITSUAux::PackCluster)
+  UInt_t                fClID;              // packed cluster info (see AliITSMFTAux::PackCluster)
   Float_t               fChi2Glo;           // current chi2 global (sum of track-cluster chi2's on layers with hit)
   Float_t               fChi2Cl;            // track-cluster chi2 (if >0) or penalty for missing cluster (if < 0)
   Float_t               fChi2Penalty;       // total penalty (e.g. for missing clusters)

@@ -15,7 +15,7 @@
 #include <Riostream.h>
 #include <TArrayI.h>
 
-#include <AliITSUDigitPix.h>
+#include <AliITSMFTDigitPix.h>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -24,10 +24,10 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-ClassImp(AliITSUDigitPix)
+ClassImp(AliITSMFTDigitPix)
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix()
+AliITSMFTDigitPix::AliITSMFTDigitPix()
 :  TObject()
   ,fCoord1(0)
   ,fCoord2(0)
@@ -45,7 +45,7 @@ AliITSUDigitPix::AliITSUDigitPix()
 }
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits)
+AliITSMFTDigitPix::AliITSMFTDigitPix(const Int_t *digits)
 :  TObject()
   ,fCoord1(0)
   ,fCoord2(0)
@@ -64,7 +64,7 @@ AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits)
 }
 
 //______________________________________________________________________
-AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits)
+AliITSMFTDigitPix::AliITSMFTDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits)
 : TObject()
  ,fCoord1(0)
  ,fCoord2(0)
@@ -82,9 +82,43 @@ AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,const I
     fCoord2       = digits[1];
     fSignal       = 1;
 }
-
 //______________________________________________________________________
-Int_t AliITSUDigitPix::GetListOfTracks(TArrayI &t)
+
+AliITSMFTDigitPix::AliITSMFTDigitPix(const AliITSMFTDigitPix &h)
+: TObject(h)
+, fCoord1(h.fCoord1)
+, fCoord2(h.fCoord2)
+, fSignal(h.fSignal)
+, fSignalPix(h.fSignalPix)
+, fROCycle(h.fROCycle)
+
+{
+    for ( int i = 0 ; i < fgkSize; i++)
+    {
+        fTracks[i] = h.fTracks[i];
+        fHits[i] = h.fHits[i];
+    }
+  
+    
+}
+//______________________________________________________________________
+AliITSMFTDigitPix& AliITSMFTDigitPix::operator=(const AliITSMFTDigitPix& source)
+{
+    // Assignment operator.
+    if (this==&source) return *this;
+    this->~AliITSMFTDigitPix();
+    new(this) AliITSMFTDigitPix(source);
+    return *this;
+    //
+}
+//______________________________________________________________________
+AliITSMFTDigitPix::~AliITSMFTDigitPix()
+{
+    // dtor
+
+}
+//______________________________________________________________________
+Int_t AliITSMFTDigitPix::GetListOfTracks(TArrayI &t)
 {
     // Fills the TArrayI t with the tracks found in fTracks removing
     // duplicated tracks, but otherwise in the same order. It will return
@@ -117,7 +151,7 @@ Int_t AliITSUDigitPix::GetListOfTracks(TArrayI &t)
 }
 
 //______________________________________________________________________
-void AliITSUDigitPix::Print(ostream *os) const
+void AliITSMFTDigitPix::Print(ostream *os) const
 {
     //Standard output format for this class
     Int_t i;
@@ -130,7 +164,7 @@ void AliITSUDigitPix::Print(ostream *os) const
 }
 
 //______________________________________________________________________
-void AliITSUDigitPix::Read(istream *os)
+void AliITSMFTDigitPix::Read(istream *os)
 {
     //Standard input for this class
     Int_t i;
@@ -143,7 +177,7 @@ void AliITSUDigitPix::Read(istream *os)
 }
 
 //______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSUDigitPix &source)
+ostream &operator<<(ostream &os,AliITSMFTDigitPix &source)
 {
     // Standard output streaming function.
 
@@ -152,7 +186,7 @@ ostream &operator<<(ostream &os,AliITSUDigitPix &source)
 }
 
 //______________________________________________________________________
-istream &operator>>(istream &os,AliITSUDigitPix &source)
+istream &operator>>(istream &os,AliITSMFTDigitPix &source)
 {
     // Standard output streaming function.
 

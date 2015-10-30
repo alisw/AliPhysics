@@ -1,5 +1,5 @@
-#ifndef ALIITSUSDIGIT_H
-#define ALIITSUSDIGIT_H
+#ifndef AliITSMFTSDigit_H
+#define AliITSMFTSDigit_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
@@ -7,17 +7,17 @@
 
 using std::istream;
 
-class AliITSUSDigit: public TObject 
+class AliITSMFTSDigit: public TObject 
 {
  public:
   enum {kBuffSize=10};
   //
-  AliITSUSDigit();
-  AliITSUSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle=0);
-  AliITSUSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle=0);
-  AliITSUSDigit(const AliITSUSDigit &source);
-  AliITSUSDigit& operator=(const AliITSUSDigit &source);
-  virtual ~AliITSUSDigit() {}
+  AliITSMFTSDigit();
+  AliITSMFTSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle=0);
+  AliITSMFTSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle=0);
+  AliITSMFTSDigit(const AliITSMFTSDigit &source);
+  AliITSMFTSDigit& operator=(const AliITSMFTSDigit &source);
+  virtual ~AliITSMFTSDigit() {}
   Double_t GetSignal(Int_t i)    const {return ( (i>=0&&i<kBuffSize) ? fSignal[i] : 0.0);}
   Double_t GetSignal()           const {return fTsignal;}
   Double_t GetSignalAfterElect() const {return fSignalAfterElect;}
@@ -36,8 +36,8 @@ class AliITSUSDigit: public TObject
   Int_t GetNTracks()             const {return fNTracks;}
   Int_t GetROCycle()             const {return fROCycle;}
   //
-  void Add(const AliITSUSDigit *pl);
-  void AddTo(Int_t fileIndex, const AliITSUSDigit *pl);
+  void Add(const AliITSMFTSDigit *pl);
+  void AddTo(Int_t fileIndex, const AliITSMFTSDigit *pl);
   void ShiftIndices(Int_t fileIndex);
   void Print(Option_t *option="")                 const;
   Int_t Read(const char *name)                          {return TObject::Read(name);}
@@ -59,7 +59,7 @@ class AliITSUSDigit: public TObject
   Float_t  fNoise;             // Total noise, coupling, ...
   Float_t  fSignalAfterElect;  // Signal after electronics
   //
-  ClassDef(AliITSUSDigit,2) // Item list of signals and track numbers
+  ClassDef(AliITSMFTSDigit,2) // Item list of signals and track numbers
 };	
 
 

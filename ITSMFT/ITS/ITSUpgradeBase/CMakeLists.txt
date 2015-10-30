@@ -21,6 +21,9 @@ include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -31,14 +34,8 @@ set(SRCS
     AliITSDigitUpgrade.cxx
     AliITSRecPointU.cxx
     AliITSsegmentationUpgrade.cxx
-    AliITSUAux.cxx
-    AliITSUCalibrationPix.cxx
     AliITSUGeomTGeo.cxx
     AliITSULoader.cxx
-    AliITSUParamList.cxx
-    AliITSUSDigit.cxx
-    AliITSUSegmentationPix.cxx
-    AliITSUSensMap.cxx
    )
 
 # Headers from sources
@@ -51,7 +48,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD)
+set(LIBDEPS COMMONITSMFTBase COMMONITSMFTSim STEERBase STEER ESD)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

@@ -19,25 +19,23 @@
 #include "AliMC.h"
 #include "AliStack.h"
 
-#include "AliITSU.h"
-#include "AliITSUGeomTGeo.h"
-#include "AliITSUHit.h"
+//#include "AliITSU.h"
+//#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTHit.h"
 
-ClassImp(AliITSUHit)
+ClassImp(AliITSMFTHit)
 
 ////////////////////////////////////////////////////////////////////////
 //
-// At the moment the same functionality/data-members as parent AliITShit 
-// except the geometry transformation uses AliITSgeomTGeoUp 
+// At the moment the same functionality/data-members as parent AliITShit
+// except the geometry transformation uses AliITSgeomTGeoUp
 //
 ////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------
-AliITSUHit::AliITSUHit() : AliITSMFTHit()
-/*
- ,
+AliITSMFTHit::AliITSMFTHit() : AliHit(),
 fStatus(0), // Track Status
-fModule(0), // Module number 
+fModule(0), // Module number
 fPx(0),     // PX of particle at the point of the hit
 fPy(0),     // PY of particle at the point of the hit
 fPz(0),     // PZ of particle at the point of the hit
@@ -48,19 +46,15 @@ fx0(0),     // Starting point of this step
 fy0(0),     // Starting point of this step
 fz0(0),     // Starting point of this step
 ft0(0)     // Starting point of this step
-*/
 {
 }
 
 //----------------------------------------------------------------------
-AliITSUHit::AliITSUHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,
-			   TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p) 
-: AliITSMFTHit( shunt, track, vol, edep, tof, x, x0, p)
-
-/*
-AliHit(shunt,track),
+AliITSMFTHit::AliITSMFTHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,
+                           TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p)
+: AliHit(shunt,track),
 fStatus(vol[3]), // Track Status
-fModule(vol[0]),  // Module number 
+fModule(vol[0]),  // Module number
 fPx(p.Px()),     // PX of particle at the point of the hit
 fPy(p.Py()),     // PY of particle at the point of the hit
 fPz(p.Pz()),     // PZ of particle at the point of the hit
@@ -71,19 +65,16 @@ fx0(x0.X()),     // Starting point of this step
 fy0(x0.Y()),     // Starting point of this step
 fz0(x0.Z()),     // Starting point of this step
 ft0(x0.T())     // Starting point of this step
-*/
 {
-  // ct-r
- // SetPosition(x);
+    // ct-r
+    SetPosition(x);
 }
 
 //______________________________________________________________________
-AliITSUHit::AliITSUHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) 
-  : AliITSMFTHit(shunt, track, vol, hits)
-/*
-AliHit(shunt, track),
+AliITSMFTHit::AliITSMFTHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
+: AliHit(shunt, track),
 fStatus(vol[3]), // Track Status
-fModule(vol[0]),  // Module number 
+fModule(vol[0]),  // Module number
 fPx(hits[3]),     // PX of particle at the point of the hit
 fPy(hits[4]),     // PY of particle at the point of the hit
 fPz(hits[5]),     // PZ of particle at the point of the hit
@@ -94,21 +85,18 @@ fx0(hits[8]),     // Starting point of this step
 fy0(hits[9]),     // Starting point of this step
 fz0(hits[10]),     // Starting point of this step
 ft0(hits[11])     // Starting point of this step
-*/
 {
-  // c-tor
-//    fX          = hits[0];  // Track X global position
-//    fY          = hits[1];  // Track Y global position
-//    fZ          = hits[2];  // Track Z global position
+    // c-tor
+    fX          = hits[0];  // Track X global position
+    fY          = hits[1];  // Track Y global position
+    fZ          = hits[2];  // Track Z global position
 }
 
 //______________________________________________________________________
-AliITSUHit::AliITSUHit(const AliITSUHit &h)
-: AliITSMFTHit(h)
-/*
-AliHit(h),
+AliITSMFTHit::AliITSMFTHit(const AliITSMFTHit &h)
+: AliHit(h),
 fStatus(h.fStatus), // Track Status
-fModule(h.fModule),  // Module number 
+fModule(h.fModule),  // Module number
 fPx(h.fPx),     // PX of particle at the point of the hit
 fPy(h.fPy),     // PY of particle at the point of the hit
 fPz(h.fPz),     // PZ of particle at the point of the hit
@@ -119,18 +107,17 @@ fx0(h.fx0),     // Starting point of this step
 fy0(h.fy0),     // Starting point of this step
 fz0(h.fz0),     // Starting point of this step
 ft0(h.ft0)     // Starting point of this step
-*/
 {
-  // cp c-tor
+    // cp c-tor
     if(this == &h) return;
     return;
 }
 
 //______________________________________________________________________
-AliITSUHit& AliITSUHit::operator=(const AliITSUHit &h)
+AliITSMFTHit& AliITSMFTHit::operator=(const AliITSMFTHit &h)
 {
-  // The standard = operator
-  if(this == &h) return *this;
+    // The standard = operator
+    if(this == &h) return *this;
     this->fStatus  = h.fStatus;
     this->fModule  = h.fModule;
     this->fPx      = h.fPx;
@@ -143,11 +130,11 @@ AliITSUHit& AliITSUHit::operator=(const AliITSUHit &h)
     this->fy0      = h.fy0;
     this->fz0      = h.fz0;
     this->ft0      = h.ft0;
-  return *this;
+    return *this;
 }
 
 //______________________________________________________________________
-void AliITSUHit::SetShunt(Int_t shunt){
+void AliITSMFTHit::SetShunt(Int_t shunt){
     // Sets track flag based on shunt value. Code copied from
     // AliHit standar constructor.
     // Inputs:
@@ -158,7 +145,7 @@ void AliITSUHit::SetShunt(Int_t shunt){
     //   none.
     Int_t primary,track,current,parent;
     TParticle *part;
-
+    
     track = fTrack;
     if(shunt == 1) {
         primary = gAlice->GetMCApp()->GetPrimary(track);
@@ -185,97 +172,82 @@ void AliITSUHit::SetShunt(Int_t shunt){
 }
 
 //______________________________________________________________________
-void AliITSUHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
+void AliITSMFTHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
 {
-  // Returns the position and time of flight of this hit in the local
-  // coordinates of this chip, and in the units of the Monte Carlo.
-  //
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  double g[3]={fX,fY,fZ},l[3];
-  gm->GetMatrixSens(fModule)->MasterToLocal(g,l);
-  x = l[0];
-  y = l[1];
-  z = l[2];
-  tof = fTof;
-  //
+    // Returns the position and time of flight of this hit in the local
+    // coordinates of this chip, and in the units of the Monte Carlo.
+    //
+    x = -999;
+    y = -999;
+    z = -999;
+    tof = -999;
+    
+    //
 }
 
 //______________________________________________________________________
-void AliITSUHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof)
+void AliITSMFTHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof)
 {
-  // Returns the initial position and time of flight of this hit 
-  // in the local coordinates of this chip, and in the units of the 
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  double g[3]={fx0,fy0,fz0},l[3];  
-  gm->GetMatrixSens(fModule)->MasterToLocal(g,l);
-  x = l[0];
-  y = l[1];
-  z = l[2];
-  tof = ft0;
+    // Returns the initial position and time of flight of this hit
+    // in the local coordinates of this chip, and in the units of the
+    x = -999;
+    y = -999;
+    z = -999;
+    tof = -999;
 }
 
 //______________________________________________________________________
-void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det) const
+void AliITSMFTHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det) const
 {
-  // Returns the layer stave and detector number lables for this
-  // ITS chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return; }
-  gm->GetChipId(fModule,layer,stave,sstave,mod,det);
-}  
+    // Returns the layer stave and detector number lables for this
+    // ITS chip. Note: indices start from 0!
+    
+    layer = -999;
+    stave = -999;
+    sstave = -999;
+    mod = -999;
+    det = -999;
+}
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetLayer() const
+Int_t AliITSMFTHit::GetLayer() const
 {
-  // Returns the layer. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetLayer(fModule);
-}  
+    // Returns the layer. Note: indices start from 0!
+    return -999;
+}
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetStave() const
+Int_t AliITSMFTHit::GetStave() const
 {
-  // Returns the stave of TS chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetStave(fModule);
-}  
+    // Returns the stave of TS chip. Note: indices start from 0!
+    return -999;
+}
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetHalfStave() const
+Int_t AliITSMFTHit::GetHalfStave() const
 {
-  // Returns the substave of the chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetHalfStave(fModule);
-}  
+    // Returns the substave of the chip. Note: indices start from 0!
+    return -999;
+}
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetModule() const
+Int_t AliITSMFTHit::GetModule() const
 {
-  // Returns the module of the chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetModule(fModule);
-}  
+    return -999;
+}
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetChipInModule() const // former GetDetector
+Int_t AliITSMFTHit::GetChipInModule() const // former GetDetector
 {
-  // Returns the detector within the module(or stave). Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetChipIdInModule(fModule);
-}  
+    // Returns the detector within the module(or stave). Note: indices start from 0!
+    return -999;
+}
 
 //______________________________________________________________________
-void AliITSUHit::Print(Option_t */*option*/) const 
+void AliITSMFTHit::Print(Option_t */*option*/) const
 {
-  // print itself
-  printf("Mod%4d Tr:%5d DE:%.2e TOF: %.3e| P:%.3f %.3f %.3f |>%.4f %.4f %.4f >%.4f %.4f %.4f\n",
-	 fModule,fTrack,fDestep,fTof,fPx,fPy,fPz, fx0,fy0,fz0,fX,fY,fZ);
-
+    // print itself
+    printf("Mod%4d Tr:%5d DE:%.2e TOF: %.3e| P:%.3f %.3f %.3f |>%.4f %.4f %.4f >%.4f %.4f %.4f\n",
+           fModule,fTrack,fDestep,fTof,fPx,fPy,fPz, fx0,fy0,fz0,fX,fY,fZ);
+    
 }

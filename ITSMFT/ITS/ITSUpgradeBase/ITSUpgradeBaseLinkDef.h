@@ -17,10 +17,4 @@
 //
 #pragma link C++ class  AliITSULoader+;
 #pragma link C++ class  AliITSUGeomTGeo+;
-#pragma link C++ class  AliITSUCalibrationPix+;
-#pragma link C++ class  AliITSUSegmentationPix+;
-#pragma link C++ class  AliITSUSensMap+;
-#pragma link C++ class  AliITSUSDigit+;
-#pragma link C++ class  AliITSUParamList+;
-#pragma link C++ namespace  AliITSUAux;
 #endif

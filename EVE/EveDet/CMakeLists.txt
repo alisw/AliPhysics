@@ -22,6 +22,9 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 # Additional include folders in alphabetical order
 include_directories(
 		    ${AliRoot_SOURCE_DIR}/AD/ADbase
+  		    ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase
