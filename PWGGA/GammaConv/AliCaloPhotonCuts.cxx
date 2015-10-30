@@ -3395,8 +3395,12 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Fl
 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
-	return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
+	return ( 0.9615 / ( 0.976941 *( 1. / ( 1. + 0.162310 * exp( -e / 1.08689 ) ) * 1. / ( 1. + 0.0819592 * exp( ( e - 152.338 ) / 30.9594 ) ) ) ) );
 }
+//old kTestBeamv2, changed 30.10.2015
+//Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
+//	return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
+//}
 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e){
