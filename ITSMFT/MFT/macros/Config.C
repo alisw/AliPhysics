@@ -665,7 +665,7 @@ void LoadLibs() {
     gSystem->Load("libAliPythia6");     // ALICE specific implementations
   } 
   else {
-    gSystem->Load("libpythia6.4.21");   // Pythia 6.4
+    gSystem->Load("libpythia6_4_25");   // Pythia 6.4
     gSystem->Load("libAliPythia6");     // ALICE specific implementations	
   }
   
