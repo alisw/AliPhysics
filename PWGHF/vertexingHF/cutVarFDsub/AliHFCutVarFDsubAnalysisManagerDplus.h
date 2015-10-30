@@ -39,8 +39,18 @@ public:
                       const TString strListData,
                       Bool_t MConly);
   
-  void GetCuts(Int_t version=0, Int_t Rebin=1, Int_t fsig=0, Int_t fbkg=0); /// get the list of cuts
-  void GetAxes(Int_t version=0); /// get the axes of the THnSparses
+  void GetCuts(Double_t*** cutslowset, ///first dimension: number of set, second: number of pt bin, third: the number of cut variable (pt included)
+               Double_t*** cutshighset,
+               Double_t** means, ///first dimension: number of set, second: number of pt bin
+               Double_t** sigmas, 
+               Int_t Rebin,
+               Int_t fsig,
+               Int_t fbkg,
+               Int_t nSets,
+               Int_t nPtBins,
+               Int_t nCutVariables); /// get the list of cuts
+  
+  void GetAxes(UInt_t* dataAxesNo,UInt_t* MCGenAxesNo,UInt_t* MCCutAxesNo,TString* axesName,Int_t nAxes); /// get the axes of the THnSparses
 
   TH1F* GetCrossSecPrompt(const TString AccFilePath, const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
     return CalculateCrossSection(AccFilePath,GenLimAccHistoName,GenAccHistoName,system,"Prompt"); } /// get the prompt cross section
