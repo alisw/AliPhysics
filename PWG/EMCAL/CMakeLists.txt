@@ -95,7 +95,7 @@ add_library(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MODULE}.cx
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils EMCALTriggerBase ESD PWGTools STEER STEERBase Tender)
+set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGTools STEER STEERBase Tender)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
