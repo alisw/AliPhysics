@@ -795,10 +795,13 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
   return energy;
 }
 
+///
+/// Initialising Non Linearity Parameters for the different
+/// parametrizations available, defined in enum NonlinearityFunctions
+///
 //__________________________________________________
 void AliEMCALRecoUtils::InitNonLinearityParam()
 {
-  //Initialising Non Linearity Parameters
   
   if (fNonLinearityFunction == kPi0MC) {
     fNonLinearityParams[0] = 1.014;
@@ -865,13 +868,25 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
   }
   
   if (fNonLinearityFunction == kBeamTestCorrectedv2) {
-    fNonLinearityParams[0] =  0.983504;
-    fNonLinearityParams[1] =  0.210106;
-    fNonLinearityParams[2] =  0.897274;
-    fNonLinearityParams[3] =  0.0829064;
-    fNonLinearityParams[4] =  152.299;
-    fNonLinearityParams[5] =  31.5028;
-    fNonLinearityParams[6] =  0.968;
+    // Parameters until November 2015
+//    fNonLinearityParams[0] =  0.983504;
+//    fNonLinearityParams[1] =  0.210106;
+//    fNonLinearityParams[2] =  0.897274;
+//    fNonLinearityParams[3] =  0.0829064;
+//    fNonLinearityParams[4] =  152.299;
+//    fNonLinearityParams[5] =  31.5028;
+//    fNonLinearityParams[6] =  0.968;
+    
+    // New parametrization excluding point at 0.5 GeV from Beam Test Data
+    // https://indico.cern.ch/event/438805/contribution/1/attachments/1145354/1641875/emcalPi027August2015.pdf
+    
+    fNonLinearityParams[0] =  0.976941;
+    fNonLinearityParams[1] =  0.162310;
+    fNonLinearityParams[2] =  1.08689;
+    fNonLinearityParams[3] =  0.0819592;
+    fNonLinearityParams[4] =  152.338;
+    fNonLinearityParams[5] =  30.9594;
+    fNonLinearityParams[6] =  0.9615;
   }
 
   if (fNonLinearityFunction == kSDMv5) {
