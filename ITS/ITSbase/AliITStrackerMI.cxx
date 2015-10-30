@@ -551,7 +551,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   TObjArray itsTracks(15000);
   fOriginal.Clear();
   fEsd = event;         // store pointer to the esd 
-
+  Bool_t checkInv = AliITSReconstructor::GetCheckInvariant(); // off in the special reco mode w/o invariant check
   // temporary (for cosmics)
   if(event->GetVertex()) {
     TString title = event->GetVertex()->GetTitle();
@@ -577,6 +577,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
       if (esd->GetStatus()&AliESDtrack::kITSin) continue;
       if (esd->GetKinkIndex(0)>0) continue;   //kink daughter
       AliITStrackMI *t = new AliITStrackMI(*esd);
+      t->SetCheckInvariant(checkInv);
       t->GetDZ(GetX(),GetY(),GetZ(),t->GetDP());              //I.B.
       Double_t vdist = TMath::Sqrt(t->GetD(0)*t->GetD(0)+t->GetD(1)*t->GetD(1));
 
@@ -707,6 +708,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   double bz0 = GetBz();
   const double kWatchStep=10.; // for larger steps watch arc vs segment difference
   //
+  Bool_t checkInv = AliITSReconstructor::GetCheckInvariant(); // off in the special reco mode w/o invariant check
   Int_t ntrk=0;
   for (Int_t i=0; i<nentr; i++) {
      AliESDtrack *esd=event->GetTrack(i);
@@ -714,6 +716,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      // Start time integral and add distance from current position to vertex 
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
      AliITStrackMI t(*esd);
+     t.SetCheckInvariant(checkInv);
      Double_t xyzTrk[3]={0},xyzVtx[3]={GetX(),GetY(),GetZ()};
      t.GetXYZ(xyzTrk); 
      Double_t dst2 = 0.;
@@ -790,6 +793,8 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       for (UInt_t i=0; i<AliITSPlaneEffSPD::kNModule*AliITSPlaneEffSPD::kNChip; i++) fSPDChipIntPlaneEff[i]=kFALSE;     
   }
 
+  Bool_t checkInv = AliITSReconstructor::GetCheckInvariant(); // off in the special reco mode w/o invariant check
+
   Int_t ntrk=0;
   for (Int_t i=0; i<nentr; i++) {
     AliESDtrack *esd=event->GetTrack(i);
@@ -800,6 +805,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
 
     AliITStrackMI *t = new AliITStrackMI(*esd);
+    t->SetCheckInvariant(checkInv);
 
     t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
     if (!CorrectForTPCtoITSDeadZoneMaterial(t)) {
@@ -2564,7 +2570,11 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
 
      const AliITSdetector &det=layer.GetDetector(idet);
      // only for ITS-SA tracks refit
-     if (ilayer>1 && fTrackingPhase.Contains("RefitInward") && !(track->GetStatus()&AliESDtrack::kTPCin)) track->SetCheckInvariant(kFALSE);
+     Bool_t saveCheckInv = kTRUE;
+     if (ilayer>1 && fTrackingPhase.Contains("RefitInward") && !(track->GetStatus()&AliESDtrack::kTPCin)) {
+       saveCheckInv = track->GetCheckInvariant();
+       track->SetCheckInvariant(kFALSE);
+     }
      // 
      if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
 
@@ -2659,7 +2669,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
      // cross material
      // add time if going outward
      if(!CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir)) return kFALSE;
-     track->SetCheckInvariant(kTRUE);
+     track->SetCheckInvariant(saveCheckInv);
   } // end loop on layers
 
   if (!track->PropagateTo(xx,0.,0.)) return kFALSE;

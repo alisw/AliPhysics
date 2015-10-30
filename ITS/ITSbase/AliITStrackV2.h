@@ -29,6 +29,7 @@ public:
   ~AliITStrackV2(){fESDtrack=0;}
 
   void   SetCheckInvariant(Bool_t check=kTRUE) {fCheckInvariant=check;}
+  Bool_t GetCheckInvariant()             const {return fCheckInvariant;}
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho,
 				Bool_t anglecorr=kFALSE) {
     return AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass(),anglecorr);

@@ -42,12 +42,17 @@ public:
 
   static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 
+  static void   SetCheckInvariant(Bool_t v) {fgkCheckInvariant = v;}
+  static Bool_t GetCheckInvariant()         {return fgkCheckInvariant;}
+
 private:
   AliITSReconstructor(const AliITSReconstructor &); //Not implemented
   AliITSReconstructor& operator=(const AliITSReconstructor &); //Not implemented
 
   //data
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
+
+  static Bool_t fgkCheckInvariant;   // allow or forbid AliITStrackV2::CheckInvariant
 
   ClassDef(AliITSReconstructor, 6)   // class for the ITS reconstruction
 };
