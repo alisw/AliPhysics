@@ -21,8 +21,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/reducedTree)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-			${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
-		)
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
+		    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
+		   )   
 
 # Sources in alphabetical order
 set(SRCS
