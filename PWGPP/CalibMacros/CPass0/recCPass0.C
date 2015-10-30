@@ -21,7 +21,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   // addopt errors to account for calibration imprefection before cpass0
   Double_t tpcSystematicErrors[5]={1,1,1./100.,1./100.,0.1};
   Double_t tpcSystematicErrorClusters[2]={2.,2.};
-  Double_t tpcExtendedRoads[2]={2,2};
+  Double_t tpcExtendedRoads[2]={3.5,3.5};
   Double_t tpcPrimDCACuts[2] = {10.,30.}; // Y,Z
   TVectorD *vectpcSystematicErrors=new TVectorD(5, tpcSystematicErrors);
   TVectorD *vectpcSystematicErrorClusters=new TVectorD(2, tpcSystematicErrorClusters);
@@ -34,6 +34,8 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (gSystem->Getenv("streamLevel")){
     SetStreamLevel( AliTPCtracker::kStreamErrParam| AliTPCtracker::kStreamTransform);
   }
+
+  AliITSReconstructor::SetCheckInvariant(kFALSE); // no invariant check with extended TPC errors
 
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
