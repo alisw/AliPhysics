@@ -19,6 +19,7 @@
 #include "TObjString.h"
 #include "TBrowser.h"
 #include "TFormula.h"
+#include "RVersion.h"
 
 ClassImp(AliMultEstimator);
 //________________________________________________________________
@@ -106,7 +107,9 @@ void AliMultEstimator::SetupFormula(const AliMultInput* lInput)
         expr.ReplaceAll(lVarName, repl);
     }
     fFormula = new TFormula(Form("e%s", GetName()), expr);
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,4)
     fFormula->Optimize();
+#endif
 }
 //________________________________________________________________
 Float_t AliMultEstimator::Evaluate(const AliMultInput* lInput)
