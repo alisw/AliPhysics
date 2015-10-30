@@ -58,6 +58,7 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 #include "AliHLTEMCALRawAnalyzerFastFitComponent.h"
 #include "AliHLTEMCALRawAnalyzerNNComponent.h"
 #include "AliHLTEMCALClusterizerComponentNbyN.h"
+#include "AliHLTEMCALTriggerMakerComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEMCALAgent)
@@ -214,6 +215,7 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponentNbyN);
     //pHandler->AddComponent(new AliHLTCaloClusterAnalyserComponent);			 
     //pHandler->AddComponent(new AliHLTEMCALESDEntriesMakerComponent);
+    pHandler->AddComponent(new AliHLTEMCALTriggerMakerComponent);
     
     return 0;
 }

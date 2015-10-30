@@ -244,7 +244,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
       fDigitCount--;
       //      printf("Going to overwrite digit: x = %d, z = %d, gain = %d, energy = %f\n", fDigitStructPtr->fX, fDigitStructPtr->fZ, fDigitStructPtr->fGain, fDigitStructPtr->fEnergy);
     }
-  
+
   fChannelBook[coord.fX][coord.fZ] = fDigitStructPtr;
  
   fDigitStructPtr->fX = coord.fX;
