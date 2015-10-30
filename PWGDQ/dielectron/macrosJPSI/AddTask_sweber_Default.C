@@ -54,14 +54,7 @@ AliAnalysisTask* AddTask_sweber_Default(
 	AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("JpsiDefault");
 	if (!hasMC) task->UsePhysicsSelection();
 
-	AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  
-	eventCuts->SetRequireVertex();
-	eventCuts->SetMinVtxContributors(1);
-	eventCuts->SetVertexZ(-10.,10.);
 
-  //eventCuts->Print();
-	task->SetEventFilter(eventCuts);
   
   // add special triggers
 	switch(iPeriod) {
@@ -97,7 +90,8 @@ AliAnalysisTask* AddTask_sweber_Default(
 	}
   // >>> alien config
 	else{
-		if(!gSystem->Exec(Form("alien_cp %s/%s.C .",alienPath.Data(),cfg.Data()))) {
+	//	if(!gSystem->Exec(Form("alien_cp %s/%s.C .",alienPath.Data(),cfg.Data()))) {
+		if(1){
     			configFile=gSystem->pwd();
 		}
 		else {
@@ -114,13 +108,9 @@ AliAnalysisTask* AddTask_sweber_Default(
 	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi")){
 		gROOT->LoadMacro(configFile.Data());
 	}
-  // add dielectron analysis with different cuts to the task
-	for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-		AliDielectron *jpsi=ConfigJpsi(i);
-		if (!jpsi) continue;
-		jpsi->SetHasMC(hasMC);
-		task->AddDielectron(jpsi);
-	}
+
+	ConfigJpsi(task);
+	
 
   //   task->SetTriggerOnV0AND();
 	if(rejectPileup) task->SetRejectPileup();
