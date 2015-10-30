@@ -27,7 +27,7 @@ class AliTriggerIR : public TObject {
 public:
   AliTriggerIR();
   AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t incomplete = kFALSE, Bool_t transerr = kFALSE);
-  AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words,Bool_t incomplete, Bool_t transerr,Bool_t run2flag);
+  AliTriggerIR(UInt_t orbit, UInt_t nwords, ULong64_t *words,Bool_t incomplete = kFALSE, Bool_t transerr = kFALSE);
 
   AliTriggerIR(const AliTriggerIR &rec);
   AliTriggerIR& operator= (const AliTriggerIR& rec);
