@@ -248,6 +248,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fSelection -> AddEstimator( fEstRefMultEta5 );
     fSelection -> AddEstimator( fEstRefMultEta8 );
     
+    //Pre-optimize and create TFormulas
+    fSelection->Setup ( fInput );
+    
     //============================================================
 
     Long64_t lNEv = fTree->GetEntries();
@@ -397,7 +400,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     cout<<"(4) Look at average values"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
-        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<"/"<<lNRuns<<", with "<<ntot<<" events..."<<endl;
+        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), with "<<ntot<<" events..."<<endl;
         sTree[iRun]->SetEstimate(ntot+1);
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
@@ -422,23 +425,23 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
         }
     }
-    
+
     cout<<"(5) Generate Boundaries through a loop in all desired estimators"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
-        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<"/"<<lNRuns<<", with "<<ntot<<" events..."<<endl;
+        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), with "<<ntot<<" events..."<<endl;
         sTree[iRun]->SetEstimate(ntot+1);
+        // Memory allocation: don't repeat it per estimator! only per run
+        index = new Long64_t[ntot];
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
             if( ! ( fSelection->GetEstimator(iEst)->IsInteger() ) ) {
                 //==== Floating Point Calibration Engine ====
                 lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
-                //This will make sure we use only a projection of the TTree!
-                index = new Long64_t[ntot];
-
                 cout<<"--- Sorting estimator "<<fSelection->GetEstimator(iEst)->GetName()<<"..."<<flush;
+
                 TMath::Sort(ntot,sTree[iRun]->GetV1(),index);
-                cout<<" Done! Getting Boundaries..."<<endl;
+                cout<<" Done! Getting Boundaries... "<<flush;
                 lNrawBoundaries[0] = 0.0;
                 for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
                     Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
@@ -446,15 +449,15 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     sTree[iRun]->GetEntry( index[position] );
                     //Calculate the estimator with this input, please
                     fSelection->Evaluate ( fInput );
+                    //fSelection->PrintInfo();
                     lNrawBoundaries[lB] = fSelection->GetEstimator(iEst)->GetValue();
                 }
+                cout<<" Done! Saving... "<<endl; 
                 //Should not be the source of excessive memory consumption...
                 //...but can be rearranged if needed!
                 hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
                 hCalib[iRun][iEst]->SetDirectory(0);
                 for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
-                //Cleanup: Delete index variable
-                delete[] index;
                 //==== End Floating Point Calibration Engine ====
             } else {
                 //==== Integer Value Calibration Engine ====
@@ -491,6 +494,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 }
             }
         }
+        //Cleanup: Delete index variable
+        delete[] index;
     }
 
     cout<<"(6) Write OADB"<<endl;
@@ -501,8 +506,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     TFile * f = new TFile (fOutputFileName.Data(), "recreate");
     AliOADBContainer * oadbContMS = new AliOADBContainer("MultSel");
     AliOADBMultSelection * oadbMultSelection = new AliOADBMultSelection("Default");
-    AliMultSelectionCuts * cuts              = new AliMultSelectionCuts;
-    AliMultSelection     * fsels             = new AliMultSelection ( fSelection );
+    AliMultSelectionCuts * cuts              = new AliMultSelectionCuts();
+    cuts = fMultSelectionCuts;
+    AliMultSelection     * fsels             = new AliMultSelection    ( fSelection         );
 
     cout<<"=================================================================================="<<endl; 
     cout<<"AliMultSelection Object to be saved (DEFAULT)"<<endl;
@@ -528,7 +534,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         cout<<"Processing run number "<<lRunNumbers[iRun]<<endl;
         oadbMultSelection = new AliOADBMultSelection();
-        cuts              = new AliMultSelectionCuts;
+        cuts              = new AliMultSelectionCuts();
+        cuts = fMultSelectionCuts;
         fsels             = new AliMultSelection( fSelection );
         //cout<<"Dump"<<endl;
         //fsels->PrintInfo();
@@ -548,6 +555,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         cout<<"=================================================================================="<<endl; 
         cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
         fsels->PrintInfo();
+        cuts->Print(); 
 	cout<<"=================================================================================="<<endl; 
         oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun] ,lRunNumbers[iRun] );
     }

@@ -81,6 +81,7 @@ class AliESDAD; //AD
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionCuts.h"
 
 //task header
 #include "AliMultSelectionTask.h"
@@ -149,9 +150,7 @@ fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
 fHistEventCounter(0),
-oadbMultSelection(0),
-fMultCuts(0),
-fSelection(0),
+fOadbMultSelection(0),
 fInput(0)
 //------------------------------------------------
 // Tree Variables
@@ -159,9 +158,9 @@ fInput(0)
 
 }
 
-AliMultSelectionTask::AliMultSelectionTask(const char *name)
+AliMultSelectionTask::AliMultSelectionTask(const char *name, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
-fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -218,16 +217,14 @@ fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
 fHistEventCounter(0),
-oadbMultSelection(0),
-fMultCuts(0),
-fSelection(0),
+fOadbMultSelection(0),
 fInput(0)
 {
     
     for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
-    DefineOutput(2, TTree::Class()); // Event Tree
+    if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
 }
 
 
@@ -237,10 +234,6 @@ AliMultSelectionTask::~AliMultSelectionTask()
     // DESTRUCTOR
     //------------------------------------------------
 
-    if (fListHist) {
-        delete fListHist;
-        fListHist = 0x0;
-    }
     if (fTreeEvent) {
         delete fTreeEvent;
         fTreeEvent = 0x0;
@@ -253,7 +246,6 @@ AliMultSelectionTask::~AliMultSelectionTask()
       delete fUtils;
       fUtils = 0x0;
     }
-    
 }
 
  
@@ -266,7 +258,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     // Called once
 
     //------------------------------------------------
-
     
     //Create Input Information
     fInput = new AliMultInput();
@@ -334,68 +325,69 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZpaTower );
     fInput->AddVariable( fZpcTower );
     
-    fTreeEvent = new TTree("fTreeEvent","Event");
-
-    //------------------------------------------------
-    // fTree Branch definitions - Event by Event info
-    //------------------------------------------------
-
-    //-----------BASIC-INFO---------------------------
-    
-    // A.T. (my suggestion for V0: 1..4 replacing partial)
-    fTreeEvent->Branch("fAmplitude_V0A1",&fAmplitude_V0A1,"fAmplitude_V0A1/F");
-    fTreeEvent->Branch("fAmplitude_V0A2",&fAmplitude_V0A2,"fAmplitude_V0A2/F");
-    fTreeEvent->Branch("fAmplitude_V0A3",&fAmplitude_V0A3,"fAmplitude_V0A3/F");
-    fTreeEvent->Branch("fAmplitude_V0A4",&fAmplitude_V0A4,"fAmplitude_V0A4/F");
-    fTreeEvent->Branch("fAmplitude_V0C1",&fAmplitude_V0C1,"fAmplitude_V0C1/F");
-    fTreeEvent->Branch("fAmplitude_V0C2",&fAmplitude_V0C2,"fAmplitude_V0C2/F");
-    fTreeEvent->Branch("fAmplitude_V0C3",&fAmplitude_V0C3,"fAmplitude_V0C3/F");
-    fTreeEvent->Branch("fAmplitude_V0C4",&fAmplitude_V0C4,"fAmplitude_V0C4/F");
-
-    //Run Number
-    fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-
-    //Booleans for Event Selection
-    fTreeEvent->Branch("fEvSel_VtxZCut", &fEvSel_VtxZCut, "fEvSel_VtxZCut/O");
-    fTreeEvent->Branch("fEvSel_IsNotPileup", &fEvSel_IsNotPileup, "fEvSel_IsNotPileup/O");
-    fTreeEvent->Branch("fEvSel_IsNotPileupMV", &fEvSel_IsNotPileupMV, "fEvSel_IsNotPileupMV/O");
-    fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
-    fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
-    fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
-    fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
-    fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
-    fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
-    
-    //A.T. FIXME change into AliMultVariable
-    //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
-    //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
-    fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
-
-    fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
-    fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
-    //A.T. FIXME change into AliMultVariable
-    //ZDC info (only booleans: the rest will be done in the loop automatically)
-    fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
-    fTreeEvent->Branch("fZncFired", &fZncFired, "fZncFired/O");    //Booleans for Event Selection
-    fTreeEvent->Branch("fZpaFired", &fZpaFired, "fZpaFired/O");    //Booleans for Event Selection
-    fTreeEvent->Branch("fZpcFired", &fZpcFired, "fZpcFired/O");    //Booleans for Event Selection
-    
-    //Automatic Loop for linking directly to AliMultInput
-    for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++){
-        if( !fInput->GetVariable(iVar)->IsInteger()  ){
-            fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValue(), Form("%s/F",fInput->GetVariable(iVar)->GetName()) );
-        }else{
-            fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValueInteger(), Form("%s/I",fInput->GetVariable(iVar)->GetName()) );
+    if( fkCalibration ) {
+        fTreeEvent = new TTree("fTreeEvent","Event");
+        
+        //------------------------------------------------
+        // fTree Branch definitions - Event by Event info
+        //------------------------------------------------
+        
+        //-----------BASIC-INFO---------------------------
+        
+        // A.T. (my suggestion for V0: 1..4 replacing partial)
+        fTreeEvent->Branch("fAmplitude_V0A1",&fAmplitude_V0A1,"fAmplitude_V0A1/F");
+        fTreeEvent->Branch("fAmplitude_V0A2",&fAmplitude_V0A2,"fAmplitude_V0A2/F");
+        fTreeEvent->Branch("fAmplitude_V0A3",&fAmplitude_V0A3,"fAmplitude_V0A3/F");
+        fTreeEvent->Branch("fAmplitude_V0A4",&fAmplitude_V0A4,"fAmplitude_V0A4/F");
+        fTreeEvent->Branch("fAmplitude_V0C1",&fAmplitude_V0C1,"fAmplitude_V0C1/F");
+        fTreeEvent->Branch("fAmplitude_V0C2",&fAmplitude_V0C2,"fAmplitude_V0C2/F");
+        fTreeEvent->Branch("fAmplitude_V0C3",&fAmplitude_V0C3,"fAmplitude_V0C3/F");
+        fTreeEvent->Branch("fAmplitude_V0C4",&fAmplitude_V0C4,"fAmplitude_V0C4/F");
+        
+        //Run Number
+        fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+        
+        //Booleans for Event Selection
+        fTreeEvent->Branch("fEvSel_VtxZCut", &fEvSel_VtxZCut, "fEvSel_VtxZCut/O");
+        fTreeEvent->Branch("fEvSel_IsNotPileup", &fEvSel_IsNotPileup, "fEvSel_IsNotPileup/O");
+        fTreeEvent->Branch("fEvSel_IsNotPileupMV", &fEvSel_IsNotPileupMV, "fEvSel_IsNotPileupMV/O");
+        fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
+        fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
+        fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
+        fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
+        fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
+        fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
+        
+        //A.T. FIXME change into AliMultVariable
+        //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
+        //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
+        fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
+        
+        fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
+        fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+        //A.T. FIXME change into AliMultVariable
+        //ZDC info (only booleans: the rest will be done in the loop automatically)
+        fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
+        fTreeEvent->Branch("fZncFired", &fZncFired, "fZncFired/O");    //Booleans for Event Selection
+        fTreeEvent->Branch("fZpaFired", &fZpaFired, "fZpaFired/O");    //Booleans for Event Selection
+        fTreeEvent->Branch("fZpcFired", &fZpcFired, "fZpcFired/O");    //Booleans for Event Selection
+        
+        //Automatic Loop for linking directly to AliMultInput
+        for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++){
+            if( !fInput->GetVariable(iVar)->IsInteger()  ){
+                fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValue(), Form("%s/F",fInput->GetVariable(iVar)->GetName()) );
+            }else{
+                fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValueInteger(), Form("%s/I",fInput->GetVariable(iVar)->GetName()) );
+            }
+        }
+        
+        if( fkDebug ){
+            //Fixme: Save first 5 quantiles, should be enough for debugging
+            for ( Int_t iq=0; iq<fNDebug; iq++){
+                fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
+            }
         }
     }
-    
-    if( fkDebug ){
-        //Fixme: Save first 5 quantiles, should be enough for debugging
-        for ( Int_t iq=0; iq<fNDebug; iq++){
-            fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
-        }
-    }
-
     //------------------------------------------------
     // Set up objects
     //------------------------------------------------
@@ -438,7 +430,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     //TTree Object: Saved to base directory. Should cache to disk while saving.
     //(Important to avoid excessive memory usage, particularly when merging)
-    PostData(2, fTreeEvent);
+    if ( fkCalibration ) PostData(2, fTreeEvent);
 }// end UserCreateOutputObjects
 
 
@@ -697,6 +689,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0A->SetValue(multV0A);
     fAmplitude_V0C->SetValue(multV0C);
     
+    if ( lVerbose ) {
+        Printf(" V0A Amplitude: %.5f", multV0A );
+        Printf(" V0C Amplitude: %.5f", multV0C );
+    }
+    
     fAmplitude_OnlineV0A->SetValue(multonlineV0A);
     fAmplitude_OnlineV0C->SetValue(multonlineV0C);
 
@@ -839,55 +836,83 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // I/O: Create object for storing, add
         //===============================================
         
+        if(lVerbose) Printf( "--- Evaluate -1-");
         //Evaluate Estimators from Variables
-        fSelection -> Evaluate (fInput);
-
+        AliMultSelection*     lSelection = fOadbMultSelection->GetMultSelection();
+        AliMultSelectionCuts* lMultCuts  = fOadbMultSelection->GetEventCuts();
+        if(lVerbose) Printf( "--- Evaluate -2-");
+        lSelection -> Evaluate (fInput);
+        if(lVerbose) Printf( "--- INPUT --- ");
+        if(lVerbose) fInput -> Print("V") ;
+        if(lVerbose) Printf( "--- OUTPUT --- ");
+        if(lVerbose) lSelection -> PrintInfo();
+        if(lVerbose) Printf( "--- Evaluate -3-");
+        
         //Determine Quantiles from calibration histogram
         TH1F *lThisCalibHisto = 0x0;
         TString lThisCalibHistoName;
         Float_t lThisQuantile = -1;
-        for(Long_t iEst=0; iEst<fSelection->GetNEstimators(); iEst++) {
-            lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,fSelection->GetEstimator(iEst)->GetName());
+        for(Long_t iEst=0; iEst<lSelection->GetNEstimators(); iEst++) {
+            lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,lSelection->GetEstimator(iEst)->GetName());
             lThisCalibHisto = 0x0;
-            lThisCalibHisto = oadbMultSelection->GetCalibHisto( lThisCalibHistoName );
+            lThisCalibHisto = fOadbMultSelection->GetCalibHisto( lThisCalibHistoName );
             if ( ! lThisCalibHisto ){
                 lThisQuantile = 199;
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
-                fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+                lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
                 continue;
             }else{
-                lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
+                lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( lSelection->GetEstimator(iEst)->GetValue() ));
                 //cleanup: discard events according to criteria stored in OADB object
                 //Check Selections as they are in the fMultSelectionCuts Object
-                if( fMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
-                if( fMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
-                if( TMath::Abs(fEvSel_VtxZ)          > fMultCuts->GetVzCut()      ) lThisQuantile = 202;
-                if( fMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
-                if( fMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
-                if( fMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
+                if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
+                if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
+                if( TMath::Abs(fEvSel_VtxZ)          > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
+                if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
+                if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
+                if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
-                fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+                lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }
         }
 
         //Add to AliVEvent
-        if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
-            InputEvent()->AddObject(fSelection);
-            fkAttached = kTRUE;
+        //if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
+        //    InputEvent()->AddObject(fSelection);
+        //    fkAttached = kTRUE;
+        //}
+        // Here, we need to get the object directly from the event.
+        // The object is deleted on change of input file by the event
+        // reset procedure, so in case the object has disappeared, we
+        // need to re-add it.  This is particulary needed on Proof(Lite)
+        AliVEvent*        input = InputEvent();
+        TObject*          outO  = input->FindListObject("MultSelection");
+        AliMultSelection* outS  = 0;
+        if (!outO) {
+            outS = new AliMultSelection(*lSelection);
+            outS->SetName("MultSelection");
+            input->AddObject(outS);
+        }
+        else {
+            outS = static_cast<AliMultSelection*>(outO);
+            outS->Set(lSelection);
         }
     }
-    
+    if(lVerbose) Printf( "--- INTERMEDIATE --- ");
+    if(lVerbose) fInput -> Print("V") ;
     //Event-level fill
     if ( fkCalibration ) {
         //Pre-filter on triggered (kMB) events for saving info
         if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
+            if(lVerbose) Printf( "--- FILLTREE --- ");
+            if(lVerbose) fInput -> Print("V") ;
             fTreeEvent->Fill() ;
         }
     }
     
     // Post output data.
     PostData(1, fListHist);
-    PostData(2, fTreeEvent);
+    if ( fkCalibration ) PostData(2, fTreeEvent);
 }
 
 //________________________________________________________________________
@@ -929,31 +954,54 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         return 0;
     else
         fCurrentRun = esd->GetRunNumber();
+    AliInfoF("Detected run number: %i",fCurrentRun);
+    TString lPeriodName = GetPeriodNameByRunNumber();
     
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), GetPeriodName().Data() ));
-    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),GetPeriodName().Data()));
+    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
+    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
     
     AliOADBContainer *con = new AliOADBContainer("OADB");
     Int_t lFoundFile = con->InitFromFile(fileName,"MultSel");
     
     //FIXME: Here one should open an empty file instead...
     TString fileNameDef =(Form("%s/COMMON/MULTIPLICITY/data/OADB-LHC15f.root", AliAnalysisManager::GetOADBPath() ));
-    if ( lFoundFile == 1 ) con->InitFromFile(fileNameDef,"MultSel");
-    
-    //Get Object for this run!
-    oadbMultSelection = (AliOADBMultSelection* )con->GetObject(fCurrentRun, "Default");
-    
-    if (!oadbMultSelection) {
-        AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
-        oadbMultSelection  = (AliOADBMultSelection*)(con->GetDefaultObject("oadbDefault"));
+    if ( lFoundFile == 1 ) {
+        lFoundFile = con->InitFromFile(fileNameDef,"MultSel");
+        if (lFoundFile == 1)
+            AliFatal("Check AliPhysics Installation: nothing found in LHC15f calibration!");
     }
     
-    //Ensure Selection is possible using simple IsEventSelected rationale
-    fMultCuts  = oadbMultSelection->GetEventCuts();
-    fSelection = new AliMultSelection( oadbMultSelection->GetMultSelection() ); //allocate new
-
+    //Get Object for this run!
+    TObject *lObjAcquired = 0x0;
+    
+    lObjAcquired = con->GetObject(fCurrentRun, "Default");
+    
+    if (!lObjAcquired) {
+        AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+        lObjAcquired  = con->GetDefaultObject("oadbDefault");
+    }
+    if (!lObjAcquired) {
+        // This should not happen...
+        AliFatal("Really cannot find any OADB object - giving up!");
+    }
+    
+    AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
+    
+    fOadbMultSelection = new AliOADBMultSelection(*lObjTypecast);
+    // De-couple histograms from the underlying file
+    fOadbMultSelection->Dissociate();
+    // Update cache map from estimator to histogram for fast look-up
+    fOadbMultSelection->Setup(fCurrentRun);
+    
     //Make sure naming convention is followed!
-    fSelection->SetName("MultSelection");
+    AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
+    if (sel) {
+        sel->SetName("MultSelection");
+        //Optimize evaluation
+        sel->Setup(fInput);
+    }
+    AliInfo("Successfully set up! Inspect MultSelection:");
+    if (sel){ sel->PrintInfo(); } else { AliWarning("Weird. No AliMultSelection found..."); }
     return 0;
 }
 
@@ -1126,9 +1174,8 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
     Bool_t lReturnValue = !(fUtils->IsSPDClusterVsTrackletBG ( event ) );
     return lReturnValue;
 }
-
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodName()
+TString AliMultSelectionTask::GetPeriodName() const
 {
     //============================================================
     //This function is meant to get the period name.
@@ -1148,6 +1195,18 @@ TString AliMultSelectionTask::GetPeriodName()
     AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!handler) return lProductionName; //failed!
     TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData){
+        Printf("Unable to find alirootVersion! Inspect list:");
+        handler->GetUserInfo()->ls(); 
+        lProductionName = "LHC15f";
+        
+        //exception (FIXME! temporary testing!)
+        if( fCurrentRun <= 139517 && fCurrentRun >= 136851){
+            Printf("Oh, this is Run 1 Pb-Pb! okay...");
+            lProductionName = "LHC10h";
+        }
+        return lProductionName;
+    }
     TString lAlirootVersion(prodInfoData->GetTitle());
     
     //==================================
@@ -1173,6 +1232,31 @@ TString AliMultSelectionTask::GetPeriodName()
     //Memory cleanup
     delete lArrStr;
     //Return production name
+    return lProductionName;
+}
+//______________________________________________________________________
+TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
+{
+    //============================================================
+    // This function is meant to get the period name.
+    // Note: This corresponds to the period to which this data
+    // was anchored, will read from run number!
+    //
+    // N.B. This will require some bookkeeping of all enabled productions
+    //
+    //============================================================
+    
+    //default, to be replaced with "Empty" shortly
+    TString lProductionName = "LHC15f";
+    
+    //Registered Productions : Run 1
+    if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lProductionName = "LHC10h";
+    
+    //Registered Productions : Run 2
+    if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lProductionName = "LHC15f";
+    if ( fCurrentRun >= 235196 && fCurrentRun <= 236866 ) lProductionName = "LHC15i";
+    if ( fCurrentRun >= 237003 && fCurrentRun <= 238622 ) lProductionName = "LHC15j";
+    
     return lProductionName;
 }
 

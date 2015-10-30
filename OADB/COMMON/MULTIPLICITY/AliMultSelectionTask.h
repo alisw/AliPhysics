@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name);
+    AliMultSelectionTask(const char *name, Bool_t lCalib = kFALSE);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
@@ -71,16 +71,18 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    static TString GetPeriodName(); //no input required, will have all info in globals...
+    TString GetPeriodName()             const; //no input required, will have all info in globals...
+    TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
-    Bool_t IsNotPileupMV (AliVEvent *event);
+    Bool_t IsNotPileupMV           (AliVEvent *event);
     Bool_t PassesTrackletVsCluster (AliVEvent *event);
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
 
-    void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
+    //removed to avoid accidental usage!
+    //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
     void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
@@ -198,9 +200,7 @@ private:
     TH1D *fHistEventCounter; //!
     
     //AliMultSelection Framework
-    AliOADBMultSelection *oadbMultSelection;
-    AliMultSelectionCuts *fMultCuts;
-    AliMultSelection     *fSelection;
+    AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;
 
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented

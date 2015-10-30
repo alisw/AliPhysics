@@ -9,35 +9,163 @@
 #include "TFolder.h"
 #include "TObjString.h"
 #include "TBrowser.h"
-
+#include <TMap.h>
+#include <TROOT.h>
 
 ClassImp(AliOADBMultSelection);
+
+//________________________________________________________________
+//Constructors/Destructor
 AliOADBMultSelection::AliOADBMultSelection() :
-TNamed("multSel",""), fEventCuts(0), fSelection(0), fCalibList(0)
+TNamed("multSel",""), fCalibList(0), fEventCuts(0), fSelection(0), fMap(0)
 {
     // constructor
-    fCalibList = new TList();
-    fCalibList -> SetOwner (kTRUE) ;
+    // fCalibList = new TList();
+    // fCalibList -> SetOwner (kTRUE) ;
 }
-
+//________________________________________________________________
+AliOADBMultSelection::AliOADBMultSelection(const AliOADBMultSelection& o)
+: TNamed(o),
+fCalibList(0),
+fEventCuts(0),
+fSelection(0),
+fMap(0)
+{
+    fCalibList = new TList();
+    fCalibList->SetOwner (kTRUE);
+    TIter next(o.fCalibList);
+    TObject* obj = 0;
+    while ((obj = next())) fCalibList->Add(obj->Clone());
+    fSelection = new AliMultSelection(*o.fSelection);
+    fEventCuts = new AliMultSelectionCuts(*o.fEventCuts);
+}
+//________________________________________________________________
 AliOADBMultSelection::AliOADBMultSelection(const char * name, const char * title) :
-TNamed(name, title), fEventCuts(0), fSelection(0), fCalibList(0)
+TNamed(name, title), fCalibList(0), fEventCuts(0), fSelection(0), fMap(0)
 {
     // constructor
     fCalibList = new TList();
     fCalibList -> SetOwner (kTRUE) ;
 }
-
+//________________________________________________________________
+AliOADBMultSelection& AliOADBMultSelection::operator=(const AliOADBMultSelection& o)
+{
+    if (&o == this) return *this;
+    SetName(o.GetName());
+    SetTitle(o.GetTitle());
+    if (fCalibList) {
+        fCalibList->Delete();
+        fCalibList = 0;
+    }
+    if (fMap) {
+        delete fMap;
+        fMap = 0;
+    }
+    fCalibList = new TList();
+    fCalibList->SetOwner (kTRUE);
+    TIter next(o.fCalibList);
+    TObject* obj = 0;
+    while ((obj = next())) fCalibList->Add(obj->Clone());
+    SetMultSelection(new AliMultSelection(*o.fSelection));
+    SetEventCuts(new AliMultSelectionCuts(*o.fEventCuts));
+    return *this;
+}
+//________________________________________________________________
 AliOADBMultSelection::~AliOADBMultSelection(){
     // Destructor
     if(fEventCuts)     delete fEventCuts;
     if(fSelection)     delete fSelection;
     
-    if( fCalibList) {
-        fCalibList -> Delete();
-    }
+    //if( fCalibList) {
+    //    fCalibList -> Delete();
+    //}
 }
 
+//________________________________________________________________
+void AliOADBMultSelection::Dissociate()
+{
+    TIter next(fCalibList);
+    TH1*  hist = 0;
+    while ((hist = static_cast<TH1*>(next()))) hist->SetDirectory(0);
+}
+//________________________________________________________________
+void AliOADBMultSelection::AddCalibHisto (TH1F * var) {
+    if (!var) return;
+    if (!fCalibList) {
+        //create if needed...
+        fCalibList = new TList;
+        fCalibList->SetOwner();
+    }
+    fCalibList->Add(var);
+}
+//________________________________________________________________
+void AliOADBMultSelection::SetEventCuts(AliMultSelectionCuts* c)
+{
+    if (fEventCuts) delete fEventCuts;
+    fEventCuts = c;
+}
+//________________________________________________________________
+void AliOADBMultSelection::SetMultSelection(AliMultSelection* s)
+{
+    if (fSelection) delete fSelection;
+    fSelection = s;
+}
+//________________________________________________________________
+TH1F* AliOADBMultSelection::GetCalibHisto(Long_t iEst) const
+{
+    if (!fCalibList) return 0;
+    if (iEst < 0 || iEst >= fCalibList->GetEntries()) return 0;
+    return (TH1F*) fCalibList->At(iEst);
+}
+//________________________________________________________________
+TH1F* AliOADBMultSelection::GetCalibHisto(const TString& lCalibHistoName) const
+{
+    if (!fCalibList) return 0;
+    return ((TH1F*)fCalibList->FindObject(lCalibHistoName));
+}
+//________________________________________________________________
+void AliOADBMultSelection::Print(Option_t* option) const
+{
+    Printf("%s: %s/%s", ClassName(), GetName(), GetTitle());
+    gROOT->IncreaseDirLevel();
+    if (fSelection) {
+        gROOT->IndentLevel();
+        fSelection->Print(option);
+    }
+    if (fEventCuts) {
+        gROOT->IndentLevel();
+        fEventCuts->Print(option);
+    }
+    if (fMap) {
+        gROOT->IndentLevel();
+        Printf("Mapping from estimator to histogram");
+        gROOT->IncreaseDirLevel();
+        TIter  next(fMap);
+        TObject* key = 0;
+        while ((key = static_cast<TPair*>(next()))) {
+            TObject* value = fMap->GetValue(key);
+            TString  k(key->GetName());
+            TString  h(value ? value->GetName() : "?");
+            gROOT->IndentLevel();
+            Printf(" Estimator %s -> %s", k.Data(), h.Data());
+        }
+        gROOT->DecreaseDirLevel();
+    }
+    else if (fCalibList) {
+        gROOT->IndentLevel();
+        Printf("Calibration histograms");
+        gROOT->IncreaseDirLevel();
+        TIter next(fCalibList);
+        TObject* o = 0;
+        while ((o = next())) {
+            gROOT->IndentLevel();
+            o->Print(option);
+        }
+        gROOT->DecreaseDirLevel();  
+    }
+    
+}
+//________________________________________________________________
 void AliOADBMultSelection::Browse(TBrowser *b)
 {
     // Browse this object.
@@ -76,3 +204,37 @@ void AliOADBMultSelection::Browse(TBrowser *b)
     else
         TObject::Browse(b);
 }
+//________________________________________________________________
+TH1F* AliOADBMultSelection::FindHisto(AliMultEstimator* e)
+{
+    if (!fMap) return 0;
+    TPair* ret = static_cast<TPair*>(fMap->FindObject(e));
+    if (!ret) return 0;
+    return static_cast<TH1F*>(ret->Value());
+}
+//________________________________________________________________
+void AliOADBMultSelection::Setup(Long_t runNo)
+{
+    if (fMap) {
+        delete fMap;
+        fMap = 0;
+    }
+    AliMultSelection* sel = GetMultSelection();
+    if (!sel) return;
+    
+    fMap = new TMap;
+    fMap->SetOwner(false);
+    
+    for(Long_t iEst=0; iEst<sel->GetNEstimators(); iEst++) {
+        AliMultEstimator* e = sel->GetEstimator(iEst);
+        if (!e) continue;
+        
+        TString name(Form("hCalib_%ld_%s", runNo, e->GetName()));
+        TH1F*   h = GetCalibHisto(name);
+        if (!h) continue;
+        
+        fMap->Add(e, h);
+    }
+}
+
+

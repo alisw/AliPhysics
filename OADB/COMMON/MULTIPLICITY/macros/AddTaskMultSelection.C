@@ -1,4 +1,4 @@
-AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kTRUE, const TString lMasterJobSessionFlag = "")
+AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a Multiplicity Selection Task
     // Get the pointer to the existing analysis manager via the static access method.
@@ -18,7 +18,7 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kTRUE, const T
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliMultSelectionTask *taskMultSelection = new AliMultSelectionTask("taskMultSelection");
+    AliMultSelectionTask *taskMultSelection = new AliMultSelectionTask("taskMultSelection", lCalibration);
     mgr->AddTask(taskMultSelection);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     
@@ -37,10 +37,9 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kTRUE, const T
                                                                      TTree::Class(),
                                                                      AliAnalysisManager::kOutputContainer,
                                                                      outputFileName );
+        //This one you should merge in file-resident ways...
+        coutputTree->SetSpecialOutput();
     }
-    
-    //This one you should merge in file-resident ways...
-    coutputTree->SetSpecialOutput();
     
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskMultSelection, 0, mgr->GetCommonInputContainer());

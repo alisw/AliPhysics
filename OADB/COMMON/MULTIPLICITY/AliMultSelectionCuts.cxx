@@ -22,8 +22,9 @@
 
 ClassImp(AliMultSelectionCuts);
 
+//________________________________________________________________
 AliMultSelectionCuts::AliMultSelectionCuts() :
-  TNamed(), fESD(0), fVzCut(10), fErrorCode(0),
+  TNamed(), fESD(0), fVzCut(10), fErrorCode(299),
     fEvSel_Trig_kMB (kTRUE),
     fEvSel_INELgtZERO (kTRUE),
     fEvSel_TrackletsVsClusters (kTRUE),
@@ -33,8 +34,9 @@ AliMultSelectionCuts::AliMultSelectionCuts() :
   // Constructor
   
 }
+//________________________________________________________________
 AliMultSelectionCuts::AliMultSelectionCuts(const char * name, const char * title):
-  TNamed(name,title), fESD(0), fVzCut(10), fErrorCode(0),
+  TNamed(name,title), fESD(0), fVzCut(10), fErrorCode(299),
     fEvSel_Trig_kMB (kTRUE),
     fEvSel_INELgtZERO (kTRUE),
     fEvSel_TrackletsVsClusters (kTRUE),
@@ -44,20 +46,26 @@ AliMultSelectionCuts::AliMultSelectionCuts(const char * name, const char * title
   // Constructor
   
 }
+//________________________________________________________________
+AliMultSelectionCuts& AliMultSelectionCuts::operator=(const AliMultSelectionCuts& o)
+{
+    if (&o == this) return *this;
+    SetName(o.GetName());
+    SetTitle(o.GetTitle());
+    fESD = 0;
+    fVzCut = o.fVzCut;
+    fErrorCode = o.fErrorCode;
+    fEvSel_Trig_kMB = o.fEvSel_Trig_kMB;
+    fEvSel_INELgtZERO = o.fEvSel_INELgtZERO;
+    fEvSel_TrackletsVsClusters = o.fEvSel_TrackletsVsClusters;
+    fEvSel_RejectPileupInMultBins = o.fEvSel_RejectPileupInMultBins;
+    fEvSel_CheckConsistencySPDandTrackVertices = o.fEvSel_CheckConsistencySPDandTrackVertices;
+    return *this;
+}
+//________________________________________________________________
 AliMultSelectionCuts::~AliMultSelectionCuts(){
   // destructor
   
-}
-Bool_t AliMultSelectionCuts::IsEventSelected(AliESDEvent * esd) {
-//Possibly deprecated -> break down done inside AliMultSelectionTask 
-  fESD = esd;
-  Bool_t returnValue = kTRUE;
-    if(!IsMinBias())       returnValue = kFALSE;
-    if(!IsVzCutSelected()) returnValue = kFALSE;
-    if(!IsINELgtZERO())    returnValue = kFALSE;
-    if(!HasNoInconsistentSPDandTrackVertices(esd)) returnValue = kFALSE;
-    if( fESD -> IsPileupFromSPDInMultBins() ) returnValue = kFALSE; 
-    return returnValue;
 }
 
 void AliMultSelectionCuts::Print(Option_t *option) const {
@@ -69,7 +77,21 @@ void AliMultSelectionCuts::Print(Option_t *option) const {
   Printf(" Reject Pileup SPD (mult bins).....: [%i]", fEvSel_RejectPileupInMultBins);
   Printf(" SPD and Track vertex consistency..: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
 }
-
+//________________________________________________________________
+/* Deprecated
+ 
+ Bool_t AliMultSelectionCuts::IsEventSelected(AliESDEvent * esd) {
+ //Possibly deprecated -> break down done inside AliMultSelectionTask
+ fESD = esd;
+ Bool_t returnValue = kTRUE;
+ if(!IsMinBias())       returnValue = kFALSE;
+ if(!IsVzCutSelected()) returnValue = kFALSE;
+ if(!IsINELgtZERO())    returnValue = kFALSE;
+ if(!HasNoInconsistentSPDandTrackVertices(esd)) returnValue = kFALSE;
+ if( fESD -> IsPileupFromSPDInMultBins() ) returnValue = kFALSE;
+ return returnValue;
+ }
+ 
 Bool_t AliMultSelectionCuts::IsMinBias(){
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
@@ -112,4 +134,4 @@ Bool_t AliMultSelectionCuts::HasNoInconsistentSPDandTrackVertices(AliESDEvent * 
         if (displacement > maxDisplacement) returnValue = kFALSE;
     }
     return returnValue;
-}
+} */
