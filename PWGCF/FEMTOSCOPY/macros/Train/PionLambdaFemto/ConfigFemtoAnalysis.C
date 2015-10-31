@@ -55,6 +55,16 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   const double PionMass = 0.13956995,
              LambdaMass = 1.115683;
 
+
+  // Get the default configurations
+  AFAPL::AnalysisParams analysis_config = AFAPL::DefaultConfig();
+  AFAPL::CutParams cut_config = AFAPL::DefaultCutConfig();
+  MacroParams macro_config;
+
+  // Read parameter string and update configurations
+  BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
+
+  // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
@@ -64,15 +74,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   rdr->SetCentralityFlattening(kFALSE);
   rdr->SetReadV0(1);
   rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+  rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
-
-  // Get the default configurations
-  AFAPL::AnalysisParams analysis_config = AFAPL::DefaultConfig();
-  AFAPL::CutParams cut_config = AFAPL::DefaultCutConfig();
-  MacroParams macro_config;
-
-  // Read string and update configurations
-  BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
 
 //   if (macro_config.analysis_configurations.empty()) {
 //     // insert pi+ lambda code
@@ -140,8 +143,16 @@ ConfigFemtoAnalysis(const TString& param_str = "")
 
     AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avgsep_cf", 240, 0.0, 40.0);
     avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
-
     analysis->AddCorrFctn(avgsep_cf);
+
+    if (analysis_config.is_mc_analysis) {
+
+      AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avgsep_cf", 240, 0.0, 40.0);
+      avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
+
+      analysis->AddCorrFctn(avgsep_cf);
+
+    }
 
     manager->AddAnalysis(analysis);
 

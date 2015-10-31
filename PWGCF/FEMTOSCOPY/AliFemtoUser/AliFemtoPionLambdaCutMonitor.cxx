@@ -23,6 +23,7 @@ static const double PionMass = 0.13956995;
 #endif
 
 AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing,
+                                           const bool is_mc_analysis,
                                            const bool suffix_output):
   AliFemtoCutMonitor()
   , _centrality(NULL)
@@ -149,8 +150,8 @@ AliFemtoPionLambdaCutMonitor::Event::Fill(const AliFemtoParticleCollection *coll
 
 AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
                                          const TString& typestr,
-                                         const bool suffix_output,
-                                         const bool is_mc_analysis):
+                                         const bool is_mc_analysis,
+                                         const bool suffix_output):
   AliFemtoCutMonitor()
   , fYPt(NULL)
   , fPtPhi(NULL)
@@ -393,16 +394,17 @@ AliFemtoPionLambdaCutMonitor::Lambda::GetOutputList()
 }
 
 
-
-
 AliFemtoPionLambdaCutMonitor::Pair::Pair(const bool passing,
                                          const TString& typestr,
-                                         const bool suffix_output,
-                                         const bool is_mc_analysis):
+                                         const bool is_mc_analysis,
+                                         const bool suffix_output
+                                         ):
   AliFemtoCutMonitor()
   , _minv(NULL)
   , fAvgSep_pion(NULL)
   , fAvgSep_proton(NULL)
+  , fMCTrue_minv(NULL)
+  , fMCTrue_kstar(NULL)
 {
   const TString title_format = TString::Format("%s %%s %s; %%s",
                                                typestr.Data(),
@@ -425,14 +427,78 @@ AliFemtoPionLambdaCutMonitor::Pair::Pair(const bool passing,
     TString::Format(title_format,
       "AvgSep Proton Daughter", "Average Separation (cm)"),
     144, 0.0, 20.0);
+
+  cout << "[PAIR] MONTE CARLO : " << is_mc_analysis << "\n";
+
+  if (is_mc_analysis) {
+    fMCTrue_minv = new TH2F(
+      "mc_Minv" + pf,
+      TString::Format(title_format,
+        "Minv True vs Reconstructed",
+        "M_{inv}^{r} (GeV);"
+        "M_{inv}^{t} (Gev);"),
+      144, 1.0, 6.0,
+      144, 1.0, 6.0);
+
+    fMCTrue_kstar = new TH2F(
+      "mc_Kstar" + pf,
+      TString::Format(title_format,
+        "K* True vs Reconstructed",
+        "K*^{r} (GeV);"
+        "K*^{t} (Gev);"),
+      144, 0.0, 4.0,
+      144, 0.0, 4.0);
+  }
 }
 
 void
 AliFemtoPionLambdaCutMonitor::Pair::Fill(const AliFemtoPair *pair)
 {
-  _minv->Fill(pair->MInv());
-}
+  const float minv = pair->MInv(),
+             kstar = pair->KStar();
 
+  _minv->Fill(minv);
+
+  if (fMCTrue_minv) {
+    const AliFemtoModelHiddenInfo *mc_1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
+                                  *mc_2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
+    if (mc_1 && mc_2) {
+
+      const AliFemtoV0 *lambda = pair->Track1()->V0();
+      const AliFemtoTrack *pion = pair->Track2()->Track();
+
+      // get true momentums
+      const AliFemtoThreeVector& momentum_1 = *mc_1->GetTrueMomentum(),
+                                 momentum_2 = *mc_2->GetTrueMomentum();
+
+      // get true mass and calculate true energy
+      const float m1 = mc_1->GetMass(),
+                  e1 = TMath::Sqrt(m1 * m1 + momentum_1.Mag2()),
+
+                  m2 = mc_2->GetMass(),
+                  e2 = TMath::Sqrt(m2 * m2 + momentum_2.Mag2());
+
+      // build momentum four-vectors
+      const AliFemtoLorentzVector p1(e1, momentum_1),
+                                  p2(e2, momentum_2),
+                                  p_sum = p1 + p2,
+                                  p_diff = p1 - p2;
+
+      // Minv is just the magnitude of the momentum sum
+      fMCTrue_minv->Fill(minv, p_sum.m());
+
+      const float tQ = pow(m1 * m1 - m2 * m2, 2) / p_sum.m2(),
+                  q2 = tQ - p_diff.m2(),
+
+                  mc_kstar = TMath::Sqrt(q2 >= 0 ? q2 : 0.0) / 2.0;
+
+      // kstar calculation
+      fMCTrue_kstar->Fill(kstar, mc_kstar);
+
+    }
+  }
+
+}
 
 
 TList*
@@ -442,6 +508,14 @@ AliFemtoPionLambdaCutMonitor::Pair::GetOutputList()
   TCollection *output = olist;
 
   output->Add(_minv);
+
+  if (fMCTrue_kstar) {
+    output->Add(fMCTrue_kstar);
+  }
+
+  if (fMCTrue_minv) {
+    output->Add(fMCTrue_minv);
+  }
 
   return olist;
 };

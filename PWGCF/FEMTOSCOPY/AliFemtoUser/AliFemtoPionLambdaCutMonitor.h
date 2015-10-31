@@ -42,7 +42,9 @@ public:
      * \param suffix_output: If true, this will put a _P or _F at the end of all
      *   the histogram names - required if not grouping output lists.
      */
-    Event(const bool passing, const bool suffix_output=kFALSE);
+    Event(const bool passing,
+          const bool is_mc_analysis=kFALSE,
+          const bool suffix_output=kFALSE);
 
     /**
      * Return list of Histograms to be placed in output file.
@@ -84,8 +86,8 @@ public:
   public:
     Pion(const bool passing,
          const TString& typestr,
-         const bool suffix_output=kFALSE,
-         const bool is_mc_analysis=kFALSE);
+         const bool is_mc_analysis=kFALSE,
+         const bool suffix_output=kFALSE);
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 
@@ -113,8 +115,8 @@ public:
     Lambda(const bool passing,
            const TString& typestr,
            const AliFemtoAnalysisPionLambda::LambdaType,
-           const bool suffix_output=kFALSE,
-           const bool is_mc_analysis=kFALSE);
+           const bool is_mc_analysis=kFALSE,
+           const bool suffix_output=kFALSE);
 
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoV0* aEvent);
@@ -137,8 +139,8 @@ public:
   public:
     Pair(const bool passing,
          const TString& typestr,
-         const bool suffix_output=kFALSE,
-         const bool is_mc_analysis=kFALSE);
+         const bool is_mc_analysis=kFALSE,
+         const bool suffix_output=kFALSE);
 
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoPair* aEvent);
@@ -147,6 +149,11 @@ public:
     TH1F *_minv;
     TH1F *fAvgSep_pion;
     TH1F *fAvgSep_proton;
+
+
+    TH2F *fMCTrue_minv;
+    TH2F *fMCTrue_kstar;
+
   };
 
 /*
