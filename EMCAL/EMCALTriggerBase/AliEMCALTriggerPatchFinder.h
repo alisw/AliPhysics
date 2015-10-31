@@ -11,10 +11,10 @@
 #include <TObject.h>
 #include <vector>
 
-#include "AliEmcalTriggerRawPatch.h"
+#include "AliEMCALTriggerRawPatch.h"
 
-template<typename T> class AliEmcalTriggerDataGrid;
-template<typename T> class AliEmcalTriggerAlgorithm;
+template<typename T> class AliEMCALTriggerDataGrid;
+template<typename T> class AliEMCALTriggerAlgorithm;
 
 /**
  * @class AliEmcalTriggerPatchFinder
@@ -26,22 +26,22 @@ template<typename T> class AliEmcalTriggerAlgorithm;
  * Patches are found via the function FindPatches.
  */
 template<typename T>
-class AliEmcalTriggerPatchFinder : public TObject {
+class AliEMCALTriggerPatchFinder : public TObject {
 public:
   /**
    * Constructor
    */
-  AliEmcalTriggerPatchFinder();
+  AliEMCALTriggerPatchFinder();
   /**
    * Destructor
    */
-  virtual ~AliEmcalTriggerPatchFinder();
+  virtual ~AliEMCALTriggerPatchFinder();
 
   /**
    * Add trigger algorithm to the trigger patch finder
    * @param trigger Trigger algorithm assigned to the patch finder
    */
-  void AddTriggerAlgorithm(AliEmcalTriggerAlgorithm<T> *trigger) { fTriggerAlgorithms.push_back(trigger); }
+  void AddTriggerAlgorithm(AliEMCALTriggerAlgorithm<T> *trigger) { fTriggerAlgorithms.push_back(trigger); }
 
   /**
    * Find trigger patches usin the grid of adc values. All trigger patch finders are called one after each other.
@@ -49,13 +49,13 @@ public:
    * @param adc Data grid with ADC values
    * @return List of trigger patches found by all trigger algorithms assigned to this trigger patch finder.
    */
-  std::vector<AliEmcalTriggerRawPatch> FindPatches(const AliEmcalTriggerDataGrid<T> &adc) const;
+  std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const;
 
 protected:
-  std::vector<AliEmcalTriggerAlgorithm<T> *>                 fTriggerAlgorithms;      ///< Trigger algoritms to be used
+  std::vector<AliEMCALTriggerAlgorithm<T> *>                 fTriggerAlgorithms;      ///< Trigger algoritms to be used
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerPatchFinder, 1);
+  ClassDef(AliEMCALTriggerPatchFinder, 1);
   /// \endcond
 };
 

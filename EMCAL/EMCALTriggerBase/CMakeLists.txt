@@ -25,11 +25,11 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources - alphabetical order
 set(SRCS
-  AliEmcalTriggerDataGrid.cxx
-  AliEmcalTriggerChannelContainer.cxx
-  AliEmcalTriggerRawPatch.cxx
-  AliEmcalTriggerPatchFinder.cxx
-  AliEmcalTriggerAlgorithm.cxx
+  AliEMCALTriggerDataGrid.cxx
+  AliEMCALTriggerChannelContainer.cxx
+  AliEMCALTriggerRawPatch.cxx
+  AliEMCALTriggerPatchFinder.cxx
+  AliEMCALTriggerAlgorithm.cxx
   )
 
 # Headers from sources

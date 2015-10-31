@@ -11,21 +11,21 @@
 #include <TObject.h>
 #include <vector>
 
-#include "AliEmcalTriggerRawPatch.h"
+#include "AliEMCALTriggerRawPatch.h"
 
 
-template<typename T> class AliEmcalTriggerDataGrid;
+template<typename T> class AliEMCALTriggerDataGrid;
 
 /**
  * @class AliEmcalTriggerAlgorithm
  * @brief Base class for EMCAL Level1 trigger algorithms
  */
 template<typename T>
-class AliEmcalTriggerAlgorithm : public TObject {
+class AliEMCALTriggerAlgorithm : public TObject {
 public:
-  AliEmcalTriggerAlgorithm();
-  AliEmcalTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
-  virtual ~AliEmcalTriggerAlgorithm();
+  AliEMCALTriggerAlgorithm();
+  AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
+  virtual ~AliEMCALTriggerAlgorithm();
 
   void SetRowMin(Int_t rowmin);
   void SetRowMax(Int_t rowmax);
@@ -33,7 +33,7 @@ public:
   void SetBitMask(ULong_t bitmask);
   void SetPatchSize(Int_t patchsize);
 
-  virtual std::vector<AliEmcalTriggerRawPatch> FindPatches(const AliEmcalTriggerDataGrid<T> &adc) const;
+  virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const;
 
 protected:
   int                               fRowMin;
@@ -43,7 +43,7 @@ protected:
   double                            fThreshold;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerAlgorithm, 1);
+  ClassDef(AliEMCALTriggerAlgorithm, 1);
   /// \endcond
 };
 
@@ -54,38 +54,38 @@ protected:
  * A jet
  */
 template<typename T>
-class AliEmcalJetTriggerAlgorithm : public AliEmcalTriggerAlgorithm<T> {
+class AliEMCALJetTriggerAlgorithm : public AliEMCALTriggerAlgorithm<T> {
 public:
   /**
    * Constructor
    */
-  AliEmcalJetTriggerAlgorithm();
+  AliEMCALJetTriggerAlgorithm();
   /**
    * Constructor, setting also range limits and bit mask
    * @param rowmin Min. row used for patch finding
    * @param rowmax Max. row used for patch finding
    * @param bitmask Bitmask stored in the raw patches
    */
-  AliEmcalJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
+  AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
   /**
    * Destructor
    */
-  virtual ~AliEmcalJetTriggerAlgorithm();
+  virtual ~AliEMCALJetTriggerAlgorithm();
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTriggerAlgorithm, 1);
+  ClassDef(AliEMCALJetTriggerAlgorithm, 1);
   /// \endcond
 };
 
 template<typename T>
-class AliEmcalGammaTriggerAlgorithm : public AliEmcalTriggerAlgorithm<T> {
+class AliEMCALGammaTriggerAlgorithm : public AliEMCALTriggerAlgorithm<T> {
 public:
-  AliEmcalGammaTriggerAlgorithm();
-  AliEmcalGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
-  virtual ~AliEmcalGammaTriggerAlgorithm();
+  AliEMCALGammaTriggerAlgorithm();
+  AliEMCALGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
+  virtual ~AliEMCALGammaTriggerAlgorithm();
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalGammaTriggerAlgorithm, 1);
+  ClassDef(AliEMCALGammaTriggerAlgorithm, 1);
   /// \endcond
 };
 

@@ -17,20 +17,20 @@
  * @date Oct. 23, 2015
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  */
-#include "AliEmcalTriggerAlgorithm.h"
-#include "AliEmcalTriggerDataGrid.h"
+#include "AliEMCALTriggerAlgorithm.h"
+#include "AliEMCALTriggerDataGrid.h"
 
 #include <algorithm>
 
 
 /// \cond CLASSIMP
-templateClassImp(AliEmcalTriggerAlgorithm)
-templateClassImp(AliEmcalJetTriggerAlgorithm)
-templateClassImp(AliEmcalGammaTriggerAlgorithm)
+templateClassImp(AliEMCALTriggerAlgorithm)
+templateClassImp(AliEMCALJetTriggerAlgorithm)
+templateClassImp(AliEMCALGammaTriggerAlgorithm)
 /// \endcond
 
 template<typename T>
-AliEmcalTriggerAlgorithm<T>::AliEmcalTriggerAlgorithm():
+AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm():
 TObject(),
 fRowMin(0),
 fRowMax(0),
@@ -41,7 +41,7 @@ fThreshold(0)
 }
 
 template<typename T>
-AliEmcalTriggerAlgorithm<T>::AliEmcalTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
 TObject(),
 fRowMin(rowmin),
 fRowMax(rowmax),
@@ -52,12 +52,12 @@ fThreshold(0)
 }
 
 template<typename T>
-AliEmcalTriggerAlgorithm<T>::~AliEmcalTriggerAlgorithm() {
+AliEMCALTriggerAlgorithm<T>::~AliEMCALTriggerAlgorithm() {
 }
 
 template<typename T>
-std::vector<AliEmcalTriggerRawPatch> AliEmcalTriggerAlgorithm<T>::FindPatches(const AliEmcalTriggerDataGrid<T> &adc) const {
-  std::vector<AliEmcalTriggerRawPatch> result;
+std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const {
+  std::vector<AliEMCALTriggerRawPatch> result;
   T sumadc(0);
   for(int irow = fRowMin; irow < fRowMax - fPatchSize; irow += fPatchSize){
     for(int icol = 0; icol < adc.GetNumberOfCols() - fPatchSize; icol += fPatchSize){
@@ -66,13 +66,13 @@ std::vector<AliEmcalTriggerRawPatch> AliEmcalTriggerAlgorithm<T>::FindPatches(co
         for(int jcol = icol; jcol < icol + fPatchSize; jcol++){
           try{
             sumadc += adc(jcol, jrow);
-          } catch (typename AliEmcalTriggerDataGrid<T>::OutOfBoundsException &e){
+          } catch (typename AliEMCALTriggerDataGrid<T>::OutOfBoundsException &e){
 
           }
         }
       }
       if(sumadc > fThreshold){
-        AliEmcalTriggerRawPatch recpatch(icol, irow, fPatchSize, sumadc);
+        AliEMCALTriggerRawPatch recpatch(icol, irow, fPatchSize, sumadc);
         recpatch.SetBitmask(fBitMask);
         result.push_back(recpatch);
       }
@@ -83,47 +83,47 @@ std::vector<AliEmcalTriggerRawPatch> AliEmcalTriggerAlgorithm<T>::FindPatches(co
 }
 
 template<typename T>
-AliEmcalJetTriggerAlgorithm<T>::AliEmcalJetTriggerAlgorithm():
-AliEmcalTriggerAlgorithm<T>()
+AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm():
+AliEMCALTriggerAlgorithm<T>()
 {
   this->SetPatchSize(16);
 }
 
 template<typename T>
-AliEmcalJetTriggerAlgorithm<T>::AliEmcalJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
-AliEmcalTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
+AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(16);
 }
 
 template<typename T>
-AliEmcalJetTriggerAlgorithm<T>::~AliEmcalJetTriggerAlgorithm(){
+AliEMCALJetTriggerAlgorithm<T>::~AliEMCALJetTriggerAlgorithm(){
 }
 
 template<typename T>
-AliEmcalGammaTriggerAlgorithm<T>::AliEmcalGammaTriggerAlgorithm():
-AliEmcalTriggerAlgorithm<T>()
+AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm():
+AliEMCALTriggerAlgorithm<T>()
 {
   this->SetPatchSize(2);
 }
 
 template<typename T>
-AliEmcalGammaTriggerAlgorithm<T>::AliEmcalGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
-AliEmcalTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
+AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(2);
 }
 
 template<typename T>
-AliEmcalGammaTriggerAlgorithm<T>::~AliEmcalGammaTriggerAlgorithm(){
+AliEMCALGammaTriggerAlgorithm<T>::~AliEMCALGammaTriggerAlgorithm(){
 }
 
-template class AliEmcalTriggerAlgorithm<int>;
-template class AliEmcalTriggerAlgorithm<double>;
-template class AliEmcalTriggerAlgorithm<float>;
-template class AliEmcalJetTriggerAlgorithm<int>;
-template class AliEmcalJetTriggerAlgorithm<double>;
-template class AliEmcalJetTriggerAlgorithm<float>;
-template class AliEmcalGammaTriggerAlgorithm<int>;
-template class AliEmcalGammaTriggerAlgorithm<double>;
-template class AliEmcalGammaTriggerAlgorithm<float>;
+template class AliEMCALTriggerAlgorithm<int>;
+template class AliEMCALTriggerAlgorithm<double>;
+template class AliEMCALTriggerAlgorithm<float>;
+template class AliEMCALJetTriggerAlgorithm<int>;
+template class AliEMCALJetTriggerAlgorithm<double>;
+template class AliEMCALJetTriggerAlgorithm<float>;
+template class AliEMCALGammaTriggerAlgorithm<int>;
+template class AliEMCALGammaTriggerAlgorithm<double>;
+template class AliEMCALGammaTriggerAlgorithm<float>;

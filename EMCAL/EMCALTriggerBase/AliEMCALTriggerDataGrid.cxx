@@ -12,14 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliEmcalTriggerDataGrid.h"
+#include "AliEMCALTriggerDataGrid.h"
 
 /// \cond CLASSIMP
-templateClassImp(AliEmcalTriggerDataGrid)
+templateClassImp(AliEMCALTriggerDataGrid)
 /// \endcond
 
 template<typename T>
-AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid():
+AliEMCALTriggerDataGrid<T>::AliEMCALTriggerDataGrid():
     fNCols(0),
     fNRows(0),
     fValues(NULL)
@@ -27,7 +27,7 @@ AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid():
 }
 
 template<typename T>
-AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid(Int_t ncols, Int_t nrows):
+AliEMCALTriggerDataGrid<T>::AliEMCALTriggerDataGrid(Int_t ncols, Int_t nrows):
     fNCols(ncols),
     fNRows(nrows),
     fValues(NULL)
@@ -37,7 +37,7 @@ AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid(Int_t ncols, Int_t nrows):
 }
 
 template<typename T>
-AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid(const AliEmcalTriggerDataGrid &ref):
+AliEMCALTriggerDataGrid<T>::AliEMCALTriggerDataGrid(const AliEMCALTriggerDataGrid &ref):
     fNCols(ref.fNCols),
     fNRows(ref.fNRows),
     fValues(NULL)
@@ -47,7 +47,7 @@ AliEmcalTriggerDataGrid<T>::AliEmcalTriggerDataGrid(const AliEmcalTriggerDataGri
 }
 
 template<typename T>
-AliEmcalTriggerDataGrid<T> &AliEmcalTriggerDataGrid<T>::operator=(const AliEmcalTriggerDataGrid<T> &ref){
+AliEMCALTriggerDataGrid<T> &AliEMCALTriggerDataGrid<T>::operator=(const AliEMCALTriggerDataGrid<T> &ref){
   TObject::operator =(ref);
   if(this != &ref){
     if(fValues) delete[] fValues;
@@ -60,7 +60,7 @@ AliEmcalTriggerDataGrid<T> &AliEmcalTriggerDataGrid<T>::operator=(const AliEmcal
 }
 
 template<typename T>
-const T &AliEmcalTriggerDataGrid<T>::operator()(Int_t col, Int_t row) const{
+const T &AliEMCALTriggerDataGrid<T>::operator()(Int_t col, Int_t row) const{
   if(!fValues) throw UninitException();
   if(row >= fNRows) throw OutOfBoundsException(OutOfBoundsException::kRowDir, row, fNRows);
   if(col >= fNCols) throw OutOfBoundsException(OutOfBoundsException::kColDir, col, fNCols);
@@ -68,7 +68,7 @@ const T &AliEmcalTriggerDataGrid<T>::operator()(Int_t col, Int_t row) const{
 }
 
 template<typename T>
-T &AliEmcalTriggerDataGrid<T>::operator()(Int_t col, Int_t row) {
+T &AliEMCALTriggerDataGrid<T>::operator()(Int_t col, Int_t row) {
   if(!fValues) throw UninitException();
   if(row >= fNRows) throw OutOfBoundsException(OutOfBoundsException::kRowDir, row, fNRows);
   if(col >= fNCols) throw OutOfBoundsException(OutOfBoundsException::kColDir, col, fNCols);
@@ -76,12 +76,12 @@ T &AliEmcalTriggerDataGrid<T>::operator()(Int_t col, Int_t row) {
 }
 
 template<typename T>
-AliEmcalTriggerDataGrid<T>::~AliEmcalTriggerDataGrid() {
+AliEMCALTriggerDataGrid<T>::~AliEMCALTriggerDataGrid() {
   if(fValues) delete[] fValues;
 }
 
 template<typename T>
-void AliEmcalTriggerDataGrid<T>::Allocate(Int_t ncols, Int_t nrows){
+void AliEMCALTriggerDataGrid<T>::Allocate(Int_t ncols, Int_t nrows){
   if(fValues){
     T *tempstorage = new T[ncols * nrows];
     memset(tempstorage, 0, sizeof(T) * ncols * nrows);
@@ -104,7 +104,7 @@ void AliEmcalTriggerDataGrid<T>::Allocate(Int_t ncols, Int_t nrows){
 }
 
 template<typename T>
-void AliEmcalTriggerDataGrid<T>::SetADC(Int_t col, Int_t row, const T &adc) {
+void AliEMCALTriggerDataGrid<T>::SetADC(Int_t col, Int_t row, const T &adc) {
   if(!fValues)
     throw UninitException();
   if(row >= fNRows)
@@ -115,12 +115,12 @@ void AliEmcalTriggerDataGrid<T>::SetADC(Int_t col, Int_t row, const T &adc) {
 }
 
 template<typename T>
-void AliEmcalTriggerDataGrid<T>::Reset() {
+void AliEMCALTriggerDataGrid<T>::Reset() {
   memset(fValues, 0, sizeof(T) * fNCols * fNRows);
 }
 
 template<typename T>
-const T &AliEmcalTriggerDataGrid<T>::GetADC(Int_t col, Int_t row) const {
+const T &AliEMCALTriggerDataGrid<T>::GetADC(Int_t col, Int_t row) const {
   if(!fValues)
     throw UninitException();
   if(row >= fNRows)
@@ -131,11 +131,11 @@ const T &AliEmcalTriggerDataGrid<T>::GetADC(Int_t col, Int_t row) const {
 }
 
 template<typename T>
-Int_t AliEmcalTriggerDataGrid<T>::GetIndex(Int_t col, Int_t row) const {
+Int_t AliEMCALTriggerDataGrid<T>::GetIndex(Int_t col, Int_t row) const {
   return row * fNCols + col;
 }
 
-template class AliEmcalTriggerDataGrid<int>;
-template class AliEmcalTriggerDataGrid<double>;
-template class AliEmcalTriggerDataGrid<float>;
-template class AliEmcalTriggerDataGrid<char>;
+template class AliEMCALTriggerDataGrid<int>;
+template class AliEMCALTriggerDataGrid<double>;
+template class AliEMCALTriggerDataGrid<float>;
+template class AliEMCALTriggerDataGrid<char>;

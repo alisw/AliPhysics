@@ -17,46 +17,46 @@
  * @date Oct. 23, 2015
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  */
-#include "AliEmcalTriggerPatchFinder.h"
-#include "AliEmcalTriggerAlgorithm.h"
-#include "AliEmcalTriggerDataGrid.h"
+#include "AliEMCALTriggerPatchFinder.h"
+#include "AliEMCALTriggerAlgorithm.h"
+#include "AliEMCALTriggerDataGrid.h"
 
 #include <vector>
 
 /// \cond CLASSIMP
-templateClassImp(AliEmcalTriggerPatchFinder)
+templateClassImp(AliEMCALTriggerPatchFinder)
 /// \endcond
 
 template<typename T>
-AliEmcalTriggerPatchFinder<T>::AliEmcalTriggerPatchFinder():
+AliEMCALTriggerPatchFinder<T>::AliEMCALTriggerPatchFinder():
   TObject(),
   fTriggerAlgorithms()
 {
 }
 
 template<typename T>
-AliEmcalTriggerPatchFinder<T>::~AliEmcalTriggerPatchFinder() {
-  for(typename std::vector<AliEmcalTriggerAlgorithm<T> *>::iterator algiter = fTriggerAlgorithms.begin();
+AliEMCALTriggerPatchFinder<T>::~AliEMCALTriggerPatchFinder() {
+  for(typename std::vector<AliEMCALTriggerAlgorithm<T> *>::iterator algiter = fTriggerAlgorithms.begin();
       algiter != fTriggerAlgorithms.end();
       ++algiter)
     delete *algiter;
 }
 
 template<typename T>
-std::vector<AliEmcalTriggerRawPatch> AliEmcalTriggerPatchFinder<T>::FindPatches(const AliEmcalTriggerDataGrid<T> &adc) const{
-  std::vector<AliEmcalTriggerRawPatch> result;
-  for(typename std::vector<AliEmcalTriggerAlgorithm<T> *>::const_iterator algiter = fTriggerAlgorithms.begin();
+std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerPatchFinder<T>::FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const{
+  std::vector<AliEMCALTriggerRawPatch> result;
+  for(typename std::vector<AliEMCALTriggerAlgorithm<T> *>::const_iterator algiter = fTriggerAlgorithms.begin();
       algiter != fTriggerAlgorithms.end();
       ++algiter)
   {
-    std::vector<AliEmcalTriggerRawPatch> tmp = (*algiter)->FindPatches(adc);
-    for(std::vector<AliEmcalTriggerRawPatch>::iterator patchiter = tmp.begin(); patchiter != tmp.end(); ++patchiter){
+    std::vector<AliEMCALTriggerRawPatch> tmp = (*algiter)->FindPatches(adc);
+    for(std::vector<AliEMCALTriggerRawPatch>::iterator patchiter = tmp.begin(); patchiter != tmp.end(); ++patchiter){
       result.push_back(*patchiter);
     }
   }
   return result;
 }
 
-template class AliEmcalTriggerPatchFinder<int>;
-template class AliEmcalTriggerPatchFinder<double>;
-template class AliEmcalTriggerPatchFinder<float>;
+template class AliEMCALTriggerPatchFinder<int>;
+template class AliEMCALTriggerPatchFinder<double>;
+template class AliEMCALTriggerPatchFinder<float>;

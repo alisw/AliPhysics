@@ -15,7 +15,7 @@
  * Dynamical-size container for ADC values from the FASTOR
  */
 template<typename T>
-class AliEmcalTriggerDataGrid : public TObject {
+class AliEMCALTriggerDataGrid : public TObject {
 public:
   /**
    * \class UninitException
@@ -122,7 +122,7 @@ public:
   /**
    * Dummy constructor, does not allocate anything
    */
-  AliEmcalTriggerDataGrid();
+  AliEMCALTriggerDataGrid();
 
   /**
    * Constructror
@@ -130,7 +130,7 @@ public:
    * @param cols Number of cols
    * @param rows Number of rows
    */
-  AliEmcalTriggerDataGrid(Int_t cols, Int_t rows);
+  AliEMCALTriggerDataGrid(Int_t cols, Int_t rows);
 
   /**
    * Copy constructor
@@ -138,7 +138,7 @@ public:
    * of the ref storage will be copied into this storage
    * @param ref Reference for the copy
    */
-  AliEmcalTriggerDataGrid(const AliEmcalTriggerDataGrid<T> &ref);
+  AliEMCALTriggerDataGrid(const AliEMCALTriggerDataGrid<T> &ref);
 
   /**
    * Assignment operator
@@ -147,7 +147,7 @@ public:
    * @param ref Reference for the copy
    * @return This channel map
    */
-  AliEmcalTriggerDataGrid<T> &operator=(const AliEmcalTriggerDataGrid<T> &ref);
+  AliEMCALTriggerDataGrid<T> &operator=(const AliEMCALTriggerDataGrid<T> &ref);
 
   /**
    * Constant acces operator at position (col, row)
@@ -168,7 +168,7 @@ public:
   /**
    * Destructor
    */
-  virtual ~AliEmcalTriggerDataGrid();
+  virtual ~AliEMCALTriggerDataGrid();
 
   /**
    * Set the ADC values stored in the 2D map again to 0
@@ -226,7 +226,7 @@ protected:
   T                         *fValues;         ///< Array of Trigger ADC values
 
   /// \cond
-  ClassDef(AliEmcalTriggerDataGrid, 1);
+  ClassDef(AliEMCALTriggerDataGrid, 1);
   /// \endcond
 };
 
