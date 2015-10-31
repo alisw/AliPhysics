@@ -444,8 +444,8 @@ const AliFemtoTrackCut* AliFemtoAnalysisPionLambda::GetPionCut() const
 void AliFemtoAnalysisPionLambda::AddStanardCutMonitors()
 {
   if (fEventCut) {
-    fEventCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Event(true, fMCAnalysis),
-                             new AliFemtoPionLambdaCutMonitor::Event(false, fMCAnalysis));
+    fEventCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Event(true, fMCAnalysis, false),
+                             new AliFemtoPionLambdaCutMonitor::Event(false, fMCAnalysis, false));
   } else {
     std::cout << " NO fEventCut!\n";
     exit(1);
