@@ -21,6 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALTriggerBase)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
+    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
   )
 
 # Sources - alphabetical order
@@ -30,6 +31,8 @@ set(SRCS
   AliEMCALTriggerRawPatch.cxx
   AliEMCALTriggerPatchFinder.cxx
   AliEMCALTriggerAlgorithm.cxx
+  AliEMCALTriggerPatchInfo.cxx
+  AliEMCALTriggerBitConfig.cxx
   )
 
 # Headers from sources
