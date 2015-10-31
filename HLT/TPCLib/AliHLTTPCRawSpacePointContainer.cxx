@@ -614,6 +614,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 						  const char* option) const
 {
   /// write blocks to HLT component output
+
   if (!outputPtr || !pDecoder || !pGrid) return -EINVAL;
   if (pDecoder->fCount==0) return 0;
   if (option) {
@@ -632,13 +633,20 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 
   // Note: the offset parameter is only for the block descriptors, output pointer and size
   // consider already the offset
-  AliHLTTPCRawClusterData* blockout=reinterpret_cast<AliHLTTPCRawClusterData*>(outputPtr+size);
+
+  if( fWrittenClusterIds ) fWrittenClusterIds->clear();
+
+  if( capacity < sizeof(AliHLTTPCRawClusterData) ) return -ENOSPC;
+ 
+  AliHLTTPCRawClusterData* blockout=reinterpret_cast<AliHLTTPCRawClusterData*>(outputPtr);
   blockout->fVersion=0;
   blockout->fCount=0;
+ 
+  size = sizeof(AliHLTTPCRawClusterData);
 
   if (pDeflater) {
     pDeflater->Clear();
-    pDeflater->InitBitDataOutput(reinterpret_cast<AliHLTUInt8_t*>(blockout->fClusters), capacity-size-sizeof(AliHLTTPCRawClusterData));
+    pDeflater->InitBitDataOutput(reinterpret_cast<AliHLTUInt8_t*>(blockout->fClusters), capacity-size);
     blockout->fVersion=pDeflater->GetDeflaterVersion();
     if (fMode&kModeDifferentialPadTime) blockout->fVersion+=2;
   }
@@ -647,6 +655,9 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   AliHLTUInt64_t lastPad64=0;
   AliHLTUInt64_t lastTime64=0;
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
+
+  AliHLTUInt32_t filledBytes = 0;
+
   if (clusterID!=pGrid->end()) {
     for (; clusterID!=pGrid->end(); clusterID++) {
       if (clusterID.Data().fTrackId>-1) {
@@ -664,6 +675,11 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
 
       if( index<0 || index>= (int)pDecoder->fCount ) continue;
+
+      if( size + sizeof(AliHLTTPCRawCluster) > capacity ){
+	iResult = -ENOSPC;
+	break;
+      }
 
       const AliHLTTPCRawCluster &input = pDecoder->fClusters[index];
 
@@ -695,7 +711,10 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	c.SetSigmaPad2(sigmaY2);
 	c.SetSigmaTime2(sigmaZ2);
 	c.SetQMax(input.GetQMax());
+	size += sizeof(AliHLTTPCRawCluster);	
       } else {
+	AliHLTUInt32_t oldSize = pDeflater->GetBitDataOutputSizeBytes(); 
+
 	AliHLTUInt64_t padrow64=input.GetPadRow();
 	if (padrow64==lastPadRow) {
 	  padrow64-=lastPadRow;
@@ -761,10 +780,19 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaZ2, sigmaZ264);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge , input.GetCharge());
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kQMax   , input.GetQMax());
+      
+	size += pDeflater->GetBitDataOutputSizeBytes() - oldSize;
       }
       blockout->fCount++;
     }
   }
+
+  if( iResult<0 ){
+    if (fWrittenClusterIds ) fWrittenClusterIds->clear();
+    size = 0;
+    return iResult;
+  }
+
   AliHLTComponent_BlockData bd;
   AliHLTComponent::FillBlockData(bd);
   bd.fOffset        = size+offset;
@@ -780,7 +808,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
   outputBlocks.push_back(bd);
 
-  size += bd.fSize;
+  size = bd.fSize;
 
   if (fWrittenClusterIds && fWrittenClusterIds->size()>0) {
     AliHLTComponent::FillBlockData(bd);
