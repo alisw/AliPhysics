@@ -23,6 +23,8 @@
 #include "AliAODHandler.h"
 #include "AliAODMuonReplicator.h"
 #include "AliLog.h"
+#include "AliMuonEventCuts.h"
+
 ///
 /// \brief AliAnalysisTaskAOD2MuonAOD : a class to convert full AODs to muon ones
 ///
@@ -35,7 +37,7 @@ ClassImp(AliAnalysisTaskAOD2MuonAOD)
 /// \endcond
 
 //_____________________________________________________________________________
-AliAnalysisTaskAOD2MuonAOD::AliAnalysisTaskAOD2MuonAOD(Int_t mcMode, Bool_t withSPDTracklets)
+AliAnalysisTaskAOD2MuonAOD::AliAnalysisTaskAOD2MuonAOD(Int_t mcMode, Bool_t withSPDTracklets, AliMuonEventCuts* muonEventCuts)
 : AliAnalysisTaskSE("AliAnalysisTaskAOD2MuonAOD"),
 fBranchReplicator(new AliAODMuonReplicator("MuonReplicator",
                                            "remove non muon tracks and non primary or pileup vertices",
@@ -43,7 +45,8 @@ fBranchReplicator(new AliAODMuonReplicator("MuonReplicator",
                                            new AliAnalysisNonPrimaryVertices,
                                            mcMode,
                                            kTRUE,
-                                           withSPDTracklets))
+                                           withSPDTracklets)),
+fMuonEventCuts(muonEventCuts)
 {
   /// ctor. For the parameters \see AliAODMuonReplicator::AliAODMuonReplicator
 }
@@ -73,6 +76,27 @@ void AliAnalysisTaskAOD2MuonAOD::UserCreateOutputObjects()
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskAOD2MuonAOD::HasMuonInformation(const AliAODEvent& event) const
+{
+  /// Determine whether or not this event has any information related to muon
+  /// spectrometer. This means either some muon tracks or just some L0 inputs (or both)
+  
+  AliAODHeader* header = static_cast<AliAODHeader*>(event.GetHeader());
+  if ( header->GetNumberOfMuons()>0 )
+  {
+    return kTRUE;
+  }
+  
+  const TObjArray* selectTrigClasses = fMuonEventCuts->GetSelectedTrigClassesInEvent(InputEvent());
+  
+  if ( selectTrigClasses->GetEntries() > 0 )
+  {
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
 void AliAnalysisTaskAOD2MuonAOD::UserExec(Option_t*)
 {
   /// Main method doing the actual filtering (delegating it to
@@ -82,6 +106,11 @@ void AliAnalysisTaskAOD2MuonAOD::UserExec(Option_t*)
   if (!event)
   {
     AliError("Event is not a the AOD type");
+    return;
+  }
+  
+  if ( fMuonEventCuts && !HasMuonInformation(*event) )
+  {
     return;
   }
 
