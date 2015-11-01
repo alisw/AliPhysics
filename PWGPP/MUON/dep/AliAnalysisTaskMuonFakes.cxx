@@ -53,6 +53,7 @@
 #include "AliMUONTriggerTrack.h"
 
 #include "AliAnalysisTaskMuonFakes.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

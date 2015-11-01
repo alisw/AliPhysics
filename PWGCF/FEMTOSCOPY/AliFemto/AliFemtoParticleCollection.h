@@ -38,9 +38,11 @@ using std::list;
 #ifdef ST_NO_TEMPLATE_DEF_ARGS
 typedef list<AliFemtoParticle *, allocator<AliFemtoParticle *> >            AliFemtoParticleCollection;
 typedef list<AliFemtoParticle *, allocator<AliFemtoParticle *> >::iterator  AliFemtoParticleIterator;
+typedef list<AliFemtoParticle *, allocator<AliFemtoParticle *> >::const_iterator  AliFemtoParticleConstIterator;
 #else
 typedef list<AliFemtoParticle *>            AliFemtoParticleCollection;
 typedef list<AliFemtoParticle *>::iterator  AliFemtoParticleIterator;
+typedef list<AliFemtoParticle *>::const_iterator  AliFemtoParticleConstIterator;
 #endif
 
 #endif

@@ -39,7 +39,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     else AliError("fReadMC has to be kTRUE");
   }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
-  void SetFillNSparse(Int_t fill=0){fFillSparse=fill;}
+  void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
@@ -117,6 +117,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
   
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
+  THnSparseF *fnSparseIP;       ///!<!THnSparse for topomatic variable
   THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
   ///[0]: Acc step prompt Ds
   ///[1]: Acc step FD Ds
@@ -124,7 +125,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[3]: Selected FD Ds
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,15);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,16);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

@@ -30,13 +30,9 @@
 #pragma link C++ class AliEmcalTenderTask+;
 #pragma link C++ class AliEmcalTrackingQATask+;
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
-#pragma link C++ class AliEmcalTriggerDataGrid<float>+;
-#pragma link C++ class AliEmcalTriggerDataGrid<double>+;
-#pragma link C++ class AliEmcalTriggerDataGrid<int>+;
-#pragma link C++ class AliEmcalTriggerDataGrid<char>+;
 #pragma link C++ class AliEmcalTriggerMaker+;
-#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition+;
-#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer+;
+#pragma link C++ class AliEmcalTriggerMakerKernel+;
+#pragma link C++ class AliEmcalTriggerMakerTask+;
 #pragma link C++ class AliEmcalTriggerPatchInfo+;
 #pragma link C++ class AliEmcalTriggerSetupInfo+;
 #pragma link C++ class AliEsdSkimTask+;
@@ -55,5 +51,25 @@
 #pragma link C++ class AliEmcalTriggerSelectionCuts++;
 #pragma link C++ class AliEmcalTriggerSelection+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerSelection+;
+#pragma link C++ class AliEmcalTriggerDataGridAP<float>+;
+#pragma link C++ class AliEmcalTriggerDataGridAP<double>+;
+#pragma link C++ class AliEmcalTriggerDataGridAP<int>+;
+#pragma link C++ class AliEmcalTriggerDataGridAP<char>+;
+
+#pragma link C++ class AliEmcalTriggerRawPatchAP+;
+#pragma link C++ class AliEmcalTriggerPatchFinderAP<float>+;
+#pragma link C++ class AliEmcalTriggerPatchFinderAP<double>+;
+#pragma link C++ class AliEmcalTriggerPatchFinderAP<int>+;
+#pragma link C++ class AliEmcalTriggerAlgorithmAP<float>+;
+#pragma link C++ class AliEmcalTriggerAlgorithmAP<double>+;
+#pragma link C++ class AliEmcalTriggerAlgorithmAP<int>+;
+#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<float>+;
+#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<double>+;
+#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<int>+;
+#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<float>+;
+#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<double>+;
+#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<int>+;
+#pragma link C++ class AliEmcalTriggerChannelContainerAP+;
+#pragma link C++ class AliEmcalTriggerChannelContainerAP::AliEmcalTriggerChannelPositionAP+;
 #endif
 

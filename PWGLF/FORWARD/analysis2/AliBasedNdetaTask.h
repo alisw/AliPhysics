@@ -21,6 +21,7 @@ class TH2D;
 class TH2F;
 class TH1D;
 class TH1I;
+class TF1;
 class AliAODEvent;
 class AliAODForwardMult;
 class TObjArray;
@@ -407,6 +408,30 @@ public:
    * Z-coordinate @f$ IP_{z}@f$
    */
   void SetGlobalEmpiricalcorrection(TH2D* h){fEmpiricalCorrection=h;}
+  /** 
+   * Set re-weighing function to correct for different primary vertex
+   * distribution in analysed data from what was used in the empirical
+   * correction.  To use, put code like the following into the
+   * configuration file (default <tt>dNdetaConfig.C</tt>):
+   * @code 
+   TF1* f = new TF1("reweight",
+                    "TMath::Gaus(x,[0],[1],true)/TMath::Gaus(x,[2],[3],true",
+                    -10,10,4);
+   f->SetParNames("#mu_{1},#sigma_{1},#mu_{2},#sigma_{2}");
+   f->SetParameters(0.592,6.836,muIpz,sigmaIpz);
+   f->SetParErrors(0.023,0.029,eMuIpz,eSigmaIpz);
+   task->SetIpzReweight(f);
+   @endcode 
+   *
+   * where @a muIpz and @a sigmaIpz are the mean and sigma of the data
+   * being analysed.  The values 0.592 (+/- 0.023) and 6.836 (+/-
+   * 0.029) are the best-fit (@f$ \chi^2/\nu=0.76@f$) values from the
+   * empirical base run (138190).  Currently, the errors on the
+   * parameters are not used.
+   * 
+   * @param f Function to use 
+   */
+  void SetIpzReweight(TF1* f) { fIpzReweight = f; }
 protected:
   /** 
    * Copy contructor - not defined
@@ -588,8 +613,9 @@ protected:
      * 
      * @param data    Data to add
      * @param isZero  If this is zero event
+     * @param weight  Event weight 
      */
-    void Add(const TH2D* data, Bool_t isZero=false);
+    void Add(const TH2D* data, Bool_t isZero, Double_t weight);
     /** 
      * Get the histogram name 
      * 
@@ -706,6 +732,7 @@ protected:
      * @param data        Data histogram 
      * @param mc          MC histogram
      * @param filter      Mask of trigger bits to filter out
+     * @param weight      Event weight
      *
      * @return true if the event was selected
      */
@@ -716,7 +743,8 @@ protected:
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				UInt_t                   filter);
+				UInt_t                   filter,
+				Double_t                 weight);
     /** 
      * Calculate the Event-Level normalization. 
      * 
@@ -990,7 +1018,8 @@ protected:
   TH1D*           fTakenCent;     // The taken centrality 
   TString         fCentMethod;    // Centrality estimator 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
-  Bool_t          fUseUtilPileup; // Check for SPD outliers 
+  Bool_t          fUseUtilPileup; // Check for SPD outliers
+  TF1*            fIpzReweight;   // Re-weighing function 
   ClassDef(AliBasedNdetaTask,19); // Determine charged particle density
 };
 

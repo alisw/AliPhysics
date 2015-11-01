@@ -1823,6 +1823,14 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
       AliWarning("ERROR: lESDevent not available \n");
       return;
    }
+    
+    //Is First event in chunk rejection: Still present!
+    if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
+        AliWarning("Pb / | This is the first event in the chunk!");
+        PostData(1, fListHist);
+        PostData(2, fTreeCascade);
+        return;
+    }
 
 /* --- Acquisition of exact event ID
    fTreeVariableRunNumber = lESDevent->GetRunNumber();
@@ -2291,14 +2299,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     PostData(2, fTreeCascade);
     return;
   }
-  
-  //Is First event in chunk rejection: Still present!
-  if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
-    AliWarning("Pb / | This is the first event in the chunk!");
-    PostData(1, fListHist);
-    PostData(2, fTreeCascade);
-    return;
-  }
+
   
   ///////////////////////////////
   /// events after PV selection

@@ -90,7 +90,23 @@ Int_t AliAnalysisMuMuCutRegistry::AddCutCombination(const TObjArray& cutElements
 
   if ( cutCombination->IsTrackCutter() )
   {
-    GetCutCombinations(AliAnalysisMuMuCutElement::kTrack)->Add(cutCombination);
+    TObjArray* a = GetCutCombinations(AliAnalysisMuMuCutElement::kTrack);
+    TIter nextCutComb(a);
+    AliAnalysisMuMuCutCombination* other;
+    Bool_t alreadyThere(kFALSE);
+    
+    while ( ( other = static_cast<AliAnalysisMuMuCutCombination*>(nextCutComb())) && !alreadyThere )
+    {
+        if ( cutCombination->IsEqualForTrackCutter(*other) )
+        {
+          alreadyThere = kTRUE;
+        }
+    }
+    
+    if (!alreadyThere)
+    {
+      a->Add(cutCombination);
+    }
   }
 
   if ( cutCombination->IsTrackPairCutter() )
@@ -404,7 +420,7 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
     while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(next())) )
     {
       std::cout << Form("    %4d ",i);
-      cutCombination->Print("            ");
+      cutCombination->Print(sopt.Data());
       ++i;
     }
   }
@@ -423,7 +439,7 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
       while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(nextCutRef()) ) )
       {
         std::cout << Form("%4d ",i);
-        ce->Print();
+        ce->Print(sopt.Data());
         ++i;
       }
     }

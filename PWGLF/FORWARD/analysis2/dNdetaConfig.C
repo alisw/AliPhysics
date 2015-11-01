@@ -115,6 +115,16 @@ void dNdetaConfig(AliBasedNdetaTask* task)
   // task->SetCentralityAxis("pbpb");
   // task->SetCentralityAxis("ppb");
   // task->SetCentralityAxis("0-5-10-20-30-40-50-60-80-90");
+
+  // - Set Re-weighting function based on IPz
+  //
+  // TF1* f = new TF1("reweight",
+  //                  "TMath::Gaus(x,[0],[1],true)/TMath::Gaus(x,[2],[3],true",
+  //                  -10,10,4);
+  // f->SetParNames("#mu_{emp},#sigma_{emp},#mu_{this},#sigma_{this}");
+  // f->SetParameters(0.592,6.836,muIpz,sigmaIpz);
+  // f->SetParErrors(0.023,0.029,eMuIpz,eSigmaIpz);
+  // task->SetIpzReweight(f);
   
   // - Set satellite vertex flag
   // task->SetSatelliteVertices(satVtx);

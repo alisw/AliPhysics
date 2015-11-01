@@ -57,8 +57,18 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   void SetCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::CollisionType type){fCollisionType=type;}
   void SetRemoveSignals(Bool_t rem = kTRUE){fRemoveSignals = rem;}
   //Cuts for clusters and pi0s.
-  
- protected:
+  void SetTrackCut(const char* cutmask){
+    fCutMask = 0;//Defaults to GlobalHybrid tracks.
+    //GlobalHybrid - 0
+    if(TString(cutmask).CompareTo("GlobalHybrid")==0) fCutMask = 0;
+    //Filter Bit 4 - 1
+    if(TString(cutmask).CompareTo("BIT4")==0) fCutMask = 1;
+    //Filter Bit 5 - 2
+    if(TString(cutmask).CompareTo("BIT5")==0) fCutMask = 2;
+    //Filter Bit 6 - 3
+    if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
+  }
+protected:
   TList*  fOutput;                  //! list send on output slot 1
   TText*  fTextBox;                 //! text information
   TString fOption;                 // option string  
@@ -126,6 +136,7 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   Double_t 	    fMinPt;
   Double_t 	    fMaxPt;
   Int_t 	    fMinNClustersTPC;
+  Int_t 	    fCutMask; // To correspond to different cut masks.
   //Objects to adress the correct run number lists.
   static const Int_t fNRunsP10b = 57;
   static const Int_t fNRunsP10c = 46;

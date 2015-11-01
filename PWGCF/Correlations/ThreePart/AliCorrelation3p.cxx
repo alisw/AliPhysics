@@ -16,6 +16,7 @@
 #include "AliCorrelation3p.h"
 #include "AliVParticle.h"
 #include "AliCFPI0.h"
+#include "AliFilteredTrack.h"
 #include "AliLog.h"
 #include "TCollection.h"
 #include "TObjArray.h"
@@ -50,11 +51,11 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fhPhiEtaDeltaPhi12Cut1(0.5*TMath::Pi())
   , fhPhiEtaDeltaPhi12Cut2(0.25*TMath::Pi())
   , fAcceptanceCut(0.8)
-  , fWeights(NULL)
-  , fWeightshpT(NULL)
-  , fhighpt(NULL)
-  , fMultWeightIndex(0)
-  , fVZWeightIndex(0)
+//   , fWeights(NULL)
+//   , fWeightshpT(NULL)
+//   , fhighpt(NULL)
+//   , fMultWeightIndex(0)
+//   , fVZWeightIndex(0)
   , fMixedEvent(NULL)
   , fMBinEdges(MBinEdges)
   , fZBinEdges(ZBinEdges)
@@ -62,6 +63,7 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fVZ(0)
   , fMBin(0)
   , fVzBin(0)
+  , fbinver(0)
   , fCollisionType(PbPb)
   , fTriggerType(tracks)
 {
@@ -78,11 +80,11 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
   , fAcceptanceCut(other.fAcceptanceCut)  
-  , fWeights(NULL)
-  , fWeightshpT(NULL)
-  , fhighpt(NULL)
-  , fMultWeightIndex(0)
-  , fVZWeightIndex(0)
+//   , fWeights(NULL)
+//   , fWeightshpT(NULL)
+//   , fhighpt(NULL)
+//   , fMultWeightIndex(0)
+//   , fVZWeightIndex(0)
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
@@ -90,6 +92,7 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fVZ(0)
   , fMBin(0)
   , fVzBin(0)
+  , fbinver(other.fbinver)
   , fCollisionType(other.fCollisionType)
   , fTriggerType(other.fTriggerType)
 {
@@ -214,23 +217,28 @@ int AliCorrelation3p::Init(const char* arguments)
   a->AddAt(new TH1D("hAphic","Associated phi",270,-.5*Pii ,2.5*Pii),kHistPhiAssociatedallbins);
   a->AddAt(new TH1D("hAetac","Associated eta",100,-3.0,3.0),kHistEtaAssociatedallbins);
   //Create one set of histograms per mixing bin
+  //set binning:
+  int nbinseta;
+  int nbinsphi;
+  if(fbinver==0){nbinseta = 63;nbinsphi = 38;}
+  if(fbinver==1){nbinseta = 31;nbinsphi = 18;}
+  if(!(fbinver==0||fbinver==1)){nbinseta = 63;nbinsphi = 38;}//revert to original
   for(Int_t i=0;i<fMBinEdges.GetSize()-1;i++){
     for(Int_t j=0;j<fZBinEdges.GetSize()-1;j++){
-    a->AddAt(new TH1D(GetNameHist("hpT"				     ,i,j),"pT"							    			,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),GetNumberHist(kHistpT				,i,j));
-    a->AddAt(new TH1D(GetNameHist("hphi"			     ,i,j),"phi"						    			,270,-.5*Pii ,2.5*Pii						       ),GetNumberHist(kHistPhi				,i,j));
-    a->AddAt(new TH1D(GetNameHist("heta"			     ,i,j),"eta"						   			,100,-3.0    ,3.0						       ),GetNumberHist(kHistEta				,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTpT"			     ,i,j),"Trigger pT"						   			,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),GetNumberHist(kHistTriggerpT			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTphi"			     ,i,j),"Trigger phi"					   			,270,-.5*Pii ,2.5*Pii						       ),GetNumberHist(kHistTriggerPhi			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTeta"			     ,i,j),"Trigger eta"					      			,100,-3.0    ,3.0						       ),GetNumberHist(kHistTriggerEta			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hApT"			     ,i,j),"Associated pT"					      			,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),GetNumberHist(kHistAssociatedpT		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hAphi"			     ,i,j),"Associated phi"					      			,270,-.5*Pii ,2.5*Pii						       ),GetNumberHist(kHistAssociatedPhi		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hAeta"			     ,i,j),"Associated eta"					      			,100,-3.0    ,3.0						       ),GetNumberHist(kHistAssociatedEta		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hNAssoc"			     ,i,j),"Number of associated"							,1000,0	     ,5000						       ),GetNumberHist(kHistNassoc			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hNTriggers"                       ,i,j),"Number of triggers in this bin filled."                                     ,1   ,0      ,1                                                        ),GetNumberHist(kHistNTriggers                   ,i,j));
-    a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	     ,i,j),"#Delta#Phi vs #Delta#eta"				     			,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36	  ,-0.5*Pii,1.5*Pii			       ),GetNumberHist(khPhiEta				,i,j));//"classical" 2 particle correlation
-    a->AddAt(new TH3F(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta"    ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}"                            ,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEta                     ,i,j));//3d, DPhiDPhiDEta
-//     a->AddAt(new TH3D(GetNameHist("hDeltaPhiVsDeltaPhiVsDEtaScaled"  ,i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12} scaled with # associated"   ,63 ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut    ,36        ,-0.5*Pii,1.5*Pii  ,36 ,-0.5*Pii,1.5*Pii   ),GetNumberHist(khPhiPhiDEtaScaled               ,i,j));//3d, DPhiDPhiDEta scaled
-    a->AddAt(new TH1D(GetNameHist("khQAtocheckadressing"             ,i,j),"Will be filled once per event. Should match the centvzbin histogram."       ,1  ,0 ,2                                                              ),GetNumberHist(khQAtocheckadressing             ,i,j));
+    a->AddAt(new TH1D(GetNameHist("hpT"				 ,i,j),"pT"						 ,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)	    ),GetNumberHist(kHistpT			,i,j));
+    a->AddAt(new TH1D(GetNameHist("hphi"			 ,i,j),"phi"						 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistPhi			,i,j));
+    a->AddAt(new TH1D(GetNameHist("heta"			 ,i,j),"eta"						 ,100,-3.0    ,3.0						         	    ),GetNumberHist(kHistEta			,i,j));
+    a->AddAt(new TH1D(GetNameHist("hTpT"			 ,i,j),"Trigger pT"					 ,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)	    ),GetNumberHist(kHistTriggerpT		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hTphi"			 ,i,j),"Trigger phi"					 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistTriggerPhi		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hTeta"			 ,i,j),"Trigger eta"					 ,100,-3.0    ,3.0						        	    ),GetNumberHist(kHistTriggerEta		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hApT"			 ,i,j),"Associated pT"					 ,100,0.0     ,(fMaxAssociatedPt>fMinAssociatedPt?fMaxAssociatedPt:fMinAssociatedPt)),GetNumberHist(kHistAssociatedpT		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hAphi"			 ,i,j),"Associated phi"					 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistAssociatedPhi		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hAeta"			 ,i,j),"Associated eta"					 ,100,-3.0    ,3.0						        	    ),GetNumberHist(kHistAssociatedEta		,i,j));
+    a->AddAt(new TH1D(GetNameHist("hNAssoc"			 ,i,j),"Number of associated"				 ,100,0	     ,500						       		    ),GetNumberHist(kHistNassoc			,i,j));
+    a->AddAt(new TH1D(GetNameHist("hNTriggers"                   ,i,j),"Number of triggers in this bin filled."          ,1   ,0      ,1                                                        	    ),GetNumberHist(kHistNTriggers              ,i,j));
+    a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	 ,i,j),"#Delta#Phi vs #Delta#eta"			 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*Pii,1.5*Pii			       ),GetNumberHist(khPhiEta	   ,i,j));//"classical" 2 particle correlation
+    a->AddAt(new TH3F(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta",i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}" ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*Pii,1.5*Pii,nbinsphi ,-0.5*Pii,1.5*Pii),GetNumberHist(khPhiPhiDEta,i,j));//3d, DPhiDPhiDEta
+    a->AddAt(new TH1D(GetNameHist("khQAtocheckadressing"         ,i,j),"Will be filled once per event. Should match the centvzbin histogram."   ,1  ,0 ,2),GetNumberHist(khQAtocheckadressing,i,j));
     }
   }
   a->AddAt(new TH1D("overflow","overflow",3,0.0,1),GetNumberHist(kNofHistograms+1,fMBinEdges.GetSize()-1,fZBinEdges.GetSize()-1));
@@ -248,10 +256,6 @@ int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
   HistFill(kcentrvsvzbin,fMBin,fVzBin);
   if (fMBin<0||fVzBin<0) return -1;
   HistFill(GetNumberHist(khQAtocheckadressing,fMBin,fVzBin),1.0);
-  if(fWeights){
-    fMultWeightIndex = fWeights->GetXaxis()->FindBin(fMultiplicity);
-    fVZWeightIndex   = fWeights->GetYaxis()->FindBin(fVZ);
-  }
   return 1;
 }
 
@@ -265,10 +269,7 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   if (ptrigger->Pt()<=fMinTriggerPt) return false;
   if (fMaxTriggerPt>fMinTriggerPt && ptrigger->Pt()>fMaxTriggerPt) return false;
   if (doHistogram) {
-    Double_t Weight = 1.0;
-    if(fWeightshpT&&fhighpt){
-      Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());
-    }
+    Double_t Weight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
     HistFill(GetNumberHist(kHistEta,fMBin,fVzBin),ptrigger->Eta(),Weight);
@@ -282,7 +283,7 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   return true;
 }
 
-bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*ptrigger*/, bool doHistogram)
+bool AliCorrelation3p::CheckAssociated( AliVParticle* p, bool doHistogram)
 {
   // check associated particle cuts
   if (!p) return false;
@@ -291,16 +292,7 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   if (p->Pt()<=fMinAssociatedPt) return false;
   if (fMaxAssociatedPt>fMinAssociatedPt && p->Pt()>fMaxAssociatedPt) return false;
   if (doHistogram) {
-    Double_t Weight = 1.0;
-    if(fWeights&&fWeightshpT&&fhighpt){
-      if(p->Pt()<2.0){
-	Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p->Pt());
-	Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
-      }
-      else {
-	Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p->Pt());
-      }
-    }
+    Double_t Weight = dynamic_cast<AliFilteredTrack*>(p)->GetEff();
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),p->Phi(),Weight);
     HistFill(GetNumberHist(kHistEta,fMBin,fVzBin),p->Eta(),Weight);
@@ -314,7 +306,7 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   return true;
 }
 
-int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1, const AliVParticle* p2, const double weight)
+int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVParticle* p2, const double weight)
 {
   /// fill histograms from particles, fills each histogram exactly once.
   Double_t fillweight = 1.0;
@@ -335,55 +327,19 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
     if (DeltaPhi2>1.5*Pii)  DeltaPhi2 -= 2*Pii;
   }
   // eta difference
-  Double_t DeltaEta12 = p1      ->Eta() - p2->Eta();
-  if(abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&abs(DeltaEta12)<1.0E-10) {
-    Double_t phi1=p1->Phi() ;
-    while(phi1<-0.5*Pii||phi1>1.5*Pii){
-      if (phi1<-0.5*Pii) phi1 += 2*Pii;
-      if (phi1>1.5*Pii)  phi1 -= 2*Pii;}
-//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p1->Eta(),phi1);
-    return 0;}//Track duplicate, reject.
-  if(abs(p1->Eta()-ptrigger->Eta())<1.0E-10){
-    Double_t phi1=p1->Phi() ;
-    while(phi1<-0.5*Pii||phi1>1.5*Pii){
-      if (phi1<-0.5*Pii) phi1 += 2*Pii;
-      if (phi1>1.5*Pii)  phi1 -= 2*Pii;}
-//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p1->Eta(),phi1);  
-    return 0;}//Track duplicate, reject.
-  if(abs(p2->Eta()-ptrigger->Eta())<1.0E-10){
-    Double_t phi2=p2->Phi() ;
-    while(phi2<-0.5*Pii||phi2>1.5*Pii){
-      if (phi2<-0.5*Pii) phi2 += 2*Pii;
-      if (phi2>1.5*Pii)  phi2 -= 2*Pii;}
-//     HistFill(GetNumberHist(khPhiEtaDublicate,fMBin,fVzBin),p2->Eta(),phi2);  
-    return 0;
-  }//Track duplicate, reject.
-  if(fWeights&&fWeightshpT&&fhighpt){
-    //t:
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt()); 
-    //a1:
-    if(p1->Pt()>2.0){
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
-    }
-    else{
-      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
-      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
-    }
-    //a2
-    if(p2->Pt()>2.0){
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p2->Pt());      
-    }
-    else{
-      Int_t indexpT2 = fWeights->GetZaxis()->FindBin(p2->Pt());
-      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT2);
-    }
-  }
-  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight*weight);
-//   if(weight>1)  HistFill(GetNumberHist(khPhiPhiDEtaScaled,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2,1.0/(weight-1));
+  Double_t DeltaEta12 = p1->Eta()-p2->Eta();
+  if(abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&abs(DeltaEta12)<1.0E-10)	return 0;//Track duplicate, reject.
+  if(abs(p1->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
+  if(abs(p2->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
+  fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
+  fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
+  fillweight *= dynamic_cast<AliFilteredTrack*>(p2)->GetEff();
+  fillweight *= weight;
+  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight);
   return 0;
 }
 
-int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
+int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1)
 {
   /// fill histograms from particles
   Double_t fillweight = 1.0;  
@@ -398,30 +354,15 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
   }
   // eta difference
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
-  if(fWeights&&fWeightshpT&&fhighpt){
-    //t:
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());    
-    //a1:
-    if(p1->Pt()>2.0){
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
-    }
-    else{
-      Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
-      fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
-    }
-  }
-  
+  fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
+  fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, fillweight);//2p correlation
   return 0;
 }
 
-int AliCorrelation3p::FillTrigger(const AliVParticle* ptrigger)
+int AliCorrelation3p::FillTrigger(AliVParticle* ptrigger)
 {
-  Double_t fillweight = 1.0;
-  if(fWeights&&fWeightshpT&&fhighpt){
-    //t:
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());    
-  }
+  Double_t fillweight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();    
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;
 }

@@ -27,7 +27,9 @@ const struct { unsigned int bin_count; float min; float max; }
 VertexBinning = {16, -10.0, 10.0},
 MultBinning = {30, 0, 10000};
 
-const bool default_group_output_objects = kTRUE;
+const bool default_enable_pair_monitors = kTRUE,
+           default_group_output_objects = kTRUE,
+                 default_is_mc_analysis = kFALSE;
 
 const float default_lambda_PtMin = 0.2,
             default_lambda_PtMax = 5.0,
@@ -87,7 +89,9 @@ const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
 
 const Bool_t  default_pair_TPCOnly = kTRUE;
-const Float_t default_pair_TPCExitSepMin = -1.0;
+const Float_t default_pair_TPCExitSepMin = -1.0,
+              default_pair_MinAvgSeparationPos = 0.0,
+              default_pair_MinAvgSeparationNeg = 0.0;
 
 
 const AliFemtoAnalysisPionLambda::PionType
@@ -127,7 +131,9 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
   fPionType(default_PionType),
   fLambdaType(default_LambdaType),
   fGroupOutputObjects(default_group_output_objects)
+, fMCAnalysis(default_is_mc_analysis)
 {
+  SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
 }
 
@@ -138,7 +144,9 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name):
   fPionType(default_PionType),
   fLambdaType(default_LambdaType),
   fGroupOutputObjects(default_group_output_objects)
+, fMCAnalysis(default_is_mc_analysis)
 {
+  SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
 }
 
@@ -153,7 +161,9 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name,
   fPionType(pion),
   fLambdaType(lambda),
   fGroupOutputObjects(default_group_output_objects)
+, fMCAnalysis(default_is_mc_analysis)
 {
+  SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
 }
 
@@ -168,7 +178,9 @@ AliFemtoAnalysisPionLambda
   fPionType(pion),
   fLambdaType(lambda),
   fGroupOutputObjects(default_group_output_objects)
+, fMCAnalysis(default_is_mc_analysis)
 {
+  SetEnablePairMonitors(default_enable_pair_monitors);
   _Init(params);
 }
 
@@ -182,7 +194,9 @@ AliFemtoAnalysisPionLambda
   fPionType(params.pion_type),
   fLambdaType(params.lambda_type),
   fGroupOutputObjects(params.group_output_objects)
+, fMCAnalysis(params.is_mc_analysis)
 {
+  SetEnablePairMonitors(params.enable_pair_monitors);
 //   cout << "[AliFemtoAnalysisPionLambda] Constructed with : " <<
 //     params.vertex_bins <<
 //     " " << params.vertex_min <<
@@ -198,18 +212,20 @@ AliFemtoAnalysisPionLambda::AnalysisParams
 AliFemtoAnalysisPionLambda::DefaultConfig()
 {
   AliFemtoAnalysisPionLambda::AnalysisParams params = {
-    VertexBinning.bin_count,
-    VertexBinning.min,
-    VertexBinning.max,
+    VertexBinning.bin_count
+  , VertexBinning.min
+  , VertexBinning.max
 
-    MultBinning.bin_count,
-    MultBinning.min,
-    MultBinning.max,
+  , MultBinning.bin_count
+  , MultBinning.min
+  , MultBinning.max
 
-    default_PionType,
-    default_LambdaType,
+  , default_PionType
+  , default_LambdaType
 
-    default_group_output_objects
+  , default_enable_pair_monitors
+  , default_group_output_objects
+  , default_is_mc_analysis
   };
 
   return params;
@@ -276,15 +292,18 @@ AliFemtoAnalysisPionLambda::DefaultCutConfig()
     // pair
     default_pair_TPCOnly,
     default_pair_TPCExitSepMin
+  , default_pair_MinAvgSeparationPos
+  , default_pair_MinAvgSeparationNeg
   };
 
-    
+  // sanity checks
   assert(params.event_MultMin == default_event_EventMultMin);
   assert(params.pion_PtMin == default_pion_PtMin);
   assert(params.lambda_PtMin == default_lambda_PtMin);
   assert(params.lambda_daughter_StatusDaughters == default_lambda_StatusDaughters);
   assert(params.pair_TPCOnly == default_pair_TPCOnly);
   assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
+
   return params;
 }
 
@@ -389,6 +408,8 @@ AliFemtoAnalysisPionLambda::BuildPairCut(const CutParams &p) const
 
   cut->SetTPCOnly(p.pair_TPCOnly);
   cut->SetTPCExitSepMinimum(p.pair_TPCExitSepMin);
+  cut->SetMinAvgSeparation(0, p.pair_MinAvgSeparationPos);
+  cut->SetMinAvgSeparation(1, p.pair_MinAvgSeparationNeg);
 
   return cut;
 }
@@ -423,8 +444,8 @@ const AliFemtoTrackCut* AliFemtoAnalysisPionLambda::GetPionCut() const
 void AliFemtoAnalysisPionLambda::AddStanardCutMonitors()
 {
   if (fEventCut) {
-    fEventCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Event(true),
-                             new AliFemtoPionLambdaCutMonitor::Event(false));
+    fEventCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Event(true, fMCAnalysis, false),
+                             new AliFemtoPionLambdaCutMonitor::Event(false, fMCAnalysis, false));
   } else {
     std::cout << " NO fEventCut!\n";
     exit(1);
@@ -432,52 +453,91 @@ void AliFemtoAnalysisPionLambda::AddStanardCutMonitors()
 
   if (fFirstParticleCut) {
     const TString ltype = (fLambdaType == kLambda) ? "Lambda" : "AntiLambda";
-    fFirstParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Lambda(true, ltype, fLambdaType),
-                                     new AliFemtoPionLambdaCutMonitor::Lambda(false, ltype, fLambdaType));
+    fFirstParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Lambda(true, ltype, fLambdaType, fMCAnalysis),
+                                     new AliFemtoPionLambdaCutMonitor::Lambda(false, ltype, fLambdaType, fMCAnalysis));
   }
 
   if (fSecondParticleCut) {
     const TString ptype = (fPionType == kPiPlus) ? "Pi+" : "Pi-";
-    fSecondParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pion(true, ptype),
-                                      new AliFemtoPionLambdaCutMonitor::Pion(false, ptype));
+    fSecondParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pion(true, ptype, fMCAnalysis),
+                                      new AliFemtoPionLambdaCutMonitor::Pion(false, ptype, fMCAnalysis));
   }
 
   if (fPairCut) {
     const TString ltype = (fLambdaType == kLambda) ? "Lam" : "ALam",
                   ptype = (fPionType == kPiPlus) ? "Pi+" : "Pi-",
-                 pair_t = ptype + "/" + ltype;
-    fPairCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pair(true, pair_t),
-                            new AliFemtoPionLambdaCutMonitor::Pair(false, pair_t));
+                pair_ty = ptype + "/" + ltype;
+    fPairCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pair(true, pair_ty, fMCAnalysis),
+                            new AliFemtoPionLambdaCutMonitor::Pair(false, pair_ty, fMCAnalysis));
   }
 
 }
 
+TObjArray* GetPassFailOutputList(const TString &name,
+                                 AliFemtoCutMonitorHandler *handler)
+{
+  AliFemtoCutMonitorCollection *p_coll = handler->PassMonitorColl(),
+                               *f_coll = handler->FailMonitorColl();
 
+  TObjArray *res = new TObjArray(),
+            *passout = new TObjArray(),
+            *failout = new TObjArray();
+
+  res->SetName(name);
+  passout->SetName("pass");
+  failout->SetName("fail");
+
+  res->Add(passout);
+  res->Add(failout);
+
+  for (AliFemtoCutMonitorIterator it = p_coll->begin();
+                                  it != p_coll->end();
+                                ++it) {
+    TList *o_list = (*it)->GetOutputList();
+    passout->AddAll(o_list);
+    delete o_list;
+  }
+
+  for (AliFemtoCutMonitorIterator it = f_coll->begin();
+                                  it != f_coll->end();
+                                ++it) {
+    TList *o_list = (*it)->GetOutputList();
+    failout->AddAll(o_list);
+    delete o_list;
+  }
+
+  return res;
+}
 
 TList* AliFemtoAnalysisPionLambda::GetOutputList()
 {
   TList *outputlist = NULL;
   TSeqCollection *output = NULL;
+
   // get "standard" outputs - that's what we output
   if (!fGroupOutputObjects) {
     outputlist = AliFemtoVertexMultAnalysis::GetOutputList();
     output = outputlist;
   } else {
-    outputlist = new TList();
-    output = new TObjArray();
-    outputlist->Add(output);
 
+    output = new TObjArray();
     output->SetName(fAnalysisName);
 
-    TList *super_objects = AliFemtoVertexMultAnalysis::GetOutputList();
+    output->Add(GetPassFailOutputList("Event", EventCut()));
+    output->Add(GetPassFailOutputList("Pion", GetPionCut()));
+    output->Add(GetPassFailOutputList("Lambda", GetLambdaCut()));
+    output->Add(GetPassFailOutputList("Pair", PairCut()));
 
-    TIter next(super_objects);
-    TObject *obj = NULL;
-    while (obj = next()) {
-      output->Add(obj);
+    for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                  iter != fCorrFctnCollection->end();
+                                  ++iter) {
+      TList *cf_output = (*iter)->GetOutputList();
+      output->AddAll(cf_output);
+      delete cf_output;
     }
 
-    delete super_objects;
+    outputlist = new TList();
+    outputlist->Add(output);
   }
 
   // get the analysis report
@@ -489,36 +549,70 @@ TList* AliFemtoAnalysisPionLambda::GetOutputList()
     settings->SetName("settings");
     TList *setting_list = ListSettings();
     TIter next_setting(setting_list);
-    TObject *setting = NULL;
-    while (setting = next_setting()) {
+    for (TObject *setting = next_setting();
+                  setting != NULL;
+                  setting = next_setting()) {
       settings->Add(setting);
     }
     delete setting_list;
     settings->SetOwner(kTRUE);
     output->Add(settings);
- }
-
+  }
   return outputlist;
 }
 
 TList* AliFemtoAnalysisPionLambda::ListSettings()
 {
   TList *setting_list = new TList();
-  
-  setting_list->Add(new TObjString(
-    TString::Format("AliFemtoAnalysisPionLambda.piontype=%d", fPionType)
-  ));
-  
-  setting_list->Add(new TObjString(
-    TString::Format("AliFemtoAnalysisPionLambda.lambdatype=%d", fLambdaType)
-  ));
-  
+
+
+  setting_list->AddVector(
+
+    new TObjString(
+      TString::Format("AliFemtoAnalysisPionLambda.piontype=%d", fPionType)
+    ),
+
+    new TObjString(
+      TString::Format("AliFemtoAnalysisPionLambda.lambdatype=%d", fLambdaType)
+    ),
+
+    new TObjString(
+      TString::Format("AliFemtoAnalysisPionLambda.mc_analysis=%d", fMCAnalysis)
+    ),
+
+  NULL);
+
   TList *parent_list = AliFemtoVertexMultAnalysis::ListSettings();
-  
+
   setting_list->AddAll(parent_list);
   delete parent_list;
- 
-  
+
+
   return setting_list;
 }
 
+void AliFemtoAnalysisPionLambda::EventBegin(const AliFemtoEvent* ev)
+{
+  fEventCut->EventBegin(ev);
+  fFirstParticleCut->EventBegin(ev);
+  fSecondParticleCut->EventBegin(ev);
+  fPairCut->EventBegin(ev);
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                ++iter) {
+    (*iter)->EventBegin(ev);
+  }
+}
+
+void AliFemtoAnalysisPionLambda::EventEnd(const AliFemtoEvent* ev)
+{
+  fEventCut->EventEnd(ev);
+  fFirstParticleCut->EventEnd(ev);
+  fSecondParticleCut->EventEnd(ev);
+  fPairCut->EventEnd(ev);
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                ++iter) {
+    (*iter)->EventEnd(ev);
+  }
+}

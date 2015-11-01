@@ -17,7 +17,6 @@
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
-#include "AliEmcalTriggerPatchInfo.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -29,6 +28,7 @@ class iostream;
 class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
+class AliEmcalTriggerPatchInfo;
 
 using namespace std;
 

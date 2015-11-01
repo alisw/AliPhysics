@@ -31,6 +31,7 @@ class AliPPVsMultUtils;
 class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

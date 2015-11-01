@@ -111,16 +111,20 @@ Double_t                  AliFemtoModelHiddenInfo::GetMass() const
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(AliFemtoThreeVector *aMom)
 {
-  if (aMom == NULL && fTrueMomentum != NULL) {
+  // neither are null - simple set
+  if (aMom != NULL && fTrueMomentum != NULL) {
+    *fTrueMomentum = *aMom;
+  }
+  // parameter is NULL - delete & null member
+  else if (fTrueMomentum != NULL) {
     delete fTrueMomentum;
     fTrueMomentum = NULL;
   }
-  // Set momentum from vector
-  else if (fTrueMomentum) {
-    *fTrueMomentum = *aMom;
-  } else {
+  // member is NULL - allocate vector
+  else if (aMom != NULL) {
     fTrueMomentum = new AliFemtoThreeVector(*aMom);
   }
+
 }
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(const AliFemtoThreeVector& aMom)
@@ -149,15 +153,17 @@ void                   AliFemtoModelHiddenInfo::SetTrueMomentum(Double_t aPx, Do
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPoint(AliFemtoLorentzVector *aPos)
 {
-  if (aPos == NULL && fEmissionPoint != NULL) {
+  // neither are null - simple set
+  if (aPos != NULL && fEmissionPoint != NULL) {
+    *fEmissionPoint = *aPos;
+  }
+  // parameter is NULL - delete & null member
+  else if (fEmissionPoint != NULL) {
     delete fEmissionPoint;
     fEmissionPoint = NULL;
   }
-  // Set position from vector
-  else if (fEmissionPoint) {
-    *fEmissionPoint = *aPos;
-  }
-  else {
+  // member is NULL - allocate vector
+  else if (aPos != NULL) {
     fEmissionPoint = new AliFemtoLorentzVector(*aPos);
   }
 }
@@ -224,16 +230,17 @@ Double_t                  AliFemtoModelHiddenInfo::GetMassPos() const
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentumPos(AliFemtoThreeVector *aMom)
 {
-  // NULL removes the momentum
-  if (aMom == NULL && fTrueMomentumPos != NULL) {
+  // neither are null - simple set
+  if (aMom != NULL && fTrueMomentumPos != NULL) {
+    *fTrueMomentumPos = *aMom;
+  }
+  // parameter is NULL - delete & null member
+  else if (fTrueMomentumPos != NULL) {
     delete fTrueMomentumPos;
     fTrueMomentumPos = NULL;
   }
-  // Set momentum from vector
-  else if (fTrueMomentumPos) {
-    *fTrueMomentumPos = *aMom;
-  }
-  else {
+  // member is NULL - allocate vector
+  else if (aMom != NULL) {
     fTrueMomentumPos = new AliFemtoThreeVector(*aMom);
   }
 }
@@ -263,15 +270,17 @@ void                   AliFemtoModelHiddenInfo::SetTrueMomentumPos(Double_t aPx,
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPointPos(AliFemtoLorentzVector *aPos)
 {
-  if (aPos == NULL && fEmissionPointPos != NULL) {
+  // neither are null - simple set
+  if (aPos != NULL && fEmissionPointNeg != NULL) {
+    *fEmissionPointPos = *aPos;
+  }
+  // parameter is NULL - delete & null member
+  else if (fEmissionPointPos != NULL) {
     delete fEmissionPointPos;
     fEmissionPointPos = NULL;
   }
-  // Set position from vector
-  else if (fEmissionPointPos) {
-    *fEmissionPointPos = *aPos;
-  }
-  else {
+  // member is NULL - allocate vector
+  else if (aPos != NULL) {
     fEmissionPointPos = new AliFemtoLorentzVector(*aPos);
   }
 }
@@ -334,15 +343,17 @@ Double_t                  AliFemtoModelHiddenInfo::GetMassNeg() const
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentumNeg(AliFemtoThreeVector *aMom)
 {
-  if (aMom == NULL && fTrueMomentumNeg != NULL) {
+  // neither are null - simple set
+  if (aMom != NULL && fTrueMomentumNeg != NULL) {
+    *fTrueMomentumNeg = *aMom;
+  }
+  // parameter is NULL - delete & null member
+  else if (fTrueMomentumNeg != NULL) {
     delete fTrueMomentumNeg;
     fTrueMomentumNeg = NULL;
   }
-  // Set momentum from vector
-  else if (fTrueMomentumNeg) {
-    *fTrueMomentumNeg = *aMom;
-  }
-  else {
+  // member is NULL - allocate vector
+  else if (aMom != NULL) {
     fTrueMomentumNeg = new AliFemtoThreeVector(*aMom);
   }
 }
@@ -372,15 +383,17 @@ void                   AliFemtoModelHiddenInfo::SetTrueMomentumNeg(Double_t aPx,
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetEmissionPointNeg(AliFemtoLorentzVector *aPos)
 {
-   if (aPos == NULL && fEmissionPointNeg != NULL) {
+  // neither are null - simple set
+  if (aPos != NULL && fEmissionPointNeg != NULL) {
+    *fEmissionPointNeg = *aPos;
+  }
+  // parameter is NULL - delete & null member
+  else if (fEmissionPointNeg != NULL) {
     delete fEmissionPointNeg;
     fEmissionPointNeg = NULL;
   }
-  // Set position from vector
-  else if (fEmissionPointNeg) {
-    *fEmissionPointNeg = *aPos;
-  }
-  else {
+  // member is NULL - allocate vector
+  else if (aPos != NULL) {
     fEmissionPointNeg = new AliFemtoLorentzVector(*aPos);
   }
 }

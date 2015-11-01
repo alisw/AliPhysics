@@ -17,6 +17,7 @@ class TH2F;
 class TH3F;
 class TF1;
 class TSpline3;
+class AliADCalibData;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -84,6 +85,7 @@ private:
   TH1F	      *fHistMeanTimeDifference;
   TH2F	      *fHistMeanTimeCorrelation;
   TH2F	      *fHistMeanTimeSumDiff;
+  TH2F	      *fHistDecision;
   TH2F	      *fHistDecisionBasic;
   TH2F	      *fHistDecisionRobust;
   
@@ -105,6 +107,20 @@ private:
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
   TH3F	      *fHistTimeVsChargePerPM_UnCorr;
+  
+  /*Experimental gain monitoring*/
+  TH2F	      *fHistChargeTriggerPerChannel;
+  TH2F	      *fHistChargeTriggerPerChannel_ADAND;
+  TH2F	      *fHistChargeTriggerPerChannel_PF;
+  TH2F	      *fHistChargeTriggerPerChannel_ADANDPF;
+  TH1F	      *fHistChargeTriggerADA;
+  TH1F	      *fHistChargeTriggerADA_ADAND;
+  TH1F	      *fHistChargeTriggerADA_PF;
+  TH1F	      *fHistChargeTriggerADA_ADANDPF;
+  TH1F	      *fHistChargeTriggerADC;
+  TH1F	      *fHistChargeTriggerADC_ADAND;
+  TH1F	      *fHistChargeTriggerADC_PF;
+  TH1F	      *fHistChargeTriggerADC_ADANDPF;
   
   /*Robust time testing*/
   TH1F	      *fHistMedianTimeADA;
@@ -129,12 +145,14 @@ private:
   void         SetTimeSlewing();
   TSpline3     *fTimeSlewingSpline[16]; //Time slewing splines
   Float_t      CorrectLeadingTime(Int_t i, Float_t time, Float_t adc);
+  void	       SetCalibData();
+  AliADCalibData* fCalibData;      // calibration data
   
 
   AliAnalysisTaskADPilot(const AliAnalysisTaskADPilot&);            // not implemented
   AliAnalysisTaskADPilot& operator=(const AliAnalysisTaskADPilot&); // not implemented
   
-  ClassDef(AliAnalysisTaskADPilot, 1);
+  ClassDef(AliAnalysisTaskADPilot, 3);
 };
 
 #endif

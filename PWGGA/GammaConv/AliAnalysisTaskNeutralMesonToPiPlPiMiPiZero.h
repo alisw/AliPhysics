@@ -1,3 +1,4 @@
+
 #ifndef ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
 #define ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
 
@@ -75,7 +76,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
-    	
+
 		// routines for neutral pion candidates from pure conversion
 		void ProcessNeutralPionCandidatesPureConversions();	
 		void ProcessTrueNeutralPionCandidatesPureConversions(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -92,9 +93,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void ProcessPionCandidates();
 		void ProcessMCParticles();
 		void CalculateMesonCandidates();
-        void CalculateBackground();
+		void CalculateBackground();
 		void UpdateEventByEventData();
-        
+
 		Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
 		Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
 		Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
@@ -104,7 +105,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 
 		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
 		AliPrimaryPionSelector			*fPionSelector;								// primary charged pion selector, basic selection of pi+,pi-
-		AliGammaConversionAODBGHandler 	**fBGHandler;								// BG handler
+		AliGammaConversionAODBGHandler	**fBGHandlerPiPl;							// BG handler Pos Pion
+		AliGammaConversionAODBGHandler	**fBGHandlerPiMi;							// BG handler Neg Pion
 		AliESDEvent 					*fESDEvent;									// current event
 		AliMCEvent 						*fMCEvent;									// current MC event
 		AliStack 						*fMCStack;									// current MC stack
@@ -121,6 +123,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TList 							*fGoodConvGammas;							// good conv gammas after selection
 		TList 							*fClusterCandidates; 						//! good calo gammas after selection 
 		TList 							*fNeutralPionCandidates;					// good neutral pion candidates
+		TList 							*fPosPionCandidates;						// good positive pion candidates
+		TList 							*fNegPionCandidates;						// good negative pion candidates
 		TList 							*fGoodVirtualParticles;						// combination of pi+pi- candidates
 		TList 							*fEventCutArray;							// array with event cuts
 		TList 							*fGammaCutArray;							// array with Conversion Cuts
@@ -153,7 +157,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F	 						**fHistoGammaGammaInvMassPt;				// array of histos of gamma-gamma, invMass, pT_{gamma gamma}
 		TH2F	 						**fHistoMotherInvMassPt;					// array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
 		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				// array of THnSparseF of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}, Z, M
-		TH2F 							**fHistoMotherBackInvMassPt;				// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
 		
 		// pure MC properties
@@ -217,7 +224,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 4 );
+		ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 5);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

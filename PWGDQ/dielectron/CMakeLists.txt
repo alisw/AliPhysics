@@ -27,54 +27,50 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/BtoJPSI
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
                    )
 
 # Sources in alphabetical order
 set(SRCS
-      AliAnalysisTaskDielectronEfficiency.cxx
-      AliAnalysisTaskDielectronFilter.cxx
-      AliAnalysisTaskDielectronME.cxx
-      AliAnalysisTaskDielectronReadAODBranch.cxx
-      AliAnalysisTaskDielectronSE.cxx
-      AliAnalysisTaskMultiDielectron.cxx
-      AliAnalysisTaskMultiDielectronTG.cxx
-      AliAnalysisTaskRandomRejection.cxx
-      AliAnalysisTaskReducedTree.cxx
-      AliAnalysisTaskSingleParticle.cxx
-      AliAnalysisTaskElectronEfficiency.cxx
-      AliDielectronBtoJPSItoEleCDFfitFCN.cxx
-      AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
-      AliDielectronBtoJPSItoEleCDFfitHandler.cxx
-      AliDielectronBtoJPSItoEle.cxx
-      AliDielectronCF.cxx
-      AliDielectronCFdraw.cxx
-      AliDielectronCutGroup.cxx
-      AliDielectronCutQA.cxx
-      AliDielectron.cxx
-      AliDielectronDebugTree.cxx
-      AliDielectronEventCuts.cxx
-      AliDielectronEvent.cxx
-      AliDielectronHelper.cxx
-      AliDielectronHF.cxx
-      AliDielectronHFhelper.cxx
-      AliDielectronHistos.cxx
-      AliDielectronMC.cxx
-      AliDielectronMixingHandler.cxx
-      AliDielectronPair.cxx
-      AliDielectronPairLegCuts.cxx
-      AliDielectronPID.cxx
-      AliDielectronSignalBase.cxx
-      AliDielectronSignalExt.cxx
-      AliDielectronSignalFunc.cxx
-      AliDielectronSignalMC.cxx
-      AliDielectronSpectrum.cxx
-      AliDielectronTrackCuts.cxx
-      AliDielectronTrackRotator.cxx
-      AliDielectronTRDpidCut.cxx
-      AliDielectronV0Cuts.cxx
-      AliDielectronVarCuts.cxx
-      AliDielectronVarManager.cxx
-      AliReducedEvent.cxx
+      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
+      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitFCNfitter.cxx
+      BtoJPSI/AliDielectronBtoJPSItoEleCDFfitHandler.cxx
+      BtoJPSI/AliDielectronBtoJPSItoEle.cxx
+      core/AliDielectronCF.cxx
+      core/AliDielectronCFdraw.cxx
+      core/AliDielectronCutGroup.cxx
+      core/AliDielectronCutQA.cxx
+      core/AliDielectron.cxx
+      core/AliDielectronDebugTree.cxx
+      core/AliDielectronEventCuts.cxx
+      core/AliDielectronEvent.cxx
+      core/AliDielectronHelper.cxx
+      core/AliDielectronHF.cxx
+      core/AliDielectronHFhelper.cxx
+      core/AliDielectronHistos.cxx
+      core/AliDielectronMC.cxx
+      core/AliDielectronMixingHandler.cxx
+      core/AliDielectronPair.cxx
+      core/AliDielectronPairLegCuts.cxx
+      core/AliDielectronPID.cxx
+      core/AliDielectronSignalMC.cxx
+      core/AliDielectronTrackCuts.cxx
+      core/AliDielectronTrackRotator.cxx
+      core/AliDielectronV0Cuts.cxx
+      core/AliDielectronVarCuts.cxx
+      core/AliDielectronVarManager.cxx
+      core/AliAnalysisTaskDielectronFilter.cxx
+      core/AliAnalysisTaskDielectronReadAODBranch.cxx
+      core/AliAnalysisTaskMultiDielectron.cxx
+      core/AliAnalysisTaskRandomRejection.cxx
+      core/AliAnalysisTaskElectronEfficiency.cxx
+      JPSI/AliDielectronSignalBase.cxx
+      JPSI/AliDielectronSignalExt.cxx
+      JPSI/AliDielectronSignalFunc.cxx
+      JPSI/AliDielectronSpectrum.cxx
    )
 
 # Headers from sources
@@ -85,11 +81,10 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase PWGLFforward2)
-
 # Generate the ROOT map
 # Dependecies
+set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase )
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 

@@ -41,7 +41,7 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
   void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;                              }
   void SetIsFull(Bool_t isFull)    { fIsFull       = isFull;                            }
 
-  void SetEvsHCuts(Double_t cuts[5])  const { AliMuonsHFHeader::SetSelectionCuts(cuts); }
+  void SetEvsHCuts(Double_t cuts[5]) const;
 
  private:
 

@@ -727,14 +727,14 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinsSpsmass=60;
    const Int_t nbinsSpsptjet=200;
    const Int_t nbinsSpsptD=50;
-   const Int_t nbinsSpsz=72;
+   const Int_t nbinsSpsz=144;
    const Int_t nbinsSpsphi=100;
     
    const Float_t pttracklims[2]={0.,200.};
    Float_t ptjetlims[2]={0.,150.};
    if(!fJetCont->GetRhoName().IsNull()) ptjetlims[0]=-50.;
    const Float_t ptDlims[2]={0.,50.};
-   const Float_t zlims[2]={0.,1.4};
+   const Float_t zlims[2]={0.,1.2};
    const Float_t philims[2]={0.,6.3};
    const Float_t etalims[2]={-1.5,1.5};
    

@@ -41,6 +41,7 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptQA.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

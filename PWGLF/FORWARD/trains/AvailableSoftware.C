@@ -18,6 +18,7 @@
 # include <TList.h>
 # include <TPRegexp.h>
 # include <TObjString.h>
+# include <fstream>
 #else
 class TString;
 class TList;
@@ -31,6 +32,15 @@ class TList;
  */
 struct AvailableSoftware
 {
+  static const char* GetField(TObject* o)
+  {
+    static TString r;
+    if (!o) return "";
+    TString s(o->GetName());
+    TString t = s.Strip(TString::kBoth,' ');
+    r = t.Strip(TString::kBoth, '\t');
+    return r.Data();
+  }
   /** 
    * Get the full map of packages to dependencies
    * 
@@ -46,32 +56,48 @@ struct AvailableSoftware
 	      "sed -e '/\\/*td.*>/d' | "
 	      "sed -e 's/<a.*>\\(.*\\)<\\/a>/\\1/'");
     TString    values = gSystem->GetFromPipe(c);
-    TObjArray* tokens = values.Tokenize(" \t\n");
+    TObjArray* tokens = values.Tokenize("\n");
     Int_t      n      = tokens->GetEntries();
+    std::ofstream out("values");
+    out << values << std::endl;
+    out.close();
+    // Printf("%s", values.Data());
     // tokens->ls();
-    for (Int_t i = 0; i < n; i += 2) { // 2-3 lines per package
-      TObjString* opack = static_cast<TObjString*>(tokens->At(i+0));
+    for (Int_t i = 0; i < n; i += 1) { // 2-3 lines per package
+      TObject* opack = tokens->At(i+0);
+      TString pack = GetField(opack);
+      if (pack.IsNull()) {
+	i += 2;
+	continue;
+      }
       TObjString* odeps = static_cast<TObjString*>(tokens->At(i+1));
-      TObjString* onext = static_cast<TObjString*>(tokens->At(i+2));
-      if (onext &&
-	  (onext->String().EqualTo("n/a") ||
-	   onext->String().EqualTo("Available"))) i++;
+      TObjString* oblank= static_cast<TObjString*>(tokens->At(i+2));
+      TObjString* oavail= static_cast<TObjString*>(tokens->At(i+3));
+      TObjString* odate = static_cast<TObjString*>(tokens->At(i+4));
+      i += 4;
+      if (oblank) {
+	TString blk = GetField(oblank);
+	if (!blk.IsNull())
+	  ::Warning("", "blanck is not blanck: \"%s\"", oblank->GetName());
+      }
+      if (oavail) {
+	TString avail = GetField(oavail);
+	if (!avail.EqualTo("Available")) continue;
+      }
       
-      TString& pack = opack->String();
+      // TString& pack = opack->String();
       pack.ReplaceAll("VO_ALICE@", "");
       
-      TString& deps = odeps->String();
+      // TString& deps = odeps->String();
+      TString deps = GetField(odeps);
       deps.ReplaceAll("VO_ALICE@", "");
-      if (deps.EqualTo("n/a") || deps.EqualTo("Available")) deps = "";
-      
-      // Info("", "Package: %s, Dependencies: %s", pack.Data(), deps.Data());
-
       if (!(pack.BeginsWith("AliPhysics") ||
 	    pack.BeginsWith("AliRoot") ||
 	    pack.BeginsWith("ROOT"))) continue;
       if (pack.Contains(".post_install")) continue;
 
       l.Add(new TNamed(pack, deps));
+      // Printf("%-30s: %s", pack.Data(), deps.Data());
     }
     l.Sort();
     // l.ls();
@@ -110,7 +136,8 @@ struct AvailableSoftware
     if (!query.IsNull() && (!list && !last && !nots && !rele && !anat)) {
       Info("GetPackage", "%s=%s already specified, leaving that",
 	   name.Data(), query.Data());
-      return 0;
+      TObject* o = l->FindObject(Form("%s::%s",name.Data(),query.Data()));
+      return o;
     }
     
     TPRegexp pRele(Form("%s::v[0-9]-[0-9]+-(Rev-|)[0-9]+.*",name.Data()));

@@ -13,6 +13,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              TString EvTrigger="MB",
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateCRC2=kFALSE,
+                             Int_t CRC2nEtaBins=6,
                              Bool_t bUseCRCRecentering=kFALSE,
                              TString QVecWeightsFileName,
                              Bool_t bUsePhiEtaWeights,
@@ -285,6 +286,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
+ taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
  taskQC->SetUseVZERO(bUseVZERO);

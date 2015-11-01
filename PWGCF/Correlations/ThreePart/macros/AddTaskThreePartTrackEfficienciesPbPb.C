@@ -2,7 +2,6 @@
 #include "AliAnalysisTaskCorrelation3p_lightefficiency.h"
 #endif
 AliAnalysisTaskCorrelation3p_lightefficiency* AddTaskThreePartTrackEfficienciesPbPb (const char* name = "ThreePartTrackEfficienciesPbPb",
-						      const char* options = "",
 						      const char* centrality = "V0M",
 						      const Double_t MinPt = 0.5,
 						      const Double_t MaxPt = 16.0,
@@ -45,7 +44,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency* AddTaskThreePartTrackEfficienciesP
   
   const char* fname = Form("%s_%1.0f_%1.0f",name,MinPt,MaxPt);
   const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinPt,MaxPt);
-  AliAnalysisTaskCorrelation3p_lightefficiency* task = new AliAnalysisTaskCorrelation3p_lightefficiency(Form("%sTask", tname), options);
+  AliAnalysisTaskCorrelation3p_lightefficiency* task = new AliAnalysisTaskCorrelation3p_lightefficiency(Form("%sTask", tname), "");
 
   task->SetCentralityEstimator(centrality);
   task->SetMinPt(MinPt);

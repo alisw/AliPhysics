@@ -529,7 +529,7 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const TString& firedTriggerClasses,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuCutElement::Print(Option_t* /*opt*/) const
+void AliAnalysisMuMuCutElement::Print(Option_t* opt) const
 {
   /// Printout of the cut information
   if ( !fCutMethod )
@@ -537,12 +537,26 @@ void AliAnalysisMuMuCutElement::Print(Option_t* /*opt*/) const
     Init();
   }
   
-  std::cout << Form("Cut %s(%p) %s(%p)::%s(%s) [",
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if (sopt.Contains("PTR"))
+  {
+    std::cout << Form("Cut %s(%p) %s(%p)::%s(%s) [",
                     fName.Data(),this,
                     fCutObject->ClassName(),
                     fCutObject,
                     GetCallMethodName(),
                     GetCallMethodProto());
+  }
+  else
+  {
+    std::cout << Form("Cut %s %s::%s(%s) [",
+                      fName.Data(),
+                      fCutObject->ClassName(),
+                      GetCallMethodName(),
+                      GetCallMethodProto());
+  }
   
   if ( IsEventCutter() ) std::cout << " E";
   if ( IsEventHandlerCutter() ) std::cout << " EH";

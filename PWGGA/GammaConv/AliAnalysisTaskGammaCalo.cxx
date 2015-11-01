@@ -628,7 +628,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		fHistoNEvents[iCut] = new TH1F("NEvents","NEvents",11,-0.5,10.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
@@ -649,7 +649,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 			fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",11,-0.5,10.5);
 			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
 				TString TriggerNames = "Not Trigger: ";
 				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
@@ -1479,19 +1479,21 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 	//
 	// Called for each event
 	//
+
+	if(fIsMC> 0) fMCEvent = MCEvent();
+	if(fMCEvent == NULL) fIsMC = 0;
+
+	fInputEvent = InputEvent();
+
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+	if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
+	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			fHistoNEvents[iCut]->Fill(eventQuality);
 			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 		}
 		return;
 	}
-	
-	if(fIsMC> 0) fMCEvent = MCEvent();
-	if(fMCEvent == NULL) fIsMC = 0;
-	
-	fInputEvent = InputEvent();
 	
 	if(fIsMC>0 && fInputEvent->IsA()==AliESDEvent::Class()){
 		fMCStack = fMCEvent->Stack();
@@ -1639,7 +1641,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
 
 	// match tracks to clusters
-	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC);
 
 	// vertex
 	Double_t vertex[3] = {0};
@@ -1652,8 +1654,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 		if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
 		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
-		if (!clus) continue;
-		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){ delete clus; continue;}
+		if(!clus) continue;
+		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC,fWeightJetJetMC)){ delete clus; continue;}
 		// TLorentzvector with cluster
 		TLorentzVector clusterVector;
 		clus->GetMomentum(clusterVector,vertex);

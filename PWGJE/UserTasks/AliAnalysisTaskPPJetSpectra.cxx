@@ -13,6 +13,7 @@
 
 #include "AliAnalysisTaskPPJetSpectra.h"
 #include "AliAnalysisHelperJetTasks.h"
+#include <iostream>
 
 ClassImp(AliAnalysisTaskPPJetSpectra)
 

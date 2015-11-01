@@ -41,6 +41,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
+#include "AliAnalysisUtils.h"
 #include <iostream>
 using namespace std;
 
@@ -63,6 +64,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fMeanPtCuts(NULL),
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
+  fUtils(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -90,7 +92,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fImpactParameterMin(0.0),
   fImpactParameterMax(100.0),
   fhistTPCvsGlobalMult(0),
-  fData2011(kFALSE)
+  fData2011(kFALSE),
+  fCheckPileUp(kFALSE)
 {
   //constructor 
 }
@@ -112,6 +115,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fMeanPtCuts(NULL),
   fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010()),
   fStandardGlobalCuts(AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()),
+  fUtils(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -139,7 +143,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fImpactParameterMin(0.0),
   fImpactParameterMax(100.0),
   fhistTPCvsGlobalMult(0),
-  fData2011(kFALSE)
+  fData2011(kFALSE),
+  fCheckPileUp(kFALSE)
 {
   //constructor 
 }
@@ -161,6 +166,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fMeanPtCuts(NULL),
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
+  fUtils(NULL),
   fCutPrimaryVertexX(that.fCutPrimaryVertexX),
   fPrimaryVertexXmax(that.fPrimaryVertexXmax),
   fPrimaryVertexXmin(that.fPrimaryVertexXmin),
@@ -188,16 +194,23 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fImpactParameterMin(that.fImpactParameterMin),
   fImpactParameterMax(that.fImpactParameterMax),
   fhistTPCvsGlobalMult(that.fhistTPCvsGlobalMult),
-  fData2011(that.fData2011)
+  fData2011(that.fData2011),
+  fCheckPileUp(that.fCheckPileUp)
 {
   if (that.fQA) DefineHistograms();
-  //copy constructor 
+  //copy constructor
   if (that.fRefMultCuts)
     fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
   if (that.fMeanPtCuts)
     fMeanPtCuts = new AliFlowTrackCuts(*(that.fMeanPtCuts));
   fStandardTPCcuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
   fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
+    
+  if (that.fUtils) {
+      fUtils = new AliAnalysisUtils();
+      fUtils->SetUseMVPlpSelection(kTRUE);
+      fUtils->SetUseOutOfBunchPileUp(kTRUE);
+  }
 }
 
 ////-----------------------------------------------------------------------
@@ -208,6 +221,10 @@ AliFlowEventCuts::~AliFlowEventCuts()
   delete fRefMultCuts;
   delete fStandardGlobalCuts;
   delete fStandardTPCcuts;
+  if(fUtils) {
+      delete fUtils;
+      fUtils = NULL;
+  }
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
@@ -246,6 +263,12 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   if (that.fMeanPtCuts) *fMeanPtCuts=*(that.fMeanPtCuts);
   fStandardTPCcuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
   fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
+  if (that.fUtils) {
+      fUtils = new AliAnalysisUtils();
+      fUtils->SetUseMVPlpSelection(kTRUE);
+      fUtils->SetUseOutOfBunchPileUp(kTRUE);
+  }
+
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
@@ -270,6 +293,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutZDCtiming=that.fCutZDCtiming;
   fhistTPCvsGlobalMult=that.fhistTPCvsGlobalMult;
   fData2011=that.fData2011;
+  fCheckPileUp=that.fCheckPileUp;
   return *this;
 }
 
@@ -298,9 +322,23 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
         pvtxz = pvtx->GetZ();
         ncontrib = pvtx->GetNContributors();
     }
+    
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
+    
+    
+  if(fCheckPileUp){
+      // pile-up rejection
+      if(!fUtils) {
+          fUtils = new AliAnalysisUtils();
+          fUtils->SetUseMVPlpSelection(kTRUE);
+          fUtils->SetUseOutOfBunchPileUp(kTRUE);
+      }
+      if(fUtils->IsPileUpEvent(aodevent)) pass = kFALSE;
+   }
+    
+
   Int_t multTPC = 0;
   Int_t multGlobal = 0; 
 

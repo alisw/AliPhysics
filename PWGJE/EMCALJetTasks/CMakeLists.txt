@@ -25,6 +25,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
@@ -61,6 +62,7 @@ set(SRCS
     AliLocalRhoParameter.cxx
     AliPythiaInfo.cxx
     AliRhoParameter.cxx
+    Tracks/AliAnalysisTaskLEDCheck.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx

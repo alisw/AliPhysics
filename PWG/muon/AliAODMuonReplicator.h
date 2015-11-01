@@ -28,6 +28,7 @@ class AliAODTZERO;
 class AliAODHeader;
 class AliAODTracklets;
 class AliAODZDC;
+class AliAODAD;
 
 class AliAODMuonReplicator : public AliAODBranchReplicator
 {
@@ -61,6 +62,7 @@ private:
   mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable AliAODVZERO* fVZERO; //! internal vzero object
   mutable AliAODTZERO* fTZERO; //! internal tzero object
+  mutable AliAODAD* fAD; //!internal ad object
   mutable AliAODHeader* fHeader; //! internal header object
   mutable AliAODTracklets* fTracklets; //! internal tracklets object
   mutable AliAODZDC* fZDC; //! internal zdc object
@@ -78,7 +80,7 @@ private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,7) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,8) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

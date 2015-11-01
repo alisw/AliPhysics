@@ -30,6 +30,9 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetNeutralMass(Double_t m)     { fNeutralMass     = m ; }
   void           SetMassDistribution(TH1D *hM)  { fMassFromDistr = kTRUE; fHMassDistrib = hM;}
   void           SetMassDistributionFromFile(TString filename, TString histoname);
+  void           SetpTDistributionFromFile(TString filename, TString histoname);
+  void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
+  
   
  protected:
   void           Run();

@@ -167,7 +167,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetCuts(cDensity);
   // Set lumping (nEta,nPhi)
   task->GetDensityCalculator().SetLumping(32,4);
-  // Recalculate phi taking (x,y) offset of IP into account 
+  // Recalculate eta,phi taking (x,y) offset of IP into account 
   task->GetDensityCalculator().SetRecalculatePhi(true);
   // Least acceptable quality of ELoss fits
   task->GetDensityCalculator()

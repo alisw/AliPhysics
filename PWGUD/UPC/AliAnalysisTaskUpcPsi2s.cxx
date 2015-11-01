@@ -77,7 +77,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
@@ -100,7 +100,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
@@ -403,6 +403,12 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistPsi2sMassCoherent->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
   fListHist->Add(fHistPsi2sMassCoherent);
   
+  TString CutNameZDC[4] = {"CCUP4","< 8 neutrons","0 netrons","No timing"};
+  fHistZDCCuts = new TH1D("fHistZDCCuts","fHistZDCCuts",4,0.5,4.5);
+  for (Int_t i = 0; i<4; i++) fHistZDCCuts->GetXaxis()->SetBinLabel(i+1,CutNameZDC[i].Data());
+  fListHist->Add(fHistZDCCuts);
+  
+  
   fListSystematics = new TList();
   fListSystematics->SetOwner();
   fListSystematics->SetName("fListSystematics");
@@ -593,8 +599,21 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   
   if(!isMC && !trigger.Contains("CCUP") ) return;
   
+  
+  
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
+  
+  AliAODZDC *fZDCdata = aod->GetZDCData();
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  fZDCAtime = fZDCdata->GetZNATime();
+  fZDCCtime = fZDCdata->GetZNCTime();
+  
+  if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
+  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
+  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
+  if(fZDCAtime == 0 && fZDCCtime == 0) fHistZDCCuts->Fill(4);
 
   //primary vertex
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
@@ -606,7 +625,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 
   //VZERO, ZDC
   AliAODVZERO *fV0data = aod ->GetVZEROData();
-  AliAODZDC *fZDCdata = aod->GetZDCData();
+  
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
@@ -614,9 +633,6 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   
   fHistNeventsJPsi->Fill(4);
   fHistNeventsPsi2s->Fill(4);
-  
-  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
 
   if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
   
@@ -976,8 +992,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 				
-		//new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
-		//((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
+		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
 		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -1072,8 +1088,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 		
-		//new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
-		//((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
@@ -1276,6 +1292,20 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
+  
+  
+  AliESDZDC *fZDCdata = esd->GetESDZDC();
+  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  if(fZDCdata->IsZNAhit()) fZDCAtime= fZDCdata->GetZDCTDCCorrected(12,0);
+  else fZDCAtime=-666;
+  if(fZDCdata->IsZNChit()) fZDCCtime= fZDCdata->GetZDCTDCCorrected(10,0);
+  else fZDCCtime=-666;
+  
+  if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
+  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
+  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
+  if(fZDCAtime == -666 && fZDCCtime == -666) fHistZDCCuts->Fill(4);
 
   //primary vertex
   AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
@@ -1287,14 +1317,11 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
 
   //VZERO, ZDC
   AliESDVZERO *fV0data = esd->GetVZEROData();
-  AliESDZDC *fZDCdata = esd->GetESDZDC();
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
   if(fV0Adecision != AliESDVZERO::kV0Empty || fV0Cdecision != AliESDVZERO::kV0Empty) return;
-  
-  fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0]; 
+
   if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
   
   fHistNeventsJPsi->Fill(4);
@@ -1491,6 +1518,10 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fPerNum = esd->GetPeriodNumber();
   fOrbNum = esd->GetOrbitNumber();
   fBCrossNum = esd->GetBunchCrossNumber();
+
+  //TOF trigger mask
+  const AliTOFHeader *tofH = esd->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
 
   //primary vertex
   AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();

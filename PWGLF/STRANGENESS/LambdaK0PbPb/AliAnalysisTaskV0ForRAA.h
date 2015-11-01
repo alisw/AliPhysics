@@ -123,7 +123,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0 = ptK0; fCtauPtCutL = ptL;
     Printf("AliAnalysisTaskV0ForRAA::SetCtauCut ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
   void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters = doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
-  //  void SetEtaSignCut(Double_t etasign)                        {fEtaSignCut = etasign;Printf("AliAnalysisTaskV0ForRAA::eta cut sign on  daughters %2.2f !",etasign);}
+   void SetEtaSignCut(Double_t etasign)                        {fEtaSignCut = etasign;Printf("AliAnalysisTaskV0ForRAA::eta cut sign on  daughters %2.2f !",etasign);}
   void SetLowHighMassCut(Double_t lowK=0.25,Double_t highK=0.75,Double_t lowL=1.05,Double_t highL=1.25){fK0sLowMassCut = lowK; fK0sHighMassCut = highK; fLLowMassCut = lowL; fLHighMassCut = highL; Printf("AliAnalysisTaskV0ForRAA::SetLowHighMassCut K0s: low = %1.3f  high = %1.3f  Lambda: low = %1.3f  high = %1.3f",lowK,highK,lowL,highL);}
   void SetMinMaxNCLSITS(Int_t minP,Int_t maxP,Int_t minN,Int_t maxN,Bool_t switchCase=kFALSE,Double_t radmin=0.0000,Double_t radmax=10000.0){fMinNCLSITSPos = minP; fMaxNCLSITSPos = maxP;fMinNCLSITSNeg = minN; fMaxNCLSITSNeg = maxN;fSwitchCaseITSCls = switchCase;fDecRadCutITSMin=radmin;fDecRadCutITSMax=radmax;Printf("AliAnalysisTaskV0ForRAA::SetMinMaxNCLSITS for V0 daughters minPos %i, maxPos %i, minNeg %i, maxNeg %i switch case %i for 2D decay rad. min: %3.2f  max: %3.2f",minP,maxP,minN,maxN,switchCase,radmin,radmax);}
   
@@ -518,7 +518,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   //eta and pt
   Double_t  fEtaCutMCDaughters;        // eta cut for MC daughters on/off
   Double_t  fEtaCutMCDaughtersVal;     // eta cut value for MC daughters
-  // Double_t  fEtaSignCut;            // eta cutsign daughters
+  Double_t  fEtaSignCut;            // eta cutsign daughters
 
   //for FD and sec. variables calc
   Bool_t    fUseXi0;                   // take xi0 into account

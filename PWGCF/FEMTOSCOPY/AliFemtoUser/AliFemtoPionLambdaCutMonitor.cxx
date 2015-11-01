@@ -4,6 +4,7 @@
 
 
 #include "AliFemtoPionLambdaCutMonitor.h"
+#include "AliFemtoModelHiddenInfo.h"
 
 #include "AliFemtoEvent.h"
 
@@ -12,6 +13,7 @@ static const double PionMass = 0.13956995;
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH2I.h>
 #include <TObjArray.h>
 
 #ifdef __ROOT__
@@ -20,15 +22,23 @@ static const double PionMass = 0.13956995;
   /// \endcond
 #endif
 
-AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing):
-  _centrality(NULL),
-  _multiplicity(NULL),
-  _vertex_z(NULL),
-  _vertex_xy(NULL)
+AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing,
+                                           const bool is_mc_analysis,
+                                           const bool suffix_output):
+  AliFemtoCutMonitor()
+  , _centrality(NULL)
+  , _multiplicity(NULL)
+  , _vertex_z(NULL)
+  , _vertex_xy(NULL)
+  , _collection_size_pass(NULL)
+  , _collection_size_fail(NULL)
+  , _prev_ev(NULL)
+  , _prev_pion_coll_size(0)
+  , _prev_lam_coll_size(0)
 {
   const char *title_suffix = (passing ? " (PASS)" : " (FAIL)");
 
-  const TString pf(passing ? "_P" : "_F");
+  const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
   _centrality = new TH1F(
     "centrality" + pf,
@@ -54,6 +64,20 @@ AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing):
     48, -1.0f, 1.0f,
     48, -1.0f, 1.0f
   );
+
+  // only create _collection_size histograms if this is the passing event cut monitor
+  if (passing) {
+     _collection_size_pass = new TH2I("collection_size_p",
+                                      "Size of Particle Collection in Passing Events;"
+                                      "# pions;"
+                                      "# lambdas;",
+                                      100, -0.5, 2000.5,
+                                      10, -0.5, 10.5);
+     _collection_size_fail = (TH2I*)_collection_size_pass->Clone("collection_size_f");
+  } else {
+     _collection_size_pass = NULL;
+     _collection_size_fail = NULL;
+  }
 }
 
 TList*
@@ -67,10 +91,15 @@ AliFemtoPionLambdaCutMonitor::Event::GetOutputList()
   output->Add(_vertex_z);
   output->Add(_vertex_xy);
 
+  if (_collection_size_pass) {
+     output->Add(_collection_size_pass);
+     output->Add(_collection_size_fail);
+  }
+
   return olist;
 }
 
-void 
+void
 AliFemtoPionLambdaCutMonitor::Event::Fill(const AliFemtoEvent* ev)
 {
   const Float_t centrality = ev->CentralityV0();
@@ -81,30 +110,62 @@ AliFemtoPionLambdaCutMonitor::Event::Fill(const AliFemtoEvent* ev)
   _multiplicity->Fill(multiplicty);
   _vertex_z->Fill(vertex.z());
   _vertex_xy->Fill(vertex.x(), vertex.y());
+
+  if (_collection_size_pass && ev == _prev_ev) {
+    _collection_size_pass->Fill(_prev_pion_coll_size, _prev_lam_coll_size);
+    _prev_ev = NULL;
+  }
+}
+
+void AliFemtoPionLambdaCutMonitor::Event::EventBegin(const AliFemtoEvent* ev)
+{
+  if (_collection_size_pass == NULL) {
+    return;
+  }
+  _prev_ev = ev;
+}
+
+void AliFemtoPionLambdaCutMonitor::Event::EventEnd(const AliFemtoEvent* ev)
+{
+  // this cut monitor does not monitor collection size
+  if (_collection_size_pass == NULL) {
+    return;
+  }
+
+  // We were not called with the previous event - must have gone to failed
+  if (_prev_ev != NULL) {
+    _collection_size_fail->Fill(_prev_pion_coll_size, _prev_lam_coll_size);
+    _prev_ev = NULL;
+  }
 }
 
 
-AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing, const TString& typestr):
-  _minv(NULL),
-  _ypt(NULL),
-  fPtPhi(NULL),
-  fEtaPhi(NULL)
+void
+AliFemtoPionLambdaCutMonitor::Event::Fill(const AliFemtoParticleCollection *coll_1,
+                                          const AliFemtoParticleCollection *coll_2)
+{
+  _prev_lam_coll_size = coll_1->size();
+  _prev_pion_coll_size = coll_2->size();
+}
+
+AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
+                                         const TString& typestr,
+                                         const bool is_mc_analysis,
+                                         const bool suffix_output):
+  AliFemtoCutMonitor()
+  , fYPt(NULL)
+  , fPtPhi(NULL)
+  , fEtaPhi(NULL)
+  , fMinv(NULL)
 {
   // Build 'standard' format for histogram titles
   //  <ParticleType> <Title> <Pass/Fail>; <AxisInfo>
   const TString title_format = TString::Format("%s %%s %s; %%s",
                                                typestr.Data(),
                                                (passing ? "(PASS)" : "(FAIL)"));
-  const TString pf(passing ? "_P" : "_F");
+  const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
-  _minv = new TH1F(
-    "Mass" + pf,
-    TString::Format(title_format, "M_{inv}",
-                                  "M_{inv} (GeV);"
-                                  "dN/dM"),
-    144, 0.120, .158);
-
-  _ypt = new TH2F(
+  fYPt = new TH2F(
     "eta_Pt" + pf,
     TString::Format(title_format,
                     "\\eta vs p_{T}",
@@ -118,19 +179,29 @@ AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing, const TString& type
     "PtPhi" + pf,
     TString::Format(title_format,
                     "Pt vs Phi",
-                    "p_{T} (GeV);"
-                    "Phi (rads)"),
-    144,  0.0, 3.0,
-    100, -TMath::Pi(), TMath::Pi());
+                    "Phi (rads)",
+                    "p_{T} (GeV);"),
+    144, -TMath::Pi(), TMath::Pi(),
+    144,  0.0, 3.0);
 
   fEtaPhi = new TH2F(
     "EtaPhi" + pf,
     TString::Format(title_format,
                     "\\eta vs Phi",
-                    "\\eta;"
-                    "Phi (rads)"),
-    144, -1.4, 1.4,
-    144, -TMath::Pi(), TMath::Pi());
+                    "Phi (rads)",
+                    "\\eta;"),
+    144, -TMath::Pi(), TMath::Pi(),
+    144, -1.4, 1.4);
+
+  if (is_mc_analysis) {
+    fMinv = new TH1F(
+      "mc_Mass" + pf,
+      TString::Format(title_format, "M_{inv}",
+                                    "M_{inv} (GeV);"
+                                    "dN/dM"),
+      144, 0.0120, 1.158);
+  }
+
 }
 
 
@@ -140,10 +211,12 @@ AliFemtoPionLambdaCutMonitor::Pion::GetOutputList()
   TList *olist = new TList();
   TCollection *output = olist;
 
-  output->Add(_minv);
-  output->Add(_ypt);
+  output->Add(fYPt);
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
+  if (fMinv) {
+    output->Add(fMinv);
+  }
 
   return olist;
 }
@@ -153,38 +226,48 @@ void AliFemtoPionLambdaCutMonitor::Pion::Fill(const AliFemtoTrack* track)
   const float pz = track->P().z(),
               pt = track->Pt(),
              phi = track->P().Phi();
+
   const double energy = ::sqrt(track->P().Mag2() + PionMass * PionMass),
                   eta = 0.5 * ::log((energy + pz) / (energy - pz));
 
 
-  _minv->Fill(track->GetMass());
-  _ypt->Fill(eta, pt);
-  fPtPhi->Fill(pt, phi);
-  fEtaPhi->Fill(eta, phi);
+  if (fMinv) {
+    fMinv->Fill(track->GetMass());
+  }
+
+  fYPt->Fill(eta, pt);
+  fPtPhi->Fill(phi, pt);
+  fEtaPhi->Fill(phi, eta);
 }
 
 AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,
                                              const TString& typestr,
-                                             const AliFemtoAnalysisPionLambda::LambdaType ltype):
-  fLambdaType(ltype),
-  _minv(NULL),
-  _ypt(NULL),
-  _dedx_pt_pro(NULL),
-  _dedx_pt_pi(NULL)
+                                             const AliFemtoAnalysisPionLambda::LambdaType ltype,
+                                             const bool is_mc_analysis,
+                                             const bool suffix_output):
+  AliFemtoCutMonitor()
+  , fLambdaType(ltype)
+  , _minv(NULL)
+  , _ypt(NULL)
+  , _dedx_pt_pro(NULL)
+  , _dedx_pt_pi(NULL)
+  , fCosPointingAngle(NULL)
+  , fMCTrue_minv(NULL)
+  , fMCTrue_ypt(NULL)
 {
   // Build 'standard' format for histogram titles
   //  <ParticleType> <Title> <Pass/Fail>; <AxisInfo>
   const TString title_format = TString::Format("%s %%s %s; %%s",
                                          typestr.Data(),
                                          (passing ? "(PASS)" : "(FAIL)"));
-  const TString pf(passing ? "_P" : "_F");
+  const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
   _minv = new TH1F(
     "V0_Minv" + pf,
     TString::Format(title_format,
                     "M_{inv}",
                     "M_{inv} (GeV); dN/dM"),
-    576, 1.07, 1.118);
+    576, 1.070, 1.140);
 
   _ypt = new TH2F(
     "V0_YPt" + pf,
@@ -215,6 +298,33 @@ AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,
                     "dN/(p_{T} $\\cdot$ dE/dx)"),
      128, 0, 2.2,
      128, 0, 500.0);
+
+  fCosPointingAngle = new TH1F(
+    "CosPointingAngle",
+    TString::Format(title_format,
+                    "Cosine Pointing Angle",
+                    "Cos(\\Theta);"),
+     60, 0.98, 1.002);
+  fCosPointingAngle->Sumw2();
+
+  if (is_mc_analysis) {
+    fMCTrue_minv = _minv = new TH1F(
+      "mc_V0_Minv" + pf,
+      TString::Format(title_format,
+                      "(MC) M_{inv}",
+                      "M_{inv} (GeV); dN/dM"),
+      576, 1.070, 1.140);
+
+    fMCTrue_ypt = new TH2F(
+      "mc_V0_YPt" + pf,
+      TString::Format(title_format,
+                      "(MC) \\eta vs p_{T}",
+                      "\\eta;"
+                      "p_{T} (GeV);"
+                      "dN/(p_{T} $\\cdot$ \\eta)"),
+      140, -1.4, 1.4,
+      100, 0.0, 3.0);
+  }
 }
 
 
@@ -228,13 +338,13 @@ AliFemtoPionLambdaCutMonitor::Lambda::Fill(const AliFemtoV0* track)
 
                minv = (type_is_lambda) ? track->MassLambda() : track->MassAntiLambda(),
 
-            pt_pion = (type_is_lambda) ? track->PtNeg() : track->PtPos(), 
-          pt_proton = (type_is_lambda) ? track->PtPos() : track->PtNeg(), 
+            pt_pion = (type_is_lambda) ? track->PtNeg() : track->PtPos(),
+          pt_proton = (type_is_lambda) ? track->PtPos() : track->PtNeg(),
 
-           eta_pion = (type_is_lambda) ? track->EtaNeg() : track->EtaPos(), 
-         eta_proton = (type_is_lambda) ? track->EtaPos() : track->EtaNeg(), 
+           eta_pion = (type_is_lambda) ? track->EtaNeg() : track->EtaPos(),
+         eta_proton = (type_is_lambda) ? track->EtaPos() : track->EtaNeg(),
 
-          dedx_pion = (type_is_lambda) ? track->DedxNeg() : track->DedxPos(), 
+          dedx_pion = (type_is_lambda) ? track->DedxNeg() : track->DedxPos(),
         dedx_proton = (type_is_lambda) ? track->DedxPos() : track->DedxNeg();
 /*
        nsig_tpc_pro = (type_is_lambda) ? track->PosNSigmaTPCP() : track->NegNSigmaTPCP(),
@@ -248,6 +358,18 @@ AliFemtoPionLambdaCutMonitor::Lambda::Fill(const AliFemtoV0* track)
   _ypt->Fill(eta, pt);
   _dedx_pt_pro->Fill(pt_proton, dedx_proton);
   _dedx_pt_pi->Fill(pt_pion, dedx_pion);
+  fCosPointingAngle->Fill(track->CosPointingAngle());
+
+  if (fMCTrue_minv) {
+    const AliFemtoModelHiddenInfo *mc_data = dynamic_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+    if (mc_data) {
+      fMCTrue_minv->Fill(mc_data->GetMass());
+      fMCTrue_ypt->Fill(mc_data->GetTrueMomentum()->PseudoRapidity(),
+                        mc_data->GetTrueMomentum()->Perp());
+    }
+  }
+
+
 }
 
 
@@ -261,33 +383,122 @@ AliFemtoPionLambdaCutMonitor::Lambda::GetOutputList()
   output->Add(_ypt);
   output->Add(_dedx_pt_pro);
   output->Add(_dedx_pt_pi);
+  output->Add(fCosPointingAngle);
+
+  if (fMCTrue_minv) {
+    output->Add(fMCTrue_minv);
+    output->Add(fMCTrue_ypt);
+  }
 
   return olist;
 }
 
 
-
-
-AliFemtoPionLambdaCutMonitor::Pair::Pair(const bool passing, const TString& typestr):
-  _minv(NULL)
+AliFemtoPionLambdaCutMonitor::Pair::Pair(const bool passing,
+                                         const TString& typestr,
+                                         const bool is_mc_analysis,
+                                         const bool suffix_output
+                                         ):
+  AliFemtoCutMonitor()
+  , _minv(NULL)
+  , fAvgSep_pion(NULL)
+  , fAvgSep_proton(NULL)
+  , fMCTrue_minv(NULL)
+  , fMCTrue_kstar(NULL)
 {
   const TString title_format = TString::Format("%s %%s %s; %%s",
                                                typestr.Data(),
                                                (passing ? "(PASS)" : "(FAIL)"));
-  const TString pf(passing ? "_P" : "_F");
+  const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
   _minv = new TH1F(
     "Pair_Minv" + pf,
     TString::Format(title_format, "M_{inv}", "M_{inv} (GeV)"),
     288, 0.0, 8.0);
+
+  fAvgSep_pion = new TH1F(
+    "AvgSep_pi" + pf,
+    TString::Format(title_format,
+      "AvgSep Pion Daughter", "Average Separation (cm)"),
+    144, 0.0, 20.0);
+
+  fAvgSep_proton = new TH1F(
+    "AvgSep_pro" + pf,
+    TString::Format(title_format,
+      "AvgSep Proton Daughter", "Average Separation (cm)"),
+    144, 0.0, 20.0);
+
+  cout << "[PAIR] MONTE CARLO : " << is_mc_analysis << "\n";
+
+  if (is_mc_analysis) {
+    fMCTrue_minv = new TH2F(
+      "mc_Minv" + pf,
+      TString::Format(title_format,
+        "Minv True vs Reconstructed",
+        "M_{inv}^{r} (GeV);"
+        "M_{inv}^{t} (Gev);"),
+      144, 1.0, 6.0,
+      144, 1.0, 6.0);
+
+    fMCTrue_kstar = new TH2F(
+      "mc_Kstar" + pf,
+      TString::Format(title_format,
+        "K* True vs Reconstructed",
+        "K*^{r} (GeV);"
+        "K*^{t} (Gev);"),
+      144, 0.0, 4.0,
+      144, 0.0, 4.0);
+  }
 }
 
 void
 AliFemtoPionLambdaCutMonitor::Pair::Fill(const AliFemtoPair *pair)
 {
-  _minv->Fill(pair->MInv());
-}
+  const float minv = pair->MInv(),
+             kstar = pair->KStar();
 
+  _minv->Fill(minv);
+
+  if (fMCTrue_minv) {
+    const AliFemtoModelHiddenInfo *mc_1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
+                                  *mc_2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
+    if (mc_1 && mc_2) {
+
+      const AliFemtoV0 *lambda = pair->Track1()->V0();
+      const AliFemtoTrack *pion = pair->Track2()->Track();
+
+      // get true momentums
+      const AliFemtoThreeVector& momentum_1 = *mc_1->GetTrueMomentum(),
+                                 momentum_2 = *mc_2->GetTrueMomentum();
+
+      // get true mass and calculate true energy
+      const float m1 = mc_1->GetMass(),
+                  e1 = TMath::Sqrt(m1 * m1 + momentum_1.Mag2()),
+
+                  m2 = mc_2->GetMass(),
+                  e2 = TMath::Sqrt(m2 * m2 + momentum_2.Mag2());
+
+      // build momentum four-vectors
+      const AliFemtoLorentzVector p1(e1, momentum_1),
+                                  p2(e2, momentum_2),
+                                  p_sum = p1 + p2,
+                                  p_diff = p1 - p2;
+
+      // Minv is just the magnitude of the momentum sum
+      fMCTrue_minv->Fill(minv, p_sum.m());
+
+      const float tQ = pow(m1 * m1 - m2 * m2, 2) / p_sum.m2(),
+                  q2 = tQ - p_diff.m2(),
+
+                  mc_kstar = TMath::Sqrt(q2 >= 0 ? q2 : 0.0) / 2.0;
+
+      // kstar calculation
+      fMCTrue_kstar->Fill(kstar, mc_kstar);
+
+    }
+  }
+
+}
 
 
 TList*
@@ -297,6 +508,14 @@ AliFemtoPionLambdaCutMonitor::Pair::GetOutputList()
   TCollection *output = olist;
 
   output->Add(_minv);
+
+  if (fMCTrue_kstar) {
+    output->Add(fMCTrue_kstar);
+  }
+
+  if (fMCTrue_minv) {
+    output->Add(fMCTrue_minv);
+  }
 
   return olist;
 };

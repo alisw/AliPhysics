@@ -502,16 +502,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   fHistEventMultiplicity->Fill(1);
   fHistEventMultiplicity->Fill(7);
   
-  //_____________________________________________________
-  //   Centrality  
-  
-  AliCentrality *centrality = lESDevent->GetCentrality();
-  Float_t percentile=centrality->GetCentralityPercentile(fCentrality);
-  if(Flatten(percentile))return;
-  Int_t TrackNumber = lESDevent->GetNumberOfTracks();
-  fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
-  
-  //______________________________________________________
+ //______________________________________________________
   // PID
   
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -550,8 +541,20 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
   Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB          = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-    
-  fHistTrackMultiplicity->Fill(TrackNumber,percentile); 
+
+  //_____________________________________________________
+  //   Centrality  
+  
+  AliCentrality *centrality = lESDevent->GetCentrality();
+  Float_t percentile=centrality->GetCentralityPercentile(fCentrality);
+  if(isSelectedCentral == kTRUE){
+    if(Flatten(percentile))return;
+  }
+  
+  Int_t TrackNumber = lESDevent->GetNumberOfTracks();
+  fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
+  
+  
     
   Int_t eventtype = -999;
   

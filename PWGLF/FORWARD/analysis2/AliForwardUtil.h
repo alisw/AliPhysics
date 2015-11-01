@@ -22,6 +22,7 @@ class TH1;
 class TF1;
 class TAxis;
 class TArrayD;
+class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
 class AliAnalysisTaskSE;
@@ -221,6 +222,20 @@ public:
   static Double_t GetEtaFromStrip(UShort_t det, Char_t ring, 
 				  UShort_t sec, UShort_t strip, Double_t zvtx);
   /** 
+   * Recalculate the eta of a strip.  This will correct for an off-set IP
+   * 
+   * @param r      Ring identifier 
+   * @param strip  Strip number 
+   * @param eta    Nominal eta, on return corrected
+   * @param phi    Nominal phi, on return corrected
+   * @param ipX    IP X coordinate 
+   * @param ipY    IP Y coordinate 
+   * 
+   */
+  static void GetEtaPhiFromStrip(Char_t r, UShort_t strip,
+				 Double_t& eta, Double_t& phi , 
+				 Double_t ipX,  Double_t ipY);
+  /** 
    * Get the azimuthal angle of a strip
    * 
    * @param ring  Ring identifier 'I' or 'O'
@@ -389,6 +404,73 @@ public:
 			   TArrayD& bins);
   /* @} */
 
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Centrality functions 
+   */
+  /** 
+   * Compatbility function to retrieve the centrality from the event.
+   * 
+   * @param event   Event 
+   * @param method  Centrality method 
+   * @param qual    Quality flat - 0 is good 
+   * @param verbose If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems 
+   */
+  static Float_t GetCentralityCompat(const AliVEvent& event,
+				     const TString&   method,
+				     Int_t&           qual,
+				     Bool_t           verbose);
+  //____________________________________________________________________
+  /** 
+   * Compatbility function to retrieve the centrality from the ESD event. 
+   * 
+   * @param event   Event 
+   * @param method  Centrality method 
+   * @param qual    Quality flat - 0 is good 
+   * @param verbose If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems 
+   */
+  static Float_t GetCentralityCompat(const AliESDEvent& event,
+				     const TString&     method,
+				     Int_t&             qual,
+				     Bool_t             verbose);
+  //____________________________________________________________________
+  /** 
+   * Compatbility function to retrieve the centrality from the AOD header. 
+   * 
+   * @param event   Event 
+   * @param method  Centrality method 
+   * @param qual    Quality flat - 0 is good 
+   * @param verbose If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems 
+   */
+  static Float_t GetCentralityCompat(const AliAODEvent& event,
+				     const TString&     method,
+				     Int_t&             qual,
+				     Bool_t             verbose);
+  //____________________________________________________________________
+  /** 
+   * Get the centrality of the event.  One can pass a both an ESD and
+   * AOD event.  Also, there's fall-back to the old centrality objects
+   * in case the newer AliMultSelection object isn't found.
+   * 
+   * @param event    Event 
+   * @param method   Centrality method to use 
+   * @param qual     On return, the quality - 0 is good 
+   * @param verbose  If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems. 
+   */
+  static Float_t GetCentrality(const AliVEvent& event, 
+			       const TString&   method, 
+			       Int_t&           qual, 
+			       Bool_t           verbose=false);
+  
   //==================================================================
   /** 
    * @{ 

@@ -25,6 +25,7 @@
 #include "Riostream.h"
 #include "TRandom3.h"
 #include "TSystem.h"
+#include "TArrayI.h"
 #include "TGraphErrors.h"
 #include "TStopwatch.h"
 #include "AliFlowEventSimple.h"
@@ -51,6 +52,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQcumulants();
   virtual void InitializeArraysForDiffCorrelations(); 
+  virtual void InitializeArraysForSymmetryPlanes();
   virtual void InitializeArraysForNestedLoops(); 
 
   // 1.) Method Init() and methods called in it (!):
@@ -67,6 +69,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void BookEverythingForStandardCandles();
    virtual void BookEverythingForQcumulants();
    virtual void BookEverythingForDiffCorrelations();
+   virtual void BookEverythingForSymmetryPlanes();
    
   // 2.) Method Make() and methods called in it:
   virtual void Make(AliFlowEventSimple *anEvent);
@@ -77,6 +80,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void CalculateCorrelations(AliFlowEventSimple *anEvent);
    virtual void CalculateDiffCorrelations(AliFlowEventSimple *anEvent);
    virtual void CalculateEbECumulants(AliFlowEventSimple *anEvent);
+   virtual void CalculateSymmetryPlanes(AliFlowEventSimple *anEvent);
    virtual void ResetQvector();
    virtual void CrossCheckWithNestedLoops(AliFlowEventSimple *anEvent);
    virtual void CrossCheckDiffWithNestedLoops(AliFlowEventSimple *anEvent);
@@ -96,6 +100,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void GetPointersForStandardCandles(); 
    virtual void GetPointersForQcumulants(); 
    virtual void GetPointersForDiffCorrelations(); 
+   virtual void GetPointersForSymmetryPlanes();
 
   // 5.) Setters and getters:
   //  5.0.) Base list and internal flags:
@@ -262,6 +267,14 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetRangesDiffBins(Double_t* const rdb) {this->fRangesDiffBins = rdb;};
   Double_t* GetRangesDiffBins() const {return this->fRangesDiffBins;};
 
+  //  5.10.) Symmetry plane correlations:
+  void SetSymmetryPlanesList(TList* const spl) {this->fSymmetryPlanesList = spl;};
+  TList* GetSymmetryPlanesList() const {return this->fSymmetryPlanesList;}
+  void SetSymmetryPlanesFlagsPro(TProfile* const spfp) {this->fSymmetryPlanesFlagsPro = spfp;};
+  TProfile* GetSymmetryPlanesFlagsPro() const {return this->fSymmetryPlanesFlagsPro;};
+  void SetCalculateSymmetryPlanes(Bool_t csp) {this->fCalculateSymmetryPlanes = csp;};
+  Bool_t GetCalculateSymmetryPlanes() const {return this->fCalculateSymmetryPlanes;};
+
   // 6.) The rest:
   virtual void WriteHistograms(TString outputFileName);
   virtual void WriteHistograms(TDirectoryFile *outputFileName);
@@ -290,6 +303,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   static void DumpPointsForDurham(TH1F *h);
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
   TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
+  virtual Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k=0);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -304,7 +318,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 6.) Nested loops;
   // 7.) 'Standard candles';
   // 8.) Q-cumulants;
-  // 9.) Differential correlations. 
+  // 9.) Differential correlations;
+  // 10.) Symmetry plane correlations.
 
   // 0.) Base list and internal flags:
   TList* fHistList;            // base list to hold all output object (a.k.a. grandmother of all lists)
@@ -417,7 +432,17 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TProfile *fDiffCorrelationsPro[2][4];  // multi-particle correlations [0=cos,1=sin][1p,2p,3p,4p]
   UInt_t fDiffBinNo;                     // differential bin number
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,2);
+  // 10.) Symmetry plane correlations:
+  TList *fSymmetryPlanesList;         // list to hold all correlations between symmetry planes
+  TProfile *fSymmetryPlanesFlagsPro;  // profile to hold all flags for symmetry plane correlations
+  Bool_t fCalculateSymmetryPlanes;    // calculate correlations between symmetry planes
+  //Bool_t ...
+  TProfile *fSymmetryPlanesPro[1][2]; // symmetry planes correlations [[0]:(Psi2n,Psi1n),[1]:...][[0]:n=1,[1]:n=2,...]
+  //Int_t fnHighestCorrelatorSPC;     // highest generic correlator to be calculated TBI implement this more differentially
+  //Int_t fnHighestHarmonicSPC;       // highest harmonic for evaluation of generic correlators TBI implement this more differentially
+  //Int_t fnHighestOptimizerSPC;      // highest optimizer TBI implement this more differentially
+
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,3);
 
 };
 

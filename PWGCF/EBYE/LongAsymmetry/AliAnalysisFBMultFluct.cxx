@@ -25,6 +25,7 @@
 #include "AliAODVertex.h"
 
 #include "AliAODVZERO.h" 
+#include <iostream>
 
 // example of an analysis task creating a p_t spectrum
 // Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing

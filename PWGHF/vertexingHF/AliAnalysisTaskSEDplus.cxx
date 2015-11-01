@@ -960,7 +960,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       }
 
 
-      Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0, dxy=0;
+      Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0, dxy=0, dd0max=0;
       if(fCutsDistr||fFillNtuple||fDoImpPar){
 	dlen=d->DecayLength();
 	cosp=d->CosPointingAngle();
@@ -969,20 +969,25 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
 	sigvert=d->GetSigmaVert();         
 	ptmax=0;
-	for(Int_t i=0;i<3;i++){
-	  if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
-	}
 	dlxy=d->NormalizedDecayLengthXY();
 	dxy = d->DecayLengthXY();
 	cxy=d->CosPointingAngleXY();
+	for(Int_t i=0; i<3; i++) {
+	  if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
+	  Double_t diffIP, errdiffIP;
+	  d->Getd0MeasMinusExpProng(i,aod->GetMagneticField(),diffIP,errdiffIP);
+	  Double_t normdd0= diffIP/errdiffIP;
+	  if(i==0) dd0max=normdd0;
+	  else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+	}
       }
       Double_t impparXY=d->ImpParXY()*10000.;
        //for all THnSParse except for FD
-      Double_t arrayForSparse[6]={invMass,ptCand,impparXY,cxy,dxy,dlxy};
+      Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max};
 
       //for THnSparse for FD
-      Double_t arrayForSparseFD[7]={invMass,ptCand,impparXY,cxy,dxy,dlxy,ptB};
-      Double_t arrayForSparseTrue[7]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,ptB};
+      Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,ptB};
+      Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,dd0max,ptB};
       Double_t flagOrigin = 0;
 
       //Ntuple
@@ -1027,7 +1032,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	PostData(4,fNtupleDplus);
       }
         
-      if(fFillNtuple==2){
+      if(fFillNtuple==2 && passTightCuts){
 	Float_t tmp[5];
 	tmp[0]=pdgCode;
 	if(isFeeddown) tmp[0]+=5000.;
@@ -1284,43 +1289,41 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
-  /// Histos for impact paramter study
+  /// Histos for impact parameter study
 
   Int_t nmassbins=GetNBinsHistos();
   Double_t maxmult;
   if(fSystem==1) maxmult=5000;
   else maxmult=200;
 
-  const Int_t Nvar = 6;
-  const Int_t NvarFD = 7;
-  
   //dimensions for THnSparse which are NOT for BFeed
-  Int_t nbins[Nvar]={nmassbins,80,fNImpParBins,30,100,30};
-  Double_t xmin[Nvar]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.};
-  Double_t xmax[Nvar]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.};
+  Int_t nbins[kVarForSparse]={nmassbins,80,fNImpParBins,30,100,30,40};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.};
 
   //dimensions for THnSparse for BFeed 
-  Int_t nbinsFD[NvarFD]={nmassbins,80,fNImpParBins,30,100,30,84};
-  Double_t xminFD[NvarFD]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-2};
-  Double_t xmaxFD[NvarFD]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,40};
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,80,fNImpParBins,30,100,30,40,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,40};
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   fHistMassPtImpParTC[0]=new THnSparseF("hMassPtImpParAll",
 					"Mass vs. pt vs.imppar - All",
-					Nvar,nbins,xmin,xmax);
+					kVarForSparse,nbins,xmin,xmax);
   fHistMassPtImpParTC[1]=new THnSparseF("hMassPtImpParPrompt",
 					"Mass vs. pt vs.imppar - promptD",
-					Nvar,nbins,xmin,xmax);
+					kVarForSparse,nbins,xmin,xmax);
   fHistMassPtImpParTC[2]=new THnSparseF("hMassPtImpParBfeed",
 					"Mass vs. pt vs.imppar - DfromB",
-					NvarFD,nbinsFD,xminFD,xmaxFD);
+					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
   fHistMassPtImpParTC[3]=new THnSparseF("hMassPtImpParTrueBfeed",
 					"Mass vs. pt vs.true imppar -DfromB",
-					NvarFD,nbinsFD,xminFD,xmaxFD);
+					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
   fHistMassPtImpParTC[4]=new THnSparseF("hMassPtImpParBkg",
 				        "Mass vs. pt vs.imppar - backgr.",
-					Nvar,nbins,xmin,xmax);
+					kVarForSparse,nbins,xmin,xmax);
+
 
   for(Int_t i=0; i<5; i++){
     fHistMassPtImpParTC[i]->GetAxis(0)->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
@@ -1329,9 +1332,10 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
     fHistMassPtImpParTC[i]->GetAxis(3)->SetTitle("cos(#theta_{P}^{xy})");
     fHistMassPtImpParTC[i]->GetAxis(4)->SetTitle("decL XY (cm)");
     fHistMassPtImpParTC[i]->GetAxis(5)->SetTitle("Norm decL XY");
+    fHistMassPtImpParTC[i]->GetAxis(6)->SetTitle("Norm max d0-d0exp");
 
     if(i == 2 || i == 3)
-      fHistMassPtImpParTC[i]->GetAxis(6)->SetTitle("p_{T}^{B} (GeV/c)");
+      fHistMassPtImpParTC[i]->GetAxis(7)->SetTitle("p_{T}^{B} (GeV/c)");
     
     fOutput->Add(fHistMassPtImpParTC[i]);
   }
@@ -1341,25 +1345,25 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
 void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   /// Histos for MC Acceptance histos
 
-  const Int_t NvarPrompt = 2;
-  const Int_t NvarFD = 3;
+  const Int_t nVarPrompt = 2;
+  const Int_t nVarFD = 3;
   
-  Int_t nbinsPrompt[NvarPrompt]={200,100};
-  Int_t nbinsFD[NvarFD]={200,100,200};
+  Int_t nbinsPrompt[nVarPrompt]={200,100};
+  Int_t nbinsFD[nVarFD]={200,100,200};
 
-  Double_t xminPrompt[NvarPrompt] = {0.,-1.};
-  Double_t xmaxPrompt[NvarPrompt] = {40.,1.};
+  Double_t xminPrompt[nVarPrompt] = {0.,-1.};
+  Double_t xmaxPrompt[nVarPrompt] = {40.,1.};
 
-  Double_t xminFD[NvarFD] = {0.,-1.,0.};
-  Double_t xmaxFD[NvarFD] = {40.,1.,40.};
+  Double_t xminFD[nVarFD] = {0.,-1.,0.};
+  Double_t xmaxFD[nVarFD] = {40.,1.,40.};
 
   //pt, y
-  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",NvarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt); 
+  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt); 
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
 
   //pt,y,ptB
-  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",NvarFD,nbinsFD,xminFD,xmaxFD);
+  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",nVarFD,nbinsFD,xminFD,xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
   fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");

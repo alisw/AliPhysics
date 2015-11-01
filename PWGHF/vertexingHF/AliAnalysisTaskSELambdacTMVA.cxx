@@ -1339,7 +1339,7 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 		pdgDaughter[2]=211;   
 
 		labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
-		if(labDp>0){
+		if(labDp>=0){
 			AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
 			Int_t pdgMom=fVertUtil->CheckOrigin(arrayMC,partDp,fKeepLcNotFromQuark ? kFALSE : kTRUE);
 			fhRecoPDGmom->Fill(pdgMom);

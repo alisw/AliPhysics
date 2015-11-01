@@ -36,7 +36,7 @@
 #include "AliAODMCHeader.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliLog.h"
-
+#include <iostream>
 
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
@@ -2753,7 +2753,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       phi = mcpart->Phi();
 
         //check photons in EMCAL //to be redefined with fIsoConeR
-      if((TMath::Abs(eta)>0.3) || (phi<1.8 || phi>(TMath::Pi()-0.4)))
+      if((TMath::Abs(eta)>0.27) || (phi<1.8 || phi>(TMath::Pi()-0.4)))
         continue;
 
         //cout<<"iTr: "<< iTr<<"\t Label: "<<mcpart->GetLabel()<<"\t coordinates eta: "<<eta<<" and phi: "<<phi<<endl;

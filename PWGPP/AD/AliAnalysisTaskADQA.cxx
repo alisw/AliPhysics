@@ -413,12 +413,9 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
     Printf("ERROR: No ESD AD");
     return;
   }
-  AliESDfriend *fESDfriend = fESD->FindFriend();
-  if (!fESDfriend) {
-    Printf("ERROR: No ESD friend");
-    return;
-  }
-  AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
+  AliESDfriend *fESDfriend = fESD->FindFriend();  
+  AliESDADfriend* esdADfriend = 0x0;
+  if(fESDfriend) esdADfriend = fESDfriend->GetADfriend();
   
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;

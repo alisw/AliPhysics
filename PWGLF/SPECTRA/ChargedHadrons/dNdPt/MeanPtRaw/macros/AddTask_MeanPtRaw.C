@@ -23,18 +23,17 @@ AliAnalysisTaskMeanPtRaw *AddTask_MeanPtRaw(char *contName = "MeanPtRaw", char *
   AliAnalysisTaskMeanPtRaw *task = new AliAnalysisTaskMeanPtRaw("pluettigMeanPt");
 
   // --- Set ESD track Cuts ---
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts *esdTrackCuts0 = CreatedNdPtTrackCuts(200);
-  AliESDtrackCuts *esdTrackCuts1 = CreatedNdPtTrackCuts(42);
-  AliESDtrackCuts *esdTrackCuts2 = CreatedNdPtTrackCuts(72);
+  AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+//   AliESDtrackCuts* esdTrackCutsTPCITSDefault = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+//   AliESDtrackCuts* esdTrackCutsTPCITS120Rows = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+//   esdTrackCutsTPCITS120Rows->SetMinNCrossedRowsTPC(120);
   
 
  // --- End track Cuts ---
 
-  task->AddAliESDtrackCut(esdTrackCuts0, "TPC-only tracking, cut number 42");
-  task->AddAliESDtrackCut(esdTrackCuts1, "TPC+ITS combine tracking + DCAr(pt) (2011)");
-  task->AddAliESDtrackCut(esdTrackCuts2, "TPC+ITS combine tracking + DCAr(pt) (2010)");
+  task->AddAliESDtrackCut(esdTrackCutsTPCOnly, "TPC-only tracking");
+//   task->AddAliESDtrackCut(esdTrackCutsTPCITSDefault, "TPC+ITS combined tracking, default");
+//   task->AddAliESDtrackCut(esdTrackCutsTPCITS120Rows, "TPC+ITS combined tracking, +120 crossedRows");
   task->SelectCollisionCandidates(AliVEvent::kMB);
   task->SetMaxVertexZ(10.);    // cm
 
