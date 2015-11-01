@@ -270,7 +270,7 @@ const char *AliHLTModulePreprocessor::DetectorName(Int_t detectorID)
 {
   // Returns the name of particular
   // detector identified by its index
-  if (detectorID < 0 || detectorID >= AliHLTDAQ::NumberOfDetectors()) 
+  if (detectorID < 0 || (detectorID >= AliHLTDAQ::NumberOfDetectors() && detectorID!=AliHLTDAQ::HLTId()))
     {
       TString errormessage;
       errormessage.Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,AliHLTDAQ::NumberOfDetectors()-1);
