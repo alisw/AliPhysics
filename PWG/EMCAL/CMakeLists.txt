@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
   )
 
 # Sources - alphabetical order
@@ -55,11 +56,6 @@ set(SRCS
   AliEmcalTenderTask.cxx
   AliEmcalTrackingQATask.cxx
   AliEmcalTrackPropagatorTask.cxx
-  AliEmcalTriggerBitConfig.cxx
-  AliEmcalTriggerDataGrid.cxx
-  AliEmcalTriggerMaker.cxx
-  AliEmcalTriggerPatchInfo.cxx
-  AliEmcalTriggerSetupInfo.cxx
   AliEsdSkimTask.cxx
   AliEsdTrackExt.cxx
   AliHadCorrTask.cxx
@@ -68,11 +64,22 @@ set(SRCS
   AliEMCALConfiguration.cxx
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
-  AliEmcalTriggerDecision.cxx
-  AliEmcalTriggerDecisionContainer.cxx
-  AliEmcalTriggerSelectionCuts.cxx
-  AliEmcalTriggerSelection.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
+  Trigger/AliEmcalTriggerBitConfig.cxx
+  Trigger/AliEmcalTriggerMaker.cxx
+  Trigger/AliEmcalTriggerMakerKernel.cxx
+  Trigger/AliEmcalTriggerMakerTask.cxx
+  Trigger/AliEmcalTriggerPatchInfo.cxx
+  Trigger/AliEmcalTriggerSetupInfo.cxx
+  Trigger/AliEmcalTriggerDecision.cxx
+  Trigger/AliEmcalTriggerDecisionContainer.cxx
+  Trigger/AliEmcalTriggerSelectionCuts.cxx
+  Trigger/AliEmcalTriggerSelection.cxx
+  Trigger/AliEmcalTriggerDataGridAP.cxx
+  Trigger/AliEmcalTriggerChannelContainerAP.cxx
+  Trigger/AliEmcalTriggerRawPatchAP.cxx
+  Trigger/AliEmcalTriggerPatchFinderAP.cxx
+  Trigger/AliEmcalTriggerAlgorithmAP.cxx
   )
 
 # Headers from sources

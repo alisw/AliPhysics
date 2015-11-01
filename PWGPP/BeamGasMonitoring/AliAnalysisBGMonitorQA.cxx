@@ -29,6 +29,9 @@
 #include "AliAnalysisUtils.h"
 #include "AliESDAD.h"
 #include "AliESDADfriend.h"
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 ClassImp(AliAnalysisBGMonitorQA)
 

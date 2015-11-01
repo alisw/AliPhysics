@@ -15,16 +15,10 @@
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;
 #pragma link C++ class AliDielectronVarManager+;
-#pragma link C++ class AliAnalysisTaskDielectronSE+;
-#pragma link C++ class AliAnalysisTaskDielectronME+;
 #pragma link C++ class AliAnalysisTaskDielectronFilter+;
-#pragma link C++ class AliAnalysisTaskDielectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;
-#pragma link C++ class AliDielectronSingleTG+;
-#pragma link C++ class AliAnalysisTaskMultiDielectronTG+;
 #pragma link C++ class AliAnalysisTaskRandomRejection+;
 #pragma link C++ class AliAnalysisTaskDielectronReadAODBranch+;
-#pragma link C++ class AliAnalysisTaskSingleParticle+;
 #pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
@@ -45,16 +39,8 @@
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitFCNfitter+;
 #pragma link C++ class AliDielectronBtoJPSItoEleCDFfitHandler+;
 #pragma link C++ class AliDielectronBtoJPSItoEle+;
-#pragma link C++ class AliDielectronTRDpidCut+;
 #pragma link C++ class AliDielectronSignalMC+;
 #pragma link C++ class AliDielectronEvent+;
 #pragma link C++ class AliDielectronMixingHandler+;
-#pragma link C++ class AliReducedEvent+;
-#pragma link C++ class AliReducedEventFriend+;
-#pragma link C++ class AliReducedTrack+;
-#pragma link C++ class AliReducedPair+;
-#pragma link C++ class AliReducedFMD+;
-#pragma link C++ class AliReducedCaloCluster+;
-#pragma link C++ class AliAnalysisTaskReducedTree+;
 
 #endif

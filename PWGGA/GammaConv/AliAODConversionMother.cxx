@@ -9,7 +9,7 @@ using namespace std;
 
 ClassImp(AliAODConversionMother)
 
-AliAODConversionMother::AliAODConversionMother() :
+AliAODConversionMother::AliAODConversionMother():
 AliAODConversionParticle(),
     fMCLabel(-1),
     fChi2(-1),
@@ -21,7 +21,6 @@ AliAODConversionParticle(),
     fdcaRPrimVtx(100),
     fQuality(0),
     fTrueMeson(0)
-   
 {
 	fLabel[0] = -1;
 	fLabel[1] = -1;
@@ -59,7 +58,7 @@ fTrueMeson(0)
     fLabel[2]=0;
 }
 
-AliAODConversionMother::AliAODConversionMother(AliAODConversionPhoton *y1,AliAODConversionPhoton *y2):
+AliAODConversionMother::AliAODConversionMother(AliAODConversionPhoton *y1, AliAODConversionPhoton *y2):
 AliAODConversionParticle(),
 fMCLabel(-1),
 fChi2(-1),
@@ -132,6 +131,46 @@ fTrueMeson(0)
     fLabel[0]=-1;
     fLabel[1]=-1;
     fLabel[2]=0;
+}
+
+
+AliAODConversionMother::AliAODConversionMother(AliAODConversionMother *meson1,AliAODConversionMother *meson2):
+AliAODConversionParticle(),
+fMCLabel(-1),
+fChi2(-1),
+fOpeningAngle(-1),
+fAlpha(-1),
+fWeight(1),
+fdcaBetweenPhotons(1),
+fdcaZPrimVtx(100),
+fdcaRPrimVtx(100),
+fQuality(0),
+fTrueMeson(0)
+{
+	// Set 4momentum
+	SetPxPyPzE(meson1->Px()+meson2->Px(),meson1->Py()+meson2->Py(),meson1->Pz()+meson2->Pz(),meson1->E()+meson2->E());
+
+	// Calculate Opening Angle
+	TVector3 v1(meson1->Px(),meson1->Py(),meson1->Pz());
+	TVector3 v2(meson2->Px(),meson2->Py(),meson2->Pz());
+	fOpeningAngle=v1.Angle(v2);
+
+	fProductionVtx[0]=0;
+	fProductionVtx[1]=0;
+	fProductionVtx[2]=0;
+
+	// Calculate Alpha
+	if((meson1->E()+meson2->E()) != 0){
+		fAlpha=(meson1->E()-meson2->E())/(meson1->E()+meson2->E());
+	}
+
+	// Set Chi2 to the mean chi2 of gammas
+	// fChi2=0.5*(y1->GetChi2perNDF()+y2->GetChi2perNDF());
+
+	//Set Decay Photon Labels
+	fLabel[0]=-1;
+	fLabel[1]=-1;
+	fLabel[2]=0;
 }
 
 
@@ -273,3 +312,4 @@ void AliAODConversionMother::DetermineMesonQuality(AliAODConversionPhoton* y1, A
    }
    
 }
+

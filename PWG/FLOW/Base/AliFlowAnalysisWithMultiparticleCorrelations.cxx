@@ -116,7 +116,11 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fUseDefaultBinning(kTRUE),
  fnDiffBins(-44),
  fRangesDiffBins(NULL),
- fDiffBinNo(-1)
+ fDiffBinNo(-1),
+ // 10.) Symmetry plane correlations:
+ fSymmetryPlanesList(NULL),
+ fSymmetryPlanesFlagsPro(NULL),
+ fCalculateSymmetryPlanes(kFALSE)
  {
   // Constructor.  
   
@@ -135,7 +139,8 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
   this->InitializeArraysForEbECumulants();
   this->InitializeArraysForWeights();
   this->InitializeArraysForQcumulants();
-  this->InitializeArraysForDiffCorrelations(); 
+  this->InitializeArraysForDiffCorrelations();
+  this->InitializeArraysForSymmetryPlanes();
   this->InitializeArraysForNestedLoops(); 
 
  } // end of AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCorrelations()
@@ -181,6 +186,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Init()
  this->BookEverythingForStandardCandles();
  this->BookEverythingForQcumulants();
  this->BookEverythingForDiffCorrelations(); 
+ this->BookEverythingForSymmetryPlanes();
 
  // d) Set all flags:
  // ... 
@@ -202,9 +208,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // d) Fill Q-vector components;
  // e) Calculate multi-particle correlations from Q-vector components; 
  // f) Calculate e-b-e cumulants; 
- // g) Reset Q-vector components;
- // h) Cross-check results with nested loops;
- // i) Dump the points.
+ // g) Calculate symmetry plane correlations;
+ // h) Reset Q-vector components;
+ // i) Cross-check results with nested loops;
+ // j) Dump the points.
 
  // a) Cross-check internal flags:
  if(fUseInternalFlags){if(!this->CrossCheckInternalFlags(anEvent)){return;}}
@@ -225,14 +232,17 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // f) Calculate e-b-e cumulants: 
  if(fCalculateEbECumulants){this->CalculateEbECumulants(anEvent);}
 
- // g) Reset Q-vector components:
+ // g) Calculate symmetry plane correlations:
+ if(fCalculateSymmetryPlanes){this->CalculateSymmetryPlanes(anEvent);}
+
+ // h) Reset Q-vector components:
  if(fCalculateQvector||fCalculateDiffQvectors){this->ResetQvector();}
 
- // h) Cross-check results with nested loops:
+ // i) Cross-check results with nested loops:
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
  if(fCrossCheckDiffWithNestedLoops){this->CrossCheckDiffWithNestedLoops(anEvent);}
 
- // i) Dump the points:
+ // j) Dump the points:
  if(fDumpThePoints){this->DumpThePoints(anEvent);}
  
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
@@ -552,6 +562,22 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForDiffCorrel
  fDiffHarmonics[3][3] = 2;
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForDiffCorrelations()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForSymmetryPlanes()
+{
+ // Initialize all arrays for symmetry plane correlations.
+
+ for(Int_t gc=0;gc<1;gc++) // 'generic correlator': [[0]:(Psi2n,Psi1n),[1]:...] TBI upper boundary will change
+ {
+  for(Int_t n=0;n<2;n++) // 'harmonic n for generic correlator': [[0]:n=1,[1]:n=2,...] TBI upper boundary will change
+  {
+   fSymmetryPlanesPro[gc][n] = NULL;
+  }
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForSymmetryPlanes()
 
 //=======================================================================================================================
 
@@ -1919,7 +1945,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  // f) Book and nest lists for nested loops;
  // g) Book and nest lists for 'standard candles';
  // h) Book and nest lists for Q-cumulants;
- // i) Book and nest lists for differential correlations.
+ // i) Book and nest lists for differential correlations;
+ // j) Book and nest lists for symmetry plane correlations.
 
  // a) Book and nest lists for control histograms:
  fControlHistogramsList = new TList();
@@ -1974,6 +2001,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  fDiffCorrelationsList->SetName("Differential Correlations");
  fDiffCorrelationsList->SetOwner(kTRUE);
  fHistList->Add(fDiffCorrelationsList);
+
+ // j) Book and nest lists for symmetry plane correlations:
+ fSymmetryPlanesList = new TList();
+ fSymmetryPlanesList->SetName("Symmetry_Plane_Correlations");
+ fSymmetryPlanesList->SetOwner(kTRUE);
+ fHistList->Add(fSymmetryPlanesList);
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
 
@@ -2620,6 +2653,56 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelat
 
 //=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlanes()
+{
+ // Book all the stuff for symmetry plane correlations.
+
+ // a) Book the profile holding all the flags for symmetry plane correlations;
+ // b) Book TProfile *fSymmetryPlanesPro[?][?]. TBI check the exact dimensions in the header file.
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlanes()";
+
+ // a) Book the profile holding all the flags for symmetry plane correlations:
+ fSymmetryPlanesFlagsPro = new TProfile("fSymmetryPlanesFlagsPro","Flags for Symmetry Plane Correlations (SPC)",1,0,1);
+ fSymmetryPlanesFlagsPro->SetTickLength(-0.01,"Y");
+ fSymmetryPlanesFlagsPro->SetMarkerStyle(25);
+ fSymmetryPlanesFlagsPro->SetLabelSize(0.03);
+ fSymmetryPlanesFlagsPro->SetLabelOffset(0.02,"Y");
+ fSymmetryPlanesFlagsPro->SetStats(kFALSE);
+ fSymmetryPlanesFlagsPro->SetFillColor(kGray);
+ fSymmetryPlanesFlagsPro->SetLineColor(kBlack);
+ fSymmetryPlanesFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateSymmetryPlanes"); fSymmetryPlanesFlagsPro->Fill(0.5,fCalculateSymmetryPlanes);
+ //fSymmetryPlanesFlagsPro->GetXaxis()->SetBinLabel(2,"TBI"); fSymmetryPlanesFlagsPro->Fill(1.5,TBI);
+ fSymmetryPlanesList->Add(fSymmetryPlanesFlagsPro);
+
+ if(!fCalculateSymmetryPlanes){return;}
+
+ // b) Book TProfile *fSymmetryPlanesPro[?][?]: TBI check the exact dimensions in the header file
+ TString sTitle[1][2] = {"#LT#LTcos[4(#psi_{2}-#psi_{1})]#GT#GT","#LT#LTcos[4(#psi_{4}-#psi_{2})]#GT#GT"}; // TBI check h.w. harmonic 4, as well as h.w. indices on symmetry planes
+ TString sLabels[4] = {"k = 0","k = 1","k = 2","k = 3"};
+ for(Int_t gc=0;gc<1;gc++) // 'generic correlator': [[0]:(Psi2n,Psi1n),[1]:...] TBI upper boundary will change
+ {
+  for(Int_t n=0;n<2;n++) // 'harmonic n for generic correlator': [[0]:n=1,[1]:n=2,...] TBI upper boundary will change
+  {
+   fSymmetryPlanesPro[gc][n] = new TProfile(Form("%d,%d",gc,n),sTitle[gc][n].Data(),4,0.,4.); // TBI this is a landmine, introduce fnHighestOptimizerSPC eventually instead of '4'
+   fSymmetryPlanesPro[gc][n]->Sumw2();
+   fSymmetryPlanesPro[gc][n]->SetStats(kFALSE);
+   fSymmetryPlanesPro[gc][n]->SetMarkerColor(kRed);
+   fSymmetryPlanesPro[gc][n]->SetMarkerStyle(kFullSquare);
+   fSymmetryPlanesPro[gc][n]->SetLineColor(kBlack);
+   fSymmetryPlanesPro[gc][n]->SetLabelSize(0.0544);
+   for(Int_t o=0;o<4;o++) // TBI h.w. '4'
+   {
+    fSymmetryPlanesPro[gc][n]->GetXaxis()->SetBinLabel(o+1,sLabels[o].Data());
+   } // for(Int_t o=0;o<4;o++)
+   fSymmetryPlanesList->Add(fSymmetryPlanesPro[gc][n]);
+  }
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlanes()
+
+//=======================================================================================================================
+
 void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForEbECumulants()
 {
  // Book all the stuff for event-by-event cumulants.
@@ -2980,7 +3063,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *hi
  // e) Get pointers for correlations;
  // f) Get pointers for 'standard candles';
  // g) Get pointers for Q-cumulants;
- // h) Get pointers for differential correlations.
+ // h) Get pointers for differential correlations;
+ // i) Get pointers for symmetry planes.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *histList)";
 
@@ -3014,6 +3098,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *hi
 
  // h) Get pointers for differential correlations:
  this->GetPointersForDiffCorrelations(); 
+
+ // i) Get pointers for symmetry planes:
+ this->GetPointersForSymmetryPlanes();
   
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetOutputHistograms(TList *histList)
 
@@ -3301,6 +3388,45 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForDiffCorrelation
  */
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForDiffCorrelations()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForSymmetryPlanes()
+{
+ // Get pointers for symmetry planes.
+
+ // a) Get pointer for fSymmetryPlanesList;
+ // b) Get pointer for fSymmetryPlanesFlagsPro;
+ // c) Set again all flags;
+ // d) Get pointers to TProfile *fSymmetryPlanesPro[?][?].
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForSymmetryPlanes()";
+
+ // a) Get pointer for fSymmetryPlanesList:
+ fSymmetryPlanesList = dynamic_cast<TList*>(fHistList->FindObject("Symmetry_Plane_Correlations"));
+ if(!fSymmetryPlanesList){Fatal(sMethodName.Data(),"fSymmetryPlanesList");}
+
+ // b) Get pointer for fSymmetryPlanesFlagsPro:
+ fSymmetryPlanesFlagsPro = dynamic_cast<TProfile*>(fSymmetryPlanesList->FindObject("fSymmetryPlanesFlagsPro"));
+ if(!fSymmetryPlanesFlagsPro){Fatal(sMethodName.Data(),"fSymmetryPlanesFlagsPro");}
+
+ // c) Set again all flags:
+ fCalculateSymmetryPlanes = fSymmetryPlanesFlagsPro->GetBinContent(1);
+
+ if(!fCalculateSymmetryPlanes){return;}
+
+ // d) Get pointers to TProfile *fSymmetryPlanesPro[?][?]: // TBI
+ for(Int_t gc=0;gc<1;gc++) // 'generic correlator': [[0]:(Psi2n,Psi1n),[1]:...] TBI upper boundary will change
+ {
+  for(Int_t n=0;n<2;n++) // 'harmonic n for generic correlator': [[0]:n=1,[1]:n=2,...] TBI upper boundary will change
+  {
+
+   fSymmetryPlanesPro[gc][n] = dynamic_cast<TProfile*>(fSymmetryPlanesList->FindObject(Form("%d,%d",gc,n)));
+   if(!fSymmetryPlanesPro[gc][n]){Fatal(sMethodName.Data(),"fSymmetryPlanesPro[%d][%d]",gc,n);}
+  }
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForSymmetryPlanes()
 
 //=======================================================================================================================
 
@@ -4936,21 +5062,128 @@ TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(cons
 
 } // TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production)
 
+//=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)
+{
+ // Calculate symmetry plane correlations from Q-vector components.
 
+ // a) Insanity checks;
+ // b) Calculate and store symmetry plane correlations.
 
+ // a) Insanity checks:
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)";
+ if(!anEvent){Fatal(sMethodName.Data(),"Sorry, anEvent is NULL.");}
+ Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
+ if(dMultRP<0.){Fatal(sMethodName.Data(),"Sorry, dMultRP is negative.");}
 
+ // b) Calculate and store symmetry plane correlations.
+ for(Int_t o=0;o<4;o++) // o = optimizer TBI this clearly will be generalized further, also 4 is h.w.
+ {
+  fSymmetryPlanesPro[0][0]->Fill(0.5+o,CorrelationPsi2nPsi1n(1,o));
+  fSymmetryPlanesPro[0][1]->Fill(0.5+o,CorrelationPsi2nPsi1n(2,o));
+ } // for(Int_t o=0;o<4;o++) // o = optimizer TBI this clearly will be generalized further, also 4 is h.w.
 
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)
 
+//=======================================================================================================================
 
+Double_t AliFlowAnalysisWithMultiparticleCorrelations::CorrelationPsi2nPsi1n(Int_t n, Int_t k)
+{
+ // TBI Comment the weather here eventually...
 
+ // TBI the optimizer can have the non-trivial harmonic structure as well...
+ //     now it's hardwired to n=2
 
+ // a) Return value;
+ // b) Method name;
+ // c) Insanity checks;
 
+ // a) Return value:
+ Double_t ratio = -44.;
 
+ // b) Method name:
+ TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::CorrelationPsi2nPsi1n(Int_t n, Int_t k)";
 
+ // c) Insanity checks:
+ // TBI if n is this and that...
+ // TBI if k is this and that...
 
+ Int_t order = 6 + 2*k;
+ TArrayI harmonics0 = TArrayI(order); harmonics0.Reset(0);
+ TArrayI harmonics1 = TArrayI(order); harmonics1.Reset(0);
+ TArrayI harmonics2 = TArrayI(order); harmonics2.Reset(0);
 
+ // Harmonics for numerator:
+ harmonics1.AddAt(2*n,0);
+ harmonics1.AddAt(2*n,1);
+ harmonics1.AddAt(-n,2);
+ harmonics1.AddAt(-n,3);
+ harmonics1.AddAt(-n,4);
+ harmonics1.AddAt(-n,5);
+ // Harmonics for denominator:
+ harmonics2.AddAt(2*n,0);
+ harmonics2.AddAt(-2*n,1);
+ harmonics2.AddAt(n,2);
+ harmonics2.AddAt(-n,3);
+ harmonics2.AddAt(n,4);
+ harmonics2.AddAt(-n,5);
 
+ switch(k)
+ {
+  case 0:
+   // TBI ???
+  break;
+  case 1:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+  break;
+  case 2:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   harmonics1.AddAt(2,8);
+   harmonics1.AddAt(-2,9);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+   harmonics2.AddAt(2,8);
+   harmonics2.AddAt(-2,9);
+  break;
+  case 3:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   harmonics1.AddAt(2,8);
+   harmonics1.AddAt(-2,9);
+   harmonics1.AddAt(2,10);
+   harmonics1.AddAt(-2,11);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+   harmonics2.AddAt(2,8);
+   harmonics2.AddAt(-2,9);
+   harmonics2.AddAt(2,10);
+   harmonics2.AddAt(-2,11);
+  break;
+  default:
+   cout<<Form("And the fatal 'k' value is... %d. Congratulations!!",k)<<endl;
+   Fatal(sMethodName.Data(),"switch(k)"); // TBI
+ } // switch(k)
+
+ // Calculate weight and correlators:
+ Double_t dWeight = Recursion(order,harmonics0.GetArray()).Re(); // weight is 'number of combinations' by default
+ TComplex cNum1 = Recursion(order,harmonics1.GetArray())/dWeight;
+ TComplex cNum2 = Recursion(order,harmonics2.GetArray())/dWeight;
+ ratio = cNum1.Re()/cNum2.Re();
+
+ return ratio;
+
+} // Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k)
 
 
 

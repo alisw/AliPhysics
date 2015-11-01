@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name);
+    AliMultSelectionTask(const char *name, Bool_t lCalib = kFALSE);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
@@ -70,16 +70,23 @@ public:
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
+    //Get Period name (can be static)
+    TString GetPeriodName()             const; //no input required, will have all info in globals...
+    TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
-    Bool_t IsNotPileupMV (AliVEvent *event);
+    Bool_t IsNotPileupMV           (AliVEvent *event);
     Bool_t PassesTrackletVsCluster (AliVEvent *event);
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
 
-    void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
+    //removed to avoid accidental usage!
+    //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
     void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
+    void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
+    void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -98,7 +105,8 @@ private:
     Bool_t fkCalibration; //if true, save Calibration object
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
-    Bool_t fkAttached; //if true, has already attached to ESD (AOD)
+    Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -128,6 +136,18 @@ private:
     //AD Related
     AliMultVariable *fMultiplicity_ADA;
     AliMultVariable *fMultiplicity_ADC;
+    //ZDC Related
+    AliMultVariable *fZncEnergy;
+    AliMultVariable *fZpcEnergy;
+    AliMultVariable *fZnaEnergy;
+    AliMultVariable *fZpaEnergy;
+    AliMultVariable *fZem1Energy;
+    AliMultVariable *fZem2Energy;
+    //ZDC Tower info
+    AliMultVariable *fZnaTower;
+    AliMultVariable *fZncTower;
+    AliMultVariable *fZpaTower;
+    AliMultVariable *fZpcTower;
     
     // A.T.
     Float_t fAmplitude_V0A1;   //!
@@ -160,32 +180,27 @@ private:
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
-
-    Float_t  fZncEnergy;          //!  ZNC Energy
-    Float_t  fZpcEnergy;          //!  ZPC Energy
-    Float_t  fZnaEnergy;          //!  ZNA Energy
-    Float_t  fZpaEnergy;          //!  ZPA Energy
-    Float_t  fZem1Energy;         //!  ZEM1 Energy
-    Float_t  fZem2Energy;         //!  ZEM2 Energy
-    Double_t fZnaTower;           //! common PMT of ZNA
-    Double_t fZncTower;           //! common PMT of ZNC
-    Double_t fZpaTower;           //! common PMT of ZPA
-    Double_t fZpcTower;           //! common PMT of ZPC
+    
     Bool_t   fZnaFired;
     Bool_t   fZncFired;
     Bool_t   fZpaFired;
     Bool_t   fZpcFired;
     
     Int_t    fNTracks;             //!  no. tracks
-    Int_t fCurrentRun; 
+    Int_t fCurrentRun;
+    
+    Float_t fQuantiles[100]; //! percentiles
+    Int_t fNDebug; // number of percentiles
+    
+    //Data needed for Monte Carlo
+    Int_t fMC_NColl;
+    Int_t fMC_NPart;
 
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     
     //AliMultSelection Framework
-    AliOADBMultSelection *oadbMultSelection;
-    AliMultSelectionCuts *fMultCuts;
-    AliMultSelection     *fSelection;
+    AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;
 
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented

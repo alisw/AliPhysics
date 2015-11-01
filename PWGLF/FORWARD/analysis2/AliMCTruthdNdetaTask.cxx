@@ -137,7 +137,8 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 						  Double_t vzMax, 
 						  const TH2D* primary,
 						  const TH2D*,
-						  UInt_t filter)
+						  UInt_t filter,
+						  Double_t weight)
 { 
   // Check the centrality class unless this is the 'all' bin 
   if (!primary) return false;
@@ -164,7 +165,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 
   // Now use our normal check, but with the new mask, except ignore vertex
   if (forward->CheckEvent(mask, -10000, -10000, 0, 0, 0, 0, filter)) {
-    fSumTruth->Add(primary);
+    fSumTruth->Add(primary, weight);
 
     // Store event count in left-most under- underflow bin 
     Int_t cnt = Int_t(fSumTruth->GetBinContent(0,0));
@@ -173,7 +174,7 @@ AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult*
 
   // Now use our normal check with the full trigger mask and vertex
   if (CheckEvent(forward, triggerMask, vzMin, vzMax, filter)) 
-    fSum->Add(primary, isZero);
+    fSum->Add(primary, isZero, weight);
   return true;
 }
 

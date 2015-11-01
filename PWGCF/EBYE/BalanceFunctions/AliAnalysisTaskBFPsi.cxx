@@ -44,6 +44,8 @@
 #include "AliBalanceEbyE.h"
 #include "AliBalancePsi.h"
 #include "AliAnalysisTaskTriggeredBF.h"
+#include "TFile.h"
+#include <iostream>
 
 
 // Analysis task for the BF vs Psi code
@@ -178,6 +180,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
+  fExcludeSecondariesInMC(kFALSE),
   fExcludeWeakDecaysInMC(kFALSE),
   fExcludeResonancesInMC(kFALSE),
   fExcludeElectronsInMC(kFALSE),
@@ -1903,6 +1906,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
+      //Exclude secondaries from material and weak decays
+      if(fExcludeSecondariesInMC){
+	
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+
+	if (!AODmcTrack->IsPhysicalPrimary())
+	  continue;   
+      }
+
       //Exclude resonances
       if(fExcludeResonancesInMC) {
 	
@@ -1912,7 +1925,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
       
         if (AODmcTrack){ 
-	  //if (AODmcTrack->IsPhysicalPrimary()){
 	  
 	  Int_t gMotherIndex = AODmcTrack->GetMother();
 	  if(gMotherIndex != -1) {

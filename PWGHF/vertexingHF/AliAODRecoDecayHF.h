@@ -89,7 +89,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   void     Setd0errProngs(Int_t nprongs,Double_t *d0);
   Double_t Normalizedd0Prong(Int_t ip) const 
     {return Getd0Prong(ip)/Getd0errProng(ip);}
-  
+  void Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t& d0diff, Double_t& errd0diff) const;
+
+
   void SetProngIDs(Int_t nIDs,UShort_t *id);
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}

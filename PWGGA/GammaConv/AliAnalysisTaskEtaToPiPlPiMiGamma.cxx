@@ -392,7 +392,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
@@ -656,8 +656,8 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-
-	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+	if(InputEvent()->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
+	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			fHistoNEvents[iCut]->Fill(eventQuality);
 		}

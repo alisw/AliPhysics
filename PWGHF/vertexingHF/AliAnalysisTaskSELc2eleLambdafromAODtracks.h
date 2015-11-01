@@ -58,7 +58,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray);
-  void MakeMCAnalysis(TClonesArray *mcArray);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectV0( const AliVEvent *event,Int_t nV0,Int_t &nSeleV0, Bool_t *seleV0Flags, TClonesArray *mcArray);
@@ -73,6 +73,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
+  void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
+  Bool_t GetMCEventType() const {return fMCEventType;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -154,15 +156,48 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
+	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleLambdaMass;         //!<! e-Lambda mass spectra
   THnSparse* fHistoEleLambdaMassRS;         //!<! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassRS1;         //!<! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassRS2;         //!<! e-Lambda mass spectra right sign
   THnSparse* fHistoEleLambdaMassWS;         //!<! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassWS1;         //!<! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassWS2;         //!<! e-Lambda mass spectra wrong sign
   THnSparse* fHistoEleLambdaMassRSMix;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSMix1;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSMix2;         //!<! e-Lambda mass spectra right sign (mixed event)
   THnSparse* fHistoEleLambdaMassWSMix;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMix1;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMix2;         //!<! e-Lambda mass spectra wrong sign (mixed event)
   THnSparse* fHistoEleLambdaMassRSSide;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSide1;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSide2;         //!<! e-Lambda mass spectra right sign (mixed event)
   THnSparse* fHistoEleLambdaMassWSSide;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSide1;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSide2;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+
+  THnSparse* fHistoEleLambdaMassRSAway;         //!<! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassRS1Away;         //!<! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassRS2Away;         //!<! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassWSAway;         //!<! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassWS1Away;         //!<! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassWS2Away;         //!<! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassRSMixAway;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSMix1Away;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSMix2Away;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMixAway;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMix1Away;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMix2Away;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSideAway;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSide1Away;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSide2Away;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSideAway;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSide1Away;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSide2Away;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+
   THnSparse* fHistoEleLambdaMassvsElePtRS;         //!<! e-Lambda mass vs elept spectra right sign
   THnSparse* fHistoEleLambdaMassvsElePtWS;         //!<! e-Lambda mass vs elept spectra wrong sign
   THnSparse* fHistoEleLambdaMassvsElePtRSMix;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
@@ -301,6 +336,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoFeedDownXicPlusMCS;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen1;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen2;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS1;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS2;     //!<! Sigma in mcArray
   THnSparse* fHistoLcElectronMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen2;         //!<! Lc in mcArray
@@ -405,15 +446,48 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+
+  THnSparse* fHistoEleLambdaPtvsV0dlRSAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRS1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRS2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSideAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSide1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSide2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMixAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMix1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMix2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWS1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWS2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSideAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSide1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSide2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMixAway;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMix1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMix2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
 
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseEleLambdaPt; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPt1; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPt2; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic0; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic01; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic02; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus1; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus2; //!<! Response function e-Lambda pT <- XicPt
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
 	TH1F *fHistonElevsRunNumber;//!<! nele vs runnumber
 	TH1F *fHistonLambdavsRunNumber;//!<! nlambda vs runnumber
+	TH1F *fHistoMCEventType;//!<! MC even type
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -434,7 +508,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,11); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,15); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

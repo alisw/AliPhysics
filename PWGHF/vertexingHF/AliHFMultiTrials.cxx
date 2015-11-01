@@ -241,7 +241,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 	      ry=fitter->GetRawYield(); 
 	      ery=fitter->GetRawYieldError(); 
 	      fB1=fitter->GetBackgroundFullRangeFunc();
-	      if(fDrawIndividualFits && thePad){
+	      if(out && fDrawIndividualFits && thePad){
 	       	thePad->Clear();
 	       	fitter->DrawHere(thePad);
 	      }

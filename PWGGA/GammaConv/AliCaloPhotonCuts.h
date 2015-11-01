@@ -89,7 +89,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			k15a3a,
 			k15a3a_plus,
 			k15a3b,
-			k13b2_efix
+			k13b2_efix,
+			k15h1a,
+			k15h1b
 		};
 
 		//handeling of CutString
@@ -109,7 +111,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			IsNLMCutUsed() {return fUseNLM;}
 		
 		//Constructors
-		AliCaloPhotonCuts(const char *name="ClusterCuts", const char * title="Cluster Cuts");
+		AliCaloPhotonCuts(Bool_t isJetJet=kFALSE, const char *name="ClusterCuts", const char * title="Cluster Cuts");
 		AliCaloPhotonCuts(const AliCaloPhotonCuts&);
 		AliCaloPhotonCuts& operator=(const AliCaloPhotonCuts&);
 
@@ -119,7 +121,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		virtual Bool_t 	IsSelected(TObject* /*obj*/)									{return kTRUE;}
 		virtual Bool_t 	IsSelected(TList* /*list*/) 									{return kTRUE;}
 
-		Bool_t 			ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC);
+		Bool_t 			ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight=1.);
 		Bool_t 			ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
@@ -147,11 +149,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t			GetIsPureCaloCut()												{return fIsPureCalo;}
 
 		// Cut functions
-		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
-		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC);
+		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
+		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC, Double_t weight);
 
-		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event);
-		void			MatchTracksToClusters(AliVEvent* event);
+		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
+		void			MatchTracksToClusters(AliVEvent* event, Double_t weight=1.);
 		Bool_t			CheckClusterForTrackMatch(AliVCluster* cluster);
 		Int_t 			GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
 		Int_t 			GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -205,6 +207,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TProfile*			fBadChannels;				// TProfile with bad channels
 		Int_t				fNMaxEMCalModules;			// max number of EMCal Modules
 		Int_t				fNMaxPHOSModules;			// max number of PHOS Modules
+
+		Bool_t				fIsJetJet;					// Flag for usage of JetJet MC
 
 		//for NonLinearity correction
 		TString				fV0ReaderName;				// Name of V0Reader
@@ -333,7 +337,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,13)
+		ClassDef(AliCaloPhotonCuts,15)
 };
 
 #endif

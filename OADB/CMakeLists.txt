@@ -65,7 +65,8 @@ set(LIBDEPS STEERBase AOD ESD ANALYSIS ANALYSISalice)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
-add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+file(GLOB_RECURSE OADB_ROOTFILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.root")
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "COMMON/MULTIPLICITY" "${OADB_ROOTFILES}")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)

@@ -1,14 +1,21 @@
 /*
 Comments:
-* 19 aug 2015: trichert changed mc primary method
-* 19 aug 2015: trichert changed vtx cut
-* 08 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
-* 15 sep 2015: fixed bug: p_track->n_track
-* 15 sep 2015: flags on injected MC particles: 
+* 19 aug 2015: trichert: changed mc primary method
+* 19 aug 2015: trichert: changed vtx cut
+* 08 sep 2015: trichert: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
+* 15 sep 2015: trichert: fixed bug: p_track->n_track
+* 15 sep 2015: trichert: flags on injected MC particles: 
   - MC track: pidCodeMC>10 = injected
   - track: pidCode>10 = injected
   - p_track and n_track: n/p_pidCode>10 = injected
-* 23 sep 2015: hardcoded trigger conditions, search for kSemiCentral
+* 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
+* 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
+
+
+Remiders:
+* For pp: remove pile up thing
+* For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
+* For 2011 DT: add hardcoded trigger conditions!
 
 */
 
@@ -67,9 +74,6 @@ using namespace std;
 // Tuva Richert (Lund)
 
 /* 
-To do:
-
-Separate the code into two
 
 */
 
@@ -373,33 +377,51 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Get trigger decision
   fTriggeredEventMB = 0; 
   
+
+  //_____________NOMINAL TRIGGER CONDITION___________
+  // Always use if MC
+  // Use if 2010 data
+
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit1 ){
     fn1->Fill(1);
     fTriggeredEventMB = 1;  //event triggered as minimum bias
-  }//OLD (change back)
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit2 ){
-  //   // From AliVEvent:
-  //   //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
-  //   fTriggeredEventMB += 2;  
-  //   fn2->Fill(1);
-  // }//NEW (remove -- especially for MC)
+  }
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kSemiCentral ){
+     ->IsEventSelected() & ftrigBit2 ){
     // From AliVEvent:
     //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kMB ){
-    // From AliVEvent:
-    //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
-    fTriggeredEventMB += 4;  
-    fn2->Fill(1);
-  }
+
  
+  //_____________ end nominal _______________________
+
+
+  // //_____________SPECIAL TRIGGER CONDITION___________
+  // // Never use if MC
+  // // Use if 2011 data
+
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit1 ){
+  //   fn1->Fill(1);
+  //   fTriggeredEventMB = 1;  //event triggered as minimum bias
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kMB ){
+  //   fTriggeredEventMB += 4;  
+  //   fn2->Fill(1);
+  // }
+ 
+  // //_____________ end special ______________________
+
+
 
    // Get process type for MC
   fMcProcessType = 0; // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD

@@ -1204,12 +1204,10 @@ void AliAnalysisTaskHypertriton3AOD::UserExec(Option_t *){
 	
 	negPi.SetXYZM(etpi.Px(),etpi.Py(),etpi.Pz(),pionMass);
 	
-	
-	pTmom = TMath::Sqrt((etd.Pt()*etd.Pt())+(etp.Pt()*etp.Pt())+(etpi.Pt()*etpi.Pt()));
-	pTotHyper = TMath::Sqrt((Hypertriton.Px()*Hypertriton.Px())+(Hypertriton.Py()*Hypertriton.Py())+(Hypertriton.Pz()*Hypertriton.Pz()));
-	if(pTmom < fMinPtMother || pTmom > fMaxPtMother) continue;
-	
 	Hypertriton=posD+posP+negPi;
+	pTotHyper = Hypertriton.P();
+
+	if(Hypertriton.Pt() < fMinPtMother || Hypertriton.Pt() > fMaxPtMother) continue;
 	
 	if(fSideBand == kTRUE && (Hypertriton.M() < 3.08 || Hypertriton.M() > 3.18)) continue;
 	ctau = (Hypertriton.M()*decayLengthH3L)/pTotHyper;
@@ -1293,10 +1291,11 @@ void AliAnalysisTaskHypertriton3AOD::UserExec(Option_t *){
 	  TParticle *tparticleMother = stack->Particle(TMath::Abs(labelM));
 	  ndau = tparticleMother->GetNDaughters();
 	  
-	  if(tparticleMother->GetPdgCode() == 1010010030 && ndau == 3){
-	    Int_t labelFirstDau = tparticleMother->GetDaughter(0);
-	    Int_t labelSecondDau = labelFirstDau + 1;
-	    Int_t labelThirdDau = tparticleMother->GetDaughter(1);
+	  if(tparticleMother->GetPdgCode() == 1010010030){
+	    Int_t labelThirdDau = tparticleMother->GetLastDaughter();
+	    Int_t labelFirstDau = labelThirdDau - 2;
+	    Int_t labelSecondDau = labelThirdDau - 1;
+	    
 	    if(labelFirstDau == lD && labelSecondDau == lP && labelThirdDau == lPi){
 	      //signature of dca pion-primary in case of MCtruth
 	      

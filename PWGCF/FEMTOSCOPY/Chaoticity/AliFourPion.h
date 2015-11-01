@@ -63,7 +63,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   static const Int_t fKbinsT     = 7;// Set fKstep as well !!!!
   static const Int_t fKbinsTOneD = 28;// Set fKstep as well !!!!
   static const Int_t fKbinsY     = 1;// Set fKstep as well !!!!
-  static const Int_t fEDbins     = 4;
+  static const Int_t fEDbins     = 2;
   static const Int_t fCentBins   = 10;// 0-50%
   static const Int_t fMbinsMixing= 10;// 5% widths
   static const Int_t fRVALUES    = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
@@ -117,7 +117,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
   void SetQinvMin(Float_t qim) {fQLowerCut = qim;}
-  void SetOnlineCorrection(Bool_t FC) {fCorrectWeights = FC;}
+  void SetOnlineCorrection(Bool_t FC) {fOnlineCorrection = FC;}
+  void SetInterpCorrection(Bool_t wc) {fInterpCorrection = wc;}
   //
   Short_t GetCollisionType() {return fCollisionType;}
   
@@ -284,7 +285,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
-  Bool_t fCorrectWeights;
+  Bool_t fOnlineCorrection;
+  Bool_t fInterpCorrection;
   Short_t fInterpolationType;
   Bool_t fOneDInterpolation;
   Bool_t fMixedChargeCut;
@@ -372,7 +374,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t farrP1[4][4][4];
   Float_t farrP2[4][4][4];
   
- 
+  Float_t fIC[5][7][20];
+  
   //
   Char_t fDefaultsCharSwitch[kMultLimitPbPb];//!
   TArrayC *fLowQPairSwitch_E0E0[kMultLimitPbPb];//!

@@ -31,61 +31,61 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskMuMu.cxx 
-  AliHistogramCollection.cxx
-  AliAnalysisTaskAOD2MuonAOD.cxx
-  AliAnalysisTaskESDMuonFilter.cxx 
-  AliAnalysisTaskMuonAODfromGeneral.cxx 
-  AliAnalysisTaskFromStandardToMuonAOD.cxx 
-  AliAnalysisTaskSingleMu.cxx 
-  AliAnalysisTaskLUT.cxx 
-  AliAnalysisTaskLinkToMC.cxx 
-  AliAODEventInfo.cxx 
-  AliESDMuonTrackCuts.cxx 
-  AliAnalysisTaskSingleMuESD.cxx 
-  AliCFMuonResTask1.cxx 
-  AliCFMuonSingleTask1.cxx 
-  AliEventPoolMuon.cxx 
-  AliAnalysisTaskCreateMixedDimuons.cxx 
-  AliAnalysisTaskMuonAODCreation.cxx 
-  AliAnalysisTaskMuonDistributions.cxx 
-  AliMuonInfoStoreRD.cxx 
-  AliDimuInfoStoreRD.cxx 
-  AliMuonInfoStoreMC.cxx 
-  AliDimuInfoStoreMC.cxx 
-  AliMuonsHFHeader.cxx 
-  AliAnalysisTaskSEMuonsHF.cxx 
-  AliAnalysisTaskDimuonCFContainerBuilder.cxx 
-  AliAnalysisTaskMuonTreeBuilder.cxx 
-  AliAODMuonReplicator.cxx 
-  AliAnalysisTaskMuonCollisionMultiplicity.cxx 
-  AliCFMuonResUpsilon.cxx 
-  AliMuonEventCuts.cxx 
-  AliMuonTrackCuts.cxx 
-  AliMuonPairCuts.cxx 
-  AliVAnalysisMuon.cxx 
-  AliAnalysisTaskFlowSingleMu.cxx 
-  AliAnalysisMuonUtility.cxx
-  AliUtilityMuonAncestor.cxx
-  AliOADBMuonTrackCutsParam.cxx
+  AliAnalysisCountTriggers.cxx
+  AliAnalysisMuMuBase.cxx
   AliAnalysisMuMuBinning.cxx
+  AliAnalysisMuMuCutCombination.cxx
+  AliAnalysisMuMuCutElement.cxx
+  AliAnalysisMuMuCutRegistry.cxx
+  AliAnalysisMuMuEventCutter.cxx
+  AliAnalysisMuMuGlobal.cxx
+  AliAnalysisMuMuMCGene.cxx
+  AliAnalysisMuMuMinv.cxx
+  AliAnalysisMuMuNch.cxx
+  AliAnalysisMuMuSingle.cxx
+  AliAnalysisMuonUtility.cxx
   AliAnalysisNonMuonTrackCuts.cxx
   AliAnalysisNonPrimaryVertices.cxx
   AliAnalysisTaskAOD2MuonAOD.cxx
+  AliAnalysisTaskAOD2MuonAOD.cxx
+  AliAnalysisTaskCreateMixedDimuons.cxx 
+  AliAnalysisTaskDimuonCFContainerBuilder.cxx 
+  AliAnalysisTaskESDMuonFilter.cxx 
+  AliAnalysisTaskFlowSingleMu.cxx 
+  AliAnalysisTaskFromStandardToMuonAOD.cxx 
+  AliAnalysisTaskLinkToMC.cxx 
+  AliAnalysisTaskLUT.cxx 
   AliAnalysisTaskMuMu.cxx
-  AliAnalysisMuMuBase.cxx
-  AliAnalysisMuMuGlobal.cxx
-  AliAnalysisMuMuCutRegistry.cxx
-  AliAnalysisMuMuCutElement.cxx
-  AliAnalysisMuMuEventCutter.cxx
-  AliAnalysisMuMuCutCombination.cxx
-  AliAnalysisMuMuSingle.cxx
-  AliAnalysisMuMuMinv.cxx
-  AliAnalysisMuMuNch.cxx
+  AliAnalysisTaskMuMu.cxx 
+  AliAnalysisTaskMuonAODCreation.cxx 
+  AliAnalysisTaskMuonAODfromGeneral.cxx 
+  AliAnalysisTaskMuonCollisionMultiplicity.cxx 
+  AliAnalysisTaskMuonDistributions.cxx 
+  AliAnalysisTaskMuonTreeBuilder.cxx 
   AliAnalysisTaskNorm.cxx
-  AliAnalysisCountTriggers.cxx
-  AliAnalysisMuMuMCGene.cxx
-  )
+  AliAnalysisTaskSEMuonsHF.cxx 
+  AliAnalysisTaskSingleMu.cxx 
+  AliAnalysisTaskSingleMuESD.cxx 
+  AliAODEventInfo.cxx 
+  AliAODMuonReplicator.cxx 
+  AliCFMuonResTask1.cxx 
+  AliCFMuonResUpsilon.cxx 
+  AliCFMuonSingleTask1.cxx 
+  AliDimuInfoStoreMC.cxx 
+  AliDimuInfoStoreRD.cxx 
+  AliESDMuonTrackCuts.cxx 
+  AliEventPoolMuon.cxx 
+  AliHistogramCollection.cxx
+  AliMuonEventCuts.cxx 
+  AliMuonInfoStoreMC.cxx 
+  AliMuonInfoStoreRD.cxx 
+  AliMuonPairCuts.cxx 
+  AliMuonsHFHeader.cxx 
+  AliMuonTrackCuts.cxx 
+  AliOADBMuonTrackCutsParam.cxx
+  AliUtilityMuonAncestor.cxx
+  AliVAnalysisMuon.cxx 
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

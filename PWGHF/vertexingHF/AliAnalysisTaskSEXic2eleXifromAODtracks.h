@@ -59,7 +59,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
-  void MakeMCAnalysis(TClonesArray *mcArray);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
@@ -74,6 +74,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
+  void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
+  Bool_t GetMCEventType() const {return fMCEventType;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -156,6 +158,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
+	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleXiMass;         //!<! e-Xi mass spectra
@@ -177,6 +180,26 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleXiMassWSMix2;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassRSSide2;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassWSSide2;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassAway;         //!<! e-Xi mass spectra
+  THnSparse* fHistoEleXiMassRSAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMixAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMixAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSideAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSideAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS2Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix2Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide2Away;         //!<! e-Xi mass spectra (wrong-sign)
+
   THnSparse* fHistoEleXiMassvsElePtRS;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassvsElePtWS;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassvsElePtRSMix;         //!<! e-Xi mass-ept spectra (right-sign)
@@ -200,6 +223,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElePtRSMix;         //!<! e spectra (right-sign, mix)
   TH2F* fHistoElePtWSMix;         //!<! e spectra (wrong-sign, mix)
   THnSparse* fHistoEleXiMassMCS;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassMCS1;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassMCS2;         //!<! e-Xi mass spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassMCGen;         //!<! e-Xi mass spectra (Efficiency denominator)
   THnSparse* fHistoEleXiMassvsElePtMCS;         //!<! e-Xi mass-ept spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassvsElePtMCGen;         //!<! e-Xi mass-ept spectra (Efficiency denominator)
@@ -283,6 +308,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
 	TH1F *fHistonElevsRunNumber;//!<!  nele vs runnumber
 	TH1F *fHistonXivsRunNumber;//!<!  nxi vs runnumber
+	TH1F *fHistoMCEventType;//!<!  MC Event Type
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -299,7 +325,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,11); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,14); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

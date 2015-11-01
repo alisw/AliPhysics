@@ -210,7 +210,7 @@ TH2F* AliSpectraBothHistoManager::BookNSigHistogram(const char * name)
 	nbins=100;
 	miny=0.0;
   }				
-  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 50, 0, 2.5,nbins,miny, 20);
+  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 140, -3.5, 3.5,nbins,miny, 20);
   //if(fNRebin!=0){
    // hist->RebinY(fNRebin);
     //hist->RebinX(fNRebin);

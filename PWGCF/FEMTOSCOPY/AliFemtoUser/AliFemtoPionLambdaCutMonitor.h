@@ -9,6 +9,8 @@
 
 class TH1F;
 class TH2F;
+class TH2I;
+class AliFemtoEvent;
 
 #include "AliFemtoCutMonitor.h"
 #include "AliFemtoCutMonitorHandler.h"
@@ -19,44 +21,103 @@ class TH2F;
 /// \brief The cut monitor used by the pion-lambda femtoscopy analysis
 ///
 /// This cut monitor is designed to be used for ALL cuts in the
-/// AliFemtoAnalysisPionLambda. Instead of adding
+/// AliFemtoAnalysisPionLambda class. This is for conveience.
 ///
-/// Because of the specialization - this
+/// Because of the specialization for pion+lambda particles, this class
+/// is not expected to be used in any other analysis, but may be used as a
+/// model for other specializations.
 ///
 class AliFemtoPionLambdaCutMonitor {
 public:
 
   class Event : public AliFemtoCutMonitor {
   public:
-    Event(const bool passing);
+
+    /**
+     * Construct event cut monitor with knowledge if a passing or failing cut.
+     *
+     * \param passing: This will set the correct pass/fail word in histogram
+     *                 titles.
+     *
+     * \param suffix_output: If true, this will put a _P or _F at the end of all
+     *   the histogram names - required if not grouping output lists.
+     */
+    Event(const bool passing,
+          const bool is_mc_analysis=kFALSE,
+          const bool suffix_output=kFALSE);
+
+    /**
+     * Return list of Histograms to be placed in output file.
+     */
     virtual TList* GetOutputList();
+
+    /**
+     * Called at beginning of event processing. Used to reset the collection
+     * size counters.
+     */
+    virtual void EventBegin(const AliFemtoEvent*);
+    virtual void EventEnd(const AliFemtoEvent*);
+
+    /// Fill plots with event information
     virtual void Fill(const AliFemtoEvent* aEvent);
+
+    /// Save information about the particle collection
+    virtual void Fill(const AliFemtoParticleCollection *,
+                      const AliFemtoParticleCollection *);
 
   protected:
     TH1F *_centrality;
     TH1F *_multiplicity;
     TH1F *_vertex_z;
     TH2F *_vertex_xy;
+    TH2I *_collection_size_pass;
+    TH2I *_collection_size_fail;
+
+    const AliFemtoEvent *_prev_ev;
+    UInt_t _prev_pion_coll_size;
+    UInt_t _prev_lam_coll_size;
   };
 
+
+  /// \class AliFemtoPionLambdaCutMonitor::Pion
+  /// \brief Cut monitor containing plots of interesting pion data
+  ///
   class Pion : public AliFemtoCutMonitor {
   public:
-    Pion(const bool passing, const TString& typestr);
+    Pion(const bool passing,
+         const TString& typestr,
+         const bool is_mc_analysis=kFALSE,
+         const bool suffix_output=kFALSE);
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
 
   protected:
-    TH1F *_minv;
-    TH2F *_ypt;
+    TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
+    TH1F *fMinv;
   };
 
+  /// \class AliFemtoPionLambdaCutMonitor::Lambda
+  /// \brief Cut monitor containing plots of interesting lambda data
+  ///
   class Lambda : public AliFemtoCutMonitor {
   public:
+
+    /**
+     * Construct the cut monitor
+     * \param passing: Determines wheter to put (PASS) or (FAIL) to
+     *    the output titles
+     * \param typestr: String added to the python
+     * \param ltype: Lambda type which determines which pos/neg track is pion/proton daughter.
+     * \param suffix_output: If True, will append _P or _F to each histogram name
+     */
     Lambda(const bool passing,
            const TString& typestr,
-           const AliFemtoAnalysisPionLambda::LambdaType);
+           const AliFemtoAnalysisPionLambda::LambdaType,
+           const bool is_mc_analysis=kFALSE,
+           const bool suffix_output=kFALSE);
+
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoV0* aEvent);
 
@@ -67,16 +128,32 @@ public:
     TH2F *_ypt;
     TH2F *_dedx_pt_pro;
     TH2F *_dedx_pt_pi;
+    TH1F *fCosPointingAngle;
+
+    TH1F *fMCTrue_minv;
+    TH2F *fMCTrue_ypt;
+
   };
 
   class Pair : public AliFemtoCutMonitor {
   public:
-    Pair(const bool passing, const TString& typestr);
+    Pair(const bool passing,
+         const TString& typestr,
+         const bool is_mc_analysis=kFALSE,
+         const bool suffix_output=kFALSE);
+
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoPair* aEvent);
 
   protected:
     TH1F *_minv;
+    TH1F *fAvgSep_pion;
+    TH1F *fAvgSep_proton;
+
+
+    TH2F *fMCTrue_minv;
+    TH2F *fMCTrue_kstar;
+
   };
 
 /*
@@ -142,11 +219,11 @@ private:
   void _init();
 */
 
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoCutMonitorPionLambda, 0);
-  /// \endcond
-#endif
+// #ifdef __ROOT__
+//   /// \cond CLASSIMP
+//   ClassDef(AliFemtoCutMonitorPionLambda, 0);
+//   /// \endcond
+// #endif
 
 };
 

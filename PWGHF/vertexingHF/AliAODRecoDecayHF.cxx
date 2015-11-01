@@ -440,3 +440,25 @@ void AliAODRecoDecayHF::Misalign(TString misal) {
 
   return;
 }
+//-----------------------------------------------------------------------------------
+void AliAODRecoDecayHF::Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t& diff, Double_t &errdiff) const{
+  // compute the difference between measured and expected track impact parameter
+  
+  Double_t d0meas=Getd0Prong(ip);
+  Double_t errd0meas=Getd0errProng(ip);
+  Double_t lxy=DecayLengthXY();  
+  AliAODVertex* secVtx=(AliAODVertex*)GetSecondaryVtx();
+  Double_t errlxy2=secVtx->Error2DistanceXYToVertex(GetPrimaryVtx());
+
+  AliAODTrack *trk = (AliAODTrack*)GetDaughter(ip);
+  AliExternalTrackParam etp; 
+  etp.CopyFromVTrack(trk);  
+  Double_t dz[2],dtrkcovar[3];
+  etp.PropagateToDCA(secVtx,magf,3.,dz,dtrkcovar);
+  Double_t pxt=etp.Px();
+  Double_t pyt=etp.Py();
+  Double_t sinThetap=(pxt*Py()-pyt*Px())/(Pt()*PtProng(ip));
+  diff=d0meas-lxy*sinThetap;
+  errdiff=TMath::Sqrt(errd0meas*errd0meas+errlxy2*sinThetap*sinThetap);
+
+}

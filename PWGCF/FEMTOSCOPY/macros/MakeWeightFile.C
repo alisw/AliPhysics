@@ -62,7 +62,8 @@ void MakeWeightFile()
     //TFile *InputFile = new TFile("Results/RawWeightFile_11h.root","READ");
     //TFile *InputFile = new TFile("Results/PDC_11h_pT_0p2to1p0_FullRunWrongWeightsNoPadRowTTCandMCTTC_RawWeightFile.root","READ");
     //TFile *InputFile = new TFile("Results/RawWeightFile_11h_0p02eta0p045phi_0p03eta0p067phi.root","READ");
-    InputFile = new TFile("Results/RawWeightFile_11h_6kT.root","READ");
+    InputFile = new TFile("Results/RawWeightFile_11h_7kT.root","READ");
+    //InputFile = new TFile("Results/PDC_11h_0p06to0p08Norm_RawWeightFile100kTbins.root","READ");
     //TFile *InputFile = new TFile("Results/RawWeightFile_11h_q2Binning_LowPtMultBinning.root","READ");
     //TFile *InputFile = new TFile("Results/PDC_11h_Norm0p06to0p08_RawWeightFileLowpTBinningWithHighpTConstraint.root","READ");
     //TFile *InputFile = new TFile("Results/RawWeightFile_11h_8MeVbins.root","READ");
@@ -78,8 +79,8 @@ void MakeWeightFile()
   double NormL_1D=0.15;
   double NormH_1D=0.2;
   if(CollisionType!=0){
-    NormL=0.3;
-    NormH=0.35;
+    NormL=0.3;// 0.3, 0.18
+    NormH=0.35;// 0.35, 0.22
     NormL_1D=0.7;
     NormH_1D=0.8;
   }
@@ -95,6 +96,7 @@ void MakeWeightFile()
   
   
   const int KtBins=6;//4
+  const int KtBinsOneD=28;
   const int KyBins=1;
   const int MBins=10;
   const int MBLimit=10;// 0-10. 1 for GenSignal, 10 for the rest!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -102,6 +104,13 @@ void MakeWeightFile()
   double fKstepT[KtBins]={0};
   double fKmeanT[KtBins]={0};
   double fKmiddleT[KtBins]={0};
+
+  // 7x1 (Kt: 0-0.2, 0.2-0.25, 0.25-0.3, 0.3-0.35, 0.35-0.4, 0.4-0.45, 0.45-1.0)
+  if(KtBins==7){
+    fKstepT[0] = 0.2; fKstepT[1] = 0.05; fKstepT[2] = 0.05; fKstepT[3] = 0.05; fKstepT[4] = 0.05; fKstepT[5] = 0.05; fKstepT[6] = 0.55;
+    fKmeanT[0] = 0.188; fKmeanT[1] = 0.227; fKmeanT[2] = 0.275; fKmeanT[3] = 0.324; fKmeanT[4] = 0.374; fKmeanT[5] = 0.424; fKmeanT[6] = 0.552; 
+    fKmiddleT[0] = 0.1; fKmiddleT[1] = 0.225; fKmiddleT[2] = 0.275; fKmiddleT[3] = 0.325; fKmiddleT[4] = 0.375; fKmiddleT[5] = 0.425; fKmiddleT[6] = 0.725;
+  }
   // 6x1 (Kt: 0-0.2, 0.2-0.24, 0.24-0.3, 0.3-0.35, 0.35-0.45, 0.45-1.0)
   if(KtBins==6){
     fKstepT[0] = 0.2; fKstepT[1] = 0.04; fKstepT[2] = 0.06; fKstepT[3] = 0.05; fKstepT[4] = 0.1; fKstepT[5] = 0.55;
@@ -115,19 +124,26 @@ void MakeWeightFile()
     fKmiddleT[0] = 0.125; fKmiddleT[1] = 0.3; fKmiddleT[2] = 0.4; fKmiddleT[3] = 0.725;
   }
   // OneD kT bin edges
-  int BinEdgesL[6]={1,5,6,7,8,10};
-  int BinEdgesH[6]={4,5,6,7,9,20};
-
+  int BinEdgesL[KtBinsOneD]={1,5,6,7,8,10,  10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10};
+  int BinEdgesH[KtBinsOneD]={4,5,6,7,9,20,  20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20};
+  /*int BinEdgesL[KtBinsOneD]={0};
+  int BinEdgesH[KtBinsOneD]={0};
+  for(int i=0; i<KtBinsOneD; i++){
+    BinEdgesL[i] = 3*i + 17;
+    BinEdgesH[i] = BinEdgesL[i] + 2;
+    //cout<<BinEdgesL[i]<<"  "<<BinEdgesH[i]<<endl;
+    }*/
+  
   TFile *OutFile = new TFile("WeightFile_temp.root","RECREATE");
   TH3F *WeightHistos[KtBins][MBins][NumEDbins];
-  TH1F *WeightHistos1D[KtBins][MBins];
+  TH2F *WeightHistosOneD[MBins];
  
   TH3D *QinvMean = (TH3D*)MyList->FindObject("TwoParticle_Charge1_0_Charge2_0_M_0_ED_0_Term_1_osl_b1_QW");
   TH3D *QinvMeanDen = (TH3D*)MyList->FindObject("TwoParticle_Charge1_0_Charge2_0_M_0_ED_0_Term_1_osl_b1");
   QinvMean->Divide(QinvMeanDen);
 
  
-  for(int ktB=1; ktB<=KtBins; ktB++){
+  for(int ktB=1; ktB<=KtBinsOneD; ktB++){
     cout<<"kT Bin "<<ktB<<endl;
     for(int MB=1; MB<=MBins; MB++){
       if(CollisionType!=0 && MB>1) continue;
@@ -183,23 +199,11 @@ void MakeWeightFile()
 	OneDNameDen->Append("_ED_0_Term_2");
 	//
 	//
-	TH3D *tempNum = (TH3D*)MyList->FindObject(InNameNum->Data());
-	TH3D *tempDen = (TH3D*)MyList->FindObject(InNameDen->Data());
-	//
 	TH2D *tempNum2D = (TH2D*)MyList->FindObject(OneDNameNum->Data());
 	TH2D *tempDen2D = (TH2D*)MyList->FindObject(OneDNameDen->Data());
 	TH1D *tempNum1D = (TH1D*)tempNum2D->ProjectionY("tempNum1D",BinEdgesL[ktB-1], BinEdgesH[ktB-1]);
 	TH1D *tempDen1D = (TH1D*)tempDen2D->ProjectionY("tempDen1D",BinEdgesL[ktB-1], BinEdgesH[ktB-1]);
 	//
-	
-	int NormBinStartOut = tempNum->GetXaxis()->FindBin(NormL);
-	int NormBinStartSideLong = tempNum->GetXaxis()->FindBin(NormL);
-	int NormBinEnd = tempNum->GetXaxis()->FindBin(NormH);
-	double Norm = tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
-	if(tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd) > 0){
-	  Norm /= tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
-	}else Norm=0;
-	cout<<"Normalization = "<<Norm<<endl;
 	int NormBinStart1D = tempNum1D->GetXaxis()->FindBin(NormL_1D);
 	int NormBinEnd1D = tempNum1D->GetXaxis()->FindBin(NormH_1D);
 	double Norm1D = tempNum1D->Integral(NormBinStart1D, NormBinEnd1D);
@@ -207,6 +211,23 @@ void MakeWeightFile()
 	  Norm1D /= tempDen1D->Integral(NormBinStart1D, NormBinEnd1D);
 	}else Norm1D=0;
 	cout<<"1D Norm = "<<Norm1D<<endl;
+	//for(int i=0; i<KtBinsOneD; i++){
+	//cout<<tempNum2D->GetXaxis()->GetBinLowEdge(BinEdgesL[i])<<"  "<<tempNum2D->GetXaxis()->GetBinUpEdge(BinEdgesH[i])<<endl;
+	//}	
+	//
+	//
+	if(ktB<=KtBins){
+	  TH3D *tempNum = (TH3D*)MyList->FindObject(InNameNum->Data());
+	  TH3D *tempDen = (TH3D*)MyList->FindObject(InNameDen->Data());
+	  int NormBinStartOut = tempNum->GetXaxis()->FindBin(NormL);
+	  int NormBinStartSideLong = tempNum->GetXaxis()->FindBin(NormL);
+	  int NormBinEnd = tempNum->GetXaxis()->FindBin(NormH);
+	  double Norm = tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
+	  if(tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd) > 0){
+	    Norm /= tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
+	  }else Norm=0;
+	  cout<<"Mbin = "<<MB<<"  Normalization = "<<Norm<<"  Num Count = "<<tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<"  Den Count = "<<tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<endl;
+	}
 	//
 	TString *OutNameWeight = new TString("Weight_Kt_");
 	*OutNameWeight += ktB-1;
@@ -214,23 +235,26 @@ void MakeWeightFile()
 	*OutNameWeight += MB-1;
 	OutNameWeight->Append("_ED_");
 	*OutNameWeight += q2B-1;
-	TString *OutNameWeight1D = new TString(OutNameWeight->Data());
+	TString *OutNameWeight1D = new TString("Weight_M_");
+	*OutNameWeight1D += MB-1;
 	OutNameWeight1D->Append("_1D");
 	//
 	int Nbins=tempNum->GetNbinsX();
 	double QLimit = tempNum->GetXaxis()->GetBinUpEdge(Nbins);
-	WeightHistos[ktB-1][MB-1][q2B-1] = new TH3F(OutNameWeight->Data(),"r3 Weights", Nbins,0,QLimit, Nbins,0,QLimit, Nbins,0,QLimit);
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->SetTitle("out");
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetYaxis()->SetTitle("side");
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetZaxis()->SetTitle("long");
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->SetTitleOffset(1.8);
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetYaxis()->SetTitleOffset(1.8);
-	WeightHistos[ktB-1][MB-1][q2B-1]->GetZaxis()->SetTitleOffset(1.8);
+	if(ktB<=KtBins){
+	  WeightHistos[ktB-1][MB-1][q2B-1] = new TH3F(OutNameWeight->Data(),"r3 Weights", Nbins,0,QLimit, Nbins,0,QLimit, Nbins,0,QLimit);
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->SetTitle("out");
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetYaxis()->SetTitle("side");
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetZaxis()->SetTitle("long");
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->SetTitleOffset(1.8);
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetYaxis()->SetTitleOffset(1.8);
+	  WeightHistos[ktB-1][MB-1][q2B-1]->GetZaxis()->SetTitleOffset(1.8);
+	}
 	//
 	// 2D weights
 	//
 	if(q2B==1) {
-	  WeightHistos1D[ktB-1][MB-1] = new TH1F(OutNameWeight1D->Data(),"1D Weights", 100, 0, 0.5);
+	  if(ktB==1) WeightHistosOneD[MB-1] = new TH2F(OutNameWeight1D->Data(),"1D Weights", KtBinsOneD,0.16,1.0, 100, 0, 0.5);
 	  for( int invB=1; invB<=100; invB++){
 	    double weight=1, weight_e=0;
 	    if(tempDen1D->GetBinContent(invB) > 0 && tempNum1D->GetBinContent(invB) > 0) {
@@ -249,14 +273,23 @@ void MakeWeightFile()
 	      weight_e = pow(sqrt(double(tempNum1D->GetBinContent(invB)))/double(tempDen1D->GetBinContent(invB)) / Norm1D,2);
 	      weight_e += pow(sqrt(double(tempDen1D->GetBinContent(invB)))*double(tempNum1D->GetBinContent(invB))/pow(double(tempDen1D->GetBinContent(invB)),2) / Norm1D,2);
 	      weight_e = sqrt(weight_e);
-	      WeightHistos1D[ktB-1][MB-1]->SetBinContent(invB, weight-1);// difference from unity
-	      WeightHistos1D[ktB-1][MB-1]->SetBinError(invB, weight_e);
+	      WeightHistosOneD[MB-1]->SetBinContent(ktB, invB, weight-1);// difference from unity
+	      WeightHistosOneD[MB-1]->SetBinError(ktB, invB, weight_e);
 	    }
 	  }
-	  WeightHistos1D[ktB-1][MB-1]->Write();
+	  // Set 0 entry low q bins to nearest non-zero neighbor
+	  for(int b=5; b>0; b--) {
+	    if( WeightHistosOneD[MB-1]->GetBinContent(ktB, b) == 0){
+	      WeightHistosOneD[MB-1]->SetBinContent(ktB, b, WeightHistosOneD[MB-1]->GetBinContent(ktB, b+1));
+	    }
+	  }
+	  //
+	  if(ktB==KtBinsOneD) WeightHistosOneD[MB-1]->Write();
 	}
 	//
 	//  4D weights
+	//
+	if(ktB>KtBins) continue;
 	//
 	double MaxQout = 2*(fKmiddleT[ktB-1]+fKstepT[ktB-1]/2.) - 2*0.16;
 	int SaturationBin = WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->FindBin(MaxQout) - 1;
@@ -272,7 +305,7 @@ void MakeWeightFile()
 		weight = double(tempNum->GetBinContent(outB,sideB,longB))/double(tempDen->GetBinContent(outB,sideB,longB)) / Norm;
 		if(FSIandMRandMuonCorrect){
 		  float qinv = QinvMean->GetBinContent(outB,sideB,longB);
-		  if(qinv==0){
+		  if(qinv==0){// never actually used in Pb-Pb
 		    float qout = QinvMean->GetXaxis()->GetBinCenter(outB);
 		    float gamma = sqrt(pow(0.139,2) + pow(fKmeanT[ktB-1],2)) / 0.139;
 		    qout /= gamma;
@@ -288,7 +321,7 @@ void MakeWeightFile()
 		  weight *= MuonCorr;
 		  weight += 1;
 		  //
-		  //if(qinv<0.3 && weight<0) cout<<outB<<"  "<<sideB<<"  "<<longB<<"  "<<qinv<<"    "<<weight<<"       "<<FSICorr<<"  "<<MuonCorr<<"  "<<MomResCorr<<endl;
+		  //if(MB==1 && ktB==5 && longB>20 && weight==1) cout<<outB<<"  "<<sideB<<"  "<<longB<<"  "<<qinv<<"    "<<weight<<"       "<<FSICorr<<"  "<<MuonCorr<<"  "<<MomResCorr<<endl;
 		}
 		weight_e = pow(sqrt(double(tempNum->GetBinContent(outB,sideB,longB)))/double(tempDen->GetBinContent(outB,sideB,longB)) / Norm,2);
 		weight_e += pow(sqrt(double(tempDen->GetBinContent(outB,sideB,longB)))*double(tempNum->GetBinContent(outB,sideB,longB))/pow(double(tempDen->GetBinContent(outB,sideB,longB)),2) / Norm,2);

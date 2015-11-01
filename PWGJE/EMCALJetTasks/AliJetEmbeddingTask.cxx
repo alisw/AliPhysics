@@ -95,7 +95,37 @@ void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString 
    }
    
    TH1D* h = (TH1D*) f->Get(histoname);
+   if(!h) {
+      AliError("Input file for Mass not found");
+      f->ls();
+   }
    SetMassDistribution(h);
+   return;
+
+}
+
+//________________________________________________________________________
+
+void AliJetEmbeddingTask::SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT){
+   SetMassDistributionFromFile(filenameM, histonameM);
+   SetpTDistributionFromFile(filenamepT, histonamepT);
+   return;
+}
+
+//________________________________________________________________________
+void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString histoname){
+   TFile *f = TFile::Open(filename);
+   if(!f){
+      AliError(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
+      return;
+   }
+   
+   TH1D* h = (TH1D*) f->Get(histoname);
+   if(!h) {
+      AliError("Input file for pT not found");
+      f->ls();
+   }
+   AliJetModelBaseTask::SetPtSpectrum((TH1F*)h);
    return;
 
 }

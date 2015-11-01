@@ -5,7 +5,8 @@ AliAnalysisTaskSED0MassCutVarFDSub *AddTaskD0MassCutVarFDSub(Int_t flag=0/*0 = D
                                                              TString finDirname="Loose",
                                                              TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
                                                              Bool_t FillMassPt=false, Bool_t FillImpPar=false,
-                                                             Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false)
+                                                             Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false,
+                                                             Bool_t upgrade=false)
 {
   //
   // AddTask for the AliAnalysisTaskSE for the analysis of D0 candidates using
@@ -163,6 +164,20 @@ AliAnalysisTaskSED0MassCutVarFDSub *AddTaskD0MassCutVarFDSub(Int_t flag=0/*0 = D
   out10name += finDirname.Data();
   inname += finDirname.Data();
 
+  if (upgrade) {
+    filename  += "Upgrade";
+    out1name  += "Upgrade";
+    out2name  += "Upgrade";
+    out3name  += "Upgrade";
+    out4name  += "Upgrade";
+    out5name  += "Upgrade";
+    out6name  += "Upgrade";
+    out7name  += "Upgrade";
+    out8name  += "Upgrade";
+    out9name  += "Upgrade";
+    out10name += "Upgrade";
+  }
+
   //setting my cut values
 
   //cuts order
@@ -250,7 +265,7 @@ AliAnalysisTaskSED0MassCutVarFDSub *AddTaskD0MassCutVarFDSub(Int_t flag=0/*0 = D
   massD0Task->SetPIDCheck(PIDCheck);
   //  massD0Task->SetRejectSDDClusters(kTRUE);
 
-  //   massD0Task->SetWriteVariableTree(kTRUE);
+  //massD0Task->SetWriteVariableTree(kTRUE);
 
   mgr->AddTask(massD0Task);
 

@@ -159,6 +159,15 @@ install(FILES
 	    AddGoodRuns.C
             ConfigVertexingHF.C
             ConfigVertexingHF_highmult.C
+            ConfigVertexingHF_pp_LambdaC.C
+            ConfigVertexingHF_TrackRel.C
+            ConfigVertexingHF_Pb_Cent2080.C
+            ConfigVertexingHF_Pb_AllCent.C
+            ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
+            ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
+            ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
+            ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
+            ConfigVertexingHF_Pb_AllCent_NoLS.C
         DESTINATION
             PWGHF/vertexingHF/)
 

@@ -1,10 +1,10 @@
 #ifndef AliMultSelection_H
 #define AliMultSelection_H
+#include <TNamed.h>
+#include <TList.h>
+#include "AliMultEstimator.h"
 
-#include <iostream>
-#include "TNamed.h"
-
-using namespace std;
+class AliMultInput;
 
 class AliMultSelection : public TNamed {
     
@@ -12,14 +12,19 @@ public:
     AliMultSelection();
     AliMultSelection(const char * name, const char * title = "Mult Estimator");
     AliMultSelection(AliMultSelection *lCopyMe);
+    AliMultSelection(const AliMultSelection& lCopyMe);
+    void Set(AliMultSelection* s);
     ~AliMultSelection();
-    void Clear(Option_t* = "") {}; //dummy
-
-    void     PrintInfo();
     
-    void     AddEstimator ( AliMultEstimator *lEst ) { fEstimatorList->Add(lEst); fNEsts++; }
-    AliMultEstimator* GetEstimator (TString lName) { return ((AliMultEstimator*)fEstimatorList->FindObject(lName.Data()) ); }
-    AliMultEstimator* GetEstimator (Long_t lEstIdx) { return ((AliMultEstimator*)fEstimatorList->At( lEstIdx ) ); }
+    void Clear(Option_t* = "") {}; //dummy
+    void CleanUp();
+    AliMultSelection& operator=(const AliMultSelection& lCopyMe);
+    void     PrintInfo();
+
+    //Estimator Handling
+    void     AddEstimator ( AliMultEstimator *lEst );
+    AliMultEstimator* GetEstimator (const TString& lName) const;
+    AliMultEstimator* GetEstimator (Long_t lEstIdx) const;
     Long_t GetNEstimators () { return fNEsts; }
     
     //User Functions to get percentiles
@@ -28,6 +33,9 @@ public:
     
     //Master "Evaluate"
     void Evaluate ( AliMultInput *lInput );
+    
+    //Get ready: prepare/optimize TFormulas
+    void Setup(const AliMultInput *lInput);
     
     TList *GetEstimatorList() { return fEstimatorList; } 
     

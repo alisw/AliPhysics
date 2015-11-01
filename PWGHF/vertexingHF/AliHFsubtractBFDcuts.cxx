@@ -65,6 +65,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   , fPtCand(0.)
   , fNprongs((UInt_t)-1)
   , fNprongsInAcc((UInt_t)-1)
+  , fFoundElectron(kFALSE)
   , fMotherPt(-1.)
   , fGenerateDecayList(kFALSE) // DON'T ACTIVATE, DOESN'T MERGE
   , fDecayProngs()
@@ -88,6 +89,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const char* name, const char* title)
   , fPtCand(0.)
   , fNprongs((UInt_t)-1)
   , fNprongsInAcc((UInt_t)-1)
+  , fFoundElectron(kFALSE)
   , fMotherPt(-1.)
   , fGenerateDecayList(kFALSE) // DON'T ACTIVATE, DOESN'T MERGE
   , fDecayProngs()
@@ -115,6 +117,7 @@ AliHFsubtractBFDcuts::AliHFsubtractBFDcuts(const AliHFsubtractBFDcuts& c)
   , fPtCand(c.fPtCand)
   , fNprongs(c.fNprongs)
   , fNprongsInAcc(c.fNprongsInAcc)
+  , fFoundElectron(c.fFoundElectron)
   , fMotherPt(c.fMotherPt)
   , fGenerateDecayList(c.fGenerateDecayList)
   , fDecayProngs(c.fDecayProngs)
@@ -136,9 +139,9 @@ AliHFsubtractBFDcuts::~AliHFsubtractBFDcuts() {
 
 void AliHFsubtractBFDcuts::InitHistos(){
   // mass, pt, normLXY, cosPointXY, normL, cosPoint, LXY, L
-  Int_t dimAxes[8]={500  ,24 ,30 ,100   ,30 ,100   ,100  ,100  };
-  Double_t  min[8]={  1.7, 0., 0.,  0.99, 0.,  0.99,  0. ,  0. };
-  Double_t  max[8]={  2.2,24.,30.,  1.  ,30.,  1.  ,  1.0,  1.0};
+  Int_t dimAxes[8]={500  ,24 ,200 ,100   ,200 ,100   ,100  ,100  };
+  Double_t  min[8]={  1.7, 0.,  0.,  0.99,  0.,  0.99,  0. ,  0. };
+  Double_t  max[8]={  2.2,24.,100.,  1.  ,100.,  1.  ,  1.0,  1.0};
   fTHnData=new THnSparseF("fCutsDataFD","fCutsDataFD",8,dimAxes,min,max);
   fTHnData->GetAxis(0)->SetName("mass");
   fTHnData->GetAxis(0)->SetTitle("Mass (K,#pi) (GeV/#it{c^{2}})");
@@ -158,10 +161,10 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnData->GetAxis(7)->SetTitle("Decay length (cm)");
 
   // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
-  Int_t dimAxesMC[9]={24 ,30 ,100   ,20 ,24 ,30 ,100   ,100  ,100  };
-  Double_t  minMC[9]={ 0., 0.,  0.99, 0., 0., 0.,  0.99,  0. ,  0. };
-  Double_t  maxMC[9]={24.,30.,  1.  ,20.,24.,30.,  1.  ,  1.0,  1.0};
-  fTHnMC=new THnSparseF("fCutsMCFD","fCutsMCFD",9,dimAxesMC,minMC,maxMC);
+  Int_t dimAxesMC[10]={24 ,200 ,100   ,20 ,24 ,200 ,100   ,100  ,100  ,2 };
+  Double_t  minMC[10]={ 0.,  0.,  0.99, 0., 0.,  0.,  0.99,  0. ,  0. ,0.};
+  Double_t  maxMC[10]={24.,100.,  1.  ,20.,24.,100.,  1.  ,  1.0,  1.0,2.};
+  fTHnMC=new THnSparseF("fCutsMCFD","fCutsMCFD",10,dimAxesMC,minMC,maxMC);
   fTHnMC->GetAxis(0)->SetName("pt");
   fTHnMC->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fTHnMC->GetAxis(1)->SetName("NormDecLengthXY");
@@ -180,11 +183,13 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnMC->GetAxis(7)->SetTitle("XY decay length (cm)");
   fTHnMC->GetAxis(8)->SetName("DecLength");
   fTHnMC->GetAxis(8)->SetTitle("Decay length (cm)");
+  fTHnMC->GetAxis(9)->SetName("ContainsElectron");
+  fTHnMC->GetAxis(9)->SetTitle("ContainsElectron");
 
-  Int_t dimAxesGen[5]={24 ,20 ,24 ,100 ,100 };
-  Double_t  minGen[5]={ 0., 0., 0.,  0.,  0.};
-  Double_t  maxGen[5]={24.,20.,24.,  1.,  1.};
-  fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",5,dimAxesGen,minGen,maxGen);
+  Int_t dimAxesGen[6]={24 ,20 ,24 ,100 ,100 ,2 };
+  Double_t  minGen[6]={ 0., 0., 0.,  0.,  0.,0.};
+  Double_t  maxGen[6]={24.,20.,24.,  1.,  1.,2.};
+  fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",6,dimAxesGen,minGen,maxGen);
   fTHnGenStep->GetAxis(0)->SetName("pt");
   fTHnGenStep->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fTHnGenStep->GetAxis(1)->SetName("nProngs");
@@ -195,6 +200,8 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnGenStep->GetAxis(3)->SetTitle("XY decay length (cm)");
   fTHnGenStep->GetAxis(4)->SetName("DecLength");
   fTHnGenStep->GetAxis(4)->SetTitle("Decay length (cm)");
+  fTHnGenStep->GetAxis(5)->SetName("ContainsElectron");
+  fTHnGenStep->GetAxis(5)->SetTitle("ContainsElectron");
 
   fQAhists->Add(new TH1F("hRapidityDist"           , "All Particles;y;Counts (a.u.)"                                                                                                ,800,-4., 4.                            )); //  0
   fQAhists->Add(new TH1F("hRapidityDistStable"     , "All Stable Particles;y;Counts (a.u.)"                                                                                         ,800,-4., 4.                            )); //  1
@@ -226,6 +233,7 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*
   if (fIsMC && fMCarray) {
     fNprongs=0;
     fNprongsInAcc=0;
+    fFoundElectron=kFALSE;
     fDecayChain=kFALSE; // TODO: use this value
     fMotherPt=pt;
     fLabCand=dzeropart->GetLabel();
@@ -238,7 +246,7 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*
     if (!AnalyseDecay(fGenerateDecayList, kTRUE)) {
       AliDebug(3, "Error during the decay type determination!");
     }
-    Double_t entry[] = {pt,(Double_t)fNprongsInAcc,fMotherPt,decayLength,decayLengthXY};
+    Double_t entry[] = {pt,(Double_t)fNprongsInAcc,fMotherPt,decayLength,decayLengthXY,(Double_t)fFoundElectron};
     fTHnGenStep->Fill(entry,weight);
     // y distribution of all particles
     for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
@@ -280,7 +288,7 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t 
   Double_t decayLengXY=dzerocand->DecayLengthXY();
   Double_t decayLeng=dzerocand->DecayLength();
   // mass, pt, normLXY, cosPointXY, normL, cosPoint, LXY, L
-  Double_t pointData[8]={massD0,pt,normalDecayLengXY,cptangXY,normalDecayLeng,cptang,decayLengXY,decayLeng};
+  Double_t pointData[]={massD0,pt,normalDecayLengXY,cptangXY,normalDecayLeng,cptang,decayLengXY,decayLeng};
 
   if(isSelected==1||isSelected==3){
     fTHnData->Fill(pointData,weight);
@@ -294,6 +302,7 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t 
     fNprongs=0;
     fNprongsInAcc=0;
     fDecayChain=kFALSE; // TODO: use this value
+    fFoundElectron=kFALSE;
     fMotherPt=pt;
     fD0Cand=dzerocand;
     if (fD0Cand) fD0CandParam=new AliNeutralTrackParam(fD0Cand);
@@ -301,7 +310,7 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t 
       AliDebug(3, "Error during the decay type determination!");
     }
     // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
-    Double_t pointMC[9]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongsInAcc,fMotherPt,normalDecayLeng,cptang,decayLengXY,decayLeng};
+    Double_t pointMC[]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongsInAcc,fMotherPt,normalDecayLeng,cptang,decayLengXY,decayLeng,(Double_t)fFoundElectron};
     fTHnMC->Fill(pointMC, weight);
 
     if (mcHeader) {
@@ -441,13 +450,14 @@ void AliHFsubtractBFDcuts::CountProngs(Int_t labCurrMother, Int_t labCurrExcl,
   }
 }
 
-Bool_t AliHFsubtractBFDcuts::IsStable(Int_t labProng) const {
+Bool_t AliHFsubtractBFDcuts::IsStable(Int_t labProng) {
   const Int_t stablePartPdgs[] = { 11, 13, 211, 321, 2212, 12, 14, 22, 111, 130 };
   const Int_t nStablePartPdgs  = sizeof(stablePartPdgs)/sizeof(Int_t);
   AliAODMCParticle* prong = (AliAODMCParticle*)fMCarray->UncheckedAt(labProng);
   Int_t pdgProng = prong->GetPdgCode();
   if (pdgProng<0) pdgProng*=-1; // treat particles and anti-particles the same way
   for (Int_t iPdg=0; iPdg<nStablePartPdgs; ++iPdg) {
+    if (pdgProng == 11) fFoundElectron = kTRUE;
     if (stablePartPdgs[iPdg] == pdgProng) return kTRUE;
   }
   return kFALSE;

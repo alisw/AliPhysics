@@ -567,7 +567,9 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTr
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
 
 	Double_t pte = trk->Pt();
-	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte) return kFALSE;
+	Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+	if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+	if(nSigmaTPCele<nsigmamin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 
 	return kTRUE;

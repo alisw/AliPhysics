@@ -17,6 +17,9 @@ public:
     
     //void    Print(Option_t *option="") const;
     
+    //_________________________________________________________________________
+    //Interface: steering functions to be used in calibration macro
+  
     //Set Filenames
     void SetInputFile ( TString lFile ) { fInputFileName = lFile.Data(); } 
     void SetBufferFile ( TString lFile ) { fBufferFileName = lFile.Data(); } 
@@ -30,6 +33,9 @@ public:
         lDesiredBoundaries = lB;
         lNDesiredBoundaries = lNB;
     }
+    
+    //Getter for event selection criteria
+    AliMultSelectionCuts * GetEventCuts() { return fMultSelectionCuts;     }
     
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();

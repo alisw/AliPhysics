@@ -120,7 +120,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatch2(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Default constructor.
   for(Int_t j=0; j<16; j++) {
@@ -185,7 +185,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatch2(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Standard constructor.
   for(Int_t j=0; j<16; j++) {
@@ -739,10 +739,11 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
   nbins1[3]=144; xmin1[3]=0.; xmax1[3]=2.016;
   nbins1[4]=144; xmin1[4]=0.; xmax1[4]=2.016;
   nbins1[5]=300; xmin1[5]=0.; xmax1[5]=300;
-  nbins1[6]=300; xmin1[6]=0.; xmax1[6]=500;
+  nbins1[6]=500; xmin1[6]=0.; xmax1[6]=500;
   nbins1[7]=3; xmin1[7]=0.0; xmax1[7]=1.0*TMath::Pi()/2.0;
 
-  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match", nDim1,nbins1,xmin1,xmax1);
+  // before cuts to perform match
+  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match before cuts", nDim1,nbins1,xmin1,xmax1);
   fhnPatchMatch->GetAxis(0)->SetTitle("Centrality %");              // 0
   fhnPatchMatch->GetAxis(1)->SetTitle("Jet p_{T}");                 // 1
   fhnPatchMatch->GetAxis(2)->SetTitle("Max Cluster Energy");        // 2
@@ -752,6 +753,18 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
   fhnPatchMatch->GetAxis(6)->SetTitle("Max Patch ADC");             // 6
   fhnPatchMatch->GetAxis(7)->SetTitle("Event Plane - Jet Angle");   // 7
   fOutput->Add(fhnPatchMatch);
+
+  // after cuts to perform match
+  fhnPatchMatch2 = new THnSparseF("fhnPatchMatch2","fhn Patch Match after cuts", nDim1,nbins1,xmin1,xmax1);
+  fhnPatchMatch2->GetAxis(0)->SetTitle("Centrality %");              // 0
+  fhnPatchMatch2->GetAxis(1)->SetTitle("Jet p_{T}");                 // 1
+  fhnPatchMatch2->GetAxis(2)->SetTitle("Max Cluster Energy");        // 2
+  fhnPatchMatch2->GetAxis(3)->SetTitle("#Delta#phi Geo");            // 3
+  fhnPatchMatch2->GetAxis(4)->SetTitle("#Delta#Eta Geo");            // 4
+  fhnPatchMatch2->GetAxis(5)->SetTitle("Max Patch Energy");          // 5
+  fhnPatchMatch2->GetAxis(6)->SetTitle("Max Patch ADC");             // 6
+  fhnPatchMatch2->GetAxis(7)->SetTitle("Event Plane - Jet Angle");   // 7
+  fOutput->Add(fhnPatchMatch2);
 
   // for jet cluster matched to patch
   Int_t nDim2=18;
@@ -1044,6 +1057,12 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
             double kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
             double kEnergyOffline = fMaxPatch->GetPatchE();
 
+            // get patch variables
+            double etamin = TMath::Min(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
+            double etamax = TMath::Max(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
+            double phimin = TMath::Min(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
+            double phimax = TMath::Max(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
+
             for(int maxbinE = 0; maxbinE<16; maxbinE++) {
                if(maxClusterE > maxbinE) fHistdPhidEtaPatchJetCluster[maxbinE]->Fill(dPhiPatchLeadCl, dEtaPatchLeadCl);
             }
@@ -1051,13 +1070,10 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
             Double_t fillarr[8] = {fCent, jet->Pt(), maxClusterE, dPhiPatchLeadCl, dEtaPatchLeadCl, kEnergyOffline, kAmplitudeOnline, dEPJet};
             fhnPatchMatch->Fill(fillarr);
 
+            if(maxClusterEta > etamin && maxClusterEta < etamax && maxClusterPhi > phimin && maxClusterPhi < phimax) fhnPatchMatch2->Fill(fillarr);
+
             // patch meeting offline energy cut
             if(fMaxPatch->GetPatchE() > fPatchECut) {
-              // get patch variables
-              Double_t etamin = TMath::Min(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
-              Double_t etamax = TMath::Max(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
-              Double_t phimin = TMath::Min(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
-              Double_t phimax = TMath::Max(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
 
               // look to geometrically match patch to leading cluster of jet
               if(maxClusterEta > etamin && maxClusterEta < etamax && maxClusterPhi > phimin && maxClusterPhi < phimax){

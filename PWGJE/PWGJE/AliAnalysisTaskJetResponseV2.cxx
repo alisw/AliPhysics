@@ -48,6 +48,7 @@
 #include "AliAODHandler.h"
 
 #include "AliAnalysisTaskJetResponseV2.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

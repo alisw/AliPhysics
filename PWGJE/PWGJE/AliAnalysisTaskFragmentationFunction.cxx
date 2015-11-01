@@ -51,6 +51,8 @@
 #include "AliVEvent.h"
 
 #include "AliAnalysisTaskFragmentationFunction.h"
+#include <iostream>
+
 using std::cout;
 using std::endl;
 using std::cerr;

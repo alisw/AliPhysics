@@ -82,6 +82,9 @@ public:
                              const AnalysisParams&,
                              const CutParams&);
 
+  virtual void EventBegin(const AliFemtoEvent*);
+  virtual void EventEnd(const AliFemtoEvent*);
+
   /**
    * Create a Cut-Parameter object with default options.
    */
@@ -112,15 +115,20 @@ protected:
 
   /// The name of the analysis to identify in the output list
   TString fAnalysisName;
-  
+
   /// The type of Pion particles this analysis will search for
   PionType fPionType;
-  
+
   /// The type of Lambda particles this analysis will search for.
   /// This determines which V0 daughter (pos or neg) will pass proton vs pion daughter cuts
   LambdaType fLambdaType;
 
+  /// Output objects in multiple TObjArrays instead of one TList
   Bool_t fGroupOutputObjects;
+
+  /// This is a Monte Carlo analysis
+  Bool_t fMCAnalysis;
+
 
 private:
 
@@ -147,7 +155,10 @@ struct AliFemtoAnalysisPionLambda::AnalysisParams {
   PionType pion_type;
   LambdaType lambda_type;
 
+  Bool_t enable_pair_monitors;
+
   Bool_t group_output_objects;
+  Bool_t is_mc_analysis;
 };
 
 /// \class AliFemtoAnalysisPionLambda::CutParams
@@ -214,10 +225,8 @@ struct AliFemtoAnalysisPionLambda::CutParams {
   // PAIR
   Bool_t pair_TPCOnly;
   Float_t pair_TPCExitSepMin;
+  Float_t pair_MinAvgSeparationPos;
+  Float_t pair_MinAvgSeparationNeg;
 };
-
-
-
-
 
 #endif

@@ -47,7 +47,7 @@ ClassImp(AliAnalysisTaskLocalRho)
 //_____________________________________________________________________________
 AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskLocalRho", kTRUE), 
-  fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
+  fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
   fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), 
   fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), 
   fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kFALSE), fDetectorType(kTPC), 
@@ -69,7 +69,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho() :
 //_____________________________________________________________________________
 AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType type) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
+  fInitialized(0), fAttachToEvent(kTRUE), fFillHistograms(kFALSE), fNoEventWeightsForQC(kTRUE), 
   fUseScaledRho(0), fCentralityClasses(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), 
   fUserSuppliedR3(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fInCentralitySelection(-1), 
   fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kFALSE), fDetectorType(kTPC), 
@@ -94,7 +94,7 @@ AliAnalysisTaskLocalRho::AliAnalysisTaskLocalRho(const char* name, runModeType t
     DefineOutput(2, TList::Class());
     DefineOutput(3, TList::Class());
   } break;
-  default: fDebug = -1;   // suppress debug info explicitely when not running locally
+  default: break;   // suppress debug info explicitely when not running locally
   }
 }
 
@@ -112,6 +112,9 @@ AliAnalysisTaskLocalRho::~AliAnalysisTaskLocalRho()
 //_____________________________________________________________________________
 void AliAnalysisTaskLocalRho::ExecOnce()
 {
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   // Init the analysis
   if(fLocalRhoName=="") fLocalRhoName = Form("LocalRhoFrom_%s", GetName());
   fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
@@ -138,8 +141,9 @@ void AliAnalysisTaskLocalRho::ExecOnce()
 Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis() 
 {
   // Initialize the anaysis
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(fLocalJetMinEta > -10 && fLocalJetMaxEta > -10) SetJetEtaLimits(fLocalJetMinEta, fLocalJetMaxEta);
   if(fLocalJetMinPhi > -10 && fLocalJetMaxPhi > -10) SetJetPhiLimits(fLocalJetMinPhi, fLocalJetMaxPhi);
   switch (fFitModulationType)  {
@@ -180,7 +184,9 @@ Bool_t AliAnalysisTaskLocalRho::InitializeAnalysis()
 void AliAnalysisTaskLocalRho::UserCreateOutputObjects()
 {
   // create output objects
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
   if(!fCentralityClasses) {   // classes must be defined at this point
     Int_t c[] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
@@ -248,8 +254,9 @@ void AliAnalysisTaskLocalRho::UserCreateOutputObjects()
 TH1F* AliAnalysisTaskLocalRho::BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Int_t c, Bool_t append)
 {
   // Book a TH1F and connect it to the output container
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(!fOutputList) return 0x0;
   TString title(name);
   if(c!=-1) { // format centrality dependent histograms accordingly
@@ -268,8 +275,9 @@ TH2F* AliAnalysisTaskLocalRho::BookTH2F(const char* name, const char* x, const c
 					Int_t binsy, Double_t miny, Double_t maxy, Int_t c, Bool_t append)
 {
   // Book a TH2F and connect it to the output container
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(!fOutputList) return 0x0;
   TString title(name);
   if(c!=-1) { // format centrality dependent histograms accordingly
@@ -287,8 +295,9 @@ TH2F* AliAnalysisTaskLocalRho::BookTH2F(const char* name, const char* x, const c
 Bool_t AliAnalysisTaskLocalRho::Run()
 {
   // Execute once for each event
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(!(InputEvent()||fTracks||fJets||fRho)) return kFALSE;
   if(!fInitialized) fInitialized = InitializeAnalysis();
   // get the centrality bin (necessary for some control histograms
@@ -426,6 +435,9 @@ Bool_t AliAnalysisTaskLocalRho::Run()
 //_____________________________________________________________________________
 void AliAnalysisTaskLocalRho::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const 
 {
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   // Get the vzero event plane
   if(fUseV0EventPlaneFromHeader) {
     // use the vzero event plane from the event header
@@ -472,8 +484,9 @@ void AliAnalysisTaskLocalRho::CalculateEventPlaneTPC(Double_t* tpc)
   // Grab the TPC event plane. if parameter fExcludeLeadingJetsFromFit is larger than 0, 
   // strip in eta of width fExcludeLeadingJetsFromFit * GetJetContainer()->GetJetRadius() around the leading jet (before
   // subtraction of rho) will be exluded from the event plane estimate
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   fNAcceptedTracks = 0;                // reset the track counter
   Double_t qx2(0), qy2(0);     // for psi2
   Double_t qx3(0), qy3(0);     // for psi3
@@ -503,38 +516,21 @@ void AliAnalysisTaskLocalRho::CalculateEventPlaneTPC(Double_t* tpc)
 void AliAnalysisTaskLocalRho::CalculateEventPlaneCombinedVZERO(Double_t* comb) const
 {
   // Grab the combined vzero event plane
-
-  //    if(fUseV0EventPlaneFromHeader) {    // use the vzero from the header
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   Double_t a(0), b(0), c(0), d(0);
   comb[0] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 2, a, b);
   comb[1] = InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 10, 3, c, d);
-  // FIXME the rest of this function isn't impelmented yet (as of 01-07-2013)
-  // this means a default the combined vzero event plane from the header is used
-  // to get this value 'by hand', vzeroa and vzeroc event planes have to be combined
-  // according to their resolution - this will be added ...
-  //
-  //    } else {
-  //        Double_t qx2a(0), qy2a(0), qx2c(0), qy2c(0), qx3a(0), qy3a(0), qx3c(0), qy3c(0);
-  //        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 2, qx2a, qy2a);
-  //        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 2, qx2c, qy2c);
-  //        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 8, 3, qx3a, qy3a);
-  //        InputEvent()->GetEventplane()->CalculateVZEROEventPlane(InputEvent(), 9, 3, qx3c, qy3c);
-  //        Double_t chi2A(-1), chi2C(-1), chi3A(-1), chi3C(-1);     // get chi from the resolution
-  //        Double_t qx2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
-  //        Double_t qy2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
-  //        Double_t qx3(chi3A*chi3A*qx3a+chi3C*chi3C*qx3c);
-  //        Double_t qy3(chi3A*chi3A*qy3a+chi3C*chi3C*qy3c);
-  //        comb[0] = .5*TMath::ATan2(qy2, qx2);
-  //        comb[1] = (1./3.)*TMath::ATan2(qy3, qx3);
-  //    }
 }
 
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskLocalRho::CalculateQC2(Int_t harm) 
 {
   // Get the second order q-cumulant, a -999 return will be caught in the qa routine of CorrectRho
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   Double_t reQ(0), imQ(0), modQ(0), M11(0), M(0);
   if(fUsePtWeight) {  // for the weighted 2-nd order q-cumulant
     QCnQnk(harm, 1, reQ, imQ);      // get the weighted 2-nd order q-vectors
@@ -552,8 +548,9 @@ Double_t AliAnalysisTaskLocalRho::CalculateQC2(Int_t harm)
 Double_t AliAnalysisTaskLocalRho::CalculateQC4(Int_t harm) 
 {
   // Get the fourth order q-cumulant, a -999 return will be caught in the qa routine of CorrectRho
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   Double_t reQn1(0), imQn1(0), reQ2n2(0), imQ2n2(0), reQn3(0), imQn3(0), M1111(0), M(0);
   Double_t a(0), b(0), c(0), d(0), e(0), f(0), g(0);  // terms of the calculation
   if(fUsePtWeight) {  // for the weighted 4-th order q-cumulant
@@ -589,8 +586,9 @@ Double_t AliAnalysisTaskLocalRho::CalculateQC4(Int_t harm)
 void AliAnalysisTaskLocalRho::QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &imQ) 
 {
   // Get the weighted n-th order q-vector, pass real and imaginary part as reference
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(!fTracks) return;
   fNAcceptedTracksQCn = 0;
   Int_t iTracks(fTracks->GetEntriesFast());
@@ -608,8 +606,9 @@ void AliAnalysisTaskLocalRho::QCnQnk(Int_t n, Int_t k, Double_t &reQ, Double_t &
 Double_t AliAnalysisTaskLocalRho::QCnS(Int_t i, Int_t j) 
 {
   // Get the weighted ij-th order autocorrelation correction
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(!fTracks || i <= 0 || j <= 0) return -999;
   Int_t iTracks(fTracks->GetEntriesFast());
   Double_t Sij(0);
@@ -625,8 +624,9 @@ Double_t AliAnalysisTaskLocalRho::QCnS(Int_t i, Int_t j)
 Double_t AliAnalysisTaskLocalRho::QCnM() 
 {
   // Get multiplicity for unweighted q-cumulants. function QCnQnk should be called first
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   return (Double_t) fNAcceptedTracksQCn;
 }
 
@@ -634,8 +634,9 @@ Double_t AliAnalysisTaskLocalRho::QCnM()
 Double_t AliAnalysisTaskLocalRho::QCnM11() 
 {
   // Get multiplicity weights for the weighted two particle cumulant
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   return (QCnS(2,1) - QCnS(1,2));
 }
 
@@ -643,8 +644,9 @@ Double_t AliAnalysisTaskLocalRho::QCnM11()
 Double_t AliAnalysisTaskLocalRho::QCnM1111() 
 {
   // Get multiplicity weights for the weighted four particle cumulant
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   return (QCnS(4,1)-6*QCnS(1,2)*QCnS(2,1)+8*QCnS(1,3)*QCnS(1,1)+3*QCnS(2,2)-6*QCnS(1,4));
 }
 
@@ -653,8 +655,9 @@ Bool_t AliAnalysisTaskLocalRho::QCnRecovery(Double_t psi2, Double_t psi3)
 {
   // Decides how to deal with the situation where c2 or c3 is negative 
   // Returns kTRUE depending on whether or not a modulated rho is used for the jet background
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if(TMath::AreEqualAbs(fFitModulation->GetParameter(3), .0, 1e-10) && TMath::AreEqualAbs(fFitModulation->GetParameter(7), .0,1e-10)) {
     fFitModulation->SetParameter(7, 0);
     fFitModulation->SetParameter(3, 0);
@@ -709,8 +712,9 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
   //      and a check can be performed to see if rho has no negative local minimum
   //  [3] get v2 and v3 from user supplied histograms
   //      in this way, a fixed value of v2 and v3 is subtracted w.r.t. whichever event plane is requested
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   switch (fFitModulationType) {       // for approaches where no fitting is required
   case kQC2 : {
     fFitModulation->FixParameter(4, psi2); 
@@ -970,8 +974,9 @@ Bool_t AliAnalysisTaskLocalRho::CorrectRho(Double_t psi2, Double_t psi3)
 void AliAnalysisTaskLocalRho::FillAnalysisSummaryHistogram() const
 {
   // Fill the analysis summary histrogram, saves all relevant analysis settigns
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   fHistAnalysisSummary->GetXaxis()->SetBinLabel(2, "fJetRadius");
   fHistAnalysisSummary->SetBinContent(2, GetJetContainer()->GetJetRadius());
   fHistAnalysisSummary->GetXaxis()->SetBinLabel(3, "fJetEtaMin");
@@ -1018,8 +1023,9 @@ void AliAnalysisTaskLocalRho::FillAnalysisSummaryHistogram() const
 void AliAnalysisTaskLocalRho::FillEventPlaneHistograms(Double_t psi2, Double_t psi3) const
 {
   // Fill event plane histograms
-
-  if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   fHistPsi2[fInCentralitySelection]->Fill(psi2);
   fHistPsi3[fInCentralitySelection]->Fill(psi3);    
 }
@@ -1027,14 +1033,19 @@ void AliAnalysisTaskLocalRho::FillEventPlaneHistograms(Double_t psi2, Double_t p
 //_____________________________________________________________________________
 void AliAnalysisTaskLocalRho::Terminate(Option_t *)
 {
-  // Terminate
+   #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+   #endif
+ // Terminate
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskLocalRho::SetModulationFit(TF1* fit) 
 {
   // Set function to fit modulation
-
+  #ifdef ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+      printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+  #endif
   if (fFitModulation) delete fFitModulation;
   fFitModulation = fit; 
 }

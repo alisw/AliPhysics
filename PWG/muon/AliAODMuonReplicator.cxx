@@ -16,21 +16,17 @@
 // $Id$
 
 ///
-/// Implementation of an AliAODBranchReplicator to produce slim muon and dimuon aods.
+/// Implementation of an AliAODBranchReplicator to produce slim muon aods.
 ///
-/// This replicator is in charge of replicating the tracks,vertices,dimuons
-/// (vzero, tzero, zdc, and, optionally, the SPD tracklets) branches
-/// of the standard AOD into muon AODs (AliAOD.Muons.root and AliAOD.Dimuons.root)
+/// This replicator is in charge of replicating the {tracks,vertices,
+/// vzero, tzero, zdc, ad, and, optionally, the SPD tracklets} branches
+/// of the standard AOD into muon AODs (AliAOD.Muons.root)
 ///
 /// The tracks are filtered so that only muon tracks (and only muon tracks
 /// that pass the trackCut if present) make it to the output aods
 ///
 /// The vertices are filtered so that only the primary (and pileup) vertices make it
 /// to the output aods.
-///
-/// The dimuons are recreated here, according to the set of tracks
-/// that pass the trackCut (that set may be the same as the input set,
-/// but to be 100% safe, we always recreate the dimuons).
 ///
 /// \author L. Aphecetche (Subatech)
 
@@ -63,6 +59,7 @@ fVertexCut(vertexCut), fVertices(0x0),
 fDimuons(0x0),
 fVZERO(0x0),
 fTZERO(0x0),
+fAD(0x0),
 fHeader(0x0),
 fTracklets(0x0),
 fZDC(0x0),
@@ -382,6 +379,8 @@ TList* AliAODMuonReplicator::GetList() const
     
     fZDC = new AliAODZDC;
     
+    fAD = new AliAODAD;
+    
     fList = new TList;
     fList->SetOwner(kTRUE);
     
@@ -393,6 +392,7 @@ TList* AliAODMuonReplicator::GetList() const
     fList->Add(fVZERO);
     fList->Add(fTZERO);
     fList->Add(fZDC);
+    fList->Add(fAD);
     
     if ( fMCMode > 0 )
     {
@@ -431,6 +431,11 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   *fTZERO = *(source.GetTZEROData());
 
   *fZDC = *(source.GetZDCData());
+  
+  if ( source.GetADData() )
+  {
+    *fAD = *(source.GetADData());
+  }
   
   fTracks->Clear("C");
   TIter next(source.GetTracks());

@@ -34,7 +34,8 @@ public:
 
 protected:
   void CreateEnergyBinning(TArrayD& binning) const;
-  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double eta, double phi);
+  void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
+  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
   Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 

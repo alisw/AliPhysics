@@ -51,6 +51,7 @@
 #include "AliAODJet.h"
 
 #include "AliAnalysisTaskJetCore.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

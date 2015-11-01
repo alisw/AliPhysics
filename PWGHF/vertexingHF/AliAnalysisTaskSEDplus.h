@@ -96,6 +96,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
   enum {kMaxPtBins=20};
+  enum {kVarForSparse=7,kVarForSparseFD=8};
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents; //!<!hist. for No. of events

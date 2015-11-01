@@ -903,9 +903,6 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
   // a 2d histogram on event level (as fct of zvtx, multiplicity)
   // Histograms has to be deleted by the caller of the function
   
-  if (!fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5))
-    AliFatal("Histogram without vertex axis provided");
-
   THnBase* sparse = fTrackHist[region]->GetGrid(step)->GetGrid();
   if (fGetMultCacheOn)
   {
@@ -939,17 +936,74 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
 
     fEventHist->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(firstBinPt2, lastBinPt2);
   }
+  
+  Bool_t hasVertex = kTRUE;
+  if (!fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5))
+    hasVertex = kFALSE;
+
+  if (hasVertex)
+  {
+    Int_t dimensions[] = { 4, 0, 5, 3 };
+    THnBase* tmpTrackHist = sparse->ProjectionND(4, dimensions, "E");
+    *eventHist = (TH2*) fEventHist->GetGrid(step)->Project(2, 1);
+    // convert to THn 
+    *trackHist = ChangeToThn(tmpTrackHist);
+    delete tmpTrackHist;
+  }
+  else
+  {
+    Int_t dimensions[] = { 4, 0, 3 };
+    THnBase* tmpTrackHist = sparse->ProjectionND(3, dimensions, "E");
     
-  Int_t dimensions[] = { 4, 0, 5, 3 };
-  THnBase* tmpTrackHist = sparse->ProjectionND(4, dimensions, "E");
-  *eventHist = (TH2*) fEventHist->GetGrid(step)->Project(2, 1);
+    // add dummy vertex axis, so that the extraction code can work as usual
+    Int_t nBins[] = { tmpTrackHist->GetAxis(0)->GetNbins(), tmpTrackHist->GetAxis(1)->GetNbins(), 1, tmpTrackHist->GetAxis(2)->GetNbins() };
+    Double_t vtxAxis[] = { -100, 100 };
+    
+    *trackHist = new THnF(Form("%s_thn", tmpTrackHist->GetName()), tmpTrackHist->GetTitle(), 4, nBins, 0, 0);
+    
+    for (int i=0; i<3; i++) 
+    {
+      int j = i;
+      if (i == 2)
+	j = 3;
+      
+      (*trackHist)->SetBinEdges(j, tmpTrackHist->GetAxis(i)->GetXbins()->GetArray());
+      (*trackHist)->GetAxis(j)->SetTitle(tmpTrackHist->GetAxis(i)->GetTitle());
+    }
+      
+    (*trackHist)->SetBinEdges(2, vtxAxis);
+    (*trackHist)->GetAxis(2)->SetTitle("dummy z-vtx");
+    
+    // bin by bin copy...
+    Int_t bins[4];
+    for (Int_t binIdx = 0; binIdx < tmpTrackHist->GetNbins(); binIdx++)
+    {
+      Double_t value = tmpTrackHist->GetBinContent(binIdx, bins);
+      Double_t error = tmpTrackHist->GetBinError(binIdx);
+      
+      // move third to fourth axis
+      bins[3] = bins[2];
+      bins[2] = 1;
+      
+      (*trackHist)->SetBinContent(bins, value);
+      (*trackHist)->SetBinError(bins, error);
+    }
+      
+    delete tmpTrackHist;
+    
+    TH1* projEventHist = (TH1*) fEventHist->GetGrid(step)->Project(1);
+    *eventHist = new TH2F(Form("%s_vtx", projEventHist->GetName()), projEventHist->GetTitle(), 1, vtxAxis, projEventHist->GetNbinsX(), projEventHist->GetXaxis()->GetXbins()->GetArray());
+    for (Int_t binIdx = 1; binIdx <= projEventHist->GetNbinsX(); binIdx++)
+    {
+      (*eventHist)->SetBinContent(1, binIdx, projEventHist->GetBinContent(binIdx));
+      (*eventHist)->SetBinError(1, binIdx, projEventHist->GetBinError(binIdx));
+    }
+    
+    delete projEventHist;
+  }
   
   ResetBinLimits(sparse);
   ResetBinLimits(fEventHist->GetGrid(step));
-
-  // convert to THn 
-  *trackHist = ChangeToThn(tmpTrackHist);
-  delete tmpTrackHist;
 }
 
 //____________________________________________________________________

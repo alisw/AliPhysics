@@ -25,5 +25,6 @@ add_subdirectory(muondep)
 add_subdirectory(Tools)
 add_subdirectory(TRD)
 add_subdirectory(HMTF)
+add_subdirectory(MCLEGO)
 
 message(STATUS "PWG enabled")

@@ -3,6 +3,7 @@
 #include <TMath.h>
 #include <TH2D.h>
 #include <TH1D.h>
+#include <TF1.h>
 #include <THStack.h>
 #include <TList.h>
 #include <AliAnalysisManager.h>
@@ -35,7 +36,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fTakenCent(0),
     fCentMethod("default"),
     fAnaUtil(),
-    fUseUtilPileup(false)
+    fUseUtilPileup(false),
+    fIpzReweight(0)
 {
   // 
   // Constructor
@@ -60,7 +62,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fTakenCent(0),
     fCentMethod("default"),
     fAnaUtil(),
-    fUseUtilPileup(false)
+    fUseUtilPileup(false),
+    fIpzReweight(0)
 {
   // 
   // Constructor
@@ -391,6 +394,7 @@ AliBasedNdetaTask::Book()
   fSums->Add(AliForwardUtil::MakeParameter("scheme", fNormalizationScheme));
   fSums->Add(AliForwardUtil::MakeParameter("centEstimator", 
 					   GetCentMethodID(fCentMethod)));
+  if (fIpzReweight)  fSums->Add(fIpzReweight->Clone("ipZw")); 
   // fSums->Add(new TNamed("centEstimator", fCentMethod.Data()));
 
   // Make our centrality bins 
@@ -464,32 +468,17 @@ Double_t
 AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 				 AliAODForwardMult* forward)
 {
-  Double_t       cent    = forward->GetCentrality();
-  if (!fCentMethod.IsNull()) {
-    if (fCentMethod.BeginsWith("MULT")) {
-      AliAODMultEventClass* mult = GetMultClass(event);
-      if (mult) 
-	cent = mult->GetCentrality(fCentMethod);
-    }
-    else {
-      AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(event.GetHeader());
-      if(!hdr) AliFatal("Not a standard AOD");
-      if (hdr) { 
-	AliCentrality* cP = hdr->GetCentralityP();
-	if (cP) { 
-	  cent = cP->GetCentralityPercentile(fCentMethod);
-	  // Info("GetCentrality", "Got %f%% centrality from %s",
-	  //      cent, fCentMethod.Data());
-	}
-      }
-    }
-  }
-  Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
+  DGUARD(fDebug,1,"Getting centrality from event of object: %s",
+	 fCentMethod.Data());
+  Int_t   qual    = 0;
+  Float_t cent    = forward->GetCentrality();
+  DMSG(fDebug,2,"Centrality stored in AOD forward: %5.1f%%", cent);
+  if (!fCentMethod.IsNull()) 
+    cent = AliForwardUtil::GetCentrality(event,fCentMethod,qual,(fDebug > 1));
+  
   if (cent < 0)    cent = -.5;
-  if (cent >= max) {
-    Double_t tmp = (max >= 100. ? 100. : TMath::Max(max+.1,100.5));
-    // Info("GetCentrality", "Obtained %f >= %f -> %f", cent, max, tmp);
-    cent = tmp;
+  if (qual <= 0) {// OK centrality 
+    if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
   }
   return cent;
 
@@ -523,7 +512,12 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   if (!ApplyEmpiricalCorrection(forward,data))
     return false;
 
-
+  Double_t ipzW = 1;
+  if (fIpzReweight)  {
+    ipzW = fIpzReweight->Eval(vtx);
+    DMSG(fDebug,5,"IPz=%f -> Weight %f", vtx, ipzW);
+  }
+  
   Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
 		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
   Bool_t taken  = false;
@@ -531,13 +525,14 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
   if (allBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, fMaxIpZ, 
-			   data, dataMC, fFilterMask)) taken = true;
+			   data, dataMC, fFilterMask, ipzW)) taken = true;
   
   // Find this centrality bin
   if (HasCentrality()) {
-    taken                  = false;
+    taken                  = false;    
     Double_t       cent    = GetCentrality(aod, forward);
     // fSeenCent->Fill(cent);
+    DMSG(fDebug,1,"Got event centrality %f", cent);
     
     Int_t          icent   = fCentAxis.FindBin(cent);    
     if (icent == (fCentAxis.GetNbins()+1) &&
@@ -549,7 +544,7 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin && thisBin->ProcessEvent(forward, fTriggerMask,
 					 isZero, fMinIpZ,  fMaxIpZ,
-					 data, dataMC, fFilterMask)) 
+					 data, dataMC, fFilterMask, ipzW)) 
       taken = true;
     if (taken) fTakenCent->Fill(cent);
     
@@ -558,7 +553,7 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
       static_cast<CentralityBin*>(fListOfCentralities->At(nbins+1));
     if (fullBin && fullBin->ProcessEvent(forward, fTriggerMask, isZero,
 					 fMinIpZ, fMaxIpZ, data, dataMC,
-					 fFilterMask))
+					 fFilterMask, ipzW))
       fSeenCent->Fill(cent);
   }
   
@@ -937,7 +932,10 @@ AliBasedNdetaTask::Print(Option_t* option) const
   PFV("Bin-0 Trigger efficiency", fTriggerEff0);
   PFV("Centrality estimator",    (fCentMethod.IsNull() ? 
 				  "-default-" : fCentMethod.Data()));
-
+  PFB("Re-weight from IPz",      fIpzReweight!=0);
+  if (fIpzReweight) fIpzReweight->Print();
+    
+  
   TString opt(option);
   opt.ToUpper();
   if (opt.Contains("R") &&
@@ -1057,11 +1055,11 @@ AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
 
 //____________________________________________________________________
 void
-AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero)
+AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero, Double_t weight)
 {
   DGUARD(fDebug,2,"Adding %s to sums", data->GetName());
-  if (isZero) fSum0->Add(data);
-  else        fSum->Add(data);
+  if (isZero) fSum0->Add(data, weight);
+  else        fSum->Add(data, weight);
   fEvents->Fill(isZero ? 1 : 0);
 }
 
@@ -1506,8 +1504,10 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
 
   DGUARD(fDebug,2,"Check the event");
   // We do not check for centrality here - it's already done 
-  return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
-			     fTriggers, fStatus, filter);
+  Bool_t ret = forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
+				   fTriggers, fStatus, filter);
+  DMSG(fDebug, 2, "%s", (ret ? "Accepted" : "Rejected"));
+  return ret;
 }
   
 
@@ -1520,7 +1520,8 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
 					       Double_t    vzMax,
 					       const TH2D* data, 
 					       const TH2D* mc,
-					       UInt_t      filter)
+					       UInt_t      filter,
+					       Double_t    weight)
 {
   // 
   // Process an event
@@ -1532,16 +1533,17 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //    vzMax       Maximum IP z coordinate
   //    data        Data histogram 
   //    mc          MC histogram
+  //    weight      Event weight 
   //
-  DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
-	 data ? data->GetName() : "(null)");
+  DGUARD(fDebug,1,"Process one event for %s a given centrality bin " 
+	 "[%5.1f%%,%5.1f%%)", data ? data->GetName() : "(null)", fLow, fHigh);
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax, filter)) 
     return false;
   if (!data) return false;
   if (!fSum) CreateSums(data, mc);
 
-  fSum->Add(data, isZero);
-  if (mc) fSumMC->Add(mc, isZero);
+  fSum->Add(data, isZero, weight);
+  if (mc) fSumMC->Add(mc, isZero, weight);
 
   return true;
 }

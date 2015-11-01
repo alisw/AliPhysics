@@ -28,9 +28,11 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		AliAODConversionMother(AliKFConversionMother *kf);
 
 		//Constructor Decay Mother Particle
-		AliAODConversionMother(AliAODConversionPhoton *y1,AliAODConversionPhoton *y2);
+		AliAODConversionMother(AliAODConversionPhoton *y1, AliAODConversionPhoton *y2);
 		// Constructor Mother particle from one photon and one meson
 		AliAODConversionMother(AliAODConversionMother *meson, AliAODConversionPhoton *gamma);
+		// Constructor Mother particle from two mesons
+		AliAODConversionMother(AliAODConversionMother *meson1, AliAODConversionMother *meson2);
 
 		
 		//Destructor
@@ -121,7 +123,7 @@ class AliAODConversionMother : public AliAODConversionParticle{
 													// 3 : eta'
 													// 4 : omega
 		
-    ClassDef(AliAODConversionMother,5)
+	ClassDef(AliAODConversionMother,5)
 };
 
 #endif

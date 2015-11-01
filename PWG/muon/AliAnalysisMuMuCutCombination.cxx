@@ -108,6 +108,35 @@ void AliAnalysisMuMuCutCombination::Add(AliAnalysisMuMuCutElement* ce)
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisMuMuCutCombination::IsEqualForTrackCutter(const AliAnalysisMuMuCutCombination& other) const
+{
+  /// whether or not we are the same combination as other, only considering the cuts
+  /// or the given type
+  
+  for ( Int_t i = 0; i <= fCuts->GetLast(); ++i )
+  {
+    AliAnalysisMuMuCutElement* thisCuti = static_cast<AliAnalysisMuMuCutElement*>(fCuts->At(i));
+    
+    if ( thisCuti->IsTrackCutter() && !other.fCuts->FindObject(thisCuti)  )
+    {
+      return kFALSE;
+    }
+  }
+  
+  for ( Int_t i = 0; i <= other.fCuts->GetLast(); ++i )
+  {
+    AliAnalysisMuMuCutElement* otherCuti = static_cast<AliAnalysisMuMuCutElement*>(other.fCuts->At(i));
+    
+    if ( otherCuti->IsTrackCutter() && !fCuts->FindObject(otherCuti)  )
+    {
+      return kFALSE;
+    }
+  }
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
 {
   /// Whether or not we are the same cut combination as obj
@@ -287,10 +316,20 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const TString& firedTriggerClasses,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuCutCombination::Print(Option_t* space) const
+void AliAnalysisMuMuCutCombination::Print(Option_t* opt) const
 {
   /// Printout of the cut combination
-  std::cout << Form("%s(%p) [",GetName(),this);
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("PTR"))
+  {
+    std::cout << Form("%s(%p) [",GetName(),this);
+  }
+  else
+  {
+    std::cout << Form("%s [",GetName());
+  }
   if ( IsEventCutter() ) std::cout << " E";
   if ( IsEventHandlerCutter() ) std::cout << " EH";
   if ( IsTrackCutter() ) std::cout << " T";
@@ -303,7 +342,7 @@ void AliAnalysisMuMuCutCombination::Print(Option_t* space) const
   
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
-    std::cout << space;
-    ce->Print();
+    std::cout << "            ";
+    ce->Print(sopt.Data());
   }
 }

@@ -62,6 +62,7 @@ public:
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
+  void SetRequireMaxMomentum (float p) { fRequireMaxMomentum = p; }
   void SetEnablePerformancePlot (bool cut) { fEnablePerformance = cut; }
   void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
   void SetDisableITSatHighPt (float pt) { fDisableITSatHighPt = pt; }
@@ -140,8 +141,8 @@ private:
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
   Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
-  Bool_t                fFixForLHC14a6;         ///<  Cut away all the tracks with at least 1 SPD cluster
-
+  Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
+  Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins

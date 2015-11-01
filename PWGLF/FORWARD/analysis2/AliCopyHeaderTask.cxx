@@ -136,7 +136,26 @@ AliCopyHeaderTask::UserExec(Option_t*)
     aodHeader->SetRefMultiplicityComb05(mult05);
     aodHeader->SetRefMultiplicityComb08(mult08);
   }
-
+  // --- Copy multiplicity object ------------------------------------
+  // AliAnalysisTaskESDfilter::ConvertTracklets(const AliESDEvent& esd)
+  AliMultiplicity* mul       = esd->GetMultiplicity();
+  AliAODTracklets* tracklets = (aod->GetTracklets());
+  if (mul && mul->GetNumberOfTracklets() > 0 && tracklets) {
+    Int_t nTracklets =  mul->GetNumberOfTracklets();
+    tracklets->CreateContainer(nTracklets);
+    for (Int_t i = 0; i < nTracklets; i++) {
+      tracklets->SetTracklet(i,
+			     mul->GetTheta(i),
+			     mul->GetPhi(i),
+			     mul->GetDeltaPhi(i),
+			     mul->GetLabel(i, 0),
+			     mul->GetLabel(i, 1));
+    }
+    tracklets->SetFiredChipMap      (mul->GetFiredChipMap());
+    tracklets->SetFastOrFiredChipMap(mul->GetFastOrFiredChipMap());
+    tracklets->SetFiredChips        (0, mul->GetNumberOfFiredChips(0));
+    tracklets->SetFiredChips        (1, mul->GetNumberOfFiredChips(1));
+  }
 }
 
 //____________________________________________________________________

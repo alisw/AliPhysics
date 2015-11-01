@@ -74,6 +74,7 @@ install (FILES
 set (INPUT_FILES
   MonteCarlo/template.jdl
   MonteCarlo/DIPSYpp_HepMC.in
+  MonteCarlo/crmc_template.param
   MonteCarlo/LoadLibs.C
   MonteCarlo/rungen.C
   MonteCarlo/runTask.C
