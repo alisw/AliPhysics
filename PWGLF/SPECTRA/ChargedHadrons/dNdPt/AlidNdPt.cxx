@@ -14,7 +14,7 @@
  **************************************************************************/
  // last change: 2013-06-13 by M.Knichel
 
-#include "AliESDtrackCuts.h"  
+#include "AliESDtrackCuts.h"
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 #include "AliPhysicsSelection.h"
@@ -35,10 +35,10 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fUsePileUpRejection(kFALSE)
-, fAnalysisMode(AlidNdPtHelper::kTPC) 
-, fTrigger(AliTriggerAnalysis::kMB1) 
-, fTriggerClass(0) 
-, fParticleMode(AlidNdPtHelper::kAllPart) 
+, fAnalysisMode(AlidNdPtHelper::kTPC)
+, fTrigger(AliTriggerAnalysis::kMB1)
+, fTriggerClass(0)
+, fParticleMode(AlidNdPtHelper::kAllPart)
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
@@ -58,10 +58,10 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fUsePileUpRejection(kFALSE)
-, fAnalysisMode(AlidNdPtHelper::kTPC) 
-, fTrigger(AliTriggerAnalysis::kMB1) 
-, fTriggerClass(0) 
-, fParticleMode(AlidNdPtHelper::kAllPart) 
+, fAnalysisMode(AlidNdPtHelper::kTPC)
+, fTrigger(AliTriggerAnalysis::kMB1)
+, fTriggerClass(0)
+, fParticleMode(AlidNdPtHelper::kAllPart)
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
@@ -80,10 +80,10 @@ AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
 , fMultTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fUsePileUpRejection(kFALSE)
-, fAnalysisMode(AlidNdPtHelper::kTPC) 
-, fTrigger(AliTriggerAnalysis::kMB1) 
-, fTriggerClass(0) 
-, fParticleMode(AlidNdPtHelper::kAllPart) 
+, fAnalysisMode(AlidNdPtHelper::kTPC)
+, fTrigger(AliTriggerAnalysis::kMB1)
+, fTriggerClass(0)
+, fParticleMode(AlidNdPtHelper::kAllPart)
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
@@ -102,10 +102,10 @@ AlidNdPt& AlidNdPt::operator=(const AlidNdPt&)
 //_____________________________________________________________________________
 AlidNdPt::~AlidNdPt() {
   // destructor
-  if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL; 
+  if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL;
   if(fdNdPtAcceptanceCuts) delete fdNdPtAcceptanceCuts; fdNdPtAcceptanceCuts=NULL;
   if(fMultAcceptanceCuts) delete fMultAcceptanceCuts; fMultAcceptanceCuts=NULL;
-  if(fdNdPtRecAcceptanceCuts) delete fdNdPtRecAcceptanceCuts; fdNdPtRecAcceptanceCuts=NULL;  
+  if(fdNdPtRecAcceptanceCuts) delete fdNdPtRecAcceptanceCuts; fdNdPtRecAcceptanceCuts=NULL;
   if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
   if(fMultTrackCuts) delete fMultTrackCuts; fMultTrackCuts=NULL;
   if(fPhysicsSelection) delete fPhysicsSelection; fPhysicsSelection=NULL;
@@ -116,11 +116,11 @@ AlidNdPt::~AlidNdPt() {
 Double_t * AlidNdPt::CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax) {
   // retun pointer to the array with log axis
   // it is user responsibility to delete the array
- 
+
   Double_t logxmin = TMath::Log10(xmin);
   Double_t logxmax = TMath::Log10(xmax);
   Double_t binwidth = (logxmax-logxmin)/nbins;
-  
+
   Double_t *xbins =  new Double_t[nbins+1];
 
   xbins[0] = xmin;

@@ -2,10 +2,10 @@
 #define ALIDNDPTANALYSISPPB_H
 
 //------------------------------------------------------------------------------
-// AlidNdPtAnalysispPb class used for dNdPt analysis in p-Pb collisions 
+// AlidNdPtAnalysispPb class used for dNdPt analysis in p-Pb collisions
 // based on AlidNdPtAnalysis class
-// 
-// Author: J.Otwinowski 04/11/2008 
+//
+// Author: J.Otwinowski 04/11/2008
 // last change: 2013-06-19 by M.Knichel
 //------------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ class AliAnalysisUtils;
 
 class AlidNdPtAnalysispPb : public AlidNdPt {
 public :
-  AlidNdPtAnalysispPb(); 
+  AlidNdPtAnalysispPb();
   AlidNdPtAnalysispPb(Char_t* name, Char_t* title);
   ~AlidNdPtAnalysispPb();
 
@@ -42,10 +42,10 @@ public :
   // Process events
   virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0);
 
-  // Merge output objects (needed by PROOF) 
+  // Merge output objects (needed by PROOF)
   virtual Long64_t Merge(TCollection* const list);
 
-  // Analyse output histograms 
+  // Analyse output histograms
   virtual void Analyse();
 
   // Export objects to folder
@@ -62,10 +62,10 @@ public :
   // background calculation
   static Bool_t IsBinZeroSPDvtx(const AliESDEvent* esdEvent);
   static Bool_t IsBinZeroTrackSPDvtx(const AliESDEvent* esdEvent);
-    
+
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
-  
+
   // Set binning for Histograms (if not set default binning is used)
   void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
   void SetBinsMultTE(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbinsTE = nbins; fBinsMultTE = CloneArray(fMultNedgesTE = nbins+1,edges); } }
@@ -82,7 +82,7 @@ public :
   // Getters
   THnSparseF *GetEventMultCorrelationMatrix() const {return fEventMultCorrelationMatrix;}
   THnSparseF *GetTrackPtCorrelationMatrix()   const {return fTrackPtCorrelationMatrix;}
-  
+
 
   //NOTE: for now in p-Pb ND and NSD are the same, DD is empty!
   //kNSD would have to be added to PWG0Helper, now kND is used to signal NSD!
@@ -109,7 +109,7 @@ public :
   //
   THnSparseF *GetRecCandleEventMatrix() const {return fRecCandleEventMatrix;}
 
-  //NOTE: for now in p-Pb ND and NSD are the same, DD is empty!  
+  //NOTE: for now in p-Pb ND and NSD are the same, DD is empty!
   THnSparseF *GetGenTrackEventMatrix() const {return fGenTrackEventMatrix;}
   THnSparseF *GetGenTrackSDEventMatrix() const {return fGenTrackSDEventMatrix;}
   THnSparseF *GetGenTrackDDEventMatrix() const {return fGenTrackDDEventMatrix;}
@@ -161,52 +161,52 @@ public :
   THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
   THnSparseF *GetRecTrackHist2() const {return fRecTrackHist2;}
-  THnSparseF *GetEventCount() const {return fEventCount;}  
+  THnSparseF *GetEventCount() const {return fEventCount;}
 
   //
   // Generic histograms to be corrected
   //
-  THnSparseF* GetRecEventHist() const {return fRecEventHist;} 
+  THnSparseF* GetRecEventHist() const {return fRecEventHist;}
   THnSparseF* GetRecTrackHist() const {return fRecTrackHist;}
-  THnSparseF* GetEventMultHist() const {return fEventMultHist;} 
-  THnSparseF* GetMCPrimTrackHist() const {return fMCPrimTrackHist;} 
-    
+  THnSparseF* GetEventMultHist() const {return fEventMultHist;}
+  THnSparseF* GetMCPrimTrackHist() const {return fMCPrimTrackHist;}
+
   //
   // centrality histograms etc. getter+setter
   //
-  THnSparseF* GetCentralityEventHist() const {return fCentralityEventHist;} 
-  THnSparseF* GetCentralityTrackHist() const {return fCentralityTrackHist;} 
+  THnSparseF* GetCentralityEventHist() const {return fCentralityEventHist;}
+  THnSparseF* GetCentralityTrackHist() const {return fCentralityTrackHist;}
   const char* GetCentralityEstimator(Int_t i) {return ((i > 0) && (i <= fDimensionsCentralityEstimators)) ? ((TObjString*)fCentralityEstimatorsList->At(i-1))->GetName() : 0; }
   Int_t GetNCentralityEstimators() {return fDimensionsCentralityEstimators;}
   void SetBinsCentrality(Int_t nbins, Double_t* edges) { if (CanChangeBins()) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(fCentralityNedges = nbins+1,edges); } }
   void SetCentralityEstimators(const char* estimators);
-  
+
   //rapidity shift getter+setter
   void SetRapidityShift(Double_t yShift) { fRapidityShift = yShift;}
   Double_t GetRapidityShift() { return fRapidityShift; }
-  
+
   void Set2013pA(Bool_t is2013 = kTRUE) { fIs2013pA = is2013; }
-  Double_t Get2013pA() { return fIs2013pA; }  
+  Double_t Get2013pA() { return fIs2013pA; }
 
 
 private:
 
-  // analysis folder 
+  // analysis folder
   TFolder *fAnalysisFolder; // folder for analysed histograms
-  Bool_t fHistogramsOn; // switch on/off filling of control histograms 
+  Bool_t fHistogramsOn; // switch on/off filling of control histograms
 
-  // 
+  //
   // correlation matrices (histograms)
   //
 
-  // event rec. track vs true track multiplicity correlation matrix 
+  // event rec. track vs true track multiplicity correlation matrix
   THnSparseF *fEventMultCorrelationMatrix; //-> multRecMult:multTrueMC:multMB
 
   // rec. track pt vs true track pt correlation matrix for given eta
   THnSparseF *fTrackPtCorrelationMatrix; //-> Pt:mcPt:mcEta
 
   //
-  // event level correction 
+  // event level correction
   //
 
   // all genertated
@@ -224,7 +224,7 @@ private:
   THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:multTrueMC
 
   // event vertex rec. eff correction (fRecEventMatrix / fTriggerEventMatrix)
-  THnSparseF *fRecEventMatrix; //-> mcZv:multTrueMC:Centrality 
+  THnSparseF *fRecEventMatrix; //-> mcZv:multTrueMC:Centrality
   THnSparseF *fRecSDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fRecDDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fRecNDEventMatrix; //-> mcZv:multTrueMC
@@ -255,17 +255,17 @@ private:
   THnSparseF *fRecTrackNSDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
 
   //
-  // track level correction 
+  // track level correction
   //
 
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
   THnSparseF *fGenTrackMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
-  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
+  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality
+  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality
 
   // secondary track contamination correction (fRecSecTrackMatrix / fRecTrackMatrix)
-  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta:Centrality 
-  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality 
+  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta:Centrality
+  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta:Centrality
 
   // multiple rec. track corrections (fRecMultTrackMatrix / fRecTrackMatrix)
   THnSparseF *fRecMultTrackMatrix; //-> mcZv:Pt:mcEta
@@ -304,8 +304,8 @@ private:
   //
   // Generic histograms to be corrected
   //
-  THnSparseF *fRecEventHist;    //-> Zv:multMB  
-  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRecMult  
+  THnSparseF *fRecEventHist;    //-> Zv:multMB
+  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRecMult
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
   THnSparseF *fEventMultHist; // event multiplicities multMB:multRecMult:multRec
   THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multTrueMC
@@ -315,9 +315,9 @@ private:
   //
   THnSparseF *fRecCandleEventMatrix; // Zv:multMB
 
-  // centrality test histograms  
+  // centrality test histograms
   THnSparseF *fCentralityEventHist; // rec event hist with centrality zv:multRecMult:multMB:cent:...
-  THnSparseF *fCentralityTrackHist; // rec track hist with centrality zv:pt:eta:multRecMult:multMB:cent:...  
+  THnSparseF *fCentralityTrackHist; // rec track hist with centrality zv:pt:eta:multRecMult:multMB:cent:...
   TObjArray *fCentralityEstimatorsList; // TObjArray with TObjStrings containing cent. estimators
   Int_t fDimensionsCentralityEstimators;  // number of centrality estimators: if 0 hists are not filled
   Int_t fCentralityNbins;  // number of centrality bins (common for all estimators)
@@ -333,28 +333,28 @@ private:
   Int_t fMultNbins;
   Int_t fMultNbinsTE;
   Int_t fPtNbins;
-  Int_t fPtCorrNbins; 
+  Int_t fPtCorrNbins;
   Int_t fEtaNbins;
   Int_t fZvNbins;
   Int_t fMultNedges;   // fMultNbins+1 uses for streaming dynamic array
   Int_t fMultNedgesTE; // fMultNbinsTE+1 uses for streaming dynamic array
-  Int_t fPtNedges;     // fPtNbins+1 uses for streaming dynamic array  
-  Int_t fPtCorrNedges; // fCentralityNbins+1 uses for streaming dynamic array  
+  Int_t fPtNedges;     // fPtNbins+1 uses for streaming dynamic array
+  Int_t fPtCorrNedges; // fCentralityNbins+1 uses for streaming dynamic array
   Int_t fEtaNedges;    // fEtaNbins+1 uses for streaming dynamic array
-  Int_t fZvNedges;     // fZvNbins+1 uses for streaming dynamic array    
+  Int_t fZvNedges;     // fZvNbins+1 uses for streaming dynamic array
   Double_t *fBinsMult;   //[fMultNedges]
   Double_t *fBinsMultTE; //[fMultNedgesTE]
   Double_t *fBinsPt;     //[fPtNedges]
   Double_t *fBinsPtCorr; //[fPtCorrNedges]
   Double_t *fBinsEta;    //[fEtaNedges]
   Double_t *fBinsZv;     //[fZvNedges]
-  
+
   Double_t fRapidityShift; //y shift CMS vs. LAB
   AliAnalysisUtils* fUtils;
-  Bool_t fIs2013pA; 
-  
+  Bool_t fIs2013pA;
+
   Bool_t fIsInit;
-    
+
   // generic function to change binning
   Bool_t CanChangeBins();
 

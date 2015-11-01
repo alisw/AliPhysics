@@ -47,7 +47,7 @@ using namespace std;
 ClassImp(AlidNdPtTask)
 
 //_____________________________________________________________________________
-AlidNdPtTask::AlidNdPtTask(const char *name) 
+AlidNdPtTask::AlidNdPtTask(const char *name)
   : AliAnalysisTaskSE(name)
   , fESD(0)
   , fMC(0)
@@ -68,8 +68,8 @@ AlidNdPtTask::AlidNdPtTask(const char *name)
 //_____________________________________________________________________________
 AlidNdPtTask::~AlidNdPtTask()
 {
-  if(fOutput) delete fOutput;  fOutput =0; 
-  if(fCompList) delete fCompList;  fCompList =0; 
+  if(fOutput) delete fOutput;  fOutput =0;
+  if(fCompList) delete fCompList;  fCompList =0;
 }
 
 //____________________________________________________________________________
@@ -98,7 +98,7 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AlidNdPtTask::AddAnalysisObject(AlidNdPt *pObj) 
+Bool_t AlidNdPtTask::AddAnalysisObject(AlidNdPt *pObj)
 {
   // add analysis object to the list
   if(pObj == 0) {
@@ -108,7 +108,7 @@ Bool_t AlidNdPtTask::AddAnalysisObject(AlidNdPt *pObj)
 
   // add object to the list
   fCompList->AddLast(pObj);
-       
+
 return kTRUE;
 }
 
@@ -142,7 +142,7 @@ void AlidNdPtTask::UserCreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::UserExec(Option_t *) 
+void AlidNdPtTask::UserExec(Option_t *)
 {
   //
   // Called for each event
@@ -177,10 +177,10 @@ void AlidNdPtTask::UserExec(Option_t *)
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::FinishTaskOutput() 
+void AlidNdPtTask::FinishTaskOutput()
 {
   //
-  // Called one at the end 
+  // Called one at the end
   // locally on working node
   //
    // check output data
@@ -194,7 +194,7 @@ void AlidNdPtTask::FinishTaskOutput()
   TIterator* itOut = fOutput->MakeIterator();
   itOut->Reset();
   while(( pObj = dynamic_cast<AlidNdPt*>(itOut->Next())) != NULL) {
-    if(pObj->GetAnalyseOutput()) { 
+    if(pObj->GetAnalyseOutput()) {
       pObj->Analyse();
     }
   }
@@ -204,10 +204,10 @@ void AlidNdPtTask::FinishTaskOutput()
 }
 
 //_____________________________________________________________________________
-void AlidNdPtTask::Terminate(Option_t *) 
+void AlidNdPtTask::Terminate(Option_t *)
 {
-  // Called one at the end 
-  
+  // Called one at the end
+
   // check output data
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {
