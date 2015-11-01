@@ -30,6 +30,7 @@ set(SRCS
   FILTER_AODMUONWITHTRACKLETS.cxx
   FILTER_RAWMUON.cxx
   FILTER_ESDMUON.cxx
+  FILTER_AODMUONONLY_PP2015.cxx
   )
 
 # Headers from sources
@@ -49,7 +50,7 @@ add_executable(${EXE} ${EXE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS PWGmuon RAWDatabase)
+set(LIBDEPS PWGmuon RAWDatabase PWGGAGammaConv)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
