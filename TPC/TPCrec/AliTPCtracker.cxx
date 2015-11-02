@@ -1273,7 +1273,8 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
       for (Int_t j=0;j<tpcrow->GetN2();++j) 
 	tpcrow->SetCluster2(j, *(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
     }
-    clrow->GetArray()->Clear("C");
+    //clrow->GetArray()->Clear("C");
+    clrow->GetArray()->Clear(); // RS AliTPCclusterMI does not allocate memory
   }
   //
   delete clrow;
@@ -1407,7 +1408,8 @@ Int_t  AliTPCtracker::LoadClusters()
     }
   }
   //
-  clrow->Clear("C");
+  //clrow->Clear("C");
+  clrow->Clear(); // RS AliTPCclusterMI does not allocate memory
   LoadOuterSectors();
   LoadInnerSectors();
 

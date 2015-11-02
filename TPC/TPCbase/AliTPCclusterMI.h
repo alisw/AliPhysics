@@ -13,7 +13,7 @@
 
 #include "AliCluster.h"
 #include "TMath.h"
-#include "AliTPCclusterInfo.h"
+//#include "AliTPCclusterInfo.h"
 #include <AliTrackPointArray.h>
 
 //_____________________________________________________________________________
@@ -25,7 +25,7 @@ public:
   AliTPCclusterMI &operator = (const AliTPCclusterMI & cluster); //assignment operator
   AliTPCclusterMI(Int_t *lab, Float_t *hit);
   virtual ~AliTPCclusterMI();
-  virtual void	Clear(const Option_t*) { delete fInfo; fInfo=0;}
+  virtual void	Clear(const Option_t*) { };//delete fInfo; fInfo=0;}
   virtual Bool_t IsSortable() const;
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
@@ -48,15 +48,15 @@ public:
   Char_t  GetType()const {return fType;}
   Float_t GetTimeBin() const { return fTimeBin;}
   Float_t GetPad() const { return fPad;}
-  AliTPCclusterInfo * GetInfo() const { return fInfo;}
-  void SetInfo(AliTPCclusterInfo * info);
+  //  AliTPCclusterInfo * GetInfo() const { return fInfo;}
+  //  void SetInfo(AliTPCclusterInfo * info);
   //
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
   AliTrackPoint*    MakePoint();
   static void     SetGlobalTrackPoint(const AliCluster &cl, AliTrackPoint &point);
 
 private:
-  AliTPCclusterInfo * fInfo;  ///< pointer to the cluster debug info
+  //  AliTPCclusterInfo * fInfo;  ///< pointer to the cluster debug info
   Float_t   fTimeBin;  ///< time bin coordinate
   Float_t   fPad;  ///< pad coordinate
   Short_t   fQ ;       ///< Q of cluster (in ADC counts)
@@ -66,7 +66,7 @@ private:
   UChar_t   fDetector; ///< detector  number
   UChar_t   fRow;      ///< row number number
   /// \cond CLASSIMP
-  ClassDef(AliTPCclusterMI,5)  // Time Projection Chamber clusters
+  ClassDef(AliTPCclusterMI,6)  // Time Projection Chamber clusters
   /// \endcond
 };
 

@@ -658,9 +658,9 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
 //     AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
 //     cl->SetInfo(info);
 //   }
-  if (!fRecoParam->DumpSignal()) {
-    cl->SetInfo(0);
-  }
+//  if (!fRecoParam->DumpSignal()) {
+//    cl->SetInfo(0);
+//  }
   const Int_t kClusterStream=128; // stream level should be per action - to be added to the AliTPCReconstructor
   if ( (AliTPCReconstructor::StreamLevel()&kClusterStream)==kClusterStream) {
     Float_t xyz[3];
@@ -797,7 +797,8 @@ void AliTPCclusterer::Digits2Clusters()
 
     FindClusters(noiseROC);
     FillRow();
-    fRowCl->GetArray()->Clear("C");    
+    // fRowCl->GetArray()->Clear("C");     //RS AliTPCclusterMI does not allocate memory
+    fRowCl->GetArray()->Clear();    
     nclusters+=fNcluster;    
 
     delete[] fBins;
@@ -941,7 +942,8 @@ void AliTPCclusterer::ProcessSectorData(){
     FindClusters(noiseROC);
     
     FillRow();
-    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear("C");
+    //    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear("C");
+    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear(); // RS AliTPCclusterMI does not allocate memory
     fNclusters += fNcluster;
     
   } // End of loop to find clusters
@@ -1552,7 +1554,8 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       clusterArray->Compress();
 
       FillRow();
-      fRowCl->GetArray()->Clear("c");
+      //fRowCl->GetArray()->Clear("c");
+      fRowCl->GetArray()->Clear(); // RS: AliTPCclusterMI does not allocate memory
       
     } // for (fRow = 0; fRow < nRows; fRow++) {
     fNclusters+=nClusterSectorGood;

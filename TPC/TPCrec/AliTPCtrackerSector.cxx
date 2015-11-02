@@ -104,8 +104,10 @@ void AliTPCtrackerRow::ResetClusters() {
    //
    // reset clusters
    // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
-  if (fClusters1) fClusters1->Clear("C");
-  if (fClusters2) fClusters2->Clear("C");
+  //  if (fClusters1) fClusters1->Clear("C");
+  //  if (fClusters2) fClusters2->Clear("C");
+  if (fClusters1) fClusters1->Clear(); // RS AliTPCclusterMI does not allocate memory
+  if (fClusters2) fClusters2->Clear();
 
    fN  = 0; 
    fN1 = 0;
