@@ -7,6 +7,7 @@
 #include <TRandom3.h>
 #include <TFile.h>
 #include <AliLog.h>
+#include <TGrid.h>
 
 #include "AliJetEmbeddingTask.h"
 
@@ -87,10 +88,27 @@ void AliJetEmbeddingTask::Run()
 }
 
 //________________________________________________________________________
+
+void AliJetEmbeddingTask::SetMassDistribution(TH1D *hM)  {
+   if(!hM){
+      AliError("Null histogram for mass distribution");
+      return;
+   }
+   fMassFromDistr = kTRUE; 
+   fHMassDistrib = hM;
+   AliInfo("Input mass distribution set");
+   
+   return;
+}
+//________________________________________________________________________
 void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString histoname){
+   
+   if(filename.Contains("alien")) {
+      TGrid::Connect("alien://");
+   }
    TFile *f = TFile::Open(filename);
    if(!f){
-      AliError(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
+      AliFatal(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
       return;
    }
    
@@ -114,9 +132,13 @@ void AliJetEmbeddingTask::SetMassAndPtDistributionFromFile(TString filenameM, TS
 
 //________________________________________________________________________
 void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString histoname){
+   
+   if(filename.Contains("alien")) {
+      TGrid::Connect("alien://");
+   }
    TFile *f = TFile::Open(filename);
    if(!f){
-      AliError(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
+      AliFatal(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
       return;
    }
    
