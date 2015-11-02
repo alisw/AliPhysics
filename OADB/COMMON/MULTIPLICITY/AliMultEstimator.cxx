@@ -24,13 +24,15 @@
 ClassImp(AliMultEstimator);
 //________________________________________________________________
 AliMultEstimator::AliMultEstimator() :
-  TNamed(), fDefinition(""), fIsInteger(kFALSE), fValue(0), fMean(0), fPercentile(0), fFormula(0)
+  TNamed(), fDefinition(""), fIsInteger(kFALSE), fValue(0), fMean(0), fPercentile(0), fFormula(0),
+fkUseAnchor(kFALSE), fAnchorPoint(0), fAnchorPercentile(100.0)
 {
   // Constructor
   
 }
 AliMultEstimator::AliMultEstimator(const char * name, const char * title, TString lInitDef):
-TNamed(name,title), fDefinition(""), fIsInteger(kFALSE), fValue(0), fMean(0), fPercentile(0), fFormula(0)
+TNamed(name,title), fDefinition(""), fIsInteger(kFALSE), fValue(0), fMean(0), fPercentile(0), fFormula(0),
+fkUseAnchor(kFALSE), fAnchorPoint(0), fAnchorPercentile(100.0)
 {
     //Named, titled, definition constructor
     fDefinition=lInitDef;
@@ -43,7 +45,10 @@ fIsInteger(e.fIsInteger),
 fValue(e.fValue),
 fMean(e.fMean),
 fPercentile(e.fPercentile),
-fFormula(0)
+fFormula(0),
+fkUseAnchor(e.fkUseAnchor),
+fAnchorPoint(e.fAnchorPoint),
+fAnchorPercentile(e.fAnchorPercentile)
 {
   if (e.fFormula) fFormula = new TFormula(*e.fFormula);
 }
@@ -63,6 +68,11 @@ AliMultEstimator& AliMultEstimator::operator=(const AliMultEstimator& e)
     fFormula = 0;
     if (e.fFormula) fFormula = new TFormula(*e.fFormula);
     
+    //Anchor point configs
+    fkUseAnchor         = e.fkUseAnchor;
+    fAnchorPoint        = e.fAnchorPoint;
+    fAnchorPercentile   = e.fAnchorPercentile;
+    
     return *this;
 }
 //________________________________________________________________
@@ -76,6 +86,11 @@ void AliMultEstimator::Set(const AliMultEstimator* e)
     fValue       = e->fValue;
     fMean        = e->fMean;
     fPercentile  = e->fPercentile;
+    
+    //Anchor point configs
+    fkUseAnchor         = e->fkUseAnchor;
+    fAnchorPoint        = e->fAnchorPoint;
+    fAnchorPercentile   = e->fAnchorPercentile;
 }
 //________________________________________________________________
 AliMultEstimator::~AliMultEstimator(){

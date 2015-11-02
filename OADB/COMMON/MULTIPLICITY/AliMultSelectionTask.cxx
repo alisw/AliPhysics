@@ -1249,7 +1249,13 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     //default, to be replaced with "Empty" shortly
     TString lProductionName = "LHC15f";
     
-    //Registered Productions : Run 1
+    //Registered Productions : Run 1 pp
+    if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lProductionName = "LHC10b";
+    if ( fCurrentRun >= 118903 && fCurrentRun <= 120829 ) lProductionName = "LHC10c";
+    if ( fCurrentRun >= 122374 && fCurrentRun <= 126437 ) lProductionName = "LHC10d";
+    if ( fCurrentRun >= 127712 && fCurrentRun <= 130840 ) lProductionName = "LHC10e";
+    
+    //Registered Productions : Run 1 Pb-Pb
     if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lProductionName = "LHC10h";
     
     //Registered Productions : Run 2

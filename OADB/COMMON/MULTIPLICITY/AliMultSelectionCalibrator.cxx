@@ -78,14 +78,24 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const 
 }
 AliMultSelectionCalibrator::~AliMultSelectionCalibrator() {
     // Destructor
-
+    
+    if ( fInput ) {
+        delete fInput;
+        fInput = 0x0;
+    }
+    if ( fSelection ) {
+        delete fSelection;
+        fSelection = 0x0;
+    }
     if ( fMultSelectionCuts ) {
         delete fMultSelectionCuts;
         fMultSelectionCuts = 0x0;
     }
+    if ( fCalibHists ) {
+        delete fCalibHists;
+        fCalibHists = 0x0;
+    }
 
-    //Make sure the TList owns its objects
-    fCalibHists -> SetOwner(kTRUE);
 }
 Bool_t AliMultSelectionCalibrator::Calibrate() {
     // Function meant to generate calibration OADB
@@ -148,54 +158,15 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
 
     //============================================================
-    // --- Definition of Variables for estimators ---
+    // Auto-configure Input
     //============================================================
-    // -> only this part needs changing for any additional
-    //    variables that may be required for estimators
-    //============================================================
-
-    //Create input variables in AliMultInput Class
-    //V0 related
-    AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
-    AliMultVariable *fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
-    AliMultVariable *fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
-    AliMultVariable *fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
-    AliMultVariable *fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
-    AliMultVariable *fAmplitude_V0CEq      = new AliMultVariable("fAmplitude_V0CEq");
-    AliMultVariable *fAmplitude_OnlineV0A  = new AliMultVariable("fAmplitude_OnlineV0A");
-    AliMultVariable *fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
-    //SPD Related
-    AliMultVariable *fnSPDClusters         = new AliMultVariable("fnSPDClusters");
-    fnSPDClusters->SetIsInteger( kTRUE );
-    //AD Related
-    AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
-    AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
-
-    AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
-    fRefMultEta5->SetIsInteger( kTRUE );
-    AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
-    fRefMultEta8->SetIsInteger( kTRUE );
-    AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
-    fnTracklets->SetIsInteger( kTRUE );
     
-    //Add to AliMultInput Object
-    fInput->AddVariable( fAmplitude_V0A );
-    fInput->AddVariable( fAmplitude_V0C );
-    fInput->AddVariable( fAmplitude_V0Apartial );
-    fInput->AddVariable( fAmplitude_V0Cpartial );
-    fInput->AddVariable( fAmplitude_V0AEq );
-    fInput->AddVariable( fAmplitude_V0CEq );
-    fInput->AddVariable( fAmplitude_OnlineV0A );
-    fInput->AddVariable( fAmplitude_OnlineV0C );
-    fInput->AddVariable( fMultiplicity_ADA );
-    fInput->AddVariable( fMultiplicity_ADC );
-    fInput->AddVariable( fnSPDClusters );
-    fInput->AddVariable( fnTracklets   );
-    fInput->AddVariable( fRefMultEta5  );
-    fInput->AddVariable( fRefMultEta8  );
-
-    //============================================================
-
+    if ( fInput->GetNVariables() < 1 ){
+        cout<<"Error: No Input Variables configured!"<<endl;
+        cout<<"The simplest way to get rid of this problem is to remember to call SetupStandardInput()!"<<endl;
+        return kFALSE; //failure to calibrate
+    }
+    
     //Binding to input variables
     for(Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
         if( !fInput->GetVariable(iVar)->IsInteger() ) {
@@ -204,53 +175,12 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             fTree->SetBranchAddress(fInput->GetVariable(iVar)->GetName(),&fInput->GetVariable(iVar)->GetRValueInteger());
         }
     }
-
-    //============================================================
-    // --- Definition of Estimators ---
-    //============================================================
-    // -> only this part needs changing for any additional
-    //    estimators that use known variables
-    //============================================================
-
-    AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
-    AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "(fAmplitude_V0A)");
-    AliMultEstimator *fEstV0C = new AliMultEstimator("V0C", "", "(fAmplitude_V0C)");
-
-    AliMultEstimator *fEstOnlineV0M = new AliMultEstimator("OnlineV0M", "", "(fAmplitude_OnlineV0A)+(fAmplitude_OnlineV0C)");
-    AliMultEstimator *fEstOnlineV0A = new AliMultEstimator("OnlineV0A", "", "(fAmplitude_OnlineV0A)");
-    AliMultEstimator *fEstOnlineV0C = new AliMultEstimator("OnlineV0C", "", "(fAmplitude_OnlineV0C)");
-
-    AliMultEstimator *fEstADM = new AliMultEstimator("ADM", "", "(fMultiplicity_ADA)+(fMultiplicity_ADC)");
-    AliMultEstimator *fEstADA = new AliMultEstimator("ADA", "", "(fMultiplicity_ADA)");
-    AliMultEstimator *fEstADC = new AliMultEstimator("ADC", "", "(fMultiplicity_ADC)");
-
-    //Integer estimators
-    AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPDClusters", "", "(fnSPDClusters)");
-    fEstnSPDClusters->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
-    fEstnSPDTracklets->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstRefMultEta5 = new AliMultEstimator("RefMult05", "", "(fRefMultEta5)");
-    fEstRefMultEta5->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
-    fEstRefMultEta8->SetIsInteger(kTRUE);
     
-    fSelection -> AddEstimator( fEstV0M );
-    fSelection -> AddEstimator( fEstV0A );
-    fSelection -> AddEstimator( fEstV0C );
-    fSelection -> AddEstimator( fEstOnlineV0M );
-    fSelection -> AddEstimator( fEstOnlineV0A );
-    fSelection -> AddEstimator( fEstOnlineV0C );
-    fSelection -> AddEstimator( fEstADM );
-    fSelection -> AddEstimator( fEstADA );
-    fSelection -> AddEstimator( fEstADC );
-    fSelection -> AddEstimator( fEstnSPDClusters  );
-    fSelection -> AddEstimator( fEstnSPDTracklets );
-    fSelection -> AddEstimator( fEstRefMultEta5 );
-    fSelection -> AddEstimator( fEstRefMultEta8 );
-    
+    //============================================================
+    // Calibration pre-optimization and setup
+    //============================================================
     //Pre-optimize and create TFormulas
     fSelection->Setup ( fInput );
-    
     //============================================================
 
     Long64_t lNEv = fTree->GetEntries();
@@ -288,11 +218,15 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //For computing extreme values (useful for integer calibration mode)
     Double_t lMaxEst[lNEstimators][lMax];
     Double_t lMinEst[lNEstimators][lMax];
-
+    
+    //Index of first value above anchor point threshold
+    Long64_t lAnchorEst[lNEstimators][lMax];
+    
     for(Long_t iEst=0; iEst<lNEstimators; iEst++) {
         for(Long_t iRun=0; iRun<lMax; iRun++) lAvEst[iEst][iRun] = 0;
         for(Long_t iRun=0; iRun<lMax; iRun++) lMaxEst[iEst][iRun] = -1e+3;
         for(Long_t iRun=0; iRun<lMax; iRun++) lMinEst[iEst][iRun] = 1e+6; //not more than a million, I hope?
+        for(Long_t iRun=0; iRun<lMax; iRun++) lAnchorEst[iEst][iRun] = -1; //invalid index
     }
 
     //Add Timer
@@ -396,7 +330,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
     //Histograms to store calibration information
     TH1F *hCalib[1000][lNEstimators];
-
+    
     cout<<"(4) Look at average values"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
@@ -425,7 +359,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
         }
     }
-
+    //might be needed
+    Long64_t lAcceptedEvents;
     cout<<"(5) Generate Boundaries through a loop in all desired estimators"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
@@ -442,9 +377,29 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
                 TMath::Sort(ntot,sTree[iRun]->GetV1(),index);
                 cout<<" Done! Getting Boundaries... "<<flush;
-                lNrawBoundaries[0] = 0.0;
+                
+                //Special override in case anchored estimator
+                if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
+                    cout<<"Anchoring... "<<flush;
+                    //Require determination of index after which values are to be discarded
+                    //Count fraction of accepted
+                    TString lCondition = fSelection->GetEstimator(iEst)->GetDefinition();
+                    lCondition.Append(Form("> %.10f",fSelection->GetEstimator(iEst)->GetAnchorPoint() ) );
+                    lAcceptedEvents = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),lCondition.Data(),"goff");
+                }
+                lNrawBoundaries[0] = 0.0; //Defined OK even if anchored
                 for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
                     Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
+                    
+                    if( fSelection->GetEstimator(iEst)->GetUseAnchor() && ntot != 0 ){
+                        //Make sure index position lAnchorEst corresponds to lAnchorPercentile
+                        Double_t lAnchorPercentile = (Double_t) fSelection->GetEstimator(iEst)->GetAnchorPercentile();
+                        Double_t lFractionAccepted = (((Double_t) lAcceptedEvents )/((Double_t) ntot));
+                        Double_t lScalingFactor    = lFractionAccepted/((0.01)*lAnchorPercentile);
+                        //Make sure: if AnchorPercentile requested, cut at AnchorPoint
+                        position = (Long64_t) ( ((Double_t)(position)) * lScalingFactor );
+                        if(position > ntot-1 ) position = ntot-1; //protection !
+                    }
                     //cout<<"Position requested: "<<position<<flush;
                     sTree[iRun]->GetEntry( index[position] );
                     //Calculate the estimator with this input, please
@@ -457,7 +412,18 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 //...but can be rearranged if needed!
                 hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
                 hCalib[iRun][iEst]->SetDirectory(0);
-                for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
+                for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
+                    hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
+                    
+                    //override in case anchored!
+                    if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
+                        if ( lMiddleOfBins[ibin-1] > fSelection->GetEstimator(iEst)->GetAnchorPercentile() ){
+                            //Override, this is useless!
+                            //Alberica's recommendation: outside of user range to be sure!
+                            hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);
+                        }
+                    }
+                }
                 //==== End Floating Point Calibration Engine ====
             } else {
                 //==== Integer Value Calibration Engine ====
@@ -567,7 +533,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     cout<<" Done!"<<endl;
     return kTRUE;
 }
-
+//________________________________________________________________
 Float_t AliMultSelectionCalibrator::MinVal( Float_t A, Float_t B ) {
     if( A < B ) {
         return A;
@@ -575,4 +541,53 @@ Float_t AliMultSelectionCalibrator::MinVal( Float_t A, Float_t B ) {
     else {
         return B;
     }
+}
+//________________________________________________________________
+void AliMultSelectionCalibrator::SetupStandardInput() {
+    //============================================================
+    // --- Definition of Variables for estimators ---
+    //============================================================
+    
+    //Create input variables in AliMultInput Class
+    //V0 related
+    AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
+    AliMultVariable *fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
+    AliMultVariable *fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
+    AliMultVariable *fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
+    AliMultVariable *fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
+    AliMultVariable *fAmplitude_V0CEq      = new AliMultVariable("fAmplitude_V0CEq");
+    AliMultVariable *fAmplitude_OnlineV0A  = new AliMultVariable("fAmplitude_OnlineV0A");
+    AliMultVariable *fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
+    //SPD Related
+    AliMultVariable *fnSPDClusters         = new AliMultVariable("fnSPDClusters");
+    fnSPDClusters->SetIsInteger( kTRUE );
+    //AD Related
+    AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
+    AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
+    
+    AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
+    fRefMultEta5->SetIsInteger( kTRUE );
+    AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
+    fRefMultEta8->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
+    fnTracklets->SetIsInteger( kTRUE );
+    
+    //Add to AliMultInput Object
+    fInput->AddVariable( fAmplitude_V0A );
+    fInput->AddVariable( fAmplitude_V0C );
+    fInput->AddVariable( fAmplitude_V0Apartial );
+    fInput->AddVariable( fAmplitude_V0Cpartial );
+    fInput->AddVariable( fAmplitude_V0AEq );
+    fInput->AddVariable( fAmplitude_V0CEq );
+    fInput->AddVariable( fAmplitude_OnlineV0A );
+    fInput->AddVariable( fAmplitude_OnlineV0C );
+    fInput->AddVariable( fMultiplicity_ADA );
+    fInput->AddVariable( fMultiplicity_ADC );
+    fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnTracklets   );
+    fInput->AddVariable( fRefMultEta5  );
+    fInput->AddVariable( fRefMultEta8  );
+    
+    //============================================================
+    
 }
