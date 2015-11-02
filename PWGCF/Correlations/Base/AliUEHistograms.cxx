@@ -139,8 +139,12 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   if (histogramsStr.Contains("3"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhi", binningStr);
-  else if (histogramsStr.Contains("4"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality", binningStr);
+  else if (histogramsStr.Contains("4")) {
+    if (histogramsStr.Contains("S"))
+      fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralitySparse", binningStr);
+    else
+      fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality", binningStr);
+  }
   else if (histogramsStr.Contains("5") || histogramsStr.Contains("6"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx", binningStr);
   

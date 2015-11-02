@@ -277,6 +277,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     histType = "5R";
   else if (fUseVtxAxis == 2)
     histType = "6R";
+  else if (fUseVtxAxis == 11)
+    histType = "4RS";
   if (fCourseCentralityBinning)
     histType += "C";
   fHistos = new AliUEHistograms("AliUEHistogramsSame", histType, fCustomBinning);
