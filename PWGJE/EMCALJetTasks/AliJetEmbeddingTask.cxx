@@ -143,7 +143,7 @@ void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString hi
       AliFatal(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
       return;
    }
-   Printf("Taking pt H ");
+
    TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
    if(!h) {
       AliError("Input file for pT not found");
