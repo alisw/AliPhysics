@@ -89,7 +89,7 @@ void AliJetEmbeddingTask::Run()
 
 //________________________________________________________________________
 
-void AliJetEmbeddingTask::SetMassDistribution(TH1D *hM)  {
+void AliJetEmbeddingTask::SetMassDistribution(TH1F *hM)  {
    if(!hM){
       AliError("Null histogram for mass distribution");
       return;
@@ -112,12 +112,14 @@ void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString 
       return;
    }
    
-   TH1D* h = (TH1D*) f->Get(histoname);
+   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
    if(!h) {
       AliError("Input file for Mass not found");
       f->ls();
    }
    SetMassDistribution(h);
+   f->Close();
+   delete f;
    return;
 
 }
@@ -141,13 +143,18 @@ void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString hi
       AliFatal(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
       return;
    }
-   
-   TH1D* h = (TH1D*) f->Get(histoname);
+   Printf("Taking pt H ");
+   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
    if(!h) {
       AliError("Input file for pT not found");
       f->ls();
    }
-   AliJetModelBaseTask::SetPtSpectrum((TH1F*)h);
+
+   AliJetModelBaseTask::SetPtSpectrum(h);
+
+   f->Close();
+   delete f;
+
    return;
 
 }
