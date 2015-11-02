@@ -36,8 +36,8 @@ public:
   //
   struct ClBinInfo  // info on bin clusters start, number of clusters
   {
-    unsigned short ncl;    // number of clusters
-    unsigned short first;  // entry of 1st cluster in sorted vector of ClsInfo
+    int ncl;    // number of clusters
+    int first;  // entry of 1st cluster in sorted vector of ClsInfo
     int            index;  // index in the vector containing cells with non-0 occupancy
   };
   typedef struct ClBinInfo ClBinInfo_t;
