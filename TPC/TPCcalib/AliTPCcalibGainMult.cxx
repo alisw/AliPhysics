@@ -404,7 +404,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       Double_t dipAngleTgl  = trackIn->GetTgl();
       //
       for (Int_t irow =0; irow<160;irow++)    {
-	AliTPCTrackerPoint * point = seed->GetTrackPoint(irow);
+	const AliTPCTrackerPoints::Point * point = seed->GetTrackPoint(irow);
 	if (point==0) continue;
 	AliTPCclusterMI * cl = seed->GetClusterPointer(irow);
 	if (cl==0) continue;	

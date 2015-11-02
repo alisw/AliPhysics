@@ -35,4 +35,17 @@
 #pragma link C++ class AliTPCCosmicTrackfit+; // Helper class for cosmic tracker
 #pragma link C++ class AliCosmicTracker+;     // Tracker for cosmics (combined fit for upper and lower half)
 
+#pragma read \
+  sourceClass="AliTPCseed" \
+  targetClass="AliTPCseed" \
+  source="Bool_t  fInDead;Bool_t fIsSeeding;Bool_t fBSigned; AliTPCTrackerPoint  fTrackPoints[160]" \
+  version="[-8]"	   \
+  target="fTrackPointsArr" \
+  targetType="AliTPCTrackerPoints" \
+  code="{\
+  newObj->SetInDead(onfile.fInDead);		\
+  newObj->SetIsSeeding(onfile.fIsSeeding);	\
+  newObj->SetBSigned(onfile.fBSigned);           \
+  for (int i=159;i--;) fTrackPointsArr.SetPoint(i,&onfile.fTrackPoints[i]);}"
+
 #endif

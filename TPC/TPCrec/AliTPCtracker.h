@@ -27,7 +27,6 @@
 class TFile;
 class AliTPCParam;
 class AliTPCseed;
-class AliTPCTrackerPoint;
 class AliESDEvent;
 class AliESDtrack;
 class TTree;

@@ -215,7 +215,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     AliTPCclusterMI cl0(*cluster);
     Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
     Int_t i[1]={cluster->GetDetector()};
-    AliTPCTrackerPoint * point = seed->GetTrackPoint(irow);
+    const AliTPCTrackerPoints::Point* point = seed->GetTrackPoint(irow);
     Double_t ty=0,tz=0;
      
     if (point){

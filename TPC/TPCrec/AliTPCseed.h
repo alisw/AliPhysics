@@ -27,7 +27,6 @@ class TFile;
 class AliTPCParam;
 class AliTPCseed;
 class AliTPCclusterMI;
-class AliTPCTrackerPoint;
 class AliESD;
 class AliTPCCalPad;
 class TClonesArray;
@@ -56,8 +55,9 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      Int_t GetProlongation(Double_t xr, Double_t &y, Double_t & z) const;
      virtual Double_t GetPredictedChi2(const AliCluster *cluster2) const;
      virtual Bool_t Update(const AliCluster* c2, Double_t chi2, Int_t i);
-     AliTPCTrackerPoint * GetTrackPoint(Int_t i);
-     const AliTPCTrackerPoint * GetTrackPointConst(Int_t i) const { return &fTrackPoints[i]; }
+     //
+     const AliTPCTrackerPoints::Point* GetTrackPoint(Int_t i) const { return fTrackPointsArr.GetPoint(i); }
+     //
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
      AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer[irow];}
      void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
@@ -166,8 +166,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   void CopyToTPCseed( AliTPCseed &s) const { s = *this; }
   void SetFromTPCseed( const AliTPCseed* seed ) { *this=*seed; }
 
-  void    SetShared(int i)      {fShared[i/8] |= 0x1<<(i%8);}
-  Bool_t  IsShared(int i) const {return fShared[i/8] & 0x1<<(i%8);}
+  void    SetShared(int i)      {fTrackPointsArr.SetShared(i);}
+  Bool_t  IsShared(int i) const {return fTrackPointsArr.IsShared(i);}
 
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
@@ -203,11 +203,10 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      UChar_t   fSeed1;            //first row for seeding
      UChar_t   fSeed2;            //last row for seeding
      Char_t   fCircular;           // indicates curlin track
-     UChar_t fShared[20];         // shared map
      Int_t   fOverlapLabels[12];  //track labels and the length of the  overlap     
      Float_t fMAngular;           // mean angular factor
-     AliTPCTrackerPoint  fTrackPoints[kMaxRow];  //track points - array track points
      Int_t   fPoolID;              //! id in the pool
+     AliTPCTrackerPoints fTrackPointsArr;  // track points - array track points
      ClassDef(AliTPCseed,9)
 };
 

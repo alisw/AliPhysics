@@ -70,7 +70,8 @@ AliTPCseed::AliTPCseed():
   fSeed2(-1),
   fCircular(0),
   fMAngular(0),
-  fPoolID(-1)
+  fPoolID(-1),
+  fTrackPointsArr()
 {
   //
   for (Int_t i=0;i<kMaxRow;i++) SetClusterIndex2(i,-3);
@@ -85,7 +86,6 @@ AliTPCseed::AliTPCseed():
   }
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
-  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -112,7 +112,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fSeed2(-1),
   fCircular(0),
   fMAngular(0),
-  fPoolID(-1)
+  fPoolID(-1),
+  fTrackPointsArr(s.fTrackPointsArr)
 {
   //---------------------
   // dummy copy constructor
@@ -125,7 +126,6 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     }else{
       fClusterPointer[i] = s.fClusterPointer[i];
     }
-    fTrackPoints[i] = s.fTrackPoints[i];
   }
   for (Int_t i=0;i<kMaxRow;i++) fIndex[i] = s.fIndex[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=s.fTPCr[i];
@@ -138,7 +138,6 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
-  memcpy(fShared,s.fShared,20*sizeof(UChar_t));
 }
 
 
@@ -166,7 +165,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fSeed2(-1),
   fCircular(0),
   fMAngular(0),
-  fPoolID(-1)
+  fPoolID(-1),
+  fTrackPointsArr()
 {
   //
   // Constructor from AliTPCtrack
@@ -192,7 +192,6 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
-  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -220,7 +219,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fSeed2(-1),
   fCircular(0),
   fMAngular(0),
-  fPoolID(-1)
+  fPoolID(-1),
+  fTrackPointsArr()
 {
   //
   // Constructor
@@ -238,7 +238,6 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
-  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::~AliTPCseed(){
@@ -264,6 +263,7 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
   //
   if(this!=&param){
     AliTPCtrack::operator=(param);
+    fTrackPointsArr = param.fTrackPointsArr;
     fEsd =param.fEsd; 
     fClusterOwner = param.fClusterOwner;
     if (!fClusterOwner) for(Int_t i = 0;i<kMaxRow;++i)fClusterPointer[i] = param.fClusterPointer[i];
@@ -307,20 +307,9 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     for(Int_t i = 0;i<12;++i)fOverlapLabels[i] = param.fOverlapLabels[i];
     fMAngular = param.fMAngular;
     fCircular = param.fCircular;
-    for(int i = 0;i<kMaxRow;++i)fTrackPoints[i] =  param.fTrackPoints[i];
   }
-  memcpy(fShared,param.fShared,20*sizeof(UChar_t));
   return (*this);
 }
-//____________________________________________________
-AliTPCTrackerPoint * AliTPCseed::GetTrackPoint(Int_t i)
-{
-  //
-  // 
-  return &fTrackPoints[i];
-}
-
-
 
 Double_t AliTPCseed::GetDensityFirst(Int_t n)
 {
@@ -394,15 +383,6 @@ void AliTPCseed::Reset(Bool_t all)
   fNFoundable = 0;
   SetChi2(0);
   ResetCovariance(10.);
-  /*
-  if (fTrackPoints){
-    for (Int_t i=0;i<8;i++){
-      delete [] fTrackPoints[i];
-    }
-    delete fTrackPoints;
-    fTrackPoints =0;
-  }
-  */
 
   if (all){   
     for (Int_t i=200;i--;) SetClusterIndex2(i,-3);
@@ -1028,7 +1008,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     if (shapeNorm){
       if (type<=1){
 	//	
-	AliTPCTrackerPoint * point = GetTrackPoint(irow);
+	const AliTPCTrackerPoints::Point * point = GetTrackPoint(irow);
 	Float_t              ty = TMath::Abs(point->GetAngleY());
 	Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
 	
@@ -1051,7 +1031,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       Float_t zres0 = parcl->GetRMS0(1,ipad,0,0)/param->GetZWidth();
       //
       
-      AliTPCTrackerPoint * point = GetTrackPoint(irow);
+      const AliTPCTrackerPoints::Point * point = GetTrackPoint(irow);
       Float_t              ty = TMath::Abs(point->GetAngleY());
       Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
       
@@ -1265,7 +1245,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     //
-    AliTPCTrackerPoint * point = GetTrackPoint(irow);
+    const AliTPCTrackerPoints::Point * point = GetTrackPoint(irow);
     if (point==0) continue;    
     Float_t rsigmay = TMath::Sqrt(point->GetSigmaY());
     if (rsigmay > kClusterShapeCut) continue;
@@ -1534,7 +1514,7 @@ Float_t  AliTPCseed::CookShape(Int_t type){
   Float_t means=0;
   Float_t meanc=0;
   for (Int_t i =0; i<kMaxRow;i++)    {
-    AliTPCTrackerPoint * point = GetTrackPoint(i);
+    const AliTPCTrackerPoints::Point * point = GetTrackPoint(i);
     if (point==0) continue;
 
     AliTPCclusterMI * cl = fClusterPointer[i];
@@ -1836,7 +1816,7 @@ Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, I
     //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
     //
-    AliTPCTrackerPoint * point = GetTrackPoint(irow);
+    const AliTPCTrackerPoints::Point * point = GetTrackPoint(irow);
     if (point==0) continue;    
     Float_t rsigmay = TMath::Sqrt(point->GetSigmaY());
     if (rsigmay > kClusterShapeCut) continue;
@@ -1880,7 +1860,7 @@ void AliTPCseed::Clear(Option_t*)
   // formally seed may allocate memory for clusters (althought this should not happen for 
   // the seeds in the pool). Hence we need this method for fwd. compatibility
   if (fClusterOwner) for (int i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
-  memset(fShared,0,20*sizeof(UChar_t));
+  fTrackPointsArr.Clear();
   ResetBit(0xffffffff);
 }
 
