@@ -149,7 +149,7 @@ int AliHLTITSVertexerSPDComponent::GetOutputDataTypes(AliHLTComponentDataTypeLis
 {
   // see header file for class documentation
   tgtList.clear();
-  tgtList.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
+  tgtList.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD);
   return tgtList.size();
 }
 
