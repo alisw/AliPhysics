@@ -74,7 +74,7 @@ namespace CaloConstants
     const int NCOLUMNSMOD  = NXCOLUMNSMOD; // Number of columns per module
     
     const int NRCUSPERSECTOR =  4; // Number of RCUs per sector
-    const int NMODULES       = 10; // Number of modules of the EMCAL detector
+    const int NMODULES       = 20; // Number of modules of the EMCAL detector
     const int NRCUSPERMODULE =  2; // Number of RCUs per Module
     const int NFEECS         =  9; // Number of Frontend cards per branch*/
     const int NZROWSRCU      = 48; // Number of Rows per RCU
