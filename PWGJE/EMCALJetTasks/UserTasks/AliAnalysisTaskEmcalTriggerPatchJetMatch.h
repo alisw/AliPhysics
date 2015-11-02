@@ -29,7 +29,7 @@ class AliEMCalTriggerAnaTriggerDecision;
 #include <TBits.h>
 #include <TMath.h>
 #include <AliVEvent.h>
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
