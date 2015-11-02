@@ -108,6 +108,7 @@ fnCenBin(10),
 fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
+fCenWeightsHist(NULL),
 fCorrWeight("TPCuVZuZDCu")
 {
  // constructor
@@ -217,6 +218,7 @@ fnCenBin(10),
 fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
+fCenWeightsHist(NULL),
 fCorrWeight("TPCuVZuZDCu")
 {
  // Dummy constructor
@@ -286,7 +288,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateCME(fCalculateCME);
  fQC->SetCalculateCRC2(fCalculateCRC2);
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
- fQC->SetCalculateFlow(fCalculateFlow);
+ fQC->SetCalculateFlowQC(fCalculateFlow);
+ fQC->SetCalculateFlowZDC(fCalculateFlow);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
@@ -325,7 +328,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  if(fUseCRCRecenter || fRecenterZDC) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
- 
+ if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
  fQC->SetMultiplicityIs(fMultiplicityIs);
  fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
  fQC->SetUse2DHistograms(fUse2DHistograms);

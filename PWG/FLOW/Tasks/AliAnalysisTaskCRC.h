@@ -185,6 +185,8 @@ public:
  TString GetDataSet() const {return this->fDataSet;};
  void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
  TString GetCorrWeight() const {return this->fCorrWeight;};
+ void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
+ TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -265,6 +267,7 @@ private:
  TString fDataSet;
  TString fCorrWeight;
  TList *fQVecList;           // list with weights
+ TH1D* fCenWeightsHist;
  
  ClassDef(AliAnalysisTaskCRC, 2);
 };
