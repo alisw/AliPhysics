@@ -145,6 +145,10 @@ public:
    void MarkSeedFree( TObject* seed );
    TObject *&NextFreeSeed();
    //
+   void FillSeedClusterStatCache(const AliTPCseed* seed);
+   void GetCachedSeedClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2) const;
+   void GetSeedClusterStatistic(const AliTPCseed* seed, Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2) const;
+   //
  public:
    void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
@@ -261,6 +265,10 @@ private:
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool
    Int_t fLastSeedID;                   //! id of the pool seed on which is returned by the NextFreeSeed method
+   //
+   Bool_t fClStatFoundable[kMaxRow];    //! cached info on foundable clusters of the seed
+   Bool_t fClStatFound[kMaxRow];        //! cached info on found clusters of the seed   
+   Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
    ClassDef(AliTPCtracker,4) 
 };

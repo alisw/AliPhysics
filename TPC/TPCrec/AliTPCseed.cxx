@@ -386,8 +386,18 @@ void AliTPCseed::GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_
 }
 
 
-
-
+void AliTPCseed::GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable)
+{
+  // get cluster stat.  on given region, faster than the version providing also shared info
+  //
+  found = foundable = 0;
+  for (Int_t i=first;i<last; i++){
+    Int_t index = GetClusterIndex2(i);
+    if (index!=-1) foundable++;
+    if (index<0 || index&0x8000) continue;
+    found++;
+  }
+}
 
 void AliTPCseed::Reset(Bool_t all)
 {
@@ -1530,12 +1540,13 @@ Float_t  AliTPCseed::CookShape(Int_t type){
   Float_t means=0;
   Float_t meanc=0;
   for (Int_t i =0; i<kMaxRow;i++)    {
+    //
+    //AliTPCclusterMI * cl = GetClusterPointer(i);
+    //if (cl==0) continue;
+    if (GetClusterIndex2(i)<0) continue;	
+    //
     const AliTPCTrackerPoints::Point * point = GetTrackPoint(i);
-    if (point==0) continue;
-
-    AliTPCclusterMI * cl = GetClusterPointer(i);
-    if (cl==0) continue;	
-    
+    if (point==0) continue;    
     Float_t rsigmay =  TMath::Sqrt(point->GetSigmaY());
     Float_t rsigmaz =  TMath::Sqrt(point->GetSigmaZ());
     Float_t rsigma =   (rsigmay+rsigmaz)*0.5;

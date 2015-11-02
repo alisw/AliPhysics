@@ -59,7 +59,9 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      const AliTPCTrackerPoints::Point* GetTrackPoint(Int_t i) const { return fTrackPointsArr.GetPoint(i); }
      //
      AliTPCclusterMI * GetClusterFast(Int_t irow){return fClusterPointer ? ((AliTPCclusterMI*)fClusterPointer[irow]):0;}
-     AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer ? fClusterPointer[irow] : 0;}
+     AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer ? fClusterPointer[irow]:0;}
+     const AliTPCclusterMI** GetClusters() const {return (const AliTPCclusterMI**)fClusterPointer;}
+     void  SetClustersArrayTMP(AliTPCclusterMI** arr) {fClusterPointer = arr; fNClStore = arr ? kMaxRow : 0;}
      void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl);
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {
@@ -67,6 +69,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
        return GetSigma1Pt2()*cnv*cnv;
      }
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2);
+     void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable);
      
      void Modify(Double_t factor);
      void SetClusterIndex2(Int_t row, Int_t index) {
@@ -91,7 +94,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      void CookPID();
      Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
-     AliTPCclusterMI* GetClusterPointer(Int_t i) const {return fClusterPointer[i];}
+     AliTPCclusterMI* GetClusterPointer(Int_t i) const {return GetClusterFast(i);}
      Int_t GetSector() const {return fSector;}
      Float_t GetCurrentSigmaY2() const {return fCurrentSigmaY2;}
      Float_t GetCurrentSigmaZ2() const {return fCurrentSigmaZ2;}
