@@ -1,16 +1,16 @@
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*					                                  *
-* Authors: Svein Lindal, Daniel Lohner 		                  *
-* Version 1.0                        					  *
-*                           						  *
+*                                            *
+* Authors: Svein Lindal, Daniel Lohner                       *
+* Version 1.0                                    *
+*                                         *
 * Permission to use, copy, modify and distribute this software and its   *
 * documentation strictly for non-commercial purposes is hereby granted   *
 * without fee, provided that the above copyright notice appears in all   *
 * copies and that both the copyright notice and this permission notice   *
 * appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is    	  *
-* provided "as is" without express or implied warranty.       		  *
+* about the suitability of this software for any purpose. It is        *
+* provided "as is" without express or implied warranty.             *
 **************************************************************************/
 
 ////////////////////////////////////////////////
@@ -58,14 +58,14 @@ ClassImp(AliConvEventCuts)
 
 
 const char* AliConvEventCuts::fgkCutNames[AliConvEventCuts::kNCuts] = {
-  "HeavyIon",						//0
-  "CentralityMin",					//1
-  "CentralityMax",					//2
-  "SelectSpecialTrigger",			//3
-  "SelectSpecialSubTriggerClass",	//4
-  "RemovePileUp",					//5
-  "RejectExtraSignals",			//6
-  "VertexCut",						//7
+  "HeavyIon",                     //0
+  "CentralityMin",                //1
+  "CentralityMax",                //2
+  "SelectSpecialTrigger",         //3
+  "SelectSpecialSubTriggerClass", //4
+  "RemovePileUp",                 //5
+  "RejectExtraSignals",           //6
+  "VertexCut",                    //7
 };
 
 
@@ -415,7 +415,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
-      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel(	4,"kEMC7");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 4,"kEMC7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 5,"kEMCEJE");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 6,"kEMCEJ1");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 7,"kEMCEJ2");
@@ -487,7 +487,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
       fEventQuality = 5;
       return kFALSE;
     }
-  }	
+  }
   cutindex++;
 
   // Z Vertex Position Cut
@@ -496,7 +496,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       fEventQuality = 4;
       return kFALSE;
-    }	
+    }
   }
   cutindex++;
 
@@ -653,7 +653,7 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
   // Initialize Cuts from a given Cut string
   if(fDoCentralityFlat > 0){
     AliInfo("Centrality flattening was enabled");
-    LoadWeightingFlatCentralityFromFile();		
+    LoadWeightingFlatCentralityFromFile();
   }
   
   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
@@ -674,7 +674,7 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
 
   if (fV0ReaderName.CompareTo("") == 0){
     fV0ReaderName = "V0ReaderV1";
-  }	
+  }
   const char *cutSelection = analysisCutSelection.Data();
   #define ASSIGNARRAY(i)  fCuts[i] = cutSelection[i] - '0'
   for(Int_t ii=0;ii<kNCuts;ii++){
@@ -737,13 +737,13 @@ Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
       fCuts[kExtraSignals] = value;
       UpdateCutString();
       return kTRUE;
-    } else return kFALSE;		
+    } else return kFALSE;
   case kVertex:
     if( SetVertexCut(value)) {
       fCuts[kVertex] = value;
       UpdateCutString();
       return kTRUE;
-    } else return kFALSE;		
+    } else return kFALSE;
 
   case kNCuts:
     AliError("Cut id out of range");
@@ -844,7 +844,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
     else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
-  printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);	
+  printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);
 }
 
 ///________________________________________________________________________
@@ -940,9 +940,9 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
   case 1:
     fSpecialTrigger=1; // V0AND
     break;
-// 	case 2:
-// 		fSpecialTrigger=2; // 
-// 		break;
+//   case 2:
+//     fSpecialTrigger=2; // 
+//     break;
   case 3:       
     fSpecialTrigger=3; //specific centrality trigger selection
     fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kMB";
@@ -1005,19 +1005,19 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 0://with VZERO
       fSpecialTrigger=0;
       fSpecialSubTrigger=0; 
-// 			AliInfo("Info: Nothing to be done");
-      break;	
+//       AliInfo("Info: Nothing to be done");
+      break;
     case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
       fSpecialSubTrigger=1; 
-// 			cout << "V0OR with SDD requested" << endl;	    
+//       cout << "V0OR with SDD requested" << endl;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }	
+    }
   } else if (fSpecialTrigger == 1){ //AND with different detectors
     switch(selectSpecialSubTriggerClass){
-    case 0:	//with VZERO general implementation of V0AND (periods LHC11c onwards)
+    case 0:  //with VZERO general implementation of V0AND (periods LHC11c onwards)
       fSpecialTrigger=0;
       fSpecialSubTrigger=0; 
       fOfflineTriggerMask=AliVEvent::kINT7;
@@ -1034,8 +1034,8 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     case 2: //with VZERO (will only work with LHC11a dataset)
       fSpecialTrigger=1;
       fSpecialSubTrigger=0; 
-// 			AliInfo("Info: Nothing to be done");
-      break;	
+//       AliInfo("Info: Nothing to be done");
+      break;
     case 3: //V0AND with SDD requested (will only work with LHC11a dataset)
       fSpecialTrigger=1;
       fSpecialSubTrigger=1; 
@@ -1043,78 +1043,78 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		
+    }  
   } else if (fSpecialTrigger == 3){ // Selecting kCentral and kSemiCentral from trigger classes, not aliases
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // kCentral - no vertex restriction
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN";
-// 			cout << "kCentralOpen" << endl;
+//       cout << "kCentralOpen" << endl;
       break;
     case 2: // kCentral - T00 +- 10 cm
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CCENT";
-// 			cout << "kCentralVertex" << endl;
+//       cout << "kCentralVertex" << endl;
       break;
     case 3: // kCentral - both
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
-// 			cout << "kCentral both" << endl;
+//       cout << "kCentral both" << endl;
       break;
     case 4: // kSemiCentral - no vertex restriction
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVLN";
-// 			cout << "kSemiCentralOpen" << endl;
+//       cout << "kSemiCentralOpen" << endl;
       break;
     case 5: // kSemiCentral - T00 +- 10 cm
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI";
-// 			cout << "kSemiCentralVertex" << endl;
+//       cout << "kSemiCentralVertex" << endl;
       break;
     case 6: // kSemiCentral - both
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSEMI%CVLN";
-// 			cout << "kSemiCentral both" << endl;
+//       cout << "kSemiCentral both" << endl;
       break;
     case 7: // kMB
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI1_|CPBI1-";
-// 			cout << "kMB 1" << endl;
-      break;			
+//       cout << "kMB 1" << endl;
+      break;
     case 8: // kMB
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_|CPBI2-";
-// 			cout << "kMB 2" << endl;
-      break;			
+//       cout << "kMB 2" << endl;
+      break;
     case 9: // kMB
       fSpecialSubTrigger=1; 
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
-// 			cout << "kMB both" << endl;
-      break;	
+//       cout << "kMB both" << endl;
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		
+    }  
   } else if (fSpecialTrigger == 4){ // Subdivision of TRD trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7WUHSH - V0AND with single electron in TRD & EMCAL
       fSpecialSubTrigger=1; 
@@ -1159,13 +1159,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   } else if (fSpecialTrigger == 5){ // Subdivision of kEMC trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kEMC1;
@@ -1191,13 +1191,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   }  else if (fSpecialTrigger == 6){ // Subdivision of kPHI trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CEMC1 - V0OR and EMCAL fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
@@ -1223,13 +1223,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   } else if (fSpecialTrigger == 7){ // Subdivision of kHighMult trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // CSHM1 - V0OR and high mult fired
       fSpecialSubTrigger=1; 
@@ -1249,13 +1249,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   }  else if (fSpecialTrigger == 8){ // Subdivision of kEMCEGA trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EGA - CINT7 EGA
       fSpecialSubTrigger=1; 
@@ -1302,13 +1302,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   } else if (fSpecialTrigger == 9){ // Subdivision of kEMCEGA trigger classes
     switch(selectSpecialSubTriggerClass){
     case 0: // all together
       fSpecialSubTrigger=0; 
       fSpecialSubTriggerName="";
-// 			AliInfo("Info: Nothing to be done");
+//       AliInfo("Info: Nothing to be done");
       break;
     case 1: // 7EJE - CINT7 EJE
       fSpecialSubTrigger=1; 
@@ -1355,7 +1355,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
-    }		   
+    }     
   }
   return 1;
 }
@@ -1419,28 +1419,28 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 
   switch(vertexCut){
   case 0: // no Vertex required // NOT fully working yet
-    fEnableVertexCut 	= kFALSE;	 
-    fMaxVertexZ 		= 1000;
+    fEnableVertexCut   = kFALSE; 
+    fMaxVertexZ     = 1000;
     break; 
   case 1: // vertex within +-15 cm
-    fEnableVertexCut 	= kTRUE;	 
-    fMaxVertexZ 		= 15;
+    fEnableVertexCut   = kTRUE; 
+    fMaxVertexZ     = 15;
     break; 
   case 2: // vertex within +-12.5 cm
-    fEnableVertexCut 	= kTRUE;	 
-    fMaxVertexZ 		= 12.5;
+    fEnableVertexCut   = kTRUE; 
+    fMaxVertexZ     = 12.5;
     break; 
   case 3: // vertex within +-10 cm
-    fEnableVertexCut 	= kTRUE;	 
-    fMaxVertexZ 		= 10.0;
+    fEnableVertexCut   = kTRUE; 
+    fMaxVertexZ     = 10.0;
     break; 
   case 4: // vertex within +-7.5 cm
-    fEnableVertexCut 	= kTRUE;	 
-    fMaxVertexZ 		= 7.5;
+    fEnableVertexCut   = kTRUE; 
+    fMaxVertexZ     = 7.5;
     break; 
   case 5: // vertex within +-5 cm
-    fEnableVertexCut 	= kTRUE;	 
-    fMaxVertexZ 		= 5.;
+    fEnableVertexCut   = kTRUE; 
+    fMaxVertexZ     = 5.;
     break; 
   default:
     AliError(Form("Vertex Cut not defined %d",vertexCut));
@@ -1631,7 +1631,7 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
                           ->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC11h")==0){
     if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
-  }						
+  }          
   if (fIsHeavyIon == 2){
     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
   }
@@ -1688,14 +1688,14 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 // Analysing Jet-Jet MC's 
 //________________________________________________________________________
 Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight){
-  AliGenCocktailEventHeader *cHeader 	= 0x0;
-  AliAODMCHeader *cHeaderAOD 			= 0x0;
-  Bool_t headerFound 					= kFALSE;
-  AliStack *fMCStack 					= 0x0;
-  TClonesArray *fMCStackAOD 			= 0x0;
-  weight 								= -1;
-  fMaxPtJetMC 						= 0;
-  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  AliAODMCHeader *cHeaderAOD       = 0x0;
+  Bool_t headerFound           = kFALSE;
+  AliStack *fMCStack           = 0x0;
+  TClonesArray *fMCStackAOD       = 0x0;
+  weight                 = -1;
+  fMaxPtJetMC             = 0;
+  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
     periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
     periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ){
@@ -1705,32 +1705,32 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 
   if(MCEvent->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(MCEvent)){
-      cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if(cHeader) headerFound 	= kTRUE;
-      fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
-    }	
+      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+      if(cHeader) headerFound   = kTRUE;
+      fMCStack           = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+    }
   }
   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-    cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(cHeaderAOD) headerFound 		= kTRUE;
+    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    fMCStackAOD           = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
   }
   
   if(headerFound){
-    TList *genHeaders 				= 0x0;
-    if(cHeader) genHeaders 			= cHeader->GetHeaders();
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders       = cHeader->GetHeaders();
     if(cHeaderAOD){
-      genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+      genHeaders           = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
         return kFALSE;
       }
     }
-    AliGenEventHeader* gh 			= 0;
+    AliGenEventHeader* gh       = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-      gh 						= (AliGenEventHeader*)genHeaders->At(i);
-      TString GeneratorName 	= gh->GetName();
+      gh             = (AliGenEventHeader*)genHeaders->At(i);
+      TString GeneratorName   = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
-        Bool_t eventAccepted = kTRUE;			
+        Bool_t eventAccepted = kTRUE;
         TParticle * jet =  0;
         Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
         Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
@@ -1741,9 +1741,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           //Compare jet pT and pt Hard
           if(jet->Pt() > fMaxFacPtHard * ptHard){
             eventAccepted= kFALSE;
-          }	
+          }
           if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
-        }	
+        }
         if (jet) delete jet;
                 if (fMCStack){
                     for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
@@ -1769,10 +1769,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                 }   
         
         if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
-          Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
-                            21,	28, 36, 45, 57, 
+          Double_t ptHardBinRanges[13]   = {  5,   7,   9,   12, 16, 
+                            21,  28, 36, 45, 57, 
                             70, 85, 1000};
-          Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+          Double_t weightsBins[12]     = {  7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
                             1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
                             1.933238e-05, 1.562895e-05};
           Int_t bin = 0;
@@ -1786,12 +1786,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
     //                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
     //                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
     //                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
-    //                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
+    //                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};
                     // LHC15g1a                                    
                     Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
                                                         6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
                                                         2.62906, 1.12884, 0.656873, 0.262822,  0.0876732, 
-                                                        0.0307759, 0.0087083, 0.0027664, 0.00106203};      
+                                                        0.0307759, 0.0087083, 0.0027664, 0.00106203};
                                                         
                     Int_t bin = 0;
                     Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
@@ -1807,7 +1807,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                     Double_t weightsBins[19]        = { 4.43897 , 0.495766, 0.039486, 0.00383011, 0.000447104,
                                                         6.37277e-05, 1.03166e-05, 2.26971e-06, 7.59023e-07, 0,
                                                         2.63331, 1.12815, 0.657034, 0.262756,  0.0877227, 
-                                                        0.0307638, 0.00870635, 0.00276658, 0.00106229};      
+                                                        0.0307638, 0.00870635, 0.00276658, 0.00106229};
                     Int_t bin = 0;
                     Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
                     if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
@@ -1815,24 +1815,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                     if (bin < 19) weight = weightsBins[bin];
                 
         } else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
-          Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
-                            84,		117, 	152,	191,  	234,
+          Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57, 
+                            84,    117,   152,  191,    234,
                             1000};
-          Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
+          Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
                             5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 10) weight = weightsBins[bin];
         } else {
           weight = 1;
-        }	
+        }
         if (weight == -1) return kFALSE;
         else return eventAccepted;
-      } 	
-    }		
-  } else {		
+      }   
+    }  
+  } else {    
     AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
-    TString eventHeaderName 		= eventHeader->ClassName();
+    TString eventHeaderName     = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       Bool_t eventAccepted = kTRUE;
       TParticle * jet =  0;
@@ -1845,7 +1845,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         //Compare jet pT and pt Hard
         if(jet->Pt() > fMaxFacPtHard * ptHard){
           eventAccepted= kFALSE;
-        }	
+        }
         if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
       }
       if (fMCStack){
@@ -1855,8 +1855,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
             if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
               eventAccepted= kFALSE;
-            }	
-          }	
+            }
+          }
           
         }
       } else if (fMCStackAOD){
@@ -1869,13 +1869,13 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
             }
           }
         }
-      }	
+      }
       
       if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
-        Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
-                          21,	28, 36, 45, 57, 
+        Double_t ptHardBinRanges[13]   = {  5,   7,   9,   12, 16, 
+                          21,  28, 36, 45, 57, 
                           70, 85, 1000};
-        Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+        Double_t weightsBins[12]     = {  7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
                           1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
                           1.933238e-05, 1.562895e-05};
         Int_t bin = 0;
@@ -1889,12 +1889,12 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 //                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
 //                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
 //                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
-//                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
+//                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};
                 // LHC15g1a                                    
                 Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
                                                     6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
                                                     2.62906, 1.12884, 0.656873, 0.262822,  0.0876732, 
-                                                    0.0307759, 0.0087083, 0.0027664, 0.00106203};      
+                                                    0.0307759, 0.0087083, 0.0027664, 0.00106203};
                                                     
                 Int_t bin = 0;
                 Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
@@ -1910,7 +1910,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                 Double_t weightsBins[19]        = { 4.43897 , 0.495766, 0.039486, 0.00383011, 0.000447104,
                                                     6.37277e-05, 1.03166e-05, 2.26971e-06, 7.59023e-07, 0,
                                                     2.63331, 1.12815, 0.657034, 0.262756,  0.0877227, 
-                                                    0.0307638, 0.00870635, 0.00276658, 0.00106229};      
+                                                    0.0307638, 0.00870635, 0.00276658, 0.00106229};
                 Int_t bin = 0;
                 Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
                 if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
@@ -1918,24 +1918,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                 if (bin < 19) weight = weightsBins[bin];
                 
       } else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
-        Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
-                          84,		117, 	152,	191,  	234,
+        Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57, 
+                          84,    117,   152,  191,    234,
                           1000};
-        Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
+        Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
                           5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 10) weight = weightsBins[bin];
       } else {
         weight = 1;
-      }	
+      }
       
       if (weight == -1) return kFALSE;
       else return eventAccepted;
     } else {
       return kFALSE;
-    }	
-  }	
+    }
+  }
   
   return kFALSE;
 }
@@ -1945,9 +1945,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 //________________________________________________________________________
 void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSection, Float_t &NTrials){
 
-  AliGenCocktailEventHeader *cHeader 	= 0x0;
-  AliAODMCHeader *cHeaderAOD 			= 0x0;
-  Bool_t headerFound 					= kFALSE;
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  AliAODMCHeader *cHeaderAOD       = 0x0;
+  Bool_t headerFound           = kFALSE;
 
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
@@ -1960,30 +1960,30 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
 
   if(MCEvent->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(MCEvent)){
-      cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if(cHeader) headerFound 	= kTRUE;
+      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+      if(cHeader) headerFound   = kTRUE;
     }
   }
   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-    cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    if(cHeaderAOD) headerFound 		= kTRUE;
+    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
   }
 
   if(headerFound){
-    TList *genHeaders 				= 0x0;
-    if(cHeader) genHeaders 			= cHeader->GetHeaders();
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders       = cHeader->GetHeaders();
     if(cHeaderAOD){
-      genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+      genHeaders           = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
         NTrials = -1;
         XSection = -1;
         return;
       }
     }
-    AliGenEventHeader* gh 			= 0;
+    AliGenEventHeader* gh       = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-      gh 						= (AliGenEventHeader*)genHeaders->At(i);
-      TString GeneratorName 	= gh->GetName();
+      gh             = (AliGenEventHeader*)genHeaders->At(i);
+      TString GeneratorName   = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
         AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(gh);
         NTrials = gPythia->Trials();
@@ -1993,7 +1993,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
     }
   } else {
     AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
-    TString eventHeaderName 		= eventHeader->ClassName();
+    TString eventHeaderName     = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
       NTrials = gPythia->Trials();
@@ -2012,54 +2012,54 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
 // Analysing Jet-Jet MC's 
 //________________________________________________________________________
 Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
-  AliGenCocktailEventHeader *cHeader 	= 0x0;
-  AliAODMCHeader *cHeaderAOD 			= 0x0;
-  Bool_t headerFound 					= kFALSE;
-  AliStack *fMCStack 					= 0x0;
-  TClonesArray *fMCStackAOD 			= 0x0;
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  AliAODMCHeader *cHeaderAOD       = 0x0;
+  Bool_t headerFound           = kFALSE;
+  AliStack *fMCStack           = 0x0;
+  TClonesArray *fMCStackAOD       = 0x0;
   
-  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
+  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
     periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
     periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ) return -1;
 
   if(MCEvent->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(MCEvent)){
-      cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if(cHeader) headerFound 	= kTRUE;
-      fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
-    }	
+      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+      if(cHeader) headerFound   = kTRUE;
+      fMCStack           = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+    }
   }
   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-    cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(cHeaderAOD) headerFound 		= kTRUE;
+    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    fMCStackAOD           = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
   }
   
   if(headerFound){
-    TList *genHeaders 				= 0x0;
-    if(cHeader) genHeaders 			= cHeader->GetHeaders();
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders       = cHeader->GetHeaders();
     if(cHeaderAOD){
-      genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+      genHeaders           = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
         return -1;
       }
     }
-    AliGenEventHeader* gh 			= 0;
+    AliGenEventHeader* gh       = 0;
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-      gh 						= (AliGenEventHeader*)genHeaders->At(i);
-      TString GeneratorName 	= gh->GetName();
+      gh             = (AliGenEventHeader*)genHeaders->At(i);
+      TString GeneratorName   = gh->GetName();
       if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
         return dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
-      } 	
-    }		
-  } else {		
+      }   
+    }  
+  } else {    
     AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
-    TString eventHeaderName 		= eventHeader->ClassName();
+    TString eventHeaderName     = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
-    }	
-  }	
+    }
+  }
   
   return -1;
 }
@@ -2072,56 +2072,56 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
   if (!fMimicTrigger) return kTRUE;
   
   Int_t runRangesEMCalL0 [35] = { 144871, 145288, 146375, 146382,  // LHC11a
-                  146502, 148522,				 // LHC11a
+                  146502, 148522,         // LHC11a
                   150209, 153056, 153911, 153915, // LHC11b,c,d
                   158135, 158136, 158178, 158182, 160683,
                   160764, 161139, 161256, 161379, 161457,
                   161525, 161556, 161558, 161609, 161630,
                   161724, // LHC11d,e
                   173731, 177144, 177147, 177653, 177724, 178327,
-                  195180,						  // LHC13b-f	
-                  197469, 197692 	 			  // LHC13g
+                  195180,              // LHC13b-f  
+                  197469, 197692            // LHC13g
   };
   
   Double_t thresholdEMCalL0[34] = {2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
-                  3.43, 				  // LHC11a	2.76TeV
-                  1.94, 3.39, 4.01, 5.25, 5.5, 	  // LHC11b, LHC11c, LHC11d
+                  3.43,           // LHC11a  2.76TeV
+                  1.94, 3.39, 4.01, 5.25, 5.5,     // LHC11b, LHC11c, LHC11d
                   2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
                   2.01, 1.75, 1.52, 2.01, 1.52, 2.01,      
                   3.2,
                   2.01 
   };
-  Double_t spreadEMCalL0[34] = 	{0., 0., 0, 0,   // LHC11a 7TeV
-                  0.7, 				  // LHC11a 2.76TeV		
-                  0., 0., 0., 0., 0., 	  // LHC11b, LHC11c, LHC11d
+  Double_t spreadEMCalL0[34] =   {0., 0., 0, 0,   // LHC11a 7TeV
+                  0.7,           // LHC11a 2.76TeV    
+                  0., 0., 0., 0., 0.,     // LHC11b, LHC11c, LHC11d
                   0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                   0., 0., 0., 0., 0., 0.,      
                   0.1,
                   0.1 
   };
 
-  Int_t runRangesEMCalL1[4] = {   179796, 					  // LHC12c-i
-                  195180,						  // LHC13b-f	
-                  197469, 197692 	 			  // LHC13g
+  Int_t runRangesEMCalL1[4] = {   179796,             // LHC12c-i
+                  195180,              // LHC13b-f  
+                  197469, 197692            // LHC13g
   };
   
   Double_t thresholdEMCalL1[3] = { 8.398, 11.5, 6.};
   Double_t spreadEMCalL1[3] = { 0., 0.5, 0.4};
   
-  Int_t runRangesEMCalL1G2[3] = { 195180,						  // LHC13b-f	
-                  197469, 197692 	 			  // LHC13g
+  Int_t runRangesEMCalL1G2[3] = { 195180,              // LHC13b-f  
+                  197469, 197692            // LHC13g
   };
   
   Double_t thresholdEMCalL1G2[2] = { 7.2, 3.9};
   Double_t spreadEMCalL1G2[2] = { 0.3, 0.2};
   
-  Int_t runnumber = fInputEvent->GetRunNumber();	
+  Int_t runnumber = fInputEvent->GetRunNumber();
   
   if (fSpecialTrigger == 5 ){
     if (runnumber < runRangesEMCalL0[0]) return kTRUE;
     Int_t binRun = 0;
     while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 34 ){
-// 			cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+//       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
       binRun++;
     }
     if (binRun==34) return kFALSE;
@@ -2134,27 +2134,27 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       triggerSmearing->SetParameter(2, spreadEMCalL0[binRun]);
       threshold = triggerSmearing->GetRandom();
       delete triggerSmearing;
-    }	
+    }
     
-// 		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
+//     cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
     
     Int_t nclus = 0;
     nclus = fInputEvent->GetNumberOfCaloClusters();
   
-    if(nclus == 0)	return kFALSE;
+    if(nclus == 0)  return kFALSE;
     
     // Loop over EMCal clusters
     Bool_t eventIsAccepted = kFALSE;
-    for(Int_t i = 0; i < nclus; i++){	
+    for(Int_t i = 0; i < nclus; i++){  
       AliVCluster* clus = NULL;
-      clus = fInputEvent->GetCaloCluster(i);		
+      clus = fInputEvent->GetCaloCluster(i);
       if (!clus) continue;
       if (!clus->IsEMCAL()) continue;
       if (clus->E() > threshold ){
-// 				cout << "found L0" << endl;
+//         cout << "found L0" << endl;
         eventIsAccepted = kTRUE;
-      }	
-    }	
+      }
+    }
     return eventIsAccepted;
     
   } else if (fSpecialTrigger == 6 ) {
@@ -2165,9 +2165,9 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       if (runnumber < runRangesEMCalL1[0]) return kTRUE;
       Int_t binRun = 0;
       while (!(runnumber >= runRangesEMCalL1[binRun] && runnumber < runRangesEMCalL1[binRun+1] ) && binRun < 3 ){
-  // 			cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+  //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
         binRun++;
-      }	
+      }
       if (binRun==3) return kFALSE;
       Double_t threshold = thresholdEMCalL1[binRun];
 
@@ -2178,35 +2178,35 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         triggerSmearing->SetParameter(2, spreadEMCalL1[binRun]);
         threshold = triggerSmearing->GetRandom();
         delete triggerSmearing;
-      }	
+      }
       
-// 			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
+//       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
       
       Int_t nclus = 0;
       nclus = fInputEvent->GetNumberOfCaloClusters();
     
-      if(nclus == 0)	return kFALSE;
+      if(nclus == 0)  return kFALSE;
       
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){	
+      for(Int_t i = 0; i < nclus; i++){  
         AliVCluster* clus = NULL;
-        clus = fInputEvent->GetCaloCluster(i);		
+        clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
         if (clus->E() > threshold ){
-// 					cout << "found L1G1" << endl;
+//           cout << "found L1G1" << endl;
           eventIsAccepted = kTRUE;
-        }	
-      }	
+        }
+      }
       return eventIsAccepted;
-    } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){	
+    } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){  
       if (runnumber < runRangesEMCalL1G2[0]) return kTRUE;
       Int_t binRun = 0;
       while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 2 ){
-  // 			cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+  //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
         binRun++;
-      }	
+      }
       if (binRun==2) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (spreadEMCalL1G2[binRun] != 0.){
@@ -2216,34 +2216,34 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         triggerSmearing->SetParameter(2, spreadEMCalL1G2[binRun]);
         threshold = triggerSmearing->GetRandom();
         delete triggerSmearing;
-      }				
-// 			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
+      }      
+//       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
       
       Int_t nclus = 0;
       nclus = fInputEvent->GetNumberOfCaloClusters();
     
-      if(nclus == 0)	return kFALSE;
+      if(nclus == 0)  return kFALSE;
       
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
-      for(Int_t i = 0; i < nclus; i++){	
+      for(Int_t i = 0; i < nclus; i++){  
         AliVCluster* clus = NULL;
-        clus = fInputEvent->GetCaloCluster(i);		
+        clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
         if (clus->E() > threshold ){
-// 					cout << "found L1G2" << endl;
+//           cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
-        }	
-      }	
+        }
+      }
       return eventIsAccepted;
-    }	
+    }
     return kTRUE;
   } else if (fSpecialTrigger == 9 ) {
     return kTRUE;
   } else {
     return kTRUE;
-  } 	
+  }   
   
   return kTRUE;
 }
@@ -2258,18 +2258,18 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   
   UInt_t isSelected = AliVEvent::kAny;
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-  //    cout << 	periodName.Data() << endl;
+  //    cout <<   periodName.Data() << endl;
   
   if (fInputHandler==NULL) return kFALSE;
   if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
   
-    TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();  
+    TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
     if (!fTriggerSelectedManually){
       if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
       else {
         if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
         else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-        else if (	periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || 
+        else if (  periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || 
               periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || 
               periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || 
               periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || 
@@ -2277,9 +2277,9 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
               periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || 
               periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
           // fixing default trigger to kINT7 as no data with kMB was taken!!!
-          fOfflineTriggerMask = AliVEvent::kINT7;      
-  // 				cout << "will take kINT7 as trigger mask" << endl; 
-        }	
+          fOfflineTriggerMask = AliVEvent::kINT7;
+  //         cout << "will take kINT7 as trigger mask" << endl; 
+        }
         else fOfflineTriggerMask = AliVEvent::kMB;
       }
     }
@@ -2291,17 +2291,17 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
     if (isMC) fOfflineTriggerMask = AliVEvent::kAny;
   
     if (fOfflineTriggerMask){
-      isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();		 
+      isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected(); 
       
       if (isSelected && !fPreSelCut){
-// 				cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
-// 				if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-// 					if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
-// 					fTriggersEMCAL= GetTriggerList();	
-// 				}
+//         cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
+//         if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+//           if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
+//           fTriggersEMCAL= GetTriggerList();
+//         }
         if (fSpecialSubTrigger>0 && !isMC){
           if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
-          if (fRejectTriggerOverlap){						
+          if (fRejectTriggerOverlap){            
             // trigger rejection EMC1,7,8
             if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC7") == 0){
               if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
@@ -2322,27 +2322,27 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
             if (periodName.CompareTo("LHC13g") == 0){
               // EG1 is the trigger with the highest threshold
               if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
-// 								cout << firedTrigClass.Data() << endl;
+//                 cout << firedTrigClass.Data() << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-// 								cout << "INT7? " << isSelected << endl;
+//                 cout << "INT7? " << isSelected << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-// 								cout << "CEM7? " << isSelected << endl;
+//                 cout << "CEM7? " << isSelected << endl;
                 if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
-// 								cout << "7EG2? " << isSelected << endl;
+//                 cout << "7EG2? " << isSelected << endl;
               } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                 if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-              } else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
-// 								cout << firedTrigClass.Data() << endl;
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+//                 cout << firedTrigClass.Data() << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-// 								cout << "INT7? " << isSelected << endl;
+//                 cout << "INT7? " << isSelected << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-// 								cout << "CEM7? " << isSelected << endl;
-              } else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+//                 cout << "CEM7? " << isSelected << endl;
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              }	
+              }
             } else {
               // EG2 is the trigger with the highest threshold
               if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
@@ -2353,17 +2353,17 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                 if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
-              } else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              } else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
               }
             }
           }
           if (isSelected != 0 ){
-// 						cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
+//             cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
             if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
@@ -2382,13 +2382,13 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
           
         } else if (isMC){
           if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-// 						isSelected = 0;
-// 						if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<fInputEvent->GetRunNumber()<<endl;
-// 						if (fTriggersEMCAL&fTriggersEMCALSelected){
-// 							cout << "accepted ++++++++++++++++++++" << endl;
+//             isSelected = 0;
+//             if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<fInputEvent->GetRunNumber()<<endl;
+//             if (fTriggersEMCAL&fTriggersEMCALSelected){
+//               cout << "accepted ++++++++++++++++++++" << endl;
               isSelected = 1;
-// 						}	
-          }	
+//             }
+          }
         }
         //if for specif centrality trigger selection 
         if(fSpecialSubTrigger == 1){
@@ -2409,7 +2409,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
             for (Int_t i=0; i<ClassesList->GetEntriesFast();++i){
               TObjString *NameClass = (TObjString*)ClassesList->At(i);
               if (firedTrigClass.Contains(NameClass->GetString())) isSelected = 1;
-            }	
+            }
           } else if(fSpecialSubTriggerName.Contains("&")){ //logic AND of two classes
             TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("&");
             TString CheckClass = "";
@@ -2419,17 +2419,17 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
               else CheckClass+="0";
             }
             if(CheckClass.Contains("0")) isSelected = 0;
-          }	
+          }
           else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
         }
-      }				
-    } 	 
+      }      
+    }    
   }
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
-// 	cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
+//   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
   
   // Fill Histogram
   if(hTriggerClass){
@@ -2547,81 +2547,81 @@ TString AliConvEventCuts::GetCutNumber(){
 //________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent){
 
-  TString periodName 					= ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+  TString periodName           = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
 
   if(fNotRejectedStart){
     delete[] fNotRejectedStart;
-    fNotRejectedStart 				= NULL;
+    fNotRejectedStart         = NULL;
   }
   if(fNotRejectedEnd){
     delete[] fNotRejectedEnd;
-    fNotRejectedEnd 				= NULL;
+    fNotRejectedEnd         = NULL;
   }
   if(fGeneratorNames){
     delete[] fGeneratorNames;
-    fGeneratorNames 				= NULL;
+    fGeneratorNames         = NULL;
   }
 
   if(rejection == 0) return; // No Rejection
   
-  AliGenCocktailEventHeader *cHeader 	= 0x0;
-  AliAODMCHeader *cHeaderAOD 			= 0x0;
-  Bool_t headerFound 					= kFALSE;
-  AliStack *fMCStack 					= 0x0;
-  TClonesArray *fMCStackAOD 			= 0x0;
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  AliAODMCHeader *cHeaderAOD       = 0x0;
+  Bool_t headerFound           = kFALSE;
+  AliStack *fMCStack           = 0x0;
+  TClonesArray *fMCStackAOD       = 0x0;
   if(MCEvent->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(MCEvent)){
-      cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if(cHeader) headerFound 	= kTRUE;
-      fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
-    }	
+      cHeader           = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+      if(cHeader) headerFound   = kTRUE;
+      fMCStack           = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+    }
   }
   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-    cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(cHeaderAOD) headerFound 		= kTRUE;
+    cHeaderAOD             = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+    fMCStackAOD           = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
   }
 
-// 	cout << "event starts here" << endl;
+//   cout << "event starts here" << endl;
   if(headerFound){
-    TList *genHeaders 				= 0x0;
-    if(cHeader) genHeaders 			= cHeader->GetHeaders();
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders       = cHeader->GetHeaders();
     if(cHeaderAOD){
-      genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+      genHeaders           = cHeaderAOD->GetCocktailHeaders();
       if(genHeaders->GetEntries()==1){
         SetRejectExtraSignalsCut(0);
         return;
       }
     }
-    AliGenEventHeader* gh 			= 0;
-    fnHeaders 						= 0;
-    Int_t firstindexA 				= 0;
-    Int_t lastindexA 				=  -1;
+    AliGenEventHeader* gh       = 0;
+    fnHeaders             = 0;
+    Int_t firstindexA         = 0;
+    Int_t lastindexA         =  -1;
     if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
     if(rejection == 2){ // TList of Headers Names
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-        gh 						= (AliGenEventHeader*)genHeaders->At(i);
-        TString GeneratorName 	= gh->GetName();
-        lastindexA 				= lastindexA + gh->NProduced();
-// 				cout << i << "\t" << GeneratorName.Data() << endl;
+        gh             = (AliGenEventHeader*)genHeaders->At(i);
+        TString GeneratorName   = gh->GetName();
+        lastindexA         = lastindexA + gh->NProduced();
+//         cout << i << "\t" << GeneratorName.Data() << endl;
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-// 					cout << GeneratorInList.Data() << endl;
+//           cout << GeneratorInList.Data() << endl;
           if(GeneratorName.CompareTo(GeneratorInList) == 0){
-// 						cout << "accepted" << endl;
+//             cout << "accepted" << endl;
             if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCStack){
                 if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
-                  if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {	
+                  if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {  
                     if (gh->NProduced() > 10 && fMCStack->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
-// 											cout << "cond 1: "<< fnHeaders << endl;
+//                       cout << "cond 1: "<< fnHeaders << endl;
                       fnHeaders++;
                       continue;
-                    }	
+                    }
                     continue;
-                  }	
+                  }
                 } else {
-// 									cout << "cond 2: " << fnHeaders << endl;
+//                   cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                   
@@ -2634,75 +2634,75 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                     if (gh->NProduced() > 10){
                       AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA+10));
                       if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
-// 												cout << "cond 1: " << fnHeaders << endl;
+//                         cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
                       } 
-                    }	
+                    }
                     continue;
                   }
                 } else {
-// 									cout << "cond 2: " << fnHeaders << endl;
+//                   cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
                 }   
               }
               continue;
             }
-// 						cout << "cond 3: "<< fnHeaders << endl;
+//             cout << "cond 3: "<< fnHeaders << endl;
             fnHeaders++;
             continue;
           }
         }
-        firstindexA 			= firstindexA + gh->NProduced();
+        firstindexA       = firstindexA + gh->NProduced();
       }
     }
-// 		cout << "number of headers: " <<fnHeaders << endl;
+//     cout << "number of headers: " <<fnHeaders << endl;
     
-    fNotRejectedStart 				= new Int_t[fnHeaders];
-    fNotRejectedEnd 				= new Int_t[fnHeaders];
-    fGeneratorNames 				= new TString[fnHeaders];
+    fNotRejectedStart         = new Int_t[fnHeaders];
+    fNotRejectedEnd         = new Int_t[fnHeaders];
+    fGeneratorNames         = new TString[fnHeaders];
 
     if(rejection == 1 || rejection == 3){
-      fNotRejectedStart[0] 		= 0;
-      fNotRejectedEnd[0] 			= ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-      fGeneratorNames[0] 			= ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      fNotRejectedStart[0]     = 0;
+      fNotRejectedEnd[0]       = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
+      fGeneratorNames[0]       = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
       return;
     }
 
-    Int_t firstindex 				= 0;
-    Int_t lastindex 				=  -1;
-    Int_t number 					= 0;
+    Int_t firstindex         = 0;
+    Int_t lastindex         =  -1;
+    Int_t number           = 0;
     
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh = (AliGenEventHeader*)genHeaders->At(i);
-      TString GeneratorName 		= gh->GetName();
-      lastindex 					= lastindex + gh->NProduced();
+      TString GeneratorName     = gh->GetName();
+      lastindex           = lastindex + gh->NProduced();
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-// 				cout << i << "\t" << GeneratorName.Data() << endl;
+//         cout << i << "\t" << GeneratorName.Data() << endl;
         if(GeneratorName.CompareTo(GeneratorInList) == 0){
           if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
             if(fMCStack){
               if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
                 if (fMCStack->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
-// 									cout << "produced " << gh->NProduced() << " with box generator" << endl;
+//                   cout << "produced " << gh->NProduced() << " with box generator" << endl;
                   if (gh->NProduced() > 10 && fMCStack->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
-// 										cout << "one of them was a pi0 or eta" <<  endl;
+//                     cout << "one of them was a pi0 or eta" <<  endl;
                     fNotRejectedStart[number] = firstindex;
                     fNotRejectedEnd[number] = lastindex;
                     fGeneratorNames[number] = GeneratorName;
                     number++;
-// 										cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+//                     cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
                     continue;
-                  }	
-                }	
+                  }
+                }
               } else {
                 fNotRejectedStart[number] = firstindex;
                 fNotRejectedEnd[number] = lastindex;
                 fGeneratorNames[number] = GeneratorName;
                 number++;
-                continue;	
+                continue;
               }
             }   
             if ( fMCStackAOD){
@@ -2725,7 +2725,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                 fNotRejectedEnd[number] = lastindex;
                 fGeneratorNames[number] = GeneratorName;
                 number++;
-                continue;	
+                continue;
               }   
             }
             continue;
@@ -2733,34 +2733,34 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd[number] = lastindex;
             fGeneratorNames[number] = GeneratorName;
-// 						cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+//             cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
             number++;
             continue;
           }
           
         }
       }
-      firstindex 					= firstindex + gh->NProduced();
+      firstindex           = firstindex + gh->NProduced();
     }
-// 		for (Int_t i = 0; i < number; i++){
-// 			cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
-// 		}	
+//     for (Int_t i = 0; i < number; i++){
+//       cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
+//     }
   
   } else { // No Cocktail Header Found
-    fNotRejectedStart 				= new Int_t[1];
-    fNotRejectedEnd 				= new Int_t[1];
+    fNotRejectedStart         = new Int_t[1];
+    fNotRejectedEnd         = new Int_t[1];
 
-    fnHeaders 						= 1;
-    fNotRejectedStart[0] 			= 0;
-    fNotRejectedEnd[0] 				= static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
+    fnHeaders             = 1;
+    fNotRejectedStart[0]       = 0;
+    fNotRejectedEnd[0]         = static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
     if (rejection > 1){
-      fNotRejectedStart[0] 		= -1;
-      fNotRejectedEnd[0] 			= -1;
-    }	
+      fNotRejectedStart[0]     = -1;
+      fNotRejectedEnd[0]       = -1;
+    }
     
-    fGeneratorNames 				= new TString[1];
-    fGeneratorNames[0] 				= "NoCocktailGeneratorFound";
-// 		SetRejectExtraSignalsCut(0);
+    fGeneratorNames         = new TString[1];
+    fGeneratorNames[0]         = "NoCocktailGeneratorFound";
+//     SetRejectExtraSignalsCut(0);
   }
   
 }
@@ -2768,7 +2768,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
-// 	cout << index << endl;
+//   cout << index << endl;
   if(index < 0) return 0; // No Particle
 
   Int_t accepted = 0;
@@ -2779,9 +2779,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
       return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
     }
     for(Int_t i = 0;i<fnHeaders;i++){
-// 			cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
+//       cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
       if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-// 				cout << "accepted" << endl;
+//         cout << "accepted" << endl;
         accepted = 1;
         if(i == 0) accepted = 2; // MB Header
       }
@@ -2803,7 +2803,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
           if(i == 0) accepted = 2; // MB Header
         }
       }
-    }	
+    }
   }
 
   return accepted;
@@ -2850,7 +2850,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if( (IsSpecialTrigger() == 1 || IsSpecialTrigger() == 3) && !hasV0And)
     return 8; // V0AND requested but no fired
 
-  // Special EMCAL checks due to hardware issues in LHC11a	
+  // Special EMCAL checks due to hardware issues in LHC11a  
   if (isEMCALAnalysis || IsSpecialTrigger() == 5 || IsSpecialTrigger() == 8 || IsSpecialTrigger() == 9 ){
     Int_t runnumber = InputEvent->GetRunNumber();
     if ((runnumber>=144871) && (runnumber<=146860)) { 
@@ -2887,15 +2887,15 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
         return 9;
       }
     }
-  }	
+  }
     
   if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 
   if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
-//	if(hCentralityVsNumberOfPrimaryTracks)
-//		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
-//												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-//												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+//  if(hCentralityVsNumberOfPrimaryTracks)
+//    hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
+//                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+//                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
   Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
   Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
@@ -2965,14 +2965,14 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
 
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-  if (!( period.Contains("LHC13d2")			|| period.Contains("LHC14a1") 					|| period.CompareTo("LHC13e7") == 0 		|| period.Contains("LHC13b2_efix") 		||
-      period.CompareTo("LHC14b2") == 0 	|| period.Contains("LHC14e2")					|| period.Contains("LHC12f1a")  		|| period.Contains("LHC12f1b")  || 
+  if (!( period.Contains("LHC13d2")      || period.Contains("LHC14a1")           || period.CompareTo("LHC13e7") == 0     || period.Contains("LHC13b2_efix")     ||
+      period.CompareTo("LHC14b2") == 0   || period.Contains("LHC14e2")          || period.Contains("LHC12f1a")      || period.Contains("LHC12f1b")  || 
       period.Contains("LHC12i3") )) return 1.;
   Int_t kCaseGen = 0;
     
   if (IsParticleFromBGEvent(index, MCStack, InputEvent)){
-    if (period.Contains("LHC13d2") 		|| period.CompareTo("LHC13e7") == 0 			|| period.Contains("LHC13b2_efix")  		|| period.Contains("LHC14a1") 			||
-      period.CompareTo("LHC14b2") == 0 || period.Contains("LHC14e2")					|| period.Contains("LHC12f1a") 	|| period.Contains("LHC12f1b") 	|| 
+    if (period.Contains("LHC13d2")     || period.CompareTo("LHC13e7") == 0       || period.Contains("LHC13b2_efix")      || period.Contains("LHC14a1")       ||
+      period.CompareTo("LHC14b2") == 0 || period.Contains("LHC14e2")          || period.Contains("LHC12f1a")   || period.Contains("LHC12f1b")   || 
       period.Contains("LHC12i3")){
       kCaseGen = 1;
     }
@@ -2995,7 +2995,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(TString period, Int_t index, AliStac
       PDGCode = aodMCParticle->GetPdgCode();
     } else {
       return 1;
-    }	
+    }
   }
 
   Float_t functionResultMC = 1.;
@@ -3127,7 +3127,7 @@ AliEmcalTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
 //________________________________________________________________________
 void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *fInputEvent)
 {
-// 	cout << "entered EMCAL trigger initialization" << endl;
+//   cout << "entered EMCAL trigger initialization" << endl;
   
   // Init the analysis.
   if (fCaloTriggersName.IsNull()){
@@ -3135,7 +3135,7 @@ void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *fInputEvent)
       fCaloTriggersName = "EMCALTrigger";
     } else {
       fCaloTriggersName = "emcalTrigger";
-    }	
+    }
   }
   
   if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
@@ -3152,7 +3152,7 @@ void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *fInputEvent)
     } else {
       fCaloTriggerPatchInfoName = "EmcalTriggers";
     }
-  }	
+  }
   
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
     fTriggerPatchInfo = GetArrayFromEvent(fInputEvent, fCaloTriggerPatchInfoName.Data(), "AliEmcalTriggerPatchInfo");
@@ -3180,36 +3180,36 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   Int_t nJ2 = 0;
   Int_t nL0 = 0;
   AliEmcalTriggerPatchInfo *patch;
-// 	if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
+//   if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
-// 		cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-// 		cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-// 		cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+//     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
+//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
-// 			cout << "fired L1GA high" << endl;
+//       cout << "fired L1GA high" << endl;
       nG1++;
-    }	
+    }
     if (patch->IsGammaLow()){
-// 			cout << "fired L1GA low" << endl;
+//       cout << "fired L1GA low" << endl;
       nG2++;
-    }	
+    }
     if (patch->IsJetHigh()){
-// 			cout << "fired L1JE high" << endl;
+//       cout << "fired L1JE high" << endl;
       nJ1++;
     }
     if (patch->IsJetLow()){
-// 			cout << "fired L1JE low" << endl;
+//       cout << "fired L1JE low" << endl;
       nJ2++;
-    }	
+    }
     if (patch->IsLevel0()){
-// 			cout << "fired L0" << endl;
+//       cout << "fired L0" << endl;
       nL0++;
-    }	
-// 		cout << patch->GetPatchE() 	<< "\t" << patch->GetADCAmp()	<< "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
-// 		     << "\t" << patch->IsJetHigh()	<< "\t" << patch->IsJetLow()	<< "\t" << patch->IsLevel0() 
-// 			 << "\t" << patch->GetPhiMin()	<< "\t" << patch->GetPhiMax()	<< "\t" << abs(patch->GetPhiMin()-patch->GetPhiMax())
-// 			 << "\t" << patch->GetEtaMin()	<< "\t" << patch->GetEtaMax()	<< "\t" << abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+    }
+//     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
+//          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
+//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << abs(patch->GetPhiMin()-patch->GetPhiMax())
+//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){
@@ -3220,12 +3220,12 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     AliDebug(2, Form("Gamma:  low[%d], high[%d]" ,nG2, nG1));
   }
     
-// 	if (nPatch > 0){
-// 		cout << 	  Form("Number of patches: %d", nPatch) << endl;
-// 		cout << 	  Form("Level0: [%d]" ,nL0) << endl;
-// 		cout << 	  Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
-// 		cout << 	  Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
-// 	}
+//   if (nPatch > 0){
+//     cout <<     Form("Number of patches: %d", nPatch) << endl;
+//     cout <<     Form("Level0: [%d]" ,nL0) << endl;
+//     cout <<     Form("Jet:    low[%d], high[%d]" ,nJ2, nJ1) << endl;
+//     cout <<     Form("Gamma:  low[%d], high[%d]" ,nG2, nG1) << endl;
+//   }
     
   ULong_t triggers(0);
   if (nG1>0)
@@ -3299,81 +3299,81 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
     
     TParticle* firstmother = (TParticle *)MCStack->Particle(particle->GetMother(0));
     if (!firstmother) return kFALSE;
-    Int_t pdgCodeFirstMother 		= firstmother->GetPdgCode();			
+    Int_t pdgCodeFirstMother     = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
     if ( intDecay && abs(particle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
-// 			cout << "dalitz candidate found" << endl;
+//       cout << "dalitz candidate found" << endl;
     }
   
     UInt_t source = particle->GetMother(0);
     Bool_t foundExcludedPart = kFALSE;
-    Bool_t foundShower = kFALSE;		
+    Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
     Int_t pdgCodeMotherPPrevMother = 0;
     Int_t depth = 0;
     if (dalitzCand || realRadius3D < fSecProdBoundary ){
-// 			if (particle->GetPdgCode() == 22){
-// 				cout << endl << endl << "new particle: " << stackpos <<endl;
-// 				cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
-// 			}
+//       if (particle->GetPdgCode() == 22){
+//         cout << endl << endl << "new particle: " << stackpos <<endl;
+//         cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
+//       }
       while (depth < 20){
-        TParticle* mother 	= (TParticle *)MCStack->Particle(source);
-        source 				= mother->GetMother(0); 
-// 				if (particle->GetPdgCode() == 22)cout << "Stackposition: "<< source << endl;
-        Int_t pdgCodeMother 		= mother->GetPdgCode();			
-// 				if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
+        TParticle* mother   = (TParticle *)MCStack->Particle(source);
+        source         = mother->GetMother(0); 
+//         if (particle->GetPdgCode() == 22)cout << "Stackposition: "<< source << endl;
+        Int_t pdgCodeMother     = mother->GetPdgCode();
+//         if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
         if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
           depth =20;
-        }	
+        }
         if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
           foundShower = kTRUE;
           depth =20;
         }
         
         // particles to be excluded:
-        // K0s 		- 310  
-        // K0l 		- 130
-        // K+/-		- 321
-        // Lambda	- 3122
-        // Sigma0	- 3212
-        // Sigma+/-	- 3222, 3112
-        // Cascades	- 3322, 3312	
-        if (abs(pdgCodeMother) == 310 	|| abs(pdgCodeMother) == 130 	|| abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122 	|| abs(pdgCodeMother) == 3212 	|| abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112 	|| abs(pdgCodeMother) == 3322 	|| abs(pdgCodeMother) == 3312 
+        // K0s     - 310  
+        // K0l     - 130
+        // K+/-    - 321
+        // Lambda  - 3122
+        // Sigma0  - 3212
+        // Sigma+/-  - 3222, 3112
+        // Cascades  - 3322, 3312  
+        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
+          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
+          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312 
         ) {
           foundExcludedPart = kTRUE;
-        }	
-// 				if (particle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
+        }
+//         if (particle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
         pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
-        pdgCodeMotherPrev = pdgCodeMother;			
+        pdgCodeMotherPrev = pdgCodeMother;
         if (source == -1) depth = 20;
         
-// 				if (particle->GetPdgCode() == 22)cout << depth << endl;
+//         if (particle->GetPdgCode() == 22)cout << depth << endl;
         depth++;
-      }	
-    }	
+      }
+    }
     if (foundExcludedPart){
-// 			if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
+//       if (particle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
       return kFALSE;
     } else if (dalitzCand && realRadius3D < fSecProdBoundary ){
-// 			if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
+//       if (particle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
       return kTRUE;
     } else if (foundShower){
-// 			if (particle->GetPdgCode() == 22)cout << "This is a shower" << endl;
-      return kFALSE;			
+//       if (particle->GetPdgCode() == 22)cout << "This is a shower" << endl;
+      return kFALSE;
     } else if (realRadius3D >= fSecProdBoundary){
-// 			cout << "This is a secondary, to large production radius" << endl;
-      return kFALSE;			
+//       cout << "This is a secondary, to large production radius" << endl;
+      return kFALSE;
     }
   }
 
   return kTRUE;
-}	
+}
 
 //_________________________________________________________________________
 Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMCParticle* AODMCParticle,  Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
@@ -3398,7 +3398,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
     if ( intDecay && abs(AODMCParticle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
-// 			cout << "dalitz candidate found" << endl;
+//       cout << "dalitz candidate found" << endl;
     }
 
     UInt_t source = AODMCParticle->GetMother();
@@ -3408,16 +3408,16 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
     Int_t pdgCodeMotherPPrevMother = 0;
     Int_t depth = 0;
     if (dalitzCand || realRadius3D < fSecProdBoundary ){
-// 			if (AODMCParticle->GetPdgCode() == 22){
-// 				cout << endl << endl << "new particle: " << stackpos <<endl;
-// 				cout << AODMCParticle->GetPdgCode() << "\t" << AODMCParticle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
-// 			}
+//       if (AODMCParticle->GetPdgCode() == 22){
+//         cout << endl << endl << "new particle: " << stackpos <<endl;
+//         cout << AODMCParticle->GetPdgCode() << "\t" << AODMCParticle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
+//       }
       while (depth < 20){
         AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(source));
         source = mother->GetMother();
-// 				if (AODMCParticle->GetPdgCode() == 22)cout << "Stackposition: "<< source << endl;
-        Int_t pdgCodeMother 		= mother->GetPdgCode();
-// 				if (AODMCParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
+//         if (AODMCParticle->GetPdgCode() == 22)cout << "Stackposition: "<< source << endl;
+        Int_t pdgCodeMother     = mother->GetPdgCode();
+//         if (AODMCParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
         if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
@@ -3429,42 +3429,43 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
         }
 
         // particles to be excluded:
-        // K0s 		- 310
-        // K0l 		- 130
-        // K+/-		- 321
-        // Lambda	- 3122
-        // Sigma0	- 3212
-        // Sigma+/-	- 3222, 3112
-        // Cascades	- 3322, 3312
-        if (abs(pdgCodeMother) == 310 	|| abs(pdgCodeMother) == 130 	|| abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122 	|| abs(pdgCodeMother) == 3212 	|| abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112 	|| abs(pdgCodeMother) == 3322 	|| abs(pdgCodeMother) == 3312)
+        // K0s      - 310
+        // K0l      - 130
+        // K+/-     - 321
+        // Lambda   - 3122
+        // Sigma0   - 3212
+        // Sigma+/- - 3222, 3112
+        // Cascades - 3322, 3312
+        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
+          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
+          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312)
         {
           foundExcludedPart = kTRUE;
         }
-// 				if (AODMCParticle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
+//      if (AODMCParticle->GetPdgCode() == 22)cout << mother->GetPdgCode() << "\t" <<  source << "\t" << foundExcludedPart<< endl;
         pdgCodeMotherPPrevMother = pdgCodeMotherPrev;
         pdgCodeMotherPrev = pdgCodeMother;
         if (source == -1) depth = 20;
 
-// 				if (AODMCParticle->GetPdgCode() == 22)cout << depth << endl;
+//      if (AODMCParticle->GetPdgCode() == 22)cout << depth << endl;
         depth++;
       }
     }
     if (foundExcludedPart){
-// 			if (AODMCParticle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
+//      if (AODMCParticle->GetPdgCode() == 22)cout << "This is definitely a secondary, manually excluded" << endl;
       return kFALSE;
     } else if (dalitzCand && realRadius3D < fSecProdBoundary ){
-// 			if (AODMCParticle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
+//      if (AODMCParticle->GetPdgCode() == 22)cout << "This was a decay via a virtual photon" << endl;
       return kTRUE;
     } else if (foundShower){
-// 			if (AODMCParticle->GetPdgCode() == 22)cout << "This is a shower" << endl;
+//      if (AODMCParticle->GetPdgCode() == 22)cout << "This is a shower" << endl;
       return kFALSE;
     } else if (realRadius3D >= fSecProdBoundary){
-// 			cout << "This is a secondary, too large production radius" << endl;
+//      cout << "This is a secondary, too large production radius" << endl;
       return kFALSE;
     }
   }
 
   return kTRUE;
 }
+exa
