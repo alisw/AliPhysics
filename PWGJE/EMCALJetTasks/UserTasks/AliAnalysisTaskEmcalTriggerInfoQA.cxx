@@ -28,7 +28,7 @@
 #include "AliEmcalJet.h"
 #include "AliEMCALGeometry.h"
 
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
 ClassImp(AliAnalysisTaskEmcalTriggerInfoQA)

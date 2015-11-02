@@ -12,7 +12,7 @@
 #include <TLorentzVector.h>
 
 #include "AliLog.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliParticleContainer.h"
 #include "AliVVZERO.h"
 

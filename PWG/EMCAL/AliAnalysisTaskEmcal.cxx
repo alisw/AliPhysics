@@ -34,7 +34,7 @@
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisUtils.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
