@@ -49,7 +49,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 4) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 5) /// Jet embedding task
   /// \endcond
 };
 #endif
