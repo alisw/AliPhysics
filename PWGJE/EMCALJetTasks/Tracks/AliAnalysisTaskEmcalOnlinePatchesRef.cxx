@@ -18,7 +18,7 @@
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"

@@ -17,7 +17,7 @@
  *
  * Author: Markus Fasel
  */
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 
 ClassImp(AliEmcalTriggerSelectionCuts)

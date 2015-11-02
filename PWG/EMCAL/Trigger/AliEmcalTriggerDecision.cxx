@@ -20,7 +20,7 @@
  */
 
 #include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 ClassImp(AliEmcalTriggerDecision)
 

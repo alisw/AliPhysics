@@ -59,7 +59,7 @@
 #include <AliESDtrackCuts.h>
 #include "AliPID.h"
 #include "AliTPCdEdxInfo.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliVVZERO.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEmcalTriggerSetupInfo.h"

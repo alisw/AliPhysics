@@ -45,7 +45,7 @@
 
 #include "AliClusterContainer.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliEMCalHistoContainer.h"

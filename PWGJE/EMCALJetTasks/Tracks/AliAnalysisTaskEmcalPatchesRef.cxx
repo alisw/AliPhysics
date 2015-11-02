@@ -22,7 +22,7 @@
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCalHistoContainer.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 
