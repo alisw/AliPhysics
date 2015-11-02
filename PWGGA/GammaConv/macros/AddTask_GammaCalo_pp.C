@@ -99,25 +99,26 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
   Int_t numberOfCuts = 2;
   if (trainConfig == 32   || trainConfig == 101 || trainConfig == 201 || trainConfig == 63)
       numberOfCuts = 1;
-  if (trainConfig == 111   || trainConfig == 114   || trainConfig == 117   || trainConfig == 120   || trainConfig == 121   || 
-      trainConfig == 122   || trainConfig == 123   || trainConfig == 124     || trainConfig == 109)
+  if (trainConfig == 111  || trainConfig == 114 || trainConfig == 117 || trainConfig == 120   || trainConfig == 121   || 
+      trainConfig == 122  || trainConfig == 123 || trainConfig == 124 || trainConfig == 109)
       numberOfCuts = 3;
-  if (trainConfig == 31   || trainConfig == 4   || trainConfig == 5    || trainConfig == 6   || trainConfig == 7     ||
-      trainConfig == 10   || trainConfig == 51    || trainConfig == 52   || trainConfig == 53   || trainConfig == 54   ||
-      trainConfig == 55   || trainConfig == 56    || trainConfig == 57   || trainConfig == 58   || trainConfig == 59   ||
-      trainConfig == 60   || trainConfig == 61    || trainConfig == 62   || trainConfig == 64   || trainConfig == 70   ||
-      trainConfig == 71   || trainConfig == 72    || trainConfig == 73   || trainConfig == 74   || trainConfig == 75   ||
-      trainConfig == 76   || trainConfig == 77    || trainConfig == 78   || trainConfig == 79   || trainConfig == 80   ||
-      trainConfig == 81   || trainConfig == 102    || trainConfig == 110  || trainConfig == 8)
+  if (trainConfig == 31   || trainConfig == 4   || trainConfig == 5   || trainConfig == 6   || trainConfig == 7   ||
+      trainConfig == 10   || trainConfig == 51  || trainConfig == 52  || trainConfig == 53  || trainConfig == 54  ||
+      trainConfig == 55   || trainConfig == 56  || trainConfig == 57  || trainConfig == 58  || 
+      trainConfig == 60   || trainConfig == 61  || trainConfig == 62  || trainConfig == 64  || trainConfig == 70  ||
+      trainConfig == 71   || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  || trainConfig == 75  ||
+      trainConfig == 76   || trainConfig == 77  || trainConfig == 78  || trainConfig == 79  || trainConfig == 80  ||
+      trainConfig == 81   || trainConfig == 102 || trainConfig == 110 || trainConfig == 8)
       numberOfCuts = 4;
-  if (trainConfig == 2   || trainConfig == 3    || trainConfig == 84  || trainConfig == 85  || trainConfig == 86  ||
-      trainConfig == 87  || trainConfig == 88  || trainConfig == 89  ||  trainConfig == 98  || trainConfig == 99  ||
+  if (trainConfig == 2    || trainConfig == 3   || trainConfig == 84  || trainConfig == 85  || trainConfig == 86  ||
+      trainConfig == 87   || trainConfig == 88  || trainConfig == 89  || trainConfig == 98  || trainConfig == 99  ||
       trainConfig == 103  || trainConfig == 104  )
       numberOfCuts = 5;
-  if (trainConfig == 65  || trainConfig == 66  || trainConfig == 67  || trainConfig == 68  || trainConfig == 82  ||
-      trainConfig == 83  || trainConfig == 105)
+  if (trainConfig == 65   || trainConfig == 66  || trainConfig == 67  || trainConfig == 68  || trainConfig == 82  ||
+      trainConfig == 83   || trainConfig == 105)
       numberOfCuts = 6;
-
+  if (trainConfig == 59)
+      numberOfCuts = 8;
 
   
   TString *eventCutArray = new TString[numberOfCuts];
@@ -251,10 +252,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
     eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000060"; // INT7,                                                               2 cell diagonals
     eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111121060032000000"; mesonCutArray[3] = "0163103100000050"; // INT7,                                 no M02 cut
   } else if (trainConfig == 59){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // INT7,                                                   50ns timing
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // INT7,                standard kSDMv5
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // INT7,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // INT7,              NonLinearity none
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 50ns timing
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // INT7, standard kSDMv5
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // INT7, NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // INT7, NonLinearity none
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111123060032220000"; mesonCutArray[4] = "0163103100000050"; // INT7, NonLinearity TB+ConvCalo
+    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111124060032220000"; mesonCutArray[5] = "0163103100000050"; // INT7,              TB+Calo
+    eventCutArray[ 6] = "00000113"; clusterCutArray[6] = "1111125060032220000"; mesonCutArray[6] = "0163103100000050"; // INT7,              kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
+    eventCutArray[ 7] = "00000113"; clusterCutArray[7] = "1111126060032220000"; mesonCutArray[7] = "0163103100000050"; // INT7,              kPi0MC+Calo (replay of Jasons with Calo)
     
   } else if (trainConfig == 60){  // EMCAL clusters, EMC7 trigger
     eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7, 400 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal

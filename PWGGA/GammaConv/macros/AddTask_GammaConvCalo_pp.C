@@ -103,40 +103,40 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
-  if (trainConfig == 101 ||   trainConfig == 131 ||   trainConfig == 120 ||   trainConfig == 121||
-      trainConfig == 122 ||   trainConfig == 123 ||  trainConfig == 201) {
+  if (trainConfig == 101  || trainConfig == 131 || trainConfig == 120 || trainConfig == 121 ||
+      trainConfig == 122  || trainConfig == 123 || trainConfig == 201) {
       numberOfCuts = 1;
   }
-  if (trainConfig == 113 ||   trainConfig == 114 ||   trainConfig == 115 ||   trainConfig == 116 ||  trainConfig == 129) {
+  if (trainConfig == 113  || trainConfig == 114 || trainConfig == 115 || trainConfig == 116 || trainConfig == 129) {
       numberOfCuts = 3;
   }
-  if (trainConfig == 8 ||   trainConfig == 10 ||   trainConfig == 12 ||  trainConfig == 13 ||
-	  trainConfig == 21 ||  trainConfig == 23 ||   trainConfig == 24 ||   trainConfig == 26 ||
-      trainConfig == 40 ||    trainConfig == 41 ||    trainConfig == 48 ||    trainConfig == 50 ||   trainConfig == 52 ||    
-	  trainConfig == 53 ||        trainConfig == 61 ||    trainConfig == 63 ||   trainConfig == 65 ||
-	  trainConfig == 67 ||       trainConfig == 75 ||   trainConfig == 77 ||   trainConfig == 79 ||
-	  trainConfig == 80 ||       trainConfig == 88 ||   trainConfig == 90 ||   trainConfig == 92 ||
-	  trainConfig == 93 ||       trainConfig == 97 ||  trainConfig == 30 ||
-      trainConfig == 108 ||   trainConfig == 126 ||  trainConfig == 128 ||
-      trainConfig == 111 ||   trainConfig == 117 ||   trainConfig == 118 ||   trainConfig == 119||  trainConfig == 23) {
+  if (trainConfig == 8    || trainConfig == 10  || trainConfig == 12  || trainConfig == 13  ||
+      trainConfig == 21   || trainConfig == 23  || trainConfig == 24  || trainConfig == 26  ||
+      trainConfig == 40   || trainConfig == 41  || trainConfig == 48  || trainConfig == 50  || trainConfig == 52  ||    
+      trainConfig == 53   || trainConfig == 61  || trainConfig == 63  || trainConfig == 65  ||
+      trainConfig == 67   || trainConfig == 75  || trainConfig == 77  || trainConfig == 79  ||
+      trainConfig == 80   || trainConfig == 88  || trainConfig == 90  || trainConfig == 92  ||
+      trainConfig == 93   || trainConfig == 97  || trainConfig == 30  ||
+      trainConfig == 108  || trainConfig == 126 || trainConfig == 128 ||
+      trainConfig == 111  || trainConfig == 117 || trainConfig == 118 || trainConfig == 119 || trainConfig == 23) {
       numberOfCuts = 4;    
   }
-  if (trainConfig == 2 ||   trainConfig == 3 ||   trainConfig == 5 ||   trainConfig == 6 ||   trainConfig == 7 || 
-      trainConfig == 11 ||  trainConfig == 15 ||  trainConfig == 16 ||  trainConfig == 18 ||  trainConfig == 19 ||
-      trainConfig == 20 ||  trainConfig == 25 ||  trainConfig == 42 ||  trainConfig == 43 ||  trainConfig == 45 ||  
-      trainConfig == 46 ||  trainConfig == 47 ||  trainConfig == 51 ||  trainConfig == 55 ||  trainConfig == 56 ||  
-      trainConfig == 58 ||  trainConfig == 59 ||  trainConfig == 60 ||  trainConfig == 64 ||  trainConfig == 69 ||  
-      trainConfig == 70 ||  trainConfig == 72 ||  trainConfig == 73 ||  trainConfig == 74 ||  trainConfig == 78 ||  
-      trainConfig == 82 ||  trainConfig == 83 ||  trainConfig == 85 ||  trainConfig == 86 ||  trainConfig == 87 ||  
-      trainConfig == 91 ||  trainConfig == 98 ||  trainConfig == 99 || 
-      trainConfig == 102 ||  trainConfig == 103 ||   trainConfig == 105 ||   trainConfig == 106 ||
-      trainConfig == 107 ||  trainConfig == 127) {
+  if (trainConfig == 2    || trainConfig == 3   || trainConfig == 5   || trainConfig == 6   || trainConfig == 7   || 
+      trainConfig == 11   || trainConfig == 15  || trainConfig == 16  || trainConfig == 18  || trainConfig == 19  ||
+      trainConfig == 20   || trainConfig == 25  || trainConfig == 42  || trainConfig == 43  || trainConfig == 45  ||  
+      trainConfig == 46   || trainConfig == 47  || trainConfig == 51  || trainConfig == 55  || trainConfig == 56  ||  
+      trainConfig == 58   || trainConfig == 59  || trainConfig == 60  || trainConfig == 64  || trainConfig == 69  ||  
+      trainConfig == 70   || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  || trainConfig == 78  ||  
+      trainConfig == 82   || trainConfig == 83  || trainConfig == 85  || trainConfig == 86  || trainConfig == 87  ||  
+      trainConfig == 91   || trainConfig == 98  || trainConfig == 99  || 
+      trainConfig == 102  || trainConfig == 103 || trainConfig == 105 || trainConfig == 106 ||
+      trainConfig == 107  || trainConfig == 127) {
       numberOfCuts = 5;  
   }
-  if (trainConfig == 4  ||  trainConfig == 14 || trainConfig == 17 ||  trainConfig == 27 || trainConfig == 44 ||
-	  trainConfig == 54 ||  trainConfig == 57 ||  trainConfig == 68 ||  trainConfig == 71 ||
-	  trainConfig == 81 || trainConfig == 84 || trainConfig == 94 || trainConfig == 301 ||  trainConfig == 302 ||
-      trainConfig == 104 ||  trainConfig == 110) {
+  if (trainConfig == 4    || trainConfig == 14  || trainConfig == 17  || trainConfig == 27  || trainConfig == 44 ||
+      trainConfig == 54   || trainConfig == 57  || trainConfig == 68  || trainConfig == 71  ||
+      trainConfig == 81   || trainConfig == 84  || trainConfig == 94  || trainConfig == 301 || trainConfig == 302 ||
+      trainConfig == 104  || trainConfig == 110) {
       numberOfCuts = 6;
   }
 
@@ -227,8 +227,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101053032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121053032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122053032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00003113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123053032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
-	eventCutArray[ 5] = "00003113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124053032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo
+    eventCutArray[ 4] = "00003113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123053032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
+    eventCutArray[ 5] = "00003113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124053032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo
 
   // EMC1 variations  
   } else if (trainConfig == 15){ //EMCAL minEnergy variation
@@ -302,8 +302,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101053032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00051113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121053032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00051113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122053032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00051113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123053032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
-	eventCutArray[ 5] = "00051113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124053032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo
+    eventCutArray[ 4] = "00051113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123053032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
+    eventCutArray[ 5] = "00051113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124053032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo
     
   //LHC11a EMCal no non linearity internally  
   } else if (trainConfig == 28){ 
@@ -402,8 +402,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
-	eventCutArray[ 5] = "00000113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
+    eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
+    eventCutArray[ 5] = "00000113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
 
   // LHC13g variations EMC7 cut  
   } else if (trainConfig == 55){ //EMCAL minEnergy variation
@@ -477,8 +477,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00052113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00052113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
-	eventCutArray[ 5] = "00052113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
+    eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
+    eventCutArray[ 5] = "00052113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
     
   // LHC13g variations EG2 cut  
   } else if (trainConfig == 69){ //EMCAL minEnergy variation
@@ -552,8 +552,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00085113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00085113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00085113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
-	eventCutArray[ 5] = "00085113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
+    eventCutArray[ 4] = "00085113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
+    eventCutArray[ 5] = "00085113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
 
   // LHC13g variations EG1 cut
   } else if (trainConfig == 82){ //EMCAL minEnergy variation
@@ -627,8 +627,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 1] = "00083113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
     eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
-	eventCutArray[ 4] = "00083113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
-	eventCutArray[ 5] = "00083113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
+    eventCutArray[ 4] = "00083113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo+TestBeamv2
+    eventCutArray[ 5] = "00083113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124063032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo+TestBeamv2
 
   //LHC13g
   } else if (trainConfig == 95){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
