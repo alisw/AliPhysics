@@ -90,8 +90,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			k15a3a_plus,
 			k15a3b,
 			k13b2_efix,
-			k15h1a,
-			k15h1b
+			k15h1,
+			k15h2
 		};
 
 		//handeling of CutString
@@ -337,7 +337,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,15)
+		ClassDef(AliCaloPhotonCuts,16)
 };
 
 #endif

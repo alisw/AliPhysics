@@ -3211,10 +3211,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 					energy /= FunctionNL_kSDM(energy, 0.984462, -3.00363, -2.63773);
 
 				//pass2
-				else if( fCurrentMC == k15h1a )
+				else if( fCurrentMC == k15h1 )
 					energy /= FunctionNL_kSDM(energy, 0.983251, -3.44339, -1.70998);
 
-				else if( fCurrentMC == k15h1b )
+				else if( fCurrentMC == k15h2 )
 					energy /= FunctionNL_kSDM(energy, 0.984462, -3.00363, -2.63773);
 
 				else fPeriodNameAvailable = kFALSE;
@@ -3233,10 +3233,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 					energy /= FunctionNL_kSDM(2.0*energy, 0.96728, -2.96279, -0.903677);
 
 				//pass2
-				else if( fCurrentMC == k15h1a )
+				else if( fCurrentMC == k15h1 )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.967301, -3.1683, -0.653058);
 
-				else if( fCurrentMC == k15h1b )
+				else if( fCurrentMC == k15h2 )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.96728, -2.96279, -0.903677);
 
 				else fPeriodNameAvailable = kFALSE;
@@ -3407,7 +3407,6 @@ Float_t AliCaloPhotonCuts::FunctionM02(Float_t E, Float_t a, Float_t b, Float_t 
 	return ( exp( a+ b*E ) + c + d*E + e/E);
 }
 
-
 //________________________________________________________________________
 AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString nameMC){
 	if(nameMC.CompareTo("LHC14e2a")==0)				return k14e2a;
@@ -3424,11 +3423,21 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString nameMC){
 	else if(nameMC.CompareTo("LHC15a3b")==0)		return k15a3b;
 	else if(nameMC.Contains("LHC13b2_efix"))		return k13b2_efix;
 	else if(nameMC.CompareTo("LHC15h1a1")==0 ||
-			nameMC.CompareTo("LHC15h1a2")==0 ||
-			nameMC.CompareTo("LHC15h1a3")==0)		return k15h1a;
-	else if(nameMC.CompareTo("LHC15h1b1")==0 ||
-			nameMC.CompareTo("LHC15h1b2")==0 ||
-			nameMC.CompareTo("LHC15h1b3")==0)		return k15h1b;
+			nameMC.CompareTo("LHC15h1b")==0 ||
+			nameMC.CompareTo("LHC15h1c")==0 ||
+			nameMC.CompareTo("LHC15h1d")==0 ||
+			nameMC.CompareTo("LHC15h1f")==0 ||
+			nameMC.CompareTo("LHC15h1g")==0 ||
+			nameMC.CompareTo("LHC15h1h")==0 ||
+			nameMC.CompareTo("LHC15h1i")==0)		return k15h1;
+	else if(nameMC.CompareTo("LHC15h2a")==0 ||
+			nameMC.CompareTo("LHC15h2b")==0 ||
+			nameMC.CompareTo("LHC15h2c")==0 ||
+			nameMC.CompareTo("LHC15h2d")==0 ||
+			nameMC.CompareTo("LHC15h2f")==0 ||
+			nameMC.CompareTo("LHC15h2g")==0 ||
+			nameMC.CompareTo("LHC15h2h")==0 ||
+			nameMC.CompareTo("LHC15h2i")==0)		return k15h2;
 	else return kNoMC;
 }
 
