@@ -14,40 +14,27 @@
 # **************************************************************************
 
 # Module
-set(MODULE ITSUpgradeSim)
+set(MODULE COMMONITSMFTBase)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
-                    ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeBase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
-                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
-                    ${AliRoot_SOURCE_DIR}/STEER/CDB
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+		     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase	
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliITSUChip.cxx
-    AliITSU.cxx
-    AliITSUDigitizer.cxx
-    AliITSUHit.cxx
-    AliITSUSimulation.cxx
-    AliITSUSimulationPix.cxx
-    AliITSUSuze02.cxx
-    AliITSUv0.cxx
-    AliITSUv0Layer.cxx
-    AliITSUv1.cxx
-    AliITSUv1Layer.cxx
-    AliITSUv2.cxx
-    AliITSUv2Layer.cxx
-   )
+   	AliITSMFTAux.cxx
+	AliITSMFTCalibrationPix.cxx
+	AliITSMFTParamList.cxx
+	AliITSMFTSDigit.cxx
+	AliITSMFTSegmentationPix.cxx
+	AliITSMFTSensMap.cxx
+    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -59,7 +46,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS COMMONITSMFTBase COMMONITSMFTSim STEERBase STEER CDB ESD RAWDatabase RAWDatarec ITSUpgradeBase)
+set(LIBDEPS STEERBase STEER ESD )
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
@@ -82,3 +69,4 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+

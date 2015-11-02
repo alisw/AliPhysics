@@ -1,9 +1,9 @@
-#include "AliITSUParamList.h"
+#include "AliITSMFTParamList.h"
 
-ClassImp(AliITSUParamList)
+ClassImp(AliITSMFTParamList)
 
 //___________________________________________________
-AliITSUParamList::AliITSUParamList(Int_t n, const Double_t *parVal) 
+AliITSMFTParamList::AliITSMFTParamList(Int_t n, const Double_t *parVal) 
 :  AliParamList(n,parVal)
   ,fParamObj(0) 
 {
@@ -11,7 +11,7 @@ AliITSUParamList::AliITSUParamList(Int_t n, const Double_t *parVal)
 }
 
 //___________________________________________________
-AliITSUParamList::AliITSUParamList(const AliITSUParamList& src)
+AliITSMFTParamList::AliITSMFTParamList(const AliITSMFTParamList& src)
   : AliParamList(src)
   , fParamObj( src.fParamObj ? (TObjArray*) src.fParamObj->Clone() : 0)
 {
@@ -19,26 +19,26 @@ AliITSUParamList::AliITSUParamList(const AliITSUParamList& src)
 }
 
 //_____________________________________________________________________
-AliITSUParamList& AliITSUParamList::operator=(const AliITSUParamList& src)
+AliITSMFTParamList& AliITSMFTParamList::operator=(const AliITSMFTParamList& src)
 {
   // copy op.
   if (this != &src) {
-    this->~AliITSUParamList();
-    new(this) AliITSUParamList(src);
+    this->~AliITSMFTParamList();
+    new(this) AliITSMFTParamList(src);
   }
   return *this;
   //
 }
 
 //_____________________________________________________________________
-AliITSUParamList::~AliITSUParamList()
+AliITSMFTParamList::~AliITSMFTParamList()
 {
   // d-tor
   delete fParamObj;
 }
 
 //_____________________________________________________________________
-void AliITSUParamList::AddParamObject(TObject* obj)
+void AliITSMFTParamList::AddParamObject(TObject* obj)
 {
   // add new custom object
   if (!fParamObj) {
@@ -50,7 +50,7 @@ void AliITSUParamList::AddParamObject(TObject* obj)
 }
 
 //_____________________________________________________________________
-void AliITSUParamList::Print(Option_t *opt) const
+void AliITSMFTParamList::Print(Option_t *opt) const
 {
   // print itself
   AliParamList::Print(opt);

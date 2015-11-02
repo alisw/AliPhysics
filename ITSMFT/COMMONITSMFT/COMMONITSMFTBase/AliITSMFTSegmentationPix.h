@@ -1,5 +1,5 @@
-#ifndef ALIITSUSEGMENTATIONPIX_H
-#define ALIITSUSEGMENTATIONPIX_H
+#ifndef AliITSMFTSegmentationPix_H
+#define AliITSMFTSegmentationPix_H
 
 #include "TObject.h"
 
@@ -7,18 +7,18 @@
 
 // segmentation and response for pixels in ITS upgrade 
 
-class AliITSUSegmentationPix : public TObject {
+class AliITSMFTSegmentationPix : public TObject {
  public:
-  AliITSUSegmentationPix(UInt_t id=0, int nchips=0,int ncol=0,int nrow=0,
+  AliITSMFTSegmentationPix(UInt_t id=0, int nchips=0,int ncol=0,int nrow=0,
 			 float pitchX=0,float pitchZ=0,
 			 float thickness=0,
 			 float pitchLftC=-1,float pitchRgtC=-1,
 			 float edgL=0,float edgR=0,float edgT=0,float edgB=0);
   
-  //  AliITSUSegmentationPix(Option_t *opt="" );
-  AliITSUSegmentationPix(const AliITSUSegmentationPix &source);
-  virtual ~AliITSUSegmentationPix();
-  AliITSUSegmentationPix& operator=(const AliITSUSegmentationPix &source);
+  //  AliITSMFTSegmentationPix(Option_t *opt="" );
+  AliITSMFTSegmentationPix(const AliITSMFTSegmentationPix &source);
+  virtual ~AliITSMFTSegmentationPix();
+  AliITSMFTSegmentationPix& operator=(const AliITSMFTSegmentationPix &source);
   //
   virtual void    Init();
   //  
@@ -82,9 +82,12 @@ class AliITSUSegmentationPix : public TObject {
   void         GetDiodShift(Int_t row,Int_t col, Double_t &dx,Double_t &dz) const {float dxf,dzf; GetDiodShift(row,col,dxf,dzf); dx=dxf; dz=dzf; }
   //
   Bool_t                           Store(const char* outf);
-  static AliITSUSegmentationPix*   LoadWithID(UInt_t id, const char* inpf);
+  static AliITSMFTSegmentationPix*   LoadWithID(UInt_t id, const char* inpf);
   static void                      LoadSegmentations(TObjArray* dest, const char* inpf);
   //
+  static UInt_t      ComposeChipTypeID(UInt_t segmId);  
+    
+    
  protected:
   Float_t Z2Col(Float_t z) const;
   Float_t Col2Z(Int_t col) const;
@@ -120,7 +123,7 @@ class AliITSUSegmentationPix : public TObject {
     //
     static const char* fgkSegmListName; // pattern for segmentations list name
     //
-  ClassDef(AliITSUSegmentationPix,4) //Segmentation class upgrade pixels 
+  ClassDef(AliITSMFTSegmentationPix,4) //Segmentation class upgrade pixels 
 
 };
 

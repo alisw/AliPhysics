@@ -80,7 +80,7 @@ the AliITS class.
 #include "AliITSU.h"
 #include "AliITSULoader.h"
 #include "AliITSUHit.h"
-#include "AliITSUSDigit.h"
+#include "AliITSMFTSDigit.h"
 #include "AliITSUSimulation.h"
 #include "AliITSUSimulationPix.h"
 #include "AliMC.h"
@@ -88,12 +88,12 @@ the AliITS class.
 #include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliLog.h"
-#include "AliITSUDigitPix.h"
+#include "AliITSMFTDigitPix.h"
 #include "AliITSUChip.h"
-#include "AliITSUDigitPix.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUSimuParam.h"
-#include "AliITSUParamList.h"
+#include "AliITSMFTDigitPix.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTSimuParam.h"
+#include "AliITSMFTParamList.h"
 #include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
 #include "AliCDBEntry.h"
 
@@ -318,7 +318,7 @@ void AliITSU::InitArrays()
   fDetDigits = new TObjArray(kNChipTypes);
   for (Int_t i=0;i<kNChipTypes;i++) fDetDigits->AddAt(new TClonesArray(GetDigitClassName(i),100),i);
   //
-  fSDigits = new TClonesArray("AliITSUSDigit",100);
+  fSDigits = new TClonesArray("AliITSMFTSDigit",100);
   //
   fDetHits = new TClonesArray("AliITSUHit",100);
   //
@@ -720,15 +720,15 @@ void AliITSU::ResetDigits(Int_t branch)
 }
 
 //______________________________________________________________________
-void AliITSU::AddSumDigit(AliITSUSDigit &sdig)
+void AliITSU::AddSumDigit(AliITSMFTSDigit &sdig)
 {
   // Adds the chip summable digits to the summable digits tree.
-  new( (*fSDigits)[fSDigits->GetEntriesFast()]) AliITSUSDigit(sdig);
+  new( (*fSDigits)[fSDigits->GetEntriesFast()]) AliITSMFTSDigit(sdig);
   //  
 }
 
 //______________________________________________________________________
-void AliITSU::AddSimDigit(Int_t branch, AliITSUDigitPix *d)
+void AliITSU::AddSimDigit(Int_t branch, AliITSMFTDigitPix *d)
 {
   //    Add a simulated digit.
   // Inputs:
@@ -738,8 +738,8 @@ void AliITSU::AddSimDigit(Int_t branch, AliITSUDigitPix *d)
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kChipTypePix:
-    new(ldigits[nd]) AliITSUDigitPix(*((AliITSUDigitPix*)d));
+  case AliITSMFTAux::kChipTypePix:
+    new(ldigits[nd]) AliITSMFTDigitPix(*((AliITSMFTDigitPix*)d));
     break;
   default:
     AliFatal(Form("Unknown digits branch %d",branch));
@@ -767,8 +767,8 @@ void AliITSU::AddSimDigit(Int_t branch,Float_t /*phys*/,Int_t *digits,Int_t *tra
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kChipTypePix:
-    new(ldigits[nd]) AliITSUDigitPix(digits,tracks,hits);
+  case AliITSMFTAux::kChipTypePix:
+    new(ldigits[nd]) AliITSMFTDigitPix(digits,tracks,hits);
     break;
   default:
     AliFatal(Form("Unknown digits branch %d",branch));
@@ -870,15 +870,15 @@ void AliITSU::InitSimulation()
   //
   AliCDBEntry* cdbEnt = AliCDBManager::Instance()->Get("ITS/Calib/SimuParam"); // tmp: load it centrally
   if (!cdbEnt) {AliFatal("Failed to find ITS/Calib/SimuParam on CDB"); exit(1);}
-  fSimuParam    = (AliITSUSimuParam*)cdbEnt->GetObject();
+  fSimuParam    = (AliITSMFTSimuParam*)cdbEnt->GetObject();
   //
-  fSensMap      = new AliITSUSensMap("AliITSUSDigit",0,0);
+  fSensMap      = new AliITSMFTSensMap("AliITSMFTSDigit",0,0);
   fSimModelLr   = new AliITSUSimulation*[fNLayers];
-  fSegModelLr   = new AliITSUSegmentationPix*[fNLayers];
-  fResponseLr   = new AliITSUParamList*[fNLayers];
+  fSegModelLr   = new AliITSMFTSegmentationPix*[fNLayers];
+  fResponseLr   = new AliITSMFTParamList*[fNLayers];
   //
   TObjArray arrSeg;
-  AliITSUSegmentationPix::LoadSegmentations(&arrSeg, AliITSUGeomTGeo::GetITSsegmentationFileName());
+  AliITSMFTSegmentationPix::LoadSegmentations(&arrSeg, AliITSUGeomTGeo::GetITSsegmentationFileName());
   //
   // add known simulation types used in the setup
   for (int i=fNLayers;i--;) {
@@ -886,7 +886,7 @@ void AliITSU::InitSimulation()
     fSegModelLr[i] = 0;
     fResponseLr[i] = 0;
     int dType = fGeomTGeo->GetLayerChipTypeID(i);           // fine detector type: class + segmentation
-    int sType = dType/AliITSUGeomTGeo::kMaxSegmPerChipType; // detector simulation class
+    int sType = dType/AliITSMFTAux::kMaxSegmPerChipType; // detector simulation class
     //
     // check if the simulation of this sType was already created for preceeding layers
     AliITSUSimulation* simUpg = 0;
@@ -899,8 +899,8 @@ void AliITSU::InitSimulation()
     if (!simUpg) { // need to create simulation for detector class sType
       switch (sType) 
 	{
-	case AliITSUGeomTGeo::kChipTypePix : 
-	  simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap); 
+	case AliITSMFTAux::kChipTypePix :
+	  simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap);
 	  break;
 	default: AliFatal(Form("No %d detector type is defined",sType));
 	}
@@ -908,10 +908,10 @@ void AliITSU::InitSimulation()
     fSimModelLr[i] = simUpg;
     //
     // add segmentations used in the setup
-    if (!(fSegModelLr[i]=(AliITSUSegmentationPix*)arrSeg[dType])) {AliFatal(Form("Segmentation for ChipType#%d is not found",dType)); exit(1);}
+    if (!(fSegModelLr[i]=(AliITSMFTSegmentationPix*)arrSeg[dType])) {AliFatal(Form("Segmentation for ChipType#%d is not found",dType)); exit(1);}
     //
     // add response function for the detectors of this layer
-    if ( !(fResponseLr[i]=(AliITSUParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for ChipType#%d is not found in SimuParams",dType)); exit(1);}
+    if ( !(fResponseLr[i]=(AliITSMFTParamList*)fSimuParam->FindRespFunParams(dType)) ) {AliFatal(Form("Response for ChipType#%d is not found in SimuParams",dType)); exit(1);}
   }
   // delete non needed segmentations
   for (int i=fNLayers;i--;) arrSeg.Remove(fSegModelLr[i]);

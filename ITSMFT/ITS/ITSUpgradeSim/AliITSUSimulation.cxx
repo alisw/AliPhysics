@@ -20,10 +20,10 @@
 #include "TSeqCollection.h"
 #include "AliLog.h"
 #include "AliITSUSimulation.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUSDigit.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTSDigit.h"
 #include "AliITSUChip.h"
-#include "AliITSUParamList.h"
+#include "AliITSMFTParamList.h"
 using namespace TMath;
 
 ClassImp(AliITSUSimulation)
@@ -45,7 +45,7 @@ AliITSUSimulation::AliITSUSimulation()
     // Default constructor
 }
 //______________________________________________________________________
-AliITSUSimulation::AliITSUSimulation(AliITSUSimuParam* sim,AliITSUSensMap* map)
+AliITSUSimulation::AliITSUSimulation(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
   :fSeg(0)
   ,fCalibDead(0)
   ,fCalibNoisy(0)
@@ -98,7 +98,7 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::InitSimulationChip(AliITSUChip* mod, Int_t event, AliITSUSegmentationPix* seg, AliITSUParamList* resp)
+void AliITSUSimulation::InitSimulationChip(AliITSUChip* mod, Int_t event, AliITSMFTSegmentationPix* seg, AliITSMFTParamList* resp)
 {
   //  This function creates maps to build the list of tracks for each
   //  summable digit. Inputs defined by base class.
@@ -125,12 +125,12 @@ Bool_t AliITSUSimulation::AddSDigitsToChip(TSeqCollection *pItemArr,Int_t mask )
   Bool_t sig = kFALSE;
   // 
   for( Int_t i=0; i<nItems; i++ ) {
-    AliITSUSDigit * pItem = (AliITSUSDigit *)(pItemArr->At( i ));
+    AliITSMFTSDigit * pItem = (AliITSMFTSDigit *)(pItemArr->At( i ));
     if(pItem->GetChip() != int(fChip->GetIndex()) ) AliFatal(Form("SDigits chip %d != current chip %d: exit", pItem->GetChip(),fChip->GetIndex()));
     if(pItem->GetSumSignal()>0.0 ) sig = kTRUE;
-    AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(pItem);
+    AliITSMFTSDigit* oldItem = (AliITSMFTSDigit*)fSensMap->GetItem(pItem);
     if (!oldItem) {
-      oldItem = (AliITSUSDigit*)fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(*pItem) );
+      oldItem = (AliITSMFTSDigit*)fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSMFTSDigit(*pItem) );
       if (mask) oldItem->ShiftIndices(mask);
     }
     else oldItem->AddTo(mask, pItem);
@@ -148,9 +148,9 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
     return;
   }
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
-  AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);  
+  AliITSMFTSDigit* oldItem = (AliITSMFTSDigit*)fSensMap->GetItem(ind);  
   if (!oldItem) {    
-    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fChip->GetIndex(),ind,signal,roCycle) );
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSMFTSDigit(trk,ht,fChip->GetIndex(),ind,signal,roCycle) );
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
   else oldItem->AddSignal(trk,ht,signal);
@@ -166,9 +166,9 @@ void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int
     return;
   }
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
-  AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
+  AliITSMFTSDigit* oldItem = (AliITSMFTSDigit*)fSensMap->GetItem(ind);
   if (!oldItem) {
-    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fChip->GetIndex(),ind,noise,roCycle) );
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSMFTSDigit(fChip->GetIndex(),ind,noise,roCycle) );
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
   else oldItem->AddNoise(noise);

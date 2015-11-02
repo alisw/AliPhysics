@@ -1,5 +1,5 @@
-#ifndef ALIITSUSIMUPARAM_H
-#define ALIITSUSIMUPARAM_H
+#ifndef AliITSMFTSIMUPARAM_H
+#define AliITSMFTSIMUPARAM_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,19 +15,51 @@
 #include <TMath.h>
 #include <TF1.h>
 #include "AliMathBase.h"
-class AliITSUParamList;
+class AliITSMFTParamList;
 
-class AliITSUSimuParam : public TObject {
+class AliITSMFTSimuParam : public TObject {
 
  public:
-  enum {kNoCouplingPix,kOldCouplingPix,kNewCouplingPix,kMaxCouplingOptPix};
+    
+    
+    enum {kNoCouplingPix,kOldCouplingPix,kNewCouplingPix,kMaxCouplingOptPix};
+    //
+    enum {kChargeSpreadType                  // charge spread function type, one of kNSpreadFuns types
+        ,kSpreadFunParamNXoffs               // number of pixels to consider +- from injection point (in X)
+        ,kSpreadFunParamNZoffs               // number of pixels to consider +- from injection point (in Z)
+        ,kSpreadFunMinSteps                  // the single hit charge is divided into kSpreadFunMinSteps (minimum is 3)
+        ,kReadOutSchemeType                  // readout type strobe, rolling shutter etc
+        ,kReadOutCycleLength                 // full readout cycle window
+        ,kSpreadFunGlobalQScale              // Global charge scaling factor to match tes beam results to simu (Geant3)
+        ,kPixSNDisrcCut                      // S/N cut applied at discrimination level
+        ,kPixMinElToAdd                      // Min number of electrons to add to sdig
+        ,kPixNoiseIsOn                       // Turn Pixel Noise on
+        ,kPixNoiseInAllMod                   // To apply pixel noise in all chips, if not only on ones where there is a hit
+        ,kPixNoiseMPV                        // Pixel noise MPV
+        ,kPixNoiseSigma                      // Pixel noise sigma
+        ,kPixFakeRate                        // Pixel fake rate
+        ,kDigitalSim                         //Digital pixel simulation
+        //
+        ,kNReservedParams=20                 // some reserved slots
+        ,kParamStart = kNReservedParams      // user parameters must start from this slot
+    };
+   
+    
+    //
+    // defined readout types:
+    enum {kReadOutStrobe                      // hits in static time window fReadOutCycleLength wrt offset fReadOOutCycleOffset (global for sensor) are seen
+        ,kReadOutRollingShutter             // hits in rolling (row-wise) window are seen (see GetReadOutCycleRollingShutter)
+        ,kNReadOutTypes
+    };
+   
+    
   //
-  AliITSUSimuParam();
-  AliITSUSimuParam(UInt_t nLayers,UInt_t nPix);
-  AliITSUSimuParam(const AliITSUSimuParam& simpar);
+  AliITSMFTSimuParam();
+  AliITSMFTSimuParam(UInt_t nLayers,UInt_t nPix);
+  AliITSMFTSimuParam(const AliITSMFTSimuParam& simpar);
   // assignment operator 
-  AliITSUSimuParam& operator=(const AliITSUSimuParam& source);
-  ~AliITSUSimuParam();
+  AliITSMFTSimuParam& operator=(const AliITSMFTSimuParam& source);
+  ~AliITSMFTSimuParam();
   //
   void     SetNPix(Int_t np);
   void     SetNLayers(Int_t nl);
@@ -80,9 +112,9 @@ class AliITSUSimuParam : public TObject {
   Double_t LorentzAngleHole(Double_t bz)                                  const;
   //
   Int_t    GetNRespFunParams()                                            const  {return fRespFunParam.GetEntriesFast();}
-  const    AliITSUParamList* GetRespFunParams(Int_t i)                    const  {return (const AliITSUParamList*)fRespFunParam[i];}
-  const    AliITSUParamList* FindRespFunParams(Int_t detId)               const;
-  void     AddRespFunParam(AliITSUParamList* pr);
+  const    AliITSMFTParamList* GetRespFunParams(Int_t i)                    const  {return (const AliITSMFTParamList*)fRespFunParam[i];}
+  const    AliITSMFTParamList* FindRespFunParams(Int_t detId)               const;
+  void     AddRespFunParam(AliITSMFTParamList* pr);
   //
   virtual void Print(Option_t *opt = "")                                  const; 
   //
@@ -144,9 +176,9 @@ class AliITSUSimuParam : public TObject {
   Float_t*   fPixNoise;       //[fNPix] Pix electronic noise: sigma
   Float_t*   fPixBaseline;    //[fNPix] Pix electronic noise: baseline
   //
-  TObjArray  fRespFunParam;   // set of parameterizations for response function (AliITSUParamList)
+  TObjArray  fRespFunParam;   // set of parameterizations for response function (AliITSMFTParamList)
 
-  ClassDef(AliITSUSimuParam,2);  // ITSU simulataion params
+  ClassDef(AliITSMFTSimuParam,1);  // ITSU simulataion params
 };
 
 

@@ -1,7 +1,7 @@
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 
 //_______________________________________________________________
-void AliITSUAux::PrintBits(ULong64_t patt, Int_t maxBits)
+void AliITSMFTAux::PrintBits(ULong64_t patt, Int_t maxBits)
 {
   // print maxBits of the pattern
   maxBits = Min(64,maxBits);

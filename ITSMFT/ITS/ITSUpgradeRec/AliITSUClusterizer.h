@@ -7,8 +7,8 @@
 
 class TTree;
 class TObjAray;
-class AliITSUSegmentationPix;
-class AliITSUDigitPix;
+class AliITSMFTSegmentationPix;
+class AliITSMFTDigitPix;
 class AliCluster;
 class AliITSURecoParam;
 
@@ -24,7 +24,7 @@ class AliITSUClusterizer : public TObject
   virtual ~AliITSUClusterizer();
   void SetRawData(Bool_t v=kTRUE)                      {fRawData = v;}
   void Clusterize();
-  void SetSegmentation(const AliITSUSegmentationPix *segm);
+  void SetSegmentation(const AliITSMFTSegmentationPix *segm);
   void SetRecoParam(const AliITSURecoParam* param)     {fRecoParam = param;}
   void SetLayerID(Int_t id)                            {fLayerID = id;}
   void SetVolID(Int_t id)                              {fVolID = id;}
@@ -47,7 +47,7 @@ class AliITSUClusterizer : public TObject
  protected: // transient data types
   struct AliITSUClusterizerClusterDigit {
     AliITSUClusterizerClusterDigit *fNext;
-    AliITSUDigitPix *fDigit;
+    AliITSMFTDigitPix *fDigit;
   };
   
   struct AliITSUClusterizerClusterCand;
@@ -102,7 +102,7 @@ class AliITSUClusterizer : public TObject
   //
   Int_t fVolID;                             // Volume id (chip index)
   Bool_t fAllowDiagonalClusterization;      // allow clusters with pixels having common corners only
-  const AliITSUSegmentationPix* fSegm;      // Segmentation or local coord calc.
+  const AliITSMFTSegmentationPix* fSegm;      // Segmentation or local coord calc.
   const AliITSURecoParam*       fRecoParam; // reco params
   //
   // Digit Input

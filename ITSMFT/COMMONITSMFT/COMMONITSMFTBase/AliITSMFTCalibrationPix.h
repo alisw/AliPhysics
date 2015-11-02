@@ -1,9 +1,9 @@
-#ifndef ALIITSUCALIBRATIONPIX_H
-#define ALIITSUCALIBRATIONPIX_H
+#ifndef AliITSMFTCalibrationPix_H
+#define AliITSMFTCalibrationPix_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliITSUCalibrationPix.h 53595 2011-12-14 16:13:16Z masera $ */
+/* $Id: AliITSMFTCalibrationPix.h 53595 2011-12-14 16:13:16Z masera $ */
 //#include "TRandom.h"
 #include "TObject.h"
 #include "TString.h"
@@ -14,13 +14,13 @@
 // ITS response class for pixels                  //
 ////////////////////////////////////////////////////
 
-class AliITSUCalibrationPix :  public TObject {
+class AliITSMFTCalibrationPix :  public TObject {
  public:
-    AliITSUCalibrationPix(); // default constructor
-    AliITSUCalibrationPix(Short_t nChips,Short_t nColPerChip,Short_t nRow); // default constructor
-    AliITSUCalibrationPix(const AliITSUCalibrationPix &src);
+    AliITSMFTCalibrationPix(); // default constructor
+    AliITSMFTCalibrationPix(Short_t nChips,Short_t nColPerChip,Short_t nRow); // default constructor
+    AliITSMFTCalibrationPix(const AliITSMFTCalibrationPix &src);
     //    
-    virtual ~AliITSUCalibrationPix() {;} // destructror
+    virtual ~AliITSMFTCalibrationPix() {;} // destructror
 
     virtual void   ClearBad();
 
@@ -85,9 +85,9 @@ class AliITSUCalibrationPix :  public TObject {
     UInt_t   fBadChips;        // bit pattern of completely dead chips?
     TArrayS  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBadSingle
     //
-    AliITSUCalibrationPix& operator=(const AliITSUCalibrationPix& source);
+    AliITSMFTCalibrationPix& operator=(const AliITSMFTCalibrationPix& source);
     //
-    ClassDef(AliITSUCalibrationPix,2) // pixels response
+    ClassDef(AliITSMFTCalibrationPix,2) // pixels response
 };
 
 #endif

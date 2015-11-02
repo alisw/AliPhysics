@@ -1,10 +1,10 @@
 #include "AliITSURecoSens.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliExternalTrackParam.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliLog.h"
 
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 using namespace TMath;
 
 ClassImp(AliITSURecoSens)

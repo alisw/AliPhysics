@@ -1,9 +1,9 @@
 #include "AliITSUTrackCond.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliLog.h"
 #include <TMath.h>
 
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 using namespace TMath;
 
 Char_t    AliITSUTrackCond::fgkClSharing = 0;
@@ -177,11 +177,11 @@ void AliITSUTrackCond::AddGroupPattern(UShort_t patt,Int_t minCl)
 {
   // add new group pattern to last condition: the track should have at least minCl clusters at layers given by patt
   if (fNConditions<1) AliFatal("Can be called only after AddCondition");
-  if (minCl>int(AliITSUAux::kMaxLayers)) AliFatal(Form("Requested Nlayers=%d exceeds max alowed %d",minCl,AliITSUAux::kMaxLayers));
+  if (minCl>int(AliITSMFTAux::kMaxLayers)) AliFatal(Form("Requested Nlayers=%d exceeds max alowed %d",minCl,AliITSMFTAux::kMaxLayers));
   if (minCl<1)                           AliFatal(Form("Requested Nlayers=%d for pattern %x",minCl,patt));
   int ind = fConditions.GetSize();
   fConditions.Set(ind+1);
-  fConditions[ind] = (patt&AliITSUAux::kMaxLrMask) | (minCl<<kShiftNcl);
+  fConditions[ind] = (patt&AliITSMFTAux::kMaxLrMask) | (minCl<<kShiftNcl);
   fAuxData[(fNConditions-1)*kNAuxSz + kNGroups]++;
 }
 
@@ -212,7 +212,7 @@ Bool_t AliITSUTrackCond::CheckPattern(UShort_t patt) const
     // if every group of the condition does not match, check next contition
     for (int ig=arrAux[cntCond+kNGroups];ig--;) {
       UInt_t pattReq = arrGrp[grAddr++];
-      UShort_t actLr = (pattReq&AliITSUAux::kMaxLrMask)&patt;  // patter of active layers satisfying to mask
+      UShort_t actLr = (pattReq&AliITSMFTAux::kMaxLrMask)&patt;  // patter of active layers satisfying to mask
       if (!actLr || NumberOfBitsSet(actLr)<int(pattReq>>kShiftNcl)) {ok = kFALSE; break;}
     }
     if (ok) return kTRUE;
