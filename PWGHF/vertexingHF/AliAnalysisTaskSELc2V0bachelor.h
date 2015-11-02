@@ -40,7 +40,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   
   AliAnalysisTaskSELc2V0bachelor();
   AliAnalysisTaskSELc2V0bachelor(const Char_t* name, AliRDHFCutsLctoV0* cuts,
-				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE, Bool_t useTPCpid=kFALSE, Char_t sign=2);
+				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE, Bool_t useTPCpid=kFALSE, Char_t sign=2, Bool_t checkOrigin=kFALSE);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
   /// Implementation of interface methods
@@ -53,7 +53,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   /// histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
-			   TClonesArray *mcArray);
+			   TClonesArray *mcArray, Int_t originLc);
 
   void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0S,
 			       TClonesArray *mcArray,
@@ -95,12 +95,15 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetSign(Char_t sign) {fSign = sign;}
   Char_t GetSign() const {return fSign;}
 
+  void SetCheckOrigin(Bool_t origin) {fCheckOrigin = origin;}
+  Bool_t GetCheckOrigin() const {return fCheckOrigin;}
+
  private:
   
   void CheckEventSelection(AliAODEvent *aodEvent);
   void CheckEventSelectionWithCandidates(AliAODEvent *aodEvent);
   void CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part,AliRDHFCutsLctoV0* cutsAnal);
-  void FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc);
+  void FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc, Int_t originLc);
   void DefineTreeVariables();
 
   Int_t MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
@@ -111,6 +114,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   void DefineGeneralHistograms();
   void DefineK0SHistos();
+  void DefineSignalHistosSeparatedPerOrigin();
   void FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis);
   void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis);
 
@@ -162,9 +166,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Double_t fPtMaxToFillTheTree;///999.
   Bool_t fUseTPCPIDtoFillTree;///kFALSE
   Char_t fSign;
+  Bool_t fCheckOrigin;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,8); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,9); /// class for Lc->p K0
   /// \endcond
 };
 

@@ -11,7 +11,8 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 						     Double_t minRotAngle=5.*TMath::Pi()/6.,
 						     Double_t maxRotAngle=7.*TMath::Pi()/6.,
 						     Bool_t useTPCpidToFillTree=kFALSE,
-						     Char_t sign=2)
+						     Char_t sign=2,
+						     Bool_t origin=kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -58,7 +59,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   if (writeVariableTree) sign=2;
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree,additionalChecks,trackRotation,useTPCpidToFillTree,sign);
+  AliAnalysisTaskSELc2V0bachelor *task = new AliAnalysisTaskSELc2V0bachelor("AliAnalysisTaskSELc2V0bachelor",RDHFCutsLctoV0anal,onTheFly,writeVariableTree,additionalChecks,trackRotation,useTPCpidToFillTree,sign,origin);
   task->SetAdditionalChecks(additionalChecks);
   task->SetMC(theMCon);
   task->SetDebugLevel(0);

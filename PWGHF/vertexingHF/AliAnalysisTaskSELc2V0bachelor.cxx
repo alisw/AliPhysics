@@ -70,6 +70,7 @@
 #include "AliInputEventHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliNeutralTrackParam.h"
+#include "AliVertexingHFUtils.h"
 
 using std::cout;
 using std::endl;
@@ -105,7 +106,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fPtMinToFillTheTree(0.),
   fPtMaxToFillTheTree(999.),
   fUseTPCPIDtoFillTree(kFALSE),
-  fSign(2)
+  fSign(2),
+  fCheckOrigin(kFALSE)
 {
   //
   /// Default ctor
@@ -118,8 +120,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
 }
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* name,
-							       AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly,
-							       Bool_t writeVariableTree, Bool_t additionalChecks, Bool_t trackRotation, Bool_t useTPCpid, Char_t sign) :
+								   AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly,
+								   Bool_t writeVariableTree, Bool_t additionalChecks, Bool_t trackRotation, Bool_t useTPCpid, Char_t sign, Bool_t origin) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -146,7 +148,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fPtMinToFillTheTree(0.),
   fPtMaxToFillTheTree(999.),
   fUseTPCPIDtoFillTree(useTPCpid),
-  fSign(sign)
+  fSign(sign),
+  fCheckOrigin(origin)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -446,6 +449,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
     }
 
     DefineK0SHistos(); // define analysis histograms
+    if (fUseMCInfo && fCheckOrigin) DefineSignalHistosSeparatedPerOrigin(); // define analysis histograms for SNG separated for origin
   
     PostData(4,fOutputAll);
     PostData(5,fOutputPIDBach);
@@ -464,9 +468,9 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
 
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopKos,
-							     TClonesArray *mcArray,
-							     Int_t &nSelectedAnal,
-							     AliRDHFCutsLctoV0 *cutsAnal)
+							       TClonesArray *mcArray,
+							       Int_t &nSelectedAnal,
+							       AliRDHFCutsLctoV0 *cutsAnal)
 {
 
   /// make the analysis
@@ -546,6 +550,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(2);
 
     Int_t isLc = 0;
+    Int_t originLc = -1; // -1 -> RD; 0 -> BKG; 1 -> form c; 2 -> from b; 3 -> not from quark
 
     if (fUseMCInfo) {
 
@@ -562,16 +567,29 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 	  if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
 	  pdgCode = TMath::Abs(pdgCode);
 	  isLc = 1;
+	  AliVertexingHFUtils *util = new AliVertexingHFUtils();
+	  Int_t pdgMom = util->CheckOrigin(mcArray,partLc,kFALSE);
+	  if (pdgMom == 4) {
+	    originLc=1; // from c
+	  } else if (pdgMom == 5) {
+	    originLc=2; // form b
+	  } else {
+	    Int_t isThereaQuark=util->CheckOrigin(mcArray,partLc,kTRUE);
+	    if (isThereaQuark<=0) originLc=3; // not from q
+	  }
+	  delete util;
 	}
       } else {
 	AliDebug(2,Form("No MC candidate (cascade number %d -total cascade number = %d -)", iLctopK0S,nCascades));
 	pdgCode=-1;
       }
+    } else {
+      originLc=-1; // real data
     }
 
     FillLc2pK0Sspectrum(lcK0Spr, isLc,
 			nSelectedAnal, cutsAnal,
-			mcArray);
+			mcArray, originLc);
 
     if (unsetvtx) lcK0Spr->UnsetOwnPrimaryVtx();
 
@@ -584,10 +602,11 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 
 //________________________________________________________________________
 void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part,
-							 Int_t isLc,
-							 Int_t &nSelectedAnal,
-							 AliRDHFCutsLctoV0 *cutsAnal,
-							 TClonesArray *mcArray)
+							   Int_t isLc,
+							   Int_t &nSelectedAnal,
+							   AliRDHFCutsLctoV0 *cutsAnal,
+							   TClonesArray *mcArray,
+							   Int_t originLc)
 {
   //
   /// Fill histos for Lc -> K0S+proton
@@ -657,7 +676,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	 part->CosV0PointingAngle()>0.99 && TMath::Abs(invmassK0S-mk0sPDG)<=0.05 &&
 	 part->Pt()>=fPtMinToFillTheTree && part->Pt()<fPtMaxToFillTheTree &&
 	 (!fUseTPCPIDtoFillTree || (fUseTPCPIDtoFillTree && TMath::Abs(nSigmaTPCpr)<3.)))
-      FillTheTree(part,cutsAnal,mcArray,isLc);
+      FillTheTree(part,cutsAnal,mcArray,isLc,originLc);
     return;
   }
 
@@ -666,8 +685,8 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   cutsAnal->SetUsePID(areCutsUsingPID);
   Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
 
-  //if (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
-  if (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
+  //if (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
+  if (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
     if (fUseMCInfo && isLc && !fWriteVariableTree) {
       Int_t pdgCand1 = 4122;
       Int_t pdgDgLctoV0bachelor1[2]={2212,310};
@@ -734,7 +753,20 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	//if (isCandidateSelectedCuts) {
 	FillAnalysisHistograms(part,cutsAnal,"Sgn");
 	//}
-      }     
+	if (fCheckOrigin) {
+	  switch (originLc) {
+	  case 1:
+	    FillAnalysisHistograms(part,cutsAnal,"SgnC");
+	    break;
+	  case 2:
+	    FillAnalysisHistograms(part,cutsAnal,"SgnB");
+	    break;
+	  case 3:
+	    FillAnalysisHistograms(part,cutsAnal,"SgnNoQ");
+	    break;
+	  }
+	}
+      }
       else {
 
 	fillthis="histArmPodK0SOfflineSgn";
@@ -743,7 +775,6 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	fillthis="histArmPodLcOfflineSgn";
 	FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
-	FillAnalysisHistograms(part,cutsAnal,"OfflineSgn");
  	if (isCandidateSelectedCuts) {
 	  fillthis="histoprotonBachSigmaVspTOFsgn";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
@@ -751,6 +782,22 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
 	  //FillAnalysisHistograms(part,cutsAnal,"OfflineSgn");
 	}
+
+	if (fCheckOrigin) {
+	  switch (originLc) {
+	  case 1:
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnC");
+	    break;
+	  case 2:
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnB");
+	    break;
+	  case 3:
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnNoQ");
+	    break;
+	  }
+	}
+	FillAnalysisHistograms(part,cutsAnal,"OfflineSgn");
+
       }
     }// sgn
     else { // bkg
@@ -1315,196 +1362,196 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
 
 
-    nameHistoSgn="histptK0SSgn";
-    nameHistoBkg="histptK0SBkg";
-    titleHistoSgn="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-    titleHistoBkg="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
-    TH2F* ptK0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
-    TH2F* ptK0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
+      nameHistoSgn="histptK0SSgn";
+      nameHistoBkg="histptK0SBkg";
+      titleHistoSgn="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+      titleHistoBkg="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+      TH2F* ptK0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
+      TH2F* ptK0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
 
-    nameHistoSgn="histptPSgn";
-    nameHistoBkg="histptPBkg";
-    titleHistoSgn="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
-    titleHistoBkg="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
-    TH2F* ptPSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
-    TH2F* ptPBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
+      nameHistoSgn="histptPSgn";
+      nameHistoBkg="histptPBkg";
+      titleHistoSgn="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+      titleHistoBkg="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+      TH2F* ptPSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
+      TH2F* ptPBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
 
-    nameHistoSgn="histptPipSgn";
-    nameHistoBkg="histptPipBkg";
-    titleHistoSgn="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
-    titleHistoBkg="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
-    TH2F* ptPiPSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
-    TH2F* ptPiPBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
+      nameHistoSgn="histptPipSgn";
+      nameHistoBkg="histptPipBkg";
+      titleHistoSgn="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+      titleHistoBkg="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+      TH2F* ptPiPSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
+      TH2F* ptPiPBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
 
-    nameHistoSgn="histptPimSgn";
-    nameHistoBkg="histptPimBkg";
-    titleHistoSgn="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
-    titleHistoBkg="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
-    TH2F* ptPiMSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
-    TH2F* ptPiMBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
+      nameHistoSgn="histptPimSgn";
+      nameHistoBkg="histptPimBkg";
+      titleHistoSgn="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+      titleHistoBkg="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+      TH2F* ptPiMSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,41,binLimpTprong);
+      TH2F* ptPiMBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,41,binLimpTprong);
 
-    nameHistoSgn="histLambdaMassSgn";
-    nameHistoBkg="histLambdaMassBkg";
-    titleHistoSgn="m_{inv}(p,#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(p,#pi^{-}) [GeV/c^{2}]; Entries";
-    titleHistoBkg="m_{inv}(p,#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(p,#pi^{-}) [GeV/c^{2}]; Entries";
-    TH2F* massLambdaSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
-    TH2F* massLambdaBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
+      nameHistoSgn="histLambdaMassSgn";
+      nameHistoBkg="histLambdaMassBkg";
+      titleHistoSgn="m_{inv}(p,#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(p,#pi^{-}) [GeV/c^{2}]; Entries";
+      titleHistoBkg="m_{inv}(p,#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(p,#pi^{-}) [GeV/c^{2}]; Entries";
+      TH2F* massLambdaSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
+      TH2F* massLambdaBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
 
-    nameHistoSgn="histLambdaBarMassSgn";
-    nameHistoBkg="histLambdaBarMassBkg";
-    titleHistoSgn="m_{inv}(#bar{p},#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#bar{p},#pi^{+}) [GeV/c^{2}]; Entries";
-    titleHistoBkg="m_{inv}(#bar{p},#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#bar{p},#pi^{+}) [GeV/c^{2}]; Entries";
-    TH2F* massLambdaBarSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
-    TH2F* massLambdaBarBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
+      nameHistoSgn="histLambdaBarMassSgn";
+      nameHistoBkg="histLambdaBarMassBkg";
+      titleHistoSgn="m_{inv}(#bar{p},#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#bar{p},#pi^{+}) [GeV/c^{2}]; Entries";
+      titleHistoBkg="m_{inv}(#bar{p},#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(#bar{p},#pi^{+}) [GeV/c^{2}]; Entries";
+      TH2F* massLambdaBarSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
+      TH2F* massLambdaBarBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,mMinLambdaPDG,mMinLambdaPDG+0.5);
 
-    nameHistoSgn="histGammaMassSgn";
-    nameHistoBkg="histGammaMassBkg";
-    titleHistoSgn="m_{inv}(e^{+},e^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(e^{+},e^{-}) [GeV/c^{2}]; Entries";
-    titleHistoBkg="m_{inv}(e^{+},e^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(e^{+},e^{-}) [GeV/c^{2}]; Entries";
-    TH2F* massGammaSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,100,0.,1.);
-    TH2F* massGammaBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,100,0.,1.);
+      nameHistoSgn="histGammaMassSgn";
+      nameHistoBkg="histGammaMassBkg";
+      titleHistoSgn="m_{inv}(e^{+},e^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(e^{+},e^{-}) [GeV/c^{2}]; Entries";
+      titleHistoBkg="m_{inv}(e^{+},e^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; m_{inv}(e^{+},e^{-}) [GeV/c^{2}]; Entries";
+      TH2F* massGammaSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,100,0.,1.);
+      TH2F* massGammaBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,100,0.,1.);
 
-    nameHistoSgn="histD0K0SSgn";
-    nameHistoBkg="histD0K0SBkg";
-    titleHistoSgn="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
-    titleHistoBkg="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
-    TH2F* d0K0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,-1.,1.);
-    TH2F* d0K0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,-1.,1.);
+      nameHistoSgn="histD0K0SSgn";
+      nameHistoBkg="histD0K0SBkg";
+      titleHistoSgn="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+      titleHistoBkg="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+      TH2F* d0K0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,-1.,1.);
+      TH2F* d0K0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,-1.,1.);
 
-    nameHistoSgn="histD0PSgn";
-    nameHistoBkg="histD0PBkg";
-    titleHistoSgn="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
-    titleHistoBkg="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
-    TH2F* d0PSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,-1.,1.);
-    TH2F* d0PBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,-1.,1.);
+      nameHistoSgn="histD0PSgn";
+      nameHistoBkg="histD0PBkg";
+      titleHistoSgn="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+      titleHistoBkg="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+      TH2F* d0PSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),11,binLimpTLc,1000,-1.,1.);
+      TH2F* d0PBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),11,binLimpTLc,1000,-1.,1.);
 
-    nameHistoSgn="histCosPAK0SSgn";
-    nameHistoBkg="histCosPAK0SBkg";
-    titleHistoSgn="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
-    titleHistoBkg="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
-    TH2F *cosPAK0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),41,binLimpTprong,100,0.99,1.);
-    TH2F *cosPAK0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),41,binLimpTprong,100,0.99,1.);
+      nameHistoSgn="histCosPAK0SSgn";
+      nameHistoBkg="histCosPAK0SBkg";
+      titleHistoSgn="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+      titleHistoBkg="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+      TH2F *cosPAK0SSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),41,binLimpTprong,100,0.99,1.);
+      TH2F *cosPAK0SBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),41,binLimpTprong,100,0.99,1.);
 
-    TH2F* allptK0SSgn = (TH2F*)ptK0SSgn->Clone();
-    TH2F* allptK0SBkg = (TH2F*)ptK0SBkg->Clone();
-    TH2F* allptPSgn = (TH2F*)ptPSgn->Clone();
-    TH2F* allptPBkg = (TH2F*)ptPBkg->Clone();
-    TH2F* allptPiPSgn = (TH2F*)ptPiPSgn->Clone();
-    TH2F* allptPiPBkg = (TH2F*)ptPiPBkg->Clone();
-    TH2F* allptPiMSgn = (TH2F*)ptPiMSgn->Clone();
-    TH2F* allptPiMBkg = (TH2F*)ptPiMBkg->Clone();
-    TH2F* allmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
-    TH2F* allmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
-    TH2F* allmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
-    TH2F* allmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
-    TH2F* allmassGammaSgn = (TH2F*)massGammaSgn->Clone();
-    TH2F* allmassGammaBkg = (TH2F*)massGammaBkg->Clone();
-    TH2F* alld0K0SSgn = (TH2F*)d0K0SSgn->Clone();
-    TH2F* alld0K0SBkg = (TH2F*)d0K0SBkg->Clone();
-    TH2F* alld0PSgn = (TH2F*)d0PSgn->Clone();
-    TH2F* alld0PBkg = (TH2F*)d0PBkg->Clone();
-    TH2F* allcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
-    TH2F* allcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
+      TH2F* allptK0SSgn = (TH2F*)ptK0SSgn->Clone();
+      TH2F* allptK0SBkg = (TH2F*)ptK0SBkg->Clone();
+      TH2F* allptPSgn = (TH2F*)ptPSgn->Clone();
+      TH2F* allptPBkg = (TH2F*)ptPBkg->Clone();
+      TH2F* allptPiPSgn = (TH2F*)ptPiPSgn->Clone();
+      TH2F* allptPiPBkg = (TH2F*)ptPiPBkg->Clone();
+      TH2F* allptPiMSgn = (TH2F*)ptPiMSgn->Clone();
+      TH2F* allptPiMBkg = (TH2F*)ptPiMBkg->Clone();
+      TH2F* allmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
+      TH2F* allmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
+      TH2F* allmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
+      TH2F* allmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
+      TH2F* allmassGammaSgn = (TH2F*)massGammaSgn->Clone();
+      TH2F* allmassGammaBkg = (TH2F*)massGammaBkg->Clone();
+      TH2F* alld0K0SSgn = (TH2F*)d0K0SSgn->Clone();
+      TH2F* alld0K0SBkg = (TH2F*)d0K0SBkg->Clone();
+      TH2F* alld0PSgn = (TH2F*)d0PSgn->Clone();
+      TH2F* alld0PBkg = (TH2F*)d0PBkg->Clone();
+      TH2F* allcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
+      TH2F* allcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
 
-    TH2F* pidptK0SSgn = (TH2F*)ptK0SSgn->Clone();
-    TH2F* pidptK0SBkg = (TH2F*)ptK0SBkg->Clone();
-    TH2F* pidptPSgn = (TH2F*)ptPSgn->Clone();
-    TH2F* pidptPBkg = (TH2F*)ptPBkg->Clone();
-    TH2F* pidptPiPSgn = (TH2F*)ptPiPSgn->Clone();
-    TH2F* pidptPiPBkg = (TH2F*)ptPiPBkg->Clone();
-    TH2F* pidptPiMSgn = (TH2F*)ptPiMSgn->Clone();
-    TH2F* pidptPiMBkg = (TH2F*)ptPiMBkg->Clone();
-    TH2F* pidmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
-    TH2F* pidmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
-    TH2F* pidmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
-    TH2F* pidmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
-    TH2F* pidmassGammaSgn = (TH2F*)massGammaSgn->Clone();
-    TH2F* pidmassGammaBkg = (TH2F*)massGammaBkg->Clone();
-    TH2F* pidd0K0SSgn = (TH2F*)d0K0SSgn->Clone();
-    TH2F* pidd0K0SBkg = (TH2F*)d0K0SBkg->Clone();
-    TH2F* pidd0PSgn = (TH2F*)d0PSgn->Clone();
-    TH2F* pidd0PBkg = (TH2F*)d0PBkg->Clone();
-    TH2F* pidcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
-    TH2F* pidcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
+      TH2F* pidptK0SSgn = (TH2F*)ptK0SSgn->Clone();
+      TH2F* pidptK0SBkg = (TH2F*)ptK0SBkg->Clone();
+      TH2F* pidptPSgn = (TH2F*)ptPSgn->Clone();
+      TH2F* pidptPBkg = (TH2F*)ptPBkg->Clone();
+      TH2F* pidptPiPSgn = (TH2F*)ptPiPSgn->Clone();
+      TH2F* pidptPiPBkg = (TH2F*)ptPiPBkg->Clone();
+      TH2F* pidptPiMSgn = (TH2F*)ptPiMSgn->Clone();
+      TH2F* pidptPiMBkg = (TH2F*)ptPiMBkg->Clone();
+      TH2F* pidmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
+      TH2F* pidmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
+      TH2F* pidmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
+      TH2F* pidmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
+      TH2F* pidmassGammaSgn = (TH2F*)massGammaSgn->Clone();
+      TH2F* pidmassGammaBkg = (TH2F*)massGammaBkg->Clone();
+      TH2F* pidd0K0SSgn = (TH2F*)d0K0SSgn->Clone();
+      TH2F* pidd0K0SBkg = (TH2F*)d0K0SBkg->Clone();
+      TH2F* pidd0PSgn = (TH2F*)d0PSgn->Clone();
+      TH2F* pidd0PBkg = (TH2F*)d0PBkg->Clone();
+      TH2F* pidcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
+      TH2F* pidcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
 
-    fOutputAll->Add(allptK0SSgn);
-    fOutputAll->Add(allptK0SBkg);
-    fOutputAll->Add(allptPSgn);
-    fOutputAll->Add(allptPBkg);
-    fOutputAll->Add(allptPiPSgn);
-    fOutputAll->Add(allptPiPBkg);
-    fOutputAll->Add(allptPiMSgn);
-    fOutputAll->Add(allptPiMBkg);
-    fOutputAll->Add(allmassLambdaSgn);
-    fOutputAll->Add(allmassLambdaBkg);
-    fOutputAll->Add(allmassLambdaBarSgn);
-    fOutputAll->Add(allmassLambdaBarBkg);
-    fOutputAll->Add(allmassGammaSgn);
-    fOutputAll->Add(allmassGammaBkg);
-    fOutputAll->Add(alld0K0SSgn);
-    fOutputAll->Add(alld0K0SBkg);
-    fOutputAll->Add(alld0PSgn);
-    fOutputAll->Add(alld0PBkg);
-    fOutputAll->Add(allcosPAK0SSgn);
-    fOutputAll->Add(allcosPAK0SBkg);
+      fOutputAll->Add(allptK0SSgn);
+      fOutputAll->Add(allptK0SBkg);
+      fOutputAll->Add(allptPSgn);
+      fOutputAll->Add(allptPBkg);
+      fOutputAll->Add(allptPiPSgn);
+      fOutputAll->Add(allptPiPBkg);
+      fOutputAll->Add(allptPiMSgn);
+      fOutputAll->Add(allptPiMBkg);
+      fOutputAll->Add(allmassLambdaSgn);
+      fOutputAll->Add(allmassLambdaBkg);
+      fOutputAll->Add(allmassLambdaBarSgn);
+      fOutputAll->Add(allmassLambdaBarBkg);
+      fOutputAll->Add(allmassGammaSgn);
+      fOutputAll->Add(allmassGammaBkg);
+      fOutputAll->Add(alld0K0SSgn);
+      fOutputAll->Add(alld0K0SBkg);
+      fOutputAll->Add(alld0PSgn);
+      fOutputAll->Add(alld0PBkg);
+      fOutputAll->Add(allcosPAK0SSgn);
+      fOutputAll->Add(allcosPAK0SBkg);
 
-    fOutputPIDBach->Add(pidptK0SSgn);
-    fOutputPIDBach->Add(pidptK0SBkg);
-    fOutputPIDBach->Add(pidptPSgn);
-    fOutputPIDBach->Add(pidptPBkg);
-    fOutputPIDBach->Add(pidptPiPSgn);
-    fOutputPIDBach->Add(pidptPiPBkg);
-    fOutputPIDBach->Add(pidptPiMSgn);
-    fOutputPIDBach->Add(pidptPiMBkg);
-    fOutputPIDBach->Add(pidmassLambdaSgn);
-    fOutputPIDBach->Add(pidmassLambdaBkg);
-    fOutputPIDBach->Add(pidmassLambdaBarSgn);
-    fOutputPIDBach->Add(pidmassLambdaBarBkg);
-    fOutputPIDBach->Add(pidmassGammaSgn);
-    fOutputPIDBach->Add(pidmassGammaBkg);
-    fOutputPIDBach->Add(pidd0K0SSgn);
-    fOutputPIDBach->Add(pidd0K0SBkg);
-    fOutputPIDBach->Add(pidd0PSgn);
-    fOutputPIDBach->Add(pidd0PBkg);
-    fOutputPIDBach->Add(pidcosPAK0SSgn);
-    fOutputPIDBach->Add(pidcosPAK0SBkg);
+      fOutputPIDBach->Add(pidptK0SSgn);
+      fOutputPIDBach->Add(pidptK0SBkg);
+      fOutputPIDBach->Add(pidptPSgn);
+      fOutputPIDBach->Add(pidptPBkg);
+      fOutputPIDBach->Add(pidptPiPSgn);
+      fOutputPIDBach->Add(pidptPiPBkg);
+      fOutputPIDBach->Add(pidptPiMSgn);
+      fOutputPIDBach->Add(pidptPiMBkg);
+      fOutputPIDBach->Add(pidmassLambdaSgn);
+      fOutputPIDBach->Add(pidmassLambdaBkg);
+      fOutputPIDBach->Add(pidmassLambdaBarSgn);
+      fOutputPIDBach->Add(pidmassLambdaBarBkg);
+      fOutputPIDBach->Add(pidmassGammaSgn);
+      fOutputPIDBach->Add(pidmassGammaBkg);
+      fOutputPIDBach->Add(pidd0K0SSgn);
+      fOutputPIDBach->Add(pidd0K0SBkg);
+      fOutputPIDBach->Add(pidd0PSgn);
+      fOutputPIDBach->Add(pidd0PBkg);
+      fOutputPIDBach->Add(pidcosPAK0SSgn);
+      fOutputPIDBach->Add(pidcosPAK0SBkg);
 
-    if (fTrackRotation) {
+      if (fTrackRotation) {
 
-      TH2F* pidTRptK0SSgn = (TH2F*)ptK0SSgn->Clone();
-      TH2F* pidTRptK0SBkg = (TH2F*)ptK0SBkg->Clone();
-      TH2F* pidTRptPSgn = (TH2F*)ptPSgn->Clone();
-      TH2F* pidTRptPBkg = (TH2F*)ptPBkg->Clone();
-      TH2F* pidTRptPiPSgn = (TH2F*)ptPiPSgn->Clone();
-      TH2F* pidTRptPiPBkg = (TH2F*)ptPiPBkg->Clone();
-      TH2F* pidTRptPiMSgn = (TH2F*)ptPiMSgn->Clone();
-      TH2F* pidTRptPiMBkg = (TH2F*)ptPiMBkg->Clone();
-      TH2F* pidTRmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
-      TH2F* pidTRmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
-      TH2F* pidTRmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
-      TH2F* pidTRmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
-      TH2F* pidTRmassGammaSgn = (TH2F*)massGammaSgn->Clone();
-      TH2F* pidTRmassGammaBkg = (TH2F*)massGammaBkg->Clone();
-      TH2F* pidTRcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
-      TH2F* pidTRcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
-      fOutputPIDBachTR->Add(pidTRptK0SSgn);
-      fOutputPIDBachTR->Add(pidTRptK0SBkg);
-      fOutputPIDBachTR->Add(pidTRptPSgn);
-      fOutputPIDBachTR->Add(pidTRptPBkg);
-      fOutputPIDBachTR->Add(pidTRptPiPSgn);
-      fOutputPIDBachTR->Add(pidTRptPiPBkg);
-      fOutputPIDBachTR->Add(pidTRptPiMSgn);
-      fOutputPIDBachTR->Add(pidTRptPiMBkg);
-      fOutputPIDBachTR->Add(pidTRmassLambdaSgn);
-      fOutputPIDBachTR->Add(pidTRmassLambdaBkg);
-      fOutputPIDBachTR->Add(pidTRmassLambdaBarSgn);
-      fOutputPIDBachTR->Add(pidTRmassLambdaBarBkg);
-      fOutputPIDBachTR->Add(pidTRmassGammaSgn);
-      fOutputPIDBachTR->Add(pidTRmassGammaBkg);
-      fOutputPIDBachTR->Add(pidTRcosPAK0SSgn);
-      fOutputPIDBachTR->Add(pidTRcosPAK0SBkg);
+	TH2F* pidTRptK0SSgn = (TH2F*)ptK0SSgn->Clone();
+	TH2F* pidTRptK0SBkg = (TH2F*)ptK0SBkg->Clone();
+	TH2F* pidTRptPSgn = (TH2F*)ptPSgn->Clone();
+	TH2F* pidTRptPBkg = (TH2F*)ptPBkg->Clone();
+	TH2F* pidTRptPiPSgn = (TH2F*)ptPiPSgn->Clone();
+	TH2F* pidTRptPiPBkg = (TH2F*)ptPiPBkg->Clone();
+	TH2F* pidTRptPiMSgn = (TH2F*)ptPiMSgn->Clone();
+	TH2F* pidTRptPiMBkg = (TH2F*)ptPiMBkg->Clone();
+	TH2F* pidTRmassLambdaSgn = (TH2F*)massLambdaSgn->Clone();
+	TH2F* pidTRmassLambdaBkg = (TH2F*)massLambdaBkg->Clone();
+	TH2F* pidTRmassLambdaBarSgn = (TH2F*)massLambdaBarSgn->Clone();
+	TH2F* pidTRmassLambdaBarBkg = (TH2F*)massLambdaBarBkg->Clone();
+	TH2F* pidTRmassGammaSgn = (TH2F*)massGammaSgn->Clone();
+	TH2F* pidTRmassGammaBkg = (TH2F*)massGammaBkg->Clone();
+	TH2F* pidTRcosPAK0SSgn = (TH2F*)cosPAK0SSgn->Clone();
+	TH2F* pidTRcosPAK0SBkg = (TH2F*)cosPAK0SBkg->Clone();
+	fOutputPIDBachTR->Add(pidTRptK0SSgn);
+	fOutputPIDBachTR->Add(pidTRptK0SBkg);
+	fOutputPIDBachTR->Add(pidTRptPSgn);
+	fOutputPIDBachTR->Add(pidTRptPBkg);
+	fOutputPIDBachTR->Add(pidTRptPiPSgn);
+	fOutputPIDBachTR->Add(pidTRptPiPBkg);
+	fOutputPIDBachTR->Add(pidTRptPiMSgn);
+	fOutputPIDBachTR->Add(pidTRptPiMBkg);
+	fOutputPIDBachTR->Add(pidTRmassLambdaSgn);
+	fOutputPIDBachTR->Add(pidTRmassLambdaBkg);
+	fOutputPIDBachTR->Add(pidTRmassLambdaBarSgn);
+	fOutputPIDBachTR->Add(pidTRmassLambdaBarBkg);
+	fOutputPIDBachTR->Add(pidTRmassGammaSgn);
+	fOutputPIDBachTR->Add(pidTRmassGammaBkg);
+	fOutputPIDBachTR->Add(pidTRcosPAK0SSgn);
+	fOutputPIDBachTR->Add(pidTRcosPAK0SBkg);
 
-    }
+      }
 
 
     } // useOnTheFly
@@ -1537,20 +1584,20 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0SOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
-    TH2F* armenterosPodK0SOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
+    TH2F* armenterosPodK0SOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-1.,1.,300,0.,0.3);
 
     nameHistoSgn="histArmPodLcOfflineSgn";
     nameHistoBkg="histArmPodLcOfflineBkg";
     titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLcOfflineSgn = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
-    TH2F* armenterosPodLcOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
+    TH2F* armenterosPodLcOfflineBkg = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-4.,4.,800,0.,1.6);
 
 
     TH2F* allspectrumK0SMassOfflineSgn = (TH2F*)spectrumK0SMassOfflineSgn->Clone();
-    TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();  
+    TH2F* allspectrumK0SMassOfflineBkg = (TH2F*) spectrumK0SMassOfflineBkg->Clone();
     TH2F* allspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone();
-    TH2F* allspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
+    TH2F* allspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();
     TH2F* allmomentumDistributionK0SvspOfflineSgn = (TH2F*)momentumDistributionK0SvspOfflineSgn->Clone();
     TH2F* allmomentumDistributionK0SvspOfflineBkg = (TH2F*)momentumDistributionK0SvspOfflineBkg->Clone();
     TH2F* allArmenterosPodK0SOfflineSgn = (TH2F*)armenterosPodK0SOfflineSgn->Clone();
@@ -1596,13 +1643,13 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     titleHistoSgn="V0-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     titleHistoBkg="V0-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0SOfflineSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
-    TH2F* armenterosPodK0SOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-1.,1.,300,0.,0.3);
+    TH2F* armenterosPodK0SOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-1.,1.,300,0.,0.3);
     nameHistoSgn="histArmPodLcOfflineSgn0";
     nameHistoBkg="histArmPodLcOfflineBkg0";
     titleHistoSgn="#Lambda_{c}-candidate Armenteros-Podolanski distribution (sgn) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     titleHistoBkg="#Lambda_{c}-candidate Armenteros-Podolanski distribution (bkg) -offline-; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLcOfflineSgn0 = new TH2F(nameHistoSgn.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
-    TH2F* armenterosPodLcOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoSgn.Data(),200,-4.,4.,800,0.,1.6);
+    TH2F* armenterosPodLcOfflineBkg0 = new TH2F(nameHistoBkg.Data(),titleHistoBkg.Data(),200,-4.,4.,800,0.,1.6);
     fOutputAll->Add(armenterosPodK0SOfflineSgn0);
     fOutputAll->Add(armenterosPodK0SOfflineBkg0);
     fOutputAll->Add(armenterosPodLcOfflineSgn0);
@@ -1610,7 +1657,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     if (fTrackRotation) {
       TH2F* pidBachTRspectrumLcMassOfflineByK0SSgn = (TH2F*)spectrumLcMassOfflineByK0SSgn->Clone();
-      TH2F* pidBachTRspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();  
+      TH2F* pidBachTRspectrumLcMassOfflineByK0SBkg = (TH2F*) spectrumLcMassOfflineByK0SBkg->Clone();
       fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SSgn);
       fOutputPIDBachTR->Add(pidBachTRspectrumLcMassOfflineByK0SBkg);
     }
@@ -1826,11 +1873,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH1F *hNormRotated=new TH1F("hNormRotated","",fNRotations+1,-0.5,fNRotations+0.5);
     TH1F *hNormRotatedOffline=new TH1F("hNormRotatedOffline","",fNRotations+1,-0.5,fNRotations+0.5);
     /*
-    hNormRotated->Sumw2();
-    hNormRotatedOffline->Sumw2();
+      hNormRotated->Sumw2();
+      hNormRotatedOffline->Sumw2();
  
-    hNormRotated->SetMinimum(0);
-    hNormRotatedOffline->SetMinimum(0);
+      hNormRotated->SetMinimum(0);
+      hNormRotatedOffline->SetMinimum(0);
     */
 
     fOutputPIDBachTR->Add(hNormRotated);
@@ -1861,15 +1908,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       TH1F *hNormRotatedBkg=new TH1F("hNormRotatedBkg","",fNRotations+1,-0.5,fNRotations+0.5);
       TH1F *hNormRotatedOfflineBkg=new TH1F("hNormRotatedOfflineBkg","",fNRotations+1,-0.5,fNRotations+0.5);
       /*
-      hNormRotatedSgn->Sumw2();
-      hNormRotatedOfflineSgn->Sumw2();
-      hNormRotatedBkg->Sumw2();
-      hNormRotatedOfflineBkg->Sumw2();
+	hNormRotatedSgn->Sumw2();
+	hNormRotatedOfflineSgn->Sumw2();
+	hNormRotatedBkg->Sumw2();
+	hNormRotatedOfflineBkg->Sumw2();
 
-      hNormRotatedSgn->SetMinimum(0);
-      hNormRotatedOfflineSgn->SetMinimum(0);
-      hNormRotatedBkg->SetMinimum(0);
-      hNormRotatedOfflineBkg->SetMinimum(0);
+	hNormRotatedSgn->SetMinimum(0);
+	hNormRotatedOfflineSgn->SetMinimum(0);
+	hNormRotatedBkg->SetMinimum(0);
+	hNormRotatedOfflineBkg->SetMinimum(0);
       */
 
       fOutputPIDBachTR->Add(hNormRotatedSgn);
@@ -1884,11 +1931,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH3F *hMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
     TH3F *hMassVsPtVsYOffline=new TH3F("hMassVsPtVsYOffline","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
     /*
-    hMassVsPtVsY->Sumw2();
-    hMassVsPtVsYOffline->Sumw2();
+      hMassVsPtVsY->Sumw2();
+      hMassVsPtVsYOffline->Sumw2();
 
-    hMassVsPtVsY->SetMinimum(0);
-    hMassVsPtVsYOffline->SetMinimum(0);
+      hMassVsPtVsY->SetMinimum(0);
+      hMassVsPtVsYOffline->SetMinimum(0);
     */
 
     fOutputPIDBachTR->Add(hMassVsPtVsY);
@@ -1902,15 +1949,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       TH3F *hMassVsPtVsYOfflineBkg=new TH3F("hMassVsPtVsYOfflineBkg","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
 
       /*
-      hMassVsPtVsYSgn->Sumw2();
-      hMassVsPtVsYOfflineSgn->Sumw2();
-      hMassVsPtVsYBkg->Sumw2();
-      hMassVsPtVsYOfflineBkg->Sumw2();
+	hMassVsPtVsYSgn->Sumw2();
+	hMassVsPtVsYOfflineSgn->Sumw2();
+	hMassVsPtVsYBkg->Sumw2();
+	hMassVsPtVsYOfflineBkg->Sumw2();
 
-      hMassVsPtVsYSgn->SetMinimum(0);
-      hMassVsPtVsYOfflineSgn->SetMinimum(0);
-      hMassVsPtVsYBkg->SetMinimum(0);
-      hMassVsPtVsYOfflineBkg->SetMinimum(0);
+	hMassVsPtVsYSgn->SetMinimum(0);
+	hMassVsPtVsYOfflineSgn->SetMinimum(0);
+	hMassVsPtVsYBkg->SetMinimum(0);
+	hMassVsPtVsYOfflineBkg->SetMinimum(0);
       */
 
       fOutputPIDBachTR->Add(hMassVsPtVsYSgn);
@@ -1923,11 +1970,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH3F *hMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
     TH3F *hMassVsPtVsYRotOffline=new TH3F("hMassVsPtVsYRotOffline","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
     /*
-    hMassVsPtVsYRot->Sumw2();
-    hMassVsPtVsYRotOffline->Sumw2();
+      hMassVsPtVsYRot->Sumw2();
+      hMassVsPtVsYRotOffline->Sumw2();
 
-    hMassVsPtVsYRot->SetMinimum(0);
-    hMassVsPtVsYRotOffline->SetMinimum(0);
+      hMassVsPtVsYRot->SetMinimum(0);
+      hMassVsPtVsYRotOffline->SetMinimum(0);
     */
 
     fOutputPIDBachTR->Add(hMassVsPtVsYRot);
@@ -1940,15 +1987,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       TH3F *hMassVsPtVsYRotBkg=new TH3F("hMassVsPtVsYRotBkg","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
       TH3F *hMassVsPtVsYRotOfflineBkg=new TH3F("hMassVsPtVsYRotOfflineBkg","",nMassBins,fMinMass,maxm,15,0.,15.,20,-1.,1.);
       /*
-      hMassVsPtVsYRotSgn->Sumw2();
-      hMassVsPtVsYRotOfflineSgn->Sumw2();
-      hMassVsPtVsYRotBkg->Sumw2();
-      hMassVsPtVsYRotOfflineBkg->Sumw2();
+	hMassVsPtVsYRotSgn->Sumw2();
+	hMassVsPtVsYRotOfflineSgn->Sumw2();
+	hMassVsPtVsYRotBkg->Sumw2();
+	hMassVsPtVsYRotOfflineBkg->Sumw2();
 
-      hMassVsPtVsYRotSgn->SetMinimum(0);
-      hMassVsPtVsYRotOfflineSgn->SetMinimum(0);
-      hMassVsPtVsYRotBkg->SetMinimum(0);
-      hMassVsPtVsYRotOfflineBkg->SetMinimum(0);
+	hMassVsPtVsYRotSgn->SetMinimum(0);
+	hMassVsPtVsYRotOfflineSgn->SetMinimum(0);
+	hMassVsPtVsYRotBkg->SetMinimum(0);
+	hMassVsPtVsYRotOfflineBkg->SetMinimum(0);
       */
 
       fOutputPIDBachTR->Add(hMassVsPtVsYRotSgn);
@@ -1961,11 +2008,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH1F *hDeltaMass=new TH1F("hDeltaMass","",100,-0.4,0.4);
     TH1F *hDeltaMassOffline=new TH1F("hDeltaMassOffline","",100,-0.4,0.4);
     /*
-    hDeltaMass->Sumw2();
-    hDeltaMassOffline->Sumw2();
+      hDeltaMass->Sumw2();
+      hDeltaMassOffline->Sumw2();
 
-    hDeltaMass->SetMinimum(0);
-    hDeltaMassOffline->SetMinimum(0);
+      hDeltaMass->SetMinimum(0);
+      hDeltaMassOffline->SetMinimum(0);
     */
 
     fOutputPIDBachTR->Add(hDeltaMass);
@@ -1978,15 +2025,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
       TH1F *hDeltaMassBkg=new TH1F("hDeltaMassBkg","",100,-0.4,0.4);
       TH1F *hDeltaMassOfflineBkg=new TH1F("hDeltaMassOfflineBkg","",100,-0.4,0.4);
       /*
-      hDeltaMassSgn->Sumw2();
-      hDeltaMassOfflineSgn->Sumw2();
-      hDeltaMassBkg->Sumw2();
-      hDeltaMassOfflineBkg->Sumw2();
+	hDeltaMassSgn->Sumw2();
+	hDeltaMassOfflineSgn->Sumw2();
+	hDeltaMassBkg->Sumw2();
+	hDeltaMassOfflineBkg->Sumw2();
 
-      hDeltaMassSgn->SetMinimum(0);
-      hDeltaMassOfflineSgn->SetMinimum(0);
-      hDeltaMassBkg->SetMinimum(0);
-      hDeltaMassOfflineBkg->SetMinimum(0);
+	hDeltaMassSgn->SetMinimum(0);
+	hDeltaMassOfflineSgn->SetMinimum(0);
+	hDeltaMassBkg->SetMinimum(0);
+	hDeltaMassOfflineBkg->SetMinimum(0);
       */
 
       fOutputPIDBachTR->Add(hDeltaMassSgn);
@@ -1997,37 +2044,37 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     }
 
     /*
-    Int_t binSparseDMassRot[5]={nMassBins,100,24,40,20};
-    Double_t edgeLowSparseDMassRot[5]={fMinMass,-0.4,0.,-4.,0};
-    Double_t edgeHighSparseDMassRot[5]={maxm,0.4,12.,4.,3.14};
-    THnSparse *hDeltaMassFullAnalysis=new THnSparseF("hDeltaMassFullAnalysis","hDeltaMassFullAnalysis;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
-    THnSparse *hDeltaMassFullAnalysisOffline=new THnSparseF("fDeltaMassFullAnalysisOffline","hDeltaMassFullAnalysisOffline;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      Int_t binSparseDMassRot[5]={nMassBins,100,24,40,20};
+      Double_t edgeLowSparseDMassRot[5]={fMinMass,-0.4,0.,-4.,0};
+      Double_t edgeHighSparseDMassRot[5]={maxm,0.4,12.,4.,3.14};
+      THnSparse *hDeltaMassFullAnalysis=new THnSparseF("hDeltaMassFullAnalysis","hDeltaMassFullAnalysis;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      THnSparse *hDeltaMassFullAnalysisOffline=new THnSparseF("fDeltaMassFullAnalysisOffline","hDeltaMassFullAnalysisOffline;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
 
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysis);
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOffline);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysis);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOffline);
 
-    if (fUseMCInfo) {
+      if (fUseMCInfo) {
 
-    THnSparse *hDeltaMassFullAnalysisSgn=new THnSparseF("hDeltaMassFullAnalysisSgn","hDeltaMassFullAnalysisSgn;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
-    THnSparse *hDeltaMassFullAnalysisOfflineSgn=new THnSparseF("fDeltaMassFullAnalysisOfflineSgn","hDeltaMassFullAnalysisOfflineSgn;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      THnSparse *hDeltaMassFullAnalysisSgn=new THnSparseF("hDeltaMassFullAnalysisSgn","hDeltaMassFullAnalysisSgn;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      THnSparse *hDeltaMassFullAnalysisOfflineSgn=new THnSparseF("fDeltaMassFullAnalysisOfflineSgn","hDeltaMassFullAnalysisOfflineSgn;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
 
-    THnSparse *hDeltaMassFullAnalysisBkg=new THnSparseF("hDeltaMassFullAnalysisBkg","hDeltaMassFullAnalysisBkg;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
-    THnSparse *hDeltaMassFullAnalysisOfflineBkg=new THnSparseF("fDeltaMassFullAnalysisOfflineBkg","hDeltaMassFullAnalysisOfflineBkg;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      THnSparse *hDeltaMassFullAnalysisBkg=new THnSparseF("hDeltaMassFullAnalysisBkg","hDeltaMassFullAnalysisBkg;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
+      THnSparse *hDeltaMassFullAnalysisOfflineBkg=new THnSparseF("fDeltaMassFullAnalysisOfflineBkg","hDeltaMassFullAnalysisOfflineBkg;inv mass (GeV/c);#Delta inv mass (GeV/c); p_{T}^{#Lambda_{c}} (GeV/c); #Delta p_{T} (GeV/c); daughter angle (2prongs) (rad);",5,binSparseDMassRot,edgeLowSparseDMassRot,edgeHighSparseDMassRot);
 
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisSgn);
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineSgn);
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisBkg);
-    fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineBkg);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysisSgn);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineSgn);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysisBkg);
+      fOutputPIDBachTR->Add(hDeltaMassFullAnalysisOfflineBkg);
 
-    }
+      }
     */
 
   }
 
   /*
-  fOutputAll->Print();
-  fOutputPIDBach->Print();
-  if (fTrackRotation) fOutputPIDBachTR->Print();
+    fOutputAll->Print();
+    fOutputPIDBach->Print();
+    if (fTrackRotation) fOutputPIDBachTR->Print();
   */
   return;
 }
@@ -2233,8 +2280,8 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelectionWithCandidates(AliAODEve
 
 //-----------------------------
 Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
-						Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
-						TClonesArray *mcArray) {
+						  Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
+						  TClonesArray *mcArray) {
   //
   /// This is now implemented in AliAODRecoCascadeHF
   //
@@ -2470,9 +2517,9 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
 
 //________________________________________________________________
 void AliAnalysisTaskSELc2V0bachelor::FillArmPodDistribution(AliAODRecoDecay *vZero,
-							    TString histoTitle,
-							    Bool_t isCandidateSelectedCuts,
-							    Bool_t isBachelorID) {
+							      TString histoTitle,
+							      Bool_t isCandidateSelectedCuts,
+							      Bool_t isBachelorID) {
   //
   /// This is to fill Armenteros Podolanski plots
   //
@@ -2569,7 +2616,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 }
 
 //-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc) {
+void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc, Int_t checkLcOrigin) {
   //
   /// This is to fill tree
   //
@@ -2730,8 +2777,21 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 
   Int_t areV0daughtersSelected = (v0pos->TestFilterMask(BIT(4)))*1 + (!(v0pos->TestFilterMask(BIT(4))))*2;
   areV0daughtersSelected += (v0pos->GetLabel()<0)*4 + (v0pos->GetLabel()>=0)*8;
-  areV0daughtersSelected += (v0neg->TestFilterMask(BIT(4)))*16 + (!(v0neg->TestFilterMask(BIT(4))))*32;
-  areV0daughtersSelected += (v0neg->GetLabel()<0)*64 + (v0neg->GetLabel()>=0)*128;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(0))*16;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(1))*32;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(2))*64;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(3))*128;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(4))*256;
+  areV0daughtersSelected += (v0pos->HasPointOnITSLayer(5))*512;
+
+  areV0daughtersSelected += (v0neg->TestFilterMask(BIT(4)))*1024 + (!(v0neg->TestFilterMask(BIT(4))))*2048;
+  areV0daughtersSelected += (v0neg->GetLabel()<0)*4096 + (v0neg->GetLabel()>=0)*8192;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(0))*16384;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(1))*32768;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(2))*65536;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(3))*131072;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(4))*262144;
+  areV0daughtersSelected += (v0neg->HasPointOnITSLayer(5))*524288;
 
   Double_t nSigmaITSpr=-999.;
   cutsAnal->GetPidHF()->GetnSigmaITS(bachelor,4,nSigmaITSpr);
@@ -2958,6 +3018,60 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   //fCandidateVariables[86] = part->QtProng(0);
   //fCandidateVariables[87] = part->Alpha();
 
+
+  AliPIDCombined *objectPIDCombined=new AliPIDCombined;
+  objectPIDCombined->SetDefaultTPCPriors();
+  objectPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+
+  Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
+  UInt_t detUsed = objectPIDCombined->ComputeProbabilities(bachelor, pidResponse, probTPCTOF);
+
+  Double_t probProton = -1.;
+  //  Double_t probPion = -1.;
+  //  Double_t probKaon = -1.;
+  if (detUsed == (UInt_t)objectPIDCombined->GetDetectorMask() ) {
+    AliDebug(2, Form("We have found the detector mask for TOF + TPC: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
+    probProton = probTPCTOF[AliPID::kProton];
+    // probPion = probTPCTOF[AliPID::kPion];
+    // probKaon = probTPCTOF[AliPID::kKaon];
+  }
+  else { // if you don't have both TOF and TPC, try only TPC
+    objectPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+    AliDebug(2, "We did not find the detector mask for TOF + TPC, let's see only TPC");
+    detUsed = objectPIDCombined->ComputeProbabilities(bachelor, pidResponse, probTPCTOF);
+    AliDebug(2,Form(" detUsed (TPC case) = %d", detUsed));
+    if (detUsed == (UInt_t)objectPIDCombined->GetDetectorMask()) {
+      probProton = probTPCTOF[AliPID::kProton];
+      // probPion = probTPCTOF[AliPID::kPion];
+      // probKaon = probTPCTOF[AliPID::kKaon];
+      AliDebug(2, Form("TPC only worked: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
+    }
+    else {
+      AliDebug(2, "Only TPC did not work...");
+    }
+    // resetting mask to ask for both TPC+TOF
+    objectPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  }
+  AliDebug(2, Form("probProton = %f", probProton));
+
+  // now we get the TPC and TOF single PID probabilities (only for Proton, or the tree will explode :) )
+  Double_t probProtonTPC = -1.;
+  Double_t probProtonTOF = -1.;
+  Double_t pidTPC[AliPID::kSPECIES]={-1.};
+  Double_t pidTOF[AliPID::kSPECIES]={-1.};
+  Int_t respTPC = pidResponse->ComputePIDProbability(AliPIDResponse::kDetTPC, bachelor, AliPID::kSPECIES, pidTPC);
+  Int_t respTOF = pidResponse->ComputePIDProbability(AliPIDResponse::kDetTOF, bachelor, AliPID::kSPECIES, pidTOF);
+  if (respTPC == AliPIDResponse::kDetPidOk) probProtonTPC = pidTPC[AliPID::kProton];
+  if (respTOF == AliPIDResponse::kDetPidOk) probProtonTOF = pidTOF[AliPID::kProton];
+
+  fCandidateVariables[90]=probProton;
+  fCandidateVariables[91]=probProtonTPC;
+  fCandidateVariables[92]=probProtonTOF;
+
+  fCandidateVariables[93]=checkLcOrigin;
+
+  delete objectPIDCombined;
+
   fVariablesTree->Fill();
 
   return;
@@ -2971,7 +3085,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 90;
+  Int_t nVar = 94;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[ 0]="isLcByMC";
@@ -3064,6 +3178,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[87]="pdgV0neg"; // pdg MC V0 negative
   fCandidateVariableNames[88]="pdgV0Candidate"; // pdg MC V0candidate recovered via new method
   fCandidateVariableNames[89]="startTimeMask"; // start time mask
+
+  fCandidateVariableNames[90]="combinedProtonProb";
+  fCandidateVariableNames[91]="TPCProtonProb";
+  fCandidateVariableNames[92]="TOFProtonProb";
+  fCandidateVariableNames[93]="checkLcOrigin";
 
   //fCandidateVariableNames[65]="bachelorPx";
   //fCandidateVariableNames[66]="bachelorPy";
@@ -3317,34 +3436,35 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
   Double_t ptV0neg = v0neg->Pt();
 
-  fillthis="histK0SMass"+appendthis;
-  //    cout << fillthis << endl;
-  cutsAnal->SetExcludedCut(2);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
-  }
-  cutsAnal->SetExcludedCut(-1);
-
-  fillthis="histpK0Svsp"+appendthis;
-  //    cout << fillthis << endl;
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
-    if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
+  if (!appendthis.Contains("SgnC") && !appendthis.Contains("SgnB") && !appendthis.Contains("SgnNoQ")) {
+    fillthis="histpK0Svsp"+appendthis;
+    //cout << fillthis << endl;
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
+    }
   }
 
   fillthis="histLcMassByK0S"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
   }
 
-
-
+  if (!appendthis.Contains("SgnC") && !appendthis.Contains("SgnB") && !appendthis.Contains("SgnNoQ")) {
+    fillthis="histK0SMass"+appendthis;
+    //    cout << fillthis << endl;
+    cutsAnal->SetExcludedCut(2);
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
+      if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
+    }
+    cutsAnal->SetExcludedCut(-1);
+  }
 
   fillthis="histptK0S"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(15);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptK0S);
@@ -3352,7 +3472,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   }
 
   fillthis="histptP"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(4);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptBach);
@@ -3360,7 +3480,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   }
 
   fillthis="histptPip"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(5);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptV0pos);
@@ -3368,39 +3488,41 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   }
 
   fillthis="histptPim"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(6);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptV0neg);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,ptV0neg);
   }
 
-  fillthis="histLambdaMass"+appendthis;
-  //    cout << fillthis << endl;
-  cutsAnal->SetExcludedCut(13);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
-    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
-  }
+  if (!appendthis.Contains("SgnC") && !appendthis.Contains("SgnB") && !appendthis.Contains("SgnNoQ")) {
+    fillthis="histLambdaMass"+appendthis;
+    //    cout << fillthis << endl;
+    cutsAnal->SetExcludedCut(13);
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
+      if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
+    }
 
-  fillthis="histLambdaBarMass"+appendthis;
-  //    cout << fillthis << endl;
-  cutsAnal->SetExcludedCut(13);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
-    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
-  }
+    fillthis="histLambdaBarMass"+appendthis;
+    //    cout << fillthis << endl;
+    cutsAnal->SetExcludedCut(13);
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
+      if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
+    }
 
-  fillthis="histGammaMass"+appendthis;
-  //    cout << fillthis << endl;
-  cutsAnal->SetExcludedCut(14);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
-    ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
-    if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
+    fillthis="histGammaMass"+appendthis;
+    //    cout << fillthis << endl;
+    cutsAnal->SetExcludedCut(14);
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
+      if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
+    }
   }
 
   fillthis="histD0K0S"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(11);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(1));
@@ -3408,7 +3530,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   }
 
   fillthis="histD0P"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(10);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(0));
@@ -3416,7 +3538,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   }
 
   fillthis="histCosPAK0S"+appendthis;
-  //    cout << fillthis << endl;
+  //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(9);
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->CosV0PointingAngle());
@@ -3430,8 +3552,8 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
 }
 //---------------------------
 Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack *bachelor, Double_t b,
-							Double_t &xVtxLc, Double_t &yVtxLc, Double_t &zVtxLc,
-							Double_t &pxVtxBachelor, Double_t &pyVtxBachelor, Double_t &pzVtxBachelor) {
+							  Double_t &xVtxLc, Double_t &yVtxLc, Double_t &zVtxLc,
+							  Double_t &pxVtxBachelor, Double_t &pyVtxBachelor, Double_t &pzVtxBachelor) {
   //--------------------------------------------------------------------
   /// This function returns the DCA between the V0 and the track
   /// This is a copy of AliCascadeVertexer::PropagateToDCA(...) method
@@ -3461,25 +3583,25 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
     pz2=v->Pz();
 
   /*
-  AliAODTrack *trackP = (AliAODTrack*) v->GetDaughter(0);
-  //Double_t pxpypzP[3]; trackP->PxPyPz(pxpypzP);
-  //Double_t xyzP[3]; trackP->XvYvZv(xyzP);
-  Double_t cvP[21]; trackP->GetCovarianceXYZPxPyPz(cvP);
-  //Short_t signP=trackP->Charge();
-  //AliExternalTrackParam *tP = new AliExternalTrackParam(xyzP,pxpypzP,cvP,signP);
+    AliAODTrack *trackP = (AliAODTrack*) v->GetDaughter(0);
+    //Double_t pxpypzP[3]; trackP->PxPyPz(pxpypzP);
+    //Double_t xyzP[3]; trackP->XvYvZv(xyzP);
+    Double_t cvP[21]; trackP->GetCovarianceXYZPxPyPz(cvP);
+    //Short_t signP=trackP->Charge();
+    //AliExternalTrackParam *tP = new AliExternalTrackParam(xyzP,pxpypzP,cvP,signP);
 
-  // Get AliExternalTrackParam out of the AliAODTrack
-  AliAODTrack *trackN = (AliAODTrack*) v->GetDaughter(1);
-  //Double_t pxpypzN[3]; trackN->PxPyPz(pxpypzN);
-  //Double_t xyzN[3]; trackN->XvYvZv(xyzN);
-  Double_t cvN[21]; trackN->GetCovarianceXYZPxPyPz(cvN);
-  //Short_t signN=trackN->Charge();
-  //AliExternalTrackParam *tN = new AliExternalTrackParam(xyzN,pxpypzN,cvN,signN);
+    // Get AliExternalTrackParam out of the AliAODTrack
+    AliAODTrack *trackN = (AliAODTrack*) v->GetDaughter(1);
+    //Double_t pxpypzN[3]; trackN->PxPyPz(pxpypzN);
+    //Double_t xyzN[3]; trackN->XvYvZv(xyzN);
+    Double_t cvN[21]; trackN->GetCovarianceXYZPxPyPz(cvN);
+    //Short_t signN=trackN->Charge();
+    //AliExternalTrackParam *tN = new AliExternalTrackParam(xyzN,pxpypzN,cvN,signN);
 
-  Double_t xyzV0[3]={x2,y2,z2};
-  Double_t pxpypzV0[3]={px2,py2,pz2};
-  Double_t cvV0[21]; for (Int_t ii=0; ii<21; ii++) cvV0[ii]=cvP[ii]+cvN[ii];
-  AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyzV0,pxpypzV0,cvV0,0);
+    Double_t xyzV0[3]={x2,y2,z2};
+    Double_t pxpypzV0[3]={px2,py2,pz2};
+    Double_t cvV0[21]; for (Int_t ii=0; ii<21; ii++) cvV0[ii]=cvP[ii]+cvN[ii];
+    AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyzV0,pxpypzV0,cvV0,0);
   */
  
   // calculation dca
@@ -3564,7 +3686,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::GetAlpha(Double_t xyz[3],Double_t pxpyp
 
 //---------------------------
 Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00, Double_t a01,
-					     Double_t a10, Double_t a11) const {
+					       Double_t a10, Double_t a11) const {
   //--------------------------------------------------------------------
   /// This function calculates locally a 2x2 determinant.
   /// This is a copy of the AliCascadeVertexer::Det(...) method
@@ -3574,8 +3696,8 @@ Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00, Double_t a01,
 
 //---------------------------
 Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00,Double_t a01,Double_t a02,
-					     Double_t a10,Double_t a11,Double_t a12,
-					     Double_t a20,Double_t a21,Double_t a22) const {
+					       Double_t a10,Double_t a11,Double_t a12,
+					       Double_t a20,Double_t a21,Double_t a22) const {
   //--------------------------------------------------------------------
   /// This function calculates locally a 3x3 determinant
   /// This is a copy of the AliCascadeVertexer::Det(...) method
@@ -3585,7 +3707,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00,Double_t a01,Double_t 
 
 //----------------------------------------------------------------------------
 Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candidate,
-						      TClonesArray *mcArray)
+							TClonesArray *mcArray)
 {
   //
   /// Check if this candidate is matched to a MC signal  Lc -> p K0S + X
@@ -3636,8 +3758,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
 }
 //--------------------------------------------------------------------------
 Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArray,
-							    Int_t dgLabels[10],Int_t ndg,
-							    Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother, Int_t &nDauCand) const
+							      Int_t dgLabels[10],Int_t ndg,
+							      Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother, Int_t &nDauCand) const
 {
   ///
   /// Check if this candidate is matched to a MC signal
@@ -3878,5 +4000,452 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
   delete partCopy;
 
   return;
+
+}
+
+//----------------------------------------------------
+void AliAnalysisTaskSELc2V0bachelor::DefineSignalHistosSeparatedPerOrigin()
+{
+  //
+  // Define analysis histograms for SNG separated for origin (from c, from b and from no-quark)
+  //
+
+  if (!fUseMCInfo) return;
+  if (!fCheckOrigin) return;
+
+  Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t mMinLambdaPDG  = TDatabasePDG::Instance()->GetParticle(2212)->Mass()+
+    TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+  TString nameHistoSgnC=" ", nameHistoSgnB=" ", nameHistoSgnNoQ=" ";
+  TString titleHistoSgnC=" ", titleHistoSgnB=" ", titleHistoSgnNoQ=" ";
+
+  // pt(Lc)
+  Double_t *binLimpTLc=new Double_t[11+1]; // 11 pT(Lc) bins
+  binLimpTLc[ 0]= 0.;
+  binLimpTLc[ 1]= 1.;
+  binLimpTLc[ 2]= 2.;
+  binLimpTLc[ 3]= 3.;
+  binLimpTLc[ 4]= 4.;
+  binLimpTLc[ 5]= 5.;
+  binLimpTLc[ 6]= 6.;
+  binLimpTLc[ 7]= 8.;
+  binLimpTLc[ 8]=12.;
+  binLimpTLc[ 9]=17.;
+  binLimpTLc[10]=25.;
+  binLimpTLc[11]=35.;
+
+  // pt(prong)
+  Double_t *binLimpTprong=new Double_t[41+1]; // 41 pT(prong) bins
+  binLimpTprong[ 0]= 0.0;
+  binLimpTprong[ 1]= 0.1;
+  binLimpTprong[ 2]= 0.2;
+  binLimpTprong[ 3]= 0.3;
+  binLimpTprong[ 4]= 0.4;
+  binLimpTprong[ 5]= 0.5;
+  binLimpTprong[ 6]= 0.6;
+  binLimpTprong[ 7]= 0.7;
+  binLimpTprong[ 8]= 0.8;
+  binLimpTprong[ 9]= 0.9;
+  binLimpTprong[10]= 1.0;
+  binLimpTprong[11]= 1.2;
+  binLimpTprong[12]= 1.4;
+  binLimpTprong[13]= 1.6;
+  binLimpTprong[14]= 1.8;
+  binLimpTprong[15]= 2.0;
+  binLimpTprong[16]= 2.2;
+  binLimpTprong[17]= 2.4;
+  binLimpTprong[18]= 2.6;
+  binLimpTprong[19]= 2.8;
+  binLimpTprong[20]= 3.0;
+  binLimpTprong[21]= 3.5;
+  binLimpTprong[22]= 4.0;
+  binLimpTprong[23]= 4.5;
+  binLimpTprong[24]= 5.0;
+  binLimpTprong[25]= 5.5;
+  binLimpTprong[26]= 6.0;
+  binLimpTprong[27]= 6.5;
+  binLimpTprong[28]= 7.0;
+  binLimpTprong[29]= 7.5;
+  binLimpTprong[30]= 8.0;
+  binLimpTprong[31]= 9.0;
+  binLimpTprong[32]=10.0;
+  binLimpTprong[33]=11.0;
+  binLimpTprong[34]=12.0;
+  binLimpTprong[35]=13.0;
+  binLimpTprong[36]=14.0;
+  binLimpTprong[37]=15.0;
+  binLimpTprong[38]=20.0;
+  binLimpTprong[39]=25.0;
+  binLimpTprong[40]=30.0;
+  binLimpTprong[41]=35.0;
+
+  if (fUseOnTheFlyV0) {
+
+    nameHistoSgnC="histLcMassByK0SSgnC";
+    nameHistoSgnB="histLcMassByK0SSgnB";
+    nameHistoSgnNoQ="histLcMassByK0SSgnNoQ";
+    titleHistoSgnC="#Lambda_{c} #leftarrow c - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+    titleHistoSgnB="#Lambda_{c} #leftarrow b - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+    titleHistoSgnNoQ="#Lambda_{c} #leftarrow no quark - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+    TH2F* spectrumLcMassByK0SSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+    TH2F* spectrumLcMassByK0SSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+    TH2F* spectrumLcMassByK0SSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+
+    TH2F* allspectrumLcMassByK0SSgnC = (TH2F*)spectrumLcMassByK0SSgnC->Clone();
+    TH2F* allspectrumLcMassByK0SSgnB = (TH2F*) spectrumLcMassByK0SSgnB->Clone();
+    TH2F* allspectrumLcMassByK0SSgnNoQ = (TH2F*) spectrumLcMassByK0SSgnNoQ->Clone();
+    TH2F* pidBachspectrumLcMassByK0SSgnC = (TH2F*)spectrumLcMassByK0SSgnC->Clone();
+    TH2F* pidBachspectrumLcMassByK0SSgnB = (TH2F*) spectrumLcMassByK0SSgnB->Clone();
+    TH2F* pidBachspectrumLcMassByK0SSgnNoQ = (TH2F*) spectrumLcMassByK0SSgnNoQ->Clone();
+
+    fOutputAll->Add(allspectrumLcMassByK0SSgnC);
+    fOutputAll->Add(allspectrumLcMassByK0SSgnB);
+    fOutputAll->Add(allspectrumLcMassByK0SSgnNoQ);
+    fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgnC);
+    fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgnB);
+    fOutputPIDBach->Add(pidBachspectrumLcMassByK0SSgnNoQ);
+
+    nameHistoSgnC="histptK0SSgnC";
+    nameHistoSgnB="histptK0SSgnB";
+    nameHistoSgnNoQ="histptK0SSgnNoQ";
+    titleHistoSgnC="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+    titleHistoSgnB="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+    titleHistoSgnNoQ="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+    TH2F* ptK0SSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptK0SSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptK0SSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,41,binLimpTprong);
+
+    nameHistoSgnC="histptPSgnC";
+    nameHistoSgnB="histptPSgnB";
+    nameHistoSgnNoQ="histptPSgnNoQ";
+    titleHistoSgnC="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+    titleHistoSgnB="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+    titleHistoSgnNoQ="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+    TH2F* ptPSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,41,binLimpTprong);
+
+    nameHistoSgnC="histptPipSgnC";
+    nameHistoSgnB="histptPipSgnB";
+    nameHistoSgnNoQ="histptPipSgnNoQ";
+    titleHistoSgnC="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+    titleHistoSgnB="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+    titleHistoSgnNoQ="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+    TH2F* ptPiPSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPiPSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPiPSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+
+    nameHistoSgnC="histptPimSgnC";
+    nameHistoSgnB="histptPimSgnB";
+    nameHistoSgnNoQ="histptPimSgnNoQ";
+    titleHistoSgnC="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+    titleHistoSgnB="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+    titleHistoSgnNoQ="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+    TH2F* ptPiMSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPiMSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+    TH2F* ptPiMSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+
+    nameHistoSgnC="histD0K0SSgnC";
+    nameHistoSgnB="histD0K0SSgnB";
+    nameHistoSgnNoQ="histD0K0SSgnNoQ";
+    titleHistoSgnC="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+    titleHistoSgnB="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+    titleHistoSgnNoQ="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+    TH2F* d0K0SSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,1000,-1.,1.);
+    TH2F* d0K0SSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,1000,-1.,1.);
+    TH2F* d0K0SSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,1000,-1.,1.);
+
+    nameHistoSgnC="histD0PSgnC";
+    nameHistoSgnB="histD0PSgnB";
+    nameHistoSgnNoQ="histD0PSgnNoQ";
+    titleHistoSgnC="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+    titleHistoSgnB="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+    titleHistoSgnNoQ="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+    TH2F* d0PSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,1000,-1.,1.);
+    TH2F* d0PSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,1000,-1.,1.);
+    TH2F* d0PSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,1000,-1.,1.);
+
+    nameHistoSgnC="histCosPAK0SSgnC";
+    nameHistoSgnB="histCosPAK0SSgnB";
+    nameHistoSgnNoQ="histCosPAK0SSgnNoQ";
+    titleHistoSgnC="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+    titleHistoSgnB="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+    titleHistoSgnNoQ="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+    TH2F *cosPAK0SSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),41,binLimpTprong,100,0.99,1.);
+    TH2F *cosPAK0SSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),41,binLimpTprong,100,0.99,1.);
+    TH2F *cosPAK0SSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),41,binLimpTprong,100,0.99,1.);
+
+    TH2F* allptK0SSgnC = (TH2F*)ptK0SSgnC->Clone();
+    TH2F* allptK0SSgnB = (TH2F*)ptK0SSgnB->Clone();
+    TH2F* allptK0SSgnNoQ = (TH2F*)ptK0SSgnNoQ->Clone();
+    TH2F* allptPSgnC = (TH2F*)ptPSgnC->Clone();
+    TH2F* allptPSgnB = (TH2F*)ptPSgnB->Clone();
+    TH2F* allptPSgnNoQ = (TH2F*)ptPSgnNoQ->Clone();
+    TH2F* allptPiPSgnC = (TH2F*)ptPiPSgnC->Clone();
+    TH2F* allptPiPSgnB = (TH2F*)ptPiPSgnB->Clone();
+    TH2F* allptPiPSgnNoQ = (TH2F*)ptPiPSgnNoQ->Clone();
+    TH2F* allptPiMSgnC = (TH2F*)ptPiMSgnC->Clone();
+    TH2F* allptPiMSgnB = (TH2F*)ptPiMSgnB->Clone();
+    TH2F* allptPiMSgnNoQ = (TH2F*)ptPiMSgnNoQ->Clone();
+    TH2F* alld0K0SSgnC = (TH2F*)d0K0SSgnC->Clone();
+    TH2F* alld0K0SSgnB = (TH2F*)d0K0SSgnB->Clone();
+    TH2F* alld0K0SSgnNoQ = (TH2F*)d0K0SSgnNoQ->Clone();
+    TH2F* alld0PSgnC = (TH2F*)d0PSgnC->Clone();
+    TH2F* alld0PSgnB = (TH2F*)d0PSgnB->Clone();
+    TH2F* alld0PSgnNoQ = (TH2F*)d0PSgnNoQ->Clone();
+    TH2F* allcosPAK0SSgnC = (TH2F*)cosPAK0SSgnC->Clone();
+    TH2F* allcosPAK0SSgnB = (TH2F*)cosPAK0SSgnB->Clone();
+    TH2F* allcosPAK0SSgnNoQ = (TH2F*)cosPAK0SSgnNoQ->Clone();
+
+    TH2F* pidptK0SSgnC = (TH2F*)ptK0SSgnC->Clone();
+    TH2F* pidptK0SSgnB = (TH2F*)ptK0SSgnB->Clone();
+    TH2F* pidptK0SSgnNoQ = (TH2F*)ptK0SSgnNoQ->Clone();
+    TH2F* pidptPSgnC = (TH2F*)ptPSgnC->Clone();
+    TH2F* pidptPSgnB = (TH2F*)ptPSgnB->Clone();
+    TH2F* pidptPSgnNoQ = (TH2F*)ptPSgnNoQ->Clone();
+    TH2F* pidptPiPSgnC = (TH2F*)ptPiPSgnC->Clone();
+    TH2F* pidptPiPSgnB = (TH2F*)ptPiPSgnB->Clone();
+    TH2F* pidptPiPSgnNoQ = (TH2F*)ptPiPSgnNoQ->Clone();
+    TH2F* pidptPiMSgnC = (TH2F*)ptPiMSgnC->Clone();
+    TH2F* pidptPiMSgnB = (TH2F*)ptPiMSgnB->Clone();
+    TH2F* pidptPiMSgnNoQ = (TH2F*)ptPiMSgnNoQ->Clone();
+    TH2F* pidd0K0SSgnC = (TH2F*)d0K0SSgnC->Clone();
+    TH2F* pidd0K0SSgnB = (TH2F*)d0K0SSgnB->Clone();
+    TH2F* pidd0K0SSgnNoQ = (TH2F*)d0K0SSgnNoQ->Clone();
+    TH2F* pidd0PSgnC = (TH2F*)d0PSgnC->Clone();
+    TH2F* pidd0PSgnB = (TH2F*)d0PSgnB->Clone();
+    TH2F* pidd0PSgnNoQ = (TH2F*)d0PSgnNoQ->Clone();
+    TH2F* pidcosPAK0SSgnC = (TH2F*)cosPAK0SSgnC->Clone();
+    TH2F* pidcosPAK0SSgnB = (TH2F*)cosPAK0SSgnB->Clone();
+    TH2F* pidcosPAK0SSgnNoQ = (TH2F*)cosPAK0SSgnNoQ->Clone();
+
+    fOutputAll->Add(allptK0SSgnC);
+    fOutputAll->Add(allptK0SSgnB);
+    fOutputAll->Add(allptK0SSgnNoQ);
+    fOutputAll->Add(allptPSgnC);
+    fOutputAll->Add(allptPSgnB);
+    fOutputAll->Add(allptPSgnNoQ);
+    fOutputAll->Add(allptPiPSgnC);
+    fOutputAll->Add(allptPiPSgnB);
+    fOutputAll->Add(allptPiPSgnNoQ);
+    fOutputAll->Add(allptPiMSgnC);
+    fOutputAll->Add(allptPiMSgnB);
+    fOutputAll->Add(allptPiMSgnNoQ);
+    fOutputAll->Add(alld0K0SSgnC);
+    fOutputAll->Add(alld0K0SSgnB);
+    fOutputAll->Add(alld0K0SSgnNoQ);
+    fOutputAll->Add(alld0PSgnC);
+    fOutputAll->Add(alld0PSgnB);
+    fOutputAll->Add(alld0PSgnNoQ);
+    fOutputAll->Add(allcosPAK0SSgnC);
+    fOutputAll->Add(allcosPAK0SSgnB);
+    fOutputAll->Add(allcosPAK0SSgnNoQ);
+
+    fOutputPIDBach->Add(pidptK0SSgnC);
+    fOutputPIDBach->Add(pidptK0SSgnB);
+    fOutputPIDBach->Add(pidptK0SSgnNoQ);
+    fOutputPIDBach->Add(pidptPSgnC);
+    fOutputPIDBach->Add(pidptPSgnB);
+    fOutputPIDBach->Add(pidptPSgnNoQ);
+    fOutputPIDBach->Add(pidptPiPSgnC);
+    fOutputPIDBach->Add(pidptPiPSgnB);
+    fOutputPIDBach->Add(pidptPiPSgnNoQ);
+    fOutputPIDBach->Add(pidptPiMSgnC);
+    fOutputPIDBach->Add(pidptPiMSgnB);
+    fOutputPIDBach->Add(pidptPiMSgnNoQ);
+    fOutputPIDBach->Add(pidd0K0SSgnC);
+    fOutputPIDBach->Add(pidd0K0SSgnB);
+    fOutputPIDBach->Add(pidd0K0SSgnNoQ);
+    fOutputPIDBach->Add(pidd0PSgnC);
+    fOutputPIDBach->Add(pidd0PSgnB);
+    fOutputPIDBach->Add(pidd0PSgnNoQ);
+    fOutputPIDBach->Add(pidcosPAK0SSgnC);
+    fOutputPIDBach->Add(pidcosPAK0SSgnB);
+    fOutputPIDBach->Add(pidcosPAK0SSgnNoQ);
+
+  }
+
+  nameHistoSgnC="histLcMassByK0SOfflineSgnC";
+  nameHistoSgnB="histLcMassByK0SOfflineSgnB";
+  nameHistoSgnNoQ="histLcMassByK0SOfflineSgnNoQ";
+  titleHistoSgnC="#Lambda_{c} #leftarrow c - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+  titleHistoSgnB="#Lambda_{c} #leftarrow b - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+  titleHistoSgnNoQ="#Lambda_{c} #leftarrow no quark - sgn: invariant mass (by K^{0}_{S})  vs p_{T} - MC; m_{inv}(p,K^{0}_{S}) [GeV/c^{2}]; p_{T}(#Lambda_{c}) [GeV/c]";
+  TH2F* spectrumLcMassOfflineByK0SSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+  TH2F* spectrumLcMassOfflineByK0SSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+  TH2F* spectrumLcMassOfflineByK0SSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),1000,mLcPDG-0.250,mLcPDG+0.250,11,binLimpTLc);
+
+  TH2F* allspectrumLcMassOfflineByK0SSgnC = (TH2F*)spectrumLcMassOfflineByK0SSgnC->Clone();
+  TH2F* allspectrumLcMassOfflineByK0SSgnB = (TH2F*) spectrumLcMassOfflineByK0SSgnB->Clone();
+  TH2F* allspectrumLcMassOfflineByK0SSgnNoQ = (TH2F*) spectrumLcMassOfflineByK0SSgnNoQ->Clone();
+  TH2F* pidBachspectrumLcMassOfflineByK0SSgnC = (TH2F*)spectrumLcMassOfflineByK0SSgnC->Clone();
+  TH2F* pidBachspectrumLcMassOfflineByK0SSgnB = (TH2F*) spectrumLcMassOfflineByK0SSgnB->Clone();
+  TH2F* pidBachspectrumLcMassOfflineByK0SSgnNoQ = (TH2F*) spectrumLcMassOfflineByK0SSgnNoQ->Clone();
+  fOutputAll->Add(allspectrumLcMassOfflineByK0SSgnC);
+  fOutputAll->Add(allspectrumLcMassOfflineByK0SSgnB);
+  fOutputAll->Add(allspectrumLcMassOfflineByK0SSgnNoQ);
+  fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgnC);
+  fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgnB);
+  fOutputPIDBach->Add(pidBachspectrumLcMassOfflineByK0SSgnNoQ);
+
+  nameHistoSgnC="histptK0SOfflineSgnC";
+  nameHistoSgnB="histptK0SOfflineSgnB";
+  nameHistoSgnNoQ="histptK0SOfflineSgnNoQ";
+  titleHistoSgnC="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+  titleHistoSgnB="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+  titleHistoSgnNoQ="p_{T}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(K^{0}_{S}) [GeV/c]; Entries";
+  TH2F* ptK0SOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptK0SOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptK0SOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,41,binLimpTprong);
+
+  nameHistoSgnC="histptPOfflineSgnC";
+  nameHistoSgnB="histptPOfflineSgnB";
+  nameHistoSgnNoQ="histptPOfflineSgnNoQ";
+  titleHistoSgnC="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+  titleHistoSgnB="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+  titleHistoSgnNoQ="p_{T}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(p) [GeV/c]; Entries";
+  TH2F* ptPOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,41,binLimpTprong);
+
+  nameHistoSgnC="histptPipOfflineSgnC";
+  nameHistoSgnB="histptPipOfflineSgnB";
+  nameHistoSgnNoQ="histptPipOfflineSgnNoQ";
+  titleHistoSgnC="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+  titleHistoSgnB="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+  titleHistoSgnNoQ="p_{T}(#pi^{+}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{+}) [GeV/c]; Entries";
+  TH2F* ptPiPOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPiPOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPiPOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+
+  nameHistoSgnC="histptPimOfflineSgnC";
+  nameHistoSgnB="histptPimOfflineSgnB";
+  nameHistoSgnNoQ="histptPimOfflineSgnNoQ";
+  titleHistoSgnC="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+  titleHistoSgnB="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+  titleHistoSgnNoQ="p_{T}(#pi^{-}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; p_{T}(#pi^{-}) [GeV/c]; Entries";
+  TH2F* ptPiMOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPiMOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+  TH2F* ptPiMOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnB.Data(),11,binLimpTLc,41,binLimpTprong);
+
+  nameHistoSgnC="histD0K0SOfflineSgnC";
+  nameHistoSgnB="histD0K0SOfflineSgnB";
+  nameHistoSgnNoQ="histD0K0SOfflineSgnNoQ";
+  titleHistoSgnC="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+  titleHistoSgnB="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+  titleHistoSgnNoQ="d_{0}(K^{0}_{S}) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(K^{0}_{S}) [#sigmas]; Entries";
+  TH2F* d0K0SOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,1000,-1.,1.);
+  TH2F* d0K0SOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,1000,-1.,1.);
+  TH2F* d0K0SOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,1000,-1.,1.);
+
+  nameHistoSgnC="histD0POfflineSgnC";
+  nameHistoSgnB="histD0POfflineSgnB";
+  nameHistoSgnNoQ="histD0POfflineSgnNoQ";
+  titleHistoSgnC="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+  titleHistoSgnB="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+  titleHistoSgnNoQ="d_{0}(p) vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; d_{0}(p) [cm]; Entries";
+  TH2F* d0POfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),11,binLimpTLc,1000,-1.,1.);
+  TH2F* d0POfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),11,binLimpTLc,1000,-1.,1.);
+  TH2F* d0POfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),11,binLimpTLc,1000,-1.,1.);
+
+  nameHistoSgnC="histCosPAK0SOfflineSgnC";
+  nameHistoSgnB="histCosPAK0SOfflineSgnB";
+  nameHistoSgnNoQ="histCosPAK0SOfflineSgnNoQ";
+  titleHistoSgnC="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+  titleHistoSgnB="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+  titleHistoSgnNoQ="K^{0}_{S} cosine of pointing angle wrt primary vertex vs p_{T}(#Lambda_{c}); p_{T}(#Lambda_{c}) [GeV/c]; cosine; Entries";
+  TH2F *cosPAK0SOfflineSgnC = new TH2F(nameHistoSgnC.Data(),titleHistoSgnC.Data(),41,binLimpTprong,100,0.99,1.);
+  TH2F *cosPAK0SOfflineSgnB = new TH2F(nameHistoSgnB.Data(),titleHistoSgnB.Data(),41,binLimpTprong,100,0.99,1.);
+  TH2F *cosPAK0SOfflineSgnNoQ = new TH2F(nameHistoSgnNoQ.Data(),titleHistoSgnNoQ.Data(),41,binLimpTprong,100,0.99,1.);
+
+  TH2F* allptK0SOfflineSgnC = (TH2F*)ptK0SOfflineSgnC->Clone();
+  TH2F* allptK0SOfflineSgnB = (TH2F*)ptK0SOfflineSgnB->Clone();
+  TH2F* allptK0SOfflineSgnNoQ = (TH2F*)ptK0SOfflineSgnNoQ->Clone();
+  TH2F* allptPOfflineSgnC = (TH2F*)ptPOfflineSgnC->Clone();
+  TH2F* allptPOfflineSgnB = (TH2F*)ptPOfflineSgnB->Clone();
+  TH2F* allptPOfflineSgnNoQ = (TH2F*)ptPOfflineSgnNoQ->Clone();
+  TH2F* allptPiPOfflineSgnC = (TH2F*)ptPiPOfflineSgnC->Clone();
+  TH2F* allptPiPOfflineSgnB = (TH2F*)ptPiPOfflineSgnB->Clone();
+  TH2F* allptPiPOfflineSgnNoQ = (TH2F*)ptPiPOfflineSgnNoQ->Clone();
+  TH2F* allptPiMOfflineSgnC = (TH2F*)ptPiMOfflineSgnC->Clone();
+  TH2F* allptPiMOfflineSgnB = (TH2F*)ptPiMOfflineSgnB->Clone();
+  TH2F* allptPiMOfflineSgnNoQ = (TH2F*)ptPiMOfflineSgnNoQ->Clone();
+  TH2F* alld0K0SOfflineSgnC = (TH2F*)d0K0SOfflineSgnC->Clone();
+  TH2F* alld0K0SOfflineSgnB = (TH2F*)d0K0SOfflineSgnB->Clone();
+  TH2F* alld0K0SOfflineSgnNoQ = (TH2F*)d0K0SOfflineSgnNoQ->Clone();
+  TH2F* alld0POfflineSgnC = (TH2F*)d0POfflineSgnC->Clone();
+  TH2F* alld0POfflineSgnB = (TH2F*)d0POfflineSgnB->Clone();
+  TH2F* alld0POfflineSgnNoQ = (TH2F*)d0POfflineSgnNoQ->Clone();
+  TH2F* allcosPAK0SOfflineSgnC = (TH2F*)cosPAK0SOfflineSgnC->Clone();
+  TH2F* allcosPAK0SOfflineSgnB = (TH2F*)cosPAK0SOfflineSgnB->Clone();
+  TH2F* allcosPAK0SOfflineSgnNoQ = (TH2F*)cosPAK0SOfflineSgnNoQ->Clone();
+
+  TH2F* pidptK0SOfflineSgnC = (TH2F*)ptK0SOfflineSgnC->Clone();
+  TH2F* pidptK0SOfflineSgnB = (TH2F*)ptK0SOfflineSgnB->Clone();
+  TH2F* pidptK0SOfflineSgnNoQ = (TH2F*)ptK0SOfflineSgnNoQ->Clone();
+  TH2F* pidptPOfflineSgnC = (TH2F*)ptPOfflineSgnC->Clone();
+  TH2F* pidptPOfflineSgnB = (TH2F*)ptPOfflineSgnB->Clone();
+  TH2F* pidptPOfflineSgnNoQ = (TH2F*)ptPOfflineSgnNoQ->Clone();
+  TH2F* pidptPiPOfflineSgnC = (TH2F*)ptPiPOfflineSgnC->Clone();
+  TH2F* pidptPiPOfflineSgnB = (TH2F*)ptPiPOfflineSgnB->Clone();
+  TH2F* pidptPiPOfflineSgnNoQ = (TH2F*)ptPiPOfflineSgnNoQ->Clone();
+  TH2F* pidptPiMOfflineSgnC = (TH2F*)ptPiMOfflineSgnC->Clone();
+  TH2F* pidptPiMOfflineSgnB = (TH2F*)ptPiMOfflineSgnB->Clone();
+  TH2F* pidptPiMOfflineSgnNoQ = (TH2F*)ptPiMOfflineSgnNoQ->Clone();
+  TH2F* pidd0K0SOfflineSgnC = (TH2F*)d0K0SOfflineSgnC->Clone();
+  TH2F* pidd0K0SOfflineSgnB = (TH2F*)d0K0SOfflineSgnB->Clone();
+  TH2F* pidd0K0SOfflineSgnNoQ = (TH2F*)d0K0SOfflineSgnNoQ->Clone();
+  TH2F* pidd0POfflineSgnC = (TH2F*)d0POfflineSgnC->Clone();
+  TH2F* pidd0POfflineSgnB = (TH2F*)d0POfflineSgnB->Clone();
+  TH2F* pidd0POfflineSgnNoQ = (TH2F*)d0POfflineSgnNoQ->Clone();
+  TH2F* pidcosPAK0SOfflineSgnC = (TH2F*)cosPAK0SOfflineSgnC->Clone();
+  TH2F* pidcosPAK0SOfflineSgnB = (TH2F*)cosPAK0SOfflineSgnB->Clone();
+  TH2F* pidcosPAK0SOfflineSgnNoQ = (TH2F*)cosPAK0SOfflineSgnNoQ->Clone();
+
+  fOutputAll->Add(allptK0SOfflineSgnC);
+  fOutputAll->Add(allptK0SOfflineSgnB);
+  fOutputAll->Add(allptK0SOfflineSgnNoQ);
+  fOutputAll->Add(allptPOfflineSgnC);
+  fOutputAll->Add(allptPOfflineSgnB);
+  fOutputAll->Add(allptPOfflineSgnNoQ);
+  fOutputAll->Add(allptPiPOfflineSgnC);
+  fOutputAll->Add(allptPiPOfflineSgnB);
+  fOutputAll->Add(allptPiPOfflineSgnNoQ);
+  fOutputAll->Add(allptPiMOfflineSgnC);
+  fOutputAll->Add(allptPiMOfflineSgnB);
+  fOutputAll->Add(allptPiMOfflineSgnNoQ);
+  fOutputAll->Add(alld0K0SOfflineSgnC);
+  fOutputAll->Add(alld0K0SOfflineSgnB);
+  fOutputAll->Add(alld0K0SOfflineSgnNoQ);
+  fOutputAll->Add(alld0POfflineSgnC);
+  fOutputAll->Add(alld0POfflineSgnB);
+  fOutputAll->Add(alld0POfflineSgnNoQ);
+  fOutputAll->Add(allcosPAK0SOfflineSgnC);
+  fOutputAll->Add(allcosPAK0SOfflineSgnB);
+  fOutputAll->Add(allcosPAK0SOfflineSgnNoQ);
+
+  fOutputPIDBach->Add(pidptK0SOfflineSgnC);
+  fOutputPIDBach->Add(pidptK0SOfflineSgnB);
+  fOutputPIDBach->Add(pidptK0SOfflineSgnNoQ);
+  fOutputPIDBach->Add(pidptPOfflineSgnC);
+  fOutputPIDBach->Add(pidptPOfflineSgnB);
+  fOutputPIDBach->Add(pidptPOfflineSgnNoQ);
+  fOutputPIDBach->Add(pidptPiPOfflineSgnC);
+  fOutputPIDBach->Add(pidptPiPOfflineSgnB);
+  fOutputPIDBach->Add(pidptPiPOfflineSgnNoQ);
+  fOutputPIDBach->Add(pidptPiMOfflineSgnC);
+  fOutputPIDBach->Add(pidptPiMOfflineSgnB);
+  fOutputPIDBach->Add(pidptPiMOfflineSgnNoQ);
+  fOutputPIDBach->Add(pidd0K0SOfflineSgnC);
+  fOutputPIDBach->Add(pidd0K0SOfflineSgnB);
+  fOutputPIDBach->Add(pidd0K0SOfflineSgnNoQ);
+  fOutputPIDBach->Add(pidd0POfflineSgnC);
+  fOutputPIDBach->Add(pidd0POfflineSgnB);
+  fOutputPIDBach->Add(pidd0POfflineSgnNoQ);
+  fOutputPIDBach->Add(pidcosPAK0SOfflineSgnC);
+  fOutputPIDBach->Add(pidcosPAK0SOfflineSgnB);
+  fOutputPIDBach->Add(pidcosPAK0SOfflineSgnNoQ);
 
 }

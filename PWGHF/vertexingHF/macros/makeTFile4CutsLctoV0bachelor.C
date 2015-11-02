@@ -62,11 +62,14 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0An->SetHighPtCut(3.0); // default value 2.5 GeV/c
   RDHFLctoV0An->SetPidSelectionFlag(4); // 0 -> TOF AND TPC
                                         // 1 -> if (TOF) TOF else TPC w veto
-                                        // 2 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
-                                        // 3 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
-                                        // 4 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s}
-                                        // 5 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
-
+                                        // 2 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                        // 3 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
+                                        // 4 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s}
+                                        // 5 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
+                                        // 6 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else -3s<TPC<2s}
+                                        // 7 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
+                                        // 8 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else -2<TPC<3s}
+                                        // 9 -> combined: TOF, TPC
   const Int_t nptbins=14;
   RDHFLctoV0An->SetNPtBins(nptbins);
 
@@ -187,7 +190,11 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
 
-  //RDHFLc->SetRecoKF(); //set this if you want to recompute the secondary vertex with the KF package
+  if (RDHFLctoV0An->GetPidSelectionFlag()==9) {
+    Float_t minCombProb[nptbins];
+    for (Int_t iBin=0; iBin<nptbins; iBin++) minCombProb[iBin]=0.;
+    RDHFLctoV0An->SetMinCombinedProbability(nptbins,minCombProb);
+  }
 
   //pid settings
   //1. bachelor: default one
@@ -199,6 +206,11 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjBachelor->SetTPC(kTRUE);
   pidObjBachelor->SetTOF(kTRUE);
   pidObjBachelor->SetTOFdecide(kFALSE);
+  if (RDHFLctoV0An->GetPidSelectionFlag()==9) {
+    pidObjBachelor->SetUseCombined();
+    pidObjBachelor->SetUseDefaultPriors(kTRUE);
+    pidObjBachelor->SetCombDetectors(AliAODPidHF::kTPCTOF);
+  }
 
   RDHFLctoV0An->SetPidHF(pidObjBachelor);
 
@@ -208,6 +220,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   // RDHFLctoV0An  ->SetPIDStrategy(AliRDHFCutsLctoV0::kCombined);
   //
 
+  //RDHFLc->SetRecoKF(); //set this if you want to recompute the secondary vertex with the KF package
   //uncomment these lines to apply cuts with the KF package
   //RDHFLctoV0An->SetCutsStrategy(AliRDHFCutsLctoV0::kKF);
   //for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
