@@ -58,9 +58,9 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      //
      const AliTPCTrackerPoints::Point* GetTrackPoint(Int_t i) const { return fTrackPointsArr.GetPoint(i); }
      //
-     AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
-     AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer[irow];}
-     void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
+     AliTPCclusterMI * GetClusterFast(Int_t irow){return fClusterPointer ? ((AliTPCclusterMI*)fClusterPointer[irow]):0;}
+     AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer ? fClusterPointer[irow] : 0;}
+     void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl);
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {
        Double_t cnv=GetBz()*kB2C;
@@ -173,7 +173,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
-     AliTPCclusterMI*   fClusterPointer[kMaxRow];  // array of cluster pointers  - 
+     Int_t fNClStore;                       // size of stored cluster pointers array
+     AliTPCclusterMI**  fClusterPointer;    //[fNClStore] array of cluster pointers  - 
      Bool_t             fClusterOwner;         // indicates the track is owner of cluster
      //---CURRENT VALUES
      Short_t fRow;               // current row number  

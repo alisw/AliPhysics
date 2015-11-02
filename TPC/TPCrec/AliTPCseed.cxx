@@ -48,6 +48,8 @@ ClassImp(AliTPCseed)
 AliTPCseed::AliTPCseed():
   AliTPCtrack(),
   fEsd(0x0),
+  fNClStore(0),
+  fClusterPointer(0),
   fClusterOwner(kFALSE),
   fRow(0),
   fSector(-1),
@@ -75,7 +77,6 @@ AliTPCseed::AliTPCseed():
 {
   //
   for (Int_t i=0;i<kMaxRow;i++) SetClusterIndex2(i,-3);
-  for (Int_t i=0;i<kMaxRow;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<4;i++) {
@@ -91,6 +92,8 @@ AliTPCseed::AliTPCseed():
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   AliTPCtrack(s),
   fEsd(0x0),
+  fNClStore(0),
+  fClusterPointer(0),
   fClusterOwner(clusterOwner),
   fRow(0),
   fSector(-1),
@@ -118,13 +121,17 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   //---------------------
   // dummy copy constructor
   //-------------------------
-  for (Int_t i=0;i<kMaxRow;i++) {
-    fClusterPointer[i]=0;
-    if (fClusterOwner){
-      if (s.fClusterPointer[i])
-	fClusterPointer[i] = new AliTPCclusterMI(*(s.fClusterPointer[i]));
-    }else{
-      fClusterPointer[i] = s.fClusterPointer[i];
+  if (s.fClusterPointer) {
+    fNClStore = kMaxRow;
+    fClusterPointer = new AliTPCclusterMI*[kMaxRow];
+    for (Int_t i=0;i<kMaxRow;i++) {
+      fClusterPointer[i]=0;
+      if (fClusterOwner){
+	if (s.fClusterPointer[i])
+	  fClusterPointer[i] = new AliTPCclusterMI(*(s.fClusterPointer[i]));
+      }else{
+	fClusterPointer[i] = s.fClusterPointer[i];
+      }
     }
   }
   for (Int_t i=0;i<kMaxRow;i++) fIndex[i] = s.fIndex[i];
@@ -144,6 +151,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
 AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   AliTPCtrack(t),
   fEsd(0x0),
+  fNClStore(0),
+  fClusterPointer(0),
   fClusterOwner(kFALSE),
   fRow(0),
   fSector(-1),
@@ -174,7 +183,6 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fFirstPoint =0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<kMaxRow;i++) {
-    fClusterPointer[i] = 0;
     Int_t index = t.GetClusterIndex(i);
     if (index>=-1){ 
       SetClusterIndex2(i,index);
@@ -198,6 +206,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
 		       const Double_t cc[15], Int_t index):      
   AliTPCtrack(xr, alpha, xx, cc, index),
   fEsd(0x0),
+  fNClStore(0),
+  fClusterPointer(0),
   fClusterOwner(kFALSE),
   fRow(0),
   fSector(-1),
@@ -227,7 +237,6 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   //
   fFirstPoint =0;
   for (Int_t i=0;i<kMaxRow;i++) SetClusterIndex2(i,-3);
-  for (Int_t i=0;i<kMaxRow;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<4;i++) {
     fDEDX[i] = 0.;
@@ -245,12 +254,14 @@ AliTPCseed::~AliTPCseed(){
   // destructor
   AliDebug(5,"Destruct AliTPCseed - Begin");
   fNoCluster =0;
-  if (fClusterOwner){
-    for (Int_t icluster=0; icluster<kMaxRow; icluster++){
-      if(fClusterPointer[icluster])
-	delete fClusterPointer[icluster];
-      fClusterPointer[icluster]=0;
+  if (fClusterPointer) {
+    if (fClusterOwner){
+      for (Int_t icluster=0; icluster<kMaxRow; icluster++){
+	if(fClusterPointer[icluster]) delete fClusterPointer[icluster];
+	fClusterPointer[icluster]=0;
+      }
     }
+    delete[] fClusterPointer;
   }
   AliDebug(5,"Destruct AliTPCseed - End");
 }
@@ -266,16 +277,19 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     fTrackPointsArr = param.fTrackPointsArr;
     fEsd =param.fEsd; 
     fClusterOwner = param.fClusterOwner;
-    if (!fClusterOwner) for(Int_t i = 0;i<kMaxRow;++i)fClusterPointer[i] = param.fClusterPointer[i];
-    else                for(Int_t i = 0;i<kMaxRow;++i) {
-	delete fClusterPointer[i];
-	if (param.fClusterPointer[i]) { 
-	  fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
-	}
-	else {
-	  fClusterPointer[i] = 0x0;
-	}
+    if (param.fClusterPointer) {
+      if (!fClusterPointer) {
+	fClusterPointer = new AliTPCclusterMI*[kMaxRow];
+	memset(fClusterPointer,0,kMaxRow*sizeof(AliTPCclusterMI*));
+	fNClStore = kMaxRow;
       }
+      if (!fClusterOwner) for(Int_t i = 0;i<kMaxRow;++i) fClusterPointer[i] = param.fClusterPointer[i];
+      else                for(Int_t i = 0;i<kMaxRow;++i) {
+	  delete fClusterPointer[i];
+	  if (param.fClusterPointer[i]) fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
+	  else fClusterPointer[i] = 0x0;
+	}
+    }
     // leave out fPoint, they are also not copied in the copy ctor...
     // but deleted in the dtor... strange...
     fRow            = param.fRow;
@@ -340,25 +354,25 @@ void AliTPCseed::GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_
     Int_t index = GetClusterIndex2(i);
     if (index!=-1) foundable++;
     if (index&0x8000) continue;
-    if (fClusterPointer[i]) {
+    if (fClusterPointer && fClusterPointer[i]) {
       found++;
     }
     else 
       continue;
 
-    if (fClusterPointer[i]->IsUsed(10)) {
+    if (fClusterPointer && fClusterPointer[i]->IsUsed(10)) {
       shared++;
       continue;
     }
     if (!plus2) continue; //take also neighborhoud
     //
-    if ( (i>0) && fClusterPointer[i-1]){
+    if ( (i>0) && fClusterPointer && fClusterPointer[i-1]){
       if (fClusterPointer[i-1]->IsUsed(10)) {
 	shared++;
 	continue;
       }
     }
-    if ( fClusterPointer[i+1]){
+    if ( fClusterPointer && fClusterPointer[i+1]){
       if (fClusterPointer[i+1]->IsUsed(10)) {
 	shared++;
 	continue;
@@ -386,8 +400,10 @@ void AliTPCseed::Reset(Bool_t all)
 
   if (all){   
     for (Int_t i=200;i--;) SetClusterIndex2(i,-3);
-    if (!fClusterOwner) for (Int_t i=kMaxRow;i--;) fClusterPointer[i]=0;
-    else                for (Int_t i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
+    if (fClusterPointer) {
+      if (!fClusterOwner) for (Int_t i=kMaxRow;i--;) fClusterPointer[i]=0;
+      else                for (Int_t i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
+    }
   }
 
 }
@@ -1517,7 +1533,7 @@ Float_t  AliTPCseed::CookShape(Int_t type){
     const AliTPCTrackerPoints::Point * point = GetTrackPoint(i);
     if (point==0) continue;
 
-    AliTPCclusterMI * cl = fClusterPointer[i];
+    AliTPCclusterMI * cl = GetClusterPointer(i);
     if (cl==0) continue;	
     
     Float_t rsigmay =  TMath::Sqrt(point->GetSigmaY());
@@ -1859,10 +1875,27 @@ void AliTPCseed::Clear(Option_t*)
 {
   // formally seed may allocate memory for clusters (althought this should not happen for 
   // the seeds in the pool). Hence we need this method for fwd. compatibility
-  if (fClusterOwner) for (int i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
+  if (fClusterPointer) {
+    if (fClusterOwner) for (int i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
+    delete[] fClusterPointer;
+    fNClStore = 0;
+  }
   fTrackPointsArr.Clear();
   ResetBit(0xffffffff);
 }
+
+//_______________________________________________________________________
+void AliTPCseed::SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) 
+{
+  // if needed, create array and set the pointer
+  if (!fClusterPointer) {
+    fClusterPointer = new AliTPCclusterMI*[kMaxRow];
+    fNClStore = kMaxRow;
+    memset(fClusterPointer,0,kMaxRow*sizeof(AliTPCclusterMI*));
+  }
+  fClusterPointer[irow]=cl;
+}
+
 
 TObject* AliTPCseed::Clone(const char* /*newname*/) const
 {
