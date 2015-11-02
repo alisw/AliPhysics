@@ -28,7 +28,11 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   kTOFandTPCasym1=2,
   kTOFandTPCasym2=3,
   kTPClowTOFhigh=4,
-  kTPClowTOFintermediateTOForTPChigh=5
+  kTPClowTOFintermediateTOForTPChigh=5,
+  kTPClowTOFintermediateTOForTPChighA=6,
+  kTPClowTOForTPCintermediate_high=7,
+  kTPClowTOForTPCintermediate_highA=8,
+  kCombinedTPCTOF=9
  };
 
   AliRDHFCutsLctoV0(const char* name="CutsLctoV0", Short_t v0channel=0);
@@ -67,6 +71,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetLowPtCut(Float_t lowPtCut) {fLowPtCut=lowPtCut;};
   Float_t GetLowPtCut() const {return fLowPtCut;};
 
+  void SetMinCombinedProbability(Int_t ptBins, Float_t *ptMin);
+  const Float_t *GetMinCombinedProbability() {return fMinCombinedProbability;}
+
   void SetExcludedCut(Int_t excludedCut) {fExcludedCut=excludedCut;}
   Int_t GetExcludedCut(){return fExcludedCut;}
 
@@ -83,7 +90,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual void PrintAll() const;
  protected:
 
-  void CheckPID(AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
+  void CheckPID(Int_t candPtBin, AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 		Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4);
 
  private:
@@ -94,11 +101,12 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t fHighPtCut;  /// high pT cut separation for proton identification
   Float_t fLowPtCut;   /// low pT cut separation for proton identification
   Int_t   fExcludedCut; /// cut to be excluded (-1=none)
+  Float_t *fMinCombinedProbability; //[fnPtBins] min value for combined PID probabilities
 
   //UShort_t fV0channel;
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctoV0,6);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,7);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
   /// \endcond
 };
 

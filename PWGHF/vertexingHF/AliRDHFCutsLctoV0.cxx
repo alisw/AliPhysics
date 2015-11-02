@@ -51,12 +51,13 @@ ClassImp(AliRDHFCutsLctoV0);
 //--------------------------------------------------------------------------
 AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const char* name, Short_t /*v0channel*/) :
 AliRDHFCuts(name),
-  fPidSelectionFlag(0),
-  fV0daughtersCuts(0),
-  fV0Type(0),
-  fHighPtCut(2.5),
-  fLowPtCut(1.0),
-  fExcludedCut(-1)
+fPidSelectionFlag(0),
+fV0daughtersCuts(0),
+fV0Type(0),
+fHighPtCut(2.5),
+fLowPtCut(1.0),
+fExcludedCut(-1),
+fMinCombinedProbability(0)
 {
   //
   // Default Constructor
@@ -148,8 +149,8 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
   fV0Type(source.fV0Type),
   fHighPtCut(source.fHighPtCut),
   fLowPtCut(source.fLowPtCut),
-  fExcludedCut(source.fExcludedCut)
-  /*fV0channel(source.fV0channel)*/
+  fExcludedCut(source.fExcludedCut),
+  fMinCombinedProbability(0)
 {
   //
   // Copy constructor
@@ -157,6 +158,8 @@ AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0 &source) :
 
   if (source.fV0daughtersCuts) AddTrackCutsV0daughters(source.fV0daughtersCuts);
   else fV0daughtersCuts = new AliESDtrackCuts();
+
+  if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
 
 }
 //--------------------------------------------------------------------------
@@ -179,6 +182,8 @@ AliRDHFCutsLctoV0 &AliRDHFCutsLctoV0::operator=(const AliRDHFCutsLctoV0 &source)
     fHighPtCut = source.fHighPtCut;
     fLowPtCut = source.fLowPtCut;
 
+    if(source.fMinCombinedProbability) SetMinCombinedProbability(source.fnPtBins,source.fMinCombinedProbability);
+
   }
 
   return *this;
@@ -194,6 +199,11 @@ AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
   if (fV0daughtersCuts) {
     delete fV0daughtersCuts;
     fV0daughtersCuts=0;
+  }
+
+  if(fMinCombinedProbability) {
+    delete [] fMinCombinedProbability;
+    fMinCombinedProbability=0;
   }
 
 }
@@ -618,14 +628,16 @@ Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
   Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
   Bool_t okLcLambdaPi = kTRUE; // Lambda case
 
-  CheckPID(bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
+  Double_t ptCand = objD->Pt();
+  Int_t candPtBin = PtBin(ptCand);
+  CheckPID(candPtBin,bachelor,v0Neg,v0Pos,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
 
   Int_t returnvalue = okLcK0Sp+2*okLcLambdaBarPi+4*okLcLambdaPi;
 
   return returnvalue;
 }
 //-----------------------
-void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
+void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
 				 AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 				 Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4) {
   // identification strategy
@@ -769,7 +781,7 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
     trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
 				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
-    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && !trackIDByTOF && TMath::Abs(nTPCsigmas)<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && TMath::Abs(nTPCsigmas)<3) ) );
     isBachelorID1 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && trackIDByTOF) || (bachelor->P()>=fHighPtCut && (trackIDByTOF || trackIDByTPC) ); // K0S case
 
     nTOFsigmas = -999;
@@ -778,12 +790,109 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
     trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
 				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
-    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && !trackIDByTOF && TMath::Abs(nTPCsigmas)<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && TMath::Abs(nTPCsigmas)<3) ) );
     isBachelorID2 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && trackIDByTOF) || (bachelor->P()>=fHighPtCut && (trackIDByTOF || trackIDByTPC) ); // LambdaBar case
 
     isBachelorID4 = isBachelorID2; // Lambda case
 
     break;
+
+  case 6:
+
+    // identify bachelor
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && nTPCsigmas>-3 && nTPCsigmas<2) ) );
+    isBachelorID1 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && trackIDByTOF) || (bachelor->P()>=fHighPtCut && (trackIDByTOF || trackIDByTPC) ); // K0S case
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,2,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && nTPCsigmas>-3 && nTPCsigmas<2) ) );
+    isBachelorID2 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && trackIDByTOF) || (bachelor->P()>=fHighPtCut && (trackIDByTOF || trackIDByTPC) ); // LambdaBar case
+
+    isBachelorID4 = isBachelorID2; // Lambda case
+
+    break;
+
+  case 7:
+
+    // identify bachelor
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fLowPtCut && tofID!=1/*!trackIDByTOF*/ && TMath::Abs(nTPCsigmas)<3) ) );
+    isBachelorID1 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && (trackIDByTOF || trackIDByTPC) ); // K0S case
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,2,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && TMath::Abs(nTPCsigmas)<3) ) );
+    isBachelorID2 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && (trackIDByTOF || trackIDByTPC) ); // LambdaBar case
+
+    isBachelorID4 = isBachelorID2; // Lambda case
+
+    break;
+
+  case 8:
+
+    // identify bachelor
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,4,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fLowPtCut && tofID!=1/*!trackIDByTOF*/ && nTPCsigmas>-3 && nTPCsigmas<2) ) );
+    isBachelorID1 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && (trackIDByTOF || trackIDByTPC) ); // K0S case
+
+    nTOFsigmas = -999;
+    tofID = fPidHF->GetnSigmaTOF(bachelor,2,nTOFsigmas);
+    nTPCsigmas = -999;
+    tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
+    trackIDByTOF = ( (tofID==1) && ( (bachelor->P()>=fLowPtCut && bachelor->P()<fHighPtCut && TMath::Abs(nTOFsigmas)<3) ||
+				     (bachelor->P()>=fHighPtCut && nTOFsigmas>-2 && nTOFsigmas<3) ) );
+    trackIDByTPC = ( (tpcID==1) && ( (bachelor->P()<fLowPtCut && TMath::Abs(nTPCsigmas)<2) || (bachelor->P()>=fHighPtCut && tofID!=1/*!trackIDByTOF*/ && nTPCsigmas>-3 && nTPCsigmas<2) ) );
+    isBachelorID2 = (bachelor->P()<fLowPtCut && trackIDByTPC) || (bachelor->P()>=fLowPtCut && (trackIDByTOF || trackIDByTPC) ); // LambdaBar case
+
+    isBachelorID4 = isBachelorID2; // Lambda case
+
+    break;
+
+  case 9:
+
+    // identify bachelor
+    fPidHF->GetPidCombined()->SetDefaultTPCPriors();
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+    Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
+    UInt_t detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(bachelor, fPidHF->GetPidResponse(), probTPCTOF);
+    Double_t probProton = -1.;
+    Double_t probPion = -1.;
+    if (detUsed == (UInt_t)fPidHF->GetPidCombined()->GetDetectorMask() ) {
+      probProton = probTPCTOF[AliPID::kProton];
+      probPion = probTPCTOF[AliPID::kPion];
+    }
+    isBachelorID1=probProton>fMinCombinedProbability[candPtBin]; // K0S case
+
+    isBachelorID2=probPion>fMinCombinedProbability[candPtBin]; // LambdaBar case
+
+    isBachelorID4 = isBachelorID2; // Lambda case
+
+    break;
+
   }
 
 }
@@ -1253,6 +1362,14 @@ void AliRDHFCutsLctoV0::PrintAll() const {
     cout<<endl;
   }
 
+  if (fPidSelectionFlag==9) {
+      for(Int_t ib=0;ib<fnPtBins;ib++){
+	cout<<"fMinCombinedProbability["<<ib<<"] = "<<fMinCombinedProbability[ib]<<"\t";
+      } 
+      cout<<endl;
+      cout << " GetCombDetectors() = " << GetPidHF()->GetCombDetectors() << endl;
+  }
+
   if (fTrackCuts) {
     Float_t eta1=0, eta2=0; fTrackCuts->GetEtaRange(eta1,eta2);
     cout << " etaRange for Bachelor: [" << eta1 << "," << eta2 << "]\n";
@@ -1393,3 +1510,20 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) cons
 
 }
 
+//---------------------------------------------------------------------------
+void AliRDHFCutsLctoV0::SetMinCombinedProbability(Int_t nPtBins,Float_t *minProb) {
+  //
+  // store the combined probability cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
+    AliFatal("exiting");
+  }
+
+  if(!fMinCombinedProbability) fMinCombinedProbability = new Float_t[fnPtBins];
+
+  for(Int_t ib=0; ib<fnPtBins; ib++) {
+    fMinCombinedProbability[ib] = minProb[ib];
+  }
+  return;
+}
