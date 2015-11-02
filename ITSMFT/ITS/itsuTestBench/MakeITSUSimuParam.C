@@ -1,34 +1,34 @@
 //RS: before running MakeITSUSimuParam call ".x LoadLibs.C"
 
 // Reference sensor parameterizations
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map(Double_t sncut);// don't forget to turn off diode shift for P26 in Config.C
-AliITSUSimuParam*  MakeITSUSimuParam_M32terP31Map( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26Map(Double_t sncut);// don't forget to turn off diode shift for P26 in Config.C
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32terP31Map( Double_t sncut);
 // Irradiated sensor parameterizations P31
-AliITSUSimuParam*  MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut);
-AliITSUSimuParam*  MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut);
-AliITSUSimuParam*  MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut);
 // Irradiated sensor parameterizations P26
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut);
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut);
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut);
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut);
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut);
 
 // Reference sensor parameterizations with 2 2D Gaussian
-AliITSUSimuParam*  MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broadening);//
+AliITSMFTSimuParam*  MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broadening);//
 
 
 // Digital sensor parameter response test
-AliITSUSimuParam*  MakeITSUSimuParam_1stDigital();//
+AliITSMFTSimuParam*  MakeITSUSimuParam_1stDigital();//
 
 
 
-void SetPSFParams(TString pixType, AliITSUParamList* parData);
+void SetPSFParams(TString pixType, AliITSMFTParamList* parData);
 
 // To turn noise generation ON set these values to 1
 const int kAddNoise = -1;
 const int kAddNoiseInAllMod = -1;
 
-const char* inpPSFName = "$ALICE_ROOT/ITSMFT/ITS/misc/ITSU_pixel_response_PSFs.root";
+const char* inpPSFName = "$ALICE_ROOT/ITSMFT/COMMONITSMFT/misc/ITSU_pixel_response_PSFs.root";
 const int kNLayers = 7;
 
 
@@ -75,7 +75,7 @@ void MakeITSUSimuParam(Int_t simuType = 9, const char* cdbURI="local://") {
     //
     //
     //========================================================================
-    AliITSUSimuParam *param = 0;
+    AliITSMFTSimuParam *param = 0;
     //
     // Select only one parameterziation... and don't forget to set 18 um thickness in Config.C !!!
     
@@ -167,11 +167,11 @@ void MakeITSUSimuParam(Int_t simuType = 9, const char* cdbURI="local://") {
 //   ||                                                                                                   //
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
-AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -180,10 +180,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -191,29 +191,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -221,29 +221,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -251,23 +251,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -281,11 +281,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -295,10 +295,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31",parData);
@@ -306,30 +306,30 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,20.62,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.55,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31",parData);
@@ -338,23 +338,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,20.62,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.55,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     // now set the parameters according selected function
     itsSimuParam->AddRespFunParam(parData);
@@ -362,7 +362,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31", parData );
@@ -370,22 +370,22 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,20.62,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.55,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,20.62,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.55,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -398,11 +398,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
 //   ||                                                                                                   //
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
-AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -413,10 +413,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad",parData);
@@ -424,30 +424,30 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,21.843706,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.417494,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,21.843706,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.417494,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad",parData);
@@ -456,23 +456,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,21.843706,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.417494,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,21.843706,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.417494,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     // now set the parameters according selected function
     itsSimuParam->AddRespFunParam(parData);
@@ -480,7 +480,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad", parData );
@@ -488,22 +488,22 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,21.843706,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.417494,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,21.843706,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.417494,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -516,11 +516,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
 //___\/___________________________________________________________________________________________________//
 
 
-AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -530,10 +530,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq",parData);
@@ -541,30 +541,30 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,27.274548,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.723949,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,27.274548,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.723949,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq",parData);
@@ -573,23 +573,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,27.274548,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.723949,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,27.274548,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.723949,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     // now set the parameters according selected function
     itsSimuParam->AddRespFunParam(parData);
@@ -597,7 +597,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq", parData );
@@ -605,22 +605,22 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,27.274548,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.723949,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,27.274548,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.723949,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -634,11 +634,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
 //___\/___________________________________________________________________________________________________//
 
 
-AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -648,10 +648,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq",parData);
@@ -659,30 +659,30 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,43.840798,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.187048,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,43.840798,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.187048,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq",parData);
@@ -691,23 +691,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,43.840798,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.187048,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,43.840798,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.187048,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     // now set the parameters according selected function
     itsSimuParam->AddRespFunParam(parData);
@@ -715,7 +715,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq", parData );
@@ -723,22 +723,22 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale"); //980./1080.
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,43.840798,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,3.187048,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,43.840798,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,3.187048,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)"); // cycle lenght is 10-30 us --> 10-30e-6 s
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -754,11 +754,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -768,10 +768,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -779,29 +779,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.566901,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.665233,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.566901,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.665233,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -809,29 +809,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.566901,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.665233,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.566901,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.665233,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -839,23 +839,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.566901,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.665233,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.566901,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.665233,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -869,11 +869,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -883,10 +883,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -894,29 +894,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.982178,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.067505,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.982178,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.067505,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -924,29 +924,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.982178,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.067505,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.982178,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.067505,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -954,23 +954,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.982178,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.067505,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.982178,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.067505,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -985,11 +985,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -1000,10 +1000,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1011,29 +1011,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.980760,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.091568,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.980760,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.091568,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1041,29 +1041,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.980760,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.091568,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.980760,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.091568,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1071,23 +1071,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.980760,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.091568,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.980760,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.091568,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -1101,11 +1101,11 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
 //  \||/                                                                                                  //
 //___\/___________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -1116,10 +1116,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1127,29 +1127,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.218402,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.616870,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.218402,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.616870,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1157,29 +1157,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.218402,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.616870,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.218402,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.616870,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1187,23 +1187,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-4,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-4,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,18.218402,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.616870,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,18.218402,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.616870,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -1221,7 +1221,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
 //        - The fake rate is set to 10^-5                                                                 //
 //________________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broadening)
+AliITSMFTSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broadening)
 {
     //const char* macroname = "MakeITSUSimuParam.C";
     //
@@ -1230,7 +1230,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     
     
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
@@ -1240,10 +1240,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     if(sncut != 5 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1251,29 +1251,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1281,29 +1281,29 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1311,23 +1311,23 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     // obligatory params for all AliITSUSimulationPix functions: number of pixels in X,Z around
     // injected one to consider
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,0,"DigitalSim");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNXoffs,2,"nPixX");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunParamNZoffs,2,"nPixZ");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunMinSteps,10,"nChargeSteps");
-    parData->SetParameter(AliITSUSimulationPix::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
-    parData->SetParameter(AliITSUSimulationPix::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
-    parData->SetParameter(AliITSUSimulationPix::kPixMinElToAdd,1,"pixMinElToAdd");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,0,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs,2,"nPixX");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs,2,"nPixZ");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps,10,"nChargeSteps");
+    parData->SetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale,qscale[sncut-5],"globQscale");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixSNDisrcCut,sncut,"pixSNDisrcCut");
+    parData->SetParameter(AliITSMFTSimuParam::kPixMinElToAdd,1,"pixMinElToAdd");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
@@ -1344,78 +1344,78 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
 //                                                                                                        //
 //________________________________________________________________________________________________________//
 
-AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
+AliITSMFTSimuParam* MakeITSUSimuParam_1stDigital()
 {
     //
-    AliITSUSimuParam* itsSimuParam = new AliITSUSimuParam();
+    AliITSMFTSimuParam* itsSimuParam = new AliITSMFTSimuParam();
     //
     itsSimuParam->SetNLayers(kNLayers);
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,1,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,1,"DigitalSim");
     // obligatory params for all AliITSUSimulationPix functions: fake rate
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     //
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,1,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,1,"DigitalSim");
     //
     // obligatory params for all AliITSUSimulationPix functions: fake rate
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     //
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSMFTSimuParam::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
-    parData->SetParameter(AliITSUSimulationPix::kDigitalSim,1,"DigitalSim");
+    parData->SetParameter(AliITSMFTSimuParam::kDigitalSim,1,"DigitalSim");
     //
     // obligatory params for all AliITSUSimulationPix functions: fake rate
-    parData->SetParameter(AliITSUSimulationPix::kPixFakeRate,1e-5,"pixFakeRate");
+    parData->SetParameter(AliITSMFTSimuParam::kPixFakeRate,1e-5,"pixFakeRate");
     // Noise
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseIsOn,kAddNoise,"pixNoiseIsOn");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod,kAddNoiseInAllMod,"pixNoiseIsOnInAllMod");
     //
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseMPV,17.53,"pixNoiseMPV");
-    parData->SetParameter(AliITSUSimulationPix::kPixNoiseSigma,2.93,"pixNoiseSigma");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseMPV,17.53,"pixNoiseMPV");
+    parData->SetParameter(AliITSMFTSimuParam::kPixNoiseSigma,2.93,"pixNoiseSigma");
     // and readout timing scheme
-    parData->SetParameter(AliITSUSimulationPix::kReadOutSchemeType,AliITSUSimulationPix::kReadOutRollingShutter,"ROType");
-    parData->SetParameter(AliITSUSimulationPix::kReadOutCycleLength,25e-6,"ROCycle(s)");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutSchemeType,AliITSMFTSimuParam::kReadOutRollingShutter,"ROType");
+    parData->SetParameter(AliITSMFTSimuParam::kReadOutCycleLength,25e-6,"ROCycle(s)");
     //
     itsSimuParam->AddRespFunParam(parData);
 
@@ -1429,7 +1429,7 @@ AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
 
 
 //_______________________________________________________________
-void SetPSFParams(TString pixType, AliITSUParamList* parData )
+void SetPSFParams(TString pixType, AliITSMFTParamList* parData )
 {
     //
     // Reads the PSF map and sets the parameters
@@ -1452,5 +1452,5 @@ void SetPSFParams(TString pixType, AliITSUParamList* parData )
     fin->Close();  
     //
     parData->AddParamObject(hProfWrk);
-    parData->SetParameter(AliITSUSimulationPix::kChargeSpreadType,AliITSUSimulationPix::kSpreadFunHisto,pixType.Data());
+    parData->SetParameter(AliITSMFTSimuParam::kChargeSpreadType,AliITSUSimulationPix::kSpreadFunHisto,pixType.Data());
 }

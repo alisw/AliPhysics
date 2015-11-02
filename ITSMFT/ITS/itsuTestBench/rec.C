@@ -1,36 +1,21 @@
 
 void rec() {
   
-  //  AliLog::SetClassDebugLevel("AliReconstruction",1);
   AliLog::SetClassDebugLevel("AliITSUReconstructor",1);
-
-  TDatime t;
-
-  gSystem->Load("libITSUpgradeBase");
-  gSystem->Load("libITSUpgradeSim");
-  gSystem->Load("libITSUpgradeRec");
-
-  //  gSystem->Exec("rm -rf *RecPoints* AliESD*");
 
   // Set ITS upgrade reconstructor
   gPluginMgr->AddHandler("AliReconstructor", "ITS",
 			 "AliITSUReconstructor","ITS", "AliITSUReconstructor()");
   
   AliReconstruction rec;
-  rec.SetRunReconstruction("ITS TPC"); // run cluster finder
-  //rec.SetRunTracking(""); // Turn on with ITS when tracker is implemented
-  rec.SetRunTracking("ITS TPC"); // Turn on with ITS when tracker is implemented
+  rec.SetRunReconstruction("ITS"); // run cluster finder
+  rec.SetRunTracking("ITS"); 
   
   
-  //rec.SetRunReconstruction("");//ITS TPC"); // run cluster finder
-  //rec.SetRunTracking("ITS TPC"); // Turn on with ITS when tracker is implemented
-  
-
-  rec.SetRunVertexFinder(kFALSE); // to be implemented - CreateVertexer
+  rec.SetRunVertexFinder(kTRUE);  // to be implemented - CreateVertexer
   rec.SetRunMultFinder(kFALSE);   // to be implemented - CreateMultFinder
   rec.SetRunPlaneEff(kFALSE);     // to be implemented - CreateTrackleter
 
-  //  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   rec.SetSpecificStorage("GRP/GRP/Data",
 			 Form("local://%s",gSystem->pwd()));
   rec.SetSpecificStorage("ITS/Align/Data",
@@ -43,15 +28,16 @@ void rec() {
   rec.SetRunGlobalQA(0);
   AliLog::Flush();
 
+  AliITSURecoParam *par=AliITSURecoParam::GetHighFluxParam();
+  par->SetTracker(2);    // 1 is the Cooked Matrix tracker, 2 is the Cellular Automaton tracker  
+  par->SetSAonly(kTRUE); // kFALSE is the TPC+ITS mode
+  rec.SetRecoParam("ITS",par);
+
   TStopwatch timer;
   timer.Start();
-  //
-  //  AliLog::SetClassDebugLevel("AliITSUTrackerGlo",3);
   //
   rec.Run();
   timer.Stop();
   timer.Print();
-
-  printf("\n\n\n TDatime \n");
-  t.Print();
 }
+
