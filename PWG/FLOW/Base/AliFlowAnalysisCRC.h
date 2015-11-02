@@ -58,13 +58,18 @@ public:
  virtual ~AliFlowAnalysisCRC();
  
  enum CorrelationWeights { kMultiplicity,
-                           kUnit
-                          };
+  kUnit
+ };
  
  enum DataSet { k2010,
-                k2011,
-                kAny
-               };
+  k2011,
+  kAny
+ };
+ 
+ enum MagnetPol { kMAll,
+  kMPos,
+  kMNeg
+ };
  
  // 0.) methods called in the constructor:
  virtual void InitializeArraysForIntFlow();
@@ -83,6 +88,8 @@ public:
  virtual void InitializeArraysForCRCPt();
  virtual void InitializeArraysForCME();
  virtual void InitializeArraysForCRC2();
+ virtual void InitializeArraysForFlowEbE();
+ virtual void InitializeArraysForFlowQC();
  virtual void InitializeArraysForFlowSPZDC();
  virtual void InitializeArraysForFlowSPVZ();
  
@@ -112,6 +119,8 @@ public:
  virtual void BookEverythingForQVec();
  virtual void BookEverythingForCME();
  virtual void BookEverythingForCRC2();
+ virtual void BookEverythingForFlowEbE();
+ virtual void BookEverythingForFlowQC();
  virtual void BookEverythingForFlowSPZDC();
  virtual void BookEverythingForFlowSPVZ();
  virtual void StoreIntFlowFlags();
@@ -122,6 +131,7 @@ public:
  virtual void StoreControlHistogramsFlags();
  virtual void StoreBootstrapFlags();
  virtual void StoreCRCFlags();
+ virtual void SetCentralityWeights();
  
  // 2.) method Make() and methods called within Make():
  virtual void Make(AliFlowEventSimple *anEvent);
@@ -187,6 +197,7 @@ public:
  virtual void CalculateCMETPC();
  virtual void CalculateCMEZDC();
  virtual void CalculateCRC2Cor();
+ virtual void CalculateFlowQC();
  virtual void CalculateFlowSPZDC();
  virtual void CalculateFlowSPVZ();
  // 2h.) Various
@@ -239,8 +250,10 @@ public:
  virtual void FinalizeCMETPC();
  virtual void FinalizeCMEZDC();
  virtual void FinalizeCRC2Cor();
+ virtual void FinalizeFlowQC();
  virtual void FinalizeFlowSPZDC();
  virtual void FinalizeFlowSPVZ();
+ virtual Bool_t CheckRunFullTPCFlow(Int_t RunNum);
  // 3h.) Various:
  virtual void FinalizeVarious();
  
@@ -263,6 +276,7 @@ public:
  virtual void GetPointersForCRCPt();
  virtual void GetPointersForQVec();
  virtual void GetPointersForCME();
+ virtual void GetPointersForFlowQC();
  virtual void GetPointersForFlowSPZDC();
  virtual void GetPointersForFlowSPVZ();
  virtual void GetPointersForVarious();
@@ -277,6 +291,8 @@ public:
  virtual Int_t GetCRCQVecBin(Int_t c, Int_t y);
  virtual Int_t GetCRCRunBin(Int_t RunNum);
  virtual Int_t GetCRCCenBin(Double_t Centrality);
+ 
+ virtual Double_t GetSPZDChar(Int_t har, Double_t QRe,Double_t QIm,Double_t ZARe,Double_t ZAIm,Double_t ZCRe,Double_t ZCIm);
  
  // **** SETTERS and GETTERS ****
  
@@ -662,8 +678,12 @@ public:
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
  void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
  Bool_t GetCalculateCME() const {return this->fCalculateCME;};
- void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
- Bool_t GetCalculateFlow() const {return this->fCalculateFlow;};
+ void SetCalculateFlowQC(Bool_t const cCRC) {this->fCalculateFlowQC = cCRC;};
+ Bool_t GetCalculateFlowQC() const {return this->fCalculateFlowQC;};
+ void SetCalculateFlowZDC(Bool_t const cCRC) {this->fCalculateFlowZDC = cCRC;};
+ Bool_t GetCalculateFlowZDC() const {return this->fCalculateFlowZDC;};
+ void SetCalculateFlowVZ(Bool_t const cCRC) {this->fCalculateFlowVZ = cCRC;};
+ Bool_t GetCalculateFlowVZ() const {return this->fCalculateFlowVZ;};
  void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
  Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
@@ -712,7 +732,7 @@ public:
  TH1D* GetCRCSumWeigHist(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCSumWeigHist[r][c][eg][h];};
  void SetCRCNUATermsPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsPro[r][c][eg][h] = TP;};
  TProfile* GetCRCNUATermsPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[r][c][eg][h];};
-
+ 
  // 12.e) Q Vectors:
  void SetCRCQVecReHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecRe[r][c] = TH;};
  TProfile* GetCRCQVecReHist(Int_t const r, Int_t const c) const {return this->fCRCQVecRe[r][c];};
@@ -807,8 +827,8 @@ public:
  TProfile* GetCRC2CovPro(Int_t const r, Int_t const h, Int_t const c) const {return this->fCRC2CovPro[r][h][c];};
  void SetCRC2CovHist(TH1D* const TP, Int_t const r, Int_t const h, Int_t const c) {this->fCRC2CovHist[r][h][c] = TP;};
  TH1D* GetCRC2CovHist(Int_t const r, Int_t const h, Int_t const c) const {return this->fCRC2CovHist[r][h][c];};
-
-//  13.) CRC Pt differential
+ 
+ //  13.) CRC Pt differential
  void SetCRCPtTPCTNt(TNtuple* const TH) {this->fCRCPtTPCTNt = TH;};
  TNtuple* GetCRCPtTPCTNt() const {return this->fCRCPtTPCTNt;};
  void SetCRCPtVZTNt(TNtuple* const TH) {this->fCRCPtVZTNt = TH;};
@@ -816,14 +836,44 @@ public:
  void SetCRCPtZDCTNt(TNtuple* const TH) {this->fCRCPtZDCTNt = TH;};
  TNtuple* GetCRCPtZDCTNt() const {return this->fCRCPtZDCTNt;};
  
+ void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
+ TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+ 
+ void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
+ void SetPtDiffRangePt(Double_t min, Double_t max) {this->fPtDiffMinPt=min; this->fPtDiffMaxPt=max;}
+ 
+ // Flow QC
+ void SetFlowQCList(TList* const TL) {this->fFlowQCList = TL;};
+ void SetFlowQCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorPro[c][eg][h] = TP;};
+ TProfile* GetFlowQCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorPro[c][eg][h];};
+ void SetFlowQCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowQCNUAPro[c][eg][k] = TP;};
+ TProfile* GetFlowQCNUAPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowQCNUAPro[c][eg][k];};
+ void SetFlowQCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorHist[c][eg][h] = TH;};
+ TH1D* GetFlowQCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorHist[c][eg][h];};
+ 
+ void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
+ TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
+ void SetFlowQCFinalPtIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowQCFinalPtIntHist[c][eg] = TH;};
+ TH1D* GetFlowQCFinalPtIntHist(Int_t const c, Int_t const eg) const {return this->fFlowQCFinalPtIntHist[c][eg];};
+ void SetFlowQCSpectra(TProfile* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
+ TProfile* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
+ 
  // Flow SP ZDC
  void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
  void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[c][eg][h] = TP;};
  TProfile* GetFlowSPZDCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[c][eg][h];};
- void SetFlowSPZDCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h, Int_t const k) {this->fFlowSPZDCNUAPro[c][eg][h][k] = TP;};
- TProfile* GetFlowSPZDCNUAPro(Int_t const c, Int_t const eg, Int_t const h, Int_t const k) const {return this->fFlowSPZDCNUAPro[c][eg][h][k];};
+ void SetFlowSPZDCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSPZDCNUAPro[c][eg][k] = TP;};
+ TProfile* GetFlowSPZDCNUAPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSPZDCNUAPro[c][eg][k];};
  void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowSPZDCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorHist[c][eg][h];};
+ 
+ void SetFlowSPZDCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCFinalPtDifHist[c][eg][h] = TH;};
+ TH1D* GetFlowSPZDCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCFinalPtDifHist[c][eg][h];};
+ void SetFlowSPZDCFinalPtIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCFinalPtIntHist[c][eg] = TH;};
+ TH1D* GetFlowSPZDCFinalPtIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCFinalPtIntHist[c][eg];};
+ void SetFlowSPZDCSpectra(TProfile* const TH, Int_t const c) {this->fFlowSPZDCSpectra[c] = TH;};
+ TProfile* GetFlowSPZDCSpectra(Int_t const c) const {return this->fFlowSPZDCSpectra[c];};
+ 
  // Flow SP VZ
  void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
  void SetFlowSPVZCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorPro[c][eg][h] = TP;};
@@ -832,7 +882,7 @@ public:
  TProfile* GetFlowSPVZNUAPro(Int_t const c, Int_t const eg, Int_t const h, Int_t const k) const {return this->fFlowSPVZNUAPro[c][eg][h][k];};
  void SetFlowSPVZCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorHist[c][eg][h] = TH;};
  TH1D* GetFlowSPVZCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPVZCorHist[c][eg][h];};
-
+ 
  Int_t GetnRun() const {return this->fCRCnRun;};
  Int_t GetCRCPtnCen() const {return this->fCRCPtnCenBin;};
  Double_t GetCRCPtwCen() const {return this->fCRCPtwCenBin;};
@@ -888,6 +938,8 @@ public:
  Int_t GetRunNumber() const {return this->fRunNum;}
  void SetDataSet(DataSet set) {this->fDataSet = set;};
  DataSet GetDataSet() const {return this->fDataSet;}
+ void SetMPolSelec(MagnetPol set) {this->fMPolSelec = set;};
+ MagnetPol GetMPolSelec() const {return this->fMPolSelec;}
  void SetCorrWeightTPC(CorrelationWeights weights) {this->fCorrWeightTPC = weights;};
  CorrelationWeights GetCorrWeightTPC() const {return this->fCorrWeightTPC;};
  void SetCorrWeightVZ(CorrelationWeights weights) {this->fCorrWeightVZ = weights;};
@@ -940,22 +992,22 @@ private:
  Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights; // use phi,eta weights
  TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
-// TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
-// TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
-// TH1D *fEtaWeightsPOIs[2]; //! histogram holding eta weights
-// TH2D *fPhiEtaWeightsPOIs[2]; //! histogram holding phi,eta weights
+ // TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
+ // TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
+ // TH1D *fEtaWeightsPOIs[2]; //! histogram holding eta weights
+ // TH2D *fPhiEtaWeightsPOIs[2]; //! histogram holding phi,eta weights
  TH1F *fPhiWeightsRPs; //!
-// TH1D *fPtWeightsRPs; //!
-// TH1D *fEtaWeightsRPs; //!
-// TH1F *fPhiDistrRefPOIs[2]; //! histogram holding phi weights
-// TH1D *fPtDistrRefPOIs[2]; //! histogram holding pt weights
-// TH1D *fEtaDistrRefPOIs[2]; //! histogram holding eta weights
-// TH2D *fPhiEtaDistrRefPOIs[2]; //! histogram holding phi,eta weights
-// TH1F *fPhiDistrRefRPs; //!
-// TH1D *fPtDistrRefRPs; //!
-// TH1D *fEtaDistrRefRPs; //!
-// TH2D *fPhiEtaDistrRefRPs; //!
-// TH1D *fPtWeights[2]; //! histogram holding pt weights
+ // TH1D *fPtWeightsRPs; //!
+ // TH1D *fEtaWeightsRPs; //!
+ // TH1F *fPhiDistrRefPOIs[2]; //! histogram holding phi weights
+ // TH1D *fPtDistrRefPOIs[2]; //! histogram holding pt weights
+ // TH1D *fEtaDistrRefPOIs[2]; //! histogram holding eta weights
+ // TH2D *fPhiEtaDistrRefPOIs[2]; //! histogram holding phi,eta weights
+ // TH1F *fPhiDistrRefRPs; //!
+ // TH1D *fPtDistrRefRPs; //!
+ // TH1D *fEtaDistrRefRPs; //!
+ // TH2D *fPhiEtaDistrRefRPs; //!
+ // TH1D *fPtWeights[2]; //! histogram holding pt weights
  TH2D *fPhiEtaWeights[2]; //!
  
  // 2b.) event weights:
@@ -1211,7 +1263,9 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCME;
  Bool_t fCalculateCRC2;
- Bool_t fCalculateFlow;
+ Bool_t fCalculateFlowQC;
+ Bool_t fCalculateFlowZDC;
+ Bool_t fCalculateFlowVZ;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
@@ -1259,10 +1313,11 @@ private:
  TH1D *fCRCNUATermsHist[4][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms final histo
  
  // Q vectors
-// const static Int_t fCRCnRun = 92;
+ // const static Int_t fCRCnRun = 92;
  const static Int_t fCRCQVecnCR = 64;
  Int_t fCRCnRun;
  DataSet fDataSet;
+ MagnetPol fMPolSelec;
  TArrayI fRunList;    // Run list
  TList *fCRCQVecList; //! Q Vectors list
  TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
@@ -1387,30 +1442,49 @@ private:
  TH1D *fCRC2NUAHist[fCRCMaxnCen][3][4]; //! NUA hist
  TProfile *fCRC2CovPro[fCRCMaxnCen][3][3]; //! Cov pro
  TH1D *fCRC2CovHist[fCRCMaxnCen][3][3]; //! Cov hist
-
- // Flow SP ZDC
- const static Int_t fPtDiffNBins = 20;
+ 
+ // Flow all
  const static Int_t fFlowNHarm = 4;
+ const static Int_t fFlowNHarmMax = 9;
+ Int_t fPtDiffNBins;
  Double_t fPtDiffMinPt;
  Double_t fPtDiffMaxPt;
- TH1D *fPtDiffQRe[fFlowNHarm]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fPtDiffQIm[fFlowNHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fPtDiffMul[fFlowNHarm]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TH1D *fPtDiffQRe[fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fPtDiffQIm[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fPtDiffMul[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ 
+ // Flow SP ZDC
  TList *fFlowSPZDCList;    //! SPZDC List
  TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
- TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][5][4]; //! NUA profile, [CRCBin][eg]
+ TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][6]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
-
+ 
+ TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][5]; //!
+ TH1D *fFlowSPZDCFinalPtIntHist[fCRCMaxnCen][5]; //!
+ TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
+ 
+ // Flow QC
+ TList *fFlowQCList;    //! QC List
+ TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
+ TProfile *fFlowQCNUAPro[fCRCMaxnCen][fFlowNHarm][6]; //! NUA profile, [CRCBin][eg]
+ TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
+ 
+ TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][5]; //!
+ TH1D *fFlowQCFinalPtIntHist[fCRCMaxnCen][5]; //!
+ TProfile *fFlowQCSpectra[fCRCMaxnCen]; //!
+ 
  // Flow SP VZ
  TList *fFlowSPVZList;    //! SPVZ List
  TProfile *fFlowSPVZCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPVZNUAPro[fCRCMaxnCen][fFlowNHarm][5][4]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPVZCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
-
+ 
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
  TH1D *fMultHist; //! Multiplicity distribution
  TH1D *fCenHist; //! Centrality distribution
+ TH1D* fCenWeightsHist; //! Centrality weights
+ Double_t fCenWeightEbE;
  
  ClassDef(AliFlowAnalysisCRC, 4);
  

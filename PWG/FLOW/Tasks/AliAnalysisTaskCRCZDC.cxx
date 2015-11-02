@@ -153,6 +153,7 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
+fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator("V0M"),
@@ -281,6 +282,7 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
+fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator("V0M"),
@@ -443,9 +445,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
   fOutput->Add(fQAList);
  }
-
+ 
  fAnalysisUtil = new AliAnalysisUtils;
-
+ 
  for(int i=0; i<5; i++){
   char hname[20];
   sprintf(hname,"hZNCPM%d",i);
@@ -674,7 +676,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   //check event cuts
   if (InputEvent()) {
    if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-   if(fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+   if(fRejectPileUp && fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
   }
   
   //first attach all possible information to the cuts
@@ -691,10 +693,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  }
  
  if (fAnalysisType == "MCAOD") {
-
+  
   AliAODMCHeader *mcHeader;
   TClonesArray* mcArray;
-
+  
   mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcArray){
    AliError("Array of MC particles not found");
@@ -705,7 +707,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    AliError("Could not find MC Header in AOD");
    return;
   }
-
+  
   Int_t AODPOIs = 0;
   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
    AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
@@ -734,7 +736,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->InsertTrack(fFlowTrack);
    AODPOIs++;
   }
-
+  
   Int_t MCPOIs = 0;
   for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
    AliAODMCParticle *AODMCPart = (AliAODMCParticle*)mcArray->At(jTracks);
@@ -753,16 +755,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->InsertTrack(fFlowTrack);
    MCPOIs++;
   }
-
+  
   printf("#AODs : %d, #MC primaries : %d \n",AODPOIs,MCPOIs);
-
+  
   fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
   fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   fFlowEvent->SetRun(aod->GetRunNumber());
   printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
  }
-
+ 
  if(fAnalysisType ==  "MCkine") {
   
   fFlowEvent->ClearFast();
@@ -1044,7 +1046,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  } // PHYSICS SELECTION
  
  PostData(1, fFlowEvent);
-
+ 
  PostData(2, fOutput);
  
 }
