@@ -602,7 +602,12 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                 = 1,          
     eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
     eventCutArray[ 1] = "00010113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
     eventCutArray[ 2] = "00010113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; ///variation alpha opan max
+    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; ///variation alpha opan max 
+  } else if (trainConfig == 102) {  // like trainConfig 71, except with smearing added to meson cut
+    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500900000"; //New standard cut for eta analysis
+    eventCutArray[ 1] = "00010113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500900000"; //variation alpha pT dependent
+    eventCutArray[ 2] = "00010113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500900000"; //variation alpha
+    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500900002"; ///variation alpha opan max    
   }	else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
