@@ -235,9 +235,6 @@ fEventInfo    (0)
     
     fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
     fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
-
-    fM->Connect("EventServerOk()", cls, this, "EventServerChangedState(=1)");
-    fM->Connect("EventServerDown()", cls, this, "EventServerChangedState(=0)");
     
     if(storageManager) // if SM is enabled in general
     {
@@ -478,21 +475,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         listEventsTab->SetOfflineMode(kFALSE);
         fEventId->SetState(kTRUE);
     }
-#endif
-}
-
-void AliEveEventManagerWindow::EventServerChangedState(int state)
-{
-#ifdef ZMQ
-    cout<<"MAN EDITOR - change state called"<<endl;
-    if (state == 0)// Event Server off
-    {
-    }
-    else if(state == 1)// SM on
-    {
-    }
-//    SetCleanup(kDeepCleanup);
-    Layout();
 #endif
 }
 

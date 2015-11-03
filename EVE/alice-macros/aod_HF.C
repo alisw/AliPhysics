@@ -83,8 +83,8 @@ AliEveHFList* aod_HF()
 {
   Bool_t useParFiles=kFALSE;
   
-  TEveUtil::LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C+");
-  LoadLibraries(useParFiles);
+//  TEveUtil::LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C+");
+//  LoadLibraries(useParFiles);
   
   AliAODEvent* aod = AliEveEventManager::AssertAOD();
   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();

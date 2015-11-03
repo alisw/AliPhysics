@@ -93,7 +93,6 @@ public:
   void DoSetTrigSel();
 
   void Update(int=1);
-  void EventServerChangedState(int state);
   void StorageManagerChangedState(int state);
     
 protected:

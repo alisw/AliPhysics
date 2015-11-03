@@ -108,16 +108,27 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     
     static const TEveException kEH("AliEveEventManager::GotoEvent ");
     
-    if(!fCurrentData.fESD)
+    if(!fCurrentData.fESD && !fCurrentData.fAOD)
     {
         cout<<"No ESD event avaliable. Probably files were not opened."<<endl;
         return;
     }
     
-    if(fCurrentData.fESD->GetRunNumber() != fEventManager->GetCurrentRun())
+    if(fCurrentData.fESD)
     {
-        fEventManager->ResetMagneticField();
-        fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
+        if(fCurrentData.fESD->GetRunNumber() != fEventManager->GetCurrentRun())
+        {
+            fEventManager->ResetMagneticField();
+            fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
+        }
+    }
+    else if(fCurrentData.fAOD)
+    {
+        if(fCurrentData.fAOD->GetRunNumber() != fEventManager->GetCurrentRun())
+        {
+            fEventManager->ResetMagneticField();
+            fEventManager->SetCurrentRun(fCurrentData.fAOD->GetRunNumber());
+        }
     }
     
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}

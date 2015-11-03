@@ -72,6 +72,9 @@ public:
   TEveViewer* GetRhoZView() { return fRhoZView; }
   TEveViewer* GetMuonView() { return fMuonView; }
 
+    TEveScene* GetRPhiScene() {return fRPhiGeomScene;}
+    TEveScene* GetRhoZScene() {return fRhoZGeomScene;}
+    
     TEveProjectionManager* GetRhoZMgr() { return fRhoZMgr;}
     
   void SetMuonView(Bool_t set) { fIsMuonView = set; }

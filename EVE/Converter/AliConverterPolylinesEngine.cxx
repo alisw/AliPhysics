@@ -211,7 +211,7 @@ void AliConverterPolylinesEngine::AddPolylinesToMuonTracks(
     trackList->MakeTracks();
     gEve->AddElement(trackList);
 
-    std::vector<TEveVector4D > muonPoints = trkProp->GetPoints();
+    std::vector<TEveVector4D > muonPoints = trkProp->GetLastPoints();
     InsertPolyPoints(minimalisticMuonTrack, muonPoints);
 }
 
@@ -251,7 +251,7 @@ void AliConverterPolylinesEngine::AddPolylinesToMinimalisticTrack(
     evetrack->MakeTrack();
     tEveTrackList->MakeTracks();
 
-    std::vector<TEveVector4D> pointsVec = pTrackPropagator->GetPoints();
+    std::vector<TEveVector4D> pointsVec = pTrackPropagator->GetLastPoints();
     InsertPolyPoints(minimalisticTrack, pointsVec);
 }
 
@@ -302,8 +302,8 @@ void AliConverterPolylinesEngine::AddPolyLinesToKinkTrack(
     gEve->AddElement(myKink, cont);
     cont->MakeKinks();
 
-    std::vector<TEveVector4D> mPoints = rnrStyleMoth->GetPoints();
-    std::vector<TEveVector4D> dPoints = rnrStyleDaugh->GetPoints();
+    std::vector<TEveVector4D> mPoints = rnrStyleMoth->GetLastPoints();
+    std::vector<TEveVector4D> dPoints = rnrStyleDaugh->GetLastPoints();
     InsertPolyPoints(mTrack, mPoints);
     InsertPolyPoints(dTrack, dPoints);
     delete myKink;
@@ -350,8 +350,8 @@ void AliConverterPolylinesEngine::AddPolyLinesToV0Track(
 
     cont->MakeV0s();
 
-    std::vector<TEveVector4D> negPoints = negativePropagator->GetPoints();
-    std::vector<TEveVector4D> posPoints = positivePropagator->GetPoints();
+    std::vector<TEveVector4D> negPoints = negativePropagator->GetLastPoints();
+    std::vector<TEveVector4D> posPoints = positivePropagator->GetLastPoints();
     InsertPolyPoints(negativeTrack, negPoints);
     InsertPolyPoints(positiveTrack, posPoints);
     delete myV0;
@@ -417,9 +417,9 @@ void AliConverterPolylinesEngine::AddPolylinesToCascade(
     gEve->AddElement(myCascade, cont);
     cont->MakeCascades();
 
-    std::vector<TEveVector4D> negPoints = rnrStyleNeg->GetPoints();
-    std::vector<TEveVector4D> posPoints = rnrStylePos->GetPoints();
-    std::vector<TEveVector4D> bacPoints = rnrStyleBac->GetPoints();
+    std::vector<TEveVector4D> negPoints = rnrStyleNeg->GetLastPoints();
+    std::vector<TEveVector4D> posPoints = rnrStylePos->GetLastPoints();
+    std::vector<TEveVector4D> bacPoints = rnrStyleBac->GetLastPoints();
     InsertPolyPoints(negativeTrack, negPoints);
     InsertPolyPoints(positiveTrack, posPoints);
     InsertPolyPoints(bachelorTrack, bacPoints);

@@ -38,5 +38,3 @@ void AliEveDataSource::SetEventFromStorageManager(AliESDEvent *event)
 
 void AliEveDataSource::StorageManagerOk(){}
 void AliEveDataSource::StorageManagerDown(){}
-void AliEveDataSource::EventServerOk(){}
-void AliEveDataSource::EventServerDown(){}

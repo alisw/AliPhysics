@@ -175,7 +175,7 @@ void emcal_esdclustercells()
         SetUpEMCALGeometry(esd);
         
         SetUpPHOSGeometry(esd);
-        
+
         fHistoEM  = new TH2F("histoEMcell","EMCal Cell #eta vs #phi vs E",
                              100,-1.5,1.5,80,-pi,pi);
         fHistoPH  = new TH2F("histoPHcell","PHOS Cell #eta vs #phi vs E",
@@ -364,14 +364,12 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
             //if(amp < 0.1) continue ;
             
             // 2d projection view
-            
             fGeomEM->EtaPhiFromIndex(id,eta,phi);
             
             //            printf("CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
             //                   icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
             
             fHistoEM->Fill(eta,GetPhi(phi),amp);
-            
             // 3d view
             //
             fGeomEM->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -1078,9 +1076,10 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     TEveCalo3D* calo3d = new TEveCalo3D(data);
     AliEveEventManager::RegisterTransient(calo3d);
     
-    calo3d->SetBarrelRadius(550);
+    calo3d->SetBarrelRadius(600);
     calo3d->SetEndCapPos(550);
     calo3d->SetFrameTransparency(100);
+    calo3d->SetMaxTowerH(300);
     g_histo2d_s2->AddElement(calo3d);
     
     return calo3d;

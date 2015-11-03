@@ -25,8 +25,6 @@ public:
     
     void StorageManagerOk();    // *SIGNAL*
     void StorageManagerDown();  // *SIGNAL*
-    void EventServerOk();       // *SIGNAL*
-    void EventServerDown();     // *SIGNAL*
     
 private:
     TThread *fEventListenerThread;          // Subscriber's thread receiving events from online reco

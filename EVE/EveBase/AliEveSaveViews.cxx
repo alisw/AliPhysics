@@ -7,6 +7,7 @@
 //
 
 #include "AliEveSaveViews.h"
+#include "AliEveMultiView.h"
 #include "AliEveInit.h"
 
 #include <TGFileDialog.h>
@@ -146,6 +147,22 @@ void AliEveSaveViews::SaveForAmore()
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
+    TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
+    TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();
+    
+    TEveElement::List_i rPhiElement = rPhiScene->BeginChildren();
+    TEveElement::List_i rhoZElement = rhoZScene->BeginChildren();
+    
+    TEveProjectionAxes* rPhiAxes = ((TEveProjectionAxes*)*rPhiElement);
+    TEveProjectionAxes* rhoZAxes = ((TEveProjectionAxes*)*rhoZElement);
+    
+    //rPhiAxes->SetRnrSelf(false);
+//    rhoZAxes->SetRnrSelf(false);
+//    
+//    gEve->FullRedraw3D();
+//    gSystem->ProcessEvents();
+//    gEve->Redraw3D();
+    
     for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
@@ -205,13 +222,12 @@ void AliEveSaveViews::SaveForAmore()
         }
         index++;
     }
-    /*
-     // Create a glow (bloom) effect
-     TASImage *tempImg = (TASImage*)compositeImg->Clone("tempImg");
-     tempImg->Blur(10.0,10.0);
-     compositeImg->Merge(tempImg, "lighten");
-     if(tempImg){delete tempImg;tempImg=0;}
-     */
+    
+//    rPhiAxes->SetRnrSelf(true);
+//    rhoZAxes->SetRnrSelf(true);
+//    
+//    gSystem->ProcessEvents();
+//    gEve->Redraw3D();
     
     // show LIVE bar
     if(fShowLiveBar)
@@ -220,10 +236,10 @@ void AliEveSaveViews::SaveForAmore()
         UInt_t year,month,day;
         UInt_t hour,minute,second;
         
-        ts.GetDate(kTRUE, 0, &year, &month,&day);
-        ts.GetTime(kTRUE, 0, &hour, &minute,&second);
+        ts.GetDate(kFALSE, 0, &year, &month,&day);
+        ts.GetTime(kFALSE, 0, &hour, &minute,&second);
         
-        TString gmtNow = TString::Format("%u-%.2u-%.2u %.2u:%.2u:%.2u GMT+2",year,month,day,hour+2,minute,second);
+        TString gmtNow = TString::Format("%u-%.2u-%.2u %.2u:%.2u:%.2u",year,month,day,hour,minute,second);
         
         compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 45, 0, 299, 95);
         compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 125, 60, 212, 26);
@@ -231,6 +247,8 @@ void AliEveSaveViews::SaveForAmore()
         compositeImg->DrawRectangle(20,0, 324, 94);
         compositeImg->DrawText(152, 6, "LIVE", 75, "#FF2D00", "FreeSansBold.otf");
         compositeImg->DrawText(132, 65, gmtNow, 16, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawText(282, 61, "Geneva", 13, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawText(292, 74, "time", 13, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
         TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
