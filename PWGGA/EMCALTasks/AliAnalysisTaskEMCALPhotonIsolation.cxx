@@ -2069,7 +2069,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
           Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
           Int_t idxdaug2 = MomP2Check->GetLastDaughter();
           if ( idxdaug1 == clusterlabel ){ //Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster Energy
-            if ( idxdaug2 < npart ){//2nd daughter within List of Particles.
+            if ( idxdaug2<npart ){//2nd daughter within List of Particles.
               
               AliAODMCParticle *daug2 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug2));
               if ( daug2->GetPdgCode() == 22 && ( daug2->Phi() - phiTrue )< 0.01 && ( daug2->Eta() - etaTrue )< 0.01 ){//very tight cut because they are photons
