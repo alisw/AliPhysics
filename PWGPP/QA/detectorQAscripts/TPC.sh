@@ -36,7 +36,9 @@ periodLevelQA()
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatchTrends.C .
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/makePeriodTrendingTree.C .
   aliroot -b -q -l "drawPerformanceTPCQAMatchTrends.C(\"trending.root\",\"PbPb\")"
+  aliroot -b -q -l "makePeriodTrendingTree.C(\"trending.root\",\"PbPb\")"
   makeHTMLindexPerPeriod
 }
 
