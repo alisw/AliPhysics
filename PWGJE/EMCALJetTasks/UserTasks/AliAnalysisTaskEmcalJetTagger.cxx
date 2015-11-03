@@ -24,6 +24,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fJetTaggingMethod(kGeo),
   fContainerBase(0),
   fContainerTag(1),
+  fSpecPartContTag(-1),
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
@@ -70,6 +71,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fJetTaggingMethod(kGeo),
   fContainerBase(0),
   fContainerTag(1),
+  fSpecPartContTag(-1),
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
@@ -286,9 +288,14 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     if(!jet2) continue;
 
     Double_t ptJet2 =  jet2->Pt() - GetRhoVal(fContainerTag)*jet2->Area();
-    Double_t fraction = jetCont->GetFractionSharedPt(jet1, GetParticleContainer(1));
+    
+    Double_t fraction = -2;
+    if(fSpecPartContTag > -1) fraction = jetCont->GetFractionSharedPt(jet1, GetParticleContainer(fSpecPartContTag));
+    else fraction = jetCont->GetFractionSharedPt(jet1);
+    
     fh2PtJet2VsFraction[fCentBin]->Fill(ptJet2,fraction);
-
+    AliDebug(5, Form("Fraction = %f, minimum = %f", fraction, fMinFractionShared));
+    //if(fJetTaggingType==kClosest) Printf("Fraction = %f, minimum = %f", fraction, fMinFractionShared);
     if(fraction<fMinFractionShared && fJetTaggingType==kClosest)
       continue;
     fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
