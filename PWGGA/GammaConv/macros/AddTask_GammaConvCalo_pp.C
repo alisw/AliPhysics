@@ -647,14 +647,14 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     eventCutArray[ 0] = "00103113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121053032230000"; mesonCutArray[0] = "0163103100000010"; // 0 -2
     eventCutArray[ 1] = "01203113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000010"; // 2 -5
     eventCutArray[ 2] = "02303113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121053032230000"; mesonCutArray[2] = "0163103100000010"; // 5 -10
-    eventCutArray[ 3] = "03503113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121053032230000"; mesonCutArray[3] = "0163103100000010"; // 10 -30
-    eventCutArray[ 4] = "05703113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111121053032230000"; mesonCutArray[4] = "0163103100000010"; // 30 -100
+    eventCutArray[ 3] = "03403113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121053032230000"; mesonCutArray[3] = "0163103100000010"; // 10 -30
+    eventCutArray[ 4] = "04503113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111121053032230000"; mesonCutArray[4] = "0163103100000010"; // 30 -100
   } else if (trainConfig == 99){ // INT7 - with multiplicity bins
     eventCutArray[ 0] = "00100113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063032230000"; mesonCutArray[0] = "0163103100000010"; // 0 -2
     eventCutArray[ 1] = "01200113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063032230000"; mesonCutArray[1] = "0163103100000010"; // 2 -5
     eventCutArray[ 2] = "02300113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // 5 -10
-    eventCutArray[ 3] = "03500113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // 10 -30
-    eventCutArray[ 4] = "05700113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111121063032230000"; mesonCutArray[4] = "0163103100000010"; // 30 -100
+    eventCutArray[ 3] = "03400113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // 10 -30
+    eventCutArray[ 4] = "04500113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111121063032230000"; mesonCutArray[4] = "0163103100000010"; // 30 -100
     
   // ************************************* EMCAL cuts ****************************************************
   // LHC12
