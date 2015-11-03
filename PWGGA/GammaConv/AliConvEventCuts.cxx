@@ -3468,3 +3468,124 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
 
   return kTRUE;
 }
+
+
+//________________________________________________________________________
+Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliStack* fMCStack, Bool_t isConversion ){
+  if (particle != NULL && fMCStack != NULL){
+    Int_t pdgSecondary      = 0;
+    if (!isConversion){
+      Bool_t hasMother        = kFALSE;
+      Bool_t hasGrandMother   = kFALSE;
+      Long_t motherID         = particle->GetMother(0);
+      Long_t grandMotherID    = -1;
+      // is the photon a direct photons, without a mother?
+      if (motherID > -1){
+        hasMother             = kTRUE;
+        grandMotherID         = fMCStack->Particle(motherID)->GetMother(0);
+        // is the meson a primary?
+        if (grandMotherID > -1){
+          hasGrandMother      = kTRUE;
+          pdgSecondary        = fMCStack->Particle(grandMotherID)->GetPdgCode();
+        }
+      }
+    } else {
+      Bool_t hasMother            = kFALSE;
+      Bool_t hasGrandMother       = kFALSE;
+      Bool_t hasGreatGrandMother  = kFALSE;
+      Long_t motherID             = particle->GetMother(0);
+      Long_t grandMotherID        = -1;
+      Long_t greatGrandMotherID   = -1;
+      // is the electron a direct electron, without a mother?
+      if (motherID > -1){
+        hasMother                 = kTRUE;
+        grandMotherID             = fMCStack->Particle(motherID)->GetMother(0);
+        // is the photon a direct photons, without a mother?
+        if (grandMotherID > -1){
+          hasGrandMother          = kTRUE;
+          greatGrandMotherID      = fMCStack->Particle(grandMotherID)->GetMother(0);
+          // is the meson a primary?
+          if (greatGrandMotherID > -1){
+            hasGreatGrandMother   = kTRUE;
+            pdgSecondary          = fMCStack->Particle(greatGrandMotherID)->GetPdgCode();
+          }    
+        }
+      }
+    }  
+    // is the secondary photon from a lambda
+    if (TMath::Abs(pdgSecondary) == 3122 )
+      return 3;
+    // is the secondary photon from a K0s
+    else if ( TMath::Abs(pdgSecondary) == 310 )
+      return 2;
+    // is the secondary photon from a eta
+    else if ( TMath::Abs(pdgSecondary) == 221 )
+      return 4;
+    // is the secondary photon from something else
+    else if ( TMath::Abs(pdgSecondary) != 0 )
+      return 1;
+    
+  } else {    
+    return 0;  
+  }   
+}
+
+//________________________________________________________________________
+Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *particle, TClonesArray *aodmcArray, Bool_t isConversion ){
+  if (particle != NULL && aodmcArray != NULL){
+    Int_t pdgSecondary      = 0;
+    if (!isConversion){
+      Bool_t hasMother        = kFALSE;
+      Bool_t hasGrandMother   = kFALSE;
+      Long_t motherID         = particle->GetMother();
+      Long_t grandMotherID    = -1;
+      // is the photon a direct photons, without a mother?
+      if (motherID > -1){
+        hasMother             = kTRUE;
+        grandMotherID         = ((AliAODMCParticle*)aodmcArray->At(motherID))->GetMother();
+        // is the meson a primary?
+        if (grandMotherID > -1){
+          hasGrandMother      = kTRUE;
+          pdgSecondary        = ((AliAODMCParticle*)aodmcArray->At(grandMotherID))->GetPdgCode();
+        }
+      }
+    } else {
+      Bool_t hasMother            = kFALSE;
+      Bool_t hasGrandMother       = kFALSE;
+      Bool_t hasGreatGrandMother  = kFALSE;
+      Long_t motherID             = particle->GetMother();
+      Long_t grandMotherID        = -1;
+      Long_t greatGrandMotherID   = -1;
+      // is the electron a direct electron, without a mother?
+      if (motherID > -1){
+        hasMother                 = kTRUE;
+        grandMotherID             = ((AliAODMCParticle*)aodmcArray->At(motherID))->GetMother();
+        // is the photon a direct photons, without a mother?
+        if (grandMotherID > -1){
+          hasGrandMother          = kTRUE;
+          greatGrandMotherID      = ((AliAODMCParticle*)aodmcArray->At(grandMotherID))->GetMother();
+          // is the meson a primary?
+          if (greatGrandMotherID > -1){
+            hasGreatGrandMother   = kTRUE;
+            pdgSecondary          = ((AliAODMCParticle*)aodmcArray->At(greatGrandMotherID))->GetPdgCode();
+          }    
+        }
+      }
+    }
+    // is the secondary photon from a lambda
+    if (TMath::Abs(pdgSecondary) == 3122 )
+      return 3;
+    // is the secondary photon from a K0s
+    else if ( TMath::Abs(pdgSecondary) == 310 )
+      return 2;
+    // is the secondary photon from a eta
+    else if ( TMath::Abs(pdgSecondary) == 221 )
+      return 4;
+    // is the secondary photon from something else
+    else if ( TMath::Abs(pdgSecondary) != 0 )
+      return 1;
+    
+  } else {    
+    return 0;  
+  }   
+}

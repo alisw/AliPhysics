@@ -237,8 +237,24 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      DoEtaShift(Bool_t doEtaShift)                                       { fDoEtaShift = doEtaShift                                  ; }
       
       //MC particle flags - determine whether particle is primary or secondary
-      Bool_t IsConversionPrimaryESD(AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ);
-      Bool_t IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMCParticle* AODMCParticle, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ);
+      Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
+                                        UInt_t stackpos, 
+                                        Double_t prodVtxX, 
+                                        Double_t prodVtxY,
+                                        Double_t prodVtxZ);
+      Bool_t    IsConversionPrimaryAOD( AliVEvent *fInputEvent, 
+                                        AliAODMCParticle* AODMCParticle,
+                                        Double_t prodVtxX, 
+                                        Double_t prodVtxY,
+                                        Double_t prodVtxZ);
+      
+      Int_t     SecondaryClassificationPhoton(  TParticle *particle,
+                                                AliStack* fMCStack, 
+                                                Bool_t isConversion );
+      Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,
+                                                  TClonesArray *aodmcArray, 
+                                                  Bool_t isConversion );
+
       
     protected:
       TList*                      fHistograms;
