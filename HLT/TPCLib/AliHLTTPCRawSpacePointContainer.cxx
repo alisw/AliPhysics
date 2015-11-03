@@ -625,7 +625,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
     }
   }
   int iResult=0;
-  AliHLTUInt32_t capacity=size;
+  const AliHLTUInt32_t capacity=size;
   size=0;
 
   int slice=AliHLTTPCSpacePointData::GetSlice(mask);
@@ -711,7 +711,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	c.SetSigmaPad2(sigmaY2);
 	c.SetSigmaTime2(sigmaZ2);
 	c.SetQMax(input.GetQMax());
-	size += sizeof(AliHLTTPCRawCluster);	
+	size += sizeof(AliHLTTPCRawCluster);
       } else {
 	AliHLTUInt32_t oldSize = pDeflater->GetBitDataOutputSizeBytes(); 
 
@@ -789,13 +789,12 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 
   if( iResult<0 ){
     if (fWrittenClusterIds ) fWrittenClusterIds->clear();
-    size = 0;
     return iResult;
   }
 
   AliHLTComponent_BlockData bd;
   AliHLTComponent::FillBlockData(bd);
-  bd.fOffset        = size+offset;
+  bd.fOffset        = offset;
   if (!pDeflater) {
     bd.fSize        = sizeof(AliHLTTPCRawClusterData)+blockout->fCount*sizeof(AliHLTTPCRawCluster);
     bd.fDataType    = AliHLTTPCDefinitions::fgkRawClustersDataType;
