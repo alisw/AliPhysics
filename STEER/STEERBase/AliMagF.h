@@ -71,7 +71,8 @@ class AliMagF : public TVirtualMagField
   static AliMagF* CreateFieldMap(Float_t l3Current=-30000., Float_t diCurrent=-6000., 
 				 Int_t convention=0, Bool_t uniform = kFALSE, 
 				 Float_t beamenergy=7000, const Char_t* btype="pp",
-				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
+				 Bool_t returnNullOnInvalidCurrent = kFALSE);
   //
  protected:
   // not supposed to be changed during the run, set only at the initialization via constructor
