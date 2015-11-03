@@ -403,8 +403,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   if(!nRecPoints) return kTRUE;
 
   const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
-
-  TObjArray *ioArray = new TObjArray(400);
+  TObjArray arrClTmp(400), *ioArray = &arrClTmp; // RS don't trash the heap
+  //
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
     fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
@@ -423,7 +423,6 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   else {
     if(!(c = (AliTRDcluster*)RecPoints()->UncheckedAt(0))){
       AliError("Missing first cluster.");
-      delete ioArray;
       return kFALSE;  
     }
     Int_t detOld(c->GetDetector()), nw(0);
@@ -450,7 +449,6 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     AliDebug(2, Form("Clusters FOUND[%d] WRITTEN[%d] STATUS[%s]", nRecPoints, nw, nw==nRecPoints?"OK":"FAILED"));
     if(nw!=nRecPoints) AliWarning(Form("Clusters FOUND[%d] WRITTEN[%d]", nRecPoints, nw));
   }
-  delete ioArray;
 
   return kTRUE;  
 }
