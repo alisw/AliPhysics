@@ -16,18 +16,37 @@ class TH1D;
 ///
 class AliFemtoCorrFctnKStar : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnKStar();
-  AliFemtoCorrFctnKStar(const char *title, const int nbins, const float KStarLo, const float KStarHi);
 
+  /// Construct default parameters
+  AliFemtoCorrFctnKStar();
+
+  /// Construct with histogram parameters
+  AliFemtoCorrFctnKStar(const char *title,
+                        const int nbins,
+                        const float KStarLo,
+                        const float KStarHi);
+
+  /// Create runtime report
   virtual AliFemtoString Report();
-  virtual void Finish();
+
+  /// GetOutputList
   virtual TList* GetOutputList();
 
+  /// Run after analysis is finished
+  virtual void Finish();
+
+  /// Add K* of pairs from an event
   virtual void AddRealPair(AliFemtoPair* aPair);
+
+  /// Add K* of pairs from mied events
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
 protected:
+
+  /// K* of pairs in same event
   TH1D *fNumerator;
+
+  /// K* of pairs in different event
   TH1D *fDenominator;
 
 #ifdef __ROOT__
