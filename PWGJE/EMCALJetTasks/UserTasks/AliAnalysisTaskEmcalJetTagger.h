@@ -40,7 +40,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   
   void SetTypeAcceptance(Int_t type)                            { fTypeAcc = type; /*see Init()*/}
   void SetMaxDistance(Double_t dist)                            { fMaxDist = dist; }
-  
+  void SetSpecialParticleContainer(Int_t contnumb)              { fSpecPartContTag = contnumb; }
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -57,6 +57,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   JetTaggingMethod                    fJetTaggingMethod;           // jet matching method
   Int_t                               fContainerBase;              // jets to be tagged
   Int_t                               fContainerTag;               // jets used for tagging
+  Int_t                               fSpecPartContTag;            // particle container optionally used in AliJetContainer::GetFractionSharedPt(). Set only if needed.
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
   Bool_t                              fMatchingDone;               // flag to indicate if matching is done or not
@@ -78,7 +79,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 7)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 8)
 };
 #endif
 
