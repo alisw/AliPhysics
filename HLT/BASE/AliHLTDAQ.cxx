@@ -28,6 +28,7 @@
 #include "AliHLTMisc.h"
 #include "TClass.h"
 #include "TSystem.h"
+#include "TString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDAQ)
@@ -94,6 +95,9 @@ Int_t       AliHLTDAQ::DetectorID(const char *detectorName)
 {
   // get the detector ID from the detector name
   // forwards to AliDAQ::DetectorName
+  TString detName(detectorName);
+  if (detName.CompareTo("HLT", TString::kIgnoreCase) == 0) return HLTId();
+  
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorID(detectorName);
   return -1;
@@ -161,7 +165,14 @@ Int_t       AliHLTDAQ::DetectorIDFromDdlID(Int_t ddlID, Int_t &ddlIndex)
   // get detector ID from global DDL ID and index of DDL within the detector
   // forwards to AliDAQ::DetectorNameFromDdlID
   if (!fgpInstance) GetInstance();
-  if (fgpInstance) return fgpInstance->VirtDetectorIDFromDdlID(ddlID, ddlIndex);
+  if (fgpInstance)
+  {
+    Int_t detectorID = fgpInstance->VirtDetectorIDFromDdlID(ddlID, ddlIndex);
+    TString detName(fgpInstance->VirtDetectorName(detectorID));
+    if (detName.CompareTo("HLT", TString::kIgnoreCase) == 0) return HLTId();
+
+    return(detectorID);
+  }
   return -1;
 }
 
