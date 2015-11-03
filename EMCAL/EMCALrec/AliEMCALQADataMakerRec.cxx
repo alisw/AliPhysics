@@ -682,7 +682,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   //const Int_t nTot2x2 = nTotTRUs* n2x2PerTRU;// total TRU channel
 
-  vector <unsigned int> startBins [nTotTRUs][n2x2PerTRU];
+  // Set nTRUs array size to maximum possible 52, later it will be filled up to the real maximum
+  vector <unsigned int> startBins [AliEMCALTriggerMappingV2::fNTotalTRU][n2x2PerTRU];
   
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   Int_t nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
@@ -698,7 +699,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   // The next 2 array must be up to 96 (n2x2PerTRU) to account for the possibility
   // to have 2x2 (single module) L0 trigger patches instead of 4x4 (2x2 modules)
-  vector<Int_t> timeOfFiredPatches[nTotTRUs][n2x2PerTRU];
+  // Set nTRUs array size to maximum possible 52, later it will be filled up to the real maximum
+  vector<Int_t> timeOfFiredPatches[AliEMCALTriggerMappingV2::fNTotalTRU][n2x2PerTRU];
   
   bool is2x2PatchModeActive = false; //default in Run2 is 4x4 Patch for L0 trigger
   Int_t iSM = 0; // SuperModule index 
