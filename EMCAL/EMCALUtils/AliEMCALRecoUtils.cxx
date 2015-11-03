@@ -694,7 +694,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
     case kBeamTestCorrected:
     {
-      //From beam test, corrected for material between beam and EMCAL
+      // From beam test, corrected for material between beam and EMCAL
       //fNonLinearityParams[0] =  0.99078
       //fNonLinearityParams[1] =  0.161499;
       //fNonLinearityParams[2] =  0.655166; 
@@ -709,7 +709,8 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
      
     case kBeamTestCorrectedv2:
     {
-      //From beam test, corrected for material between beam and EMCAL
+      // From beam test, corrected for material between beam and EMCAL
+      // Different function to kBeamTestCorrected
       //fNonLinearityParams[0] =  0.983504;
       //fNonLinearityParams[1] =  0.210106;
       //fNonLinearityParams[2] =  0.897274;
@@ -717,6 +718,21 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  152.299;
       //fNonLinearityParams[5] =  31.5028;
       //fNonLinearityParams[6] =  0.968;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kBeamTestCorrectedv3:
+    {
+      // Same function as kBeamTestCorrectedv2, different default parametrization.
+      //fNonLinearityParams[0] =  0.976941;
+      //fNonLinearityParams[1] =  0.162310;
+      //fNonLinearityParams[2] =  1.08689;
+      //fNonLinearityParams[3] =  0.0819592;
+      //fNonLinearityParams[4] =  152.338;
+      //fNonLinearityParams[5] =  30.9594;
+      //fNonLinearityParams[6] =  0.9615;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -868,16 +884,20 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
   }
   
   if (fNonLinearityFunction == kBeamTestCorrectedv2) {
-    // Parameters until November 2015
-//    fNonLinearityParams[0] =  0.983504;
-//    fNonLinearityParams[1] =  0.210106;
-//    fNonLinearityParams[2] =  0.897274;
-//    fNonLinearityParams[3] =  0.0829064;
-//    fNonLinearityParams[4] =  152.299;
-//    fNonLinearityParams[5] =  31.5028;
-//    fNonLinearityParams[6] =  0.968;
+    // Parameters until November 2015, use now kBeamTestCorrectedv3
+    fNonLinearityParams[0] =  0.983504;
+    fNonLinearityParams[1] =  0.210106;
+    fNonLinearityParams[2] =  0.897274;
+    fNonLinearityParams[3] =  0.0829064;
+    fNonLinearityParams[4] =  152.299;
+    fNonLinearityParams[5] =  31.5028;
+    fNonLinearityParams[6] =  0.968;    
+  }
+
+  if (fNonLinearityFunction == kBeamTestCorrectedv3) {
     
-    // New parametrization excluding point at 0.5 GeV from Beam Test Data
+    // New parametrization of kBeamTestCorrectedv2
+    // excluding point at 0.5 GeV from Beam Test Data
     // https://indico.cern.ch/event/438805/contribution/1/attachments/1145354/1641875/emcalPi027August2015.pdf
     
     fNonLinearityParams[0] =  0.976941;
