@@ -131,9 +131,8 @@ int alizmq_socket_type(std::string config)
 }
 
 //_______________________________________________________________________________________
-int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout)
+int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout, int highWaterMark)
 {
-
   int rc = 0;
   int zmqSocketMode = 0;
   std::string zmqEndpoints = "";
@@ -165,10 +164,8 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   //set socket options
   int lingerValue = 10;
   rc += zmq_setsockopt(socket,  ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  int highWaterMarkRecv = 10;
-  rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
-  int highWaterMarkSend = 10;
-  rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
+  rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMark, sizeof(highWaterMark));
+  rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
   rc += zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeout, sizeof(timeout));
   if (rc!=0) {printf("cannot set socket options\n"); return -1;}
