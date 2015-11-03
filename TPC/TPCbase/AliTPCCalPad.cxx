@@ -414,7 +414,7 @@ Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType 
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType)
+Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType) const
 {
   /// return mean of the RMS of all ROCs
 
@@ -430,7 +430,7 @@ Double_t AliTPCCalPad::GetMedian(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadTyp
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetMinElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType)
+Double_t AliTPCCalPad::GetMinElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType) const
 {
   /// return MinElement all ROCs
 
@@ -438,7 +438,7 @@ Double_t AliTPCCalPad::GetMinElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPa
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetMaxElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType)
+Double_t AliTPCCalPad::GetMaxElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType) const
 {
   /// return MaxElement of all ROCs
 
@@ -446,7 +446,7 @@ Double_t AliTPCCalPad::GetMaxElement(AliTPCCalPad* outlierPad, AliTPCCalROC::EPa
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType)
+Double_t AliTPCCalPad::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalPad* outlierPad, AliTPCCalROC::EPadType padType) const
 {
   /// return mean of the LTM and sigma of all ROCs
 

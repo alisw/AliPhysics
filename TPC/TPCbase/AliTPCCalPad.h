@@ -61,9 +61,9 @@ class AliTPCCalPad : public TNamed {
   Double_t GetMean      (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
   Double_t GetRMS       (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
   Double_t GetMedian    (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
-  Double_t GetMinElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll);
-  Double_t GetMaxElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll);
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType epadType=AliTPCCalROC::kAll);   // return mean of the LTM and sigma of all ROCs
+  Double_t GetMinElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetMaxElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType epadType=AliTPCCalROC::kAll) const;   // return mean of the LTM and sigma of all ROCs
   TGraph  *MakeGraph(Int_t type=0, Float_t ratio=0.7, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll);
   TH2F    *MakeHisto2D(Int_t side=0);
   TH1F    *MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0, Int_t side=0);  

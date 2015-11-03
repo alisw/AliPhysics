@@ -37,7 +37,7 @@ class AliTPCCalROC : public TNamed {
   UInt_t        GetNPads(UInt_t row)  const     { return (row<fNRows)? AliTPCROC::Instance()->GetNPads(fSector,row):0;};
   Float_t      GetValue(UInt_t row, UInt_t pad) const { return ( (row<fNRows) && (fkIndexes[row]+pad)<fNChannels)? fData[fkIndexes[row]+pad]: 0; };
   Float_t      GetValue(UInt_t channel) const { return  fData[channel]; };
-  void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fkIndexes[row]+pad)<fNChannels)fData[fkIndexes[row]+pad]= vd; };
+  void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fkIndexes[row]+pad)<fNChannels)fData[fkIndexes[row]+pad]= vd; }
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; }
   void         Reset();
   virtual void Draw(Option_t* option = "");
