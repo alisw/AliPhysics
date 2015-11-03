@@ -8,9 +8,9 @@
 #include "AliFemtoCorrFctn.h"
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoCorrFctnKStar);
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnKStar);
+  /// \endcond
 #endif
 
 AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar():
@@ -26,9 +26,13 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char *title,
                                              const int nbins,
                                              const float KStarLo,
                                              const float KStarHi):
-  AliFemtoCorrFctn(),
-  fNumerator(new TH1D(TString::Format("%s_Num", title), "KStar - Numerator; k*(GeV);", nbins, KStarLo, KStarHi)),
-  fDenominator(new TH1D(TString::Format("%s_Den", title), "KStar - Denominator; k*(GeV);", nbins, KStarLo, KStarHi))
+  AliFemtoCorrFctn()
+  , fNumerator(new TH1D(TString::Format("%s_Num", title),
+             "KStar - Numerator; k*(GeV);",
+             nbins, KStarLo, KStarHi))
+  , fDenominator(new TH1D(TString::Format("%s_Den", title),
+               "KStar - Denominator; k*(GeV);",
+               nbins, KStarLo, KStarHi))
 {
   fNumerator->Sumw2();
   fDenominator->Sumw2();
