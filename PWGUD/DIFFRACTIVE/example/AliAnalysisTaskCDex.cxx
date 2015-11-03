@@ -22,7 +22,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
-
+#include <TMath.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
@@ -191,7 +191,7 @@ void AliAnalysisTaskCDex::UserExec(Option_t *)
 
 	//= VERTEX COINCIDENCE AND POSITION ==========================================
 	AnalyzeVtx();
-	if (!(abs(fVtxZ) < 4.)) { // vertex from tracks within +/-4cm
+	if (!(TMath::Abs(fVtxZ) < 4.)) { // vertex from tracks within +/-4cm
 		//PostOutputs();
 		//return;
 	}
