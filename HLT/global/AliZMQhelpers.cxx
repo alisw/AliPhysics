@@ -40,7 +40,7 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish)
         if (endpoint [0] == '@')
             rc = zmq_bind (self, endpoint + 1);
         else
-        if (endpoint [0] == '>' || endpoint [0] == '-')
+        if (endpoint [0] == '>' || endpoint [0] == '-' || endpoint [0] == '+' )
             rc = zmq_connect (self, endpoint + 1);
         else
         if (serverish)
