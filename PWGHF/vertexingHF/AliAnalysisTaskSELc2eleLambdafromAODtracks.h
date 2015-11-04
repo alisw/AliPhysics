@@ -58,6 +58,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray);
+  void FillMCGenPairROOTObjects(AliAODMCParticle *e, AliAODMCParticle *v, TClonesArray *array);
   Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
@@ -74,13 +75,16 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
   void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
-  Bool_t GetMCEventType() const {return fMCEventType;}
+  Int_t GetMCEventType() const {return fMCEventType;}
+  void SetMCDoPairAnalysis(Bool_t a) {fMCDoPairAnalysis = a;}
+  Bool_t GetMCDoPairAnalysis() const {return fMCDoPairAnalysis;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
   AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
 	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgele_array, Int_t *pdgv0_array, Int_t *labelele_array, Int_t *labelv0_array,  Int_t &ngen_ele, Int_t &ngen_v0);
+	void	GetMCDecayHistory(AliAODMCParticle *mcpart, TClonesArray *mcArray, Int_t *pdgarray, Int_t *labelarray, Int_t &ngen);
 
 
   /// mixing
@@ -111,6 +115,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void DefineMCTreeVariables();
   void DefineMCEleTreeVariables();
   void DefineMCV0TreeVariables();
+  void DefineMCGenPairTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
@@ -135,6 +140,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fMCGenPairVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   Bool_t fReconstructPrimVert;       ///Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -147,6 +153,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCV0Variables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCGenPairVariables;   //!<! variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -156,7 +163,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
-	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
+	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar
+	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleLambdaMass;         //!<! e-Lambda mass spectra
@@ -488,6 +496,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonElevsRunNumber;//!<! nele vs runnumber
 	TH1F *fHistonLambdavsRunNumber;//!<! nlambda vs runnumber
 	TH1F *fHistoMCEventType;//!<! MC even type
+	TH1F *fHistoMCDeltaPhiccbar;//!<! MC dphi ccbar
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -508,7 +517,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,15); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,16); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
