@@ -638,17 +638,22 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
 }
 
+/// JLK 26-June-2008
+/// Returns digitized value of the energy and shifted time in a cell absId
+/// in the way those parameters are stored in the data digits.
+/// This is done using the calibration constants stored in the OCDB
+/// or default values if no fCalibData object is found.
+/// This effectively converts everything to match the dynamic range
+/// of the real data we will collect
+///
+/// \param energy: digit energy in GeV
+/// \param time: time at generation
+/// \param absId: tower ID
+///
 //_____________________________________________________________________
 void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, const Int_t absId)
 {
-  // JLK 26-June-2008
-  // Returns digitized value of the energy in a cell absId
-  // using the calibration constants stored in the OCDB
-  // or default values if no CalibData object is found.
-  // This effectively converts everything to match the dynamic range
-  // of the real data we will collect
-  //
-  // Load Geometry
+  // Load Geometry and cell indeces
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
   if (geom==0)
@@ -668,26 +673,32 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
+  // Recover parameters from OCDB for this channel
   if(fCalibData)
   {
+    // Energy
     fADCpedestalEC     = fCalibData->GetADCpedestal     (iSupMod,ieta,iphi);
     fADCchannelEC      = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
     fADCchannelECDecal = fCalibData->GetADCchannelDecal (iSupMod,ieta,iphi);
-    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi,0); // Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
+    
+    // Time
+    // Recover parameters for  bunch crossing number equal to 0 
+    // (has simulation different bunch crossings stored? not for the moment)
+    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi,0); 
     fTimeChannelDecal  = fCalibData->GetTimeChannelDecal(iSupMod,ieta,iphi);
   }
   
-  //Apply calibration to get ADC counts and partial decalibration as especified in OCDB
+  // Apply calibration to get ADC counts and partial decalibration as especified in OCDB
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
+  
+  if ( energy > fNADCEC ) energy =  fNADCEC ;
   
   // Apply shift to time, if requested and calibration parameter is available,
   // if not, apply fix shift 
   if(fTimeDelayFromOCDB && fTimeChannel > 0) 
-    time  += fTimeChannel-fTimeChannelDecal;
+    time  += fTimeChannel - fTimeChannelDecal;
   else                   
     time  += fTimeDelay;
-  
-  if ( energy > fNADCEC ) energy =  fNADCEC ;
 }
 
 //_____________________________________________________________________
