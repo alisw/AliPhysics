@@ -21,8 +21,8 @@ include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALTriggerBase)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-  )
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase)
 
 # Sources - alphabetical order
 set(SRCS
