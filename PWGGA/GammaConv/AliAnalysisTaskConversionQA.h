@@ -131,8 +131,8 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     UInt_t                      fKind;                      //
     Bool_t                      fIsMC;                      //
     Int_t                       fnGammaCandidates;          //
-    Int_t                       fMCStackPos;                //[fnGammaCandidates]
-    Int_t                       fMCStackNeg;                //[fnGammaCandidates]
+    Int_t*                      fMCStackPos;                //[fnGammaCandidates]
+    Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
     ClassDef(AliAnalysisTaskConversionQA, 5);
 };
