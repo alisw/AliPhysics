@@ -85,7 +85,10 @@ protected:
   TH2I* fHistSSDclusters_SSDrawSize;
   TH2I* fHistSDDclusters_SDDrawSize;
   TH2I* fHistITSSAtracks_SPDclusters;
-  TH2I* fHistSPDclusters_SSDclusters;;
+  TH2I* fHistSPDclusters_SSDclusters;
+  TH2I* fHistTPCHLTclusters_TPCHLTclustersSize;
+  TH2I* fHistTPCtracks_TPCtracklets;
+  TH2I* fHistITStracks_ITSOutTracks;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };

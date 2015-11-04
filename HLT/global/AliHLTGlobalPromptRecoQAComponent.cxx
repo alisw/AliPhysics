@@ -83,6 +83,9 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistSDDclusters_SDDrawSize(NULL)
   , fHistITSSAtracks_SPDclusters(NULL)
   , fHistSPDclusters_SSDclusters(NULL)
+  , fHistTPCHLTclusters_TPCHLTclustersSize(NULL)
+  , fHistTPCtracks_TPCtracklets(NULL)
+  , fHistITStracks_ITSOutTracks(NULL)
 
 {
   // see header file for class documentation
@@ -99,6 +102,9 @@ AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
   delete fHistSSDclusters_SSDrawSize;
   delete fHistITSSAtracks_SPDclusters;
   delete fHistSPDclusters_SSDclusters;
+  delete fHistTPCHLTclusters_TPCHLTclustersSize;
+  delete fHistTPCtracks_TPCtracklets;
+  delete fHistITStracks_ITSOutTracks;
 }
 
 int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
@@ -122,7 +128,7 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
         fSkipEvents = argument.Atoi();
       }	else if (argument.CompareTo("-print-stats")==0) {
         fPrintStats = 1;
-      }	else {
+      }	else if (!argument.Contains("pushback-period")) {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;
@@ -228,11 +234,14 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   std::string argString = GetComponentArgs();
   if (Configure(argString.c_str())<0) return -EINVAL;
 
-  fHistSPDclusters_SPDrawSize = new TH2I("SPDncls_SPDsize", "SPDncls vs SPD raw size", 50, 0., 1000., 50, 0., 10000.);
-  fHistSSDclusters_SSDrawSize = new TH2I("SSDncls_SSDsize", "SSDncls vs SSD raw size", 50, 0., 1000., 50, 0., 10000.);
-  fHistSDDclusters_SDDrawSize = new TH2I("SDDncls_SDDsize", "SDDncls vs SDD raw size", 50, 0., 1000., 50, 0., 10000.);
+  fHistSPDclusters_SPDrawSize = new TH2I("SPDncls_SPDsize", "SPDncls vs SPD raw size", 50, 0., 3000., 50, 0., 10000.);
+  fHistSSDclusters_SSDrawSize = new TH2I("SSDncls_SSDsize", "SSDncls vs SSD raw size", 50, 0., 2000., 50, 0., 40000.);
+  fHistSDDclusters_SDDrawSize = new TH2I("SDDncls_SDDsize", "SDDncls vs SDD raw size", 50, 0., 1000., 50, 0., 20000.);
   fHistITSSAtracks_SPDclusters = new TH2I("ITSSAPntrk_SPDncls", "ITSSAP tracks vs SPD ncls", 50, 0., 1000., 50, 0., 10000.);
-  fHistSPDclusters_SSDclusters = new TH2I("SPDncls_SSDncls", "SPDncls vs SSDncls", 50, 0., 1000., 50, 0., 1000.);
+  fHistSPDclusters_SSDclusters = new TH2I("SPDncls_SSDncls", "SPDncls vs SSDncls", 50, 0., 3000., 50, 0., 2000.);
+  fHistTPCHLTclusters_TPCHLTclustersSize = new TH2I("TPCHLTncls_TPCHLTsize", "TPCHLTSncls vs size", 50, 0., 5000000., 50, 0., 80000000.);
+  fHistTPCtracks_TPCtracklets = new TH2I("TPCntrk_TPCntrl", "TPCntrk vs TPCnTracklets", 50, 0., 25000., 50, 0., 40000.);
+  fHistITStracks_ITSOutTracks = new TH2I("ITSntrk_ITSOutntrk", "ITSntrk vs ITSOutntrk", 50, 0., 25000., 50, 0., 25000.);
 
   return iResult;
 }
@@ -336,9 +345,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() || //Used
-//      iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() ||
-//      iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
-//      iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() || //Used
       iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType()) //Used
     {
@@ -410,24 +419,38 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, compressedSizeTPC, nITSSAPtracks, nSPDtracklets, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex);
   }
 
-
   //fill histograms
   fHistSPDclusters_SPDrawSize->Fill(nClustersSPD, rawSizeSPD);
-  if (PushBack(fHistSPDclusters_SPDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  if (fHistSPDclusters_SPDrawSize->GetEntries() && PushBack(fHistSPDclusters_SPDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistSPDclusters_SPDrawSize->Reset();
+
   fHistSDDclusters_SDDrawSize->Fill(nClustersSDD, rawSizeSDD);
-  if (PushBack(fHistSDDclusters_SDDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  if (fHistSDDclusters_SDDrawSize->GetEntries() && PushBack(fHistSDDclusters_SDDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistSDDclusters_SDDrawSize->Reset();
+
   fHistSSDclusters_SSDrawSize->Fill(nClustersSSD, rawSizeSSD);
-  if (PushBack(fHistSSDclusters_SSDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  if (fHistSSDclusters_SSDrawSize->GetEntries() && PushBack(fHistSSDclusters_SSDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistSSDclusters_SSDrawSize->Reset();
+
   fHistITSSAtracks_SPDclusters->Fill(nITSSAPtracks, nClustersSPD);
-  if (PushBack(fHistITSSAtracks_SPDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  if (fHistITSSAtracks_SPDclusters->GetEntries() && PushBack(fHistITSSAtracks_SPDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistITSSAtracks_SPDclusters->Reset();
+
   fHistSPDclusters_SSDclusters->Fill(nClustersSPD, nClustersSSD);
-  if (PushBack(fHistSPDclusters_SSDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  if (fHistSPDclusters_SSDclusters->GetEntries() && PushBack(fHistSPDclusters_SSDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistSPDclusters_SSDclusters->Reset();
+
+  fHistTPCHLTclusters_TPCHLTclustersSize->Fill(nClustersTPC, clusterSizeTPC);
+  if (fHistTPCHLTclusters_TPCHLTclustersSize->GetEntries() && PushBack(fHistTPCHLTclusters_TPCHLTclustersSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+    fHistTPCHLTclusters_TPCHLTclustersSize->Reset();
+
+  fHistTPCtracks_TPCtracklets->Fill(nTPCtracks, nTPCtracklets);
+  if (fHistTPCtracks_TPCtracklets->GetEntries() && PushBack(fHistTPCtracks_TPCtracklets, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+    fHistTPCtracks_TPCtracklets->Reset();
+
+  fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
+  if (fHistITStracks_ITSOutTracks->GetEntries() && PushBack(fHistITStracks_ITSOutTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+    fHistITStracks_ITSOutTracks->Reset();
 
   return iResult;
 }
-
