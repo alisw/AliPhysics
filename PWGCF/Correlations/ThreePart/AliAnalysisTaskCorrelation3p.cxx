@@ -16,6 +16,7 @@
 #include "AliAnalysisTaskCorrelation3p.h"
 #include "AliThreeParticleCorrelator.h"
 #include "AliCorrelation3p.h"
+#include "AliCorrelation3p_noQA.h"
 #include "AliCFPI0.h"
 #include "AliFilteredTrack.h"
 #include "AliAnalysisManager.h"
@@ -45,6 +46,8 @@
 #include <TRandom3.h>
 #include <sstream>
 #include <memory>
+#include<iostream>
+
 ClassImp(AliAnalysisTaskCorrelation3p)
 //
 //Task to create three particle correlations.
@@ -53,9 +56,9 @@ ClassImp(AliAnalysisTaskCorrelation3p)
 // Paul Baetzing || pbatzing@cern.ch
 //
 
-using std::string;
-using std::cin;
-using std::stringstream;
+// using std::string;
+// using std::cin;
+// using std::stringstream;
 
 AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   : AliAnalysisTaskSE("AliAnalysisTaskCorrelation3p")
@@ -72,6 +75,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
   , fQA(kFALSE)
+  , fqatask(kFALSE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -142,6 +146,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
   , fQA(kFALSE)  
+  , fqatask(kFALSE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -233,7 +238,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
   if(fCollisionType==PbPb) collisiontype.Append("PbPb");
   fOutput = new THashList;
   fOutput->SetOwner();
-  if(!fQA){
+  if(!fQA&&!fqatask){
     //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
     AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
     fCorrelator=correlator;
@@ -273,8 +278,48 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
     fOutput->Add(workertracktrigger);
-}
-  else{
+    }
+  if(!fQA&&fqatask){
+    //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
+    AliThreeParticleCorrelator<AliCorrelation3p_noQA>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p_noQA>;
+    fCorrelator=correlator;
+    //Initialize QA histograms and add them to fOutput
+    InitializeQAhistograms();
+    //Intitialize the Multiplicity and ZVertex bins.
+    const Int_t    MaxNofEvents=fMaxNEventMix;
+    const Int_t    MinNofTracks=fMinNofTracksMix;
+    const Int_t    nofMBins=fMBinEdges.GetSize()-1;
+    Double_t 	 MBinsTemp[nofMBins+1];
+    for(int i=0; i<=nofMBins; ++i) MBinsTemp[i] = fMBinEdges.At(i);
+    const Int_t    nofZBins=fZBinEdges.GetSize()-1;//5;
+    Double_t 	 ZBinsTemp[nofZBins+1];
+    for(int i=0; i<=nofZBins; ++i) ZBinsTemp[i] = fZBinEdges.At(i);
+    //Create the AliEventPoolManager 
+    AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
+    poolMgr->SetTargetValues(MinNofTracks,1.0E-4,1.0);
+    correlator->InitEventMixing(poolMgr);
+    
+    //initialize track worker and add to the output if appropriate
+    TString tracksname;
+    if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) tracksname = Form("tracktrigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
+    if(ftrigger == AliAnalysisTaskCorrelation3p::pi0)    tracksname = Form("pi0trigger_correlation_%.0f_%.0f", fMinTriggerPt, fMaxTriggerPt);
+    TString triggertype;
+    if(ftrigger == AliAnalysisTaskCorrelation3p::tracks) triggertype = "tracks";
+    if(ftrigger == AliAnalysisTaskCorrelation3p::pi0) triggertype = "pi0";
+    TString triggerinit = Form("minTriggerPt=%.1f maxTriggerPt=%.1f minAssociatedPt=%.1f maxAssociatedPt=%.1f collisiontype=%s triggertype=%s", fMinTriggerPt, fMaxTriggerPt, fMinAssociatedPt, fMaxAssociatedPt,collisiontype.Data(),triggertype.Data());
+    AliCorrelation3p_noQA* workertracktrigger =new AliCorrelation3p_noQA(tracksname, fMBinEdges, fZBinEdges);
+    workertracktrigger->SetAcceptanceCut(fAcceptancecut);
+    workertracktrigger->SetBinningVersion(fBinVer);
+    workertracktrigger->Init(triggerinit);
+    correlator->Add(workertracktrigger);
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
+    fOutput->Add(workertracktrigger);
+    }
+  
+  if(fQA){
     InitializeQAhistograms();
   }
   // all tasks must post data once for all outputs
@@ -340,8 +385,10 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
   //if fQA the correlations are not build.
   if(!fQA){
-    if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
-    if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb&&!fqatask){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::pp&&!fqatask){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb&&fqatask){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p_noQA>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
+    if(fCollisionType==AliAnalysisTaskCorrelation3p::pp&&fqatask){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p_noQA>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
     //Do the actual correlations.
     if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, allrelevantParticles);//correlate for events that contain at least one trigger or associated.
     else delete allrelevantParticles;
