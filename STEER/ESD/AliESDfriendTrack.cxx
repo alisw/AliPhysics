@@ -167,6 +167,13 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   fCalibContainer->AddLast(calibObject);
 }
 
+void AliESDfriendTrack::RemoveCalibObject(TObject * calibObject){
+  //
+  // remove calibration object from the array -
+  //
+  if (fCalibContainer) fCalibContainer->Remove(calibObject);
+}
+
 TObject * AliESDfriendTrack::GetCalibObject(Int_t index) const {
   //
   //
@@ -187,6 +194,17 @@ Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
   }
   return -1;
 }
+
+const AliVTPCseed* AliESDfriendTrack::GetTPCseed() const 
+{
+  TObject* calibObject = NULL;
+  AliVTPCseed* seedP = NULL;
+  for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) return seedP;
+  }
+  return 0;
+}
+
 
 void AliESDfriendTrack::ResetTPCseed( const AliTPCseed* seed )
 {

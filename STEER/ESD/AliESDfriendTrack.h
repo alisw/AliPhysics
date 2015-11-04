@@ -15,7 +15,7 @@
 class AliKalmanTrack;
 class TObjArrray;
 class AliTPCseed;
-
+class AliVTPCseed;
 
 //_____________________________________________________________________________
 class AliESDfriendTrack : public AliVfriendTrack {
@@ -48,6 +48,7 @@ public:
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
+  void RemoveCalibObject(TObject * calibObject);
   TObject * GetCalibObject(Int_t index) const;
 
   //
@@ -92,6 +93,7 @@ public:
   // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
+  const AliVTPCseed* GetTPCseed() const;
   void ResetTPCseed( const AliTPCseed* s );
 
 protected:
