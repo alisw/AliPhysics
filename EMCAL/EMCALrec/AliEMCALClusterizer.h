@@ -67,6 +67,7 @@ public:
   virtual Float_t GetTimeMin()                        const { return fTimeMin;                 }
   virtual Float_t GetTimeMax()                        const { return fTimeMax;                 }
   virtual Float_t GetTimeCut()                        const { return fTimeCut;                 }
+  virtual Float_t IsTimeCalibrationOn()               const { return fTimeCalibration;         }
   virtual Float_t GetECAClusteringThreshold()         const { return fECAClusteringThreshold;  }  
   virtual Float_t GetECALocalMaxCut()                 const { return fECALocMaxCut;            } 
   virtual Float_t GetECALogWeight()                   const { return fECAW0;                   }
@@ -76,6 +77,7 @@ public:
   virtual void    SetTimeMin(Float_t t)		                  { fTimeMin = t;                    }
   virtual void    SetTimeMax(Float_t t)		                  { fTimeMax = t;                    }
   virtual void    SetTimeCut(Float_t t)		                  { fTimeCut = t;                    }
+  virtual void    SetTimeCalibration(Bool_t t)		          { fTimeCalibration = t;            }
   virtual void    SetECAClusteringThreshold(Float_t th)     { fECAClusteringThreshold = th;    }
   virtual void    SetMinECut(Float_t mine)                  { fMinECut      = mine;            }
   virtual void    SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut;             }
@@ -135,6 +137,7 @@ protected:
   Float_t  fTimeMin;                    // minimum time of physical signal in a cell/digit
   Float_t  fTimeMax;                    // maximum time of physical signal in a cell/digit
   Float_t  fTimeCut;                    // maximum time difference between the digits inside EMC cluster
+  Bool_t   fTimeCalibration;            // recover time shifts from OCDB?
 
   Bool_t   fDefaultInit;                //!says if the task was created by defaut ctor (only parameters are initialized)
   Bool_t   fToUnfold;                   // says if unfolding should be performed 
@@ -155,7 +158,7 @@ protected:
   AliEMCALClusterizer(              const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,8)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,9)  // Clusterization algorithm class 
   
 };
 #endif // AliEMCALCLUSTERIZER_H

@@ -69,7 +69,7 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   fCalibData(NULL), 
   fCaloPed(NULL),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
-  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
+  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
   fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
@@ -91,7 +91,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fCalibData(NULL), 
   fCaloPed(NULL),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
-  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
+  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
   fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
@@ -130,7 +130,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry,
   fCalibData(calib),
   fCaloPed(caloped),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
-  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
+  fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
   fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),fRejectBelowThreshold(0),
@@ -261,9 +261,9 @@ void AliEMCALClusterizer::Calibrate(Float_t & amp, Float_t & time, const Int_t a
   fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
   fTimeECA        = fCalibData->GetTimeChannel(iSupMod,ieta,iphi, bc);
   
-  time -= fTimeECA ;
-  amp   = amp * fADCchannelECA - fADCpedestalECA ;  
+  if ( fTimeCalibration ) time -= fTimeECA ;
   
+  amp   = amp * fADCchannelECA - fADCpedestalECA ;  
 }
 
 //____________________________________________________________________________
@@ -377,15 +377,18 @@ void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
   fTimeCut                = recParam->GetTimeCut();
   fTimeMin                = recParam->GetTimeMin();
   fTimeMax                = recParam->GetTimeMax();
+  fTimeCalibration        = recParam->IsTimeCalibrationOn();
   
   //For NxN
   SetNRowDiff(recParam->GetNRowDiff());
   SetNColDiff(recParam->GetNColDiff());
   
   AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, "
-                  "fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s,fRejectBelowThreshold=%d",
-                  fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax, 
-		  fRejectBelowThreshold));
+                  "fToUnfold=%d, fECALocMaxCut=%.3f GeV, "
+                  "fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s,"
+                  "fTimeCalibration %d, fRejectBelowThreshold=%d",
+                  fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,
+                  fTimeCut, fTimeMin, fTimeMax, fTimeCalibration,fRejectBelowThreshold));
 
   if (fToUnfold) {
     Int_t i=0;
