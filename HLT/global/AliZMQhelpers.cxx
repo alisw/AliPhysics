@@ -80,7 +80,7 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
         if (endpoint [0] == '@')
             rc = zmq_bind (self, endpoint + 1);
         else
-        if (endpoint [0] == '>' || endpoint [0] == '-')
+        if (endpoint [0] == '>' || endpoint [0] == '-' || endpoint [0] == '+' )
             rc = zmq_connect (self, endpoint + 1);
         else
         if (serverish)
@@ -139,7 +139,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 
   if (config.empty()) return 0;
 
-  std::size_t found = config.find_first_of("@>-");
+  std::size_t found = config.find_first_of("@>-+");
   if (found == std::string::npos || found == 0)
   {printf("misformed socket config string %s\n", config.c_str()); return 1;}
   
