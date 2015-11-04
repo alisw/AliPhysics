@@ -3801,8 +3801,8 @@ Int_t AliTPCtracker::PostProcess(AliESDEvent *event)
   //
   fSeeds->Clear();
   ResetSeedsPool();
-  delete fSeeds;
-  fSeeds =0;
+  //  delete fSeeds; // RS avoid unnecessary deletes
+  // fSeeds =0;
 }
 
 void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
@@ -3816,9 +3816,9 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
   }
   if (fSeeds) 
     DeleteSeeds();
-  if (!fSeeds){   
-    fSeeds = new TObjArray(nentr);
-  }
+  if (!fSeeds) fSeeds = new TObjArray(nentr);
+  else if (fSeeds->GetSize()<nentr) fSeeds->Expand(nentr);  //RS reuse array
+  //
   UnsignClusters();
   //  Int_t ntrk=0;  
   for (Int_t i=0; i<nentr; i++) {
@@ -7149,7 +7149,9 @@ TObjArray * AliTPCtracker::Tracking()
   timer.Start();
   Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
 
-  TObjArray * seeds = new TObjArray;
+  TObjArray * seeds = fSeeds;
+  if (!seeds) seeds = new TObjArray;
+  else seeds->Clear();
   TObjArray * arr=0;
   Int_t fLastSeedRowSec=AliTPCReconstructor::GetRecoParam()->GetLastSeedRowSec();
   Int_t gapPrim = AliTPCReconstructor::GetRecoParam()->GetSeedGapPrim();
@@ -7336,7 +7338,9 @@ TObjArray * AliTPCtracker::TrackingSpecial()
   timer.Start();
   Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
 
-  TObjArray * seeds = new TObjArray;
+  TObjArray * seeds = fSeeds;
+  if (!seeds) seeds = new TObjArray;
+  else seeds->Clear();
   TObjArray * arr=0;
   
   Int_t   gap  = 15;
