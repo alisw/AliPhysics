@@ -584,56 +584,53 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   delete sdigArray ; //We should not delete its contents
   
   //------------------------------
-  //remove digits below thresholds
-  // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
-  // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3,
-  // before merge in the same loop real data digits if available
-  Float_t energy = 0;
+  // Remove digits below ADC thresholds or 
+  // dead in OCDB, decalibrate them
+  //
+   
+  Float_t ampADC = 0;
   Float_t time   = 0;
+  Int_t   idigit = 0;
   for(i = 0 ; i < nEMC ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    if ( !digit ) continue;
+    if ( !digit ) 
+    {
+      digits->RemoveAt(i) ; // It should not happen, but just in case
+      continue;
+    }
     
-    //Then get the energy in GeV units.
-    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+    // Get the time and energy before calibration
+    ampADC = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+
+    time   = digit->GetTime();
     
-    //Then digitize using the calibration constants of the ocdb
-    Float_t ampADC = energy;
+    // Then digitize energy (GeV to ADC) and shift time
+    // using the calibration constants of the OCDB
     DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
     
+    // Skip digits with below 3 ADC or found dead in OCDB
     if(ampADC < fDigitThreshold || IsDead(digit->GetId()))
-      digits->RemoveAt(i) ;
-    
+    {
+      digits->RemoveAt(i) ; 
+      continue;
+    }
+
+    // Set digit final values
+    digit->SetIndexInList(idigit++) ;
+    digit->SetAmplitude(ampADC) ;
+    digit->SetTime(time);
+
   } // digit loop
   
   digits->Compress() ;
+    
+  Int_t ndigits = digits->GetEntriesFast();
   
-  Int_t ndigits = digits->GetEntriesFast() ;
+  if(idigit != ndigits)
+    AliFatal(Form("Total number of digits in array %d different to expected %d",ndigits,idigit));
   
-  //---------------------------------------------------------------
-  //JLK 26-June-2008
-  //After we have done the summing and digitizing to create the
-  //digits, now we want to calibrate the resulting amplitude to match
-  //the dynamic range of our real data.
-  for (i = 0 ; i < ndigits ; i++)
-  {
-    digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ;
-    if( !digit ) continue ;
-    
-    digit->SetIndexInList(i) ;
-    
-    time   = digit->GetTime();
-
-    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-
-    Float_t ampADC = energy;
-    DigitizeEnergyTime(ampADC, time, digit->GetId());
-    
-    digit->SetAmplitude(ampADC) ;
-    digit->SetTime(time);
-    // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
-  }//Digit loop
+  AliDebug(1,Form("Number of recorded digits is %d",ndigits));
   
 }
 
