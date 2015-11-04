@@ -24,7 +24,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 						      const Double_t Mbin7 = 90.,
 						      const char * file = "",
 						      const char * cutmask = "GlobalHybrid",
-						      const Int_t binver = 1
+						      const Int_t binver = 1,
+						      const Int_t Zbinver =1
  						    )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for pp data 
@@ -94,6 +95,19 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
   const Double_t Zbin17 = 7.5;						      
   const Double_t Zbin18 = 8.5;						      
   const Double_t Zbin19 = 10.;  
+  if(Zbinver==2){
+    NZBins=    9;
+    Zbin0 = -10.;
+    Zbin1 = -7.5;
+    Zbin2 = -5.5;
+    Zbin3 = -3.5;
+    Zbin4 = -1.5;
+    Zbin5 =  1.5;
+    Zbin6 =  3.5;
+    Zbin7 =  5.5;
+    Zbin8 =  7.5;
+    Zbin9 =  10.;
+  }
   Double_t *Zbin = new Double_t[NZBins+1];
   Zbin[0] = Zbin0;
   Zbin[1] = Zbin1;

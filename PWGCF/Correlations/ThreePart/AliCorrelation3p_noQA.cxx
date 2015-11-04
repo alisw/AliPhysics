@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-#include "AliCorrelation3p.h"
+#include "AliCorrelation3p_noQA.h"
 #include "AliVParticle.h"
 #include "AliCFPI0.h"
 #include "AliFilteredTrack.h"
@@ -39,9 +39,9 @@
 
 using namespace std;
 
-ClassImp(AliCorrelation3p)
+ClassImp(AliCorrelation3p_noQA)
 
-AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD ZBinEdges)
+AliCorrelation3p_noQA::AliCorrelation3p_noQA(const char* name,TArrayD MBinEdges, TArrayD ZBinEdges)
   : TNamed(name?name:"AliCorrelation3p", "")
   , fHistograms(NULL)
   , fMinTriggerPt(8.0)
@@ -51,11 +51,6 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fhPhiEtaDeltaPhi12Cut1(0.5*TMath::Pi())
   , fhPhiEtaDeltaPhi12Cut2(0.25*TMath::Pi())
   , fAcceptanceCut(0.8)
-//   , fWeights(NULL)
-//   , fWeightshpT(NULL)
-//   , fhighpt(NULL)
-//   , fMultWeightIndex(0)
-//   , fVZWeightIndex(0)
   , fMixedEvent(NULL)
   , fMBinEdges(MBinEdges)
   , fZBinEdges(ZBinEdges)
@@ -70,7 +65,7 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   // default constructor
 }
 
-AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
+AliCorrelation3p_noQA::AliCorrelation3p_noQA(const AliCorrelation3p_noQA& other)
   : TNamed(other)
   , fHistograms((other.fHistograms!=NULL?(new TObjArray(*other.fHistograms)):NULL))
   , fMinTriggerPt(other.fMinTriggerPt)
@@ -80,12 +75,7 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
   , fAcceptanceCut(other.fAcceptanceCut)  
-//   , fWeights(NULL)
-//   , fWeightshpT(NULL)
-//   , fhighpt(NULL)
-//   , fMultWeightIndex(0)
-//   , fVZWeightIndex(0)
-  , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
+  , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p_noQA(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
   , fMultiplicity(0)
@@ -99,16 +89,16 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   // copy constructor
 }
 
-AliCorrelation3p& AliCorrelation3p::operator=(const AliCorrelation3p& other)
+AliCorrelation3p_noQA& AliCorrelation3p_noQA::operator=(const AliCorrelation3p_noQA& other)
 {
   // assignment operator
   if (this==&other) return *this;
-  this->~AliCorrelation3p();
-  new (this) AliCorrelation3p(other);
+  this->~AliCorrelation3p_noQA();
+  new (this) AliCorrelation3p_noQA(other);
   return *this;
 }
 
-AliCorrelation3p::~AliCorrelation3p()
+AliCorrelation3p_noQA::~AliCorrelation3p_noQA()
 {
   // destructor
   //
@@ -121,22 +111,22 @@ AliCorrelation3p::~AliCorrelation3p()
   fMixedEvent=NULL;
 }
 
-void AliCorrelation3p::Copy(TObject &object) const
+void AliCorrelation3p_noQA::Copy(TObject &object) const
 {
   /// overloaded from TObject: copy to target object
-  AliCorrelation3p* target=dynamic_cast<AliCorrelation3p*>(&object);
+  AliCorrelation3p_noQA* target=dynamic_cast<AliCorrelation3p_noQA*>(&object);
   if (!target) return;
 
-  AliCorrelation3p* backupME=fMixedEvent;
+  AliCorrelation3p_noQA* backupME=fMixedEvent;
   if (!target->fMixedEvent) {
     // avoid copying the mixed event object if there is no target
-    const_cast<AliCorrelation3p*>(this)->fMixedEvent=NULL;
+    const_cast<AliCorrelation3p_noQA*>(this)->fMixedEvent=NULL;
   }
   *target=*this;
-  const_cast<AliCorrelation3p*>(this)->fMixedEvent=backupME;
+  const_cast<AliCorrelation3p_noQA*>(this)->fMixedEvent=backupME;
 }
 
-int AliCorrelation3p::Init(const char* arguments)
+int AliCorrelation3p_noQA::Init(const char* arguments)
 {
   /// init class and create histograms
   const char* key=NULL;
@@ -210,12 +200,6 @@ int AliCorrelation3p::Init(const char* arguments)
   //histograms that are not binned
   a->AddAt(new TH2D("centvsvz","centrality vs vz",100,fMBinEdges.At(0),fMBinEdges.At(fMBinEdges.GetSize()-1),100,fZBinEdges.At(0),fZBinEdges.At(fZBinEdges.GetSize()-1)),kcentrvsvz);
   a->AddAt(new TH2D("centbinvsvzbin","centrality bin vs vz bin",fMBinEdges.GetSize()-1,0.0,fMBinEdges.GetSize()-1,fZBinEdges.GetSize()-1,0,fZBinEdges.GetSize()-1),kcentrvsvzbin);
-  a->AddAt(new TH1D("hTpTc","Trigger pT",100,0.0,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),kHistpTTriggerallbins);
-  a->AddAt(new TH1D("hTphic","Trigger phi",270,-.5*Pii ,2.5*Pii),kHistPhiTriggerallbins);
-  a->AddAt(new TH1D("hTetac","Trigger eta",100,-3.0,3.0),kHistEtaTriggerallbins);
-  a->AddAt(new TH1D("hApTc","Associated pT",100,0.0,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)),kHistpTAssociatedallbins);
-  a->AddAt(new TH1D("hAphic","Associated phi",270,-.5*Pii ,2.5*Pii),kHistPhiAssociatedallbins);
-  a->AddAt(new TH1D("hAetac","Associated eta",100,-3.0,3.0),kHistEtaAssociatedallbins);
   //Create one set of histograms per mixing bin
   //set binning:
   int nbinseta;
@@ -225,20 +209,9 @@ int AliCorrelation3p::Init(const char* arguments)
   if(!(fbinver==0||fbinver==1)){nbinseta = 63;nbinsphi = 38;}//revert to original
   for(Int_t i=0;i<fMBinEdges.GetSize()-1;i++){
     for(Int_t j=0;j<fZBinEdges.GetSize()-1;j++){
-    a->AddAt(new TH1D(GetNameHist("hpT"				 ,i,j),"pT"						 ,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)	    ),GetNumberHist(kHistpT			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hphi"			 ,i,j),"phi"						 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistPhi			,i,j));
-    a->AddAt(new TH1D(GetNameHist("heta"			 ,i,j),"eta"						 ,100,-3.0    ,3.0						         	    ),GetNumberHist(kHistEta			,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTpT"			 ,i,j),"Trigger pT"					 ,100,0.0     ,(fMaxTriggerPt>fMinTriggerPt?fMaxTriggerPt:fMinTriggerPt)	    ),GetNumberHist(kHistTriggerpT		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTphi"			 ,i,j),"Trigger phi"					 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistTriggerPhi		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hTeta"			 ,i,j),"Trigger eta"					 ,100,-3.0    ,3.0						        	    ),GetNumberHist(kHistTriggerEta		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hApT"			 ,i,j),"Associated pT"					 ,100,0.0     ,(fMaxAssociatedPt>fMinAssociatedPt?fMaxAssociatedPt:fMinAssociatedPt)),GetNumberHist(kHistAssociatedpT		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hAphi"			 ,i,j),"Associated phi"					 ,270,-.5*Pii ,2.5*Pii						        	    ),GetNumberHist(kHistAssociatedPhi		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hAeta"			 ,i,j),"Associated eta"					 ,100,-3.0    ,3.0						        	    ),GetNumberHist(kHistAssociatedEta		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hNAssoc"			 ,i,j),"Number of associated"				 ,100,0	     ,500						       		    ),GetNumberHist(kHistNassoc			,i,j));
     a->AddAt(new TH1D(GetNameHist("hNTriggers"                   ,i,j),"Number of triggers in this bin filled."          ,1   ,0      ,1                                                        	    ),GetNumberHist(kHistNTriggers              ,i,j));
     a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	 ,i,j),"#Delta#Phi vs #Delta#eta"			 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*Pii,1.5*Pii			       ),GetNumberHist(khPhiEta	   ,i,j));//"classical" 2 particle correlation
     a->AddAt(new TH3F(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta",i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}" ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*Pii,1.5*Pii,nbinsphi ,-0.5*Pii,1.5*Pii),GetNumberHist(khPhiPhiDEta,i,j));//3d, DPhiDPhiDEta
-    a->AddAt(new TH1D(GetNameHist("khQAtocheckadressing"         ,i,j),"Will be filled once per event. Should match the centvzbin histogram."   ,1  ,0 ,2),GetNumberHist(khQAtocheckadressing,i,j));
     }
   }
   a->AddAt(new TH1D("overflow","overflow",3,0.0,1),GetNumberHist(kNofHistograms+1,fMBinEdges.GetSize()-1,fZBinEdges.GetSize()-1));
@@ -246,7 +219,7 @@ int AliCorrelation3p::Init(const char* arguments)
   return 0;
 }
 
-int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
+int AliCorrelation3p_noQA::SetMultVZ(Double_t Mult, Double_t Vz)
 {
   fMultiplicity=Mult;
   fVZ=Vz;
@@ -255,74 +228,43 @@ int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
   HistFill(kcentrvsvz,fMultiplicity,fVZ);
   HistFill(kcentrvsvzbin,fMBin,fVzBin);
   if (fMBin<0||fVzBin<0) return -1;
-  HistFill(GetNumberHist(khQAtocheckadressing,fMBin,fVzBin),1.0);
   return 1;
 }
 
-bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
+bool AliCorrelation3p_noQA::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
 {
   // check trigger particle cuts
   if (!ptrigger) return false;
-  AliCFPI0 *phostrigger = dynamic_cast<AliCFPI0*>(ptrigger);
-  if ((phostrigger!=NULL)&&(fTriggerType==tracks)) return false;//We only want tracks as triggers
-  if ((phostrigger==NULL)&&(fTriggerType==pi0)) return false;//We only want pi0s as triggers
   if (ptrigger->Pt()<=fMinTriggerPt) return false;
   if (fMaxTriggerPt>fMinTriggerPt && ptrigger->Pt()>fMaxTriggerPt) return false;
-  if (doHistogram) {
-    Double_t Weight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
-    HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
-    HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
-    HistFill(GetNumberHist(kHistEta,fMBin,fVzBin),ptrigger->Eta(),Weight);
-    HistFill(GetNumberHist(kHistTriggerpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
-    HistFill(GetNumberHist(kHistTriggerPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
-    HistFill(GetNumberHist(kHistTriggerEta,fMBin,fVzBin),ptrigger->Eta(),Weight);
-    HistFill(kHistpTTriggerallbins,ptrigger->Pt(),Weight);
-    HistFill(kHistPhiTriggerallbins,ptrigger->Phi(),Weight);
-    HistFill(kHistEtaTriggerallbins,ptrigger->Eta(),Weight);    
-  }
   return true;
 }
 
-bool AliCorrelation3p::CheckAssociated( AliVParticle* p, bool doHistogram)
+bool AliCorrelation3p_noQA::CheckAssociated( AliVParticle* p, bool doHistogram)
 {
   // check associated particle cuts
   if (!p) return false;
-  AliCFPI0 *phosp = dynamic_cast<AliCFPI0*>(p);
-  if (phosp != NULL) return false;//We only want tracks as associated particles
   if (p->Pt()<=fMinAssociatedPt) return false;
   if (fMaxAssociatedPt>fMinAssociatedPt && p->Pt()>fMaxAssociatedPt) return false;
-  if (doHistogram) {
-    Double_t Weight = dynamic_cast<AliFilteredTrack*>(p)->GetEff();
-    HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
-    HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),p->Phi(),Weight);
-    HistFill(GetNumberHist(kHistEta,fMBin,fVzBin),p->Eta(),Weight);
-    HistFill(GetNumberHist(kHistAssociatedpT,fMBin,fVzBin),p->Pt(),Weight);
-    HistFill(GetNumberHist(kHistAssociatedPhi,fMBin,fVzBin),p->Phi(),Weight);
-    HistFill(GetNumberHist(kHistAssociatedEta,fMBin,fVzBin),p->Eta(),Weight);
-    HistFill(kHistpTAssociatedallbins,p->Pt(),Weight);
-    HistFill(kHistPhiAssociatedallbins,p->Phi(),Weight);
-    HistFill(kHistEtaAssociatedallbins,p->Eta(),Weight);    
-  }
   return true;
 }
 
-int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVParticle* p2, const double weight)
+int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVParticle* p2, const double weight)
 {
   /// fill histograms from particles, fills each histogram exactly once.
   Double_t fillweight = 1.0;
   if (!ptrigger || !p1 || !p2) {cout << "failed fill"<<endl;return -EINVAL;}
   if ((ptrigger->Pt()<=p1->Pt())||(ptrigger->Pt()<=p2->Pt())) {return 0;}
   const double Pii=TMath::Pi();
-  HistFill(GetNumberHist(kHistNassoc,fMBin,fVzBin),weight);
   // phi difference associated 1 to trigger particle
   Double_t DeltaPhi1 = ptrigger->Phi() - p1->Phi();
-  while(DeltaPhi1<-0.5*Pii||DeltaPhi1>1.5*Pii){
+  if(DeltaPhi1<-0.5*Pii||DeltaPhi1>1.5*Pii){
     if (DeltaPhi1<-0.5*Pii) DeltaPhi1 += 2*Pii;
     if (DeltaPhi1>1.5*Pii)  DeltaPhi1 -= 2*Pii;
   }
   // phi difference associated 2 to trigger particle
   Double_t DeltaPhi2 = ptrigger->Phi() - p2->Phi();
-  while(DeltaPhi2<-0.5*Pii||DeltaPhi2>1.5*Pii){
+  if(DeltaPhi2<-0.5*Pii||DeltaPhi2>1.5*Pii){
     if (DeltaPhi2<-0.5*Pii) DeltaPhi2 += 2*Pii;
     if (DeltaPhi2>1.5*Pii)  DeltaPhi2 -= 2*Pii;
   }
@@ -339,7 +281,7 @@ int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVPart
   return 0;
 }
 
-int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1)
+int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1)
 {
   /// fill histograms from particles
   Double_t fillweight = 1.0;  
@@ -348,7 +290,7 @@ int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1)
   const double Pii=TMath::Pi();
   // phi difference associated  to trigger particle
   Double_t DeltaPhi = ptrigger->Phi() - p1->Phi();
-  while(DeltaPhi<-0.5*Pii||DeltaPhi>1.5*Pii){
+  if(DeltaPhi<-0.5*Pii||DeltaPhi>1.5*Pii){
     if (DeltaPhi<-0.5*Pii) DeltaPhi += 2*Pii;
     if (DeltaPhi>1.5*Pii)  DeltaPhi -= 2*Pii;
   }
@@ -360,20 +302,20 @@ int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1)
   return 0;
 }
 
-int AliCorrelation3p::FillTrigger(AliVParticle* ptrigger)
+int AliCorrelation3p_noQA::FillTrigger(AliVParticle* ptrigger)
 {
   Double_t fillweight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();    
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;
 }
 
-void AliCorrelation3p::Clear(Option_t * /*option*/)
+void AliCorrelation3p_noQA::Clear(Option_t * /*option*/)
 {
   /// overloaded from TObject: cleanup
   return TObject::Clear();
 }
 
-void AliCorrelation3p::Print(Option_t *option) const
+void AliCorrelation3p_noQA::Print(Option_t *option) const
 {
   /// overloaded from TObject: print info
   const char* key=NULL;
@@ -401,7 +343,7 @@ void AliCorrelation3p::Print(Option_t *option) const
   }
 }
 
-TObject* AliCorrelation3p::FindObject(const char *name) const
+TObject* AliCorrelation3p_noQA::FindObject(const char *name) const
 {
   /// overloaded from TObject: find object by name
   if (fHistograms) {
@@ -411,7 +353,7 @@ TObject* AliCorrelation3p::FindObject(const char *name) const
   return NULL;
 }
 
-TObject* AliCorrelation3p::FindObject(const TObject *obj) const
+TObject* AliCorrelation3p_noQA::FindObject(const TObject *obj) const
 {
   /// overloaded from TObject: find object by pointer
   if (fHistograms) {
@@ -421,7 +363,7 @@ TObject* AliCorrelation3p::FindObject(const TObject *obj) const
   return NULL;
 }
 
-void AliCorrelation3p::SaveAs(const char *filename,Option_t */*option*/) const
+void AliCorrelation3p_noQA::SaveAs(const char *filename,Option_t */*option*/) const
 {
   /// overloaded from TObject: save to file
   std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
@@ -434,7 +376,7 @@ void AliCorrelation3p::SaveAs(const char *filename,Option_t */*option*/) const
   output->Close();
 }
 
-AliCorrelation3p& AliCorrelation3p::operator+=(const AliCorrelation3p& other)
+AliCorrelation3p_noQA& AliCorrelation3p_noQA::operator+=(const AliCorrelation3p_noQA& other)
 {
   /// add histograms from another instance
   if (!fHistograms || !other.fHistograms) return *this;
@@ -456,12 +398,12 @@ AliCorrelation3p& AliCorrelation3p::operator+=(const AliCorrelation3p& other)
   }
   return *this;
 }
-int AliCorrelation3p::Merge(TCollection* li)
+int AliCorrelation3p_noQA::Merge(TCollection* li)
 {
    // interface for the TFileMerger
    TIter next(li);
    while (TObject* o = next()) {
-      AliCorrelation3p* src=dynamic_cast<AliCorrelation3p*>(o);
+      AliCorrelation3p_noQA* src=dynamic_cast<AliCorrelation3p_noQA*>(o);
       if (!src) {
 	AliWarning(Form("skipping incompatible object %s of type %s", o->ClassName(), o->GetName()));
 	continue;
@@ -471,7 +413,7 @@ int AliCorrelation3p::Merge(TCollection* li)
    return 0;
 }
 
-const char* AliCorrelation3p::GetNameHist(const char* name, Int_t MBin, Int_t ZBin) const
+const char* AliCorrelation3p_noQA::GetNameHist(const char* name, Int_t MBin, Int_t ZBin) const
 {
   if((MBin>(fMBinEdges.GetSize()-1))||(ZBin>(fZBinEdges.GetSize()-1)))return name;//Index out of bounds
   Double_t Mlow = fMBinEdges.At(MBin);
@@ -481,14 +423,14 @@ const char* AliCorrelation3p::GetNameHist(const char* name, Int_t MBin, Int_t ZB
   return Form("%sM(%4.2f)->(%4.2f)Z(%4.2f)->(%4.2f)",name,Mlow,Mhigh,Zlow,Zhigh);
 }
 
-Int_t AliCorrelation3p::GetNumberHist(Int_t khist, Int_t Mbin, Int_t ZBin) const
+Int_t AliCorrelation3p_noQA::GetNumberHist(Int_t khist, Int_t Mbin, Int_t ZBin) const
 {
   if((Mbin>(fMBinEdges.GetSize()-1))||(ZBin>(fZBinEdges.GetSize()-1)))return -1;//Index out of bounds
   int offset = kNonbinnedhists;//Offset so the extra histograms come first.
   return offset+khist+(Mbin+ZBin*(fMBinEdges.GetSize()))*kNofHistograms;//increase the number by number of hists for each M+zbin.
 }
 
-Int_t AliCorrelation3p::GetMultBin(Double_t Mult)
+Int_t AliCorrelation3p_noQA::GetMultBin(Double_t Mult)
 {
   int Nbins = fMBinEdges.GetSize()-1;
   for (int bin =0;bin<Nbins;bin++)if(Mult>=fMBinEdges[bin]&&Mult<fMBinEdges[bin+1])return bin;
@@ -496,7 +438,7 @@ Int_t AliCorrelation3p::GetMultBin(Double_t Mult)
   return -1;
 }
 
-Int_t AliCorrelation3p::GetZBin(Double_t Zvert)
+Int_t AliCorrelation3p_noQA::GetZBin(Double_t Zvert)
 {
   int Nbins = fZBinEdges.GetSize()-1;
   for (int bin =0;bin<Nbins;bin++)if(Zvert>=fZBinEdges[bin]&&Zvert<fZBinEdges[bin+1])return bin;
@@ -504,12 +446,12 @@ Int_t AliCorrelation3p::GetZBin(Double_t Zvert)
   return -1;
 }
 
-void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1)
+void AliCorrelation3p_noQA::HistFill(Int_t Histn,Double_t Val1)
 {
   if(Histn>=0)dynamic_cast<TH1D*>(fHistograms->At(Histn))->Fill(Val1);
   else   dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kNofHistograms+1,fMBinEdges.GetSize()-1,fZBinEdges.GetSize()-1)))->Fill(0.5);//wrong histn
 }
-void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2)
+void AliCorrelation3p_noQA::HistFill(Int_t Histn,Double_t Val1, Double_t Val2)
 {
   if(Histn>=0){
     if(dynamic_cast<TH2D*>(fHistograms->At(Histn)))dynamic_cast<TH2D*>(fHistograms->At(Histn))->Fill(Val1,Val2);
@@ -517,7 +459,7 @@ void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2)
   }
   else dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kNofHistograms,fMBinEdges.GetSize()-1,fZBinEdges.GetSize())+1))->Fill(0.5);//wrong histn
 }
-void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double_t Val3)
+void AliCorrelation3p_noQA::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double_t Val3)
 {
   if(Histn>=0){
     if(dynamic_cast<TH3F*>(fHistograms->At(Histn)))dynamic_cast<TH3F*>(fHistograms->At(Histn))->Fill(Val1,Val2, Val3);
@@ -525,13 +467,13 @@ void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double
   }
   else dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kNofHistograms,fMBinEdges.GetSize()-1,fZBinEdges.GetSize())+1))->Fill(0.5);//wrong histn
 }
-void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double_t Val3, Double_t weight)
+void AliCorrelation3p_noQA::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double_t Val3, Double_t weight)
 {
   if(Histn>=0)dynamic_cast<TH3F*>(fHistograms->At(Histn))->Fill(Val1,Val2,Val3, weight);
   else dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kNofHistograms,fMBinEdges.GetSize()-1,fZBinEdges.GetSize())+1))->Fill(0.5);//wrong histn
 }
 
-TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
+TH2D* AliCorrelation3p_noQA::slice(TH3F* hist, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
@@ -654,7 +596,7 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
   return Slice;
 }
 
-void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
+void AliCorrelation3p_noQA::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
   TString namestring = TString(name);
@@ -778,7 +720,7 @@ void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_
   delete Slice;
 }
 
-TH2D* AliCorrelation3p::DetaDphiAss(TH3F* hist, const char* name)
+TH2D* AliCorrelation3p_noQA::DetaDphiAss(TH3F* hist, const char* name)
 {
   Double_t Pii = TMath::Pi();
   TH2D * DetaDphiAss = (TH2D*)hist->Project3D(Form("%s_yx",name));DetaDphiAss->Reset("m");
@@ -805,7 +747,7 @@ TH2D* AliCorrelation3p::DetaDphiAss(TH3F* hist, const char* name)
 }
 
 
-TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* name, Bool_t baverage) const
+TH2D* AliCorrelation3p_noQA::DeltaEtaCut(TH3F* hist, const char* option, const char* name, Bool_t baverage) const
 {
   //option can be: sameside    = if deltaPhi_1<pi/2, deltaPhi_2<pi/2 and  if deltaPhi_1>pi/2, deltaPhi_2>pi/2
   //		   lesspi2     = DeltaPhi_[12]<pi/2
@@ -858,7 +800,7 @@ TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* 
   return Result;
 }
 
-TCanvas* AliCorrelation3p::Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats)
+TCanvas* AliCorrelation3p_noQA::Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
   Canvas->Divide(3,3);
@@ -901,7 +843,7 @@ TCanvas* AliCorrelation3p::Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* hist
   return Canvas;
 }
 
-TCanvas* AliCorrelation3p::Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* histbotl, TH2D* histbotr, const char* name, Bool_t Stats)
+TCanvas* AliCorrelation3p_noQA::Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* histbotl, TH2D* histbotr, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
   Canvas->Divide(2,2);
@@ -920,7 +862,7 @@ TCanvas* AliCorrelation3p::Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* hist
   return Canvas;
 }
 
-TCanvas* AliCorrelation3p::Makecanvas(TH2D* hist, const char* name, Bool_t Stats)
+TCanvas* AliCorrelation3p_noQA::Makecanvas(TH2D* hist, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
   Canvas->Divide(2,2);
@@ -953,7 +895,7 @@ TCanvas* AliCorrelation3p::Makecanvas(TH2D* hist, const char* name, Bool_t Stats
   return Canvas;
 }
 
-Double_t AliCorrelation3p::FindScalingfactor(const char* scalingmethod,TH2D* sighist,TH2D*mixhist)
+Double_t AliCorrelation3p_noQA::FindScalingfactor(const char* scalingmethod,TH2D* sighist,TH2D*mixhist)
 {
   TString selector=TString(scalingmethod);
   Double_t scalingfactor = 0;
@@ -1041,7 +983,7 @@ Double_t AliCorrelation3p::FindScalingfactor(const char* scalingmethod,TH2D* sig
   return scalingfactor;
 }
 
-Double_t AliCorrelation3p::GetPoint(TH1* hist, Double_t xpoint, Double_t ypoint, Double_t zpoint)
+Double_t AliCorrelation3p_noQA::GetPoint(TH1* hist, Double_t xpoint, Double_t ypoint, Double_t zpoint)
 {
   //Returns the content of the bin with the corresponding points.
   TH1D* hist1d = dynamic_cast<TH1D*>(hist);
@@ -1069,7 +1011,7 @@ Double_t AliCorrelation3p::GetPoint(TH1* hist, Double_t xpoint, Double_t ypoint,
 }
 
 
-void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist)
+void AliCorrelation3p_noQA::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist)
 {
   TH1D* hist11d = dynamic_cast<TH1D*>(histtoadd);
   TH1D* hist21d = dynamic_cast<TH1D*>(addedhist);
@@ -1221,7 +1163,7 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
   }
 }
 
-TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis,bool mixed){
+TH1 * AliCorrelation3p_noQA::PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis,bool mixed){
   TH1* Hist;
   if(!mixed)Hist= dynamic_cast<TH1*>(fHistograms->At(HistLocation)->Clone(HistName));
   if(mixed) Hist= dynamic_cast<TH1*>(fMixedEvent->fHistograms->At(HistLocation)->Clone(HistName));
@@ -1246,7 +1188,7 @@ TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const 
   return Hist;
 }
 
-TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale, TParameter<double> * par){
+TH1 * AliCorrelation3p_noQA::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale, TParameter<double> * par){
   Double_t LeastContent = 1.0;//Least amount in mixed to scale.
   Hist->SetTitle(title);
   Hist->GetXaxis()->SetTitle(xaxis);
@@ -1274,7 +1216,7 @@ TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xax
   return Hist;
 }
 
-int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool all)
+int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recreate,bool all)
 {//This function makes a new file that contains all the histograms in all versions possible.
   TFile * outfile;
   TString dir = TString(scalingmethod);
@@ -1335,72 +1277,10 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       if(mixeddir) mixeddir->cd();
       else outfile->cd();
       dirmzbin = gDirectory->mkdir(GetNameHist("Bin",mb,zb));
-//       cout <<GetNameHist("Bin",mb,zb)<<endl;
       binstats = dirmzbin->mkdir("bin_stats");
       dirmzbinsig = dirmzbin->mkdir("same_event");
       dirmzbinmixed = dirmzbin->mkdir("mixed_event");
       dirmzbindiv = dirmzbin->mkdir("divided");
-      {//for bin statistics
-	binstats->cd();
-	TH1D* savehist1 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistpT,mb,zb),"total_pT","pT of triggers and associated combined","pT [GeV/c]","# particles"));
-	savehist1->Write();
-	if(mb == 0&&zb == 0)HistpT = savehist1;
-	else HistpT->Add(savehist1);
-	TH1D* savehist2 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistPhi,mb,zb),"total_Phi","Phi of triggers and associated combined","#Phi [rad]","# particles"));
-	savehist2->Write();
-	if(mb == 0&&zb == 0)HistPhi = savehist2;
-	else HistPhi->Add(savehist2);
-	TH1D*  savehist3 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistEta,mb,zb),"total_Eta","Eta of triggers and associated combined","#eta []","# particles"));
-	savehist3->Write();
-	if(mb == 0&&zb == 0)HistEta = savehist3;
-	else HistEta->Add(savehist3);
-	TH1D* savehist4 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerpT,mb,zb),"trigger_pT","pT of triggers","pT [GeV/c]","# triggers"));
-	savehist4->Write();
-	if(mb == 0&&zb == 0)HistTriggerpT = savehist4;
-	else HistTriggerpT->Add(savehist4);
-	TH1D* savehist5 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerPhi,mb,zb),"trigger_Phi","Phi of triggers","#Phi [rad]","# triggers"));
-	savehist5->Write();
-	if(mb == 0&&zb == 0)HistTriggerPhi = savehist5;
-	else HistTriggerPhi->Add(savehist5);
-	TH1D* savehist6 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistTriggerEta,mb,zb),"trigger_Eta","Eta of triggers","#eta []","# triggers"));
-	savehist6->Write();
-	if(mb == 0&&zb == 0)HistTriggerEta = savehist6;
-	else HistTriggerEta->Add(savehist6);
-	TH1D* savehist7 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedpT,mb,zb),"associated_pT","pT of associated","pT [GeV/c]","# associated"));
-	savehist7->Write();
-	if(mb == 0&&zb == 0)HistAssociatedpT = savehist7;
-	else HistAssociatedpT->Add(savehist7);
-	TH1D* savehist8 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedPhi,mb,zb),"associated_Phi","Phi of associated","#Phi [rad]","# associated"));
-	savehist8->Write();
-	if(mb == 0&&zb == 0)HistAssociatedPhi = savehist8;
-	else HistAssociatedPhi->Add(savehist8);
-	TH1D* savehist9 = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistAssociatedEta,mb,zb),"associated_Eta","Eta of associated","#eta []","# associated"));	
-	savehist9->Write();
-	if(mb == 0&&zb == 0)HistAssociatedEta = savehist9;
-	else HistAssociatedEta->Add(savehist9);
-	tempcanvas = Makecanvas(savehist1,savehist2,savehist3,savehist4,savehist5,savehist6,savehist7,savehist8,savehist9,"samestatscanvas",kFALSE);
-	tempcanvas->Write();
-	delete tempcanvas;
-	tempcanvas=NULL;
-	if(!(mb==0&&zb==0)){delete savehist1;delete savehist2;delete savehist3;delete savehist4;delete savehist5;delete savehist6;delete savehist7;delete savehist8;delete savehist9;}
-	TH1D* savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated","Number of associated per trigger","# associated in a given fill","# fills"));		
-	savehist->Write();
-	nav = 0;
-	Double_t norm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){nav += savehist->GetBinCenter(i)*savehist->GetBinContent(i);norm += savehist->GetBinContent(i);}
-	if(norm !=0)nav = nav/norm;
-	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNassoc,mb,zb),"number_of_associated_mixed","Number of associated per trigger in mixed","# associated in a given fill","# fills","",true));		
-	savehist->Write();
-	navm = 0;
-	Double_t normm = 0;
-	for(int i=1;i<savehist->GetNbinsX();i++){navm += savehist->GetBinCenter(i)*savehist->GetBinContent(i);normm += savehist->GetBinContent(i);}
-	if(normm !=0)navm = navm/normm;
-	else nav = 0;
-	savehist = dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
-	savehist->Write();
-	delete savehist;
-      }
 /////////same event histograms
 	dirmzbinsig->cd();
 	TH1D* scalinghist= dynamic_cast<TH1D*>(PrepareHist(GetNumberHist(kHistNTriggers,mb,zb),"number_of_triggers","Total number of triggers filled","","# triggers"));
@@ -1434,18 +1314,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
-// 	  DPHIDETA12DPHI12L2PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");     
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3 = DeltaEtaCut(DPHIDPHIDETA,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
-// 	  DPHIDETA12DPHI12L4PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3,"DPHIDEta12_DPHI12less4Pi_3d",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3 =DeltaEtaCut(DPHIDPHIDETA,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
 	  PrepareHist(DPHIDETA12SameSide_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
 	  DPHIDETA12SameSide_3->Write("DPhi_1_DEta_12_SameSide");
@@ -1458,7 +1326,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDETA,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-      
 /////////mixed event histograms
 	dirmzbinmixed->cd();
 	TParameter<double> * scale = new TParameter<double>("scale",0.0);
@@ -1504,18 +1371,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L2PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
-// 	  DPHIDETA12DPHI12L2PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");      
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3m,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"less4pi","DPhi_1_DEta_12_DPHI12_LESS_4PI",kFALSE);
-// 	  PrepareHist(DPHIDETA12DPHI12L4PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<4#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
-// 	  DPHIDETA12DPHI12L4PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3m,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
 	  TH2D* DPHIDETA12SameSide_3m =DeltaEtaCut(DPHIDPHIDETAm,"sameside","DPhi_1_DEta_12_SameSide",kFALSE);
 	  PrepareHist(DPHIDETA12SameSide_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for both associated on the same side","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
 	  DPHIDETA12SameSide_3m->Write("DPhi_1_DEta_12_SameSide");
@@ -1599,26 +1454,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;	 
 	  delete DPHIDETA12_3div;
-// 	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
-// 	  if(!empty)DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
-// 	  else DPHIDETA12DPHI12L2PI_3div->Scale(0.0);
-// 	  if(setAverage) DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHIDETA12DPHI12L2PI_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12DPHI12L2PI_3div->Write();
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L2PI_3div,"DPHIDEta12_DPHI12less2Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  delete DPHIDETA12DPHI12L2PI_3div;
-// 	  TH2D* DPHIDETA12DPHI12L4PI_3div = (TH2D*)DPHIDETA12DPHI12L4PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_4PI");
-// 	  if(!empty)DPHIDETA12DPHI12L4PI_3div->Divide(DPHIDETA12DPHI12L4PI_3m);
-// 	  else DPHIDETA12DPHI12L4PI_3div->Scale(0.0);
-// 	  if(setAverage) DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHIDETA12DPHI12L4PI_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12DPHI12L4PI_3div->Write();
-// 	  tempcanvas= Makecanvas(DPHIDETA12DPHI12L4PI_3div,"DPHIDEta12_DPHI12less4Pi",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
-// 	  delete DPHIDETA12DPHI12L4PI_3div;
 	  TH2D* DPHIDETA12SameSide_3div = (TH2D*)DPHIDETA12SameSide_3->Clone("DPhi_1_DEta_12_SameSide");
 	  if(!empty)DPHIDETA12SameSide_3div->Divide(DPHIDETA12SameSide_3m);
 	  else DPHIDETA12SameSide_3div->Scale(0.0);
@@ -1644,9 +1479,9 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
       delete DPhi12DEta12;delete DPhi12DEta12m;
       delete DPHIDPHI3;delete DPHIDPHI3near;delete DPHIDPHI3mid;delete DPHIDPHI3far;delete DPHIDPHI3m;delete DPHIDPHI3nearm;delete DPHIDPHI3midm;delete DPHIDPHI3farm;
-      delete DPHIDETA12_3;//delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;
+      delete DPHIDETA12_3;
       delete DPHIDETA12SameSide_3;
-      delete DPHIDETA12_3m;//delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;
+      delete DPHIDETA12_3m;
       delete DPHIDETA12SameSide_3m;
       delete DPHIDETA;delete DPHIDETAm;
     }
