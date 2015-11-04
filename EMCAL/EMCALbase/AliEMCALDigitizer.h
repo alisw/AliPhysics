@@ -58,16 +58,15 @@ public:
   Double_t GetTimeResolutionPar0() const { return fTimeResolutionPar0 ; }
   Double_t GetTimeResolutionPar1() const { return fTimeResolutionPar1 ; }
   Double_t GetTimeDelay()          const { return fTimeDelay          ; }
+  Double_t IsTimeDelay()           const { return fTimeDelayFromOCDB  ; }
   Float_t  GetECAchannel()         const { return fADCchannelEC       ; }
   Float_t  GetECApedestal()        const { return fADCpedestalEC      ; }
   
   void     SetEventRange(Int_t first=0, Int_t last=-1) { fFirstEvent     = first ; 
-                                                         fLastEvent      = last             ; }
-  void     SetDigitThreshold(Int_t EMCThreshold)       { fDigitThreshold = EMCThreshold     ; }
-  void     SetPinNoise(Float_t pinNoise )              { fPinNoise       = pinNoise         ; }
-  void     SetTimeNoise(Float_t timeNoise )            { fTimeNoise      = timeNoise        ; }
+                                                         fLastEvent      = last  ; }
 
-  //General
+
+  // General
   Int_t    GetDigitsInRun()  const { return fDigitsInRun; } 
   void     Print (Option_t * option = "") const ;
   void     Print1(Option_t * option)            ; // *MENU*
@@ -113,7 +112,8 @@ private:
   Float_t  fGainFluctuations ;     // correct fMeanPhotonElectron by the gain fluctuations
   Float_t  fPinNoise ;             // Electronics noise in EMC, APD
   Double_t fTimeNoise;             // Electronics noise in EMC, time
-  Double_t fTimeDelay;             // Time delay to reproduce data delay
+  Double_t fTimeDelay;             // Time delay to mimick roughly data delay
+  Bool_t   fTimeDelayFromOCDB;     // Recover time delay from data
   Double_t fTimeResolutionPar0 ;   // Time resolution of FEE electronics
   Double_t fTimeResolutionPar1 ;   // Time resolution of FEE electronics
   Float_t  fADCchannelEC ;         // calibration width of one ADC channel in EC section (GeV)
@@ -130,7 +130,7 @@ private:
   AliEMCALCalibData * fCalibData;  // Calibration data pointer
   AliEMCALSDigitizer* fSDigitizer; // SDigitization object
   
-  ClassDef(AliEMCALDigitizer,13)  
+  ClassDef(AliEMCALDigitizer,14)  
 };
 
 

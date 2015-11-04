@@ -124,6 +124,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
+    fTimeDelayFromOCDB(0),
     fTimeResolutionPar0(0),
     fTimeResolutionPar1(0),
     fADCchannelEC(0),
@@ -158,6 +159,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
+    fTimeDelayFromOCDB(0),
     fTimeResolutionPar0(0),
     fTimeResolutionPar1(0),
     fADCchannelEC(0),
@@ -193,6 +195,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fPinNoise(d.fPinNoise),
     fTimeNoise(d.fTimeNoise),
     fTimeDelay(d.fTimeDelay),
+    fTimeDelayFromOCDB(d.fTimeDelayFromOCDB),
     fTimeResolutionPar0(d.fTimeResolutionPar0),
     fTimeResolutionPar1(d.fTimeResolutionPar1),
     fADCchannelEC(d.fADCchannelEC),
@@ -224,6 +227,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliDigitizationInput * rd)
     fPinNoise(0.),
     fTimeNoise(0.),
     fTimeDelay(0.),
+    fTimeDelayFromOCDB(0.),
     fTimeResolutionPar0(0.),
     fTimeResolutionPar1(0.),
     fADCchannelEC(0),
@@ -675,7 +679,13 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   
   //Apply calibration to get ADC counts and partial decalibration as especified in OCDB
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
-  time  += fTimeChannel-fTimeChannelDecal+fTimeDelay;
+  
+  // Apply shift to time, if requested and calibration parameter is available,
+  // if not, apply fix shift 
+  if(fTimeDelayFromOCDB && fTimeChannel > 0) 
+    time  += fTimeChannel-fTimeChannelDecal;
+  else                   
+    time  += fTimeDelay;
   
   if ( energy > fNADCEC ) energy =  fNADCEC ;
 }
@@ -1081,6 +1091,7 @@ void AliEMCALDigitizer::InitParameters()
   fTimeResolutionPar0 = simParam->GetTimeResolutionPar0(); 
   fTimeResolutionPar1 = simParam->GetTimeResolutionPar1(); 
   fTimeDelay          = simParam->GetTimeDelay(); //600e-9 ; // 600 ns
+  fTimeDelayFromOCDB  = simParam->IsTimeDelayFromOCDB(); 
   
   // These defaults are normally not used. 
   // Values are read from calibration database instead
