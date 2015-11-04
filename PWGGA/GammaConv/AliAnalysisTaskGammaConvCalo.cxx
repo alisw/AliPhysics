@@ -2250,17 +2250,19 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
       }
     }
 
-    if(fIsMC>0){
-      if(fInputEvent->IsA()==AliESDEvent::Class()){
-        ProcessTrueClusterCandidates(PhotonCandidate,clus->GetM02());
-      }else {
-        ProcessTrueClusterCandidatesAOD(PhotonCandidate,clus->GetM02());
-      }
-    }
 
-    if (fIsFromMBHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+    if (fIsOverlappingWithOtherHeader) 
+      fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+    
     if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
       fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+      if(fIsMC>0){
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          ProcessTrueClusterCandidates(PhotonCandidate,clus->GetM02());
+        }else {
+          ProcessTrueClusterCandidatesAOD(PhotonCandidate,clus->GetM02());
+        }
+      }
       fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
     }else{
       delete PhotonCandidate;
