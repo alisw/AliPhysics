@@ -27,11 +27,11 @@ public:
   AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
   virtual ~AliEMCALTriggerAlgorithm();
 
-  void SetRowMin(Int_t rowmin);
-  void SetRowMax(Int_t rowmax);
-  void SetThreshold(Double_t threshold);
-  void SetBitMask(ULong_t bitmask);
-  void SetPatchSize(Int_t patchsize);
+  void SetRowMin(Int_t rowmin) { fRowMin = rowmin; }
+  void SetRowMax(Int_t rowmax) { fRowMax = rowmax; }
+  void SetThreshold(Double_t threshold) { fThreshold = threshold; }
+  void SetBitMask(ULong_t bitmask) { fBitMask |= bitmask; }
+  void SetPatchSize(Int_t patchsize) { fPatchSize = patchsize; }
 
   virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const;
 
