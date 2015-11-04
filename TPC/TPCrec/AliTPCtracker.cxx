@@ -1245,7 +1245,7 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
 {
   //
   // load clusters to the memory
-  AliTPCClustersRow *clrow = new AliTPCClustersRow("AliTPCclusterMI");
+  AliTPCClustersRow *clrow = 0; //RS new AliTPCClustersRow("AliTPCclusterMI");
   Int_t lower   = arr->LowerBound();
   Int_t entries = arr->GetEntriesFast();
   
@@ -1287,7 +1287,7 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
     clrow->GetArray()->Clear(); // RS AliTPCclusterMI does not allocate memory
   }
   //
-  delete clrow;
+  //  delete clrow;
   LoadOuterSectors();
   LoadInnerSectors();
   return 0;
@@ -2041,6 +2041,11 @@ void  AliTPCtracker::ApplyTailCancellation(){
     nclALL += sector.GetNClInSector(1);
   }
 
+  //RS changed from heap allocation in the loop to stack allocation
+  TGraphErrors * graphRes[20]; 
+  Float_t        indexAmpGraphs[20];      
+  static TObjArray rowClusterArray(kMaxClusterPerRow); // caches clusters for each row  // RS avoid trashing the heap
+
   // start looping over all clusters 
   for (Int_t iside=0; iside<2; iside++){    // loop over sides
     //
@@ -2053,9 +2058,9 @@ void  AliTPCtracker::ApplyTailCancellation(){
       for (Int_t sec = 0;sec<fkNOS;sec++){        //loop overs sectors
         //
         //
-        // Cache time response functions and their positons to COG of the cluster        
-        TGraphErrors ** graphRes   = new TGraphErrors *[20];
-        Float_t * indexAmpGraphs   = new Float_t[20];      
+        // Cache time response functions and their positons to COG of the cluster       
+	// TGraphErrors ** graphRes   = new TGraphErrors *[20]; // RS avoid heap allocations if stack can be used
+        // Float_t * indexAmpGraphs   = new Float_t[20];        // RS Moved outside of the loop
         for (Int_t icache=0; icache<20; icache++) 
         {
           graphRes[icache]       = NULL;
@@ -2082,7 +2087,9 @@ void  AliTPCtracker::ApplyTailCancellation(){
           Float_t qMaxArray[ncl];
           Int_t sortedClusterIndex[ncl];
           Float_t sortedClusterTimeBin[ncl];
-          TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  
+          //TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  // RS avoid trashing the heap
+	  rowClusterArray.Clear();
+	  if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
           for (Int_t i=0;i<ncl;i++) 
           {
             qTotArray[i]=0;
@@ -2090,15 +2097,15 @@ void  AliTPCtracker::ApplyTailCancellation(){
             sortedClusterIndex[i]=i;
             AliTPCclusterMI *rowcl= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
             if (rowcl) {
-              rowClusterArray->AddAt(rowcl,i);
+              rowClusterArray.AddAt(rowcl,i);
             } else {
-              rowClusterArray->RemoveAt(i);
+              rowClusterArray.RemoveAt(i);
             }
             // Fill the timebin info to the array in order to sort wrt tb
             if (!rowcl) {
 	      sortedClusterTimeBin[i]=0.0;
 	    } else {
-            sortedClusterTimeBin[i] = rowcl->GetTimeBin();
+	      sortedClusterTimeBin[i] = rowcl->GetTimeBin();
 	    }
 
           } 
@@ -2107,12 +2114,12 @@ void  AliTPCtracker::ApplyTailCancellation(){
           // Main cluster correction loops over clusters
           for (Int_t icl0=0; icl0<ncl;icl0++){    // first loop over clusters
 
-            AliTPCclusterMI *cl0= static_cast<AliTPCclusterMI*>(rowClusterArray->At(sortedClusterIndex[icl0]));
+            AliTPCclusterMI *cl0= static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl0]));
             
             if (!cl0) continue;
             Int_t nclPad=0;                       
             for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
-              AliTPCclusterMI *cl1= static_cast<AliTPCclusterMI*>(rowClusterArray->At(sortedClusterIndex[icl1]));
+              AliTPCclusterMI *cl1= static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl1]));
 	      if (!cl1) continue;
 	      if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>4) continue;           // no contribution if far away in pad direction
               if (cl0->GetTimeBin()<= cl1->GetTimeBin()) continue;               // no contibution to the tail if later
@@ -2168,11 +2175,11 @@ void  AliTPCtracker::ApplyTailCancellation(){
             }// dump the results to the debug streamer if in debug mode
           
           }//end of first loop over cluster
-          delete rowClusterArray;
+          // delete rowClusterArray; // RS was moved to stack allocation
         }//end of loop over rows
         for (int i=0; i<20; i++) delete graphRes[i];
-        delete [] graphRes;
-        delete [] indexAmpGraphs;
+	//        delete [] graphRes; //RS was changed to stack allocation
+	//        delete [] indexAmpGraphs;
       
       }//end of loop over sectors
     }//end of loop over IROC/OROC
@@ -3106,8 +3113,10 @@ void AliTPCtracker::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t facto
   UnsignClusters();
   //
   Int_t nseed = arr->GetEntriesFast();  
-  Float_t * quality = new Float_t[nseed];
-  Int_t   * indexes = new Int_t[nseed];
+  //  Float_t quality = new Float_t[nseed];
+  //  Int_t   * indexes = new Int_t[nseed];
+  Float_t quality[nseed]; //RS Use stack allocations
+  Int_t   indexes[nseed];
   Int_t good =0;
   //
   //
@@ -3198,8 +3207,8 @@ void AliTPCtracker::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t facto
   if (fDebug>0){
     Info("RemoveUsed","\n*****\nNumber of good tracks after shared removal\t%d\n",fNtracks);
   }
-  delete []quality;
-  delete []indexes;
+  //  delete []quality; // RS was moved to stack allocation
+  //  delete []indexes;
 }
 
 void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray) 
@@ -6356,6 +6365,13 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     track0->CookPID();
   }
   //
+  // RS use stack allocation instead of the heap
+  AliTPCseed mother,daughter;
+  AliKink kinkl;
+  AliTPCseed *pmother = new AliTPCseed();
+  AliTPCseed *pdaughter = new AliTPCseed();
+  AliKink *pkink = new AliKink;
+  //
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
@@ -6378,31 +6394,28 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     if (track0->GetKinkIndex(0)!=0) continue;
     if (track0->GetNumberOfClusters()<80) continue;
 
-    AliTPCseed *pmother = new AliTPCseed();
-    AliTPCseed *pdaughter = new AliTPCseed();
-    AliKink *pkink = new AliKink;
-
-    AliTPCseed & mother = *pmother;
-    AliTPCseed & daughter = *pdaughter;
-    AliKink & kinkl = *pkink;
+    // AliTPCseed *pmother = new AliTPCseed(); // RS use stack allocation
+    // AliTPCseed *pdaughter = new AliTPCseed();
+    // AliKink *pkink = new AliKink;
+    //
     if (CheckKinkPoint(track0,mother,daughter, kinkl)){
       if (mother.GetNumberOfClusters()<30||daughter.GetNumberOfClusters()<20) {
-	delete pmother;
-	delete pdaughter;
-	delete pkink;
+	//	delete pmother; // RS used stack allocation
+	//	delete pdaughter;
+	//	delete pkink;
 	continue;  //too short tracks
       }
       if (mother.Pt()<1.4) {
-	delete pmother;
-	delete pdaughter;
-	delete pkink;
+	//	delete pmother; // RS used stack allocation
+	//	delete pdaughter;
+	//	delete pkink;
 	continue;
       }
       Int_t row0= kinkl.GetTPCRow0();
       if (kinkl.GetDistance()>0.5 || kinkl.GetR()<110. || kinkl.GetR()>240.) {
-	delete pmother;
-	delete pdaughter;
-	delete pkink;
+	//	delete pmother; // RS used stack allocation
+	//	delete pdaughter;
+	//	delete pkink;
 	continue;
       }
       //
@@ -6438,9 +6451,9 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       }
       //
     }
-    delete pmother;
-    delete pdaughter;
-    delete pkink;
+    //delete pmother; // RS used stack allocation
+    //delete pdaughter;
+    //delete pkink;
   }
 
   delete [] daughters;
