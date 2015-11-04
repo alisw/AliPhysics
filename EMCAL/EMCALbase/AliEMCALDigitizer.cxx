@@ -337,7 +337,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     if (fDigInput)
       readEvent = dynamic_cast<AliStream*>(fDigInput->GetInputStream(i))->GetCurrentEventNumber() ;
     
-    Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ;
+    AliInfo(Form("Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data())) ;
     
     rl2->LoadSDigits();
     //     rl2->LoadDigits();
@@ -651,7 +651,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 /// \param absId: tower ID
 ///
 //_____________________________________________________________________
-void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, const Int_t absId)
+void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, Int_t absId)
 {
   // Load Geometry and cell indeces
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
@@ -861,7 +861,7 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
     
     (emcalLoader->TreeD())->Fill();
     
-    emcalLoader->WriteDigits(   "OVERWRITE");
+    emcalLoader->WriteDigits("OVERWRITE");
     
     Unload();
     
@@ -1047,7 +1047,7 @@ Bool_t AliEMCALDigitizer::Init()
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   
   if ( emcalLoader == 0 ) {
-    Fatal("Init", "Could not obtain the AliEMCALLoader");  
+    AliFatal("Could not obtain the AliEMCALLoader");  
     return kFALSE;
   } 
   
