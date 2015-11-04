@@ -339,6 +339,36 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
   return kTRUE;
 }
 
+Bool_t AliTrackerBase::PropagateTrackParamOnlyTo(AliExternalTrackParam *track, Double_t xToGo,Double_t maxStep, Bool_t rotateTo, Double_t maxSnp)
+{
+  //----------------------------------------------------------------
+  //
+  // Propagates in fixed step size the track params ONLY to the plane X=xk (cm) using the magnetic field map 
+  // W/O correcting for the crossed material.
+  // maxStep  - maximal step for propagation
+  //
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  double xpos = track->GetX();
+  Int_t dir   = (xpos<xToGo) ? 1:-1;
+  //
+  double xyz[3];
+  track->GetXYZ(xyz);
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = track->GetX()+step;
+    Double_t bz=GetBz(xyz); // getting the local Bz
+    if (!track->PropagateParamOnlyTo(x,bz))  return kFALSE;
+    track->GetXYZ(xyz);   // global position
+    if (rotateTo){
+      Double_t alphan = TMath::ATan2(xyz[1], xyz[0]); 
+      if (maxSnp>0 && TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+      if (!track->AliExternalTrackParam::RotateParamOnly(alphan)) return kFALSE;      
+    }
+  }
+  return kTRUE;
+}
+
 Int_t AliTrackerBase::PropagateTrackTo2(AliExternalTrackParam *track, Double_t xToGo,
                                         Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Int_t sign, Bool_t addTimeStep, Bool_t correctMaterialBudget){
   //----------------------------------------------------------------
@@ -475,6 +505,38 @@ AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
       }
       track->AddTimeStep(d);
     }
+  }
+  return kTRUE;
+}
+
+Bool_t AliTrackerBase::PropagateTrackParamOnlyToBxByBz(AliExternalTrackParam *track,
+						       Double_t xToGo,Double_t maxStep, Bool_t rotateTo, Double_t maxSnp)
+{
+  //----------------------------------------------------------------
+  //
+  // Propagates in fixed step size the track params ONLY to the plane X=xk (cm) using the magnetic field map 
+  // W/O correcting for the crossed material.
+  // maxStep  - maximal step for propagation
+  //
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = track->GetX();
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
+  Double_t xyz[3];
+  track->GetXYZ(xyz);
+  //
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t b[3]; GetBxByBz(xyz,b); // getting the local Bx, By and Bz
+    if (!track->PropagateParamOnlyBxByBzTo(x,b))  return kFALSE;
+    if (maxSnp>0 && TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
+    track->GetXYZ(xyz);
+    if (rotateTo){
+      Double_t alphan = TMath::ATan2(xyz[1], xyz[0]); 
+      if (!track->AliExternalTrackParam::Rotate(alphan)) return kFALSE;
+    }
+    xpos = track->GetX();    
   }
   return kTRUE;
 }
