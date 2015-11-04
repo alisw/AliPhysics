@@ -59,6 +59,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
+  void FillMCGenPairROOTObjects(AliAODMCParticle *mcparte, AliAODMCParticle* mcpartv, TClonesArray *mcArray);
   Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
@@ -75,7 +76,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
   void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
-  Bool_t GetMCEventType() const {return fMCEventType;}
+  Int_t GetMCEventType() const {return fMCEventType;}
+  void SetMCDoPairAnalysis(Bool_t a) {fMCDoPairAnalysis = a;}
+  Bool_t GetMCDoPairAnalysis() const {return fMCDoPairAnalysis;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -83,6 +86,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   AliAODVertex* ReconstructSecondaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod);
 	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgarray_ele, Int_t *pdgarray_casc, Int_t *labelarray_ele, Int_t *labelarray_casc,  Int_t &ngen_ele, Int_t &ngen_casc);
 	Int_t MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const;
+	void	GetMCDecayHistory(AliAODMCParticle *mcpart, TClonesArray *mcArray, Int_t *pdgarray, Int_t *labelarray, Int_t &ngen);
 
 
   /// mixing
@@ -113,6 +117,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DefineMCTreeVariables();
   void DefineMCEleTreeVariables();
   void DefineMCCascTreeVariables();
+  void DefineMCGenPairTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
@@ -137,6 +142,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fMCGenPairVariablesTree;         //!<! tree of mcArray analysis pair tree
   Bool_t fReconstructPrimVert;       /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -149,6 +155,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCCascVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCGenPairVariables;   //!<! variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -158,7 +165,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
-	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
+	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar 
+	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleXiMass;         //!<! e-Xi mass spectra
@@ -309,6 +317,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonElevsRunNumber;//!<!  nele vs runnumber
 	TH1F *fHistonXivsRunNumber;//!<!  nxi vs runnumber
 	TH1F *fHistoMCEventType;//!<!  MC Event Type
+	TH1F *fHistoMCXic0Decays;//!<!  MC Event Type
+	TH1F *fHistoMCDeltaPhiccbar;//!<!  MC Event Type
+	TH1F *fHistoMCNccbar;//!<!  MC Event Type
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -325,7 +336,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,14); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,15); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
