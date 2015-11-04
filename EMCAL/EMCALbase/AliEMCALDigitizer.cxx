@@ -525,7 +525,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
                      absID, energy, nextSig));
     //Add delay to time
-    digit->SetTime(digit->GetTime()+fTimeDelay) ;
+    digit->SetTime(digit->GetTime()) ;
     
   } // for(absID = 0; absID < nEMC; absID++)
   
@@ -624,7 +624,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     digit->SetIndexInList(i) ;
     
     time   = digit->GetTime();
-    digit->SetTime(time);
 
     energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
 
@@ -632,6 +631,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     DigitizeEnergyTime(ampADC, time, digit->GetId());
     
     digit->SetAmplitude(ampADC) ;
+    digit->SetTime(time);
     // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
   }//Digit loop
   
@@ -678,7 +678,7 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   
   //Apply calibration to get ADC counts and partial decalibration as especified in OCDB
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
-  time  += fTimeChannel-fTimeChannelDecal;
+  time  += fTimeChannel-fTimeChannelDecal+fTimeDelay;
   
   if ( energy > fNADCEC ) energy =  fNADCEC ;
 }
