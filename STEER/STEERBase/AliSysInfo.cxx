@@ -267,6 +267,8 @@ TTree * AliSysInfo::MakeTree(const char *lname){
   tree->SetAlias("T","stampSec-first");
   tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)");
   tree->SetAlias("VM","pI.fMemVirtual");
+  tree->SetAlias("deltaRM","(pI.fMemResident-pIOld.fMemResident)");
+  tree->SetAlias("RM","pI.fMemResident");
   return tree;
 }
 
