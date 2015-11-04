@@ -295,7 +295,9 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
 			rms  = 0.;
 			if (fPedCount[idet][ism][irow][icol] > 0)
 			  {
-			    mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			    //mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+                            // Fix for 2015 data sjena
+			    mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol] + 5;
 			    
 			    meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
 			    
