@@ -45,6 +45,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t GetTimeCut            () const     {return fTimeCut             ;}
   Float_t GetTimeMin            () const     {return fTimeMin             ;}
   Float_t GetTimeMax            () const     {return fTimeMax             ;}
+  Bool_t  IsTimeCalibrationOn   () const     {return fTimeCalibration     ;}
   Bool_t  GetUnfold             () const     {return fUnfold              ;}
   Int_t   GetNRowDiff           () const     {return fNRowDiff            ;}
   Int_t   GetNColDiff           () const     {return fNColDiff            ;}
@@ -56,6 +57,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetTimeCut            (Float_t t)         {fTimeCut   = t          ;}
   void SetTimeMin            (Float_t t)         {fTimeMin   = t          ;}
   void SetTimeMax            (Float_t t)         {fTimeMax   = t          ;}
+  void SetTimeCalibration    (Bool_t  yn)        {fTimeCalibration = yn   ;}
   void SetUnfold             (Bool_t unfold)     {fUnfold    = unfold     ;}
   void SetNxM(Int_t rdiff, Int_t cdiff)          {fNRowDiff=rdiff; fNColDiff = cdiff; }
 
@@ -152,6 +154,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t fTimeCut ;             // Maximum time of digits with respect to EMC cluster max.
   Float_t fTimeMin ;             // Minimum time of digits
   Float_t fTimeMax ;             // Maximum time of digits
+  Bool_t  fTimeCalibration;      // Activate time calibration
   Short_t fClusterizerFlag ;     // Choice of the clusterizer; Default selection (v1) is zero
   Int_t   fNRowDiff;             // NxN: How many neighbors to consider along row (phi)
   Int_t   fNColDiff;             // NxN: How many neighbors to consider along col (eta)
@@ -194,7 +197,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,17)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,18)     // Reconstruction parameters
 };
 
 #endif //  ALIEMCALRECPARAM_H

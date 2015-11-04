@@ -39,6 +39,7 @@ fGainFluctuations(0),
 fPinNoise(0),
 fTimeNoise(0),
 fTimeDelay(0),
+fTimeDelayFromOCDB(0),
 fTimeResolutionPar0(0),
 fTimeResolutionPar1(0),
 fNADCEC(0),//Digitizer
@@ -57,6 +58,7 @@ fECPrimThreshold(0.) //SDigitizer
   fTimeResolutionPar0 = 0.26666; // From F. Blanco: 0.51639^2
   fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
   fTimeDelay          = 600e-9 ; // 600 ns
+  fTimeDelayFromOCDB  = kFALSE ; 
 
   fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
 	
@@ -77,6 +79,7 @@ fGainFluctuations(0),
 fPinNoise(0),
 fTimeNoise(0),
 fTimeDelay(0),
+fTimeDelayFromOCDB(0),
 fTimeResolutionPar0(0),
 fTimeResolutionPar1(0),
 fNADCEC(0),
@@ -126,6 +129,7 @@ void AliEMCALSimParam::Print(Option_t *) const
   printf("\t Time Resolution (fTimeResolutionPar0)      = %g\n", fTimeResolutionPar0) ;
   printf("\t Time Resolution (fTimeResolutionPar1)      = %g\n", fTimeResolutionPar1) ;
   printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
+  printf("\t Time Delay OCDB (fTimeDelayFromOCDB)       = %d\n", fTimeDelayFromOCDB) ;
   printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d, Gain Fluc. (fGainFluctuations) %2.1f\n", fMeanPhotonElectron,fGainFluctuations)  ;
   printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
 

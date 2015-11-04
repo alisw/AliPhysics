@@ -46,6 +46,7 @@ fLocMaxCut(0.03),
 fTimeCut(1.),// high value, accept all
 fTimeMin(-1.),// small value, accept all
 fTimeMax(1.),// high value, accept all//clustering
+fTimeCalibration(0),
 fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
 fNRowDiff(1),
 fNColDiff(1),
@@ -249,7 +250,8 @@ fUnfold(rp.fUnfold),
 fLocMaxCut(rp.fLocMaxCut), 
 fTimeCut(rp.fTimeCut), 
 fTimeMin(rp.fTimeMin),
-fTimeMax(rp.fTimeMax),//clustering
+fTimeMax(rp.fTimeMax),
+fTimeCalibration(rp.fTimeCalibration),//clustering
 fClusterizerFlag(rp.fClusterizerFlag),
 fNRowDiff(rp.fNRowDiff),
 fNColDiff(rp.fNColDiff),
@@ -312,8 +314,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fLocMaxCut = rp.fLocMaxCut; 
     fTimeCut   = rp.fTimeCut;
     fTimeMax   = rp.fTimeMax;
-    fTimeMin   = rp.fTimeMin;//clustering
-    fClusterizerFlag   = rp.fClusterizerFlag;
+    fTimeMin   = rp.fTimeMin;
+    fTimeCalibration = rp.fTimeCalibration;//clustering
+    fClusterizerFlag = rp.fClusterizerFlag;
     fNRowDiff  = rp.fNRowDiff;
     fNColDiff  = rp.fNColDiff;
     fMthCutEta         = rp.fMthCutEta;
@@ -592,8 +595,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   // if "pid", just PID parameters, if "raw", just raw utils parameters.
   if(!strcmp("",opt) || !strcmp("reco",opt)){
     AliInfo(Form("Clusterizer selected: %d", fClusterizerFlag));
-    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
-                 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
+    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n fTimeCalibration=%d\n ",
+                 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9,fTimeCalibration));
     
     AliInfo(Form("Track-matching cuts :\n dEta<%f, dPhi<%f, step=%f[cm], pT>%f, NITS>%f, NTPC>%f\n", 
                  fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC));

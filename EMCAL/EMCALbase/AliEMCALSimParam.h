@@ -30,6 +30,7 @@ public:
   Float_t  GetPinNoise()                const { return fPinNoise           ; }
   Double_t GetTimeNoise()               const { return fTimeNoise          ; }
   Double_t GetTimeDelay()               const { return fTimeDelay          ; }
+  Double_t IsTimeDelayFromOCDB()        const { return fTimeDelayFromOCDB  ; }
   Double_t GetTimeResolutionPar0()      const { return fTimeResolutionPar0 ; }
   Double_t GetTimeResolutionPar1()      const { return fTimeResolutionPar1 ; }
   Int_t    GetNADCEC()                  const { return fNADCEC             ; }
@@ -40,6 +41,7 @@ public:
   void     SetPinNoise(Float_t val)           { fPinNoise            = val ; }
   void     SetTimeNoise(Float_t val)          { fTimeNoise           = val ; }
   void     SetTimeDelay(Double_t val)         { fTimeDelay           = val ; }
+  void     SetTimeDelayFromOCDB(Bool_t val)   { fTimeDelayFromOCDB   = val ; }
   void     SetTimeResolutionPar0(Double_t val){ fTimeResolutionPar0  = val ; }
   void     SetTimeResolutionPar1(Double_t val){ fTimeResolutionPar1  = val ; }
   void     SetNADCED(Int_t val)               { fNADCEC              = val ; }
@@ -67,7 +69,8 @@ private:
   Float_t  fGainFluctuations ;    // correct fMeanPhotonElectron by the gain fluctuations
   Float_t  fPinNoise ;            // Electronics noise in EMC, APD
   Double_t fTimeNoise ;           // Electronics noise in EMC, time
-  Double_t fTimeDelay;            // Time delay to reproduce data delay
+  Double_t fTimeDelay;            // Simple time delay to mimick roughly delay in data
+  Bool_t   fTimeDelayFromOCDB;    // Get time delay from OCDB 
   Double_t fTimeResolutionPar0 ;  // Time resolution of FEE electronics
   Double_t fTimeResolutionPar1 ;  // Time resolution of FEE electronics
   Int_t    fNADCEC ;              // number of channels in EC section ADC
@@ -77,7 +80,7 @@ private:
   Float_t fB ;                     // Slope Digitizition parameters
   Float_t fECPrimThreshold ;       // To store primary if EC Shower Elos > threshold
 		
-  ClassDef(AliEMCALSimParam,6)
+  ClassDef(AliEMCALSimParam,7)
 };
 
 #endif
