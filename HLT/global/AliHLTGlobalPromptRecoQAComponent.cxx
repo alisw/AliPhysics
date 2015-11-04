@@ -60,6 +60,9 @@
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
+#include "tracking-ca/AliHLTTPCCADefinitions.h"
+#include "tracking-ca/AliHLTTPCCACompressedInputData.h"
+#include "tracking-ca/AliHLTTPCCASliceOutput.h"
 
 #include "TH1I.h"
 #include <string>
@@ -73,6 +76,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fVerbosity(0)
   , fBenchmark("PromptRecoQA")
   , fSkipEvents(0)
+  , fPrintStats(0)
   , fEventsSinceSkip(0)
   , fHistSPDclusters_SPDrawSize(NULL)
   , fHistSSDclusters_SSDrawSize(NULL)
@@ -116,6 +120,8 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
       if (argument.CompareTo("-skip-events")==0) {
 	      argument.ReplaceAll("-skip-events=","");
         fSkipEvents = argument.Atoi();
+      }	else if (argument.CompareTo("-print-stats")==0) {
+        fPrintStats = 1;
       }	else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -171,8 +177,25 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD);
   list.push_back(kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS);
-  list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC);
-  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC);
+  list.push_back(kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD); //SPD Vertex
+  list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC); //HLT-TPC clusters from HWCF
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC); //TPC DDL raw data
+  list.push_back(AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters
+  list.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters (internally compressed form)
+  list.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC); //Non-transformed HLT-TPC clusters
+  list.push_back(AliHLTTPCCADefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
+  list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC); //HLT-TPC merged tracks
+  list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITS); //TPC-ITS tracks
+  list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITSOut); //ITS-Out merged tracks
+
+
+  //All this is TPC Data compression
+  list.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
+  list.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  list.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
+  list.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
+  list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
 }
 
 AliHLTComponentDataType AliHLTGlobalPromptRecoQAComponent::GetOutputDataType()
@@ -250,16 +273,29 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t nClustersTPC = 0;
   AliHLTUInt32_t rawSizeTPC = 0;
   AliHLTUInt32_t hwcfSizeTPC = 0;
+  AliHLTUInt32_t clusterSizeTPC = 0;
   AliHLTUInt32_t compressedSizeTPC = 0;
 
   AliHLTUInt32_t nITSSAPtracks = 0;
   AliHLTUInt32_t nSPDtracklets =0;
+  AliHLTUInt32_t nTPCtracklets = 0;
   AliHLTUInt32_t nTPCtracks = 0;
+  AliHLTUInt32_t nITSTracks = 0;
+  AliHLTUInt32_t nITSOutTracks = 0;
+  
+  Bool_t bITSSPDVertex = kFALSE;
+  
 
   //loop over input blocks and extract basic stats
   int nBlocks = evtData.fBlockCnt;  
   for (int ndx=0; ndx<nBlocks; ndx++) {
     const AliHLTComponentBlockData* iter = blocks+ndx;
+    
+    //Vertex Found
+    if (iter->fDataType == (kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD))
+    {
+      bITSSPDVertex = kTRUE;
+    }
 
     //numbers of clusters
     if (iter->fDataType == (kAliHLTDataTypeClusters | kAliHLTDataOriginITSSPD))
@@ -283,6 +319,32 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nClustersITS += inPtr->fSpacePointCnt;
     }
 
+    if (iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType) //Transformed TPC clusters used in TPCCATracker
+    {
+      AliHLTTPCClusterData* inPtrSP = ( AliHLTTPCClusterData* )( iter->fPtr );
+      nClustersTPC += inPtrSP->fSpacePointCnt;
+    }
+    else if (iter->fDataType == AliHLTTPCCADefinitions::fgkCompressedInputDataType) //Compressed (internally) form of transformed HLT TPC clusters (currently not used)
+    {
+      const AliHLTUInt8_t * inPtr = (const AliHLTUInt8_t *)iter->fPtr;
+      while(inPtr< ((const AliHLTUInt8_t *) iter->fPtr) + iter->fSize)
+      {
+        AliHLTTPCCACompressedClusterRow *row = (AliHLTTPCCACompressedClusterRow*) inPtr;
+        nClustersTPC+= row->fNClusters;
+        inPtr = (const AliHLTUInt8_t *)(row->fClusters+row->fNClusters);
+      }
+    }
+
+    if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() || //Used
+//      iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() ||
+//      iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
+//      iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() || //Used
+      iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType()) //Used
+    {
+      compressedSizeTPC += iter->fSize;
+    }
+
     //RAW sizes
     if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD))
     {
@@ -300,16 +362,41 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       rawSizeITS += iter->fSize;
     }
-    if (iter->fDataType == (AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC))
+    if (iter->fDataType == (AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC hardware clusters
     {
       hwcfSizeTPC += iter->fSize;
     }
-    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC))
+    
+    if (iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC clusters
+    {
+      clusterSizeTPC += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) //TPC RAW DDL Size
     {
       rawSizeTPC += iter->fSize;
     }
 
     //numbers of tracks
+    if (iter->fDataType == AliHLTTPCCADefinitions::fgkTrackletsDataType) //HLT-TPC CA-trackets (before TPC global merger)
+    {
+      AliHLTTPCCASliceOutput* out = reinterpret_cast<AliHLTTPCCASliceOutput*>(iter->fPtr);
+      nTPCtracklets += out->NTracks();
+    }
+
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
+    {
+      nTPCtracks += ((AliHLTTracksData*) iter->fPtr)->fCount;
+    }
+
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginITS))
+    {
+      nITSTracks += ((AliHLTTracksData*) iter->fPtr)->fCount;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginITSOut))
+    {
+      nITSOutTracks += ((AliHLTTracksData*) iter->fPtr)->fCount;
+    }
+
     if (iter->fDataType == (kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS))
     {
       AliHLTITSSAPTrackerDataContainer* inPtr = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(iter->fPtr);
@@ -317,6 +404,13 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
   }// end read input blocks
   
+  if (fPrintStats)
+  {
+    HLTImportant("Blocks %d: HLT Reco QA Stats: SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) ITS-Cl %d (%d) TPC-Cl %d (%d / %d / %d), TPC-Comp (%d), ITSSAP-Tr %d, SPD-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d",
+      nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, compressedSizeTPC, nITSSAPtracks, nSPDtracklets, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex);
+  }
+
+
   //fill histograms
   fHistSPDclusters_SPDrawSize->Fill(nClustersSPD, rawSizeSPD);
   if (PushBack(fHistSPDclusters_SPDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)

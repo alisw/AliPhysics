@@ -78,6 +78,7 @@ protected:
   AliHLTComponentBenchmark fBenchmark; // benchmark
   
   Int_t fSkipEvents;
+  Int_t fPrintStats;
   Int_t fEventsSinceSkip;
 
   TH2I* fHistSPDclusters_SPDrawSize;
