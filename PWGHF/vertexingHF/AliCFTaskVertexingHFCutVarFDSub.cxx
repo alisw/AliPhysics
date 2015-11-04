@@ -152,6 +152,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fTHnAnalysis(0x0),
   fTHnGenerator(0x0),
   fhBptCutVar(0x0),
+  fhBquarkPt(0x0),
+  fhCquarkPt(0x0),
   fListBdecays(0x0),
   fQAHists(0x0)
 {
@@ -223,6 +225,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fTHnAnalysis(0x0),
   fTHnGenerator(0x0),
   fhBptCutVar(0x0),
+  fhBquarkPt(0x0),
+  fhCquarkPt(0x0),
   fListBdecays(0x0),
   fQAHists(0x0)
 {
@@ -242,8 +246,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   DefineOutput(6,THnSparseF::Class());
   DefineOutput(7,TH3F::Class());
   DefineOutput(8,TH1F::Class());
-  DefineOutput(9,TList::Class());
-  DefineOutput(10,TList::Class());
+  DefineOutput(9,TH1F::Class());
+  DefineOutput(10,TH1F::Class());
+  DefineOutput(11,TList::Class());
+  DefineOutput(12,TList::Class());
 
   fCuts->PrintAll();
 }
@@ -269,6 +275,8 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fTHnAnalysis=c.fTHnAnalysis;
     fTHnGenerator=c.fTHnGenerator;
     fhBptCutVar=c.fhBptCutVar;
+    fhBquarkPt=c.fhBquarkPt;
+    fhCquarkPt=c.fhCquarkPt;
     fListBdecays=c.fListBdecays;  // FIXME: TList copy contructor not implemented
     fQAHists=c.fQAHists;  // FIXME: TList copy contructor not implemented
   }
@@ -338,6 +346,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fTHnAnalysis(c.fTHnAnalysis),
   fTHnGenerator(c.fTHnGenerator),
   fhBptCutVar(c.fhBptCutVar),
+  fhBquarkPt(c.fhBquarkPt),
+  fhCquarkPt(c.fhCquarkPt),
   fListBdecays(c.fListBdecays), // FIXME: TList copy contructor not implemented
   fQAHists(c.fQAHists) // FIXME: TList copy contructor not implemented
 {
@@ -367,6 +377,8 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   if (fTHnAnalysis)         { delete fTHnAnalysis;         fTHnAnalysis=0x0;         }
   if (fTHnGenerator)        { delete fTHnGenerator;        fTHnGenerator=0x0;        }
   if (fhBptCutVar)          { delete fhBptCutVar;          fhBptCutVar=0x0;          }
+  if (fhBquarkPt)           { delete fhBquarkPt;           fhBquarkPt=0x0;           }
+  if (fhCquarkPt)           { delete fhCquarkPt;           fhCquarkPt=0x0;           }
   if (fListBdecays)         { delete fListBdecays;         fListBdecays=0x0;         }
   if (fQAHists)             { delete fQAHists;             fQAHists=0x0;             }
   for(Int_t i=0; i<4; i++) {
@@ -880,6 +892,10 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         (mcPart->Y()<1.)&&(mcPart->Y()>-1.)) {
       fhBptCutVar->Fill(mcPart->Pt());
     }
+
+    // Obtain the pt spectrum of the injected quarks
+    if (TMath::Abs(mcPart->GetPdgCode())==5&&TMath::Abs(mcPart->Y())<1.) fhBquarkPt->Fill(mcPart->Pt());
+    if (TMath::Abs(mcPart->GetPdgCode())==4&&TMath::Abs(mcPart->Y())<1.) fhCquarkPt->Fill(mcPart->Pt());
 
     //counting c quarks
     cquarks += cfVtxHF->MCcquarkCounting(mcPart);
@@ -1551,6 +1567,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   }
 
   fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
+  fhBquarkPt = new TH1F("hBquarkPt", "B quark #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
+  fhCquarkPt = new TH1F("hCquarkPt", "C quark #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
 
   PostData( 1,fHistEventsProcessed) ;
   PostData( 2,fCFManager->GetParticleContainer()) ;
@@ -1558,8 +1576,10 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   PostData( 6,fTHnAnalysis);
   PostData( 7,fTHnGenerator);
   PostData( 8,fhBptCutVar);
-  PostData( 9,fListBdecays);
-  PostData(10,fQAHists);
+  PostData( 9,fhBquarkPt);
+  PostData(10,fhCquarkPt);
+  PostData(11,fListBdecays);
+  PostData(12,fQAHists);
 }
 
 

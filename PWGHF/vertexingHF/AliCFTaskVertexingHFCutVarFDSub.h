@@ -296,11 +296,13 @@ protected:
   THnSparseF* fTHnAnalysis;   ///
   THnSparseF* fTHnGenerator;  /// Generator level histogram D0 pt, Nprongs of the decay, Mother pt
   TH1F* fhBptCutVar;          /// B0 pt spectrum
+  TH1F* fhBquarkPt;           /// b quark pt spectrum
+  TH1F* fhCquarkPt;           /// c quark pt spectrum
   TList* fListBdecays;        /// List with B hadron decays (unique entries)
   TList* fQAHists;            /// List with QA histograms used to study the B hardon decays
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,9); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,10); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
