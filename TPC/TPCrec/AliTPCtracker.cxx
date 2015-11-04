@@ -5402,8 +5402,8 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
     //prefer high momenta tracks if overlaps
     quality[i] *= TMath::Sqrt(TMath::Abs(pt->Pt())+0.5);
     params[i]=(*pt);
-    AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),5.,kTRUE);
-    AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),1.,kTRUE);
+    AliTracker::PropagateTrackParamOnlyToBxByBz(&(params[i]),xref,5.,kTRUE);
+    //    AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),1.,kTRUE); //RS What is the point of 2nd propagation
   }
   TMath::Sort(nseed,quality,indexes);
   //
