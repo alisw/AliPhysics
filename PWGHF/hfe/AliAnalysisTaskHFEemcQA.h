@@ -88,6 +88,9 @@ private:
     TH2F        *fdEdx;//!dedx vs pt
     TH2F        *fTPCNpts;//!TPC Npoints used for dedx
     TH2F        *fTPCnsig;//!TPC Nsigma
+    TH2F        *fTPCnsigEta0;//!TPC Nsigma
+    TH2F        *fTPCnsigEta1;//!TPC Nsigma
+    TH2F        *fTPCnsigEta2;//!TPC Nsigma
     TH1F        *fHistPtMatch;//!tracks matched to EMCAL
     TH2F        *fEMCTrkMatch;//!Distance of EMC cluster to closest track in phi and z
     TH1F        *fEMCTrkPt;//!tracks with EMCAL cluster

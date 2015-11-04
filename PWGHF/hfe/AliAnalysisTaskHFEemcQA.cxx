@@ -101,6 +101,9 @@ fTrkphi(0),
 fdEdx(0),
 fTPCNpts(0),
 fTPCnsig(0),
+fTPCnsigEta0(0),
+fTPCnsigEta1(0),
+fTPCnsigEta2(0),
 fHistPtMatch(0),
 fEMCTrkMatch(0),
 fEMCTrkPt(0),
@@ -179,6 +182,9 @@ fTrkphi(0),
 fdEdx(0),
 fTPCNpts(0),
 fTPCnsig(0),
+fTPCnsigEta0(0),
+fTPCnsigEta1(0),
+fTPCnsigEta2(0),
 fHistPtMatch(0),
 fEMCTrkMatch(0),
 fEMCTrkPt(0),
@@ -322,6 +328,15 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
     fOutputList->Add(fTPCnsig);
     
+    fTPCnsigEta0 = new TH2F("fTPCnsigEta0","TPC Nsigma vs. Eta pT > 2 GeV/c;#eta;#sigma_{TPC-dE/dx}",50,-1,1,200,-10,10);
+    fOutputList->Add(fTPCnsigEta0);
+
+    fTPCnsigEta1 = new TH2F("fTPCnsigEta1","TPC Nsigma vs. Eta pT > 3 GeV/c;#eta;#sigma_{TPC-dE/dx}",50,-1,1,200,-10,10);
+    fOutputList->Add(fTPCnsigEta1);
+
+    fTPCnsigEta2 = new TH2F("fTPCnsigEta2","TPC Nsigma vs. Eta pT > 5 GeV/c;#eta;#sigma_{TPC-dE/dx}",50,-1,1,200,-10,10);
+    fOutputList->Add(fTPCnsigEta2);
+
     fHistPtMatch = new TH1F("fHistPtMatch", "p_{T} distribution of tracks matched to EMCAL;p_{T} (GeV/c);counts",1000, 0.0, 100.0);
     fOutputList->Add(fHistPtMatch);
     
@@ -477,7 +492,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         //return;
     }
     
-    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(fAOD)fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName())); 
 
     ///////////////////
     //PID initialised//
@@ -732,6 +747,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         fdEdx->Fill(TrkP,dEdx);
         fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
         fTPCnsig->Fill(TrkP,fTPCnSigma);
+        if(TrkPt>2.0)fTPCnsigEta0->Fill(TrkEta,fTPCnSigma);
+        if(TrkPt>3.0)fTPCnsigEta1->Fill(TrkEta,fTPCnSigma);
+        if(TrkPt>5.0)fTPCnsigEta2->Fill(TrkEta,fTPCnSigma);
         
         ///////////////////////////
         //Track matching to EMCAL//
@@ -780,6 +798,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
             }
             
+            //Float_t tof = clustMatch->GetTOF();
+
             //EMCAL EID info
             Double_t eop = -1.0;
             //Double_t m02 = -99999,m20 = -99999,sqm02=-99999.0,sqm20=-99999.0;//Ratm02m20=-999.0;

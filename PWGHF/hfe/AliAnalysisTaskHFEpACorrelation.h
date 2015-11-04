@@ -453,6 +453,11 @@ private:
     TH2F                **fCetaPhi_MC_with_partner_greater;
     TH2F                **fCetaPhi_MC_with_partner_below;
     TH2F                ** fCetaPhi_MC_NHFE_1partner_reco;
+    TH1F                *fMCEffPID_beforePID;
+    TH1F                *fMCEffPID_afterPID;
+    TH1F                *fpTMCGeneratedBKG;
+
+    
     //end of new histograms
     TH1F				*fInvMass;
     TH1F				*fInvMassBack;
