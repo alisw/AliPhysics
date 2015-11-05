@@ -218,6 +218,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1IndexEmbedded(0)
    ,fh1PtEmbBeforeMatch(0)
    ,fh1PtEmbExtraOnly(0)
+   ,fh1PtEmbReject(0)
    ,fh1PtEmbAfterMatch(0)
    ,fh1FractionPtEmbedded(0)
    ,fh1DeltaREmbedded(0)
@@ -512,6 +513,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1IndexEmbedded(0)
   ,fh1PtEmbBeforeMatch(0)
   ,fh1PtEmbExtraOnly(0)
+  ,fh1PtEmbReject(0)
   ,fh1PtEmbAfterMatch(0)
   ,fh1FractionPtEmbedded(0)
   ,fh1DeltaREmbedded(0)
@@ -809,6 +811,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
   ,fh1PtEmbBeforeMatch(copy.fh1PtEmbBeforeMatch)
   ,fh1PtEmbExtraOnly(copy.fh1PtEmbExtraOnly)
+  ,fh1PtEmbReject(copy.fh1PtEmbReject)
   ,fh1PtEmbAfterMatch(copy.fh1PtEmbAfterMatch)
   ,fh1FractionPtEmbedded(copy.fh1FractionPtEmbedded)
   ,fh1DeltaREmbedded(copy.fh1DeltaREmbedded)
@@ -1101,9 +1104,10 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
     fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
     fh1PtEmbExtraOnly               = o.fh1PtEmbExtraOnly;
-    fh1PtEmbAfterMatch             = o.fh1PtEmbAfterMatch;
+    fh1PtEmbReject                  = o. fh1PtEmbReject;
+    fh1PtEmbAfterMatch              = o.fh1PtEmbAfterMatch;
     fh1FractionPtEmbedded           = o.fh1FractionPtEmbedded;
-    fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
+    fh1DeltaREmbedded               = o.fh1DeltaREmbedded;
     fh2TracksPerpCone               = o.fh2TracksPerpCone;
     fh1PerpCone                     = o.fh1PerpCone;
     //fh1V0JetPt                     = o.fh1V0JetPt;
@@ -1590,6 +1594,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
   fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
 
+  fh1PtEmbReject                = new TH1F("fh1PtEmbReject","Pt spectrum of jets rejected by JetMatching cuts",19,5.,100.);
   fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
   fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
   fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
@@ -2126,6 +2131,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1IndexEmbedded);
     fCommonHistList->Add(fh1PtEmbExtraOnly);
     fCommonHistList->Add(fh1PtEmbBeforeMatch);
+    fCommonHistList->Add(fh1PtEmbReject);
     fCommonHistList->Add(fh1PtEmbAfterMatch);
     fCommonHistList->Add(fh1FractionPtEmbedded);
     fCommonHistList->Add(fh1DeltaREmbedded);
@@ -3663,18 +3669,25 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
 	
 	if(!embeddedJet)continue;
-
+	
 	//Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
+	
+	Double_t JetPtEmb = embeddedJet->Pt();
+	fh1PtEmbBeforeMatch->Fill(JetPtEmb);
+	
+	
+	if((ptFractionEmbedded < fCutFractionPtEmbedded) || (deltaREmbedded > fCutDeltaREmbedded)){
+	  Double_t JetPtRej = embeddedJet->Pt();
+	  fh1PtEmbReject->Fill(JetPtRej);
+	}
+	
+	
+	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	  
-	  Double_t JetPtEmb = embeddedJet->Pt();
-	  fh1PtEmbBeforeMatch->Fill(JetPtEmb);
+	  //Float_t jetPtEmbAfterMatch = jet->Pt();
+	  Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();
 	  
-	  if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
-	    
-	    //Float_t jetPtEmbAfterMatch = jet->Pt();
-	    Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();
-
-	    fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatchEmb);
+	  fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatchEmb);
 	  
 	  
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
