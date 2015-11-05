@@ -112,7 +112,7 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
   /// inherited from AliHLTComponent: multiple output data types of the component.
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
-  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());

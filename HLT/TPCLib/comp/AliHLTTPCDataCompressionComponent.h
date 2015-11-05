@@ -49,7 +49,7 @@ class TH1F;
  *  -  AliHLTTPCDefinitions::RemainingClusterIdsDataType());	 
  *  -  AliHLTTPCDefinitions::ClusterIdTracksDataType()
  *  -  AliHLTTPCDefinitions::ClusterTracksCompressedDataType()
- *  -  AliHLTTPCDefinitions::RawClustersDataType());		 
+ *  -  AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed()); //Used if we cannot compress
  *
  * <h2>Data Formats</h2>
  * Two formats for compressed clusters can be used.

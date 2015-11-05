@@ -410,6 +410,7 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // {'REMCLIDS':'TPC '}
   // {'CLIDSTRK':'TPC '}
   if (dt==AliHLTTPCDefinitions::RawClustersDataType() ||
+      dt==AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
       dt==AliHLTTPCDefinitions::HWClustersDataType() ||
       dt==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
       dt==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {
@@ -483,6 +484,7 @@ AliHLTOUTHandler* AliHLTTPCAgent::GetOutputHandler(AliHLTComponentDataType dt,
   // {'CLIDSTRK':'TPC '}
   // FIXME: needs to be commissioned
   // if (dt==AliHLTTPCDefinitions::RawClustersDataType() ||
+  //     dt==AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
   //     dt==AliHLTTPCDefinitions::HWClustersDataType() ||
   //     dt==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
   //     dt==AliHLTTPCDefinitions::ClusterTracksCompressedDataType() ||
