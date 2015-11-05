@@ -24,7 +24,6 @@
 #pragma link C++ class AliJetContainer+;
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
-#pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliJetFastSimulation+;
 #pragma link C++ class AliJetModelBaseTask+;
 #pragma link C++ class AliJetModelCopyTracks+;
@@ -159,6 +158,7 @@
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
+#pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
