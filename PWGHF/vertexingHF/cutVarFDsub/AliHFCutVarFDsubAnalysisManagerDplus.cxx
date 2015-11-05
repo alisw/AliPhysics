@@ -23,6 +23,7 @@ using std::vector;
 AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus()
   : AliHFCutVarFDsubAnalysisManager()
   , fNevents(0.)
+  , fPID(kTRUE)
 {
   /// Default constructor
 }
@@ -122,6 +123,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Double_t*** cutslowset,
       for(Int_t iCutVar=0; iCutVar<nCutVariables; iCutVar++) {
         cutset[iSet]->AddCut(new AliHFCutVarFDsubCut(iCutVar,cutslowset[iSet][iPt][iCutVar],cutshighset[iSet][iPt][iCutVar]));
       }
+      if(fPID) {
+        cutset[iSet]->AddCut(new AliHFCutVarFDsubCut(nCutVariables,1.5,2.5));
+      }
       ptBin->Add((TObject*)cutset[iSet]);
     }
     fCuts->Add((TObject*)ptBin);  
@@ -146,8 +150,10 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* M
   for(Int_t iAxis=0; iAxis<nAxes; iAxis++) {
     fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(dataAxesNo[iAxis],MCGenAxesNo[iAxis],MCCutAxesNo[iAxis],axesName[iAxis]));
   }
+  if(fPID) {
+    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(7,(UInt_t)-1,7,"PID"));
+  }
 }
-
 
 //_________________________________________________________________________________________________
 TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFilePath,
