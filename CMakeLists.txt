@@ -312,12 +312,25 @@ else()
       THerwig TOF TPC TRD TRIGGER TTherminator VZERO ZDC ALIGN data GRP OCDB
       QAref)
 
+  # AliRoot modules requiring OpenGL
+  set(ALIROOT_MODULES_OPENGL
+      EVE)
+  if(ROOT_HASOPENGL)
+    list(APPEND ALIROOT_MODULES "${ALIROOT_MODULES_FORTRAN}")
+  else()
+    string(REPLACE ";" " " ALIROOT_MODULES_OPENGL_FLAT "${ALIROOT_MODULES_OPENGL}")
+    message(WARNING "The following modules will not be built because ROOT has no OpenGL support: ${ALIROOT_MODULES_OPENGL_FLAT}")
+  endif()
+
   # AliRoot modules requiring Fortran
-  set(ALIROOT_FORTRAN_MODULES
+  set(ALIROOT_MODULES_FORTRAN
       DIME DPMJET HERWIG HIJING LHAPDF MICROCERN PYTHIA6 TEPEMGEN THbtp THijing
       THydjet TPHIC TUHKMgen TAmpt)
   if(CMAKE_Fortran_COMPILER)
-    list(APPEND ALIROOT_MODULES "${ALIROOT_FORTRAN_MODULES}")
+    list(APPEND ALIROOT_MODULES "${ALIROOT_MODULES_FORTRAN}")
+  else()
+    string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
+    message(WARNING "The following modules will not be built because no Fortran compiler was found: ${ALIROOT_MODULES_FORTRAN_FLAT}")
   endif()
 
   # Selectively exclude modules (with -DEXCLUDE_MODULES="mod1;mod2"...)
