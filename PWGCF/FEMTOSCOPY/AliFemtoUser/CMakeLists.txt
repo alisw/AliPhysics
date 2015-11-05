@@ -85,6 +85,7 @@ set(SRCS
   AliFemtoPairCutAntiGammaAlpha.cxx
   AliFemtoCorrFctnGammaMonitorAlpha.cxx
   AliFemtoCorrFctn3DPRF.cxx
+  AliFemtoCorrFctn3DPRF_qosl_q.cxx
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
   AliFemtoPairCutGeneralizedRadialDistance.cxx
   AliFemtoPairCutMergedFraction.cxx
