@@ -384,7 +384,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
       fRejectedTrigPattern->Add(trigCombo);
       AliDebug(1,Form("Adding %s to reject pattern",trigCombo->GetName()));
     }
-    else if ( trigCombo->GetType() == AliMuonTriggerCombo::kMatchPattern || trigCombo->GetType() == AliMuonTriggerCombo::kComboSimple ) {
+    else if ( trigCombo->GetType() == AliMuonTriggerCombo::kMatchPattern || ( trigCombo->GetType() == AliMuonTriggerCombo::kComboSimple && trigCombo->HasTriggerClasses() ) ) {
       fSelectedTrigPattern->Add(trigCombo);
       AliDebug(1,Form("Adding %s to match pattern",trigCombo->GetName()));
     }
