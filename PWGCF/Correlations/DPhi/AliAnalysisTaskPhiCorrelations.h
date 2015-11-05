@@ -136,6 +136,7 @@ public:
   void   SetRemoveWeakDecaysInMC(Bool_t flag) { fRemoveWeakDecaysInMC = flag; }
   void   SetFillYieldRapidity(Bool_t flag) { fFillYieldRapidity = flag; }
   void   SetFillCorrelationsRapidity(Bool_t flag) { fFillCorrelationsRapidity = flag; }
+  void   SetUseDoublePrecision(Bool_t flag) { fUseDoublePrecision = flag; }
 
   AliHelperPID* GetHelperPID() { return fHelperPID; }
   void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -265,13 +266,14 @@ private:
   Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
   Bool_t fFillYieldRapidity;     // fill a control histogram centrality vs pT vs y
   Bool_t fFillCorrelationsRapidity; // fills correlation histograms with rapidity instead of pseudorapidity (default: kFALSE)
+  Bool_t fUseDoublePrecision;    // use double precision for AliTHn
 
   Bool_t fFillpT;                // fill sum pT instead of number density
 
   // jet configuration
   TString fJetBranchName;        // name of jet branch for exclusion of in-jet tracks
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 54); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 55); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle

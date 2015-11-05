@@ -29,10 +29,10 @@ class TObjArray;
 class AliAODEvent;
 class AliAODHeader;
 class AliEventPoolManager;
-class AliTHn;
 
 #include <TObject.h>
 #include "AliAnalysisTaskSE.h"
+#include  "AliTHn.h" // cannot forward declare 
 
 class AliAnalysisTaskLongRangeCorrelations : public AliAnalysisTaskSE { 
 public: 
