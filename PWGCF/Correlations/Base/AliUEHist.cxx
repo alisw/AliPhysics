@@ -137,10 +137,12 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   Double_t* vertexBinsEff = GetBinning(binning, "vertex_eff", nVertexBinsEff);
   
   Int_t useVtxAxis = 0;
-  Bool_t useAliTHn = kTRUE;
+  Int_t useAliTHn = 1; // 0 = don't use | 1 = with float | 2 = with double
   
   if (TString(reqHist).Contains("Sparse"))
-    useAliTHn = kFALSE;
+    useAliTHn = 0;
+  if (TString(reqHist).Contains("Double"))
+    useAliTHn = 2;
   
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
@@ -260,8 +262,10 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
     
   for (UInt_t i=0; i<initRegions; i++)
   {
-    if (axis >= 2 && useAliTHn)
+    if (axis >= 2 && useAliTHn == 1)
       fTrackHist[i] = new AliTHn(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+    else if (axis >= 2 && useAliTHn == 2)
+      fTrackHist[i] = new AliTHnD(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
     else
       fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
     

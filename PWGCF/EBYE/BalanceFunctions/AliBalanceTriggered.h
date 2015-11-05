@@ -13,10 +13,10 @@
 
 #include <TObject.h>
 #include "TString.h"
+#include  "AliTHn.h" // cannot forward declare 
 
 class TGraphErrors;
 class TH1D;
-class AliTHn;
 
 const Int_t kTrackVarsSingle = 4;       // track variables in histogram (eta, phi, pTtrig, centrality)
 const Int_t kTrackVarsPair   = 5;       // track variables in histogram (dEta, dPhi, pT, pTtrig, centrality)

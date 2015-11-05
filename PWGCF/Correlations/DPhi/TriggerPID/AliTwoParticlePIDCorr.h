@@ -29,7 +29,6 @@ class AliVParticle;
 class AliCFContainer;
 class AliCFGridSparse;
 class THnBase;
-class AliTHn;
 class TProfile;
 
 
@@ -46,6 +45,8 @@ class TProfile;
 #include "AliLog.h"
 #include "AliTHn.h"
 #include "TBits.h"
+#include  "AliTHn.h" // cannot forward declare 
+
 
 
 #ifndef ALIANALYSISTASKSE_H
