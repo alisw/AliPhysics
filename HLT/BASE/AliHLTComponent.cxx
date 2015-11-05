@@ -44,8 +44,10 @@
 #include "TRandom3.h"
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
+#include "TTimeStamp.h"
 #include <cassert>
 #include <ctime>
+#include <time.h>
 #include <stdint.h>
 
 /**
@@ -1461,8 +1463,8 @@ int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataT
   fLastObjectSize=0;
   if (fPushbackPeriod>0) {
     // suppress the output
-    TDatime time;
-    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
+    TTimeStamp time;
+    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return 0;
   }
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
@@ -1521,8 +1523,8 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const AliHLTCompon
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   if (fPushbackPeriod>0) {
     // suppress the output
-    TDatime time;
-    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
+    TTimeStamp time;
+    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return 0;
   }
 
   return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
@@ -2225,15 +2227,18 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // set the time for the pushback period
   if (fPushbackPeriod>0) {
     // suppress the output
-    TDatime time;
+    TTimeStamp time;
     if (fLastPushBackTime<0) {
       // choose a random offset at beginning to equalize traffic for multiple instances
       // of the component
-      gRandom->SetSeed(fChainIdCrc);
-      fLastPushBackTime=time.Get();
+      timespec tv;
+      clock_gettime(CLOCK_REALTIME,&tv);
+      gRandom->SetSeed(tv.tv_nsec);
+      fLastPushBackTime=time.GetSec();
       fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
-    } else if ((int)time.Get()-fLastPushBackTime>=fPushbackPeriod) {
-      fLastPushBackTime=time.Get();
+      HLTImportant("time: %i, fLastPushBackTime: %i",(int)time.GetSec(),fLastPushBackTime);
+    } else if ((int)time.GetSec()-fLastPushBackTime>=fPushbackPeriod) {
+      fLastPushBackTime=time.GetSec();
     }
   }
 
