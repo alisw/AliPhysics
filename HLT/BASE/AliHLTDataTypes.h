@@ -1460,6 +1460,11 @@ extern "C" {
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeCaloCluster; 
 
+  /** Container of calorimeter triggers
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeCaloTrigger;
+
   /** Container of dEdx
    * @ingroup alihlt_component_datatypes
    */

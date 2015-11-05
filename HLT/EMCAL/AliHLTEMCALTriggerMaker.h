@@ -26,8 +26,6 @@
 #include <TObject.h>
 #include "AliHLTLogging.h"
 
-struct AliHLTCaloTriggerDataStruct;
-struct AliHLTCaloTriggerPatchContainerStruct;
 struct AliHLTCaloTriggerPatchDataStruct;
 class AliHLTEMCALGeometry;
 
@@ -44,7 +42,11 @@ template<typename T> class AliEMCALTriggerPatchFinder;
  */
 class AliHLTEMCALTriggerMaker : public TObject, public AliHLTLogging {
 public:
-
+  enum{
+    kOriginSTU = 0,
+    kOriginRECAL = 1,
+    kOriginCELLS = 1
+  };
   /**
    * Constructor
    */
@@ -74,10 +76,24 @@ public:
   void ResetADC();
 
   /**
+   * Set the origin of the trigger patches (STU, RECAL, CELLS)
+   * @param origin Origin of the trigger patches
+   */
+  void SetOrigin(UChar_t origin) { fOrigin = origin; }
+
+  /**
    * Add digit structure to the data grid
    * @param digit Input digit data
    */
   void AddDigit(const AliHLTCaloDigitDataStruct *digit);
+
+  /**
+   * Set the adc value for a given col / row combination
+   * @param col Column
+   * @param row Row
+   * @param adc ADC value
+   */
+  void SetADC(Int_t col, Int_t row, Float_t adc);
 
   /**
    * Set the pointer to the writeout buffer
@@ -91,7 +107,7 @@ public:
    * pushed to the writeout buffer.
    * @return Number of found patches (-1 in case of buffer overflow)
    */
-  Int_t FindPatches(AliHLTUInt32_t availableSize);
+  Int_t FindPatches();
 
 protected:
   /**
@@ -99,7 +115,7 @@ protected:
    * @param inputpatch EMCAL raw patch to be converted into an EMCAL HLT patch
    * @param output HLT trigger patch obtaied using the information in the EMCAL raw patch
    */
-   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output) const;
+   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UChar_t origin) const;
 
   /**
    * Initialise trigger patch finders in the EMCAL
@@ -111,6 +127,7 @@ protected:
   void InitializeDCALPatchFinders();
 
 private:
+  UChar_t                                       fOrigin;
   /** Pointer to the output buffer */
   AliHLTCaloTriggerPatchDataStruct              *fTriggerPatchDataPtr;
   /** Underlying EMCAL geometry*/

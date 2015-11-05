@@ -218,6 +218,7 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 	  while(currentchannel != 0) {
 	  
 	    fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
+	    //fMapperPtr->FixCoordinate(coord);
 	    
 	    cout << " from histo maker ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << endl;
 	    cout << " fX: " << coord.fX << " fZ: " << coord.fZ << endl;

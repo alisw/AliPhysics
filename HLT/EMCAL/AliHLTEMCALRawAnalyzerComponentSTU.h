@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef ALIHLTEMCALTRIGGERDATAMAKERCOMPONENT_H
-#define ALIHLTEMCALTRIGGERDATAMAKERCOMPONENT_H
+#ifndef AliHLTEMCALRawAnalyzerComponentSTU_H
+#define AliHLTEMCALRawAnalyzerComponentSTU_H
 
 /**
  * @file AliHLTEMCALTriggerRawDigitMaker.h
@@ -22,31 +22,32 @@
  * @date Nov 3, 2015
  */
 
-#include <vector>
 #include "AliHLTCaloConstants.h"
 #include "AliHLTCaloProcessor.h"
-#include "AliHLTCaloTriggerRawDigitDataStruct.h"
-#include "AliHLTEMCALSTUHeaderStruct.h"
+#include <vector>
 
-struct AliHLTCaloTriggerDataStruct;
+class AliEMCALTriggerData;
+class AliHLTCaloMapper;
 class AliHLTEMCALGeometry;
+class AliHLTEMCALSTURawDigitMaker;
+class AliRawReaderMemory;
 
 /**
  * @class AliHTLEMCALTriggerRawDigitMaker
- * @brief Combining data from STU and TRU in EMCAL trigger data
+ * @brief Creating EMCAL Raw Digits from the raw data
  */
-class AliHLTEMCALTriggerDataMakerComponent : public AliHLTCaloProcessor, protected AliHLTCaloConstantsHandler {
+class AliHLTEMCALRawAnalyzerComponentSTU : public AliHLTCaloProcessor, protected AliHLTCaloConstantsHandler {
 public:
 
   /**
    * Constructor
    */
-  AliHLTEMCALTriggerDataMakerComponent();
+  AliHLTEMCALRawAnalyzerComponentSTU();
 
   /**
    * Destructor
    */
-  virtual ~AliHLTEMCALTriggerDataMakerComponent();
+  virtual ~AliHLTEMCALRawAnalyzerComponentSTU();
 
   /**
    * Initialize component
@@ -109,35 +110,34 @@ protected:
           AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr,
           AliHLTUInt32_t& size, std::vector<AliHLTComponentBlockData>& outputBlocks );
 
+  /**
+   * Init EMCAL mapper
+   * @param specification Specification
+   */
+  void InitMapping( const int specification );
+
   bool CheckInputDataType(const AliHLTComponentDataType &datatype);
 
-  void ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr);
-  void ReadTRUData(UShort_t ndigits, AliHLTCaloTriggerRawDigitDataStruct * triggerdata);
-  Int_t MakeTriggerData(AliHLTCaloTriggerDataStruct *outputptr);
-  void Reset();
+  /** EMCAL Mapper */
+  AliHLTCaloMapper                    *fMapperPtr;                      //COMMENT
 
-  void CombineTRUSTUDigit(AliHLTCaloTriggerRawDigitDataStruct &target, const AliHLTCaloTriggerRawDigitDataStruct &trudigit, const AliHLTCaloTriggerRawDigitDataStruct &studigit);
-  void ConvertRawDigit(AliHLTCaloTriggerDataStruct *target, const AliHLTCaloTriggerRawDigitDataStruct * source, Int_t col, Int_t row);
+  /** Specification */
+  AliHLTUInt32_t                      fCurrentSpec;
 
 private:
-  enum {
-    kMaxChannels = 5962
-  };
-  AliHLTEMCALTriggerDataMakerComponent(const AliHLTEMCALTriggerDataMakerComponent &ref);
-  AliHLTEMCALTriggerDataMakerComponent &operator=(const AliHLTEMCALTriggerDataMakerComponent &ref);
+  AliHLTEMCALRawAnalyzerComponentSTU(const AliHLTEMCALRawAnalyzerComponentSTU &ref);
+  AliHLTEMCALRawAnalyzerComponentSTU &operator=(const AliHLTEMCALRawAnalyzerComponentSTU &ref);
+
+  /** Pointer to the raw data reader which reads from memory */
+  AliRawReaderMemory                  *fRawReaderMemoryPtr;            //!transient
+
+  /** STU Raw Digit Maker */
+  AliHLTEMCALSTURawDigitMaker         *fSTURawDigitMaker;
 
   /** Pointer to the geometry class */
-  AliHLTEMCALGeometry                       *fGeometry;
+  AliHLTEMCALGeometry                 *fGeometry;
 
-  AliHLTEMCALSTUHeaderStruct                fSTUHeader;
-  Short_t                                   fNRawDigitsTRU;
-  Short_t                                   fRawIndexesTRU[kMaxChannels];
-  Short_t                                   fNRawDigitsSTU;
-  Short_t                                   fRawIndexesSTU[kMaxChannels];
-  AliHLTCaloTriggerRawDigitDataStruct       fTRURawDigitBuffer[kMaxChannels];
-  AliHLTCaloTriggerRawDigitDataStruct       fSTURawDigitBuffer[kMaxChannels];
-
-  ClassDef(AliHLTEMCALTriggerDataMakerComponent, 1);
+  ClassDef(AliHLTEMCALRawAnalyzerComponentSTU, 1);
 };
 
 #endif

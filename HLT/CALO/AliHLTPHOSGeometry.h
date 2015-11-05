@@ -46,7 +46,7 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
     
       /** Convert absolute ID to local coordinates */
       virtual void GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z);      
-      
+
      protected:
 	
 	Int_t GetGeometryFromCDB();

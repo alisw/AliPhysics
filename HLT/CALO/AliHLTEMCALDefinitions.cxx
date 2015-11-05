@@ -47,7 +47,13 @@ const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkChannelDataType =
 AliHLTComponentDataTypeInitializer("CHANNELT", kAliHLTDataOriginEMCAL);
 
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType =
-AliHLTComponentDataTypeInitializer("TRGDIGT", kAliHLTDataOriginEMCAL);
+AliHLTComponentDataTypeInitializer("TDIGT   ", kAliHLTDataOriginEMCAL);
+
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkTriggerSTUDataType =
+AliHLTComponentDataTypeInitializer("STUT    ", kAliHLTDataOriginEMCAL);
+
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkFastorDataType =
+AliHLTComponentDataTypeInitializer("FASTORT ", kAliHLTDataOriginEMCAL);
 
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkTriggerPatchDataType =
 AliHLTComponentDataTypeInitializer("TRIGGERT", kAliHLTDataOriginEMCAL);

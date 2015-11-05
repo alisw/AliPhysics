@@ -12,16 +12,15 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef ALIHLTEMCALTRIGGERRAWDIGITMAKER_H
-#define ALIHLTEMCALTRIGGERRAWDIGITMAKER_H
+#ifndef AliHLTEMCALSTURawDigitMaker_H
+#define AliHLTEMCALSTURawDigitMaker_H
 
+#include <AliHLTCaloTriggerRawDigitDataStruct.h>
 #include <TObject.h>
 #include <vector>
 #include "AliCaloBunchInfo.h"
-#include "AliHLTEMCALTriggerRawDigitDataStruct.h"
 #include "AliHLTLogging.h"
 
-class AliCaloRawAnalyzerFakeALTRO;
 class AliCaloRawStreamV3;
 class AliEMCALTriggerData;
 class AliEMCALTriggerSTUDCSConfig;
@@ -30,40 +29,22 @@ class AliRawReader;
 
 class AliHLTEMCALGeometry;
 
-class AliHLTEMCALTriggerRawDigitMaker : public TObject, public AliHLTLogging {
+class AliHLTEMCALSTURawDigitMaker : public TObject, public AliHLTLogging {
 public:
   /**
    * Constructor
    */
-  AliHLTEMCALTriggerRawDigitMaker();
+  AliHLTEMCALSTURawDigitMaker();
 
   /**
    * Destructor
    */
-  virtual ~AliHLTEMCALTriggerRawDigitMaker();
-
-  /**
-   * Add bunch list of type AliCaloBunchInfo
-   * @param bunchlist
-   */
-  void Add(const std::vector<AliCaloBunchInfo> &bunchlist);
-
-  /**
-   * Connect I/O
-   * @param reader ALICE Raw Reader
-   * @param in Calorimeter Raw Stream
-   * @param inSTU EMCAL STU Raw Stream
-   * @param digitcont container for raw digits
-   * @param data
-   */
-  void SetIO(AliRawReader* reader, AliCaloRawStreamV3& in, AliEMCALTriggerSTURawStream& inSTU, AliEMCALTriggerData* data);
-
-  const std::vector<AliHLTEMCALTriggerRawDigitDataStruct> &GetRawDigits()  const { return fRawDigitVector; }
+  virtual ~AliHLTEMCALSTURawDigitMaker();
 
   /**
    * Post process digits
    */
-  void PostProcess();
+  void ProcessSTUStream(AliRawReader *rawreader, AliEMCALTriggerSTURawStream *stustream);
 
   /**
    * Set the geometry ptr for this class
@@ -76,41 +57,44 @@ public:
    */
   void Reset();
 
+  Int_t WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr) const;
+
+  Int_t GetNumberOfRawDigits() const { return fNRawDigits; }
+
+  const AliEMCALTriggerData *GetTriggerData() const { return fTriggerData; }
+
 protected:
-  static const Int_t fgkSTUEqId;
-  static const Int_t fgkNRawDigits;
+  enum{
+    fgkNRawDigits = 5952,
+    fgkMaxFastorModule = 144
+  };
+
 
   /**
    * Get the raw digit for a given index. If not existing, create it.
    * @param index
    * @return
    */
-  AliHLTEMCALTriggerRawDigitDataStruct &GetRawDigit(Int_t index);
+  AliHLTCaloTriggerRawDigitDataStruct &GetRawDigit(Int_t index);
 
   /** Ptr to the EMCAL geometry */
   const AliHLTEMCALGeometry                               *fkGeometryPtr;
-  /** Raw reader */
-	AliRawReader                                            *fRawReader;
-  /** Calo raw stream */
-  AliCaloRawStreamV3                                      *fCaloRawStream;
-  /** STU raw stream */
-  AliEMCALTriggerSTURawStream                             *fSTURawStream;
-  /** Raw analyzer */
-	AliCaloRawAnalyzerFakeALTRO                             *fRawAnalyzer;
 	/** DCS Config */
 	AliEMCALTriggerSTUDCSConfig                             *fDCSConfigSTU;
 	/** Raw digit container */
-	std::vector<AliHLTEMCALTriggerRawDigitDataStruct>       fRawDigitVector;
 	/** Trigger data */
 	AliEMCALTriggerData                                     *fTriggerData;
-	/** Raw digit indexes */
-  Int_t                                                   fRawDigitIndex[5952];
+
+  AliHLTCaloTriggerRawDigitDataStruct                       fRawDigitBuffer[fgkNRawDigits];
+  /** Raw digit indexes */
+  Short_t                                                   fNRawDigits;
+  Short_t                                                   fRawDigitIndex[fgkNRawDigits];
 
 private:
-  AliHLTEMCALTriggerRawDigitMaker(const AliHLTEMCALTriggerRawDigitMaker &);
-  AliHLTEMCALTriggerRawDigitMaker &operator=(const AliHLTEMCALTriggerRawDigitMaker &);
+  AliHLTEMCALSTURawDigitMaker(const AliHLTEMCALSTURawDigitMaker &);
+  AliHLTEMCALSTURawDigitMaker &operator=(const AliHLTEMCALSTURawDigitMaker &);
 
-	ClassDef(AliHLTEMCALTriggerRawDigitMaker, 1);
+	ClassDef(AliHLTEMCALSTURawDigitMaker, 1);
 };
 
 #endif

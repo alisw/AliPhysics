@@ -44,6 +44,7 @@ public:
   bool GetIsInitializedMapping();
   virtual char* GetFilePath();
  
+  virtual void FixCoordinate(AliHLTCaloCoordinate &input) {} // Needed in case of EMCAL to fix channel online - offline mapping in DCAL supermodules
   virtual int  GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
   static void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
   static void ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord);

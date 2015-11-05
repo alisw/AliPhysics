@@ -1,5 +1,5 @@
-#ifndef ALIHLTEMCALMAPPER_H
-#define ALIHLTEMCALMAPPER_H
+#ifndef AliHLTEMCALRawAnalyzerStandardComponent_H
+#define AliHLTEMCALRawAnalyzerStandardComponent_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -18,28 +18,34 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+// Evaluation of amplitude using  just the
+// max  ADC walu - pedestal, and pek position
+// using the time index of the max
+// amplitude
 
 
-#include  "AliHLTCaloMapper.h"
+#include  "AliHLTEMCALRawAnalyzerComponent.h"
 
+//AliHLTCALORawAnalyzerCrudeComponent
 
-class  AliHLTEMCALMapper : public AliHLTCaloMapper
+class  AliHLTEMCALRawAnalyzerStandardComponent : public AliHLTEMCALRawAnalyzerComponent
+//class  AliHLTEMCALRawAnalyzerStandardComponent : public AliHLTCALORawAnalyzerComponent
 {
- public:
-  AliHLTEMCALMapper(  const unsigned long  specifiaction );
-  virtual ~AliHLTEMCALMapper();
-  virtual Bool_t InitAltroMapping( const unsigned long specification ); 
-  virtual void InitDDLSpecificationMapping();
-  virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
-  
-  virtual void FixCoordinate(AliHLTCaloCoordinate &input);
-
+public:
+  AliHLTEMCALRawAnalyzerStandardComponent();
+  virtual ~AliHLTEMCALRawAnalyzerStandardComponent();
+  virtual int DoDeinit();
+  virtual const char* GetComponentID();
+  virtual AliHLTComponent* Spawn(); 
+  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
  private:
-  AliHLTEMCALMapper();
-  AliHLTEMCALMapper(const AliHLTEMCALMapper & );
-  AliHLTEMCALMapper & operator = (const AliHLTEMCALMapper &);
-  const char* DDL2RcuMapFileName(const int ddlid) const;
-  
+  AliHLTEMCALRawAnalyzerStandardComponent( const AliHLTEMCALRawAnalyzerStandardComponent  & );
+  AliHLTEMCALRawAnalyzerStandardComponent & operator = (const AliHLTEMCALRawAnalyzerStandardComponent  &);
+  // bool TestBoolConst() { return false; };
+  //  bool TestBool()  {return  false; };
+
+    
+
 };
 
 #endif

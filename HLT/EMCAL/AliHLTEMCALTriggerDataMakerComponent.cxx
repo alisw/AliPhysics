@@ -12,82 +12,61 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliCaloRawStreamV3.h"
-#include "AliEMCALTriggerData.h"
+#include "AliHLTCaloTriggerDataStruct.h"
+#include "AliHLTCaloTriggerHeaderStruct.h"
+#include "AliHLTCaloTriggerRawDigitDataStruct.h"
 #include "AliEMCALTriggerSTURawStream.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTEMCALGeometry.h"
-#include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALTriggerDataMakerComponent.h"
-#include "AliHLTEMCALTriggerHeaderStruct.h"
-#include "AliHLTEMCALTriggerFastorDataStruct.h"
-#include "AliHLTEMCALTriggerRawDigitDataStruct.h"
-#include "AliHLTEMCALTriggerRawDigitMaker.h"
-#include "AliRawReaderMemory.h"
 
 ClassImp(AliHLTEMCALTriggerDataMakerComponent)
 
 AliHLTEMCALTriggerDataMakerComponent::AliHLTEMCALTriggerDataMakerComponent():
 AliHLTCaloProcessor(),
 AliHLTCaloConstantsHandler("EMCAL"),
-fMapperPtr(NULL),
-fCurrentSpec(0),
-fRawReaderMemoryPtr(NULL),
-fCaloRawStreamPtr(NULL),
-fRawDigitMaker(NULL),
 fGeometry(NULL),
-fTriggerData(NULL)
+fSTUHeader(),
+fNRawDigitsTRU(0),
+fNRawDigitsSTU(0)
 {
+  for(Short_t iter = 0; iter < kMaxChannels; iter++){
+    fRawIndexesTRU[iter] = -1;
+    fRawIndexesSTU[iter] = -1;
+  }
 }
 
 AliHLTEMCALTriggerDataMakerComponent::~AliHLTEMCALTriggerDataMakerComponent() {
-  if(fMapperPtr) delete fMapperPtr;
   if(fGeometry) delete fGeometry;
-  if(fRawDigitMaker) delete fRawDigitMaker;
-  if(fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
-  if(fCaloRawStreamPtr) delete fCaloRawStreamPtr;
-  if(fTriggerData) delete fTriggerData;
 }
 
 int AliHLTEMCALTriggerDataMakerComponent::DoInit(int argc, const char **argv){
   fGeometry = new AliHLTEMCALGeometry(GetRunNo());
-
-  fRawDigitMaker = new AliHLTEMCALTriggerRawDigitMaker;
-  fRawDigitMaker->SetGeometry(fGeometry);
-
-  fRawReaderMemoryPtr = new AliRawReaderMemory();
-  fCaloRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, "EMCAL");
-
-  fTriggerData = new AliEMCALTriggerData;
-
   return 0;
 }
 
 int AliHLTEMCALTriggerDataMakerComponent::DoDeinit(){
-  if(fMapperPtr) delete fMapperPtr;
   if(fGeometry) delete fGeometry;
-  if(fRawDigitMaker) delete fRawDigitMaker;
-  if(fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
-  if(fCaloRawStreamPtr) delete fCaloRawStreamPtr;
-  if(fTriggerData) delete fTriggerData;
+  fGeometry = NULL;
   return 0;
 }
 
 const char* AliHLTEMCALTriggerDataMakerComponent::GetComponentID(){
-  return "EmcalTriggerRawDigitMaker";
+  return "EmcalTriggerDataMaker";
 }
 
 void AliHLTEMCALTriggerDataMakerComponent::GetInputDataTypes( std::vector <AliHLTComponentDataType>& list){
   list.clear();
-  list.push_back( AliHLTEMCALDefinitions::fgkDDLRawDataType   | kAliHLTDataOriginEMCAL );
+  list.push_back( AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType   | kAliHLTDataOriginEMCAL );
+  list.push_back( AliHLTEMCALDefinitions::fgkTriggerSTUDataType | kAliHLTDataOriginEMCAL );
 }
 
 AliHLTComponentDataType AliHLTEMCALTriggerDataMakerComponent::GetOutputDataType(){
-  return AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType;
+  return kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL;
 }
 
 void AliHLTEMCALTriggerDataMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier){
-  constBase = 0;
+  constBase = sizeof(AliHLTCaloTriggerHeaderStruct);
   inputMultiplier = 1.5;
 }
 
@@ -122,83 +101,46 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
   UInt_t specification      = 0;
   UInt_t totSize            = 0;
   const AliHLTComponentBlockData* iter = NULL;
-  unsigned long ndx;
 
   // Get pointers to output buffer
-  AliHLTEMCALTriggerHeaderStruct *headerPtr = reinterpret_cast<AliHLTEMCALTriggerHeaderStruct *>(outputPtr);
-  AliHLTEMCALTriggerFastorDataStruct *dataIter = reinterpret_cast<AliHLTEMCALTriggerFastorDataStruct *>(outputPtr + sizeof(AliHLTEMCALTriggerHeaderStruct)),
-      *nextFastor(NULL);
-  totSize += sizeof(AliHLTEMCALTriggerHeaderStruct);
+  AliHLTCaloTriggerHeaderStruct *headerPtr = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(outputPtr);
+  AliHLTCaloTriggerDataStruct *dataIter = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(outputPtr + sizeof(AliHLTCaloTriggerHeaderStruct));
+  totSize += sizeof(AliHLTCaloTriggerHeaderStruct);
 
-  bool headerInitialized = false;
-  Int_t nfastor = 0;
+  Reset();
+  AliHLTCaloTriggerRawDigitDataStruct *dataptr = NULL;
+  for(ULong_t ndx = 0; ndx < evtData.fBlockCnt; ndx++){
+    iter = blocks + ndx;
 
-  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {
-    iter = blocks+ndx;
-    if(  ! CheckInputDataType(iter->fDataType) ) {
+    if(!this->CheckInputDataType(iter->fDataType)){
       continue;
-    }
-
-    if(iter->fSpecification != fCurrentSpec) {
-      fCurrentSpec = iter->fSpecification;
-      InitMapping(iter->fSpecification);
     }
     specification |= iter->fSpecification;
 
-    // Initialize raw reader from input data
-    fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), static_cast<ULong_t>(iter->fSize));
-    fRawReaderMemoryPtr->SetEquipmentID(fMapperPtr->GetDDLFromSpec(iter->fSpecification) + fCaloConstants->GetDDLOFFSET());
-    fRawReaderMemoryPtr->Reset();
-    fRawReaderMemoryPtr->NextEvent();
-
-    fTriggerData->Reset();
-    fRawDigitMaker->Reset();
-
-    AliEMCALTriggerSTURawStream stustream(fRawReaderMemoryPtr);
-    fRawDigitMaker->SetIO(fRawReaderMemoryPtr, *fCaloRawStreamPtr, stustream, fTriggerData);
-
-    Int_t caloFlag(0);
-    while (fCaloRawStreamPtr->NextDDL()) {
-      while (fCaloRawStreamPtr->NextChannel()) {
-        caloFlag = fCaloRawStreamPtr->GetCaloFlag();
-
-        if ( caloFlag != 2 ) continue; // Only FALTRO
-        vector<AliCaloBunchInfo> bunchlist;
-
-        while (fCaloRawStreamPtr->NextBunch())
-          bunchlist.push_back( AliCaloBunchInfo(fCaloRawStreamPtr->GetStartTimeBin(), fCaloRawStreamPtr->GetBunchLength(), fCaloRawStreamPtr->GetSignals() ) );
-
-        if (bunchlist.size() == 0) continue;
-
-        fRawDigitMaker->Add(bunchlist);
-      } // End while over channel
-    } // End while over DDL's, of input stream
-    fRawDigitMaker->PostProcess();
-
-    if(!headerInitialized){
-      // Set Header
-      for (int i = 0; i < 2; i++) {
-        headerPtr->fL1Threshold[2*i] = fTriggerData->GetL1JetThreshold(i);
-        headerPtr->fL1Threshold[2*i+1] = fTriggerData->GetL1GammaThreshold(i);
-      }
-      headerPtr->fL1FrameMask = fTriggerData->GetL1FrameMask();
-      headerInitialized = true;
-    }
-
-    // Write out stuff
-    const std::vector<AliHLTEMCALTriggerRawDigitDataStruct> &indigits = fRawDigitMaker->GetRawDigits();
-    for(std::vector<AliHLTEMCALTriggerRawDigitDataStruct>::const_iterator digiter = indigits.begin(); digiter != indigits.end(); ++digiter){
-      Int_t col, row;
-      if(fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(digiter->fID, col, row)){
-        nextFastor = dataIter + 1;
-        ConvertRawDigit(dataIter, &(*digiter), col, row);
-        dataIter = nextFastor;
-        nfastor++;
-        totSize += sizeof(AliHLTEMCALTriggerFastorDataStruct);
-      }
+    if(iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType){
+      // Handle TRU data
+      Int_t ndigits = iter->fSize / sizeof(AliHLTCaloTriggerRawDigitDataStruct);
+      HLTDebug("Data containing %d TRU digits", ndigits);
+      dataptr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct *>(iter->fPtr);
+      ReadTRUData(ndigits, dataptr);
+    } else if(iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerSTUDataType){
+      // Handle STU data
+      AliHLTEMCALSTUHeaderStruct *stuheader = reinterpret_cast<AliHLTEMCALSTUHeaderStruct *>(iter->fPtr);
+      dataptr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct *>(reinterpret_cast<AliHLTUInt8_t*>(iter->fPtr) + sizeof(AliHLTEMCALSTUHeaderStruct));
+      HLTDebug("Data containing %d STU digits", stuheader->fNRawDigits);
+      ReadSTUData(stuheader, dataptr);
     }
   }
-  headerPtr->fNfastor = nfastor;
+
+  // Write header
+  memcpy(headerPtr->fL1Threshold, fSTUHeader.fL1Threshold, sizeof(Int_t) *4);
+  memcpy(headerPtr->fL1V0, fSTUHeader.fL1V0, sizeof(Int_t) * 2);
+  headerPtr->fL1FrameMask = fSTUHeader.fL1FrameMask;
+
+  // Write data
+  Int_t dataSize = MakeTriggerData(dataIter);
+  totSize += dataSize;
+  headerPtr->fNfastor = dataSize / sizeof(AliHLTCaloTriggerDataStruct);
 
   AliHLTComponentBlockData bdChannelData;
   FillBlockData( bdChannelData );
@@ -212,7 +154,75 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
   return 0;
 }
 
-void AliHLTEMCALTriggerDataMakerComponent::ConvertRawDigit(AliHLTEMCALTriggerFastorDataStruct *target, const AliHLTEMCALTriggerRawDigitDataStruct *source, Int_t col, Int_t row) {
+
+void AliHLTEMCALTriggerDataMakerComponent::ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr){
+  fSTUHeader = *headerptr;
+  for(UShort_t idig = 0; idig < headerptr->fNRawDigits; idig++){
+    fRawIndexesSTU[dataptr->fID] = fNRawDigitsSTU;
+    fSTURawDigitBuffer[fNRawDigitsSTU] = *dataptr;
+    dataptr++;
+    fNRawDigitsSTU++;
+  }
+  HLTInfo("Successfully read in %d STU digits", fNRawDigitsSTU);
+}
+
+void AliHLTEMCALTriggerDataMakerComponent::ReadTRUData(UShort_t ndigits, AliHLTCaloTriggerRawDigitDataStruct *triggerdata){
+  for(UShort_t idig = 0; idig < ndigits; idig++){
+    fRawIndexesTRU[triggerdata->fID] = fNRawDigitsTRU;
+    fTRURawDigitBuffer[fNRawDigitsTRU] = *triggerdata;
+    triggerdata++;
+    fNRawDigitsTRU++;
+  }
+  HLTInfo("Successfully read in %d TRU digits", fNRawDigitsTRU);
+}
+
+Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDataStruct *outputdata) {
+  Int_t outputsize = 0, col = 0, row = 0;
+  AliHLTCaloTriggerRawDigitDataStruct tmpdigit;
+  for(UShort_t indcounter = 0; indcounter < kMaxChannels; indcounter++){
+    fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(indcounter, col, row);
+    if(fRawIndexesTRU[indcounter] >= 0 && fRawIndexesSTU[indcounter] >=0){
+      CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
+      ConvertRawDigit(outputdata, &tmpdigit, col, row);
+      outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      outputdata++;
+    } else if(fRawIndexesTRU[indcounter] >= 0){
+      ConvertRawDigit(outputdata, &(fTRURawDigitBuffer[fRawIndexesTRU[indcounter]]), col, row);
+      outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      outputdata++;
+    } else if(fRawIndexesSTU[indcounter] >= 0){
+      ConvertRawDigit(outputdata, &(fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]), col, row);
+      outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      outputdata++;
+    }
+  }
+  return outputsize;
+}
+
+void AliHLTEMCALTriggerDataMakerComponent::CombineTRUSTUDigit(
+    AliHLTCaloTriggerRawDigitDataStruct &target,
+    const AliHLTCaloTriggerRawDigitDataStruct &trudigit,
+    const AliHLTCaloTriggerRawDigitDataStruct &studigit){
+  AliHLTCaloTriggerRawDigitDataStruct merged;
+  target.fID = trudigit.fID;
+  target.fNTimeSamples = trudigit.fNTimeSamples;
+  memcpy(target.fTimeSamples, trudigit.fTimeSamples, sizeof(Int_t) * 15);
+  target.fNL0Times = trudigit.fNL0Times;
+  memcpy(target.fL0Times, trudigit.fL0Times, sizeof(UChar_t) * 10);
+  target.fL1TimeSum = studigit.fL1TimeSum;
+  target.fTriggerBits = trudigit.fTriggerBits | studigit.fTriggerBits;
+}
+
+void AliHLTEMCALTriggerDataMakerComponent::Reset(){
+  for(Short_t iter = 0; iter < kMaxChannels; iter++){
+    fRawIndexesTRU[iter] = -1;
+    fRawIndexesSTU[iter] = -1;
+  }
+  fNRawDigitsTRU = 0;
+  fNRawDigitsSTU = 0;
+}
+
+void AliHLTEMCALTriggerDataMakerComponent::ConvertRawDigit(AliHLTCaloTriggerDataStruct *target, const AliHLTCaloTriggerRawDigitDataStruct *source, Int_t col, Int_t row) {
   target->fCol = col;
   target->fRow = row;
   Int_t amplitude, time;
@@ -223,13 +233,4 @@ void AliHLTEMCALTriggerDataMakerComponent::ConvertRawDigit(AliHLTEMCALTriggerFas
   target->fNL0Times = source->fNL0Times;
   memcpy(target->fL0Times, source->fL0Times, sizeof(UChar_t) * 10);
   target->fTriggerBits = source->fTriggerBits;
-}
-
-void AliHLTEMCALTriggerDataMakerComponent::InitMapping( const int specification ) {
-  if (!fMapperPtr)  fMapperPtr =  new AliHLTEMCALMapper( specification );
-
-  if(fMapperPtr->GetIsInitializedMapping() == false ) {
-    HLTError("%d:%d, ERROR, mapping not initialized ", __FILE__, __LINE__ );
-    exit(-2);
-  }
 }

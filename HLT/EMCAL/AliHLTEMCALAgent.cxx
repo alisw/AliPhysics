@@ -50,10 +50,14 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 //#include "AliHLTEMCALModuleCalibrationProcessorComponent.h"
 //#include "AliHLTEMCALMonitorTriggerComponent.h"
 #include "AliHLTEMCALRawAnalyzerComponent.h"
-#include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
+#include "AliHLTEMCALRawAnalyzerStandardComponent.h"
 #include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
+#include "AliHLTEMCALRawAnalyzerComponentTRU.h"
+#include "AliHLTEMCALRawAnalyzerComponentSTU.h"
+#include "AliHLTEMCALTriggerDataMakerComponent.h"
 //#include "AliHLTEMCALRcuCalibrationProcessorComponent.h"
 //#include "AliHLTEMCALRcuDAComponent.h"
+#include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
 #include "AliHLTEMCALRawAnalyzerLMSComponent.h"
 #include "AliHLTEMCALRawAnalyzerFastFitComponent.h"
 #include "AliHLTEMCALRawAnalyzerNNComponent.h"
@@ -110,7 +114,7 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         // 	}
         
         int moduleStart = 0;
-        int moduleEnd = 9;
+        int moduleEnd = 20;
         
         int rcuStart = 0;
         int rcuEnd = 1;
@@ -121,6 +125,9 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         TString mergerInput;
         TString sinkClusterInput;
         TString emInput;
+        TString tmInput;   // Input for trigger maker
+        TString tdInput;   // Input for trigger data maker
+        TString arg;
         
         for (int module = moduleStart; module <= moduleEnd; module++) 
         {
@@ -128,7 +135,7 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
             
             for(int rcu = rcuStart; rcu < rcuEnd; rcu++) 
             {
-                TString arg, publisher, ra, dm;
+                TString publisher, ra, ta, dm;
                 // raw data publisher components
                 publisher.Form("EMCAL-RP_%02d_%d", module, rcu);
                 arg.Form("-verbose -minid %d -datatype 'DDL_RAW ' 'EMCA'  -dataspec 0x%x ", ddlOffset + module*(rcusPerModule) + rcu, 0x1 << (module*rcusPerModule + rcu));
@@ -140,6 +147,13 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
                 ra.Form("EMCAL-RA_%02d_%d", module, rcu);
                 handler->CreateConfiguration(ra.Data(), "EmcalRawCrude", publisher.Data(), arg.Data());
                 
+                // Raw analyzer for TRU data
+                arg = "";
+                ta.Form("EMC-TRU_%02d_%d", module, rcu);
+                handler->CreateConfiguration(ta.Data(), "EmcalTruAnalyzer", publisher.Data(), arg.Data());
+                if(tdInput.Length() > 0) tdInput += " ";
+                tdInput += ta;
+
                 // digit maker components
                 dm.Form("EMCAL-DM_%02d_%d", module, rcu);
                 arg="";
@@ -147,10 +161,12 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
                 handler->CreateConfiguration(dm.Data(), "EmcalDigitMaker", ra.Data(), arg.Data());
                 
                 if(clInput.Length() > 0) clInput += " ";
+                if(tmInput.Length() > 0) tmInput += " ";
                 clInput+=dm;
+                tmInput+=dm;
             }
             
-            TString arg, cl, ca;
+            TString cl, ca;
             
             cl.Form("EMCAL-CF_%02d", module);
             arg = "";
@@ -165,8 +181,29 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
             emInput += ca;
         }
         
+        // Loop for STU
+        const int stu_offset = 4652;
+        const int stu_min = 0;
+        const int stu_max = 1;
+        for(int istu = stu_min; istu <= stu_max; istu++){
+          TString stupublisher, stuanalyzer;
+          arg.Form("-verbose -minid %d -datatype  'DDL_RAW ' 'EMCA'", stu_offset + istu);
+          stupublisher.Form("EMCAL-SP_%d", istu);
+          handler->CreateConfiguration(stupublisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+
+          // STU raw analyser
+          stuanalyzer.Form("EMCAL-STU_%d", istu);
+          handler->CreateConfiguration(stuanalyzer.Data(), "EmcalStuAnalyzer", stupublisher.Data(), "");
+          tdInput += " " + stuanalyzer;
+        }
+
+        // Tigger data merger
+        AliHLTConfiguration trgdata("EMCAL-TRG", "EmcalTriggerDataMaker", tdInput.Data(), "");
+        tmInput += " EMCAL-TRG";
+
+        handler->CreateConfiguration("EMCAL-TM", "EmcalTriggerMaker", tmInput.Data(), "");
         
-        TString arg, em;
+        TString em;
         
         // tracker finder components
         
@@ -206,11 +243,15 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     // see header file for class documentation
     if (!pHandler) return -EINVAL;
     
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerStandardComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerCrudeComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerLMSComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerPeakFinderComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerFastFitComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerNNComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerComponentTRU);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerComponentSTU);
+    pHandler->AddComponent(new AliHLTEMCALTriggerDataMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALDigitMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponent);
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponentNbyN);

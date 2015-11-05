@@ -28,6 +28,7 @@
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
+#include "AliHLTEMCALTRURawDigitMaker.h"
 
 #include "AliCaloConstants.h"
 
@@ -61,7 +62,6 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataType()
   return AliHLTEMCALDefinitions::fgkChannelDataType;
 }
 
-
 void 
 AliHLTEMCALRawAnalyzerComponent::InitMapping( const int specification )
 {
@@ -77,5 +77,4 @@ AliHLTEMCALRawAnalyzerComponent::InitMapping( const int specification )
       exit(-2);
     }
 }
-
 

@@ -44,6 +44,7 @@ set(SRCS
     AliHLTEMCALDigitMakerComponent.cxx
     AliHLTEMCALMapper.cxx
     AliHLTEMCALRawAnalyzerComponent.cxx
+    AliHLTEMCALRawAnalyzerStandardComponent.cxx
     AliHLTEMCALRawAnalyzerCrudeComponent.cxx
     AliHLTEMCALRawAnalyzerFastFitComponent.cxx
     AliHLTEMCALRawAnalyzerLMSComponent.cxx
@@ -52,19 +53,19 @@ set(SRCS
     AliHLTEMCALRawHistoMaker.cxx
     AliHLTEMCALRawHistoMakerComponent.cxx
     AliHLTEMCALRecoParamHandler.cxx
-    AliHLTEMCALTriggerRawDigitMaker.cxx
-    AliHLTEMCALTriggerRawDigitDataStruct.cxx
     AliHLTEMCALTriggerDataMakerComponent.cxx
     AliHLTEMCALTriggerMaker.cxx
     AliHLTEMCALTriggerMakerComponent.cxx
-    AliHLTEMCALTriggerQAComponent.cxx
+    AliHLTEMCALTRURawDigitMaker.cxx
+    AliHLTEMCALRawAnalyzerComponentTRU.cxx
+    AliHLTEMCALSTURawDigitMaker.cxx
+    AliHLTEMCALRawAnalyzerComponentSTU.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
-    AliHLTEMCALTriggerHeaderStruct.h
-    AliHLTEMCALTriggerFastorDataStruct.h
+    AliHLTEMCALSTUHeaderStruct.h
 )
 
 # Generate the dictionary

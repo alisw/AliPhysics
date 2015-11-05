@@ -175,7 +175,7 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
       wlast =  wcurrent;
       wcurrent =  watch.RealTime();
       cout << __FILE__ << __LINE__ << "The event rate is " <<
-          1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  watch.Start(kFALSE);
+          1000/( wcurrent  -  wlast ) << "  Hz" << endl;    watch.Start(kFALSE);
     }
   }
 }
@@ -332,6 +332,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
           return -1;
         }
 
+        //fAnalyzerPtr->SetL1Phase(fAltroRawStreamPtr->GetL1Phase());
         AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(),
             fAltroRawStreamPtr->GetAltroCFG2() );
 
@@ -341,7 +342,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
           channelDataPtr->fChannelID =  chId;
           channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
           channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
-          if(fDetector.CompareTo("EMCAL") == 0) channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() )*100E-9 - fAltroRawStreamPtr->GetL1Phase();
+          // Time from the raw rreader already converted - no need to multiply twice
+          // if(fDetector.CompareTo("EMCAL") == 0) channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() )*100E-9 - fAltroRawStreamPtr->GetL1Phase();
           channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
           channelCount++;
           channelDataPtr++; // Updating position of the free output.
@@ -487,4 +489,3 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::CopyBufferToSharedMemory(UShort
     return fTotalSize;
   }
 }
-

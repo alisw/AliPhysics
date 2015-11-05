@@ -58,6 +58,7 @@ set(SRCS
     AliHLTCaloRecoParamHandler.cxx
     AliHLTCaloSanityInspector.cxx
     AliHLTCaloSharedMemoryInterfacev2.cxx
+    AliHLTCaloTriggerRawDigitDataStruct.cxx
     AliHLTEMCALDefinitions.cxx
     AliHLTEMCALGeometry.cxx
     AliHLTCaloUtilities.cxx

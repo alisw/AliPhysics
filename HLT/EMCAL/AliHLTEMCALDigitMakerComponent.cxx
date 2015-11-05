@@ -127,7 +127,6 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTComponentTriggerData& /* trigData */, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
     std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
-
   //patch in order to skip calib events
   if(! IsDataEvent()) return 0;
 
@@ -200,6 +199,8 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
 
     ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTCaloDigitDataStruct)));
+
+    HLTDebug("Found %d digits", ret);
 
     if(ret == -1)
     {

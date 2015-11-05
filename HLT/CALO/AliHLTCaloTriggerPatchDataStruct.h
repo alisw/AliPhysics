@@ -42,6 +42,8 @@ struct AliHLTCaloTriggerPatchDataStruct {
   UInt_t                    fADC;
   /** Bit mask of the trigger patch */
   UInt_t                    fBitMask;
+  /** Data origin (STU, RECAL, Digits) */
+  UChar_t                   fOrigin;
 };
 
 #endif

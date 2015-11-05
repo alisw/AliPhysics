@@ -60,21 +60,29 @@ void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
   (*fADCValues)(globCol, globRow) += digit->fAmplitude;
 }
 
-Int_t AliHLTEMCALTriggerMaker::FindPatches(AliHLTUInt32_t availableSize){
+void AliHLTEMCALTriggerMaker::SetADC(Int_t col, Int_t row, Float_t adc){
+  (*fADCValues)(col, row) = adc;
+}
+
+Int_t AliHLTEMCALTriggerMaker::FindPatches(){
+  /*
   if(availableSize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
     HLTError("Not enough space to write new trigger patches");
     return -1;
   }
-  AliHLTUInt32_t mysize = availableSize;
+  */
+  //AliHLTUInt32_t mysize = availableSize;
   std::vector<AliEMCALTriggerRawPatch> foundpatches = fPatchFinder->FindPatches(*fADCValues);
   Int_t patchcount = 0;
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchiter = foundpatches.begin(); patchiter != foundpatches.end(); ++patchiter){
+    /*
     if(mysize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
       HLTError("Not enough space - some patches will be lost");
       return patchcount;
     }
+    */
     AliHLTCaloTriggerPatchDataStruct *next = fTriggerPatchDataPtr + 1;
-    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr);
+    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr, fOrigin);
     fTriggerPatchDataPtr = next;
     patchcount++;
   }
@@ -109,10 +117,11 @@ void AliHLTEMCALTriggerMaker::InitializeDCALPatchFinders(){
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
 }
 
-void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output) const {
+void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output, UChar_t origin) const {
   output.fCol = input.GetColStart();
   output.fRow = input.GetRowStart();
   output.fSize = input.GetPatchSize();
   output.fADC = input.GetADC();
   output.fBitMask = input.GetBitmask();
+  output.fOrigin = origin;
 }

@@ -248,6 +248,9 @@ const AliHLTComponentDataType kAliHLTDataTypeITSSAPData = AliHLTComponentDataTyp
 /** Container of HLT calorimeter clusters */
 const AliHLTComponentDataType kAliHLTDataTypeCaloCluster = AliHLTComponentDataTypeInitializer( "CALOCLUS", kAliHLTDataOriginAny );
 
+/** Container of HLT calorimeter triggers */
+const AliHLTComponentDataType kAliHLTDataTypeCaloTrigger = AliHLTComponentDataTypeInitializer( "CALOTRIG", kAliHLTDataOriginAny );
+
 /** Container of dEdx */
 const AliHLTComponentDataType kAliHLTDataTypedEdx = AliHLTComponentDataTypeInitializer( "DEDX    ", kAliHLTDataOriginAny );
 
