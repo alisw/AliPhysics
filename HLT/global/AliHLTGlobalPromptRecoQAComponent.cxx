@@ -182,22 +182,31 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD);
+  
   list.push_back(kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD); //SPD Vertex
+  
   list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC); //HLT-TPC clusters from HWCF
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC); //TPC DDL raw data
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters
   list.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters (internally compressed form)
   list.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC); //Non-transformed HLT-TPC clusters
+  
   list.push_back(AliHLTTPCCADefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC); //HLT-TPC merged tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITS); //TPC-ITS tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITSOut); //ITS-Out merged tracks
-
+  
+  list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO); //VZERO-RECO output
+  
+  list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
 
   //All this is TPC Data compression
   list.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
-  list.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  list.push_back(AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed());
   list.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
@@ -278,22 +287,32 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t rawSizeSSD = 0;
   AliHLTUInt32_t nClustersITS = 0;
   AliHLTUInt32_t rawSizeITS = 0;
+  AliHLTUInt32_t rawSizeVZERO = 0;
+  AliHLTUInt32_t rawSizeEMCAL = 0;
   
   AliHLTUInt32_t nClustersTPC = 0;
   AliHLTUInt32_t rawSizeTPC = 0;
   AliHLTUInt32_t hwcfSizeTPC = 0;
+  AliHLTUInt32_t clusterSizeTPCtransformed = 0;
   AliHLTUInt32_t clusterSizeTPC = 0;
   AliHLTUInt32_t compressedSizeTPC = 0;
 
   AliHLTUInt32_t nITSSAPtracks = 0;
-  AliHLTUInt32_t nSPDtracklets =0;
   AliHLTUInt32_t nTPCtracklets = 0;
   AliHLTUInt32_t nTPCtracks = 0;
   AliHLTUInt32_t nITSTracks = 0;
   AliHLTUInt32_t nITSOutTracks = 0;
+
+  float vZEROMultiplicity = 0.;
   
   Bool_t bITSSPDVertex = kFALSE;
   
+  float compressionRatio;
+  
+  AliHLTUInt32_t nESDSize = 0;
+  AliHLTUInt32_t nESDFriendSize = 0;
+  AliHLTUInt32_t nFlatESDSize = 0;
+  AliHLTUInt32_t nFlatESDFriendSize = 0;
 
   //loop over input blocks and extract basic stats
   int nBlocks = evtData.fBlockCnt;  
@@ -344,14 +363,28 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() || //Used
-      iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() ||
+    if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
-      iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() || //Used
-      iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType()) //Used
+      iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType())
     {
       compressedSizeTPC += iter->fSize;
+    }
+    
+    //VZERO Multiplicity
+    if (iter->fDataType == (kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO))
+    {
+      const TObject* o = GetInputObjectFromIndex(ndx);
+      if (o)
+      {
+        const AliESDVZERO* v = dynamic_cast<const AliESDVZERO*>(o);
+        if (v)
+        {
+          for (int i = 0;i < 64;i++) vZEROMultiplicity += v->GetMultiplicity(i);
+        }
+      }
     }
 
     //RAW sizes
@@ -375,14 +408,43 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       hwcfSizeTPC += iter->fSize;
     }
-    
-    if (iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC clusters
+    if (iter->fDataType == (AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC)) //Size of transformed HLT-TPC clusters
+    {
+      clusterSizeTPCtransformed += iter->fSize;
+    }
+    if (iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC clusters (uncompressed from HWCF, not yet transformed)
     {
       clusterSizeTPC += iter->fSize;
     }
     if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) //TPC RAW DDL Size
     {
       rawSizeTPC += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginVZERO))
+    {
+      rawSizeVZERO += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginEMCAL))
+    {
+      rawSizeEMCAL += iter->fSize;
+    }
+
+    //esd size
+    if (iter->fDataType == (kAliHLTDataTypeESDObject|kAliHLTDataOriginOut))
+    {
+      nESDSize += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut))
+    {
+      nESDFriendSize += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut))
+    {
+      nFlatESDSize += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut))
+    {
+      nFlatESDFriendSize += iter->fSize;
     }
 
     //numbers of tracks
@@ -412,7 +474,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nITSSAPtracks += inPtr->fCount;
     }
   }// end read input blocks
-  
+
+  compressionRatio = compressedSizeTPC > 0 ? ((float) hwcfSizeTPC / (float) compressedSizeTPC) : 0.f;
+
 
   //fill histograms
   fHistSPDclusters_SPDrawSize->Fill(nClustersSPD, rawSizeSPD);
@@ -435,14 +499,13 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fHistSPDclusters_SSDclusters->GetEntries() && PushBack(fHistSPDclusters_SSDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistSPDclusters_SSDclusters->Reset();
 
-  fHistTPCHLTclusters_TPCHLTclustersSize->Fill(nClustersTPC, clusterSizeTPC);
+  fHistTPCHLTclusters_TPCHLTclustersSize->Fill(nClustersTPC, hwcfSizeTPC);
   if (fHistTPCHLTclusters_TPCHLTclustersSize->GetEntries() && PushBack(fHistTPCHLTclusters_TPCHLTclustersSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistTPCHLTclusters_TPCHLTclustersSize->Reset();
 
   fHistTPCtracks_TPCtracklets->Fill(nTPCtracks, nTPCtracklets);
   if (fHistTPCtracks_TPCtracklets->GetEntries() && PushBack(fHistTPCtracks_TPCtracklets, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistTPCtracks_TPCtracklets->Reset();
-
 
   int pushed_something = 0;
   fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
@@ -454,8 +517,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   if (fPrintStats && pushed_something) //Don't print this for every event if we use a pushback period
   {
-    HLTImportant("Blocks %d: HLT Reco QA Stats: SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) ITS-Cl %d (%d) TPC-Cl %d (%d / %d / %d), TPC-Comp (%d), ITSSAP-Tr %d, SPD-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d",
-      nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, compressedSizeTPC, nITSSAPtracks, nSPDtracklets, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex);
+    HLTImportant("Blocks %d: HLT Reco QA Stats: SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) ITS-Cl %d (%d) TPC-Cl %d (%d / %d / %d / %d), TPC-Comp %fx (%d)"
+      ", ITSSAP-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d, V0 %f (%d), EMCAL (%d), ESD %d / %d (%d / %d)",
+      nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressedSizeTPC,
+      nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, rawSizeEMCAL, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize);
   }
 
   return iResult;
