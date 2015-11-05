@@ -1227,6 +1227,11 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
   return pObj;
 }
 
+const TObject* AliHLTComponent::GetInputObjectFromIndex(const int idx, const char* classname, int bforce)
+{
+  return GetInputObject(idx, classname, bforce);
+}
+
 TObject* AliHLTComponent::GetInputObject(int idx, const char* /*classname*/, int bForce)
 {
   // see header file for function documentation

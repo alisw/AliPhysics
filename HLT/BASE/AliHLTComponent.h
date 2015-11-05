@@ -1214,6 +1214,13 @@ class AliHLTComponent : public AliHLTLogging {
   const TObject* GetNextInputObject(int bForce=0);
   
   /**
+   * Get an object from an input block whose number you already know.
+   * In fact, this calls GetInputObject on that block, and returns
+   * a const pointer
+   */
+  const TObject* GetInputObjectFromIndex(const int idx, const char* classname=NULL, int bforce=0);
+  
+  /**
    * Removes a TObject from the list of objects automatically deleted
    * after the event processing function DoEvent. Objects obtained via
    * GetFirstInputObject etc. are placed there and cleaned up afterwards.
