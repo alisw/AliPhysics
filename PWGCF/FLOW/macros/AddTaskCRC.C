@@ -1,6 +1,4 @@
-AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
-                             Int_t nCenBin,
-                             Double_t CenBinWidth,
+AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Double_t ptMin=0.2,
                              Double_t ptMax=5.0,
                              TString analysisTypeUser="AOD",
@@ -21,6 +19,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
+                             Float_t ZDCGainAlpha=0.395,
                              Bool_t bInvertZDC=kFALSE,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
@@ -33,8 +32,10 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Double_t dMinClusTPC=70,
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
+                             Bool_t bUsePtWeights=kFALSE,
+                             TString PtWeightsFileName="",
                              Bool_t bCenFlattening=kTRUE,
-                             TString CenWeightsFileName,
+                             TString CenWeightsFileName="",
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -71,6 +72,8 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  
  Double_t centrMin=0.;
  Double_t centrMax=100.;
+ Double_t CenBinWidth=10.;
+ Int_t nHarmonic=1;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -112,6 +115,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskFE->SetCentralityEstimator("V0M");
  taskFE->SetRejectPileUp(bRejectPileUp);
  taskFE->SetUseMCCen(bZDCMCCen);
+ taskFE->SetZDCGainAlpha(ZDCGainAlpha);
  taskFE->SetDataSet(sDataSet);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
@@ -309,6 +313,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bInvertZDC);
  taskQC->SetCorrWeight(sCorrWeight);
+ taskQC->SetUsePtWeights(bUsePtWeights);
  
  if(bCenFlattening && sDataSet=="2011") {
   TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
@@ -328,6 +333,25 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   }
  } // end of if(bCenFlattening)
  
+ if(bUsePtWeights) {
+  TFile* PtWeightsFile = TFile::Open(PtWeightsFileName,"READ");
+  if(!PtWeightsFile) {
+   cout << "ERROR: PtWeightsFile not found!" << endl;
+   exit(1);
+  }
+  for(Int_t c=0; c<10; c++) {
+   TH1D* PtWeightsHist = dynamic_cast<TH1D*>(PtWeightsFile->Get(Form("eff_unbiased_%d",c)));
+   if(PtWeightsHist) {
+    taskQC->SetPtWeightsHist(PtWeightsHist,c);
+    cout << "Pt weights centr. "<<c<<" set (from " <<  PtWeightsFileName.Data() << ")" << endl;
+   }
+   else {
+    cout << "ERROR: PtWeightsHist not found!" << endl;
+    exit(1);
+   }
+  }
+ } // end of if(bUsePtWeights)
+
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
