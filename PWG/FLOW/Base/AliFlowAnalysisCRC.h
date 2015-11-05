@@ -838,6 +838,8 @@ public:
  
  void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+ void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
+ TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  void SetPtDiffRangePt(Double_t min, Double_t max) {this->fPtDiffMinPt=min; this->fPtDiffMaxPt=max;}
@@ -1455,12 +1457,13 @@ private:
  
  // Flow SP ZDC
  TList *fFlowSPZDCList;    //! SPZDC List
- TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
+ const static Int_t fFlowNPro = 9;
+ TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][6]; //! NUA profile, [CRCBin][eg]
- TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
+ TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
  
- TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][5]; //!
- TH1D *fFlowSPZDCFinalPtIntHist[fCRCMaxnCen][5]; //!
+ TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
+ TH1D *fFlowSPZDCFinalPtIntHist[fCRCMaxnCen][fFlowNPro]; //!
  TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
  
  // Flow QC
@@ -1484,6 +1487,7 @@ private:
  TH1D *fMultHist; //! Multiplicity distribution
  TH1D *fCenHist; //! Centrality distribution
  TH1D* fCenWeightsHist; //! Centrality weights
+ TH1D* fPtWeightsHist[10]; //! Pt weights
  Double_t fCenWeightEbE;
  
  ClassDef(AliFlowAnalysisCRC, 4);

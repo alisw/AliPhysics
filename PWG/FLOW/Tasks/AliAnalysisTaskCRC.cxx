@@ -151,6 +151,10 @@ fCorrWeight("TPCuVZuZDCu")
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
+ for(Int_t c=0; c<10; c++) {
+  fPtWeightsHist[c] = NULL;
+ }
+
 }
 
 //================================================================================================================
@@ -250,6 +254,10 @@ fCorrWeight("TPCuVZuZDCu")
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
+ for(Int_t c=0; c<10; c++) {
+  fPtWeightsHist[c] = NULL;
+ }
+
 }
 
 //==========================================================================================================
@@ -299,6 +307,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
+ fQC->SetUsePtWeights(fUsePtWeights);
  if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
  else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
  if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
@@ -329,6 +338,9 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
  if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
+ for(Int_t c=0; c<10; c++) {
+  if(fPtWeightsHist[c]) fQC->SetPtWeightsHist(fPtWeightsHist[c],c);
+ }
  fQC->SetMultiplicityIs(fMultiplicityIs);
  fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
  fQC->SetUse2DHistograms(fUse2DHistograms);

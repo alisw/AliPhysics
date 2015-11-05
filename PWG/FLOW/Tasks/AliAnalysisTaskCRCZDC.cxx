@@ -192,6 +192,7 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fCRCnRun(0),
+fZDCGainAlpha(0.395),
 fDataSet("2010")
 {
  for(int i=0; i<5; i++){
@@ -922,18 +923,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   } else {
    const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
    const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-   const Float_t alpha = 0.395;
    Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
    Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
-   for(Int_t i=0; i<4; i++){
+   for(Int_t i=0; i<4; i++) {
     if(towZNC[i+1]>0.) {
-     wZNC = TMath::Power(towZNC[i+1], alpha);
+     wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
      numXZNC += x[i]*wZNC;
      numYZNC += y[i]*wZNC;
      denZNC += wZNC;
     }
     if(towZNA[i+1]>0.) {
-     wZNA = TMath::Power(towZNA[i+1], alpha);
+     wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
      numXZNA += x[i]*wZNA;
      numYZNA += y[i]*wZNA;
      denZNA += wZNA;
@@ -945,6 +945,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    }
    else{
     xyZNC[0] = xyZNC[1] = 999.;
+    zncEnergy = 0.;
    }
    if(denZNA!=0) {
     xyZNA[0] = numXZNA/denZNA;
@@ -952,6 +953,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    }
    else{
     xyZNA[0] = xyZNA[1] = 999.;
+    znaEnergy = 0.;
    }
   }
   
@@ -966,7 +968,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   }
   if(fDataSet.EqualTo("MCkine")) RunBin=0;
   if(RunBin!=-1) {
-   for(Int_t i=0; i<4; i++){
+   for(Int_t i=0; i<4; i++) {
     if(towZNC[i+1]>0.) {
      fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
     }
