@@ -28,7 +28,7 @@ TString PdfToTxt ( TString filename, Bool_t clear = kFALSE )
   }
 
   if ( gSystem->AccessPathName(convertedFilename.Data()) != 0 ) {
-    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s | xargs > %s",filename.Data(),convertedFilename.Data()));
+    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s | xargs -I %% > %s",filename.Data(),convertedFilename.Data()));
   }
 
   return convertedFilename;
