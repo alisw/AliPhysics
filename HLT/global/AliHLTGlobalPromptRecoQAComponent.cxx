@@ -413,11 +413,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
   }// end read input blocks
   
-  if (fPrintStats)
-  {
-    HLTImportant("Blocks %d: HLT Reco QA Stats: SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) ITS-Cl %d (%d) TPC-Cl %d (%d / %d / %d), TPC-Comp (%d), ITSSAP-Tr %d, SPD-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d",
-      nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, compressedSizeTPC, nITSSAPtracks, nSPDtracklets, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex);
-  }
 
   //fill histograms
   fHistSPDclusters_SPDrawSize->Fill(nClustersSPD, rawSizeSPD);
@@ -448,9 +443,20 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fHistTPCtracks_TPCtracklets->GetEntries() && PushBack(fHistTPCtracks_TPCtracklets, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
     fHistTPCtracks_TPCtracklets->Reset();
 
+
+  int pushed_something = 0;
   fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
   if (fHistITStracks_ITSOutTracks->GetEntries() && PushBack(fHistITStracks_ITSOutTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  {
     fHistITStracks_ITSOutTracks->Reset();
+    pushed_something = 1;
+  }
+
+  if (fPrintStats && pushed_something) //Don't print this for every event if we use a pushback period
+  {
+    HLTImportant("Blocks %d: HLT Reco QA Stats: SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) ITS-Cl %d (%d) TPC-Cl %d (%d / %d / %d), TPC-Comp (%d), ITSSAP-Tr %d, SPD-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d",
+      nBlocks, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersITS, rawSizeITS, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, compressedSizeTPC, nITSSAPtracks, nSPDtracklets, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex);
+  }
 
   return iResult;
 }
