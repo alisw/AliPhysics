@@ -45,6 +45,9 @@ public:
     kRejectPattern  //!<! Reject pattern
   };
 
+  /// Combination has trigger inputs
+  Bool_t HasTriggerClasses() { return fTriggerClasses ? kTRUE : kFALSE; }
+
 
 private:
   Bool_t Init ( const char* name, const char* trigInputsString, const char* trigPtMatchLevel );
