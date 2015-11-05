@@ -383,6 +383,8 @@ void AliUEHistograms::DeleteContainers()
     
   if (fEfficiencyCorrectionTriggers)
   {
+    if (fEfficiencyCorrectionTriggers == fEfficiencyCorrectionAssociated)
+      fEfficiencyCorrectionAssociated = 0;
     delete fEfficiencyCorrectionTriggers;
     fEfficiencyCorrectionTriggers = 0;
   }
