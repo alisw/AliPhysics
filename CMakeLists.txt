@@ -23,6 +23,12 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(ROOT_VERSION_MIN_5 "5.34.30")
 set(ROOT_VERSION_MIN_6 "6.04.00")
 
+# Without EVE, ROOT v5.34.17 is sufficient
+list(FIND EXCLUDE_MODULES "EVE" excleve)
+if (excleve GREATER -1)
+  set(ROOT_VERSION_MIN_5 "5.34.17")
+endif()
+
 ### CMP0025   Compiler id for Apple Clang is now AppleClang.
 ### CMP0042   MACOSX_RPATH is enabled by default.
 
