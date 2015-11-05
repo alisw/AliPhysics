@@ -3250,13 +3250,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
     // NonLinearity LHC12 ConvCalo - kTestBeamv2 + shifting MC
     case 13:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_11;// goto previous case for shifting MC
       break;
 
     // NonLinearity LHC12 Calo - kTestBeamv2 + shifting MC
     case 14:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_12;// goto previous case for shifting MC
       break;
 
@@ -3310,13 +3310,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
     // NonLinearity LHC11a ConvCalo - kTestBeamv2 + shifting MC
     case 23:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_21;// goto previous case for shifting MC
       break;
 
     // NonLinearity LHC11a Calo - kTestBeamv2 + shifting MC
     case 24:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_22;// goto previous case for shifting MC
       break;
 
@@ -3360,13 +3360,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
     // NonLinearity LHC13 pPb ConvCalo  - kTestBeamv2 + shifting MC
     case 83:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_81;// goto previous case for shifting MC
       break;
 
     // NonLinearity LHC13 pPb Calo  - kTestBeamv2 + shifting MC
     case 84:
-      energy *= FunctionNL_kTestBeamv2(energy);
+      energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_82;// goto previous case for shifting MC
       break;
 
@@ -3399,7 +3399,7 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Fl
 }
 
 //________________________________________________________________________
-Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv3(Float_t e){
   return ( 0.9615 / ( 0.976941 *( 1. / ( 1. + 0.162310 * exp( -e / 1.08689 ) ) * 1. / ( 1. + 0.0819592 * exp( ( e - 152.338 ) / 30.9594 ) ) ) ) );
 }
 //old kTestBeamv2, changed 30.10.2015
