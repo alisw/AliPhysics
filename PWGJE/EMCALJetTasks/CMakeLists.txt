@@ -50,7 +50,6 @@ set(SRCS
     AliJetConstituentTagCopier.cxx
     AliJetContainer.cxx
     AliJetEmbeddingFromGenTask.cxx
-    AliJetEmbeddingFromPYTHIATask.cxx
     AliJetEmbeddingTask.cxx
     AliJetFastSimulation.cxx
     AliJetModelBaseTask.cxx
@@ -172,6 +171,7 @@ if(FASTJET_FOUND)
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
+	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
