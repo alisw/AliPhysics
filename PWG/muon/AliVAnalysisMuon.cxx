@@ -81,6 +81,7 @@ ClassImp(AliVAnalysisMuon) // Class implementation in ROOT context
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon() :
   AliAnalysisTaskSE(),
+  fEnableRunByRunInfo(0),
   fMuonEventCuts(0x0),
   fMuonTrackCuts(0x0),
   fMuonPairCuts(0x0),
@@ -103,6 +104,7 @@ AliVAnalysisMuon::AliVAnalysisMuon() :
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
+  fEnableRunByRunInfo(0),
   fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
   fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
@@ -134,6 +136,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& trackCuts) :
   AliAnalysisTaskSE(name),
+  fEnableRunByRunInfo(0),
   fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(new AliMuonTrackCuts(trackCuts)),
   fMuonPairCuts(0x0),
@@ -166,6 +169,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
 //________________________________________________________________________
 AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pairCuts) :
   AliAnalysisTaskSE(name),
+  fEnableRunByRunInfo(0),
   fMuonEventCuts(new AliMuonEventCuts("stdEventCuts","stdEventCuts")),
   fMuonTrackCuts(0x0),
   fMuonPairCuts(new AliMuonPairCuts(pairCuts)),
@@ -278,9 +282,9 @@ void AliVAnalysisMuon::UserCreateOutputObjects()
     centralityClasses += GetCentralityClasses()->GetBinLabel(icent);
   }
   fEventCounters->AddRubric("selected", "yes/no");
-  fEventCounters->AddRubric("trigger", 100);
+  fEventCounters->AddRubric("trigger", 50);
   fEventCounters->AddRubric("centrality", centralityClasses);
-  fEventCounters->AddRubric("run", 10000);
+  fEventCounters->AddRubric("run", 1000);
   fEventCounters->Init();
   fOutputList->Add(fEventCounters);
  
@@ -327,10 +331,12 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
   Int_t centralityBin = GetCentralityClasses()->FindBin(centrality);
   TString centralityBinLabel = GetCentralityClasses()->GetBinLabel(centralityBin);
 
+  TString runInfo = fEnableRunByRunInfo ? Form("%i",fCurrentRunNumber) : "any";
+
   TString selKey = ( physSel == kPhysSelPass ) ? "yes" : "no";
   for ( Int_t itrig=0; itrig<selectTrigClasses->GetEntries(); ++itrig ) {
     TString trigName = selectTrigClasses->At(itrig)->GetName();
-    fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s/run:%i", trigName.Data(), selKey.Data(), centralityBinLabel.Data(),fCurrentRunNumber));
+    fEventCounters->Count(Form("trigger:%s/selected:%s/centrality:%s/run:%s", trigName.Data(), selKey.Data(), centralityBinLabel.Data(),runInfo.Data()));
   }
 
   ProcessEvent(fPhysSelKeys->At(physSel)->GetName(), *selectTrigClasses, centralityBinLabel);
