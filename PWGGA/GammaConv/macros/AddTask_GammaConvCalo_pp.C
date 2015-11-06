@@ -1,19 +1,22 @@
-void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,                      //change different set of cuts
-                                Int_t     isMC                      = 0,                      //run MC
-                                Int_t     enableQAMesonTask         = 1,                      //enable QA in AliAnalysisTaskGammaConvV1
-                                Int_t     enableQAPhotonTask        = 1,                      // enable additional QA task
-                                TString   fileNameInputForWeighting = "MCSpectraInput.root",  // path to file for weigting input
-                                TString   cutnumberAODBranch        = "000000006008400001001500000",
-                                Int_t     enableExtMatchAndQA       = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
-                                TString   periodname                = "LHC12f1x",             // period name
-                                Bool_t    doWeighting               = kFALSE,                 // enables weighting
-                                Bool_t    enableV0findingEffi       = kFALSE,                 // enables V0finding efficiency histograms
-                                Bool_t    isUsingTHnSparse          = kTRUE,                  // enable or disable usage of THnSparses for background estimation
-                                Bool_t    enableTriggerMimicking    = kFALSE,                 // enable trigger mimicking
-                                Bool_t    enableTriggerOverlapRej   = kFALSE,                 // enable trigger overlap rejection
-                                Float_t   maxFacPtHard              = 3.,                     // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader        = "",
-                                Bool_t    doTreeConvGammaShape      = kFALSE
+void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,                      //change different set of cuts
+                                Int_t     isMC                          = 0,                      //run MC
+                                Int_t     enableQAMesonTask             = 1,                      //enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
+                                TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
+                                TString   cutnumberAODBranch            = "000000006008400001001500000",
+                                Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                TString   periodname                    = "LHC12f1x",             // period name
+                                Bool_t    doParticleWeighting           = kFALSE,                 // enables weighting
+                                Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
+                                Bool_t    isUsingTHnSparse              = kTRUE,                  // enable or disable usage of THnSparses for background estimation
+                                Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
+                                Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
+                                Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
+                                TString   periodNameV0Reader            = "",                     // 
+                                Bool_t    doTreeConvGammaShape          = kFALSE,                 //
+                                Bool_t    doMultiplicityWeighting       = kFALSE,                  //
+                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    //
+                                TString   periodNameAnchor              = ""
               ) {
   
   Int_t isHeavyIon = 0;
@@ -895,8 +898,25 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
       mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     }  
     
-    if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+    if (doParticleWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile( kTRUE, kTRUE, kFALSE, fileNameInputForPartWeighting, 
+                                                                                           mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    TString triggerString   = eventCutArray[i];
+    triggerString           = triggerString(3,2);
+    if (triggerString.CompareTo("03")==0) 
+      triggerString         = "00";
+
+    dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+    mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+   
+    if (doMultiplicityWeighting){
+      cout << "enableling mult weighting" << endl;
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+    }
+              
+    
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
@@ -910,7 +930,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig               = 1,        
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
   
-	analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
+    analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
