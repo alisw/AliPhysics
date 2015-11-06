@@ -68,6 +68,10 @@ class AliEMCALCalibData: public TNamed {
   Float_t  fADCchannelOnline    [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// width of one ADC channel in GeV obtained from the voltage settings online
   Float_t  fADCchannelDecal     [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// decalibrate width of one ADC channel in GeV ([mod][col][row])
   Float_t  fADCpedestal         [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// value of the  ADC pedestal ([mod][col][row]), not used
+                                                                                                                        
+  // Do not use, please use AliEMCALTimeCalib, keep for backward compatibility reasons  
+  Float_t  fTimeChannelDecal    [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// time shift of one ADC channel ([mod][col][row])
+  Float_t  fTimeChannel         [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; /// time shift of one ADC channel ([mod][col][row][bunch crossing number])
 
   // Add specific arrays for DCal to avoid backward incompatibilities,
   // dimension of DCal SM is smaller than EMCAL but assume the same to avoid complications due to partial SM
@@ -77,9 +81,6 @@ class AliEMCALCalibData: public TNamed {
   Float_t  fADCpedestalDCAL     [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// value of the  ADC pedestal ([mod][col][row]), not used
  
   // Do not use, please use AliEMCALTimeCalib, keep for backward compatibility reasons  
-  Float_t  fTimeChannelDecal    [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// time shift of one ADC channel ([mod][col][row])
-  Float_t  fTimeChannel         [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; /// time shift of one ADC channel ([mod][col][row][bunch crossing number])
-
   Float_t  fTimeChannelDecalDCAL[fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; /// time shift of one ADC channel ([mod][col][row])
   Float_t  fTimeChannelDCAL     [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; /// time shift of one ADC channel ([mod][col][row][bunch crossing number])
 
