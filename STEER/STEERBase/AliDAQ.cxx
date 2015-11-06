@@ -528,7 +528,7 @@ const char *AliDAQ::OfflineModuleName(Int_t detectorID)
 {
   // Returns the name of the offline module
   // for a given detector (online naming convention)
-  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+  if (detectorID < 0 || (detectorID > kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
