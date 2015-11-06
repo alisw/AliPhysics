@@ -561,7 +561,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
           "itsChi2="<<itsChi2<<
           "trdChi2="<<trdChi2<<
           "tofChi2="<<tofChi2<<
-	  "tofBC="<<tofBC<<
+	  "tofBC="<<tofDiff<<
           //
           "trackITS.="<<&trackArrayITS[iPoint]<<  // ITS fit
           "trackTRD.="<<&trackArrayTRD[iPoint]<<  // TRD fit
@@ -624,7 +624,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "itsChi2="<<itsChi2<<
       "trdChi2="<<trdChi2<<
       "tofChi2="<<tofChi2<<
-      "tofBC="<<tofBC<<
+      "tofBC="<<tofDiff<<
       //
       "track.="<<ip<<                    // track parameters at inner wal of TPC
       "vecR.="<<&vecR<<
