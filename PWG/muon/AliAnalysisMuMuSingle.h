@@ -15,6 +15,7 @@
 
 #include "AliAnalysisMuonUtility.h"
 
+class AliMergeableCollectionProxy;
 class AliMuonTrackCuts;
 class TH2F;
 class TObjArray;
@@ -55,6 +56,10 @@ public:
 
   void SetRun(const AliInputEventHandler* eventHandler);
 
+  void MakePtEtaSpectraPerBunchCrossing() { fPtEtaSpectraPerBCX = kTRUE; }
+  
+  void MakeDCAHistos() { fDCAHistos = kTRUE; }
+  
 protected:
   
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
@@ -64,6 +69,9 @@ protected:
                                   const char* centrality,
                                   const char* trackCutName,
                                   const AliVParticle& part);
+  
+  void FillHistosForMuonTrack(AliMergeableCollectionProxy& proxy, const AliVParticle& track);
+
 
 private:
   
@@ -99,7 +107,10 @@ private:
   Bool_t fShouldSeparatePlusAndMinus; // whether or not to histogram mu+ and mu- separately
   TH2F* fAccEffHisto; // dimuon acc x eff (y vs pt)
   
-  ClassDef(AliAnalysisMuMuSingle,1) // implementation of AliAnalysisMuMuBase for single mu analysis
+  Bool_t fPtEtaSpectraPerBCX; // make pt vs eta spectra bunch by bunch (caution : much slower !)
+  Bool_t fDCAHistos; // make DCA histograms
+  
+  ClassDef(AliAnalysisMuMuSingle,3) // implementation of AliAnalysisMuMuBase for single mu analysis
 };
 
 #endif

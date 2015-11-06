@@ -74,6 +74,36 @@ fHasMC(kFALSE)
 }
 
 //_____________________________________________________________________________
+TString AliAnalysisMuMuBase::BuildPath(const char* eventSelection, const char* triggerClassName,
+                                       const char* centrality, const char* cut) const
+{
+  TString path;
+  
+  path.Form("/%s/%s/%s/",eventSelection,triggerClassName,centrality);
+  if ( strlen(cut) > 0 )
+  {
+    path += cut;
+    path += "/";
+  }
+  
+  return path;
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuBase::BuildMCPath(const char* eventSelection, const char* triggerClassName,
+                                          const char* centrality, const char* cut) const
+{
+  TString path = BuildPath(eventSelection,triggerClassName,centrality,cut);
+  
+  TString mcPath;
+  
+  mcPath.Form("/%s/%s",MCInputPrefix(),path.Data());
+  
+  return mcPath;
+}
+
+
+//_____________________________________________________________________________
 void
 AliAnalysisMuMuBase::CreateEventHistos(UInt_t dataType,
                                        const char* what,
