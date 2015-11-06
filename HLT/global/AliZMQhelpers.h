@@ -11,7 +11,8 @@ struct AliHLTDataTopic;
 //convenience typedefs:
 //define a map of strings
 typedef std::map<std::string,std::string> stringMap;
-typedef std::vector<std::pair<zmq_msg_t*, zmq_msg_t*> > aliZMQmsg;
+typedef std::pair<zmq_msg_t*, zmq_msg_t*> aliZMQframe;
+typedef std::vector<aliZMQframe> aliZMQmsg;
 typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
 
 //  Init and bind/connect a ZMQ socket using a string:
@@ -23,6 +24,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 // extract the socket mode from a config string
 int alizmq_socket_type(std::string config);
 int alizmq_socket_type(void* socket);
+const char* alizmq_socket_name(int socketType);
 
 //  --------------------------------------------------------------------------
 //  Attach a socket to zero or more endpoints. If endpoints is not null,

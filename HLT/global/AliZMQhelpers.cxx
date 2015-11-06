@@ -25,6 +25,9 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish)
     if (!endpoints)
         return 0;
 
+    if (strlen(endpoints)<2)
+        return 0;
+
     //  We hold each individual endpoint here
     char endpoint [256];
     while (*endpoints) {
@@ -63,6 +66,8 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
 {
     assert (self);
     if (!endpoints)
+        return 0;
+    if (strlen(endpoints)<2)
         return 0;
 
     //  We hold each individual endpoint here
@@ -124,10 +129,31 @@ int alizmq_socket_type(std::string config)
   else if (config.compare(0,6,"STREAM")==0) return ZMQ_STREAM;
   else if (config.compare(0,4,"PAIR")==0) return ZMQ_PAIR;
   else if (config.compare(0,4,"XSUB")==0) return ZMQ_XSUB;
-  else if (config.compare(0,4,"XPUB")==0) return ZMQ_XSUB;
+  else if (config.compare(0,4,"XPUB")==0) return ZMQ_XPUB;
   
   printf("Invalid socket type %s\n", config.c_str());
   return -1;
+}
+
+//_______________________________________________________________________________________
+const char* alizmq_socket_name(int socketType)
+{
+  switch (socketType)
+  {
+    case ZMQ_PUB: return "PUB";
+    case ZMQ_SUB: return "SUB";
+    case ZMQ_REP: return "REP";
+    case ZMQ_REQ: return "REQ";
+    case ZMQ_PUSH: return "PUSH";
+    case ZMQ_PULL: return "PULL";
+    case ZMQ_DEALER: return "DEALER";
+    case ZMQ_ROUTER: return "ROUTER";
+    case ZMQ_STREAM: return "STREAM";
+    case ZMQ_PAIR: return "PAIR";
+    case ZMQ_XPUB: return "XPUB";
+    case ZMQ_XSUB: return "XSUB";
+    default: return "INVALID";
+  }
 }
 
 //_______________________________________________________________________________________
@@ -140,12 +166,13 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   if (config.empty()) return 0;
 
   std::size_t found = config.find_first_of("@>-+");
-  if (found == std::string::npos || found == 0)
+  if (found == 0)
   {printf("misformed socket config string %s\n", config.c_str()); return 1;}
   
   zmqSocketMode = alizmq_socket_type(config);
-  zmqEndpoints=config.substr(found,std::string::npos);
-  Printf("socket mode: %i, endpoints: %s",zmqSocketMode, zmqEndpoints.c_str());
+  
+  if (found!=std::string::npos)
+  { zmqEndpoints=config.substr(found,std::string::npos); }
 
   bool newSocket=true;
   //init the ZMQ socket
@@ -184,6 +211,8 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     usleep(100000);
   }
   if (rc!=0) {printf("cannot attach to %s\n",zmqEndpoints.c_str()); return -1;}
+
+  Printf("socket mode: %s, endpoints: %s",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
   //reset the object containers
   return zmqSocketMode;
