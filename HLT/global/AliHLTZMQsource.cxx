@@ -39,8 +39,8 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fOutputDataTypes()
   , fZMQcontext(NULL)
   , fZMQin(NULL)
-  , fZMQsocketType(ZMQ_SUB)
-  , fZMQendpoint(">tcp://localhost:60201")
+  , fZMQsocketType(-1)
+  , fZMQinConfig("SUB")
   , fMessageFilter("")
   , fZMQrequestTimeout(1000)
   , fZMQneverBlock(kTRUE)
@@ -90,7 +90,7 @@ AliHLTComponentDataType AliHLTZMQsource::GetOutputDataType()
 void AliHLTZMQsource::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // overloaded from AliHLTComponent
-  constBase=10000000;
+  constBase=1000000;
   inputMultiplier=1.0;
 }
 
@@ -108,41 +108,22 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   int retCode=0;
   //process arguments
   ProcessOptionString(GetComponentArgs());
-  HLTMessage("options processed\n");
 
   int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
   HLTMessage(Form("ctx create rc %i errno %i",rc,errno));
-  fZMQin = zmq_socket(fZMQcontext, fZMQsocketType); 
-  HLTMessage(Form("socket create rc %i errno %i",rc,errno));
 
-  //set socket options
-  //default subscription to all
-  rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fMessageFilter.Data(), fMessageFilter.Length());
-  HLTMessage(Form("setopt ZMQ_SUBSCRIBE=\'%s\' arglength=%i rc=%i errno=%i", fMessageFilter.Data(), fMessageFilter.Length(), rc, errno));
+  //init ZMQ socket
+  rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQinConfig.Data(), 0, 10 ); 
+  if (!fZMQin || rc<0) 
+  {
+    HLTError("cannot initialize ZMQ socket %s, %s",fZMQinConfig.Data(),zmq_strerror(errno));
+    return -1;
+  }
   
-  int lingerValue = 10;
-  rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i rc=%i errno=%i", lingerValue, rc, errno));
-  int highWaterMarkSend = 20;
-  rc = zmq_setsockopt(fZMQin, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i rc=%i errno=%i",highWaterMarkSend, rc, errno));
-  int highWaterMarkRecv = 20;
-  rc = zmq_setsockopt(fZMQin, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i rc=%i errno=%i",highWaterMarkRecv, rc, errno));
-  int rcvtimeo = 0;
-  rc = zmq_setsockopt(fZMQin, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(rcvtimeo));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%i",rcvtimeo, rc, errno));
-  int sndtimeo = 0;
-  rc = zmq_setsockopt(fZMQin, ZMQ_SNDTIMEO, &sndtimeo, sizeof(sndtimeo));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
-
-  //connect or bind, after setting socket options
-  HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
-  rc = alizmq_attach(fZMQin,fZMQendpoint.Data());
-  if (rc==-1) retCode=-1;
-  HLTMessage(Form("  connect rc %i errno %i",rc,errno));
+  HLTMessage(Form("socket create ptr %p %s",fZMQin,(rc<0)?zmq_strerror(errno):""));
+  HLTImportant(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
 
   return retCode;
 }
@@ -198,11 +179,12 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     if (! (sockets[0].revents & ZMQ_POLLIN))
     {
       //if we got no reply reset the connection, probably source died
-      int lingerValue = 0;
-      rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-      rc = zmq_close(fZMQin);
-      fZMQin = zmq_socket(fZMQcontext, fZMQsocketType); 
-      rc = alizmq_attach(fZMQin,fZMQendpoint.Data());
+      rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQinConfig.Data(), 0, 10 ); 
+      if (rc<0) 
+      {
+        HLTError("cannot reinitialize ZMQ socket %s, %s",fZMQinConfig.Data(),zmq_strerror(errno));
+        return -1;
+      }
       
       //just return normally
       return 0;
@@ -255,16 +237,19 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   
-  if (option.EqualTo("ZMQsocketMode")) 
+  if (option.EqualTo("in"))
   {
-    if (value.EqualTo("SUB"))  fZMQsocketType=ZMQ_SUB;
-    if (value.EqualTo("PULL")) fZMQsocketType=ZMQ_PULL;
-    if (value.EqualTo("REQ"))  fZMQsocketType=ZMQ_REQ;
-  }
- 
-  if (option.EqualTo("ZMQendpoint"))
-  {
-    fZMQendpoint = value;
+    fZMQinConfig = value;
+    fZMQsocketType = alizmq_socket_type(value.Data());
+    switch (fZMQsocketType)
+    {
+      case ZMQ_REQ:
+      case ZMQ_PULL:
+      case ZMQ_SUB:
+      default:
+        HLTWarning("use of socket type %s for a source is currently unsupported!", alizmq_socket_type(value.Data()));
+        return -EINVAL;
+    }
   }
 
   if (option.EqualTo("MessageFilter"))

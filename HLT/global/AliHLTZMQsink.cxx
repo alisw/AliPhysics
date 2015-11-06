@@ -31,8 +31,8 @@ AliHLTZMQsink::AliHLTZMQsink() :
   AliHLTComponent()
   , fZMQcontext(NULL)
   , fZMQout(NULL)
-  , fZMQsocketType(ZMQ_PUB)
-  , fZMQendpoint("@tcp://*:60201")
+  , fZMQsocketType(-1)
+  , fZMQoutConfig("PUB")
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
@@ -100,36 +100,21 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   ProcessOptionString(GetComponentArgs());
 
   int rc = 0;
-  //init ZMQ stuff
+  //init ZMQ context
   fZMQcontext = zmq_ctx_new();
   HLTMessage(Form("ctx create ptr %p %s",fZMQcontext,(rc<0)?zmq_strerror(errno):""));
   if (!fZMQcontext) return -1;
-  fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
+
+  //init ZMQ socket
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig.Data(), 0, 10 ); 
+  if (!fZMQout || rc<0) 
+  {
+    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.Data(),zmq_strerror(errno));
+    return -1;
+  }
+  
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  if (!fZMQout) return -1;
-
-  //set socket options
-  int lingerValue = 10;
-  rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i %s", lingerValue, rc, (rc<0)?zmq_strerror(errno):""));
-  int highWaterMarkSend = 100;
-  rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i %s",highWaterMarkSend, rc, (rc<0)?zmq_strerror(errno):""));
-  int highWaterMarkRecv = 100;
-  rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i %s",highWaterMarkRecv, rc, (rc<0)?zmq_strerror(errno):""));
-  int rcvtimeo = 0;
-  rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i %s",rcvtimeo, rc, (rc<0)?zmq_strerror(errno):""));
-  int sndtimeo = 0;
-  rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i %s",sndtimeo, rc, (rc<0)?zmq_strerror(errno):""));
-
-  //connect or bind, after setting socket options
-  HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
-  rc = alizmq_attach(fZMQout,fZMQendpoint.Data());
-  if (rc==-1) retCode=-1;
-  HLTMessage(Form("connect rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+  HLTImportant(Form("ZMQ connected to: %s rc %i %s",fZMQoutConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
   
   return retCode;
 }
@@ -245,10 +230,12 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, sizeof(blockTopic), ZMQ_SNDMORE);
       HLTMessage(Form("send topic rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+      if (rc<0) HLTWarning("error sending topic frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
       int flags = 0;
       if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
       if (iSelectedBlock < (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
+      if (rc<0) HLTWarning("error sending data frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
       HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
     
@@ -258,8 +245,10 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
       HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+      if (rc<0) HLTWarning("error sending dummy REP topic");
       rc = zmq_send(fZMQout, 0, 0, 0);
       HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+      if (rc<0) HLTWarning("error sending dummy REP data");
     }
   }
 
@@ -273,24 +262,22 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   
-  //if (option.EqualTo("ZMQpollIn"))
-  //{
-  //  fZMQpollIn = (value.EqualTo("0"))?kFALSE:kTRUE;
-  //}
- 
-  if (option.EqualTo("ZMQsocketMode")) 
+  if (option.EqualTo("out"))
   {
-    if (value.EqualTo("PUB"))  fZMQsocketType=ZMQ_PUB;
-    if (value.EqualTo("REP"))  fZMQsocketType=ZMQ_REP;
-    if (value.EqualTo("PUSH")) fZMQsocketType=ZMQ_PUSH;
-    
-    //always poll when REPlying
-    fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
-  }
- 
-  if (option.EqualTo("ZMQendpoint"))
-  {
-    fZMQendpoint = value;
+    fZMQoutConfig = value;
+    fZMQsocketType = alizmq_socket_type(value.Data());
+    switch (fZMQsocketType)
+    {
+      case ZMQ_REP:
+        fZMQpollIn=kTRUE;
+      case ZMQ_PUSH:
+        fZMQpollIn=kFALSE;
+      case ZMQ_PUB:
+        fZMQpollIn=kFALSE;
+      default:
+        HLTWarning("use of socket type %s for a sink is currently unsupported!", alizmq_socket_type(value.Data()));
+        return -EINVAL;
+    }
   }
 
   if (option.EqualTo("pushback-period"))
