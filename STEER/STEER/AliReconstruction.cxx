@@ -2561,10 +2561,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 void AliReconstruction::CleanProcessedEvent()
 {
     //
+    //    if (fWriteESDfriend) ResetFriends();
+    ResetFriends(); // RS: Important: first reset friends to be sure objects owned by trackers are released
+
     fesd->Reset();
     fhltesd->Reset();
-    //    if (fWriteESDfriend) ResetFriends();
-    ResetFriends();
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fReconstructor[iDet]) fReconstructor[iDet]->FinishEvent();
@@ -4527,13 +4528,12 @@ Bool_t AliReconstruction::IsCosmicOrCalibSpecie() const {
 void AliReconstruction::ResetFriends() 
 {
   // destroy friends taking care to release objects eventually owned by detectors
-  if (!fesdf) return;
-  //
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!fTracker[iDet]) continue;
     if (fTracker[iDet]->OwnsESDObjects()) fTracker[iDet]->CleanESDFriendsObjects(fesd);
   }
   //
+  if (!fesdf) return;
   fesdf->~AliESDfriend();
   new (fesdf) AliESDfriend(); // Reset...
 }
