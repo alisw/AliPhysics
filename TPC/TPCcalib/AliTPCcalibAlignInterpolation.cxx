@@ -799,8 +799,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  if (sector<0) sector+=18;
 	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
 	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
-	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   (*vecZ)[ipoint]/localX, deltaPhi };
-	  if (xxx[0]==0) continue;
+	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   (*vecZ)[ipoint]/localX, (*vecDelta)[ipoint]};
+	  if (xxx[4]==0) continue;
 	  hisToFill[ihis]->Fill(xxx);	  
 	}	
       }
