@@ -53,6 +53,7 @@
 #include "AliTPCTransform.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCcalibAlignInterpolation.h"
+#include "AliPID.h"
 #include "TSystem.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
@@ -404,7 +405,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     if (!friendTrack) continue;      
     if (esdTrack->GetITSNcls()<4) continue;
     Double_t mass = esdTrack->GetMass();  // particle mass    
-    Double_t tofBC=esdTrack->GetTOFBunchCrossing();
+    Double_t tofDiff=esdTrack->GetTOFExpTDiffSpec(AliPID::kPion);
     // Get TPC seed
     TObject *calibObject=0;
     AliTPCseed *seed = 0;
