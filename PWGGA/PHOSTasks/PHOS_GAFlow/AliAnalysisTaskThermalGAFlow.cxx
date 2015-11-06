@@ -70,7 +70,7 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
 // END CUTS! //
 
 {
-  AliInfo("*** CONSTRUCTOR_TRUTH ***");
+  AliInfo("*** CONSTRUCTOR ***");
   DefineOutput(1, TList::Class());
 }
 
@@ -129,7 +129,7 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Clus_Trackdr->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_Trackdr);
 
-  TH1F *Clus_TrackMatchStd = new TH1F("Clus_TrackMatchStd", "Track Match Std", 100, -5, 5);
+  TH1F *Clus_TrackMatchStd = new TH1F("Clus_TrackMatchStd", "Track Match Std", 100, 0, 10);
   Clus_TrackMatchStd->GetXaxis()->SetTitle("TrackMatchStd");
   Clus_TrackMatchStd->GetYaxis()->SetTitle("dN/do");
   fAnalist->Add(Clus_TrackMatchStd);
@@ -140,7 +140,7 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   fAnalist->Add(Clus_TOF);
 
   Int_t Nbins = 150; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
-  Float_t Ptbins[151];
+  Double_t Ptbins[151];
   Double_t a = TMath::Power(10, 1);
   for(Int_t ibin = 0; ibin < 151; ibin++){
   Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/150.));
@@ -166,16 +166,6 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Clus_DispLambda->GetYaxis()->SetTitle("dN/dD");
   fAnalist->Add(Clus_DispLambda);
 
-  TH1F *Event_NClus_MB = new TH1F("Event_NClus_MB", "N Clusters per Event (MB)", 200, 0, 200);
-  Event_NClus_MB->GetXaxis()->SetTitle("N Clusters");
-  Event_NClus_MB->GetYaxis()->SetTitle("Counts");
-  fAnalist->Add(Event_NClus_MB);
-
-  TH1F *Event_NClus = new TH1F("Event_NClus", "N Clusters per Event", 200, 0, 200);
-  Event_NClus->GetXaxis()->SetTitle("N Clusters");
-  Event_NClus->GetYaxis()->SetTitle("Counts");
-  fAnalist->Add(Event_NClus);
-
   TH1F *Event_Vertexx = new TH1F("Event_Vertexx", "Vertex Position Along Beam Axis", 100, -50, 50);
   Event_Vertexx->GetXaxis()->SetTitle("Vertex X");
   Event_Vertexx->GetYaxis()->SetTitle("Counts");
@@ -195,6 +185,11 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Event_EPSP->GetXaxis()->SetTitle("|cos(Psi_V0A - Psi_V0C)|");
   Event_EPSP->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Event_EPSP);
+
+  TH2F *Event_EPAC = new TH2F("Event_EPAC", "Event Plane A and C Sides", 100, 0, TMath::Pi(), 100, 0, TMath::Pi()); 
+  Event_EPAC->GetXaxis()->SetTitle("V0A EP");
+  Event_EPAC->GetYaxis()->SetTitle("V0C_EP");
+  fAnalist->Add(Event_EPAC);
 
   TH2F *Event_N0ClusVsCent = new TH2F("Event_N0ClusVsCent","NClus vs Cent", 51, -2, 100, 200, 0, 200);
   Event_N0ClusVsCent->GetXaxis()->SetTitle("Cent");
@@ -241,20 +236,54 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Stat_Efficiency->GetYaxis()->SetTitle("Cut Number");
   fAnalist->Add(Stat_Efficiency);
 
-  TH2F *Meson_RawM = new TH2F("Meson_RawM", "Raw Diphoton Mass", 280,0,.7,500,0,25);
+//  TH2F *Meson_RawM = new TH2F("Meson_RawM", "Raw Diphoton Mass", 280,0,.7,500,0,25);
+//  Meson_RawM->GetXaxis()->SetTitle("M (GeV/c^2)");
+//  Meson_RawM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+//  fAnalist->Add(Meson_RawM);
+
+//  TH2F *Meson_XM = new TH2F("Meson_XM", "Mixed Event Diphoton Mass", 280,0,.7,500,0,25);
+//  Meson_XM->GetXaxis()->SetTitle("M (GeV/c^2)");
+//  Meson_XM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+//  fAnalist->Add(Meson_XM);
+
+  TH2F *Meson_RawM = new TH2F("Meson_RawM", "Raw Diphoton Mass", 400,0,1, Nbins, Ptbins);
   Meson_RawM->GetXaxis()->SetTitle("M (GeV/c^2)");
   Meson_RawM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
   fAnalist->Add(Meson_RawM);
 
-  TH2F *Meson_XM = new TH2F("Meson_XM", "Mixed Event Diphoton Mass", 280,0,.7,500,0,25);
+  TH2F *Meson_XM = new TH2F("Meson_XM", "Mixed Event Diphoton Mass", 400,0,1, Nbins, Ptbins);
   Meson_XM->GetXaxis()->SetTitle("M (GeV/c^2)");
   Meson_XM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
   fAnalist->Add(Meson_XM);
 
-  TH2F *Meson_M = new TH2F("Meson_M", "Subtracted Diphoton Mass", 280,0,.7,500,0,25);
-  Meson_M->GetXaxis()->SetTitle("M (GeV/c^2)");
-  Meson_M->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
-  fAnalist->Add(Meson_M);
+  TH2F *Cluster_M = new TH2F("Cluster_M", "Di-Cluster Mass", 400,0,1, Nbins, Ptbins);
+  Cluster_M->GetXaxis()->SetTitle("M (GeV/c^2)");
+  Cluster_M->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+  fAnalist->Add(Cluster_M);
+
+//Begin Pt slices of mass - incomplete
+/*  TH1F *fHistM_slice;
+  Int_t maslicebin = 500;
+  Double_t maslicemin = 0;
+  Double_t maslicemax = 0.7;
+  maslicenum = 31;
+  maslicewidth = 0.2;
+
+  for (Int_t slice = 0; slice < maslicenum; slice++){
+    char names[10], titles[19];
+    Int_t min = slice;
+    Int_t max = (slice+1);
+    sprintf(names, "fHistM_[%i]", slice);
+    sprintf(titles[slice], "(%i*%i)<Pt(diphoton)<(%i+1)*%i", min, maslicewidth, max, maslicewidth);
+
+    fHistM_slice = new TH1F(names[names], titles[slice], maslicebin, maslicemin, maslicemax);
+    fHistM_slice->GetXaxis()->SetTitle("M (GeV/c^2)");
+    fHistM_slice->GetYaxis()->SetTitle("dN/dM");
+    fHistM_slice->SetMarkerStyle(kFullCircle);
+    fAnalist->Add(fHistM_slice);
+  }
+*/
+//End Pt slices of mass
 
   PostData(1, fAnalist);
 }
@@ -262,17 +291,25 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
 //______________________________Main Loop, Called for each Event_____________//
 
 void AliAnalysisTaskThermalGAFlow::UserExec( Option_t *){
+//printf("Anything.\n");
+FillHist("Stat_Efficiency", 15);
+PostData(1,fAnalist);
 CaptainsLog(0);
 
 //Step 0: Configure the environment - take out your toys
 ConfigureEvent();
+FillHist("Stat_Efficiency", 16);
+PostData(1,fAnalist);
 if(fRunNumber != fEvent->GetRunNumber()){fRunNumber = fEvent->GetRunNumber(); InitializeGeometry();}
+FillHist("Stat_Efficiency", 17);
+PostData(1,fAnalist);
 ScanBasicEventParameters();
 CaptainsLog(1);
 
 //Step 1: Internal Triggering and QA - set up your toys
 if(!ApplyEventCuts()){PostData(1,fAnalist);}
 else {
+FillHist("Stat_Efficiency", 18);
 ScanClusters();
 SaveEvent();
 CaptainsLog(2);
@@ -281,10 +318,11 @@ CaptainsLog(2);
 //printf("fSextant = %p\n", fSextant);
 MesonExclusion();
 CaptainsLog(3);
-
 //Step 3: Compute thermal photon spectrum - have fun and be happy
+Hypnotic();
 
 //Step 4: Compute thermal photon flow - put away your toys when you're done with them 
+//delete fSextant;
 fSextant = 0x0;
 PostData(1,fAnalist);
 }
@@ -361,6 +399,8 @@ while(V0C_RP > TMath::Pi()){V0C_RP = V0C_RP - TMath::Pi();}
 
 RP = (V0A_RP + V0C_RP)/2;;
 RPscaler = TMath::Abs(TMath::Cos((V0A_RP - V0C_RP)));
+
+FillHist("Event_EPAC", V0A_RP, V0C_RP);
 
 fevPlane = RP;
 fevScaler = RPscaler;
@@ -482,7 +522,6 @@ return 1;
 
 //___________________________Apply Charged Particle Veto____________________________//
 Bool_t AliAnalysisTaskThermalGAFlow::ApplyCPCuts(AliESDCaloCluster *cluster){
-
 //Double_t dx = cluster->GetTrackDx();
 //Double_t dz = cluster->GetTrackDz();
 //  Double_t trackDr = sqrt(dx*dx + dz*dz);
@@ -614,12 +653,16 @@ cluster->GetPosition(cellGlobalPosArr);
 cluster->GetMomentum(p, fvertexx);
 
 AliCaloPhoton* photon = new AliCaloPhoton(p.Px(), p.Py(), p.Pz(), p.E());
+photon->SetMomV2(&p);
 photon->SetEMCx(cellGlobalPosArr[0]);
 photon->SetEMCy(cellGlobalPosArr[1]);
 photon->SetEMCz(cellGlobalPosArr[2]);
 
 if(photon == 0x0){printf("The photon is null. That shouldn't happen."); return;}
 fSextant->AddLast(photon);
+
+//AliCaloPhoton *y = static_cast<AliCaloPhoton*> (fSextant->At(fSextant->GetLast()));
+//printf("pPx: %f -- y: %f: -- yPx: %f\n", p.Px(), photon->GetMomV2()->Px() ,y->GetMomV2()->Px()  );
 
 //printf("Photon Saved! \n");
 
@@ -665,39 +708,36 @@ void AliAnalysisTaskThermalGAFlow::MesonExclusion(){
 //printf("Check\n");
 if(fSextant == 0x0){return;}
 //printf("Me!!\n");
+//Use the mixed event method.
 
 AliCaloPhoton *y1, *y2;
-Double_t piarr[2];
 TList* atlas = ReferenceAtlas(fvertexx[2], fcentrality, fevPlane);
 
 for(Int_t i1 = 0; i1 < fSextant->GetEntriesFast(); i1++){
  y1 = static_cast<AliCaloPhoton*> (fSextant->At(i1));
  for(Int_t i2 = i1+1; i2 < fSextant->GetEntriesFast(); i2++){
   y2 = static_cast<AliCaloPhoton*> (fSextant->At(i2));
-  InvMass(y1, y2, piarr);
-//  printf("y1: %p, y2: %p, piarr[1]: %f, piarr[2]: %f \n", y1, y2, piarr[1], piarr[2]);
-  FillHist("Meson_RawM", piarr[1], piarr[2]);
+//  printf("y1: %p, y2: %p, piarr[1]: %f, piarr[2]: %f \n", y1, y2, PionMass(y1, y2), PionPt(y1, y2));
+  FillHist("Meson_RawM", PionMass(y1, y2), PionPt(y1, y2));
  }
  for(TObjLink* XLink = atlas->FirstLink(); XLink != atlas->LastLink(); XLink = XLink->Next()){
   //Don't match to the last link.  That's the Sextant.
   TObjArray *XEvent = static_cast<TObjArray*> (XLink->GetObject());
   for(Int_t ix2 = 0; ix2 < XEvent->GetEntriesFast(); ix2++){ 
    y2 = static_cast<AliCaloPhoton*> (XEvent->At(ix2));
-   InvMass(y1, y2, piarr);
-   FillHist("Meson_XM", piarr[1], piarr[2]);
+   FillHist("Meson_XM", PionMass(y1, y2), PionPt(y1, y2));
   }
  }
 }
-
 }
 
 //____________________________Get the Event List you need___________________________//
 TList* AliAnalysisTaskThermalGAFlow::ReferenceAtlas(Double_t vertx, Double_t cent, Double_t evplane){
 TList* atlas;
 Int_t index;
-Int_t vertxbins = 10;
-Int_t centbins = 10;
-Int_t evplanebins = 10;
+Int_t vertxbins = 5;
+Int_t centbins = 5;
+Int_t evplanebins = 5;
 
 Int_t vertx_index = std::floor( ((vertx / (2*fMaxVertexx)) + 0.5) * vertxbins );
 Int_t cent_index = std::floor( (((cent - fMinCentrality) / (fMaxCentrality - fMinCentrality)) * centbins) );
@@ -728,19 +768,24 @@ return atlas;}
 }
 
 //____________________________Compute Invariant Mass________________________________//
-Double_t *AliAnalysisTaskThermalGAFlow::InvMass(AliCaloPhoton* y1, AliCaloPhoton* y2, Double_t piarr[2]){
+Double_t AliAnalysisTaskThermalGAFlow::PionMass(AliCaloPhoton* y1, AliCaloPhoton* y2){
 const TLorentzVector *p1 = y1->GetMomV2();
 const TLorentzVector *p2 = y2->GetMomV2();
 TLorentzVector ppi = *p1 + *p2;
 
 Double_t Mpi = sqrt(ppi.E()*ppi.E()-ppi.Px()*ppi.Px()-ppi.Py()*ppi.Py()-ppi.Pz()*ppi.Pz());
-Double_t Ptshared = sqrt((ppi.Px()*ppi.Px()+ppi.Py()*ppi.Py()));
-piarr[1] = Mpi;
-piarr[2] = Ptshared;
-
-return piarr;
+return Mpi;
 }
 
+//____________________________Compute Pion Pt________________________________//
+Double_t AliAnalysisTaskThermalGAFlow::PionPt(AliCaloPhoton* y1, AliCaloPhoton* y2){
+const TLorentzVector *p1 = y1->GetMomV2();
+const TLorentzVector *p2 = y2->GetMomV2();
+TLorentzVector ppi = *p1 + *p2;
+
+Double_t Ptshared = sqrt((ppi.Px()*ppi.Px()+ppi.Py()*ppi.Py()));
+return Ptshared;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                                                                                  //
@@ -750,6 +795,33 @@ return piarr;
 //                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////
 
+//___________________________Hypnotic Protocol_____________________________________//
+void AliAnalysisTaskThermalGAFlow::Hypnotic(){
+
+TLorentzVector p1, p2, p;
+AliESDCaloCluster *cluster1, *cluster2;
+
+for(Int_t i1cluster = 0; i1cluster < fesd->GetNumberOfCaloClusters(); i1cluster++) {
+ cluster1 = fesd->GetCaloCluster(i1cluster);
+ if(WeakCuts(cluster1)){
+  for(Int_t i2cluster = i1cluster+1; i2cluster < fesd->GetNumberOfCaloClusters(); i2cluster++)  {
+   cluster2 = fesd->GetCaloCluster(i2cluster);
+   if(WeakCuts(cluster2)){
+    cluster1->GetMomentum(p1, fvertexx);
+    cluster2->GetMomentum(p2, fvertexx);
+    p=p1+p2;
+    FillHist("Cluster_M", sqrt(p.E()*p.E()-p.Px()*p.Px()-p.Py()*p.Py()-p.Pz()*p.Pz()), sqrt((p.Px()*p.Px()+p.Py()*p.Py()))); 
+}}}}
+
+}
+
+//_________________________WeakCuts______________________________________//
+Bool_t AliAnalysisTaskThermalGAFlow::WeakCuts(AliESDCaloCluster *cluster){
+if(!(cluster->IsPHOS())){return 0;}
+if(!(cluster->GetNCells() >= fMinCells)){return 0;}
+if(!(cluster->E() >= fMinE)){return 0;}
+return 1;
+}
 //___________________________Get the Position of the center of the cluster_________//
 Int_t *AliAnalysisTaskThermalGAFlow::GetPos(AliESDCaloCluster* cluster, Int_t x[4]){
   Float_t cellGlobalPosArr[3];
