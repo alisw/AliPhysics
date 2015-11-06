@@ -32,6 +32,7 @@ TString fHistName = "histogram";
 TString fHistDistribution = "exp(-0.5*((x-0.)/0.1)**2)";
 float fHistRangeLow = -0.5;
 float fHistRangeHigh = 0.5;
+int fHistNBins = 100;
     
 TString GetFullArgString(int argc, char** argv);
 int ProcessOptionString(TString arguments);
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
   if (fZMQsocketModeOUT < 0) return 1;
 
   TF1 formula("histDistribution",fHistDistribution);
-  fHistogram = new TH1F(fHistName, fHistName, 200, fHistRangeLow, fHistRangeHigh);
+  fHistogram = new TH1F(fHistName, fHistName, fHistNBins, fHistRangeLow, fHistRangeHigh);
 
   //main loop
   int iterations=0;
@@ -117,6 +118,10 @@ int ProcessOption(TString option, TString value)
     TString highString = value(value.Index(',')+1,999);
     fHistRangeLow = lowString.Atof();
     fHistRangeHigh = highString.Atof();
+  }
+  else if (option.EqualTo("nbins"))
+  {
+    fHistNBins = value.Atoi();
   }
   else if (option.EqualTo("count"))
   {
