@@ -64,7 +64,7 @@ private:
   Bool_t    fTransErr;     // flag which says if there was a transmission error (gap) or not
   UInt_t    fNWord2;
   ULong64_t *fIntRun2;     // [fNWord2]
-  UShort_t  *fBC2;
+  UShort_t  *fBC2;         //[fNWord2]
   Bool_t    fIncomplete2;   // flag which says if the IR is incomplete or not
   Bool_t    fTransErr2;     // flag which says if there was a transmission error (gap) or not
 
