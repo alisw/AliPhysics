@@ -54,6 +54,7 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   , fVerbosity(0)
   , fClusters(NULL)
   , fCurrentSector(-1)
+  , fCurrentRow(-1)
   , fpDecoder(NULL)
   , fTPCParam(NULL)
 {
@@ -94,6 +95,11 @@ void AliHLTTPCClusterAccessHLTOUT::Execute(const char *method,  const char *para
     if (error) *error=iResult;
     return;
   }
+  if (strcmp(method, "prepare_copy")==0) {
+    int iResult=ScanParameters(params);
+    if (error) *error=iResult;
+    return;
+  }
   if (strcmp(method, "verbosity")==0) {
     int iResult=0;
     if (params) {
@@ -128,24 +134,7 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
   AliTPCClustersRow* rowcl=dynamic_cast<AliTPCClustersRow*>(&object);
   if (rowcl) {
     int index=rowcl->GetID();
-    if (!fTPCParam) {
-      AliFatal("TPCParam object not initialized, use 'Copy()' funtion to initialize");
-      return;
-    }
-    int sector=-1;
-    int row=-1;
-    if (!fTPCParam->AdjustSectorRow(index, sector, row)) {
-      AliFatal(Form("failed to get sector and row for index %d", index));
-      return;
-    }
-    fClusters->FillSectorArray(rowcl->GetArray(), sector, row);
-    return;
-  }
-  AliTPCParam* tpcparam=dynamic_cast<AliTPCParam*>(&object);
-  if (tpcparam) {
-    // FIXME: can nor make a copy of the TPCparam object because
-    // there is no appropriate copy constructor or assignment operator
-    const_cast<AliHLTTPCClusterAccessHLTOUT*>(this)->fTPCParam=tpcparam;
+    fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow);
     return;
   }
   return TObject::Copy(object);
@@ -155,10 +144,9 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
 void AliHLTTPCClusterAccessHLTOUT::Clear(Option_t * option)
 {
   /// inherited from TObject: cleanup
-  if (strcmp(option, "event")==0) {
-    if (fClusters) fClusters->Clear();
-    fCurrentSector=-1;
-  }
+  if (fClusters) fClusters->Clear(option);
+  fCurrentSector=-1;
+  fCurrentRow=-1;
 }
 
 void AliHLTTPCClusterAccessHLTOUT::Print(Option_t *option) const
@@ -167,14 +155,13 @@ void AliHLTTPCClusterAccessHLTOUT::Print(Option_t *option) const
   if (fClusters) fClusters->Print(option);
 }
 
-int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
+int AliHLTTPCClusterAccessHLTOUT::ScanParameters(const char* params)
 {
-  /// process the cluster data from HLTOUT and fill array
-  /// the cluster data can be in many different formats, e.g.
-  /// raw or compressed
-  int iResult=0;
   TString strparams(params);
   int sector=-1;
+  int row=-1;
+  fCurrentSector=-1;
+  fCurrentRow=-1;
   std::auto_ptr<TObjArray> tokens(strparams.Tokenize(" "));
   if (!tokens.get()) return -ENOMEM;
   for (int i=0; i< tokens->GetEntriesFast(); i++) {
@@ -186,24 +173,42 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       argument.ReplaceAll("sector=", "");
       sector=argument.Atoi();
     }
+    if (argument.BeginsWith("row=")) {
+      argument.ReplaceAll("row=", "");
+      row=argument.Atoi();
+    }
   }
   if (sector<0) {
     AliError("invalid argument, please specify \"sector=sectorno\"");
     return -EINVAL;
   }
-  if (sector>=76) {
+  if (sector>=72) {
     AliError(Form("invalid sector number %d", sector));
     return -EINVAL;
   }
+
+  fCurrentSector=sector;
+  fCurrentRow=row;
+
+  return 0;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
+{
+  /// process the cluster data from HLTOUT and fill array
+  /// the cluster data can be in many different formats, e.g.
+  /// raw or compressed
+  int iResult=0;
+  iResult = ScanParameters(params);
+  if (iResult<0) return iResult;
 
   if (!fClusters) {
     fClusters=new AliRawClusterContainer;
   }
   if (!fClusters) return -ENOMEM;
 
-  if (fCurrentSector>=0) {
+  if (fClusters->HaveData()) {
     // cluster container already filled
-    fCurrentSector=sector;
 //     TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
 //     if (!pArray) {
 //       AliError(Form("can not get cluster array for sector %d", sector));
@@ -407,7 +412,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 //     AliInfo(Form("extracted HLT clusters: %d, converted HLT clusters: %d", nExtractedClusters, nConvertedClusters));
 //   }
 
-  fCurrentSector=sector;
+  fClusters->MarkValid();
 //   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
 //   if (!pArray) {
 //     AliError(Form("can not get cluster array for sector %d", sector));
@@ -421,7 +426,7 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::AliRawClusterContainer()
   : fClusterMaps()
   , fSectorArray(new TClonesArray(AliTPCclusterMI::Class()))
   , fIterator()
-
+  , fHaveData(false)
 {
   /// constructor
   for (int i=0; i<72; i++) {
@@ -487,14 +492,18 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterEntry* AliHLTTPCClusterAccessHLTOUT::
   return &map.back();
 }
 
-void  AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Clear(Option_t* /*option*/)
+void  AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Clear(Option_t* option)
 {
   /// internal cleanup
-  {
+  if (strcmp(option, "event")==0) {
     for (vector<AliRawClusterEntryVector*>::iterator i=fClusterMaps.begin(); i!=fClusterMaps.end(); i++)
       if (*i) (*i)->clear();
+    if (fSectorArray) fSectorArray->Clear("C");
+    fHaveData=false;
   }
-  if (fSectorArray) fSectorArray->Clear();
+  if (strcmp(option, "sector")==0) {
+    if (fSectorArray) fSectorArray->Clear("C");
+  }
 }
 
 TObjArray* AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::GetSectorArray(unsigned sector) const
