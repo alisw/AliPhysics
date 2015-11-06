@@ -175,8 +175,8 @@ TParticle*  AliGenEposReader::NextParticle()
   std::pair <std::multimap<Int_t,Int_t>::iterator, std::multimap<Int_t,Int_t>::iterator> ret = fMothersMap.equal_range(fCurrentParticle);
   TParticle* particle =
      new TParticle(EposToPdg(id[fCurrentParticle]),
-		   ist[fCurrentParticle],
-		   (zus[fCurrentParticle]>0&&ior[fCurrentParticle]!=fCurrentParticle) ? ior[fCurrentParticle]:-1,
+		   (ist[fCurrentParticle]==0) ? 1 : 0,
+		   (zus[fCurrentParticle]>0&&ior[fCurrentParticle]!=fCurrentParticle) ? ior[fCurrentParticle] : -1,
 		   -1,
 		   ret.first->second,
 		   ret.first->second+fMothersMap.count(fCurrentParticle)-1,
@@ -188,7 +188,6 @@ TParticle*  AliGenEposReader::NextParticle()
 		   y[fCurrentParticle],
 		   z[fCurrentParticle],
 		   t[fCurrentParticle]);
-  if (ist[fCurrentParticle]==0) particle->SetBit(kTransportBit);
     
   if (particle && particle->GetStatusCode()==1) {
       particle->SetBit(kTransportBit);
