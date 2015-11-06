@@ -85,27 +85,27 @@ void SetCC(Int_t flag=0)
     dbFolder  ="local://InitCalibDB";
     firstRun  =  0;
     lastRun   =  AliCDBRunRange::Infinity();
-    objFormat = "EMCAL initial gain factors and pedestals";
+    objFormat = "EMCAL constant time shift of 600 ns";
   }
   else if (flag == 1)
   {
     dbFolder  ="local://DeCalibDB";
     firstRun  =  0;
     lastRun   = AliCDBRunRange::Infinity();
-    objFormat = "EMCAL random pedestals and ADC gain factors (12x48x24)";
+    objFormat = "EMCAL random time shift";
   }
   else if (flag == 2)
   {
     dbFolder  ="local://DeCalibGausDB"; // create directory DeCalibDB in current directory
     firstRun  =  0;
     lastRun   = AliCDBRunRange::Infinity();
-    objFormat = "EMCAL random pedestals and gausian ADC gain factors (12x48x24)";
+    objFormat = "EMCAL random gaussian time shift";
   }
   
   AliEMCALCalibTime *calibti=new AliEMCALCalibTime("EMCAL");
   
-  Float_t timeShift0[4] = {600.,625.,600.,625.} ;  
-  Float_t timeShift [4] = {  0.,  0.,  0.,  0.} ;  
+  Float_t timeShift0[] = {600.,600.,600.,600.} ;  
+  Float_t timeShift [] = {600.,600.,600.,600.} ;  
   
   TRandom rn;
   Int_t nSMod = AliEMCALCalibTime::fgkECALDCALModules;
@@ -126,7 +126,7 @@ void SetCC(Int_t flag=0)
           if (flag == 1)
           {
             // Spread calibration coefficients uniformly 
-            timeShift[bc]  = rn.Uniform(550,800);
+            timeShift[bc]  = rn.Uniform(500,700);
           }
           else if (flag == 2)
           { // Gaussian
