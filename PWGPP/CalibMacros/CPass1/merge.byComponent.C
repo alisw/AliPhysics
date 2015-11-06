@@ -9,7 +9,7 @@ void merge(TString component, const Char_t *inputstring)
 
   /* copy only */
   if (component == "COPY") {
-    CopyCPass(inputstring, "AliESDfriends_v1.root");
+    CopyCPass(inputstring, "CalibObjects.root");
     return;
   }
   

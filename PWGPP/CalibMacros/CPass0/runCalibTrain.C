@@ -4,7 +4,7 @@
   - requires OCDB access (default set to "raw://")
   - requires run number as argument to init OCDB
   - calls LoadLibraries.C, ConfigCalibTrain.C and AddTaskTPCCalib.C macros
-  - output AliESDfriends_v1.root with TPC and TRD calibration objects are created
+  - output CalibObjects.root with TPC and TRD calibration objects are created
 
   Example:
   .L $ALICE_PHYSICS/ANALYSIS/macros/runCalibTrain.C
@@ -82,11 +82,11 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   mgr->SetInputEventHandler(inpHandler);
   
   // Output
-  const char *outFile = "AliESDfriends_v1.root";
+  const char *outFile = "CalibObjects.root";
   AliESDHandler* esdHandler   = new AliESDHandler();
   mgr->SetOutputEventHandler(esdHandler);
-  esdHandler->SetOutputFileName(outFile);
-  mgr->SetCommonFileName(outFile);
+  //esdHandler->SetOutputFileName(outFile);
+  //mgr->SetCommonFileName(outFile);
   //  
   // Detector Tasks
   //
