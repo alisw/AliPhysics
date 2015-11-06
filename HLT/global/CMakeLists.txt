@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
                     ${AliRoot_SOURCE_DIR}/HLT/ITS
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib
+                    ${AliRoot_SOURCE_DIR}/HLT/CALO
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
@@ -121,7 +122,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
+set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib AliHLTCalo)
 if(ZEROMQ_FOUND)
   set(LIBDEPS ${LIBDEPS} ${ZEROMQ_LIBRARIES})
 endif(ZEROMQ_FOUND)
