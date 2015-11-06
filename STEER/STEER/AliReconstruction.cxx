@@ -2537,19 +2537,23 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
   }
     
-    gSystem->GetProcInfo(&procInfo);
-    Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
-    Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
-    Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
-    aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
-    aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
-    aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
-    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
-                iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
-    oldMres=procInfo.fMemResident;
-    oldMvir=procInfo.fMemVirtual;
-    oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
+  gSystem->GetProcInfo(&procInfo);
+  Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
+  Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
+  Float_t dCPU=procInfo.fCpuUser+procInfo.fCpuSys-oldCPU;
+  aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
+  aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
+  aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
+  AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
+	       iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
+  oldMres=procInfo.fMemResident;
+  oldMvir=procInfo.fMemVirtual;
+  oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
   
+  if (fTracker[AliQAv1::kTPC]) {
+    fTracker[AliQAv1::kTPC]->UnloadClusters();
+    AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[AliQAv1::kTPC],iEvent), AliQAv1::kTPC,4, iEvent);
+  }
     
   return kTRUE;
 }
@@ -2559,10 +2563,8 @@ void AliReconstruction::CleanProcessedEvent()
     //
     fesd->Reset();
     fhltesd->Reset();
-    if (fWriteESDfriend) {
-      fesdf->~AliESDfriend();
-      new (fesdf) AliESDfriend(); // Reset...
-    }
+    //    if (fWriteESDfriend) ResetFriends();
+    ResetFriends();
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       if (fReconstructor[iDet]) fReconstructor[iDet]->FinishEvent();
@@ -3262,9 +3264,13 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
   
   for (Int_t iDet = 3; iDet >= 0; iDet--) {
     if (!fTracker[iDet]) continue;
+    // 
+    // RS: TPC clusters will be unloaded in the end of process event, since used in the friends calib objects
     // unload clusters
-    fTracker[iDet]->UnloadClusters();
-    AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,4, eventNr);
+    if (iDet!=1) {
+      fTracker[iDet]->UnloadClusters();
+      AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,4, eventNr);
+    }
     fLoader[iDet]->UnloadRecPoints();
     AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
@@ -4516,6 +4522,22 @@ Bool_t AliReconstruction::IsCosmicOrCalibSpecie() const {
   return isOK;
 }
 
+
+//______________________________________________________________________________
+void AliReconstruction::ResetFriends() 
+{
+  // destroy friends taking care to release objects eventually owned by detectors
+  if (!fesdf) return;
+  //
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (!fTracker[iDet]) continue;
+    if (fTracker[iDet]->OwnsESDObjects()) fTracker[iDet]->CleanESDFriendsObjects(fesd);
+  }
+  //
+  fesdf->~AliESDfriend();
+  new (fesdf) AliESDfriend(); // Reset...
+}
+
 //______________________________________________________________________________
 void AliReconstruction::WriteESDfriend() {
   // Fill the ESD friend in the tree. The required fraction of ESD friends is stored
@@ -4565,8 +4587,7 @@ void AliReconstruction::WriteESDfriend() {
   }
   
   if (!isSelected) {
-    fesdf->~AliESDfriend();
-    new (fesdf) AliESDfriend(); // Reset...
+    ResetFriends();
     fesdf->SetSkipBit(kTRUE);
   }
   //

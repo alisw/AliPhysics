@@ -113,6 +113,7 @@ public:
   void SetDiamondProfileSPD(AliESDVertex *dp) {fDiamondProfileSPD=dp;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
   void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
+  void ResetFriends();
 		
   void SetSkipIncompleteDAQ(Bool_t v=kTRUE) { fSkipIncompleteDAQ = v; }
   Bool_t GetSkipIncompleteDAQ() { return fSkipIncompleteDAQ; }
