@@ -15,6 +15,7 @@ class TTree;
 struct AliHLTTracksData;
 class AliTPCclusterMI;
 class TH2I;
+class TH2F;
 
 /**
  * @class AliHLTGlobalPromptRecoQAComponent
@@ -86,9 +87,10 @@ protected:
   TH2I* fHistSDDclusters_SDDrawSize;
   TH2I* fHistITSSAtracks_SPDclusters;
   TH2I* fHistSPDclusters_SSDclusters;
-  TH2I* fHistTPCHLTclusters_TPCHLTclustersSize;
+  TH2F* fHistTPCHLTclusters_TPCCompressionRatio;
   TH2I* fHistTPCtracks_TPCtracklets;
   TH2I* fHistITStracks_ITSOutTracks;
+  TH2I* fHistTPCClusterSize_TPCCompressedSize;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };
