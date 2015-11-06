@@ -1,0 +1,107 @@
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        *
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Salvatore Aiola                                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+#ifndef ALIHLTEMCALTRIGGERQACOMPONENT_H
+#define ALIHLTEMCALTRIGGERQACOMPONENT_H
+
+/**
+ * @file   AliHLTEMCALTriggerQAComponent.h
+ * @author Salvatore Aiola
+ * @date   Nov. 2, 2015
+ * @brief  A trigger QA component for EMCAL HLT
+ */
+
+#include "AliHLTCaloProcessor.h"
+
+class AliEMCALTriggerQA;
+class AliEMCALTriggerPatchInfo;
+class AliEMCALTriggerBitConfig;
+class AliHLTCaloTriggerPatchDataStruct;
+class AliHLTEMCALGeometry;
+class AliEMCALGeometry;
+
+/**
+ * @class AliHLTEMCALTriggerQAComponent
+ * @brief HLT component for EMCAL/DCAL trigger QA
+ */
+class AliHLTEMCALTriggerQAComponent : public AliHLTCaloProcessor {
+public:
+  AliHLTEMCALTriggerQAComponent();
+  virtual ~AliHLTEMCALTriggerQAComponent();
+
+  void SetTriggerBitConfig(const AliEMCALTriggerBitConfig* const config) { fTriggerBitConfig = config; }
+	
+	/**
+	 *
+	 * @param evtData
+	 * @param blocks
+	 * @param trigData
+	 * @param outputPtr
+	 * @param size
+	 * @param outputBlocks
+	 * @return
+	 */
+  int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+	      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+	      std::vector<AliHLTComponentBlockData>& outputBlocks);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  const char* GetComponentID();
+
+  /** interface function, see @ref AliHLTComponent for description */
+  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  AliHLTComponentDataType GetOutputDataType();
+
+  /** interface function, see @ref AliHLTComponent for description */
+  void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  AliHLTComponent* Spawn();
+
+
+protected:
+  /** interface function, see @ref AliHLTComponent for description */
+   int DoInit(int argc, const char** argv);
+
+   /** interface function, see @ref AliHLTComponent for description */
+   virtual int Deinit();
+   
+   /** converts the HLT trigger patch flat structure into an AliEMCALTriggerPatchInfo object */
+   void HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const;
+
+   /** initialise the geometry */
+   void InitialiseGeometry();
+
+   const AliEMCALTriggerBitConfig       *fTriggerBitConfig ;  ///< Trigger bit configuration, aliroot-dependent
+   Bool_t                                fHistoResetOnPush ;  //   Reset histograms when data is pushed
+   int                                   fLocalEventCount  ;  //!  Event counter
+   AliHLTEMCALGeometry                  *fGeometry         ;  //!  EMCal geometry
+
+private:
+   /** Pointer to the trigger QA class */
+   AliEMCALTriggerQA                          *fTriggerQAPtr;            //! Transient
+
+   /** Copy constructor,  not implemented */
+   AliHLTEMCALTriggerQAComponent(const AliHLTEMCALTriggerQAComponent&);
+
+   /** Assignment operator, not implemented */
+   AliHLTEMCALTriggerQAComponent& operator=(const AliHLTEMCALTriggerQAComponent);
+
+   ClassDef(AliHLTEMCALTriggerQAComponent, 1);
+};
+
+#endif

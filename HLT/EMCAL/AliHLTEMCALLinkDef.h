@@ -26,5 +26,6 @@
 #pragma link C++ class AliHLTEMCALTriggerMakerComponent+;
 #pragma link C++ class AliHLTEMCALTriggerRawDigitMaker+;
 #pragma link C++ class AliHLTEMCALTriggerDataMakerComponent+;
+#pragma link C++ class AliHLTEMCALTriggerQAComponent+;
 
 #endif // __CINT__

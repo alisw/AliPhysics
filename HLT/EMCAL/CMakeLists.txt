@@ -57,6 +57,7 @@ set(SRCS
     AliHLTEMCALTriggerDataMakerComponent.cxx
     AliHLTEMCALTriggerMaker.cxx
     AliHLTEMCALTriggerMakerComponent.cxx
+    AliHLTEMCALTriggerQAComponent.cxx
    )
 
 # Headers from sources
