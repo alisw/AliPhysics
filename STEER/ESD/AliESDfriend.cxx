@@ -27,7 +27,7 @@
 
 ClassImp(AliESDfriend)
 
-AliESDfriend::AliESDfriend(): AliVfriendEvent(), fTracks("AliESDfriendTrack",1),
+AliESDfriend::AliESDfriend(): AliVfriendEvent(), fTracks(1),
   fESDVZEROfriend(NULL),
   fESDTZEROfriend(NULL),
   fESDADfriend(NULL),
@@ -37,6 +37,7 @@ AliESDfriend::AliESDfriend(): AliVfriendEvent(), fTracks("AliESDfriendTrack",1),
  //
  // Default constructor
  //
+  fTracks.SetOwner(kTRUE);
   for (Int_t i=0;i<72;i++)
   {
     fNclustersTPC[i]=0;

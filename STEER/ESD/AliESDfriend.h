@@ -43,11 +43,11 @@ public:
   }
   Int_t GetEntriesInTracks() const {return fTracks.GetEntries();}
   void AddTrack(const AliESDfriendTrack *t) {
-     new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
+    fTracks.Add((AliESDfriendTrack*)t);
   }
 
   void AddTrackAt(const AliESDfriendTrack *t, Int_t i) {
-     new(fTracks[i]) AliESDfriendTrack(*t);
+    fTracks.AddAtAndExpand((AliESDfriendTrack*)t,i);
   }
 
   void SetVZEROfriend(const AliESDVZEROfriend * obj);
@@ -80,7 +80,7 @@ public:
   void SetNclustersTPCused(UInt_t sector, Int_t occupancy) {if (sector<72) fNclustersTPCused[sector]=occupancy;}
 
 protected:
-  TClonesArray fTracks;    // ESD friend tracks
+  TObjArray fTracks;    // ESD friend tracks
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data
   AliESDTZEROfriend *fESDTZEROfriend; // TZERO calibration object
   AliESDADfriend *fESDADfriend; // AD object containing complete raw data
@@ -88,7 +88,7 @@ protected:
   Int_t fNclustersTPC[72]; //cluster occupancy per sector per sector
   Int_t fNclustersTPCused[72]; //number of clusters used in tracking per sector
 
-  ClassDef(AliESDfriend,5) // ESD friend
+  ClassDef(AliESDfriend,6) // ESD friend
 };
 
 #endif

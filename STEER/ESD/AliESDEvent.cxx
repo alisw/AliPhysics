@@ -1487,8 +1487,8 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
     if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     const AliESDfriendTrack *f=t->GetFriendTrack();
     ev->AddTrack(f);
-
-    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
+    // RS: now we store the pointer, no copy
+    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
 
   }
 
