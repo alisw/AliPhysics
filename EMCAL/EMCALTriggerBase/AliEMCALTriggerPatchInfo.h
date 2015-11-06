@@ -25,6 +25,10 @@
 class AliEMCALGeometry;
 class TArrayI;
 
+typedef bool DetectorType_t;
+const DetectorType_t kEMCALdet = true;
+const DetectorType_t kDCALPHOSdet = false;
+
 /**
  * @class AliEmcalTriggerPatchInfo
  * @brief Main data structure storing all relevant information of EMCAL/DCAL trigger patches
@@ -72,6 +76,43 @@ class AliEMCALTriggerPatchInfo: public TObject {
     kMainTriggerBitNum = 24, ///< Trigger bit indicating the main (highest energy) trigger patch of a given type per event
     kSimpleOfflineBitNum = 25///< Trigger bit indicating that the patch was created by the offline trigger algorithm
   };
+
+  /**
+   * Initialize patch
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param bitmask     Trigger bit mask of the patch
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   */
+  void Initialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+
+    /**
+   * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param bitmask     Trigger bit mask of the patch
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
+   */
+  static AliEMCALTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+
+  /**
+   * Recalculate patch kinematic variables
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   */
+  void RecalculateKinematics(Double_t patchE, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
    * Access \f$ \phi \f$ angle of the geometric center of the trigger patch
@@ -250,6 +291,23 @@ class AliEMCALTriggerPatchInfo: public TObject {
   Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> kSimpleOfflineBitNum)&1); }
 
   /**
+   * Check whether patch is in the EMCal
+   * @return True if the patch is in the EMCal
+   */
+  Bool_t         IsEMCal()         const { return (fDetectorType == kEMCALdet)   ; }
+
+  /**
+   * Check whether patch is in the EMCal
+   * @return True if the patch is in the EMCal
+   */
+  Bool_t         IsDCalPHOS()      const { return (fDetectorType == kDCALPHOSdet); }
+
+  /**
+   * @return Detector in which the patch is located (EMCal or DCal/PHOS)
+   */
+  DetectorType_t GetDetectorType() const { return fDetectorType                  ; }
+
+  /**
    * Access to Lorentz Vector of the centre-of-mass of the trigger patch
    * @return Lorentz Vector of the centre-of-mass of the trigger patch
    */
@@ -397,6 +455,12 @@ class AliEMCALTriggerPatchInfo: public TObject {
   void SetOffSet(Int_t i)        { fOffSet      = i; }
 
   /**
+   * Set detector in which the patch is located (EMCal or DCal/PHOS)
+   * @param t Detector type
+   */
+  void SetDetectorType(DetectorType_t t)  { fDetectorType = t; }
+
+  /**
    * Set the trigger bit configuration
    * @param ref Trigger bit configuration used to create the patch
    */
@@ -425,6 +489,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
   UChar_t           fCol0;                          ///< Start column
   UChar_t           fRow0;                          ///< Start row
   UChar_t           fPatchSize;                     ///< Trigger patch size
+  DetectorType_t    fDetectorType;                  ///< Detector type (EMCal or DCal/PHOS)
   AliEMCALTriggerBitConfig   fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP
