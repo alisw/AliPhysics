@@ -36,6 +36,8 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
     jetContC->SetRhoMassName(rhoMname);
     jetContC->ConnectParticleContainer(partContConst);
     
+    mgr->AddTask(task);
+    
     //Connnect input
     mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
     //Connect output
