@@ -861,9 +861,12 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
   for(int i=0; i<26; i++) {
      a[i] = GetRecoParam() -> GetLow(i+130);
      b[i] = GetRecoParam() -> GetLow(i+156);
-    
-     qt11mean[i] =qt01mean[i] = 18500;
-     if(i<26) amplitude[i]=0;
+     if(i<24) 
+       qt11mean[i] =qt01mean[i] =fTime0vertex[i] + 15500;
+     else
+      qt11mean[i] =qt01mean[i] =fTime0vertex[0] + 15500;
+ 
+     amplitude[i]=0;
      //    printf(":ReadNewQT pmt %i Qt01mean %i QT11mean %i \n",i, qt01mean[i],   qt11mean[i]); 
   }
   Int_t diff[4];
@@ -905,11 +908,12 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
   printf(" AliT0Reconstructor::ReadOldQTC \n");
   Int_t  chargeQT0[26], chargeQT1[26], pedestal[26];
   Float_t meanQT1[26];
-  for (int i=0; i<26; i++) {
+  for (int i=0; i<24; i++) {
     if (fQT1mean[i]==0)  meanQT1[i]= fTime0vertex[0] + 2564;
     else 
       meanQT1[i]=fQT1mean[i];
   } 
+  for (int i=24; i<26; i++) meanQT1[i]= fQT1mean[23];
 
   for (Int_t i0=0; i0<26; i0++) {
     amplitude[i0]=0;
