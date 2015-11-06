@@ -86,6 +86,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
   fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
   Int_t npatches = fTriggerMakerPtr->FindPatches(size);
   HLTDebug("Found %d patches", npatches);
+  mysize = npatches*sizeof(AliHLTCaloTriggerPatchDataStruct);
 
   if(mysize != 0){
     AliHLTComponentBlockData bd;
