@@ -1490,6 +1490,35 @@ Double_t AliESDtrack::GetTOFExpTDiff(Double_t b, Bool_t pidTPConly) const
   return tdif*kps2ns;
 }
 
+//_______________________________________________________________________
+Double_t AliESDtrack::GetTOFExpTDiffSpec(AliPID::EParticleType specie,Double_t b) const 
+{
+  // Returns the time difference in ns between TOF signal and expected time for given specii
+  const double kps2ns = 1e-3; // we need ns
+  const double kNoInfo = kTOFBCNA*25; // no info
+ if (!IsOn(kTOFout)) return kNoInfo; // no info
+  //
+  double tdif = GetTOFsignal();
+  if (IsOn(kTIME)) { // integrated time info is there
+    Double_t times[AliPID::kSPECIESC];
+    // old esd has only AliPID::kSPECIES times
+    GetIntegratedTimes(times,int(specie)>=int(AliPID::kSPECIES) ? AliPID::kSPECIESC : AliPID::kSPECIES); 
+    tdif -= times[specie];
+  }
+  else { // assume integrated time info from TOF radius and momentum
+    const double kRTOF = 385.;
+    const double kCSpeed = 3.e-2; // cm/ps
+    double p = GetP();
+    if (p<0.01) return kNoInfo;
+    double m = GetMass(specie);
+    double curv = GetC(b);
+    double path = TMath::Abs(curv)>kAlmost0 ? // account for curvature
+      2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+GetTgl()*GetTgl()) : kRTOF;
+    tdif -= path/kCSpeed*TMath::Sqrt(1.+m*m/(p*p));
+  }
+  return tdif*kps2ns;
+}
+
 //______________________________________________________________________________
 Double_t AliESDtrack::M() const
 {
