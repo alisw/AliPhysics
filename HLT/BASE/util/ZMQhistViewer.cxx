@@ -78,7 +78,7 @@ int main(int argc, char** argv)
   TMessage::EnableSchemaEvolutionForAll(kTRUE);
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
-  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
   if (fZMQsocketModeIN < 0) return 1;
 
   //main loop
