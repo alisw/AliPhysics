@@ -41,6 +41,7 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     virtual void SetMinCPVStd(Double_t x) {fMinCPVStd = x;}
 
   protected:
+
     Int_t fRunNumber; //Run number of present run
 
     TList             *fAnalist; //The Analist - stores output data
@@ -72,9 +73,9 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     Double_t fMinLambdaDisp;
     Double_t fMinCPVStd;
 
-    void FillHist(const char * key, Double_t x, Double_t y) const;
-    void FillHist(const char * key, Double_t x) const;
-    void FillHist(const char * key, Double_t x, Double_t y, Double_t z) const;
+//    void FillHist(const char * key, Double_t x, Double_t y) const;
+//    void FillHist(const char * key, Double_t x) const;
+//    void FillHist(const char * key, Double_t x, Double_t y, Double_t z) const;
     void ConfigureEvent();
     void InitializeGeometry();
     void ScanBasicEventParameters();
@@ -83,7 +84,8 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     void SavePhoton(AliESDCaloCluster* cluster);
     void SaveEvent();
     void MesonExclusion();
-    Double_t *InvMass(AliCaloPhoton* y1, AliCaloPhoton* y2, Double_t piarr[2]);
+    Double_t PionMass(AliCaloPhoton* y1, AliCaloPhoton* y2);
+    Double_t PionPt(AliCaloPhoton* y1, AliCaloPhoton* y2);
     TList *ReferenceAtlas(Double_t vertx, Double_t cent, Double_t evplane);
     Bool_t ApplyEventCuts();
     Bool_t ApplyClusterCuts(AliESDCaloCluster *cluster);
@@ -91,8 +93,14 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     Bool_t ApplyCoreShapeCut(AliESDCaloCluster *cluster);
     Bool_t ApplyDispMatrixCut(AliESDCaloCluster *cluster);
     Bool_t ApplyCPCuts(AliESDCaloCluster *cluster);
+
     Int_t *GetPos(AliESDCaloCluster* cluster, Int_t x[4]);
     Int_t *GetPos(AliAODCaloCluster* cluster, Int_t x[4]);
+    void Hypnotic();
+    Bool_t WeakCuts(AliESDCaloCluster *cluster);
+    void FillHist(const char * key, Double_t x, Double_t y) const;
+    void FillHist(const char * key, Double_t x) const;
+    void FillHist(const char * key, Double_t x, Double_t y, Double_t z) const;
 
 //*****************Add Task BS*****************//   
 //We need to declare task to be private to avoid compilation warning

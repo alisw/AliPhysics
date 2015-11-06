@@ -11,12 +11,14 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
    const Double_t fMaxCentrality = 100,
    const Double_t fCoreRadius = 3.5,
    const Double_t fMinCoreEnergyRatio = 0.4,
-   const Double_t fMaxLambdaDisp = 0.3,
+   const Double_t fMinLambdaDisp = 0.3,
    const Double_t fMinCPVStd = 2.5,
 //End Default Cuts
 
    const char *tag            = ""
+
 )
+
 {   
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -26,6 +28,7 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
     ::Error("AddTaskPHOSThermalGAFlowMC", "No analysis manager to connect to.");
     return NULL;
   }  
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
@@ -35,7 +38,8 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("ThermalGA_%s", tag));
+  TString name(Form("ash_%s", tag));
+  printf("Adding\n");
   AliAnalysisTaskThermalGAFlowMC *PHOSGAtask = new AliAnalysisTaskThermalGAFlowMC(name);
 
   PHOSGAtask->SetDebug(fDebug);
@@ -47,8 +51,8 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
   PHOSGAtask->SetMaxCentrality(fMaxCentrality);
   PHOSGAtask->SetCoreRadius(fCoreRadius);
   PHOSGAtask->SetMinCoreEnergyRatio(fMinCoreEnergyRatio);
-  PHOSGAtask->SetMaxLambdaDisp(fMaxLambdaDisp);
-  PHOSGAtask->SetMin_CPVStd(fMinCPVStd);
+  PHOSGAtask->SetMinLambdaDisp(fMinLambdaDisp);
+  PHOSGAtask->SetMinCPVStd(fMinCPVStd);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
