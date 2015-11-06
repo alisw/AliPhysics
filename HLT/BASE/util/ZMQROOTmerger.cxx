@@ -27,36 +27,41 @@ typedef std::map<std::string,std::string> stringMap;
 
 //methods
 TObject* UnpackMessage(zmq_msg_t* message);
-Int_t Merge(TObject* object, TCollection* list);
-TString GetFullArgString(int argc, char** argv);
-int ProcessOptionString(TString arguments);
+TString GetFullArgString(Int_t argc, char** argv);
+Int_t ProcessOptionString(TString arguments);
 stringMap* TokenizeOptionString(const TString str);
-int ProcessOption(TString option, TString value);
-int InitZMQ();
-void* InitZMQsocket(void* context, int socketMode, const char* configs);
-int SendMergerData(void* socket);
-void ResetOutputData();
+Int_t ProcessOption(TString option, TString value);
+Int_t InitZMQ();
+void* InitZMQsocket(void* context, Int_t socketMode, const char* configs);
 void* work(void* param);
-int Run();
+Int_t Run();
 long GetMilliSecSince(TTimeStamp* time);
 
-int HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* /*socket*/=NULL);
-int HandleRequest(zmq_msg_t* /*topicMsg*/, zmq_msg_t* /*dataMsg*/, void* /*socket*/=NULL);
-int SendRequest(void* /*socket*/);
+Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* /*socket*/=NULL);
+Int_t HandleRequest(zmq_msg_t* /*topicMsg*/, zmq_msg_t* /*dataMsg*/, void* /*socket*/=NULL);
+
+Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
+Int_t DoSend(void* socket);
+Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
+Int_t DoRequest(void* /*socket*/);
+
+//merger private functions
+void ResetOutputData();
+Int_t Merge(TObject* object, TCollection* list);
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
-TString fZMQconfigIN  = "PULL@tcp://*:60201";
+TString fZMQconfigIN  = "PUSH";
 TString fZMQsubscriptionIN = "";
-TString fZMQconfigOUT  = "REP@tcp://*:60211";
-TString fZMQconfigMON  = "PUB@tcp://*:60212";
+TString fZMQconfigOUT  = "PULL";
+TString fZMQconfigMON  = "REP";
 
 Bool_t  fResetOnSend = kFALSE;
 
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
 TMap fMergeListMap;          //map with the lists of objects to be merged in
-int fMaxObjects = 1;        //trigger merge after this many messages
+Int_t fMaxObjects = 1;        //trigger merge after this many messages
 
 long fPushbackPeriod = -1;        //! in milliseconds
 TTimeStamp fLastPushBackTime;
@@ -67,7 +72,6 @@ void* fZMQcontext = NULL;    //ze zmq context
 void* fZMQmon = NULL;        //the request-reply socket, here we request the merged data
 void* fZMQout = NULL;        //the monitoring socket, here we publish a copy of the data
 void* fZMQin  = NULL;        //the in socket - entry point for the data to be merged.
-void* fZMQinternal = NULL;   //the pair socket for thread communication
 
 void* work(void* /*param*/)
 {
@@ -84,34 +88,34 @@ long GetMilliSecSince(TTimeStamp* last)
 }
 
 //_______________________________________________________________________________________
-int Run()
+Int_t Run()
 {
-  int rc = 0;
+  Int_t rc = 0;
+  Int_t nSockets=3;
+  zmq_pollitem_t sockets[] = { 
+    { fZMQin, 0, ZMQ_POLLIN, 0 },
+    { fZMQout, 0, ZMQ_POLLIN, 0 },
+    { fZMQmon, 0, ZMQ_POLLIN, 0 },
+  };
   //main loop
   while(1)
   {
     errno=0;
 
-    int inType=alizmq_socket_type(fZMQin);
-    int outType=alizmq_socket_type(fZMQout);
-    int monType=alizmq_socket_type(fZMQmon);
+    Int_t inType=alizmq_socket_type(fZMQin);
+    Int_t outType=alizmq_socket_type(fZMQout);
+    Int_t monType=alizmq_socket_type(fZMQmon);
     
     //request first
-    if (inType==ZMQ_REQ) SendRequest(fZMQin);
-    if (outType==ZMQ_REQ) SendRequest(fZMQout);
-    if (monType==ZMQ_REQ) SendRequest(fZMQmon);
+    if (inType==ZMQ_REQ) DoRequest(fZMQin);
+    if (outType==ZMQ_REQ) DoRequest(fZMQout);
+    if (monType==ZMQ_REQ) DoRequest(fZMQmon);
 
     //wait for the data
     //poll sockets - we want to take action on one of two conditions:
     //  1 - request comes in - then we merge whatever is not yet merged and send
     //  2 - data comes in - then we add it to the merging list
-    zmq_pollitem_t sockets[] = { 
-                                 { fZMQin, 0, ZMQ_POLLIN, 0 },
-                                 { fZMQout, 0, ZMQ_POLLIN, 0 },
-                                 { fZMQmon, 0, ZMQ_POLLIN, 0 },
-                                 { fZMQinternal, 0, ZMQ_POLLIN, 0 },
-                               };
-    rc = zmq_poll(sockets, 4, -1); //poll sockets
+    rc = zmq_poll(sockets, nSockets, -1); //poll sockets
     if (rc==-1 && errno==ETERM)
     {
       //this can only happen it the context was terminated, one of the sockets are
@@ -171,14 +175,13 @@ int Run()
 }
 
 //_____________________________________________________________________
-int HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
   std::string requestTopic;
   requestTopic.assign(static_cast<char*>(zmq_msg_data(topicMsg)), zmq_msg_size(topicMsg));
-
   std::string requestBody;
   requestBody.assign(static_cast<char*>(zmq_msg_data(dataMsg)), zmq_msg_size(dataMsg));
-  
+
   if (fVerbose) Printf("in: request topic: %s body: %s", requestTopic.c_str(), requestBody.c_str());
 
   if (requestTopic.compare(0, 6, "CONFIG")==0)
@@ -188,22 +191,41 @@ int HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
     zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
     zmq_send(socket, reply.c_str(), reply.size(), 0);
     ProcessOptionString(requestBody.c_str());
+    return 1;
   }
   else if (requestTopic.compare(0, 4, "INFO")==0)
   {
     //do nothing, maybe log, send back an empty info reply
     zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
     zmq_send(socket, 0, 0, 0);
+    return 1;
   }
   else
-  {
-    SendMergerData(socket);
-  }
-  return 0;
+    return 0;
 }
 
 //_____________________________________________________________________
-int HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+{
+  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  return DoReply(topicMsg, dataMsg, socket);
+}
+
+//_____________________________________________________________________
+Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+{
+  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  return DoReceive(topicMsg, dataMsg, socket);
+}
+
+//_____________________________________________________________________
+Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+{
+  return DoSend(socket);
+}
+
+//_____________________________________________________________________
+Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
   //handle the message
   //add to the list of objects to merge for each object type (by name)
@@ -239,12 +261,6 @@ int HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
         if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
         Merge(mergingObject, mergingList);
 
-        bool send=false;
-        if (fPushbackPeriod>=0) {
-          if (GetMilliSecSince(&fLastPushBackTime)>fPushbackPeriod) send=true;
-        }
-
-        if (send) SendMergerData(socket);
       }
     }
   }
@@ -252,31 +268,38 @@ int HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   {
     if (fVerbose) Printf("no object!");
   }
+  
+  if (fPushbackPeriod>=0)
+  {
+    if (GetMilliSecSince(&fLastPushBackTime)>fPushbackPeriod)
+      DoSend(socket);
+  }
+
   return 0;
 }
 
 //______________________________________________________________________________
-int SendRequest(void*)
+Int_t DoRequest(void*)
 {
   return 0;
 }
 
 //______________________________________________________________________________
-int SendMergerData(void* socket)
+Int_t DoSend(void* socket)
 {
   //send back merged data, one object per frame
 
-  int rc = 0;
+  Int_t rc = 0;
   TIter mapIter(&fMergeObjectMap);
   TObject* object = NULL;
-  int objectNumber=0;
+  Int_t objectNumber=0;
   while ((object = mapIter.Next()))
   {
     //the topic
     AliHLTDataTopic topic = kAliHLTDataTypeTObject;
     //the data
     
-    int flags = ( objectNumber < fMergeObjectMap.GetEntries()-1 ) ? ZMQ_SNDMORE : 0;    
+    Int_t flags = ( objectNumber < fMergeObjectMap.GetEntries()-1 ) ? ZMQ_SNDMORE : 0;    
     rc = alizmq_msg_send(topic, fMergeObjectMap.GetValue(object), socket, flags, 0);
     if (rc<0)
     {
@@ -291,8 +314,9 @@ int SendMergerData(void* socket)
       if (fVerbose) Printf("data reset on send");
     }
   }
-  //always at least send an empty reply
-  if (objectNumber==0) alizmq_msg_send("INFO","NODATA",socket,0);
+  //always at least send an empty reply if we are replying
+  if (objectNumber==0 && alizmq_socket_type(socket)==ZMQ_REP)
+    alizmq_msg_send("INFO","NODATA",socket,0);
 
   fLastPushBackTime.Set();
 
@@ -306,7 +330,7 @@ void ResetOutputData()
 }
 
 //______________________________________________________________________________
-int ProcessOption(TString option, TString value)
+Int_t ProcessOption(TString option, TString value)
 {
   //process option
   //to be implemented by the user
@@ -353,14 +377,17 @@ int ProcessOption(TString option, TString value)
 }
 
 //_______________________________________________________________________________________
-int InitZMQ()
+Int_t InitZMQ()
 {
   //init or reinit stuff
-  int rc = 0;
-  rc += alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), 0);
-  rc += alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), 0);
-  rc += alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), 0);
-  return rc;
+  Int_t rc = 0;
+  printf("in:  ");
+  rc += alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), 0, 200);
+  printf("out: ");
+  rc += alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), 0, 200);
+  printf("mon: ");
+  rc += alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), 0, 200);
+  return 0;
 }
 
 //_______________________________________________________________________________________
@@ -398,12 +425,12 @@ Int_t Merge(TObject* object, TCollection* mergeList)
 
 ////////////////////////////////////////////////////////////////////////////////
 //_______________________________________________________________________________________
-TString GetFullArgString(int argc, char** argv)
+TString GetFullArgString(Int_t argc, char** argv)
 {
   TString argString;
   TString argument="";
   if (argc>0) {
-    for (int i=1; i<argc; i++) {
+    for (Int_t i=1; i<argc; i++) {
       argument=argv[i];
       if (argument.IsNull()) continue;
       if (!argString.IsNull()) argString+=" ";
@@ -414,18 +441,22 @@ TString GetFullArgString(int argc, char** argv)
 }
 
 //______________________________________________________________________________
-int ProcessOptionString(TString arguments)
+Int_t ProcessOptionString(TString arguments)
 {
   //process passed options
+  Int_t nOptions=0;
   stringMap* options = TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
+    if (ProcessOption(i->first,i->second)>0)
+      nOptions++;
+    else
+      break;
   }
   delete options; //tidy up
 
-  return 1; 
+  return nOptions; 
 }
 
 //______________________________________________________________________________
@@ -499,13 +530,24 @@ stringMap* TokenizeOptionString(const TString str)
 }
 
 //_______________________________________________________________________________________
-int main(int argc, char** argv)
+int main(Int_t argc, char** argv)
 {
-  int mainReturnCode=0;
+  Int_t mainReturnCode=0;
 
   //process args
   TString argString = GetFullArgString(argc,argv);
-  ProcessOptionString(argString);
+  if (ProcessOptionString(argString)<=0)
+  {
+    printf("options: \n");
+    printf("in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n");
+    printf("out : data out\n");
+    printf("mon : monitoring socket\n");
+    printf("Verbose : print some info\n");
+    printf("pushback-period : push the merged data once every n ms\n");
+    printf("ResetOnSend : always reset after send\n");
+    printf("reset : reset NOW\n");
+    return 1;
+  }
 
   //globally enable schema evolution for serializing ROOT objects
   TMessage::EnableSchemaEvolutionForAll(kTRUE);
