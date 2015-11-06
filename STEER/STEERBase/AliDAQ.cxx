@@ -209,6 +209,9 @@ Int_t AliDAQ::DetectorID(const char *detectorName)
   TString detStr = detectorName;
 
   Int_t iDet;
+  if (detStr.CompareTo(fgkDetectorName[kNDetectors-1],TString::kIgnoreCase)==0) {
+    return kHLTId;
+  }
   for(iDet = 0; iDet < kNDetectors; iDet++) {
     if (detStr.CompareTo(fgkDetectorName[iDet],TString::kIgnoreCase) == 0)
       break;
@@ -224,8 +227,9 @@ const char *AliDAQ::DetectorName(Int_t detectorID)
 {
   // Returns the name of particular
   // detector identified by its index
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID==kHLTId) return fgkDetectorName[kNDetectors-1];
+  if (detectorID < 0 || detectorID >= kNDetectors-1) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
   return fgkDetectorName[detectorID];
@@ -247,12 +251,12 @@ Int_t AliDAQ::DdlIDOffset(Int_t detectorID)
   // Returns the DDL ID offset
   // for a given detector identified
   // by its index
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
   // HLT has a DDL offset = 30
-  if (detectorID == (kNDetectors-1)) return (kHLTId << 8);
+  if (detectorID == kHLTId) return (kHLTId << 8);
 
   return (detectorID << 8);
 }
@@ -278,16 +282,17 @@ Int_t AliDAQ::DetectorIDFromDdlID(Int_t ddlID,Int_t &ddlIndex)
   Int_t detectorID = ddlID >> 8;
 
   // HLT
-  if (detectorID == kHLTId) detectorID = kNDetectors-1;
+  Int_t detectorIDindex=detectorID;
+  if (detectorID == kHLTId) detectorIDindex = kNDetectors-1;
 
-  if (detectorID < 0 || detectorID >= kNDetectors) {
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
     return -1;
   }
   ddlIndex = ddlID & 0xFF;
-  if (ddlIndex >= fgkNumberOfDdls[detectorID]) {
+  if (ddlIndex >= NumberOfDdls(detectorIDindex)) {
     AliErrorClass(Form("Invalid DDL index %d (%d -> %d) for detector %d",
-		       ddlIndex,0,fgkNumberOfDdls[detectorID],detectorID));
+		       ddlIndex,0,NumberOfDdls(detectorIDindex),detectorIDindex));
     ddlIndex = -1;
     return -1;
   }
@@ -314,10 +319,10 @@ Int_t AliDAQ::DdlID(Int_t detectorID, Int_t ddlIndex)
   Int_t ddlID = DdlIDOffset(detectorID);
   if (ddlID < 0)
     return -1;
-  
-  if (ddlIndex >= fgkNumberOfDdls[detectorID]) {
+ 
+  if (ddlIndex >= NumberOfDdls(detectorID)) {
     AliErrorClass(Form("Invalid DDL index %d (%d -> %d) for detector %d",
-		       ddlIndex,0,fgkNumberOfDdls[detectorID],detectorID));
+		       ddlIndex,0,NumberOfDdls(detectorID),detectorID));
     return -1;
   }
 
@@ -348,9 +353,9 @@ const char *AliDAQ::DdlFileName(Int_t detectorID, Int_t ddlIndex)
   if (ddlID < 0)
     return "";
   
-  if (ddlIndex >= fgkNumberOfDdls[detectorID]) {
+  if (ddlIndex >= NumberOfDdls(detectorID)) {
     AliErrorClass(Form("Invalid DDL index %d (%d -> %d) for detector %d",
-		       ddlIndex,0,fgkNumberOfDdls[detectorID],detectorID));
+		       ddlIndex,0,NumberOfDdls(detectorID),detectorID));
     return "";
   }
 
@@ -379,12 +384,15 @@ Int_t AliDAQ::NumberOfDdls(Int_t detectorID)
 {
   // Returns the number of DDLs for
   // a given detector
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
 
-  return fgkNumberOfDdls[detectorID];
+  int detectorIDindex = detectorID;
+  if (detectorID==kHLTId) detectorIDindex=kNDetectors-1;
+
+  return fgkNumberOfDdls[detectorIDindex];
 }
 
 Float_t AliDAQ::NumberOfLdcs(const char *detectorName)
@@ -402,12 +410,15 @@ Float_t AliDAQ::NumberOfLdcs(Int_t detectorID)
 {
   // Returns the number of DDLs for
   // a given detector
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
 
-  return fgkNumberOfLdcs[detectorID];
+  int detectorIDindex = detectorID;
+  if (detectorID==kHLTId) detectorIDindex=kNDetectors-1;
+
+  return fgkNumberOfLdcs[detectorIDindex];
 }
 
 void AliDAQ::PrintConfig()
@@ -517,12 +528,15 @@ const char *AliDAQ::OfflineModuleName(Int_t detectorID)
 {
   // Returns the name of the offline module
   // for a given detector (online naming convention)
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
 
-  return fgkOfflineModuleName[detectorID];
+  int detectorIDindex=detectorID;
+  if (detectorID==kHLTId) detectorIDindex = kNDetectors-1;
+
+  return fgkOfflineModuleName[detectorIDindex];
 }
 
 const char *AliDAQ::OnlineName(const char *detectorName)
@@ -540,12 +554,15 @@ const char *AliDAQ::OnlineName(Int_t detectorID)
 {
   // Returns the name of the online detector name (3 characters)
   // for a given detector
-  if (detectorID < 0 || detectorID >= kNDetectors) {
-    AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
+  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+    AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
 
-  return fgkOnlineName[detectorID];
+  int detectorIDindex=detectorID;
+  if (detectorID==kHLTId) detectorIDindex = kNDetectors-1;
+
+  return fgkOnlineName[detectorIDindex];
 }
 
 void AliDAQ::SetRun1(){
