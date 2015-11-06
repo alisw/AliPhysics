@@ -171,7 +171,10 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
 
   void    SetShared(int i)      {fTrackPointsArr.SetShared(i);}
   Bool_t  IsShared(int i) const {return fTrackPointsArr.IsShared(i);}
-
+  //
+  Bool_t  GetClusterOwner() const {return fClusterOwner;}
+  void    SetClusterOwner(Bool_t v) {fClusterOwner = v;}
+  //
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
