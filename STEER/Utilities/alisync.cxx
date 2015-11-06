@@ -137,13 +137,21 @@ void downloadFile(const JobInfo &info,
   gSystem->Load("libTreePlayer");
 
   static const std::string prefix = "alien://"; 
-  if (info.filename.compare(0, prefix.size(), prefix) == 0)
+  if (info.filename.compare(0, prefix.size(), prefix) == 0
+      || outdir.compare(0, prefix.size(), prefix) == 0)
     TGrid::Connect("alien://");
+  bool useAtomic = true;
+  if (outdir.compare(0, prefix.size(), prefix) == 0)
+    useAtomic = false;
 
   std::string tmpdest = outdir + "/." + basename(info.filename) + ".tmp";
-  // Remove old temporary file.
-  unlink(tmpdest.c_str());
   std::string dest = outdir + "/" + basename(info.filename);
+  // If destination is a local file, remove old temporary file.
+  // else we really copy directly where we want to be.
+  if (useAtomic)
+    unlink(tmpdest.c_str());
+  else
+    tmpdest = dest;
   // If no regexps specified, simply use TFile::Cp. If regular
   // expressions specified, copy only the tkeys that match those files.
   if (regexps.empty())
@@ -193,11 +201,13 @@ void downloadFile(const JobInfo &info,
     dest->WriteKeys();
     dest->Close();
   }
-  if (rename(tmpdest.c_str(), dest.c_str()))
-  {
-    unlink(tmpdest.c_str());
-    exit(1);
-  }
+  // In case the file is local, we need to move it in place.
+  if (useAtomic) 
+    if (rename(tmpdest.c_str(), dest.c_str()))
+    {
+      unlink(tmpdest.c_str());
+      exit(1);
+    }
   exit(0);
 }
 
