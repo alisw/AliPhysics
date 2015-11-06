@@ -181,7 +181,7 @@ void downloadFile(const JobInfo &info,
         }
       }
     }
-    for (std::vector<string>::iterator ki = mergeableKeys.begin(); 
+    for (std::vector<std::string>::iterator ki = mergeableKeys.begin(); 
          ki != mergeableKeys.end() ; ++ki)
     {
       TKey *oldKey = src->GetKey(ki->c_str());
