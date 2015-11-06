@@ -85,8 +85,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   const char *outFile = "CalibObjects.root";
   AliESDHandler* esdHandler   = new AliESDHandler();
   mgr->SetOutputEventHandler(esdHandler);
-  //esdHandler->SetOutputFileName(outFile);
-  //mgr->SetCommonFileName(outFile);
+  esdHandler->SetOutputFileName(outFile);
+  mgr->SetCommonFileName(outFile);
   //  
   // Detector Tasks
   //
