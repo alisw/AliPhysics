@@ -228,7 +228,7 @@ const char *AliDAQ::DetectorName(Int_t detectorID)
   // Returns the name of particular
   // detector identified by its index
   if (detectorID==kHLTId) return fgkDetectorName[kNDetectors-1];
-  if (detectorID < 0 || detectorID >= kNDetectors-1) {
+  if (detectorID < 0 || detectorID > kNDetectors-1) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
@@ -251,12 +251,12 @@ Int_t AliDAQ::DdlIDOffset(Int_t detectorID)
   // Returns the DDL ID offset
   // for a given detector identified
   // by its index
-  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+  if (detectorID < 0 || (detectorID > kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
   // HLT has a DDL offset = 30
-  if (detectorID == kHLTId) return (kHLTId << 8);
+  if (detectorID == kHLTId || detectorID==kNDetectors-1) return (kHLTId << 8);
 
   return (detectorID << 8);
 }
@@ -384,7 +384,7 @@ Int_t AliDAQ::NumberOfDdls(Int_t detectorID)
 {
   // Returns the number of DDLs for
   // a given detector
-  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+  if (detectorID < 0 || (detectorID > kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
@@ -410,7 +410,7 @@ Float_t AliDAQ::NumberOfLdcs(Int_t detectorID)
 {
   // Returns the number of DDLs for
   // a given detector
-  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+  if (detectorID < 0 || (detectorID > kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return -1;
   }
@@ -554,7 +554,7 @@ const char *AliDAQ::OnlineName(Int_t detectorID)
 {
   // Returns the name of the online detector name (3 characters)
   // for a given detector
-  if (detectorID < 0 || (detectorID >= kNDetectors-1 && detectorID!=kHLTId)) {
+  if (detectorID < 0 || (detectorID > kNDetectors-1 && detectorID!=kHLTId)) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d, %d) !",detectorID,0,kNDetectors-2,kHLTId));
     return "";
   }
