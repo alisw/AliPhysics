@@ -63,6 +63,8 @@ public:
     kStreamFindKinks          =0x40000,    // flag: stream track infroamtion in the FindKinks method
     kStreamSeeddEdx           =0x80000     // flag: stream TPC dEdx intermediate information  AliTPCseed::CookdEdxNorm (to check and validate methods used in calibration)
   };
+  enum {kMaxFriendTracks=2000};
+
   AliTPCtracker();
   AliTPCtracker(const AliTPCParam *par); 
   virtual ~AliTPCtracker();
@@ -170,6 +172,10 @@ public:
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
 
+   //
+   virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
+   virtual void   CleanESDFriendsObjects(AliESDEvent* esd);
+   //
 private:
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
@@ -255,12 +261,13 @@ private:
    Double_t fExtraClErrYZ2;             //! extra cl.error Y^2+Z^2
    Double_t fExtraClErrY2;              //! extra cl.error Y^2
    Double_t fExtraClErrZ2;              //! extra cl.error Z^2
-   //
    Double_t fPrimaryDCAZCut;            //! special cut on DCAz for primaries tracking only, disables secondaries seeding
    Double_t fPrimaryDCAYCut;            //! special cut on DCAy for primaries tracking only, disables secondaries seeding
    Bool_t   fDisableSecondaries;        //! special flag to disable secondaries seeding
-   //
-   TObjArray * fCrossTalkSignalArray;  // for 36 sectors    
+   TObjArray * fCrossTalkSignalArray;  // for 36 sectors 
+   AliTPCclusterMI** fClPointersPool;  //! pool of cluster pointers for seeds stored in friends
+   AliTPCclusterMI** fClPointersPoolPtr; //! pointer on the current free slot in the pool
+   Int_t fClPointersPoolSize; // number of seeds holding the cluster arrays
    TClonesArray* fSeedsPool;            //! pool of seeds
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool

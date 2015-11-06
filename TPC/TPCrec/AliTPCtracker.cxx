@@ -173,6 +173,9 @@ AliTPCtracker::AliTPCtracker()
   fPrimaryDCAYCut(-1),
   fDisableSecondaries(kFALSE),
          fCrossTalkSignalArray(0),
+		 fClPointersPool(0),
+		 fClPointersPoolPtr(0),
+		 fClPointersPoolSize(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
@@ -406,18 +409,21 @@ AliTracker(),
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-         fDebugStreamer(0),
-         fUseHLTClusters(4),
-  fClExtraRoadY(0.),
-  fClExtraRoadZ(0.),  
-  fExtraClErrYZ2(0),
-  fExtraClErrY2(0),
-  fExtraClErrZ2(0),
-  fPrimaryDCAZCut(-1),
-  fPrimaryDCAYCut(-1),
-  fDisableSecondaries(kFALSE),
-         fCrossTalkSignalArray(0),
-         fSeedsPool(0),
+                 fDebugStreamer(0),
+                 fUseHLTClusters(4),
+                 fClExtraRoadY(0.),
+                 fClExtraRoadZ(0.),  
+                 fExtraClErrYZ2(0),
+                 fExtraClErrY2(0),
+                 fExtraClErrZ2(0),
+                 fPrimaryDCAZCut(-1),
+                 fPrimaryDCAYCut(-1),
+                 fDisableSecondaries(kFALSE),
+                 fCrossTalkSignalArray(0),
+		 fClPointersPool(0),
+		 fClPointersPoolPtr(0),
+		 fClPointersPoolSize(0),
+                 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -456,7 +462,11 @@ AliTracker(),
   }
   //
   fSeedsPool = new TClonesArray("AliTPCseed",1000);
-
+  fClPointersPool = new AliTPCclusterMI*[kMaxFriendTracks*kMaxRow];
+  memset(fClPointersPool,0,kMaxFriendTracks*kMaxRow*sizeof(AliTPCclusterMI*));
+  fClPointersPoolPtr = fClPointersPool;
+  fClPointersPoolSize = kMaxFriendTracks;
+  //
   // crosstalk array and matrix initialization
   Int_t nROCs   = 72;
   Int_t nTimeBinsAll  = AliTPCcalibDB::Instance()->GetMaxTimeBinAllPads() ;
@@ -494,18 +504,21 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-         fDebugStreamer(0),
-         fUseHLTClusters(4),
-  fClExtraRoadY(0.),
-  fClExtraRoadZ(0.),  
-  fExtraClErrYZ2(0),
-  fExtraClErrY2(0),
-  fExtraClErrZ2(0),
-  fPrimaryDCAZCut(-1),
-  fPrimaryDCAYCut(-1),
-  fDisableSecondaries(kFALSE),
-         fCrossTalkSignalArray(0),
-         fSeedsPool(0),
+                 fDebugStreamer(0),
+                 fUseHLTClusters(4),
+                 fClExtraRoadY(0.),
+                 fClExtraRoadZ(0.),  
+                 fExtraClErrYZ2(0),
+                 fExtraClErrY2(0),
+                 fExtraClErrZ2(0),
+                 fPrimaryDCAZCut(-1),
+                 fPrimaryDCAYCut(-1),
+                 fDisableSecondaries(kFALSE),
+                 fCrossTalkSignalArray(0),
+		 fClPointersPool(0),
+		 fClPointersPoolPtr(0),
+		 fClPointersPoolSize(0),
+                 fSeedsPool(0),
 		 fFreeSeedsID(500),
 		 fNFreeSeeds(0),
 		 fLastSeedID(-1)
@@ -539,9 +552,19 @@ AliTPCtracker::~AliTPCtracker() {
     fSeeds->Clear(); 
     delete fSeeds;
   }
+  delete[] fClPointersPool;
   if (fCrossTalkSignalArray) delete fCrossTalkSignalArray;
   if (fDebugStreamer) delete fDebugStreamer;
-  if (fSeedsPool) delete fSeedsPool;
+  if (fSeedsPool) {
+    for (int isd=fSeedsPool->GetEntries();isd--;) {
+      AliTPCseed* seed = (AliTPCseed*)fSeedsPool->At(isd);
+      if (seed) {
+	seed->SetClusterOwner(kFALSE);
+	seed->SetClustersArrayTMP(0);
+      }
+    }
+    delete fSeedsPool;
+  }
 }
 
 
@@ -3514,7 +3537,6 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   //
   //return 0;
   if (!event) return 0;
-  const Int_t kMaxFriendTracks=2000;
   fEvent = event;
   fEventHLT = 0;
   // extract correction object for multiplicity dependence of dEdx
@@ -3655,8 +3677,24 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       if (storeFriend){ // RS: seed is needed for calibration, regardless on streamlevel
 	// RS: this is the only place where the seed is created not in the pool, 
 	// since it should belong to ESDevent
-	AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
-	esd->AddCalibObject(seedCopy);
+	//AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
+	//esd->AddCalibObject(seedCopy);
+	//
+	//RS to avoid the cloning the seeds and clusters we will declare the seed to own its
+	// clusters and reattach the clusters pointers from the pool, so they are saved in the friends
+	seed->SetClusterOwner(kTRUE);
+	Int_t poolFilled = (fClPointersPoolPtr-fClPointersPool)/kMaxRow;
+	if (poolFilled>=fClPointersPoolSize) { // expand cluster pointers pool, normally should not happen
+	  fClPointersPoolSize += 100;
+	  AliTPCclusterMI** pooln = new AliTPCclusterMI*[fClPointersPoolSize*kMaxRow];
+	  memcpy(pooln,fClPointersPool,poolFilled*kMaxRow*sizeof(AliTPCclusterMI*));
+	  delete[] fClPointersPool;
+	  fClPointersPool = pooln;
+	  fClPointersPoolPtr = fClPointersPool+poolFilled*kMaxRow; // update position pointer
+	}
+	memcpy(fClPointersPoolPtr,seedClusters,kMaxRow*sizeof(AliTPCclusterMI*));
+	seed->SetClustersArrayTMP(fClPointersPoolPtr);
+	fClPointersPoolPtr += kMaxRow;
       }
       //
       ntracks++;
@@ -3665,7 +3703,8 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       //printf("problem\n");
     }
     //
-    if (!seedClustersSave) seed->SetClustersArrayTMP(0); //RS detach temporary clusters !!!
+    //RS if seed does not own clusters, then it was not added to friends: detach temporary clusters !!!
+    if (!seedClustersSave && !seed->GetClusterOwner()) seed->SetClustersArrayTMP(0); 
     //
   }
   //FindKinks(fSeeds,event);
@@ -8078,7 +8117,8 @@ void AliTPCtracker::ResetSeedsPool()
   // mark all seeds in the pool as unused
   AliInfo(Form("CurrentSize: %d, BookedUpTo: %d, free: %d",fSeedsPool->GetSize(),fSeedsPool->GetEntriesFast(),fNFreeSeeds));
   fNFreeSeeds = 0;
-  fSeedsPool->Clear("C"); // RS: nominally the seeds may allocate memory...
+  fSeedsPool->Clear(); // RS: nominally the seeds may allocate memory...
+  
 }
 
 Int_t  AliTPCtracker::PropagateToRowHLT(AliTPCseed *pt, int nrow)
@@ -8576,4 +8616,25 @@ void AliTPCtracker::GetSeedClusterStatistic(const AliTPCseed* seed, Int_t first,
     }
     
   }
+}
+
+void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
+{
+  // RS: remove seeds stored in friend's calib object contained w/o changing its ownership
+  //
+  AliInfo("Removing own seeds from friend tracks");
+  AliESDfriend* esdF = esd->FindFriend();
+  if (!esdF) return;
+  int ntr = esdF->GetNumberOfTracks();
+  for (int itr=ntr;itr--;) {
+    AliESDfriendTrack* trcF = esdF->GetTrack(itr);
+    if (!trcF) continue;
+    AliTPCseed* seed = (AliTPCseed*)trcF->GetTPCseed();
+    if (seed) {
+      trcF->RemoveCalibObject((TObject*)seed);
+      seed->SetClusterOwner(kFALSE);
+      seed->SetClustersArrayTMP(0);
+    }
+  }
+  //
 }
