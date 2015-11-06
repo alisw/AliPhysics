@@ -10,6 +10,7 @@
 // Author: J.Otwinowski   04/02/2008 
 // Changes by M.Knichel   15/10/2010
 // Changes by J.Salzwedel 15/10/2014
+// Changes by A. Timmins 6/11/2015
 //------------------------------------------------------------------------------
 
 /*AliPerformanceDEdx.cxx
@@ -156,8 +157,7 @@ void AliPerformanceDEdx::Init()
 
     if(fUseSparse){
         fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
-//        fDeDxHisto->SetBinEdges(7,binsP);
-
+        fDeDxHisto->SetBinEdges(7,binsP);
         fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
         fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
         fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");

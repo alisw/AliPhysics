@@ -13,6 +13,7 @@
 // Author: J.Otwinowski   17/10/2009 
 // Changes by M.Knichel   22/10/2010
 // Changes by J.Salzwedel 14/10/2014
+// Changes by A. Timmins 6/11/2015
 //------------------------------------------------------------------------------
 
 /*
@@ -221,17 +222,19 @@ void AliPerformanceMatch::Init(){
     Double_t maxTrackingEffHisto[5]  = { 1.5, 2*TMath::Pi(), ptMax, 1.5,  6.5 };
       if(fUseSparse){
         fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:phi:pt:eta:ITSclusters",5,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
-        //fTrackingEffHisto->SetBinEdges(2,binsPt);
+        fTrackingEffHisto->SetBinEdges(2,binsPt);
         fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
         fTrackingEffHisto->GetAxis(1)->SetTitle("phi (rad)");
         fTrackingEffHisto->GetAxis(2)->SetTitle("p_{T}");
         fTrackingEffHisto->GetAxis(3)->SetTitle("eta");
         fTrackingEffHisto->GetAxis(4)->SetTitle("number of ITS clusters");
-              fTrackingEffHisto->Sumw2();
+        fTrackingEffHisto->Sumw2();
       }
       else{
           h_tpc_match_trackingeff_all_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3],binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2]);
           h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_tpc_2_3","",binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3],binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2]);
+          h_tpc_match_trackingeff_all_2_3->GetYaxis()->Set(nPtBins,binsPt);
+          h_tpc_match_trackingeff_tpc_2_3->GetYaxis()->Set(nPtBins,binsPt);
           fFolderObj->Add(h_tpc_match_trackingeff_all_2_3);
           fFolderObj->Add(h_tpc_match_trackingeff_tpc_2_3);
       }
@@ -249,7 +252,7 @@ void AliPerformanceMatch::Init(){
     if(fUseSparse){
       
         fTPCConstrain = new THnSparseF("fTPCConstrain","pull_phi:phi:pt:eta",4, binsTPCConstrain,minTPCConstrain,maxTPCConstrain);
-   //     fTPCConstrain->SetBinEdges(2,binsPt);
+        fTPCConstrain->SetBinEdges(2,binsPt);
         fTPCConstrain->GetAxis(0)->SetTitle("(#phi-#phi_{ref})/#sigma");
         fTPCConstrain->GetAxis(1)->SetTitle("phi (rad)");
         fTPCConstrain->GetAxis(2)->SetTitle("p_{T}");
@@ -258,7 +261,10 @@ void AliPerformanceMatch::Init(){
       }
     else{
         h_tpc_constrain_tpc_0_2_3 = new TH3D("h_tpc_constrain_tpc_0_2_3","",binsTPCConstrain[0],minTPCConstrain[0],maxTPCConstrain[0],binsTPCConstrain[2],minTPCConstrain[2],maxTPCConstrain[2],binsTPCConstrain[3],minTPCConstrain[3],maxTPCConstrain[3]);
+        h_tpc_constrain_tpc_0_2_3->GetYaxis()->Set(nPtBins,binsPt);
         fFolderObj->Add(h_tpc_constrain_tpc_0_2_3);
+
+
     }
   }
 

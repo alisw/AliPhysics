@@ -10,6 +10,7 @@
 // Author: J.Otwinowski 04/02/2008 
 // Changes by M.Knichel 15/10/2010
 // Changes by J.Salzwedel 01/10/2014
+// Changes by A. Timmins 6/11/2015
 //------------------------------------------------------------------------------
 
 /*
@@ -329,7 +330,7 @@ void AliPerformanceTPC::Init()
   
     if(fUseSparse){
         fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
-        //fTPCTrackHisto->SetBinEdges(7,binsPt);
+        fTPCTrackHisto->SetBinEdges(7,binsPt);
         fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
         fTPCTrackHisto->GetAxis(1)->SetTitle("chi2PerClust");
         fTPCTrackHisto->GetAxis(2)->SetTitle("nClust/nFindableClust");
@@ -348,17 +349,30 @@ void AliPerformanceTPC::Init()
         h_tpc_track_all_recvertex_0_5_7 = new TH3D("h_tpc_track_all_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_pos_recvertex_0_5_7 = new TH3D("h_tpc_track_pos_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_neg_recvertex_0_5_7 = new TH3D("h_tpc_track_neg_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
-        
+        h_tpc_track_all_recvertex_0_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_pos_recvertex_0_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_neg_recvertex_0_5_7->GetZaxis()->Set(nPtBins,binsPt);
+
         h_tpc_track_all_recvertex_1_5_7 = new TH3D("h_tpc_track_all_recvertex_1_5_7","",binsTPCTrackHisto[1],minTPCTrackHisto[1],maxTPCTrackHisto[1],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_all_recvertex_2_5_7 = new TH3D("h_tpc_track_all_recvertex_2_5_7","",binsTPCTrackHisto[2],minTPCTrackHisto[2],maxTPCTrackHisto[2],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+
+        h_tpc_track_all_recvertex_1_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_all_recvertex_2_5_7->GetZaxis()->Set(nPtBins,binsPt);
         
         h_tpc_track_all_recvertex_3_5_7 = new TH3D("h_tpc_track_all_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_pos_recvertex_3_5_7 = new TH3D("h_tpc_track_pos_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_neg_recvertex_3_5_7 = new TH3D("h_tpc_track_neg_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+
+        h_tpc_track_all_recvertex_3_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_pos_recvertex_3_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_neg_recvertex_3_5_7->GetZaxis()->Set(nPtBins,binsPt);
         
         h_tpc_track_all_recvertex_4_5_7 = new TH3D("h_tpc_track_all_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_pos_recvertex_4_5_7 = new TH3D("h_tpc_track_pos_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
         h_tpc_track_neg_recvertex_4_5_7 = new TH3D("h_tpc_track_neg_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_4_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_pos_recvertex_4_5_7->GetZaxis()->Set(nPtBins,binsPt);
+        h_tpc_track_neg_recvertex_4_5_7->GetZaxis()->Set(nPtBins,binsPt);
         
         h_tpc_track_pos_recvertex_3_5_6 = new TH3D("h_tpc_track_pos_recvertex_3_5_6","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
         h_tpc_track_pos_recvertex_4_5_6 = new TH3D("h_tpc_track_pos_recvertex_4_5_6","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
