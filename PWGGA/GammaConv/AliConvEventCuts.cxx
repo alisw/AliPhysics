@@ -622,6 +622,7 @@ void AliConvEventCuts::LoadWeightingMultiplicityFromFile() {
   if (fNameHistoReweightingMultData.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
     cout << "I have to find: " <<  fNameHistoReweightingMultData.Data() << endl;
     TH1D *hReweightMultDatatemp = (TH1D*)w->Get(fNameHistoReweightingMultData.Data());
+    if (hReweightMultDatatemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
     hReweightMultData = new TH1D(*hReweightMultDatatemp);
     if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
     else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultData.Data() ,fPathReweightingMult.Data()));
@@ -630,6 +631,7 @@ void AliConvEventCuts::LoadWeightingMultiplicityFromFile() {
   if (fNameHistoReweightingMultMC.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
     cout << "I have to find: " <<  fNameHistoReweightingMultMC.Data() << endl;
     TH1D *hReweightMultMCtemp = (TH1D*)w->Get(fNameHistoReweightingMultMC.Data());
+    if (hReweightMultMCtemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
     hReweightMultMC = new TH1D(*hReweightMultMCtemp);
     if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
     else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultMC.Data() ,fPathReweightingMult.Data()));
