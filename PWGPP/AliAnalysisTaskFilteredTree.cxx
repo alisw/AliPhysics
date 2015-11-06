@@ -513,7 +513,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   //
   // Select real events with high-pT tracks 
   //
-
+  static Int_t downscaleCounter=0;
   // get selection cuts
   AliFilteredTreeEventCuts *evtCuts = GetEventCuts(); 
   AliFilteredTreeAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
@@ -665,7 +665,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       Double_t scalempt= TMath::Min(track->Pt(),10.);
       Double_t downscaleF = gRandom->Rndm();
       downscaleF *= fLowPtTrackDownscaligF;
-      if(TMath::Exp(2*scalempt)<downscaleF) continue;
+      if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
       AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
@@ -683,6 +683,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
+      downscaleCounter++;
       (*fTreeSRedirector)<<"highPt"<<
         "gid="<<gid<<
         "fileName.="<<&fCurrentFileName<<            
@@ -774,6 +775,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   //   particle ID, mother ID, production mechanism ...
   // 
   // get selection cuts
+  static Int_t downscaleCounter=0;
   AliFilteredTreeEventCuts *evtCuts = GetEventCuts(); 
   AliFilteredTreeAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
   AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
@@ -960,7 +962,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Double_t scalempt= TMath::Min(track->Pt(),10.);
       Double_t downscaleF = gRandom->Rndm();
       downscaleF *= fLowPtTrackDownscaligF;
-      if(TMath::Exp(2*scalempt)<downscaleF) continue;
+      if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
       // Dump to the tree 
@@ -1390,6 +1392,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	  pidResponse->ComputePIDProbability(AliPIDResponse::kTOF, track, nSpecies, tofPID.GetMatrixArray());	    
 	}
         if(fTreeSRedirector && dumpToTree && fFillTree) {
+	  downscaleCounter++;
           (*fTreeSRedirector)<<"highPt"<<
             "gid="<<gid<<
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
@@ -1436,6 +1439,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             if (!refTOF) refTOF = &refDummy;
             if (!refEMCAL) refEMCAL = &refDummy;
             if (!refPHOS) refPHOS = &refDummy;
+	    downscaleCounter++;
             (*fTreeSRedirector)<<"highPt"<<	
               "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
               "nrefITS="<<nrefITS<<              // number of track references in the ITS
@@ -1493,6 +1497,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 {
   //
   // Fill tree for efficiency studies MC only
+  static Int_t downscaleCounter=0;
   AliInfo("we start!");
   if(!mcEvent) {
     AliDebug(AliLog::kError, "mcEvent not available");
@@ -1661,8 +1666,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       Double_t scalempt= TMath::Min(particle->Pt(),10.);
       Double_t downscaleF = gRandom->Rndm();
       downscaleF *= fLowPtTrackDownscaligF;
-      if(TMath::Exp(2*scalempt)<downscaleF) continue;
-
+      if (downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       // is particle in acceptance
       if(!accCuts->AcceptTrack(particle)) continue;
 
@@ -1720,13 +1724,14 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       Double_t tpcTrackLength = 0.;
       AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(iMc);
       if(mcParticle) {
-        Int_t counter;
+	Int_t counter=0;
         tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
       } 
 
 
       //
       if(fTreeSRedirector && fFillTree) {
+	downscaleCounter++;
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fCurrentFileName<<
           "triggerClass.="<<&triggerClass<<
@@ -1791,6 +1796,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   //
   // Select real events with V0 (K0s and Lambda and Gamma) high-pT candidates
   //
+  static Int_t downscaleCounter=0;
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
@@ -1951,7 +1957,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
 
       //
       Bool_t isDownscaled = IsV0Downscaled(v0);
-      if (isDownscaled) continue;
+      if (downscaleCounter>0 && isDownscaled) continue;
       AliKFParticle kfparticle; //
       Int_t type=GetKFParticle(v0,esdEvent,kfparticle);
       if (type==0) continue;   
@@ -1989,7 +1995,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         }
       }
 
-
+      downscaleCounter++;
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
         "isDownscaled="<<isDownscaled<<       //  
@@ -2025,6 +2031,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
   //
   // Select real events with large TPC dEdx signal
   //
+  static Int_t downscaleCounter=0;
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
@@ -2139,7 +2146,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
         }
       }
 	
-
+      downscaleCounter++;
       (*fTreeSRedirector)<<"dEdx"<<           // high dEdx tree
         "gid="<<gid<<                         // global id
         "fileName.="<<&fCurrentFileName<<     // file name
