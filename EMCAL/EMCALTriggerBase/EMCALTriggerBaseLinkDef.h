@@ -28,5 +28,6 @@
 #pragma link C++ class AliEMCALTriggerBitConfig+;
 #pragma link C++ class AliEMCALTriggerBitConfigOld+;
 #pragma link C++ class AliEMCALTriggerBitConfigNew+;
+#pragma link C++ class AliEMCALTriggerQA+;
 
 #endif
