@@ -3694,6 +3694,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 	}
 	memcpy(fClPointersPoolPtr,seedClusters,kMaxRow*sizeof(AliTPCclusterMI*));
 	seed->SetClustersArrayTMP(fClPointersPoolPtr);
+	esd->AddCalibObject(seed);
 	fClPointersPoolPtr += kMaxRow;
       }
       //
@@ -8624,10 +8625,11 @@ void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
   //
   AliInfo("Removing own seeds from friend tracks");
   AliESDfriend* esdF = esd->FindFriend();
-  if (!esdF) return;
-  int ntr = esdF->GetNumberOfTracks();
+  int ntr = esd->GetNumberOfTracks();
   for (int itr=ntr;itr--;) {
-    AliESDfriendTrack* trcF = esdF->GetTrack(itr);
+    AliESDtrack* trc = esd->GetTrack(itr);
+    AliESDfriendTrack* trcF = (AliESDfriendTrack*)trc->GetFriendTrack();
+    if (!trcF && esdF) trcF = (AliESDfriendTrack*)esdF->GetTrack(itr); // might be reattached
     if (!trcF) continue;
     AliTPCseed* seed = (AliTPCseed*)trcF->GetTPCseed();
     if (seed) {
