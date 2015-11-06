@@ -1568,7 +1568,9 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   // 
   //
   const Int_t kMinNcl =10;
-  AliTPCseed *track=new AliTPCseed(*seed);
+  static AliTPCseed trackTmp;
+  AliTPCseed* track = &trackTmp;
+  track->AliExternalTrackParam::operator=(*seed);
   Int_t sector=-1;
   // reset covariance
   //
@@ -1584,8 +1586,8 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   Float_t xmin=1000, xmax=-10000;
   Int_t imin=158, imax=0;
   for (Int_t i=0;i<kMaxRow;i++) {
-    AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
+    AliTPCclusterMI *c=seed->GetClusterPointer(i);
+    if (!c || (seed->GetClusterIndex(i) & 0x8000)) continue; 
     if (sector<0) sector = c->GetDetector();
     if (c->GetX()<xmin) xmin=c->GetX();
     if (c->GetX()>xmax) xmax=c->GetX();
@@ -1593,12 +1595,12 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
     if (i>imax) imax=i;
   }
   if(imax-imin<kMinNcl) {
-    delete track;
+    //RS    delete track;
     return 0 ;
   }
   // Not succes to rotate
   if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
-    delete track;
+    //    delete track;
     return 0;
   }
   //
@@ -1613,8 +1615,8 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   //
   for (Int_t i=imin; i<=imax; i++){
-    AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
+    AliTPCclusterMI *c=seed->GetClusterPointer(i);
+    if (!c || (seed->GetClusterIndex(i) & 0x8000)) continue; 
     //    if (RejectCluster(c,track)) continue;
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
@@ -1627,14 +1629,15 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
     }
     if ( !((static_cast<AliExternalTrackParam*>(track)->Update(&r[1],cov)))) isOK=kFALSE;
   }
-  if (!isOK) { delete track; return 0;}
+  //RS  if (!isOK) { delete track; return 0;}
+  if (!isOK) { return 0;}
   track->AddCovariance(covar);
   //
   //
   //
   for (Int_t i=imax; i>=imin; i--){
-    AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue;
+    AliTPCclusterMI *c=seed->GetClusterPointer(i);
+    if (!c || (seed->GetClusterIndex(i) & 0x8000)) continue;
     //if (RejectCluster(c,track)) continue;
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
@@ -1653,8 +1656,8 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   //
   for (Int_t i=imin; i<=imax; i++){
-    AliTPCclusterMI *c=track->GetClusterPointer(i);
-    if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
+    AliTPCclusterMI *c=seed->GetClusterPointer(i);
+    if (!c || (seed->GetClusterIndex(i) & 0x8000)) continue; 
     sector = (c->GetDetector()%18);
     if (!track->Rotate(TMath::DegToRad()*(sector%18*20.+10.)-track->GetAlpha())) {
       //continue;
@@ -1675,7 +1678,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   if (parin) (*parin)=paramIn;
   if (parout) (*parout)=paramOut;
-  delete track;
+  //RS  delete track;
   return ncl;
 }
 
