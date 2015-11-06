@@ -144,18 +144,22 @@ public:
 
   static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
 
+  static void PatchSt1DCSAliases(TMap& hvMap);
+  
+  static Bool_t PatchHVValues(TObjArray& values, TString* msg=0x0, Bool_t dryRun=kFALSE);
+  
+  static UInt_t PatchHVDCSAliasesSt1WasAppliedMask() { return fgkPatchHVDCSAliasesSt1WasAppliedMask; }
+  
+  static UInt_t PatchHVAllWasAppliedMask() { return fgkPatchHVAllWasAppliedMask; }
+
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
   /// Not implemented
   AliMUONCalibrationData& operator=(const AliMUONCalibrationData& other);
 
-  static Bool_t PatchHVValues(TObjArray& values, TString* msg=0x0, Bool_t dryRun=kFALSE);
-  
   static Bool_t CheckHVGroup(TObjArray& values, Int_t first, Int_t last, Double_t& value,
                              Int_t& slope, TString* msg);
-
-  static void PatchSt1DCSAliases(TMap& hvMap);
 
   static void AddToMap(const TMap& sourceMap,
                        TMap& destMap,
@@ -188,7 +192,8 @@ private:
   
   mutable AliMUONVStore* fConfig; //!<! configuration of the tracker
   
-  static UInt_t fgkDCSSt1Flag; //!<! flag to indicate that the DCS alias naming is not messed up in St1
+  static UInt_t fgkPatchHVDCSAliasesSt1WasAppliedMask; //!<! mask to indicate that the DCS alias naming is not messed up in St1
+  static UInt_t fgkPatchHVAllWasAppliedMask; //!<! mask to indicate that HV values were massaged already
   
   ClassDef(AliMUONCalibrationData,14) // Storage for all MUON calibration data.
 };
