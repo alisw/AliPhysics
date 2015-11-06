@@ -28,9 +28,9 @@ if [ -f Run0_999999999_v3_s0.root ]; then
     mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
 fi
 
-echo "* Running AliRoot to merge calib objects found in $path with pattern AliESDfriends_v1.root"
-echo aliroot -l -b -q "merge.C(\"$path\",\"AliESDfriends_v1.root\")"
-time aliroot -l -b -q "merge.C(\"$path\",\"AliESDfriends_v1.root\")" &> merge.log
+echo "* Running AliRoot to merge calib objects found in $path with pattern CalibObjects.root"
+echo aliroot -l -b -q "merge.C(\"$path\",\"CalibObjects.root\")"
+time aliroot -l -b -q "merge.C(\"$path\",\"CalibObjects.root\")" &> merge.log
 
 exitcode=$?
 
