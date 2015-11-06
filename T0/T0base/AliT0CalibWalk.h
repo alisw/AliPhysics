@@ -32,6 +32,7 @@ class AliT0CalibWalk: public TNamed {
   void    GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
   void SetCalibByData(Bool_t calib) {fCalibByData=calib;}
   void SetWalk2015(TString filename);
+  void SetWalkDima(TString filename);
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
