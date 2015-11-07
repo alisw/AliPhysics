@@ -383,6 +383,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1PtEmbBeforeMatch;           // pt spectrum of embedded jets from extra particles before JetMatching
   TH1F* fh1PtEmbExtraOnly;             // pt spectrum of embedded jets from extraonly particles (embedded truth)
   TH1F* fh1PtEmbReject;                // pt spectrum of embedded jets that are rejected by jet matching cuts
+  TH2F* fh2PtEtaEmbReject;                // pt spectrum of embedded jets that are rejected by jet matching cuts
   TH1F* fh1PtEmbAfterMatch;           // pt spectrum of embedded jets from extra particles after JetMatching
   TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
   TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
@@ -519,6 +520,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnFeedDownALa;
   THnSparse* fhnFeedDownLaCone;
   THnSparse* fhnFeedDownALaCone;
+  TH2F* fh2FeedDownXiLa;  //Xi - La correlation plot for inclusive Feeddown fractions calculation, considered are Xi- and X0 FD
+  TH2F* fh2FeedDownXiALa;  //AXi - ALa correlation plot for inclusive Feeddown fractions calculation, considered are Xibar+ and X0bar FD
   TH1F* fh1MCProdRadiusK0s;
   TH1F* fh1MCProdRadiusLambda;
   TH1F* fh1MCProdRadiusAntiLambda;
