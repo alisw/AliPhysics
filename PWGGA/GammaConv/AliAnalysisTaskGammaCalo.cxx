@@ -762,7 +762,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherEtaPtOpenAngle[iCut]);
       }
       
-      if (fIsMC > 1){
+      if (fIsMC > 1 && fDoMesonQA > 0 && fDoMesonQA < 3){
         fHistoMotherPi0PtY[iCut]->Sumw2();
         fHistoMotherEtaPtY[iCut]->Sumw2();
         fHistoMotherPi0PtAlpha[iCut]->Sumw2();
