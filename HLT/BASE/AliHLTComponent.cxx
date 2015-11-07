@@ -47,8 +47,14 @@
 #include "TTimeStamp.h"
 #include <cassert>
 #include <ctime>
-#include <time.h>
 #include <stdint.h>
+
+#include <time.h>
+#include <sys/time.h>
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 
 /**
  * default compression level for ROOT objects
@@ -2236,9 +2242,19 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     if (fLastPushBackTime<0) {
       // choose a random offset at beginning to equalize traffic for multiple instances
       // of the component
-      timespec tv;
-      clock_gettime(CLOCK_REALTIME,&tv);
-      gRandom->SetSeed(tv.tv_nsec);
+      struct timespec ts;
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+      clock_serv_t cclock;
+      mach_timespec_t mts;
+      host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+      clock_get_time(cclock, &mts);
+      mach_port_deallocate(mach_task_self(), cclock);
+      ts.tv_sec = mts.tv_sec;
+      ts.tv_nsec = mts.tv_nsec;
+#else
+      clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+      gRandom->SetSeed(ts.tv_nsec);
       fLastPushBackTime=time.GetSec();
       fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
       HLTImportant("time: %i, fLastPushBackTime: %i",(int)time.GetSec(),fLastPushBackTime);
