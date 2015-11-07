@@ -137,12 +137,12 @@ int AliHLTLumiRegComponent::DoInit(int argc, const char **argv){
   AliCDBEntry *grpEntry = AliCDBManager::Instance()->Get("/GRP/GRP/Data/");
   if(!grpEntry) {
     ::Error("AliHLTLumiRegComponent","Cannot get AliCDBEntry");
-    return 0;
+    return 1;
   }
   const AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(grpEntry->GetObject());
   if(!grpData) {
     ::Error("AliHLTLumiRegComponent","Cannot get AliGRPObject");
-    return 0;
+    return 1;
   }
   TString beamType(grpData->GetBeamType());
   
@@ -151,7 +151,7 @@ int AliHLTLumiRegComponent::DoInit(int argc, const char **argv){
     if((beamType == "p-A")||(beamType == "A-p")) fEventSpecie = AliHLTLumiRegComponent::kpPb;
     else fEventSpecie = AliHLTLumiRegComponent::kpp;
 
-  return 1;
+  return 0;
 }
 
 Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
