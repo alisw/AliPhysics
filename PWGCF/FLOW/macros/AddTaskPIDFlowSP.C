@@ -5,6 +5,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
 		      Bool_t isVZERO = kFALSE,
 		      Bool_t isPbPb = kTRUE,
 		      Bool_t is2011 = kTRUE,
+		      AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
 		      Int_t gAODfilterBit = 768,
 		      Double_t gProbPID = 0.9,
 		      UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
@@ -30,7 +31,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
   TString outputSlotName[nCentralitiesMax][nHarmonics];
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralitiesMax - 1; iCentralityBin++) {
     //Create the event cut object
-    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,doQA);
+    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,gCentralityEstimator,doQA);
     
     //Create the RP cut object
     cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,doQA);        
@@ -161,9 +162,9 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
 					   Int_t gCentralityMax = -1,
 					   Bool_t isPbPb = kTRUE,
 					   Bool_t is2011 = kTRUE,
+					   AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
 					   Bool_t doQA = kFALSE) {
   //Part of the code that creates the event cut objects
-  AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO;
   Double_t gVertexZmin = -10., gVertexZmax = 10.;
   
   //Create the event cut objects
