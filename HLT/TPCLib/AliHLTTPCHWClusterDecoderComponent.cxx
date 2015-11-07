@@ -273,7 +273,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
       HLTDebug("minSlice: %d, minPartition: %d", AliHLTTPCDefinitions::GetMinSliceNr(*iter), AliHLTTPCDefinitions::GetMinPatchNr(*iter));     
       
-      long maxRawClusters = ((long)maxOutSize-size-sizeof(AliHLTTPCRawClusterData))/sizeof(AliHLTTPCRawCluster);
+      long maxRawClusters = ((long)maxOutSize-size-sizeof(AliHLTTPCRawClusterData))/sizeof(AliHLTTPCRawCluster) - 1; //Subract 1 to correct for rounding
        
       if( maxRawClusters<=0 ) {
 	HLTWarning("No more space to add raw clusters, exiting!");
