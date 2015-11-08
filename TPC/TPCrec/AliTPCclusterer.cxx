@@ -774,8 +774,10 @@ void AliTPCclusterer::Digits2Clusters()
     
     
     fMaxBin=fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-    fBins    =new Float_t[fMaxBin];
-    fSigBins =new Int_t[fMaxBin];
+    Float_t binsStack[fMaxBin];
+    Int_t   sigBinsStack[fMaxBin];
+    fBins    = binsStack; //new Float_t[fMaxBin];
+    fSigBins = sigBinsStack; //new Int_t[fMaxBin];
     fNSigBins = 0;
     memset(fBins,0,sizeof(Float_t)*fMaxBin);
     
@@ -801,8 +803,10 @@ void AliTPCclusterer::Digits2Clusters()
     fRowCl->GetArray()->Clear();    
     nclusters+=fNcluster;    
 
-    delete[] fBins;
-    delete[] fSigBins;
+    fBins = 0;
+    fSigBins = 0;
+    //    delete[] fBins; // RS moved to stack
+    //    delete[] fSigBins;
   }  
  
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
@@ -1374,8 +1378,8 @@ Double_t AliTPCclusterer::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t i
   //
   //
   Float_t kMin =fRecoParam->GetDumpAmplitudeMin();   // minimal signal to be dumped
-  Float_t *dsignal = new Float_t[nchannels];
-  Float_t *dtime   = new Float_t[nchannels];
+  Float_t dsignal[nchannels];
+  Float_t dtime[nchannels];
   for (Int_t i=0; i<nchannels; i++){
     dtime[i] = i;
     dsignal[i] = signal[i];
@@ -1406,8 +1410,8 @@ Double_t AliTPCclusterer::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t i
       "\n";
   }
 
-  delete [] dsignal;
-  delete [] dtime;
+  //  delete [] dsignal; // RS Moved to stack but where it is used? 
+  //  delete [] dtime;
   if (rms06>fRecoParam->GetMaxNoise()) {
     pedestalEvent+=1024.;
     return 1024+median; // sign noisy channel in debug mode
