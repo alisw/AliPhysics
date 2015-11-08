@@ -46,7 +46,7 @@
 #include <stdexcept>
 #include <functional>
 #include <AliLog.h>
-
+#include <sys/resource.h>
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
@@ -84,6 +84,25 @@ int main(int argc, char **argv)
   // in the run is stored in the same file in the tree TreeE, containing the
   // run and event number, the number of vertices, tracks and primary tracks
   // in the event.
+
+  //RS: use maximum stack size
+  const rlim_t kStackSize = 64L * 1024L * 1024L;   // min stack size = 64 Mb
+  struct rlimit rl;
+  int result;
+  result = getrlimit(RLIMIT_STACK, &rl);
+  if (result == 0) {
+    rlim_t oldss = rl.rlim_cur, newss = kStackSize;
+    if (newss > rl.rlim_max) {
+      AliWarningGeneralF("AliRoot","Requestested new stack size %ld > hard limit %ld",newss,rl.rlim_max);
+      newss = rl.rlim_max;
+    }
+    if (rl.rlim_cur < kStackSize) {
+      rl.rlim_cur = kStackSize;
+      result = setrlimit(RLIMIT_STACK, &rl);
+      if (result != 0)	fprintf(stderr, "setrlimit returned result = %d\n", result);
+      else AliInfoGeneralF("AliRoot","Set stack size from %ld to %ld, hard limit: %ld",oldss,rl.rlim_cur,rl.rlim_max);
+    }
+  }
   
   for ( int i = 1; i < argc; ++i ) 
   {
