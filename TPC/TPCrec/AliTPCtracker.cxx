@@ -2068,7 +2068,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
   //RS changed from heap allocation in the loop to stack allocation
   TGraphErrors * graphRes[20]; 
   Float_t        indexAmpGraphs[20];      
-  static TObjArray rowClusterArray(kMaxClusterPerRow); // caches clusters for each row  // RS avoid trashing the heap
+  AliTPCclusterMI* rowClusterArray[kMaxClusterPerRow]; // caches clusters for each row  // RS avoid trashing the heap
 
   // start looping over all clusters 
   for (Int_t iside=0; iside<2; iside++){    // loop over sides
@@ -2085,11 +2085,13 @@ void  AliTPCtracker::ApplyTailCancellation(){
         // Cache time response functions and their positons to COG of the cluster       
 	// TGraphErrors ** graphRes   = new TGraphErrors *[20]; // RS avoid heap allocations if stack can be used
         // Float_t * indexAmpGraphs   = new Float_t[20];        // RS Moved outside of the loop
-        for (Int_t icache=0; icache<20; icache++) 
-        {
-          graphRes[icache]       = NULL;
-          indexAmpGraphs[icache] = 0;
-        }
+	memset(graphRes,0,20*sizeof(TGraphErrors*));
+	memset(indexAmpGraphs,0,20*sizeof(float));
+        //for (Int_t icache=0; icache<20; icache++)  //RS
+        //{
+        //  graphRes[icache]       = NULL;
+        //  indexAmpGraphs[icache] = 0;
+	// }
         /////////////////////////////  --> position fo sie loop
         if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(sec+36*secType+18*iside,graphRes,indexAmpGraphs))
         {
@@ -2112,19 +2114,20 @@ void  AliTPCtracker::ApplyTailCancellation(){
           Int_t sortedClusterIndex[ncl];
           Float_t sortedClusterTimeBin[ncl];
           //TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  // RS avoid trashing the heap
-	  rowClusterArray.Clear();
-	  if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
+	  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
+	  //if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
           for (Int_t i=0;i<ncl;i++) 
           {
             qTotArray[i]=0;
             qMaxArray[i]=0;
             sortedClusterIndex[i]=i;
             AliTPCclusterMI *rowcl= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
-            if (rowcl) {
-              rowClusterArray.AddAt(rowcl,i);
-            } else {
-              rowClusterArray.RemoveAt(i);
-            }
+            if (rowcl) rowClusterArray[i] = rowcl;
+	    //if (rowcl) {
+            //  rowClusterArray.AddAt(rowcl,i);
+            //} else {
+            //  rowClusterArray.RemoveAt(i);
+            //}
             // Fill the timebin info to the array in order to sort wrt tb
             if (!rowcl) {
 	      sortedClusterTimeBin[i]=0.0;
@@ -2138,12 +2141,12 @@ void  AliTPCtracker::ApplyTailCancellation(){
           // Main cluster correction loops over clusters
           for (Int_t icl0=0; icl0<ncl;icl0++){    // first loop over clusters
 
-            AliTPCclusterMI *cl0= static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl0]));
+            AliTPCclusterMI *cl0= rowClusterArray[sortedClusterIndex[icl0]]; //RS static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl0]));
             
             if (!cl0) continue;
             Int_t nclPad=0;                       
             for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
-              AliTPCclusterMI *cl1= static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl1]));
+              AliTPCclusterMI *cl1= rowClusterArray[sortedClusterIndex[icl1]];//RS static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl1]));
 	      if (!cl1) continue;
 	      if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>4) continue;           // no contribution if far away in pad direction
               if (cl0->GetTimeBin()<= cl1->GetTimeBin()) continue;               // no contibution to the tail if later
@@ -5243,10 +5246,10 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
   //
   //
   Int_t nentries = array->GetEntriesFast();  
-  AliHelix *helixes      = new AliHelix[nentries];
-  Float_t  *xm           = new Float_t[nentries];
-  Float_t  *dz0           = new Float_t[nentries];
-  Float_t  *dz1           = new Float_t[nentries];
+  AliHelix helixes[nentries];
+  Float_t  xm[nentries];
+  Float_t  dz0[nentries];
+  Float_t  dz1[nentries];
   //
   //
   TStopwatch timer;
@@ -5379,10 +5382,10 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
 	}
     }
   }    
-  delete [] helixes;
-  delete [] xm;
-  delete [] dz0;
-  delete [] dz1;
+  //  delete [] helixes; // RS moved to stack
+  //  delete [] xm;
+  //  delete [] dz0;
+  //  delete [] dz1;
   if (AliTPCReconstructor::StreamLevel()>0) {
     AliInfo("Time for curling tracks removal DEBUGGING MC");
     timer.Print();
@@ -5412,7 +5415,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   Int_t lastpoint = kMaxRow;
   //
   Int_t nentries = array->GetEntriesFast();  
-  AliExternalTrackParam *params      = new AliExternalTrackParam[nentries];
+  AliExternalTrackParam params[nentries];
   //
   //
   TStopwatch timer;
@@ -5422,8 +5425,8 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   //1.  Propagate the ext. param to reference radius
   Int_t nseed = array->GetEntriesFast();  
   if (nseed<=0) return;
-  Float_t * quality = new Float_t[nseed];
-  Int_t   * indexes = new Int_t[nseed];
+  Float_t quality[nseed];
+  Int_t   indexes[nseed];
   for (Int_t i=0; i<nseed; i++) {
     AliTPCseed *pt=(AliTPCseed*)array->UncheckedAt(i);    
     if (!pt){
@@ -5553,9 +5556,9 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   //
   // 4. Delete temporary array
   //
-  delete [] params; 
-  delete [] quality;
-  delete [] indexes;
+  // delete [] params; // RS moved to stack
+  //  delete [] quality;
+  //  delete [] indexes;
 
 }
 
@@ -5611,7 +5614,7 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
   //
   //
   Int_t nentries = array->GetEntriesFast();  
-  AliHelix *helixes      = new AliHelix[nentries];
+  AliHelix helixes[nentries];
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed* track = (AliTPCseed*)array->At(i);    
     if (!track) continue;
@@ -5757,7 +5760,7 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
       }
     }
   }
-  delete [] helixes;
+  //  delete [] helixes; //RS moved to stack
   if (AliTPCReconstructor::StreamLevel()>1) {
     AliInfo("Time for curling tracks removal");
     timer.Print();
@@ -5774,21 +5777,21 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   // RS something is wrong in this routine: not all seeds are assigned to daughters and mothers array, but they all are queried
   // to check later
 
-  TObjArray *kinks= new TObjArray(10000);
-  //  TObjArray *v0s= new TObjArray(10000);
+  TObjArray kinks(10000);
   Int_t nentries = array->GetEntriesFast();
-  AliHelix *helixes      = new AliHelix[nentries];
-  Int_t    *sign         = new Int_t[nentries];
-  Int_t    *nclusters    = new Int_t[nentries];
-  Float_t  *alpha        = new Float_t[nentries];
+  AliHelix helixes[nentries];
+  Char_t   sign[nentries];
+  UChar_t  nclusters[nentries];
+  Float_t  alpha[nentries];
+  UChar_t  usage[nentries];
+  Float_t  zm[nentries];
+  Float_t  z0[nentries]; 
+  Float_t  fim[nentries];
+  Bool_t   shared[nentries];
+  Bool_t   circular[nentries];
+  Float_t dca[nentries];
   AliKink  *kink         = new AliKink();
-  Int_t      * usage     = new Int_t[nentries];
-  Float_t  *zm           = new Float_t[nentries];
-  Float_t  *z0           = new Float_t[nentries]; 
-  Float_t  *fim          = new Float_t[nentries];
-  Float_t  *shared       = new Float_t[nentries];
-  Bool_t   *circular     = new Bool_t[nentries];
-  Float_t *dca          = new Float_t[nentries];
+
   //const AliESDVertex * primvertex = esd->GetVertex();
   //
   //  nentries = array->GetEntriesFast();
@@ -5973,8 +5976,10 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     for (Int_t j =i+1;j<nentries;j++){
       nall++;
       if (sign[j]*sign[i]<1) continue;
-      if ( (nclusters[i]+nclusters[j])>200) continue;
-      if ( (nclusters[i]+nclusters[j])<80) continue;
+      int ncltot = nclusters[i];
+      ncltot += nclusters[j];
+      if ( ncltot>200) continue;
+      if ( ncltot<80) continue;
       if ( TMath::Abs(zm[i]-zm[j])>60.) continue;
       if ( TMath::Abs(fim[i]-fim[j])>0.6 && TMath::Abs(fim[i]-fim[j])<5.7 ) continue;
       //AliTPCseed * track1 = (AliTPCseed*)array->At(j);  Double_t phase[2][2],radius[2];    
@@ -6198,7 +6203,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	continue;
       }
       //
-      kinks->AddLast(kink);
+      kinks.AddLast(kink);
       kink = new AliKink;
       ncandidates++;
     }
@@ -6206,16 +6211,18 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   //
   // sort the kinks according quality - and refit them towards vertex
   //
-  Int_t       nkinks    = kinks->GetEntriesFast();
-  Float_t    *quality   = new Float_t[nkinks];
-  Int_t      *indexes   = new Int_t[nkinks];
-  AliTPCseed *mothers   = new AliTPCseed[nkinks];
-  AliTPCseed *daughters = new AliTPCseed[nkinks];
+  Int_t       nkinks    = kinks.GetEntriesFast();
+  Float_t    quality[nkinks];
+  Int_t      indexes[nkinks];
+  AliTPCseed *mothers[nkinks];
+  AliTPCseed *daughters[nkinks];
+  memset(mothers,0,nkinks*sizeof(AliTPCseed*));
+  memset(daughters,0,nkinks*sizeof(AliTPCseed*));
   //
   //
   for (Int_t i=0;i<nkinks;i++){
     quality[i] =100000;
-    AliKink *kinkl = (AliKink*)kinks->At(i);
+    AliKink *kinkl = (AliKink*)kinks.At(i);
     //
     // refit kinks towards vertex
     // 
@@ -6229,45 +6236,41 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     // Refit Kink under if too small angle
     //
     if (kinkl->GetAngle(2)<0.05){
+      //
+      // RS: if possible, remove kink before reseeding
+      if (kinkl->GetDistance()>0.5 || kinkl->GetR()<110 || kinkl->GetR()>240) {
+	delete kinks.RemoveAt(i);
+	continue;
+      }
+      //
       kinkl->SetTPCRow0(GetRowNumber(kinkl->GetR()));
       Int_t row0 = kinkl->GetTPCRow0();
       Int_t drow = Int_t(2.+0.5/(0.05+kinkl->GetAngle(2)));
-      //
       //
       Int_t last  = row0-drow;
       if (last<40) last=40;
       if (last<ktrack0->GetFirstPoint()+25) last = ktrack0->GetFirstPoint()+25;
       AliTPCseed* seed0 = ReSeed(ktrack0,last,kFALSE);
       //
-      //
       Int_t first = row0+drow;
       if (first>130) first=130;
       if (first>ktrack1->GetLastPoint()-25) first = TMath::Max(ktrack1->GetLastPoint()-25,30);
       AliTPCseed* seed1 = ReSeed(ktrack1,first,kTRUE);
       //
-      if (seed0 && seed1){
+      if (seed0 && seed1) {
 	kinkl->SetStatus(1,8);
 	if (RefitKink(*seed0,*seed1,*kinkl)) kinkl->SetStatus(1,9);
 	row0 = GetRowNumber(kinkl->GetR());
 	sumn = seed0->GetNumberOfClusters()+seed1->GetNumberOfClusters();
-	mothers[i] = *seed0;
-	daughters[i] = *seed1;
+	mothers[i]   = seed0;
+	daughters[i] = seed1;
       }
-      else{
-	delete kinks->RemoveAt(i);
+      else {
+	delete kinks.RemoveAt(i);
 	if (seed0) MarkSeedFree( seed0 );
 	if (seed1) MarkSeedFree( seed1 );
 	continue;
       }
-      if (kinkl->GetDistance()>0.5 || kinkl->GetR()<110 || kinkl->GetR()>240) {
-	delete kinks->RemoveAt(i);
-	if (seed0) MarkSeedFree( seed0 );
-	if (seed1) MarkSeedFree( seed1 );
-	continue;
-      }
-      //
-      MarkSeedFree( seed0 );
-      MarkSeedFree( seed1 );
     }
     //
     if (kinkl) quality[i] = 160*((0.1+kinkl->GetDistance())*(2.-kinkl->GetTPCDensityFactor()))/(sumn+40.);  //the longest -clossest will win
@@ -6277,23 +6280,24 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   //remove double find kinks
   //
   for (Int_t ikink0=1;ikink0<nkinks;ikink0++){
-    AliKink * kink0 = (AliKink*) kinks->At(indexes[ikink0]);
+    AliKink * kink0 = (AliKink*) kinks.At(indexes[ikink0]);
     if (!kink0) continue;
     //
     for (Int_t ikink1=0;ikink1<ikink0;ikink1++){ 
-      kink0 = (AliKink*) kinks->At(indexes[ikink0]);
+      kink0 = (AliKink*) kinks.At(indexes[ikink0]);
       if (!kink0) continue;
-      AliKink * kink1 = (AliKink*) kinks->At(indexes[ikink1]);
+      AliKink * kink1 = (AliKink*) kinks.At(indexes[ikink1]);
       if (!kink1) continue;
       // if not close kink continue
       if (TMath::Abs(kink1->GetPosition()[2]-kink0->GetPosition()[2])>10) continue;
       if (TMath::Abs(kink1->GetPosition()[1]-kink0->GetPosition()[1])>10) continue;
       if (TMath::Abs(kink1->GetPosition()[0]-kink0->GetPosition()[0])>10) continue;
       //
-      AliTPCseed &mother0   = mothers[indexes[ikink0]];
-      AliTPCseed &daughter0 = daughters[indexes[ikink0]];
-      AliTPCseed &mother1   = mothers[indexes[ikink1]];
-      AliTPCseed &daughter1 = daughters[indexes[ikink1]];
+      AliTPCseed &mother0   =  mothers[indexes[ikink0]]   ? *mothers[indexes[ikink0]]   : *((AliTPCseed*)array->At(kink0->GetIndex(0)));
+      AliTPCseed &daughter0 =  daughters[indexes[ikink0]] ? *daughters[indexes[ikink0]] : *((AliTPCseed*)array->At(kink0->GetIndex(1)));
+      AliTPCseed &mother1   =  mothers[indexes[ikink1]]   ? *mothers[indexes[ikink1]]   : *((AliTPCseed*)array->At(kink1->GetIndex(0)));
+      AliTPCseed &daughter1 =  daughters[indexes[ikink1]] ? *daughters[indexes[ikink1]] : *((AliTPCseed*)array->At(kink1->GetIndex(1)));
+
       Int_t row0 = (kink0->GetTPCRow0()+kink1->GetTPCRow0())/2;
       //
       Int_t same  = 0;
@@ -6334,13 +6338,13 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 	if (sum1>sum0){
 	  shared[kink0->GetIndex(0)]= kTRUE;
 	  shared[kink0->GetIndex(1)]= kTRUE;	  
-	  delete kinks->RemoveAt(indexes[ikink0]);
+	  delete kinks.RemoveAt(indexes[ikink0]);
 	  break;
 	}
 	else{
 	  shared[kink1->GetIndex(0)]= kTRUE;
 	  shared[kink1->GetIndex(1)]= kTRUE;	  
-	  delete kinks->RemoveAt(indexes[ikink1]);
+	  delete kinks.RemoveAt(indexes[ikink1]);
 	}
       }
     }
@@ -6348,7 +6352,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 
 
   for (Int_t i=0;i<nkinks;i++){
-    AliKink * kinkl = (AliKink*) kinks->At(indexes[i]);
+    AliKink * kinkl = (AliKink*) kinks.At(indexes[i]);
     if (!kinkl) continue;
     kinkl->SetTPCRow0(GetRowNumber(kinkl->GetR()));
     Int_t index0 = kinkl->GetIndex(0);
@@ -6368,9 +6372,12 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     //
     //
     if ( ktrack0->GetKinkIndex(0)==0 && ktrack1->GetKinkIndex(0)==0) {  //best kink
-      if (mothers[indexes[i]].GetNumberOfClusters()>20 && daughters[indexes[i]].GetNumberOfClusters()>20 && (mothers[indexes[i]].GetNumberOfClusters()+daughters[indexes[i]].GetNumberOfClusters())>100){
-	*ktrack0 = mothers[indexes[i]];
-	*ktrack1 = daughters[indexes[i]];
+      if ( (mothers[indexes[i]]) && daughters[indexes[i]] && 
+	   mothers[indexes[i]]->GetNumberOfClusters()>20 &&  // where they reseeded?
+	   daughters[indexes[i]]->GetNumberOfClusters()>20 && 
+	  (mothers[indexes[i]]->GetNumberOfClusters()+daughters[indexes[i]]->GetNumberOfClusters())>100){
+	*ktrack0 = *mothers[indexes[i]];
+	*ktrack1 = *daughters[indexes[i]];
       }
     }
     //
@@ -6403,9 +6410,6 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   // RS use stack allocation instead of the heap
   AliTPCseed mother,daughter;
   AliKink kinkl;
-  AliTPCseed *pmother = new AliTPCseed();
-  AliTPCseed *pdaughter = new AliTPCseed();
-  AliKink *pkink = new AliKink;
   //
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
@@ -6491,27 +6495,31 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     //delete pkink;
   }
 
-  delete [] daughters;
-  delete [] mothers;
+  for (int i=nkinks;i--;) {
+    if (mothers[i]) MarkSeedFree( mothers[i] );
+    if (daughters[i]) MarkSeedFree( daughters[i] );
+  }
+  //  delete [] daughters;
+  //  delete [] mothers;
   //
-  //
-  delete [] dca;
-  delete []circular;
-  delete []shared;
-  delete []quality;
-  delete []indexes;
+  // RS: most of heap array are converted to stack arrays
+  //  delete [] dca;
+  //  delete []circular;
+  //  delete []shared;
+  //  delete []quality;
+  //  delete []indexes;
   //
   delete kink;
-  delete[]fim;
-  delete[] zm;
-  delete[] z0;
-  delete [] usage;
-  delete[] alpha;
-  delete[] nclusters;
-  delete[] sign;
-  delete[] helixes;
-  kinks->Delete();
-  delete kinks;
+  //  delete[]fim;
+  //  delete[] zm;
+  //  delete[] z0;
+  //  delete [] usage;
+  //  delete[] alpha;
+  //  delete[] nclusters;
+  //  delete[] sign;
+  // delete[] helixes;
+  kinks.Delete();
+  //delete kinks;
 
   AliInfo(Form("Ncandidates=\t%d\t%d\t%d\t%d\n",esd->GetNumberOfKinks(),ncandidates,ntracks,nall));
   timer.Print();
