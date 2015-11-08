@@ -282,9 +282,8 @@ void AliESDfriendTrack::SetTPCIndices(Int_t* indices, Int_t n){
 	if (fTPCindex == 0x0){
 		fTPCindex = new Int_t[fnMaxTPCcluster];
 	}
-	for (Int_t i = 0; i < fnMaxTPCcluster; i++){
-		fTPCindex[i] = indices[i];
-	}
+ 	memcpy(fTPCindex,indices,sizeof(Int_t)*fnMaxTPCcluster); //RS
+	//for (Int_t i = 0; i < fnMaxTPCcluster; i++){fTPCindex[i] = indices[i];}
 }
 
 void AliESDfriendTrack::SetTRDIndices(Int_t* indices, Int_t n){
@@ -305,8 +304,7 @@ void AliESDfriendTrack::SetTRDIndices(Int_t* indices, Int_t n){
 	if (fTRDindex == 0x0){
 		fTRDindex = new Int_t[fnMaxTRDcluster];
 	}
-	for (Int_t i = 0; i < fnMaxTRDcluster; i++){
-		fTRDindex[i] = indices[i];
-	}
+	memcpy(fTRDindex,indices,sizeof(Int_t)*fnMaxTRDcluster); //RS
+	//for (Int_t i = 0; i < fnMaxTRDcluster; i++){fTRDindex[i] = indices[i];}
 }
 
