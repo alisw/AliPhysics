@@ -2068,7 +2068,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
   //RS changed from heap allocation in the loop to stack allocation
   TGraphErrors * graphRes[20]; 
   Float_t        indexAmpGraphs[20];      
-  AliTPCclusterMI* rowClusterArray[kMaxClusterPerRow]; // caches clusters for each row  // RS avoid trashing the heap
+  //  AliTPCclusterMI* rowClusterArray[kMaxClusterPerRow]; // caches clusters for each row  // RS avoid trashing the heap
 
   // start looping over all clusters 
   for (Int_t iside=0; iside<2; iside++){    // loop over sides
@@ -2114,6 +2114,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
           Int_t sortedClusterIndex[ncl];
           Float_t sortedClusterTimeBin[ncl];
           //TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  // RS avoid trashing the heap
+	  AliTPCclusterMI* rowClusterArray[ncl]; // caches clusters for each row  // RS avoid trashing the heap 
 	  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
 	  //if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
           for (Int_t i=0;i<ncl;i++) 
