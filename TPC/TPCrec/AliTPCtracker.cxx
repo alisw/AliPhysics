@@ -135,6 +135,7 @@
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
 //
+#include "AliESDfriendTrack.h"
 
 using std::cout;
 using std::cerr;
@@ -3580,6 +3581,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   //
   // RS: the cluster pointers are not permanently attached to the seed during the tracking, need to attach temporarily
   AliTPCclusterMI* seedClusters[kMaxRow];
+  int seedsInFriends = 0;
   //
   for (Int_t i=0;i<nseed;i++) {
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
@@ -3633,7 +3635,6 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 	"Track.="<<seed<<
 	"\n"; 
     }
-
     if (seed->GetNumberOfClusters()>15) {
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
@@ -3672,9 +3673,10 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       //
       // add seed to the esd track in Calib level
       //
-      Bool_t storeFriend = gRandom->Rndm()<(kMaxFriendTracks)/Float_t(nseed);
+      Bool_t storeFriend = seedsInFriends<(kMaxFriendTracks-1) && gRandom->Rndm()<(kMaxFriendTracks)/Float_t(nseed);
       //      if (AliTPCReconstructor::StreamLevel()>0 &&storeFriend){
       if (storeFriend){ // RS: seed is needed for calibration, regardless on streamlevel
+	storeFriend++;
 	// RS: this is the only place where the seed is created not in the pool, 
 	// since it should belong to ESDevent
 	//AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
@@ -3684,19 +3686,12 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 	// clusters and reattach the clusters pointers from the pool, so they are saved in the friends
 	seed->SetClusterOwner(kTRUE);
 	Int_t poolFilled = (fClPointersPoolPtr-fClPointersPool)/kMaxRow;
-	if (poolFilled>=fClPointersPoolSize) { // expand cluster pointers pool, normally should not happen
-	  fClPointersPoolSize += 100;
-	  AliTPCclusterMI** pooln = new AliTPCclusterMI*[fClPointersPoolSize*kMaxRow];
-	  memcpy(pooln,fClPointersPool,poolFilled*kMaxRow*sizeof(AliTPCclusterMI*));
-	  delete[] fClPointersPool;
-	  fClPointersPool = pooln;
-	  fClPointersPoolPtr = fClPointersPool+poolFilled*kMaxRow; // update position pointer
-	}
 	memcpy(fClPointersPoolPtr,seedClusters,kMaxRow*sizeof(AliTPCclusterMI*));
 	seed->SetClustersArrayTMP(fClPointersPoolPtr);
 	esd->AddCalibObject(seed);
 	fClPointersPoolPtr += kMaxRow;
       }
+      else seed->SetClustersArrayTMP((AliTPCclusterMI**)seedClustersSave);
       //
       ntracks++;
     }

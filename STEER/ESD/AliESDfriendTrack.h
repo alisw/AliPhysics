@@ -93,7 +93,7 @@ public:
   // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
-  const AliVTPCseed* GetTPCseed() const;
+  const TObject* GetTPCseed() const;
   void ResetTPCseed( const AliTPCseed* s );
 
 protected:

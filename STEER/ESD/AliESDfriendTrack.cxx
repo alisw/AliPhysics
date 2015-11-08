@@ -195,12 +195,12 @@ Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
   return -1;
 }
 
-const AliVTPCseed* AliESDfriendTrack::GetTPCseed() const 
+const TObject* AliESDfriendTrack::GetTPCseed() const 
 {
   TObject* calibObject = NULL;
   AliVTPCseed* seedP = NULL;
   for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
-    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) return seedP;
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) return calibObject;
   }
   return 0;
 }

@@ -107,7 +107,6 @@
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
 #include <TArrayD.h>
 #include <TArrayF.h>
 #include <TArrayS.h>
@@ -2554,6 +2553,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fTracker[AliQAv1::kTPC]->UnloadClusters();
     AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[AliQAv1::kTPC],iEvent), AliQAv1::kTPC,4, iEvent);
   }
+  if (fLoader[AliQAv1::kTPC]) {
+    fLoader[AliQAv1::kTPC]->UnloadRecPoints();
+    AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[AliQAv1::kTPC],iEvent), AliQAv1::kTPC,5, iEvent);
+  }
     
   return kTRUE;
 }
@@ -3268,12 +3271,12 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     // 
     // RS: TPC clusters will be unloaded in the end of process event, since used in the friends calib objects
     // unload clusters
-    if (iDet!=1) {
+    if (iDet!=AliQAv1::kTPC) {
       fTracker[iDet]->UnloadClusters();
       AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,4, eventNr);
+      fLoader[iDet]->UnloadRecPoints();
+      AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
     }
-    fLoader[iDet]->UnloadRecPoints();
-    AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
   // stop filling residuals for TPC and ITS
   if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kFALSE);     
