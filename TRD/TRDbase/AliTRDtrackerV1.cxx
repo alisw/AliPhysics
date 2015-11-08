@@ -291,16 +291,17 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         nTRDseeds= 0, // number of seeds in the TRD acceptance
         nTPCseeds= 0; // number of TPC seeds
   Float_t foundMin = 20.0;
-  
-  Float_t *quality = NULL;
-  Int_t   *index   = NULL;
+
   fEventInFile  = event->GetEventNumberInFile();
   nSeeds   = event->GetNumberOfTracks();
+  
+  Float_t quality[nSeeds];
+  Int_t   index[nSeeds];
   // Sort tracks according to quality 
   // (covariance in the yz plane)
   if(nSeeds){  
-    quality = new Float_t[nSeeds];
-    index   = new Int_t[4*nSeeds];
+    //    quality = new Float_t[nSeeds]; // RS move on stack
+    //    index   = new Int_t[4*nSeeds];
     for (Int_t iSeed = nSeeds; iSeed--;) {
       AliESDtrack *seed = event->GetTrack(iSeed);
       Double_t covariance[15];
@@ -466,8 +467,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     }
     seed->SetTRDBudget(track.GetBudget(0));
   }
-  if(index) delete [] index;
-  if(quality) delete [] quality;
+  //  if(index) delete [] index; // RS moved to stack
+  //  if(quality) delete [] quality;
 
   AliInfo(Form("Number of seeds: TPCout[%d] TRDin[%d]", nTPCseeds, nTRDseeds));
   AliInfo(Form("Number of tracks: TRDout[%d] TRDbackup[%d]", nFound, nBacked));
@@ -1993,7 +1994,7 @@ Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)
   //
 
   Int_t nsize = Int_t(clusterTree->GetTotBytes() / (sizeof(AliTRDcluster))); 
-  TObjArray *clusterArray = new TObjArray(nsize+1000); 
+  static TObjArray* clusterArray=0;// = new TObjArray(nsize+1000); 
   
   TBranch *branch = clusterTree->GetBranch("TRDcluster");
   if (!branch) {
@@ -2028,7 +2029,8 @@ Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)
       delete (clusterArray->RemoveAt(iCluster)); 
     }
   }
-  delete clusterArray;
+  //  delete clusterArray;
+  clusterArray->Delete(); //RS normally should not contain clusters anymore
 
   return kTRUE;
 }
