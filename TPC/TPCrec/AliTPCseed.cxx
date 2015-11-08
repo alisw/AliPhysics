@@ -409,7 +409,7 @@ void AliTPCseed::Reset(Bool_t all)
   ResetCovariance(10.);
 
   if (all){   
-    for (Int_t i=200;i--;) SetClusterIndex2(i,-3);
+    for (Int_t i=kMaxRow;i--;) SetClusterIndex2(i,-3);
     if (fClusterPointer) {
       if (!fClusterOwner) for (Int_t i=kMaxRow;i--;) fClusterPointer[i]=0;
       else                for (Int_t i=kMaxRow;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
@@ -1420,7 +1420,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   if (ncl<10) return 0;
   //
-  Double_t * ampWithBelow = new Double_t[ncl + nclBelowThr];
+  Double_t ampWithBelow[ncl + nclBelowThr];
   for(Int_t iCl = 0; iCl < ncl + nclBelowThr; iCl++) {
     if (iCl < nclBelowThr) {
       ampWithBelow[iCl] = amp[indexes[0]];
@@ -1498,7 +1498,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (mode==1) meanL=TMath::Exp(meanL);  // upper truncation
   if (mode==1) meanD=TMath::Exp(meanD);  // lower truncation
   //
-  delete [] ampWithBelow; //return?
+  //delete [] ampWithBelow; //return? // RS made on stack
   
 
   //
