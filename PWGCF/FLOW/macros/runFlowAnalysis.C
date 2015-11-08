@@ -564,15 +564,6 @@ void LoadLibraries(const anaModes mode) {
     // If you want to use already compiled libraries 
     // in the aliroot distribution
     //--------------------------------------------------------
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gSystem->Load("libCORRFW");
-    cerr<<"libCORRFW loaded..."<<endl;
-    gSystem->Load("libPWGflowBase");
-    cerr<<"libPWGflowBase loaded..."<<endl;
     gSystem->Load("libPWGflowTasks");
     cerr<<"libPWGflowTasks loaded..."<<endl;
   }

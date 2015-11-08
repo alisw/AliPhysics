@@ -12,21 +12,6 @@ void runFlowOnDataExample() {
     // rbertens@cern.ch , rbertens@nikhef.nl , r.a.bertens@uu.nl
 
   // load libraries
-  gSystem->Load("libCore");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libTree");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libEventMixing");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGTools");
-  gSystem->Load("libPWGCFebye");
-  gSystem->Load("libPWGflowBase");
   gSystem->Load("libPWGflowTasks");
 
     // create the analysis manager
