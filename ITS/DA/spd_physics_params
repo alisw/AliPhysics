@@ -1,0 +1,8 @@
+MistakeProbabilityNoisy -1
+MistakeProbabilityDead -1
+fMinEventsForNoisy 10000
+fMinEventsForDead 1000000
+fDefinitelyNoisyRatio 0.05
+fMinNrEqHitsForDeadChips 60000
+fRatioToMeanForInefficientChip 0.1 
+nEventsCyclic 300000
