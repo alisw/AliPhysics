@@ -2334,7 +2334,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1);
           }
           
-          if (fDoMesonQA == 1 && fIsMC < 2){
+          if (fDoMesonQA == 1 && fIsMC < 1){
             fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),gamma1->E());
             if(abs(pi0cand->GetAlpha())<0.1)
             fHistoMotherInvMassECalibalpha[fiCut]->Fill(pi0cand->M(),gamma1->E());            
