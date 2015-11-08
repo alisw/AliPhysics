@@ -72,12 +72,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable);
      
      void Modify(Double_t factor);
-     void SetClusterIndex2(Int_t row, Int_t index) {
-       fIndex[row] = index;
-     }
-     Int_t  GetClusterIndex2(Int_t row) const {
-       return fIndex[row];
-     }
+     void  SetClusterIndex2(Int_t row, Int_t index) {fIndex[row] = index;} //RS: no check on index range
+     Int_t GetClusterIndex2(Int_t row) const { return fIndex[row];} // RS: no check on index range
      Int_t GetClusterSector(Int_t row) const {
        Int_t pica = -1;
        if (fIndex[row]>=0) pica =  ((fIndex[row]&0xff000000)>>24);
