@@ -55,6 +55,10 @@ ClassImp(AliTRDReconstructor)
 
 Int_t    AliTRDReconstructor::fgStreamLevel     = 0;        // stream (debug) level
 
+Double_t AliTRDReconstructor::fgExtraBoundaryTolerance = 0;
+Double_t AliTRDReconstructor::fgExtraRoadY = 0;
+Double_t AliTRDReconstructor::fgExtraRoadZ = 0;
+Int_t    AliTRDReconstructor::fgExtraMaxClPerLayer = 0;
 
 AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
 AliTRDonlineTrackMatching AliTRDReconstructor::fgOnlineTrackMatcher;

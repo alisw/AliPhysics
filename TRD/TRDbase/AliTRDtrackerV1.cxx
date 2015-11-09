@@ -269,7 +269,12 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 // 4. Writting to friends, PID, MC label, quality etc. Setting status bit AliESDtrack::kTRDout.
 // 5. Propagation to TOF. If track propagation fails the AliESDtrack::kTRDStop is set.
 //  
-
+  AliInfoF("ExtraTolerances: boundary check: %.2f, roadY: %.2f, roadZ: %.2f, extra cl/layer: %d",
+	   AliTRDReconstructor::GetExtraBoundaryTolerance(),
+	   AliTRDReconstructor::GetExtraRoadY(),
+	   AliTRDReconstructor::GetExtraRoadZ(),
+	   AliTRDReconstructor::GetExtraMaxClPerLayer());
+  //
   if(!fClusters || !fClusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
     return 0;
@@ -732,7 +737,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
   if ( AliTRDReconstructor::GetStreamLevel()>0) debugLevel= AliTRDReconstructor::GetStreamLevel();
   TTreeSRedirector *cstreamer = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker) : 0x0;
-
+  const double kBoundaryEps = 0.5;
+  double boundaryEps = kBoundaryEps + AliTRDReconstructor::GetExtraBoundaryTolerance();
   Bool_t kStoreIn(kTRUE),     // toggel store track params. at TRD entry
          kStandAlone(kFALSE), // toggle tracker awarness of stand alone seeding 
          kUseTRD(fkRecoParam->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
@@ -869,7 +875,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Prolongation to x[%7.2f] y[%7.2f] z[%7.2f]", x+AliTRDReconstructor::GetMaxStep(), y, z));
       break;
     }
-    if(fGeom->IsOnBoundary(det, y, z, .5)){ 
+    if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){ 
       t.SetErrStat(AliTRDtrackV1::kBoundary, ily);
       AliDebug(4, "Failed Track on Boundary");
       continue;
