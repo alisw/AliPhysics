@@ -269,11 +269,12 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 // 4. Writting to friends, PID, MC label, quality etc. Setting status bit AliESDtrack::kTRDout.
 // 5. Propagation to TOF. If track propagation fails the AliESDtrack::kTRDStop is set.
 //  
-  AliInfoF("ExtraTolerances: boundary check: %.2f, roadY: %.2f, roadZ: %.2f, extra cl/layer: %d",
+  AliInfoF("Extra Tolerances: boundary check: %.2f, roadY: %.2f, roadZ: %.2f, extra cl/layer: %d, ExtraChi2out: %.2f",
 	   AliTRDReconstructor::GetExtraBoundaryTolerance(),
 	   AliTRDReconstructor::GetExtraRoadY(),
 	   AliTRDReconstructor::GetExtraRoadZ(),
-	   AliTRDReconstructor::GetExtraMaxClPerLayer());
+	   AliTRDReconstructor::GetExtraMaxClPerLayer(),
+	   AliTRDReconstructor::GetExtraChi2Out());
   //
   if(!fClusters || !fClusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
@@ -729,7 +730,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 // Author
 //   Alexandru Bercuci <A.Bercuci@gsi.de>
 //
-
+  
   Int_t n = 0;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   AliTRDtrackingChamber *chamber = NULL;
@@ -750,6 +751,9 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   // - start propagation from first tracklet found
   AliTRDseedV1 *tracklets[kNPlanes];
   memset(tracklets, 0, sizeof(AliTRDseedV1 *) * kNPlanes);
+  //
+  double chi2Cut = fkRecoParam->GetChi2Cut() + AliTRDReconstructor::GetExtraChi2Out();
+  //
   for(Int_t ip(kNPlanes); ip--;){
     if(!(tracklets[ip] = t.GetTracklet(ip))) continue;
     t.UnsetTracklet(ip);
@@ -1021,7 +1025,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
      }
      
      // update Kalman with the TRD measurement
-     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
+     if (chi2> chi2Cut){ // MI parameterizad chi2 cut 03.05.2014
       t.SetErrStat(AliTRDtrackV1::kChi2, ily);
       if(debugLevel > 2){
         UChar_t status(t.GetStatusTRD());
