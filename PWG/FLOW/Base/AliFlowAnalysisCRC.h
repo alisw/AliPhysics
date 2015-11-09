@@ -1487,6 +1487,7 @@ private:
  TH1D *fMultHist; //! Multiplicity distribution
  TH1D *fCenHist; //! Centrality distribution
  TH1D* fCenWeightsHist; //! Centrality weights
+ TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights
  Double_t fCenWeightEbE;
  
