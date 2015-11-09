@@ -244,7 +244,7 @@ void LoadLibs()
   // Load common libraries (better too many than too few)
 
   //load CGAL, Fastjet and SISCone
-  gSystem->Load("libCGAL");
+  if(gSystem->Load("/usr/lib/libCGAL") != 0 ) gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
   gSystem->Load("libsiscone");
   gSystem->Load("libsiscone_spherical");
