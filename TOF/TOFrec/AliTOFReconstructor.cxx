@@ -47,6 +47,8 @@ class TTree;
 
 ClassImp(AliTOFReconstructor)
 
+Double_t AliTOFReconstructor::fgExtraTolerance = 0;
+
  //____________________________________________________________________
 AliTOFReconstructor::AliTOFReconstructor() :
   AliReconstructor(),
