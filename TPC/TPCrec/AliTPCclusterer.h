@@ -51,6 +51,8 @@ private:
   AliTPCclusterer(const AliTPCclusterer &param); // copy constructor
   AliTPCclusterer &operator = (const AliTPCclusterer & param); //assignment
 
+  void InitClustererArrays();
+
   Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,
    AliTPCclusterMI &c);  

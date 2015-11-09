@@ -145,7 +145,14 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam* par, const AliTPCRecoParam *
 
   //  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
   fRowCl= new AliTPCClustersRow("AliTPCclusterMI");
+}
 
+void AliTPCclusterer::InitClustererArrays()
+{
+  // init the arrays for the clusterer
+  // this has been moved out from the constructor as it is not needed
+  // when using the HLT clusters, but it allocates ~100MB
+  //
   // Non-persistent arrays
   //
   //alocate memory for sector - maximal case
@@ -190,8 +197,8 @@ AliTPCclusterer::~AliTPCclusterer(){
   AliTPCROC * roc = AliTPCROC::Instance();
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
-    delete [] fAllBins[iRow];
-    delete [] fAllSigBins[iRow];
+    if (fAllBins) delete [] fAllBins[iRow];
+    if (fAllSigBins) delete [] fAllSigBins[iRow];
   }
   delete [] fAllBins;
   delete [] fAllSigBins;
@@ -1020,8 +1027,8 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
-    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
-    fAllNSigBins[iRow]=0;
+    if (fAllBins) memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    if (fAllNSigBins) fAllNSigBins[iRow]=0;
   }
 
   rawReader->Reset();
@@ -1057,6 +1064,10 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   while (input.NextDDL()){
     if (input.GetSector() != fSector)
       AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
+
+    if (!fAllBins) {
+      InitClustererArrays();
+    }
     
     //Int_t nRows = fParam->GetNRow(fSector);
     
@@ -1488,9 +1499,9 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       fMaxPad = fParam->GetNPads(fSector,fRow);
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
 
-      fBins = fAllBins[fRow];
-      fSigBins = fAllSigBins[fRow];
-      fNSigBins = fAllNSigBins[fRow];
+      fBins = fAllBins?fAllBins[fRow]:NULL;
+      fSigBins = fAllNSigBins?fAllSigBins[fRow]:NULL;
+      fNSigBins = fAllNSigBins?fAllNSigBins[fRow]:0;
 
       for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
 	if (!clusterArray->At(i)) 
