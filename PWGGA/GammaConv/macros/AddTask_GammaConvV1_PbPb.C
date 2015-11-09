@@ -1453,7 +1453,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     eventCutArray[ 3] = "52400023"; photonCutArray[ 3] = "00216609247602008500404000"; mesonCutArray[ 3]= "0152501500000000"; // 20-40%
     eventCutArray[ 4] = "52500023"; photonCutArray[ 4] = "00216609247602008500404000"; mesonCutArray[ 4]= "0152501500000000"; // 20-50%
   } else if ( trainConfig == 234){ // standard LHC11h cut selection - double rejec, no Psi cut with phi cut - added signal
-    eventCutArray[ 0] = "56800023"; photonCutArray[ 0] = "00200009247602008250404000"; mesonCutArray[ 0]= "0152501500000000"; // 0-5%
+    eventCutArray[ 0] = "56800013"; photonCutArray[ 0] = "00200009247602008250404000"; mesonCutArray[ 0]= "0152501500000000"; // 0-5%
   }else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
