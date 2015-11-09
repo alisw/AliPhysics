@@ -1136,8 +1136,9 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   Float_t x1;
   Float_t x2;
   Int_t s = 0;
-  Int_t sTmp = 0; // only temporary until optimization methods are chosen 
+  Int_t sTmp = 0; // only temporary until optimization methods are chosen
   Int_t d = 0;
+  Int_t invPtDev = 0;
 
   //additional params for sagitta optimization
   Int_t tmpTrackletMask = track->GetTrackletMask();
@@ -1147,24 +1148,24 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   Int_t zBin = 0;
   Int_t zPos = 0;
   Int_t fitParam = 0;
-  Int_t zDiff = 0; 
+  Int_t zDiff = 0;
   Int_t padTiltingCorrection = 0;
   Int_t refLayer = 0; //reference layer for pad tilting correction
   if      (track->GetTracklet(3)!=0x0) refLayer = 3;
   else if (track->GetTracklet(4)!=0x0) refLayer = 4;
   else if (track->GetTracklet(2)!=0x0) refLayer = 2;
-  invXpos  = fGtuParam->GetLayerInvXpos(refLayer);  
+  invXpos  = fGtuParam->GetLayerInvXpos(refLayer);
   stack    = fGtuParam->GetGeo()->GetStack(track->GetTracklet(refLayer)->GetDetector());
   zBin     = track->GetTracklet(refLayer)->GetZbin();
   zPos     = fGtuParam->GetZpos(stack, refLayer, zBin);
-  fitParam = zPos*invXpos;   
+  fitParam = zPos*invXpos;
   fitParam *= 1e-4;
 
   AliDebug(5,Form("There are %i tracklets in this track.", track->GetNTracklets()));
 
   if ( (corrMode == 1) || (corrMode == 3) )
   {
-    // tracklet removal 
+    // tracklet removal
     if (track->GetTrackletMask() == 31) tmpTrackletMask = 30;
     else if (track->GetTrackletMask() == 47) tmpTrackletMask = 45;
     else if (track->GetTrackletMask() == 55) tmpTrackletMask = 39;
@@ -1186,14 +1187,14 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
     Int_t zBinTmp  = trk->GetZbin();
     if (layer != refLayer) zDiff = fGtuParam->GetZpos(stackTmp, layer, zBinTmp)*1e3 - fitParam*fGtuParam->GetLayerXpos(layer);
     trklYpos[layer] = trk->GetYbin() - ((Int_t) (1./fGtuParam->GetBinWidthY()*fGtuParam->CorrectYforAlignmentOCDB(trk->GetDetector(),
-        fGtuParam->GetZpos(fGtuParam->GetGeo()->GetStack(trk->GetDetector()), layer, trk->GetZbin())))); //ocdb alignment correction 
+        fGtuParam->GetZpos(fGtuParam->GetGeo()->GetStack(trk->GetDetector()), layer, trk->GetZbin())))); //ocdb alignment correction
     padTiltingCorrection = zDiff * fGtuParam->GetTanOfTiltingAngle(layer);
     padTiltingCorrection *= 6.52e-7; // *=1e-8 to  account for previous shifts and /=160e-4 for the bin width of yPos
-    if ( (corrMode == 2) || (corrMode == 3) ) trklYpos[layer] = trklYpos[layer] + padTiltingCorrection; 
+    if ( (corrMode == 2) || (corrMode == 3) ) trklYpos[layer] = trklYpos[layer] + padTiltingCorrection;
 
 
-    AliDebug(10,Form("  layer %i trk yprime: %6i, aki: %6i", layer, trk->GetYPrime(),
-		     fGtuParam->GetAki(track->GetTrackletMask(), layer)));
+    AliDebug(10,Form("  layer %i trk yprime: %6i, aki: %6i, pki: %i, ybin: %6i", layer, trk->GetYPrime(),
+		     fGtuParam->GetAki(track->GetTrackletMask(), layer), fGtuParam->GetPki(track->GetTrackletMask(), layer), trk->GetYbin()));
     a += (((fGtuParam->GetAki(track->GetTrackletMask(), layer) * trk->GetYPrime()) >> 7) + 1) >> 1;
     b += fGtuParam->GetBki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();
     c += fGtuParam->GetCki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();
@@ -1208,17 +1209,19 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
       a += 3;
   a = a >> 2;
 
+  invPtDev = a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - s;
+
   track->SetFitParams(a << 2, b, c);
-  if (corrMode == 0)      track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - s ); 
-  else if (corrMode != 0) track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - ((Int_t) sTmp) ); 
+  if (corrMode == 0)      track->SetInvPtDev(invPtDev);
+  else if (corrMode != 0) track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - ((Int_t) sTmp) );
   //following lines are for debugging purposes only
-  //if (corrMode == 0)      track->SetInvPtDev( s ); 
-  //else if (corrMode == 1) track->SetInvPtDev( (Int_t) sTmp ) ; 
+  //if (corrMode == 0)      track->SetInvPtDev( s );
+  //else if (corrMode == 1) track->SetInvPtDev( (Int_t) sTmp ) ;
 
   fGtuParam->GetIntersectionPoints(track->GetTrackletMask(), x1, x2);
 
-  AliDebug(5,Form("  Track parameters: a16 = %i, a18 = %i, b = %f, c = %f, x1 = %f, x2 = %f, pt = %f (trkl mask: %i)",
-		  a, a << 2, b, c, x1, x2, track->GetPt(), track->GetTrackletMask()));
+  AliDebug(5,Form("  Track parameters: a16 = %i, a18 = %i, b = %f, c = %f, x1 = %f, x2 = %f, pt = %f, s = %i, invPtDev = %i (trkl mask: %i)",
+		  a, a << 2, b, c, x1, x2, track->GetPt(), s, invPtDev, track->GetTrackletMask()));
 
   return kTRUE;
 }
