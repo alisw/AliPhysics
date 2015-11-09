@@ -64,7 +64,8 @@ fNPedSamples(5),
 fRemoveBadChannels(kFALSE),
 fFittingAlgorithm(0), 
 fUseFALTRO(kTRUE), 
-fFitLEDEvents(kFALSE),//raw signal
+fFitLEDEvents(kFALSE),
+fUseL1Phase(kTRUE),//raw signal
 fRejectBelowThreshold(0)
 {
   // default reco values
@@ -269,7 +270,8 @@ fNPedSamples(rp.fNPedSamples),
 fRemoveBadChannels(rp.fRemoveBadChannels),
 fFittingAlgorithm(rp.fFittingAlgorithm),  
 fUseFALTRO(rp.fUseFALTRO),
-fFitLEDEvents(rp.fFitLEDEvents), //raw signal
+fFitLEDEvents(rp.fFitLEDEvents), 
+fUseL1Phase(rp.fUseL1Phase),//raw signal
 fRejectBelowThreshold(rp.fRejectBelowThreshold)
 {
   //copy constructor
@@ -333,7 +335,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fRemoveBadChannels = rp.fRemoveBadChannels;
     fFittingAlgorithm  = rp.fFittingAlgorithm;
     fUseFALTRO         = rp.fUseFALTRO;
-    fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
+    fFitLEDEvents      = rp.fFitLEDEvents;
+    fUseL1Phase        = rp.fUseL1Phase;//raw signal
     fRejectBelowThreshold =rp.fRejectBelowThreshold;//unfolding
 	  
     //PID values
@@ -652,8 +655,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   if(!strcmp("",opt) || !strcmp("raw",opt)){
     AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
                  fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
-    AliInfo(Form("Raw signal: remove bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d, Fit LED events %d \n",
-                 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO, fFitLEDEvents));
+    AliInfo(Form("Raw signal: remove bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d, Fit LED events %d, use L1Phase %d\n",
+                 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO, fFitLEDEvents,fUseL1Phase));
   }
 }
 

@@ -338,6 +338,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
     if (!fgRawUtils->GetFittingAlgorithm()) fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
     fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
+    fgRawUtils->SetL1PhaseUsage(GetRecParam()->UseL1Phase());
     //  fgRawUtils->SetFALTROUsage(0);
  
     //fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());

@@ -107,6 +107,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetFittingAlgorithm(Int_t val)       {fFittingAlgorithm=val; }
   void SetFALTROUsage(Bool_t val)           {fUseFALTRO=val; }
   void SetLEDFit(Bool_t val)                {fFitLEDEvents=val; }
+  void SetL1PhaseUse(Bool_t val)            {fUseL1Phase=val; }
 
 	
   /* raw signal getters */
@@ -119,7 +120,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
   Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
-
+  Bool_t   UseL1Phase()           const {return fUseL1Phase;}     
+  
   //Unfolding (Adam)
   Double_t GetSSPars(Int_t i) const   {return fSSPars[i];}
   Double_t GetPar5(Int_t i) const     {return fPar5[i];}
@@ -188,7 +190,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    fFittingAlgorithm;      // select the fitting algorithm
   Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
   Bool_t   fFitLEDEvents;          // fit LED events or not
-	
+  Bool_t   fUseL1Phase;            // shift time bin depending on L1 phase
+  
   //Shower shape parameters (Adam)
   Bool_t   fRejectBelowThreshold;  // split (false-default) or reject (true) cell energy below threshold after UF 
   Double_t fSSPars[8]; // Unfolding shower shape parameters
@@ -197,7 +200,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,18)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,19)     // Reconstruction parameters
 };
 
 #endif //  ALIEMCALRECPARAM_H

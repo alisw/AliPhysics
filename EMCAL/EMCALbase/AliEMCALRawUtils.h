@@ -82,6 +82,8 @@ public:
     
   void     SetFALTROUsage(Bool_t val)         { fUseFALTRO = val          ; }
   
+  void     SetL1PhaseUsage(Bool_t val)        { fUseL1Phase = val         ; }
+  
   AliCaloRawAnalyzer *GetRawAnalyzer()  const { return fRawAnalyzer       ; }
   
   virtual Option_t* GetOption()         const { return fOption.Data()     ; }
@@ -113,13 +115,15 @@ private:
   Float_t fTimeMax;                     ///< Maximum threshold for the time of the signal.
     
   Bool_t  fUseFALTRO;                   ///< Use FALTRO and pass it to the digits.
+  
+  Bool_t  fUseL1Phase;                  ///< Use L1Phase time shift.
     
   AliCaloRawAnalyzer *fRawAnalyzer;     ///< e.g. for sample selection for fits.
     
   AliEMCALTriggerRawDigitMaker* fTriggerRawDigitMaker;	///< Trigger raw digit info.
  
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRawUtils,7) ;
+  ClassDef(AliEMCALRawUtils,8) ;
   /// \endcond
 
 };
