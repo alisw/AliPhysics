@@ -687,6 +687,7 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
   /// calibration objects with the information
 
   if (!fActiveChambers[iSector]) return;
+  if (!fAllBins) return; // nothing has been expanded to the array
 
   Int_t nLocalMaxima = 0;
   const Int_t maxTimeBin = fTimeBinsMax+4; // Used to step between neighboring pads
@@ -935,6 +936,8 @@ void AliTPCdataQA::MakeArrays(){
 void AliTPCdataQA::CleanArrays(){
   ///
 
+  if (!fAllBins) return;
+
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
 
     // To speed up the performance by a factor 2 on cosmic data (and
@@ -987,6 +990,10 @@ void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
   iTimeBin -= fFirstTimeBin;
   iPad     += 2;
   iTimeBin += 2;
+
+  // Make the arrays for expanding the data
+  if (!fAllBins)
+    MakeArrays();
 
   Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
   fAllBins[iRow][bin] = signal;
@@ -1108,6 +1115,9 @@ void AliTPCdataQA::Init()
   /// NB! This has to be done first even if the data is rejected by the time
   /// cut to make sure that the objects are available in Analyse
 
+  /// 2015-11-09 arrays for expending the data are not allocated in advance
+  /// but when they are needed. That saves about 100 MByte of memory.
+
   if(!fIsDQM) {
 
     if (!fNLocalMaxima){
@@ -1188,10 +1198,6 @@ void AliTPCdataQA::Init()
         }
     }
   }
-  // Make the arrays for expanding the data
-
-  if (!fAllBins)
-    MakeArrays();
 
   //
   // If Analyse has been previously called we need now to denormalize the data
