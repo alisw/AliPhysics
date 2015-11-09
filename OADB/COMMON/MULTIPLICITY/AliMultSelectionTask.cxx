@@ -1013,7 +1013,7 @@ Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, AliVEvent::EOff
     //Code to reject events that aren't trigType
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = maskIsSelected & lCheckedTrig > 0;
+    isSelected = maskIsSelected & lCheckedTrig;
     return isSelected;
 }
 
