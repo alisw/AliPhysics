@@ -9,6 +9,8 @@
 # @LDNAME LinkDef file name, ex: LinkDef.h
 # @DHDRS  Dictionary headers
 # @DINCDIR Include folders that need to be passed to cint/cling
+# @EXTRADEFINITIONS - optional, extra compile flags specific to library
+#       - used as ${ARGV4}
 macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
 
     # Creating the INCLUDE path for cint/cling
@@ -16,36 +18,33 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
         set(INCLUDE_PATH -I${dir} ${INCLUDE_PATH})
     endforeach()
     
-    # Generate the dictionary
-#    message(STATUS "Generating dictionary ${DNAME} for ${LDNAME}")
+    # Get the list of definitions from the directory to be sent to CINT
+    get_directory_property(tmpdirdefs COMPILE_DEFINITIONS)
+    foreach(dirdef ${tmpdirdefs})
+        set(GLOBALDEFINITIONS -D${dirdef} ${GLOBALDEFINITIONS})
+    endforeach()
     
-#    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx")
-#    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h")
-#    message(STATUS "bbb${INCLUDE_PATH}bbb")
-#    message(STATUS "${DHDRS} ${LDNAME}")
-#    message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
-    
-    # Get the definitions from the directory to be sent to CINT
-    get_directory_property(tmpdirdefs DEFINITIONS)
-    string(REPLACE " " ";" tmpdirdefs "${tmpdirdefs}")
+    # Custom definitions specific to library
+    # Received as the forth optional argument
+    separate_arguments(EXTRADEFINITIONS UNIX_COMMAND "${ARGV4}")
 
     if (ROOT_VERSION_MAJOR LESS 6)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
                        ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p 
-                       ${tmpdirdefs} ${INCLUDE_PATH} 
+                       ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} 
                        ${DHDRS} ${LDNAME}
                        DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                       )
     else (ROOT_VERSION_MAJOR LESS 6)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
+      add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm
                        COMMAND
                          LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
                        ARGS
                          -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx
                          -rmf ${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap -rml lib${DNAME}
-                         ${tmpdirdefs} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
+                         ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} ${DHDRS} ${LDNAME}
                        DEPENDS
                          ${DHDRS} ${LDNAME} ${ROOT_CINT}
                        WORKING_DIRECTORY
