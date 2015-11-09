@@ -67,7 +67,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NclsTRD",                "N_{cls}^{TRD}",                                      ""},
   {"TRDntracklets",          "N_{trkl}^{TRD}",                                     ""},
   {"TRDpidQuality",          "N_{PID.trkl}^{TRD}",                                 ""},
-  {"TRDchi2",                "#chi^{2}/^{}N_{cls}^{TRD}",                          ""},//TODO: check denominator
+  {"TRDchi2",                "#chi^{2}",					   ""},
+  {"TRDchi2PerTracklet",     "#chi^{2}/^{}N_{trkl}^{TRD}",                         ""},
   {"TRDpidProb_Electrons",   "P(PID_{e}^{TRD})",                                   ""},
   {"TRDpidProb_Pions",       "P(PID_{#pi}^{TRD})",                                 ""},
   {"TRDpidProb2D_Electrons", "P(2dim. PID_{e}^{TRD})",                             ""},
