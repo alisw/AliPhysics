@@ -28,10 +28,15 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   TVectorD *vectpcSystematicErrorClusters=new TVectorD(2, tpcSystematicErrorClusters);
   TVectorD *vectpcExtendedRoads= new TVectorD(2, tpcExtendedRoads);
   TVectorD *vectpcPrimDCACuts = new TVectorD(2, tpcPrimDCACuts);
+  const double kZOutSectorCut = 3.; // cut on clusters on wrong side of CE (added to extendedRoadZ)
+  const double kPrimaryZ2XCut = 1.2; // cut on clusters Z/X (large eta)
   AliTPCReconstructor::SetSystematicError(vectpcSystematicErrors);
   AliTPCReconstructor::SetSystematicErrorCluster(vectpcSystematicErrorClusters);
   AliTPCReconstructor::SetExtendedRoads(vectpcExtendedRoads);
   AliTPCReconstructor::SetPrimaryDCACut(vectpcPrimDCACuts);
+  AliTPCReconstructor::SetZOutSectorCut(kZOutSectorCut);
+  AliTPCReconstructor::SetPrimaryZ2XCut(kPrimaryZ2XCut);
+  //
   if (gSystem->Getenv("streamLevel")){
     SetStreamLevel( AliTPCtracker::kStreamErrParam| AliTPCtracker::kStreamTransform);
   }
@@ -45,6 +50,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   AliTRDReconstructor::SetExtraBoundaryTolerance(3); // relax boundary check
   AliTRDReconstructor::SetExtraRoadY(4); // extra road in Y
   AliTRDReconstructor::SetExtraRoadZ(6); // extra road in Z
+  AliTRDReconstructor::SetExtraChi2Out(25); // extra chi2 tolerance on backpropagation
   //
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
