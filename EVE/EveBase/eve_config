@@ -7,6 +7,8 @@
 
 HLTESDtree.show:        	0
 MUON.show:              	1
+axes.show:                  1
+fullscreen.mode:            0
 
 tracks.width:           	2
 tracks.noRefit.dash:		1

@@ -369,6 +369,14 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
             //            printf("CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
             //                   icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
             
+            if(fabs(eta)>0.7){ // something is wrong
+                cout<<"\n\nWrong eta values for EMCAL\n\n"<<endl;
+                cout<<"Run number in AliEveEventManager:"<<AliEveEventManager::GetCurrentRun()<<endl;
+                AliCDBManager::Instance()->Print();
+                AliEveEventManager::AssertGeometry()->Print();
+                AliEveEventManager::AssertMagField()->Print();
+            }
+            
             fHistoEM->Fill(eta,GetPhi(phi),amp);
             // 3d view
             //

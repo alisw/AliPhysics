@@ -8,6 +8,7 @@
  **************************************************************************/
 
 #include "AliEveMultiView.h"
+#include "AliEveInit.h"
 #include <TGPack.h>
 #include <TBrowser.h>
 
@@ -63,9 +64,15 @@ fPack(0)
     // Projection managers
     //=====================
     
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    bool showAxes = settings.GetValue("axes.show", false);
+    
     fRPhiMgr = new TEveProjectionManager();
     fRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
     gEve->AddToListTree(fRPhiMgr, kFALSE);
+    
+    if(showAxes)
     {
         TEveProjectionAxes* a = new TEveProjectionAxes(fRPhiMgr);
         a->SetMainColor(kWhite);
@@ -80,6 +87,8 @@ fPack(0)
     fRhoZMgr = new TEveProjectionManager();
     fRhoZMgr->SetProjection(TEveProjection::kPT_RhoZ);
     gEve->AddToListTree(fRhoZMgr, kFALSE);
+    
+    if(showAxes)
     {
         TEveProjectionAxes* a = new TEveProjectionAxes(fRhoZMgr);
         a->SetMainColor(kWhite);
@@ -96,6 +105,8 @@ fPack(0)
         fMuonMgr = new TEveProjectionManager();
         fMuonMgr->SetProjection(TEveProjection::kPT_RhoZ);
         gEve->AddToListTree(fMuonMgr, kFALSE);
+        
+        if(showAxes)
         {
             TEveProjectionAxes* a = new TEveProjectionAxes(fMuonMgr);
             a->SetMainColor(kWhite);

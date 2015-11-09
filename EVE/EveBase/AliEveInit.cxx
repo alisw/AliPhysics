@@ -28,6 +28,8 @@
 #include <TGButton.h>
 #include <TGFileBrowser.h>
 #include <TEveMacro.h>
+#include <TGTab.h>
+#include <TGWindow.h>
 
 #include <AliESDtrackCuts.h>
 #include <AliESDEvent.h>
@@ -77,6 +79,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
 
     bool autoloadEvents   = settings.GetValue("events.autoload.set",false);   // set autoload by default
     bool saveViews        = settings.GetValue("ALICE_LIVE.send",false);       // send pictures to ALICE LIVE
+    bool fullscreen       = settings.GetValue("fullscreen.mode",false);       // hide left and bottom tabs
     
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
     
@@ -214,6 +217,13 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     glv1->CurrentCamera().RotateRad(-0.4, 0.6);
     glv2->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     glv3->CurrentCamera().Dolly(1, kFALSE, kFALSE);
+    
+    // Fullscreen
+    if(fullscreen){
+        ((TGWindow*)gEve->GetBrowser()->GetTabLeft()->GetParent())->Resize(1,0);
+        ((TGWindow*)gEve->GetBrowser()->GetTabBottom()->GetParent())->Resize(0,1);
+        gEve->GetBrowser()->Layout();
+    }
     
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();

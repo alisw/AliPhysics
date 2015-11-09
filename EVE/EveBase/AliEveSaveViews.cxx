@@ -147,22 +147,6 @@ void AliEveSaveViews::SaveForAmore()
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
-    TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
-    TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();
-    
-    TEveElement::List_i rPhiElement = rPhiScene->BeginChildren();
-    TEveElement::List_i rhoZElement = rhoZScene->BeginChildren();
-    
-    TEveProjectionAxes* rPhiAxes = ((TEveProjectionAxes*)*rPhiElement);
-    TEveProjectionAxes* rhoZAxes = ((TEveProjectionAxes*)*rhoZElement);
-    
-    //rPhiAxes->SetRnrSelf(false);
-//    rhoZAxes->SetRnrSelf(false);
-//    
-//    gEve->FullRedraw3D();
-//    gSystem->ProcessEvents();
-//    gEve->Redraw3D();
-    
     for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
@@ -222,12 +206,6 @@ void AliEveSaveViews::SaveForAmore()
         }
         index++;
     }
-    
-//    rPhiAxes->SetRnrSelf(true);
-//    rhoZAxes->SetRnrSelf(true);
-//    
-//    gSystem->ProcessEvents();
-//    gEve->Redraw3D();
     
     // show LIVE bar
     if(fShowLiveBar)

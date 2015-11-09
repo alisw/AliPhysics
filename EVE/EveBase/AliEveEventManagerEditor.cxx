@@ -370,6 +370,22 @@ void AliEveEventManagerWindow::DoRefresh()
     }
     mv->SetDepth(0);
     
+    TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
+    TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();
+    
+    TEveElement::List_i rPhiElement = rPhiScene->BeginChildren();
+    TEveElement::List_i rhoZElement = rhoZScene->BeginChildren();
+    
+    TEveProjectionAxes* rPhiAxes = ((TEveProjectionAxes*)*rPhiElement);
+    TEveProjectionAxes* rhoZAxes = ((TEveProjectionAxes*)*rhoZElement);
+    
+    rPhiAxes->SetRnrSelf(settings.GetValue("axes.show",false));
+    rhoZAxes->SetRnrSelf(settings.GetValue("axes.show",false));
+    
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    gEve->Redraw3D();
+    
     Int_t ev = fM->GetEventId();
 //    fM->Close();
 //    fM->Open();

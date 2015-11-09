@@ -100,7 +100,7 @@ void AliEveDataSourceOnline::GetNextEvent()
             if(tmpEvent)
             {
                 cout<<"received. ("<<tmpEvent->GetRunNumber();
-                if(tmpEvent->GetRunNumber()>=0)
+                if(tmpEvent->GetRunNumber()>=0 && tmpEvent->GetNumberOfTracks()>0)
                 {
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->Lock();
