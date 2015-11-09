@@ -27,7 +27,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaXYMax                =  2.4,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- int particleID                 = 1, // pion=0, kaon=1, proton=2
+ int particleID                 = 0, // pion=0, kaon=1, proton=2
  double nSigmaCut               = 3.0,
  int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
  Bool_t requestTOFPID           = 1,
@@ -167,6 +167,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       baseName     +=  part1Name;
       baseName     +=  part2Name;
       baseName     +=  eventName;
+      baseName     +=  "_";
+      baseName     +=  particleID;
       listName     =   baseName;
       taskName     =   baseName;
         
