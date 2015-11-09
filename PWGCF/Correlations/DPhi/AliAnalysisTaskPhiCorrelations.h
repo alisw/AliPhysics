@@ -136,6 +136,7 @@ public:
   void   SetRemoveWeakDecaysInMC(Bool_t flag) { fRemoveWeakDecaysInMC = flag; }
   void   SetFillYieldRapidity(Bool_t flag) { fFillYieldRapidity = flag; }
   void   SetFillCorrelationsRapidity(Bool_t flag) { fFillCorrelationsRapidity = flag; }
+  void   SetUseDoublePrecision(Bool_t flag) { fUseDoublePrecision = flag; }
 
   AliHelperPID* GetHelperPID() { return fHelperPID; }
   void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -145,6 +146,9 @@ public:
 
   TMap* GetMap() { return fMap; }
   void   SetMap(TMap* map){ fMap = map; }
+
+  void SetJetBranchName(const char* branchName) { fJetBranchName = branchName; }
+  const char* GetJetBranchName() const { return fJetBranchName; }
 
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -255,17 +259,21 @@ private:
   Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
   TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
   Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
-  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons
-  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons
+  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
+  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
   Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
   Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
   Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
   Bool_t fFillYieldRapidity;     // fill a control histogram centrality vs pT vs y
   Bool_t fFillCorrelationsRapidity; // fills correlation histograms with rapidity instead of pseudorapidity (default: kFALSE)
+  Bool_t fUseDoublePrecision;    // use double precision for AliTHn
 
   Bool_t fFillpT;                // fill sum pT instead of number density
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 53); // Analysis task for delta phi correlations
+  // jet configuration
+  TString fJetBranchName;        // name of jet branch for exclusion of in-jet tracks
+
+  ClassDef(AliAnalysisTaskPhiCorrelations, 55); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle

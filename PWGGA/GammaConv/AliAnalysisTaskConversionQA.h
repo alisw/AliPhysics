@@ -20,137 +20,121 @@ using namespace std;
 
 class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
 
-	public:
-	
-		AliAnalysisTaskConversionQA();
-		AliAnalysisTaskConversionQA(const char *name);
-		virtual ~AliAnalysisTaskConversionQA();
+  public:
 
-		virtual void   UserCreateOutputObjects();
-		virtual Bool_t Notify();
-		virtual void   UserExec(Option_t *option);
-		virtual void   Terminate(Option_t *);
+    AliAnalysisTaskConversionQA();
+    AliAnalysisTaskConversionQA(const char *name);
+    virtual ~AliAnalysisTaskConversionQA();
 
-		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
-		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Bool_t IsHeavyIon ){
-			fConversionCuts=conversionCuts;
-			fIsHeavyIon = IsHeavyIon;
-		}
-		void SetEventCuts(AliConvEventCuts* conversionCuts,Bool_t IsHeavyIon ){
-			fEventCuts=conversionCuts;
-			fIsHeavyIon = IsHeavyIon;
-		}
+    virtual void   UserCreateOutputObjects  ();
+    virtual Bool_t Notify                   ();
+    virtual void   UserExec                 ( Option_t *option );
+    virtual void   Terminate                ( Option_t * );
 
-		void FillType(Bool_t fillTree, Bool_t fillHistorams){
-			ffillTree = fillTree;
-			ffillHistograms = fillHistorams;
-		}
-		void SetIsMC(Bool_t isMC){fIsMC = isMC;}
-	
-	private:
-			
-		AliAnalysisTaskConversionQA(const AliAnalysisTaskConversionQA&); // Prevent copy-construction
-		AliAnalysisTaskConversionQA &operator=(const AliAnalysisTaskConversionQA&); // Prevent assignment
+    void SetV0Reader                        ( AliV0ReaderV1 *v0Reader )                   { fV0Reader=v0Reader                  ; }
+    void SetConversionCuts                  ( AliConversionPhotonCuts* conversionCuts, 
+                                              Bool_t IsHeavyIon )                         {
+                                                                                            fConversionCuts=conversionCuts      ;
+                                                                                            fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }
+    void SetEventCuts                       ( AliConvEventCuts* conversionCuts,
+                                              Bool_t IsHeavyIon )                         {
+                                                                                            fEventCuts=conversionCuts           ;
+                                                                                            fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }
 
-		void ProcessQATree(AliAODConversionPhoton *gamma);
-		void ProcessQA(AliAODConversionPhoton *gamma);
-		void RelabelAODPhotonCandidates(Bool_t mode);
-		void ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi);
-		void ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi);
-		UInt_t IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate);
-		UInt_t IsTruePhotonAOD(AliAODConversionPhoton *TruePhotonCandidate);
-		void CountTracks();
-		void SetLogBinningXTH2(TH2* histoRebin);
-			
-		AliV0ReaderV1 			*fV0Reader;    					//
-		TClonesArray 			*fConversionGammas;				//
-		AliConversionPhotonCuts 	*fConversionCuts; 				// Cuts used by the V0Reader
-		AliConvEventCuts 		*fEventCuts;	 				// Cuts used by the V0Reader
-		AliVEvent 				*fInputEvent;					//
-		Int_t 					fNumberOfESDTracks;				//
-		AliMCEvent 				*fMCEvent;						//
-		AliStack 				*fMCStack;						//
-		TTree	 				*fTreeQA;						//
-		Bool_t 					fIsHeavyIon;					//
-		Bool_t 					ffillTree;						//
-		Bool_t 					ffillHistograms;				//
-		TList 					*fOutputList;					//
-		TList 					*fTreeList;						//
-		TList 					*fESDList;						//
-		TH1F 					*hVertexZ;						//
-		TH1I 					*hNGoodESDTracks;				//
-		TH1I 					*hNV0Tracks;					//
-		TH1I 					*hNContributorsVertex;			//
-		TH2F 					*hITSClusterPhi;				//
-		TH1F 					*hGammaPt;						//
-		TH1F 					*hGammaPhi;						//
-		TH1F 					*hGammaPhi_Pos;					//
-		TH1F 					*hGammaPhi_Neg;					//
-		TH1F 					*hGammaEta;						//
-		TH1F 					*hGammaChi2perNDF;				//
-		TH1F 					*hGammaPsiPair;					//
-		TH2F 					*hGammaArmenteros;				//
-		TH1F 					*hGammaCosinePointingAngle;		//
-		TH1F 					*hGammaInvMass;					//
-		TH2F 					*hElecPt;						//
-		TH2F 					*hElecEta;						//
-		TH2F 					*hElecPhi;						//
-		TH1F 					*hElecNfindableClsTPC;			//
-		TH1F 					*hPosiNfindableClsTPC;			//
-		TH1F 					*hElecClsTPC;					//
-		TH1F 					*hPosiClsTPC;					//
-		TH2F 					*hElectrondEdxP;				//
-		TH2F						*hElectronITSdEdxP;				//
-		TH2F	 					*hElectronTOFP;					//
-		TH2F 					*hElectronNSigmadEdxP;			//
-		TH2F 					*hElectronNSigmadEdxEta;		//
-		TH2F 					*hElectronNSigmaPiondEdxP;		//
-		TH2F 					*hElectronNSigmaITSP;			//
-		TH2F 					*hElectronNSigmaTOFP;			//
-		TH2F 					*hPositrondEdxP;				//
-		TH2F 					*hPositronITSdEdxP;				//
-		TH2F 					*hPositronTOFP;					//
-		TH2F 					*hPositronNSigmadEdxP;			//
-		TH2F 					*hPositronNSigmadEdxEta;		//
-		TH2F 					*hPositronNSigmaPiondEdxP;		//
-		TH2F 					*hPositronNSigmaITSP;			//
-		TH2F  					*hPositronNSigmaTOFP;			//
-		//    TH2F 						*hElecAsymP;					//
-		//    TH2F 						*hGammaXY;						//
-		//    TH2F 						*hGammaZR;   					//
-		//    TList 					*fTrueList;						//
-		//    TH2F 						*hTrueResolutionR;				//
-		//    TH2F 						*hTrueResolutionZ;				//
-		//    TH2F 						*hTrueResolutionPhi;			//
-		//    TH1F 						*hTrueGammaPt;					//
-		//    TH1F 						*hTrueGammaPhi;					//
-		//    TH1F 						*hTrueGammaEta;					//
-		//    TH1F 						*hTrueGammaMass;				//
-		//    TH1F 						*hTrueGammaChi2perNDF;			//
-		//    TH1F 						*hTrueGammaPsiPair;				//
-		//    TH1F 						*hTrueGammaQt;					//
-		//    TH1F 						*hTrueGammaCosinePointingAngle;	//
-		//    TH2F 						*hTrueGammaXY;					//
-		//    TH2F 						*hTrueGammaZR;					//
-		//    TH2F 						*hTrueElecPt;					//
-		//    TH2F 						*hTrueElecEta;					//
-		//    TH2F 						*hTrueElecPhi;					//
-		//    TH1F 						*hTrueElecNfindableClsTPC;		//
-		//    TH1F 						*hTruePosiNfindableClsTPC;		//
-		//    TH2F 						*hTrueElecAsymP;				//
-		Float_t 					fGammaPt;						//
-		Float_t 					fGammaTheta;					//
-		Float_t 					fGammaChi2NDF;					//
-		TVectorF 				fGammaPhotonProp;				//
-		TVectorF 				fGammaConvCoord;				//
-		TVectorF 				fDaughterProp;					//
-		UInt_t 					fKind;							//
-		Bool_t 					fIsMC;							//
-		Int_t 					fnGammaCandidates;				//
-		Int_t 					*fMCStackPos;     				//[fnGammaCandidates]
-		Int_t 					*fMCStackNeg;     				//[fnGammaCandidates]
-		
-		ClassDef(AliAnalysisTaskConversionQA, 5);
+    void FillType                           ( Bool_t fillTree, 
+                                              Bool_t fillHistorams)                       {
+                                                                                            ffillTree = fillTree                ;
+                                                                                            ffillHistograms = fillHistorams     ;
+                                                                                          }
+    void SetIsMC                            ( Bool_t isMC )                               { fIsMC = isMC                        ; }
+
+  private:
+        
+    AliAnalysisTaskConversionQA     ( const AliAnalysisTaskConversionQA& ); // Prevent copy-construction
+    AliAnalysisTaskConversionQA &operator=( const AliAnalysisTaskConversionQA& ); // Prevent assignment
+
+    void ProcessQATree              ( AliAODConversionPhoton *gamma );
+    void ProcessQA                  ( AliAODConversionPhoton *gamma );
+    void RelabelAODPhotonCandidates ( Bool_t mode );
+    void ProcessTrueQAESD           ( AliAODConversionPhoton *TruePhotonCandidate, 
+                                      AliESDtrack *elec, 
+                                      AliESDtrack *posi );
+    void ProcessTrueQAAOD           ( AliAODConversionPhoton *TruePhotonCandidate, 
+                                      AliAODTrack *elec,
+                                      AliAODTrack *posi );
+    UInt_t IsTruePhotonESD          ( AliAODConversionPhoton *TruePhotonCandidate );
+    UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
+    void CountTracks                ();
+    void SetLogBinningXTH2          ( TH2* histoRebin );
+        
+    AliV0ReaderV1*              fV0Reader;                  //
+    TClonesArray*               fConversionGammas;          //
+    AliConversionPhotonCuts*    fConversionCuts;            // Cuts used by the V0Reader
+    AliConvEventCuts*           fEventCuts;                 // Cuts used by the V0Reader
+    AliVEvent*                  fInputEvent;                //
+    Int_t                       fNumberOfESDTracks;         //
+    AliMCEvent*                 fMCEvent;                   //
+    AliStack*                   fMCStack;                   //
+    TTree*                      fTreeQA;                    //
+    Bool_t                      fIsHeavyIon;                //
+    Bool_t                      ffillTree;                  //
+    Bool_t                      ffillHistograms;            //
+    TList*                      fOutputList;                //
+    TList*                      fTreeList;                  //
+    TList*                      fESDList;                   //
+    TH1F*                       hVertexZ;                   //
+    TH1I*                       hNGoodESDTracks;            //
+    TH1I*                       hNV0Tracks;                 //
+    TH1I*                       hNContributorsVertex;       //
+    TH2F*                       hITSClusterPhi;             //
+    TH1F*                       hGammaPt;                   //
+    TH1F*                       hGammaPhi;                  //
+    TH1F*                       hGammaPhi_Pos;              //
+    TH1F*                       hGammaPhi_Neg;              //
+    TH1F*                       hGammaEta;                  //
+    TH1F*                       hGammaChi2perNDF;           //
+    TH1F*                       hGammaPsiPair;              //
+    TH2F*                       hGammaArmenteros;           //
+    TH1F*                       hGammaCosinePointingAngle;  //
+    TH1F*                       hGammaInvMass;              //
+    TH2F*                       hElecPt;                    //
+    TH2F*                       hElecEta;                   //
+    TH2F*                       hElecPhi;                   //
+    TH1F*                       hElecNfindableClsTPC;       //
+    TH1F*                       hPosiNfindableClsTPC;       //
+    TH1F*                       hElecClsTPC;                //
+    TH1F*                       hPosiClsTPC;                //
+    TH2F*                       hElectrondEdxP;             //
+    TH2F*                       hElectronITSdEdxP;          //
+    TH2F*                       hElectronTOFP;              //
+    TH2F*                       hElectronNSigmadEdxP;       //
+    TH2F*                       hElectronNSigmadEdxEta;     //
+    TH2F*                       hElectronNSigmaPiondEdxP;   //
+    TH2F*                       hElectronNSigmaITSP;        //
+    TH2F*                       hElectronNSigmaTOFP;        //
+    TH2F*                       hPositrondEdxP;             //
+    TH2F*                       hPositronITSdEdxP;          //
+    TH2F*                       hPositronTOFP;              //
+    TH2F*                       hPositronNSigmadEdxP;       //
+    TH2F*                       hPositronNSigmadEdxEta;     //
+    TH2F*                       hPositronNSigmaPiondEdxP;   //
+    TH2F*                       hPositronNSigmaITSP;        //
+    TH2F*                       hPositronNSigmaTOFP;        //
+    Float_t                     fGammaPt;                   //
+    Float_t                     fGammaTheta;                //
+    Float_t                     fGammaChi2NDF;              //
+    TVectorF                    fGammaPhotonProp;           //
+    TVectorF                    fGammaConvCoord;            //
+    TVectorF                    fDaughterProp;              //
+    UInt_t                      fKind;                      //
+    Bool_t                      fIsMC;                      //
+    Int_t                       fnGammaCandidates;          //
+    Int_t*                      fMCStackPos;                //[fnGammaCandidates]
+    Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
+    
+    ClassDef(AliAnalysisTaskConversionQA, 5);
 };
 
 #endif

@@ -39,10 +39,11 @@
 using namespace std;
 
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
+bool PrintData=0;
 //
 int CollisionType_def=2;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
-bool FixNorm=0;// Fix Normalization for Pb-Pb only
+bool FixNorm=1;// Fix Normalization (PbPb only)
 //
 int Mbin=0;// 0-9: centrality bin in widths of 5%
 int CHARGE=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
@@ -162,9 +163,9 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   else {Q3LimitLow = 0.01; Q3LimitHigh = 0.25;}// 0.01 and 0.25
   
   // Pb-Pb points from main analysis
-  double C3_pointsPbPb_accepted[10]={0, 3.82769, 2.82596, 2.10178, 1.66731, 1.42422, 1.28309, 1.19709, 1.14329, 1.10815};
-  double c3_pointsPbPb_accepted[10]={0, 1.86453, 1.46569, 1.2175, 1.08705, 1.03176, 1.00998, 1.00039, 0.99695, 0.995467};
-
+  double C3_pointsPbPb_accepted[10]={0, 3.80885, 2.82493, 2.10035, 1.66763, 1.42446, 1.28301, 1.19701, 1.14319, 1.10818};
+  double c3_pointsPbPb_accepted[10]={0, 1.8686, 1.45941, 1.21784, 1.08782, 1.03138, 1.00964, 1.00001, 0.996496, 0.99515};
+  
 
   //
   OneFrac = sqrt(TwoFrac);
@@ -454,12 +455,6 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 		
 	
 	// Purify.  Isolate pure 3-pion QS correlations using Lambda and K3 (removes lower order correlations)
-	/*N3_QS = TERM1;
-	N3_QS -= ( pow(1-OneFrac,3) + 3*OneFrac*pow(1-OneFrac,2) )*TERM5;
-	N3_QS -= (1-OneFrac)*(TERM2 + TERM3 + TERM4 - 3*(1-TwoFrac)*TERM5);
-	N3_QS /= f33;
-	N3_QS *= K3;
-	N3_QS *=  MuonCorr1;*/
 	N3_QS = TERM1;
 	N3_QS -= f31 * TERM5;
 	N3_QS -= f32 * (TERM2 + TERM3 + TERM4);
@@ -620,11 +615,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   TMinuit *MyMinuit_fit[2];// c3/C3
   TF1 *c3Fit1D_Expan[2];
   if(FitType==0) {
-    c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2.,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2.,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)) + [5]/(120.*pow(2.,2.5))*(32.*pow(x/sqrt(3.)*[2]/0.19733,5) - 160.*pow(x/sqrt(3.)*[2]/0.19733,3) + 120*x/sqrt(3.)*[2]/0.19733) ,3))",0,1);
-    c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2.,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2.,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)) + [5]/(120.*pow(2.,2.5))*(32.*pow(x/sqrt(3.)*[2]/0.19733,5) - 160.*pow(x/sqrt(3.)*[2]/0.19733,3) + 120*x/sqrt(3.)*[2]/0.19733) ,3))",0,1);
+    c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2.,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2.,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)) + [5]/(120.*pow(2.,2.5))*(32.*pow(x/sqrt(3.)*[2]/0.19733,5) - 160.*pow(x/sqrt(3.)*[2]/0.19733,3) + 120*x/sqrt(3.)*[2]/0.19733)   +  [6]/pow(2.,6/2.)/(720.)*(64*pow(x/sqrt(3.)*[2]/0.19733,6) - 480*pow(x/sqrt(3.)*[2]/0.19733,4) + 720*pow(x/sqrt(3.)*[2]/0.19733,2) - 120),3))",0,1);
+    c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-pow([2]*x/0.19733,2)/2.) * pow(1 + ([3]/(6.*pow(2.,1.5))*(8.*pow([2]*x/sqrt(3.)/0.19733,3) - 12.*pow([2]*x/sqrt(3.)/0.19733,1))) + ([4]/(24.*pow(2.,2))*(16.*pow([2]*x/sqrt(3.)/0.19733,4) -48.*pow([2]*x/sqrt(3.)/0.19733,2) + 12)) + [5]/(120.*pow(2.,2.5))*(32.*pow(x/sqrt(3.)*[2]/0.19733,5) - 160.*pow(x/sqrt(3.)*[2]/0.19733,3) + 120*x/sqrt(3.)*[2]/0.19733)  +  [6]/pow(2.,6/2.)/(720.)*(64*pow(x/sqrt(3.)*[2]/0.19733,6) - 480*pow(x/sqrt(3.)*[2]/0.19733,4) + 720*pow(x/sqrt(3.)*[2]/0.19733,2) - 120),3))",0,1);
   }else if(FitType==1){
-    c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-[2]*x/0.19733 * sqrt(3.)/2.) * pow(1 + [3]*([2]*x/sqrt(3.)/0.19733 - 1) + [4]/2*(pow([2]*x/sqrt(3.)/0.19733,2) - 4*[2]*x/sqrt(3.)/0.19733 + 2) + [5]/6.*(-pow(x/sqrt(3.)*[1]/0.19733,3) + 9*pow(x/sqrt(3.)*[1]/0.19733,2) - 18*x/sqrt(3.)*[1]/0.19733 + 6),3))",0,1);
-    c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-[2]*x/0.19733 * sqrt(3.)/2.) * pow(1 + [3]*([2]*x/sqrt(3.)/0.19733 - 1) + [4]/2*(pow([2]*x/sqrt(3.)/0.19733,2) - 4*[2]*x/sqrt(3.)/0.19733 + 2) + [5]/6.*(-pow(x/sqrt(3.)*[1]/0.19733,3) + 9*pow(x/sqrt(3.)*[1]/0.19733,2) - 18*x/sqrt(3.)*[1]/0.19733 + 6),3))",0,1);
+    c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-[2]*x/0.19733 * sqrt(3.)/2.) * pow(1 + [3]*(-[2]*x/sqrt(3.)/0.19733 + 1) + [4]/2*(pow([2]*x/sqrt(3.)/0.19733,2) - 4*[2]*x/sqrt(3.)/0.19733 + 2) + [5]/6.*(-pow(x/sqrt(3.)*[1]/0.19733,3) + 9*pow(x/sqrt(3.)*[1]/0.19733,2) - 18*x/sqrt(3.)*[1]/0.19733 + 6)  +  [6]/24.*(pow(x/sqrt(3.)*[1]/0.19733,4) - 16*pow(x/sqrt(3.)*[1]/0.19733,3) + 72*pow(x/sqrt(3.)*[1]/0.19733,2) - 96*x/sqrt(3.)*[1]/0.19733 + 24),3))",0,1);
+    c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-[2]*x/0.19733 * sqrt(3.)/2.) * pow(1 + [3]*(-[2]*x/sqrt(3.)/0.19733 + 1) + [4]/2*(pow([2]*x/sqrt(3.)/0.19733,2) - 4*[2]*x/sqrt(3.)/0.19733 + 2) + [5]/6.*(-pow(x/sqrt(3.)*[1]/0.19733,3) + 9*pow(x/sqrt(3.)*[1]/0.19733,2) - 18*x/sqrt(3.)*[1]/0.19733 + 6)  +  [6]/24.*(pow(x/sqrt(3.)*[1]/0.19733,4) - 16*pow(x/sqrt(3.)*[1]/0.19733,3) + 72*pow(x/sqrt(3.)*[1]/0.19733,2) - 96*x/sqrt(3.)*[1]/0.19733 + 24),3))",0,1);
   }else{
     c3Fit1D_Expan[0]=new TF1("c3Fit1D_Expan1","[0]*(1+[1]*exp(-pow([2]*x/0.19733, [3])))",0,1);
     c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-pow([2]*x/0.19733, [3])))",0,1);
@@ -632,19 +627,19 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   
   TF1 *testEq[2];
   if(FitType==0) {
-    testEq[0] = new TF1("testEq_c3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
-    testEq[1] = new TF1("testEq_C3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
+    testEq[0] = new TF1("testEq_c3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733)  +  [5]/pow(2.,6/2.)/(720.)*(64*pow(x*[1]/0.19733,6) - 480*pow(x*[1]/0.19733,4) + 720*pow(x*[1]/0.19733,2) - 120) )",0,1);
+    testEq[1] = new TF1("testEq_C3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733) +  [5]/pow(2.,6/2.)/(720.)*(64*pow(x*[1]/0.19733,6) - 480*pow(x*[1]/0.19733,4) + 720*pow(x*[1]/0.19733,2) - 120) )",0,1);
   }else {
-    testEq[0] = new TF1("testEq_c3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
-    testEq[1] = new TF1("testEq_C3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
+    testEq[0] = new TF1("testEq_c3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(-x*[1]/0.19733 + 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6)  + [5]/24.*(pow(x*[1]/0.19733,4) - 16*pow(x*[1]/0.19733,3) + 72*pow(x*[1]/0.19733,2) - 96*x*[1]/0.19733 + 24))",0,1);
+    testEq[1] = new TF1("testEq_C3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(-x*[1]/0.19733 + 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6)  + [5]/24.*(pow(x*[1]/0.19733,4) - 16*pow(x*[1]/0.19733,3) + 72*pow(x*[1]/0.19733,2) - 96*x*[1]/0.19733 + 24))",0,1);
   }
   
-
+  
   for(int fitIt=0; fitIt<2; fitIt++){
     if(fitIt==0) CumulantFit=kTRUE;
     else CumulantFit=kFALSE;
     
-    const int npar_c3=7;
+    const int npar_c3=8;
     TMinuit MyMinuit_c3(npar_c3);
     MyMinuit_c3.SetFCN(fcn_c3);
     int ierflg_c3=0;
@@ -670,11 +665,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   double maxVal_c3[npar_c3];            // maximum bound on parameter
   string parName_c3[npar_c3];
   //          1.0              1.0              10.              0.              0.              0.             1.5  
-  par_c3[0] = 1.0; par_c3[1] = 1.0; par_c3[2] = 10.; par_c3[3] = 0.; par_c3[4] = 0.; par_c3[5] = 0; par_c3[6] = 1.5;
-  stepSize_c3[0] = 0.01; stepSize_c3[1] = 0.1; stepSize_c3[2] = 0.1; stepSize_c3[3] = 0.01; stepSize_c3[4] = 0.01; stepSize_c3[5] = 0.01; stepSize_c3[6] = 0.1;
-  minVal_c3[0] = 0.8; minVal_c3[1] = 0.2; minVal_c3[2] = 4.; minVal_c3[3] = -2; minVal_c3[4] = -2; minVal_c3[5] = -5; minVal_c3[6] = 0.5;
-  maxVal_c3[0] = 1.1; maxVal_c3[1] = 1000.; maxVal_c3[2] = 100.; maxVal_c3[3] = +2; maxVal_c3[4] = +2; maxVal_c3[5] = +5; maxVal_c3[6] = 2.5;
-  parName_c3[0] = "N"; parName_c3[1] = "s"; parName_c3[2] = "R_{inv}"; parName_c3[3] = "coeff_{3}"; parName_c3[4] = "coeff_{4}"; parName_c3[5] = "coeff_{5}"; parName_c3[6] = "#alpha";
+  par_c3[0] = 1.0; par_c3[1] = 1.0; par_c3[2] = 10.; par_c3[3] = 0.; par_c3[4] = 0.; par_c3[5] = 0; par_c3[6] = 0; par_c3[7] = 1.5;
+  stepSize_c3[0] = 0.01; stepSize_c3[1] = 0.1; stepSize_c3[2] = 0.1; stepSize_c3[3] = 0.01; stepSize_c3[4] = 0.01; stepSize_c3[5] = 0.01; stepSize_c3[6] = 0.01; stepSize_c3[7] = 0.1;
+  minVal_c3[0] = 0.8; minVal_c3[1] = 0.2; minVal_c3[2] = 4.; minVal_c3[3] = -2; minVal_c3[4] = -2; minVal_c3[5] = -5; minVal_c3[6] = -5; minVal_c3[6] = 0.5;
+  maxVal_c3[0] = 1.1; maxVal_c3[1] = 1000.; maxVal_c3[2] = 100.; maxVal_c3[3] = +2; maxVal_c3[4] = +2; maxVal_c3[5] = +5; maxVal_c3[6] = +5; maxVal_c3[7] = 2.5;
+  parName_c3[0] = "N"; parName_c3[1] = "s"; parName_c3[2] = "R_{inv}"; parName_c3[3] = "coeff_{3}"; parName_c3[4] = "coeff_{4}"; parName_c3[5] = "coeff_{5}"; parName_c3[6] = "coeff_{6}"; parName_c3[7] = "#alpha";
 
   if(CollisionType==0){ 
     if(FitType!=0) {
@@ -691,28 +686,29 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     }
   }
   
-  if(FitType==0) {par_c3[6] = 2.;}
-  if(FitType==1) {par_c3[6] = 1.;}
-  if(FitType==2) {par_c3[3] = 0; par_c3[4] = 0; par_c3[5] = 0;}
+  if(FitType==0) {par_c3[7] = 2.;}
+  if(FitType==1) {par_c3[7] = 1.;}
+  if(FitType==2) {par_c3[3] = 0; par_c3[4] = 0; par_c3[5] = 0; par_c3[6] = 0;}
 
   if(FitType==2) {maxVal_c3[1] = 10.;}
 
   for (int i=0; i<npar_c3; i++){
     MyMinuit_c3.DefineParameter(i, parName_c3[i].c_str(), par_c3[i], stepSize_c3[i], minVal_c3[i], maxVal_c3[i]);
   }
-  if(FitType==0 || FitType==1) { MyMinuit_c3.FixParameter(6);}
+  if(FitType==0 || FitType==1) { MyMinuit_c3.FixParameter(7);}
   if(FitType==2){
     MyMinuit_c3.FixParameter(3);
     MyMinuit_c3.FixParameter(4);
     MyMinuit_c3.FixParameter(5);
+    MyMinuit_c3.FixParameter(6);
   }
   if(FixNorm) MyMinuit_c3.FixParameter(0);
   //MyMinuit_c3.FixParameter(1);
   //MyMinuit_c3.FixParameter(2);
   //MyMinuit_c3.FixParameter(3);
   //MyMinuit_c3.FixParameter(4);
-  MyMinuit_c3.FixParameter(5);
-  
+  //MyMinuit_c3.FixParameter(5);
+  //MyMinuit_c3.FixParameter(6);
   /////////////////////////////////////////////////////////////
   // Do the minimization!
   cout<<"Start Three-d fit"<<endl;
@@ -737,6 +733,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     c3Fit1D_Expan[fitIt]->SetParameter(3,OutputPar_c3[3]);
     c3Fit1D_Expan[fitIt]->SetParameter(4,OutputPar_c3[4]);
     c3Fit1D_Expan[fitIt]->SetParameter(5,OutputPar_c3[5]);
+    c3Fit1D_Expan[fitIt]->SetParameter(6,OutputPar_c3[6]);
   }else{// Levy
     c3Fit1D_Expan[fitIt]->SetParameter(0,OutputPar_c3[0]);
     c3Fit1D_Expan[fitIt]->SetParameter(1,OutputPar_c3[1]);
@@ -746,7 +743,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   c3Fit1D_Expan[fitIt]->SetLineStyle(1);
   //c3Fit1D_Expan->Draw("same");
   
-  for(int i=0; i<5; i++) testEq[fitIt]->SetParameter(i,OutputPar_c3[i+1]);
+  for(int i=0; i<6; i++) testEq[fitIt]->SetParameter(i,OutputPar_c3[i+1]);
   cout<<"EA = "<<testEq[fitIt]->Eval(0.025)<<endl;
 
   // project 3D EW fit onto 1D histogram
@@ -776,27 +773,33 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 	if(FitType==0){
 	  Expan12 += OutputPar_c3[3]/pow(2.,3/2.)/(6.)*(8*pow(arg12,3) - 12*pow(arg12,1));
 	  Expan12 += OutputPar_c3[4]/pow(2.,4/2.)/(24.)*(16*pow(arg12,4) -48*pow(arg12,2) + 12);
-	  Expan12 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg12,5) - 160.*pow(arg12,3) + 120*arg12);
+	  Expan12 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32*pow(arg12,5) - 160*pow(arg12,3) + 120*arg12);
+	  Expan12 += OutputPar_c3[6]/pow(2.,6/2.)/(720.)*(64*pow(arg12,6) - 480*pow(arg12,4) + 720*pow(arg12,2) - 120);
 	  //
 	  Expan13 += OutputPar_c3[3]/pow(2.,3/2.)/(6.)*(8*pow(arg13,3) - 12*pow(arg13,1));
 	  Expan13 += OutputPar_c3[4]/pow(2.,4/2.)/(24.)*(16*pow(arg13,4) -48*pow(arg13,2) + 12);
-	  Expan13 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg13,5) - 160.*pow(arg13,3) + 120*arg13);
+	  Expan13 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32*pow(arg13,5) - 160*pow(arg13,3) + 120*arg13);
+	  Expan13 += OutputPar_c3[6]/pow(2.,6/2.)/(720.)*(64*pow(arg13,6) - 480*pow(arg13,4) + 720*pow(arg13,2) - 120);
 	  //
 	  Expan23 += OutputPar_c3[3]/pow(2.,3/2.)/(6.)*(8*pow(arg23,3) - 12*pow(arg23,1));
 	  Expan23 += OutputPar_c3[4]/pow(2.,4/2.)/(24.)*(16*pow(arg23,4) -48*pow(arg23,2) + 12);
-	  Expan23 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg23,5) - 160.*pow(arg23,3) + 120*arg23);
+	  Expan23 += OutputPar_c3[5]/pow(2.,5/2.)/(120.)*(32*pow(arg23,5) - 160*pow(arg23,3) + 120*arg23);
+	  Expan23 += OutputPar_c3[6]/pow(2.,6/2.)/(720.)*(64*pow(arg23,6) - 480*pow(arg23,4) + 720*pow(arg23,2) - 120);
 	}else if(FitType==1){
-	  Expan12 += OutputPar_c3[3]*(arg12 - 1);
+	  Expan12 += OutputPar_c3[3]*(-arg12 + 1);
 	  Expan12 += OutputPar_c3[4]/2.*(pow(arg12,2) - 4*arg12 + 2);
 	  Expan12 += OutputPar_c3[5]/6.*(-pow(arg12,3) + 9*pow(arg12,2) - 18*arg12 + 6);
+	  Expan12 += OutputPar_c3[6]/24.*(pow(arg12,4) - 16*pow(arg12,3) + 72*pow(arg12,2) - 96*arg12 + 24);
 	  //
-	  Expan13 += OutputPar_c3[3]*(arg13 - 1);
+	  Expan13 += OutputPar_c3[3]*(-arg13 + 1);
 	  Expan13 += OutputPar_c3[4]/2.*(pow(arg13,2) - 4*arg13 + 2);
 	  Expan13 += OutputPar_c3[5]/6.*(-pow(arg13,3) + 9*pow(arg13,2) - 18*arg13 + 6);
+	  Expan13 += OutputPar_c3[6]/24.*(pow(arg13,4) - 16*pow(arg13,3) + 72*pow(arg13,2) - 96*arg13 + 24);
 	  //
-	  Expan23 += OutputPar_c3[3]*(arg23 - 1);
+	  Expan23 += OutputPar_c3[3]*(-arg23 + 1);
 	  Expan23 += OutputPar_c3[4]/2.*(pow(arg23,2) - 4*arg23 + 2);
 	  Expan23 += OutputPar_c3[5]/6.*(-pow(arg23,3) + 9*pow(arg23,2) - 18*arg23 + 6);
+	  Expan23 += OutputPar_c3[6]/24.*(pow(arg23,4) - 16*pow(arg23,3) + 72*pow(arg23,2) - 96*arg23 + 24);
 	}else{}
 	
 	//
@@ -804,21 +807,21 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 	double t23_coh = exp(-pow(Rcoh/FmToGeV * Q23,2)/2.);
 	double t13_coh = exp(-pow(Rcoh/FmToGeV * Q13,2)/2.);
 	if(Rcoh>=100){
-	  t12_coh = exp(-pow(arg12,OutputPar_c3[6])/2.) * Expan12;
-	  t23_coh = exp(-pow(arg23,OutputPar_c3[6])/2.) * Expan23;
-	  t13_coh = exp(-pow(arg13,OutputPar_c3[6])/2.) * Expan13;
+	  t12_coh = exp(-pow(arg12,OutputPar_c3[7])/2.) * Expan12;
+	  t23_coh = exp(-pow(arg23,OutputPar_c3[7])/2.) * Expan23;
+	  t13_coh = exp(-pow(arg13,OutputPar_c3[7])/2.) * Expan13;
 	}
-	double C = 2*pow(OutputPar_c3[1],3) * pow(1-G,3)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan13*Expan23;
-	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg13,OutputPar_c3[6]))/2.)*Expan12*Expan13*t23_coh;
-	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan12*Expan23*t13_coh;
-	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg13,OutputPar_c3[6])+pow(arg23,OutputPar_c3[6]))/2.)*Expan13*Expan23*t12_coh;
+	double C = 2*pow(OutputPar_c3[1],3) * pow(1-G,3)*exp(-(pow(arg12,OutputPar_c3[7])+pow(arg13,OutputPar_c3[7])+pow(arg23,OutputPar_c3[7]))/2.)*Expan12*Expan13*Expan23;
+	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[7])+pow(arg13,OutputPar_c3[7]))/2.)*Expan12*Expan13*t23_coh;
+	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg12,OutputPar_c3[7])+pow(arg23,OutputPar_c3[7]))/2.)*Expan12*Expan23*t13_coh;
+	C += 2*pow(OutputPar_c3[1], 2) * G*pow(1-G,2)*exp(-(pow(arg13,OutputPar_c3[7])+pow(arg23,OutputPar_c3[7]))/2.)*Expan13*Expan23*t12_coh;
 	if(!CumulantFit){
-	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg12,OutputPar_c3[6]))*pow(Expan12,2);
-	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg13,OutputPar_c3[6]))*pow(Expan13,2);
-	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg23,OutputPar_c3[6]))*pow(Expan23,2);
-	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg12,OutputPar_c3[6])/2.)*Expan12 * t12_coh;
-	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg13,OutputPar_c3[6])/2.)*Expan13 * t13_coh;
-	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg23,OutputPar_c3[6])/2.)*Expan23 * t23_coh;
+	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg12,OutputPar_c3[7]))*pow(Expan12,2);
+	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg13,OutputPar_c3[7]))*pow(Expan13,2);
+	  C += pow(OutputPar_c3[1],2) * pow(1-G,2)*exp(-pow(arg23,OutputPar_c3[7]))*pow(Expan23,2);
+	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg12,OutputPar_c3[7])/2.)*Expan12 * t12_coh;
+	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg13,OutputPar_c3[7])/2.)*Expan13 * t13_coh;
+	  C += 2*OutputPar_c3[1] * G*(1-G)*exp(-pow(arg23,OutputPar_c3[7])/2.)*Expan23 * t23_coh;
 	}
 	C += 1.0;
 	C *= TERM5;
@@ -945,7 +948,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
   TH1D *Ratio_C3 = (TH1D*)C3_hist->Clone();
   TH1D *Ratio_c3 = (TH1D*)c3_hist->Clone();
-  Ratio_C3->GetYaxis()->SetTitle("Data / fit ");
+  Ratio_C3->GetYaxis()->SetTitle("Data / fit   ");
   Ratio_C3->GetXaxis()->SetTitleSize(2.2*SizeTitle);
   Ratio_C3->GetXaxis()->SetLabelSize(2.2*SizeLabel);
   Ratio_C3->GetYaxis()->SetTitleSize(2.2*SizeTitle);
@@ -954,8 +957,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Ratio_C3->GetYaxis()->SetTitleOffset(0.4);
   Ratio_C3->GetXaxis()->SetNdivisions(606);
   Ratio_C3->GetYaxis()->SetNdivisions(202);
-  Ratio_C3->SetMinimum(0.9); Ratio_C3->SetMaximum(1.045);
-  if(CollisionType==2) Ratio_C3->SetMinimum(0.85);
+  Ratio_C3->SetMinimum(0.96); Ratio_C3->SetMaximum(1.054);
+  if(CollisionType!=0) {Ratio_C3->SetMinimum(0.86); Ratio_C3->SetMaximum(1.056);}
   int BinKill=1;
   if(CollisionType!=0) BinKill=10;
   for(int bin=1; bin<=C3_hist->GetNbinsX()-BinKill; bin++){
@@ -991,6 +994,25 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   legend2->AddEntry(Ratio_c3,"#font[12]{#bf{c}}_{3}^{QS}","p");
   //legend2->Draw("same");
   Unity->Draw("same");
+
+
+  if(PrintData){
+    int Q3bins=9;
+    if(CollisionType!=0) Q3bins=25;
+    cout.precision(4);
+    cout<<"C3QS  C3QS/Fit  c3QS  c3QS/Fit"<<endl;
+    for(int qbin=1; qbin<=Q3bins; qbin++){
+      if(C3_hist->GetBinContent(qbin)>99) continue;
+      if(C3_hist->GetBinContent(qbin)==0) continue;
+      cout<<C3_hist->GetXaxis()->GetBinLowEdge(qbin)<<" TO "<<C3_hist->GetXaxis()->GetBinUpEdge(qbin)<<"; "<<C3_hist->GetBinContent(qbin)<<" +- "<<C3_hist->GetBinError(qbin)<<" (DSYS=+-"<<C3QS_Syst->GetBinError(qbin)<<"); ";
+      cout<<Ratio_C3->GetBinContent(qbin)<<" +- "<<Ratio_C3->GetBinError(qbin)<<"; ";
+      cout<<c3_hist->GetBinContent(qbin)<<" +- "<<c3_hist->GetBinError(qbin)<<" (DSYS=+-"<<C3QS_Syst->GetBinError(qbin) * c3_hist->GetBinContent(qbin)/C3_hist->GetBinContent(qbin)<<"); ";
+      cout<<Ratio_c3->GetBinContent(qbin)<<" +- "<<Ratio_c3->GetBinError(qbin)<<";"<<endl;
+    }
+    cout<<endl;
+  }
+
+
   /*
   double ChiSqSum_1D=0, SumNDF_1D=0;
   for(int bin=1; bin<=300; bin++){
@@ -1226,52 +1248,58 @@ void fcn_c3(int& npar, double* deriv, double& f, double par[], int flag){
 	  Expan12 += par[3]/pow(2.,3/2.)/(6.)*(8*pow(arg12,3) - 12*pow(arg12,1));
 	  Expan12 += par[4]/pow(2.,4/2.)/(24.)*(16*pow(arg12,4) -48*pow(arg12,2) + 12);
 	  Expan12 += par[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg12,5) - 160.*pow(arg12,3) + 120*arg12);
+	  Expan12 += par[6]/pow(2.,6/2.)/(720.)*(64*pow(arg12,6) - 480*pow(arg12,4) + 720*pow(arg12,2) - 120);
 	  //
 	  Expan13 = 1;
 	  Expan13 += par[3]/pow(2.,3/2.)/(6.)*(8*pow(arg13,3) - 12*pow(arg13,1));
 	  Expan13 += par[4]/pow(2.,4/2.)/(24.)*(16*pow(arg13,4) -48*pow(arg13,2) + 12);
 	  Expan13 += par[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg13,5) - 160.*pow(arg13,3) + 120*arg13);
+	  Expan13 += par[6]/pow(2.,6/2.)/(720.)*(64*pow(arg13,6) - 480*pow(arg13,4) + 720*pow(arg13,2) - 120);
 	  //
 	  Expan23 = 1;
 	  Expan23 += par[3]/pow(2.,3/2.)/(6.)*(8*pow(arg23,3) - 12*pow(arg23,1));
 	  Expan23 += par[4]/pow(2.,4/2.)/(24.)*(16*pow(arg23,4) -48*pow(arg23,2) + 12);
 	  Expan23 += par[5]/pow(2.,5/2.)/(120.)*(32.*pow(arg23,5) - 160.*pow(arg23,3) + 120*arg23);
+	  Expan23 += par[6]/pow(2.,6/2.)/(720.)*(64*pow(arg23,6) - 480*pow(arg23,4) + 720*pow(arg23,2) - 120);
 	}else if(FitType==1){// Laguerre expansion
 	  Expan12 = 1;
-	  Expan12 += par[3]*(arg12 - 1);
+	  Expan12 += par[3]*(-arg12 + 1);
 	  Expan12 += par[4]/2.*(pow(arg12,2) - 4*arg12 + 2);
 	  Expan12 += par[5]/6.*(-pow(arg12,3) + 9*pow(arg12,2) - 18*arg12 + 6);
+	  Expan12 += par[6]/24.*(pow(arg12,4) - 16*pow(arg12,3) + 72*pow(arg12,2) - 96*arg12 + 24);
 	  //
 	  Expan13 = 1;
-	  Expan13 += par[3]*(arg13 - 1);
+	  Expan13 += par[3]*(-arg13 + 1);
 	  Expan13 += par[4]/2.*(pow(arg13,2) - 4*arg13 + 2);
 	  Expan13 += par[5]/6.*(-pow(arg13,3) + 9*pow(arg13,2) - 18*arg13 + 6);
+	  Expan13 += par[6]/24.*(pow(arg13,4) - 16*pow(arg13,3) + 72*pow(arg13,2) - 96*arg13 + 24);
 	  //
 	  Expan23 = 1;
-	  Expan23 += par[3]*(arg23 - 1);
+	  Expan23 += par[3]*(-arg23 + 1);
 	  Expan23 += par[4]/2.*(pow(arg23,2) - 4*arg23 + 2);
 	  Expan23 += par[5]/6.*(-pow(arg23,3) + 9*pow(arg23,2) - 18*arg23 + 6);
+	  Expan23 += par[6]/24.*(pow(arg23,4) - 16*pow(arg23,3) + 72*pow(arg23,2) - 96*arg23 + 24);
 	}else{Expan12=1.0; Expan13=1.0; Expan23=1.0;}
 	//
 	double t12_coh = exp(-pow(Rcoh_def/FmToGeV * q12,2)/2.);
 	double t23_coh = exp(-pow(Rcoh_def/FmToGeV * q23,2)/2.);
 	double t13_coh = exp(-pow(Rcoh_def/FmToGeV * q13,2)/2.);
 	if(Rcoh_def>=100){
-	  t12_coh = exp(-pow(arg12,par[6])/2.) * Expan12;
-	  t23_coh = exp(-pow(arg23,par[6])/2.) * Expan23;
-	  t13_coh = exp(-pow(arg13,par[6])/2.) * Expan13;
+	  t12_coh = exp(-pow(arg12,par[7])/2.) * Expan12;
+	  t23_coh = exp(-pow(arg23,par[7])/2.) * Expan23;
+	  t13_coh = exp(-pow(arg13,par[7])/2.) * Expan13;
 	}
-	C = 2*pow(par[1],3) * pow(1-G_def,3)*exp(-(pow(arg12,par[6])+pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan13*Expan23;
-	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg13,par[6]))/2.)*Expan12*Expan13*t23_coh;
-	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[6])+pow(arg23,par[6]))/2.)*Expan12*Expan23*t13_coh;
-	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg13,par[6])+pow(arg23,par[6]))/2.)*Expan13*Expan23*t12_coh;
+	C = 2*pow(par[1],3) * pow(1-G_def,3)*exp(-(pow(arg12,par[7])+pow(arg13,par[7])+pow(arg23,par[7]))/2.)*Expan12*Expan13*Expan23;
+	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[7])+pow(arg13,par[7]))/2.)*Expan12*Expan13*t23_coh;
+	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg12,par[7])+pow(arg23,par[7]))/2.)*Expan12*Expan23*t13_coh;
+	C += 2*pow(par[1],2) * G_def*pow(1-G_def,2)*exp(-(pow(arg13,par[7])+pow(arg23,par[7]))/2.)*Expan13*Expan23*t12_coh;
 	if(!CumulantFit){
-	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg12,par[6]))*pow(Expan12,2);
-	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg13,par[6]))*pow(Expan13,2);
-	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg23,par[6]))*pow(Expan23,2);
-	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg12,par[6])/2.)*Expan12 * t12_coh;
-	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg13,par[6])/2.)*Expan13 * t13_coh;
-	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg23,par[6])/2.)*Expan23 * t23_coh;
+	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg12,par[7]))*pow(Expan12,2);
+	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg13,par[7]))*pow(Expan13,2);
+	  C += pow(par[1],2) * pow(1-G_def,2)*exp(-pow(arg23,par[7]))*pow(Expan23,2);
+	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg12,par[7])/2.)*Expan12 * t12_coh;
+	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg13,par[7])/2.)*Expan13 * t13_coh;
+	  C += 2*par[1] * G_def*(1-G_def)*exp(-pow(arg23,par[7])/2.)*Expan23 * t23_coh;
 	}
 	C += 1.0;
 	C *= par[0];// Norm

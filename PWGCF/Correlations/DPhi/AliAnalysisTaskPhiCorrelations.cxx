@@ -58,6 +58,8 @@
 #include "AliESDZDC.h"
 #include "AliESDtrackCuts.h"
 
+#include "AliEmcalJet.h"
+
 #include "AliHelperPID.h"
 #include "AliAnalysisUtils.h"
 #include "TMap.h"
@@ -174,7 +176,9 @@ fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
 fFillYieldRapidity(kFALSE),
 fFillCorrelationsRapidity(kFALSE),
-fFillpT(kFALSE)
+fUseDoublePrecision(kFALSE),
+fFillpT(kFALSE),
+fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00")
 {
   // Default constructor
   // Define input and output slots here
@@ -277,10 +281,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     histType = "5R";
   else if (fUseVtxAxis == 2)
     histType = "6R";
-  else if (fUseVtxAxis == 11)
-    histType = "4RS";
   if (fCourseCentralityBinning)
     histType += "C";
+  if (fUseDoublePrecision)
+    histType += "D";
   fHistos = new AliUEHistograms("AliUEHistogramsSame", histType, fCustomBinning);
   fHistosMixed = new AliUEHistograms("AliUEHistogramsMixed", histType, fCustomBinning);
   
@@ -1320,7 +1324,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
   if (fTriggersFromDetector == 0)
     tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
-  else if (fTriggersFromDetector <= 4)
+  else if (fTriggersFromDetector <= 5)
     tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
     AliFatal(Form("Invalid setting for fTriggersFromDetector: %d", fTriggersFromDetector));
@@ -1375,7 +1379,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 || fTrackPhiCutEvPlMax > 0.0001)
       tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   }
-  else if (fAssociatedFromDetector <= 4){
+  else if (fAssociatedFromDetector <= 5){
     if(fAssociatedFromDetector != fTriggersFromDetector)
       tracksCorrelate = GetParticlesFromDetector(inputEvent,fAssociatedFromDetector);
   }
@@ -1695,7 +1699,8 @@ void AliAnalysisTaskPhiCorrelations::ShiftTracks(TObjArray* tracks, Double_t ang
 //____________________________________________________________________
 TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet)
 {
-  //1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
+  //1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets;
+  //4 = muon tracks; 5 = global tracks w/o jets
   TObjArray* obj = new TObjArray;
   obj->SetOwner(kTRUE);
   
@@ -1770,10 +1775,61 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	obj->Add(particle);
       }
     }      
+  else if (idet == 5)
+    {
+      if(!fAOD)
+	AliFatal("Cannot access jets without AOD");
+
+      // retrieve jet array
+      TClonesArray *jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
+      if (!jetArray)
+	AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+
+      const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
+
+      const Int_t nTracks = fAOD->GetNumberOfTracks();
+      for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
+	AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
+
+	if (!track)
+	  AliFatal("Not a standard AOD");
+
+	// track cuts
+	if (!track->IsHybridGlobalConstrainedGlobal())
+	  continue;
+
+	// check if track is part of a jet
+	Bool_t trackInJet = kFALSE;
+	for (Int_t iJet = 0; iJet < nJets; ++iJet) {
+	  AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
+
+	  // skip jets outside of acceptance and too low pt
+	  if ((TMath::Abs(jet->Eta()) < .9) &&
+	      (jet->Pt() < 5.))
+	    continue;
+
+	  // exclude track if part of a jet
+	  if (jet->ContainsTrack(track->GetID())) {
+	    trackInJet = kTRUE;
+	    break;
+	  }
+	}
+
+	// skip track if it is in a selected jet
+	if (trackInJet)
+	  continue;
+
+	// add particle to array
+	AliDPhiBasicParticle* particle =
+	  new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
+	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+	obj->Add(particle);
+      }
+    }
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
-  
-  return obj;  
+
+  return obj;
 }
 
 //____________________________________________________________________

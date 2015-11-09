@@ -9,6 +9,8 @@
 
 #include "AliAnalysisMuMuBase.h"
 
+class AliMergeableCollectionProxy;
+
 class AliAnalysisMuMuGlobal : public AliAnalysisMuMuBase
 {
 public:
@@ -28,6 +30,10 @@ public:
   
 
 private:
+  
+  void FillHistosForEvent(AliMergeableCollectionProxy& p);
+  void FillHistosForMCEvent(AliMergeableCollectionProxy& p);
+  
   ClassDef(AliAnalysisMuMuGlobal,1) // implementation of AliAnalysisMuMuBase for global event properties
 };
 

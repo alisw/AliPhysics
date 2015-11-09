@@ -25,9 +25,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskBuildCorrTree.cxx
   AliAnalysisTaskCorrelation3p.cxx
   AliCFPI0.cxx
   AliCorrelation3p.cxx
+  AliCorrelation3p_noQA.cxx
+  AliFilteredEvent.cxx
   AliFilteredTrack.cxx
   AliThreeParticleCorrelator.cxx
    )

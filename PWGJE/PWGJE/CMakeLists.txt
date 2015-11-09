@@ -75,6 +75,8 @@ if(FASTJET_FOUND)
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 
+    message(INFO "fastjet libs: ${FASTJET_LIBS}")
+
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -97,6 +99,16 @@ set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice CORRFW JETAN PWGTo
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    ${FASTJET_LIBS}
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -3,12 +3,12 @@
   using AliFileMerger functionality
 
   Directory with runCalibTrain output: outputDir
-  pattern: AliESDfriends_v1.root
+  pattern: CalibObjects.root
   Output file name: CalibObjects.root
 
   Example:
   .L $ALICE_PHYSICS/ANALYSIS/CalibMacros/MergeCalibration/merge.C
-  merge("alien:///alice/cern.ch/user/j/jotwinow/CalibTrain/output","AliESDfriends_v1.root");
+  merge("alien:///alice/cern.ch/user/j/jotwinow/CalibTrain/output","CalibObjects.root");
 */
 void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles=700);
 

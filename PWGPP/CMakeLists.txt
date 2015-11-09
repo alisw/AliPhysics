@@ -347,12 +347,9 @@ install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIO
 install(DIRECTORY QA/Tracking  DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/Tracking/ExpertQA DESTINATION PWGPP/QA/Tracking USE_SOURCE_PERMISSIONS)
 install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
+install(DIRECTORY EvTrkSelection/macros DESTINATION PWGPP/EvTrkSelection FILES_MATCHING PATTERN "*.C")
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
-	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
-	      EvTrkSelection/macros/CalcSingleTrackEffQA.C
-	      EvTrkSelection/macros/SingleTrackEffTrend.C
-	      EvTrkSelection/macros/periodLevelQAEff.C
 	      DESTINATION PWGPP/EvTrkSelection)
 install(FILES CalibMacros/CPass0/LoadLibraries.C
 	      CalibMacros/CPass0/ConfigCalibTrain.C

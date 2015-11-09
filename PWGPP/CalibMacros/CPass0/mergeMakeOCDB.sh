@@ -28,8 +28,8 @@ if [ -f Run0_999999999_v3_s0.root ]; then
     mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
 fi
 
-echo ">>>>>>> Running AliRoot to merge calib objects found in $path with pattern AliESDfriends_v1.root"
-aliroot -l -b -q "merge.C(\"$path\",\"AliESDfriends_v1.root\")" 2>&1 | tee merge.log
+echo ">>>>>>> Running AliRoot to merge calib objects found in $path with pattern CalibObjects.root"
+aliroot -l -b -q "merge.C(\"$path\",\"CalibObjects.root\")" 2>&1 | tee merge.log
 mv syswatch.log syswatch_merge.log
 
 echo ">>>>>>> Extract OCDB entries for run = $runNumber, to be stored in $outputOCDB"

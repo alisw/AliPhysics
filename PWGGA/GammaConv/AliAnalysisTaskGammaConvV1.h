@@ -136,6 +136,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH2F 								**hESDMotherPi0PtOpenAngle;							//!
 		TH2F 								**hESDMotherEtaPtOpenAngle;
 		THnSparseF 							**sPtRDeltaROpenAngle;
+    TH1F                                **hESDMotherEtaSlice0;                              //!
+    TH1F                                **hESDMotherEtaSlice1;                              //!
+    TH1F                                **hESDMotherEtaSlice2;                              //!
+    TH1F                                **hESDMotherEtaSlice3;                              //!
 		TH1I 								**hMCHeaders;										//!
 		TH1F 								**hMCAllGammaPt;									//!
 		TH1F 								**hMCDecayGammaPi0Pt;								//!
