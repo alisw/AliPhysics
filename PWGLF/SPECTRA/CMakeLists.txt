@@ -42,7 +42,6 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtBackgroundCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtCorrection.cxx
   ChargedHadrons/dNdPt/AlidNdPtCutAnalysis.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCutAnalysisAOD.cxx
   ChargedHadrons/dNdPt/AlidNdPtCutAnalysisPbPb.cxx
   ChargedHadrons/dNdPt/AlidNdPt.cxx
   ChargedHadrons/dNdPt/AlidNdPtEfficiency.cxx

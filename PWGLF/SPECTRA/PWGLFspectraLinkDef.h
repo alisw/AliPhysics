@@ -10,7 +10,6 @@
 #pragma link C++ class AlidNdPtBackgroundCuts+;
 #pragma link C++ class AlidNdPtCorrection+;
 #pragma link C++ class AlidNdPtCutAnalysis+;
-#pragma link C++ class AlidNdPtCutAnalysisAOD+;
 #pragma link C++ class AlidNdPtCutAnalysisPbPb+;
 #pragma link C++ class AlidNdPt+;
 #pragma link C++ class AlidNdPtEfficiency+;
