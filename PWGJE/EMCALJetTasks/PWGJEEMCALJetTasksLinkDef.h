@@ -6,7 +6,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliAnalysisTaskEmcalJet+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoFlow+;
@@ -18,10 +17,8 @@
 #pragma link C++ class AliAnalysisTaskLocalRho+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
-#pragma link C++ class AliEmcalJet+;
 #pragma link C++ class AliEmcalJetByJetCorrection+;
 #pragma link C++ class AliEmcalPicoTrackInGridMaker+;
-#pragma link C++ class AliJetContainer+;
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
 #pragma link C++ class AliJetFastSimulation+;
@@ -32,9 +29,6 @@
 #pragma link C++ class AliJetConstituentTagCopier+;
 #pragma link C++ class AliJetResponseMaker+;
 #pragma link C++ class AliJetTriggerSelectionTask+;
-#pragma link C++ class AliLocalRhoParameter+;
-#pragma link C++ class AliRhoParameter+;
-#pragma link C++ class AliPythiaInfo+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
