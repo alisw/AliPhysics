@@ -19,6 +19,7 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
     gSystem->ResetSignal(kSigSegmentationViolation);
   }
   // addopt errors to account for calibration imprefection before cpass0
+  // 1) For TPC
   Double_t tpcSystematicErrors[5]={1,1,1./100.,1./100.,0.1};
   Double_t tpcSystematicErrorClusters[2]={2.,2.};
   Double_t tpcExtendedRoads[2]={3.5,3.5};
@@ -34,9 +35,17 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (gSystem->Getenv("streamLevel")){
     SetStreamLevel( AliTPCtracker::kStreamErrParam| AliTPCtracker::kStreamTransform);
   }
-
+  // 2) For ITS
   AliITSReconstructor::SetCheckInvariant(kFALSE); // no invariant check with extended TPC errors
-
+  // 3) For TOF
+  // extra tolerance on top of default from recoparam
+  AliTOFReconstructor::SetExtraTolerance(5.0);
+  // 4) For TRD
+  AliTRDReconstructor::SetExtraMaxClPerLayer(3); // to allow >6 cluster candidates per layer
+  AliTRDReconstructor::SetExtraBoundaryTolerance(3); // relax boundary check
+  AliTRDReconstructor::SetExtraRoadY(4); // extra road in Y
+  AliTRDReconstructor::SetExtraRoadZ(6); // extra road in Z
+  //
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
