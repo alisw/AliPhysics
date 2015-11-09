@@ -1427,13 +1427,13 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDPHI3,DPHIDPHI3near,DPHIDPHI3mid,DPHIDPHI3far,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-/////////DPHI DETA HISTOGRAMS:
-// 	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-// 	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
-// 	  DPHIDETA12_3->Write("DPhi_1_DEta_12");
-// 	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
+///////DPHI DETA HISTOGRAMS:
+	  TH2D* DPHIDETA12_3 = slice(DPHIDPHIDETA,"yx",1,DPHIDPHIDETA->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
+	  PrepareHist(DPHIDETA12_3,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
+	  DPHIDETA12_3->Write("DPhi_1_DEta_12");
+	  tempcanvas= Makecanvas(DPHIDETA12_3,"DPHIDEta12",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;
 // 	  TH2D* DPHIDETA12DPHI12L2PI_3 = DeltaEtaCut(DPHIDPHIDETA,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
 // 	  PrepareHist(DPHIDETA12DPHI12L2PI_3,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","# Pairs");
 // 	  DPHIDETA12DPHI12L2PI_3->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");     
@@ -1495,13 +1495,15 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDPHI3m,DPHIDPHI3nearm,DPHIDPHI3midm,DPHIDPHI3farm,"DPHIDPHI",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
-/////////DPHI DETA HISTOGRAMS:
-// 	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
-// 	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
-// 	  DPHIDETA12_3m->Write("DPhi_1_DEta_12");
-// 	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;
+///////DPHI DETA HISTOGRAMS:
+	  TH2D* DPHIDETA12_3m = slice(DPHIDPHIDETAm,"yx",1,DPHIDPHIDETAm->GetNbinsZ(),"DPhi_1_DEta_12",kFALSE);
+	  PrepareHist(DPHIDETA12_3m,"#Delta#Phi_{1} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true,scale);
+	  DPHIDETA12_3m->Write("DPhi_1_DEta_12");
+	  scale->Write("DPhi_1_DEta_12_scale");
+	  scale->SetVal(0.0);
+	  tempcanvas= Makecanvas(DPHIDETA12_3m,"DPHIDEta12",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;
 // 	  TH2D* DPHIDETA12DPHI12L2PI_3m = DeltaEtaCut(DPHIDPHIDETAm,"lesspi2","DPhi_1_DEta_12_DPHI12_LESS_2PI",kFALSE);
 // 	  PrepareHist(DPHIDETA12DPHI12L2PI_3m,"#Delta#Phi_{1} vs #Delta#eta_{12} for #Delta#Phi_{12}<2#pi","#Delta#eta_{12} []","#Delta#Phi_{1} [rad]","",true);
 // 	  DPHIDETA12DPHI12L2PI_3m->Write("DPhi_1_DEta_12_DPHI12_LESS_2PI");      
@@ -1586,17 +1588,17 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDPHI3div;delete DPHIDPHI3neardiv;delete DPHIDPHI3middiv;delete DPHIDPHI3fardiv;
-//////////DPHI DETA HISTOGRAMS:
-// 	  TH2D* DPHIDETA12_3div = (TH2D*) DPHIDETA12_3->Clone("DPhi_1_DEta_12");
-// 	  if(!empty)DPHIDETA12_3div->Divide(DPHIDETA12_3m);
-// 	  else DPHIDETA12_3div->Scale(0.0);
-// 	  if(setAverage) DPHIDETA12_3div->Scale(resultscalingfactor);
-// 	  if(!setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
-// 	  DPHIDETA12_3div->Write();
-// 	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
-// 	  tempcanvas->Write();
-// 	  delete tempcanvas;	 
-// 	  delete DPHIDETA12_3div;
+////////DPHI DETA HISTOGRAMS:
+	  TH2D* DPHIDETA12_3div = (TH2D*) DPHIDETA12_3->Clone("DPhi_1_DEta_12");
+	  if(!empty)DPHIDETA12_3div->Divide(DPHIDETA12_3m);
+	  else DPHIDETA12_3div->Scale(0.0);
+	  if(setAverage) DPHIDETA12_3div->Scale(resultscalingfactor);
+	  if(!setAverage)DPHIDETA12_3div->Scale(resultscalingfactor);
+	  DPHIDETA12_3div->Write();
+	  tempcanvas= Makecanvas(DPHIDETA12_3div,"DPHIDEta12",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;	 
+	  delete DPHIDETA12_3div;
 // 	  TH2D* DPHIDETA12DPHI12L2PI_3div = (TH2D*)DPHIDETA12DPHI12L2PI_3->Clone("DPhi_1_DEta_12_DPHI12_LESS_2PI");
 // 	  if(!empty)DPHIDETA12DPHI12L2PI_3div->Divide(DPHIDETA12DPHI12L2PI_3m);
 // 	  else DPHIDETA12DPHI12L2PI_3div->Scale(0.0);
@@ -1642,9 +1644,9 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
       delete DPhi12DEta12;delete DPhi12DEta12m;
       delete DPHIDPHI3;delete DPHIDPHI3near;delete DPHIDPHI3mid;delete DPHIDPHI3far;delete DPHIDPHI3m;delete DPHIDPHI3nearm;delete DPHIDPHI3midm;delete DPHIDPHI3farm;
-//       delete DPHIDETA12_3;delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;
+      delete DPHIDETA12_3;//delete DPHIDETA12DPHI12L2PI_3;delete DPHIDETA12DPHI12L4PI_3;
       delete DPHIDETA12SameSide_3;
-//       delete DPHIDETA12_3m;delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;
+      delete DPHIDETA12_3m;//delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;
       delete DPHIDETA12SameSide_3m;
       delete DPHIDETA;delete DPHIDETAm;
     }

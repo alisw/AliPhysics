@@ -345,7 +345,7 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if (*assoc==(*i)->GetTrigger()) continue;//Trigger and associated pointer are the same particle.
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=assoc+1, eassoc2 = associated.end(); assoc2 !=eassoc2;assoc2++){
-	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
+// 	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
 	  if(*assoc2==(*i)->GetTrigger()) {continue;}//Do not fill if they are the same or one is the trigger
 	  if(*assoc==*assoc2) continue;
 // 	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
@@ -353,7 +353,7 @@ class AliThreeParticleCorrelator : public TNamed {
 	  (*i)->Correlate(*assoc,*assoc2, 1.0);
 	  (*i)->Correlate(*assoc2,*assoc, 1.0);	  
 	}//loop over second associated
-	if ((*i)->CheckAssociated(*assoc)) (*i)->Correlate(*assoc);//2p correlation
+	(*i)->Correlate(*assoc);//2p correlation
       } // loop over first associated
     } // loop over triggers
     return 0;
@@ -365,9 +365,6 @@ class AliThreeParticleCorrelator : public TNamed {
     /// Fill correlation objects of different properties 
     Double_t NAssociated1 = associated.size();
     Double_t NAssociated2 = associatedmixed.size();
-    if(!(associated==associatedmixed)){//If they are the same, 1 is substracted, so add 1 if they are not and there are more combinations.
-      NAssociated1+=1;
-      NAssociated2+=1;}
     if(NAssociated1==0||NAssociated2==0) return 0;//No associated means we need not fill anything.
     if (activeTriggers.size()==0) return 0;//no triggers means nothing to be correlated
     if(pickone){
@@ -375,7 +372,7 @@ class AliThreeParticleCorrelator : public TNamed {
       Int_t NA2 = (Int_t)(NAssociated2-1)*gRandom->Rndm();//gives the index of one associatedmixed between 0 and NAssociated2-1
       for (typename std::vector<AliActiveTrigger*>::const_iterator i=activeTriggers.begin(), e=activeTriggers.end(); i!=e; i++) {
 	(*i)->Incrementtrigger();//Fill histogram for number of triggers.
-	if(!((*i)->CheckAssociated(associated[NA1])&&(*i)->CheckAssociated(associatedmixed[NA2])))continue;
+// 	if(!((*i)->CheckAssociated(associated[NA1])&&(*i)->CheckAssociated(associatedmixed[NA2])))continue;
 	(*i)->Correlate(associated[NA1],associatedmixed[NA2],1);
 	(*i)->Correlate(associatedmixed[NA2],associated[NA1],1);
       }
@@ -386,13 +383,13 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if(*assoc==(*i)->GetTrigger()) continue;//It is possible for this to happen with associated and trigger from same event
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
-	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
+// 	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
 	  if(*assoc==*assoc2||*assoc2 == (*i)->GetTrigger()) continue;//if associated are the samme or trigger is equal to the second associated.
 // 	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
 // 	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
 	  (*i)->Correlate(*assoc,*assoc2,1.0);//Fill with the number of associated in the other list.
 	}//loop over second associated
-	if ((*i)->CheckAssociated(*assoc)&&twop)(*i)->Correlate(*assoc);//2p correlation
+	if (twop)(*i)->Correlate(*assoc);//2p correlation
 	} // loop over first associated
 // 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
 // 	  if (dynamic_cast<AliVParticle*>(*assoc2)==i->GetTrigger()) continue;
@@ -475,7 +472,7 @@ class AliThreeParticleCorrelator : public TNamed {
   
   
   
- ClassDef(AliThreeParticleCorrelator, 2) // could not get it working for template class 
+ ClassDef(AliThreeParticleCorrelator, 2)
 };
 
 #endif

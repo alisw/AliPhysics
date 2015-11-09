@@ -11,6 +11,7 @@
 
 #include  "AliAnalysisTaskSE.h"
 #include  "THnSparse.h" // cannot forward declare ThnSparseF
+#include  "AliTHn.h" // cannot forward declare 
 
 ////////////////
 class AliJetHeader;
@@ -23,7 +24,6 @@ class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
 class AliCFManager;
 class AliCFContainer;
-class AliTHn;
 
 class TList;
 class TChain;

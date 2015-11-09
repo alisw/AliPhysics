@@ -147,7 +147,14 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
-  fRejectTriggerOverlap(kFALSE)
+  fRejectTriggerOverlap(kFALSE),
+  fDoMultiplicityWeighting(kFALSE),
+  fPathReweightingMult(""),
+  fNameHistoReweightingMultData(""),
+  fNameHistoReweightingMultMC(""), 
+  hReweightMultData(NULL),
+  hReweightMultMC(NULL)
+
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -236,8 +243,15 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMaxPtJetMC(ref.fMaxPtJetMC),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
-  fMimicTrigger(kFALSE),
-  fRejectTriggerOverlap(kFALSE)
+  fMimicTrigger(ref.fMimicTrigger),
+  fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
+  fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
+  fPathReweightingMult(ref.fPathReweightingMult),
+  fNameHistoReweightingMultData(ref.fNameHistoReweightingMultData),
+  fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC), 
+  hReweightMultData(ref.hReweightMultData),
+  hReweightMultMC(ref.hReweightMultMC)
+
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -308,6 +322,16 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hReweightMCHistK0s);
   }
 
+  if (hReweightMultData){
+    hReweightMultData->SetName(Form("hReweightMultData_%s",GetCutNumber().Data()));
+    fHistograms->Add(hReweightMultData);
+  }
+  if (hReweightMultMC){
+    hReweightMultMC->SetName(Form("hReweightMultMC_%s",GetCutNumber().Data()));
+    fHistograms->Add(hReweightMultMC);
+  }
+  
+  
   hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
   fHistograms->Add(hSPDClusterTrackletBackground);
 
@@ -586,6 +610,40 @@ void AliConvEventCuts::LoadWeightingFlatCentralityFromFile() {
 }
 
 ///________________________________________________________________________
+void AliConvEventCuts::LoadWeightingMultiplicityFromFile() {
+
+  AliInfo("Entering loading of weights for multiplicity weighting");
+  TFile *w = TFile::Open(fPathReweightingMult.Data());
+  if(!w){
+    AliError(Form("file for multiplicity reweighting %s not found",fPathReweightingMult.Data()));
+    return;
+  }
+  
+  if (fNameHistoReweightingMultData.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
+    cout << "I have to find: " <<  fNameHistoReweightingMultData.Data() << endl;
+    TH1D *hReweightMultDatatemp = (TH1D*)w->Get(fNameHistoReweightingMultData.Data());
+    if (hReweightMultDatatemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
+    hReweightMultData = new TH1D(*hReweightMultDatatemp);
+    if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
+    else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultData.Data() ,fPathReweightingMult.Data()));
+    hReweightMultData->SetDirectory(0);
+  }
+  if (fNameHistoReweightingMultMC.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
+    cout << "I have to find: " <<  fNameHistoReweightingMultMC.Data() << endl;
+    TH1D *hReweightMultMCtemp = (TH1D*)w->Get(fNameHistoReweightingMultMC.Data());
+    if (hReweightMultMCtemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
+    hReweightMultMC = new TH1D(*hReweightMultMCtemp);
+    if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
+    else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultMC.Data() ,fPathReweightingMult.Data()));
+    hReweightMultMC->SetDirectory(0);
+  }
+
+  w->Close();
+  delete w;
+}
+
+
+///________________________________________________________________________
 void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
 
   AliInfo("Entering loading of histograms for weighting");
@@ -656,8 +714,12 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     LoadWeightingFlatCentralityFromFile();
   }
   
+  if (fDoMultiplicityWeighting){
+    AliInfo("Multiplicity weighting was enabled");
+    LoadWeightingMultiplicityFromFile();
+  }
   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
-    AliInfo("Weighting was enabled");
+    AliInfo("Particle Weighting was enabled");
     LoadReweightingHistosMCFromFile();
   }
     
@@ -2959,6 +3021,31 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
   }
   
   return weightCentrality;
+}
+
+//_________________________________________________________________________
+Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
+
+  Double_t weightMult         = 1.;
+  
+  Float_t valueMultData       = -1.;
+  Float_t valueMultMC         = -1.;
+  
+  if (hReweightMultData == NULL || hReweightMultMC == NULL ) return weightMult;
+  
+  valueMultData               = hReweightMultData->Interpolate(mult);
+  valueMultMC                 = hReweightMultMC->Interpolate(mult);
+  
+  Float_t relativeErrorMC     = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult))/hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
+  Float_t relativeErrorData   = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult))/hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
+  
+  if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
+     if (isfinite(valueMultData) && isfinite(valueMultMC) ){
+        weightMult               = valueMultData/valueMultMC;
+     } 
+  }
+  
+  return weightMult;
 }
 
 

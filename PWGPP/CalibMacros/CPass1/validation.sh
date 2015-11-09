@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILESTOCHECK="rec_Barrel.log rec_Outer.log calib.log AliESDs_Barrel.root AliESDfriends_v1.root"
+FILESTOCHECK="rec_Barrel.log rec_Outer.log calib.log AliESDs_Barrel.root CalibObjects.root"
 
 validateout=`dirname $0`
 

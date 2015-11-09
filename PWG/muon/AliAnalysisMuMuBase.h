@@ -103,6 +103,12 @@ public:
   
 protected:
 
+  TString BuildPath(const char* eventSelection, const char* triggerClassName, const char* centrality,
+                    const char* cut="") const;
+  
+  TString BuildMCPath(const char* eventSelection, const char* triggerClassName, const char* centrality,
+                      const char* cut="") const;
+  
   void CreateHistos(const TObjArray& paths,
                     const char* hname, const char* htitle,
                     Int_t nbinsx, Double_t xmin, Double_t xmax,

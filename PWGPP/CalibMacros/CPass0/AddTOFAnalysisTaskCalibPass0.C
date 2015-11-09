@@ -30,7 +30,7 @@ AddTOFAnalysisTaskCalibPass0()
   }
   
   /* create output data container */
-  AliAnalysisDataContainer *outputc1 = mgr->CreateContainer("TOFHistos", TList::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");
+  AliAnalysisDataContainer *outputc1 = mgr->CreateContainer("TOFHistos", TList::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");
   if (!outputc1) {
     Error("AddAnalysisTaskEventTime", "cannot create output container \"Histos\"");
     return NULL;

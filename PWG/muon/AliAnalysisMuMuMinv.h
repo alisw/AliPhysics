@@ -35,6 +35,8 @@ public:
   
   void SetLegacyBinNaming() { fMinvBinSeparator = ""; }
   
+  void SetBinsToFill(const char* particle, const char* bins);
+
 protected:
   
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
@@ -66,10 +68,10 @@ private:
   Bool_t fcomputeMeanPt;
   TH2F* fAccEffHisto;
   TString fMinvBinSeparator;
-  
   Int_t fsystLevel;
+  TObjArray* fBinsToFill;
   
-  ClassDef(AliAnalysisMuMuMinv,3) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuMinv,4) // implementation of AliAnalysisMuMuBase for muon pairs
 };
 
 #endif

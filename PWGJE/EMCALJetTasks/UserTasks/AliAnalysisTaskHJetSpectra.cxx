@@ -88,6 +88,7 @@ fhKTAreaPt(0x0),
 fhJetPhi(0x0),  fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
+fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
 fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
@@ -135,6 +136,7 @@ fhKTAreaPt(0x0),
 fhJetPhi(0x0), fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
+fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
  fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
@@ -379,8 +381,10 @@ Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track, Bool
 
    if(isGen){ //pure MC select charged primary tracks 
       //Apply only for kine level or MC containers   
-      if((!track->Charge()) || (!(static_cast<AliAODMCParticle*>(track))->IsPhysicalPrimary()))
-         return kFALSE;
+      if(!track->Charge()) return kFALSE;
+      if(fTypeOfAnal != kEmb && fTypeOfAnal != kEmbSingl){
+         if(!(static_cast<AliAODMCParticle*>(track))->IsPhysicalPrimary()) return kFALSE;
+      }    
    }
    if(TMath::Abs(track->Eta()) <= fTrackEtaWindow){ //APPLY TRACK ETA CUT
       if(track->Pt() >= fMinTrackPt){   //APPLY TRACK CUT
@@ -761,7 +765,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          if(trkArrayRec && trkArrayGen){ 
 
             for(Int_t j = 0; j < trkArrayRec->GetEntries(); j++){ // loop over reconstructed tracks 
-               AliVParticle* constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
+               constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
                if(!constTrackRec) continue;
                if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
                bRecPrim = kFALSE; //not yet matched to generator level physical primary
@@ -1067,7 +1071,26 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          }
       }
    }
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   // Track Multiplicity
+   if(trkArrayRec){
+      Int_t mult   = 0;
+      Int_t multTT = 0;
+      for(Int_t j = 0; j < trkArrayRec->GetEntries(); j++){ // loop over reconstructed tracks 
+         constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
+         if(!constTrackRec) continue;
+         if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
+         mult++;
+         if(trackTT) multTT++;
+      }
+      fhTrackMultiplicity->Fill(mult);
+      if(trackTT) fhTrackMultiplicityTT->Fill(multTT);
 
+      if(centralityPercentile > -0.1){
+         fh2TrackMultVsCent->Fill(centralityPercentile,mult);
+         if(trackTT) fh2TrackMultVsCentTT->Fill(centralityPercentile,multTT);
+      } 
+   }
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //  H+JET IN RECONSTRUCTED DATA  
 
@@ -1249,7 +1272,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    for(Int_t ir=0; ir< kRho-1; ir++){ //Skip Zero bg
       //rho in events with TT 
       fhRhoTT[ir] = new TH1F(Form("fhRho%s",bgtype[ir].Data()),
-                           Form("Rho%s",bgtype[ir].Data()),40, 0.0, 20.0);
+                           Form("Rho%s",bgtype[ir].Data()),80, 0.0, 40.0);
       if(bNotKine) fOutput->Add(fhRhoTT[ir]);
 
       //rho in inclusive events
@@ -1258,7 +1281,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
  
       // rho times area in events with TT 
       fARhoTT[ir] = new TH1F(Form("fARho%s",bgtype[ir].Data()),
-                            Form("Area times rho %s",bgtype[ir].Data()),40, 0.0, 20.0);
+                            Form("Area times rho %s",bgtype[ir].Data()),80, 0.0, 40.0);
       if(bHistRec) fOutput->Add(fARhoTT[ir]);
    }
    //_______________________________________________________________________
@@ -1351,6 +1374,21 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //-------------------------
    fhCentralityZNA = new TH1F("hCentralityZNA","hCentralityZNA",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityZNA);
+
+   //-----------------------------------------------------
+   //   track multiplicity
+   fhTrackMultiplicity = new TH1D("fhTrackMultiplicity","fhTrackMultiplicity",1000,0,1000);
+   if(bNotKine) fOutput->Add(fhTrackMultiplicity);
+
+   fhTrackMultiplicityTT = (TH1D*)fhTrackMultiplicity->Clone("fhTrackMultiplicityTT");
+   if(bNotKine) fOutput->Add(fhTrackMultiplicityTT);
+
+   fh2TrackMultVsCent = new TH2D("fh2TrackMultVsCent","fh2TrackMultVsCent",20,0,100,100,0,1000);
+   if(bNotKine) fOutput->Add(fh2TrackMultVsCent);
+
+   fh2TrackMultVsCentTT = (TH2D*) fh2TrackMultVsCent->Clone("fh2TrackMultVsCentTT");
+   if(bNotKine) fOutput->Add(fh2TrackMultVsCentTT);
+   //-----------------------------------------------------
   /*
    if(fTypeOfAnal == kKine){ 
       fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
@@ -1376,7 +1414,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    if(fTypeOfAnal== kEff ){
       for(Int_t ir=0; ir < kRho; ir++){
          fhJetPtGen[ir] = new TH1D(Form("fhJetPtGen%s",bgtype[ir].Data()),
-                                   Form("Jet pT Gen %s",bgtype[ir].Data()),bw*100,-20,200);
+                                   Form("Jet pT Gen %s",bgtype[ir].Data()),bw*160,-20,300);
          fOutput->Add(fhJetPtGen[ir]);
          
          fhJetPtGenVsJetPtRec[ir] = new TH2D(Form("fhJetPtGenVsJetPtRec%s",bgtype[ir].Data()),

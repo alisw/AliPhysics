@@ -133,6 +133,7 @@ public:
   fCentrUpLim=centrup;}
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
  void SetDataSet(TString DataSet) {fDataSet = DataSet;}
+ void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -283,6 +284,7 @@ private:
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
  Int_t fCRCnRun;
+ Float_t fZDCGainAlpha;
  TString fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain

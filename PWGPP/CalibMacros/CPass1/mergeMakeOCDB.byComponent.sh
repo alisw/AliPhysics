@@ -9,18 +9,14 @@
 
 main()
 {
-  maxChunksTOT=999999
-
-  save_args=("$@") 
+  save_args=("$@")
   if [[ $# -eq 0 ]]; then
     echo arguments:
-    echo  "  1 - directory on which to look for the files to be merged or local file list"
+    echo  "  1 - directory on which to look for the files to be merged or local file list or xml collection"
     echo  "  2 - runNumber"
     echo  "  3 - OCDB output path"
     echo
     echo  "  optionally set any of these"
-    echo  "  maxChunksTOT=<max number of chunks> (def: ${maxChunksTOT}, max number of chunks to process)"
-    echo  "                                       random selection will be done but 1st entr)"
     echo  "  runParallel={0,1}   (1 to run parallel merging and downloading)"
     echo  "  defaultOCDB=raw://  (or any other valid OCDB storage as input database)"
     echo  "  fileAccessMethod={alien_cp,tfilecp,nocopy}   (by default tfilecp)"
@@ -29,6 +25,8 @@ main()
     echo  "                    \"nocopy\" will access files over the network directly TFile::Open()"
     echo  "  numberOfFilesInAbunch=50                     (how many files get downloaded in one go)"
     echo  "  maxChunksTPC=3000    (max number of chunks to be merged for TPC calibration)"
+    echo  "  makeOCDB={1,0}  run (or not) makeOCDB"
+    echo  "  calibObjectsFileName={AliESDfriends_v1.root, CalibObjects.root "
 
     echo
     echo "example:"
@@ -51,22 +49,27 @@ main()
   fileAccessMethod="tfilecp"
   numberOfFilesInAbunch=50
   maxChunksTPC=3000
+  makeOCDB=1
+  calibObjectsFileName="CalibObjects.root"
   [[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
 
   parseConfig "$@"
 
   #some sanity checks of option values
   [[ ! $numberOfFilesInAbunch =~ ^[0-9]+$ ]] && numberOfFilesInAbunch=50
-  [[ "$fileAccessMethod" != "alien_cp" && "$fileAccessMethod" != "tfilecp" && "$fileAccessMethod" != "nocopy" ]] && fileAccessMethod="tfilecp" && echo "using default fileAccessMethod=tfilecp"
+  [[ "$fileAccessMethod" != "alien_cp" && "$fileAccessMethod" != "tfilecp" && "$fileAccessMethod" != "nocopy" && "$fileAccessMethod" != "copyXMLcollection" ]] && fileAccessMethod="tfilecp" && echo "using default fileAccessMethod=tfilecp"
 
   filesAreLocal=0
-  [[ -f $path ]] && filesAreLocal=1
+  [[ -f $path && "$fileAccessMethod" != "copyXMLcollection" ]] && filesAreLocal=1
   cleanup=1
   [[ $filesAreLocal -eq 1 ]] && cleanup=0
   [[ $filesAreLocal -eq 1 ]] && fileAccessMethod="nocopy"
+  [[ ${path} =~ \.xml ]] && fileAccessMethod="copyXMLcollection"
 
   # setup components to be merged
-  components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
+  #components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
+  #TPCCluster and TPCAlign removed (see Computing Board on 01/12/2014, https://docs.google.com/document/d/14i0G6bxZpnB3MFdWgqsweI3vCcUaeCwaq99tYoqmfxk/edit, https://indico.cern.ch/event/291343/)
+  components="TOF MeanVertex T0 SDD TRD TPCCalib"   
   #components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
   # take Data Quality Flags from JDL
@@ -86,8 +89,10 @@ main()
   echo cleanup = $cleanup | tee -a merge.log
   echo fileAccessMethod = $fileAccessMethod | tee -a merge.log
   echo numberOfFilesInAbunch = $numberOfFilesInAbunch | tee -a merge.log
-  echo runParallel = $runParallel
-  echo detectorBitsQualityFlag = $detectorBitsQualityFlag
+  echo runParallel = $runParallel | tee -a merge.log
+  echo detectorBitsQualityFlag = $detectorBitsQualityFlag | tee -a merge.log
+  echo "makeOCDB = $makeOCDB" | tee -a merge.log
+  echo "calibObjectsFileName = $calibObjectsFileName" | tee -a merge.log
   echo "***********************" | tee -a merge.log
 
   alienFileList="alien.list"
@@ -107,26 +112,32 @@ main()
   echo from $path 2>&1 | tee -a copy.log
   echo "***********************" 2>&1 | tee -a copy.log
   if [[ $filesAreLocal -eq 0 ]]; then
-    if [[ "$fileAccessMethod" == "alien_cp" ]]; then
-      echo "alien_find $path AliESDfriends_v1.root | egrep ^/ > $alienFileList" 2>&1 | tee -a copy.log
-      alien_find $path "AliESDfriends_v1.root" | egrep "^/" >  $alienFileList
+    if [[ "$fileAccessMethod" == "copyXMLcollection" ]]; then
+        echo "the XML file to be parsed is:"
+        cat ${path}
+        cat ${path} | extractFileNamesFromXMLCollection > $alienFileList
+        echo
+    elif [[ "$fileAccessMethod" == "alien_cp" ]]; then
+      echo "alien_find $path ${calibObjectsFileName} | egrep ^/ > $alienFileList" 2>&1 | tee -a copy.log
+      alien_find $path "${calibObjectsFileName}" | egrep "^/" >  $alienFileList
       echo "alien_find done"
       echo
     else 
-      echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
-      aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+      echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"${calibObjectsFileName}\")" 2>&1 | tee -a copy.log
+      aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"${calibObjectsFileName}\")" 2>&1 | tee -a copy.log
       echo "MAKEALIENLIST done"
       echo
     fi
   else
     cp $path $alienFileList
   fi
+  echo "********** alienFileList is: ***********"
+  cat $alienFileList
+  echo
   #randomize the list
   #keep the first line intact (it is the largest file of the entire collection)
-  echo "randomizing $maxChunksTOT chunks of the list, preserving the 1st one "
-  nchAdd=$[maxChunksTOT-1]
-  head -n1 ${alienFileList} > ${alienFileList}.tmp
-  tail -n +2 ${alienFileList} | shuf -n $nchAdd >> ${alienFileList}.tmp 
+  sed -n '1p' ${alienFileList} > ${alienFileList}.tmp
+  sed '1d' ${alienFileList} | while read x; do echo "${RANDOM} ${x}"; done|sort -n|cut -d" " -f2- >> ${alienFileList}.tmp
   mv -f ${alienFileList}.tmp ${alienFileList}
 
   #split into sublists, each to be processed separately
@@ -153,7 +164,7 @@ main()
         alien_cp "alien://$x" $localName
         echo $localName>>$partialLocalFileList
       done<$partialAlienFileList
-    elif [[ "$fileAccessMethod" == "tfilecp" ]]; then
+    elif [[ "$fileAccessMethod" == "tfilecp" || "$fileAccessMethod" == "copyXMLcollection" ]]; then
       echo aliroot -b -q "mergeByComponent.C(\"COPY\",\"$partialAlienFileList\",\"noPath\",\"noPattern\",10,\"$partialLocalFileList\")" 2>&1 | tee -a copy.log
       aliroot -b -q "mergeByComponent.C(\"COPY\",\"$partialAlienFileList\",\"noPath\",\"noPattern\",10,\"$partialLocalFileList\")" 2>&1 | tee -a copy.log
     elif [[ "$fileAccessMethod" == "nocopy" ]]; then
@@ -210,13 +221,15 @@ main()
   rm -f $alienFileList
   rm -f $localFileList
 
-  # make OCDB
-  echo "***********************" 2>&1 | tee -a ocdb.log
-  echo making ${det} OCDB 2>&1 | tee -a ocdb.log
-  echo "***********************" 2>&1 | tee -a ocdb.log
-  echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
-  aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
-  mv syswatch.log syswatch_makeOCDB.log
+  if [[ ${makeOCDB} -ne 0 ]]; then
+    # make OCDB
+    echo "***********************" 2>&1 | tee -a ocdb.log
+    echo making ${det} OCDB 2>&1 | tee -a ocdb.log
+    echo "***********************" 2>&1 | tee -a ocdb.log
+    echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
+    aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\", $detectorBitsQualityFlag)" 2>&1 | tee -a ocdb.log
+    mv syswatch.log syswatch_makeOCDB.log
+  fi
 
   # summary
   echo "***********************" 2>&1 | tee -a ocdb.log
@@ -378,6 +391,7 @@ parseConfig()
     local var="${opt%%=*}"
     local value="${opt#*=}"
     export ${var}="${value}"
+    echo "${var}=${value}"
   done
 
   return 0
@@ -407,11 +421,16 @@ validateMerging()
 copyScripts()
 {
   [[ ! -f mergeByComponent.C ]] && \
-    cp -f $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/mergeByComponent.C $PWD && \
+    cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C $PWD && \
     echo "taking the default scripts from $ALICE_ROOT"
   [[ ! -f makeOCDB.C ]] && \
-    cp -f $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/makeOCDB.C $PWD && \
+    cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C $PWD && \
     echo "taking the default scripts from $ALICE_ROOT"
+}
+
+extractFileNamesFromXMLCollection()
+{
+    grep turl|sed 's|^.*turl\s*=\s*"\s*\([a-zA-Z]*://.*\.root\).*$|\1|g'
 }
 
 #these functions encode strings to and from a space-less form

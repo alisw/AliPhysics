@@ -51,7 +51,7 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
       AliAnalysisDataContainer* coutput = mgr->CreateContainer(task1->GetJobs()->At(i)->GetName(),
                                                                AliTPCcalibBase::Class(), 
                                                                AliAnalysisManager::kOutputContainer, 
-                                                               "AliESDfriends_v1.root:TPCCalib"); 
+                                                               "CalibObjects.root:TPCCalib"); 
       mgr->ConnectOutput(task1,i,coutput);
     }
   }
@@ -69,7 +69,7 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
       AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
                                                                AliTPCcalibBase::Class(), 
                                                                AliAnalysisManager::kOutputContainer, 
-                                                               "AliESDfriends_v1.root:TPCAlign"); 
+                                                               "CalibObjects.root:TPCAlign"); 
       mgr->ConnectOutput(taskAlign,i,coutput);
     }
   }
@@ -87,7 +87,7 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
       AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
                                                                AliTPCcalibBase::Class(), 
                                                                AliAnalysisManager::kOutputContainer, 
-                                                               "AliESDfriends_v1.root:TPCCluster"); 
+                                                               "CalibObjects.root:TPCCluster"); 
       mgr->ConnectOutput(taskCluster,i,coutput);
     }
   }

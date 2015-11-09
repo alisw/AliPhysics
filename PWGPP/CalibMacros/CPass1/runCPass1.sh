@@ -222,7 +222,7 @@ fi
 mv AliESDs.root ../AliESDs_Barrel.root
 mv AliESDfriends.root ../AliESDfriends_Barrel.root
 
-for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root; do
+for file in CalibObjects.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi

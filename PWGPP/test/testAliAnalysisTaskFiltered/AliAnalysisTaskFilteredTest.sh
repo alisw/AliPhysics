@@ -20,7 +20,7 @@
 # E.g for GSI setup:
 #
 # export UnitTestConfig=$ALICE_ROOT/../src/test/configuration/configGSI.sh 
-# $ALICE_ROOT/../src/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
+# $ALICE_PHYSICS/../src/PWGPP/test/testAliAnalysisTaskFiltered/AliAnalysisTaskFilteredTest.sh
 #
 ###############################################################################
 # Steps:

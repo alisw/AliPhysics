@@ -6,7 +6,11 @@
 
 #pragma link C++ class AliCFPI0+;
 #pragma link C++ class AliFilteredTrack+;
+#pragma link C++ class AliFilteredEvent+;
+#pragma link C++ class AliCorrelation3p_noQA+;
 #pragma link C++ class AliCorrelation3p+;
+#pragma link C++ class AliThreeParticleCorrelator<AliCorrelation3p_noQA>+;
 #pragma link C++ class AliThreeParticleCorrelator<AliCorrelation3p>+;
 #pragma link C++ class AliAnalysisTaskCorrelation3p+;
+#pragma link C++ class AliAnalysisTaskBuildCorrTree+;
 #endif

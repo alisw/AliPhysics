@@ -30,13 +30,13 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
 {
   std::vector<std::string> packages;
   
-  // packages.push_back("PWGmuon"); // uncomment this if you want to use your version of that package
+ // packages.push_back("PWGmuon"); // uncomment this if you want to use your version of that package
   
   if (!local)
   {
     TList list;
     
-    list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
+    list.Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
     list.Add(new TNamed("ALIROOT_MODE","base"));
     
     TString extraLibs;
@@ -50,7 +50,7 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
       }
     }
     
-    extraLibs.RemoveAll(TString::kBoth,':');
+    extraLibs.Remove(TString::kBoth,':');
     
     list.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
     
@@ -83,14 +83,11 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
         std::cout << "Uploading PAR file " << package << std::endl;
       }
       
-      if (gProof->UploadPackage(Form("$ALICE_PHYSICS/PARfiles/%s",package.c_str())))
+      if (gProof->UploadPackage(package.c_str()))
       {
         std::cout << "Upload failed" << std::endl;
         return kFALSE;
       }
-      
-      
-      
       
       if ( debug )
       {
@@ -262,42 +259,40 @@ TString GetOutputName(const TString& sds)
 }
 
 //______________________________________________________________________________
-void GetTriggerList(TList& triggers, Bool_t simulations)
+void GetTriggerList(Bool_t simulations, TString& triggers, TString& inputs)
 {
-  // Fill the list of triggers to be analyzed
+  // Get the list of triggers to be analyzed
   //
   // Here you can use class names and/or combinations of classes and input, e.g.
   // triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MUL"));
   
   if (!simulations)
   {
-    triggers.Add(new TObjString("CMUL7-B-NOPF-MUFAST"));
-    // triggers.Add(new TObjString("CMSH7-B-NOPF-MUFAST"));
-    // triggers.Add(new TObjString("C0MUL-B-NOPF-MUON"));
-    // triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST"));
-    // triggers.Add(new TObjString("CMSL7-B-NOPF-MUFAST"));
-    // triggers.Add(new TObjString("CMUL7-B-NOPF-MUFAST & 0MUL"));
-    // triggers.Add(new TObjString("CMSL7-B-NOPF-MUFAST & 0MUL"));
-    // triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST & 0MUL"));
+    triggers =  "CMUL7-B-NOPF-MUFAST,"
+    "CINT7-B-NOPF-MUFAST,"
+    "CMSL7-B-NOPF-MUFAST,"
+    "CMUL7-B-NOPF-MUFAST&0MUL,"
+    "CMSL7-B-NOPF-MUFAST&0MUL,"
+    "CINT7-B-NOPF-MUFAST&0MUL";
+    inputs = "0MSL:17,0MSH:18,0MLL:19,0MUL:20";
   }
   else
   {
     // add here the MC-specific trigger you want to analyze (if any)
-    
-    triggers.Add(new TObjString("CMULLO-B-NOPF-MUON"));
-    triggers.Add(new TObjString("CMSNGL-B-NOPF-MUON"));
-    
-    triggers.Add(new TObjString("ANY"));
-    
+
+    triggers = "CMULLO-B-NOPF-MUON,"
+    "CMSNGL-B-NOPF-MUON,"
+    "ANY";    
     // e.g. for dpmjet simulations (at least) we have the following "triggers" :
     // C0T0A,C0T0C,MB1,MBBG1,V0L,V0R,MULow,EMPTY,MBBG3,MULL,MULU,MUHigh
+    inputs = "";
   }
 }
 
 //______________________________________________________________________________
 AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC15i/000235839/muon_calo_pass1/AOD/;FileName=AliAOD.Muons.root;Tree=/aodTree",
                          Bool_t simulations=kFALSE,
-                         const char* addtask="AddTaskMuMuMinv.C",
+                         const char* addtask="AddTaskMuMuMinv",
                          const char* where="laphecet@nansafmaster2.in2p3.fr/?N")
 {
   ///
@@ -314,7 +309,7 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
     workers = "workers=8x";
   }
   
-  TString saf2Package("VO_ALICE@AliPhysics::v5-06-39-01"); // only care about this if you run on SAF2
+  TString saf2Package("VO_ALICE@AliPhysics::vAN-20150908"); // only care about this if you run on SAF2
   
   TString sds(dataset);
   
@@ -344,12 +339,12 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
     p = TProof::Open(where,workers.Data());
     if (!p)
     {
-      std::cerr << "Cannot connect to Proof : " << where << std::endl;
+      std::cout << "Cannot connect to Proof : " << where << std::endl;
       return 0x0;
     }
     
     TString master(gProof->GetSessionTag());
-    if (master.Contains("nansafmaster2") )
+    if (master.Contains("nansafmaster3") )
     {
       // dealing with a VAF, main package is the same regardless of the aliphysics version you asked
       mainPackage = "/opt/SAF3/etc/vaf/AliceVaf.par";
@@ -362,7 +357,7 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   
   if (!SetupLibraries(local,debug,mainPackage.Data()))
   {
-    std::cerr << "Cannot setup libraries. Aborting" << std::endl;
+    std::cout << "Cannot setup libraries. Aborting" << std::endl;
     return 0x0;
   }
   
@@ -372,30 +367,26 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   
   if (!input)
   {
-    std::cerr << "Cannot get input type !" << std::endl;
+    std::cout << "Cannot get input type !" << std::endl;
     return 0x0;
   }
   
   mgr->SetInputEventHandler(input);
   
-  TList* triggers = new TList;
-  triggers->SetOwner(kTRUE);
+  TString triggers, inputs;
+
+  GetTriggerList(simulations,triggers,inputs);
   
-  GetTriggerList(*triggers,simulations);
-  
-  TString outputname = GetOutputName(sds);
-  
-  TString saddtask(addtask);
-  saddtask.ReplaceAll("AddTaskMuMu","");
-  saddtask.ReplaceAll(".C","");
-  outputname.ReplaceAll(".root",Form(".%s.root",saddtask.Data()));
+  TString outputname = addtask;
+
+  outputname.ReplaceAll("AddTask","");
   
   AliAnalysisTask* task(0x0);
   
   if (!baseline)
   {
-    gROOT->LoadMacro(Form("%s",addtask));
-    task = AddTaskMuMu(outputname.Data(),triggers,"pp",simulations);
+    gROOT->LoadMacro(Form("%s.C",addtask));
+    task = static_cast<AliAnalysisTaskMuMu*>(gROOT->ProcessLine(Form(".x %s.C(\"%s\",\"%s\",\"%s\",\"%s\",%d)",addtask,outputname.Data(),triggers.Data(),inputs.Data(),"pp",simulations)));
   }
   else
   {
@@ -405,7 +396,7 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   
   if (!mgr->InitAnalysis())
   {
-    std::cerr << "Could not InitAnalysis" << std::endl;
+    std::cout << "Could not InitAnalysis" << std::endl;
     return 0x0;
   }
   
@@ -431,7 +422,7 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
     }
     if (!c)
     {
-      std::cerr << "Cannot create input chain !" << std::endl;
+      std::cout << "Cannot create input chain !" << std::endl;
       return 0x0;
     }
     if (debug) mgr->SetNSysInfo(10);
@@ -447,8 +438,6 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   }
   
   AliCodeTimer::Instance()->Print();
-  
-  delete triggers;
   
   return task;
 }

@@ -9,7 +9,7 @@ LoadLibraries()
 
 //___________________________________________________________________________
 
-MakeOCDB(const Char_t *filename = "AliESDfriends_v1.root", const Char_t *dbString = "raw://", Int_t runNB)
+MakeOCDB(const Char_t *filename = "CalibObjects.root", const Char_t *dbString = "raw://", Int_t runNB)
 {
   LoadLibraries();
   AliMeanVertexPreprocessorOffline meanVertexCalib;

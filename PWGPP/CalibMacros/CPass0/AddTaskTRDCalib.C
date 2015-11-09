@@ -136,7 +136,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   if (!cinput) cinput = mgr->CreateContainer("cchain",TChain::Class(),
                                       AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *coutput =mgr->CreateContainer("TRDCalib",TList::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");
+  AliAnalysisDataContainer *coutput =mgr->CreateContainer("TRDCalib",TList::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");
 
 
   mgr->ConnectInput(calibTask,0,cinput);
