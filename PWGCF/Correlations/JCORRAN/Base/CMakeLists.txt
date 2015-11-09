@@ -24,8 +24,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
                     ${AliPhysics_SOURCE_DIR}/OADB
   )
 
