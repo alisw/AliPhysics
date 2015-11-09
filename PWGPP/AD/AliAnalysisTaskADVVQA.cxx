@@ -43,13 +43,13 @@ ClassImp(AliAnalysisTaskADVVQA)
 
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA() 
-  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0)
+  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA(const char *name) 
-  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0)
+  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -64,6 +64,7 @@ AliAnalysisTaskADVVQA::~AliAnalysisTaskADVVQA(){
   if (fList_NoVBA_VBC) { delete fList_NoVBA_VBC; fList_NoVBA_VBC = 0x0; }
   if (fList_VBA_VBC) { delete fList_VBA_VBC; fList_VBA_VBC = 0x0; }
   if (fList_TVX) { delete fList_TVX; fList_TVX = 0x0; }
+  if (fList_UBA_UBC) { delete fList_UBA_UBC; fList_UBA_UBC = 0x0; }
 }
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
@@ -107,6 +108,13 @@ void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
   fListHist->Add(fList_TVX);
   
   InitHistos(fList_TVX,"TVX");
+  
+  fList_UBA_UBC = new TList();
+  fList_UBA_UBC->SetOwner();
+  fList_UBA_UBC->SetName("Hists_UBA_UBC");
+  fListHist->Add(fList_UBA_UBC);
+  
+  InitHistos(fList_UBA_UBC,"UBA_UBC");
 
   // Post output data.
   PostData(1, fListHist);
@@ -539,6 +547,8 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
     Printf("ERROR: Event not available");
     return;
   }
+  if(fInputEvent->IsIncompleteDAQ()) return;
+  
   AliESDEvent* fESD = (AliESDEvent*)fEvent;
   if (!fESD) {
     Printf("ERROR: ESD not available");
@@ -549,7 +559,8 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_VBC);
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_VBC);
-  if(  fESD->GetHeader()->IsTriggerInputFired("0TVX")) FillHistos(fList_TVX);  
+  if(  fESD->GetHeader()->IsTriggerInputFired("0TVX")) FillHistos(fList_TVX);
+  if( (fESD->GetHeader()->IsTriggerInputFired("0UBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0UBC"))) FillHistos(fList_UBA_UBC);  
 
   // Post output data.
   PostData(1, fListHist);
