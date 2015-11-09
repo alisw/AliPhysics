@@ -27,6 +27,7 @@ install(FILES
   GlauberMCHistos.root
   PMTGainsdata.txt
   SpectatorSignal.root
+  SpectatorsFromData.root
   fragmSpecDataDriven.root
   ZNsignalntu.root
   ZPsignalntu.root
