@@ -26,13 +26,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
-    AliAnalysisTaskEmcalJet.cxx
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
@@ -45,10 +45,8 @@ set(SRCS
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
-    AliEmcalJet.cxx
     AliEmcalPicoTrackInGridMaker.cxx
     AliJetConstituentTagCopier.cxx
-    AliJetContainer.cxx
     AliJetEmbeddingFromGenTask.cxx
     AliJetEmbeddingTask.cxx
     AliJetFastSimulation.cxx
@@ -58,9 +56,6 @@ set(SRCS
     AliJetRandomizerTask.cxx
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
-    AliLocalRhoParameter.cxx
-    AliPythiaInfo.cxx
-    AliRhoParameter.cxx
     Tracks/AliAnalysisTaskLEDCheck.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
@@ -209,7 +204,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL PWGJETFW)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
