@@ -97,6 +97,18 @@ set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice CORRFW JETAN PWGTo
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjettools
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjet
+    CGAL
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
