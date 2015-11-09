@@ -8,9 +8,9 @@
   .x $NOTES/aux/rootlogon.C
   gSystem->AddIncludePath("-I$ALICE_ROOT/../src/STAT/");
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+  
-  AliNDLocalRegressionTest(1000,2,"cos(7*x[0]/pi)*sin(19*x[1]/pi)",0.1);
+  AliNDLocalRegressionTest(10000,2,"cos(7*x[0]/pi)*sin(19*x[1]/pi)",0.1);
   //
-  AliNDLocalRegressionTest(1000,2,"x[0]+x[1]",0.1);
+  AliNDLocalRegressionTest(10000,2,"x[0]+x[1]",0.1);
  
 */
 
@@ -227,14 +227,14 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   gStyle->SetOptStat(0);
   //
   pformula=new TFormula("pformula", sfromula);
-  pfitNDIdeal  = new  AliNDLocalRegression;
-  pfitNDGaus0  = new  AliNDLocalRegression;
-  pfitNDGaus1  = new  AliNDLocalRegression;
-  pfitNDGaus2  = new  AliNDLocalRegression;
-  pfitNDGaus3  = new  AliNDLocalRegression;
-  pfitNDBreit0 = new  AliNDLocalRegression;
-  pfitNDBreit1 = new  AliNDLocalRegression;
-  pfitNDBreit2 = new  AliNDLocalRegression;
+  pfitNDIdeal  = new  AliNDLocalRegression("pfitNDIdeal","pfitNDIdeal");
+  pfitNDGaus0  = new  AliNDLocalRegression("pfitNDGaus0","pfitNDGaus0");
+  pfitNDGaus1  = new  AliNDLocalRegression("pfitNDGaus1","pfitNDGaus1");
+  pfitNDGaus2  = new  AliNDLocalRegression("pfitNDGaus2","pfitNDGaus2");
+  pfitNDGaus3  = new  AliNDLocalRegression("pfitNDGaus3","pfitNDGaus3");
+  pfitNDBreit0 = new  AliNDLocalRegression("pfitNDBreit0","pfitNDBreit0");
+  pfitNDBreit1 = new  AliNDLocalRegression("pfitNDBreit1","pfitNDBreit1");
+  pfitNDBreit2 = new  AliNDLocalRegression("pfitNDBreit2","pfitNDBreit2");
   //
   // 0.) Initialization of variables and THn
   // 
@@ -314,14 +314,14 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit1->SetHistogram((THn*)(hN->Clone()));
   pfitNDBreit2->SetHistogram((THn*)(hN->Clone()));
   //
-  pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
-  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Gaussian1
-  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2
-  pfitNDGaus2->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails robust
-  pfitNDGaus3->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails non robust
-  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Breit0
-  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit1
-  pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit2 without outlier filtering
+  pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);
+  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.02:0.02","2:2",0.0001);  // sample Gaussian1
+  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2
+  pfitNDGaus2->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2 - with tails robust
+  pfitNDGaus3->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2 - with tails non robust
+  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.02:0.02","2:2",0.0001);  // sample Breit0
+  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit1
+  pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit2 without outlier filtering
   //
   pfitNDIdeal->AddVisualCorrection(pfitNDIdeal,1);
   pfitNDGaus0->AddVisualCorrection(pfitNDGaus0,2);
@@ -331,6 +331,17 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit0->AddVisualCorrection(pfitNDBreit0,4);
   pfitNDBreit1->AddVisualCorrection(pfitNDBreit1,5);
   pfitNDBreit2->AddVisualCorrection(pfitNDBreit2,6);
+  //
+
+  TObjArray * array = AliNDLocalRegression::GetVisualCorrections();
+  for (Int_t i=0; i<array->GetEntries(); i++){
+    AliNDLocalRegression * regression = ( AliNDLocalRegression *)array->At(i);
+    if (regression==NULL) continue;
+    regression->AddVisualCorrection(regression);
+    Int_t hashIndex = regression->GetVisualCorrectionIndex();
+    treeIn->SetAlias( regression->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)",hashIndex).Data());
+  }
+
   
   delete pcstreamOutGaus0;
   delete pcstreamOutGaus1;
@@ -352,7 +363,7 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
   //
   // Adding week constrain AtBoundaries
   //
-  //  Technique similar to "Kalman update" of measurement used at boundaries
+  //  Technique similar to "Kalman update" of measurement used at boundaries - https://en.wikipedia.org/wiki/Kalman_filter
   // 
   // 1.) Make backup of original parameters
   // 2.) Book Kalman matrices
@@ -366,9 +377,21 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
     Int_t indexes[2]={0,1};
     Double_t relWeight[6]={1,2,10,1,2,10};
     pcstream=new TTreeSRedirector("constrainStream.root","recreate");
-    AliNDLocalRegression * regression = ( AliNDLocalRegression *)pfitNDGaus0;
-    AddWeekConstrainsAtBoundaries( regression, nDims, indexes,relWeight, pcstream);
+    
+    AliNDLocalRegression * regression0 = ( AliNDLocalRegression *)AliNDLocalRegression::GetVisualCorrections()->FindObject("pfitNDGaus0");
+    AliNDLocalRegression * regression1 = ( AliNDLocalRegression *)AliNDLocalRegression::GetVisualCorrections()->FindObject("pfitNDGaus1");
+    regressionUpdate0 = (AliNDLocalRegression *)regression0->Clone()
+    regressionUpdate1 = (AliNDLocalRegression *)regression1->Clone()
+    AddWeekConstrainsAtBoundaries( regressionUpdate0, nDims, indexes,relWeight, pcstream);
+    AddWeekConstrainsAtBoundaries( regressionUpdate1, nDims, indexes,relWeight, pcstream);
+    regressionUpdate0->SetName("pfitNDGaus0_Updated");
+    regressionUpdate1->SetName("pfitNDGaus1_Updated");
+    AliNDLocalRegression::AddVisualCorrection(regressionUpdate0);
+    AliNDLocalRegression::AddVisualCorrection(regressionUpdate1);
+     treeIn->SetAlias( regressionUpdate0->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)", regressionUpdate0->GetVisualCorrectionIndex()).Data());
+     treeIn->SetAlias( regressionUpdate1->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)", regressionUpdate1->GetVisualCorrectionIndex()).Data());
     delete pcstream;
+
 
     TFile *f = TFile::Open("constrainStream.root")
    */
@@ -379,8 +402,8 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
   //
   TObjArray *vecParamOrig    = regression->fLocalFitParam;
   TObjArray *vecCovarOrig    = regression->fLocalFitCovar;
-  TObjArray *vecParamUpdated = new TObjArray(*(regression->fLocalFitParam));
-  TObjArray *vecCovarUpdated = new TObjArray(*(regression->fLocalFitCovar));
+  TObjArray *vecParamUpdated = new TObjArray(regression->fLocalFitParam->GetEntriesFast());
+  TObjArray *vecCovarUpdated = new TObjArray(regression->fLocalFitParam->GetEntriesFast());
   // 
   // 2.) Book local varaibles and Kalman matrices
   //  
@@ -388,11 +411,11 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
   Int_t nMeas= nDims*6; // update each dimension specified 2 ends 2 measurements (value and first derivative)
   
 
-  TMatrixD vecXk(nParams,1);          // X vector
-  TMatrixD covXk(nParams,nParams);    // X covariance 
-  TMatrixD matHk(nMeas,nParams);    // vector to mesurement
-  TMatrixD measR(nMeas,nMeas);             // measurement error side 
-  TMatrixD vecZk(nMeas,1);                 // measurement side
+  TMatrixD vecXk(nParams,1);           // X vector - parameter of the local fit at bin
+  TMatrixD covXk(nParams,nParams);     // X covariance 
+  TMatrixD matHk(nMeas,nParams);       // vector to mesurement (values at boundary of bin)
+  TMatrixD measR(nMeas,nMeas);         // measurement error at boundary as provided by bin in local neigberhood 
+  TMatrixD vecZk(nMeas,1);             // measurement at boundary 
   //
   TMatrixD measRBin(nMeas,nMeas);              // measurement error bin
   TMatrixD vecZkBin(nMeas,1);                  // measurement bin
@@ -409,7 +432,7 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
   TMatrixD mat1(nParams,nParams);     // update covariance matrix
   TMatrixD covXk2(nParams,nParams);   // 
   TMatrixD covOut(nParams,nParams);   //
-
+  mat1.UnitMatrix();
   //
   // 3.) Loop over all measurements bins and update mesurements -adding boundary measurements as additional measurement
   //     relWeight vector specify relative weight of such measurement  (err_i=sigma_i*refWeight_i
@@ -533,8 +556,10 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
     vecXk += matKk*vecYk;                      //  updated vector 
     covXk2 = (mat1-(matKk*matHk));
     covOut =  covXk2*covXk; 
-
-
+    //
+    vecParamUpdated->AddAt(new TVectorD(nParams,vecXk.GetMatrixArray()), iBin); 
+    vecCovarUpdated->AddAt(new TMatrixD(covOut), iBin); 
+    
     if (pcstream){
       TMatrixD vecZkBinCheck(matrixTransformBin,TMatrixD::kMult,matParam0); 
       TVectorD vecPos(nDims,binCenter);
@@ -563,7 +588,10 @@ Bool_t AddWeekConstrainsAtBoundaries(AliNDLocalRegression * regression, Int_t nD
 	 "vecYkUpdated.="<<&vecYkUpdated<< // diff after kalman update
 	 "\n";
     }
-  }       
+  } 
+  regression->fLocalFitParam= vecParamUpdated;
+  regression->fLocalFitCovar= vecCovarUpdated;
+  
   /* 
      To check:
      checkBin->Draw("measR.fElements[12]/sqrt(measR.fElements[13]*measR.fElements[0])","","")
