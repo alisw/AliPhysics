@@ -168,19 +168,21 @@ TObject* AliMuonAnalysisOutput::GetSum ( TString physSel, TString trigClassNames
   
   TString sumCentralityString = GetCentralities(centrality);
 
-  TObjArray objectNameInCollection;
+  TObjString* objString = 0x0;
+
+  THashList objectNameInCollection;
   objectNameInCollection.SetOwner();
   TObjArray* physSelList = physSel.Tokenize(",");
   TObjArray* trigClassList = trigClassNames.Tokenize(",");
   TObjArray* centralityList = sumCentralityString.Tokenize(",");
-  for ( Int_t isel=0; isel<physSelList->GetEntries(); isel++ ) {
-    for ( Int_t itrig = 0; itrig<trigClassList->GetEntries(); itrig++ ) {
-      for ( Int_t icent=0; icent<centralityList->GetEntries(); icent++ ) {
-        TString currId = Form("/%s/%s/%s/", physSelList->At(isel)->GetName(), trigClassList->At(itrig)->GetName(),centralityList->At(icent)->GetName());
+  for ( Int_t isel=0; isel<physSelList->GetEntriesFast(); isel++ ) {
+    for ( Int_t itrig = 0; itrig<trigClassList->GetEntriesFast(); itrig++ ) {
+      for ( Int_t icent=0; icent<centralityList->GetEntriesFast(); icent++ ) {
+        TString currId = Form("/%s/%s/%s/", physSelList->UncheckedAt(isel)->GetName(), trigClassList->UncheckedAt(itrig)->GetName(),centralityList->UncheckedAt(icent)->GetName());
         TList* objNameList = fMergeableCollection->CreateListOfObjectNames(currId.Data());
-        for ( Int_t iobj=0; iobj<objNameList->GetEntries(); iobj++ ) {
-          TString objName = objNameList->At(iobj)->GetName();
-          if ( ! objectNameInCollection.FindObject(objName.Data()) ) objectNameInCollection.Add(new TObjString(objName.Data()));
+        TIter next(objNameList);
+        while ( (objString = static_cast<TObjString*>(next())) ) {
+          if ( ! objectNameInCollection.FindObject(objString->GetName()) ) objectNameInCollection.Add(new TObjString(objString->GetName()));
         }
         delete objNameList;
       }
@@ -193,10 +195,11 @@ TObject* AliMuonAnalysisOutput::GetSum ( TString physSel, TString trigClassNames
   TObjArray* objPatternList = objectPattern.Tokenize(",");
 
   TString matchingObjectNames = "";
-  for ( Int_t iobj=0; iobj<objectNameInCollection.GetEntries(); iobj++ ) {
-    TString objName = objectNameInCollection.At(iobj)->GetName();
-    for ( Int_t ipat=0; ipat<objPatternList->GetEntries(); ipat++ ) {
-      TString currPattern = objPatternList->At(ipat)->GetName();
+  TIter next(&objectNameInCollection);
+  while ( (objString = static_cast<TObjString*>(next())) ) {
+    TString objName = objString->String();
+    for ( Int_t ipat=0; ipat<objPatternList->GetEntriesFast(); ipat++ ) {
+      TString currPattern = objPatternList->UncheckedAt(ipat)->GetName();
       if ( currPattern.Contains("*") ) {
         if ( ! objName.Contains(TRegexp(currPattern.Data(),kTRUE)) ) continue;
       }
