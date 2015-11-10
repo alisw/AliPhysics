@@ -27,9 +27,9 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fMinputName(""),
   fpTinputName(""),
   fFromTree(0),
-  fPathTreeinputFile("TreesJet4VectorForEmbedding.root"),
-  fTreeinputName("fTreeJetA"),
-  fBranchJDetName("fJetGenSub"),
+  fPathTreeinputFile(""),
+  fTreeinputName("fTreeJet"),
+  fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0)
 {
@@ -52,9 +52,9 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fMinputName(""),
   fpTinputName(""),
   fFromTree(0),
-  fPathTreeinputFile("TreesJet4VectorForEmbedding.root"),
-  fTreeinputName("fTreeJetA"),
-  fBranchJDetName("fJetGenSub"),
+  fPathTreeinputFile(""),
+  fTreeinputName("fTreeJet"),
+  fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0)
 {
@@ -134,13 +134,11 @@ void AliJetEmbeddingTask::Run()
        	  if(!fTreeJet4Vect || fBranchJDetName.IsNull()) {
        	     AliFatal(Form("Tree or branch name not found"));
        	  }
-       	  Printf("Adding track from tree");
        	  TLorentzVector *jetDet = 0;
        	  TBranch *bDet = 0;
        	  Int_t nbranches = fTreeJet4Vect->GetNbranches();
-       	  Printf("Input: %p, %d , %s, %p %p", fTreeJet4Vect,nbranches, fBranchJDetName.Data(), jetDet,bDet );
+       	  fTreeJet4Vect->ResetBranchAddresses();
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
-       	  Printf("Branch set, %p",bDet);
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
        	  if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
        	  else {
@@ -149,30 +147,29 @@ void AliJetEmbeddingTask::Run()
        	     bDet->GetEntry(fCurrentEntry);
        	  }
        	  fCurrentEntry++;
-       	  
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
        	  
        } else {
        	  
-      Double_t mass = fMass;
-      Short_t charge = 1;
-      if(fNeutralFraction>0.) {
-	Double_t rnd = gRandom->Rndm();
-	if(rnd<fNeutralFraction) {
-	  charge = 0;
-	  mass = fNeutralMass;
-	}
-      }
-      if(fMassless) mass = 0.;
-      if(fMassFromDistr) {
-      	 if(fHMassDistrib)
-      	 mass = fHMassDistrib->GetRandom();
-      	 else {
-      	    AliError(Form("Template distribution for mass of track embedding not found, use %f", fMass));
-      	    mass = fMass;
-      	 }
-      }
-      AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
+       	  Double_t mass = fMass;
+       	  Short_t charge = 1;
+       	  if(fNeutralFraction>0.) {
+       	     Double_t rnd = gRandom->Rndm();
+       	     if(rnd<fNeutralFraction) {
+       	     	charge = 0;
+       	     	mass = fNeutralMass;
+       	     }
+       	  }
+       	  if(fMassless) mass = 0.;
+       	  if(fMassFromDistr) {
+       	     if(fHMassDistrib)
+       	     	mass = fHMassDistrib->GetRandom();
+       	     else {
+       	     	AliError(Form("Template distribution for mass of track embedding not found, use %f", fMass));
+       	     	mass = fMass;
+       	     }
+       	  }
+       	  AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
        }
     }
   }
@@ -259,7 +256,7 @@ void AliJetEmbeddingTask::SetTree(TTree *tree)  {
       return;
    }
    fFromTree = kTRUE; 
-   fTreeJet4Vect = (TTree*)tree->Clone(Form("%sCp", tree->GetName()));
+   fTreeJet4Vect = (TTree*)tree->Clone(Form("%sCpEmb", tree->GetName()));
    AliInfo(Form("Input tree set %d (%p -> %p)", fTreeJet4Vect->GetNbranches(), tree, fTreeJet4Vect));
    
    return;
@@ -280,7 +277,7 @@ void AliJetEmbeddingTask::SetTreeFromFile(TString filename, TString treename){
    
    TTree *tree = dynamic_cast<TTree*>(f->Get(treename));
    if(!tree){
-      Printf("Tree not found!!!");
+      Printf("Tree %s not found!!!", treename.Data());
       f->ls();
       return;
    }
