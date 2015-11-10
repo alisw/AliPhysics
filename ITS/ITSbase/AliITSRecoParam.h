@@ -498,12 +498,19 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void ReconstructOnlySPD(){fOptReco="SPD";}
   TString GetOptReco() const {return fOptReco;}
 
+  // RS Max number of clusters seen in PbPb2011 was 7000
+  // Even if you change it, keep it <65535
+  enum {kMaxClusterPerLayer=32000}; // max clusters per layer
+  enum {kMaxClusterPerLayer5 =kMaxClusterPerLayer*2/5}; 
+  enum {kMaxClusterPerLayer10=kMaxClusterPerLayer*2/10};
+  enum {kMaxClusterPerLayer20=kMaxClusterPerLayer*2/20}; 
   //
+  /*
   enum {kMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {kMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
   enum {kMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
   enum {kMaxClusterPerLayer20=7000};//7000*10*2/20; // max clusters per layer
-
+  */
  protected:
   //
   static const Int_t fgkLayersNotToSkip[AliITSgeomTGeo::kNLayers]; // array with layers not to skip
