@@ -562,7 +562,7 @@ void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
   if (TMath::Abs(tth) < 1e-9) {
     ::Warning("GetEtaPhiFromStrip",
 	      "eta=%f -> theta=%f tan(theta)=%f invalid (no change)",
-	      eta, theta, tth);
+	      eta, the, tth);
     return;
   }
   Double_t z   = rs / tth;
