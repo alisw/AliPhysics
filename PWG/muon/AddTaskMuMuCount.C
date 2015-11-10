@@ -1,5 +1,5 @@
 ///
-/// Configuration example of a task to get invariant mass spectrum of dimuons
+/// Configuration example of a MuMu task to get simple counting of events, without histogramming
 ///
 /// \author: L. Aphecetche (Subatech) (laurent.aphecetche - at - subatech.in2p3.fr)
 ///
@@ -29,7 +29,7 @@ AliAnalysisTask* AddTaskMuMu(const char* outputname,
  
   AliAnalysisMuMuEventCutter* eventCutter = new AliAnalysisMuMuEventCutter(triggerClassesToConsider);
   
-  // to the very list we need a cut combination at the event level
+  // to the very least we need a cut combination at the event level
   // (i.e. if we select no event, nothing will happen...)
   // we use by default the usual physics selection for real data
   // and a trivial selection (i.e. always true) for simulations

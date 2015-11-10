@@ -185,6 +185,10 @@ public:
  TString GetDataSet() const {return this->fDataSet;};
  void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
  TString GetCorrWeight() const {return this->fCorrWeight;};
+ void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
+ TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+ void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
+ TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -264,7 +268,9 @@ private:
  Double_t fCenBinWidth;
  TString fDataSet;
  TString fCorrWeight;
- TList *fQVecList;           // list with weights
+ TList *fQVecList;       // list with weights
+ TH1D* fCenWeightsHist;
+ TH1D* fPtWeightsHist[10];
  
  ClassDef(AliAnalysisTaskCRC, 2);
 };

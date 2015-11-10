@@ -13,6 +13,7 @@
  */
 
 #include "TH2F.h"
+#include "AliCodeTimer.h"
 #include "AliMuonTrackCuts.h"
 #include "AliAnalysisMuonUtility.h"
 #include "TMath.h"
@@ -31,7 +32,9 @@ AliAnalysisMuMuSingle::AliAnalysisMuMuSingle()
 : AliAnalysisMuMuBase(),
 fMuonTrackCuts(0x0),
 fShouldSeparatePlusAndMinus(kFALSE),
-fAccEffHisto(0x0)
+fAccEffHisto(0x0),
+fPtEtaSpectraPerBCX(kFALSE),
+fDCAHistos(kFALSE)
 {
   /// ctor
 }
@@ -169,6 +172,7 @@ void AliAnalysisMuMuSingle::DefineHistogramCollection(const char* eventSelection
 {
   /// Actually create the histograms for phyics/triggerClassName
  
+  
   if ( Histo(eventSelection,triggerClassName,centrality,"AliAnalysisMuMuSingle") )
   {
     return;
@@ -233,20 +237,16 @@ void AliAnalysisMuMuSingle::DefineHistogramCollection(const char* eventSelection
   nbins = GetNbins(xmin,xmax,1.0);
   
   CreateTrackHisto(eventSelection,triggerClassName,centrality,"BCX","bunch-crossing ids",nbins,xmin-0.5,xmax-0.5);
-
-  
 }
 
+
 //_____________________________________________________________________________
-void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
-                                               const char* triggerClassName,
-                                               const char* centrality,
-                                               const char* trackCutName,
-                                               const AliVParticle& track)
+void AliAnalysisMuMuSingle::FillHistosForMuonTrack(AliMergeableCollectionProxy& proxy,
+                                                   const AliVParticle& track)
 {
   /// Fill histograms for one track
-  
-  if (!AliAnalysisMuonUtility::IsMuonTrack(&track) ) return;
+ 
+  AliCodeTimerAuto("",0);
   
   if ( HasMC() )
   {
@@ -274,58 +274,66 @@ void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
   Double_t dca = EAGetTrackDCA(track);
   
   Double_t theta = AliAnalysisMuonUtility::GetThetaAbsDeg(&track);
-
+  
   if (!IsHistogramDisabled("BCX"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,"BCX")->Fill(1.0*Event()->GetBunchCrossNumber());
+    proxy.Histo("BCX")->Fill(1.0*Event()->GetBunchCrossNumber());
   }
-
+  
   if (!IsHistogramDisabled("Chi2MatchTrigger"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,"Chi2MatchTrigger")->Fill(AliAnalysisMuonUtility::GetChi2MatchTrigger(&track));
+    proxy.Histo("Chi2MatchTrigger")->Fill(AliAnalysisMuonUtility::GetChi2MatchTrigger(&track));
   }
   
   if (!IsHistogramDisabled("EtaRapidityMu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("EtaRapidityMu%s",charge.Data()))->Fill(p.Rapidity(),p.Eta());
+    proxy.Histo(Form("EtaRapidityMu%s",charge.Data()))->Fill(p.Rapidity(),p.Eta());
   }
   
   if (!IsHistogramDisabled("PtEtaMu*"))
   {
-    TH1* h = Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtEtaMu%s",charge.Data()));
+    TH1* h = proxy.Histo(Form("PtEtaMu%s",charge.Data()));
     
     h->Fill(p.Eta(),p.Pt());
-    
-    if (!IsHistogramDisabled("BCX"))
+
+    if  ( fPtEtaSpectraPerBCX )
     {
-      TH1* hbcx = Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber()));
-    
-      if (!hbcx)
+      if (!IsHistogramDisabled("BCX"))
       {
-        hbcx = static_cast<TH1*>(h->Clone(Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber())));
-        HistogramCollection()->Adopt(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,trackCutName),hbcx);
+        TH1* hbcx = proxy.Histo(Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber()));
+      
+        if (!hbcx)
+        {
+          hbcx = static_cast<TH1*>(h->Clone(Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber())));
+          proxy.Adopt(hbcx);
+        }
       }
     }
   }
   
   if (!IsHistogramDisabled("PtRapidityMu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtRapidityMu%s",charge.Data()))->Fill(p.Rapidity(),p.Pt());
+    proxy.Histo(Form("PtRapidityMu%s",charge.Data()))->Fill(p.Rapidity(),p.Pt());
   }
   
   if (!IsHistogramDisabled("PEtaMu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PEtaMu%s",charge.Data()))->Fill(p.Eta(),p.P());
+    proxy.Histo(Form("PEtaMu%s",charge.Data()))->Fill(p.Eta(),p.P());
   }
   
   if (!IsHistogramDisabled("PtPhiMu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtPhiMu%s",charge.Data()))->Fill(p.Phi(),p.Pt());
+    proxy.Histo(Form("PtPhiMu%s",charge.Data()))->Fill(p.Phi(),p.Pt());
   }
   
   if (!IsHistogramDisabled("Chi2Mu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("Chi2Mu%s",charge.Data()))->Fill(AliAnalysisMuonUtility::GetChi2perNDFtracker(&track));
+    proxy.Histo(Form("Chi2Mu%s",charge.Data()))->Fill(AliAnalysisMuonUtility::GetChi2perNDFtracker(&track));
+  }
+  
+  if (!fDCAHistos)
+  {
+    return;
   }
   
   if ( theta >= 2.0 && theta < 3.0 )
@@ -333,14 +341,14 @@ void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
     
     if (!IsHistogramDisabled("dcaP23Mu*"))
     {
-      Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("dcaP23Mu%s",charge.Data()))->Fill(p.P(),dca);
+      proxy.Histo(Form("dcaP23Mu%s",charge.Data()))->Fill(p.P(),dca);
     }
     
     if ( p.Pt() > 2 )
     {
       if (!IsHistogramDisabled("dcaPwPtCut23Mu*"))
       {
-        Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("dcaPwPtCut23Mu%s",charge.Data()))->Fill(p.P(),dca);
+        proxy.Histo(Form("dcaPwPtCut23Mu%s",charge.Data()))->Fill(p.P(),dca);
       }
     }
   }
@@ -348,16 +356,34 @@ void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
   {
     if (!IsHistogramDisabled("dcaP310Mu*"))
     {
-      Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("dcaP310Mu%s",charge.Data()))->Fill(p.P(),dca);
+      proxy.Histo(Form("dcaP310Mu%s",charge.Data()))->Fill(p.P(),dca);
     }
     if ( p.Pt() > 2 )
     {
       if (!IsHistogramDisabled("dcaPwPtCut310Mu*"))
       {
-        Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("dcaPwPtCut310Mu%s",charge.Data()))->Fill(p.P(),dca);
+        proxy.Histo(Form("dcaPwPtCut310Mu%s",charge.Data()))->Fill(p.P(),dca);
       }
     }
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
+                                               const char* triggerClassName,
+                                               const char* centrality,
+                                               const char* trackCutName,
+                                               const AliVParticle& track)
+{
+  /// Fill histograms for one track
+
+  if (!AliAnalysisMuonUtility::IsMuonTrack(&track) ) return;
+
+  AliMergeableCollectionProxy* proxy = HistogramCollection()->CreateProxy(BuildPath(eventSelection,triggerClassName,centrality,trackCutName));
+
+  FillHistosForMuonTrack(*proxy,track);
+  
+  delete proxy;
 }
 
 //_____________________________________________________________________________

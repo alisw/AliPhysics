@@ -71,6 +71,7 @@ public:
     virtual void    SetVarCentBin(Bool_t varCbin=kTRUE){fuseVarCentBins= varCbin;}
     virtual void    SetVarPtBin(Bool_t varPtbin=kTRUE){fuseVarPtBins= varPtbin;}
     
+    
     void    SetCorr2plus1or1plus1(Bool_t twoplus1){ftwoplus1 = twoplus1;}
     //void    SetEffCorrection(TH3F *hEff){fThnEff = hEff;}
     void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
@@ -80,7 +81,7 @@ public:
     void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
     void    SetTwoTrackEfficiencyCut(Bool_t TTRcut){ftwoTrackEfficiencyCut = TTRcut;}
     void    SetEqualT1T2Demand(Bool_t T1T2eQ){fEqualT1T2 = T1T2eQ;}
-    
+    void    SetFinerBinsME(Bool_t MEfinebins){fFineBinsME = MEfinebins;}
     
     
 private:
@@ -215,6 +216,40 @@ private:
         return kTRUE;
     }
     
+    
+    //______________________________| Mixed Event Pool finer bins
+    Bool_t DefineMixedEventPoolPbPb_largebins(){
+        Int_t  NofCentBins  = 7;
+        Double_t MBins[]={0., 7.5, 10., 20., 30., 40., 50., 100.1};
+        Double_t * CentrORMultBins = MBins;
+        
+        Int_t NofZVrtxBins  = 6;
+        Double_t ZBins[]={-10.0, -8.0, -4.0,  0, 4.0, 8.0, 10.};
+        Double_t *ZVrtxBins = ZBins;
+        
+        fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.1, 5);
+        if(!fPoolMgr) return kFALSE;
+        return kTRUE;
+    }
+    
+    //______________________________| Mixed Event Pool
+    Bool_t DefineMixedEventPoolpp_largebins(){
+        Int_t  NofCentBins  = 1;
+        Double_t MBins[]={0,250.};
+        Double_t * CentrORMultBins = MBins;
+        
+        Int_t NofZVrtxBins  = 10;
+        Double_t ZBins[]={-10.0, -8.0, -6.0, -4.0, -2.0, 0, 2.0, 4.0, 6.0, 8.0, 10.0};
+        Double_t *ZVrtxBins = ZBins;
+        
+        fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.1, 5);
+        if(!fPoolMgr) return kFALSE;
+        return kTRUE;
+    }
+
+    
     //______________________________| Mixed Event Pool Process
     Bool_t ProcessMixedEventPool(){
         if(!fMixedEvent) return kFALSE;
@@ -227,6 +262,7 @@ private:
     //______________________________| All Used Ojects
     Bool_t    ftwoplus1;
     Bool_t    fEqualT1T2;
+    Bool_t    fFineBinsME;
     Bool_t    fSetSystemValue;
     Bool_t    fRecoOrMontecarlo;
     Bool_t    fReadMC;
@@ -285,7 +321,7 @@ private:
     
     
     
-    ClassDef(AliAnalysisTaskDiJetCorrelationsAllb2b, 1); // example of analysis
+    ClassDef(AliAnalysisTaskDiJetCorrelationsAllb2b, 2); // example of analysis
 };
 
 

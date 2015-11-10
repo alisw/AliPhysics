@@ -11,6 +11,8 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
                                                                                Double_t pTrg2min = 5.0,
                                                                                Double_t pTrg2max = 8.0,
                                                                                Bool_t T1T2Equal = kFALSE,
+                                                                           
+                                         Bool_t fineBinsME = kTRUE,
                                                                                Double_t bit = 272,
                                                                                TString fileTrackeff = "",
                                                                                Bool_t resCut = kFALSE,
@@ -46,6 +48,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     dijetcorrelations->SetConversionCut(conversionCut);
     dijetcorrelations->SetTwoTrackEfficiencyCut(TTRcut);
     dijetcorrelations->SetEqualT1T2Demand(T1T2Equal);
+    dijetcorrelations->SetFinerBinsME(fineBinsME);
     
     // dijetcorrelations->SetAlphaAngle(alphaB2B);
     //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));

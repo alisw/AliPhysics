@@ -18,7 +18,7 @@
 #include <TObjArray.h>
 
 #include "AliEmcalTriggerBitConfig.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliLog.h"

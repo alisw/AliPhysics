@@ -54,7 +54,7 @@
 #include "AliJetContainer.h"
 #include "AliClusterContainer.h"
 #include "AliParticleContainer.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliAODHeader.h"
 #include "AliPicoTrack.h"
 

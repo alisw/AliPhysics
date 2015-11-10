@@ -17,6 +17,7 @@ class AliHFCutVarFDsubAnalysisManagerDplus : public AliHFCutVarFDsubAnalysisMana
 protected:
 
   Double_t fNevents; // Event count for normalisation
+  Bool_t fPID; ///flag to activate the PID (it adds a cut on THnSparse)
 
   AliHFCutVarFDsubAnalysisManagerDplus(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); /// Copy constructor
   AliHFCutVarFDsubAnalysisManagerDplus operator=(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); // Assignment operator
@@ -57,18 +58,18 @@ public:
 
   TH1F* GetCrossSecFD(const TString AccFilePath,const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
     return CalculateCrossSection(AccFilePath,GenLimAccHistoName,GenAccHistoName,system,"FD"); } /// get the FD cross section
-
-  //to be removed
+  
   TH1F* GetYieldsPrompt() const {return fCorrYieldPrompt;}
   TH1F* GetYieldsFD() const {return fCorrYieldFD;}
   TList* GetPromptFraction() const {return fFprompt;}
   TList* GetPromptFractionRaw() const {return fFpromptRaw;}
   TList* GetResiduals() const {return fResiduals;}
   TList* GetPulls() const {return fPulls;}
-  //
+
+  void SetPID(Bool_t isPIDon) {fPID = isPIDon;}
   
   /// \cond CLASSDEF
-  ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 1);
+  ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 2);
   /// \endcond
 };
 #endif // ALIHFCUTVARFDSUBANALYSISMANAGERDPLUS_H

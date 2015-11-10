@@ -139,14 +139,19 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   if (histogramsStr.Contains("3"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhi", binningStr);
-  else if (histogramsStr.Contains("4")) {
+  else if (histogramsStr.Contains("4") || histogramsStr.Contains("5") || histogramsStr.Contains("6")) {
+    TString configStr = "NumberDensityPhiCentrality";
+    
+    if (histogramsStr.Contains("5") || histogramsStr.Contains("6"))
+      configStr += "Vtx";
+
     if (histogramsStr.Contains("S"))
-      fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralitySparse", binningStr);
-    else
-      fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality", binningStr);
+      configStr += "Sparse";
+    else if (histogramsStr.Contains("D"))
+      configStr += "Double";
+    
+    fNumberDensityPhi = new AliUEHist(configStr, binningStr);
   }
-  else if (histogramsStr.Contains("5") || histogramsStr.Contains("6"))
-    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx", binningStr);
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -378,6 +383,8 @@ void AliUEHistograms::DeleteContainers()
     
   if (fEfficiencyCorrectionTriggers)
   {
+    if (fEfficiencyCorrectionTriggers == fEfficiencyCorrectionAssociated)
+      fEfficiencyCorrectionAssociated = 0;
     delete fEfficiencyCorrectionTriggers;
     fEfficiencyCorrectionTriggers = 0;
   }

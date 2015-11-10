@@ -44,7 +44,8 @@ void ComputeAcceptance(){
   gSystem->Load("liblhapdf.so");      // Parton density functions
   gSystem->Load("libEGPythia6.so");   // TGenerator interface
   gSystem->Load("libpythia6.so");     // Pythia
-  
+  gSystem->Load("libAliPythia6");  // ALICE specific implementations
+
   TPythia6Decayer* pdec=TPythia6Decayer::Instance();
   if(fDecayTableFileName.CompareTo("")!=0){
     if(fDecayTableFileName.Contains("ALICE_PHYSICS")){

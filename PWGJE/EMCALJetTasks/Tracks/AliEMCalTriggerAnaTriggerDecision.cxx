@@ -16,7 +16,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include "AliVEvent.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 

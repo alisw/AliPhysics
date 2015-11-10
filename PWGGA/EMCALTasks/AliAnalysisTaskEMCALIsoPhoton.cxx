@@ -18,7 +18,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloCells.h"
 #include "AliESDCaloCluster.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDInputHandler.h"

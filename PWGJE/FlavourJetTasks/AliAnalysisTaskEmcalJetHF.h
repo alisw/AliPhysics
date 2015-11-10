@@ -51,7 +51,7 @@ class AliVCaloTrigger;
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliTPCdEdxInfo.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliPIDResponse.h"

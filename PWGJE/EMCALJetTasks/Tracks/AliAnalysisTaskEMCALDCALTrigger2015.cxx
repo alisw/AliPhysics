@@ -9,7 +9,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCalHistoContainer.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"

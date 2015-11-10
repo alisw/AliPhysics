@@ -26,13 +26,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
 
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
-    AliAnalysisTaskEmcalJet.cxx
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
@@ -45,12 +45,9 @@ set(SRCS
     AliAnalysisTaskRhoSparse.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
-    AliEmcalJet.cxx
     AliEmcalPicoTrackInGridMaker.cxx
     AliJetConstituentTagCopier.cxx
-    AliJetContainer.cxx
     AliJetEmbeddingFromGenTask.cxx
-    AliJetEmbeddingFromPYTHIATask.cxx
     AliJetEmbeddingTask.cxx
     AliJetFastSimulation.cxx
     AliJetModelBaseTask.cxx
@@ -59,9 +56,6 @@ set(SRCS
     AliJetRandomizerTask.cxx
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
-    AliLocalRhoParameter.cxx
-    AliPythiaInfo.cxx
-    AliRhoParameter.cxx
     Tracks/AliAnalysisTaskLEDCheck.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
@@ -152,6 +146,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
+    UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSAJF.cxx
     UserTasks/AliAnalysisTaskSAQA.cxx
@@ -171,6 +166,7 @@ if(FASTJET_FOUND)
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
+	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
@@ -208,7 +204,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL PWGJETFW)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
@@ -216,6 +212,16 @@ endif(FASTJET_FOUND)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    ${FASTJET_LIBS}
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")

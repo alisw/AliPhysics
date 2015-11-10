@@ -11,7 +11,7 @@
 #include "THn.h"
 #include "TH3D.h"
 #include "TF1.h"
-#include<iostream>
+#include <iosfwd>
 
 class AliCorrelation3p;
 class AliESDtrackCuts;
@@ -74,6 +74,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
   void SetQA(){fQA=kTRUE;}
+  void SetQAtask(bool qatask){fqatask=qatask;}
   void SetBinVer(int binver){fBinVer=binver;}
   void SetWeights(const char* file){
     TFile* wfile = TFile::Open(file,"OLD");
@@ -159,6 +160,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
   Bool_t 	    fQA;//if true, correlations are not build.
+  Bool_t 	    fqatask;//if true AliCorrelation3p_noQA is used.
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
   TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.

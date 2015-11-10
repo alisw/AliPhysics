@@ -42,11 +42,11 @@ int CollisionType_def=0;// PbPb, pPb, pp
 int Mbin_def=0;// 0-9: centrality bin in widths of 5%
 bool SameCharge_def=1;// same-charge?
 int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
-int MixedCharge4pionType_def = 1;// 1(---+) or 2(--++)
+int MixedCharge4pionType_def = 2;// 1(---+) or 2(--++)
 //
 int EDbin_def=0;// 0 or 1: Kt3 bin
 int TPNbin=3;// TPN bin for r3 and r4
-int Gbin = int( (0) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T)
+int Gbin = int( (48) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T)
 int Ktbin_def=1;// 1(0.2-0.3),..., 6(0.7-0.8), 10 = Full Range
 bool FitBuild=0;
 //
@@ -314,8 +314,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   TProfile *K3avg[2][2][2][4];
   TH2D *Build_ThreeParticle_2D[2];// charge
   TH2D *BuildNeg_ThreeParticle_2D[2];// charge
-  //TH2D *CumulantBuild_ThreeParticle_2D[2];// charge
-  //TH2D *CumulantBuildNeg_ThreeParticle_2D[2];// charge
+  TH2D *CumulantBuild_ThreeParticle_2D[2];// charge
+  TH2D *CumulantBuildNeg_ThreeParticle_2D[2];// charge
   TH1D *TPN_ThreeParticle[2];// charge
   TH1D *Build_ThreeParticle[2];// charge
   TH1D *BuildNeg_ThreeParticle[2];// charge
@@ -561,6 +561,12 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	  TString *nameNegTPN3=new TString(name3->Data());
 	  nameNegTPN3->Append("_BuildNeg");
 	  //
+	  TString *nameBuildCumulant3=new TString(name3->Data());
+	  nameBuildCumulant3->Append("_CumulantBuild");
+	  //
+	  TString *nameBuildNegCumulant3=new TString(name3->Data());
+	  nameBuildNegCumulant3->Append("_CumulantBuildNeg");
+	  //
 	  name3->Append("_1D");
 	  
 	  ///////////////////////////////////////
@@ -603,6 +609,14 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	    BuildNeg_ThreeParticle_2D[c1]->Scale(norm_3[0]/norm_3[term]);
 	    BuildNeg_ThreeParticle_2D[c1]->RebinY(ThreeParticleRebin);
 	    //
+	    CumulantBuild_ThreeParticle_2D[c1] = (TH2D*)MyList->FindObject(nameBuildCumulant3->Data());
+	    CumulantBuild_ThreeParticle_2D[c1]->Scale(norm_3[0]/norm_3[term]);
+	    CumulantBuild_ThreeParticle_2D[c1]->RebinY(ThreeParticleRebin);
+	    //
+	    CumulantBuildNeg_ThreeParticle_2D[c1] = (TH2D*)MyList->FindObject(nameBuildNegCumulant3->Data());
+	    CumulantBuildNeg_ThreeParticle_2D[c1]->Scale(norm_3[0]/norm_3[term]);
+	    CumulantBuildNeg_ThreeParticle_2D[c1]->RebinY(ThreeParticleRebin);
+	    //
 	    TString *proName=new TString(nameTPN3->Data()); TString *proNameNeg=new TString(nameNegTPN3->Data());
 	    proName->Append("_pro");  proNameNeg->Append("_pro");
 	    TPN_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), TPNbin, TPNbin);
@@ -613,26 +627,35 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 		if(binx!=4){
 		  Build_ThreeParticle_2D[c1]->SetBinContent(binx, biny, Build_ThreeParticle_2D[c1]->GetBinContent(binx, biny) + Build_ThreeParticle_2D[c1]->GetBinContent(4, biny));
 		  BuildNeg_ThreeParticle_2D[c1]->SetBinContent(binx, biny, BuildNeg_ThreeParticle_2D[c1]->GetBinContent(binx, biny) + BuildNeg_ThreeParticle_2D[c1]->GetBinContent(4, biny));
+		  //
+		  CumulantBuild_ThreeParticle_2D[c1]->SetBinContent(binx, biny, CumulantBuild_ThreeParticle_2D[c1]->GetBinContent(binx, biny) + Build_ThreeParticle_2D[c1]->GetBinContent(4, biny));
+		  CumulantBuildNeg_ThreeParticle_2D[c1]->SetBinContent(binx, biny, CumulantBuildNeg_ThreeParticle_2D[c1]->GetBinContent(binx, biny) + BuildNeg_ThreeParticle_2D[c1]->GetBinContent(4, biny));
 		}
 	      }
 	    }
-	  
+	    
 	    //
 	    proName->Append("_FullWeight"); proNameNeg->Append("_FullWeight");
 	    Build_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), Gbin, Gbin);
 	    BuildNeg_ThreeParticle[c1] = (TH1D*)BuildNeg_ThreeParticle_2D[c1]->ProjectionY(proNameNeg->Data(), Gbin, Gbin);
+	    proName->Append("_cumulant"); proNameNeg->Append("_cumulant");
+	    CumulantBuild_ThreeParticle[c1] = (TH1D*)CumulantBuild_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), Gbin, Gbin);
+	    CumulantBuildNeg_ThreeParticle[c1] = (TH1D*)CumulantBuildNeg_ThreeParticle_2D[c1]->ProjectionY(proNameNeg->Data(), Gbin, Gbin);
 	    proName->Append("_FullWeightDen"); proNameNeg->Append("_FullWeightDen");
 	    TH1D *tempDen = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), 4, 4);
 	    TH1D *tempDenNeg = (TH1D*)BuildNeg_ThreeParticle_2D[c1]->ProjectionY(proNameNeg->Data(), 4, 4);
 	    // Add Pos with Neg weights
 	    tempDen->Add(tempDenNeg);
 	    Build_ThreeParticle[c1]->Add(BuildNeg_ThreeParticle[c1]);
+	    CumulantBuild_ThreeParticle[c1]->Add(CumulantBuildNeg_ThreeParticle[c1]);
 	    //
 	    Build_ThreeParticle[c1]->Divide(tempDen);
+	    CumulantBuild_ThreeParticle[c1]->Divide(tempDen);
 	    Build_ThreeParticle[c1]->SetLineColor(4);
+	    CumulantBuild_ThreeParticle[c1]->SetLineColor(1);
 	    //
 	   
-	    proName->Append("_2"); proNameNeg->Append("_2"); 
+	    /*proName->Append("_2"); proNameNeg->Append("_2"); 
 	    CumulantBuild_ThreeParticle[c1] = (TH1D*)Build_ThreeParticle_2D[c1]->ProjectionY(proName->Data(), TPNbin, TPNbin);
 	    CumulantBuildNeg_ThreeParticle[c1] = (TH1D*)BuildNeg_ThreeParticle_2D[c1]->ProjectionY(proNameNeg->Data(), TPNbin, TPNbin);
 	    CumulantBuild_ThreeParticle[c1]->Add(CumulantBuildNeg_ThreeParticle[c1]);
@@ -641,7 +664,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	    CumulantBuild_ThreeParticle[c1]->Add(tempDen,+1);
 	    CumulantBuild_ThreeParticle[c1]->Divide(tempDen);
 	    CumulantBuild_ThreeParticle[c1]->SetLineColor(1);
-	   
+	    */
 	  }
 	}// term 3-particle
 	
@@ -1042,7 +1065,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 
   //for(int i=1; i<14; i++) cout<<C2QS->GetBinContent(i)<<", ";
   //cout<<endl;
-  cout.precision(3);
+  //cout.precision(3);
   Build_TwoParticle[ch1_2]->SetLineColor(4); 
   Build_TwoParticle[ch1_2]->Draw("same");
   TH1D *Ratio_C2=(TH1D*)C2QS->Clone();
@@ -1382,9 +1405,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //cout<<C3QS->GetBinContent(bin)<<", ";
     //cout<<c3QS->GetBinContent(bin)<<", ";
     //cout<<C3QSratio->GetBinContent(bin)<<", ";
-    //cout<<Build_ThreeParticle[ch1_3]->GetBinContent(bin)<<", ";
+    cout<<Build_ThreeParticle[ch1_3]->GetBinContent(bin)<<", ";
   }
-  //cout<<endl;
+  cout<<endl;
   for(int bin=1; bin<=10; bin++){
     //cout<<C3QS->GetBinError(bin)<<", ";
     //cout<<c3QS->GetBinError(bin)<<", ";

@@ -423,6 +423,9 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
   // =2: as 1 but then the result is reflected to the range (0,pi), to decrease stat unc; 
   // =3 as 1 then a smoothing is done (pol0 fit over 3 points), then the result is refelcted; other values not implemented yet (e.g. =2 could be taking the RMS)
   // =4 as 1 then a smoothing is done (linear fit over 3 points), then the result is refelcted; other values not implemented yet (e.g. =2 could be taking the RMS)
+  // =13 as 3 + symmetrization
+  // =14 as 4 + symmetrization
+
   if(!fhEnvelopeMinRatio){
     Printf("Cannot produce Rel syst unc histo: you first need to calculate the envelope");
     return 0x0;
@@ -436,7 +439,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
     return h;
   }
 
-  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4){
+  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
     Double_t sqrtThree=TMath::Sqrt(3.);
     for(Int_t j=1;j<=h->GetNbinsX();j++){
       h->SetBinContent(j,fhEnvelopeMinRatio->GetBinContent(j)/sqrtThree-1./sqrtThree);
@@ -457,22 +460,54 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
     // For the smoothing, assume linear trend every 3 points, starting from transverse region
     Int_t jstart=h->FindBin(TMath::Pi()*0.5)-1;
     TF1 *f;
-    if(fSystUseRMSfromFlatDistr==3){
+    if(fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==13){
       f=new TF1("mypol0","[0]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
     }
-    else if(fSystUseRMSfromFlatDistr==4){
+    else if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14){
       f=new TF1("mypol1","[0]+x*[1]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
     }
 
     TH1D *hOut=(TH1D*)h->Clone("hOut");
+
+    Double_t median=0;
+    Double_t rms=0,mean=0;
+    Double_t *arr=hOut->GetArray();// note that this includes under and overflow
+    Int_t *index=new Int_t[hOut->GetNbinsX()];
+    TMath::Sort(hOut->GetNbinsX(),&arr[1],index,kTRUE);
+    median=arr[index[(UInt_t)(hOut->GetNbinsX()/2)+2]];// the +2 comes from: +1 because the indices start from 0 but w.r.t. to the reduced array arr (w/o first bin); to this we add +1 because we prefer to take the point after the median (also to accounts for possible odd number of bins)
+    // fast calculation of rms; mean computed excluding tails
+    for(Int_t k=0;k<hOut->GetNbinsX()-4;k++){// n-2 points for cutting tails
+      rms+=arr[index[k]+1]*arr[index[k]+1];// +1 due to underflow indexing
+      mean+=arr[index[k]+1];
+    }
+    mean/=(hOut->GetNbinsX()-4.);
+    rms=TMath::Sqrt(rms-mean*mean);
+
+
     for(Int_t j=jstart;j>=1;j--){// going towards 0
 
       if(j>=3){
 	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
 	Double_t xmin=h->GetBinLowEdge(j-1);
+
+	Double_t y1=h->GetBinContent(j-1);
+	Double_t y2=h->GetBinContent(j);
+	Double_t y3=h->GetBinContent(j+1);
+	if(y3<median-2.5*rms){
+	  h->SetBinContent(j+1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",y3,median-1.5*rms);
+	}
+	else h->SetBinContent(j+1,y3);
+	h->SetBinContent(j,y2);
+	if(y1<median-2.5*rms){
+	  h->SetBinContent(j-1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",y1,median-1.5*rms);
+	}
+	else h->SetBinContent(j-1,y1);
+
 	f->SetParameter(0,h->GetBinContent(j));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"REM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(j+1)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
       }
       else if(j==2){
@@ -481,12 +516,25 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
 	Double_t y1=h->GetBinContent(1);
 	Double_t y2=h->GetBinContent(2);
 	Double_t y3=h->GetBinContent(3);
+
 	h->SetBinContent(3,y2);
-	h->SetBinContent(2,y1);
-	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+	if(y1<median-2.5*rms){
+	  h->SetBinContent(2,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",y1,median-1.5*rms);
+	}
+	else h->SetBinContent(2,y1);
+	if(h->GetBinContent(h->GetNbinsX())<median-2.5*rms){
+	  h->SetBinContent(1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(h->GetNbinsX()),median-1.5*rms);
+	}
+	else h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+
+	//	h->SetBinContent(3,y2);
+	//	h->SetBinContent(2,y1);
+	//	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
 	f->SetParameter(0,h->GetBinContent(2));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
 	h->SetBinContent(3,y3);
 	h->SetBinContent(2,y2);
@@ -498,12 +546,25 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
 	Double_t y1=h->GetBinContent(1);
 	Double_t y2=h->GetBinContent(2);
 	Double_t y3=h->GetBinContent(3);
+
 	h->SetBinContent(3,y1);
-	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
-	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+	if(h->GetBinContent(h->GetNbinsX())<median-2.5*rms){
+	  h->SetBinContent(2,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(h->GetNbinsX()),median-1.5*rms);
+	}
+	else h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	if(h->GetBinContent(h->GetNbinsX()-1)<median-2.5*rms){
+	  h->SetBinContent(1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(h->GetNbinsX()-1),median-1.5*rms);
+	}
+	else h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+
+	//	h->SetBinContent(3,y1);
+	//	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	//	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
 	f->SetParameter(0,h->GetBinContent(2));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
 	h->SetBinContent(3,y3);
 	h->SetBinContent(2,y2);
@@ -516,9 +577,25 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
       if(j<=hOut->GetNbinsX()-2){
 	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
 	Double_t xmin=h->GetBinLowEdge(j-1);
+
+	Double_t y1=h->GetBinContent(j-1);
+	Double_t y2=h->GetBinContent(j);
+	Double_t y3=h->GetBinContent(j+1);
+	if(y3<median-2.5*rms){
+	  h->SetBinContent(j+1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",y3,median-1.5*rms);
+	}
+	else h->SetBinContent(j+1,y3);
+	h->SetBinContent(j,y2);
+	if(y1<median-2.5*rms){
+	  h->SetBinContent(j-1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",y1,median-1.5*rms);
+	}
+	else h->SetBinContent(j-1,y1);
+
 	f->SetParameter(0,h->GetBinContent(j));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(j+1)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
       }
       else if(j==hOut->GetNbinsX()-1){
@@ -527,12 +604,27 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
 	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
 	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
 	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+
+
 	h->SetBinContent(hOut->GetNbinsX()-2,y2);
-	h->SetBinContent(hOut->GetNbinsX()-1,y3);
-	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+	if(h->GetBinContent(hOut->GetNbinsX())<median-2.5*rms){
+	  h->SetBinContent(hOut->GetNbinsX()-1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(hOut->GetNbinsX()),median-1.5*rms);
+	}
+	else h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(h->GetNbinsX()));
+	if(h->GetBinContent(1)<median-2.5*rms){
+	  Printf("Moving to median: %f to %f",h->GetBinContent(1),median-1.5*rms);
+	  h->SetBinContent(hOut->GetNbinsX(),median-1.5*rms);
+	}
+	else h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+
+
+	//	h->SetBinContent(hOut->GetNbinsX()-2,y2);
+	//	h->SetBinContent(hOut->GetNbinsX()-1,y3);
+	//	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
 	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
 	h->SetBinContent(hOut->GetNbinsX()-2,y1);
 	h->SetBinContent(hOut->GetNbinsX()-1,y2);
@@ -544,12 +636,25 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
 	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
 	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
 	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+
 	h->SetBinContent(hOut->GetNbinsX()-2,y3);
-	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
-	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+	if(h->GetBinContent(1)<median-2.5*rms){
+	  h->SetBinContent(hOut->GetNbinsX()-1,median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(1),median-1.5*rms);
+	}
+	else h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+	if(h->GetBinContent(2)<median-2.5*rms){
+	  h->SetBinContent(hOut->GetNbinsX(),median-1.5*rms);
+	  Printf("Moving to median: %f to %f",h->GetBinContent(2),median-1.5*rms);
+	}
+	else h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+
+	//	h->SetBinContent(hOut->GetNbinsX()-2,y3);
+	//	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+	//	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
 	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
 	h->SetBinContent(hOut->GetNbinsX()-2,y1);
 	h->SetBinContent(hOut->GetNbinsX()-1,y2);
@@ -557,16 +662,27 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
       }
       
     }
-    // Smoothing done, now simmetrize
-    TH1D *hRefl=ReflectHisto(hOut);
-    TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
-    delete h;
-    delete hRefl;      
-    delete hOut;
-    delete f;
-    hBackTo2Pi->SetName("hRelSystFeedDownMin");
-    return hBackTo2Pi;
-    
+
+    // Smoothing done, now simmetrize if requested
+    if(fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
+      TH1D *hRefl=ReflectHisto(hOut);
+      TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+      delete index;
+      delete h;
+      delete hRefl;      
+      delete hOut;
+      delete f;
+      hBackTo2Pi->SetName("hRelSystFeedDownMin");
+      return hBackTo2Pi;
+    }
+    else{
+      delete index;
+      delete h;     
+      delete f;
+      hOut->SetName("hRelSystFeedDownMin");
+      return hOut;
+    }
+
     
   }
   
@@ -589,7 +705,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
     return h;
   }
   
-  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4){
+  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
     Double_t sqrtThree=TMath::Sqrt(3.);
     for(Int_t j=1;j<=h->GetNbinsX();j++){
       h->SetBinContent(j,fhEnvelopeMaxRatio->GetBinContent(j)/sqrtThree-1./sqrtThree);
@@ -610,22 +726,57 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
     // For the smoothing, assume linear trend every 3 points, starting from transverse region
     Int_t jstart=h->FindBin(TMath::Pi()*0.5)-1;
     TF1 *f;
-    if(fSystUseRMSfromFlatDistr==3){
+    if(fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==13){
       f=new TF1("mypol0","[0]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
     }
-    else if(fSystUseRMSfromFlatDistr==4){
+    else if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14){
       f=new TF1("mypol1","[0]+x*[1]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
     }
     TH1D *hOut=(TH1D*)h->Clone("hOut");
+    // Check median
+    Double_t median=0;
+    Double_t rms=0,mean=0;
+    Double_t *arr=hOut->GetArray();// note that this includes under and overflow
+    Int_t *index=new Int_t[hOut->GetNbinsX()];
+    TMath::Sort(hOut->GetNbinsX(),&arr[1],index,kFALSE);
+    median=arr[index[(UInt_t)(hOut->GetNbinsX()/2)+2]];// the +2 comes from: +1 because the indices start from 0 but w.r.t. to the reduced array arr (w/o first bin); to this we add +1 because we prefer to take the point after the median (also to accounts for possible odd number of bins)
+    // fast calculation of rms; mean computed excluding tails
+    for(Int_t k=0;k<hOut->GetNbinsX()-4;k++){// n-2 points for cutting tails
+      rms+=arr[index[k]+1]*arr[index[k]+1];// +1 due to underflow indexing
+      mean+=arr[index[k]+1];
+    }
+    mean/=(hOut->GetNbinsX()-4.);
+    rms=TMath::Sqrt(rms-mean*mean);
+
     for(Int_t j=jstart;j>=1;j--){// going towards 0
 
+      //      Printf("Value is for point %d : %f, around : %f, %f",j,h->GetBinContent(j),h->GetBinContent(j-1),h->GetBinContent(j+1));
+      //      Printf("The median is: %f, the truncate mean is %f, the rms: %f",median,mean,rms);
+    
       if(j>=3){
+
 	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
 	Double_t xmin=h->GetBinLowEdge(j-1);
+	
+	// now
+	Double_t y1=h->GetBinContent(j-1);
+	Double_t y2=h->GetBinContent(j);
+	Double_t y3=h->GetBinContent(j+1);
+	if(y3<median+2.5*rms)h->SetBinContent(j+1,y3);
+	else h->SetBinContent(j+1,median+1.5*rms);
+	h->SetBinContent(j,y2);
+	if(y1<median+2.5*rms)h->SetBinContent(j-1,y1);
+	else h->SetBinContent(j-1,median+1.5*rms);
+	
 	f->SetParameter(0,h->GetBinContent(j));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"REM","N",xmin,xmax);
-	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(j+1)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
+	h->SetBinContent(j+1,y3);
+	h->SetBinContent(j,y2);
+	h->SetBinContent(j-1,y1);
+	//	Printf("Value modif  : %f", f->Eval(hOut->GetBinCenter(j)));
+	
       }
       else if(j==2){
 	Double_t xmax=h->GetBinLowEdge(3)+h->GetBinWidth(3);
@@ -633,12 +784,20 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
 	Double_t y1=h->GetBinContent(1);
 	Double_t y2=h->GetBinContent(2);
 	Double_t y3=h->GetBinContent(3);
+
+
 	h->SetBinContent(3,y2);
-	h->SetBinContent(2,y1);
-	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+	if(y1<median+2.5*rms)h->SetBinContent(2,y1);
+	else h->SetBinContent(2,median+1.5*rms);
+	if(h->GetBinContent(h->GetNbinsX())<median+2.5*rms)h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+	else h->SetBinContent(1,median+1.5*rms);
+
+	//	h->SetBinContent(3,y2);
+	//	h->SetBinContent(2,y1);
+	//	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
 	f->SetParameter(0,h->GetBinContent(2));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
 	h->SetBinContent(3,y3);
 	h->SetBinContent(2,y2);
@@ -651,26 +810,42 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
 	Double_t y2=h->GetBinContent(2);
 	Double_t y3=h->GetBinContent(3);
 	h->SetBinContent(3,y1);
-	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
-	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+	if(h->GetBinContent(h->GetNbinsX())<median+2.5*rms)h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	else h->SetBinContent(2,median+1.5*rms);
+	if(h->GetBinContent(h->GetNbinsX()-1)<median+2.5*rms)h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+	else h->SetBinContent(1,median+1.5*rms);
+	//	h->SetBinContent(3,y1);
+	//	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	//	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
 	f->SetParameter(0,h->GetBinContent(2));
-	if(fSystUseRMSfromFlatDistr==4)	f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)	f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
 	h->SetBinContent(3,y3);
 	h->SetBinContent(2,y2);
 	h->SetBinContent(1,y1);
       }
-
     }
     for(Int_t j=jstart+1;j<=hOut->GetNbinsX();j++){// now going towards 2pi
       
       if(j<=hOut->GetNbinsX()-2){
+
+	// now
 	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
 	Double_t xmin=h->GetBinLowEdge(j-1);
+	Double_t y1=h->GetBinContent(j-1);
+	Double_t y2=h->GetBinContent(j);
+	Double_t y3=h->GetBinContent(j+1);
+	if(y3<median+2.5*rms)h->SetBinContent(j+1,y3);
+	else h->SetBinContent(j+1,median+1.5*rms);
+	h->SetBinContent(j,y2);
+	if(y1<median+2.5*rms)h->SetBinContent(j-1,y1);
+	else h->SetBinContent(j-1,median+1.5*rms);
+	//	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
+	//	Double_t xmin=h->GetBinLowEdge(j-1);
 	f->SetParameter(0,h->GetBinContent(j));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(j+1)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
       }
       else if(j==hOut->GetNbinsX()-1){
@@ -679,12 +854,21 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
 	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
 	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
 	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+
+
+
 	h->SetBinContent(hOut->GetNbinsX()-2,y2);
-	h->SetBinContent(hOut->GetNbinsX()-1,y3);
-	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+	if(h->GetBinContent(hOut->GetNbinsX())<median+2.5*rms)h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(h->GetNbinsX()));
+	else h->SetBinContent(hOut->GetNbinsX()-1,median+1.5*rms);
+	if(h->GetBinContent(1)<median+2.5*rms)h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+	else h->SetBinContent(hOut->GetNbinsX(),median+1.5*rms);
+
+	//	h->SetBinContent(hOut->GetNbinsX()-2,y2);
+	//	h->SetBinContent(hOut->GetNbinsX()-1,y3);
+	//	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
 	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
-	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
 	h->SetBinContent(hOut->GetNbinsX()-2,y1);
 	h->SetBinContent(hOut->GetNbinsX()-1,y2);
@@ -696,29 +880,46 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
 	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
 	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
 	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+
 	h->SetBinContent(hOut->GetNbinsX()-2,y3);
-	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
-	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+	if(h->GetBinContent(1)<median+2.5*rms)h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+	else h->SetBinContent(hOut->GetNbinsX()-1,median+1.5*rms);
+	if(h->GetBinContent(2)<median+2.5*rms)h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+	else h->SetBinContent(hOut->GetNbinsX(),median+1.5*rms);
+
+// 	h->SetBinContent(hOut->GetNbinsX()-2,y3);
+// 	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+// 	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
 	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
-	if(fSystUseRMSfromFlatDistr==4)	f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
-	h->Fit(f,"RLEM","N",xmin,xmax);
+	if(fSystUseRMSfromFlatDistr==4||fSystUseRMSfromFlatDistr==14)	f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RWW","N",xmin,xmax);
 	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
 	h->SetBinContent(hOut->GetNbinsX()-2,y1);
 	h->SetBinContent(hOut->GetNbinsX()-1,y2);
 	h->SetBinContent(hOut->GetNbinsX(),y3);
       }
       
+    }    
+    // Smoothing done, now simmetrize if requested
+    if(fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
+      TH1D *hRefl=ReflectHisto(hOut);
+      TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+      delete index;
+      delete h;
+      delete hRefl;      
+      delete hOut;
+      delete f;
+      hBackTo2Pi->SetName("hRelSystFeedDownMin");
+      return hBackTo2Pi;
     }
-    // Smoothing done, now simmetrize
-    TH1D *hRefl=ReflectHisto(hOut);
-    TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
-    delete h;
-    delete hRefl;      
-    delete hOut;
-    delete f;
-    hBackTo2Pi->SetName("hRelSystFeedDownMin");
-    return hBackTo2Pi;
-    
+    else{
+      delete index;
+      delete h;
+      delete f;
+      hOut->SetName("hRelSystFeedDownMin");
+      return hOut;
+    }
+        
     
   }
 

@@ -55,7 +55,11 @@ class AliFilteredTrack : public AliVTrack {
   };
 
   enum {
-    kSignBit  = BIT(0)   // unset -> 'plus', set -> 'minus'
+    kSignBit  		= BIT(0),   // unset -> 'plus', set -> 'minus'
+    kGlobalHybrid  	= BIT(1),   // set -> selected by GlobalHybrid
+    kBIT4 		= BIT(2),   // set -> selected by FilterBit4
+    kBIT5 		= BIT(3),   // set -> selected by FilterBit5
+    kBIT6 		= BIT(4)    // set -> selected by FilterBit6
   };
 
   // kinematics
@@ -114,7 +118,14 @@ class AliFilteredTrack : public AliVTrack {
   void SetCharge(const AliVParticle& track);
   void SetEff(float eff){feff = eff;}
   float GetEff(){return feff;}
-  
+  bool IsGlobalHybrid(){return TestBit(kGlobalHybrid);}
+  bool IsBIT4(){return TestBit(kBIT4);}
+  bool IsBIT5(){return TestBit(kBIT5);}
+  bool IsBIT6(){return TestBit(kBIT6);}
+  void SetGlobal(){SetBit(kGlobalHybrid);}
+  void SetBIT4(){SetBit(kBIT4);}
+  void SetBIT5(){SetBit(kBIT5);}
+  void SetBIT6(){SetBit(kBIT6);}
   void Calculate(bool bCalculateMommentumComponents=true);
 
  protected:
@@ -124,9 +135,10 @@ class AliFilteredTrack : public AliVTrack {
   float fPt;        // transverse momentum
   float fPhi;       // phi
   float fTheta;     // theta
-  float feff;	    //efficiency
+  UShort_t fFilterBits; //filter bits for track.
   // all other members are transient and calculated from the
   // momentum vector
+  float feff;	    //! efficiency
   float fP[3];      //! momentum vector
   float fOneOverPt; //! one over Pt
   float fPtot;      //! momentum

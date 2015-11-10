@@ -25,6 +25,8 @@ class AliAnalysisTaskThermalGAFlowMC : public AliAnalysisTaskThermalGAFlow {
     AliStack* GetMCStack();
     Bool_t IsPhotonShower(AliESDCaloCluster *cluster);
     void ScanClustersMC();
+    void ExtractRealPions();
+    void GuessPure(AliESDCaloCluster *cluster);
 
     void CaptainsLog(Int_t s);
     void FillHist(const char * key, Double_t x, Double_t y) const;

@@ -148,81 +148,86 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TList              *fOutput;                     ///< Output list
 
   //Histograms
-  TH1F               *fHistCount;                  //!<! Total number of events
-  TH1F               *fHistCentralityClass;        //!<! Event statistic per centrality class
-  TH1F               *fHistCentralityPercentile;   //!<! Event statistic per centrality percentile
-  TH1F               *fHistTrigger;                //!<! Event trigger statistic
-  TH1F               *fHistMultiplicity;           //!<! Event multiplicity
-  TH1F               *fHistZPrimaryVtx;            //!<! Primary vertex Z coordinate
-  TH1F               *fHistXPrimaryVtx;            //!<! Primary vertex X coordinate
-  TH1F               *fHistYPrimaryVtx;            //!<! Primary vertex Y coordinate
-  TH1F               *fHistChi2perTPCcluster;      //!<! TPC \f$\chi^{2}/NDF\f$ tracks distribution
+  TH1F               *fHistCount;                           //!<! Total number of events
+  TH1F               *fHistCentralityClass;                 //!<! Event statistic per centrality class
+  TH1F               *fHistCentralityPercentile;            //!<! Event statistic per centrality percentile
+  TH1F               *fHistTrigger;                         //!<! Event trigger statistic
+  TH1F               *fHistMultiplicity;                    //!<! Event multiplicity
+  TH1F               *fHistZPrimaryVtx;                     //!<! Primary vertex Z coordinate
+  TH1F               *fHistXPrimaryVtx;                     //!<! Primary vertex X coordinate
+  TH1F               *fHistYPrimaryVtx;                     //!<! Primary vertex Y coordinate
+  TH1F               *fHistChi2perTPCcluster;               //!<! TPC \f$\chi^{2}/NDF\f$ tracks distribution
 
 
   //PID
   //--> TPC
-  TH2F               *fHistTPCpid;                 //!<! TPC dE/dx vs \f$p_{TPC}\f$
-  TH2F               *fHistTPCdeusignal;           //!<! TPC PID: deuteron candidates
-  TH2F               *fHistTPCprosignal;           //!<! TPC PID: proton candidates
-  TH2F               *fHistTPCpionsignal;          //!<! TPC PID: \f$\pi^{-}\f$ candidates
-  TH2F               *fHistTPCantideusignal;       //!<! TPC PID: anti-deuteron candidates
-  TH2F               *fHistTPCantiprosignal;       //!<! TPC PID: anti-proton candidates
-  TH2F               *fHistTPCpionplussignal;      //!<! TPC PID: \f$\pi^{+}\f$ candidates
+  TH2F               *fHistTPCpid;                          //!<! TPC dE/dx vs \f$p_{TPC}\f$
+  TH2F               *fHistTPCdeusignal;                    //!<! TPC PID: deuteron candidates
+  TH2F               *fHistTPCprosignal;                    //!<! TPC PID: proton candidates
+  TH2F               *fHistTPCpionsignal;                   //!<! TPC PID: \f$\pi^{-}\f$ candidates
+  TH2F               *fHistTPCantideusignal;                //!<! TPC PID: anti-deuteron candidates
+  TH2F               *fHistTPCantiprosignal;                //!<! TPC PID: anti-proton candidates
+  TH2F               *fHistTPCpionplussignal;               //!<! TPC PID: \f$\pi^{+}\f$ candidates
 
   //--> TOF
-  TH2F               *fHistTOFsignal;              //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
+  TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
   //TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
   //TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
   //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
   //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
-  TH1F               *fHistTOFdeumass;             //!<! TOF mass of deuteron identified with TPC
-  TH1F               *fHistTOFpromass;             //!<! TOF mass of proton identified with TPC
+  TH1F               *fHistTOFdeumass;                      //!<! TOF mass of deuteron identified with TPC
+  TH1F               *fHistTOFpromass;                      //!<! TOF mass of proton identified with TPC
 
   //Candidate combination
   // Data and MC histograms
-  TH1F               *fHistpionTPCcls;             //!<! TPC clusters distribution of candidate \f$\pi\f$
-  TH1F               *fHistpTpion;                 //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
-  //TH2F               *fHistCorrDCAdprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
-  //TH2F               *fHistCorrDCApprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
-  //TH2F               *fHistCorrDCApiprimary;       //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
-  TH1F               *fHistDCApiprimary;           //!<! DCA pion-primary vertex distribution
-  TH1F               *fHistDCApprimary;            //!<! DCA proton-primary vertex distribution
-  TH1F               *fHistDCAdprimary;            //!<! DCA deuteron-primary vertex distribution
-  TH1F               *fHistDCAdeupro;              //!<! DCA deuteron-proton distribution
-  TH1F               *fHistDCApiondeu;	           //!<! DCA pion-deuteron distribution
-  TH1F               *fHistDCApionpro;             //!<! DCA pion-proton distribution
+  TH1F               *fHistpionTPCcls;                      //!<! TPC clusters distribution of candidate \f$\pi\f$
+  TH1F               *fHistpTpion;                          //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
+  //TH2F               *fHistCorrDCAdprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
+  //TH2F               *fHistCorrDCApprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
+  //TH2F               *fHistCorrDCApiprimary;                //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
+  TH1F               *fHistDCApiprimary;                    //!<! DCA pion-primary vertex distribution
+  TH1F               *fHistDCApprimary;                     //!<! DCA proton-primary vertex distribution
+  TH1F               *fHistDCAdprimary;                     //!<! DCA deuteron-primary vertex distribution
+  TH1F               *fHistDCAdeupro;                       //!<! DCA deuteron-proton distribution
+  TH1F               *fHistDCApiondeu;	                    //!<! DCA pion-deuteron distribution
+  TH1F               *fHistDCApionpro;                      //!<! DCA pion-proton distribution
   TH2F               *fHistDCAdpdpi;
   TH2F               *fHistDCApdppi;
   TH2F               *fHistDCApidpip;
-  TH1F               *fHistZDecayVtx;              //!<! Reco secondary vertex Z coordinate
-  TH1F               *fHistXDecayVtx;              //!<! Reco secondary vertex X coordinate
-  TH1F               *fHistYDecayVtx;              //!<! Reco secondary vertex Y coordinate
-  TH1F               *fHistDCAXYdeuvtx;            //!<! \f$DCA_{xy}\f$ candidate deuteron-secondary vertex
-  TH1F               *fHistDCAZdeuvtx;             //!<! \f$DCA_{z}\f$ candidate deuteron-secondary vertex
-  TH1F               *fHistDCAXYprovtx;            //!<! \f$DCA_{xy}\f$ candidate proton-secondary vertex
-  TH1F               *fHistDCAZprovtx;             //!<! \f$DCA_{z}\f$ candidate proton-secondary vertex
-  TH1F               *fHistDCAXYpionvtx;           //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
-  TH1F               *fHistDCAZpionvtx;            //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
-  TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
-  TH1F               *fHistNormalizedDecayL;       //!<! Normalized decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
-  TH1F               *fHistLifetime;               //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
-  TH1F               *fHistAngle_deu_pro;          //!<! Angle between deuteron and proton vectors
-  TH1F               *fHistAngle_deu_pion;         //!<! Angle between deuteron and pion vectors
-  TH1F               *fHistAngle_pro_pion;         //!<! Angle between proton and pion vectors
-  TH2F               *fHistAngleCorr_dp_dpi;       //!<! Correlation between angle_dp vs angle_dpi
-  TH2F               *fHistAngleCorr_dp_ppi;       //!<! Correlation between angle_dp vs angle_ppi
-  TH2F               *fHistAngleCorr_ppi_dpi;      //!<! Correlation between angle_ppi vs angle_dpi
-  TH1F               *fHistHyperRapidity;          //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
-  TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
-  TH1F               *fHistDecayMomCM_X;           //!<! X momentum component of decaying hypertriton in center-of-mass
-  TH1F               *fHistDecayMomCM_Y;           //!<! Y momentum component of decaying hypertriton in center-of-mass
-  TH1F               *fHistDecayMomCM_Z;           //!<! Z momentum component of decaying hypertriton in center-of-mass
-  TH2F               *fHistDecayMomCM_XY;          //!<! p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
-  TH2F               *fHistDecayMomCM_XZ;          //!<! p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
-  TH2F               *fHistDecayMomCM_YZ;          //!<! p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
-  TH1F               *fHistDecayMomCM;             //!<! hypertriton momentum in the center-of-mass
-  TH1F               *fHistMassHypertriton;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
-  TH1F               *fHistMassAntiHypertriton;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistZDecayVtx;                       //!<! Reco secondary vertex Z coordinate
+  TH1F               *fHistXDecayVtx;                       //!<! Reco secondary vertex X coordinate
+  TH1F               *fHistYDecayVtx;                       //!<! Reco secondary vertex Y coordinate
+  TH1F               *fHistDCAXYdeuvtx;                     //!<! \f$DCA_{xy}\f$ candidate deuteron-secondary vertex
+  TH1F               *fHistDCAZdeuvtx;                      //!<! \f$DCA_{z}\f$ candidate deuteron-secondary vertex
+  TH1F               *fHistDCAXYprovtx;                     //!<! \f$DCA_{xy}\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCAZprovtx;                      //!<! \f$DCA_{z}\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCAXYpionvtx;                    //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
+  TH1F               *fHistDCAZpionvtx;                     //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
+  TH1F               *fHistDecayLengthH3L;                  //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistNormalizedDecayL;                //!<! Normalized decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistLifetime;                        //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistAngle_deu_pro;                   //!<! Angle between deuteron and proton vectors
+  TH1F               *fHistAngle_deu_pion;                  //!<! Angle between deuteron and pion vectors
+  TH1F               *fHistAngle_pro_pion;                  //!<! Angle between proton and pion vectors
+  TH2F               *fHistAngleCorr_dp_dpi;                //!<! Correlation between angle_dp vs angle_dpi
+  TH2F               *fHistAngleCorr_dp_ppi;                //!<! Correlation between angle_dp vs angle_ppi
+  TH2F               *fHistAngleCorr_ppi_dpi;               //!<! Correlation between angle_ppi vs angle_dpi
+  TH1F               *fHistHyperRapidity;                   //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistCosPointingAngle;                //!<! Cosine of pointing angle distribution of candidate mother particle
+  TH1F               *fHistDecayMomCM_X;                    //!<! X momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Y;                    //!<! Y momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Z;                    //!<! Z momentum component of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XY;                   //!<! p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XZ;                   //!<! p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_YZ;                   //!<! p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM;                      //!<! hypertriton momentum in the center-of-mass
+  TH1F               *fHistPtHypertriton;                   //!<! hypertriton transverse momentum distribution
+  TH1F               *fHistMassHypertriton;                 //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistMassAntiHypertriton;             //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistMassHypertriton_Cent;            //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 0-10%
+  TH1F               *fHistMassAntiHypertriton_Cent;        //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
+  TH1F               *fHistMassHypertriton_SemiCent;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
+  TH1F               *fHistMassAntiHypertriton_SemiCent;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
   // MC only histograms
   TH1F               *fHistParticle;               //!<! *(MC only)* Reconstructed particles distribution per species through PDGCode cross-check
   TH1F               *fHistpionTPCclsMCt;          //!<! *(MC only)* TPC clusters distribution of candidate \f$\pi\f$ through PDGCode cross-check

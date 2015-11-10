@@ -23,7 +23,7 @@
 #include <TClonesArray.h>
 
 #include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerSelection.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 

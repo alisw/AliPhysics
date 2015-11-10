@@ -17,7 +17,7 @@
 #include "AliRhoParameter.h"
 #include "AliLog.h"
 #include "AliJetContainer.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskTriggerRejection.h"

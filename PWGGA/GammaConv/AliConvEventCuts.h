@@ -105,9 +105,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
                               TString histoCentNotFlat="")
                                                                                     { 
                                                                                       AliInfo(Form("enabled centrality flattening with weights from file: %s",pathC.Data()));
-                                                                                      fDoCentralityFlat = doFlattening;
-                                                                                      fPathWeightsFlatCent=pathC;
-                                                                                      fNameHistoNotFlatCentrality = histoCentNotFlat;
+                                                                                      fDoCentralityFlat = doFlattening                          ;
+                                                                                      fPathWeightsFlatCent=pathC                                ;
+                                                                                      fNameHistoNotFlatCentrality = histoCentNotFlat            ;
                                                                                     }
       void    SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, 
                                 Bool_t etareweight=kFALSE, 
@@ -132,6 +132,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameFitDataEta =fitNameEta                               ;
                                                                                       fNameFitDataK0s =fitNameK0s                               ; 
                                                                                     }
+      void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
+                                                TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
+                                                TString nameHistoMultData="",
+                                                TString nameHistoMultMC=""
+                                              )
+                                                                                    { 
+                                                                                      AliInfo(Form("enabled multiplicity weights from file: %s",pathC.Data()));
+                                                                                      fDoMultiplicityWeighting = doWeighting                    ;
+                                                                                      fPathReweightingMult=pathC                                ;
+                                                                                      fNameHistoReweightingMultData = nameHistoMultData         ;
+                                                                                      fNameHistoReweightingMultMC = nameHistoMultMC             ;
+                                                                                    }
+
       void    SetMaxFacPtHard(Float_t value)                                        { fMaxFacPtHard = value                                     ; 
                                                                                       AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
                                                                                     }  
@@ -168,6 +181,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
       Float_t   GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       void      GetCorrectEtaShiftFromPeriod(TString periodName);
@@ -211,7 +225,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *InputEvent = 0x0);
       
       void    LoadWeightingFlatCentralityFromFile ();
-      
+      void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
 
       // Event Cuts
@@ -237,8 +251,24 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      DoEtaShift(Bool_t doEtaShift)                                       { fDoEtaShift = doEtaShift                                  ; }
       
       //MC particle flags - determine whether particle is primary or secondary
-      Bool_t IsConversionPrimaryESD(AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ);
-      Bool_t IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMCParticle* AODMCParticle, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ);
+      Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
+                                        UInt_t stackpos, 
+                                        Double_t prodVtxX, 
+                                        Double_t prodVtxY,
+                                        Double_t prodVtxZ);
+      Bool_t    IsConversionPrimaryAOD( AliVEvent *fInputEvent, 
+                                        AliAODMCParticle* AODMCParticle,
+                                        Double_t prodVtxX, 
+                                        Double_t prodVtxY,
+                                        Double_t prodVtxZ);
+      
+      Int_t     SecondaryClassificationPhoton(  TParticle *particle,
+                                                AliStack* fMCStack, 
+                                                Bool_t isConversion );
+      Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,
+                                                  TClonesArray *aodmcArray, 
+                                                  Bool_t isConversion );
+
       
     protected:
       TList*                      fHistograms;
@@ -306,7 +336,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackground;          // SPD tracklets vs SPD clusters for background-correction
       // trigger information
-      TString                fV0ReaderName;                               // Name of V0Reader
+      TString                     fV0ReaderName;                          // Name of V0Reader
       AliVCaloTrigger*            fCaloTriggers;                          //! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //! trigger patch info array
       AliEmcalTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 // main trigger patch, will be cached after first call
@@ -322,9 +352,17 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMaxFacPtHardSingleParticle;            // maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
       Bool_t                      fMimicTrigger;                          // enable trigger mimiking
       Bool_t                      fRejectTriggerOverlap;                  // enable trigger overlap rejections
-    private:
+      // 
+      Bool_t                      fDoMultiplicityWeighting;               // Flag for multiplicity weighting
+      TString                     fPathReweightingMult;                   // Path for file used in multiplicity reweighting
+      TString                     fNameHistoReweightingMultData;          // Histogram name for reweighting Pi0
+      TString                     fNameHistoReweightingMultMC;            // Histogram name for reweighting Eta
+      TH1D*                       hReweightMultData;                      // histogram input for reweighting Eta
+      TH1D*                       hReweightMultMC;                        // histogram input for reweighting Pi0
+     
+  private:
 
-      ClassDef(AliConvEventCuts,15)
+      ClassDef(AliConvEventCuts,16)
 };
 
 

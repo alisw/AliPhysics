@@ -757,9 +757,9 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		if(contnt)ntName=(TString)contnt->GetName();
 		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
 		//NSigma PID
-		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap");
+		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber");
 		//2 prong decay products
-		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
+		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
 		else AliFatal("Invalid fill ntuple argument");
 		PostData(5,fNtupleLambdac);
 	}
@@ -1465,7 +1465,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	//fill ntuple
 	// 1 - loose pid
 	// 2 - bayesian pid
-	Float_t tmp[42];
+	Float_t tmp[48];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -1492,12 +1492,6 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	tmp[13]=TMath::Max(dcas[0],TMath::Max(dcas[1],dcas[2]));
 	tmp[14]=part->DecayLengthXY();
 	tmp[15]=part->NormalizedDecayLengthXY();
-	/*tmp[18]=part->Getd0Prong(0);
-		tmp[19]=part->Getd0Prong(1);
-		tmp[20]=part->Getd0Prong(2);
-		tmp[21]=part->Getd0Prong(0)*part->Getd0Prong(0)+part->Getd0Prong(1)*part->Getd0Prong(1)+part->Getd0Prong(2)*part->Getd0Prong(2);
-		tmp[22]=(Float_t)centrality;
-		tmp[23]=(Float_t)runNumber;*/
 
 	//Check resonant decays for efficiencies
 	tmp[16]=fIsLcResonant; // bkg
@@ -1542,23 +1536,47 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 		}
 	}
 	if(fFillNtuple>=2) {
-		tmp[27]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kPion);			//track 0, pion
-		tmp[28]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kKaon);     		//kaon
-		tmp[29]=fPIDResponse->NumberOfSigmasTPC(track0,AliPID::kProton);			//proton
-		tmp[30]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kPion);			//track 1, pion		
-		tmp[31]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kKaon);     		//kaon
-		tmp[32]=fPIDResponse->NumberOfSigmasTPC(track1,AliPID::kProton);			//proton
-		tmp[33]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kPion);			//track 2, pion
-		tmp[34]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kKaon);     		//kaon
-		tmp[35]=fPIDResponse->NumberOfSigmasTPC(track2,AliPID::kProton);	
+		Double_t d00 = part->Getd0Prong(0);
+		Double_t d01 = part->Getd0Prong(1);
+		Double_t d02 = part->Getd0Prong(2);
+		Double_t d0err0 = part->Getd0errProng(0);
+		Double_t d0err1 = part->Getd0errProng(1);
+		Double_t d0err2 = part->Getd0errProng(2);
+		tmp[27]=d00;
+		tmp[28]=d01;
+		tmp[29]=d02;
+		tmp[30]=d00*d00 + d01*d01 + d02*d02;
+		tmp[31]=d00/d0err0;
+		tmp[32]=d01/d0err1;
+		tmp[33]=d02/d0err2;
+		Double_t dd0,edd0;
+		Double_t dd1,edd1;
+		Double_t dd2,edd2;
+		part->Getd0MeasMinusExpProng(0,aod->GetMagneticField(),dd0,edd0);
+		part->Getd0MeasMinusExpProng(1,aod->GetMagneticField(),dd1,edd1);
+		part->Getd0MeasMinusExpProng(2,aod->GetMagneticField(),dd2,edd2);
+		Double_t ns0=dd0/edd0;
+		Double_t ns1=dd1/edd1;
+		Double_t ns2=dd2/edd2;
+		tmp[34]=ns0;
+		tmp[35]=ns1;
+		tmp[36]=ns2;
+		tmp[37]=part->CosPointingAngleXY();
+		tmp[13]=dcas[0];
+		tmp[38]=dcas[1];
+		tmp[39]=dcas[2];
+		tmp[11]=part->GetDist12toPrim();
+		tmp[40]=part->GetDist23toPrim();
+	  Int_t runNumber=aod->GetRunNumber();
+		tmp[41]=(Float_t)runNumber;
 	}
 	if(fFillNtuple>=3) {
-		tmp[36]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
-		tmp[37]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
-		tmp[38]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
-		tmp[39]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
-		tmp[40]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
-		tmp[41]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
+		tmp[42]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
+		tmp[43]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
+		tmp[44]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
+		tmp[45]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
+		tmp[46]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
+		tmp[47]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
 	}
 
 	fNtupleLambdac->Fill(tmp);

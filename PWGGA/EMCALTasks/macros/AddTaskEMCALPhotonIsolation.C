@@ -134,7 +134,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
         if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h")
           includeNoITS = kTRUE;
       } else if (runPeriod == "lhc12a15e"   || runPeriod.Contains("lhc12a17") || runPeriod == "lhc13b4" ||
-                 runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
+                 runPeriod == "lhc13b4_fix" || runPeriod == "lhc13b4_plus"    || runPeriod.Contains("lhc14a1") || runPeriod.Contains("lhc13b2_efix") || runPeriod.Contains("lhc13e5") || runPeriod.Contains("lhc13e4") || runPeriod.Contains("lhc14k1a") || runPeriod.Contains("lhc14k1b")
                  ) {
         aodfilterAna->SetAODfilterBits(256,512); // hybrid tracks
       } else if (runPeriod == "lhc11a" || runPeriod == "lhc10hold") {

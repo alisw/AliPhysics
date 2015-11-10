@@ -1,17 +1,21 @@
-void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,                  // change different set of cuts
-                            Int_t     isMC                      = 0,                // run MC
-                            Int_t     enableQAMesonTask         = 0,                 // enable QA in AliAnalysisTaskGammaCalo
-                            Int_t     enableQAClusterTask       = 0,                 // enable additional QA task
-                            TString   fileNameInputForWeighting = "MCSpectraInput.root",       // path to file for weigting input
-                            TString   cutnumberAODBranch        = "000000006008400001001500000",
-                            TString   periodname                = "LHC12f1x",             // period name
-                            Bool_t    doWeighting               = kFALSE,              // enables weighting
-                            Bool_t    isUsingTHnSparse          = kTRUE,              // enable or disable usage of THnSparses for background estimation
-                            Int_t     enableExtMatchAndQA       = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                            Bool_t    enableTriggerMimicking    = kFALSE,              // enable trigger mimicking
-                            Bool_t    enableTriggerOverlapRej   = kFALSE,              // enable trigger overlap rejection
-                            Float_t   maxFacPtHard              = 3.,                // maximum factor between hardest jet and ptHard generated
-                            TString   periodNameV0Reader        = ""
+void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,                  // change different set of cuts
+                            Int_t     isMC                          = 0,                // run MC
+                            Int_t     enableQAMesonTask             = 0,                 // enable QA in AliAnalysisTaskGammaCalo
+                            Int_t     enableQAClusterTask           = 0,                 // enable additional QA task
+                            TString   fileNameInputForPartWeighting = "MCSpectraInput.root",       // path to file for weigting input
+                            TString   cutnumberAODBranch            = "000000006008400001001500000",
+                            TString   periodname                    = "LHC12f1x",             // period name
+                            Bool_t    doParticleWeighting           = kFALSE,              // enables weighting
+                            Bool_t    isUsingTHnSparse              = kTRUE,              // enable or disable usage of THnSparses for background estimation
+                            Int_t     enableExtMatchAndQA           = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                            Bool_t    enableTriggerMimicking        = kFALSE,              // enable trigger mimicking
+                            Bool_t    enableTriggerOverlapRej       = kFALSE,              // enable trigger overlap rejection
+                            Float_t   maxFacPtHard                  = 3.,                // maximum factor between hardest jet and ptHard generated
+                            TString   periodNameV0Reader            = "",
+                            Bool_t    doMultiplicityWeighting       = kFALSE,                  //
+                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",    //
+                            TString   periodNameAnchor              = ""
+                            
 ) {
   
   Int_t isHeavyIon = 0;
@@ -434,14 +438,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
     eventCutArray[ 0] = "00103113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
     eventCutArray[ 1] = "01203113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
     eventCutArray[ 2] = "02303113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
-    eventCutArray[ 3] = "03503113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
-    eventCutArray[ 4] = "05703113"; clusterCutArray[4] = "1111121050032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+    eventCutArray[ 3] = "03403113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "04503113"; clusterCutArray[4] = "1111121050032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
   } else if (trainConfig == 99){ // INT7 - with multiplicity bins
     eventCutArray[ 0] = "00100113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
     eventCutArray[ 1] = "01200113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
     eventCutArray[ 2] = "02300113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
-    eventCutArray[ 3] = "03500113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
-    eventCutArray[ 4] = "05700113"; clusterCutArray[4] = "1111121060032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+    eventCutArray[ 3] = "03400113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "04500113"; clusterCutArray[4] = "1111121060032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
     
     
 // 8 TeV configs
@@ -624,8 +628,21 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
       mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     }  
     
-    if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+    if (doParticleWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForPartWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    TString triggerString   = eventCutArray[i];
+    triggerString           = triggerString(3,2);
+    if (triggerString.CompareTo("03")==0) 
+      triggerString         = "00";
+
+    dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+    mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+   
+    if (doMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+
+    
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

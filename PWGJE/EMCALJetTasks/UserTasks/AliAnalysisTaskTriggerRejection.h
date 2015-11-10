@@ -17,7 +17,7 @@ class TArrayI;
 #include <AliVEvent.h>
 
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 namespace JETriggerRejectionAna {
   class AliAnalysisTaskTriggerRejection : public AliAnalysisTaskEmcalJet {

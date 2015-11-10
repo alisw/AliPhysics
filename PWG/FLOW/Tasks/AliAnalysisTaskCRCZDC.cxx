@@ -153,6 +153,7 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
+fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator("V0M"),
@@ -191,6 +192,7 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fCRCnRun(0),
+fZDCGainAlpha(0.395),
 fDataSet("2010")
 {
  for(int i=0; i<5; i++){
@@ -281,6 +283,7 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
+fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator("V0M"),
@@ -443,9 +446,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
   fOutput->Add(fQAList);
  }
-
+ 
  fAnalysisUtil = new AliAnalysisUtils;
-
+ 
  for(int i=0; i<5; i++){
   char hname[20];
   sprintf(hname,"hZNCPM%d",i);
@@ -674,7 +677,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   //check event cuts
   if (InputEvent()) {
    if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-   if(fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+   if(fRejectPileUp && fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
   }
   
   //first attach all possible information to the cuts
@@ -691,10 +694,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  }
  
  if (fAnalysisType == "MCAOD") {
-
+  
   AliAODMCHeader *mcHeader;
   TClonesArray* mcArray;
-
+  
   mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcArray){
    AliError("Array of MC particles not found");
@@ -705,7 +708,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    AliError("Could not find MC Header in AOD");
    return;
   }
-
+  
   Int_t AODPOIs = 0;
   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
    AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
@@ -734,7 +737,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->InsertTrack(fFlowTrack);
    AODPOIs++;
   }
-
+  
   Int_t MCPOIs = 0;
   for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
    AliAODMCParticle *AODMCPart = (AliAODMCParticle*)mcArray->At(jTracks);
@@ -753,16 +756,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->InsertTrack(fFlowTrack);
    MCPOIs++;
   }
-
+  
   printf("#AODs : %d, #MC primaries : %d \n",AODPOIs,MCPOIs);
-
+  
   fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
   fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   fFlowEvent->SetRun(aod->GetRunNumber());
   printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
  }
-
+ 
  if(fAnalysisType ==  "MCkine") {
   
   fFlowEvent->ClearFast();
@@ -920,18 +923,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   } else {
    const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
    const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-   const Float_t alpha = 0.395;
    Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
    Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
-   for(Int_t i=0; i<4; i++){
+   for(Int_t i=0; i<4; i++) {
     if(towZNC[i+1]>0.) {
-     wZNC = TMath::Power(towZNC[i+1], alpha);
+     wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
      numXZNC += x[i]*wZNC;
      numYZNC += y[i]*wZNC;
      denZNC += wZNC;
     }
     if(towZNA[i+1]>0.) {
-     wZNA = TMath::Power(towZNA[i+1], alpha);
+     wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
      numXZNA += x[i]*wZNA;
      numYZNA += y[i]*wZNA;
      denZNA += wZNA;
@@ -943,6 +945,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    }
    else{
     xyZNC[0] = xyZNC[1] = 999.;
+    zncEnergy = 0.;
    }
    if(denZNA!=0) {
     xyZNA[0] = numXZNA/denZNA;
@@ -950,6 +953,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    }
    else{
     xyZNA[0] = xyZNA[1] = 999.;
+    znaEnergy = 0.;
    }
   }
   
@@ -964,7 +968,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   }
   if(fDataSet.EqualTo("MCkine")) RunBin=0;
   if(RunBin!=-1) {
-   for(Int_t i=0; i<4; i++){
+   for(Int_t i=0; i<4; i++) {
     if(towZNC[i+1]>0.) {
      fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
     }
@@ -1044,7 +1048,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  } // PHYSICS SELECTION
  
  PostData(1, fFlowEvent);
-
+ 
  PostData(2, fOutput);
  
 }

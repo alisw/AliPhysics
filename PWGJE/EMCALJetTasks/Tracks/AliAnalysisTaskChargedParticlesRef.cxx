@@ -30,7 +30,7 @@
 #include "AliInputEventHandler.h"
 #include "AliVVertex.h"
 
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 

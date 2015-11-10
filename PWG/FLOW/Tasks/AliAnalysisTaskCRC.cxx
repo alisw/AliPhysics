@@ -108,6 +108,7 @@ fnCenBin(10),
 fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
+fCenWeightsHist(NULL),
 fCorrWeight("TPCuVZuZDCu")
 {
  // constructor
@@ -150,6 +151,10 @@ fCorrWeight("TPCuVZuZDCu")
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
+ for(Int_t c=0; c<10; c++) {
+  fPtWeightsHist[c] = NULL;
+ }
+
 }
 
 //================================================================================================================
@@ -217,6 +222,7 @@ fnCenBin(10),
 fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
+fCenWeightsHist(NULL),
 fCorrWeight("TPCuVZuZDCu")
 {
  // Dummy constructor
@@ -248,6 +254,10 @@ fCorrWeight("TPCuVZuZDCu")
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
+ for(Int_t c=0; c<10; c++) {
+  fPtWeightsHist[c] = NULL;
+ }
+
 }
 
 //==========================================================================================================
@@ -286,7 +296,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateCME(fCalculateCME);
  fQC->SetCalculateCRC2(fCalculateCRC2);
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
- fQC->SetCalculateFlow(fCalculateFlow);
+ fQC->SetCalculateFlowQC(fCalculateFlow);
+ fQC->SetCalculateFlowZDC(fCalculateFlow);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
@@ -296,6 +307,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
+ fQC->SetUsePtWeights(fUsePtWeights);
  if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
  else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
  if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
@@ -325,7 +337,10 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  if(fUseCRCRecenter || fRecenterZDC) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
- 
+ if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
+ for(Int_t c=0; c<10; c++) {
+  if(fPtWeightsHist[c]) fQC->SetPtWeightsHist(fPtWeightsHist[c],c);
+ }
  fQC->SetMultiplicityIs(fMultiplicityIs);
  fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
  fQC->SetUse2DHistograms(fUse2DHistograms);

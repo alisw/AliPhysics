@@ -24,7 +24,7 @@
 
 #include "AliAODMCParticle.h"
 #include "AliLog.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliMCEvent.h"
 #include "AliPicoTrack.h"
 #include "AliVCluster.h"

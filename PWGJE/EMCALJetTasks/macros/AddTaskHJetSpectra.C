@@ -157,6 +157,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       embSingle->SetMarkMC(99999);  //SET EMBEDDED MC TRACK LABEL
       if(trigger>0) embSingle->SelectCollisionCandidates(trigger);
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
+
+      embSingle->SetCopyArray(kTRUE);
+      embSingle->SetSuffix(Form("TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal));
+      kGenPartices = embSingle->GetOutTrackName(); 
    }
  
    if(typeOfAnal == kEmb || typeOfAnal == kEmbSingl){ 

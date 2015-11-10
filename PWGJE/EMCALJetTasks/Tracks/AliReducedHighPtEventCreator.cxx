@@ -40,7 +40,7 @@
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliReducedEmcalCluster.h"

@@ -1216,7 +1216,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	      dcaZ  = -999999;
 	      }
 	  
-	  if (abs(dcaXY) > _dcaXYMax || abs(dcaZ) > _dcaZMax) continue;
+	  if (dcaXY < _dcaXYMin || dcaXY > _dcaXYMax || 
+	      dcaZ  < _dcaZMin  || dcaZ  > _dcaZMax) continue;
 	  
 	  //==== QA ===========================
 	  _dcaz->Fill(dcaZ);

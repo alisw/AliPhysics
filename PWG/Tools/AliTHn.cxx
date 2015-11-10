@@ -13,10 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTHn.cxx 20164 2007-08-14 15:31:50Z morsch $ */
+/* $Id: AliTHnT.cxx 20164 2007-08-14 15:31:50Z morsch $ */
 
-// Use AliTHn instead of AliCFContainer and your memory consumption will be drastically reduced
-// As AliTHn derives from AliCFContainer, you can just replace your current AliCFContainer object by AliTHn
+// Use AliTHnT instead of AliCFContainer and your memory consumption will be drastically reduced
+// As AliTHnT derives from AliCFContainer, you can just replace your current AliCFContainer object by AliTHnT
 // Once you have the merged output, call FillParent() and you can use AliCFContainer as usual
 //
 // this storage container is optimized for small memory usage
@@ -26,6 +26,8 @@
 // the information up into the THnSparse structure (in the ananalysis *after* data processing and merging)
 //
 // the derivation from THnSparse is obviously against many OO rules. correct would be a common baseclass of THnSparse and THn.
+//
+// Templated version allows also the use of double as storage container
 // 
 // Author: Jan Fiete Grosse-Oetringhaus
 
@@ -34,13 +36,15 @@
 #include "TCollection.h"
 #include "AliLog.h"
 #include "TArrayF.h"
+#include "TArrayD.h"
 #include "THnSparse.h"
 #include "TMath.h"
 
-ClassImp(AliTHn)
+templateClassImp(AliTHnT)
 
-AliTHn::AliTHn() : 
-  AliCFContainer(),
+template <class TemplateArray, typename TemplateType>
+AliTHnT<TemplateArray, TemplateType>::AliTHnT() : 
+  AliTHnBase(),
   fNBins(0),
   fNVars(0),
   fNSteps(0),
@@ -54,8 +58,9 @@ AliTHn::AliTHn() :
   // Constructor
 }
 
-AliTHn::AliTHn(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn) : 
-  AliCFContainer(name, title, nSelStep, nVarIn, nBinIn),
+template <class TemplateArray, typename TemplateType>
+AliTHnT<TemplateArray, TemplateType>::AliTHnT(const Char_t* name, const Char_t* title,const Int_t nSelStep, const Int_t nVarIn, const Int_t* nBinIn) : 
+  AliTHnBase(name, title, nSelStep, nVarIn, nBinIn),
   fNBins(0),
   fNVars(nVarIn),
   fNSteps(nSelStep),
@@ -75,12 +80,13 @@ AliTHn::AliTHn(const Char_t* name, const Char_t* title,const Int_t nSelStep, con
   Init();
 }
 
-void AliTHn::Init()
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::AliTHnT::Init()
 {
   // initialize
   
-  fValues = new TArrayF*[fNSteps];
-  fSumw2 = new TArrayF*[fNSteps];
+  fValues = new TemplateArray*[fNSteps];
+  fSumw2 = new TemplateArray*[fNSteps];
   
   for (Int_t i=0; i<fNSteps; i++)
   {
@@ -89,33 +95,35 @@ void AliTHn::Init()
   }
 } 
 
-AliTHn::AliTHn(const AliTHn &c) :
-  AliCFContainer(c),
+template <class TemplateArray, typename TemplateType>
+AliTHnT<TemplateArray, TemplateType>::AliTHnT(const AliTHnT &c) :
+  AliTHnBase(c),
   fNBins(c.fNBins),
   fNVars(c.fNVars),
   fNSteps(c.fNSteps),
-  fValues(new TArrayF*[c.fNSteps]),
-  fSumw2(new TArrayF*[c.fNSteps]),
+  fValues(new TemplateArray*[c.fNSteps]),
+  fSumw2(new TemplateArray*[c.fNSteps]),
   axisCache(0),
   fNbinsCache(0),
   fLastVars(0),
   fLastBins(0)
 {
   //
-  // AliTHn copy constructor
+  // AliTHnT copy constructor
   //
 
-  memset(fValues,0,fNSteps*sizeof(TArrayF*));
-  memset(fSumw2,0,fNSteps*sizeof(TArrayF*));
+  memset(fValues,0,fNSteps*sizeof(TemplateArray*));
+  memset(fSumw2,0,fNSteps*sizeof(TemplateArray*));
 
   for (Int_t i=0; i<fNSteps; i++) {
-    if (c.fValues[i]) fValues[i] = new TArrayF(*(c.fValues[i]));
-    if (c.fSumw2[i])  fSumw2[i]  = new TArrayF(*(c.fSumw2[i]));
+    if (c.fValues[i]) fValues[i] = new TemplateArray(*(c.fValues[i]));
+    if (c.fSumw2[i])  fSumw2[i]  = new TemplateArray(*(c.fSumw2[i]));
   }
 
 }
 
-AliTHn::~AliTHn()
+template <class TemplateArray, typename TemplateType>
+AliTHnT<TemplateArray, TemplateType>::~AliTHnT()
 {
   // Destructor
   
@@ -129,7 +137,8 @@ AliTHn::~AliTHn()
   delete[] fLastBins;
 }
 
-void AliTHn::DeleteContainers()
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::DeleteContainers()
 {
   // delete data containers
   
@@ -150,7 +159,8 @@ void AliTHn::DeleteContainers()
 }
 
 //____________________________________________________________________
-AliTHn &AliTHn::operator=(const AliTHn &c)
+template <class TemplateArray, typename TemplateType>
+AliTHnT<TemplateArray, TemplateType> &AliTHnT<TemplateArray, TemplateType>::operator=(const AliTHnT<TemplateArray, TemplateType> &c)
 {
   // assigment operator
 
@@ -168,14 +178,14 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
     }
     fNSteps=c.fNSteps;
     if(fNSteps) {
-      fValues=new TArrayF*[fNSteps];
-      fSumw2=new TArrayF*[fNSteps];
-      memset(fValues,0,fNSteps*sizeof(TArrayF*));
-      memset(fSumw2,0,fNSteps*sizeof(TArrayF*));
+      fValues=new TemplateArray*[fNSteps];
+      fSumw2=new TemplateArray*[fNSteps];
+      memset(fValues,0,fNSteps*sizeof(TemplateArray*));
+      memset(fSumw2,0,fNSteps*sizeof(TemplateArray*));
 
       for (Int_t i=0; i<fNSteps; i++) {
-	if (c.fValues[i]) fValues[i] = new TArrayF(*(c.fValues[i]));
-	if (c.fSumw2[i])  fSumw2[i]  = new TArrayF(*(c.fSumw2[i]));
+	if (c.fValues[i]) fValues[i] = new TemplateArray(*(c.fValues[i]));
+	if (c.fSumw2[i])  fSumw2[i]  = new TemplateArray(*(c.fSumw2[i]));
       }
     } else {
       fValues = 0;
@@ -189,11 +199,12 @@ AliTHn &AliTHn::operator=(const AliTHn &c)
 }
 
 //____________________________________________________________________
-void AliTHn::Copy(TObject& c) const
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::Copy(TObject& c) const
 {
   // copy function
 
-  AliTHn& target = (AliTHn &) c;
+  AliTHnT& target = (AliTHnT &) c;
   
   AliCFContainer::Copy(target);
   
@@ -206,21 +217,22 @@ void AliTHn::Copy(TObject& c) const
   for (Int_t i=0; i<fNSteps; i++)
   {
     if (fValues[i])
-      target.fValues[i] = new TArrayF(*(fValues[i]));
+      target.fValues[i] = new TemplateArray(*(fValues[i]));
     else
       target.fValues[i] = 0;
     
     if (fSumw2[i])
-      target.fSumw2[i] = new TArrayF(*(fSumw2[i]));
+      target.fSumw2[i] = new TemplateArray(*(fSumw2[i]));
     else
       target.fSumw2[i] = 0;
   }
 }
 
 //____________________________________________________________________
-Long64_t AliTHn::Merge(TCollection* list)
+template <class TemplateArray, typename TemplateType>
+Long64_t AliTHnT<TemplateArray, TemplateType>::Merge(TCollection* list)
 {
-  // Merge a list of AliTHn objects with this (needed for
+  // Merge a list of AliTHnT objects with this (needed for
   // PROOF). 
   // Returns the number of merged objects (including this).
 
@@ -238,7 +250,7 @@ Long64_t AliTHn::Merge(TCollection* list)
   Int_t count = 0;
   while ((obj = iter->Next())) {
     
-    AliTHn* entry = dynamic_cast<AliTHn*> (obj);
+    AliTHnT* entry = dynamic_cast<AliTHnT*> (obj);
     if (entry == 0) 
       continue;
 
@@ -247,7 +259,7 @@ Long64_t AliTHn::Merge(TCollection* list)
       if (entry->fValues[i])
       {
 	if (!fValues[i])
-	  fValues[i] = new TArrayF(fNBins);
+	  fValues[i] = new TemplateArray(fNBins);
       
 	for (Long64_t l = 0; l<fNBins; l++)
 	  fValues[i]->GetArray()[l] += entry->fValues[i]->GetArray()[l];
@@ -256,7 +268,7 @@ Long64_t AliTHn::Merge(TCollection* list)
       if (entry->fSumw2[i])
       {
 	if (!fSumw2[i])
-	  fSumw2[i] = new TArrayF(fNBins);
+	  fSumw2[i] = new TemplateArray(fNBins);
       
 	for (Long64_t l = 0; l<fNBins; l++)
 	  fSumw2[i]->GetArray()[l] += entry->fSumw2[i]->GetArray()[l];
@@ -269,7 +281,8 @@ Long64_t AliTHn::Merge(TCollection* list)
   return count+1;
 }
 
-void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::Fill(const Double_t *var, Int_t istep, Double_t weight)
 {
   // fills an entry
 
@@ -323,7 +336,7 @@ void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
 
   if (!fValues[istep])
   {
-    fValues[istep] = new TArrayF(fNBins);
+    fValues[istep] = new TemplateArray(fNBins);
     AliInfo(Form("Created values container for step %d", istep));
   }
 
@@ -332,7 +345,7 @@ void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
     // initialize with already filled entries (which have been filled with weight == 1), in this case fSumw2 := fValues
     if (!fSumw2[istep])
     {
-      fSumw2[istep] = new TArrayF(*fValues[istep]);
+      fSumw2[istep] = new TemplateArray(*fValues[istep]);
       AliInfo(Form("Created sumw2 container for step %d", istep));
     }
   }
@@ -347,7 +360,8 @@ void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
 //   AliCFContainer::Fill(var, istep, weight);
 }
 
-Long64_t AliTHn::GetGlobalBinIndex(const Int_t* binIdx)
+template <class TemplateArray, typename TemplateType>
+Long64_t AliTHnT<TemplateArray, TemplateType>::GetGlobalBinIndex(const Int_t* binIdx)
 {
   // calculates global bin index
   // binIdx contains TAxis bin indexes
@@ -363,7 +377,8 @@ Long64_t AliTHn::GetGlobalBinIndex(const Int_t* binIdx)
   return bin;
 }
 
-void AliTHn::FillContainer(AliCFContainer* cont)
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::FillContainer(AliCFContainer* cont)
 {
   // fills the information stored in the buffer in this class into the container <cont>
   
@@ -372,9 +387,9 @@ void AliTHn::FillContainer(AliCFContainer* cont)
     if (!fValues[i])
       continue;
       
-    Float_t* source = fValues[i]->GetArray();
+    TemplateType* source = fValues[i]->GetArray();
     // if fSumw2 is not stored, the sqrt of the number of bin entries in source is filled below; otherwise we use fSumw2
-    Float_t* sourceSumw2 = source;
+    TemplateType* sourceSumw2 = source;
     if (fSumw2[i])
       sourceSumw2 = fSumw2[i]->GetArray();
     
@@ -428,14 +443,16 @@ void AliTHn::FillContainer(AliCFContainer* cont)
   }  
 }
 
-void AliTHn::FillParent()
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::FillParent()
 {
   // fills the information stored in the buffer in this class into the baseclass containers
   
   FillContainer(this);
 }
 
-void AliTHn::ReduceAxis()
+template <class TemplateArray, typename TemplateType>
+void AliTHnT<TemplateArray, TemplateType>::ReduceAxis()
 {
   // "removes" one axis by summing over the axis and putting the entry to bin 1
   // TODO presently only implemented for the last axis
@@ -447,8 +464,8 @@ void AliTHn::ReduceAxis()
     if (!fValues[i])
       continue;
       
-    Float_t* source = fValues[i]->GetArray();
-    Float_t* sourceSumw2 = 0;
+    TemplateType* source = fValues[i]->GetArray();
+    TemplateType* sourceSumw2 = 0;
     if (fSumw2[i])
       sourceSumw2 = fSumw2[i]->GetArray();
     
@@ -467,8 +484,8 @@ void AliTHn::ReduceAxis()
     while (1)
     {
       // sum over axis <axis>
-      Float_t sumValues = 0;
-      Float_t sumSumw2 = 0;
+      TemplateType sumValues = 0;
+      TemplateType sumSumw2 = 0;
       for (Int_t j=1; j<=nBins[axis]; j++)
       {
 	binIdx[axis] = j;
@@ -513,3 +530,6 @@ void AliTHn::ReduceAxis()
     delete[] nBins;
   }
 }
+
+template class AliTHnT<TArrayF, Float_t>;
+template class AliTHnT<TArrayD, Double_t>;
