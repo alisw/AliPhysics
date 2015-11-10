@@ -493,7 +493,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fList->Add(fHEventsAccepted);
 			      
   fHEventsAcceptedXY = new TH2D("nEventsAcceptedXY", 
-			      "XY vertex w/trigger and Z vertex in range",
+				"XY vertex w/trigger and Z vertex in range",
 				1000,-1,1,1000,-1,1);
   
   fHEventsAcceptedXY->SetXTitle("v_{x} [cm]");
