@@ -191,6 +191,9 @@ struct dNdetaDrawer
       fTitle(""),            // Title on plot
       fBase(""),             // Optional base name of output files
       fClusterScale(""),     // Scaling of clusters to tracklets      
+      fFinalMC(""),          // Final MC correction file name
+      fEmpirical(""),        // Empirical correction file name
+      fDelta(0.),            // IP_delta wrt to (0.005,0.184)
       // Read (or set) information 
       fTrigString(0),        // Trigger string (read, or set)
       fNormString(0),        // Normalisation string (read, or set)
@@ -210,7 +213,8 @@ struct dNdetaDrawer
       fLeftRight(0),         // Left-right asymmetry
       fOthers(0),            // Older data 
       fTriggers(0),          // Number of triggers
-      fTruth(0),             // Pointer to truth 
+      fTruth(0),             // Pointer to truth
+      // Other stuff 
       fRangeParam(0),        // Parameter object for range zoom 
       fEmpCorr(0)
   {
@@ -310,6 +314,29 @@ struct dNdetaDrawer
    * @param file Filename 
    */
   void SetEmpirical(const TString& file) { fEmpirical = file; }
+  /** 
+   * Set shift of IP in (x,y) wrt to reference (x,y)=(0.005,0.184)
+   * position. Thie shift must be given in milimeters.
+   * 
+   * @param delta Shift wrt to refernce in milimeter
+   */
+  void SetDelta(Double_t delta) { fDelta = delta; }
+  void SetDelta(Double_t meanIpx, Double_t meanIpy)
+  {
+    Info("","Setting delta from %f,%f",meanIpx,meanIpy);
+    if (meanIpx < 0 && meanIpy < 0) return;
+    const Double_t refX = -0.004;
+    const Double_t refY = 0.184;
+    Double_t       dx   = (meanIpx - refX);
+    Double_t       dy   = (meanIpy - refY);
+    Info("","Shifts (%f-%f)=%f, (%f-%f)=%f",
+	 meanIpx, refX, dx,
+	 meanIpy, refY, dy);
+    if (TMath::Abs(dx) < 1e-3 && TMath::Abs(dy) < 1e-3) return;
+    Double_t       delta = TMath::Sqrt(dx*dx+dy*dy);
+    fDelta = delta/10;
+  }
+		  
   /* @} */
   //==================================================================  
   /** 
@@ -406,9 +433,11 @@ struct dNdetaDrawer
    * @return true on success 
    */
   Bool_t GetEmpirical(const TString& prx,
+		      Bool_t    useCen,
 		      TObject*& fwdEmp,
 		      TObject*& cenEmp,
-		      TString&  empname)   
+		      TString&  empName,
+		      Double_t  delta=0)   
   {
     empName = "";
     TString path(prx);
@@ -441,8 +470,34 @@ struct dNdetaDrawer
       fwdEmp  = fwdObj;
       cenEmp  = fwdObj;
       empName = empUrl.GetUrl();
-      if (fwdEmp->IsA()->InheritsFrom(TH1::Class()))
-	static_cast<TH1*>(fwdEmp)->SetDirectory(0);
+      if (fwdEmp->IsA()->InheritsFrom(TH1::Class())) {
+	TH1* h = static_cast<TH1*>(fwdEmp);
+	h->SetDirectory(0);
+	if (delta) {
+#if 0
+	  TF1* f = new TF1("corr",
+	  		   "1+[0]"
+	  		   "+(x<0)*sqrt(2)*[0]"
+	  		   "+(x<-2.4)*2*TMath::Pi()*[0]*TMath::Power(x+2.2,2)",
+	  		   -6, 6);
+#else 
+	  TF1* f = new TF1("corr", "1+[0]+(x<-2.4)*sqrt(2)*[0]*pow(x+2.2,2)");
+#endif 
+	  f->SetParameter(0,delta);
+	  Info("", "Applying correction for IP_delta=%f", delta);
+	  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+	    Double_t c   = h->GetBinContent(i);
+	    if (c < 1e-6) continue;
+	    
+	    Double_t e   = h->GetBinError(i);
+	    Double_t eta = h->GetXaxis()->GetBinCenter(i);
+	    Double_t cor = f->Eval(eta);
+	    Info("", "%5.2f -> %7.4f", eta, cor);
+	    h->SetBinContent(i, c*cor);
+	    h->SetBinError(i, e*cor);
+	  }
+	}
+      }
       if (cenEmp->IsA()->InheritsFrom(TH1::Class()))
 	static_cast<TH1*>(cenEmp)->SetDirectory(0);
     }
@@ -738,7 +793,7 @@ struct dNdetaDrawer
 	0 };
       const char** ptr = test;
       while (*ptr) {
-	if (GetEmpirical(*ptr, fwdEmp, cenEmp, fEmpirical)) break;
+	if (GetEmpirical(*ptr, useCen, fwdEmp, cenEmp, fEmpirical, fDelta)) break;
 	ptr++;
       }
     }
@@ -3189,6 +3244,7 @@ struct dNdetaDrawer
   TString      fClusterScale; // Scaling of clusters to tracklets      
   TString      fFinalMC;      // Final MC correction file name
   TString      fEmpirical;    // Empirical correction file name
+  Double_t     fDelta;        // IP_delta wrt to (0.005,0.184)
   /* @} */
   /** 
    * @{ 
@@ -3421,14 +3477,9 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   UShort_t    rebin=5, 
 	   UShort_t    others=0x7,
 	   UInt_t      flags=dNdetaDrawer::kDefaultOptions,
-	   UShort_t    sNN=0, 
-	   UShort_t    sys=0,
-	   UShort_t    trg=0,
+	   Double_t    meanIpX=-1,
+	   Double_t    meanIpY=-1,
 	   Float_t     eff=0,
-	   UShort_t    centMin=0,
-	   UShort_t    centMax=100,
-	   Float_t     vzMin=999, 
-	   Float_t     vzMax=-999,
 	   const char* base="", 
 	   UShort_t    outflg=dNdetaDrawer::kAllFormats)
 {
@@ -3441,9 +3492,10 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   }
   dNdetaDrawer* pd = new dNdetaDrawer;
   pd->SetEmpirical("file://../empirical.root#default");
+  pd->SetDelta(meanIpX, meanIpY);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
-  pd->Run(filename, title, rebin, others, flags, sys, sNN, trg, eff,
-	  centMin, centMax, vzMin, vzMax, base, outflg);
+  pd->Run(filename, title, rebin, others, flags, 0, 0, 0, eff,
+	  0, 0, +999, -999, base, outflg);
 }
 
 /** 
@@ -3516,10 +3568,6 @@ Draw(const char* filename,
      const char* outFlg="ALL",
      UShort_t    rebin=5,
      Float_t     eff=0, 
-     UShort_t    centMin=0, 
-     UShort_t    centMax=0, 
-     Float_t     vzMin=+999,
-     Float_t     vzMax=-999,
      const char* base="")
 {
   TString fname(filename);
@@ -3533,8 +3581,8 @@ Draw(const char* filename,
   dNdetaDrawer* pd = new dNdetaDrawer;
   pd->SetEmpirical("file://../empirical.root#default");
 
-  pd->Run(filename, title, others, options, outFlg, rebin, eff, 
-	  centMin, centMax, vzMin, vzMax, base);
+  pd->Run(filename, title, others, options, outFlg, rebin, eff,
+	  0, 0, +999, -999, base);
 }
 //____________________________________________________________________
 //
