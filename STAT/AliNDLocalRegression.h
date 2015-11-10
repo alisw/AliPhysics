@@ -26,6 +26,7 @@ class TObjString;
 class AliNDLocalRegression : public TNamed {
  public:
   AliNDLocalRegression();
+  AliNDLocalRegression(const char* name, const char* title);
   ~AliNDLocalRegression();
 
   Bool_t MakeFit(TTree * tree , const char *formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel,  const char * dimensionFormula, Double_t weightCut=0.00001, Int_t entries=1000000000);
@@ -38,6 +39,7 @@ class AliNDLocalRegression : public TNamed {
   void SetTree(TTree * tree) {fInputTree = tree;}
   TTreeSRedirector *GetStreamer(){return fStreamer;}
   void SetStreamer( TTreeSRedirector *streamer){ fStreamer=streamer;}
+  Bool_t AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *indexes, Double_t *relWeight, TTreeSRedirector* pcstream);
   //
   // function to access the Local Regression from the TFormula
   static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position=0);
@@ -56,9 +58,10 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrND(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
 
- protected:
+ public:
   Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction);
 
+protected:
   THn *fHistPoints;                     //  histogram local point distoribution
   Double_t fRobustFractionLTS;          //  fraction of data used for the robust mean and robust rms estimator (LTS https://en.wikipedia.org/wiki/Least_trimmed_squares)
   Double_t fRobustRMSLTSCut;            //  cut on the robust RMS  |value-localmean|<fRobustRMSLTSCut*localRMS
@@ -81,11 +84,12 @@ class AliNDLocalRegression : public TNamed {
   TObjArray *fLocalFitCovar;          // local fit covariance matrix  
   //
   TMatrixD  *fLocalRobustStat;        // local robust statistic
-private:
+protected:
   static TObjArray *fgVisualCorrection; ///< array of orrection for visualization
   Int_t    *fBinIndex;                  //[fNParameters] working arrays current bin index
   Double_t *fBinCenter;                 //[fNParameters] working current local variables - bin center
   Double_t *fBinDelta;                  //[fNParameters] working current local variables - bin delta
+private:  
   AliNDLocalRegression& operator=(const AliNDLocalRegression&);
   AliNDLocalRegression(const AliNDLocalRegression&);
   ClassDef(AliNDLocalRegression, 1);
