@@ -7,7 +7,7 @@ AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = 
 						      const Double_t MaxPt = 100.0,
 						      const Double_t Acceptancecut = 0.9,
 						      const char* period = "10h",
-						      UInt_t offlineTriggerMask = AliVEvent::kMB + AliVEvent::kSemiCentral + AliVEvent::kCentral,
+						      UInt_t offlineTriggerMask = AliVEvent::kMB,
 						      const Int_t MaxNEventsMix = 10,
 						      const Int_t MinNTracksMix = 2000,
 						      const Int_t NMBins = 7,
@@ -43,7 +43,7 @@ AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = 
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB + AliVEvent::kSemiCentral + AliVEvent::kCentral);
+  eventplaneTask->SelectCollisionCandidates(offlineTriggerMask);
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
   }

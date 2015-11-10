@@ -253,7 +253,7 @@ int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  Ali
 {
   /// fill histograms from particles, fills each histogram exactly once.
   Double_t fillweight = 1.0;
-  if (!ptrigger || !p1 || !p2) {cout << "failed fill"<<endl;return -EINVAL;}
+  if (!ptrigger || !p1 || !p2) {return 0;}
   if ((ptrigger->Pt()<=p1->Pt())||(ptrigger->Pt()<=p2->Pt())) {return 0;}
   const double Pii=TMath::Pi();
   // phi difference associated 1 to trigger particle

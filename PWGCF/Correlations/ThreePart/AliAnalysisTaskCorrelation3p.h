@@ -109,6 +109,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
     //Filter Bit 6 - 3
     if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
   }
+  void SetDstTree(bool tree = false){fisDstTree = tree;}
   
 //   void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
@@ -140,12 +141,14 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void 			GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt);
   void 			GetMCArray();
   void 			GetCentralityAndVertex();
+  void 			GetCentralityAndVertex(AliVEvent * pevent);
   Bool_t	    	GoodCluster(AliVCluster *clu);
   Bool_t	    	IsSelected(AliVParticle * p);
   Bool_t 	    	IsSelectedTrigger(AliVParticle * p);
   Bool_t 	    	IsSelectedAssociated(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackAOD(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackESD(AliVParticle* p);
+  Bool_t 	    	IsSelectedTrackFiltered(AliVParticle* p);
 
 
   enum CollisionType{pp,PbPb,pPb};
@@ -158,6 +161,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   CollisionType     fCollisionType;
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
+  Bool_t	    fisDstTree;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
   Bool_t 	    fQA;//if true, correlations are not build.
   Bool_t 	    fqatask;//if true AliCorrelation3p_noQA is used.

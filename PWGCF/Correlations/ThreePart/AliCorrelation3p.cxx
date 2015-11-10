@@ -196,11 +196,11 @@ int AliCorrelation3p::Init(const char* arguments)
   if (!fHistograms) return -ENOMEM;
   fHistograms->SetOwner(kTRUE);
   TString infoTriggerPt;
-  if (fMaxTriggerPt > fMinTriggerPt) infoTriggerPt.Form("%f < pt < %f", fMinTriggerPt, fMaxTriggerPt);
-  else infoTriggerPt.Form("pt > %f", fMinTriggerPt);
+  if (fMaxTriggerPt > fMinTriggerPt) infoTriggerPt.Form("%4.2f < pt < %4.2f", fMinTriggerPt, fMaxTriggerPt);
+  else infoTriggerPt.Form("pt > %4.2f", fMinTriggerPt);
   TString infoAssociatedPt;
-  if (fMaxAssociatedPt > fMinAssociatedPt) infoAssociatedPt.Form("%f < pt < %f", fMinAssociatedPt, fMaxAssociatedPt);
-  else infoAssociatedPt.Form("pt > %f", fMinAssociatedPt);
+  if (fMaxAssociatedPt > fMinAssociatedPt) infoAssociatedPt.Form("%4.2f < pt < %4.2f", fMinAssociatedPt, fMaxAssociatedPt);
+  else infoAssociatedPt.Form("pt > %4.2f", fMinAssociatedPt);
   AliInfo(Form("initializing %s for trigger %s and associated particle %s", GetName(), infoTriggerPt.Data(), infoAssociatedPt.Data()));
   // avoid the objects to be added to the global directory 
   bool statusAddDirectory=TH1::AddDirectoryStatus();

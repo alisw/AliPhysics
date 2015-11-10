@@ -197,18 +197,6 @@ class AliThreeParticleCorrelator : public TNamed {
     fMultiplicity = m;
   }
   
-//   /// Set the efficiency weights.
-//   void SetWeights(TObject* weights, int type){
-//     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
-//       (*o)->SetWeight(weights,type);
-//       //And for all ME workers.
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//     }
-//   }
-    
   /// get ME analysis object corresponding to parameter
   C* GetCorrespondingME(C* o, int type=0) {
     for (unsigned i=0, e=fCorrelations.size(); i<e; i++) {
@@ -345,11 +333,8 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if (*assoc==(*i)->GetTrigger()) continue;//Trigger and associated pointer are the same particle.
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=assoc+1, eassoc2 = associated.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
 	  if(*assoc2==(*i)->GetTrigger()) {continue;}//Do not fill if they are the same or one is the trigger
 	  if(*assoc==*assoc2) continue;
-// 	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
-// 	  (*i)->Correlate(*assoc2,*assoc, NAssociated);
 	  (*i)->Correlate(*assoc,*assoc2, 1.0);
 	  (*i)->Correlate(*assoc2,*assoc, 1.0);	  
 	}//loop over second associated
@@ -372,7 +357,6 @@ class AliThreeParticleCorrelator : public TNamed {
       Int_t NA2 = (Int_t)(NAssociated2-1)*gRandom->Rndm();//gives the index of one associatedmixed between 0 and NAssociated2-1
       for (typename std::vector<AliActiveTrigger*>::const_iterator i=activeTriggers.begin(), e=activeTriggers.end(); i!=e; i++) {
 	(*i)->Incrementtrigger();//Fill histogram for number of triggers.
-// 	if(!((*i)->CheckAssociated(associated[NA1])&&(*i)->CheckAssociated(associatedmixed[NA2])))continue;
 	(*i)->Correlate(associated[NA1],associatedmixed[NA2],1);
 	(*i)->Correlate(associatedmixed[NA2],associated[NA1],1);
       }
@@ -383,18 +367,11 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if(*assoc==(*i)->GetTrigger()) continue;//It is possible for this to happen with associated and trigger from same event
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
 	  if(*assoc==*assoc2||*assoc2 == (*i)->GetTrigger()) continue;//if associated are the samme or trigger is equal to the second associated.
-// 	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
-// 	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
 	  (*i)->Correlate(*assoc,*assoc2,1.0);//Fill with the number of associated in the other list.
 	}//loop over second associated
 	if (twop)(*i)->Correlate(*assoc);//2p correlation
 	} // loop over first associated
-// 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (dynamic_cast<AliVParticle*>(*assoc2)==i->GetTrigger()) continue;
-// 	  if (i->CheckAssociated(*assoc2))i->Correlate(*assoc2);//2p correlation
-// 	}//second loop so all mixed tracks get filled in 2p correlation.
     } // loop over triggers
     return 0;
   }
