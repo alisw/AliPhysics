@@ -101,7 +101,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
-  if (trainConfig == 32   || trainConfig == 101 || trainConfig == 201 || trainConfig == 63)
+  if (trainConfig == 32   || trainConfig == 101 || trainConfig == 201 || trainConfig == 63
+      || trainConfig == 181 || trainConfig == 182)
       numberOfCuts = 1;
   if (trainConfig == 111  || trainConfig == 114 || trainConfig == 117 || trainConfig == 120   || trainConfig == 121   || 
       trainConfig == 122  || trainConfig == 123 || trainConfig == 124 || trainConfig == 109)
@@ -546,6 +547,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111112060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
     eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111112060032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
     eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111112060032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+
+
+// PHOS @ 8 TeV
+  } else if (trainConfig == 181){ // PHOS clusters
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "2444400070023200000"; mesonCutArray[0] = "0163003100900050";
+  } else if (trainConfig == 182){ // PHOS clusters
+    eventCutArray[ 0] = "00062113"; clusterCutArray[0] = "2444400070023200000"; mesonCutArray[0] = "0163003100900050";
 
 
     // 7 TeV
