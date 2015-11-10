@@ -60,13 +60,13 @@ class AliHLTITSLayer
   AliHLTITSDetector *fDetectors; // array of detectors
   Int_t fN;                   // number of clusters
   AliITSRecPoint *fClusters[AliITSRecoParam::kMaxClusterPerLayer]; // pointers to clusters
-  Int_t        fClusterIndex[AliITSRecoParam::kMaxClusterPerLayer]; // pointers to clusters
+  UShort_t        fClusterIndex[AliITSRecoParam::kMaxClusterPerLayer]; // pointers to clusters
   Float_t fY[AliITSRecoParam::kMaxClusterPerLayer];                // y position of the clusters      
   Float_t fZ[AliITSRecoParam::kMaxClusterPerLayer];                // z position of the clusters      
   Float_t fYB[2];                                       // ymin and ymax
   //
   AliITSRecPoint *fClusters5[6][AliITSRecoParam::kMaxClusterPerLayer5]; // pointers to clusters -     slice in y
-  Int_t        fClusterIndex5[6][AliITSRecoParam::kMaxClusterPerLayer5]; // pointers to clusters -     slice in y    
+  UShort_t        fClusterIndex5[6][AliITSRecoParam::kMaxClusterPerLayer5]; // pointers to clusters -     slice in y    
   Float_t fY5[6][AliITSRecoParam::kMaxClusterPerLayer5];                // y position of the clusters  slice in y    
   Float_t fZ5[6][AliITSRecoParam::kMaxClusterPerLayer5];                // z position of the clusters  slice in y 
   Int_t fN5[6];                                       // number of cluster in slice
@@ -74,7 +74,7 @@ class AliHLTITSLayer
   Float_t fBy5[6][2];                                    //slice borders
   //
   AliITSRecPoint *fClusters10[11][AliITSRecoParam::kMaxClusterPerLayer10]; // pointers to clusters -     slice in y
-  Int_t        fClusterIndex10[11][AliITSRecoParam::kMaxClusterPerLayer10]; // pointers to clusters -     slice in y    
+  UShort_t        fClusterIndex10[11][AliITSRecoParam::kMaxClusterPerLayer10]; // pointers to clusters -     slice in y    
   Float_t fY10[11][AliITSRecoParam::kMaxClusterPerLayer10];                // y position of the clusters  slice in y    
   Float_t fZ10[11][AliITSRecoParam::kMaxClusterPerLayer10];                // z position of the clusters  slice in y 
   Int_t fN10[11];                                       // number of cluster in slice
@@ -82,7 +82,7 @@ class AliHLTITSLayer
   Float_t fBy10[11][2];                                 // slice borders
   //
   AliITSRecPoint *fClusters20[21][AliITSRecoParam::kMaxClusterPerLayer20]; // pointers to clusters -     slice in y
-  Int_t        fClusterIndex20[21][AliITSRecoParam::kMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
+  UShort_t        fClusterIndex20[21][AliITSRecoParam::kMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
   Float_t fY20[21][AliITSRecoParam::kMaxClusterPerLayer20];                // y position of the clusters  slice in y    
   Float_t fZ20[21][AliITSRecoParam::kMaxClusterPerLayer20];                // z position of the clusters  slice in y 
   Int_t fN20[21];                                       // number of cluster in slice
@@ -90,7 +90,7 @@ class AliHLTITSLayer
   Float_t fBy20[21][2];                                 //slice borders
   //
   AliITSRecPoint** fClustersCs;                         //clusters table in current slice
-  Int_t   *fClusterIndexCs;                             //cluster index in current slice 
+  UShort_t *fClusterIndexCs;                            //cluster index in current slice 
   Float_t *fYcs;                                        //y position in current slice
   Float_t *fZcs;                                        //z position in current slice
   Int_t    fNcs;                                        //number of clusters in current slice    
