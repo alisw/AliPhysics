@@ -3793,6 +3793,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
   for (Int_t itrack = 0; itrack < ntracks; itrack++)
     {
       AliESDtrack *track = esd->GetTrack(itrack);
+      if (track->GetFriendNotStored()) continue; // no need of alignment data for friends which are not stored
       Int_t nsp = 0;
       Int_t idx[200];
       for (Int_t i=0; i<200; ++i) idx[i] = -1; //PH avoid uninitialized values
