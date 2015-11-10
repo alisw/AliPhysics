@@ -320,7 +320,17 @@ protected:
    * @return The z coordinate of the interaction point 
    */
   virtual Double_t GetIpZ(AliAODEvent& event,
-			  AliAODForwardMult* forward); 
+			  AliAODForwardMult* forward);
+  /** 
+   * Get the IPs (x,y) coordinates 
+   * 
+   * @param aod Input event 
+   * @param x   On return, the X coordinate 
+   * @param y   On return, the Y coordinate 
+   * 
+   * @return true on success, false otherwise 
+   */
+  virtual Bool_t GetIpXY(AliAODEvent& aod, Double_t& x, Double_t& y);
   /** 
    * Get the name of the default configuration script to use.
    * Sub-classes can override this to give another default
@@ -341,6 +351,7 @@ protected:
   TH1D*    fVertex;        // Vertex distribution of all events 
   TH1D*    fCent;          // Centrality distribution of all events
   TH1D*    fAccVertex;     // Vertex distribution of accepted events 
+  TH2D*    fAccVertexXY;   // Vertex (x,y) distribution of accepted events 
   TH1D*    fAccCent;       // Centrality distribution of accepted events
   Bool_t   fFirstEvent;    // Information stored or not 
   Bool_t   fCloneList;     // Wether to clone sum list for results
