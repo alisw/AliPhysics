@@ -378,6 +378,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCetaPhi_MC_with_partner_greater(0) //new 15-09
 ,fCetaPhi_MC_with_partner_below(0) // new 15-09
 ,fCetaPhi_MC_NHFE_1partner_reco(0) // new 17-09
+,fMCEffPID_beforePID(0)
+,fMCEffPID_afterPID(0)
+,fpTMCGeneratedBKG(0)
 ,fInvMass(0)
 ,fInvMassBack(0)
 ,fDCA(0)
@@ -771,6 +774,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCetaPhi_MC_with_partner_greater(0) //new 15-09
 ,fCetaPhi_MC_with_partner_below(0) // new 15-09
 ,fCetaPhi_MC_NHFE_1partner_reco(0) // new 17-09
+,fMCEffPID_beforePID(0)
+,fMCEffPID_afterPID(0)
+,fpTMCGeneratedBKG(0)
 ,fInvMass(0)
 ,fInvMassBack(0)
 ,fDCA(0)
@@ -1791,6 +1797,15 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fPtMCWithoutLabel = new TH1F("fPtMCWithoutLabel",";p_{t} (GeV/c);Count",200,0,40);
         fPtIsPhysicaPrimary = new TH1F("fPtIsPhysicaPrimary",";p_{t} (GeV/c);Count",200,0,40);
         
+        fMCEffPID_beforePID = new TH1F("fMCEffPID_beforePID",";p_{t} (GeV/c);Count",2000,0,100);
+        fMCEffPID_afterPID = new TH1F("fMCEffPID_afterPID",";p_{t} (GeV/c);Count",2000,0,100);
+        fpTMCGeneratedBKG = new TH1F("fpTMCGeneratedBKG",";p_{t} (GeV/c);Count",2000,0,100);
+
+        fOutputList->Add(fMCEffPID_beforePID);
+        fOutputList->Add(fMCEffPID_afterPID);
+        fOutputList->Add(fpTMCGeneratedBKG);
+
+        
         fOutputList->Add(fPtBackgroundBeforeReco);
         fOutputList->Add(fPtBackgroundBeforeReco_weight);
         
@@ -1868,7 +1883,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         
         fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
     }
-
+    
     //______________________________________________________________________
     
     PostData(1, fOutputList);
@@ -2818,6 +2833,37 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+        
+        if(fIsMC  && atrack->GetLabel()>=0)
+        {
+            if(fIsAOD)
+            {
+                fMCparticle = (AliAODMCParticle*) fMCarray->At(atrack->GetLabel());
+                Int_t pdg = fMCparticle->GetPdgCode();
+                if (TMath::Abs(pdg) == 11 && fMCparticle->Eta()>fEtaCutMin && fMCparticle->Eta()<fEtaCutMax)
+                {
+                    
+                    if (fMCparticle->IsPrimary())
+                    {
+                        fMCEffPID_beforePID->Fill(fMCparticle->Pt());
+                        
+                        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                        
+                        Int_t Mother_pdg = fMCparticleMother->GetPdgCode();
+                        
+                        if( TMath::Abs(Mother_pdg)==22 || TMath::Abs(Mother_pdg)==111 || TMath::Abs(Mother_pdg)==221)
+                        {
+                            fpTMCGeneratedBKG->Fill(fMCparticle->Pt());
+                        }
+
+   
+                    }
+                    
+                }
+                
+            }
+        }
+
         
         //printf("\n\n Track label of track %d is %d  - after tender \n\n", iTracks, track_tender->GetLabel());
         
@@ -4513,8 +4559,26 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         //_______________________________________________________
         //Correlation Analysis
+        
+        if(fIsMC  && atrack->GetLabel()>=0)
+        {
+            if(fIsAOD)
+            {
+                fMCparticle = (AliAODMCParticle*) fMCarray->At(atrack->GetLabel());
+                Int_t pdg = fMCparticle->GetPdgCode();
+                if (TMath::Abs(pdg) == 11)
+                {
+                    if (fMCparticle->IsPrimary())
+                        fMCEffPID_afterPID->Fill(fMCparticle->Pt());
+                }
+                
+            }
+        }
+        
+        
         if(!fUseEMCal)
         {
+            
             fPtElec_Inc->Fill(fPt);
             
             if(fCorrelationFlag)
@@ -4544,9 +4608,9 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         else
         {
             fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
-        
+            
             if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality->GetCentralityPercentile("V0A"), fZvtx));
-        
+            
             fPool->UpdatePool(SelectedHadrons()); // fill the tracks in the event buffer. The ownership is handed over to the event mixing class. We are not allowed to delete tracksClone anymore!
         }
         
@@ -5402,7 +5466,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 }
                 
             }
-
+            
             
         } //end is NHFE
     }
@@ -5413,7 +5477,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     
     ///-----------end of new MC analysis-----------
     ///--------------------------------------------
-
+    
     
     
     
@@ -5433,7 +5497,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
             if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS());
             if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS());
         }
-        else 
+        else
         {
             if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
             {
@@ -5470,7 +5534,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         else
         {
             fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
-        
+            
             if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f",fCentrality->GetCentralityPercentile("V0A"), fZvtx));
         }
         if(fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
@@ -6686,12 +6750,12 @@ Double_t AliAnalysisTaskHFEpACorrelation::SetEoverPCutPtDependentMC(Double_t pt)
      
      }
      */
-    ////====================================================================================== 
-    ////====================================================================================== 
-    ////=========================== data 1.5 sigma =========================================== 
+    ////======================================================================================
+    ////======================================================================================
+    ////=========================== data 1.5 sigma ===========================================
     /*
      if(!fIsMC){
-     //data 1.5 sigmas 
+     //data 1.5 sigmas
      if(pt>= 2.00 &&  pt < 2.50){
      fEoverPCutMin=0.8132;
      fEoverPCutMax=1.0610;
@@ -6808,12 +6872,12 @@ Double_t AliAnalysisTaskHFEpACorrelation::SetEoverPCutPtDependentMC(Double_t pt)
         
     }
     
-    ////====================================================================================== 
-    ////====================================================================================== 
-    ////=========================== MC 2.5 sigma =========================================== 
+    ////======================================================================================
+    ////======================================================================================
+    ////=========================== MC 2.5 sigma ===========================================
     
     if(fIsMC){
-        //MC 2.5 sigmas 
+        //MC 2.5 sigmas
         if(pt>= 2.00 &&  pt < 2.50){
             fEoverPCutMin=0.7333;
             fEoverPCutMax=1.1125;
@@ -6850,7 +6914,6 @@ Double_t AliAnalysisTaskHFEpACorrelation::SetEoverPCutPtDependentMC(Double_t pt)
     
     
     return fEoverPCutMin;
-    return fEoverPCutMax;	
+    return fEoverPCutMax;
     
 }
-

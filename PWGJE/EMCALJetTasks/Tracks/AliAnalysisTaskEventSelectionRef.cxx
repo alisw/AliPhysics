@@ -24,7 +24,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"

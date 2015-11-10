@@ -20,7 +20,7 @@
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerDataGridAP.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"

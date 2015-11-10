@@ -10,7 +10,7 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
    const Double_t fMinCentrality = -1,
    const Double_t fMaxCentrality = 100,
    const Double_t fCoreRadius = 3.5,
-   const Double_t fMinCoreEnergyRatio = 0.4,
+   const Double_t fMinCoreEnergyRatio = 0.3,
    const Double_t fMinLambdaDisp = 0.3,
    const Double_t fMinCPVStd = 2.5,
 //End Default Cuts
@@ -39,6 +39,7 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
   // Init the task and do settings
   //-------------------------------------------------------
   TString name(Form("ash_%s", tag));
+  printf("Adding\n");
   AliAnalysisTaskThermalGAFlow *PHOSGAtask = new AliAnalysisTaskThermalGAFlow(name);
 
   PHOSGAtask->SetDebug(fDebug);

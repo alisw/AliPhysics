@@ -61,6 +61,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   AliMuonTrackCuts* GetMuonTrackCuts() { return fMuonTrackCuts; }
   /// Get muon pair cuts
   AliMuonPairCuts* GetMuonPairCuts() { return fMuonPairCuts; }
+
+  /// Enable run-by-run info in counter collection
+  void SetEnableRunByRunInfo ( Bool_t enable = kTRUE ) { fEnableRunByRunInfo = enable; }
   
   // Utility methods for CF container
   static Bool_t SetSparseRange(AliCFGridSparse* gridSparse,
@@ -121,7 +124,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObject* GetMergeableObject(TString physSel, TString trigClassName, TString centrality, TString objectName);
 //  TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
 
-    
+  Bool_t fEnableRunByRunInfo; ///< Enable information run by run
   AliMuonEventCuts* fMuonEventCuts; ///< Muon event cuts
   AliMuonTrackCuts* fMuonTrackCuts; ///< Muon track cuts
   AliMuonPairCuts* fMuonPairCuts;   ///< Muon pair track cuts
@@ -146,7 +149,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   void CreateMergeableObjects(TString physSel, TString trigClassName, TString centrality);
   TObjArray* fOutputPrototypeList; //!< List of prototype object to be used in collection
 
-  ClassDef(AliVAnalysisMuon, 6);
+  ClassDef(AliVAnalysisMuon, 7);
 };
 
 #endif

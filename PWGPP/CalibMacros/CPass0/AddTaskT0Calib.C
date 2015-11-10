@@ -32,7 +32,7 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("T0Calib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("T0Calib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");  
 
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,1,coutput1);

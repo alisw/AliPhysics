@@ -12,7 +12,7 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEmcalTriggerBitConfig.h"
 
 #include "AliEmcalPatchFromCellMaker.h"

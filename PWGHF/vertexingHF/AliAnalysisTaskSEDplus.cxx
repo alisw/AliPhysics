@@ -56,12 +56,12 @@ AliAnalysisTaskSE(),
   fHistNEvents(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
+  fPtVsMassNoPid(0),
   fPtVsMass(0),
-  fPtVsMassTC(0),
+  fYVsPtNoPid(0),
   fYVsPt(0),
-  fYVsPtTC(0),
+  fYVsPtSigNoPid(0),
   fYVsPtSig(0),
-  fYVsPtSigTC(0),
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
@@ -95,11 +95,11 @@ AliAnalysisTaskSE(),
     fCorreld0Kd0pi[i]=0;
   }
   
-  for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
+  for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
     
   
   for(Int_t i=0;i<3*kMaxPtBins;i++){
-    fMassHist[i]=0;
+    fMassHistNoPid[i]=0;
     fCosPHist[i]=0;
     fDLenHist[i]=0;
     fSumd02Hist[i]=0;
@@ -109,14 +109,12 @@ AliAnalysisTaskSE(),
     fPtpi1Hist[i]=0;
     fPtpi2Hist[i]=0;
     fDCAHist[i]=0;
-    fMassHistTC[i]=0;
-    fMassHistTCPlus[i]=0;
-    fMassHistTCMinus[i]=0;
+    fMassHist[i]=0;
+    fMassHistPlus[i]=0;
+    fMassHistMinus[i]=0;
     
     fDLxy[i]=0;
-    fDLxyTC[i]=0;
     fCosxy[i]=0;
-    fCosxyTC[i]=0;
     fCosPHistLS[i]=0;
     fDLenHistLS[i]=0;
     fSumd02HistLS[i]=0;
@@ -126,7 +124,6 @@ AliAnalysisTaskSE(),
   }
   for(Int_t i=0;i<5*kMaxPtBins;i++){
     fMassHistLS[i]=0;
-    fMassHistLSTC[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
@@ -141,12 +138,12 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fHistNEvents(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
+  fPtVsMassNoPid(0),
   fPtVsMass(0),
-  fPtVsMassTC(0),
+  fYVsPtNoPid(0),
   fYVsPt(0),
-  fYVsPtTC(0),
+  fYVsPtSigNoPid(0),
   fYVsPtSig(0),
-  fYVsPtSigTC(0),
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
@@ -183,10 +180,10 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
     fCorreld0Kd0pi[i]=0;
   }
   
-  for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
+  for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
     
   for(Int_t i=0;i<3*kMaxPtBins;i++){
-    fMassHist[i]=0;
+    fMassHistNoPid[i]=0;
     fCosPHist[i]=0;
     fDLenHist[i]=0;
     fSumd02Hist[i]=0;
@@ -196,14 +193,12 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
     fPtpi1Hist[i]=0;
     fPtpi2Hist[i]=0;
     fDCAHist[i]=0;
-    fMassHistTC[i]=0;
-    fMassHistTCPlus[i]=0;
-    fMassHistTCMinus[i]=0;
+    fMassHist[i]=0;
+    fMassHistPlus[i]=0;
+    fMassHistMinus[i]=0;
     
     fDLxy[i]=0;
-    fDLxyTC[i]=0;
     fCosxy[i]=0;
-    fCosxyTC[i]=0;
     fCosPHistLS[i]=0;
     fDLenHistLS[i]=0;
     fSumd02HistLS[i]=0;
@@ -213,7 +208,6 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   }
   for(Int_t i=0;i<5*kMaxPtBins;i++){
     fMassHistLS[i]=0;
-    fMassHistLSTC[i]=0;
   }
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
@@ -244,7 +238,7 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     for(Int_t i=0;i<3*fNPtBins;i++){    
-      delete fMassHist[i];
+      delete fMassHistNoPid[i];
       delete fCosPHist[i];
       delete fDLenHist[i];
       delete fSumd02Hist[i];
@@ -255,12 +249,10 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
       delete fPtpi2Hist[i];
       delete fDCAHist[i];
       delete fDLxy[i];
-      delete fDLxyTC[i];
       delete fCosxy[i];
-      delete fCosxyTC[i];
-      delete fMassHistTC[i];
-      delete fMassHistTCPlus[i];
-      delete fMassHistTCMinus[i];
+      delete fMassHist[i];
+      delete fMassHistPlus[i];
+      delete fMassHistMinus[i];
       delete fCosPHistLS[i];
       delete fDLenHistLS[i];
       delete fSumd02HistLS[i];
@@ -270,21 +262,20 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     }
     for(Int_t i=0;i<5*fNPtBins;i++){
       delete fMassHistLS[i];
-      delete fMassHistLSTC[i];
     }
     for(Int_t i=0;i<3;i++){
       delete fCorreld0Kd0pi[i];
       delete fHistCentrality[i];
     }
     for(Int_t i=0;i<5;i++){
-      delete fHistMassPtImpParTC[i];
+      delete fHistMassPtImpPar[i];
     }
+    delete fPtVsMassNoPid;
     delete fPtVsMass;
-    delete fPtVsMassTC;
+    delete fYVsPtNoPid;
     delete fYVsPt;
-    delete fYVsPtTC;
+    delete fYVsPtSigNoPid;
     delete fYVsPtSig;
-    delete fYVsPtSigTC;
     delete fPhiEtaCand;
     delete fPhiEtaCandSigReg;
     delete fSPDMult;
@@ -480,8 +471,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after loose cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after tight cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after topological cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+PID cuts");
  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
   fHistNEvents->Sumw2();
@@ -502,9 +493,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
     index=GetHistoIndex(i);
 
-    hisname.Form("hMassPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHist[index]->Sumw2();
+    hisname.Form("hMassNoPidPt%d",i);
+    fMassHistNoPid[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistNoPid[index]->Sumw2();
     hisname.Form("hCosPAllPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
     fCosPHist[index]->Sumw2();
@@ -539,29 +530,23 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hCosxyPt%d",i);
     fCosxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
     fCosxy[index]->Sumw2();
-    hisname.Form("hDLxyPt%dTC",i);
-    fDLxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,10.);
-    fDLxyTC[index]->Sumw2();
-    hisname.Form("hCosxyPt%dTC",i);
-    fCosxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
-    fCosxyTC[index]->Sumw2();
    
     hisname.Form("hMassPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTC[index]->Sumw2();
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]->Sumw2();
     hisname.Form("hMassPt%dTCPlus",i);
-    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCPlus[index]->Sumw2();
+    fMassHistPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistPlus[index]->Sumw2();
     hisname.Form("hMassPt%dTCMinus",i);
-    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCMinus[index]->Sumw2();
+    fMassHistMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistMinus[index]->Sumw2();
 
 
        
     index=GetSignalHistoIndex(i);    
-    hisname.Form("hSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHist[index]->Sumw2();
+    hisname.Form("hSigNoPidPt%d",i);
+    fMassHistNoPid[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistNoPid[index]->Sumw2();
     hisname.Form("hCosPSigPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
     fCosPHist[index]->Sumw2();
@@ -597,27 +582,21 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hCosxySigPt%d",i);
     fCosxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
     fCosxy[index]->Sumw2();
-    hisname.Form("hDLxySigPt%dTC",i);
-    fDLxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,10.);
-    fDLxyTC[index]->Sumw2();
-    hisname.Form("hCosxySigPt%dTC",i);
-    fCosxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
-    fCosxyTC[index]->Sumw2();
     hisname.Form("hSigPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTC[index]->Sumw2();
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]->Sumw2();
     hisname.Form("hSigPt%dTCPlus",i);
-    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCPlus[index]->Sumw2();
+    fMassHistPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistPlus[index]->Sumw2();
     hisname.Form("hSigPt%dTCMinus",i);
-    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCMinus[index]->Sumw2();
+    fMassHistMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistMinus[index]->Sumw2();
 
 
     index=GetBackgroundHistoIndex(i); 
-    hisname.Form("hBkgPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHist[index]->Sumw2();
+    hisname.Form("hBkgNoPidPt%d",i);
+    fMassHistNoPid[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistNoPid[index]->Sumw2();
     hisname.Form("hCosPBkgPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
     fCosPHist[index]->Sumw2();
@@ -652,28 +631,22 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hCosxyBkgPt%d",i);
     fCosxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
     fCosxy[index]->Sumw2();
-    hisname.Form("hDLxyBkgPt%dTC",i);
-    fDLxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,10.);
-    fDLxyTC[index]->Sumw2();
-    hisname.Form("hCosxyBkgPt%dTC",i);
-    fCosxyTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
-    fCosxyTC[index]->Sumw2();
   
 
     hisname.Form("hBkgPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTC[index]->Sumw2();
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]->Sumw2();
     hisname.Form("hBkgPt%dTCPlus",i);
-    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCPlus[index]->Sumw2();
+    fMassHistPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistPlus[index]->Sumw2();
     hisname.Form("hBkgPt%dTCMinus",i);
-    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistTCMinus[index]->Sumw2();
+    fMassHistMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistMinus[index]->Sumw2();
   }
     
 
   for(Int_t i=0; i<3*fNPtBins; i++){
-    fOutput->Add(fMassHist[i]);
+    fOutput->Add(fMassHistNoPid[i]);
     if(fCutsDistr){  
       fOutput->Add(fCosPHist[i]);
       fOutput->Add(fDLenHist[i]);
@@ -685,13 +658,11 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
       fOutput->Add(fPtpi2Hist[i]);
       fOutput->Add(fDCAHist[i]);
       fOutput->Add(fDLxy[i]);
-      fOutput->Add(fDLxyTC[i]);
       fOutput->Add(fCosxy[i]);
-      fOutput->Add(fCosxyTC[i]);
     }  
-    fOutput->Add(fMassHistTC[i]);
-    fOutput->Add(fMassHistTCPlus[i]);
-    fOutput->Add(fMassHistTCMinus[i]);
+    fOutput->Add(fMassHist[i]);
+    fOutput->Add(fMassHistPlus[i]);
+    fOutput->Add(fMassHistMinus[i]);
 
   }
   
@@ -706,21 +677,25 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
   
 
-  fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
-  fPtVsMassTC=new TH2F("hPtVsMassTC","PtVsMass (analysis cuts)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
-  fYVsPt=new TH3F("hYVsPt","YvsPt (prod. cuts)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
-  fYVsPtTC=new TH3F("hYVsPtTC","YvsPt (analysis cuts)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
-  fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only sig., prod. cuts)",40,0.,20.,80,-2.,2.);
-  fYVsPtSigTC=new TH2F("hYVsPtSigTC","YvsPt (MC, only Sig, analysis cuts)",40,0.,20.,80,-2.,2.);
+  fPtVsMassNoPid=new TH2F("hPtVsMassNoPid","PtVsMass (no PID)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
+  fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
+  fYVsPtNoPid=new TH3F("hYVsPtNoPid","YvsPt (no PID)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
+  fYVsPt=new TH3F("hYVsPt","YvsPt",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
+  fYVsPtSigNoPid=new TH2F("hYVsPtSigNoPid","YvsPt (MC, only sig., no PID)",40,0.,20.,80,-2.,2.);
+  fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only Sig)",40,0.,20.,80,-2.,2.);
   fPhiEtaCand=new TH2F("hPhiEtaCand","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
   fPhiEtaCandSigReg=new TH2F("hPhiEtaCandSigReg","phi vs. eta candidates",20,-1.,1.,50,0.,2*TMath::Pi());
-  fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,200.); 
+
+  Double_t maxmult;
+  if(fSystem==1) maxmult=5000;
+  else maxmult=200;
+  fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,maxmult);
+  fOutput->Add(fPtVsMassNoPid);
   fOutput->Add(fPtVsMass);
-  fOutput->Add(fPtVsMassTC);
+  fOutput->Add(fYVsPtNoPid);
   fOutput->Add(fYVsPt);
-  fOutput->Add(fYVsPtTC);
+  fOutput->Add(fYVsPtSigNoPid);
   fOutput->Add(fYVsPtSig);
-  fOutput->Add(fYVsPtSigTC);
   fOutput->Add(fPhiEtaCand);
   fOutput->Add(fPhiEtaCandSigReg);
   fOutput->Add(fSPDMult);
@@ -880,7 +855,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   }else{//Standard analysis
     // Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};//TO REMOVE
     //Double_t *cutsDplus = new (Double_t*)fRDCuts->GetCuts();
-    Int_t nSelectedloose=0,nSelectedtight=0;
+    Int_t nSelectednopid=0,nSelected=0;
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
       fHistNEvents->Fill(7);
@@ -889,7 +864,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	continue;
       }
     
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+      Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
 
@@ -947,208 +922,196 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
       Double_t invMass=d->InvMassDplus();
       Double_t rapid=d->YDplus();
-      fYVsPt->Fill(ptCand,rapid,invMass);
-      if(passTightCuts) {fYVsPtTC->Fill(ptCand,rapid,invMass);nOS++;}
+      fYVsPtNoPid->Fill(ptCand,rapid,invMass);
+      if(passTopolAndPIDCuts) {
+	fYVsPt->Fill(ptCand,rapid,invMass);
+	nOS++;
+      }
+      if(fReadMC && labDp>=0){
+	fYVsPtSigNoPid->Fill(ptCand,rapid, invMass);
+	if(passTopolAndPIDCuts)fYVsPtSig->Fill(ptCand,rapid, invMass);
+      }
+
       Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
       if(isFidAcc){
-	fPtVsMass->Fill(invMass,ptCand);
-	if(passTightCuts){
-	  fPtVsMassTC->Fill(invMass,ptCand);
+
+	Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0, dxy=0, dd0max=0;
+	if(fCutsDistr||fFillNtuple||fDoImpPar){
+	  dlen=d->DecayLength();
+	  cosp=d->CosPointingAngle();
+	  sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+	  maxdca=-9999.;
+	  for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
+	  sigvert=d->GetSigmaVert();         
+	  ptmax=0;
+	  dlxy=d->NormalizedDecayLengthXY();
+	  dxy = d->DecayLengthXY();
+	  cxy=d->CosPointingAngleXY();
+	  for(Int_t i=0; i<3; i++) {
+	    if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
+	    Double_t diffIP, errdiffIP;
+	    d->Getd0MeasMinusExpProng(i,aod->GetMagneticField(),diffIP,errdiffIP);
+	    Double_t normdd0= diffIP/errdiffIP;
+	    if(i==0) dd0max=normdd0;
+	    else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+	  }
+	}
+	Double_t impparXY=d->ImpParXY()*10000.;
+	Double_t resSel=0;
+	if(fRDCutsAnalysis->GetIsSelectedCuts()) resSel=1;
+	if(passTopolAndPIDCuts) resSel=2;
+	
+	//for all THnSParse except for FD
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,resSel};
+	//for THnSparse for FD
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,resSel,ptB};
+	Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,dd0max,resSel,ptB};
+	Double_t flagOrigin = 0;
+
+	//Fill histos
+	index=GetHistoIndex(iPtBin);
+	fHistNEvents->Fill(9);
+	nSelectednopid++;
+	fPtVsMassNoPid->Fill(invMass,ptCand);
+	fMassHistNoPid[index]->Fill(invMass);
+	if(fDoImpPar){
+	  fHistMassPtImpPar[0]->Fill(arrayForSparse);
+	}
+	if(passTopolAndPIDCuts){ 
+	  fHistNEvents->Fill(10);
+	  nSelected++;
+	  fPtVsMass->Fill(invMass,ptCand);
+	  fMassHist[index]->Fill(invMass);
+	  if(d->GetCharge()>0) fMassHistPlus[index]->Fill(invMass);
+	  else if(d->GetCharge()<0) fMassHistMinus[index]->Fill(invMass);
 	  fPhiEtaCand->Fill(etaD,phiD);
 	  if(TMath::Abs(invMass-1.8696)<0.05) fPhiEtaCandSigReg->Fill(etaD,phiD);
+	  if(fCutsDistr){	  
+	    fCosPHist[index]->Fill(cosp);
+	    fDLenHist[index]->Fill(dlen);
+	    fSumd02Hist[index]->Fill(sumD02);
+	    fSigVertHist[index]->Fill(sigvert);
+	    fPtMaxHist[index]->Fill(ptmax);
+	    fPtKHist[index]->Fill(d->PtProng(1));
+	    fPtpi1Hist[index]->Fill(d->PtProng(0));
+	    fPtpi2Hist[index]->Fill(d->PtProng(2));
+	    fDCAHist[index]->Fill(maxdca);
+	    fDLxy[index]->Fill(dlxy);
+	    fCosxy[index]->Fill(cxy);
+	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),d->Getd0Prong(2)*d->Getd0Prong(1));
+	  }
 	}
-      }
-
-
-      Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0, dxy=0, dd0max=0;
-      if(fCutsDistr||fFillNtuple||fDoImpPar){
-	dlen=d->DecayLength();
-	cosp=d->CosPointingAngle();
-	sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-	maxdca=-9999.;
-	for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
-	sigvert=d->GetSigmaVert();         
-	ptmax=0;
-	dlxy=d->NormalizedDecayLengthXY();
-	dxy = d->DecayLengthXY();
-	cxy=d->CosPointingAngleXY();
-	for(Int_t i=0; i<3; i++) {
-	  if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
-	  Double_t diffIP, errdiffIP;
-	  d->Getd0MeasMinusExpProng(i,aod->GetMagneticField(),diffIP,errdiffIP);
-	  Double_t normdd0= diffIP/errdiffIP;
-	  if(i==0) dd0max=normdd0;
-	  else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
-	}
-      }
-      Double_t impparXY=d->ImpParXY()*10000.;
-       //for all THnSParse except for FD
-      Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max};
-
-      //for THnSparse for FD
-      Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,ptB};
-      Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,dd0max,ptB};
-      Double_t flagOrigin = 0;
-
-      //Ntuple
-      if(fFillNtuple==1){
+ 	
+	// fill ntuple
+	if(fFillNtuple==1){
           
-	Float_t tmp[31];
-
-	tmp[0]=pdgCode;
-	if(isFeeddown) tmp[0]+=5000.;
-	tmp[1]=d->Px();
-	tmp[2]=d->Py();
-	tmp[3]=d->Pz();
-	tmp[4]=d->Pt();
-	tmp[5]=d->GetCharge();
-	//	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);	  
-	tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
-	tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
-	tmp[8]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
-	tmp[9]=d->PtProng(0);
-	tmp[10]=d->PtProng(1);
-	tmp[11]=d->PtProng(2);
-	tmp[12]=d->PProng(0);
-	tmp[13]=d->PProng(1);
-	tmp[14]=d->PProng(2);
-	tmp[15]=cosp;
-	tmp[16]=cxy;
-	tmp[17]=dlen;
-	tmp[18]=d->NormalizedDecayLength();
-	tmp[19]=d->DecayLengthXY();
-	tmp[20]=dlxy;
-	tmp[21]=d->InvMassDplus();
-	tmp[22]=sigvert;
-	tmp[23]=d->Getd0Prong(0);
-	tmp[24]=d->Getd0Prong(1);
-	tmp[25]=d->Getd0Prong(2);
-	tmp[26]=maxdca;
-	tmp[27]=ntracks;
-	tmp[28]=fRDCutsAnalysis->GetCentrality(aod);
-	tmp[29]=runNumber;
-	tmp[30]=d->HasBadDaughters();
-	fNtupleDplus->Fill(tmp);
-	PostData(4,fNtupleDplus);
-      }
+	  Float_t tmp[31];
+	  
+	  tmp[0]=pdgCode;
+	  if(isFeeddown) tmp[0]+=5000.;
+	  tmp[1]=d->Px();
+	  tmp[2]=d->Py();
+	  tmp[3]=d->Pz();
+	  tmp[4]=d->Pt();
+	  tmp[5]=d->GetCharge();
+	  //	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);	  
+	  tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
+	  tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
+	  tmp[8]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
+	  tmp[9]=d->PtProng(0);
+	  tmp[10]=d->PtProng(1);
+	  tmp[11]=d->PtProng(2);
+	  tmp[12]=d->PProng(0);
+	  tmp[13]=d->PProng(1);
+	  tmp[14]=d->PProng(2);
+	  tmp[15]=cosp;
+	  tmp[16]=cxy;
+	  tmp[17]=dlen;
+	  tmp[18]=d->NormalizedDecayLength();
+	  tmp[19]=d->DecayLengthXY();
+	  tmp[20]=dlxy;
+	  tmp[21]=d->InvMassDplus();
+	  tmp[22]=sigvert;
+	  tmp[23]=d->Getd0Prong(0);
+	  tmp[24]=d->Getd0Prong(1);
+	  tmp[25]=d->Getd0Prong(2);
+	  tmp[26]=maxdca;
+	  tmp[27]=ntracks;
+	  tmp[28]=fRDCutsAnalysis->GetCentrality(aod);
+	  tmp[29]=runNumber;
+	  tmp[30]=d->HasBadDaughters();
+	  fNtupleDplus->Fill(tmp);
+	  PostData(4,fNtupleDplus);
+	}
         
-      if(fFillNtuple==2 && passTightCuts){
-	Float_t tmp[5];
-	tmp[0]=pdgCode;
-	if(isFeeddown) tmp[0]+=5000.;
-	tmp[1]=d->Pt();
-	tmp[2]=d->InvMassDplus();
-	tmp[3]=impparXY;
-	if(!fReadMC){flagOrigin=0;};
-	if(fReadMC){
-	  if(isPrimary&&labDp>=0)flagOrigin=1;
-	  if(isFeeddown&&labDp>=0)flagOrigin=2;
-	  if(!(labDp>=0))flagOrigin=3;
-          
-	}
+	if(fFillNtuple==2 && passTopolAndPIDCuts){
+	  Float_t tmp[5];
+	  tmp[0]=pdgCode;
+	  if(isFeeddown) tmp[0]+=5000.;
+	  tmp[1]=d->Pt();
+	  tmp[2]=d->InvMassDplus();
+	  tmp[3]=impparXY;
+	  if(!fReadMC){flagOrigin=0;};
+	  if(fReadMC){
+	    if(isPrimary&&labDp>=0)flagOrigin=1;
+	    if(isFeeddown&&labDp>=0)flagOrigin=2;
+	    if(!(labDp>=0))flagOrigin=3;
+	    
+	  }
             
-	tmp[4]=flagOrigin;
-	fNtupleDplus->Fill(tmp);
-	PostData(4,fNtupleDplus);
-      }
+	  tmp[4]=flagOrigin;
+	  fNtupleDplus->Fill(tmp);
+	  PostData(4,fNtupleDplus);
+	}
 
-      //Fill histos
-      index=GetHistoIndex(iPtBin);
-      if(isFidAcc){
-	fHistNEvents->Fill(9);
-	nSelectedloose++;
-	fMassHist[index]->Fill(invMass);
-	if(fCutsDistr){	  
-	  fCosPHist[index]->Fill(cosp);
-	  fDLenHist[index]->Fill(dlen);
-	  fSumd02Hist[index]->Fill(sumD02);
-	  fSigVertHist[index]->Fill(sigvert);
-	  fPtMaxHist[index]->Fill(ptmax);
-	  fPtKHist[index]->Fill(d->PtProng(1));
-	  fPtpi1Hist[index]->Fill(d->PtProng(0));
-	  fPtpi2Hist[index]->Fill(d->PtProng(2));
-	  fDCAHist[index]->Fill(maxdca);
-	  fDLxy[index]->Fill(dlxy);
-	  fCosxy[index]->Fill(cxy);
-	  fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
-				  d->Getd0Prong(2)*d->Getd0Prong(1));
-	}
-	if(passTightCuts){ 
-	  fHistNEvents->Fill(10);
-	  nSelectedtight++;
-	  fMassHistTC[index]->Fill(invMass);
-	  if(fCutsDistr){  
-	    fDLxyTC[index]->Fill(dlxy);
-	    fCosxyTC[index]->Fill(cxy);
-	  }
-	  if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
-	  else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
-	  if(fDoImpPar){
-	    fHistMassPtImpParTC[0]->Fill(arrayForSparse);
-	  }
-	}
-      }
-      
-      if(fReadMC){
-	if(isFidAcc){
+     
+	if(fReadMC){
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
-	    if(passTightCuts&&fDoImpPar){
-	      if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
+	    if(fDoImpPar){
+	      if(isPrimary) fHistMassPtImpPar[1]->Fill(arrayForSparse);
 	      else if(isFeeddown){
-		fHistMassPtImpParTC[2]->Fill(arrayForSparseFD);
-		fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
+		fHistMassPtImpPar[2]->Fill(arrayForSparseFD);
+		fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
 	      }
 	    }
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
-	    if(passTightCuts&&fDoImpPar)fHistMassPtImpParTC[4]->Fill(arrayForSparse);
+	    if(fDoImpPar)fHistMassPtImpPar[4]->Fill(arrayForSparse);
 	  }
-	  
-	  fMassHist[index]->Fill(invMass);
-	  if(fCutsDistr){
-	    Float_t fact=1.;
-	    Float_t factor[3]={1.,1.,1.};
-	    if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
-	    fCosPHist[index]->Fill(cosp,fact);
-	    fDLenHist[index]->Fill(dlen,fact);
-	    fDLxy[index]->Fill(dlxy);
-	    fCosxy[index]->Fill(cxy);
-	    
-	    Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
-	    fSumd02Hist[index]->Fill(sumd02s);
-	    fSigVertHist[index]->Fill(sigvert,fact);
-	    fPtMaxHist[index]->Fill(ptmax,fact);
-	    fPtKHist[index]->Fill(d->PtProng(1),fact);
-	    fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
-	    fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
-	    fDCAHist[index]->Fill(maxdca,fact);
-	    fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
-				    d->Getd0Prong(2)*d->Getd0Prong(1));
-	  }
-	  if(passTightCuts){
-	    fMassHistTC[index]->Fill(invMass);	      
+	  fMassHistNoPid[index]->Fill(invMass);
+	  if(passTopolAndPIDCuts){
 	    if(fCutsDistr){
-	      fDLxyTC[index]->Fill(dlxy);
-	      fCosxyTC[index]->Fill(cxy);
-	    }	      
-	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
-	    else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
-	  }
-	}else{//outside fidAcc
-	  if(labDp>=0){
-	    fYVsPtSig->Fill(ptCand,rapid, invMass);
-	    if(passTightCuts)fYVsPtSigTC->Fill(ptCand,rapid, invMass);
-	  }
+	      Float_t fact=1.;
+	      Float_t factor[3]={1.,1.,1.};
+	      if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
+	      fCosPHist[index]->Fill(cosp,fact);
+	      fDLenHist[index]->Fill(dlen,fact);
+	      fDLxy[index]->Fill(dlxy);
+	      fCosxy[index]->Fill(cxy);
+	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
+	      fSumd02Hist[index]->Fill(sumd02s);
+	      fSigVertHist[index]->Fill(sigvert,fact);
+	      fPtMaxHist[index]->Fill(ptmax,fact);
+	      fPtKHist[index]->Fill(d->PtProng(1),fact);
+	      fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
+	      fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
+	      fDCAHist[index]->Fill(maxdca,fact);
+	      fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),d->Getd0Prong(2)*d->Getd0Prong(1));
+	    }
+	    fMassHist[index]->Fill(invMass);	      
+	    if(d->GetCharge()>0) fMassHistPlus[index]->Fill(invMass);
+	    else if(d->GetCharge()<0) fMassHistMinus[index]->Fill(invMass);
+	  }	
 	}
-      }//readmc
+      }
     
       if(recVtx)fRDCutsAnalysis->CleanOwnPrimaryVtx(d,aod,origownvtx);
       
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
     }
-    fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
-    fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);
+    fCounter->StoreCandidates(aod,nSelectednopid,kTRUE);
+    fCounter->StoreCandidates(aod,nSelected,kFALSE);
   }
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
@@ -1172,12 +1135,9 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     index=GetHistoIndex(i);
     indexLS=GetLSHistoIndex(i);
 
-    hisname.Form("hLSPt%dLC",i);
+    hisname.Form("hLSPt%d",i);
     fMassHistLS[indexLS] = new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
-    hisname.Form("hLSPt%dTC",i);
-    fMassHistLSTC[indexLS] = new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistLSTC[indexLS]->Sumw2();
 
     hisname.Form("hCosPAllPt%dLS",i);
     fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
@@ -1201,12 +1161,9 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     index=GetSignalHistoIndex(i);    
     indexLS++;
  
-    hisname.Form("hLSPt%dLCnw",i);
+    hisname.Form("hLSPt%dnw",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
-    hisname.Form("hLSPt%dTCnw",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistLSTC[indexLS]->Sumw2();
 
     hisname.Form("hCosPSigPt%dLS",i);
     fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
@@ -1233,9 +1190,6 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     hisname.Form("hLSPt%dLCntrip",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
-    hisname.Form("hLSPt%dTCntrip",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistLSTC[indexLS]->Sumw2();
 
     hisname.Form("hCosPBkgPt%dLS",i);
     fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
@@ -1260,17 +1214,11 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     hisname.Form("hLSPt%dLCntripsinglecut",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
-    hisname.Form("hLSPt%dTCntripsinglecut",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistLSTC[indexLS]->Sumw2();
 
     indexLS++;
-    hisname.Form("hLSPt%dLCspc",i);
+    hisname.Form("hLSPt%dspc",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
-    hisname.Form("hLSPt%dTCspc",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
-    fMassHistLSTC[indexLS]->Sumw2();
   }
 
   for(Int_t i=0; i<3*fNPtBins; i++){
@@ -1283,7 +1231,6 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
   }
   for(Int_t i=0; i<5*fNPtBins; i++){
     fOutput->Add(fMassHistLS[i]);
-    fOutput->Add(fMassHistLSTC[i]);
   }
 }
 
@@ -1297,47 +1244,48 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
   else maxmult=200;
 
   //dimensions for THnSparse which are NOT for BFeed
-  Int_t nbins[kVarForSparse]={nmassbins,80,fNImpParBins,30,100,30,40};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.};
+  Int_t nbins[kVarForSparse]={nmassbins,80,fNImpParBins,30,100,30,40,3};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-0.5};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,2.5};
 
   //dimensions for THnSparse for BFeed 
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,80,fNImpParBins,30,100,30,40,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,40};
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,80,fNImpParBins,30,100,30,40,3,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-0.5,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,2.5,40};
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
-  fHistMassPtImpParTC[0]=new THnSparseF("hMassPtImpParAll",
+  fHistMassPtImpPar[0]=new THnSparseF("hMassPtImpParAll",
 					"Mass vs. pt vs.imppar - All",
 					kVarForSparse,nbins,xmin,xmax);
-  fHistMassPtImpParTC[1]=new THnSparseF("hMassPtImpParPrompt",
+  fHistMassPtImpPar[1]=new THnSparseF("hMassPtImpParPrompt",
 					"Mass vs. pt vs.imppar - promptD",
 					kVarForSparse,nbins,xmin,xmax);
-  fHistMassPtImpParTC[2]=new THnSparseF("hMassPtImpParBfeed",
+  fHistMassPtImpPar[2]=new THnSparseF("hMassPtImpParBfeed",
 					"Mass vs. pt vs.imppar - DfromB",
 					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
-  fHistMassPtImpParTC[3]=new THnSparseF("hMassPtImpParTrueBfeed",
+  fHistMassPtImpPar[3]=new THnSparseF("hMassPtImpParTrueBfeed",
 					"Mass vs. pt vs.true imppar -DfromB",
 					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
-  fHistMassPtImpParTC[4]=new THnSparseF("hMassPtImpParBkg",
+  fHistMassPtImpPar[4]=new THnSparseF("hMassPtImpParBkg",
 				        "Mass vs. pt vs.imppar - backgr.",
 					kVarForSparse,nbins,xmin,xmax);
 
 
   for(Int_t i=0; i<5; i++){
-    fHistMassPtImpParTC[i]->GetAxis(0)->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
-    fHistMassPtImpParTC[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
-    fHistMassPtImpParTC[i]->GetAxis(2)->SetTitle("Imp Par (#mum)");
-    fHistMassPtImpParTC[i]->GetAxis(3)->SetTitle("cos(#theta_{P}^{xy})");
-    fHistMassPtImpParTC[i]->GetAxis(4)->SetTitle("decL XY (cm)");
-    fHistMassPtImpParTC[i]->GetAxis(5)->SetTitle("Norm decL XY");
-    fHistMassPtImpParTC[i]->GetAxis(6)->SetTitle("Norm max d0-d0exp");
+    fHistMassPtImpPar[i]->GetAxis(0)->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
+    fHistMassPtImpPar[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+    fHistMassPtImpPar[i]->GetAxis(2)->SetTitle("Imp Par (#mum)");
+    fHistMassPtImpPar[i]->GetAxis(3)->SetTitle("cos(#theta_{P}^{xy})");
+    fHistMassPtImpPar[i]->GetAxis(4)->SetTitle("decL XY (cm)");
+    fHistMassPtImpPar[i]->GetAxis(5)->SetTitle("Norm decL XY");
+    fHistMassPtImpPar[i]->GetAxis(6)->SetTitle("Norm max d0-d0exp");
+    fHistMassPtImpPar[i]->GetAxis(7)->SetTitle("passTopolPID");
 
     if(i == 2 || i == 3)
-      fHistMassPtImpParTC[i]->GetAxis(7)->SetTitle("p_{T}^{B} (GeV/c)");
+      fHistMassPtImpPar[i]->GetAxis(8)->SetTitle("p_{T}^{B} (GeV/c)");
     
-    fOutput->Add(fHistMassPtImpParTC[i]);
+    fOutput->Add(fHistMassPtImpPar[i]);
   }
 }
 

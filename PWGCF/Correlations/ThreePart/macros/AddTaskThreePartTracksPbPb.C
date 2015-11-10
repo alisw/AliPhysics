@@ -5,8 +5,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const char* centrality = "V0M",
 						      const Double_t MinTriggerPt = 4.0,
 						      const Double_t MaxTriggerPt = 8.0,
-						      const Double_t MinAssociatedPt = 3.0,
-						      const Double_t MaxAssociatedPt = 4.0,
+						      const Double_t MinAssociatedPt = 0.5,
+						      const Double_t MaxAssociatedPt = 1.0,
 						      const Double_t Acceptancecut = 0.8,
 						      const char* period = "11h",
 						      UInt_t offlineTriggerMask = AliVEvent::kMB,
@@ -21,9 +21,10 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const Double_t Mbin5 = 60.,
 						      const Double_t Mbin6 = 90.,
 						      const Double_t Mbin7 = 90.,
-						      const char * file = "",
+						      const char * file = "LHC11hWeight.root",
 						      const char * cutmask = "GlobalHybrid",
-						      const Int_t binver = 1
+						      const Int_t binver = 1,
+						      const Int_t Zbinver =1
 							 )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for PbPb data 
@@ -53,8 +54,9 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   task->SetAcceptanceCut(Acceptancecut);
   task->SetTrackCut(cutmask);
   task->SetBinVer(binver);
- if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
-//    if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
+  task->SetQAtask(true);
+//  if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
+   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
 
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
@@ -68,27 +70,40 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   if(NMBins>6) Mbin[7] = Mbin7;
   TArrayD tMbin(NMBins+1, Mbin);
   //z vertex binning.
-  const Int_t NZBins   =   19;
-  const Double_t Zbin0 = -10.;
-  const Double_t Zbin1 = -8.5;
-  const Double_t Zbin2 = -7.5;
-  const Double_t Zbin3 = -6.5;
-  const Double_t Zbin4 = -5.5;
-  const Double_t Zbin5 = -4.5;
-  const Double_t Zbin6 = -3.5;
-  const Double_t Zbin7 = -2.5;
-  const Double_t Zbin8 = -1.5;
-  const Double_t Zbin9 = -0.5;
-  const Double_t Zbin10 = 0.5;
-  const Double_t Zbin11 = 1.5;						      
-  const Double_t Zbin12 = 2.5;						      
-  const Double_t Zbin13 = 3.5;						      
-  const Double_t Zbin14 = 4.5;						      
-  const Double_t Zbin15 = 5.5;						      
-  const Double_t Zbin16 = 6.5;						      
-  const Double_t Zbin17 = 7.5;						      
-  const Double_t Zbin18 = 8.5;						      
-  const Double_t Zbin19 = 10.;  
+  Int_t NZBins   =   19;
+  Double_t Zbin0 = -10.;
+  Double_t Zbin1 = -8.5;
+  Double_t Zbin2 = -7.5;
+  Double_t Zbin3 = -6.5;
+  Double_t Zbin4 = -5.5;
+  Double_t Zbin5 = -4.5;
+  Double_t Zbin6 = -3.5;
+  Double_t Zbin7 = -2.5;
+  Double_t Zbin8 = -1.5;
+  Double_t Zbin9 = -0.5;
+  Double_t Zbin10 = 0.5;
+  Double_t Zbin11 = 1.5;						      
+  Double_t Zbin12 = 2.5;						      
+  Double_t Zbin13 = 3.5;						      
+  Double_t Zbin14 = 4.5;						      
+  Double_t Zbin15 = 5.5;						      
+  Double_t Zbin16 = 6.5;						      
+  Double_t Zbin17 = 7.5;						      
+  Double_t Zbin18 = 8.5;						      
+  Double_t Zbin19 = 10.;  
+  if(Zbinver==2){
+    NZBins=    9;
+    Zbin0 = -10.;
+    Zbin1 = -7.5;
+    Zbin2 = -5.5;
+    Zbin3 = -3.5;
+    Zbin4 = -1.5;
+    Zbin5 =  1.5;
+    Zbin6 =  3.5;
+    Zbin7 =  5.5;
+    Zbin8 =  7.5;
+    Zbin9 =  10.;
+  }
   Double_t *Zbin = new Double_t[NZBins+1];
   Zbin[0] = Zbin0;
   Zbin[1] = Zbin1;

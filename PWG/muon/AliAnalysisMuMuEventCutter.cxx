@@ -53,6 +53,28 @@ AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TRootIOCtor* /*ioCtor*/)
 }
 
 //______________________________________________________________________________
+AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(const char* triggerClasses, const char* triggerInputsMap)
+: TObject(), fMuonEventCuts(0x0)
+{
+  /// ctor
+  TString tclasses(triggerClasses);
+  
+  if ( !triggerClasses )
+  {
+    tclasses = "ANY";
+  }
+  
+  TString tinputs(triggerInputsMap);
+  
+  if ( !triggerInputsMap )
+  {
+    tinputs = "";
+  }
+  
+  MuonEventCuts()->SetTrigClassPatterns(tclasses,tinputs);
+}
+
+//______________________________________________________________________________
 AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses, TList* triggerInputsMap)
 : TObject(), fMuonEventCuts(0x0)
 {

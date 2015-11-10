@@ -179,8 +179,13 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistDecayMomCM_XZ(0x0),
   fHistDecayMomCM_YZ(0x0),
   fHistDecayMomCM(0x0),
+  fHistPtHypertriton(0x0),
   fHistMassHypertriton(0x0),
   fHistMassAntiHypertriton(0x0),
+  fHistMassHypertriton_Cent(0x0),
+  fHistMassAntiHypertriton_Cent(0x0),
+  fHistMassHypertriton_SemiCent(0x0),
+  fHistMassAntiHypertriton_SemiCent(0x0),
   fHistParticle(0x0),
   fHistpionTPCclsMCt(0x0),
   fHistpTpionMCt(0x0),
@@ -539,8 +544,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDecayMomCM_XZ = new TH2F("fHistDecayMomCM_XZ","p_{^{3}H_{#Lambda},X} vs p_{^{3}H_{#Lambda},Z} in center-of-mass; p_{X} (GeV/c); p_{Z} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
   fHistDecayMomCM_YZ = new TH2F("fHistDecayMomCM_YZ","p_{^{3}H_{#Lambda},Y} vs p_{^{3}H_{#Lambda},Z} in center-of-mass; p_{Y} (GeV/c); p_{Z} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
   fHistDecayMomCM = new TH1F("fHistDecayMomCM","^{3}H_{#Lambda} momentum in center-of-mass; p_{^{3}H_{#Lambda}} (GeV/c); entries/0.01",150,0.,3.);
+  fHistPtHypertriton = new TH1F("fHistPtHypertriton","candidate Hypertriton - p_{T} distribution; p_{T} (GeV/c); entries",100.,0.,10.);
   fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
   fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  fHistMassHypertriton_Cent = new TH1F("fHistMassHypertriton_Cent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  fHistMassAntiHypertriton_Cent = new TH1F("fHistMassAntiHypertriton_Cent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  fHistMassHypertriton_SemiCent = new TH1F("fHistMassHypertriton_SemiCent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  fHistMassAntiHypertriton_SemiCent = new TH1F("fHistMassAntiHypertriton_SemiCent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
 
   if(fMC){
     fHistParticle = new TH1F("fHistParticle","Check particle candidate",23,-0.5,22.5);
@@ -684,8 +694,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistDecayMomCM_XZ);
   fOutput->Add(fHistDecayMomCM_YZ);
   fOutput->Add(fHistDecayMomCM);
+  fOutput->Add(fHistPtHypertriton);
   fOutput->Add(fHistMassHypertriton);
   fOutput->Add(fHistMassAntiHypertriton);
+  fOutput->Add(fHistMassHypertriton_Cent);
+  fOutput->Add(fHistMassAntiHypertriton_Cent);
+  fOutput->Add(fHistMassHypertriton_SemiCent);
+  fOutput->Add(fHistMassAntiHypertriton_SemiCent);
 
   if(fMC){
     fOutput->Add(fHistParticle);
@@ -1441,10 +1456,19 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDecayMomCM->Fill(pTotHyperCM);
 
 	if(pTotHyperCM > fMaxPMotherCM) continue;
+
+	fHistPtHypertriton->Fill(Hypertriton.Pt());
 	
-	if(charge_d>0 && charge_p>0 && charge_pi<0)	fHistMassHypertriton->Fill(Hypertriton.M());
-	
-	if(charge_d<0 && charge_p<0 && charge_pi>0)	fHistMassAntiHypertriton->Fill(Hypertriton.M());
+	if(charge_d>0 && charge_p>0 && charge_pi<0)	{
+	  fHistMassHypertriton->Fill(Hypertriton.M());
+	  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) fHistMassHypertriton_Cent->Fill(Hypertriton.M());
+	  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) fHistMassHypertriton_SemiCent->Fill(Hypertriton.M());
+	}
+	if(charge_d<0 && charge_p<0 && charge_pi>0)	{
+	  fHistMassAntiHypertriton->Fill(Hypertriton.M());
+	  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) fHistMassAntiHypertriton_Cent->Fill(Hypertriton.M());
+	  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) fHistMassAntiHypertriton_SemiCent->Fill(Hypertriton.M());
+	}
 	
 	if(fMC){
 	  lD = trackD->GetLabel();

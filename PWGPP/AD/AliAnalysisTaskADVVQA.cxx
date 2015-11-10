@@ -43,13 +43,13 @@ ClassImp(AliAnalysisTaskADVVQA)
 
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA() 
-  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0)
+  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA(const char *name) 
-  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0)
+  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -63,6 +63,8 @@ AliAnalysisTaskADVVQA::~AliAnalysisTaskADVVQA(){
   if (fList_VBA_NoVBC) { delete fList_VBA_NoVBC; fList_VBA_NoVBC = 0x0; }
   if (fList_NoVBA_VBC) { delete fList_NoVBA_VBC; fList_NoVBA_VBC = 0x0; }
   if (fList_VBA_VBC) { delete fList_VBA_VBC; fList_VBA_VBC = 0x0; }
+  if (fList_TVX) { delete fList_TVX; fList_TVX = 0x0; }
+  if (fList_UBA_UBC) { delete fList_UBA_UBC; fList_UBA_UBC = 0x0; }
 }
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
@@ -99,6 +101,20 @@ void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
   fListHist->Add(fList_VBA_VBC);
   
   InitHistos(fList_VBA_VBC,"VBA_VBC");
+  
+  fList_TVX = new TList();
+  fList_TVX->SetOwner();
+  fList_TVX->SetName("Hists_TVX");
+  fListHist->Add(fList_TVX);
+  
+  InitHistos(fList_TVX,"TVX");
+  
+  fList_UBA_UBC = new TList();
+  fList_UBA_UBC->SetOwner();
+  fList_UBA_UBC->SetName("Hists_UBA_UBC");
+  fListHist->Add(fList_UBA_UBC);
+  
+  InitHistos(fList_UBA_UBC,"UBA_UBC");
 
   // Post output data.
   PostData(1, fListHist);
@@ -336,7 +352,49 @@ void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
   fHistTriggerUnMasked->GetXaxis()->SetBinLabel(8, "UBC");
   fHistTriggerUnMasked->GetXaxis()->SetBinLabel(9, "UGA || UGC");
   fHistTriggerUnMasked->GetXaxis()->SetBinLabel(10, "(UGA & UBC) || (UGC & UBA)");
-  list->Add(fHistTriggerUnMasked);
+  list->Add(fHistTriggerUnMasked);//31
+  
+  TString fHistChargeTriggerPerChannel_Name = "fHistChargeTriggerPerChannel_";
+  fHistChargeTriggerPerChannel_Name += TriggerName;
+  TH2F *fHistChargeTriggerPerChannel = CreateHist2D(fHistChargeTriggerPerChannel_Name.Data(),"Trigger charge per chanel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  list->Add(fHistChargeTriggerPerChannel);//32
+
+  TString fHistChargeTriggerPerChannelPF_Name = "fHistChargeTriggerPerChannel_PF_";
+  fHistChargeTriggerPerChannelPF_Name += TriggerName;
+  TH2F *fHistChargeTriggerPerChannel_PF = CreateHist2D(fHistChargeTriggerPerChannelPF_Name.Data(),"Trigger charge per chanel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  list->Add(fHistChargeTriggerPerChannel_PF);//33
+
+  TString fHistChargeTriggerADA_Name = "fHistChargeTriggerADA_";
+  fHistChargeTriggerADA_Name += TriggerName;
+  TH1F *fHistChargeTriggerADA = CreateHist1D(fHistChargeTriggerADA_Name.Data(),"Trigger charge ADA",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"ADC counts");
+  list->Add(fHistChargeTriggerADA);//34
+
+  TString fHistChargeTriggerADAPF_Name = "fHistChargeTriggerADA_PF_";
+  fHistChargeTriggerADAPF_Name += TriggerName;
+  TH1F *fHistChargeTriggerADA_PF = CreateHist1D(fHistChargeTriggerADAPF_Name.Data(),"Trigger charge ADA, PF protection",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"ADC counts");
+  list->Add(fHistChargeTriggerADA_PF);//35
+  
+  TString fHistChargeTriggerADC_Name = "fHistChargeTriggerADC_";
+  fHistChargeTriggerADC_Name += TriggerName;
+  TH1F *fHistChargeTriggerADC = CreateHist1D(fHistChargeTriggerADC_Name.Data(),"Trigger charge ADC",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"ADC counts");
+  list->Add(fHistChargeTriggerADC);//36
+
+  TString fHistChargeTriggerADCPF_Name = "fHistChargeTriggerADC_PF_";
+  fHistChargeTriggerADCPF_Name += TriggerName;
+  TH1F *fHistChargeTriggerADC_PF = CreateHist1D(fHistChargeTriggerADCPF_Name.Data(),"Trigger charge ADC, PF protection",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"ADC counts");
+  list->Add(fHistChargeTriggerADC_PF);//37
+  
+  TString fHistMaxChargeValueInt0_Name = "fHistMaxChargeValueInt0_";
+  fHistMaxChargeValueInt0_Name += TriggerName;
+  TH2F *fHistMaxChargeValueInt0 = CreateHist2D(fHistMaxChargeValueInt0_Name.Data(),"Maximum charge value per PM Int0",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+  list->Add(fHistMaxChargeValueInt0);//38
+  
+  TString fHistMaxChargeValueInt1_Name = "fHistMaxChargeValueInt1_";
+  fHistMaxChargeValueInt1_Name += TriggerName;
+  TH2F *fHistMaxChargeValueInt1 = CreateHist2D(fHistMaxChargeValueInt1_Name.Data(),"Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
+  list->Add(fHistMaxChargeValueInt1);//39
+
+
 
 }
 
@@ -372,6 +430,10 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
   Int_t nBBflagsADC = 0;
   Int_t nBGflagsADA = 0;
   Int_t nBGflagsADC = 0;
+  Float_t fCharges[16];
+  Bool_t globalPF = kTRUE;
+  Float_t chargeADA   = 0.;
+  Float_t chargeADC   = 0.;
   
   for(Int_t i=0; i<16; i++){ 
   	if(i<8)totChargeADC += esdAD->GetAdc(i);
@@ -403,6 +465,7 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 	if(esdAD->GetTime(i) < -1024+1e-6) ((TH2F*)(list->At(22)))->Fill(i,esdAD->GetAdc(i));
 	if(esdAD->GetTime(i) < -1024+1e-6 && (esdAD->GetBBFlag(i)||esdAD->GetBGFlag(i)))((TH1F*)(list->At(23)))->Fill(i);
 	
+	
 	if(esdADfriend){
 		if(!esdAD->GetBBFlag(i)) {
 			((TH1F*)(list->At(20)))->Fill(esdAD->GetAdc(i));
@@ -411,8 +474,30 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 		((TH2F*)(list->At(7)))->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) ((TH2F*)(list->At(14)))->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
  		if(i>7) ((TH2F*)(list->At(11)))->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
+		
+		Bool_t localPF = kTRUE;
+		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
+		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,11);
+		fCharges[i] = esdADfriend->GetPedestal(i,11);
+		((TH2F*)(list->At(32)))->Fill(i,fCharges[i]);
+		if(localPF)((TH2F*)(list->At(33)))->Fill(i,fCharges[i]);
+		
+		Int_t chargeArray[21];
+		for(Int_t iClock=0; iClock<21; iClock++) chargeArray[iClock] = esdADfriend->GetPedestal(i,iClock);
+		Int_t maxClock = TMath::LocMax(21,chargeArray);
+		if(!esdADfriend->GetIntegratorFlag(i,maxClock))((TH2F*)(list->At(38)))->Fill(i,chargeArray[maxClock]);
+		if( esdADfriend->GetIntegratorFlag(i,maxClock))((TH2F*)(list->At(39)))->Fill(i,chargeArray[maxClock]);
+
 		}
   }
+  for(Int_t i = 0; i<8; i++)chargeADC += fCharges[i];
+  for(Int_t i = 8; i<16; i++)chargeADA += fCharges[i];
+  ((TH1F*)(list->At(34)))->Fill(chargeADA);
+  ((TH1F*)(list->At(36)))->Fill(chargeADC);
+  if(globalPF){
+  	  ((TH1F*)(list->At(35)))->Fill(chargeADA);
+  	  ((TH1F*)(list->At(37)))->Fill(chargeADC);
+  	  }
 	
   Int_t nBBCoincidencesADA = 0;
   Int_t nBBCoincidencesADC = 0;
@@ -462,23 +547,20 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
     Printf("ERROR: Event not available");
     return;
   }
+  if(fInputEvent->IsIncompleteDAQ()) return;
+  
   AliESDEvent* fESD = (AliESDEvent*)fEvent;
   if (!fESD) {
     Printf("ERROR: ESD not available");
     return;
   }
-  AliESDVZERO* esdVZERO = fESD->GetVZEROData();
-  if (!esdVZERO) {
-    Printf("ERROR: No ESD VZERO");
-    return;
-  }
-  UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
-  //std::cout << "Triggers " << std::bitset<16>(fTriggerVZERO)<<std::endl;
   
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_NoVBC);
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_VBC);
-  if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_VBC); 
+  if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_VBC);
+  if(  fESD->GetHeader()->IsTriggerInputFired("0TVX")) FillHistos(fList_TVX);
+  if( (fESD->GetHeader()->IsTriggerInputFired("0UBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0UBC"))) FillHistos(fList_UBA_UBC);  
 
   // Post output data.
   PostData(1, fListHist);

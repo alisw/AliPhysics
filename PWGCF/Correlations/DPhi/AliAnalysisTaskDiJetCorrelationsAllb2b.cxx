@@ -36,10 +36,8 @@
 #include "AliEventPoolManager.h"
 
 #include "AliAnalysisTaskDiJetCorrelationsAllb2b.h"
-#include <iostream>
 
-using std::cout;
-using std::endl;
+
 
 ClassImp(AliAnalysisTaskDiJetCorrelationsAllb2b)
 ClassImp(AliDPhiBasicParticleDiJet)
@@ -49,6 +47,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b()
 AliAnalysisTaskSE(),
 ftwoplus1(kTRUE),
 fEqualT1T2(kTRUE),
+fFineBinsME(kTRUE),
 fSetSystemValue(kTRUE),
 fRecoOrMontecarlo(kTRUE),
 fReadMC(kFALSE),
@@ -106,6 +105,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b(c
 AliAnalysisTaskSE(name),
 ftwoplus1(kTRUE),
 fEqualT1T2(kTRUE),
+fFineBinsME(kTRUE),
 fSetSystemValue(kTRUE),
 fRecoOrMontecarlo(kTRUE),
 fReadMC(kFALSE),
@@ -167,6 +167,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::AliAnalysisTaskDiJetCorrelationsAllb2b(c
 AliAnalysisTaskSE(source),
 ftwoplus1(source.ftwoplus1),
 fEqualT1T2(source.fEqualT1T2),
+fFineBinsME(source.fFineBinsME),
 fSetSystemValue(source.fSetSystemValue),
 fRecoOrMontecarlo(source.fSetSystemValue),
 fReadMC(source.fReadMC),
@@ -244,6 +245,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b& AliAnalysisTaskDiJetCorrelationsAllb2b::
     
     ftwoplus1 = orig.ftwoplus1;
     fEqualT1T2 = orig.fEqualT1T2;
+    fFineBinsME = orig.fFineBinsME;
     fSetSystemValue= orig.fSetSystemValue;
     fRecoOrMontecarlo = orig.fRecoOrMontecarlo;
     fReadMC = orig.fReadMC;
@@ -358,21 +360,42 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
     
     DefineHistoNames();
     
-    if(fMixedEvent){
-        if(fSetSystemValue) {Bool_t DefPool = DefineMixedEventPoolPbPb();
-            if(!DefPool){
-                AliInfo("UserCreateOutput: Pool is not define properly");
-                return;
-            }}
-        
-        
-        if(!fSetSystemValue) {Bool_t DefPool = DefineMixedEventPoolpp();
-            if(!DefPool){
-                AliInfo("UserCreateOutput: Pool is not define properly");
-                return;
-            }}
-    }
     
+    if(fMixedEvent){
+        if(fSetSystemValue) {
+            
+            if(fFineBinsME){Bool_t DefPool = DefineMixedEventPoolPbPb();
+                if(!DefPool){
+                    AliInfo("UserCreateOutput: Pool is not defined properly");
+                    return;
+                }
+            }
+            
+            if(!fFineBinsME){Bool_t DefPool = DefineMixedEventPoolPbPb_largebins();
+                if(!DefPool){
+                    AliInfo("UserCreateOutput: Pool is not defined properly");
+                    return;
+                }
+            }
+        }
+        
+        
+        if(!fSetSystemValue) {
+            if(fFineBinsME){ Bool_t DefPool = DefineMixedEventPoolpp();
+                if(!DefPool){
+                    AliInfo("UserCreateOutput: Pool is not define properly");
+                    return;
+                }
+            }
+            if(!fFineBinsME){Bool_t DefPool = DefineMixedEventPoolpp_largebins();
+                if(!DefPool){
+                    AliInfo("UserCreateOutput: Pool is not define properly");
+                    return;
+                }
+            }
+        }
+    }
+      
     PostData(1,fOutputQA);
     PostData(2,fOutputCorr);
 }
@@ -438,7 +461,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         
         
-        if((std::abs(fCentrOrMult)) < 0. || (std::abs(fCentrOrMult)) > 100.00)return;
+        if((abs(fCentrOrMult)) < 0. || (abs(fCentrOrMult)) > 100.00)return;
     }
     else if(!fSetSystemValue){ // pp, pPb
         Double_t count = -1, mineta = -1.0, maxeta = 1.0;
@@ -513,13 +536,13 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
     if(fMixedEvent){
         if(TMath::Abs(zVertex)>=10){
-            AliInfo(Form("Event with Zvertex = %0.2f cm out of pool bounds, SKIPPING",zVertex));
+           // AliInfo(Form("Event with Zvertex = %0.2f cm out of pool bounds, SKIPPING",zVertex));
             return;
         }
         
         fPool= fPoolMgr->GetEventPool(fCentrOrMult, zVertex);
         if(!fPool){
-            AliInfo(Form("No pool found for Event: multiplicity = %f, zVtx = %f cm", fCentrOrMult, zVertex));
+            //AliInfo(Form("No pool found for Event: multiplicity = %f, zVtx = %f cm", fCentrOrMult, zVertex));
             return;
         }
     }
@@ -654,7 +677,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                     if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
                                     fHistT1CorrTrack->Fill(4);
                                 }
-
+                                
                                 
                                 Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                                 Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
@@ -937,7 +960,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
     Double_t  fMinTrgCorr[5] = {fMinCentorMult,  -10.0, -1.8, -0.5*TMath::Pi(),  0.5};
     Double_t  fMaxTrgCorr[5] = {fMaxCentorMult,   10.0,  1.8,  1.5*TMath::Pi(),   10};
     THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",5, fBinsTrgCorr, fMinTrgCorr, fMaxTrgCorr);
-  if(ftwoplus1) THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-T1-T2-Trk",5, fBinsTrgCorr, fMinTrgCorr, fMaxTrgCorr);
+    if(ftwoplus1) THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-T1-T2-Trk",5, fBinsTrgCorr, fMinTrgCorr, fMaxTrgCorr);
     
     if(fSetSystemValue){
         if(fuseVarCentBins){

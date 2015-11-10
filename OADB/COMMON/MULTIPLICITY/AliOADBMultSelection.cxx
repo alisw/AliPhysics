@@ -194,6 +194,9 @@ void AliOADBMultSelection::Browse(TBrowser *b)
             lEst[iEst]->Add(new TObjString(Form("Current Value: %f", fSelection->GetEstimator(iEst)->GetValue() ) ) );
             lEst[iEst]->Add(new TObjString(Form("Current Percentile: %f", fSelection->GetEstimator(iEst)->GetPercentile() ) ) );
             lEst[iEst]->Add(new TObjString(Form("Mean Value: %f", fSelection->GetEstimator(iEst)->GetMean() ) ) );
+            lEst[iEst]->Add(new TObjString(Form("Is Anchored: %i", fSelection->GetEstimator(iEst)->GetUseAnchor() ) ) );
+            lEst[iEst]->Add(new TObjString(Form("Anchor Point (raw): %f", fSelection->GetEstimator(iEst)->GetAnchorPoint() ) ) );
+            lEst[iEst]->Add(new TObjString(Form("Anchor Percentile: %f", fSelection->GetEstimator(iEst)->GetAnchorPercentile() ) ) );
             estFolder->Add(lEst[iEst]);
         }
         b->Add(histoFolder);

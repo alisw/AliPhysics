@@ -13,7 +13,11 @@
 #pragma link C++ class AliNamedString+;
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliPWGHistoTools+;
-#pragma link C++ class AliTHn+;
+#pragma link C++ typedef AliTHn;
+#pragma link C++ typedef AliTHnD;
+#pragma link C++ class AliTHnBase+;
+#pragma link C++ class AliTHnT<TArrayF, Float_t>+;
+#pragma link C++ class AliTHnT<TArrayD, Double_t>+;
 #pragma link C++ class THistManager+;
 #pragma link C++ class AliJSONReader+;
 #pragma link C++ class AliJSONData+;

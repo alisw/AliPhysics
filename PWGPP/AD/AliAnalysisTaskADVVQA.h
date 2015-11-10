@@ -53,11 +53,13 @@ private:
   TList		*fList_VBA_NoVBC;
   TList		*fList_NoVBA_VBC;
   TList		*fList_VBA_VBC;
+  TList		*fList_TVX;
+  TList		*fList_UBA_UBC;
    
   AliAnalysisTaskADVVQA(const AliAnalysisTaskADVVQA&);            // not implemented
   AliAnalysisTaskADVVQA& operator=(const AliAnalysisTaskADVVQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADVVQA, 1);
+  ClassDef(AliAnalysisTaskADVVQA, 3);
 };
 
 #endif

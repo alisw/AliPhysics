@@ -128,10 +128,12 @@ public:
  void SetInput(int input) {fAnalysisInput = input;}
  void SetMCInput() {fIsMCInput = kTRUE;}
  void SetUseMCCen( Bool_t kB ) { fUseMCCen = kB; }
+ void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
  void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
   fCentrUpLim=centrup;}
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
  void SetDataSet(TString DataSet) {fDataSet = DataSet;}
+ void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -219,6 +221,7 @@ private:
  Float_t  fCentrLowLim;	// centrality lower limit
  Float_t  fCentrUpLim;		// centrality upper limit
  TString  fCentrEstimator;     // string for the centrality estimator
+ Bool_t   fRejectPileUp;
  //
  TList       *fOutput;	   	//! list send on output slot 0
  //
@@ -281,6 +284,7 @@ private:
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
  Int_t fCRCnRun;
+ Float_t fZDCGainAlpha;
  TString fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain

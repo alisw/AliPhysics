@@ -127,6 +127,7 @@ public:
     kTRDntracklets,          // number of TRD tracklets used for tracking/PID TODO: correct getter
     kTRDpidQuality,          // number of TRD tracklets used for PID
     kTRDchi2,                // chi2 in TRD
+    kTRDchi2Trklt,	     // chi2/trklts in TRD 
     kTRDprobEle,             // TRD electron pid probability
     kTRDprobPio,             // TRD electron pid probability
     kTRDprob2DEle,           // TRD electron pid probability 2D LQ 
@@ -669,6 +670,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDchi2]       = particle->GetTRDchi2();
+  values[AliDielectronVarManager::kTRDchi2Trklt]  = particle->GetTRDchi2() / particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
@@ -889,10 +891,11 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kNFclsTPCr) || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
   if(Req(kNFclsTPCrFrac))  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   if(Req(kNFclsTPCfCross)) values[AliDielectronVarManager::kNFclsTPCfCross]= (values[kNFclsTPC]>0)?(values[kNFclsTPCr]/values[kNFclsTPC]):0;
-  if(Req(kNclsTRD))        values[AliDielectronVarManager::kNclsTRD]       = 0;
+  if(Req(kNclsTRD))        values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2);
   if(Req(kTRDntracklets))  values[AliDielectronVarManager::kTRDntracklets] = 0;
   if(Req(kTRDpidQuality))  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   if(Req(kTRDchi2))        values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
+  if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = particle->GetTRDchi2() / particle->GetTRDntrackletsPID();
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
 

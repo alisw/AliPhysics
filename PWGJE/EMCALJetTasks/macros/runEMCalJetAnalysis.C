@@ -34,7 +34,7 @@ void runEMCalJetAnalysis(
          const char*    pattern             = "*ESDs/pass2/AOD145/*AOD.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
          const char*    gridDir             = "/alice/data/2011/LHC11h_2",   // dir on alien, where the files live (used on grid)
          const char*    runNumbers          = "167903 167915",             // considered run numbers (used on grid)
-         UInt_t         numLocalFiles       = 50,                          // number of files analyzed locally
+         UInt_t         numLocalFiles       = 5,                           // number of files analyzed locally
          const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
          const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the train on the grid
          UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task
@@ -242,67 +242,10 @@ void runEMCalJetAnalysis(
 void LoadLibs()
 {
   // Load common libraries (better too many than too few)
-  gSystem->Load("libTree");
-  gSystem->Load("libVMC");
-  gSystem->Load("libGeom");
-  gSystem->Load("libGui");
-  gSystem->Load("libXMLParser");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libMinuit2");
-  gSystem->Load("libProof");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libOADB");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libCDB");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libEVGEN");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libTOFbase");
-  //gSystem->Load("libTOFrec");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libRAWDatarec");
-  gSystem->Load("libTPCbase");
-  gSystem->Load("libTPCrec");
-  gSystem->Load("libITSbase");
-  gSystem->Load("libITSrec");
-  gSystem->Load("libTRDbase");
-  gSystem->Load("libTender");
-  gSystem->Load("libSTAT");
-  gSystem->Load("libTRDrec");
-  gSystem->Load("libHMPIDbase");
-  gSystem->Load("libPWGPP");
-  gSystem->Load("libPWGHFbase");
-  gSystem->Load("libPWGDQdielectron");
-  gSystem->Load("libPWGHFhfe");
-  gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPHOSUtils");
-  gSystem->Load("libPWGCaloTrackCorrBase");
-  gSystem->Load("libEMCALraw");
-  gSystem->Load("libEMCALbase");
-  gSystem->Load("libEMCALrec");
-  gSystem->Load("libTRDbase");
-  gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROrec");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGTools");
-  gSystem->Load("libPWGEMCAL");
-  gSystem->Load("libESDfilter");
-  gSystem->Load("libPWGGAEMCALTasks");
-  gSystem->Load("libPWGCFCorrelationsBase");
-  gSystem->Load("libPWGCFCorrelationsDPhi");
 
   //load CGAL, Fastjet and SISCone
-  gSystem->Load("libCGAL");
+  if(gSystem->Load("/usr/lib/libCGAL") != 0 ) gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
-    //For FastJet 3.x use siscon*,fastjetplugins for 2.x use SISConePlugin
-  //  gSystem->Load("libSISConePlugin");
-  // gSystem->Load("libCDFConesPlugin");
   gSystem->Load("libsiscone");
   gSystem->Load("libsiscone_spherical");
   gSystem->Load("libfastjetplugins");
@@ -310,7 +253,6 @@ void LoadLibs()
   gSystem->Load("libfastjetcontribfragile");
   //
   gSystem->Load("libJETAN");
-//  gSystem->Load("libFASTJETAN");
   gSystem->Load("libPWGJEEMCALJetTasks");
 
 }
@@ -332,7 +274,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }
 
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libTOFbase.so libRAWDatabase.so libRAWDatarec.so libTPCbase.so libTPCrec.so libITSbase.so libITSrec.so libTRDbase.so libTender.so libSTAT.so libTRDrec.so libHMPIDbase.so libPWGPP.so libPWGHFbase.so libPWGDQdielectron.so libPWGHFhfe.so libEMCALUtils.so libPHOSUtils.so libPWGCaloTrackCorrBase.so libEMCALraw.so libEMCALbase.so libEMCALrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libTender.so libTenderSupplies.so libESDfilter.so libPWGTools.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGCFCorrelationsBase.so libPWGCFCorrelationsDPhi.so  libCGAL.so libJETAN.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libCGAL.so libJETAN.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");
@@ -346,10 +288,9 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   plugin->SetOverwriteMode();
   plugin->SetRunMode(gridMode);
      
-  // Here you can set the (Ali)ROOT version you want to use
-  plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-08-6");
-  plugin->SetAliROOTVersion("vAN-20140525");
+  // Here you can set the (Ali)PHYSICS version you want to use
+  plugin->SetAliPhysicsVersion("vAN-20151101");
+
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory
@@ -363,9 +304,9 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 
   plugin->SetAnalysisSource(additionalCode.Data());
   plugin->SetAdditionalLibs(tmpAdditionalLibs.Data());
-  plugin->AddExternalPackage("boost::v1_43_0");
-  plugin->AddExternalPackage("cgal::v3.6");
-  plugin->AddExternalPackage("fastjet::v2.4.2");
+//  plugin->AddExternalPackage("boost::v1_43_0");
+//  plugin->AddExternalPackage("cgal::v3.6");
+//  plugin->AddExternalPackage("fastjet::v2.4.2");
 
   plugin->SetDefaultOutputs(kTRUE);
   //plugin->SetMergeExcludes("");

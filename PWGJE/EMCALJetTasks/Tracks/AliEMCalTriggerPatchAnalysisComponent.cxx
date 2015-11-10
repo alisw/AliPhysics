@@ -19,7 +19,7 @@
 #include <vector>
 #include <TClonesArray.h>
 
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerPatchAnalysisComponent.h"

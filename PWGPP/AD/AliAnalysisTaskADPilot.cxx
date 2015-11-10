@@ -645,8 +645,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   }
   AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
   
-  TString trigger = fESD->GetFiredTriggerClasses();
-  if(!trigger.Contains("C0TVX-B") && !trigger.Contains("CINT10-B") && !trigger.Contains("CINT5-B")) return;
+  if(!fESD->GetHeader()->IsTriggerInputFired("0TVX")) return;
   
   fRun=fEvent->GetRunNumber();
   

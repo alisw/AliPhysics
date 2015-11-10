@@ -24,7 +24,8 @@ class AliAnalysisMuMuEventCutter : public TObject
 {
 public:
   AliAnalysisMuMuEventCutter(TRootIOCtor* ioCtor);
-  AliAnalysisMuMuEventCutter(TList* triggerClassesToConsider=0x0, TList* triggerInputsMap=0x0);
+  AliAnalysisMuMuEventCutter(const char* triggerClassesToConsider="", const char* inputs="");
+  AliAnalysisMuMuEventCutter(TList* triggerClassesToConsider, TList* triggerInputsMap);
   virtual ~AliAnalysisMuMuEventCutter();
   
   Bool_t SelectTriggerClass(const TString& firedTriggerClasses, TString& acceptedClasses,

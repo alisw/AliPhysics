@@ -258,14 +258,16 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
     {
       analysis->DefineHistogramCollection(eventSelection,triggerClassName,centrality);
       
-      AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
-      
       if ( MCEvent() != 0x0 )
       {
+        AliCodeTimerAuto(Form("%s (FillHistosForMCEvent)",analysis->ClassName()),1);
         analysis->FillHistosForMCEvent(eventSelection,triggerClassName,centrality);
       }
       
-      analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality);
+      {
+        AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
+        analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality);
+      }
       
       for (Int_t i = 0; i < nTracks; ++i)
       {
@@ -278,6 +280,7 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
         {
           if ( trackCut->Pass(*tracki) )
           {
+            AliCodeTimerAuto(Form("%s (FillHistosForTrack)",analysis->ClassName()),2);
             analysis->FillHistosForTrack(eventSelection,triggerClassName,centrality,trackCut->GetName(),*tracki);
           }
         }
@@ -303,6 +306,7 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
             
             if ( ( testi && testj ) && testij ) 
             {
+              AliCodeTimerAuto(Form("%s (FillHistosForPair)",analysis->ClassName()),3);
               analysis->FillHistosForPair(eventSelection,triggerClassName,centrality,pairCut->GetName(),*tracki,*trackj);
             }
           }
@@ -317,6 +321,8 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
 {
   // The binning has to be an already existing event property or one (like i.e. <dNch/dEta>) which we can compute in the SetEvent() method and attach it to the event list
   // We can generalize this method (if needed), now it is only valid for multiplicity
+  
+  AliCodeTimerAuto("",0);
   
   if( fCountInBins )
   {

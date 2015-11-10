@@ -44,23 +44,23 @@ void Makec3EAfile(){
   TH3D *pPbEA[2];
   TH3D *ppEA[2];
   //
-  PbPbEA[0] = new TH3D("PbPbEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);// Rcoh type, parNum, Gindex
+  PbPbEA[0] = new TH3D("PbPbEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);// Rcoh type, parNum, Gindex
   PbPbEA[0]->SetDirectory(0);
   //
-  pPbEA[0] = new TH3D("pPbEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);
+  pPbEA[0] = new TH3D("pPbEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);
   pPbEA[0]->SetDirectory(0);
   //
-  ppEA[0] = new TH3D("ppEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);
+  ppEA[0] = new TH3D("ppEA_c3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);
   ppEA[0]->SetDirectory(0);
   //
   //
-  PbPbEA[1] = new TH3D("PbPbEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);// Rcoh type, parNum, Gindex
+  PbPbEA[1] = new TH3D("PbPbEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);// Rcoh type, parNum, Gindex
   PbPbEA[1]->SetDirectory(0);
   //
-  pPbEA[1] = new TH3D("pPbEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);
+  pPbEA[1] = new TH3D("pPbEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);
   pPbEA[1]->SetDirectory(0);
   //
-  ppEA[1] = new TH3D("ppEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 4,0.5,4.5, 50,-0.5,49.5);
+  ppEA[1] = new TH3D("ppEA_C3","",RadiiCount,0.5,RadiiCount+0.5, 6,0.5,6.5, 50,-0.5,49.5);
   ppEA[1]->SetDirectory(0);
   //
 
@@ -90,7 +90,7 @@ void Makec3EAfile(){
 	infile = new TFile(name1->Data(),"READ");
 	if(FT==0) fit = (TMinuit*)infile->Get("MyMinuit_c3");
 	else fit = (TMinuit*)infile->Get("MyMinuit_C3");
-	for(int parNum=0; parNum<4; parNum++){
+	for(int parNum=0; parNum<6; parNum++){
 	  fit->GetParameter(parNum+1, value,value_e);
 	  PbPbEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, value);
 	}
@@ -112,7 +112,7 @@ void Makec3EAfile(){
 	infile = new TFile(name1->Data(),"READ");
 	if(FT==0) fit = (TMinuit*)infile->Get("MyMinuit_c3");
 	else fit = (TMinuit*)infile->Get("MyMinuit_C3");
-	for(int parNum=0; parNum<4; parNum++){
+	for(int parNum=0; parNum<6; parNum++){
 	  fit->GetParameter(parNum+1, value,value_e);
 	  pPbEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, value);
 	}
@@ -133,7 +133,7 @@ void Makec3EAfile(){
 	infile = new TFile(name1->Data(),"READ");
 	if(FT==0) fit = (TMinuit*)infile->Get("MyMinuit_c3");
 	else fit = (TMinuit*)infile->Get("MyMinuit_C3");
-	for(int parNum=0; parNum<4; parNum++){
+	for(int parNum=0; parNum<6; parNum++){
 	  fit->GetParameter(parNum+1, value,value_e);
 	  ppEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, value);
 	}
@@ -145,7 +145,7 @@ void Makec3EAfile(){
   for(int FT=0; FT<2; FT++){// c3 or C3
     for(int Gindex=26; Gindex<50; Gindex++){
       for(int RT=0; RT<RadiiCount; RT++){// EW or LG
-	for(int parNum=0; parNum<4; parNum++){
+	for(int parNum=0; parNum<6; parNum++){
 	  PbPbEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, PbPbEA[FT]->GetBinContent(RT+1, parNum+1, 26));
 	  pPbEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, pPbEA[FT]->GetBinContent(RT+1, parNum+1, 26));
 	  ppEA[FT]->SetBinContent(RT+1, parNum+1, Gindex+1, ppEA[FT]->GetBinContent(RT+1, parNum+1, 26));

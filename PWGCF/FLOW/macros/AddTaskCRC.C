@@ -1,17 +1,11 @@
-AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
-                             Double_t centrMin,
-                             Double_t centrMax,
-                             Int_t nCenBin,
-                             Double_t CenBinWidth,
+AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Double_t ptMin=0.2,
                              Double_t ptMax=5.0,
-                             Double_t etaMin=-0.8,
-                             Double_t etaMax=0.8,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
-                             Bool_t bCalculateCME=kFALSE,
+                             Bool_t bCalculateCRC=kTRUE,
                              Bool_t bCalculateCRC2=kFALSE,
                              Int_t CRC2nEtaBins=6,
                              Bool_t bUseCRCRecentering=kFALSE,
@@ -25,17 +19,23 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
+                             Float_t ZDCGainAlpha=0.395,
                              Bool_t bInvertZDC=kFALSE,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
+                             Bool_t bRejectPileUp=kTRUE,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
+                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
-                             Bool_t bSinTest=kFALSE,
+                             Bool_t bUsePtWeights=kFALSE,
+                             TString PtWeightsFileName="",
+                             Bool_t bCenFlattening=kTRUE,
+                             TString CenWeightsFileName="",
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -70,6 +70,11 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   return NULL;
  }
  
+ Double_t centrMin=0.;
+ Double_t centrMax=100.;
+ Double_t CenBinWidth=10.;
+ Int_t nHarmonic=1;
+ 
  // define CRC suffix
  TString CRCsuffix = ":CRC";
  
@@ -95,6 +100,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   CRCsuffix += Appendix;
  }
  
+ Double_t etaMin=-0.8;
+ Double_t etaMax=0.8;
+ 
  // create instance of the class: because possible qa plots are added in a second output slot,
  // the flow analysis task must know if you want to save qa plots at the time of class construction
  TString taskFEname = "FlowEventTask";
@@ -105,7 +113,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
  taskFE->SetCentralityEstimator("V0M");
+ taskFE->SetRejectPileUp(bRejectPileUp);
  taskFE->SetUseMCCen(bZDCMCCen);
+ taskFE->SetZDCGainAlpha(ZDCGainAlpha);
  taskFE->SetDataSet(sDataSet);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
@@ -128,9 +138,10 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
  // configure some event cuts, starting with centrality
- if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD") {
+ if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
-  cutsEvent->SetQA(kFALSE);
+  cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
+  cutsEvent->SetQA(bEventCutsQA);
  }
  else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
@@ -217,6 +228,10 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
  }
+ if (analysisTypeUser == "ESD") {
+  cutsRP = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
+  cutsPOI = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
+ }
  
  taskFE->SetCutsRP(cutsRP);
  taskFE->SetCutsPOI(cutsPOI);
@@ -284,7 +299,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
- taskQC->SetCalculateCRC(kTRUE);
+ taskQC->SetCalculateCRC(bCalculateCRC);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
@@ -297,8 +312,46 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bInvertZDC);
- taskQC->SetTestSin(bSinTest);
  taskQC->SetCorrWeight(sCorrWeight);
+ taskQC->SetUsePtWeights(bUsePtWeights);
+ 
+ if(bCenFlattening && sDataSet=="2011") {
+  TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
+  if(!CenWeightsFile) {
+   cout << "ERROR: CenWeightsFile not found!" << endl;
+   exit(1);
+  }
+  TCanvas* cav = dynamic_cast<TCanvas*>(CenWeightsFile->Get("Canvas_1"));
+  TH1D* CenHist = dynamic_cast<TH1D*>(cav->GetPrimitive("Centrality"));
+  if(CenHist) {
+   taskQC->SetCenWeightsHist(CenHist);
+   cout << "Centrality weights set (from " <<  CenWeightsFileName.Data() << ")" << endl;
+  }
+  else {
+   cout << "ERROR: CenHist not found!" << endl;
+   exit(1);
+  }
+ } // end of if(bCenFlattening)
+ 
+ if(bUsePtWeights) {
+  TFile* PtWeightsFile = TFile::Open(PtWeightsFileName,"READ");
+  if(!PtWeightsFile) {
+   cout << "ERROR: PtWeightsFile not found!" << endl;
+   exit(1);
+  }
+  for(Int_t c=0; c<10; c++) {
+   TH1D* PtWeightsHist = dynamic_cast<TH1D*>(PtWeightsFile->Get(Form("eff_unbiased_%d",c)));
+   if(PtWeightsHist) {
+    taskQC->SetPtWeightsHist(PtWeightsHist,c);
+    cout << "Pt weights centr. "<<c<<" set (from " <<  PtWeightsFileName.Data() << ")" << endl;
+   }
+   else {
+    cout << "ERROR: PtWeightsHist not found!" << endl;
+    exit(1);
+   }
+  }
+ } // end of if(bUsePtWeights)
+
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {

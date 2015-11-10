@@ -56,7 +56,7 @@ class AliHFEOADBThresholdsTRD : public TNamed{
         Double_t fEfficiency;   // Efficiency level applied
         Double_t fParams[4];    // Cut parameterization
 
-        ClassDef(AliHFEthresholdParamsTRD, 1);
+        /* ClassDef(AliHFEthresholdParamsTRD, 1); */
     };
 
     static const Double_t fgkVerySmall;   // Comparison of efficiency values

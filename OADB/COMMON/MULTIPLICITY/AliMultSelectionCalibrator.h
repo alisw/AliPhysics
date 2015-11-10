@@ -35,7 +35,16 @@ public:
     }
     
     //Getter for event selection criteria
-    AliMultSelectionCuts * GetEventCuts() { return fMultSelectionCuts;     }
+    AliMultSelectionCuts * GetEventCuts() const { return fMultSelectionCuts;     }
+    
+    //Getter for MultSelection object
+    AliMultSelection * GetMultSelection() const { return fSelection;     }
+
+    //Getter for MultInput object
+    AliMultInput * GetMultInput() const { return fInput;     }
+    
+    //Configure standard input
+    void SetupStandardInput();
     
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();

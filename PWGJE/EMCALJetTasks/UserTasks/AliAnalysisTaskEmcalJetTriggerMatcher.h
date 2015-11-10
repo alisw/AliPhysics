@@ -41,7 +41,7 @@ class AliClusterContainer;
 #include <AliLog.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include <AliESDCaloCluster.h>
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 #include "AliAnalysisFilter.h"
 
 class AliAnalysisTaskEmcalJetTriggerMatcher : public AliAnalysisTaskEmcalJet {

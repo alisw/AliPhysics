@@ -60,7 +60,7 @@
 #include "AliClusterContainer.h"
 #include "AliEmcalParticle.h"
 #include "AliESDCaloCluster.h"
-#include "AliEmcalTriggerPatchInfo.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 // event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
