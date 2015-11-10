@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //_________________________________________________________________________
 // Class that performs digitization of Summable digits from simulated data
 //  
@@ -35,6 +33,7 @@ class TBrowser;
 #include "AliDigitizer.h"
 #include "AliConfig.h"
 class AliEMCALCalibData ;
+class AliEMCALCalibTime ;
 class AliEMCALSDigitizer ;
 class AliDigitizationInput ;
 
@@ -127,10 +126,11 @@ private:
   Int_t    fFirstEvent;            // first event to process
   Int_t    fLastEvent;             // last  event to process
 	
-  AliEMCALCalibData * fCalibData;  // Calibration data pointer
+  AliEMCALCalibData * fCalibData;  // Energy Calibration data pointer
+  AliEMCALCalibTime * fCalibTime;  // Time Calibration data pointer
   AliEMCALSDigitizer* fSDigitizer; // SDigitization object
   
-  ClassDef(AliEMCALDigitizer,14)  
+  ClassDef(AliEMCALDigitizer,15)  
 };
 
 

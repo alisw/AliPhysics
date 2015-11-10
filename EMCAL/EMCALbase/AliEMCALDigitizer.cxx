@@ -13,34 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//_________________________________________________________________________
-// 
-//////////////////////////////////////////////////////////////////////////////
-// Class performs digitization of Summable digits from simulated data
-//  
-// In addition it performs mixing/embedding of summable digits from different events.
-//
-// For each event 3 branches are created in TreeD:
-//   "EMCAL" - list of digits
-//   "EMCALTRG" - list of trigger digits
-//   "AliEMCALDigitizer" - AliEMCALDigitizer with all parameters used in digitization
-//
-//
-////////////////////////////////////////////////////////////////////////////////////
-//
-//*-- Author: Sahal Yacoob (LBL)
-// based on : AliEMCALDigitizer
-// Modif: 
-//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
-//                           of new IO (a la PHOS)
-//  November 2003 Aleksei Pavlinov : adopted for Shish-Kebab geometry 
-//  July 2011 GCB: Digitizer modified to accomodate embedding. 
-//                 Time calibration added. Decalibration possibility of energy and time added
-//_________________________________________________________________________________
-
-// --- ROOT system ---
 #include <TROOT.h>
 #include <TTree.h>
 #include <TSystem.h>
@@ -65,6 +37,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALTriggerRawDigit.h"
 #include "AliCaloCalibPedestal.h"
@@ -137,6 +110,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor
@@ -172,6 +146,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor
@@ -207,6 +182,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fFirstEvent(d.fFirstEvent),
     fLastEvent(d.fLastEvent),
     fCalibData(d.fCalibData),
+    fCalibTime(d.fCalibTime),
     fSDigitizer(d.fSDigitizer ? new AliEMCALSDigitizer(*d.fSDigitizer) : 0)
 {
   // copyy ctor 
@@ -240,6 +216,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliDigitizationInput * rd)
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor Init() is called by RunDigitizer
@@ -680,12 +657,16 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, Int
     fADCpedestalEC     = fCalibData->GetADCpedestal     (iSupMod,ieta,iphi);
     fADCchannelEC      = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
     fADCchannelECDecal = fCalibData->GetADCchannelDecal (iSupMod,ieta,iphi);
-    
+  }
+  
+  if(fCalibTime)
+  {
     // Time
     // Recover parameters for  bunch crossing number equal to 0 
     // (has simulation different bunch crossings stored? not for the moment)
-    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi,0); 
-    fTimeChannelDecal  = fCalibData->GetTimeChannelDecal(iSupMod,ieta,iphi);
+    // Time stored in ns, pass to ns
+    fTimeChannel       = fCalibTime->GetTimeChannel     (iSupMod,ieta,iphi,0) * 1e-9; 
+    fTimeChannelDecal  = fCalibTime->GetTimeChannelDecal(iSupMod,ieta,iphi)   * 1e-9;
   }
   
   // Apply calibration to get ADC counts and partial decalibration as especified in OCDB
@@ -695,7 +676,7 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, Int
   
   // Apply shift to time, if requested and calibration parameter is available,
   // if not, apply fix shift 
-  if(fTimeDelayFromOCDB && fTimeChannel > 0) 
+  if ( fTimeDelayFromOCDB ) 
     time  += fTimeChannel - fTimeChannelDecal;
   else                   
     time  += fTimeDelay;
@@ -771,16 +752,21 @@ void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const In
   if(!bCell) Error("CalibrateADCTime","Wrong cell id number : absId %i ", absId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
+  // Energy calibration
   if(fCalibData)
   {
     fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
     fADCchannelEC  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
-    fTimeChannel   = fCalibData->GetTimeChannel(iSupMod,ieta,iphi,0);// Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
   }
   
   adc   = adc * fADCchannelEC - fADCpedestalEC;
-  time -= fTimeChannel;
   
+  // Time calibration  
+  // Assign bunch crossing number equal to 0 (has simulation different bunch crossings? Not for the moment)
+  if(fCalibTime && fTimeDelayFromOCDB)
+    fTimeChannel   = fCalibTime->GetTimeChannel(iSupMod,ieta,iphi,0) * 1e-9; // pass from ns to s  
+  
+  time -= fTimeChannel;
 }
 
 
@@ -1070,8 +1056,10 @@ Bool_t AliEMCALDigitizer::Init()
     fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added bt fDigInput 
   }
     
-  //Calibration instance
+  // Calibration instances
   fCalibData = emcalLoader->CalibData();
+  fCalibTime = emcalLoader->CalibTime();
+  
   return fInit ;    
 }
 
