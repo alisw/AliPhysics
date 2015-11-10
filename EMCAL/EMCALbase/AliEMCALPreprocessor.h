@@ -11,6 +11,7 @@
 
 #include "AliPreprocessor.h"
 
+class AliDCSValue;
 class AliEMCALSensorTempArray;
 class TEnv;
 
@@ -32,6 +33,8 @@ class AliEMCALPreprocessor : public AliPreprocessor {
   UInt_t  MapTriggerConfig(TMap* dcsAliasMap);//!
   UInt_t  ExtractPedestals(Int_t sourceFXS);//!
   UInt_t  ExtractSignal(Int_t sourceFXS);//!
+
+  AliDCSValue *ReadDCSValue(const TMap *values, const char *valname);
 
  private:
   TEnv                   *fConfEnv;  // Preprocessor configuration map
