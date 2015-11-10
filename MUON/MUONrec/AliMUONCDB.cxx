@@ -209,6 +209,244 @@ Bool_t AliMUONCDB::CheckOCDB(Bool_t pathOnly)
   
 }
 
+//______________________________________________________________________________
+void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
+{
+  /// Check the HV values in OCDB for a given run
+  
+  TList messages;
+  messages.SetOwner(kTRUE);
+  
+  Bool_t patched(kTRUE);
+  
+  if (!AliCDBManager::Instance()->IsDefaultStorageSet())
+  {
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+  }
+  
+  AliCDBManager::Instance()->SetRun(runNumber);
+  
+  LoadMapping();
+  
+  AliMUONCalibrationData::CreateHV(runNumber,0,patched,&messages);
+  
+  AliMUONCalibrationData cd(runNumber,true);
+  
+  AliMUONPadStatusMaker statusMaker(cd);
+  
+  AliMUONRecoParam* rp = AliMUONCDB::LoadRecoParam();
+  
+  if (!rp)
+  {
+    AliErrorGeneral("AliMUONCDB::CheckHV","Could not get RecoParam !!!");
+    return;
+  }
+  
+  statusMaker.SetLimits(*rp);
+  
+  TIter next(&messages);
+  TObjString* s;
+  AliMpDCSNamer hvNamer("TRACKER");
+  AliMUONLogger log;
+  Double_t meanHVValue(0.0);
+  Double_t nofHVValues(0.0);
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    TObjArray* a = s->String().Tokenize(":");
+    
+    TString name(static_cast<TObjString*>(a->At(0))->String());
+    
+    TObjArray* b = name.Tokenize(" ");
+    
+    name = static_cast<TObjString*>(b->At(0))->String();
+    
+    delete a;
+    delete b;
+    
+    if ( name.Contains("sw") || name.Contains("SUMMARY") ) {continue;}
+    
+    Int_t index = hvNamer.DCSIndexFromDCSAlias(name.Data());
+    
+    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
+    
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    if (!de)
+    {
+      AliErrorGeneral("AliMUONCDB::CheckHV",Form("Could not get detElemId from dcsAlias %s",name.Data()));
+      continue;
+    }
+    
+    Int_t manuId;
+    
+    if ( index >= 0 )
+    {
+      const AliMpArrayI* array = de->ManusForHV(index);
+      manuId = array->GetValue(0);
+    }
+    else
+      
+    {
+      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(de->GetBusPatchId(0));
+      manuId = bp->GetManuId(0);
+    }
+    
+    Int_t status = statusMaker.HVStatus(detElemId,manuId);
+    
+    log.Log(AliMUONPadStatusMaker::AsString(status).Data());
+    
+    meanHVValue += MeanHVValueForDCSAlias((*cd.HV()),name.Data());
+    
+    nofHVValues += 1.0;
+    
+    s->String() += Form(" (DE %4d) ",detElemId);
+    s->String() += AliMUONPadStatusMaker::AsString(status).Data();
+  }
+  
+  TIter nextMessage(&messages);
+  TObjString* msg;
+  
+  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
+  {
+    if ( verbose > 0 || msg->String().Contains("SUMMARY") )
+    {
+      AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d HVchannel %s",runNumber,msg->String().Data()));
+    }
+  }
+  
+  TString lmsg;
+  Int_t occurance;
+  TString totalLog;
+  
+  while (log.Next(lmsg,occurance))
+  {
+    totalLog += Form("%s(%d)",lmsg.Data(),occurance);
+    totalLog += " | ";
+  }
+  
+  AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d %s",runNumber,totalLog.Data()));
+  
+  // one last loop to get the list of problematic HV channels
+  nextMessage.Reset();
+  
+  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
+  {
+    if ( msg->String().Contains("HV ") )
+    {
+      AliInfoGeneral("AliMUONCDB::CheckHV",Form("     Problem at %s",msg->String().Data()));
+    }
+  }
+  
+  if (nofHVValues)
+  {
+    meanHVValue /= nofHVValues;
+    AliInfoGeneral("AliMUONCDB::CheckHV",Form("Mean HV for run %09d was %7.2f",runNumber,meanHVValue));
+  }
+  
+  AliCDBManager::Instance()->ClearCache();
+}
+
+//______________________________________________________________________________
+void AliMUONCDB::CheckHV_ALIROOT_6402(const char* runlist, Bool_t verbose)
+{
+  /// Check HV for some St1 channels (the ones that are remapped in
+  /// AliMUONCalibrationData::PatchSt1DCSAliases
+  /// (see JIRA bug ALIROOT-6402 for details)
+  
+  std::vector<int> runnumbers;
+  
+  ReadIntegers(runlist,runnumbers);
+  
+  std::vector<int> affectedRuns;
+  
+  for ( unsigned int i = 0 ; i < runnumbers.size(); ++i )
+  {
+    int runNumber = runnumbers[i];
+    
+    Bool_t affected = CheckHV_ALIROOT_6402(runNumber,verbose);
+
+    std::cout << Form("RUN %09d is potentially affected by bug ALIROOT-6402 : %s",runNumber,affected ? "YES":"NO") << std::endl;
+
+    if (affected)
+    {
+      affectedRuns.push_back(runNumber);
+    }
+  }
+  
+  std::cout << Form("%4lu runs affected in the list of %4lu runs : ",affectedRuns.size(),runnumbers.size());
+  for ( unsigned int i = 0 ; i < affectedRuns.size(); ++i )
+  {
+    std::cout << affectedRuns[i] << ",";
+  }
+  std::cout << std::endl;
+}
+
+//______________________________________________________________________________
+Bool_t AliMUONCDB::CheckHV_ALIROOT_6402(Int_t runNumber, Bool_t verbose)
+{
+  /// Check HV for some St1 channels (the ones that are remapped in
+  /// AliMUONCalibrationData::PatchSt1DCSAliases
+  /// (see JIRA bug ALIROOT-6402 for details)
+  /// Returns true if that run is (potentially) affected by the bug
+  /// Potentially means that the run is affected if reconstructed with an
+  /// AliRoot version before the bug fix...
+  
+  AliLog::GetRootLogger()->SetGlobalLogLevel(AliLog::kError);
+  
+  TList messages;
+  messages.SetOwner(kTRUE);
+  
+  if (!AliCDBManager::Instance()->IsDefaultStorageSet())
+  {
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+  }
+  
+  AliCDBManager::Instance()->SetRun(runNumber);
+  
+  LoadMapping();
+  
+  TMap* hvMap = dynamic_cast<TMap*>(AliMUONCalibrationData::CreateObject(runNumber,"MUON/Calib/HV"));
+  
+  PatchHV(*hvMap,&messages,kTRUE);
+  
+  if (verbose)
+  {
+    TIter next(&messages);
+    TObjString* msg;
+    while ( ( msg = static_cast<TObjString*>(next())))
+    {
+      std::cout << Form("RUN %09d %s",runNumber,msg->String().Data()) << std::endl;
+    }
+  }
+  
+  TIter next(hvMap);
+  TObjString* hvChannelName;
+  
+  Bool_t affected(kFALSE);
+
+  while ( ( hvChannelName = static_cast<TObjString*>(next()) ) )
+  {
+    TString name(hvChannelName->String());
+    if ( IsSt1DCSAliasRemapped(name) )
+    {
+      Float_t hvvalue = MeanHVValueForDCSAlias(*hvMap,name.Data());
+      if ( hvvalue < 1590.0 )
+      {
+        affected = kTRUE;
+        if ( verbose )
+        {
+          std::cout << Form("RUN %09d %40s HV VALUE %7.2f",runNumber,name.Data(),hvvalue) << std::endl;
+        }
+      }
+    }
+  }
+  
+  AliCDBManager::Instance()->ClearCache();
+  
+  return affected;
+}
+
 //_____________________________________________________________________________
 Bool_t AliMUONCDB::CheckMapping(Bool_t segmentationOnly)
 {
@@ -229,6 +467,31 @@ Bool_t AliMUONCDB::CheckMapping(Bool_t segmentationOnly)
   
   return kTRUE;
   
+}
+
+//______________________________________________________________________________
+Bool_t AliMUONCDB::IsSt1DCSAliasRemapped(const TString& name)
+{
+  Bool_t isit(kFALSE);
+  
+  if ( name.Contains("Chamber00Left") )
+  {
+    if (name.Contains("Quad1Sect0")) isit = kTRUE;
+    
+    if (name.Contains("Quad1Sect1")) isit = kTRUE;
+    if (name.Contains("Quad1Sect2")) isit = kTRUE;
+    
+    if (name.Contains("Quad2Sect2")) isit = kTRUE;
+    if (name.Contains("Quad2Sect1")) isit = kTRUE;
+    if (name.Contains("Quad2Sect0")) isit = kTRUE;
+  }
+  else if ( name.Contains("Chamber01Left"))
+  {
+    if (name.Contains("Quad2Sect2")) isit = kTRUE;
+    if (name.Contains("Quad2Sect0")) isit = kTRUE;
+  }
+  
+  return isit;
 }
 
 //_____________________________________________________________________________
@@ -1164,6 +1427,55 @@ AliMUONCDB::MakeTriggerEfficiency(const char* file)
   return new AliMUONTriggerEfficiencyCells(file);
 }
 
+//______________________________________________________________________________
+void AliMUONCDB::PatchHV(TMap& hvMap, TList* messages, Bool_t onlySt1remapped)
+{
+  TIter next(&hvMap);
+  TObjString* hvChannelName;
+  
+  while ( ( hvChannelName = static_cast<TObjString*>(next()) ) )
+  {
+    TString name(hvChannelName->String());
+    
+    if ( name.Contains("sw") ) continue; // skip switches
+    
+    if ( name.Contains("iMon") ) continue; // skip HV currents
+    
+    if ( onlySt1remapped )
+    {
+      if (!IsSt1DCSAliasRemapped(name))
+      {
+        continue;
+      }
+    }
+    
+    TPair* hvPair = static_cast<TPair*>(hvMap.FindObject(name.Data()));
+    TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
+    if (!values)
+    {
+      AliErrorGeneral("PatchHV",Form("Could not get values for alias %s",name.Data()));
+    }
+    else
+    {
+      TString msg;
+      
+      Bool_t ok = AliMUONCalibrationData::PatchHVValues(*values,&msg,kFALSE);
+      
+      if ( messages )
+      {
+        messages->Add(new TObjString(Form("%s %s",hvChannelName->String().Data(),msg.Data())));
+      }
+      
+      if (!ok)
+      {
+        AliErrorGeneral("PatchHV",Form("PatchHVValue was not successfull ! This is serious ! "
+                           "You'll have to check the logic for channel %s",hvChannelName->String().Data()));
+      }
+    }
+  }
+}
+
+
 //_____________________________________________________________________________
 void 
 AliMUONCDB::WriteToCDB(const char* calibpath, TObject* object, 
@@ -1952,143 +2264,4 @@ Double_t AliMUONCDB::MeanHVValueForDCSAlias(TMap& hvMap, const char* hvChannel)
     return 0.0;
   }
 }
-
-//______________________________________________________________________________
-void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
-{
-  /// Check the HV values in OCDB for a given run
-  
-  TList messages;
-  messages.SetOwner(kTRUE);
-  
-  Bool_t patched(kTRUE);
-  
-  if (!AliCDBManager::Instance()->IsDefaultStorageSet())
-  {
-    AliCDBManager::Instance()->SetDefaultStorage("raw://");
-  }
-
-  AliCDBManager::Instance()->SetRun(runNumber);
-
-  LoadMapping();
-  
-  AliMUONCalibrationData::CreateHV(runNumber,0,patched,&messages);
-  
-  AliMUONCalibrationData cd(runNumber,true);
-  
-  AliMUONPadStatusMaker statusMaker(cd);
-  
-  AliMUONRecoParam* rp = AliMUONCDB::LoadRecoParam();
-  
-  if (!rp)
-  {
-    AliErrorGeneral("AliMUONCDB::CheckHV","Could not get RecoParam !!!");
-    return;
-  }
-  
-  statusMaker.SetLimits(*rp);
-  
-  TIter next(&messages);
-  TObjString* s;
-  AliMpDCSNamer hvNamer("TRACKER");
-  AliMUONLogger log;
-  Double_t meanHVValue(0.0);
-  Double_t nofHVValues(0.0);
-  
-  while ( ( s = static_cast<TObjString*>(next()) ) )
-  {
-    TObjArray* a = s->String().Tokenize(":");
-    
-    TString name(static_cast<TObjString*>(a->At(0))->String());
-
-    TObjArray* b = name.Tokenize(" ");
-    
-    name = static_cast<TObjString*>(b->At(0))->String();
-
-    delete a;
-    delete b;
-    
-    if ( name.Contains("sw") || name.Contains("SUMMARY") ) {continue;}
-    
-    Int_t index = hvNamer.DCSIndexFromDCSAlias(name.Data());
-    
-    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
-    
-    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-    
-    if (!de)
-    {
-      AliErrorGeneral("AliMUONCDB::CheckHV",Form("Could not get detElemId from dcsAlias %s",name.Data()));
-      continue;
-    }
-    
-    Int_t manuId;
-    
-    if ( index >= 0 )
-    {
-      const AliMpArrayI* array = de->ManusForHV(index);
-      manuId = array->GetValue(0);
-    }
-    else
-      
-    {
-      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(de->GetBusPatchId(0));
-      manuId = bp->GetManuId(0);
-    }
-    
-    Int_t status = statusMaker.HVStatus(detElemId,manuId);
-    
-    log.Log(AliMUONPadStatusMaker::AsString(status).Data());
-    
-    meanHVValue += MeanHVValueForDCSAlias((*cd.HV()),name.Data());
-    
-    nofHVValues += 1.0;
-    
-    s->String() += Form(" (DE %4d) ",detElemId);
-    s->String() += AliMUONPadStatusMaker::AsString(status).Data();
-  }
-  
-  TIter nextMessage(&messages);
-  TObjString* msg;
-  
-  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
-  {
-    if ( verbose > 0 || msg->String().Contains("SUMMARY") )
-    {
-      AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d HVchannel %s",runNumber,msg->String().Data()));
-    }
-  }
-  
-  TString lmsg;
-  Int_t occurance;
-  TString totalLog;
-  
-  while (log.Next(lmsg,occurance))
-  {
-    totalLog += Form("%s(%d)",lmsg.Data(),occurance);
-    totalLog += " | ";
-  }
-
-  AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d %s",runNumber,totalLog.Data()));
-
-  // one last loop to get the list of problematic HV channels
-  nextMessage.Reset();
-  
-  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
-  {
-    if ( msg->String().Contains("HV ") )
-    {
-      AliInfoGeneral("AliMUONCDB::CheckHV",Form("     Problem at %s",msg->String().Data()));      
-    }
-  }
-  
-  if (nofHVValues)
-  {
-    meanHVValue /= nofHVValues;
-    AliInfoGeneral("AliMUONCDB::CheckHV",Form("Mean HV for run %09d was %7.2f",runNumber,meanHVValue));
-  }
-  
-  AliCDBManager::Instance()->ClearCache();
-}
-
 

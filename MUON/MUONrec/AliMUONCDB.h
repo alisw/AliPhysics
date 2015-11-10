@@ -36,6 +36,10 @@ namespace AliMUONCDB
   Double_t MeanHVValueForDCSAlias(TMap& hvMap, const char* hvChannel);
 
   void CheckHV(Int_t runNumber, Int_t verbose=0);
+  void CheckHV_ALIROOT_6402(const char* runlist, Bool_t verbose=kFALSE);
+  Bool_t CheckHV_ALIROOT_6402(Int_t runNumber, Bool_t verbose=kFALSE);
+  Bool_t IsSt1DCSAliasRemapped(const TString& name);
+  void PatchHV(TMap& hvMap, TList* messages, Bool_t onlySt1remapped=kFALSE);
 
   Bool_t LoadField();
   Bool_t LoadMapping(Bool_t segmentationOnly = kFALSE);
