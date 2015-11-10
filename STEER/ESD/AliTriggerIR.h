@@ -68,7 +68,7 @@ private:
   Bool_t    fIncomplete2;   // flag which says if the IR is incomplete or not
   Bool_t    fTransErr2;     // flag which says if there was a transmission error (gap) or not
 
-  ClassDef( AliTriggerIR, 2 )  // Trigger Interaction Record (one per orbit)
+  ClassDef( AliTriggerIR, 3 )  // Trigger Interaction Record (one per orbit)
 };
 
 #endif
