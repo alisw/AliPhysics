@@ -122,7 +122,18 @@ struct VirtualDetCfg
     if (!str.IsNull()) str.Append(" ");
     str.Append(append);
   }
-  
+  /** 
+   * Overload this member function to return the string "*OCDB*" to
+   * load geometry from OCDB.  If this returns a null pointer, the
+   * geometry will be constructed.  Alternatively, the one can specify
+   * a file nanme (possibly on remote storage).
+   * 
+   * @return File name, "*OCDB*" string, or null 
+   */
+  virtual const char* GeometrySource() const
+  {
+    return 0;
+  }
 };
 /** Global variable */
 VirtualDetCfg* detCfg = 0;

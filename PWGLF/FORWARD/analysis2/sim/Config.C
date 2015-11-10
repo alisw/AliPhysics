@@ -452,7 +452,8 @@ void Config()
     TString var;
     if       (grp->run <= 140000) var="EMCAL_FIRSTYEARV1";
     else if  (grp->run <= 170593) var="COMPLETEV1";
-    else                          var="EMCAL_COMPLETE12SMV1";
+    else if  (grp->run <= 197692) var="EMCAL_COMPLETE12SMV1";
+    else                          var="EMCAL_COMPLETE12SMV1_DCAL_8SM";
     new AliEMCALv2("EMCAL", var.Data());
   }
   if (detCfg->UseACORDE()) new AliACORDEv1("ACORDE", "normal ACORDE");

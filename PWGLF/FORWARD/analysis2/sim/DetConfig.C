@@ -19,6 +19,7 @@ struct DetCfg : public VirtualDetCfg
   // virtual Bool_t UseHMPID()  const { return false; }
   // virtual Bool_t UseTOF()    const { return false; }
   // virtual Bool_t UseTRD()    const { return false; }
+  const char* GeometrySource() const { return "*OCDB*"; }
 };
 
 /** 
