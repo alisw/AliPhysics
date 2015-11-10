@@ -147,10 +147,13 @@ ConfigFemtoAnalysis(const TString& param_str = "")
 
     if (analysis_config.is_mc_analysis) {
 
-      AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avgsep_cf", 240, 0.0, 40.0);
-      avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
+      AliFemtoModelCorrFctnKStar *cf = new AliFemtoModelCorrFctnKStar("mc_cf", 660, 0, 2.0);
+      cf->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
+      const Int_t lam_pdg = analysis_config.lambda_type == 0 ? 3122 : -3122,
+                   pi_pdg = analysis_config.pion_type == 0 ? 211 : -211;
+      cf->SetExpectedPDGCodes(lam_pdg, pi_pdg);
 
-      analysis->AddCorrFctn(avgsep_cf);
+      analysis->AddCorrFctn(cf);
 
     }
 

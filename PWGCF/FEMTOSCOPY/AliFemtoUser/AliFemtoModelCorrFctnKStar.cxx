@@ -10,32 +10,87 @@
 #endif
 
 #include "AliFemtoModelCorrFctnKStar.h"
+#include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelAllHiddenInfo.h"
 #include "AliFemtoPair.h"
-#include "AliFemtoModelManager.h"
 
-#include <TH1D.h>
-#include <TH2D.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
 
 AliFemtoModelCorrFctnKStar::AliFemtoModelCorrFctnKStar():
-  AliFemtoCorrFctn(),
-  fNumerator(new TH1D("kstar_num", "KStar - Numerator; k*(GeV);", 200, 0.0, 1.0)),
-  fDenominator(new TH1D("kstar_den", "KStar - Denominator; k*(GeV);", 200, 0.0, 1.0))
+  AliFemtoModelCorrFctn()
+  , fResNum(NULL)
+  , fResDen(NULL)
+  , fTrueNum(NULL)
+  , fTrueDen(NULL)
 {
-  fNumerator->Sumw2();
-  fDenominator->Sumw2();
+  fResNum = new TH1F("kstar_num", "KStar - Numerator; k*(GeV);", 200, 0.0, 1.0);
+  fResNum->Sumw2();
+
+  fResDen = new TH1F("kstar_num", "KStar - Numerator; k*(GeV);", 200, 0.0, 1.0);
+  fResDen->Sumw2();
+
+  fTrueNum = new TH1F("true_kstar_num", "KStar - Numerator (True Pairs); k*(GeV);", 200, 0.0, 1.0);
+  fTrueNum->Sumw2();
+
+  fTrueDen = new TH1F("true_kstar_den", "KStar - Denominator (True Pairs); k*(GeV);", 200, 0.0, 1.0);
+  fTrueDen->Sumw2();
 }
 
-AliFemtoModelCorrFctnKStar::AliFemtoModelCorrFctnKStar(const char *title,
+AliFemtoModelCorrFctnKStar::AliFemtoModelCorrFctnKStar(const char *name,
                                                        const int nbins,
                                                        const float KStarLo,
                                                        const float KStarHi):
-  AliFemtoModelCorrFctnKStar()
-  , fNumerator(new TH1D(TString::Format("%s_Num", title), "KStar - Numerator; k*(GeV);", nbins, KStarLo, KStarHi)),
-  , fDenominator(new TH1D(TString::Format("%s_Den", title), "KStar - Denominator; k*(GeV);", nbins, KStarLo, KStarHi))
+  AliFemtoModelCorrFctn()
+  , fResNum(NULL)
+  , fResDen(NULL)
+  , fTrueNum(NULL)
+  , fTrueDen(NULL)
 {
-  fNumerator->Sumw2();
-  fDenominator->Sumw2();
+  fResNum = new TH1F(
+    TString::Format("%s_Num", name),
+    "KStar - Numerator; k*(GeV);",
+    nbins, KStarLo, KStarHi);
+  fResNum->Sumw2();
+
+  fResDen = new TH1F(
+    TString::Format("%s_Den", name),
+    "KStar - Denominator; k*(GeV);",
+    nbins, KStarLo, KStarHi);
+  fResDen->Sumw2();
+
+  fTrueNum = new TH1F(
+    TString::Format("true_%s_Num", name),
+     "KStar - Numerator (True Pairs); k*(GeV);",
+    nbins, KStarLo, KStarHi);
+  fTrueNum->Sumw2();
+
+  fTrueDen = new TH1F(
+    TString::Format("true_%s_Den", name),
+    "KStar - Denominator; k*(GeV);",
+    nbins, KStarLo, KStarHi);
+  fTrueDen->Sumw2();
+}
+
+AliFemtoModelCorrFctnKStar::AliFemtoModelCorrFctnKStar(const AliFemtoModelCorrFctnKStar &orig):
+  AliFemtoModelCorrFctn(orig)
+  , fPairType(orig.fPairType)
+  , fExpectedTrack1Code(orig.fExpectedTrack1Code)
+  , fExpectedTrack2Code(orig.fExpectedTrack2Code)
+  , fResNum(new TH1F(*orig.fResNum))
+  , fResDen(new TH1F(*orig.fResDen))
+  , fTrueNum(new TH1F(*orig.fTrueNum))
+  , fTrueDen(new TH1F(*orig.fTrueDen))
+{
+}
+
+AliFemtoModelCorrFctnKStar::~AliFemtoModelCorrFctnKStar()
+{
+  delete fResNum;
+  delete fResDen;
+  delete fTrueNum;
+  delete fTrueDen;
 }
 
 AliFemtoString
@@ -45,24 +100,84 @@ AliFemtoModelCorrFctnKStar::Report()
   return AliFemtoString(report);
 }
 
-void AliFemtoModelCorrFctnKStar::Finish()
-{ // no-op
-}
 
 TList* AliFemtoModelCorrFctnKStar::GetOutputList()
 {
-  TList *output_list = new TList();
-  output_list->Add(fNumerator);
-  output_list->Add(fDenominator);
+  return AppendOutputList(new TList());
+}
+
+TList* AliFemtoModelCorrFctnKStar::AppendOutputList(TList *output_list)
+{
+  output_list->Add(fResNum);
+  output_list->Add(fResDen);
+  output_list->Add(fTrueNum);
+  output_list->Add(fTrueDen);
   return output_list;
 }
 
+bool AliFemtoModelCorrFctnKStar::PairContainsExpectedTypes(const AliFemtoPair *pair)
+{
+  const AliFemtoModelHiddenInfo
+    *info1 = dynamic_cast<const AliFemtoModelAllHiddenInfo*>(pair->Track1()->HiddenInfo()),
+    *info2 = dynamic_cast<const AliFemtoModelAllHiddenInfo*>(pair->Track2()->HiddenInfo());
+
+  return PairContainsExpectedTypes(info1, info2);
+}
+
+bool AliFemtoModelCorrFctnKStar::PairContainsExpectedTypes(
+  const AliFemtoModelHiddenInfo *info1,
+  const AliFemtoModelHiddenInfo *info2)
+{
+  const bool track_1_is_expected = fExpectedTrack1Code == info1->GetPDGPid(),
+             track_2_is_expected = fExpectedTrack2Code == info2->GetPDGPid();
+
+  return track_1_is_expected && track_2_is_expected;
+}
+
+
 void AliFemtoModelCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
 {
-  fNumerator->Fill(aPair->KStar());
+  const AliFemtoModelHiddenInfo
+    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track1()->HiddenInfo()),
+    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track2()->HiddenInfo());
+
+  if (info1 == NULL || info2 == NULL) {
+    // cout << "NULL ("
+    //      << aPair->Track1()->HiddenInfo() << " "
+    //      << aPair->Track2()->HiddenInfo() << ")\n";
+    return;
+  }
+
+  const Float_t kstar = CalcTrueKStar(aPair);
+  fResNum->Fill(kstar);
+
+  // track type not expected - skip the 'true' histogram
+  if (!PairContainsExpectedTypes(info1, info2)) {
+    return;
+  }
+
+  fTrueNum->Fill(kstar);
 }
 
 void AliFemtoModelCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair)
 {
-  fDenominator->Fill(aPair->KStar());
+  const AliFemtoModelHiddenInfo
+    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track1()->HiddenInfo()),
+    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track2()->HiddenInfo());
+
+  if (info1 == NULL || info2 == NULL) {
+    // cout << "NULL ("
+    //      << aPair->Track1()->HiddenInfo() << " "
+    //      << aPair->Track2()->HiddenInfo() << ")\n";
+    return;
+  }
+
+  const Float_t kstar = CalcTrueKStar(aPair);
+  fResDen->Fill(kstar);
+  // track type not expected - skip the 'true' histogram
+  if (!PairContainsExpectedTypes(info1, info2)) {
+    return;
+  }
+
+  fTrueDen->Fill(kstar);
 }
