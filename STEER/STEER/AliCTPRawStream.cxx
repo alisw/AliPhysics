@@ -218,7 +218,7 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
 	 new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
          irsize=0;
 	}
-        orbit = data[iword]+(data[iword+1]<<8)+(data[iword+2])<<16;
+        orbit = data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16);
       }  
       else if((data[iword+3]&0x80)==0x80){
         irdata[irsize]=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
