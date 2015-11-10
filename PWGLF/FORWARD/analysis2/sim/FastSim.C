@@ -1858,7 +1858,7 @@ struct FastSim : public TSelector
       while ((header = static_cast<AliGenEventHeader*>(next()))) {
 	AliCollisionGeometry* g = dynamic_cast<AliCollisionGeometry*>(header);
 	if (g) geom = g;
-	 hijing = dynamic_cast<AliGenHijingEventHeader*>(header);
+	hijing = dynamic_cast<AliGenHijingEventHeader*>(header);
       }
       if (geom) geometry = geom;
     }

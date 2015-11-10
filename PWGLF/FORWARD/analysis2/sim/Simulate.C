@@ -123,6 +123,8 @@ void Simulate(Int_t nev=1, UInt_t run=0)
   steer.SetTriggerConfig(!isAA ? "p-p" : "Pb-Pb");//Replace with "ocdb"
   steer.UseMagFieldFromGRP();
   steer.UseVertexFromCDB();
+  if (detCfg->GeometrySource()) 
+    steer.SetGeometryFile(detCfg->GeometrySource());
 
   // -----------------------------------------------------------------
   //
