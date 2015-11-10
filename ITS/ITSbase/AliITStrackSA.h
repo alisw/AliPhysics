@@ -53,12 +53,12 @@ class AliITStrackSA : public AliITStrackMI {
 
 
   UInt_t  fSain[kMaxNumberOfClusters];   // cluster index (SA)
-  Int_t fNSA;          // number of clusters SA 
 
-  Int_t fCluMark[AliITSgeomTGeo::kNLayers][kMaxNumberOfClustersL]; //indices for cluster used
-  Int_t fNM[AliITSgeomTGeo::kNLayers]; //number of marked clusters
+  UShort_t fCluMark[AliITSgeomTGeo::kNLayers][kMaxNumberOfClustersL]; //indices for cluster used
+  UChar_t fNM[AliITSgeomTGeo::kNLayers]; //number of marked clusters
+  UChar_t fNSA;          // number of clusters SA 
 
-  ClassDef(AliITStrackSA,4)
+  ClassDef(AliITStrackSA,5)
 };
 
 #endif
