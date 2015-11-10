@@ -5,10 +5,11 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
 		      Bool_t isVZERO = kFALSE,
 		      Bool_t isPbPb = kTRUE,
 		      Bool_t is2011 = kTRUE,
-		      AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
 		      Int_t gAODfilterBit = 768,
 		      Double_t gProbPID = 0.9,
 		      UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+		      Double_t gDCAvtxXY = -1.,
+		      Double_t gDCAvtxZ = -1.,
 		      Bool_t doQA = kTRUE) {
   //Macro to be used for studies of vn for identified particles
   //The macro uses as an input a configuration macro that 
@@ -31,13 +32,13 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
   TString outputSlotName[nCentralitiesMax][nHarmonics];
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralitiesMax - 1; iCentralityBin++) {
     //Create the event cut object
-    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,gCentralityEstimator,doQA);
+    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,doQA);
     
     //Create the RP cut object
     cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,doQA);        
 
     //Create the POI cut object
-    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,isPbPb,doQA); 
+    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,isPbPb,gDCAvtxXY,gDCAvtxZ,doQA); 
     
     suffixName[iCentralityBin] = particleSpecies.Data();
     if(isPbPb) {
@@ -162,11 +163,11 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
 					   Int_t gCentralityMax = -1,
 					   Bool_t isPbPb = kTRUE,
 					   Bool_t is2011 = kTRUE,
-					   AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
 					   Bool_t doQA = kFALSE) {
   //Part of the code that creates the event cut objects
   Double_t gVertexZmin = -10., gVertexZmax = 10.;
-  
+  AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO;
+
   //Create the event cut objects
   AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(Form("eventcutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
   if(isPbPb) {
@@ -228,14 +229,14 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
 					 Bool_t isPbPb = kTRUE,
 					 Int_t gAODfilterBit = 768,
 					 Double_t gProbPID = 0.9,
+					 Double_t gDCAvtxXY = -1.,
+					 Double_t gDCAvtxZ = -1.,
 					 Bool_t doQA = kFALSE) {
   //Part of the code that creates the POI cut objects
   Double_t gEtaMin = -0.8, gEtaMax = 0.8;
   Int_t gMinTPCdedx = 10;
   Bool_t isPID = kTRUE;
   Int_t gCharge = 0;  
-  Double_t gDCAvtxXY = -1.;
-  Double_t gDCAvtxZ = -1.;
   AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
   AliPID::EParticleType particleType = AliPID::kPion;
 
