@@ -682,9 +682,11 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const
   Int_t ntrk=ev->GetNumberOfTracks();
  
   for (Int_t i=0; i<ntrk; i++) {
+    AliESDtrack* trc = GetTrack(i);
+    if (trc->GetFriendNotStored()) continue;
     const AliESDfriendTrack *f=ev->GetTrack(i);
-    if (!f) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    GetTrack(i)->SetFriendTrack(f);
+    if (!f) {AliFatal(Form("NULL pointer for ESD friend track %d",i));}
+    trc->SetFriendTrack(f);
   }
 }
 
@@ -1485,13 +1487,13 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
     if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    const AliESDfriendTrack *f=t->GetFriendTrack();
-    ev->AddTrack(f);
-    // RS: now we store the pointer, no copy
-    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
-
+    if (!t->GetFriendNotStored()) {
+      const AliESDfriendTrack *f=t->GetFriendTrack();
+      ev->AddTrack(f);
+      // RS: now we store the pointer, no copy
+      t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
+    }
   }
-
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
 }
