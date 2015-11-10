@@ -219,7 +219,8 @@ if(FASTJET_FOUND)
     fastjetplugins
     siscone_spherical
     siscone
-    ${FASTJET_LIBS}
+    fastjettools
+    fastjet
     )
 endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
