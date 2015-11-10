@@ -47,6 +47,7 @@ class AliESDEvent;
 class AliESDtrack : public AliExternalTrackParam {
 public:
   //
+  enum {kSkipFriend=BIT(14)}; 
   enum {kNITSchi2Std=3};
   //
   AliESDtrack();
@@ -527,6 +528,9 @@ public:
   Int_t GetNumberOfITSClusters() const { return fITSncls;}
   Int_t GetNumberOfTPCClusters() const { return fTPCncls;}
   Int_t GetNumberOfTRDClusters() const { return fTRDncls;}
+  //
+  void   SetFriendNotStored(Bool_t v) {v ? (fFlags|AliVTrack::kSkipFriend) : (fFlags&(~AliVTrack::kSkipFriend));}
+  Bool_t GetFriendNotStored()    const {return IsOn(AliVTrack::kSkipFriend);}
 
 protected:
   
