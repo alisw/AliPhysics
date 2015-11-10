@@ -2115,7 +2115,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
           Float_t sortedClusterTimeBin[ncl];
           //TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  // RS avoid trashing the heap
 	  AliTPCclusterMI* rowClusterArray[ncl]; // caches clusters for each row  // RS avoid trashing the heap 
-	  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
+	  //	  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
 	  //if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
           for (Int_t i=0;i<ncl;i++) 
           {
@@ -2123,7 +2123,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             qMaxArray[i]=0;
             sortedClusterIndex[i]=i;
             AliTPCclusterMI *rowcl= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
-            if (rowcl) rowClusterArray[i] = rowcl;
+            rowClusterArray[i] = rowcl;
 	    //if (rowcl) {
             //  rowClusterArray.AddAt(rowcl,i);
             //} else {
@@ -3586,6 +3586,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   // RS: the cluster pointers are not permanently attached to the seed during the tracking, need to attach temporarily
   AliTPCclusterMI* seedClusters[kMaxRow];
   int seedsInFriends = 0;
+  fClPointersPoolPtr = fClPointersPool;
   //
   for (Int_t i=0;i<nseed;i++) {
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
@@ -3680,7 +3681,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       Bool_t storeFriend = seedsInFriends<(kMaxFriendTracks-1) && gRandom->Rndm()<(kMaxFriendTracks)/Float_t(nseed);
       //      if (AliTPCReconstructor::StreamLevel()>0 &&storeFriend){
       if (storeFriend){ // RS: seed is needed for calibration, regardless on streamlevel
-	storeFriend++;
+	seedsInFriends++;
 	// RS: this is the only place where the seed is created not in the pool, 
 	// since it should belong to ESDevent
 	//AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
@@ -3689,7 +3690,6 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 	//RS to avoid the cloning the seeds and clusters we will declare the seed to own its
 	// clusters and reattach the clusters pointers from the pool, so they are saved in the friends
 	seed->SetClusterOwner(kTRUE);
-	Int_t poolFilled = (fClPointersPoolPtr-fClPointersPool)/kMaxRow;
 	memcpy(fClPointersPoolPtr,seedClusters,kMaxRow*sizeof(AliTPCclusterMI*));
 	seed->SetClustersArrayTMP(fClPointersPoolPtr);
 	esd->AddCalibObject(seed);
