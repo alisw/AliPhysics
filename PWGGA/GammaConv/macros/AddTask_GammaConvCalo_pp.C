@@ -106,7 +106,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
-  if (trainConfig == 101  || trainConfig == 131 || trainConfig == 120 || trainConfig == 121 ||
+  if (trainConfig == 101  || trainConfig == 131 || trainConfig == 132 || trainConfig == 120 || trainConfig == 121 ||
       trainConfig == 122  || trainConfig == 123 || trainConfig == 201) {
       numberOfCuts = 1;
   }
@@ -787,10 +787,12 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   // ************************************* PHOS cuts ****************************************************
   // LHC12
   } else if (trainConfig == 131){ // PHOS clusters 8 TeV LHC12
-    eventCutArray[ 0] = "00011113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400078023200000"; mesonCutArray[0] = "0163103100000010"; // 300 MeV cluster min energy, t<|30|ns
+  } else if (trainConfig == 132){ // PHOS clusters 8 TeV LHC12
+    eventCutArray[ 0] = "00062113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400078023200000"; mesonCutArray[0] = "0163103100000010"; // 300 MeV cluster min energy, t<|30|ns
   } else if (trainConfig == 142){ // With/without Added Signals
-    eventCutArray[ 0] = "00011113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; //
-    eventCutArray[ 1] = "00011123"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[1] = "0163103100000010"; //
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400078023200000"; mesonCutArray[0] = "0163103100000010"; //
+    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "2444400078023200000"; mesonCutArray[1] = "0163103100000010"; //
 
   // ************************************* EMCAL cuts ****************************************************
   // 7 TeV
