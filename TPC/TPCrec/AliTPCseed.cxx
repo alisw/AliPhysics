@@ -257,7 +257,8 @@ AliTPCseed::~AliTPCseed(){
   if (fClusterPointer) {
     if (fClusterOwner){
       for (Int_t icluster=0; icluster<kMaxRow; icluster++){
-	if(fClusterPointer[icluster]) delete fClusterPointer[icluster];
+	if(fClusterPointer[icluster] && // shared clusters might be already deleted!
+	   fClusterPointer[icluster]->TestBit(TObject::kNotDeleted)) delete fClusterPointer[icluster];
 	fClusterPointer[icluster]=0;
       }
     }
