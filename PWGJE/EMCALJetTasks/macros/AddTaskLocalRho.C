@@ -59,7 +59,6 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
   jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetLeadingHadronType(leadhadtype);
   // task specific setters
-  jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
   jetTask->SetModulationFitMinMaxP(.001, 1);
