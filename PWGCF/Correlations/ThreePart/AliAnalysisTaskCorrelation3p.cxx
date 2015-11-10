@@ -19,6 +19,7 @@
 #include "AliCorrelation3p_noQA.h"
 #include "AliCFPI0.h"
 #include "AliFilteredTrack.h"
+#include "AliFilteredEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliEventPoolManager.h"
@@ -73,6 +74,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
+  , fisDstTree(kFALSE)
   , fgenerate(kFALSE)
   , fQA(kFALSE)
   , fqatask(kFALSE)
@@ -144,6 +146,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
+  , fisDstTree(kFALSE)
   , fgenerate(kFALSE)
   , fQA(kFALSE)  
   , fqatask(kFALSE)
@@ -340,15 +343,18 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   //if it is not found, return without doing anything:
 //   if(fefficiencies&&!fMcArray) return;
   //Find out if it is AOD or ESD.  
-  fisESD=pEvent->IsA()==AliESDEvent::Class();
-  fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  if(!fisDstTree){
+    fisESD=pEvent->IsA()==AliESDEvent::Class();
+    fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  }
   //Get the runnumber and find which bin and fill value this corresponds to.
   fRun = pEvent->GetRunNumber();
   if(fQA){
     TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
     if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
   }
-  GetCentralityAndVertex();
+  if(!fisDstTree)GetCentralityAndVertex();
+  if(fisDstTree)GetCentralityAndVertex(pEvent);
   if(!SelectEvent()) return;//events are rejected.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
@@ -414,7 +420,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 {
   Int_t nofTracks = 0;
   Int_t MultBin; Int_t VZbin;
-  if(fWeights&&false){
+  if(fWeights){
     MultBin = fWeights->GetXaxis()->FindBin(fCentralityPercentile);
     VZbin   = fWeights->GetYaxis()->FindBin(fVertex[2]);
   }
@@ -424,7 +430,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
-    if(fWeights&&false){
+    if(fWeights){
       if(t->Pt()<2.0){
 	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
 	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
@@ -596,6 +602,7 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelected(AliVParticle* p)
   if (p->IsA()==AliCFPI0::Class()) return IsSelectedTrigger(p);
   if (p->IsA()==AliESDtrack::Class() && IsSelectedTrackESD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   if (p->IsA()==AliAODTrack::Class() && IsSelectedTrackAOD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
+  if (p->IsA()==AliFilteredTrack::Class()){dynamic_cast<AliFilteredTrack*>(p)->Calculate();return IsSelectedTrigger(p)||IsSelectedAssociated(p);}
   if (p->IsA()==AliAODMCParticle::Class() && dynamic_cast<AliAODMCParticle*>(p)->IsPhysicalPrimary()) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   return kFALSE;
 }
@@ -660,6 +667,15 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackESD(AliVParticle* t)
   return fTrackCuts->IsSelected(t);
 }
 
+Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackFiltered(AliVParticle* t)
+{
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>3))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()&&(fCutMask==3))return kTRUE;
+  return kFALSE;
+}
+
 void AliAnalysisTaskCorrelation3p::GetMCArray()
 {//Gets the MCarray if we are in AOD.
     fMcArray = 0;
@@ -720,9 +736,31 @@ void AliAnalysisTaskCorrelation3p::GetCentralityAndVertex()
     fVertex[2] = fVertexobj->GetZ();}
   else return;
 }
+
+void AliAnalysisTaskCorrelation3p::GetCentralityAndVertex(AliVEvent* pEvent)
+{
+  //for DstTree:
+  if(fCollisionType == pp){fMultiplicity = dynamic_cast<AliFilteredEvent*>(pEvent)->GetCentralityP();}
+  if(fCollisionType == PbPb){fCentralityPercentile = dynamic_cast<AliFilteredEvent*>(pEvent)->GetCentralityP();}
+
+  //Get the primary Vertex
+  fVertex[0] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexX();
+  fVertex[1] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexY();
+  fVertex[2] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexZ();
+}
+
 Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
 {//This function provides the event cuts for this class.
-  if(fCollisionType==pp){//With pp, the following cuts are applied:
+  if(fisDstTree){
+    if(fCollisionType == pp){
+    FillHistogram("multiplicity",fMultiplicity,0.75);
+    }
+    if(fCollisionType == PbPb){
+      FillHistogram("centrality",fCentralityPercentile,0.75);
+    }
+    FillHistogram("vertex",fVertex[2],0.75);
+  }
+  if(fCollisionType==pp&&!fisDstTree){//With pp, the following cuts are applied:
     FillHistogram("multiplicity",fMultiplicity,0.25);
     FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
@@ -733,7 +771,7 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
     FillHistogram("multiplicity",fMultiplicity,0.75);
     FillHistogram("vertex",fVertex[2],0.75);    
   }
-  if(fCollisionType==PbPb){
+  if(fCollisionType==PbPb&&!fisDstTree){
     FillHistogram("centrality",fCentralityPercentile,0.25);
     FillHistogram("multiplicity",fMultiplicity,0.25);
     FillHistogram("vertex",fVertex[2],0.25);    
@@ -748,6 +786,7 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
     FillHistogram("multiplicity",fMultiplicity,0.75);
     FillHistogram("vertex",fVertex[2],0.75);
   }
+  
   return kTRUE;
 }
 
@@ -824,7 +863,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
 //   }
 //   fOutput->Add(new TH1D("vzeroMult" , "V0 Multiplicity",  200,  0, 30000));
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
-  fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
+  if(!fisDstTree||(fCollisionType==pp))fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
   fOutput->Add(new TH2D("vertex", "Vertex of tracks,selected vs unselected",  100,  -15.0, 15.0,2,0,1));
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
