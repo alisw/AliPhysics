@@ -320,8 +320,8 @@ struct INELAdder : public SysErrorAdder
       case  900:   fLow = 0.001;  fHigh = 0.003; break;
       case 2760:   fLow = 0.0035; fHigh = 0.006; break;
       case 7000: 
-      case 8000:
-      case 13000: fLow = 0.003;  fHigh = 0.006; break;
+      case 8000:   fLow = 0.003;  fHigh = 0.006; break;
+      case 13000:  fLow = fHigh = 0.028; break;
       default: break;
       }
     }
@@ -340,8 +340,7 @@ struct INELAdder : public SysErrorAdder
   Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
     gse->AddQualifier("TRIGGER", "INEL");
-    return
-      SysErrorAdder::MakeTrigger(gse, l);
+    return SysErrorAdder::MakeTrigger(gse, l);
   }
 };
 /**
@@ -357,8 +356,12 @@ struct INELGt0Adder : public SysErrorAdder
    * @param sNN Collision energy
    */
   INELGt0Adder(const TString& sys, UShort_t sNN)
-    : SysErrorAdder(sys, sNN, "INEL>0")
-  {}
+    : SysErrorAdder(sys, sNN, "INEL>0"), fLow(0), fHigh(0)
+  {
+    switch (sNN) {
+    case 13000:  fLow = fHigh = 0.023; break;
+    }    
+  }
   const char* MakeName() const { return "INELGt0"; }
   /** 
    * Get trigger systematic error 
@@ -368,7 +371,7 @@ struct INELGt0Adder : public SysErrorAdder
    */
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
-    low = high = 0;
+    low = fLow; high = fHigh;
   }
   Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
@@ -376,6 +379,8 @@ struct INELGt0Adder : public SysErrorAdder
     gse->AddQualifier("N", ">0");
     return SysErrorAdder::MakeTrigger(gse, l);
   }
+  Double_t fLow;
+  Double_t fHigh;
 };
 /**
  * For pp NSD results
