@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //--         Gustavo Conesa (LPSC-Grenoble), move common clusterizer functionalities to mother class
 //////////////////////////////////////////////////////////////////////////////
@@ -48,6 +46,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliESDCaloCluster.h"
 #include "AliEMCALUnfolding.h"
 
@@ -70,8 +69,11 @@ AliEMCALClusterizerv2::AliEMCALClusterizerv2(AliEMCALGeometry* geometry)
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerv2::AliEMCALClusterizerv2(AliEMCALGeometry* geometry, AliEMCALCalibData* calib, AliCaloCalibPedestal* caloped)
-  : AliEMCALClusterizerv1(geometry, calib, caloped), fDoEnGradCut(1)
+AliEMCALClusterizerv2::AliEMCALClusterizerv2(AliEMCALGeometry* geometry, 
+                                             AliEMCALCalibData* calib, 
+                                             AliEMCALCalibTime* calibt, 
+                                             AliCaloCalibPedestal* caloped)
+  : AliEMCALClusterizerv1(geometry, calib, calibt, caloped), fDoEnGradCut(1)
 {
   // ctor, geometry and calibration are initialized elsewhere.
 }

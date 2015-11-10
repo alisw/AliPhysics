@@ -60,6 +60,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliESDCaloCluster.h"
 #include "AliEMCALUnfolding.h"
 
@@ -82,8 +83,12 @@ AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped)
-: AliEMCALClusterizer(geometry, calib, caloped), fNRowDiff(1), fNColDiff(1), fEnergyGrad(0)
+AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, 
+                                               AliEMCALCalibData * calib, 
+                                               AliEMCALCalibTime * calibt, 
+                                               AliCaloCalibPedestal * caloped)
+: AliEMCALClusterizer(geometry, calib, calibt, caloped), 
+fNRowDiff(1), fNColDiff(1), fEnergyGrad(0)
 {
   // ctor, geometry and calibration are initialized elsewhere.
 }

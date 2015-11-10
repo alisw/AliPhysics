@@ -32,6 +32,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliESDCaloCluster.h"
 #include "AliEMCALUnfolding.h"
 
@@ -94,8 +95,11 @@ AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry*
 }
 
 //__________________________________________________________________________________________
-AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped) :
-  AliEMCALClusterizer(geometry, calib, caloped),
+AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry* geometry, 
+                                                               AliEMCALCalibData * calib, 
+                                                               AliEMCALCalibTime * calibt, 
+                                                               AliCaloCalibPedestal * caloped) :
+  AliEMCALClusterizer(geometry, calib, calibt, caloped),
   fNphi(4), 
   fNeta(4), 
   fShiftPhi(2), 

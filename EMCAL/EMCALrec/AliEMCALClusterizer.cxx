@@ -53,6 +53,7 @@ class TSystem;
 #include "AliCDBManager.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 class AliCDBStorage;
 #include "AliCDBEntry.h"
 
@@ -67,6 +68,7 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   fRecPoints(NULL),
   fGeom(NULL),
   fCalibData(NULL), 
+  fCalibTime(NULL), 
   fCaloPed(NULL),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
@@ -89,6 +91,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fRecPoints(NULL),
   fGeom(geometry),
   fCalibData(NULL), 
+  fCalibTime(NULL), 
   fCaloPed(NULL),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
@@ -120,6 +123,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry, 
                                          AliEMCALCalibData *calib, 
+                                         AliEMCALCalibTime *calibt, 
                                          AliCaloCalibPedestal *caloped): 
   fIsInputCalibrated(kFALSE),
   fJustClusters(kFALSE),
@@ -128,6 +132,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry,
   fRecPoints(NULL),
   fGeom(geometry),
   fCalibData(calib),
+  fCalibTime(calibt),
   fCaloPed(caloped),
   fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(0.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.), fTimeCalibration(0),
@@ -255,15 +260,21 @@ void AliEMCALClusterizer::Calibrate(Float_t & amp, Float_t & time, const Int_t a
     return ;
   }
 	  
-  Int_t bc = 0; // Get somehow the bunch crossing number
-
+  // Energy calibration
   fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
   fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-  fTimeECA        = fCalibData->GetTimeChannel(iSupMod,ieta,iphi, bc);
-  
-  if ( fTimeCalibration ) time -= fTimeECA ;
-  
+
   amp   = amp * fADCchannelECA - fADCpedestalECA ;  
+
+  // Time calibration
+  if(fCalibTime && fTimeCalibration)
+  {
+    Int_t bc = 0; // Get somehow the bunch crossing number
+
+    fTimeECA        = fCalibTime->GetTimeChannel(iSupMod,ieta,iphi, bc) * 1e-9; // ns to s
+  
+    time -= fTimeECA ;
+  }
 }
 
 //____________________________________________________________________________
@@ -279,7 +290,7 @@ void AliEMCALClusterizer::GetCalibrationParameters()
   if (fIsInputCalibrated)
     return;
   
-  //Check if calibration is stored in data base
+  // Check if energy calibration is stored in data base
   if(!fCalibData)
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
@@ -288,7 +299,21 @@ void AliEMCALClusterizer::GetCalibrationParameters()
   }
   
   if(!fCalibData)
-    AliFatal("Calibration parameters not found in CDB!");
+    AliFatal("Energy calibration parameters not found in CDB!");
+  
+  if(fTimeCalibration)
+  {
+    // Check if energy calibration is stored in data base
+    if(!fCalibTime)
+    {
+      AliCDBEntry *entry = (AliCDBEntry*) 
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Time");
+      if (entry) fCalibTime =  (AliEMCALCalibTime*) entry->GetObject();
+    }
+    
+    if(!fCalibTime)
+      AliFatal("Time calibration parameters not found in CDB!");
+  }
 }
 
 //____________________________________________________________________________
@@ -362,6 +387,7 @@ void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
 
   fNumberOfECAClusters = 0 ;
   fCalibData           = 0 ;
+  fCalibTime           = 0 ;
   fCaloPed             = 0 ;
 	
   if(!recParam) {

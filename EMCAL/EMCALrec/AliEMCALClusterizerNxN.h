@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliEMCALClusterizerNxN.h 41181 2010-05-12 13:58:06Z gconesab $ */
-
 //_________________________________________________________________________
 // This class derives from AliEMCALClustrerizer but also keeps the API of AliEMCALClusterizerv1
 // Algorithm:
@@ -26,7 +24,8 @@ public:
   
   AliEMCALClusterizerNxN() ;         
   AliEMCALClusterizerNxN(AliEMCALGeometry* geometry);
-  AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * pedestal);
+  AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, AliEMCALCalibData * calib,
+                         AliEMCALCalibTime * calibt, AliCaloCalibPedestal *pedestal);
 	
   virtual ~AliEMCALClusterizerNxN()  ;
 

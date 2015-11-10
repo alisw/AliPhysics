@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
                             
-/* $Id$ */
-
 //_________________________________________________________________________
 //  Base class for the clusterization algorithm (pure abstract)
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
@@ -22,6 +20,7 @@ class TTree;
 #include "AliLog.h"
 class AliEMCALGeometry;
 class AliEMCALCalibData;
+class AliEMCALCalibTime;
 class AliCaloCalibPedestal;
 class AliEMCALRecParam;
 #include "AliEMCALUnfolding.h"
@@ -32,7 +31,8 @@ public:
 
   AliEMCALClusterizer();
   AliEMCALClusterizer(AliEMCALGeometry *geometry);
-  AliEMCALClusterizer(AliEMCALGeometry *geometry, AliEMCALCalibData *calib, AliCaloCalibPedestal *pedestal);
+  AliEMCALClusterizer(AliEMCALGeometry *geometry, AliEMCALCalibData *calib, 
+                      AliEMCALCalibTime * calibt, AliCaloCalibPedestal *pedestal);
   virtual ~AliEMCALClusterizer();
 
   // main methods
@@ -61,8 +61,9 @@ public:
 
   virtual void    GetCalibrationParameters(void);
   virtual void    GetCaloCalibPedestal(void);
-  virtual void    SetCalibrationParameters(AliEMCALCalibData *calib)   { fCalibData = calib;   }
-  virtual void    SetCaloCalibPedestal(AliCaloCalibPedestal  *caped)   { fCaloPed   = caped;   }
+  virtual void    SetCalibrationParameters(AliEMCALCalibData *calib)     { fCalibData = calib;   }
+  virtual void    SetTimeCalibrationParameters(AliEMCALCalibTime *calib) { fCalibTime = calib;   }
+  virtual void    SetCaloCalibPedestal(AliCaloCalibPedestal  *caped)     { fCaloPed   = caped;   }
   
   virtual Float_t GetTimeMin()                        const { return fTimeMin;                 }
   virtual Float_t GetTimeMax()                        const { return fTimeMax;                 }
@@ -126,9 +127,10 @@ protected:
   TTree                *fTreeR;         // tree with output clusters
   TObjArray            *fRecPoints;     // array with EMCAL clusters
   
-  AliEMCALGeometry     *fGeom;          //!pointer to geometry for utilities
-  AliEMCALCalibData    *fCalibData;     //!calibration database if aval
-  AliCaloCalibPedestal *fCaloPed;       //!tower status map if aval
+  AliEMCALGeometry     *fGeom;          //! pointer to geometry for utilities
+  AliEMCALCalibData    *fCalibData;     //! energy calibration database if aval
+  AliEMCALCalibTime    *fCalibTime;     //! time calibration database if aval
+  AliCaloCalibPedestal *fCaloPed;       //! tower status map if aval
   
   Float_t  fADCchannelECA;              // width of one ADC channel for EC section (GeV)
   Float_t  fADCpedestalECA;             // pedestal of ADC for EC section (GeV) 
@@ -158,7 +160,7 @@ protected:
   AliEMCALClusterizer(              const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,9)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,10)  // Clusterization algorithm class 
   
 };
 #endif // AliEMCALCLUSTERIZER_H

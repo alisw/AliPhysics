@@ -36,6 +36,7 @@
 #include "AliCodeTimer.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
@@ -78,7 +79,7 @@ TClonesArray*               AliEMCALReconstructor::fgTriggerDigits    = 0;   // 
 AliEMCALTriggerElectronics* AliEMCALReconstructor::fgTriggerProcessor = 0x0;
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fGeom(0),fCalibData(0),fPedestalData(0),fTriggerData(0x0), fMatches(0x0)
+  : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0),fTriggerData(0x0), fMatches(0x0)
 {
   // ctor
 
@@ -119,7 +120,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   else          AliInfo (Form("Geometry name: <<%s>>",fGeom->GetName())); 
   
   //---------------------------
-  // Get calibration parameters	
+  // Get energy calibration parameters	
   if(!fCalibData)
   {
       AliCDBEntry *entry = (AliCDBEntry*)  man->Get("EMCAL/Calib/Data");
@@ -127,7 +128,19 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   }
   
   if(!fCalibData)
-    AliFatal("Calibration parameters not found in CDB!");
+    AliFatal("Energy Calibration parameters not found in CDB!");
+  
+  
+  //---------------------------
+  // Get time calibration parameters if requested	
+  if(!fCalibTime)
+  {
+    AliCDBEntry *entry = (AliCDBEntry*)  man->Get("EMCAL/Calib/Time");
+    if (entry) fCalibTime =  (AliEMCALCalibTime*) entry->GetObject();
+  }
+  
+  if(!fCalibTime)
+    AliFatal("Time Calibration parameters not found in CDB!");
   
   //------------------
   // Get bad channels	
@@ -178,6 +191,7 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   
   //No need to delete, recovered from OCDB
   //if(fCalibData)         delete fCalibData;
+  //if(fCalibTime)         delete fCalibTime;
   //if(fPedestalData)      delete fPedestalData;
   
   if(fgDigitsArr) fgDigitsArr->Clear("C");
@@ -242,18 +256,18 @@ void AliEMCALReconstructor::InitClusterizer() const
     }
     else return;
   }
-  
+    
   if      (clusterizerType  == AliEMCALRecParam::kClusterizerv1)
     {
-      fgClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData,fPedestalData);
+      fgClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData,fCalibTime,fPedestalData);
     }
   else if (clusterizerType  == AliEMCALRecParam::kClusterizerNxN)
     {
-      fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData);
+      fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fCalibTime,fPedestalData);
     }
   else if (clusterizerType  == AliEMCALRecParam::kClusterizerv2)
   {
-    fgClusterizer = new AliEMCALClusterizerv2   (fGeom, fCalibData,fPedestalData);
+    fgClusterizer = new AliEMCALClusterizerv2   (fGeom, fCalibData,fCalibTime,fPedestalData);
   }
   else 
   {

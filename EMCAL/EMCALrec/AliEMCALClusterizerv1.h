@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  Implementation version 1 of the clusterization algorithm                     
 //  Performs clusterization (collects neighbouring active cells) and 
@@ -30,7 +28,8 @@ public:
   
   AliEMCALClusterizerv1() ;         
   AliEMCALClusterizerv1(AliEMCALGeometry* geometry);
-  AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * pedestal);
+  AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib,
+                        AliEMCALCalibTime * calibt, AliCaloCalibPedestal *pedestal);
 	
   virtual ~AliEMCALClusterizerv1()  ;
 
