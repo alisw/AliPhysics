@@ -610,7 +610,7 @@ Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
       }
       else
       {
-        AliInfo(Form("fHistGainTime full (has %.0f merged tracks, max allowed: %.0f)",fHistGainTime->GetEntries(),fgMergeEntriesCut));
+        AliInfo(Form("fHistGainTime full (has %.0f merged tracks, trying to add %.0f, max allowed: %.0f)",fHistGainTime->GetEntries(), cal->GetHistGainTime()->GetEntries(), fgMergeEntriesCut));
       }
     }
 
