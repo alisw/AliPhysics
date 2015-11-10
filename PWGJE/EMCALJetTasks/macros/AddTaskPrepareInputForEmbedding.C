@@ -1,11 +1,8 @@
 AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
-   TString njetAreaSub = "Jet_AKTChargedR040_PicoTracks_pT0150_E_scheme", 
-   TString njetConstSub = "Jet_AKTChargedR040_PicoTracks_pT0150_E_schemeConstSub", 
+   TString njet = "Jet_AKTChargedR040_PicoTracks_pT0150_E_scheme", 
    Double_t R = 0.4, 
    TString ntrack = "PicoTracks", 
    TString accType = "TPC", 
-   TString rhoname = "", 
-   TString rhoMname = "",
    Bool_t  useLeadingJet = kFALSE){
    
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,17 +21,11 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
     task->SetLeadingJetOnly(useLeadingJet);
     
     AliParticleContainer *partCont  = task->AddParticleContainer(ntrack);
-    AliParticleContainer *partContConst  = task->AddParticleContainer(Form("%s_%s",ntrack.Data(), njetConstSub.Data()));
        
-    AliJetContainer *jetContA  = task->AddJetContainer(njetAreaSub, accType, R);
-    jetContA->SetRhoName(rhoname);
-    jetContA->SetRhoMassName(rhoMname);
-    jetContA->ConnectParticleContainer(partCont);
-    
-    AliJetContainer *jetContC  = task->AddJetContainer(njetConstSub, accType, R);
-    jetContC->SetRhoName(rhoname);
-    jetContC->SetRhoMassName(rhoMname);
-    jetContC->ConnectParticleContainer(partContConst);
+    AliJetContainer *jetCont  = task->AddJetContainer(njet, accType, R);
+    //jetCont->SetRhoName(rhoname);
+    //jetCont->SetRhoMassName(rhoMname);
+    jetCont->ConnectParticleContainer(partCont);
     
     mgr->AddTask(task);
     

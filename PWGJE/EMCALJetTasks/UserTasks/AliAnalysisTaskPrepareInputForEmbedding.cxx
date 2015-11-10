@@ -4,7 +4,6 @@
 #include <AliLog.h>
 #include <AliEmcalJet.h>
 #include "AliJetContainer.h"
-#include "AliRhoParameter.h"
 #include "AliAnalysisTaskPrepareInputForEmbedding.h"
 
 
