@@ -9,6 +9,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <TH2.h>
 #include <iostream>
 
 //____________________________________________________________________
@@ -24,6 +25,7 @@ AliBaseAODTask::AliBaseAODTask()
     fVertex(0),
     fCent(0),
     fAccVertex(0),
+    fAccVertexXY(0),
     fAccCent(0),
     fFirstEvent(true),
     fCloneList(false),
@@ -45,6 +47,7 @@ AliBaseAODTask::AliBaseAODTask(const char* name,
     fVertex(0),
     fCent(0),
     fAccVertex(0),
+    fAccVertexXY(0),
     fAccCent(0),
     fFirstEvent(true),
     fCloneList(false),
@@ -307,6 +310,13 @@ AliBaseAODTask::UserCreateOutputObjects()
   fAccVertex->SetLineColor(kGreen+2);
   fSums->Add(fAccVertex);
 
+  fAccVertexXY = new TH2D("vertexAccXY", "IP_{x,y} of accepted events",
+			  1000,-2,2,1000,-2,2);
+  fAccVertexXY->SetXTitle("IP_{x} [cm]");
+  fAccVertexXY->SetYTitle("IP_{y} [cm]");
+  fAccVertexXY->SetDirectory(0);
+  fSums->Add(fAccVertexXY);
+  
   fCent = new TH1D("cent","Centrality of all events",102, -1, 101);
   fCent->SetXTitle("Centrality [%]");
   fCent->SetYTitle("Events");
@@ -396,9 +406,32 @@ AliBaseAODTask::GetCentrality(AliAODEvent&,
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetIpZ(AliAODEvent&,
-           AliAODForwardMult* forward)
+		       AliAODForwardMult* forward)
 {
   return forward->GetIpZ();
+}
+//____________________________________________________________________
+Bool_t
+AliBaseAODTask::GetIpXY(AliAODEvent& aod, Double_t& x, Double_t& y)
+			
+{
+  x = -10000;
+  y = -10000;
+  AliVVertex* gen   = aod.GetPrimaryVertex();
+  AliVVertex* vtx[] = { aod.GetPrimaryVertexSPD(),
+			aod.GetPrimaryVertexTPC(),
+			gen };
+  Bool_t ret = false;
+  for (Int_t i = 0; i < 3; i++) { 
+    if (!vtx[i] || (vtx[i] != gen && !vtx[i]->IsFromVertexer3D()))
+      continue;
+	
+    x = vtx[i]->GetX();
+    y = vtx[i]->GetY();
+    ret = true;
+    break;
+  }
+  return ret;
 }
 
 //____________________________________________________________________
@@ -469,6 +502,10 @@ AliBaseAODTask::UserExec(Option_t *)
   if (taken) {
     fAccVertex->Fill(vtx);
     fAccCent->Fill(cent);
+
+    Double_t ipX, ipY;
+    GetIpXY(*aod, ipX,  ipY);
+    fAccVertexXY->Fill(ipX, ipY);
   }
 
   PostData(1, fSums);
