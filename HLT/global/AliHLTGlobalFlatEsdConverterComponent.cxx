@@ -340,7 +340,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
 
-  HLTWarning("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
+  HLTInfo("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
   
   // Set TPC MC labels to tracks
   for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
