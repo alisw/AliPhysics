@@ -3197,11 +3197,49 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
   switch(fSwitchNonLinearity){
 
     // Standard NonLinearity - standard kPi0MCv5 for MC and kSDMv5 for data from Jason
-    case 01:
-      energy *= FunctionNL_kPi0MC(energy, 1.0, 0.0664778, 1.57, 0.0967998, 219.381, 63.1604, 1.01286);
-      if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.964, -3.132, -0.435);
+    case 1:
+      energy *= FunctionNL_kPi0MCv5(energy);
+      if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
       break;
 
+    // kPi0MCv3 for MC and kTestBeamv3 for data
+    case 2:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
+      else energy *= FunctionNL_kPi0MCv3(energy);
+      break;
+    // kPi0MCv3 for MC and kTestBeamv2 for data
+    case 3:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
+      else energy *= FunctionNL_kPi0MCv3(energy);
+      break;
+
+    // kPi0MCv2 for MC and kTestBeamv3 for data
+    case 4:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
+      else energy *= FunctionNL_kPi0MCv2(energy);
+      break;
+    // kPi0MCv2 for MC and kTestBeamv2 for data
+    case 5:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
+      else energy *= FunctionNL_kPi0MCv2(energy);
+      break;
+
+    // kPi0MCv1 for MC and kTestBeamv3 for data
+    case 6:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
+      else energy *= FunctionNL_kPi0MCv1(energy);
+      break;
+    // kPi0MCv1 for MC and kTestBeamv2 for data
+    case 7:
+      if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
+      else energy *= FunctionNL_kPi0MCv1(energy);
+      break;
+
+    // kPi0MCv6 for MC and kSDMv6 for data
+    case 8:
+      if(isMC == 0) energy *= FunctionNL_kSDMv6(energy);
+      else energy *= FunctionNL_kPi0MCv6(energy);
+      break;
 //----------------------------------------------------------------------------------------------------------
 
     // NonLinearity LHC12 ConvCalo - only shifting MC
@@ -3248,13 +3286,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       }
       break;
 
-    // NonLinearity LHC12 ConvCalo - kTestBeamv2 + shifting MC
+    // NonLinearity LHC12 ConvCalo - kTestBeamv3 + shifting MC
     case 13:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_11;// goto previous case for shifting MC
       break;
 
-    // NonLinearity LHC12 Calo - kTestBeamv2 + shifting MC
+    // NonLinearity LHC12 Calo - kTestBeamv3 + shifting MC
     case 14:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_12;// goto previous case for shifting MC
@@ -3308,13 +3346,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       }
       break;
 
-    // NonLinearity LHC11a ConvCalo - kTestBeamv2 + shifting MC
+    // NonLinearity LHC11a ConvCalo - kTestBeamv3 + shifting MC
     case 23:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_21;// goto previous case for shifting MC
       break;
 
-    // NonLinearity LHC11a Calo - kTestBeamv2 + shifting MC
+    // NonLinearity LHC11a Calo - kTestBeamv3 + shifting MC
     case 24:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_22;// goto previous case for shifting MC
@@ -3358,13 +3396,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       }
       break;
 
-    // NonLinearity LHC13 pPb ConvCalo  - kTestBeamv2 + shifting MC
+    // NonLinearity LHC13 pPb ConvCalo  - kTestBeamv3 + shifting MC
     case 83:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_81;// goto previous case for shifting MC
       break;
 
-    // NonLinearity LHC13 pPb Calo  - kTestBeamv2 + shifting MC
+    // NonLinearity LHC13 pPb Calo  - kTestBeamv3 + shifting MC
     case 84:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_82;// goto previous case for shifting MC
@@ -3398,15 +3436,56 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Fl
   return ( p0 + exp( p1 + ( p2 * e ) ) );
 }
 
+//************************************************************************
+// predefined functions:
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv1(Float_t e){
+  return ( 1.014 * exp( 0.03329 / e ) ) + ( ( -0.3853 / ( 0.5423 * 2. * TMath::Pi() ) * exp( -( e + 0.4335 ) * ( e + 0.4335 ) / (2. * 0.5423 * 0.5423 ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv2(Float_t e){
+  return ( 0.311111 / TMath::Power( e - 0.571666, 0.567995 ) + 1 );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv3(Float_t e){
+  return ( 1.0 / ( 0.981039 * ( 1. / ( 1. + 0.113508 * exp( -e / 1.00173 ) ) * 1. / ( 1. + 0.0967998 * exp( ( e - 219.381 ) / 63.1604 ) ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv5(Float_t e){
+  return ( 1.01286 / ( 1.0 * ( 1. / ( 1. + 0.0664778 * exp( -e / 1.57 ) ) * 1. / ( 1. + 0.0967998 * exp( ( e - 219.381 ) / 63.1604 ) ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv6(Float_t e){
+  return ( 1.00437 / ( 1.0 * ( 1. / ( 1. + 0.0797873 * exp( -e / 1.68322 ) ) * 1. / ( 1. + 0.0806098 * exp( ( e - 244.586 ) / 116.938 ) ) ) ) );
+}
+
+// only shifting data, to be used with kPi0MCv5 before
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kSDMv5(Float_t e){
+  return ( 0.964 + exp( -3.132 + ( -0.435 * 2.0 * e ) ) );
+}
+
+// be careful: different definition than kSDMv5
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kSDMv6(Float_t e){
+  return ( 0.987054 / ( 1.0 * ( 1. / ( 1. + 0.237767 * exp( -e / 0.651203 ) ) * 1. / ( 1. + 0.183741 * exp( ( e - 155.427 ) / 17.0335 ) ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
+  return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
+}
+
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv3(Float_t e){
   return ( 0.9615 / ( 0.976941 *( 1. / ( 1. + 0.162310 * exp( -e / 1.08689 ) ) * 1. / ( 1. + 0.0819592 * exp( ( e - 152.338 ) / 30.9594 ) ) ) ) );
 }
-//old kTestBeamv2, changed 30.10.2015
-//Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
-//  return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
-//}
 
+//************************************************************************
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e){
   return ( exp( a+ b*E ) + c + d*E + e/E);
