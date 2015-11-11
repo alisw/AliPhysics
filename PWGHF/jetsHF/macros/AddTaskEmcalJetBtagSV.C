@@ -1,106 +1,116 @@
-AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trackcontname = "Tracks", const char *jetcontname = "Jets", const char *mctrackcontname = "MCParticles", const char *mcjetcontname = "MCJets", Double_t jetradius = 0.2, const char *type = "TPC", TString fileout="standard", Bool_t corrections_mode=kFALSE, Bool_t pthardsetting=kFALSE, Bool_t doBkgRej = kTRUE, const char* pthardmin="", const char * eventflavor="", Double_t taggingradius=0.4, TString cutfile="HFJetVertexCuts.root",Float_t minC=0., Float_t maxC=100.,const char *taskname = "HFjetsContainer", Bool_t QAvtxStep=kFALSE)
+AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "Tracks",
+                                                     const char *jetcontname   = "Jets",
+                                                     const char *mctrkcontname = "MCParticles",
+                                                     const char *mcjetcontname = "MCJets",
+                                                     const char *type          = "TPC",
+                                                     Double_t jetRadius        = 0.2,
+                                                     Bool_t corrMode           = kFALSE,
+                                                     Bool_t doBkgRej           = kTRUE,
+                                                     Bool_t doQAvtx            = kFALSE,
+                                                     Bool_t doFillV0           = kFALSE,
+                                                     Bool_t checkXsec          = kFALSE,
+                                                     Int_t debug               = 1,
+                                                     Double_t tagRadius        = 0.4,
+                                                     const char *patt          = "",
+                                                     const char *cutflname     = "",
+                                                     Float_t minC = 0., Float_t maxC = 100.,
+                                                     const char *taskname      = "HFJetsVertex")
 {
-
-  // Mailto: andrea.rossi@ts.infn.it, svallero@to.infn.it, s.lapointe@cern.ch
-
-  Int_t last=0;
+  // Mailto: ycorrale@cern.ch
 
   // Get the AnalysisManager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
+
     ::Error("AddTaskEmcalJetBtagSV", "No analysis manager to connect to.");
     return NULL;
   }
 
   TString name(taskname);
-  if (strcmp(pthardmin,"")) {
-    name += "_";
-    name += pthardmin;
-  }
-  TString str,containername;
-  if(fileout=="standard"){
-    fileout=AliAnalysisManager::GetCommonFileName();
-    fileout+=":PWGHF_HFCJ_";
-    fileout+="HFJetsVertex";
-    str="HFJetsVertex";
-  }
-  else {
-    str=fileout;
-    str.ReplaceAll(".root","");
-  }
-  str.Prepend("_");
-
   // Configure analysis task
-  AliAnalysisTaskEmcalJetBtagSV *hfTask;
-  hfTask = new AliAnalysisTaskEmcalJetBtagSV(name);
+  AliAnalysisTaskEmcalJetBtagSV *hfTask = new AliAnalysisTaskEmcalJetBtagSV(name);
 
-  AliParticleContainer *trackCont  = hfTask->AddParticleContainer(trackcontname);
-  TString strType(type);
-  AliJetContainer *jetCont = hfTask->AddJetContainer(jetcontname,strType,jetradius);
+  AliParticleContainer *trkCont  = hfTask->AddParticleContainer(trkcontname);
 
-  if (corrections_mode){
-  AliParticleContainer *mctrackCont  = hfTask->AddParticleContainer(mctrackcontname);
   TString strType(type);
-  AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname,strType,jetradius);
+  AliJetContainer *jetCont = hfTask->AddJetContainer(jetcontname, strType, jetRadius);
+
+  if (corrMode) {
+
+    AliParticleContainer *mctrackCont  = hfTask->AddParticleContainer(mctrkcontname);
+    
+    AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetRadius);
   }
-  
+
   // Set data or corrections mode
-  hfTask->SetCorrectionsMode(corrections_mode); // kFALSE for real data
+  hfTask->SetCorrectionMode(corrMode); // kFALSE for real data
   hfTask->SetDoBkgRejection(doBkgRej);
-  
+  hfTask->SetDoFillSecVtxQA(doQAvtx);
+  hfTask->SetDoFillV0Trks(doFillV0);
+  hfTask->SetCheckMCCrossSection(checkXsec);
+  hfTask->SetGenNamePattern(patt);
+  hfTask->SetDebugLevel(debug);
+
   hfTask->SetJetContName(jetcontname);
-  hfTask->SetTrackContName(trackcontname);
+  hfTask->SetTrkContName(trkcontname);
 
   // choose the method to select on the flavor of the jet and, if needed, select the pt-hard bin via the minimum pt-hard
   // also set mc jet and particle container
-  if(corrections_mode){
-  hfTask->SetMcJetContName(mcjetcontname);
-  hfTask->SetMcTrackContName(mctrackcontname);  
-  hfTask->SetPtHardSelection(pthardsetting,pthardmin,eventflavor); // kTRUE for selecting events with pt-hard, event flavor can be, e.g. bbbar, ccbar, jetjet
-  hfTask->SetJetTaggingRadius(taggingradius);
+  if (corrMode) {
+
+    hfTask->SetMcJetContName(mcjetcontname);
+    hfTask->SetMcTrkContName(mctrkcontname);
+    hfTask->SetJetTaggingRadius(tagRadius);
   }
-  // output of secondary vertex QA 
-  hfTask->DoSecondaryVertexQA(QAvtxStep);
+
   // Define the tagger
-  AliHFJetsTaggingVertex *tagger=new AliHFJetsTaggingVertex();
+  AliHFJetsTaggingVertex *tagger = new AliHFJetsTaggingVertex();
 
   // Set analysis cuts
-  if(!gSystem->AccessPathName(cutfile.Data(),kFileExists)){
+  TString strCutFlName(cutflname);
+  if (!strCutFlName.IsNull() && !gSystem->AccessPathName(strCutFlName.Data(), kFileExists)) {
+
     // read cuts from file
-    ::Info(Form("Reading cuts from file: %s", cutfile.Data()));
-    TFile *f=TFile::Open(cutfile.Data());
-    AliRDHFJetsCuts *cuts= (AliRDHFCutsD0toKpi*)f->Get("HFJetsCutsVertex");
-    // Set centrality 
+    ::Info(Form("Reading cuts from file: %s", strCutFlName.Data()));
+    
+    TFile *f = TFile::Open(strCutFlName.Data()); 
+    AliRDHFJetsCuts *cuts= (AliRDHFCutsD0toKpi *)f->Get("HFJetsCutsVertex");
+
+    // Set centrality
     cuts->SetMinCentrality(minC);
     cuts->SetMaxCentrality(maxC);
     cuts->SetTriggerMask(AliVEvent::kAny);
     cuts->SetTriggerClass(trigClass);
     cuts->PrintAll();
     hfTask->SetCuts(cuts);
-  } else {
+  } 
+  else {
+
     // define your cuts here
-    DefineCutsTask(hfTask, minC, maxC, corrections_mode);
+    DefineCutsTask(hfTask, minC, maxC, corrMode);
     DefineCutsTagger(tagger);
   }
- 
+
   // Add task to manager
   hfTask->SetTagger(tagger);
   mgr->AddTask(hfTask);
-  
+
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput =   mgr->GetCommonInputContainer();
-  mgr->ConnectInput(hfTask,0,cinput);
- 
+  AliAnalysisDataContainer *cInput =   mgr->GetCommonInputContainer();
+  mgr->ConnectInput(hfTask, 0, cInput);
+
   // All containers in a list
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(name.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
-  mgr->ConnectOutput(hfTask,1,coutput);
-  
+  AliAnalysisDataContainer *cOutput = mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
+  mgr->ConnectOutput(hfTask, 1, cOutput);
+
   delete tagger;
   return hfTask;
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, Float_t minC, Float_t maxC, Bool_t corrections_mode){
+Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, 
+                      Float_t minC, Float_t maxC, Bool_t corrMode) 
+{
 
     // define cuts for task
     AliRDHFJetsCuts *cuts=new AliRDHFJetsCuts();
@@ -109,55 +119,55 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, Float_t minC, Float_t
     cuts->SetMaxEtaJet(0.5);//0.9-R
     cuts->SetMinPtJet(5.);
     cuts->SetMaxPtJet(100.);
-    // Set centrality 
+    // Set centrality
     cuts->SetMinCentrality(minC);
     cuts->SetMaxCentrality(maxC);
     cuts->SetUsePhysicsSelection(kFALSE);
-    if (corrections_mode) cuts->SetTriggerMask(AliVEvent::kAny);
-    else {cuts->SetOptPileup(1);
-    cuts->ConfigurePileupCuts(5,0.8);
-    // cuts->SetUsePhysicsSelection(kFALSE);
-    cuts->SetTriggerClass("CINT7");
-    cuts->SetTriggerMask(AliVEvent::kINT7);
+    if (corrMode) cuts->SetTriggerMask(AliVEvent::kAny);
+    else {
+      cuts->SetOptPileup(1);
+      cuts->ConfigurePileupCuts(5, 0.8);
+      // cuts->SetUsePhysicsSelection(kFALSE);
+      cuts->SetTriggerClass("CINT7");
+      cuts->SetTriggerMask(AliVEvent::kINT7);
     } // pPb minbias only
-    task->SetCuts(cuts);
-    delete cuts;
-    return kTRUE;
+  task->SetCuts(cuts);
+  delete cuts;
+  return kTRUE;
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTagger(AliHFJetsTaggingVertex *tg){
-   
-    AliRDHFJetsCutsVertex *cuts2=new AliRDHFJetsCutsVertex("jetCuts");
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex *tg)
+{
+  AliRDHFJetsCutsVertex *cuts2 = new AliRDHFJetsCutsVertex("jetCuts");
 
-    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
-    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMinNClustersTPC(90);
-    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-    esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetRequireITSRefit(kTRUE);
-    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    esdTrackCuts->SetMinDCAToVertexXY(0.);
-    esdTrackCuts->SetEtaRange(-0.8,0.8);
-    esdTrackCuts->SetPtRange(1.0,1.e10);
-  
-    cuts2->AddTrackCuts(esdTrackCuts);
-    
-    // vertexing
-    cuts2->SetNprongs(3);
-    cuts2->SetIsElec(kFALSE); // kTRUE to select e in jet vertex  
-    cuts2->SetMinPtHardestTrack(1.0);//default 0.3
-    cuts2->SetSecVtxWithKF(kFALSE);//default with StrLinMinDist
-    cuts2->SetImpParCut(0.);//default 0
-    cuts2->SetDistPrimSec(0.);//default 0
-    cuts2->SetCospCut(-1);//default -1
-    tg->SetCuts(cuts2);
+  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetMinNClustersTPC(90);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetPtRange(1.0,1.e10);
 
-    delete esdTrackCuts;
-    delete cuts2;
+  cuts2->AddTrackCuts(esdTrackCuts);
 
-    return kTRUE;
+  // vertexing
+  cuts2->SetNprongs(3);
+  cuts2->SetIsElec(kFALSE); // kTRUE to select e in jet vertex
+  cuts2->SetMinPtHardestTrack(1.0);//default 0.3
+  cuts2->SetSecVtxWithKF(kFALSE);//default with StrLinMinDist
+  cuts2->SetImpParCut(0.);//default 0
+  cuts2->SetDistPrimSec(0.);//default 0
+  cuts2->SetCospCut(-1);//default -1
 
+  tg->SetCuts(cuts2);
+
+  delete esdTrackCuts;
+
+  delete cuts2;
+
+  return kTRUE;
 }
-
-

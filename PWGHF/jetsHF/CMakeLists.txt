@@ -70,7 +70,7 @@ endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-list (APPEND HDRS AliHFjetsUtils.h)
+list (APPEND HDRS AliHFJetsUtils.h)
 
 if(FASTJET_FOUND)
   list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
