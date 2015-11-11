@@ -114,7 +114,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   }
   
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  HLTImportant(Form("ZMQ connected to: %s (sock_type: %i, sock_name: %s) rc %i %s",fZMQoutConfig.Data(),alizmq_socket_type(fZMQout),fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
+  HLTImportant(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",fZMQoutConfig.Data(),alizmq_socket_name(fZMQsocketType),fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
   return retCode;
 }
