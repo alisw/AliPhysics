@@ -700,7 +700,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // Fill the flat ESD friend structure
   //
   
-  HLTWarning("Using approximate time-pad coordinates for clusters, see jira ATO-146");
   while( !err && fProduceFriend ){ // single loop for easy break in case of output buffer overflow
 
     // ---------- Access to clusters --------------------
