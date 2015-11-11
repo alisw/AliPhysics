@@ -76,9 +76,11 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMaxRtrack(0),
   fMinCellEnergy(0),
   fReferenceFileName(),
+  fReferenceRunByRunFileName(),
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
+  fReferenceFile(0),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -98,6 +100,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhTimeLGSum(),
   fhAllAverageBC(),
   fhAllAverageLGBC(),
+  fhRefRuns(0),
   fhTimeDsup(),
   fhTimeDsupBC(),
   fhRawTimeVsIdBC(),
@@ -161,7 +164,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 //  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::LocalInit()");
 //}
 
-/// Load reference Histograms from file
+/// Load reference Histograms (for one period) from file
 //_____________________________________________________________________
 void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 {
@@ -189,27 +192,60 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 	AliDebug(1,Form("hAllAverageLG entries BC2 %d",(Int_t)fhAllAverageLGBC[2]->GetEntries() ));
 	
     }
-  } else {
-//end of reference file is provided
+  } else { //end of reference file is provided
     AliFatal("You require to load reference histos from file but FILENAME is not provided");
   }
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 
+/// Load reference Histograms (run-by-run in one period) from file
+/// This method should be called per run
+//_____________________________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
+{
+  // connect ref run here
+
+  if(fReferenceRunByRunFileName.Length()!=0){
+    TFile *fReferenceFile = TFile::Open(fReferenceRunByRunFileName.Data());
+    AliInfo(Form("Reference R-b-R file: %s, pointer %p",fReferenceRunByRunFileName.Data(),fReferenceFile));
+    if(fReferenceFile==0x0) {
+      AliFatal("*** NO REFERENCE R-B-R FILE");
+    } else {
+      AliDebug(1,"*** OK TFILE");
+
+
+      AliInfo(Form("runnumber in LoadReferenceRunByRunHistos() %d, %d, InputEvent %p",fRunNumber,InputEvent()->GetRunNumber(),InputEvent()));
+      AliInfo(Form("fReferenceFile in LoadReferenceRunByRunHistos() %p",fReferenceFile));
+      fReferenceFile->ls();
+      fhRefRuns=(TH1F*) fReferenceFile->Get(Form("h%d",fRunNumber));
+      AliInfo(Form("Pointer to reference histogram %p",fhRefRuns));
+      if(fhRefRuns==0x0) AliFatal(Form("Reference histogram for run %d does not exist",fRunNumber));
+      if(fhRefRuns->GetEntries()==0)AliWarning("fhRefRuns->GetEntries() = 0");
+      AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() ));
+    }
+  } else { //end of reference file is provided                                                                    
+    AliFatal("You require to load reference run-by-run histos from file but FILENAME is not provided");
+  }
+    
+
+
+} // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
+
 //_____________________________________________________________________
 /// Connect ESD or AOD here
-/// Called once per file
-Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
+/// Called when run is changed
+void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
 {
-  AliDebug(1,"AnalysisTaskEMCalTimeCalib::Notify()");
+  AliDebug(1,"AnalysisTaskEMCalTimeCalib::NotifyRun()");
   AliDebug(2,Form("Notify(): EMCal geometry: fgeom = %p, fGeometryName=%s\n ",fgeom,fGeometryName.Data()));
 
   if (!InputEvent())
   {
     AliFatal("ERROR: InputEvent not set");
-    return kFALSE;
+    return;
   }
   else AliDebug(1,"Good, InputEvent set");
 
+  //  AliInfo(Form("NotifyRun, fCurrentRunnumber %d",fCurrentRunNumber));
   fRunNumber = InputEvent()->GetRunNumber();
   AliDebug(1,Form("RunNumber %d", fRunNumber));
 
@@ -217,7 +253,10 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::Notify()
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
 
-  return kTRUE;
+  if(fReferenceRunByRunFileName.Length()!=0)
+    LoadReferenceRunByRunHistos();
+
+  return;
 }
 
 //_____________________________________________________________________
@@ -404,7 +443,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     for (Int_t j = 0; j < kNSM ;  j++) 
     {
-      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,1400,-350.0,350.0);
+      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
       fhTimeDsupBC[j][i]->SetYTitle(" Time (ns) "); 
       fhTimeDsupBC[j][i]->SetXTitle(" E (GeV) "); 
     }
@@ -553,9 +592,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 
   //  if(bL1G || bL1J ||  bL0){
 
-  // Prepare TOFT0 maker at the beginning of a run
-//  if (event->GetRunNumber() != fRunNumber)
-//  {
+// Prepare TOFT0 maker at the beginning of a run
+//  if (event->GetRunNumber() != fRunNumber){
+//    AliInfo(Form("Runno per event %d",event->GetRunNumber()));
 //    fRunNumber = event->GetRunNumber();
 //    //	PrepareTOFT0maker();
 //    //  	cout<<"tofT0maker per run"<<fRunNumber<<endl;
@@ -587,7 +626,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   Int_t BunchCrossNumber =event->GetBunchCrossNumber(); 
   
   Float_t offset=0.;
-  
+  Float_t offsetPerSM=0.;
+  Int_t L1phase=0;
+
   Int_t nBC = 0;
   nBC = BunchCrossNumber%4;
   //Int_t nTriggerMask =event->GetTriggerMask();
@@ -669,22 +710,35 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	}
       }
       //if(offset==0)cout<<"offset 0 in SM "<<nSupMod<<endl;
-      
+
+      // Solution for 2015 data where L1 phase is not correct in data. We need to calibrate run by run.
+      // The shift is done per SM (0-19).
+      if(fhRefRuns!=0) {//comming from file after the first iteration
+	//offsetPerSM = (Float_t)(fhRefRuns->GetBinContent(nBC*kNSM+nSupMod));//BC0SM0 = bin0
+	L1phase = (Int_t)(fhRefRuns->GetBinContent(nSupMod));//SM0 = bin0
+	if(nBC >= L1phase)
+	  offsetPerSM = (nBC - L1phase)*25;
+	else
+	  offsetPerSM = (nBC - L1phase + 4)*25;
+      } else if(fReferenceRunByRunFileName.Length()!=0){//protection against missing reference histogram
+	AliFatal("Reference histogram run-by-run not properly loaded");
+      }
+      //end of load additional offset 
 
       if(amp>0.5) {					
-	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset);
-	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset);
+	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM);
+	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM);
       }
       
       if(amp>0.9) {
 	fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
       }
 
-      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset);
+      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM);
 
       hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
-      hkdtimecorr= hkdtime-offset;//time after first iteration
+      hkdtimecorr= hkdtime-offset-offsetPerSM;//time after first iteration
 
       //main histograms after the first itereation for calibration constants
       //if(hkdtimecorr>=-20. && hkdtimecorr<=20. && amp>0.9 ) {
@@ -697,6 +751,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeEnt[nBC]->SetBinContent(absId,entriesTime);
 //	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
+
+        //correction in 2015 for wrong phase
+	if(offsetPerSM!=0) hkdtime=hkdtime-offsetPerSM;
 
 	if(isHighGain){
 	  fhTimeEnt[nBC]->Fill(absId,1.);
@@ -856,6 +913,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMaxRtrack=0.025;
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="";//Reference.root
+  fReferenceRunByRunFileName="";
   fGeometryName="";//EMCAL_COMPLETE12SMV1_DCAL_8SM
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
@@ -965,9 +1023,113 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 
   fileNew->Close();
   delete fileNew;
+
+  for(Int_t i=0;i<4;i++){
+    delete hAllTimeAvBC[i];
+    delete hAllTimeRMSBC[i];
+    delete hAllTimeAvLGBC[i];
+    delete hAllTimeRMSLGBC[i];
+  }
+
   file->Close();
   delete file;
 
   //AliWarning("Pointers deleted. Memory cleaned.");
+}
 
+//________________________________________________________________________
+/// Calculate calibration constants per SM (equivalent of L1 phase)
+/// input - root file with calibration constants from 1st pass
+/// output - root file with histograms for given run offset per SM 
+void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile,TString outputFile){
+
+const  Double_t lowerLimit[]={
+    0,
+    1152,
+    2304,
+    3456,
+    4608,
+    5760,
+    6912,
+    8064,
+    9216,
+    10368,
+    11520,
+    11904,
+    12288,
+    13056,
+    13824,
+    14592,
+    15360,
+    16128,
+    16896,
+    17280};
+
+const  Double_t upperLimit[]={
+    1151 ,
+    2303 ,
+    3455 ,
+    4607 ,
+    5759 ,
+    6911 ,
+    8063 ,
+    9215 ,
+    10367,
+    11519,
+    11903,
+    12287,
+    13055,
+    13823,
+    14591,
+    15359,
+    16127,
+    16895,
+    17279,
+    17663};
+
+  TFile *file =new TFile(inputFile.Data());
+  if(file==0x0) return;
+
+  TH1F *ccBC[4];
+  for(Int_t i = 0; i < kNBCmask; i++){
+    ccBC[i]=(TH1F*) file->Get(Form("hAllTimeAvBC%d",i));
+  }
+  
+  TH1F *hRun=new TH1F(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
+  Int_t fitResult=0;
+  Double_t minimumValue=10000;
+  Int_t minimumIndex=-1;
+  Double_t meanBC[4];
+
+  Double_t fitParameter=0;
+  TF1 *f1=new TF1("f1","pol0",0,17664);
+  for(Int_t i=0;i<20;i++){
+    minimumValue=10000;
+    for(Int_t j=0;j<kNBCmask;j++){
+      fitResult=ccBC[j]->Fit("f1","CQ","",lowerLimit[i],upperLimit[i]);
+      if(fitResult<0){
+	hRun->SetBinContent(i,0);
+	continue;
+      }
+      fitParameter = f1->GetParameter(0);
+      if(j==0 || j==1) {
+	fitParameter+=100;
+      }
+      meanBC[j]=fitParameter;
+	
+      if(fitParameter<minimumValue){
+	minimumValue = fitParameter;
+	minimumIndex = j;
+      }
+    }
+    hRun->SetBinContent(i,minimumIndex);
+  }
+  delete f1;
+  TFile *fileNew=new TFile(outputFile.Data(),"update");
+  hRun->Write();
+  fileNew->Close();
+  delete fileNew;
+
+  file->Close();
+  delete file;
 }
