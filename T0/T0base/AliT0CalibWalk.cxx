@@ -340,6 +340,45 @@ void AliT0CalibWalk::SetWalk2015(TString filename)
   printf(" AliT0CalibWalk return \n");
   
 }
+//__________________________________________________________________________________________
+void AliT0CalibWalk::SetWalkDima(TString filename)
+{
+  Float_t ampled[200], walkled[200], ampqtc[200];;
+  for (int  i=0; i<200; i++) {
+    ampled[i] = Float_t(i*10);  
+    walkled[i]=0;
+    ampqtc[i] = Float_t (i*100);
+  }
+ TFile *file = new TFile(filename.Data());
+ file->ls();
+  if (!file) {
+    printf (" no file \n");
+    return;
+  }
+  TGraph *currGraph ;
+  TString aPMTname;
+  for(Int_t iPMT = 0; iPMT < 24; iPMT++)
+    {
+      if(iPMT<12)  aPMTname = Form("A_%02d_QTCCFDgraph", iPMT+1);
+      else aPMTname = Form("C_%02d_QTCCFDgraph", iPMT-12+1);
+      printf("  %s  \n",aPMTname.Data());
+      currGraph = (TGraph*)file->FindObjectAny(aPMTname.Data());
+      currGraph->SetTitle(Form("PMT%i",iPMT+1));
+      fWalk.AddAtAndExpand(currGraph,iPMT);
+      fWalk.At(iPMT)->Print();
+      TGraph *grwalkled = new TGraph (100,ampled,walkled);
+      fAmpLEDRec.AddAtAndExpand(grwalkled,iPMT);
+      
+      TGraph *grampled = new TGraph (200,ampled,ampled);
+      TGraph *grqtc = new TGraph (200,ampqtc,ampqtc);
+      fQTC.AddAtAndExpand(grqtc,iPMT);	 
+       fAmpLED.AddAtAndExpand(grampled,iPMT);
+      cout<<" add amp "<<iPMT<<endl;
+    }
+      
+
+}
+//__________________________________________________________________________________________
 void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 
 {
 

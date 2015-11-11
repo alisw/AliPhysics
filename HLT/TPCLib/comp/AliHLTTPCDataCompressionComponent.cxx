@@ -377,17 +377,16 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     }
     allClusters+=fSpacePointGrid->GetNumberOfSpacePoints();
     iResult=ProcessTrackClusters(&inputTrackArray[0], inputTrackArray.size(), fTrackGrid, trackindexmap, fSpacePointGrid, fRawInputClusters, slice, patch);
-    int assignedInThisPartition=0;
-    if (iResult>=0) {
-      assignedInThisPartition=iResult;
-      associatedClusters+=iResult;
-    }
+    if( iResult< 0 ) break;
+    int assignedInThisPartition = iResult;
+    associatedClusters+=iResult;
+    
     iResult=ProcessRemainingClusters(&inputTrackArray[0], inputTrackArray.size(), fTrackGrid, trackindexmap, fSpacePointGrid, fRawInputClusters, slice, patch);
-    if (iResult>=0) {
-      if (fSpacePointGrid->GetNumberOfSpacePoints()>0) {
-	if (fVerbosity>0) HLTInfo("associated %d (%d) of %d clusters in slice %d partition %d", iResult+assignedInThisPartition, assignedInThisPartition, fSpacePointGrid->GetNumberOfSpacePoints(), slice, patch);
-      }
-      associatedClusters+=iResult;
+    if( iResult< 0 ) break;
+    associatedClusters+=iResult;
+
+    if (fSpacePointGrid->GetNumberOfSpacePoints()>0) {
+      if (fVerbosity>0) HLTInfo("associated %d (%d) of %d clusters in slice %d partition %d", iResult+assignedInThisPartition, assignedInThisPartition, fSpacePointGrid->GetNumberOfSpacePoints(), slice, patch);
     }
 
     // write all remaining clusters not yet assigned to tracks
@@ -402,16 +401,17 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     fRawInputClusters->SetSpacePointPropertyGrid(pDesc->fSpecification, fSpacePointGrid);
     iResult=fRawInputClusters->Write(outputPtr+size, capacity-size, outputBlocks, fpDataDeflater, writeoptions);
     fRawInputClusters->SetSpacePointPropertyGrid(pDesc->fSpecification, NULL);
-    if (iResult>=0) {
-      size+=iResult;
-      outputDataSize+=iResult;
-      // the size of the optional cluster id array must be subtracted
-      if (fpWrittenAssociatedClusterIds && outputBlocks.size()>0 &&
-	  outputBlocks.back().fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType()) {
-	outputDataSize-=outputBlocks.back().fSize;
-      }
-      if (GetBenchmarkInstance()) GetBenchmarkInstance()->AddOutput(iResult);
+    if( iResult<0 ) break;
+    
+    size+=iResult;
+    outputDataSize+=iResult;
+    // the size of the optional cluster id array must be subtracted
+    if (fpWrittenAssociatedClusterIds && outputBlocks.size()>0 &&
+	outputBlocks.back().fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType()) {
+      outputDataSize-=outputBlocks.back().fSize;
     }
+    if (GetBenchmarkInstance()) GetBenchmarkInstance()->AddOutput(iResult);
+    
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Stop(5);
     }
@@ -457,8 +457,8 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     if (trackindexmap.size()>0) {// condition for track model compression
-    iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size+tracksBufferOffset, capacity-size-tracksBufferOffset);
-    if (iResult>=0) {
+      iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size+tracksBufferOffset, capacity-size-tracksBufferOffset);
+      if (iResult<0) break;
       AliHLTComponent_BlockData bd;
       FillBlockData(bd);
       bd.fOffset        = size;
@@ -485,16 +485,16 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	}
 	
 	fpWrittenAssociatedClusterIds->clear();
-      }
+      }    
     }
-    }
+
   } while (0);
 
   fRawInputClusters->Clear();
 
   // Write header block 
   
-  if( isInputPresent ){
+  if( iResult>=0 && isInputPresent ){
     pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDescriptorDataType() );
     if( pDesc ){
       const AliHLTTPCRawClustersDescriptor &clDesc = *reinterpret_cast<const AliHLTTPCRawClustersDescriptor*>(pDesc->fPtr);
@@ -509,17 +509,15 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       bd.fDataType      = AliHLTTPCDefinitions::DataCompressionDescriptorDataType();
       if( capacity < size + bd.fSize ){
 	iResult = -ENOSPC;
-	return iResult;
+      } else {
+	AliHLTTPCDataCompressionDescriptor compDesc;
+	compDesc.SetMergedClustersFlag( clDesc.GetMergedClustersFlag() );
+	*(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = compDesc; 
+	outputBlocks.push_back(bd);
+	size += bd.fSize;
+	outputDataSize+=bd.fSize;
+	//HLTBenchmark("header data block of size %d", bd.fSize);
       }
-
-      AliHLTTPCDataCompressionDescriptor compDesc;
-      compDesc.SetMergedClustersFlag( clDesc.GetMergedClustersFlag() );
-      *(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = compDesc; 
-
-      outputBlocks.push_back(bd);
-      size += bd.fSize;
-      outputDataSize+=bd.fSize;
-      //HLTBenchmark("header data block of size %d", bd.fSize);
     }
   }
 
@@ -547,10 +545,11 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     fTrackGrid->Clear();
   }
 
-  // forward MC labels
-  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC);
-       pDesc!=NULL; pDesc=GetNextInputBlock()) {
-    outputBlocks.push_back(*pDesc);
+  if( iResult>=0 ){ // forward MC labels
+    for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC);
+	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
+      outputBlocks.push_back(*pDesc);
+    }
   }
 
   return iResult;

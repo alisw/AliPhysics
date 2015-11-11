@@ -5,11 +5,12 @@
   1.) Check consistency of the error estimates and bias for smaple with gausian noise
   2.) Check persistancy streamer
   3.) Check outlier handling
-
-
+  .x $NOTES/aux/rootlogon.C
   gSystem->AddIncludePath("-I$ALICE_ROOT/../src/STAT/");
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+  
-  AliNDLocalRegressionTest(5000);
+  AliNDLocalRegressionTest(10000,2,"cos(7*x[0]/pi)*sin(11*x[1]/pi)",0.1);
+  //
+  AliNDLocalRegressionTest(10000,2,"x[0]+x[1]",0.1);
  
 */
 
@@ -22,6 +23,8 @@
 
 void UnitTestGaussNoise();
 void UnitTestStreamer();
+Bool_t UnitTestContrain();
+
 
 TTree * treeIn=0;
 AliNDLocalRegression *pfitNDIdeal=0;       // ideal fit without noise
@@ -226,14 +229,14 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   gStyle->SetOptStat(0);
   //
   pformula=new TFormula("pformula", sfromula);
-  pfitNDIdeal  = new  AliNDLocalRegression;
-  pfitNDGaus0  = new  AliNDLocalRegression;
-  pfitNDGaus1  = new  AliNDLocalRegression;
-  pfitNDGaus2  = new  AliNDLocalRegression;
-  pfitNDGaus3  = new  AliNDLocalRegression;
-  pfitNDBreit0 = new  AliNDLocalRegression;
-  pfitNDBreit1 = new  AliNDLocalRegression;
-  pfitNDBreit2 = new  AliNDLocalRegression;
+  pfitNDIdeal  = new  AliNDLocalRegression("pfitNDIdeal","pfitNDIdeal");
+  pfitNDGaus0  = new  AliNDLocalRegression("pfitNDGaus0","pfitNDGaus0");
+  pfitNDGaus1  = new  AliNDLocalRegression("pfitNDGaus1","pfitNDGaus1");
+  pfitNDGaus2  = new  AliNDLocalRegression("pfitNDGaus2","pfitNDGaus2");
+  pfitNDGaus3  = new  AliNDLocalRegression("pfitNDGaus3","pfitNDGaus3");
+  pfitNDBreit0 = new  AliNDLocalRegression("pfitNDBreit0","pfitNDBreit0");
+  pfitNDBreit1 = new  AliNDLocalRegression("pfitNDBreit1","pfitNDBreit1");
+  pfitNDBreit2 = new  AliNDLocalRegression("pfitNDBreit2","pfitNDBreit2");
   //
   // 0.) Initialization of variables and THn
   // 
@@ -313,14 +316,14 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit1->SetHistogram((THn*)(hN->Clone()));
   pfitNDBreit2->SetHistogram((THn*)(hN->Clone()));
   //
-  pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
-  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Gaussian1
-  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2
-  pfitNDGaus2->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails robust
-  pfitNDGaus3->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails non robust
-  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Breit0
-  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit1
-  pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit2 without outlier filtering
+  pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);
+  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.02:0.02","2:2",0.0001);  // sample Gaussian1
+  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2
+  pfitNDGaus2->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2 - with tails robust
+  pfitNDGaus3->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian2 - with tails non robust
+  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.02:0.02","2:2",0.0001);  // sample Breit0
+  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit1
+  pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit2 without outlier filtering
   //
   pfitNDIdeal->AddVisualCorrection(pfitNDIdeal,1);
   pfitNDGaus0->AddVisualCorrection(pfitNDGaus0,2);
@@ -330,6 +333,17 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit0->AddVisualCorrection(pfitNDBreit0,4);
   pfitNDBreit1->AddVisualCorrection(pfitNDBreit1,5);
   pfitNDBreit2->AddVisualCorrection(pfitNDBreit2,6);
+  //
+
+  TObjArray * array = AliNDLocalRegression::GetVisualCorrections();
+  for (Int_t i=0; i<array->GetEntries(); i++){
+    AliNDLocalRegression * regression = ( AliNDLocalRegression *)array->At(i);
+    if (regression==NULL) continue;
+    regression->AddVisualCorrection(regression);
+    Int_t hashIndex = regression->GetVisualCorrectionIndex();
+    treeIn->SetAlias( regression->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)",hashIndex).Data());
+  }
+
   
   delete pcstreamOutGaus0;
   delete pcstreamOutGaus1;
@@ -342,6 +356,55 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   UnitTestGaussNoisePlusOutliers();
   UnitTestBreitWignerNoise();
   UnitTestStreamer();
+  UnitTestContrain();
 }
 
+
+Bool_t UnitTestContrain(){ 
+  //
+  // To test:
+  //    1.) Improvement using the constraint with/without
+  //    2.) Compare 2 different constraints
+  //    3.) Repeating Kalman update data are smoother but the error estimate is underestimated
+  //             
+  Int_t nDims=2;
+  Int_t indexes[2]={0,1};
+  Double_t relWeight0[6]={1,1,1,1,1,1};
+  Double_t relWeight1[6]={1,1,10,1,1,10};
+  TTreeSRedirector*pcstream=new TTreeSRedirector("constrainStream.root","recreate");
+  
+  AliNDLocalRegression * regression0 = ( AliNDLocalRegression *)AliNDLocalRegression::GetVisualCorrections()->FindObject("pfitNDGaus0");
+  AliNDLocalRegression * regression1 = ( AliNDLocalRegression *)AliNDLocalRegression::GetVisualCorrections()->FindObject("pfitNDGaus1");
+  AliNDLocalRegression *regressionUpdate0 = (AliNDLocalRegression *)regression0->Clone();
+  AliNDLocalRegression *regressionUpdate1 = (AliNDLocalRegression *)regression1->Clone();
+ 
+  for (Int_t iter=0; iter<5; iter++){
+    regressionUpdate0->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, pcstream);
+    regressionUpdate1->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight1, pcstream);
+  }
+  regressionUpdate0->SetName("pfitNDGaus0_Updated");
+  regressionUpdate1->SetName("pfitNDGaus1_Updated");
+  AliNDLocalRegression::AddVisualCorrection(regressionUpdate0);
+  AliNDLocalRegression::AddVisualCorrection(regressionUpdate1);
+  treeIn->SetAlias( regressionUpdate0->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)", regressionUpdate0->GetVisualCorrectionIndex()).Data());
+  treeIn->SetAlias( regressionUpdate1->GetName(), TString::Format("AliNDLocalRegression::GetCorrND(%d,xyz0,xyz1+0)", regressionUpdate1->GetVisualCorrectionIndex()).Data());
+  treeIn->SetAlias( TString::Format("%sErr",regressionUpdate0->GetName()).Data(), TString::Format("AliNDLocalRegression::GetCorrNDError(%d,xyz0,xyz1+0)", regressionUpdate0->GetVisualCorrectionIndex()).Data());
+  treeIn->SetAlias( TString::Format("%sError",regressionUpdate1->GetName()).Data(), TString::Format("AliNDLocalRegression::GetCorrNDError(%d,xyz0,xyz1+0)", regressionUpdate1->GetVisualCorrectionIndex()).Data());
+  delete pcstream;
+
+  TH1 * his[10]={0};
+  TCanvas *canvasUnitTestConstrain = new TCanvas("canvasUnitTestConstrain","canvasUnitTestConstrain");
+  treeIn->SetLineColor(4);
+  treeIn->Draw("(pfitNDGaus0_Updated-pfitNDIdeal)>>hisSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","");
+  his[0]=treeIn->GetHistogram();
+  his[0]->Fit("gaus","+");
+  treeIn->SetLineColor(2);
+  treeIn->Draw("(pfitNDGaus0-pfitNDIdeal)>>hisNotSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","same");
+  his[1]=treeIn->GetHistogram();
+  his[1]->Fit("gaus","+");
+  his[0]->Draw();
+  his[1]->Draw("same");
+  canvasUnitTestConstrain->SaveAs("canvasUnitTestConstrain.png");
+  
+}
 

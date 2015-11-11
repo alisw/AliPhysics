@@ -39,11 +39,11 @@ using std::vector;
 class Doublets {
 public:
   Doublets(int xx = 0, int yy = 0, float tL = 0.f, float ph = 0.f)
-  : x((unsigned short)xx)
-  , y((unsigned short)yy)
+  : x((int)xx)
+  , y((int)yy)
   , tanL(tL)
   , phi(ph) {}
-  unsigned short x,y;
+  int x,y;
   float tanL, phi;
 };
 

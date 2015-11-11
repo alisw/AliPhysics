@@ -121,7 +121,7 @@ public:
   TObject* GetFromMap(TMap* dcsAliasMap, const char* stringId) const;
 
   /** number of detectors */
-  static const Int_t kNDetectors;    // Number of detectors
+  //static const Int_t kNDetectors;    // Number of detectors
 
 protected:
   // the AliPreprocessor interface, all functions redirected via the
@@ -161,7 +161,7 @@ private:
   Int_t fActiveDetectors; // bit array of active detectors
 
   /** array of detector names */
-  static const char *fgkDetectorName[]; // Detector names
+  //static const char *fgkDetectorName[]; // Detector names
 
   ClassDef(AliHLTModulePreprocessor, 1);
 };

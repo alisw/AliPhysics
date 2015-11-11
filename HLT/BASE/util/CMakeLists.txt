@@ -119,5 +119,5 @@ if(ZEROMQ_FOUND)
   target_link_libraries(ZMQproxy HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   
   # Installation of 
-  install(TARGETS ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy RUNTIME DESTINATION bin)
+  install(TARGETS ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQDIMlumiregServer RUNTIME DESTINATION bin)
 endif(ZEROMQ_FOUND)

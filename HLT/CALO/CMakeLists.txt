@@ -76,6 +76,8 @@ set(HDRS ${HDRS}
     AliHLTCaloRecPointDataStruct.h
     AliHLTCaloRecPointContainerStruct.h
     AliHLTCaloRecPointHeaderStruct.h
+    AliHLTCaloTriggerPatchDataStruct.h
+    AliHLTCaloTriggerPatchContainerStruct.h
 )
 
 # Generate the dictionary

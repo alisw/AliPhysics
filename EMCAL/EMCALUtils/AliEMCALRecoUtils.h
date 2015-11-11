@@ -55,7 +55,8 @@ public:
                                   kPi0MCv2 = 6, kPi0MCv3 = 7,
                                   kBeamTestCorrectedv2   = 8,
                                   kSDMv5   = 9, kPi0MCv5 = 10,
-                                  kSDMv6   =11, kPi0MCv6 = 12};
+                                  kSDMv6   =11, kPi0MCv6 = 12,
+                                  kBeamTestCorrectedv3   = 13};
   
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};

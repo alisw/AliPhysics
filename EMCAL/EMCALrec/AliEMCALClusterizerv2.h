@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 #include "AliEMCALClusterizerv1.h"
 class AliEMCALRecPoint; 
 class AliEMCALDigit;
@@ -16,7 +14,9 @@ public:
   
   AliEMCALClusterizerv2() ;         
   AliEMCALClusterizerv2(AliEMCALGeometry* geometry);
-  AliEMCALClusterizerv2(AliEMCALGeometry* geometry, AliEMCALCalibData* calib, AliCaloCalibPedestal* pedestal);
+  AliEMCALClusterizerv2(AliEMCALGeometry* geometry, AliEMCALCalibData* calib, 
+                        AliEMCALCalibTime * calibt, AliCaloCalibPedestal *pedestal);
+
   virtual ~AliEMCALClusterizerv2();
 
   virtual             Int_t AreNeighbours(AliEMCALDigit* d1, AliEMCALDigit* d2, Bool_t& shared) const; 
@@ -30,9 +30,11 @@ protected:
   Bool_t              fDoEnGradCut; //cut on energy gradient
 
 private:
-  AliEMCALClusterizerv2(const AliEMCALClusterizerv2 &); //copy ctor
+
+  AliEMCALClusterizerv2(              const AliEMCALClusterizerv2 &); //copy ctor
   AliEMCALClusterizerv2 & operator = (const AliEMCALClusterizerv2 &);
 
   ClassDef(AliEMCALClusterizerv2,1) // Clusterizer implementation version 2
 };
+
 #endif // AliEMCALCLUSTERIZERV2_H

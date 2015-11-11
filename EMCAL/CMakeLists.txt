@@ -19,6 +19,7 @@ add_subdirectory(EMCALUtils)
 add_subdirectory(EMCALraw)
 add_subdirectory(EMCALrec)
 add_subdirectory(EMCALsim)
+add_subdirectory(EMCALTriggerBase)
 
 if(DA)
     add_subdirectory(DA)

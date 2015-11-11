@@ -43,7 +43,7 @@
 #include "THn.h"
 #include "AliSysInfo.h"
 #include "TMatrixD.h"
-#include "TF1.h"
+ #include "TF1.h"
 #include "TDatabasePDG.h"
 #include "TTreeStream.h"
 #include "TStatToolkit.h"
@@ -53,6 +53,7 @@
 #include "AliTPCTransform.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCcalibAlignInterpolation.h"
+#include "AliPID.h"
 #include "TSystem.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
@@ -366,8 +367,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     vecNClTPC=esdFriend->GetNclustersTPC(isec);
     vecNClTPCused=esdFriend->GetNclustersTPCused(isec);
   }
-  Long64_t gid = esdEvent->GetHeader()->GetEventIdAsLong();
+  Long64_t gid = esdEvent->GetHeader()->GetEventIdAsLong(); 
+  Int_t timeStamp= esdEvent->GetTimeStamp();
   (*fStreamer)<<"eventInfo"<< // store event info - used to calculate per sector currents
+    "gid="<<gid<<
+    "timeStamp"<<timeStamp<<
     "nPrimTrack="<<nPrimTracks<<
     "nPrimTrackSPD="<<nPrimTracksSPD<<
     "nTracks="<<nTracks<<
@@ -392,7 +396,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   TVectorF deltaITS0(kMaxLayer), deltaITS1(kMaxLayer); 
   TVectorF deltaTRD0(kMaxLayer), deltaTRD1(kMaxLayer); 
   TVectorF deltaTOF0(kMaxLayer), deltaTOF1(kMaxLayer); 
-  TVectorF vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer);
+  TVectorF vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer), vecSec(kMaxLayer);
   
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
@@ -401,7 +405,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     if (!friendTrack) continue;      
     if (esdTrack->GetITSNcls()<4) continue;
     Double_t mass = esdTrack->GetMass();  // particle mass    
-    Double_t tofBC=esdTrack->GetTOFBunchCrossing();
+    Double_t tofDiff=esdTrack->GetTOFExpTDiffSpec(AliPID::kPion);
     // Get TPC seed
     TObject *calibObject=0;
     AliTPCseed *seed = 0;
@@ -557,7 +561,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
           "itsChi2="<<itsChi2<<
           "trdChi2="<<trdChi2<<
           "tofChi2="<<tofChi2<<
-	  "tofBC="<<tofBC<<
+	  "tofBC="<<tofDiff<<
           //
           "trackITS.="<<&trackArrayITS[iPoint]<<  // ITS fit
           "trackTRD.="<<&trackArrayTRD[iPoint]<<  // TRD fit
@@ -568,7 +572,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       }
     }
     Int_t counter=0;
-    Double_t rounding=100;
+    Double_t rounding=200;
     memset( deltaITS0.GetMatrixArray(), 0,kMaxLayer*sizeof(Float_t));
     memset( deltaITS1.GetMatrixArray(), 0,kMaxLayer*sizeof(Float_t));
     memset( deltaTRD0.GetMatrixArray(), 0,kMaxLayer*sizeof(Float_t));
@@ -579,29 +583,30 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){      
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       if (cluster.GetDetector()==0) continue;
-      Bool_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
-      if (zsignSector*cluster.GetZ()<0.) continue;
+      Double_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
+      //if (zsignSector*cluster.GetZ()<0.) continue;
 
       if (trackArrayITS[iPoint].GetUniqueID()>0){
-	deltaITS0[counter]= Int_t(trackArrayITS[iPoint].GetY()*rounding)/rounding;
-	deltaITS1[counter]= Int_t((trackArrayITS[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
+	deltaITS0[counter]= TMath::Nint(trackArrayITS[iPoint].GetY()*rounding)/rounding;
+	deltaITS1[counter]= TMath::Nint((trackArrayITS[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       deltaTRD0[counter]=0;
       deltaTRD1[counter]=0;
       deltaTOF0[counter]=0;
       deltaTOF1[counter]=0;
       if (trackArrayITSTRD[iPoint].GetUniqueID()>0){
-	deltaTRD0[counter]= Int_t(trackArrayITSTRD[iPoint].GetY()*rounding)/rounding;
-	deltaTRD1[counter]= Int_t((trackArrayITSTRD[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
+	deltaTRD0[counter]= TMath::Nint(trackArrayITSTRD[iPoint].GetY()*rounding)/rounding;
+	deltaTRD1[counter]= TMath::Nint((trackArrayITSTRD[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       if (trackArrayITSTOF[iPoint].GetUniqueID()>0){
-	deltaTOF0[counter]= Int_t(trackArrayITSTOF[iPoint].GetY()*rounding)/rounding;
-	deltaTOF1[counter]= Int_t((trackArrayITSTOF[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
+	deltaTOF0[counter]= TMath::Nint(trackArrayITSTOF[iPoint].GetY()*rounding)/rounding;
+	deltaTOF1[counter]= TMath::Nint((trackArrayITSTOF[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       //      vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer);
       vecR[counter]=trackArrayITS[iPoint].GetX();
       vecPhi[counter]=trackArrayITS[iPoint].GetAlpha();
       vecZ[counter]=trackArrayITS[iPoint].GetZ();
+      vecSec[counter]=cluster.GetDetector();
       counter++;
     }
     AliExternalTrackParam * ip = (AliExternalTrackParam *)esdTrack->GetInnerParam();
@@ -620,11 +625,12 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "itsChi2="<<itsChi2<<
       "trdChi2="<<trdChi2<<
       "tofChi2="<<tofChi2<<
-      "tofBC="<<tofBC<<
+      "tofBC="<<tofDiff<<
       //
       "track.="<<ip<<                    // track parameters at inner wal of TPC
-      "vecR.="<<&vecR<<
+      "vecR.="<<&vecR<<          
       "vecPhi.="<<&vecPhi<<
+      "vecSec.="<<&vecSec<<              // sector number
       "vecZ.="<<&vecZ<<
       "its0.="<<&deltaITS0<<
       "its1.="<<&deltaITS1<<
@@ -640,7 +646,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
  // end of track loop
 }
 
-void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t dy, Double_t dz){
+void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t dy, Double_t dz, Int_t selHis){
   //
   // Make cluster residual histograms
   //
@@ -649,17 +655,20 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   Int_t    binsTrack[9], binsTrackITS[9];
   TString  axisName[9],axisTitle[9];
   //
-  // 0 - delta   of interest
+  // 0 - local   q/pt
   // 1 - global  phi in sector number  as float
   // 2 - local   r
   // 3 - local   kz
-  // 4 - local   q/pt
+  // 4 - delta   of interest
+
   // 
   // gx,gy,gz - will be taken from the TPC
   //
-  axisName[0]="delta";   axisTitle[0]="#Delta (cm)";                 // to fill    local(clusterY-track.y)
-  binsTrack[0]=90;       xminTrack[0]=-dy;        xmaxTrack[0]=dy; 
-  binsTrackITS[0]=90;    xminTrackITS[0]=-dy;     xmaxTrackITS[0]=dy; 
+  //
+  axisName[0]="qpt";    axisTitle[0]="q/pt (c/GeV)";                         // to fill : track.GetSigned1Pt() 
+  binsTrack[0]=5;        xminTrack[0]=-2.5;        xmaxTrack[0]=2.5; 
+  binsTrackITS[0]=5;     xminTrackITS[0]=-2.5;     xmaxTrackITS[0]=2.5; 
+
   //
   axisName[1]="sector";  axisTitle[1]="Sector Number";              // to fill:   9*atan2(gy,gx)/pi+ if (sector>0) sector+18
   binsTrack[1]=180;      xminTrack[1]=0;           xmaxTrack[1]=18; 
@@ -672,37 +681,31 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   //
   axisName[3]="kZ";      axisTitle[3]="z/r";                          // to fill : gz/gr 
   binsTrack[3]=20;       xminTrack[3]=-1.0;        xmaxTrack[3]=1.0;  // +-1 for ITS+TRD and ITS+TOF 
-  binsTrackITS[3]=36;    xminTrackITS[3]=-1.8;     xmaxTrackITS[3]=1.8;  // +-1.8 for the ITS 
+  binsTrackITS[3]=20;    xminTrackITS[3]=-1.8;     xmaxTrackITS[3]=1.8;  // +-1.8 for the ITS 
   //
-  axisName[4]="qpt";    axisTitle[4]="q/pt (c/GeV)";                         // to fill : track.GetSigned1Pt() 
-  binsTrack[4]=5;        xminTrack[4]=-2.5;        xmaxTrack[4]=2.5; 
-  binsTrackITS[4]=5;     xminTrackITS[4]=-2.5;     xmaxTrackITS[4]=2.5; 
+  axisName[4]="delta";   axisTitle[4]="#Delta (cm)";                 // to fill    local(clusterY-track.y)
+  binsTrack[4]=100;       xminTrack[4]=-dy;        xmaxTrack[4]=dy; 
+  binsTrackITS[4]=100;    xminTrackITS[4]=-dy;     xmaxTrackITS[4]=dy; 
 
-
+  // 
+  binsTrack[4]=TMath::Min(Int_t(20.+2.*dy/0.05),120); // buffer should be smaller than 1 GBy
+  if (selHis==0 ||selHis<0) fHisITSDRPhi = new THnF("deltaRPhiTPCITS","#Delta_{Y} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
+  if (selHis==1 ||selHis<0) fHisITSTRDDRPhi = new THnF("deltaRPhiTPCITSTRD","#Delta_{Y} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
+  if (selHis==2 ||selHis<0) fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
   //
-  fHisITSDRPhi = new THnF("deltaRPhiTPCITS","#Delta_{Y} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
-  fHisITSTRDDRPhi = new THnF("deltaRPhiTPCITSTRD","#Delta_{Y} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
-  fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
-  //
-  fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
-  fHisITSTRDDZ = new THnF("deltaZTPCITSTRD","#Delta_{Z} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
-  fHisITSTOFDZ = new THnF("deltaZTPCITSTOF","#Delta_{Z} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
+  binsTrack[4]=TMath::Min(Int_t(20.+2.*dz/0.05),120); // buffer should be smaller than 1 GBy
+  if (selHis==3 ||selHis<0) fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
+  if (selHis==4 ||selHis<0) fHisITSTRDDZ = new THnF("deltaZTPCITSTRD","#Delta_{Z} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
+  if (selHis==5 ||selHis<0) fHisITSTOFDZ = new THnF("deltaZTPCITSTOF","#Delta_{Z} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
   //
   //
   //
-  for (Int_t ivar2=0;ivar2<5;ivar2++){
-    fHisITSDRPhi->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSDRPhi->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
-    fHisITSTRDDRPhi->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSTRDDRPhi->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
-    fHisITSTOFDRPhi->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSTOFDRPhi->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
-    fHisITSDZ->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSDZ->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
-    fHisITSTRDDZ->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSTRDDZ->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
-    fHisITSTOFDZ->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-    fHisITSTOFDZ->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+  THn *hisToFill[6]={GetHisITSDRPhi(), GetHisITSTRDDRPhi(), GetHisITSTOFDRPhi(), GetHisITSDZ(), GetHisITSTRDDZ(), GetHisITSTOFDZ()};
+  for (Int_t ihis=0; ihis<6; ihis++){
+    if (hisToFill[ihis]) for (Int_t ivar2=0;ivar2<5;ivar2++){ 
+      hisToFill[ihis]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      hisToFill[ihis]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());      
+    }
   }
 
 }
@@ -742,7 +745,7 @@ void  AliTPCcalibAlignInterpolation::CreateDistortionMapsFromFile(const char * i
   //
 }
 
-void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t downscale){
+void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t maxStat, Int_t selHis){
   /**
    * Trees with point-track residuals to residual histogram
    * @param residualList  text file with tree list
@@ -753,7 +756,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   // 
   const Int_t knPoints=159;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
-  calibInterpolation->CreateResidualHistosInterpolation(dy,dz);
+  calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
   TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
   //
   TVectorF *vecDelta= 0;
@@ -767,9 +770,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   Int_t nesd = esdArray->GetEntriesFast();  
   //
   THn *hisToFill[6]={calibInterpolation->GetHisITSDRPhi(), calibInterpolation->GetHisITSTRDDRPhi(),  calibInterpolation->GetHisITSTOFDRPhi(), calibInterpolation->GetHisITSDZ(), calibInterpolation->GetHisITSTRDDZ(),  calibInterpolation->GetHisITSTOFDZ()};
-  Int_t currentTrack=0;
+  Int_t currentTrack=0;  
+  TFile * fout = 0;
+  if (selHis<0)  fout=TFile::Open("ResidualHistograms.root","recreate");
+  if (selHis>=0) fout=TFile::Open(TString::Format("ResidualHistograms_His%d.root",selHis).Data(),"recreate");
+
   for (Int_t ihis=0; ihis<6; ihis++){    
-    for (Int_t iesd=0; iesd<nesd; iesd+=downscale){
+    if (selHis>=0 && ihis!=selHis) continue;
+    for (Int_t iesd=0; iesd<nesd; iesd++){
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta"); 
@@ -784,27 +792,22 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       for (Int_t itrack=0; itrack<ntracks; itrack++){
 	tree->GetEntry(itrack);
 	currentTrack++;
+	if (maxStat>0 &&currentTrack>maxStat) break;
 	for (Int_t ipoint=0; ipoint<knPoints; ipoint++){
 	  if ((*vecR)[ipoint]<=0) continue;
 	  Double_t sector=9.*(*vecPhi)[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
 	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
 	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
-	  Double_t xxx[5]={(*vecDelta)[ipoint], sector, localX,   (*vecZ)[ipoint]/localX, param->GetParameter()[4] };
-	  if (xxx[0]==0) continue;
+	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   (*vecZ)[ipoint]/localX, (*vecDelta)[ipoint]};
+	  if (xxx[4]==0) continue;
 	  hisToFill[ihis]->Fill(xxx);	  
 	}	
       }
     }
+    fout->cd();
+    hisToFill[ihis]->Write();
   }
-  TFile * fout = TFile::Open("ResidualHistograms.root","recreate");
-  calibInterpolation->GetHisITSDRPhi()->Write();
-  calibInterpolation->GetHisITSTRDDRPhi()->Write();
-  calibInterpolation->GetHisITSTOFDRPhi()->Write();
-  calibInterpolation->GetHisITSDZ()->Write();
-  calibInterpolation->GetHisITSTRDDZ()->Write();
-  calibInterpolation->GetHisITSTOFDZ()->Write();
-  //calibInterpolation->Write();
   delete fout;
 }
 
@@ -857,11 +860,11 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
       Double_t deltaY=param->GetY();
       Double_t deltaZ=param->GetZ()-cl->GetZ();
       Double_t localX = cl->GetX();
-      Bool_t   zsignSector=((cl->GetDetector()%36)<18) ? 1.:-1.;
+      Double_t   zsignSector=((cl->GetDetector()%36)<18) ? 1.:-1.;
       if (zsignSector*cl->GetZ()<0.) continue;
-      Double_t xxx[5]={deltaY, sector, localX,   cl->GetZ()/cl->GetX(), param->GetParameter()[4] };
+      Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   cl->GetZ()/cl->GetX(),  deltaY};
       hisToFill[iter]->Fill(xxx);	  
-      xxx[0]=deltaZ;
+      xxx[4]=deltaZ;
       hisToFill[3+iter]->Fill(xxx);	  
     }
   }
@@ -898,6 +901,7 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   }else{
     tree->AddFriend(treeFriend,TString::Format("%s",friendAlias).Data());
     tree->SetAlias(TString::Format("%sOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<2&&%s.chi2G>0&&%s.rmsG<2&&%s.rmsG/%s.rms<2",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data());
+    tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
   }
   return tree;
 }

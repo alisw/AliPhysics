@@ -24,11 +24,11 @@
 ClassImp(AliHLTEMCALGeometry);
 TGeoManager *gGeoManager = 0;
 
-AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
+AliHLTEMCALGeometry::AliHLTEMCALGeometry(Int_t runnumber) :
 	AliHLTCaloGeometry ("EMCAL"),
 	fGeo(0),fReco(0)
 {
-  GetGeometryFromCDB();
+  GetGeometryFromCDB(runnumber);
 }
 
 Int_t AliHLTEMCALGeometry::InitialiseGeometry()
@@ -105,7 +105,7 @@ AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsI
 
 
 int
-AliHLTEMCALGeometry::GetGeometryFromCDB()
+AliHLTEMCALGeometry::GetGeometryFromCDB(Int_t runnumber)
 {
   // local path to OCDB
   // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -130,7 +130,10 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	  if(gGeoManager)
 	    {
 	      HLTDebug("Getting geometry from CDB");
-	      fGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+	      if(runnumber < 0)
+	        fGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+	      else
+	        fGeo = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
 	      //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	      fReco = new AliEMCALRecoUtils;
 	      

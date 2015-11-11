@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
                             
-/* $Id$ */
-
 //_________________________________________________________________________
 //  Base class for the clusterization algorithm (pure abstract)
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
@@ -22,6 +20,7 @@ class TTree;
 #include "AliLog.h"
 class AliEMCALGeometry;
 class AliEMCALCalibData;
+class AliEMCALCalibTime;
 class AliCaloCalibPedestal;
 class AliEMCALRecParam;
 #include "AliEMCALUnfolding.h"
@@ -32,7 +31,8 @@ public:
 
   AliEMCALClusterizer();
   AliEMCALClusterizer(AliEMCALGeometry *geometry);
-  AliEMCALClusterizer(AliEMCALGeometry *geometry, AliEMCALCalibData *calib, AliCaloCalibPedestal *pedestal);
+  AliEMCALClusterizer(AliEMCALGeometry *geometry, AliEMCALCalibData *calib, 
+                      AliEMCALCalibTime * calibt, AliCaloCalibPedestal *pedestal);
   virtual ~AliEMCALClusterizer();
 
   // main methods
@@ -61,12 +61,14 @@ public:
 
   virtual void    GetCalibrationParameters(void);
   virtual void    GetCaloCalibPedestal(void);
-  virtual void    SetCalibrationParameters(AliEMCALCalibData *calib)   { fCalibData = calib;   }
-  virtual void    SetCaloCalibPedestal(AliCaloCalibPedestal  *caped)   { fCaloPed   = caped;   }
+  virtual void    SetCalibrationParameters(AliEMCALCalibData *calib)     { fCalibData = calib;   }
+  virtual void    SetTimeCalibrationParameters(AliEMCALCalibTime *calib) { fCalibTime = calib;   }
+  virtual void    SetCaloCalibPedestal(AliCaloCalibPedestal  *caped)     { fCaloPed   = caped;   }
   
   virtual Float_t GetTimeMin()                        const { return fTimeMin;                 }
   virtual Float_t GetTimeMax()                        const { return fTimeMax;                 }
   virtual Float_t GetTimeCut()                        const { return fTimeCut;                 }
+  virtual Float_t IsTimeCalibrationOn()               const { return fTimeCalibration;         }
   virtual Float_t GetECAClusteringThreshold()         const { return fECAClusteringThreshold;  }  
   virtual Float_t GetECALocalMaxCut()                 const { return fECALocMaxCut;            } 
   virtual Float_t GetECALogWeight()                   const { return fECAW0;                   }
@@ -76,6 +78,7 @@ public:
   virtual void    SetTimeMin(Float_t t)		                  { fTimeMin = t;                    }
   virtual void    SetTimeMax(Float_t t)		                  { fTimeMax = t;                    }
   virtual void    SetTimeCut(Float_t t)		                  { fTimeCut = t;                    }
+  virtual void    SetTimeCalibration(Bool_t t)		          { fTimeCalibration = t;            }
   virtual void    SetECAClusteringThreshold(Float_t th)     { fECAClusteringThreshold = th;    }
   virtual void    SetMinECut(Float_t mine)                  { fMinECut      = mine;            }
   virtual void    SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut;             }
@@ -124,9 +127,10 @@ protected:
   TTree                *fTreeR;         // tree with output clusters
   TObjArray            *fRecPoints;     // array with EMCAL clusters
   
-  AliEMCALGeometry     *fGeom;          //!pointer to geometry for utilities
-  AliEMCALCalibData    *fCalibData;     //!calibration database if aval
-  AliCaloCalibPedestal *fCaloPed;       //!tower status map if aval
+  AliEMCALGeometry     *fGeom;          //! pointer to geometry for utilities
+  AliEMCALCalibData    *fCalibData;     //! energy calibration database if aval
+  AliEMCALCalibTime    *fCalibTime;     //! time calibration database if aval
+  AliCaloCalibPedestal *fCaloPed;       //! tower status map if aval
   
   Float_t  fADCchannelECA;              // width of one ADC channel for EC section (GeV)
   Float_t  fADCpedestalECA;             // pedestal of ADC for EC section (GeV) 
@@ -135,6 +139,7 @@ protected:
   Float_t  fTimeMin;                    // minimum time of physical signal in a cell/digit
   Float_t  fTimeMax;                    // maximum time of physical signal in a cell/digit
   Float_t  fTimeCut;                    // maximum time difference between the digits inside EMC cluster
+  Bool_t   fTimeCalibration;            // recover time shifts from OCDB?
 
   Bool_t   fDefaultInit;                //!says if the task was created by defaut ctor (only parameters are initialized)
   Bool_t   fToUnfold;                   // says if unfolding should be performed 
@@ -155,7 +160,7 @@ protected:
   AliEMCALClusterizer(              const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,8)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,10)  // Clusterization algorithm class 
   
 };
 #endif // AliEMCALCLUSTERIZER_H

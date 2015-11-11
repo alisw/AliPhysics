@@ -1490,6 +1490,35 @@ Double_t AliESDtrack::GetTOFExpTDiff(Double_t b, Bool_t pidTPConly) const
   return tdif*kps2ns;
 }
 
+//_______________________________________________________________________
+Double_t AliESDtrack::GetTOFExpTDiffSpec(AliPID::EParticleType specie,Double_t b) const 
+{
+  // Returns the time difference in ns between TOF signal and expected time for given specii
+  const double kps2ns = 1e-3; // we need ns
+  const double kNoInfo = kTOFBCNA*25; // no info
+ if (!IsOn(kTOFout)) return kNoInfo; // no info
+  //
+  double tdif = GetTOFsignal();
+  if (IsOn(kTIME)) { // integrated time info is there
+    Double_t times[AliPID::kSPECIESC];
+    // old esd has only AliPID::kSPECIES times
+    GetIntegratedTimes(times,int(specie)>=int(AliPID::kSPECIES) ? AliPID::kSPECIESC : AliPID::kSPECIES); 
+    tdif -= times[specie];
+  }
+  else { // assume integrated time info from TOF radius and momentum
+    const double kRTOF = 385.;
+    const double kCSpeed = 3.e-2; // cm/ps
+    double p = GetP();
+    if (p<0.01) return kNoInfo;
+    double m = GetMass(specie);
+    double curv = GetC(b);
+    double path = TMath::Abs(curv)>kAlmost0 ? // account for curvature
+      2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+GetTgl()*GetTgl()) : kRTOF;
+    tdif -= path/kCSpeed*TMath::Sqrt(1.+m*m/(p*p));
+  }
+  return tdif*kps2ns;
+}
+
 //______________________________________________________________________________
 Double_t AliESDtrack::M() const
 {
@@ -2067,6 +2096,8 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   // type 0: get fraction of found/findable clusters with neighbourhood definition
   //      1: findable clusters with neighbourhood definition
   //      2: found clusters
+  //      3: get fraction of found/findable clusters with neighbourhood definition - requiring before and after row
+  //      4: findable clusters with neighbourhood definition - before and after row
   // bitType:
   //      0 - all cluster used
   //      1 - clusters  used for the kalman update
@@ -2081,9 +2112,36 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   Int_t findable=0;
   Int_t last=-nNeighbours;
   const TBits & clusterMap = (bitType%2==0) ? fTPCClusterMap : fTPCFitMap;
+
   
   Int_t upperBound=clusterMap.GetNbits();
   if (upperBound>row1) upperBound=row1;
+  if (type>=3){ // requires cluster before and after
+    for (Int_t i=row0; i<upperBound; ++i){
+      Int_t beforeAfter=0;
+      if (clusterMap[i]) {
+	last=i;
+	++found;
+	++findable;
+	continue;
+      }
+      if ((i-last)<=nNeighbours) {
+	++beforeAfter;
+      }
+      //look to nNeighbours after
+      for (Int_t j=i+1; j<i+1+nNeighbours; ++j){
+	if (clusterMap[j]){
+	  ++beforeAfter;
+	  break;
+	}
+      }
+      if (beforeAfter>1) ++findable;
+    }
+    if (type==3) return Float_t(found)/Float_t(TMath::Max(findable,1));
+    if (type==4) return findable;
+    return 0;
+  }
+
   for (Int_t i=row0; i<upperBound; ++i){
     //look to current row
     if (clusterMap[i]) {

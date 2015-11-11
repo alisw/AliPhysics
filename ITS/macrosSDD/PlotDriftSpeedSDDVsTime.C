@@ -485,7 +485,6 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   gstatusinjvstime[2*mod4]->SetLineColor(4);
   gstatusinjvstime[2*mod1]->Draw("AP");
   gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
-  gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Injector Status");
   gvdrvstime[2*mod2]->Draw("PSAME");
   gvdrvstime[2*mod3]->Draw("PSAME");
   gvdrvstime[2*mod4]->Draw("PSAME");
@@ -506,8 +505,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   gvdrvsrun[2*mod4]->SetMarkerColor(4);
   gvdrvsrun[2*mod4]->SetLineColor(4);
   gvdrvsrun[2*mod1]->Draw("AP");
-  gvdrvsrun[2*mod1]->SetMinimum(6.3);
-  gvdrvsrun[2*mod1]->SetMaximum(6.75);
+  gvdrvsrun[2*mod1]->SetMinimum(6.4);
+  gvdrvsrun[2*mod1]->SetMaximum(6.95);
 
   gvdrvsrun[2*mod1]->GetXaxis()->SetTitle("Run number");
   gvdrvsrun[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");

@@ -2,12 +2,12 @@
 Summary: @DETECTOR@ Detector Algorithm
 Name: @DA_NAME@
 Version: @ALIROOT_VERSION_RPM@
-Release: @ALIROOT_REVISION@
+Release: 1
 License: CERN Alice DAQ/Offine
 Group: Applications/Alice
 Prefix: /opt/%{name}
 BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/da-@DETECTOR@@_ALGORITHM@-rpm/root
-Packager: Alina Grigoras <alina.gabriela.grigoras@cern.ch>
+Packager: ALICE Builder <alibot@cern.ch>
 
 # automatic dependencies
 AutoReqProv: yes

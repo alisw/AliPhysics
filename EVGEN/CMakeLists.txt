@@ -48,6 +48,7 @@ set(SRCS
     AliGenDoubleScan.cxx
     AliGenEMCocktail.cxx
     AliGenEMlib.cxx
+    AliGenEposReader.cxx
     AliGenExtFile.cxx
     AliGenExtExec.cxx
     AliGenFixed.cxx

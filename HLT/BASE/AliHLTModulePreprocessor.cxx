@@ -31,6 +31,7 @@
 #include "TMap.h"
 #include "TObject.h"
 #include "TObjArray.h"
+#include "AliHLTDAQ.h"
 
 
 ClassImp(AliHLTModulePreprocessor)
@@ -53,33 +54,33 @@ AliHLTModulePreprocessor::~AliHLTModulePreprocessor()
 }
 
 // TODO: map this constants to AliHLTDAQ class
-const Int_t AliHLTModulePreprocessor::kNDetectors = 22;
-
-const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] = 
-{
-  "ITSSPD",
-  "ITSSDD",
-  "ITSSSD",
-  "TPC",
-  "TRD",
-  "TOF",
-  "HMPID",
-  "PHOS",
-  "CPV",
-  "PMD",
-  "MUONTRK",
-  "MUONTRG",
-  "FMD",
-  "T0",
-  "VZERO", // Name to be changed to V0 ?
-  "ZDC",
-  "ACORDE",
-  "TRG",
-  "EMCAL",
-  "DAQ_TEST",
-  "HLT",
-  "MFT"
-};
+//const Int_t AliHLTModulePreprocessor::kNDetectors = 22;
+//
+//const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] = 
+//{
+//  "ITSSPD",
+//  "ITSSDD",
+//  "ITSSSD",
+//  "TPC",
+//  "TRD",
+//  "TOF",
+//  "HMPID",
+//  "PHOS",
+//  "CPV",
+//  "PMD",
+//  "MUONTRK",
+//  "MUONTRG",
+//  "FMD",
+//  "T0",
+//  "VZERO", // Name to be changed to V0 ?
+//  "ZDC",
+//  "ACORDE",
+//  "TRG",
+//  "EMCAL",
+//  "DAQ_TEST",
+//  "HLT",
+//  "MFT"
+//};
 
 void AliHLTModulePreprocessor::SetShuttleInterface(AliHLTShuttleInterface* pInterface)
 {
@@ -223,11 +224,11 @@ Int_t AliHLTModulePreprocessor::DetectorBitMask(const char *detectorName)
   TString detStr = detectorName;
 
   Int_t iDet;
-  for(iDet = 0; iDet < kNDetectors; iDet++) {
-    if (detStr.CompareTo(fgkDetectorName[iDet],TString::kIgnoreCase) == 0)
+  for(iDet = 0; iDet < AliHLTDAQ::NumberOfDetectors(); iDet++) {
+    if (detStr.CompareTo(AliHLTDAQ::DetectorName(iDet),TString::kIgnoreCase) == 0)
       break;
   }
-  if (iDet == kNDetectors) 
+  if (iDet == AliHLTDAQ::NumberOfDetectors()) 
     {
       TString errormessage;
       errormessage.Form("Invalid detector name: %s !",detectorName);
@@ -269,14 +270,14 @@ const char *AliHLTModulePreprocessor::DetectorName(Int_t detectorID)
 {
   // Returns the name of particular
   // detector identified by its index
-  if (detectorID < 0 || detectorID >= kNDetectors) 
+  if (detectorID < 0 || (detectorID >= AliHLTDAQ::NumberOfDetectors() && detectorID!=AliHLTDAQ::HLTId()))
     {
       TString errormessage;
-      errormessage.Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1);
+      errormessage.Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,AliHLTDAQ::NumberOfDetectors()-1);
       Log(errormessage.Data());
       return "";
     }
-  return fgkDetectorName[detectorID];
+  return AliHLTDAQ::DetectorName(detectorID);
 }
 
 TObject* AliHLTModulePreprocessor::GetFromMap(TMap* dcsAliasMap, const char* stringId) const

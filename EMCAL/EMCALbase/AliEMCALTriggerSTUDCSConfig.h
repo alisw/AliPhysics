@@ -26,12 +26,14 @@ class AliEMCALTriggerSTUDCSConfig : public TObject
   void    SetRawData(Int_t rd)             { fGetRawData = rd; }
   void    SetRegion(Int_t rg)              { fRegion     = rg; }
   void    SetFw(Int_t fv)                  { fFw         = fv; }
+  void    SetPHOSScale(int iscale, int val) { fPHOSScale[iscale] = val; }
 	
   Int_t   GetG(int i, int j) const { return fG[i][j];    }
   Int_t   GetJ(int i, int j) const { return fJ[i][j];    }
   Int_t   GetRawData()       const { return fGetRawData; }
   Int_t   GetRegion()        const { return fRegion;     }
   Int_t   GetFw()            const { return fFw;         }
+  Int_t   GetPHOSScale(Int_t iscale) const { return fPHOSScale[iscale]; }
 
   void    GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const;
 	
@@ -47,6 +49,7 @@ private:
   Int_t   fGetRawData;    // GetRawData
   Int_t   fRegion;        // Region
   Int_t   fFw;            // Fw
+  Int_t   fPHOSScale[4];  // PHOS scale factors
   
   ClassDef(AliEMCALTriggerSTUDCSConfig,2) //
 };

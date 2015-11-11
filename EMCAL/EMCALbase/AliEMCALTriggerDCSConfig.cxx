@@ -32,12 +32,15 @@ ClassImp(AliEMCALTriggerDCSConfig)
 AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
 ,fTRUArr(0x0)
 ,fSTUObj(0x0)
+,fSTUDCAL(0x0)
 {
 	//
 	// AliEMCALTriggerDCSConfig default constructor
 	//
+  /*
 	fTRUArr = new TClonesArray("AliEMCALTriggerTRUDCSConfig",62);
 	fSTUObj = new AliEMCALTriggerSTUDCSConfig();
+	*/
 }
 
 //_____________________________________________________________________________

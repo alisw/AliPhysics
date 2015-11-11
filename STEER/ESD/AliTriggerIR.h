@@ -27,7 +27,7 @@ class AliTriggerIR : public TObject {
 public:
   AliTriggerIR();
   AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t incomplete = kFALSE, Bool_t transerr = kFALSE);
-  AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words,Bool_t incomplete, Bool_t transerr,Bool_t run2flag);
+  AliTriggerIR(UInt_t orbit, UInt_t nwords, ULong64_t *words,Bool_t incomplete = kFALSE, Bool_t transerr = kFALSE);
 
   AliTriggerIR(const AliTriggerIR &rec);
   AliTriggerIR& operator= (const AliTriggerIR& rec);
@@ -64,11 +64,11 @@ private:
   Bool_t    fTransErr;     // flag which says if there was a transmission error (gap) or not
   UInt_t    fNWord2;
   ULong64_t *fIntRun2;     // [fNWord2]
-  UShort_t  *fBC2;
+  UShort_t  *fBC2;         //[fNWord2]
   Bool_t    fIncomplete2;   // flag which says if the IR is incomplete or not
   Bool_t    fTransErr2;     // flag which says if there was a transmission error (gap) or not
 
-  ClassDef( AliTriggerIR, 2 )  // Trigger Interaction Record (one per orbit)
+  ClassDef( AliTriggerIR, 3 )  // Trigger Interaction Record (one per orbit)
 };
 
 #endif

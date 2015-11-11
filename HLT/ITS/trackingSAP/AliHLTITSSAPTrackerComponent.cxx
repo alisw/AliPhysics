@@ -126,7 +126,7 @@ void AliHLTITSSAPTrackerComponent::GetInputDataTypes( vector<AliHLTComponentData
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS );
+  list.push_back( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );

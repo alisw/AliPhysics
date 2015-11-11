@@ -842,5 +842,8 @@ AliMUONPadStatusMaker::Report(UInt_t mask)
     cout << Form("The message (%120s) occured %15d times (%7.4f %%)",msg.Data(),ntimes,ntimes*100.0/nPads) << endl;
   }
   
+  TMap* hvMap = CalibrationData().HV();
+  
+  std::cout << "Map UniqueID = " << hvMap->GetUniqueID() << std::endl;
 }
 

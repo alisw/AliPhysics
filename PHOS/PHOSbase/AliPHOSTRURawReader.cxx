@@ -82,7 +82,12 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
   
   const UShort_t * const signal = rawStream->GetSignals(); // stream of 10-bit words, buffered as 16-bit words
   const Int_t signalLength = rawStream->GetBunchLength();  // The length of the signal in time steps
-  const Int_t channelIndex = rawStream->GetColumn();  // For some reason the index of the readout channel is given by GetColumn function
+  const Int_t index = rawStream->GetColumn();  // For some reason the index of the readout channel is given by GetColumn function
+  
+  Int_t channelIndex = index;
+
+  if (channelIndex >= 2048)
+    channelIndex-=2048; // branch 1: 0 <= z < 28
   
   fActive = kTRUE; // Set the TRU active
   

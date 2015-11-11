@@ -43,6 +43,9 @@
 
 ClassImp(AliITSReconstructor)
 
+
+Bool_t AliITSReconstructor::fgkCheckInvariant = kTRUE;
+
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
 fDetTypeRec(0)

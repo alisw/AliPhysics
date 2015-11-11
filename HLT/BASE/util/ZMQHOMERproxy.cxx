@@ -81,12 +81,13 @@ int main(int argc, char** argv)
       char timebuf[100];
       time_t now = time (0);
       strftime (timebuf, 100, "%Y-%m-%d %H:%M:%S", localtime (&now));
-      printf("%s request: %s size: %i, errno: %s\n", timebuf, printable, requestTopicSize, zmq_strerror(errno));
+      //printf("\n%s\nrequest: %s size: %i, errno: %s\n", timebuf, printable, requestTopicSize, (requestTopicSize<0)?zmq_strerror(errno):"");
+      printf("\n%s\nrequest: %s\n", timebuf, printable);
       
       rc = zmq_getsockopt(fZMQrep, ZMQ_RCVMORE, &more, &more_size);
       if (more==1)  {
         requestSize = zmq_recv(fZMQrep, request, kAliHLTComponentDataTypeTopicSize, 0);
-        printf("  size: %i, rc: %i, errno: %s\n", (int)requestSize, rc, zmq_strerror(errno));
+        //printf("  size: %i, rc: %i, errno: %s\n", (int)requestSize, rc, (requestSize<0)?zmq_strerror(errno):"");
         rc = zmq_getsockopt(fZMQrep, ZMQ_RCVMORE, &more, &more_size);
       }
     } while (more==1);
@@ -108,7 +109,7 @@ int main(int argc, char** argv)
       {
         memset(printable,0,100);
         strncat(printable, blockTopic, kAliHLTComponentDataTypeTopicSize);
-        printf("blockTopic: %s %s\n",printable,(isSelected)?"selected":"");
+        printf("blockTopic: %s %s\n",printable,(isSelected)?"   <---- selected":"");
       }
       
       if (!isSelected) continue;

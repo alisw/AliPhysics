@@ -25,10 +25,10 @@ public:
 	virtual ~AliEMCALTriggerDCSConfig();
 	
 	void                         SetTRUArr(TClonesArray* const ta)             { fTRUArr    = ta; }
-	void                         SetSTUObj(AliEMCALTriggerSTUDCSConfig* so)    { fSTUObj    = so; }
+	inline void                  SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL = false);
   
 	TClonesArray*                GetTRUArr()                 const             { return fTRUArr;  }
-	AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(          ) const             { return (AliEMCALTriggerSTUDCSConfig*)fSTUObj;           }
+	inline AliEMCALTriggerSTUDCSConfig* GetSTUDCSConfig(Bool_t isDCAL = false) const;
 	AliEMCALTriggerTRUDCSConfig* GetTRUDCSConfig(Int_t iTRU) const             { return (AliEMCALTriggerTRUDCSConfig*)fTRUArr->At(iTRU); }
 	
 private:
@@ -36,10 +36,25 @@ private:
 	AliEMCALTriggerDCSConfig(const AliEMCALTriggerDCSConfig &cd);            // Not implemented
 	AliEMCALTriggerDCSConfig &operator=(const AliEMCALTriggerDCSConfig &cd); // Not implemented
 
-	TClonesArray*                fTRUArr; // TRU array
-	AliEMCALTriggerSTUDCSConfig* fSTUObj; // STU
+	TClonesArray*                fTRUArr;   // TRU array
+	AliEMCALTriggerSTUDCSConfig* fSTUObj;   // STU
+	AliEMCALTriggerSTUDCSConfig* fSTUDCAL;  // STU of DCAL
 
-	ClassDef(AliEMCALTriggerDCSConfig,1)  //
+	ClassDef(AliEMCALTriggerDCSConfig,2)  //
 };
+
+void AliEMCALTriggerDCSConfig::SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL) {
+	if(isDCAL)
+	  fSTUDCAL = so;
+	else
+	  fSTUObj  = so;
+}
+
+AliEMCALTriggerSTUDCSConfig* AliEMCALTriggerDCSConfig::GetSTUDCSConfig(Bool_t isDCAL) const{
+  if(isDCAL)
+    return fSTUDCAL;
+  return fSTUObj;
+}
+
 #endif
 

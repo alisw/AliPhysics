@@ -266,6 +266,7 @@ void AliEveDataSourceHLTZMQ::NextEvent()
     printf("setting new event\n");
     esdObject->GetStdContent();
     int runNumber = esdObject->GetRunNumber();
+    printf("  run: %i, number of tracks: %i\n", runNumber, esdObject->GetNumberOfTracks());
 
     printf("deleting current data\n");
     //replace the ESD

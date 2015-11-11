@@ -30,11 +30,11 @@ public :
   Bool_t RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTOFtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTOF, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTRDtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTRD, Double_t &chi2, Double_t &npoints);
-  void   CreateResidualHistosInterpolation(Double_t dy=5, Double_t dz=5);  
+  void   CreateResidualHistosInterpolation(Double_t dy=5, Double_t dz=5, Int_t selHis=-1);  
   void   CreateDistortionMapsFromFile(const char * inputFile, const char *outputFile);
   void   SetSyswatchStep(Int_t step){fSyswatchStep=(step==0)?1:step;} // step with which sys. usage is sampled
   //
-  static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
+  static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t maxStat=1000000, Int_t selHist=-1);
   static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}

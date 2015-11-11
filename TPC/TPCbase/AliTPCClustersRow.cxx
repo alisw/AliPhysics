@@ -26,6 +26,7 @@
 #include "AliClusters.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCClustersRow.h"
+#include "AliLog.h"
 #include <TDirectory.h>
 #include <TClonesArray.h>
 
@@ -38,10 +39,14 @@ ClassImp(AliTPCClustersRow)
 /// \endcond
 
 
+// code audit 2015-11-06 the class is in its current imlementation bound to
+// AliTPCclusterMI as element class, corresponding code and checks have been
+// added
+
 //*****************************************************************************
 //
 //_____________________________________________________________________________
-AliTPCClustersRow::AliTPCClustersRow()
+AliTPCClustersRow::AliTPCClustersRow() : AliClusters("AliTPCclusterMI")
 {
   //
   //default constructor
@@ -49,9 +54,13 @@ AliTPCClustersRow::AliTPCClustersRow()
 }
 
 //____________________________________________________________________________
-AliTPCClustersRow::AliTPCClustersRow(const char *classname) : AliClusters(classname)
+AliTPCClustersRow::AliTPCClustersRow(const char *classname) : AliClusters("AliTPCclusterMI")
 {
  /// special constructor
+  TString cmpstr(classname);
+  if (cmpstr.CompareTo("AliTPCclusterMI")) {
+    AliFatal("Class AliTPCClustersRow is specifically bound to AliTPCclusterMI as element class");
+  }
 
  fNclusters=0;
 }
@@ -61,11 +70,13 @@ TObject *AliTPCClustersRow::InsertCluster(const TObject *c)
 {
   /// Add a simulated cluster copy to the list
 
+  // code audit 2015-11-06 usage of name of fClass to create the TClonesArray
+  // does not make sense, because the rest of the function is hardwired
   if (fClass==0) {
     Error("AliClusters", "class type not specified");
     return 0;
   }
-  if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
+  if(!fClusters) fClusters=new TClonesArray("AliTPCclusterMI",1000);
   TClonesArray &lclusters = *fClusters;
   return new(lclusters[fNclusters++]) AliTPCclusterMI(*((AliTPCclusterMI*)c));
 }

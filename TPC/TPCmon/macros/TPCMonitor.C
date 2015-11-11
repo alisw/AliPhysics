@@ -385,7 +385,7 @@ void OpenDir()
   string   firsts   = fname.substr(ffirst,1);
   Int_t    firstsl  = strcmp(firsts.data(),":");
   Int_t    firstcol = strcmp(firsts.data(),"@");
-  if ( (fname.find("mem:")!=string::npos) || (fname.find("rfio")!=string::npos) || (fname.find("http")!=string::npos)
+  if ( (fname.find("mem:")!=string::npos) || (fname.find("rfio")!=string::npos) || (fname.find("http")!=string::npos) || (fname.find("alien:")!=string::npos)
        || !firstsl || !firstcol  )  fstart= ffirst  ;
   else                              fstart= ffirst-1; 
   

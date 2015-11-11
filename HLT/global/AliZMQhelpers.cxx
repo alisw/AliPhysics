@@ -40,7 +40,7 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish)
         if (endpoint [0] == '@')
             rc = zmq_bind (self, endpoint + 1);
         else
-        if (endpoint [0] == '>' || endpoint [0] == '-')
+        if (endpoint [0] == '>' || endpoint [0] == '-' || endpoint [0] == '+' )
             rc = zmq_connect (self, endpoint + 1);
         else
         if (serverish)
@@ -80,7 +80,7 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
         if (endpoint [0] == '@')
             rc = zmq_bind (self, endpoint + 1);
         else
-        if (endpoint [0] == '>' || endpoint [0] == '-')
+        if (endpoint [0] == '>' || endpoint [0] == '-' || endpoint [0] == '+' )
             rc = zmq_connect (self, endpoint + 1);
         else
         if (serverish)
@@ -131,16 +131,15 @@ int alizmq_socket_type(std::string config)
 }
 
 //_______________________________________________________________________________________
-int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout)
+int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout, int highWaterMark)
 {
-
   int rc = 0;
   int zmqSocketMode = 0;
   std::string zmqEndpoints = "";
 
   if (config.empty()) return 0;
 
-  std::size_t found = config.find_first_of("@>-");
+  std::size_t found = config.find_first_of("@>-+");
   if (found == std::string::npos || found == 0)
   {printf("misformed socket config string %s\n", config.c_str()); return 1;}
   
@@ -165,10 +164,8 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   //set socket options
   int lingerValue = 10;
   rc += zmq_setsockopt(socket,  ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-  int highWaterMarkRecv = 10;
-  rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
-  int highWaterMarkSend = 10;
-  rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(highWaterMarkSend));
+  rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMark, sizeof(highWaterMark));
+  rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
   rc += zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeout, sizeof(timeout));
   if (rc!=0) {printf("cannot set socket options\n"); return -1;}

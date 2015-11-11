@@ -60,7 +60,7 @@ ClassImp(AliEMCALQAChecker)
 AliEMCALQAChecker::AliEMCALQAChecker() : 
 AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fgknSM]),
-fLineCol(new TLine(47.5,-0.5,47.5,119.5)),
+fLineCol(new TLine(47.5,-0.5,47.5,207.5)),
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
 
@@ -72,19 +72,54 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
     int isect = iSM / 2;
     int isectNum = isect;
     if (isectNum > 5) isectNum += 3; // DCal
-
+    if (isectNum < 5){
     if (iside == 0) { // A side
-      fTextSM[iSM]= new TText(20, 12+24*isect, Form("SM A%d",isectNum) );
+      fTextSM[iSM]= new TText(20, 8+24*isect, Form("SM A%d",isectNum) );
     }
     else { // C side
-      fTextSM[iSM]= new TText(64, 12+24*isect, Form("SM C%d",isectNum) );
+      fTextSM[iSM]= new TText(64, 8+24*isect, Form("SM C%d",isectNum) );
+    }
+    }
+    else if ( isectNum>4 && isectNum<12){
+    if (iside == 0) { // A side
+      if(isectNum ==5)
+      fTextSM[iSM]= new TText(20, 8+24*(isect-1)+8+6, Form("SM A%d",isectNum) );
+      else
+      fTextSM[iSM]= new TText(20, 8+24*(isect-1)+8, Form("SM A%d",isectNum) );
+    }
+    else { // C side
+      if(isectNum ==5)
+      fTextSM[iSM]= new TText(64, 8+24*(isect-1)+8+6, Form("SM C%d",isectNum) );
+      else
+      fTextSM[iSM]= new TText(64, 8+24*(isect-1)+8, Form("SM C%d",isectNum) );
+    }
+    }
+    else{
+    if (iside == 0) { // A side
+      fTextSM[iSM]= new TText(20, 8+24*(isect-2)+16+6, Form("SM A%d",isectNum) );
+    }
+    else { // C side
+      fTextSM[iSM]= new TText(64, 8+24*(isect-2)+16+6, Form("SM C%d",isectNum) );
+    }
     }
   }
 
   for(int i = 0; i < fgknSectLines; i++) {
+  	if(i<5){
 		fLineRow[i] = new TLine(-0.5,23.5+(24*i),95.5,23.5+(24*i));
 		fLineRow[i]->SetLineColor(1);
 		fLineRow[i]->SetLineWidth(2);
+  	}
+  	else if(i>4 && i<9){
+  		fLineRow[i] = new TLine(-0.5,23.5+(24*(i-1))+8,95.5,23.5+(24*(i-1))+8);
+		fLineRow[i]->SetLineColor(1);
+		fLineRow[i]->SetLineWidth(2);
+  	}
+  	else{
+  		fLineRow[i] = new TLine(-0.5,23.5+(24*(i-2))+16,95.5,23.5+(24*(i-2))+16);
+		fLineRow[i]->SetLineColor(1);
+		fLineRow[i]->SetLineWidth(2);
+  	}
   }
 
 	for(int i = 0; i < 3; i++) {
@@ -218,7 +253,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       TH2F *hL1JetPatch = (TH2F*)list[specie]->At(kJL1);
       TH1I *hFrameR = (TH1I*)list[specie]->At(kSTUTRU);
       
-      
+      //TH1I *hNTimeSamplesTRU = (TH1I*)list[specie]->At(kNL0TRUSamples);
+      //TH1I *hRMSTimeforTRU = (TH1I*)list[specie]->At(kNL0TRURMS);
       //  =======================================================================================
       // calib histo checker first:
       if( hdata && ratio ){
@@ -277,7 +313,14 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  }// fText
 	}// calib histo checking done
       }// histograms NOT NULL
-      
+       //  ========================================================================================
+       // now check L0 (NEW!!!)
+       
+    //lstF = hNTimeSamplesTRU->GetListOfFunctions();
+	//CleanListOfFunctions(lstF);
+	//lstF = hRMSTimeforTRU->GetListOfFunctions();
+	//CleanListOfFunctions(lstF);
+	
       //  ========================================================================================
       //  now L1 checks:
       

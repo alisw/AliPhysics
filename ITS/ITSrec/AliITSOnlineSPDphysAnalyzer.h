@@ -31,8 +31,10 @@ class AliITSOnlineSPDphysAnalyzer {
   void       SetParam(const Char_t *pname, const Char_t *pval);
   void       ReadParamsFromLocation(const Char_t *dirName);
 
+  UInt_t     ProcessDead();
   UInt_t     ProcessDeadPixels();
   UInt_t     ProcessNoisyPixels();
+  UInt_t     ProcessNoisyPixelsFast();
   UInt_t     ProcessNoisyPixels(UInt_t eq, UInt_t nrEvts);
 
   UInt_t     GetNrEnoughStatChips();

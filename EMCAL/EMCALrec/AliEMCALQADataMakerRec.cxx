@@ -34,6 +34,7 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
+#include <TH3I.h>
 #include <TLine.h>
 #include <TText.h>
 #include <TProfile.h> 
@@ -372,6 +373,7 @@ void AliEMCALQADataMakerRec::InitRaws()
   Int_t nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
     
   //Defining histograms binning, each 2D histogram covers all SMs
+  Int_t nTotTRUs = AliEMCALTriggerMappingV2::fNTotalTRU;  
   Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
   Int_t nbinsZ = 2*AliEMCALTriggerMappingV2::fSTURegionNEta;
   Int_t nbinsPhi = 2*AliEMCALTriggerMappingV2::fSTURegionNPhi;
@@ -420,7 +422,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 	
  
   // now repeat the same for TRU and LEDMon data
-  Int_t nTot2x2 = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU; // max number of TRU channels for all SuperModules
+  Int_t nTot2x2 = nTotTRUs*AliEMCALTriggerMappingV2::fNModulesInTRU; // max number of TRU channels for all SuperModules
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hT0 = new TProfile("hTRUEmcalSupermodules", "TRU EMC: # of TRU channels vs SuperMod;SM Id;# of TRU channels",
@@ -457,6 +459,16 @@ void AliEMCALQADataMakerRec::InitRaws()
   TProfile * hT6 = new TProfile("hTRUEmcalL0hitsFirstAvgTime", "L0 trigger hits: average time of first hit", nTot2x2, -0.5, nTot2x2, profileOption); 
   Add2RawsList(hT6, kTimeL0FirstTRU, expert, !image, !saveCorr);
 
+	// L0 number of time sample: # of samples over the threshold out of the 13 time sample (bins are TRU channels)
+  TH2I * hT7 = new TH2I("hTRUEmcalL0Samples", "L0 fired trigger within a bunch per Patch", nTRUCols, -0.5, nTRUCols-0.5, nTRURows, -0.5, nTRURows-0.5);
+  hT7->SetOption("COLZ");
+  //hT3->Sumw2();
+  Add2RawsList(hT7, kNL0TRUSamples, !expert, image, !saveCorr);
+  
+  TH1I * hT8 = new TH1I("hRMSOfnTimes", "Dispersion of Time for Fired Triggers per Patch", nTotTRUs, -0.5, nTotTRUs-0.5);
+  hT8->Sumw2();
+  Add2RawsList(hT8, kNL0TRURMS, !expert, !image, !saveCorr);
+  
   // and also LED Mon..
   // LEDMon has both high and low gain channels, just as regular FEE/towers
   Int_t nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules 
@@ -647,7 +659,9 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;	
   }
-
+  const Int_t nTowColsPerSM= 2 * AliEMCALTriggerMappingV2::fNEta;
+  const Int_t nTowRowsPerSM= 2 * AliEMCALTriggerMappingV2::fNPhi; // number of rows per SuperModule
+  
   const Int_t nTowersPerSM = 2*AliEMCALTriggerMappingV2::fNEta*2*AliEMCALTriggerMappingV2::fNPhi; // number of towers in a SuperModule; 24x48
   const Int_t nRows        = 2*AliEMCALTriggerMappingV2::fNPhi; // number of rows per SuperModule
   const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule 
@@ -655,6 +669,22 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   const Int_t n2x2PerTRU   = AliEMCALTriggerMappingV2::fNModulesInTRU;
   const Int_t nTot2x2	   = fSuperModules * n2x2PerSM; // total TRU channel
 
+  Int_t maxNumL0PatchesPerTRU, nTotTRUs;
+  
+  if(fGeom->GetEMCGeometry()->GetGeoName().Contains("DCAL")){
+    maxNumL0PatchesPerTRU = (AliEMCALTriggerMappingV2::fNModulesInTRUPhi-1)*(AliEMCALTriggerMappingV2::fNModulesInTRUEta-1); // when 4x4 PatchMode for L0 trigger is ON
+    nTotTRUs = AliEMCALTriggerMappingV2::fNTotalTRU; // 52 TRUs : 32 EMCAL + 20  ( 14 + 6 unused ) DCAL
+  }
+  else{
+    maxNumL0PatchesPerTRU = (AliEMCALGeoParams::fgkEMCALTRURows-1)*(AliEMCALGeoParams::fgkEMCALTRUCols -1);
+    nTotTRUs = AliEMCALGeoParams::fgkEMCALTRUsPerSM * 10 + 2 ; //32 TRUs ( 3*10 Full_SM + 2 1/3_SM )
+  }
+  
+  //const Int_t nTot2x2 = nTotTRUs* n2x2PerTRU;// total TRU channel
+
+  // Set nTRUs array size to maximum possible 52, later it will be filled up to the real maximum
+  vector <unsigned int> startBins [AliEMCALTriggerMappingV2::fNTotalTRU][n2x2PerTRU];
+  
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   Int_t nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
   Int_t nTotalSMHG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
@@ -666,7 +696,13 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	int firstL0TimeBin = 999;
   int triggers[nTot2x2][24]; // auxiliary array for L0 trigger - TODO remove hardcoded 24
 	memset(triggers, 0, sizeof(int) * 24 * nTot2x2);
-
+  
+  // The next 2 array must be up to 96 (n2x2PerTRU) to account for the possibility
+  // to have 2x2 (single module) L0 trigger patches instead of 4x4 (2x2 modules)
+  // Set nTRUs array size to maximum possible 52, later it will be filled up to the real maximum
+  vector<Int_t> timeOfFiredPatches[AliEMCALTriggerMappingV2::fNTotalTRU][n2x2PerTRU];
+  
+  bool is2x2PatchModeActive = false; //default in Run2 is 4x4 Patch for L0 trigger
   Int_t iSM = 0; // SuperModule index 
   // start loop over input stream  
   while (in.NextDDL()) {
@@ -686,7 +722,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	while (in.NextBunch()) {
 	  nsamples += in.GetBunchLength();
 	  bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
-	} 
+	}  //Storing of each bunch per channel
 	
 	if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 	  Float_t time = 0.; 
@@ -728,7 +764,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		bunchIndex = ui;
 	      }
 	    }
-	  }
+	  }//bunch size and select earliest bunch
 
 	  // check bunch for entries in the pedestal sample range
 	  Int_t bunchLength = bunchlist.at(bunchIndex).GetLength(); 
@@ -743,49 +779,58 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		nPed++;
 	      }	    
 	    } // i
-	  }
+	  }//PEDESTALS FOR REGULARE DATA!
+	  
+          /***************/
+	  // Storing TRUL0Id Data
 	  else { // TRU L0 Id Data
 	    // which TRU the channel belongs to?
-	    //Int_t iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
-	    
+	    //Int_t iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);    
 	    Int_t iHWaddress = in.GetHWAddress();
-	    Int_t iTRUId = fGeom->GetTRUIndexFromOnlineHwAdd(iHWaddress,iRCU,iSM);\
+	    Int_t iTRUId = fGeom->GetTRUIndexFromOnlineHwAdd(iHWaddress,iRCU,iSM);
 	    for (Int_t i = 0; i< bunchLength; i++) {
-	      for( Int_t j = 0; j < nTRUL0ChannelBits; j++ ){
-		// check if the bit j is 1
-		if( (sig[i] & ( 1 << j )) > 0 ){
-		Int_t iFastORinTRU = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
-		  //printf("Fast or index in TRU: %d \n",iFastORinTRU);
-		  if(iFastORinTRU<n2x2PerTRU){
-		    Int_t AbsFastORId=-1;
-		    Int_t found =  fGeom->GetAbsFastORIndexFromTRU(iTRUId, iFastORinTRU, AbsFastORId);
-		    if(found==kTRUE){
-		       Int_t globTRUCol, globTRURow;
-		       fGeom->GetPositionInEMCALFromAbsFastORIndex(AbsFastORId, globTRUCol, globTRURow);
-		    //for(Int_t k=0 ; k<4;k++){
-		    	//fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId[k], globTRUCol, globTRURow);
-		  //  		    if(iTRUIdInSM < n2x2PerTRU) 
-		    //Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
-		    // Fill the histograms
-		    //Int_t globTRUCol, globTRURow;
-		    //GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
-		        //printf("filled L0 histos at col = %d \t row = %d\n", globTRUCol,globTRURow);
-		       	FillRawsData(kNL0TRU, globTRUCol, globTRURow);
-		    	FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
-		    	triggers[AbsFastORId][startBin] = 1;
-		    //}
-		        if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;  
-		     }
-		  } 
-		}
-	      }
-	      startBin--;
-	    } // i	
-	  } // TRU L0 Id data			
+              for( Int_t j = 0; j < nTRUL0ChannelBits; j++ ){
+                  // check if the bit j is 1
+                if( (sig[i] & ( 1 << j )) > 0 ){
+             
+                  Int_t iPatchInTRU = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+                  
+                  if(iPatchInTRU<n2x2PerTRU){
+		             timeOfFiredPatches[iTRUId][iPatchInTRU].push_back(startBin);
+			         startBins[iTRUId][iPatchInTRU].push_back(startBin);
+                  if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;
+                   }
+                  else{
+                      //only possible if in.GetColumn()>nFastORinTRU && in.GetColumn()==105 and the 8th bit of all sig[i] is 1
+                    if(iPatchInTRU==97)
+                      is2x2PatchModeActive=true;
+                    else
+                      continue;
+                  }
+                }//check if bit j of sig i is 1
+              }//loop over the 10 bits of each sig[i]
+              startBin--;
+            }//loop over the 13 time samples sig[i]
+          }//TRU L0idData
+          /***************/ //Go to line 282 for the rest of the L0 code    
+		  	
 	  
-	  // fill histograms
-	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
-	    Int_t towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
+	   // fill histograms
+          Int_t icol = in.GetColumn();
+          Int_t irow = in.GetRow();
+          
+          Int_t towerId = -1;
+          if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
+            
+            if (iSM < 10) //FULL EMCAL MODULES
+              towerId = iSM*nTowersPerSM + icol*nTowRowsPerSM + irow;
+            else if (iSM > 9 && iSM < 12) //1/3 EMCAL = OFFSET_FULL_EMCAL + iSM,irow,icol ->tower_number (nrows=1/3nrows EMCAL FULL)
+              towerId = 10*nTowersPerSM + (iSM-10)*nTowColsPerSM*(nTowRowsPerSM/3) + icol*(nTowRowsPerSM/3) + irow;
+            else if (iSM > 11 && iSM < 18)//FULL DCAL = OFFSET_FULL_EMCAL+ OFFSET_1/3_EMCAL + iSM,irow,icol ->tower_number
+              towerId = (iSM-2)*nTowersPerSM + 2*nTowColsPerSM*(nTowRowsPerSM/3) + icol*nTowRowsPerSM + irow;
+            else //1/3 DCAL = OFFSET_FULL_EMCAL+ OFFSET_1/3_EMCAL+ OFFSET_FULL_DCAL+ iSM,irow,icol ->tower_number (nrows=1/3nrows EM(D)CAL FULL)
+              towerId = 16*nTowersPerSM + (iSM-16)*nTowColsPerSM*(nTowRowsPerSM/3) + icol*(nTowRowsPerSM/3) + irow;
+              
 	    if ( in.IsLowGain() ) { 
 	      nTotalSMLG[iSM]++; 
 	      if ( (amp > fMinSignalLG) && (amp < fMaxSignalLG) ) { 
@@ -835,46 +880,93 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		// FillRawsData(kPedTRU,iTRU2x2Id, pedSamples[i]);
 	      // }
 	    // }
-	  }
-	  // LED Mon
-	  else if ( in.IsLEDMonData() ) {
-	    // for LED Mon data, the mapping class holds the gain info in the Row variable
-	    // and the Strip number in the Column..
-	    Int_t gain = in.GetRow(); 
-	    Int_t stripId = iSM*nStripsPerSM + in.GetColumn();
-	  
-	    if ( gain == 0 ) { 
-	      nTotalSMLGLEDMon[iSM]++; 
-	      if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) {
-		FillRawsData(kSigLGLEDMon,stripId, amp);
-		FillRawsData(kTimeLGLEDMon,stripId, time);
-	      }
-	      if (nPed > 0) {
-		for (Int_t i=0; i<nPed; i++) {
-		  FillRawsData(kPedLGLEDMon,stripId, pedSamples[i]);
-		}
-	      }
-	    } // gain==0
-	    else if ( gain == 1 ) {       	
-	      nTotalSMHGLEDMon[iSM]++; 
-	      if ( (amp > fMinSignalHGLEDMon) && (amp < fMaxSignalHGLEDMon) ) { 
-		FillRawsData(kSigHGLEDMon,stripId, amp);
-		FillRawsData(kTimeHGLEDMon,stripId, time);
-	      }
-	      if (nPed > 0) {
-		for (Int_t i=0; i<nPed; i++) {
-		  FillRawsData(kPedHGLEDMon,stripId, pedSamples[i]);
-		}
-	      }
-	    } // low or high gain
-	  } // LEDMon
-
-	} // SM index OK
-
+	  }//end TRU
+	   // LED Mon
+          else if ( in.IsLEDMonData() ) {
+              // for LED Mon data, the mapping class holds the gain info in the Row variable
+              // and the Strip number in the Column..
+            Int_t gain = in.GetRow();
+            Int_t stripId = iSM*nStripsPerSM + in.GetColumn();
+            
+            if ( gain == 0 ) {
+              nTotalSMLGLEDMon[iSM]++;
+              if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) {
+                FillRawsData(kSigLGLEDMon,stripId, amp);
+                FillRawsData(kTimeLGLEDMon,stripId, time);
+              }
+              if (nPed > 0) {
+                for (Int_t i=0; i<nPed; i++) {
+                  FillRawsData(kPedLGLEDMon,stripId, pedSamples[i]);
+                }
+              }
+            } // gain==0
+            else if ( gain == 1 ) {
+              nTotalSMHGLEDMon[iSM]++;
+              if ( (amp > fMinSignalHGLEDMon) && (amp < fMaxSignalHGLEDMon) ) {
+                FillRawsData(kSigHGLEDMon,stripId, amp);
+                FillRawsData(kTimeHGLEDMon,stripId, time);
+              }
+              if (nPed > 0) {
+                for (Int_t i=0; i<nPed; i++) {
+                  FillRawsData(kPedHGLEDMon,stripId, pedSamples[i]);
+                }
+              }//nPed>0
+            } // low or high gain
+          } // LEDMon
+        } // SM index OK
       } // nsamples>0 check, some data found for this channel; not only trailer/header
-    }// end while over channel 
-   
-  }// end while over DDL's, of input stream 
+    }// end while over channel
+  }// end while over DDL's, of input stream
+  
+  /***************/
+    //Filling histograms for TRUL0IdData
+  Int_t AbsFastORId=-1;
+  Int_t AbsFastORIndexesIn4x4Patch[4]={-1};
+  Int_t AbsFastORFirstIndexIn4x4Patch;
+  Int_t globTRUCol, globTRURow;
+  bool worry=false;
+  for(int k=0; k < nTotTRUs; k++){
+  	double rms=0;
+    for(int h=0; h < maxNumL0PatchesPerTRU; h++){
+      if(timeOfFiredPatches[k][h].size()==0) continue;
+      else{ //Run 1 or 2x2PatchModeON L0Channels = modules in TRU
+        if(is2x2PatchModeActive || !(fGeom->GetEMCGeometry()->GetGeoName().Contains("DCAL"))){
+          if(fGeom->GetAbsFastORIndexFromTRU(k, h, AbsFastORId)){
+            fGeom->GetPositionInEMCALFromAbsFastORIndex(AbsFastORId, globTRUCol, globTRURow);
+            for(int s=0; s<timeOfFiredPatches[k][h].size(); s++){
+              FillRawsData(kNL0TRU, globTRUCol, globTRURow);
+              FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, timeOfFiredPatches[k][h].at(s));
+              triggers[AbsFastORId][startBins[k][h].at(s)] = 1;
+            }
+            FillRawsData(kNL0TRUSamples, globTRUCol, globTRURow,timeOfFiredPatches[k][h].size());
+          }
+          else continue;
+        }
+        else{ //Run2 default L0Channels = 4x4 towers patches = 2x2 modules in TRU
+          if(fGeom->GetFastORIndexFromL0Index(k, h, AbsFastORIndexesIn4x4Patch, 4)){
+              for(int i=0;i<4;i++)
+              	//printf("AbsID = %d of the %d module in the %d Patch of the %d TRU\n",AbsFastORIndexesIn4x4Patch[i],i,h,k);
+              AbsFastORFirstIndexIn4x4Patch=AbsFastORIndexesIn4x4Patch[0];
+              fGeom->GetPositionInEMCALFromAbsFastORIndex(AbsFastORFirstIndexIn4x4Patch, globTRUCol, globTRURow);
+             //printf("TRU: %d \t PatchIndex:%d \t number of times for the fired patch: %d\n",k,h,timeOfFiredPatches[k][h].size());
+             //printf("First Index %d of the 4 modules making the patch\n", AbsFastORFirstIndexIn4x4Patch);
+              for(int s=0; s<timeOfFiredPatches[k][h].size(); s++){
+               //printf("%d time the patch has been fired and time: %d\n",s+1,timeOfFiredPatches[k][h].at(s));
+                FillRawsData(kNL0TRU, globTRUCol, globTRURow);
+                FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, timeOfFiredPatches[k][h].at(s));
+                triggers[AbsFastORFirstIndexIn4x4Patch][startBins[k][h].at(s)] = 1;
+              }//number of times each module in a patch has fired the trigger
+            FillRawsData(kNL0TRUSamples, globTRUCol, globTRURow,timeOfFiredPatches[k][h].size());
+          }//position of the patch FOUND!
+          else
+            continue;
+        }//check which kind of patch has been SELECTED
+      }//the patch "h" in TRU "k" has been fired
+      
+    }//loop over the max number of AVAILABLE patches per TRU
+  }//loop on nTotTRUs (Run1 or Run2)
+  
+  /***************/
   // filling some L0 trigger histos
   if( firstL0TimeBin < 999 ){
     for(Int_t i = 0; i < nTot2x2; i++) {	
@@ -912,14 +1004,15 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       thRatioDist->ResetStats();
       thLEDMonRatio->ResetStats();
       thLEDMonRatioDist->ResetStats();
+      
       ConvertProfile2H(prSigHG, fHighEmcHistoH2F);  
       // 
       for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
 	for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) { 
 	  if(fCalibRefHistoH2F->GetBinContent(ix, iy)) 
 	    binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy);
-	  th2DRatioAmp->SetBinContent(ix, iy, binContent);
-	  thRatioDist->Fill(binContent);
+	    th2DRatioAmp->SetBinContent(ix, iy, binContent);
+	    thRatioDist->Fill(binContent);
 	}
       } 
       // 
@@ -932,7 +1025,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	// 
 	if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
 	  binContent = hSigLGLEDMon->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
-
 	  relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
 	  if( hSigLGLEDMon->GetBinContent(ib) != 0) {
 	    relativeErrorSqr += TMath::Power( (hSigLGLEDMon->GetBinError(ib)/hSigLGLEDMon->GetBinContent(ib)), 2);
@@ -979,7 +1071,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   IncEvCountTotalESDs();
   SetEventSpecie(saveSpecie) ; 
   
-	MakeRawsSTU(rawReader);
+  //MakeRawsSTU(rawReader);
 
   // just in case the next rawreader consumer forgets to reset; let's do it here again..
   rawReader->Reset() ;
@@ -1096,10 +1188,8 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 /// \param TProfile
 /// \param histo
 ///
-
-void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo) 
-{  
-  //  reset histogram
+void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo){ 
+ //  reset histogram
   histo->Reset("ICE") ; 
   histo->ResetStats(); 
 
@@ -1109,20 +1199,53 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
   Double_t binContent = 0;
   Int_t towerNum = 0; //  global tower Id
   //   i = 0; //  tower Id within SuperModule
-    
+  Int_t iSM=0; 
+  Int_t iSMSide = 0; // 0=A, 1=C side
+  Int_t iSMSector = 0; // 2 SM's per sector  
   //  indices for 2D plots
   Int_t col2d = 0;
   Int_t row2d = 0;
-   
+  Int_t kEMCALRows = 24; // TOWERs  nRows
+  Int_t kEMCALCols = 48; // TOWERs  nCols
+  Int_t kEMCALTowersPerSM = kEMCALRows * kEMCALCols; // nTOWERS in SM
+  
   for (Int_t ibin = 1; ibin <= nbinsProf; ibin++) {
     towerNum = (Int_t) p->GetBinCenter(ibin);
     binContent = p->GetBinContent(ibin);
-    Bool_t foundInfo = fGeom->GetPositionInEMCALFromAbsFastORIndex(towerNum,col2d,row2d);
-    if(foundInfo)
-    	histo->SetBinContent(col2d+1, row2d+1, binContent);
-    else 
-	continue;
-    }
+           
+	if(towerNum<11520){
+		iSM = towerNum/(kEMCALTowersPerSM);
+		col2d = (towerNum/kEMCALRows) % kEMCALCols;
+		row2d = towerNum % kEMCALRows;
+	}
+	else if(towerNum>11519 && towerNum<12288){
+		iSM = 10 + (towerNum-11520)/(kEMCALTowersPerSM/3);//for the 10th SM the second part returns 0 (division between integers) 
+		col2d = ((towerNum-11520)/(kEMCALRows/3)) % kEMCALCols;
+		row2d = (towerNum-11520) % (kEMCALRows/3);
+	}
+	else if(towerNum>12287 && towerNum<19200){
+		iSM = 12 + (towerNum-12288)/(kEMCALTowersPerSM);//for the 12th SM the second part return 0 (division between integers) 
+		col2d = ((towerNum-12288)/kEMCALRows) % kEMCALCols;
+		row2d = (towerNum-12288) % kEMCALRows;
+	}
+	else{ //10 EMCAL_FULL + 2 EMCAL_1/3 + 6 DCAL_FULL 
+		iSM = 18 + (towerNum-19200)/(kEMCALTowersPerSM/3); //for the 18th SM the second part return 0 (division between integers)
+		col2d = ((towerNum-19200)/(kEMCALRows/3)) % kEMCALCols;
+		row2d = (towerNum-19200) % (kEMCALRows/3); 
+	}
+
+	iSMSector = iSM / 2;
+	iSMSide = iSM % 2;
+	if (iSMSide == 1) // C side, shown to the right
+		col2d += kEMCALCols;
+
+	if (towerNum>=0 && towerNum<12288)//EMCAL (FULL and 1/3 SM)
+	     row2d += iSMSector *kEMCALRows;
+	else if (towerNum>12287 && towerNum<19968)//DCAL =  EMCAL Offset (120+8) + Offset in DCAL Sectors (here they continue from 6, not 9) 
+	     row2d += 5*kEMCALRows + (kEMCALRows/3) + (iSMSector-6)*kEMCALRows;
+		
+	histo->SetBinContent(col2d+1, row2d+1, binContent);
+  }
 } 
 //____________________________________________________________________________ 
 /// from local to global indices
@@ -1190,7 +1313,8 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	
   rawReader->Reset();
   rawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
-  
+   Int_t det=0; //detector index
+  Int_t h=0; //helper for TRU-STU conversion
   // L1 segmentation
   Int_t sizeL1gsubr = 1;
   Int_t sizeL1gpatch = 2; 
@@ -1222,12 +1346,20 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
       // FastOR amplitude receive from TRU
       for (Int_t i = 0; i < AliEMCALTriggerMappingV2::fNTotalTRU; i++)
 	{
+	  if(i==34 || i==35 || i==40 || i==41 || i==46 || i==47)continue;
 	  UInt_t adc[96];
 	  for (Int_t j = 0; j < 96; j++) adc[j] = 0;
+	   if(i>31) {
+	  det=1;  //Detector switch for STU (for TRUs EMCal and DCal are the same Detector 
+	  h=i-32; //General Offset DCAL STU / EMCAL+DCAL TRU
+	  } 
+	  if(i>35) h=i-34; //1st row DCAL offset STU/TRU 
+	  if(i>41) h=i-36; //2nd row DCAL offset STU/TRU
+	  if(i>47) h=i-38; //3rd row DCAL offset STU/TRU
 	  
-	  inSTU->GetADC(i, adc);
+	  inSTU->GetADC(h, adc);
 	  
-	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i,0);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
+	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(h,det);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
 				
 	  for (Int_t j = 0; j < 96; j++)
 	    {

@@ -43,6 +43,8 @@ public:
   virtual void         FillESD(TTree *, TTree *, AliESDEvent * /*esdEvent*/) const;
 
   static const AliTOFRecoParam* GetRecoParam() { return dynamic_cast<const AliTOFRecoParam*>(AliReconstructor::GetRecoParam(3)); } // getting RecoParam obj
+  static void      SetExtraTolerance(double v) {fgExtraTolerance = v;}
+  static Double_t  GetExtraTolerance()         {return fgExtraTolerance;}
 
   virtual void FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *esdPID);
 
@@ -58,6 +60,7 @@ private:
 
   AliTOFClusterFinder *fClusterFinder;
   AliTOFClusterFinderV1 *fClusterFinderV1;
+  static Double_t fgExtraTolerance; // extra tolerance on DCut for miscalibrated TPC reco
 
   ClassDef(AliTOFReconstructor, 5)   // class for the TOF reconstruction
 };

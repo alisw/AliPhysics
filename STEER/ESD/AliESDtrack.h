@@ -91,6 +91,7 @@ public:
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetTOFExpTDiff(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
+  Double_t GetTOFExpTDiffSpec(AliPID::EParticleType specie=AliPID::kPion,Double_t b=0) const;
   //
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
   Double_t GetMassForTracking() const;

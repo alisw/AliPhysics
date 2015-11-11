@@ -1352,15 +1352,25 @@ Int_t  AliTPCtracker::LoadClusters()
   // Conversion of pad, row coordinates in local tracking coords.
   // Could be skipped here; is already done in clusterfinder
 
+  double cutZ2X = AliTPCReconstructor::GetPrimaryZ2XCut();
+  double cutZOutSector = AliTPCReconstructor::GetZOutSectorCut();
+  if (cutZOutSector>0 && AliTPCReconstructor::GetExtendedRoads()) 
+    cutZOutSector += AliTPCReconstructor::GetExtendedRoads()[1];
+  //
+  if (cutZ2X>0 || cutZOutSector>0) {
+    AliInfoF("Cut on cluster |Z/X| : %s, on cluster Z on wrong CE side: %s",
+	     cutZ2X>0        ? Form("%.3f",cutZ2X) : "N/A",
+	     cutZOutSector>0 ? Form("%.3f",cutZOutSector) : "N/A");
+  }
   Int_t j=Int_t(tree->GetEntries());
   for (Int_t i=0; i<j; i++) {
     br->GetEntry(i);
-    //  
+    //
+    TClonesArray* clArr = clrow->GetArray();
+    int nClus = clArr->GetEntriesFast();
     Int_t sec,row;
     fkParam->AdjustSectorRow(clrow->GetID(),sec,row);
-    for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
-      Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
-    }
+    for (Int_t icl=nClus; icl--;) Transform((AliTPCclusterMI*)(clArr->At(icl)));
     //
     AliTPCtrackerRow * tpcrow=0;
     Int_t left=0;
@@ -1372,15 +1382,24 @@ Int_t  AliTPCtracker::LoadClusters()
       tpcrow = &(fOuterSec[(sec-fkNIS*2)%fkNOS][row]);
       left = (sec-fkNIS*2)/fkNOS;
     }
-    if (left ==0){
-      tpcrow->SetN1(clrow->GetArray()->GetEntriesFast());
-      for (Int_t k=0;k<tpcrow->GetN1();++k) 
-	tpcrow->SetCluster1(k, *(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
+    int nClusAdd = 0;
+    if (left ==0){  // A side     
+      for (int k=0;k<nClus;k++) {
+	const AliTPCclusterMI& cl = *((AliTPCclusterMI*)clArr->At(k));
+	if (cutZOutSector>0 && cl.GetZ()<-cutZOutSector) continue;
+	if (cutZ2X>0 && cl.GetZ()/cl.GetX() > cutZ2X) continue;
+	tpcrow->SetCluster1(nClusAdd++, cl);
+      }
+      tpcrow->SetN1(nClusAdd);
     }
-    if (left ==1){
-      tpcrow->SetN2(clrow->GetArray()->GetEntriesFast());
-      for (Int_t k=0;k<tpcrow->GetN2();++k) 
-	tpcrow->SetCluster2(k, *(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
+    if (left ==1){ // C side
+      for (int k=0;k<nClus;k++) {
+	const AliTPCclusterMI& cl = *((AliTPCclusterMI*)clArr->At(k));
+	if (cutZOutSector>0 && cl.GetZ()>cutZOutSector) continue;
+	if (cutZ2X>0 && cl.GetZ()/cl.GetX() < -cutZ2X) continue;
+	tpcrow->SetCluster2(nClusAdd++, cl);
+      }
+      tpcrow->SetN2(nClusAdd);
     }
   }
   //

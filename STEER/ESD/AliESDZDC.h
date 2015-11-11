@@ -149,8 +149,8 @@ public:
   Bool_t IsZEM2hit() {return fZEM2TDChit;}
   //
   void SetZNCTDChit(Bool_t isf)  {fZNCTDChit = isf;} 
-  void SetZPCTDChit(Bool_t isf)  {fZNATDChit = isf;} 
-  void SetZNATDChit(Bool_t isf)  {fZPCTDChit = isf;} 
+  void SetZPCTDChit(Bool_t isf)  {fZPCTDChit = isf;} 
+  void SetZNATDChit(Bool_t isf)  {fZNATDChit = isf;} 
   void SetZPATDChit(Bool_t isf)  {fZPATDChit = isf;} 
   void SetZEM1TDChit(Bool_t isf) {fZEM1TDChit = isf;} 
   void SetZEM2TDChit(Bool_t isf) {fZEM2TDChit = isf;} 

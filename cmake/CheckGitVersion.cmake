@@ -3,7 +3,10 @@
 #  - ALIROOT_VERSION - branch/tag name or short hash if detached at randon hash
 #  - ALIROOT_REVISION - short sha1
 #  - ALIROOT_SERIAL - number of commits
-#  - ALIROOT_VERSION_RPM - name of the branch/tag in rpm format, - replaced with .
+#  - ALIROOT_GIT_DESCRIBE - output of "git describe --tags"
+#  - ALIROOT_VERSION_RPM - output of "git describe --tags" suitable for using it
+#                          as a version in a RPM spec, i.e. with all "weird"
+#                          characters replaced with dashes
 #  - ALIROOT_GITREFTYPE - BRANCH/TAG/DETACHED
 
 # Setting default values
@@ -25,6 +28,12 @@ if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
   #     1. branches: refs/heads/master
   #     2. detached mode(tags or hashes) empty string
   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+
+  # Get output of git describe
+  execute_process(COMMAND git describe --tags
+                  WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
+                  OUTPUT_VARIABLE ALIROOT_GIT_DESCRIBE
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   if(CMAKEDEBUG)
     message(STATUS "DEBUG: GIT_REFSPEC = \"${GIT_REFSPEC}\", GIT_SHA1 = \"${GIT_SHA1}\"")
@@ -175,11 +184,11 @@ if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
   endif()
 
   if(${ALIROOT_GITREFTYPE} STREQUAL "DETACHED")
-    message(STATUS "Found AliRoot in detached mode, hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+    message(STATUS "Found AliRoot in detached mode, hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\", describe \"${ALIROOT_GIT_DESCRIBE}\"")
   elseif(${ALIROOT_GITREFTYPE} STREQUAL "BRANCH")
-    message(STATUS "Found AliRoot branch \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+    message(STATUS "Found AliRoot branch \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\", describe \"${ALIROOT_GIT_DESCRIBE}\"")
   elseif(${ALIROOT_GITREFTYPE} STREQUAL "TAG")
-    message(STATUS "Found AliRoot tag \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\"")
+    message(STATUS "Found AliRoot tag \"${ALIROOT_VERSION}\", hash \"${ALIROOT_REVISION}\", serial \"${ALIROOT_SERIAL}\", describe \"${ALIROOT_GIT_DESCRIBE}\"")
   else()
     # it does not get here
     message(FATAL_ERROR "Git type error")
@@ -188,11 +197,9 @@ else(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
     message(WARNING "AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
 endif(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
 
-# ALIROOT_VERSION_RPM
-# Replacing -/ with . , normally it should not contain / 
-# - and / are forbidden characters in rpm creation
-string(REPLACE "-" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION})
-string(REPLACE "/" "." ALIROOT_VERSION_RPM ${ALIROOT_VERSION_RPM})
+# Use the output of git describe for RPM versions, but strip invalid characters.
+string(REGEX REPLACE "[^A-Za-z0-9_.]" "." ALIROOT_VERSION_RPM ${ALIROOT_GIT_DESCRIBE})
+string(REGEX REPLACE "\\.([0-9]+)\\.(g[a-f0-9]+)$" "_\\1_\\2" ALIROOT_VERSION_RPM ${ALIROOT_VERSION_RPM})
 if(CMAKEDEBUG)
   message(STATUS "DEBUG: ALIROOT_VERSION_RPM = ${ALIROOT_VERSION_RPM}")
 endif()

@@ -59,6 +59,7 @@
 #pragma link C++ class AliGenDPMjetEventHeader+;
 #pragma link C++ class AliGenHerwigEventHeader+;
 #pragma link C++ class AliGenGeVSimEventHeader+;
+#pragma link C++ class AliGenEpos3EventHeader+;
 #pragma link C++ class AliGenEposEventHeader+;
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;

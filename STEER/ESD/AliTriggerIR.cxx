@@ -88,7 +88,7 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
   }
 }
 //_____________________________________________________________________________
-AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t incomplete, Bool_t transerr,Bool_t run2flag):
+AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, ULong64_t *words, Bool_t incomplete, Bool_t transerr):
   TObject(),
   fOrbit(orbit),
   fNWord(0),
@@ -111,7 +111,7 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
      fIntRun2 = new ULong64_t[fNWord2];
      fBC2   = new UShort_t[fNWord2];
      for(UInt_t i = 0; i < fNWord2; i++) {
-        fIntRun2[i] = words[i] & 0xffffffffffff;
+        fIntRun2[i] = words[i] & 0xffffffffffff000>>12;
         fBC2[i] = words[i] & 0xFFF;
      }
   }

@@ -645,15 +645,17 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern) const
   /// Exact match is required for keys and objectNames
   
   TObject* sumObject = 0x0;
+  TObjString* str = 0x0;
   
   // Build array of lists of pattern
   TString idPatternString(idPattern);
   TObjArray* keyList = idPatternString.Tokenize("/");
-  TObjArray keyMatrix(keyList->GetEntries());
+  TObjArray keyMatrix(keyList->GetEntriesFast());
   keyMatrix.SetOwner();
-  for ( Int_t ikey=0; ikey<keyList->GetEntries(); ikey++ ) {
-    TObjArray* subKeyList = ((TObjString*)keyList->At(ikey))->GetString().Tokenize(",");
-    keyMatrix.AddAt(subKeyList, ikey);
+  TIter nextKey(keyList);
+  while ( ( str = static_cast<TObjString*>(nextKey()) ) ) {
+    TObjArray* subKeyList = str->String().Tokenize(",");
+    keyMatrix.Add(subKeyList);
   }
   delete keyList;
   
@@ -662,8 +664,8 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern) const
   //
   // First handle the keys
   //
+  TObjString* subKey = 0x0;
   TIter next(Map());
-  TObjString* str;
   while ( ( str = static_cast<TObjString*>(next()) ) )
   {
     TString identifier = str->String();
@@ -673,8 +675,9 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern) const
       TString currKey = GetKey(identifier, ikey, kFALSE);
       Bool_t matchKey = kFALSE;
       TObjArray* subKeyList = static_cast<TObjArray*> ( keyMatrix.At(ikey) );
-      for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
-        TString subKeyString = static_cast<TObjString*> (subKeyList->At(isub))->GetString();
+      TIter nextSubKey(subKeyList);
+      while ( (subKey=static_cast<TObjString*>(nextSubKey())) ) {
+        TString subKeyString = subKey->String();
         if ( currKey == subKeyString ) {
           matchKey = kTRUE;
           break;
@@ -701,8 +704,9 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern) const
       TString currKey = obj->GetName();
       Bool_t matchKey = kFALSE;
       TObjArray* subKeyList = static_cast<TObjArray*> ( keyMatrix.Last() );
-      for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
-        TString subKeyString = static_cast<TObjString*> (subKeyList->At(isub))->GetString();
+      TIter nextSubKey(subKeyList);
+      while ( (subKey=static_cast<TObjString*>(nextSubKey())) ) {
+        TString subKeyString = subKey->String();
         if ( currKey == subKeyString ) {
           matchKey = kTRUE;
           break;

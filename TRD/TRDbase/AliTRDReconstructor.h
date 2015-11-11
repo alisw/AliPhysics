@@ -84,7 +84,19 @@ public:
   void	              SetOption(Option_t *opt);
   static Int_t GetStreamLevel()               { return fgStreamLevel;}
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
-
+  //
+  static void SetExtraMaxClPerLayer(Int_t n)      {if (n>0) fgExtraMaxClPerLayer = n;}
+  static void SetExtraBoundaryTolerance(double v) {fgExtraBoundaryTolerance =v;}
+  static void SetExtraRoadY(double v)             {fgExtraRoadY = v;}
+  static void SetExtraRoadZ(double v)             {fgExtraRoadZ = v;}
+  static void SetExtraChi2Out(double v)           {fgExtraChi2Out = v;}
+  //
+  static Int_t    GetExtraMaxClPerLayer()     {return fgExtraMaxClPerLayer;}
+  static Double_t GetExtraBoundaryTolerance() {return fgExtraBoundaryTolerance;}
+  static Double_t GetExtraRoadY()             {return fgExtraRoadY;}
+  static Double_t GetExtraRoadZ()             {return fgExtraRoadZ;}
+  static Double_t GetExtraChi2Out()           {return fgExtraChi2Out;}
+  //
 private:
   AliTRDReconstructor(const AliTRDReconstructor &r); //Not implemented
   AliTRDReconstructor& operator = (const AliTRDReconstructor&); //Not implemented
@@ -113,12 +125,16 @@ private:
   AliTRDclusterizer   *fClusterizer;  //! instance of TRD clusterizer
   static AliTRDonlineTrackMatching fgOnlineTrackMatcher; // track matcher between on-line and off-line track
   static AliESDTrdTrigger fgTriggerFlags; //  L1 trigger flags
-
-  ClassDef(AliTRDReconstructor, 5)    //  Class for the TRD reconstruction
+  //
+  static Double_t fgExtraBoundaryTolerance; // additional tolerance for boundary check
+  static Double_t fgExtraRoadY;             // additional road in Y
+  static Double_t fgExtraRoadZ;             // additional road in Z
+  static Double_t fgExtraChi2Out;           // additional chi2 on backpropagation
+  static Int_t    fgExtraMaxClPerLayer;     // additional cl. per layer allowed
+  //
+  ClassDef(AliTRDReconstructor, 6)    //  Class for the TRD reconstruction
 
 };
-
-
 
 #endif
 

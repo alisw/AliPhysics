@@ -68,8 +68,10 @@ TString                AliTPCReconstructor::fgPIDRespnonsePath="$ALICE_PHYSICS/O
  
 TVectorD *  AliTPCReconstructor::fSystematicErrors=0;
 TVectorD *  AliTPCReconstructor::fSystematicErrorClusters=0;
-TVectorD *  AliTPCReconstructor::fExtendedRoads=0;
-TVectorD *  AliTPCReconstructor::fPrimaryDCACut=0;
+TVectorD *  AliTPCReconstructor::fgExtendedRoads=0;
+TVectorD *  AliTPCReconstructor::fgPrimaryDCACut=0;
+Double_t    AliTPCReconstructor::fgPrimaryZ2XCut = 0;
+Double_t    AliTPCReconstructor::fgZOutSectorCut = 0;
 
 AliTPCReconstructor::AliTPCReconstructor():
 AliReconstructor(),

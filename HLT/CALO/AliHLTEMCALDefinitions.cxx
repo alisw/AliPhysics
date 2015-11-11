@@ -46,6 +46,12 @@ AliHLTComponentDataTypeInitializer("CALIBRAH", kAliHLTDataOriginEMCAL);
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkChannelDataType = 
 AliHLTComponentDataTypeInitializer("CHANNELT", kAliHLTDataOriginEMCAL);
 
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType =
+AliHLTComponentDataTypeInitializer("TRGDIGT", kAliHLTDataOriginEMCAL);
+
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkTriggerPatchDataType =
+AliHLTComponentDataTypeInitializer("TRIGGERT", kAliHLTDataOriginEMCAL);
+
 AliHLTEMCALDefinitions::AliHLTEMCALDefinitions()
 {
   // see header file for class documentation
