@@ -28,6 +28,7 @@ class AliRelAlignerKalman : public TObject {
 
 public:
     AliRelAlignerKalman();
+    AliRelAlignerKalman(const char* name);
     virtual ~AliRelAlignerKalman();
     AliRelAlignerKalman& operator= (const AliRelAlignerKalman& a );
     AliRelAlignerKalman(const AliRelAlignerKalman& a);
