@@ -99,6 +99,7 @@ fTrack(0),fCuts(0) {}
    Float_t GetPtTOFMatchingPion()        const    { return fPtCutTOFMatchingPion; } 
    Float_t GetPtTOFMatchingKaon()        const    { return fPtCutTOFMatchingKaon; } 
    Float_t GetPtTOFMatchingProton()        const    { return fPtCutTOFMatchingProton; } 
+   Float_t GetPtTOFMatching(Int_t i)        const ; 
 
    Long64_t Merge(TCollection* list);
    void SetAliESDtrackCuts(AliESDtrackCuts*  cuts ){fCuts=cuts;}

@@ -426,8 +426,13 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  
 		  		if (isPrimary&&irec==kSpPion)
 					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of reconstrutsed primaries in defined eta
-		  
-		  	//nsigma cut (reconstructed nsigma	
+
+				if(track->Pt()>fTrackCuts->GetPtTOFMatching(irec)&&(!fTrackCuts->CheckTOFMatchingParticleType(irec)))
+					continue;
+
+				//in case of pt depended TOF cut we have to remove particles with pt above their TOF cut but below max TOF cut
+
+	
 				if(fUseMinSigma)
 				{
 					if(idRec == kSpUndefined)

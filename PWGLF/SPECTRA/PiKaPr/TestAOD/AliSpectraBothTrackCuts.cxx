@@ -596,3 +596,16 @@ Bool_t AliSpectraBothTrackCuts::CheckTOFMatchingParticleType(Int_t type)
   	}
 
 }
+//___________________________________________________________________________________________________________________________________
+Float_t AliSpectraBothTrackCuts::GetPtTOFMatching(Int_t i) const
+{
+
+	if(i == kSpPion)
+		return GetPtTOFMatchingPion();
+	else if(i == kSpKaon)
+		return GetPtTOFMatchingKaon();
+	else if(i == kSpProton)
+		return GetPtTOFMatchingProton();
+	else
+		return 0.0;	
+}
