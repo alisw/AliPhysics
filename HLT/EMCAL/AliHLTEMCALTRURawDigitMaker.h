@@ -26,8 +26,6 @@ public:
    */
   void SetRawReader(AliCaloRawStreamV3* in);
 
-  const std::vector<AliHLTCaloTriggerRawDigitDataStruct> GetRawDigits()  const;
-
   void Reset();
 
 protected:
