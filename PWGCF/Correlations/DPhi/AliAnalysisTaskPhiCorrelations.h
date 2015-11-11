@@ -147,8 +147,15 @@ public:
   TMap* GetMap() { return fMap; }
   void   SetMap(TMap* map){ fMap = map; }
 
+  // configuration for tracks with jets removed
   void SetJetBranchName(const char* branchName) { fJetBranchName = branchName; }
   const char* GetJetBranchName() const { return fJetBranchName; }
+  void SetTrackEtaMax(Float_t eta) { fTrackEtaMax = eta; }
+  Float_t GetTrackEtaMax() const { return fTrackEtaMax; }
+  void SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
+  Float_t GetJetEtaMax() const { return fJetEtaMax; }
+  void SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
+  Float_t GetJetPtMin() const { return fJetPtMin; }
 
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -270,10 +277,14 @@ private:
 
   Bool_t fFillpT;                // fill sum pT instead of number density
 
-  // jet configuration
+  // configuration for tracks with jet removal
   TString fJetBranchName;        // name of jet branch for exclusion of in-jet tracks
+  Float_t fTrackEtaMax;          // maximum eta to accept track
+  Float_t fJetEtaMax;            // maximum eta to accept jet
+  Float_t fJetPtMin;             // minimum pt to accept jet
+  Int_t   fJetConstMin;          // minimum number of constituents
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 55); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 56); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle

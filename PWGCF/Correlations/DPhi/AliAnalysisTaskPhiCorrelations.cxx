@@ -178,7 +178,11 @@ fFillYieldRapidity(kFALSE),
 fFillCorrelationsRapidity(kFALSE),
 fUseDoublePrecision(kFALSE),
 fFillpT(kFALSE),
-fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00")
+fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00"),
+fTrackEtaMax(.9),
+fJetEtaMax(.9),
+fJetPtMin(5.),
+fJetConstMin(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -1782,8 +1786,10 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 
       // retrieve jet array
       TClonesArray *jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
-      if (!jetArray)
+      if (!jetArray) {
+	fAOD->Print();
 	AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+      }
 
       const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
 
@@ -1795,7 +1801,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  AliFatal("Not a standard AOD");
 
 	// track cuts
-	if (!track->IsHybridGlobalConstrainedGlobal())
+	if (!track->IsHybridGlobalConstrainedGlobal() ||
+	    (TMath::Abs(track->Eta()) > fTrackEtaMax))
 	  continue;
 
 	// check if track is part of a jet
@@ -1804,8 +1811,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
 
 	  // skip jets outside of acceptance and too low pt
-	  if ((TMath::Abs(jet->Eta()) < .9) &&
-	      (jet->Pt() < 5.))
+	  if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
+	      (jet->Pt() < fJetPtMin))
 	    continue;
 
 	  // exclude track if part of a jet
@@ -1825,6 +1832,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
 	obj->Add(particle);
       }
+
+      // printf("accepted %i/%i tracks\n", obj->GetEntriesFast(), nTracks);
     }
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
