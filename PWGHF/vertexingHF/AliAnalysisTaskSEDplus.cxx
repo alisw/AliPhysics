@@ -935,7 +935,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
       if(isFidAcc){
 
-	Double_t  dlen=0,cosp=0,maxdca=0,sigvert=0,sumD02=0,ptmax=0,dlxy=0,cxy=0, dxy=0, dd0max=0;
+	Double_t  minPtDau=999.,ptmax=0,maxdca=0,sigvert=0,sumD02=0;
+	Double_t dlen=0,cosp=0,dlenxy=0,cospxy=0, ndlenxy=0, dd0max=0;
 	if(fCutsDistr||fFillNtuple||fDoImpPar){
 	  dlen=d->DecayLength();
 	  cosp=d->CosPointingAngle();
@@ -944,11 +945,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
 	  sigvert=d->GetSigmaVert();         
 	  ptmax=0;
-	  dlxy=d->NormalizedDecayLengthXY();
-	  dxy = d->DecayLengthXY();
-	  cxy=d->CosPointingAngleXY();
+	  dlenxy = d->DecayLengthXY();
+	  ndlenxy=d->NormalizedDecayLengthXY();
+	  cospxy=d->CosPointingAngleXY();
 	  for(Int_t i=0; i<3; i++) {
 	    if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
+	    if(d->PtProng(i)<minPtDau) minPtDau=d->PtProng(i);
 	    Double_t diffIP, errdiffIP;
 	    d->Getd0MeasMinusExpProng(i,aod->GetMagneticField(),diffIP,errdiffIP);
 	    Double_t normdd0= diffIP/errdiffIP;
@@ -960,12 +962,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	Double_t resSel=0;
 	if(fRDCutsAnalysis->GetIsSelectedCuts()) resSel=1;
 	if(passTopolAndPIDCuts) resSel=2;
-	
+
 	//for all THnSParse except for FD
-	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,resSel};
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
 	//for THnSparse for FD
-	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,cxy,dxy,dlxy,dd0max,resSel,ptB};
-	Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,dd0max,resSel,ptB};
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
+	Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
 	Double_t flagOrigin = 0;
 
 	//Fill histos
@@ -996,8 +998,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    fPtpi1Hist[index]->Fill(d->PtProng(0));
 	    fPtpi2Hist[index]->Fill(d->PtProng(2));
 	    fDCAHist[index]->Fill(maxdca);
-	    fDLxy[index]->Fill(dlxy);
-	    fCosxy[index]->Fill(cxy);
+	    fDLxy[index]->Fill(ndlenxy);
+	    fCosxy[index]->Fill(cospxy);
 	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),d->Getd0Prong(2)*d->Getd0Prong(1));
 	  }
 	}
@@ -1025,11 +1027,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  tmp[13]=d->PProng(1);
 	  tmp[14]=d->PProng(2);
 	  tmp[15]=cosp;
-	  tmp[16]=cxy;
+	  tmp[16]=cospxy;
 	  tmp[17]=dlen;
 	  tmp[18]=d->NormalizedDecayLength();
-	  tmp[19]=d->DecayLengthXY();
-	  tmp[20]=dlxy;
+	  tmp[19]=dlenxy;
+	  tmp[20]=ndlenxy;
 	  tmp[21]=d->InvMassDplus();
 	  tmp[22]=sigvert;
 	  tmp[23]=d->Getd0Prong(0);
@@ -1087,8 +1089,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      if(fUseStrangeness) fact=GetStrangenessWeights(d,arrayMC,factor);
 	      fCosPHist[index]->Fill(cosp,fact);
 	      fDLenHist[index]->Fill(dlen,fact);
-	      fDLxy[index]->Fill(dlxy);
-	      fCosxy[index]->Fill(cxy);
+	      fDLxy[index]->Fill(ndlenxy);
+	      fCosxy[index]->Fill(cospxy);
 	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
 	      fSumd02Hist[index]->Fill(sumd02s);
 	      fSigVertHist[index]->Fill(sigvert,fact);
@@ -1243,15 +1245,59 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
   if(fSystem==1) maxmult=5000;
   else maxmult=200;
 
+  Int_t nptbins=80;
+  Double_t ptmin=0.;
+  Double_t ptmax=40.;
+
+  Int_t nptmindaubins=10;
+  Double_t minptmindau=0.2;
+  Double_t maxptmindau=1.2;
+
+  Int_t nsigvertbins=25;
+  Double_t minsigvert=0.010;
+  Double_t maxsigvert=0.035;
+
+  Int_t nselbins=2;
+  Double_t minsel=0.5;
+  Double_t maxsel=2.5;
+
+  Int_t ncospbins=100;
+  Double_t mincosp=0.90;
+  Double_t maxcosp=1.;
+
+  Int_t ncospxybins=30;
+  Double_t mincospxy=0.97;
+  Double_t maxcospxy=1.;
+
+  Int_t ndeclbins=70;
+  Double_t mindecl=0.;
+  Double_t maxdecl=0.7;
+
+  Int_t ndeclxybins=70;
+  Double_t mindeclxy=0.;
+  Double_t maxdeclxy=0.7;
+
+  Int_t nnormdlbins=30;
+  Double_t minnormdl=0.;
+  Double_t maxnormdl=30.;
+
+  Int_t nd0d0expbins=40;
+  Double_t mind0d0=-10.;
+  Double_t maxd0d0=10.;
+
+
   //dimensions for THnSparse which are NOT for BFeed
-  Int_t nbins[kVarForSparse]={nmassbins,80,fNImpParBins,30,100,30,40,3};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-0.5};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,2.5};
+  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)", 
+				"sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
+ 
+  Int_t nbins[kVarForSparse]={nmassbins,nptbins,fNImpParBins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,fLowerImpPar,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,fHigherImpPar,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
 
   //dimensions for THnSparse for BFeed 
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,80,fNImpParBins,30,100,30,40,3,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,0.,fLowerImpPar,0.97,0.,0.,-10.,-0.5,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,40.,fHigherImpPar,1.,1,30.,10.,2.5,40};
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,fNImpParBins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,fLowerImpPar,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,fHigherImpPar,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
@@ -1273,18 +1319,8 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
 
 
   for(Int_t i=0; i<5; i++){
-    fHistMassPtImpPar[i]->GetAxis(0)->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
-    fHistMassPtImpPar[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
-    fHistMassPtImpPar[i]->GetAxis(2)->SetTitle("Imp Par (#mum)");
-    fHistMassPtImpPar[i]->GetAxis(3)->SetTitle("cos(#theta_{P}^{xy})");
-    fHistMassPtImpPar[i]->GetAxis(4)->SetTitle("decL XY (cm)");
-    fHistMassPtImpPar[i]->GetAxis(5)->SetTitle("Norm decL XY");
-    fHistMassPtImpPar[i]->GetAxis(6)->SetTitle("Norm max d0-d0exp");
-    fHistMassPtImpPar[i]->GetAxis(7)->SetTitle("passTopolPID");
-
-    if(i == 2 || i == 3)
-      fHistMassPtImpPar[i]->GetAxis(8)->SetTitle("p_{T}^{B} (GeV/c)");
-    
+    for(Int_t iax=0; iax<kVarForSparse; iax++) fHistMassPtImpPar[i]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    if(i == 2 || i == 3) fHistMassPtImpPar[i]->GetAxis(kVarForSparseFD-1)->SetTitle("p_{T}^{B} (GeV/c)");
     fOutput->Add(fHistMassPtImpPar[i]);
   }
 }
