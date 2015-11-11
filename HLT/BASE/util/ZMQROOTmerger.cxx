@@ -177,23 +177,19 @@ Int_t Run()
 //_____________________________________________________________________
 Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  std::string requestTopic;
-  requestTopic.assign(static_cast<char*>(zmq_msg_data(topicMsg)), zmq_msg_size(topicMsg));
-  std::string requestBody;
-  requestBody.assign(static_cast<char*>(zmq_msg_data(dataMsg)), zmq_msg_size(dataMsg));
-
-  if (fVerbose) Printf("in: request topic: %s body: %s", requestTopic.c_str(), requestBody.c_str());
-
-  if (requestTopic.compare(0, 6, "CONFIG")==0)
+  if (strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6))
   {
     //reconfigure (first send a reply to not cause problems on the other end)
+    std::string requestBody;
+    requestBody.assign(static_cast<char*>(zmq_msg_data(dataMsg)), zmq_msg_size(dataMsg));
+
     std::string reply = "Reconfiguring...";
     zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
     zmq_send(socket, reply.c_str(), reply.size(), 0);
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
-  else if (requestTopic.compare(0, 4, "INFO")==0)
+  else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4))
   {
     //do nothing, maybe log, send back an empty info reply
     zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
