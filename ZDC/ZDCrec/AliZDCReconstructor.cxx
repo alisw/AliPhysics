@@ -128,10 +128,10 @@ void AliZDCReconstructor::Init()
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    /*if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
     if(fgRecoParam){
       fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
-    } 
+    }*/ 
   }
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
@@ -176,8 +176,8 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
-    if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
+    //if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    //if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
   }    
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
