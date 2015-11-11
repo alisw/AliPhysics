@@ -349,7 +349,7 @@ if(AODt->TestBit(AliAODTrack::kIsDCA)){
   DCAlong = AODt->ZAtDCA();
 }
 else{
-  if(fVertex){
+  if(fVertexobj){
     Double_t fBzkg = dynamic_cast<AliAODEvent*>(InputEvent())->GetMagneticField();
     Double_t* dca = new Double_t[2];
     Double_t* dcacov = new Double_t[3];
