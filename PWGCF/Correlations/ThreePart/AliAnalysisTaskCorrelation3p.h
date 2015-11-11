@@ -108,6 +108,10 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
     if(TString(cutmask).CompareTo("BIT5")==0) fCutMask = 2;
     //Filter Bit 6 - 3
     if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
+    //Filter Bit5 | Bit 6 - 4
+    if(TString(cutmask).CompareTo("BIT5|BIT6")==0) fCutMask = 4;    
+    //Filter Global & !(Bit 5 |Bit 6) - 5
+    if(TString(cutmask).CompareTo("ExclusiveGlobal")==0) fCutMask = 5;    
   }
   void SetDstTree(bool tree = false){fisDstTree = tree;}
   

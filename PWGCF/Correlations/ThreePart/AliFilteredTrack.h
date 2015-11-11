@@ -15,6 +15,7 @@
 #define ALIFILTEREDTRACK_H
 
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
 #include "TMath.h"
 
 class TMCParticle;
@@ -40,6 +41,8 @@ class AliFilteredTrack : public AliVTrack {
   AliFilteredTrack(const AliVParticle& other);
   /// copy constructor
   AliFilteredTrack(const TMCParticle& other);
+  /// copy constructor
+  AliFilteredTrack(const AliAODTrack& other);
   /// assignment operator
   AliFilteredTrack& operator=(const AliFilteredTrack& other);
   /// assignment operator
@@ -55,11 +58,11 @@ class AliFilteredTrack : public AliVTrack {
   };
 
   enum {
-    kSignBit  		= BIT(0),   // unset -> 'plus', set -> 'minus'
-    kGlobalHybrid  	= BIT(1),   // set -> selected by GlobalHybrid
-    kBIT4 		= BIT(2),   // set -> selected by FilterBit4
-    kBIT5 		= BIT(3),   // set -> selected by FilterBit5
-    kBIT6 		= BIT(4)    // set -> selected by FilterBit6
+    kSignBit  		= BIT(14),   // unset -> 'plus', set -> 'minus'
+    kGlobalHybrid  	= BIT(15),   // set -> selected by GlobalHybrid
+    kBIT4 		= BIT(16),   // set -> selected by FilterBit4
+    kBIT5 		= BIT(17),   // set -> selected by FilterBit5
+    kBIT6 		= BIT(18)    // set -> selected by FilterBit6
   };
 
   // kinematics
@@ -115,6 +118,7 @@ class AliFilteredTrack : public AliVTrack {
 
   template<typename T> void Set(const T p[kNofDim]);
   void Set(const AliVParticle& track);
+  void Set(const AliAODTrack& track);
   void SetCharge(const AliVParticle& track);
   void SetEff(float eff){feff = eff;}
   float GetEff(){return feff;}
@@ -126,16 +130,16 @@ class AliFilteredTrack : public AliVTrack {
   void SetBIT4(){SetBit(kBIT4);}
   void SetBIT5(){SetBit(kBIT5);}
   void SetBIT6(){SetBit(kBIT6);}
+  void SetAODFilterBits(const AliAODTrack * t);
   void Calculate(bool bCalculateMommentumComponents=true);
 
  protected:
  private:
-
+   
   // persistent members stored for the class
   float fPt;        // transverse momentum
   float fPhi;       // phi
   float fTheta;     // theta
-  UShort_t fFilterBits; //filter bits for track.
   // all other members are transient and calculated from the
   // momentum vector
   float feff;	    //! efficiency

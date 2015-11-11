@@ -602,7 +602,7 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelected(AliVParticle* p)
   if (p->IsA()==AliCFPI0::Class()) return IsSelectedTrigger(p);
   if (p->IsA()==AliESDtrack::Class() && IsSelectedTrackESD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   if (p->IsA()==AliAODTrack::Class() && IsSelectedTrackAOD(p)) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
-  if (p->IsA()==AliFilteredTrack::Class()){dynamic_cast<AliFilteredTrack*>(p)->Calculate();return IsSelectedTrigger(p)||IsSelectedAssociated(p);}
+  if (p->IsA()==AliFilteredTrack::Class()&& IsSelectedTrackFiltered(p)){dynamic_cast<AliFilteredTrack*>(p)->Calculate();return IsSelectedTrigger(p)||IsSelectedAssociated(p);}
   if (p->IsA()==AliAODMCParticle::Class() && dynamic_cast<AliAODMCParticle*>(p)->IsPhysicalPrimary()) return IsSelectedTrigger(p)||IsSelectedAssociated(p);
   return kFALSE;
 }
@@ -669,10 +669,12 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackESD(AliVParticle* t)
 
 Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackFiltered(AliVParticle* t)
 {
-  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>3))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>5))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()&&(fCutMask==3))return kTRUE;
+  if((dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==4))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&!(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==5))return kTRUE;
   return kFALSE;
 }
 
