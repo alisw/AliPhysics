@@ -23,11 +23,11 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/hfe)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
-  )
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD)
 
 # Sources - alphabetical order
 set(SRCS
