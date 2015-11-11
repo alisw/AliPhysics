@@ -80,8 +80,9 @@
  *  20       Add data type for ZMQ components and for internal custom triggers
  *  21       Add AliHLTDataTopic struct for ZMQ communication (as header).
  *  22       Add kAliHLTDataOriginPTR for passing pointers between threads
+ *  23       Add Calo Trigger definitions
  */
-#define ALIHLT_DATA_TYPES_VERSION 22
+#define ALIHLT_DATA_TYPES_VERSION 23
 
 //////////////////////////////////////////////////////////////////////////
 //
