@@ -200,6 +200,7 @@ void AliAnalysisTaskBuildCorrTree::UserExec(Option_t* /*option*/)
   //Find out if it is AOD or ESD.  
   fisESD=pEvent->IsA()==AliESDEvent::Class();
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  if(fisESD)return;//ESD analysis not implemented
   fRun = pEvent->GetRunNumber();
   fEvent->SetRunNr(fRun);
   
@@ -256,14 +257,8 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
     if (!IsSelected(t)) continue;
 
     TClonesArray& tracks = *(fEvent->GetTracks());
-    AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*t);
-    if(t->IsA()==AliAODTrack::Class()){
-      AliAODTrack *AODt = dynamic_cast<AliAODTrack*>(t);
-      if(AODt->IsHybridGlobalConstrainedGlobal())reducedParticle->SetGlobal();
-      if(AODt->TestFilterBit(BIT(4)))reducedParticle->SetBIT4();
-      if(AODt->TestFilterBit(BIT(5)))reducedParticle->SetBIT5();
-      if(AODt->TestFilterBit(BIT(6)))reducedParticle->SetBIT6();
-    }
+    AliAODTrack *AODt = dynamic_cast<AliAODTrack*>(t);
+    AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*AODt);
     if(fCollisionType==AliAnalysisTaskBuildCorrTree::PbPb){
       FillHistogram("selectedTracksperRun",fRunFillValue);
       FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
