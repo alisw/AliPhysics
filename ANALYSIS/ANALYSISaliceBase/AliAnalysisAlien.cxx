@@ -4891,7 +4891,7 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo \"############## system limits : ##############\"" << endl;
       out << "ulimit -a" << endl;
       out << "echo \"############## memory : ##############\"" << endl;
-      out << "free -m" << endl;
+      out << "free 2> /dev/null || { [[ `uname` == Darwin ]] && top -l 1 -s 0 | head -8 | tail -3; }" << endl;
       out << "echo \"=========================================\"" << endl << endl;
       out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl;
