@@ -179,7 +179,8 @@ void AliHLTEMCALTriggerDataMakerComponent::ReadTRUData(UShort_t ndigits, AliHLTC
 Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDataStruct *outputdata) {
   Int_t outputsize = 0, col = 0, row = 0;
   AliHLTCaloTriggerRawDigitDataStruct tmpdigit;
-  for(UShort_t indcounter = 0; indcounter < kMaxChannels; indcounter++){
+  int maxchan = fGeometry->GetGeometryPtr()->GetNTotalTRU();
+  for(UShort_t indcounter = 0; indcounter < maxchan; indcounter++){
     fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(indcounter, col, row);
     if(fRawIndexesTRU[indcounter] >= 0 && fRawIndexesSTU[indcounter] >=0){
       CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
