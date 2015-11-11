@@ -173,11 +173,13 @@ AliESDEvent::AliESDEvent():
   fTOFHeader(0),
   fCentrality(0),
   fEventplane(0),
+  fNTPCFriend2Store(0),
   fDetectorStatus(0xFFFFFFFF),
   fDAQDetectorPattern(0xFFFF),
   fDAQAttributes(0xFFFF)
 {
 }
+
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AliVEvent(esd),
@@ -228,6 +230,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
   fCentrality(new AliCentrality(*esd.fCentrality)),
   fEventplane(new AliEventplane(*esd.fEventplane)),
+  fNTPCFriend2Store(esd.fNTPCFriend2Store),
   fDetectorStatus(esd.fDetectorStatus),
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
   fDAQAttributes(esd.fDAQAttributes)
@@ -369,7 +372,6 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   
   fCentrality = source.fCentrality;
   fEventplane = source.fEventplane;
-
   fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
 
@@ -377,6 +379,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
 
+  fNTPCFriend2Store = source.fNTPCFriend2Store;
   fTracksConnected = kFALSE;
   ConnectTracks();
   return *this;
@@ -1487,12 +1490,10 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
     if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    if (!t->GetFriendNotStored()) {
-      const AliESDfriendTrack *f=t->GetFriendTrack();
-      ev->AddTrack(f);
+    const AliESDfriendTrack *f = t->GetFriendNotStored() ? 0 : t->GetFriendTrack();
+    ev->AddTrackAt(f,i);
       // RS: now we store the pointer, no copy
-      t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
-    }
+    if (f) t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
   }
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());

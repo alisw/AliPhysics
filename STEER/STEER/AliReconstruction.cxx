@@ -230,7 +230,13 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
   fFillTriggerESD(kTRUE),
-
+  //
+  fWriteThisFriend(kFALSE),
+  fSkipFriendsForLargeZ(kFALSE),
+  fMaxFriendTracks(4000),
+  fFractionFriends(0.04),
+  fSkipFriendsCutZ(50),
+  //
   fSkipIncompleteDAQ(kTRUE),
   fCleanESD(kTRUE),
   fV0DCAmax(3.),
@@ -258,7 +264,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fFirstEvent(0),
   fLastEvent(-1),
   fNumberOfEventsPerFile((UInt_t)-1),
-  fFractionFriends(0.04),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
@@ -371,7 +376,13 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
   fFillTriggerESD(rec.fFillTriggerESD),
-
+  //
+  fWriteThisFriend(rec.fWriteThisFriend),
+  fSkipFriendsForLargeZ(rec.fSkipFriendsForLargeZ),
+  fMaxFriendTracks(rec.fMaxFriendTracks),
+  fFractionFriends(rec.fFractionFriends),
+  fSkipFriendsCutZ(rec.fSkipFriendsCutZ),
+  //
   fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ),
   fCleanESD(rec.fCleanESD),
   fV0DCAmax(rec.fV0DCAmax),
@@ -399,7 +410,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
   fNumberOfEventsPerFile(rec.fNumberOfEventsPerFile),
-  fFractionFriends(rec.fFractionFriends),
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
@@ -530,7 +540,14 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fWriteAlignmentData    = rec.fWriteAlignmentData;
   fWriteESDfriend        = rec.fWriteESDfriend;
   fFillTriggerESD        = rec.fFillTriggerESD;
-
+  //
+  //
+  fWriteThisFriend = rec.fWriteThisFriend;
+  fSkipFriendsForLargeZ = rec.fSkipFriendsForLargeZ;
+  fMaxFriendTracks = rec.fMaxFriendTracks;
+  fFractionFriends = rec.fFractionFriends;
+  fSkipFriendsCutZ = rec.fSkipFriendsCutZ;
+  //
   fSkipIncompleteDAQ = rec.fSkipIncompleteDAQ;
   fCleanESD  = rec.fCleanESD;
   fV0DCAmax  = rec.fV0DCAmax;
@@ -559,7 +576,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fFirstEvent                    = rec.fFirstEvent;
   fLastEvent                     = rec.fLastEvent;
   fNumberOfEventsPerFile         = rec.fNumberOfEventsPerFile;
-  fFractionFriends               = rec.fFractionFriends;
 
   for (Int_t i = 0; i < rec.fOptions.GetEntriesFast(); i++) {
     if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
@@ -2495,10 +2511,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("Analysis_%d",iEvent), 0,0,iEvent);     
   }  
   //
-  if (fWriteESDfriend) {
+  if (fWriteThisFriend) {
     fesd->GetESDfriend(fesdf);
     AliSysInfo::AddStamp(Form("CreateFriend_%d",iEvent), 0,0,iEvent);     
-  
   }
   //
   Long64_t nbf;
@@ -2517,7 +2532,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     WriteESDfriend();
     AliSysInfo::AddStamp(Form("WriteFriend_%d",iEvent), 0,0,iEvent);     
   }
-  //
   //
   // Auto-save the ESD tree in case of prompt reco @P2
   if (fRawReader && fRawReader->UseAutoSaveESD()) {
@@ -3226,6 +3240,10 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
   //stop filling residuals for the "outer" detectors
   if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kFALSE);     
 
+  // At this moment we decide if the friends need to be stored, since TPC stores heavy calib objects there
+  fWriteThisFriend = fWriteESDfriend ? DecideFriendsStorage() : kFALSE;
+  if (!fWriteThisFriend) fesd->SetNTPCFriend2Store(0); // don't store TPC seeds
+
   // pass 3: TRD + TPC + ITS refit inwards
 
   for (Int_t iDet = 2; iDet >= 0; iDet--) {
@@ -3261,7 +3279,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 
   // write space-points to the ESD in case alignment data output
   // is switched on
-  if (fWriteAlignmentData) {
+  if (fWriteAlignmentData && fWriteESDfriend) {
     WriteAlignmentData(esd);
     AliSysInfo::AddStamp(Form("WrtAlignData_%d",eventNr), 0,0, eventNr);
   }
@@ -3788,7 +3806,10 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 {
   // Write space-points which are then used in the alignment procedures
   // For the moment only ITS, TPC, TRD and TOF
-
+  if (!fWriteThisFriend) {
+    AliInfo("Will not write alignment data since the friends are not stored");
+    return;
+  }
   Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack = 0; itrack < ntracks; itrack++)
     {
@@ -4471,13 +4492,16 @@ Bool_t AliReconstruction::IsHighPt() const {
   const Double_t pTmin = 1.5;
   const Double_t pTmax = 100;
   ULong_t mask = 0;
-  mask |= (AliESDtrack::kITSrefit);
-  mask |= (AliESDtrack::kTPCrefit);
+  //  mask |= (AliESDtrack::kITSrefit);
+  //  mask |= (AliESDtrack::kTPCrefit);
+  mask |= (AliESDtrack::kITSin);
+  mask |= (AliESDtrack::kTPCin);
   const Double_t pTminCosmic = 5.;
   const Double_t pTmaxCosmic = 100;
   ULong_t maskCosmic = 0;
   Int_t cosmicCount=0;
-  maskCosmic |= (AliESDtrack::kTPCrefit);
+  //  maskCosmic |= (AliESDtrack::kTPCrefit);
+  maskCosmic |= (AliESDtrack::kTPCin);
 
   Bool_t isOK = kFALSE;
 
@@ -4543,54 +4567,10 @@ void AliReconstruction::ResetFriends()
 }
 
 //______________________________________________________________________________
-void AliReconstruction::WriteESDfriend() {
-  // Fill the ESD friend in the tree. The required fraction of ESD friends is stored
-  // in fFractionFriends. We select events where we store the ESD friends according
-  // to the following algorithm:
-  // 1. Store all Cosmic or Calibration events within the required fraction
-  // 2. Sample "high Pt" events within the remaining fraction after step 1.
-  // 3. Sample randomly events if we still have remaining slot
-
-  fNall++;
-  Bool_t isSelected = kFALSE;
-  //
-  // Store all friends for B field OFF 
-  if (TMath::Abs(AliTrackerBase::GetBz())<0.5) isSelected=kTRUE;
-
-  if (IsCosmicOrCalibSpecie()) { // Selection of calib or cosmic events
-    fNspecie++;
-
-    isSelected = kTRUE;
-    fSspecie++;
-  }
-  
-  Double_t remainingFraction = fFractionFriends;
-  remainingFraction -= ((Double_t)(fSspecie)/(Double_t)(fNall));
-  
-  if (IsHighPt())  { // Selection of "high Pt" events
-    fNhighPt++;
-    Double_t curentHighPtFraction = ((Double_t)(fNhighPt+1))/((Double_t)(fNall+1));
-    // "Bayesian" estimate supposing that without events all the events are of the required type
-    
-    if (!isSelected) {
-      Double_t rnd = gRandom->Rndm()*curentHighPtFraction;
-      if (rnd<remainingFraction) {
-	isSelected = kTRUE;
-	fShighPt++;
-      }
-    }
-  }
-  remainingFraction -= ((Double_t)(fShighPt)/(Double_t)(fNall));
-  
-  // Random selection to fill the remaining fraction (if any)
-  if (!isSelected) {
-    Double_t rnd = gRandom->Rndm();
-    if (rnd<remainingFraction) {	
-      isSelected = kTRUE;
-    }
-  }
-  
-  if (!isSelected) {
+void AliReconstruction::WriteESDfriend() 
+{
+  // Fill the ESD friend in the tree. 
+  if (!fWriteThisFriend) {
     ResetFriends();
     fesdf->SetSkipBit(kTRUE);
   }
@@ -4942,4 +4922,138 @@ Bool_t AliReconstruction::TriggerMatches2Alias(const char* trigName, const char*
   TString altrig = al->GetTitle();
   return altrig.Contains(Form(" %s ",trigName));
   //
+}
+
+//___________________________________________________
+Bool_t AliReconstruction::DecideFriendsStorage()
+{
+  // Decide if and what should be stored in the friends
+  // Decision is taken on 
+  // 1) even level: unconditionally for cosmic and calib event,
+  // priority for events with high pt tracks
+  // 2) optionally on track level: priority according to kPriority.. flags below
+  const Double_t pTminHigh = 1.5, pTmaxHigh = 100;
+  const ULong_t kMaskHighPt = AliESDtrack::kITSout|AliESDtrack::kTPCin;
+  const ULong_t kPriorityFlag[] =
+  {    AliESDtrack::kTPCin
+      ,AliESDtrack::kITSpureSA|AliESDtrack::kITSout
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kTRDout
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kTOFout
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kTRDout|AliESDtrack::kTOFout
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kPHOSmatch
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kEMCALmatch
+      ,AliESDtrack::kITSout|AliESDtrack::kTPCin|AliESDtrack::kHMPIDout
+      };
+  const int kNPrio = sizeof(kPriorityFlag)/sizeof(ULong_t);
+  const ULong_t highPtMask = AliESDtrack::kITSin|AliESDtrack::kTPCin;
+  float fracHighPt = 0, nHighPtCheck = 0;
+  // 
+  Bool_t isSelected = kFALSE;
+  int ntrk = fesd->GetNumberOfTracks();
+  fesd->SetNTPCFriend2Store(ntrk); // by default - all tracks
+  //
+  // Unconditionally store Field off, Cosmic and Calib events
+  double bz = AliTrackerBase::GetBz();
+  if (TMath::Abs(bz)<0.5) {
+    isSelected=kTRUE;
+    AliInfo("AliESDfriends event stored: non-standard field event");
+    return isSelected;
+  }
+  if (fEventInfo.HasCosmicTrigger() || fEventInfo.HasCalibLaserTrigger()) {
+    //      if (IsCosmicOrCalibSpecie()) {    
+    isSelected = kTRUE; // Selection of calib or cosmic events
+    AliInfo("AliESDfriends event stored: calibration or cosmic event");
+    return isSelected;
+  }
+  //
+  // analyze event on tracks level
+  static TArrayS weights;
+  static TArrayI indices;
+  Bool_t sparsify = 
+    (fMaxFriendTracks>0 && (ntrk > fMaxFriendTracks)) ||
+    (fSkipFriendsForLargeZ && fSkipFriendsCutZ>0); // applied to no-its tracks
+  //
+  if (sparsify && ntrk>weights.GetSize()) { // arrays are used only in case of sparsification
+    weights.Set(ntrk+100);
+    indices.Set(ntrk+100);
+  }
+  Short_t *pWeights = weights.GetArray(); // for fast access
+  Int_t   *pIndices = indices.GetArray();
+  //
+  for (Int_t itrk=0; itrk<ntrk; ++itrk) {
+    //	  
+    AliESDtrack * trk = fesd->GetTrack(itrk);
+    ULong_t status = trk->GetStatus();
+    //
+    // tag high pt tracks
+    Bool_t isHighPt = kFALSE;
+    if ( (status&kMaskHighPt) == kMaskHighPt ) {      
+      double pt = trk->Pt();
+      isHighPt =  (pt>pTminHigh && pt<pTmaxHigh);
+      nHighPtCheck++;
+      if (isHighPt) fracHighPt++;
+    }
+    //
+    if (sparsify) {
+      int pri = 0;    // define track priority
+      for (pri=kNPrio;pri--;) {
+	ULong_t priFlags=kPriorityFlag[pri],priFlagsOK = priFlags&status;
+	// stupidly, from the from the status flags it is not clear if there are TRD tracklets matched
+	if (priFlags&AliESDtrack::kTRDout && !trk->GetTRDntracklets()) continue;
+	if (priFlags&AliESDtrack::kTPCout && trk->GetTPCNcls()<16) continue; // disregard TPC tracks with low Nclus
+	if (priFlagsOK==kPriorityFlag[pri]) break;
+      }
+      pWeights[itrk] = ++pri;      // to have it positive
+      if (isHighPt) pWeights[itrk] += kNPrio;  // high pt tracks have highest priority
+      else {
+	if (fSkipFriendsCutZ>0 && !(status&AliESDtrack::kITSin) && (status&AliESDtrack::kTPCin)) {
+	  double z;
+	  if (!trk->GetInnerParam()->GetZAt(0,bz,z) || TMath::Abs(z)>fSkipFriendsCutZ) pWeights[itrk] = -kNPrio;
+	}
+      }
+    }
+    //
+  }
+  if (nHighPtCheck>0) fracHighPt = fracHighPt/nHighPtCheck; 
+  //
+  // decide if we store the friend event at all
+  int nkept=0, nkeptTPC=0;
+  if (gRandom->Rndm()/(1.+fracHighPt) < fFractionFriends) {
+    isSelected = kTRUE;
+    if (sparsify) {
+      TMath::Sort(ntrk,pWeights,pIndices); // sort in order of decreasing priorities
+      // flag low-priority tracks not not store friends
+      //
+      for (int itrk=0;itrk<ntrk;itrk++) {
+	int ind = pIndices[itrk];
+	AliESDtrack* trk = fesd->GetTrack(ind);
+	if (nkept>=fMaxFriendTracks) { // no room anymore
+	  trk->SetFriendNotStored(kTRUE); 
+	  //AliInfoF("FrOff %d:%d reached %d W: %d",itrk,ind, nkept,pWeights[ind]);
+	  continue; 
+	}
+	// did not reach the limit yet
+	if (pWeights[ind]>0 || !fSkipFriendsForLargeZ) { // in principle, worth storing
+	  nkept++;
+	  if (trk->GetTPCNcls()>15) nkeptTPC++;
+	  //AliInfoF("FrON  %d:%d saved %d/%d W: %d",itrk,ind, nkept,nkeptTPC,pWeights[ind]);
+	  continue;
+	}
+	// negative weight and strict rejection of such track requested
+	//AliInfoF("FrOff  %d:%d saved %d/%d W: %d",itrk,ind, nkept,nkeptTPC,pWeights[ind]);
+	fesd->GetTrack(ind)->SetFriendNotStored(kTRUE); // unconditional rejections
+	//
+      }
+    }
+    else nkept = nkeptTPC = ntrk;
+  }
+  //
+  if (isSelected) AliInfoF("AliESDfriends event stored: %d (with TPC: %d) out of %d friend tracks will be kept",
+			   nkept,nkeptTPC,ntrk);
+  else            AliInfo("AliESDfriends will not be stored for this event");
+  //
+  fesd->SetNTPCFriend2Store(nkeptTPC);
+  //
+  return isSelected;
 }

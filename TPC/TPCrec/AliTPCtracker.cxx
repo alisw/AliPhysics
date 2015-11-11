@@ -3586,6 +3586,9 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   // RS: the cluster pointers are not permanently attached to the seed during the tracking, need to attach temporarily
   AliTPCclusterMI* seedClusters[kMaxRow];
   int seedsInFriends = 0;
+  int seedsInFriendsNorm = event->GetNTPCFriend2Store();
+  if (seedsInFriendsNorm>nseed) seedsInFriendsNorm = nseed; // all friends are stored
+  //
   fClPointersPoolPtr = fClPointersPool;
   //
   for (Int_t i=0;i<nseed;i++) {
@@ -3678,8 +3681,11 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
       //
       // add seed to the esd track in Calib level
       //
-      Bool_t storeFriend = seedsInFriends<(kMaxFriendTracks-1) && gRandom->Rndm()<(kMaxFriendTracks)/Float_t(nseed);
+      Bool_t storeFriend = seedsInFriendsNorm>0 && (!esd->GetFriendNotStored()) 
+	&& seedsInFriends<(kMaxFriendTracks-1) 
+	&& gRandom->Rndm()<(kMaxFriendTracks)/Float_t(seedsInFriendsNorm);
       //      if (AliTPCReconstructor::StreamLevel()>0 &&storeFriend){
+      //AliInfoF("Store: %d Stored %d / %d FrOff: %d",storeFriend,seedsInFriends,seedsInFriendsNorm,esd->GetFriendNotStored());
       if (storeFriend){ // RS: seed is needed for calibration, regardless on streamlevel
 	seedsInFriends++;
 	// RS: this is the only place where the seed is created not in the pool, 

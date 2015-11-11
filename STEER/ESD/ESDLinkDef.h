@@ -30,7 +30,20 @@
   targetType="Int_t*" \
   code="{fTriggerBits = new Int_t[onfile.fNEntries]; for (Int_t i=0; i<onfile.fNEntries; ++i) fTriggerBits[i]=(onfile.fColumn && onfile.fRow)?onfile.fTriggerBits[onfile.fColumn[i]][onfile.fRow[i]]:0;}"
 
-#pragma link C++ class  AliESDfriend+;                                                                                                           
+#pragma link C++ class  AliESDfriend+;
+
+
+#pragma readraw \
+  sourceClass="AliESDfriend"     \
+  targetClass="AliESDfriend"     \
+  source="TClonesArray fTracks"  \
+  version="[-5]"		 \
+  target="fTracks"		 \
+  targetType="TObjArray"	 \
+  include="AliESDfriendTrack.h"	 \
+  code="{printf(\"Here\n\");TClonesArray oldarr; oldarr.Streamer(buffer); for (int i=oldarr.GetEntriesFast();i--;) fTracks.AddAtAndExpand(new AliESDfriendTrack(*((AliESDfriendTrack*)oldarr[i])),i);}"
+
+
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-47]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets=onfile.fTRDpidQuality;}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 

@@ -529,7 +529,7 @@ public:
   Int_t GetNumberOfTPCClusters() const { return fTPCncls;}
   Int_t GetNumberOfTRDClusters() const { return fTRDncls;}
   //
-  void   SetFriendNotStored(Bool_t v) {v ? (fFlags|AliVTrack::kSkipFriend) : (fFlags&(~AliVTrack::kSkipFriend));}
+  void   SetFriendNotStored(Bool_t v) {v ? (fFlags|=AliVTrack::kSkipFriend) : (fFlags&=(~AliVTrack::kSkipFriend));}
   Bool_t GetFriendNotStored()    const {return IsOn(AliVTrack::kSkipFriend);}
 
 protected:
