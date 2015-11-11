@@ -104,12 +104,14 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
     npatches = fTriggerMakerPtrFastor->FindPatches();
     HLTDebug("Found %d patches from fastors\n", npatches);
     outputPtr += npatches;
+    mysize += sizeof(AliHLTCaloTriggerPatchDataStruct) * npatches;
   }
 
   if(nDigitsGlob){
     fTriggerMakerPtrCells->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
     npatches = fTriggerMakerPtrCells->FindPatches();
     HLTDebug("Found %d patches from cells\n", npatches);
+    mysize += sizeof(AliHLTCaloTriggerPatchDataStruct) * npatches;
     outputPtr += npatches;
   }
 
