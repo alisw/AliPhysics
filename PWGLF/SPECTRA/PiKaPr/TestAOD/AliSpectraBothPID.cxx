@@ -315,7 +315,7 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
 				nsigmaKaon    =  nsigmaTOFkKaon ;
 			else
 				nsigmaKaon = nsigmaTPCkKaon ;
-			if(trk->Pt()>=trackCuts->GetPtTOFMatchingKaon())
+			if(trk->Pt()>=trackCuts->GetPtTOFMatchingProton())
 				nsigmaProton    =  nsigmaTOFkProton ;
 			else
 				nsigmaProton = nsigmaTPCkProton ;
