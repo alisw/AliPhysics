@@ -2096,6 +2096,8 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   // type 0: get fraction of found/findable clusters with neighbourhood definition
   //      1: findable clusters with neighbourhood definition
   //      2: found clusters
+  //      3: get fraction of found/findable clusters with neighbourhood definition - requiring before and after row
+  //      4: findable clusters with neighbourhood definition - before and after row
   // bitType:
   //      0 - all cluster used
   //      1 - clusters  used for the kalman update
@@ -2110,9 +2112,36 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   Int_t findable=0;
   Int_t last=-nNeighbours;
   const TBits & clusterMap = (bitType%2==0) ? fTPCClusterMap : fTPCFitMap;
+
   
   Int_t upperBound=clusterMap.GetNbits();
   if (upperBound>row1) upperBound=row1;
+  if (type>=3){ // requires cluster before and after
+    for (Int_t i=row0; i<upperBound; ++i){
+      Int_t beforeAfter=0;
+      if (clusterMap[i]) {
+	last=i;
+	++found;
+	++findable;
+	continue;
+      }
+      if ((i-last)<=nNeighbours) {
+	++beforeAfter;
+      }
+      //look to nNeighbours after
+      for (Int_t j=i+1; j<i+1+nNeighbours; ++j){
+	if (clusterMap[j]){
+	  ++beforeAfter;
+	  break;
+	}
+      }
+      if (beforeAfter>1) ++findable;
+    }
+    if (type==3) return Float_t(found)/Float_t(TMath::Max(findable,1));
+    if (type==4) return findable;
+    return 0;
+  }
+
   for (Int_t i=row0; i<upperBound; ++i){
     //look to current row
     if (clusterMap[i]) {
