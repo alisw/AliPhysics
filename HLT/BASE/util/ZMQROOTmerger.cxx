@@ -177,7 +177,7 @@ Int_t Run()
 //_____________________________________________________________________
 Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  if (strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6))
+  if (strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6)==0)
   {
     //reconfigure (first send a reply to not cause problems on the other end)
     std::string requestBody;
@@ -189,7 +189,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
-  else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4))
+  else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
   {
     //do nothing, maybe log, send back an empty info reply
     zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
