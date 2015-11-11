@@ -114,7 +114,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   }
   
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  HLTImportant(Form("ZMQ connected to: %s rc %i %s",fZMQoutConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
+  HLTImportant(Form("ZMQ connected to: %s (sock_type: %i, sock_name: %s) rc %i %s",fZMQoutConfig.Data(),alizmq_socket_type(fZMQout),fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
   return retCode;
 }
@@ -270,12 +270,15 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
     {
       case ZMQ_REP:
         fZMQpollIn=kTRUE;
+        break;
       case ZMQ_PUSH:
         fZMQpollIn=kFALSE;
+        break;
       case ZMQ_PUB:
         fZMQpollIn=kFALSE;
+        break;
       default:
-        HLTWarning("use of socket type %s for a sink is currently unsupported!", alizmq_socket_type(value.Data()));
+        HLTWarning("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
         return -EINVAL;
     }
   }

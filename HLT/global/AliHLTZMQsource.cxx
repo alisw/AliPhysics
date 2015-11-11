@@ -244,10 +244,13 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
     switch (fZMQsocketType)
     {
       case ZMQ_REQ:
+        break;
       case ZMQ_PULL:
+        break;
       case ZMQ_SUB:
+        break;
       default:
-        HLTWarning("use of socket type %s for a source is currently unsupported!", alizmq_socket_type(value.Data()));
+        HLTWarning("use of socket type %s for a source is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQinConfig.Data());
         return -EINVAL;
     }
   }
