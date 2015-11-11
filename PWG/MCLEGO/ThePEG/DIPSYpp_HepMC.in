@@ -22,6 +22,9 @@ set LHCEventHandler:EffectivePartonMode Colours
 set LHCGenerator:EventHandler:DecayHandler /Defaults/Handlers/StandardDecayHandler
 set LHCGenerator:EventHandler:HadronizationHandler Frag8
 
+## do not decay weakly decaying strange particles
+set LHCGenerator:EventHandler:DecayHandler:MaxLifeTime 10
+
 set LHCEventHandler:WFL Proton
 set LHCEventHandler:WFR Proton
 set LHCEventHandler:EventFiller:SoftRemove NoValence
