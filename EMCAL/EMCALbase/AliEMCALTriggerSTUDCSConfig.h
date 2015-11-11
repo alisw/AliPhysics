@@ -51,7 +51,7 @@ private:
   Int_t   fFw;            // Fw
   Int_t   fPHOSScale[4];  // PHOS scale factors
   
-  ClassDef(AliEMCALTriggerSTUDCSConfig,2) //
+  ClassDef(AliEMCALTriggerSTUDCSConfig,3) //
 };
 #endif
 
