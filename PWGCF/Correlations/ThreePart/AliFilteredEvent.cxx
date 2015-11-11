@@ -53,7 +53,7 @@ void AliFilteredEvent::ClearEvent() {
   fCentrality = -1.0;
   fVertex[0] = -20.0;
   fVertex[1] = -20.0;
-  fVertex[3] = -20.0;
+  fVertex[2] = -20.0;
   fRunNr = 0;
   fEventPlaneAngle = -10.0;
   fNTracks = 0;
