@@ -983,6 +983,10 @@ void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
 {
   ///
 
+  // Make the arrays for expanding the data
+  if (!fAllBins)
+    MakeArrays();
+
   R__ASSERT(iRow>=0 && iRow<fRowsMax);
   R__ASSERT(iPad>=0 && iPad<=fPadsMax);
   R__ASSERT(iTimeBin>=fFirstTimeBin && iTimeBin<=fLastTimeBin);
@@ -990,10 +994,6 @@ void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
   iTimeBin -= fFirstTimeBin;
   iPad     += 2;
   iTimeBin += 2;
-
-  // Make the arrays for expanding the data
-  if (!fAllBins)
-    MakeArrays();
 
   Int_t bin = iPad*(fTimeBinsMax+4)+iTimeBin;
   fAllBins[iRow][bin] = signal;
