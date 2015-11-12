@@ -358,9 +358,10 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
   if (!vEvent){ 
     {
       const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+      if (pBlock) {
       AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
         tmpFlatEvent->Reinitialize();
+      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
       } else {
         tmpFlatEvent = NULL;
         iResult=-1;
@@ -368,13 +369,15 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
       }
       vEvent = tmpFlatEvent;
+      }
     }
 
     if( vEvent ){
       const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+      if (pBlock) {
       AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
         tmpFlatFriend->Reinitialize();
+      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
       } else {
         tmpFlatFriend = NULL;
         iResult=-1;
@@ -382,6 +385,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
             DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
       }
       vFriend = tmpFlatFriend;
+      }
     }
   }
   return iResult;
