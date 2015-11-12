@@ -214,7 +214,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   if(!fCuts->IsEventSelected(aodEvent)) {
     if(fCuts->GetWhyRejection()==6) // rejected for Z vertex
       fCEvents->Fill(6);
-    return;
+      return;
   }
 
   Bool_t isEvSel=fCuts->IsEventSelected(aodEvent);
@@ -256,12 +256,11 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     // D* candidates and D0 from D*
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
-     if(!dstarD0pi->GetIsFilled()){
-       if(!(vHF->FillRecoCasc(aodEvent,dstarD0pi))) {//Fill the data members of the candidate only if they are empty.
+       Bool_t isDStarCand =kTRUE;
+       if(!(vHF->FillRecoCasc(aodEvent,dstarD0pi,isDStarCand))) {//Fill the data members of the candidate only if they are empty.
          fCEvents->Fill(12); //monitor how often this fails 
          continue;
        }
-     } 
     if(!dstarD0pi->GetSecondaryVtx()) continue;
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;

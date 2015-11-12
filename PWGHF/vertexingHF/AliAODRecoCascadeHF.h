@@ -68,7 +68,9 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
       }
     return (AliAODcascade*)GetDaughter(1);
     }
+   Int_t   GetIDv0() const { return (Int_t)fIDv0; }
 
+   void SetIDv0(Short_t id) { fIDv0 = id; }
   // Get v0 positive track
   AliAODTrack* Getv0PositiveTrack() const { return  (AliAODTrack*)Getv0()->GetDaughter(0);  }
   // Get v0 negative track
@@ -103,8 +105,9 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   Double_t DecayLengthXYV0() const;
   Double_t NormalizedV0DecayLength() const;
   Double_t NormalizedV0DecayLengthXY() const;
-
+ 
  protected:
+  Short_t       fIDv0;                // unique track ID, points back to the ESD track
 
   ClassDef(AliAODRecoCascadeHF, 2); // heavy-flavour cascade class
 };

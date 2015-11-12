@@ -47,7 +47,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF() :
   fd0err(0x0), 
   fProngID(0x0),
   fSelectionMap(0),
-  fIsFilled(kTRUE) 
+  fIsFilled(1) 
 {
   //
   // Default Constructor
@@ -64,7 +64,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fd0err(0x0),
   fProngID(0x0),
   fSelectionMap(0),
-  fIsFilled(kTRUE)
+  fIsFilled(1)
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -82,7 +82,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fd0err(0x0),
   fProngID(0x0),
   fSelectionMap(0),
-  fIsFilled(kTRUE)
+  fIsFilled(1)
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -102,7 +102,7 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
   fd0err(0x0),
   fProngID(0x0), 
   fSelectionMap(0),
-  fIsFilled(kTRUE)
+  fIsFilled(1)
 {
   //
   // Constructor that can used for a "MC" object
@@ -476,7 +476,7 @@ void AliAODRecoDecayHF::DeleteRecoD(){
   if(fd0err) {
    delete [] fd0err;fd0err=NULL; 
   }
-  SetIsFilled(kFALSE);
+  SetIsFilled(0);
 
   return;
 }

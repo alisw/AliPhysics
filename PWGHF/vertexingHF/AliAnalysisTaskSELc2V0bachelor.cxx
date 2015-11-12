@@ -345,7 +345,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   fCEvents->Fill(7);
 
   Int_t nSelectedAnal = 0;
-  MakeAnalysisForLc2prK0S(arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
+  MakeAnalysisForLc2prK0S(aodEvent,arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
 
   if (nSelectedAnal)
     CheckEventSelectionWithCandidates(aodEvent);
@@ -467,10 +467,10 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
 }
 
 //-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopKos,
-							       TClonesArray *mcArray,
-							       Int_t &nSelectedAnal,
-							       AliRDHFCutsLctoV0 *cutsAnal)
+void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODEvent *aodEvent,TClonesArray *arrayLctopKos,
+							     TClonesArray *mcArray,
+							     Int_t &nSelectedAnal,
+							     AliRDHFCutsLctoV0 *cutsAnal)
 {
 
   /// make the analysis
@@ -485,7 +485,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
     AliInfo("Could not find cascades, skipping the event");
     return;
   }
-
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   for (Int_t iLctopK0S = 0; iLctopK0S<nCascades; iLctopK0S++) {
 
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(0);
@@ -503,6 +503,10 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
       unsetvtx=kTRUE;
     }
 
+    if(!vHF->FillRecoCasc(aodEvent,lcK0Spr,kFALSE)){//Fill the data members of the candidate only if they are empty.
+       fCEvents->Fill(18);//monitor how often this fails
+    continue;
+    }
     if (!lcK0Spr->GetSecondaryVtx()) {
       AliInfo("No secondary vertex"); // it will be done in AliRDHFCutsLctoV0::IsSelected
       continue;
@@ -595,6 +599,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 
   }
 
+  delete vHF;
   AliDebug(2, Form("Found %d Reco particles that are Lc!!", nSelectedAnal));
 
   return;
@@ -3221,7 +3226,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   /// This is to define general histograms
   //
 
-  fCEvents = new TH1F("fCEvents","conter",18,0,18);
+  fCEvents = new TH1F("fCEvents","conter",19,0,19);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetBinLabel(1,"X1");
   fCEvents->GetXaxis()->SetBinLabel(2,"Analyzed events");
@@ -3241,6 +3246,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   fCEvents->GetXaxis()->SetBinLabel(16,"!IsEventSelected");
   fCEvents->GetXaxis()->SetBinLabel(17,"triggerMask!=kAnyINT || triggerClass!=CINT1");
   fCEvents->GetXaxis()->SetBinLabel(18,Form("zVtxMC<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
+  fCEvents->GetXaxis()->SetBinLabel(19,"Re-Fill Fail");
   //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 

@@ -1,19 +1,18 @@
 AliAnalysisVertexingHF* ConfigVertexingHF() {
-
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
   vHF = new AliAnalysisVertexingHF();
   vHF->SetMakeReducedRHF(kTRUE);
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
-  //vHF->SetJPSItoEleOff();
+  vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
-  vHF->SetLikeSignOn(); // like-sign pairs and triplets
-  //vHF->Set4ProngOff();
+//  vHF->SetLikeSignOff(); // like-sign pairs and triplets
+  vHF->Set4ProngOff();
   //vHF->SetDstarOff();
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
-  //  vHF->SetCascadesOff();
+//  vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kFALSE);
   vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
 

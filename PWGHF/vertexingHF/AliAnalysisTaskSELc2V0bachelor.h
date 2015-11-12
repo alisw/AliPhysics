@@ -55,7 +55,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
 			   TClonesArray *mcArray, Int_t originLc);
 
-  void MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopK0S,
+  void MakeAnalysisForLc2prK0S(AliAODEvent* aodEvent,TClonesArray *arrayLctopK0S,
 			       TClonesArray *mcArray,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal);
  
