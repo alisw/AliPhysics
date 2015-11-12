@@ -758,7 +758,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  // add the vertex and the cascade to the AOD
 	  rc = new(aodCascadesRef[iCascades++])AliAODRecoCascadeHF(*ioCascade);
           if(fMakeReducedRHF){
-	    rd->DeleteRecoD();
+            UShort_t id[2]={(UShort_t)postrack1->GetID(),(UShort_t)iv0};
+            rc->SetProngIDs(2,id);
+	    rc->DeleteRecoD();
           }else{
 	    AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
 	    rc->SetSecondaryVtx(vCasc);
@@ -1661,13 +1663,10 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
 }
 //----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd){
-  
   // method to retrieve daughters from trackID and reconstruct secondary vertex
   // save the TRefs to the candidate AliAODRecoDecayHF3Prong rd
   // and fill on-the-fly the data member of rd 
-  
-  if(rd->GetIsFilled())return kTRUE;//skip if rd is already filled
-
+  if(rd->GetIsFilled()!=0)return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2 already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
 
   TObjArray *threeTrackArray   = new TObjArray(3);
@@ -1722,6 +1721,8 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
   Double_t vtxRec=rd->GetDist12toPrim(); 
   Double_t vertexp2n1=rd->GetDist23toPrim(); 
   rd= Make3Prong(threeTrackArray, event, secVert3PrAOD,dispersion, vtxRec, vertexp2n1, dca12, dca2, dca3, rd);
+  rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
+  rd->SetIsFilled(2);
   threeTrackArray->Clear();
   threeTrackArray->Delete(); delete threeTrackArray;
   delete fV1; fV1=0;
@@ -1730,16 +1731,12 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
   delete esdt3; esdt3=NULL;
   return kTRUE; 
 }
-
 //___________________________
 Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd){
   // method to retrieve daughters from trackID and reconstruct secondary vertex
   // save the TRefs to the candidate AliAODRecoDecayHF2Prong rd
   // and fill on-the-fly the data member of rd 
-  
-
-  if(rd->GetIsFilled())return kTRUE;//skip if rd is already filled
-
+  if(rd->GetIsFilled()!=0)return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1:standard dAOD, 2 already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
   
   Double_t dispersion;
@@ -1784,6 +1781,8 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   Bool_t okD0FromDstar=kFALSE;
   Bool_t refill =kTRUE;
   rd= Make2Prong(twoTrackArray1, event, vtxRec, dca12, okD0, okJPSI, okD0FromDstar,refill,rd); 
+  rd->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
+  rd->SetIsFilled(2);
   delete fV1; fV1=0;
   twoTrackArray1->Clear();
   twoTrackArray1->Delete();  delete twoTrackArray1;
@@ -1792,33 +1791,41 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   return kTRUE;
 }
 //----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rCasc){
-  
+Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rCasc, Bool_t DStar){
   // method to retrieve daughters from trackID 
   // and fill on-the-fly the data member of rCasc and their AliAODRecoDecayHF2Prong daughters
-
-
-  if(rCasc->GetIsFilled())return kTRUE;//skip if rd is already filled
+  if(rCasc->GetIsFilled()!=0) return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2: already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
-  
   TObjArray *twoTrackArrayCasc    = new TObjArray(2);
-  AliAODTrack *trackPi =(AliAODTrack*)event->GetTrack(fAODMap[rCasc->GetProngID(0)]);//retrieve pion from the trackID through the AOD index map
+ 
+  AliAODTrack *trackB =(AliAODTrack*)event->GetTrack(fAODMap[rCasc->GetProngID(0)]);//retrieve bachelor from the trackID through the AOD index map
+  if(!trackB)return kFALSE;
 
+  AliNeutralTrackParam *trackV0=NULL;
+  AliAODv0 *v0 =NULL;
+  AliAODRecoDecayHF2Prong *trackD0=NULL; 
+ 
+  if(DStar){
   TClonesArray *inputArrayD0=(TClonesArray*)event->GetList()->FindObject("D0toKpi");
   if(!inputArrayD0) return kFALSE;
-  AliAODRecoDecayHF2Prong *trackD0=(AliAODRecoDecayHF2Prong*)inputArrayD0->At(rCasc->GetProngID(1)); 
+  trackD0=(AliAODRecoDecayHF2Prong*)inputArrayD0->At(rCasc->GetProngID(1)); 
   if(!trackD0)return kFALSE;
+  FillRecoCand(event,trackD0);//fill missing info of the corresponding D0 daughter
   
-  if(!FillRecoCand(event,trackD0)) return kFALSE;//fill missing info of the corresponding D0 daughter
+  trackV0 = new AliNeutralTrackParam(trackD0);
+
+  }else{//is a V0 candidate
+  v0 = ((AliAODEvent*)event)->GetV0(rCasc->GetProngID(1));
+  if(!v0) return kFALSE;
+  // Define the V0 (neutral) track
+  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+  if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);  
+  }
+
+  AliESDtrack *esdB = new AliESDtrack(trackB);
   
-  AliESDtrack *esdtPi = 0;
-  AliNeutralTrackParam *esdtD0 = 0;
-  
-  esdtPi = new AliESDtrack(trackPi);
-  esdtD0 = new AliNeutralTrackParam(trackD0);
-  
-  twoTrackArrayCasc->AddAt(esdtPi,0);
-  twoTrackArrayCasc->AddAt(esdtD0,1);
+  twoTrackArrayCasc->AddAt(esdB,0);
+  twoTrackArrayCasc->AddAt(trackV0,1);
   
   fBzkG = (Double_t)event->GetMagneticField();
   const AliVVertex *vprimary = event->GetPrimaryVertex();
@@ -1829,7 +1836,6 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   vprimary->GetCovarianceMatrix(cov);
   fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
   fV1->GetCovMatrix(cov);
-  if(!fVertexerTracks)fVertexerTracks=new AliVertexerTracks(fBzkG);
   
   Double_t dca = 0.;
   AliAODVertex *vtxCasc = 0x0;
@@ -1839,14 +1845,20 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
     twoTrackArrayCasc->Clear();
     twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
     delete fV1; fV1=0;
-    delete esdtPi; esdtPi=NULL;
-    delete esdtD0; esdtD0=NULL;
+    delete esdB; esdB=NULL;
+    delete vtxCasc;vtxCasc=NULL;
+    delete trackB; trackB=NULL;
+    delete trackV0; trackV0=NULL;
+    if(!DStar){
+    v0=NULL;
+    }
     return kFALSE;    
   }
   vtxCasc->SetParent(rCasc); 
   rCasc->SetSecondaryVtx(vtxCasc);
   AddDaughterRefs(vtxCasc,(AliAODEvent*)event,twoTrackArrayCasc);
-  vtxCasc->AddDaughter(trackD0);
+  if(DStar)vtxCasc->AddDaughter(trackD0);
+  else vtxCasc->AddDaughter(v0);
   rCasc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
   
   Bool_t refill =kTRUE;
@@ -1854,38 +1866,40 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
  
   Double_t px[2],py[2],pz[2],d0[2],d0err[2];
   // propagate tracks to secondary vertex, to compute inv. mass
-  esdtPi->PropagateToDCA(vtxCasc,fBzkG,kVeryBig);
-  esdtD0->PropagateToDCA(vtxCasc,fBzkG,kVeryBig);
+  esdB->PropagateToDCA(vtxCasc,fBzkG,kVeryBig);
+  trackV0->PropagateToDCA(vtxCasc,fBzkG,kVeryBig);
   Double_t momentum[3];
-  esdtPi->GetPxPyPz(momentum);
+  esdB->GetPxPyPz(momentum);
   px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
-  esdtD0->GetPxPyPz(momentum);
+  trackV0->GetPxPyPz(momentum);
   px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
 
   AliAODVertex *primVertexAOD  = PrimaryVertex(twoTrackArrayCasc,event);
   if(!primVertexAOD){
     delete fV1; fV1=0;
+    delete vtxCasc; vtxCasc=NULL;
     twoTrackArrayCasc->Clear();
     twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
-    delete esdtPi; esdtPi=NULL;
-    delete esdtD0; esdtD0=NULL;
+    delete esdB; esdB=NULL;
+    delete trackV0; trackV0=NULL;
+    if(!DStar)v0=NULL;
     return kFALSE;
   }
   Double_t d0z0[2],covd0z0[3];
-  esdtPi->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+  esdB->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   d0[0] = d0z0[0];
   d0err[0] = TMath::Sqrt(covd0z0[0]);
-  esdtD0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+  trackV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   d0[1] = d0z0[0];
   d0err[1] = TMath::Sqrt(covd0z0[0]);
   rCasc->SetPxPyPzProngs(2,px,py,pz);
   rCasc->SetDCA(dca);
   rCasc->Setd0Prongs(2,d0);
   rCasc->Setd0errProngs(2,d0err);
-  rCasc->SetCharge(esdtPi->Charge());
+  rCasc->SetCharge(esdB->Charge());
   // get PID info from ESD
   Double_t esdpid0[5]={0.,0.,0.,0.,0.};
-  if(esdtPi->GetStatus()&AliESDtrack::kESDpid) esdtPi->GetESDpid(esdpid0);
+  if(esdB->GetStatus()&AliESDtrack::kESDpid) esdB->GetESDpid(esdpid0);
   Double_t esdpid1[5]={0.,0.,0.,0.,0.};
   Double_t esdpid[10];
   for(Int_t i=0;i<5;i++) {
@@ -1893,17 +1907,19 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
     esdpid[5+i] = esdpid1[i];
   }
   rCasc->SetPID(2,esdpid);
-  rCasc->SetIsFilled(kTRUE);
+  rCasc->SetIsFilled(2);
+
   
   delete fV1; fV1=0;
   if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
   twoTrackArrayCasc->Clear();
   twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
-  delete esdtPi; esdtPi=NULL;
-  delete esdtD0; esdtD0=NULL;
+  delete esdB; esdB=NULL;
+  delete trackV0; trackV0=NULL;
+  if(!DStar)v0=NULL;
   return kTRUE;
 }
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 							 TObjArray *twoTrackArray,AliVEvent *event,
 							 AliAODVertex *secVert,
@@ -2148,7 +2164,6 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
     esdpid[5+i] = esdpid1[i];
   }
   the2Prong->SetPID(2,esdpid);
-  the2Prong->SetIsFilled(kTRUE);
   return the2Prong;  
 }
 //----------------------------------------------------------------------------
@@ -2355,7 +2370,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
     esdpid[10+i] = esdpid2[i];
   }
   rd->SetPID(3,esdpid);
-  rd->SetIsFilled(kTRUE);
   return rd;
 }
 //----------------------------------------------------------------------------

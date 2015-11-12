@@ -96,6 +96,8 @@ void AliAnalysisTaskSECleanupVertexingHF::UserExec(Option_t */*option*/)
   TClonesArray *inputArrayD0=0;
   //DStar TClonesArray 
   TClonesArray *arrayDStartoD0pi=0;
+  //Cascade TClonesArray
+   TClonesArray *arrayCascade=0;
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -112,50 +114,62 @@ void AliAnalysisTaskSECleanupVertexingHF::UserExec(Option_t */*option*/)
       array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       inputArrayD0=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
       arrayDStartoD0pi=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar"); 
+      arrayCascade=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
     }
   } else if(aod) {
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     inputArrayD0=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
     arrayDStartoD0pi=(TClonesArray*)aod->GetList()->FindObject("Dstar");  
+    arrayCascade=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
   }
-  if(!aod || !array3Prong || !inputArrayD0 || !arrayDStartoD0pi) {
-    printf("AliAnalysisTaskSECleanupVertexingHF::UserExec: input branch not found!\n");
+  if(!aod){
+    printf("AliAnalysisTaskSECleanupVertexingHF::UserExec: aod not found!\n");
     return;
+  }
+  if(!array3Prong || !inputArrayD0 || !arrayDStartoD0pi) {
+   printf("AliAnalysisTaskSECleanupVertexingHF::UserExec: an input branch not found!\n");
   }
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   // DStar
   for(Int_t iDStartoD0pi = 0; iDStartoD0pi<arrayDStartoD0pi->GetEntriesFast(); iDStartoD0pi++) { // D* candidates and D0 from D*
-    
     AliAODRecoCascadeHF* recdstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
     if(!recdstarD0pi)continue;
-    if(!recdstarD0pi->GetIsFilled())continue;
+    if(recdstarD0pi->GetIsFilled()==2){ 
     AliAODVertex *vtxDS = (AliAODVertex*)recdstarD0pi->GetSecondaryVtx();
     if(vtxDS) {delete vtxDS; vtxDS=0;}
-    
-    AliAODRecoDecayHF2Prong* rec2prong=(AliAODRecoDecayHF2Prong*)recdstarD0pi->Get2Prong();
-    if(!rec2prong)continue;
-    if(!rec2prong->GetIsFilled())continue;
-    AliAODVertex *vtxDS2 = (AliAODVertex*)rec2prong->GetSecondaryVtx();
-    if(vtxDS2) {delete vtxDS2; vtxDS2=0;}
-  }
+    }else continue;
+   }
 
   // D0toKpi
   for (Int_t iD0toKpi = 0; iD0toKpi < inputArrayD0->GetEntriesFast(); iD0toKpi++) {
     AliAODRecoDecayHF2Prong *recd = (AliAODRecoDecayHF2Prong*)inputArrayD0->UncheckedAt(iD0toKpi);
     if(!recd)continue;
-    if(!recd->GetIsFilled()) continue;
+    if(recd->GetIsFilled()==2){
     AliAODVertex *vtx2 = (AliAODVertex*)recd->GetSecondaryVtx();
     if(vtx2){delete vtx2;vtx2=0;}
+  }else continue;
   }
-  // 3Prong
+  //3Prong
   for (Int_t i3prong = 0; i3prong < array3Prong->GetEntriesFast(); i3prong++) {
     AliAODRecoDecayHF3Prong *recd3 = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3prong);
     if(!recd3)continue;
-    if(!recd3->GetIsFilled()) continue;
+    if(recd3->GetIsFilled()==2){
     AliAODVertex *vtx3 = (AliAODVertex*)recd3->GetSecondaryVtx();
     if(vtx3){delete vtx3;vtx3=0;}
+  }else continue;
+   }
+  //Cascade
+  if(arrayCascade){
+  for(Int_t iCasc=0; iCasc<arrayCascade->GetEntriesFast(); iCasc++){
+  AliAODRecoCascadeHF* recCasc = dynamic_cast<AliAODRecoCascadeHF*>(arrayCascade->At(iCasc));
+  if(!recCasc)continue;
+   if(recCasc->GetIsFilled()==2){
+   AliAODVertex *vtxCasc = (AliAODVertex*)recCasc->GetSecondaryVtx();
+   if(vtxCasc){delete vtxCasc; vtxCasc=0;}
+   }else continue;
+  }
   }
 
   return;

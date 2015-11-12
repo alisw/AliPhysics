@@ -53,8 +53,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod);  
   void          RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent *aod);
 
-  void     SetIsFilled(Bool_t filled){fIsFilled=filled;}
-  Bool_t   GetIsFilled() const {return fIsFilled;}  
+  void     SetIsFilled(Int_t filled){fIsFilled=filled;}
+  Int_t    GetIsFilled() const {return fIsFilled;}  
   virtual void DeleteRecoD();
 
   /// kinematics & topology
@@ -137,7 +137,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   /// track ID of daughters
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
   ULong_t       fSelectionMap; /// used to store outcome of selection in AliAnalysisVertexingHF
-  Bool_t        fIsFilled;  // kFALSE if data members of candidates are empty to reduce the size of dAOD
+  Int_t         fIsFilled;  // 0 if standard refiltering; 1 if data members of candidates are empty, 2 if data members are refilled in analysis task 
 
   /// \cond CLASSIMP
   ClassDef(AliAODRecoDecayHF,6)  // base class for AOD reconstructed heavy-flavour decays

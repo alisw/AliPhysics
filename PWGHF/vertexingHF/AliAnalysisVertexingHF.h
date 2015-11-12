@@ -68,7 +68,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void FixReferences(AliAODEvent *aod);  
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd3);
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd2);
-  Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc);
+  Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc,Bool_t isDStar);
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
