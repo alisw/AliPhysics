@@ -23,7 +23,6 @@
  ycorrale@cern.ch
  */
 
-
 //--Root--
 #include <TFile.h>
 #include <TH1F.h>
@@ -77,6 +76,7 @@ fMCXsec(0.),
 fMCavgTrials(0.),
 fCurrFileName(""),
 fCheckMCCrossSection(kFALSE),
+fUseWeight(kFALSE),
 fIsMCInfoFilled(kFALSE),
 fDebug(AliLog::kInfo),
 fOutputList(NULL),
@@ -123,6 +123,7 @@ fMCXsec(0.),
 fMCavgTrials(0.),
 fCurrFileName(""),
 fCheckMCCrossSection(kFALSE),
+fUseWeight(kFALSE),
 fIsMCInfoFilled(kFALSE),
 fDebug(AliLog::kInfo),
 fOutputList(NULL),
@@ -219,16 +220,14 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects() {
   fhEntries->GetXaxis()->SetBinLabel(9, "nUnexpError");
   fOutputList->Add(fhEntries);
 
-  fhXsec = new TH1F("hXsec", "xsec from pyxsec.root", 2, -0.5, 1.5);
-  fhXsec->GetXaxis()->SetBinLabel(1, "AllFiles");
-  fhXsec->GetXaxis()->SetBinLabel(2, Form("SelEvent_%s", fGenNamePattern.Data()));
+  fhXsec = new TProfile("hXsec", "xsec from pyxsec.root", 1, 0.5, 1.5);
+  fhXsec->GetXaxis()->SetBinLabel(1, Form("SelEvent_%s", fGenNamePattern.Data()));
   fhXsec->GetXaxis()->SetTitle("p_{T} hard bin");
   fhXsec->GetYaxis()->SetTitle("#<sigma>");
   fOutputList->Add(fhXsec);
 
-  fhTrials = new TH1F("hTrials", "trials root file", 2, -0.5, 1.5);
-  fhTrials->GetXaxis()->SetBinLabel(1, "AllFiles");
-  fhTrials->GetXaxis()->SetBinLabel(2, Form("SelEvent_%s", fGenNamePattern.Data()));
+  fhTrials = new TH1F("hTrials", "trials root file", 1, 0.5, 1.5);
+  fhTrials->GetXaxis()->SetBinLabel(1, Form("SelEvent_%s", fGenNamePattern.Data()));
   fhTrials->GetXaxis()->SetTitle("p_{T} hard bin");
   fhTrials->GetYaxis()->SetTitle("#sum{ntrials}");
   fOutputList->Add(fhTrials);
@@ -580,7 +579,6 @@ void AliAnalysisTaskEmcalJetBtagSV::GetPythiaCrossSection() {
   
   Float_t xsection  = 0;
   Float_t trials    = 1;
-  Float_t avgTrials = 0;
   
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) return;
@@ -608,35 +606,31 @@ void AliAnalysisTaskEmcalJetBtagSV::GetPythiaCrossSection() {
   }
   
   fMCXsec = xsection;
-  fhXsec->Fill(0., xsection);
+  fMCavgTrials = trials;
   
   // average number of trials
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
   
-  if (trials >= nEntries && nEntries > 0.) avgTrials = trials/nEntries;
-  
-  fMCavgTrials = avgTrials;
-  fhTrials->Fill(0., avgTrials);
+  //  if (trials >= nEntries && nEntries > 0.) fMCavgTrials /= nEntries;
   
   Printf(MSGINFO("xs %e, trial %e, avg trials %2.2f, events per file %e"),
-           xsection, trials, avgTrials, nEntries);
+         xsection, trials, fMCavgTrials, nEntries);
   
   AliDebugF(1, MSGDEBUG("Reading File %s"), curfile->GetName());
   
-  if (avgTrials > 0.) {
+  if (fMCavgTrials > 0.) {
     
-    fMCWeight =  xsection / avgTrials ;
-    
-    Printf(MSGINFO("MC Weight: %e"), fMCWeight);
+    fMCWeight =  (fUseWeight) ? fMCXsec / fMCavgTrials : 1.;
   }
   else {
     
-    AliWarningF(MSGWARNING("Average number of trials is NULL!! Set weight to 1: xs : %e, trials %e, entries %e"),
-                xsection,trials,nEntries);
+    Printf(MSGWARNING("Average number of trials is NULL!! Set weight to 1: xs : %e, trials %e, entries %e"),
+           xsection, trials, nEntries);
     
     fMCWeight = 1.;
   }
-  
+
+  Printf(MSGINFO("MC Weight: %f"), fMCWeight);
   return;
 }
 

@@ -75,6 +75,8 @@ public:
   
   void SetCheckMCCrossSection(Bool_t check) {fCheckMCCrossSection = check;}
   
+  void SetUseWeightOn() {fUseWeight = kTRUE;}
+  
   void SetJetTaggingRadius(Double_t tagradius) {fTaggingRadius = tagradius;};
   
   void SetTagger(AliHFJetsTaggingVertex *tagger)
@@ -172,6 +174,7 @@ private:
   TString     fCurrFileName;         ///<  Current file path name.
   
   Bool_t      fCheckMCCrossSection;  ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
+  Bool_t      fUseWeight;
   Bool_t      fIsMCInfoFilled;
   
   TList                      *fOutputList;       // list of output objects
@@ -181,8 +184,8 @@ private:
   AliHFJetsContainerVertex   *fhJetVtxData;      //!<! properties of vertices within the jet Data
   AliHFJetsContainerVertex   *fhQaVtx;           //!<! vertices properties
   
+  TProfile                   *fhXsec;            //!<! Cross section in PYTHIA.
   TH1F                       *fhEntries;         //!<!
-  TH1F                       *fhXsec;            //!<! Cross section in PYTHIA.
   TH1F                       *fhTrials;          //!<! Number of event trials in PYTHIA.
   
   AliVEvent                  *fEvent;            //! Input event
@@ -212,10 +215,9 @@ inline Bool_t AliAnalysisTaskEmcalJetBtagSV::UserNotify() {
     GetPythiaCrossSection();
     
     AliDebugF(1, MSGDEBUG("MC pT-hard weight: %e"), fMCWeight);
-    
-    fIsMCInfoFilled = kFALSE;
   }
   
+  fIsMCInfoFilled = kFALSE;
   return kTRUE;
 }
 

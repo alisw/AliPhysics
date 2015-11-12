@@ -1,20 +1,23 @@
 AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "Tracks",
-                                                     const char *jetcontname   = "Jets",
-                                                     const char *mctrkcontname = "MCParticles",
-                                                     const char *mcjetcontname = "MCJets",
-                                                     const char *type          = "TPC",
-                                                     Double_t jetRadius        = 0.2,
-                                                     Bool_t corrMode           = kFALSE,
-                                                     Bool_t doBkgRej           = kTRUE,
-                                                     Bool_t doQAvtx            = kFALSE,
-                                                     Bool_t doFillV0           = kFALSE,
-                                                     Bool_t checkXsec          = kFALSE,
-                                                     Int_t debug               = 1,
-                                                     Double_t tagRadius        = 0.4,
-                                                     const char *patt          = "",
-                                                     const char *cutflname     = "",
-                                                     Float_t minC = 0., Float_t maxC = 100.,
-                                                     const char *taskname      = "HFJetsVertex")
+                                                              const char *jetcontname   = "Jets",
+                                                              const char *mctrkcontname = "MCParticles",
+                                                              const char *mcjetcontname = "MCJets",
+                                                              Double_t jetradius = 0.2,
+                                                              const char *type  = "TPC",
+                                                              TString fileout   = "standard",
+                                                              Bool_t corrMode   =  kFALSE,
+                                                              Bool_t doBkgRej   =  kTRUE,
+                                                              Bool_t doQAvtx    =  kFALSE,
+                                                              Bool_t doFillV0   =  kFALSE,
+                                                              Bool_t checkXsec  =  kFALSE,
+                                                              Bool_t useWeight  =  kFALSE,
+                                                              const char *patt  =  "",
+                                                              Int_t debug       = 1,
+                                                              Double_t taggingradius = 0.4,
+                                                              TString cutfile = "",
+                                                              Float_t minC = 0., Float_t maxC = 100.,
+                                                              const char *taskname = "HFjetsContainer"
+                                                              )
 {
   // Mailto: ycorrale@cern.ch
 
@@ -39,7 +42,8 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
 
     AliParticleContainer *mctrackCont  = hfTask->AddParticleContainer(mctrkcontname);
     
-    AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetRadius);
+    TString strType(type);
+    AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetradius);
   }
 
   // Set data or corrections mode
@@ -48,6 +52,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   hfTask->SetDoFillSecVtxQA(doQAvtx);
   hfTask->SetDoFillV0Trks(doFillV0);
   hfTask->SetCheckMCCrossSection(checkXsec);
+  if (useWeight) hfTask->SetUseWeightOn();
   hfTask->SetGenNamePattern(patt);
   hfTask->SetDebugLevel(debug);
 
