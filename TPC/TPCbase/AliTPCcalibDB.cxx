@@ -1735,7 +1735,11 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   // check active state by analysing the scalers
   //
   // initialise graph with active running
-  AliCDBEntry *entry = GetCDBEntry("GRP/CTP/Scalers");
+  const char* hltMode = NULL;
+  hltMode = gSystem->Getenv("HLT_ONLINE_MODE");
+
+  AliCDBEntry *entry = NULL;
+  if (!hltMode) entry = GetCDBEntry("GRP/CTP/Scalers");
   if (entry) {
     // entry->SetOwner(kTRUE);
     AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
