@@ -392,7 +392,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      else{
 		fTextL1[0]->SetFillColor(2) ;
 		fTextL1[0]->AddText(Form("HOT SPOT IN L1 GAMMA TRIGGER = CALL EXPERT!!"));
-		/*
+		
 		  for(Int_t ix = 1; ix <=  hL1GammaPatch->GetNbinsX(); ix++) {
 		  for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
 		  if(badL1G[ix-1][iy-1] != 0) printf("L1 Gamma patch with position x = %d, y = %d is out of range\n",ix,iy);
@@ -455,7 +455,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      else {
 		fTextL1[1]->SetFillColor(2) ;
 		fTextL1[1]->AddText(Form("HOT SPOT IN L1 JET TRIGGER = CALL EXPERT!!")); 
-		/*
+		
 		  for(Int_t ix = 1; ix <=  hL1JetPatch->GetNbinsX(); ix++) {
 		  for(Int_t iy = 1; iy <=  hL1JetPatch->GetNbinsY(); iy++) {
 		  if(badL1J[ix-1][iy-1] != 0) printf("L1 Jet patch with position x = %d, y = %d is out of range\n",(4*ix-4),(4*iy-4));
