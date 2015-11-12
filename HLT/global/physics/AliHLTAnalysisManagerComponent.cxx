@@ -499,9 +499,11 @@ AliHLTAnalysisManagerComponent::stringMap* AliHLTAnalysisManagerComponent::Token
     if (start>=str.Length()-1 || start==prevStart ) break;
   }
 
+/*
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
     HLTInfo("%s : %s", i->first.data(), i->second.data());
   }
+*/
   return options;
 }
