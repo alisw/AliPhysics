@@ -1308,6 +1308,21 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CSHM8";
       break;
+    case 4: // V0 high mult trigger
+      fSpecialSubTrigger=1; 
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="V0Mult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMV0M-B-";
+      break;
+    case 5: // SPD high mult trigger
+      fSpecialSubTrigger=1; 
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="SPMult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMSH2-B-";
+      break;
+
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
