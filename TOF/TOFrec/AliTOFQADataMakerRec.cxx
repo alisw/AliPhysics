@@ -470,7 +470,7 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h24, 24,  expert, !image, !saveCorr) ;
   Add2RawsList(h25, 25,  expert, !image, !saveCorr) ;
   Add2RawsList(h26, 26, !expert,  image, !saveCorr) ;
-  Add2RawsList(h27, 27,  expert, !image, !saveCorr) ;
+  Add2RawsList(h27, 27,  expert,  image, !saveCorr) ;
   Add2RawsList(h28, 28,  expert, !image, !saveCorr) ;
   Add2RawsList(h29, 29,  expert, !image, !saveCorr) ;
   Add2RawsList(h30, 30, !expert,  image, !saveCorr) ;
