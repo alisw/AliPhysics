@@ -245,8 +245,9 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
   Short_t channelCount     = 0;
 
   AliHLTCaloTriggerRawDigitDataStruct *digitDataPtr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct*>(outputPtr);
-  fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
+  //fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
+  //fRawReaderMemoryPtr->SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
+  fRawReaderMemoryPtr->AddBuffer(reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize ), iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
 
