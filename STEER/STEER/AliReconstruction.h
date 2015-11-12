@@ -403,6 +403,7 @@ private:
   AliESDEvent*         fesd;        //! Pointer to the ESD event object
   AliESDEvent*         fhltesd;     //! Pointer to the HLT ESD event object
   AliESDfriend*        fesdf;       //! Pointer to the ESD friend object
+  AliESDfriend*        fesdfDummy;  //! Pointer to the empty ESD friend object
   TFile*               ffile;       //! Pointer to the ESD file
   TFile*               ffileF;      //! Pointer to the ESD friend file
   TTree*               ftree;       //! Pointer to the ESD tree

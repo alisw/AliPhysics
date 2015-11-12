@@ -289,7 +289,7 @@ public:
 
 
   void SetESDfriend(const AliESDfriend *f) const;
-  void GetESDfriend(AliESDfriend *f) const;
+  void GetESDfriend(AliESDfriend *f);
   virtual AliESDfriend* FindFriend() const;
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 

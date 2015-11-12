@@ -60,7 +60,7 @@ fTRDIn(0)
   
 }
 
-AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
+AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t, Bool_t shallow): 
 AliVfriendTrack(t),
 f1P(t.f1P),
 fnMaxITScluster(t.fnMaxITScluster),
@@ -82,6 +82,19 @@ fTRDIn(0)
   //
   AliDebug(2,"Calling copy constructor");
 
+  if (shallow) { // shallow copy for transfer to TClonesArray in the friends
+    fITSindex = t.fITSindex;
+    fTPCindex = t.fTPCindex;
+    fTRDindex = t.fTRDindex; 
+    fPoints   = t.fPoints;
+    fCalibContainer = t.fCalibContainer;
+    fTPCOut = t.fTPCOut;
+    fITSOut = t.fITSOut;
+    fTRDIn = t.fTRDIn;
+    //
+    return;
+  }
+  //
   Int_t i;
   if (fnMaxITScluster != 0){
 	  fITSindex = new Int_t[fnMaxITScluster];
@@ -100,7 +113,7 @@ fTRDIn(0)
   AliDebug(2,Form("fnMaxTRDcluster = %d",fnMaxTRDcluster));
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
   if (t.fCalibContainer) {
-     fCalibContainer = new TObjArray(5);
+     fCalibContainer = new TObjArray(2);
      fCalibContainer->SetOwner();
      Int_t no=t.fCalibContainer->GetEntriesFast();
      for (i=0; i<no; i++) {
@@ -154,6 +167,21 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   fTRDindex=0;
 }
 
+void AliESDfriendTrack::Clear(Option_t*)
+{
+  // clear pointers data, used for shallow copies
+  fPoints = 0;
+  fCalibContainer=0;
+  fITStrack=0;
+  fTRDtrack=0;
+  fTPCOut=0;
+  fITSOut=0;
+  fTRDIn=0;
+  fITSindex=0;
+  fTPCindex=0;
+  fTRDindex=0;
+  //  
+}
 
 void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   //
@@ -161,7 +189,7 @@ void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
   // track is owner of the objects in the container 
   //
   if (!fCalibContainer) {
-    fCalibContainer = new TObjArray(5);
+    fCalibContainer = new TObjArray(2);
     fCalibContainer->SetOwner();
   }
   fCalibContainer->AddLast(calibObject);

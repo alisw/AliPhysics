@@ -682,14 +682,24 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const
   // in case of old esds 
   // if(fESDOld)CopyFromOldESD();
 
-  Int_t ntrk=ev->GetNumberOfTracks();
- 
-  for (Int_t i=0; i<ntrk; i++) {
-    AliESDtrack* trc = GetTrack(i);
-    if (trc->GetFriendNotStored()) continue;
-    const AliESDfriendTrack *f=ev->GetTrack(i);
-    if (!f) {AliFatal(Form("NULL pointer for ESD friend track %d",i));}
-    trc->SetFriendTrack(f);
+  Int_t ntrkF=ev->GetNumberOfTracks();
+  if (ev->GetESDIndicesStored()) { // new format: sparse friends
+    Int_t ntrk=GetNumberOfTracks();
+    for (Int_t i=0; i<ntrk; i++) {
+      AliESDfriendTrack *f=ev->GetTrack(i);
+      int esdid = f->GetESDtrackID();
+      AliESDtrack* esdt = GetTrack(esdid);
+      if (!esdt) {AliFatalF("ESDfriendTrack %d points on non-existing ESDtrack %d",i,esdid);}
+      if (esdt->GetFriendNotStored()) {AliFatalF("ESDtrack %d did not store the friend, but ESDfriendTrack %d points on it",esdid,i);}
+      esdt->SetFriendTrack(f);
+    }
+  }
+  else {
+    for (Int_t i=0; i<ntrkF; i++) { // old format: 1 to 1 correspondence
+      const AliESDfriendTrack *f=ev->GetTrack(i);
+      if (!f) {AliFatal(Form("NULL pointer for ESD track %d",i));}
+      GetTrack(i)->SetFriendTrack(f);
+    }
   }
 }
 
@@ -1478,25 +1488,28 @@ void AliESDEvent::SetADData(AliESDAD * obj)
 }
 
 //______________________________________________________________________________
-void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
+void AliESDEvent::GetESDfriend(AliESDfriend *ev)
 {
   //
   // Extracts the complementary info from the ESD
+  // RS: instead of cloning full objects, create shallow copies of friend tracks
   //
   if (!ev) return;
 
   Int_t ntrk=GetNumberOfTracks();
-
+  int nfadd = 0;
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
     if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    const AliESDfriendTrack *f = t->GetFriendNotStored() ? 0 : t->GetFriendTrack();
-    ev->AddTrackAt(f,i);
-      // RS: now we store the pointer, no copy
-    if (f) t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack" 
+    if (t->GetFriendNotStored()) continue; // skip this one
+    AliESDfriendTrack *f = (AliESDfriendTrack*)t->GetFriendTrack();
+    AliESDfriendTrack *fcopy = ev->AddTrack(f,kTRUE); // create shallow copy
+    fcopy->SetESDtrackID(i);
+    f->SetESDtrackID(nfadd++);
   }
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
+  ev->SetESDIndicesStored(kTRUE);
 }
 
 //______________________________________________________________________________

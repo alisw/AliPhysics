@@ -233,8 +233,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   //
   fWriteThisFriend(kFALSE),
   fSkipFriendsForLargeZ(kFALSE),
-  fMaxFriendTracks(4000),
-  fFractionFriends(0.04),
+  fMaxFriendTracks(3000),
+  fFractionFriends(0.03),
   fSkipFriendsCutZ(50),
   //
   fSkipIncompleteDAQ(kTRUE),
@@ -312,6 +312,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fesd(NULL),
   fhltesd(NULL),
   fesdf(NULL),
+  fesdfDummy(NULL),
   ffile(NULL),
   ffileF(NULL),
   ftree(NULL),
@@ -458,6 +459,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fesd(NULL),
   fhltesd(NULL),
   fesdf(NULL),
+  fesdfDummy(NULL),
   ffile(NULL),
   ffileF(NULL),
   ftree(NULL),
@@ -662,6 +664,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fesd     = NULL;
   fhltesd  = NULL;
   fesdf    = NULL;
+  fesdfDummy    = NULL;
   ffile    = NULL;
   ffileF   = NULL;
   ftree    = NULL;
@@ -1903,6 +1906,10 @@ void AliReconstruction::SlaveBegin(TTree*)
     ffileF = TFile::Open("AliESDfriends.root", "RECREATE");
     ftreeF = new TTree("esdFriendTree", "Tree with ESD Friend objects");
     fesdf  = new AliESDfriend();
+    fesdf->SetESDIndicesStored(kTRUE); // new sparse format
+    fesdfDummy  = new AliESDfriend();
+    fesdf->SetESDIndicesStored(kTRUE);
+    fesdfDummy->SetSkipBit(kTRUE); // empty copy
     ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf);
     fesd->AddObject(fesdf);
     ffile->cd();
@@ -4562,18 +4569,17 @@ void AliReconstruction::ResetFriends()
   }
   //
   if (!fesdf) return;
-  fesdf->~AliESDfriend();
-  new (fesdf) AliESDfriend(); // Reset...
+  // RS now friends for writing contain shallow copy of non-persistent friend tracks of AliESDtracks
+  fesdf->Clear();
+  //  fesdf->~AliESDfriend();
+  //  new (fesdf) AliESDfriend(); // Reset...
 }
 
 //______________________________________________________________________________
 void AliReconstruction::WriteESDfriend() 
 {
   // Fill the ESD friend in the tree. 
-  if (!fWriteThisFriend) {
-    ResetFriends();
-    fesdf->SetSkipBit(kTRUE);
-  }
+  if (!fWriteThisFriend) ftreeF->SetBranchAddress("ESDfriend.",&fesdfDummy);
   //
   Long64_t nbf = ftreeF->Fill();
   if (fTreeBuffSize>0 && ftreeF->GetAutoFlush()<0 && (fMemCountESDF += nbf)>fTreeBuffSize ) { // default limit is still not reached
@@ -4584,7 +4590,7 @@ void AliReconstruction::WriteESDfriend()
     AliInfo(Form("Calling ftreeF->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
 		 nbf,fMemCountESDF,ftreeF->GetTotBytes(),ftreeF->GetZipBytes()));        
   }
-  
+  if (!fWriteThisFriend) ftreeF->SetBranchAddress("ESDfriend.",&fesdf); // restore real friend
 }
 
 //_________________________________________________________________
