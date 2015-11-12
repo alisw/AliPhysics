@@ -115,7 +115,7 @@ ClassImp(AliTOFQADataMakerRec)
 
 Int_t AliTOFQADataMakerRec::fgNbinsMultiplicity=2000; //number of bins in multiplicity plot
 Int_t AliTOFQADataMakerRec::fgRangeMinMultiplicity=0;//min range in multiplicity plot
-Int_t AliTOFQADataMakerRec::fgRangeMaxMultiplicity=2000;//max range in multiplicity plot
+Int_t AliTOFQADataMakerRec::fgRangeMaxMultiplicity=1000;//max range in multiplicity plot
 Int_t AliTOFQADataMakerRec::fgNbinsTime=250;//number of bins in time plot
 const Float_t AliTOFQADataMakerRec::fgkNbinsWidthTime=2.44;//width of bins in time plot
 Float_t AliTOFQADataMakerRec::fgRangeMinTime=0.0;//range min in time plot
@@ -359,9 +359,10 @@ void AliTOFQADataMakerRec::InitRaws()
   h29->SetOption("colz");
   TH2F * h30 = new TH2F("hTOFRawHitMap24","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
   h30->SetOption("colz");
-  TH2I * h31 =  new TH2I("hHitMultiVsDDL","TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72.,fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH2I * h31 =  new TH2I("hHitMultiVsDDL","TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500);
   h31->SetOption("colz");
   TH1I * h32 =  new TH1I("hNfiredMacropad","Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50);
+  h32->SetOption("hist");
 
 
   h25->GetYaxis()->SetTickLength(-0.02);
@@ -469,7 +470,7 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h24, 24,  expert, !image, !saveCorr) ;
   Add2RawsList(h25, 25,  expert, !image, !saveCorr) ;
   Add2RawsList(h26, 26, !expert,  image, !saveCorr) ;
-  Add2RawsList(h27, 27,  expert, !image, !saveCorr) ;
+  Add2RawsList(h27, 27,  expert,  image, !saveCorr) ;
   Add2RawsList(h28, 28,  expert, !image, !saveCorr) ;
   Add2RawsList(h29, 29,  expert, !image, !saveCorr) ;
   Add2RawsList(h30, 30, !expert,  image, !saveCorr) ;

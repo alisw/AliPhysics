@@ -1542,6 +1542,13 @@ fNMaxSigmaCl(3)
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
+  //
+  // RS speedup reseting
+  //  memset(fClusterWeight,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fClusterTracks,0,sizeof(UShort_t)*AliITSRecoParam::kMaxClusterPerLayer*4);
+  memset(fY,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fZ,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  /*
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
@@ -1551,13 +1558,14 @@ fNMaxSigmaCl(3)
     fY[i]=0;    
     fZ[i]=0;    
   }
+  */
   fYB[0]=0;
   fYB[1]=0;
 
   for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer5; j++) {
     for (Int_t j1=0; j1<6; j1++) {
       fClusters5[j1][j]=0;
-      fClusterIndex5[j1][j]=-1;
+      fClusterIndex5[j1][j]=0;//RS -1;
       fY5[j1][j]=0;
       fZ5[j1][j]=0;
       fN5[j1]=0;
@@ -1569,7 +1577,7 @@ fNMaxSigmaCl(3)
   for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer10; j++) {
     for (Int_t j1=0; j1<11; j1++) {
       fClusters10[j1][j]=0;
-      fClusterIndex10[j1][j]=-1;
+      fClusterIndex10[j1][j]=0;//RS-1;
       fY10[j1][j]=0;
       fZ10[j1][j]=0;
       fN10[j1]=0;
@@ -1581,7 +1589,7 @@ fNMaxSigmaCl(3)
   for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer20; j++) {
     for (Int_t j1=0; j1<21; j1++) {
       fClusters20[j1][j]=0;
-      fClusterIndex20[j1][j]=-1;
+      fClusterIndex20[j1][j]=0;//RS-1;
       fY20[j1][j]=0;
       fZ20[j1][j]=0;
       fN20[j1]=0;
@@ -1630,24 +1638,30 @@ fNMaxSigmaCl(3) {
   //--------------------------------------------------------------------
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
   fRoad=2*fR*TMath::Sqrt(TMath::Pi()/1.);//assuming that there's only one cluster
-
+  //
+  // RS speedup reseting
+  //  memset(fClusterWeight,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fClusterTracks,0,sizeof(UShort_t)*AliITSRecoParam::kMaxClusterPerLayer*4);
+  memset(fY,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fZ,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  /*
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
     fClusterTracks[2][i]=-1;    
-    fClusterTracks[3][i]=-1;    
+    fClusterTracks[3][i]=-1;
     fY[i]=0;    
     fZ[i]=0;    
   }
-
+  */
   fYB[0]=0;
   fYB[1]=0;
 
  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer5; j++) {
     for (Int_t j1=0; j1<6; j1++) {
       fClusters5[j1][j]=0;
-      fClusterIndex5[j1][j]=-1;
+      fClusterIndex5[j1][j]=0;//RS-1;
       fY5[j1][j]=0;
       fZ5[j1][j]=0;
       fN5[j1]=0;
@@ -1659,7 +1673,7 @@ fNMaxSigmaCl(3) {
   for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer10; j++) {
     for (Int_t j1=0; j1<11; j1++) {
       fClusters10[j1][j]=0;
-      fClusterIndex10[j1][j]=-1;
+      fClusterIndex10[j1][j]=0;//RS-1;
       fY10[j1][j]=0;
       fZ10[j1][j]=0;
       fN10[j1]=0;
@@ -1671,7 +1685,7 @@ fNMaxSigmaCl(3) {
   for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer20; j++) {
     for (Int_t j1=0; j1<21; j1++) {
       fClusters20[j1][j]=0;
-      fClusterIndex20[j1][j]=-1;
+      fClusterIndex20[j1][j]=0;//RS-1;
       fY20[j1][j]=0;
       fZ20[j1][j]=0;
       fN20[j1]=0;
@@ -1726,6 +1740,7 @@ AliITStrackerMI::AliITSlayer::~AliITSlayer() {
   //--------------------------------------------------------------------
   delete [] fDetectors;
   for (Int_t i=0; i<fN; i++) delete fClusters[i];
+  /* RS: Why?
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
@@ -1733,13 +1748,18 @@ AliITStrackerMI::AliITSlayer::~AliITSlayer() {
     fClusterTracks[2][i]=-1;    
     fClusterTracks[3][i]=-1;    
   }
+  */
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::AliITSlayer::ResetClusters() {
   //--------------------------------------------------------------------
   // This function removes loaded clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<fN; i++) delete fClusters[i];
+  for (Int_t i=fN; i--;) delete fClusters[i];
+  // RS speedup reseting
+  //  memset(fClusterWeight,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fClusterTracks,0,sizeof(UShort_t)*AliITSRecoParam::kMaxClusterPerLayer*4);
+  /*  
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++){
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
@@ -1747,7 +1767,7 @@ void AliITStrackerMI::AliITSlayer::ResetClusters() {
     fClusterTracks[2][i]=-1;    
     fClusterTracks[3][i]=-1;  
   }
-  
+  */  
   fN=0;
   fI=0;
 }
@@ -1756,6 +1776,10 @@ void AliITStrackerMI::AliITSlayer::ResetWeights() {
   //--------------------------------------------------------------------
   // This function reset weights of the clusters
   //--------------------------------------------------------------------
+  // RS speedup reseting
+  //  memset(fClusterWeight,0,sizeof(Float_t)*AliITSRecoParam::kMaxClusterPerLayer);
+  memset(fClusterTracks,0,sizeof(UShort_t)*AliITSRecoParam::kMaxClusterPerLayer*4);
+  /*
   for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
@@ -1763,7 +1787,8 @@ void AliITStrackerMI::AliITSlayer::ResetWeights() {
     fClusterTracks[2][i]=-1;    
     fClusterTracks[3][i]=-1;  
   }
-  for (Int_t i=0; i<fN;i++) {
+  */
+  for (Int_t i=fN;i--;) {
     AliITSRecPoint * cl = (AliITSRecPoint*)GetCluster(i);
     if (cl&&cl->IsUsed()) cl->Use();
   }
@@ -1775,8 +1800,8 @@ void AliITStrackerMI::AliITSlayer::ResetRoad() {
   // This function calculates the road defined by the cluster density
   //--------------------------------------------------------------------
   Int_t n=0;
-  for (Int_t i=0; i<fN; i++) {
-     if (TMath::Abs(fClusters[i]->GetZ())<fR) n++;
+  for (Int_t i=fN; i--;) {
+    if (TMath::Abs(fClusters[i]->GetZ())<fR) n++;
   }
   if (n>1) fRoad=2*fR*TMath::Sqrt(TMath::Pi()/n);
 }
@@ -1814,12 +1839,12 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   //
   //sort clusters
   //
-  AliITSRecPoint **clusters = new AliITSRecPoint*[fN];
-  Float_t *z                = new Float_t[fN];
-  Int_t   * index           = new Int_t[fN];
   //
   fMaxSigmaClY=0.; //AD
   fMaxSigmaClZ=0.; //AD
+  AliITSRecPoint *clusters[fN];
+  Float_t z[fN];
+  Int_t   index[fN];
 
   for (Int_t i=0;i<fN;i++){
     z[i] = fClusters[i]->GetZ();
@@ -1828,11 +1853,11 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
     fMaxSigmaClZ=TMath::Max(fMaxSigmaClZ,TMath::Sqrt(fClusters[i]->GetSigmaZ2()));
   }
   TMath::Sort(fN,z,index,kFALSE);
-  for (Int_t i=0;i<fN;i++){
+  for (Int_t i=fN;i--;) {
     clusters[i] = fClusters[index[i]];
   }
   //
-  for (Int_t i=0;i<fN;i++){
+  for (Int_t i=fN;i--;){
     fClusters[i] = clusters[i];
     fZ[i]        = fClusters[i]->GetZ();
     AliITSdetector &det=GetDetector(fClusters[i]->GetDetectorIndex());    
@@ -1840,9 +1865,9 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
     if (y>2.*fR*TMath::Pi()) y -= 2.*fR*TMath::Pi();
     fY[i] = y;
   }
-  delete[] index;
-  delete[] z;
-  delete[] clusters;
+  //  delete[] index; // RS Moved to stack
+  //  delete[] z;
+  //  delete[] clusters;
   //
 
   fYB[0]=10000000;
@@ -1857,13 +1882,13 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   fDy5 = (fYB[1]-fYB[0])/5.;
   fDy10 = (fYB[1]-fYB[0])/10.;
   fDy20 = (fYB[1]-fYB[0])/20.;
-  for (Int_t i=0;i<6;i++)  fN5[i] =0;  
-  for (Int_t i=0;i<11;i++) fN10[i]=0;  
-  for (Int_t i=0;i<21;i++) fN20[i]=0;
+  for (Int_t i=6;i--;)  fN5[i] =0;  
+  for (Int_t i=11;i--;) fN10[i]=0;  
+  for (Int_t i=21;i--;) fN20[i]=0;
   //  
-  for (Int_t i=0;i<6;i++) {fBy5[i][0] =  fYB[0]+(i-0.75)*fDy5; fBy5[i][1] =  fYB[0]+(i+0.75)*fDy5;}
-  for (Int_t i=0;i<11;i++) {fBy10[i][0] =  fYB[0]+(i-0.75)*fDy10; fBy10[i][1] =  fYB[0]+(i+0.75)*fDy10;} 
-  for (Int_t i=0;i<21;i++) {fBy20[i][0] =  fYB[0]+(i-0.75)*fDy20; fBy20[i][1] =  fYB[0]+(i+0.75)*fDy20;}
+  for (Int_t i=6;i--;)  {fBy5[i][0]  =  fYB[0]+(i-0.75)*fDy5;  fBy5[i][1]  =  fYB[0]+(i+0.75)*fDy5;}
+  for (Int_t i=11;i--;) {fBy10[i][0] =  fYB[0]+(i-0.75)*fDy10; fBy10[i][1] =  fYB[0]+(i+0.75)*fDy10;} 
+  for (Int_t i=21;i--;) {fBy20[i][0] =  fYB[0]+(i-0.75)*fDy20; fBy20[i][1] =  fYB[0]+(i+0.75)*fDy20;}
   //
   //
   for (Int_t i=0;i<fN;i++)
@@ -2949,6 +2974,8 @@ Double_t AliITStrackerMI::GetInterpolatedChi2(const AliITStrackMI * forwardtrack
 				  1./(1.+forwardtrack->GetNSkipped()));
   return 1000;
 }
+/*
+  RS: Not used
 //------------------------------------------------------------------------
 Float_t  *AliITStrackerMI::GetWeight(Int_t index) {
   //--------------------------------------------------------------------
@@ -2958,6 +2985,8 @@ Float_t  *AliITStrackerMI::GetWeight(Int_t index) {
   Int_t c=(index & 0x0fffffff) >> 00;
   return fgLayers[l].GetWeight(c);
 }
+*/
+
 //------------------------------------------------------------------------
 void AliITStrackerMI::RegisterClusterTracks(const AliITStrackMI* track,Int_t id)
 {

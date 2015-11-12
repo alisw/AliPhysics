@@ -901,7 +901,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
 	Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
 	angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
-	AliTPCTrackerPoint point;
+	AliTPCTrackerPoints::Point point;
 	point.SetAngleY( angle2 );
 	point.SetAngleZ( tpcTrack->GetTgl() );
 

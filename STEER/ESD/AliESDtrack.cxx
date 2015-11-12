@@ -1597,7 +1597,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fITSClusterMap=0;
     fITSncls=t->GetNumberOfClusters();
     if (fFriendTrack) {
-    Int_t* indexITS = new Int_t[AliESDfriendTrack::kMaxITScluster];
+    Int_t indexITS[AliESDfriendTrack::kMaxITScluster];
     for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) {
 	indexITS[i]=t->GetClusterIndex(i);
 
@@ -1607,7 +1607,6 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
         }
     }
     fFriendTrack->SetITSIndices(indexITS,AliESDfriendTrack::kMaxITScluster);
-    delete [] indexITS;
     }
 
     fITSchi2=t->GetChi2();
@@ -1646,11 +1645,10 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTPCchi2=t->GetChi2();
     
     if (fFriendTrack) {  // Copy cluster indices
-      Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
+      Int_t indexTPC[AliESDfriendTrack::kMaxTPCcluster];
       for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++)         
 	indexTPC[i]=t->GetClusterIndex(i);
       fFriendTrack->SetTPCIndices(indexTPC,AliESDfriendTrack::kMaxTPCcluster);
-      delete [] indexTPC;
     }
     fTPCsignal=t->GetPIDsignal();
     }
@@ -1664,11 +1662,10 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTRDchi2  = t->GetChi2();
     fTRDncls  = t->GetNumberOfClusters();
     if (fFriendTrack) {
-      Int_t* indexTRD = new Int_t[AliESDfriendTrack::kMaxTRDcluster];
+      Int_t indexTRD[AliESDfriendTrack::kMaxTRDcluster];
       for (Int_t i=0;i<AliESDfriendTrack::kMaxTRDcluster;i++) indexTRD[i]=-2;
       for (Int_t i=0;i<6;i++) indexTRD[i]=t->GetTrackletIndex(i);
       fFriendTrack->SetTRDIndices(indexTRD,AliESDfriendTrack::kMaxTRDcluster);
-      delete [] indexTRD;
     }    
     
     //commented out by Xianguo
@@ -2066,7 +2063,8 @@ UShort_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
     Int_t *index=fFriendTrack->GetTPCindices();
 
     if (index){
-      for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=index[i];
+      memcpy(idx,index,sizeof(int)*AliESDfriendTrack::kMaxTPCcluster);
+      //RS for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=index[i];
     }
     else {
       for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=-2;

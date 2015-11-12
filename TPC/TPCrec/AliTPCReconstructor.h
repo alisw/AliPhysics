@@ -62,7 +62,6 @@ public:
   static  void SetPrimaryDCACut( TVectorD *dcacut )        { fgPrimaryDCACut=dcacut;}
   static  void SetPrimaryZ2XCut( double v )                { fgPrimaryZ2XCut=v; }
   static  void SetZOutSectorCut( double v )                { fgZOutSectorCut=v; }
-  
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented

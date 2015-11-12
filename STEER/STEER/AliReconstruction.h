@@ -70,8 +70,16 @@ public:
     {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
   void           SetNumberOfEventsPerFile(UInt_t nEvents)
     {fNumberOfEventsPerFile = nEvents;};
-  void           SetFractionFriends(Double32_t frac = 0.04)
-    {fFractionFriends = frac;};
+  void           SetFractionFriends(Double_t frac = 0.04)    {fFractionFriends = frac;};
+  void           SetSkipFriendsForLargeZ(Bool_t v)           {fSkipFriendsForLargeZ=v;}
+  void           SetMaxFriendTracks(Int_t n)                 {fMaxFriendTracks = n;}
+  void           SetSkipFriendsCutZ(double z)                {fSkipFriendsCutZ = z;}
+  //
+  Double_t       GetFractionFriends()              const     {return fFractionFriends;};
+  Bool_t         GetSkipFriendsForLargeZ()         const     {return fSkipFriendsForLargeZ;}
+  Int_t          GetMaxFriendTracks()              const     {return fMaxFriendTracks;}
+  Double_t       GetSkipFriendsCutZ()              const     {return fSkipFriendsCutZ;}
+  //
   void           SetOption(const char* detector, const char* option);
   void           SetRecoParam(const char* detector, AliDetectorRecoParam *par);
 
@@ -113,6 +121,7 @@ public:
   void SetDiamondProfileSPD(AliESDVertex *dp) {fDiamondProfileSPD=dp;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
   void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
+  void ResetFriends();
 		
   void SetSkipIncompleteDAQ(Bool_t v=kTRUE) { fSkipIncompleteDAQ = v; }
   Bool_t GetSkipIncompleteDAQ() { return fSkipIncompleteDAQ; }
@@ -226,6 +235,7 @@ protected:
   Bool_t IsHighPt() const;
   Bool_t IsCosmicOrCalibSpecie() const;
   void WriteESDfriend();
+  Bool_t DecideFriendsStorage();
 
 private:
   AliReconstruction(const AliReconstruction& rec);
@@ -298,6 +308,12 @@ private:
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
+  //
+  Bool_t         fWriteThisFriend;    // decision to store or not friends for given event
+  Bool_t         fSkipFriendsForLargeZ; // if true, TPC only tracks with |Z|>fSkipFriendsCutZ never stored
+  Int_t          fMaxFriendTracks;    // max number of friend tracks to store per event
+  Double_t       fFractionFriends;    // fraction of ESD friends to be stored
+  Double_t       fSkipFriendsCutZ;    // friends of TPC only tracks with large Z have low priority
 
   //*** Clean ESD flag and parameters *******************
   Bool_t         fSkipIncompleteDAQ; // skip events with "incomplete DAQ" attribute
@@ -328,7 +344,6 @@ private:
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
   UInt_t         fNumberOfEventsPerFile; // number of events per file in case of raw-data reconstruction
-  Double32_t     fFractionFriends; // fraction of ESD friends to be stored
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
@@ -388,6 +403,7 @@ private:
   AliESDEvent*         fesd;        //! Pointer to the ESD event object
   AliESDEvent*         fhltesd;     //! Pointer to the HLT ESD event object
   AliESDfriend*        fesdf;       //! Pointer to the ESD friend object
+  AliESDfriend*        fesdfDummy;  //! Pointer to the empty ESD friend object
   TFile*               ffile;       //! Pointer to the ESD file
   TFile*               ffileF;      //! Pointer to the ESD friend file
   TTree*               ftree;       //! Pointer to the ESD tree
@@ -427,7 +443,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 49)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 50)      // class for running the reconstruction
 };
 
 #endif

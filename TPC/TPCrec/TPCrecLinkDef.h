@@ -35,4 +35,51 @@
 #pragma link C++ class AliTPCCosmicTrackfit+; // Helper class for cosmic tracker
 #pragma link C++ class AliCosmicTracker+;     // Tracker for cosmics (combined fit for upper and lower half)
 
+#pragma read \
+  sourceClass="AliTPCtrack" \
+  targetClass="AliTPCtrack" \
+  source="Int_t fIndex[200]" \
+  version="[-4]" \
+  target="fIndex" \
+  targetType="Int_t[159]" \
+  code="{ for (int i=159;i--;) fIndex[i]=onfile.fIndex[i]; }" 
+
+
+#pragma read \
+  sourceClass="AliTPCseed" \
+  targetClass="AliTPCseed" \
+  source="Bool_t fBSigned" \
+  version="[-8]"	   \
+  target="" \
+  targetType="UInt_t" \
+  code="{ newObj->SetBSigned(onfile.fBSigned); }"
+
+#pragma read \
+  sourceClass="AliTPCseed" \
+  targetClass="AliTPCseed" \
+  source="AliTPCTrackerPoint  fTrackPoints[160];" \
+  version="[-8]"	   \
+  target="fTrackPointsArr" \
+  targetType="AliTPCTrackerPoints" \
+  code="{for (int i=159;i--;) fTrackPointsArr.SetPoint(i,&onfile.fTrackPoints[i]);}"
+
+#pragma read \
+  sourceClass="AliTPCseed" \
+  targetClass="AliTPCseed" \
+  source="AliTPCclusterMI* fClusterPointer[160]" \
+  version="[-8]"	   \
+  target="fClusterPointer" \
+  targetType="AliTPCclusterMI**" \
+  code="{fClusterPointer = new AliTPCclusterMI*[159]; \
+  for (int i=159;i--;) fClusterPointer[i] = onfile.fClusterPointer[i] ? new AliTPCclusterMI(*onfile.fClusterPointer[i]) : 0;}"
+
+#pragma read \
+  sourceClass="AliTPCseed" \
+  targetClass="AliTPCseed" \
+  source="" \
+  version="[-8]"	   \
+  target="fNClStore" \
+  targetType="Int_t" \
+  code="{fNClStore = 159;}"
+
 #endif
