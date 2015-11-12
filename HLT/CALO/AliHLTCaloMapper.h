@@ -49,8 +49,8 @@ public:
   static void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
   static void ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord);
   virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
-  int GetDDLFromSpec( const AliHLTUInt32_t spec );
-  int GetModuleFromSpec(UInt_t specification);
+  virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  virtual int GetModuleFromSpec(UInt_t specification);
   static unsigned long GetSpecFromDDLIndex( const int ddlindex );
   
 

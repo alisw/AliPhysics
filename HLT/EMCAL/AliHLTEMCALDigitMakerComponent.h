@@ -151,8 +151,8 @@ private:
   /** Assignment operator, prohibited */
   AliHLTEMCALDigitMakerComponent & operator = (const AliHLTEMCALDigitMakerComponent);
 
-  /** Pointer to the digit maker itself */
-  AliHLTCaloDigitMaker *fDigitMakerPtr;                    //! transient
+  /** Pointer to the digit maker itself, one per module */
+  AliHLTCaloDigitMaker *fDigitMakerPtr[20];                //! transient
 
   /** The output of the component, digits in a container */
   AliHLTCaloDigitContainerDataStruct *fDigitContainerPtr;  //! transient
@@ -164,10 +164,10 @@ private:
   AliEMCALCalibData *fCalibData;
 
   /** Is the bad map initialised? */
-  Bool_t fBCMInitialised; //! transient
+  Bool_t fBCMInitialised[20]; //! transient
 
    /** Are the gains initialised? */
-  Bool_t fGainsInitialised; //! transient
+  Bool_t fGainsInitialised[20]; //! transient
 
   ClassDef(AliHLTEMCALDigitMakerComponent, 1);
 

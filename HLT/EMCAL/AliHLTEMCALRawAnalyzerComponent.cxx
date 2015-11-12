@@ -24,7 +24,7 @@
 // --------------
 
 
-
+#include "AliHLTCaloMapper.h"
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
@@ -38,6 +38,7 @@ AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent( fitAlgorithm a
 {
   //fDebug = true;
   fDebug = false;
+  for(Int_t iddl = 0; iddl < 44; iddl++) { fMapperArray[iddl] = NULL; }
 }
 
 
@@ -62,13 +63,29 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataType()
   return AliHLTEMCALDefinitions::fgkChannelDataType;
 }
 
+int
+AliHLTEMCALRawAnalyzerComponent::DoDeinit()
+{
+  //comment
+  for(Int_t iddl = 0; iddl < 44; iddl++){
+    if(fMapperArray[iddl]) delete fMapperArray[iddl];
+  }
+
+  return AliHLTCaloRawAnalyzerComponentv3::DoDeinit();
+}
+
+
 void 
 AliHLTEMCALRawAnalyzerComponent::InitMapping( const int specification )
 {
   // Comment
-  if ( fMapperPtr == 0 )
+  if(specification >= 44) return; // Do not handle STU DDLs
+  if ( fMapperArray[specification] == 0 )
     {
-      fMapperPtr =  new   AliHLTEMCALMapper( specification );
+      fMapperArray[specification] = new AliHLTEMCALMapper( specification );
+      fMapperPtr = fMapperArray[specification];
+    } else {
+      fMapperPtr = fMapperArray[specification];
     }
 
   if(fMapperPtr->GetIsInitializedMapping() == false )

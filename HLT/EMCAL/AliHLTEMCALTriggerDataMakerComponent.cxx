@@ -28,7 +28,8 @@ AliHLTCaloConstantsHandler("EMCAL"),
 fGeometry(NULL),
 fSTUHeader(),
 fNRawDigitsTRU(0),
-fNRawDigitsSTU(0)
+fNRawDigitsSTU(0),
+fMaxChannel(0)
 {
   for(Short_t iter = 0; iter < kMaxChannels; iter++){
     fRawIndexesTRU[iter] = -1;
@@ -98,7 +99,6 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
     return 0;
   }
 
-  UInt_t specification      = 0;
   UInt_t totSize            = 0;
   const AliHLTComponentBlockData* iter = NULL;
 
@@ -115,7 +115,6 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
     if(!this->CheckInputDataType(iter->fDataType)){
       continue;
     }
-    specification |= iter->fSpecification;
 
     if(iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType){
       // Handle TRU data
@@ -147,7 +146,6 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
   bdChannelData.fOffset = 0; //FIXME
   bdChannelData.fSize = totSize;
   bdChannelData.fDataType = GetOutputDataType();
-  bdChannelData.fSpecification = specification;
   outputBlocks.push_back(bdChannelData);
   outputPtr += totSize; //Updating position of the output buffer
   size = totSize;
@@ -159,28 +157,29 @@ void AliHLTEMCALTriggerDataMakerComponent::ReadSTUData(AliHLTEMCALSTUHeaderStruc
   fSTUHeader = *headerptr;
   for(UShort_t idig = 0; idig < headerptr->fNRawDigits; idig++){
     fRawIndexesSTU[dataptr->fID] = fNRawDigitsSTU;
+    if(dataptr->fID > fMaxChannel) fMaxChannel = dataptr->fID;
     fSTURawDigitBuffer[fNRawDigitsSTU] = *dataptr;
     dataptr++;
     fNRawDigitsSTU++;
   }
-  HLTInfo("Successfully read in %d STU digits", fNRawDigitsSTU);
+  HLTDebug("Successfully read in %d STU digits", fNRawDigitsSTU);
 }
 
 void AliHLTEMCALTriggerDataMakerComponent::ReadTRUData(UShort_t ndigits, AliHLTCaloTriggerRawDigitDataStruct *triggerdata){
   for(UShort_t idig = 0; idig < ndigits; idig++){
     fRawIndexesTRU[triggerdata->fID] = fNRawDigitsTRU;
+    if(triggerdata->fID > fMaxChannel) fMaxChannel = triggerdata->fID;
     fTRURawDigitBuffer[fNRawDigitsTRU] = *triggerdata;
     triggerdata++;
     fNRawDigitsTRU++;
   }
-  HLTInfo("Successfully read in %d TRU digits", fNRawDigitsTRU);
+  HLTDebug("Successfully read in %d TRU digits", fNRawDigitsTRU);
 }
 
 Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDataStruct *outputdata) {
   Int_t outputsize = 0, col = 0, row = 0;
   AliHLTCaloTriggerRawDigitDataStruct tmpdigit;
-  int maxchan = fGeometry->GetGeometryPtr()->GetNTotalTRU();
-  for(UShort_t indcounter = 0; indcounter < maxchan; indcounter++){
+  for(UShort_t indcounter = 0; indcounter <= fMaxChannel; indcounter++){
     fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(indcounter, col, row);
     if(fRawIndexesTRU[indcounter] >= 0 && fRawIndexesSTU[indcounter] >=0){
       CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
@@ -221,6 +220,7 @@ void AliHLTEMCALTriggerDataMakerComponent::Reset(){
   }
   fNRawDigitsTRU = 0;
   fNRawDigitsSTU = 0;
+  fMaxChannel = 0;
 }
 
 void AliHLTEMCALTriggerDataMakerComponent::ConvertRawDigit(AliHLTCaloTriggerDataStruct *target, const AliHLTCaloTriggerRawDigitDataStruct *source, Int_t col, Int_t row) {

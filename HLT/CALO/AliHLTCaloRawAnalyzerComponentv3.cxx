@@ -29,6 +29,7 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 #include "TStopwatch.h"
 
 #include "AliCaloRawAnalyzerFactory.h"
@@ -238,6 +239,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
       continue;
     }
 
+    if(!fDetector.CompareTo("EMCAL")) {
+      // don't use STU DDLs
+      if(iter->fSpecification >= AliDAQ::GetFirstSTUDDL()) continue;
+    }
+    //std::cout << "I-Raw Analyzer: Next Block: " << iter->fSpecification << std::endl;
     if(iter->fSpecification != fCurrentSpec)
     {
       fCurrentSpec = iter->fSpecification;
@@ -245,10 +251,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
     }
 
     blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
-    totSize += blockSize; //Keeping track of the used size
+    //totSize += blockSize; //Keeping track of the used size
     AliHLTComponentBlockData bdChannelData;
     FillBlockData( bdChannelData );
-    bdChannelData.fOffset = 0; //FIXME
+    bdChannelData.fOffset = totSize - blockSize; //FIXME
     bdChannelData.fSize = blockSize;
     bdChannelData.fDataType = GetOutputDataType();
     bdChannelData.fSpecification = iter->fSpecification;

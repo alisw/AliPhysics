@@ -113,13 +113,6 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         // 	    }
         // 	}
         
-        int moduleStart = 0;
-        int moduleEnd = 20;
-        
-        int rcuStart = 0;
-        int rcuEnd = 1;
-        
-        Int_t rcusPerModule = 2;
         Int_t ddlOffset = 4608; 
         
         TString mergerInput;
@@ -129,81 +122,57 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         TString tdInput;   // Input for trigger data maker
         TString arg;
         
-        for (int module = moduleStart; module <= moduleEnd; module++) 
+        TString clInput, rps;
+
+        for (int module = 0; module <= AliDAQ::NumberOfDdls("EMCAL"); module++)
         {
-            TString clInput;
-            
-            for(int rcu = rcuStart; rcu < rcuEnd; rcu++) 
-            {
-                TString publisher, ra, ta, dm;
-                // raw data publisher components
-                publisher.Form("EMCAL-RP_%02d_%d", module, rcu);
-                arg.Form("-verbose -minid %d -datatype 'DDL_RAW ' 'EMCA'  -dataspec 0x%x ", ddlOffset + module*(rcusPerModule) + rcu, 0x1 << (module*rcusPerModule + rcu));
+           TString publisher, ra, ta, dm;
+           // raw data publisher components
+           publisher.Form("EMCAL-RP_%02d", module);
+           arg.Form("-verbose -minid %d -datatype 'DDL_RAW ' 'EMCA'  -dataspec %d ", ddlOffset + module, module);
                 
-                handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
-                
-                // Raw analyzer
-                arg = "";
-                ra.Form("EMCAL-RA_%02d_%d", module, rcu);
-                handler->CreateConfiguration(ra.Data(), "EmcalRawCrude", publisher.Data(), arg.Data());
-                
-                // Raw analyzer for TRU data
-                arg = "";
-                ta.Form("EMC-TRU_%02d_%d", module, rcu);
-                handler->CreateConfiguration(ta.Data(), "EmcalTruAnalyzer", publisher.Data(), arg.Data());
-                if(tdInput.Length() > 0) tdInput += " ";
-                tdInput += ta;
-
-                // digit maker components
-                dm.Form("EMCAL-DM_%02d_%d", module, rcu);
-                arg="";
-                arg.Form("-sethighgainfactor 0.0153 -setlowgainfactor 0.2448 -setdigitthresholds 0.005 0.002");
-                handler->CreateConfiguration(dm.Data(), "EmcalDigitMaker", ra.Data(), arg.Data());
-                
-                if(clInput.Length() > 0) clInput += " ";
-                if(tmInput.Length() > 0) tmInput += " ";
-                clInput+=dm;
-                tmInput+=dm;
-            }
-            
-            TString cl, ca;
-            
-            cl.Form("EMCAL-CF_%02d", module);
-            arg = "";
-            arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
-            handler->CreateConfiguration(cl.Data(), "EmcalClusterizer", clInput.Data(), arg.Data());
-            
-            //ca.Form("EMCAL-CA_%02d", module);
-            //arg = " ";
-            //handler->CreateConfiguration(ca.Data(), "CaloClusterAnalyser", cl.Data(), arg.Data());
-            
-            if(emInput.Length() > 0) emInput += " ";
-            emInput += ca;
+           if(rps.Length()) rps += " ";
+           rps += publisher;
+           handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
         }
-        
-        // Loop for STU
-        const int stu_offset = 4652;
-        const int stu_min = 0;
-        const int stu_max = 1;
-        for(int istu = stu_min; istu <= stu_max; istu++){
-          TString stupublisher, stuanalyzer;
-          arg.Form("-verbose -minid %d -datatype  'DDL_RAW ' 'EMCA'", stu_offset + istu);
-          stupublisher.Form("EMCAL-SP_%d", istu);
-          handler->CreateConfiguration(stupublisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+                
+       // Raw analyzer
+       arg = "";
+       handler->CreateConfiguration("EMCAL-RA", "EmcalRawCrude", rps.Data(), arg.Data());
+                
+       // Raw analyzer for TRU data
+       arg = "";
+       handler->CreateConfiguration("EMCAL-TRU", "EmcalTruAnalyzer", rps.Data(), arg.Data());
+       if(tdInput.Length() > 0) tdInput += " ";
+       tdInput += "EMCAL-TRU";
 
-          // STU raw analyser
-          stuanalyzer.Form("EMCAL-STU_%d", istu);
-          handler->CreateConfiguration(stuanalyzer.Data(), "EmcalStuAnalyzer", stupublisher.Data(), "");
-          tdInput += " " + stuanalyzer;
-        }
+       // STU raw analyser
+       handler->CreateConfiguration("EMCAL-STU", "EmcalStuAnalyzer", rps.Data(), "");
+       tdInput += " EMCAL-STU";
+
+       // digit maker components
+       arg="";
+       arg.Form("-sethighgainfactor 0.0153 -setlowgainfactor 0.2448 -setdigitthresholds 0.005 0.002");
+       handler->CreateConfiguration("EMCAL-DM", "EmcalDigitMaker", "EMCAL-RA", arg.Data());
+       if(tmInput.Length() > 0) tmInput += " ";
+       tmInput+ "EMCAL-DM";
+            
+       arg = "";
+       arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
+       handler->CreateConfiguration("EMCAL-CF", "EmcalClusterizer", clInput.Data(), arg.Data());
+            
+       //ca.Form("EMCAL-CA_%02d", module);
+       //arg = " ";
+       //handler->CreateConfiguration(ca.Data(), "CaloClusterAnalyser", cl.Data(), arg.Data());
+            
 
         // Tigger data merger
-        AliHLTConfiguration trgdata("EMCAL-TRG", "EmcalTriggerDataMaker", tdInput.Data(), "");
-        tmInput += " EMCAL-TRG";
+       handler->CreateConfiguration("EMCAL-TRG", "EmcalTriggerDataMaker", tdInput.Data(), "");
+       tmInput += " EMCAL-TRG";
 
-        handler->CreateConfiguration("EMCAL-TM", "EmcalTriggerMaker", tmInput.Data(), "");
+       handler->CreateConfiguration("EMCAL-TM", "EmcalTriggerMaker", tmInput.Data(), "");
         
-        TString em;
+       TString em;
         
         // tracker finder components
         
@@ -213,7 +182,6 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         //handler->CreateConfiguration(em.Data(), "EmcalEsdEntriesMaker", emInput.Data(), " ");
         
     }
-    
     return 0;
 }
 

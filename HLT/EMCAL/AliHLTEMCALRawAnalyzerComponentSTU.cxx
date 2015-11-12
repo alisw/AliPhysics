@@ -30,8 +30,6 @@ ClassImp(AliHLTEMCALRawAnalyzerComponentSTU)
 AliHLTEMCALRawAnalyzerComponentSTU::AliHLTEMCALRawAnalyzerComponentSTU():
 AliHLTCaloProcessor(),
 AliHLTCaloConstantsHandler("EMCAL"),
-fMapperPtr(NULL),
-fCurrentSpec(0),
 fRawReaderMemoryPtr(NULL),
 fSTURawDigitMaker(NULL),
 fGeometry(NULL)
@@ -39,7 +37,6 @@ fGeometry(NULL)
 }
 
 AliHLTEMCALRawAnalyzerComponentSTU::~AliHLTEMCALRawAnalyzerComponentSTU() {
-  if(fMapperPtr) delete fMapperPtr;
   if(fGeometry) delete fGeometry;
   if(fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
 }
@@ -56,8 +53,6 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoInit(int argc, const char **argv){
 }
 
 int AliHLTEMCALRawAnalyzerComponentSTU::DoDeinit(){
-  if(fMapperPtr) delete fMapperPtr;
-  fMapperPtr = NULL;
   if(fGeometry) delete fGeometry;
   fGeometry = NULL;
   if(fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
@@ -112,7 +107,6 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
     return 0;
   }
 
-  UInt_t specification      = 0;
   UInt_t totSize            = 0;
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
@@ -130,16 +124,12 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
     if(  ! CheckInputDataType(iter->fDataType) ) {
       continue;
     }
-
-    if(iter->fSpecification != fCurrentSpec) {
-      fCurrentSpec = iter->fSpecification;
-      InitMapping(iter->fSpecification);
-    }
-    specification |= iter->fSpecification;
+    if(iter->fSpecification < AliDAQ::GetFirstSTUDDL() || iter->fSpecification > AliDAQ::GetLastSTUDDL()) // check for STU DDLs
+      continue;
 
     // Initialize raw reader from input data
     fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), static_cast<ULong_t>(iter->fSize));
-    fRawReaderMemoryPtr->SetEquipmentID(iter->fSpecification);
+    fRawReaderMemoryPtr->SetEquipmentID(iter->fSpecification + fCaloConstants->GetDDLOFFSET());
 
     fSTURawDigitMaker->Reset();
 
@@ -161,25 +151,16 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
   }
 
   headerPtr->fNRawDigits = fSTURawDigitMaker->GetNumberOfRawDigits();
-  HLTInfo("Successfully decoded %d digits.", headerPtr->fNRawDigits);
+  HLTDebug("Successfully decoded %d digits.", headerPtr->fNRawDigits);
 
   AliHLTComponentBlockData bdChannelData;
   FillBlockData( bdChannelData );
   bdChannelData.fOffset = 0; //FIXME
   bdChannelData.fSize = totSize;
   bdChannelData.fDataType = GetOutputDataType();
-  bdChannelData.fSpecification = specification;
+  bdChannelData.fSpecification = 0;
   outputBlocks.push_back(bdChannelData);
   outputPtr += totSize; //Updating position of the output buffer
   size = totSize;
   return 0;
-}
-
-void AliHLTEMCALRawAnalyzerComponentSTU::InitMapping( const int specification ) {
-  if (!fMapperPtr)  fMapperPtr =  new AliHLTEMCALMapper( specification );
-
-  if(fMapperPtr->GetIsInitializedMapping() == false ) {
-    HLTError("%d:%d, ERROR, mapping not initialized ", __FILE__, __LINE__ );
-    exit(-2);
-  }
 }

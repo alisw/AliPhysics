@@ -134,6 +134,7 @@ private:
   Short_t                                   fRawIndexesTRU[kMaxChannels];
   Short_t                                   fNRawDigitsSTU;
   Short_t                                   fRawIndexesSTU[kMaxChannels];
+  Short_t                                   fMaxChannel;
   AliHLTCaloTriggerRawDigitDataStruct       fTRURawDigitBuffer[kMaxChannels];
   AliHLTCaloTriggerRawDigitDataStruct       fSTURawDigitBuffer[kMaxChannels];
 

@@ -118,12 +118,6 @@ protected:
 
   bool CheckInputDataType(const AliHLTComponentDataType &datatype);
 
-  /** EMCAL Mapper */
-  AliHLTCaloMapper                    *fMapperPtr;                      //COMMENT
-
-  /** Specification */
-  AliHLTUInt32_t                      fCurrentSpec;
-
 private:
   AliHLTEMCALRawAnalyzerComponentSTU(const AliHLTEMCALRawAnalyzerComponentSTU &ref);
   AliHLTEMCALRawAnalyzerComponentSTU &operator=(const AliHLTEMCALRawAnalyzerComponentSTU &ref);

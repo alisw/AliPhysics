@@ -50,10 +50,11 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
             fDigitsPointerArray(0),
             fOutputDigitsArray(0),
             fDigitCount(0),
-            fCopyDigitsToOuput(kTRUE)
+            fCopyDigitsToOuput(kTRUE),
+            fUseInputSpec(kFALSE)
 {
   //See headerfile for documentation
-
+  fUseInputSpec = det=="EMCAL";
 
 
 }
@@ -105,7 +106,10 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);
       availableSize -= iter->fSize;
 
-      specification = specification|iter->fSpecification;
+      if(fUseInputSpec)
+        specification = iter->fSpecification;
+      else
+        specification = specification|iter->fSpecification;
 
       digitDataPtr = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
 

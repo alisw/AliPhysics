@@ -94,12 +94,9 @@ class AliHLTEMCALRawAnalyzerComponentTRU :  public AliHLTCaloProcessor, protecte
 
 
  protected:
-  virtual void InitMapping(const int specification );
   void PrintDebugInfo();
   /** Pointer to L0 TRU handler */
   AliHLTEMCALTRURawDigitMaker *fTRUhandler;
-  AliHLTCaloMapper *fMapperPtr;          //COMMENT
-  AliHLTUInt32_t fCurrentSpec;    // Data specification (RCU)
   bool fDebug;    // Turn on to enable debug info
 
  private:

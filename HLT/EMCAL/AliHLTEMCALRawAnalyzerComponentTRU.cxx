@@ -17,6 +17,7 @@
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
+#include "AliDAQ.h"
 #include "AliHLTEMCALRawAnalyzerComponentTRU.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
@@ -47,8 +48,6 @@ ClassImp(AliHLTEMCALRawAnalyzerComponentTRU);
 AliHLTEMCALRawAnalyzerComponentTRU::AliHLTEMCALRawAnalyzerComponentTRU( ):AliHLTCaloProcessor(),
     AliHLTCaloConstantsHandler("EMCAL"),
     fTRUhandler(0),
-    fMapperPtr(0),
-    fCurrentSpec(-1),
     fDebug(false),
     fRawReaderMemoryPtr(0),
     fAltroRawStreamPtr(0)
@@ -135,22 +134,6 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoDeinit()
 }
 
 void
-AliHLTEMCALRawAnalyzerComponentTRU::InitMapping( const int specification )
-{
-  // Comment
-  if ( fMapperPtr == 0 )
-    {
-      fMapperPtr =  new   AliHLTEMCALMapper( specification );
-    }
-
-  if(fMapperPtr->GetIsInitializedMapping() == false )
-    {
-      HLTError("%d:%d, ERROR, mapping not initialized ", __FILE__, __LINE__ );
-      exit(-2);
-    }
-}
-
-void
 AliHLTEMCALRawAnalyzerComponentTRU::PrintDebugInfo()
 {
   //comment
@@ -229,17 +212,13 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoEvent( const AliHLTComponentEventData& evt
       continue;
     }
 
-    if(iter->fSpecification != fCurrentSpec)
-    {
-      fCurrentSpec = iter->fSpecification;
-      InitMapping(iter->fSpecification);
-    }
+    if(iter->fSpecification >= AliDAQ::GetFirstSTUDDL()) continue;
 
     blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
     totSize += blockSize; //Keeping track of the used size
     AliHLTComponentBlockData bdChannelData;
     FillBlockData( bdChannelData );
-    bdChannelData.fOffset = 0; //FIXME
+    bdChannelData.fOffset = totSize-blockSize; //FIXME
     bdChannelData.fSize = blockSize;
     bdChannelData.fDataType = GetOutputDataType();
     bdChannelData.fSpecification = iter->fSpecification;
@@ -267,7 +246,7 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
 
   AliHLTCaloTriggerRawDigitDataStruct *digitDataPtr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct*>(outputPtr);
   fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
+  fRawReaderMemoryPtr->SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
 
@@ -287,7 +266,7 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
     }
   }
 
-  HLTInfo("Number of TRU digits: %d",fTRUhandler->GetNumberOfRawDigits());
+  HLTDebug("Number of TRU digits: %d",fTRUhandler->GetNumberOfRawDigits());
   tmpsize = fTRUhandler->WriteRawDigitsBuffer(digitDataPtr);
 
   return  tmpsize;

@@ -31,6 +31,8 @@ class  AliHLTEMCALMapper : public AliHLTCaloMapper
   virtual Bool_t InitAltroMapping( const unsigned long specification ); 
   virtual void InitDDLSpecificationMapping();
   virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
+  virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  virtual int GetModuleFromSpec(UInt_t specification);
   
   virtual void FixCoordinate(AliHLTCaloCoordinate &input);
 

@@ -58,8 +58,6 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
   Int_t digitCount        = 0;
   Int_t ret               = 0;
 
-  UInt_t specification = 0;
-
   fTriggerMakerPtrCells->ResetADC();
   fTriggerMakerPtrFastor->ResetADC();
 
@@ -75,7 +73,6 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
     if(!CheckInputDataType(iter->fDataType)){
       continue;
     }
-    specification |= iter->fSpecification;
 
     if(iter->fDataType == AliHLTEMCALDefinitions::fgkDigitDataType) {
       digit = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
@@ -89,7 +86,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
     } else if(iter->fDataType == (kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL)){
       triggerhead = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(iter->fPtr);
       AliHLTCaloTriggerDataStruct *dataptr = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t* >(iter->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
-      HLTDebug("Block %d received %d fastor triggers", triggerhead->fNfastor);
+      HLTDebug("Block %d received %d fastor triggers", ndx, triggerhead->fNfastor);
       for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
         fTriggerMakerPtrFastor->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
         dataptr++;
@@ -121,7 +118,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
     bd.fOffset = offset;
     bd.fSize = mysize;
     bd.fDataType = AliHLTEMCALDefinitions::fgkTriggerPatchDataType;
-    bd.fSpecification = specification;
+    bd.fSpecification = 0;
     outputBlocks.push_back(bd);
   }
   size = mysize;
@@ -159,7 +156,7 @@ AliHLTComponentDataType AliHLTEMCALTriggerMakerComponent::GetOutputDataType(){
 }
 
 void AliHLTEMCALTriggerMakerComponent::GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier ){
-  constBase = 1000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
+  constBase = 3000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
   inputMultiplier = 0; // (float)sizeof(AliHLTCaloTriggerPatchDataStruct)/sizeof(AliHLTCaloDigitDataStruct)+1;
 }
 

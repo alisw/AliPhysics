@@ -36,7 +36,8 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fTriggerPatchDataPtr(NULL),
   fkGeometryPtr(NULL),
   fPatchFinder(NULL),
-  fADCValues(NULL)
+  fADCValues(NULL),
+  fOrigin(kOriginCELLS)
 {
 }
 

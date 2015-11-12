@@ -164,6 +164,17 @@ AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607
 	return rname;
 }
 
+int AliHLTEMCALMapper::GetDDLFromSpec( const AliHLTUInt32_t spec ){
+  /* New handling: specification is the DDL number in EMCAL */
+  return int(spec);
+}
+
+int AliHLTEMCALMapper::GetModuleFromSpec(UInt_t specification){
+  /* New handling: specification is the DDL number in EMCAL */
+  if(specification >= 40) return -1;
+  return int(specification / 2);
+}
+
 void AliHLTEMCALMapper::FixCoordinate(AliHLTCaloCoordinate &coord){
   /*
    * Port from AliEMCALGeometry::ShiftOnlineToOfflineCellIndexes,
