@@ -139,7 +139,7 @@ AliHFsubtractBFDcuts::~AliHFsubtractBFDcuts() {
 
 void AliHFsubtractBFDcuts::InitHistos(){
   // mass, pt, normLXY, cosPointXY, normL, cosPoint, LXY, L
-  Int_t dimAxes[8]={500  ,96 ,200 ,100   ,200.,100   ,100. ,100  };
+  Int_t dimAxes[8]={500  ,96 ,200 ,100   , 200,100   , 100 ,100  };
   Double_t  min[8]={  1.7, 0.,  0.,  0.99,  0.,  0.99,  0. ,  0. };
   Double_t  max[8]={  2.2,24.,100.,  1.  ,100.,  1.  ,  1.0,  1.0};
   fTHnData=new THnSparseF("fCutsDataFD","fCutsDataFD",8,dimAxes,min,max);
