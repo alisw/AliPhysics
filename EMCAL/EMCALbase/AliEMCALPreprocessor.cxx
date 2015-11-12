@@ -403,7 +403,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   const char *detectors[2] = {"EMC", "DMC"};
   Bool_t isEMCAL;
   for(const char **idet = detectors; idet < detectors + sizeof(detectors)/sizeof(const char *); idet++){
-    Bool_t isEMCAL = !strcmp(*idet, "EMCAL");
+    Bool_t isEMCAL = !strcmp(*idet, "EMC");
     stuConfig = new AliEMCALTriggerSTUDCSConfig;
     for (i = 0; i < 3; i++) {
       for (int j = 0; j < 2; j++) {
@@ -431,6 +431,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
       stuConfig->SetFw(dcsVal->GetInt());
     }
 
+    AliDCSValue *errorcount(NULL);
     for(Int_t itru = 0; itru < 32; itru++){
       // TODO: Cross check - we might receive multiple data points
       // Currently a test procedure
@@ -443,7 +444,9 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
       if(dcsvals){
         AliInfo(Form("Found %d objects in DCS values", dcsvals->GetEntries()));
         for(TIter eniter = TIter(dcsvals).Begin(); eniter != TIter::End(); ++eniter){
-          AliInfo(Form("Object type %s", (*eniter)->IsA()->GetName()));
+          errorcount = dynamic_cast<AliDCSValue *>(*eniter);
+          stuConfig->SetTRUErrorCounts(itru, errorcount->GetTimeStamp(), errorcount->GetUInt());
+          AliInfo(Form("Saving value %d", errorcount->GetUInt()));
         }
       } else {
         AliWarning(Form("%s not found in the DCS alias map", buf));
