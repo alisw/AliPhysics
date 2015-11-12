@@ -213,10 +213,7 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->SetSector(sec);
   //  Int_t index = i&0xFFFF;
   int row = track->GetRow();
-  if (sec>=fkParam->GetNInnerSector()) {
-    row += fkParam->GetNRowLow();
-    track->SetRow(row);
-  }
+  if (sec>=fkParam->GetNInnerSector()) track->SetRow(row+fkParam->GetNRowLow()); 
   track->SetClusterIndex2(row, i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;

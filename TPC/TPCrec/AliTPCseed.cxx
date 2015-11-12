@@ -87,6 +87,7 @@ AliTPCseed::AliTPCseed():
   }
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -200,6 +201,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -247,6 +249,7 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::~AliTPCseed(){
@@ -323,6 +326,7 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     fMAngular = param.fMAngular;
     fCircular = param.fCircular;
   }
+  memcpy(fShared,param.fShared,20*sizeof(UChar_t));
   return (*this);
 }
 

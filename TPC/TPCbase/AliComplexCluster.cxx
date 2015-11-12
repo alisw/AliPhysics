@@ -96,7 +96,7 @@ AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
     fSigmaY = o.fSigmaY;
     fErrZ   = o.fErrZ;
     fErrY   = o.fErrY;
-    fIsShared = o.fIsShared;
+    //    fIsShared = o.fIsShared;
   }
   return *this;
 }
