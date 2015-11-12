@@ -149,6 +149,9 @@ private:
     AliMultVariable *fZpaTower;
     AliMultVariable *fZpcTower;
     
+    //Event selection snippet for VtxZ as AliMultVariable
+    AliMultVariable *fEvSel_VtxZ;
+    
     // A.T.
     Float_t fAmplitude_V0A1;   //!
     Float_t fAmplitude_V0A2;   //!
@@ -176,7 +179,6 @@ private:
     // A.T.
     Int_t   fnSPDClusters0;            //!
     Int_t   fnSPDClusters1;            //!
-    Float_t fEvSel_VtxZ; //! the actual value
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts

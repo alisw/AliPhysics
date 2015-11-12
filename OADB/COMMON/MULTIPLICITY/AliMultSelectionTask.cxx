@@ -298,6 +298,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fZncTower = new AliMultVariable("fZncTower");
     fZpaTower = new AliMultVariable("fZpaTower");
     fZpcTower = new AliMultVariable("fZpcTower");
+
+    fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -324,6 +326,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZncTower );
     fInput->AddVariable( fZpaTower );
     fInput->AddVariable( fZpcTower );
+    fInput->AddVariable( fEvSel_VtxZ );
     
     if( fkCalibration ) {
         fTreeEvent = new TTree("fTreeEvent","Event");
@@ -356,7 +359,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
         fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
-        fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
         
         //A.T. FIXME change into AliMultVariable
         //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
@@ -460,7 +462,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //fnSPDClusters = -1;
     fnSPDClusters0 = -1;
     fnSPDClusters1 = -1;
-    fEvSel_VtxZ = -100;
+    fEvSel_VtxZ ->SetValue( -100 );
 
     Float_t multADA =0;
     Float_t multADC =0;
@@ -565,7 +567,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //FIXME Passed default 10.0cm selection!
         fEvSel_VtxZCut = kTRUE;
     }
-    fEvSel_VtxZ = lBestPrimaryVtxPos[2] ; //Set for later use 
+    fEvSel_VtxZ -> SetValue( lBestPrimaryVtxPos[2] ); //Set for later use
     
     //===============================================
     // End Event Selection Variables Section
@@ -867,7 +869,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 //Check Selections as they are in the fMultSelectionCuts Object
                 if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
                 if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
-                if( TMath::Abs(fEvSel_VtxZ)          > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
+                if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
                 if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
                 if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
                 if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
