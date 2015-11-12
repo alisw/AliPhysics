@@ -50,7 +50,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
-  void SetJetRadius(Double_t JetRadius)                      {fJetRadius=JetRadius;}
+  void SetJetRadius(Double_t JetRadius)                     {fJetRadius=JetRadius;}
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }

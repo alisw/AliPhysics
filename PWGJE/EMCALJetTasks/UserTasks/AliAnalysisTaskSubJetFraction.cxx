@@ -624,11 +624,9 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   //  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
   //  Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
   // if(vert) fhEventCounter->Fill(7);
-
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
-
 
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
     AliEmcalJet *Jet1 = NULL; //Subtracted hybrid Jet  
@@ -654,8 +652,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     if(JetCont1) {
       fhEventCounter->Fill(2);
       JetCont1->ResetCurrentID();
-      while((Jet1=JetCont1->GetNextAcceptJet()) && (Jet1->Pt()>=10)) {
-        if(!Jet1) {
+      while((Jet1=JetCont1->GetNextAcceptJet())) {
+        if( (!Jet1) || (Jet1->Pt()<fPtThreshold)) {
 	  continue;
         }
         else {
@@ -793,8 +791,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     if(JetCont1) {
       fhEventCounter_1->Fill(2); //Number of events with a jet container                                                                                               
       JetCont1->ResetCurrentID();
-      while((Jet1=JetCont1->GetNextAcceptJet()) && (Jet1->Pt()>=10)) {
-	if(!Jet1) {
+      while((Jet1=JetCont1->GetNextAcceptJet())) {
+	if( (!Jet1) || (Jet1->Pt()<fPtThreshold)) {
 	  // fhEventCounter_1->Fill(3); //events where the jet had a problem                                                                                   
 	  continue;
 	}
@@ -1001,8 +999,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     if(JetCont) {
       fhEventCounter->Fill(2); //Number of events with a jet container
       JetCont->ResetCurrentID();
-      while((Jet1=JetCont->GetNextAcceptJet()) && (Jet1->Pt()>=10)) {
-	if(!Jet1) {
+      while((Jet1=JetCont->GetNextAcceptJet())) {
+	if((!Jet1) || (Jet1->Pt()<fPtThreshold)) {
 	  //fhEventCounter->Fill(3); //events where the jet had a problem
 	  continue;
 	}
