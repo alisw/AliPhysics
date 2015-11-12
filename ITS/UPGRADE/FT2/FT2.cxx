@@ -30,6 +30,7 @@
 #include "AliMathBase.h"
 #include "AliTPCReconstructor.h"
 
+
 ClassImp(FTProbe)
 ClassImp(FT2)
 
@@ -62,9 +63,14 @@ FTProbe::FTProbe()
 ,fIsAbsorbed(0)
 ,fDecayRadius(0)
 ,fAbsorbtionRadius(0)
+,fAbsorbtionX(0)
+,fAbsorbtionY(0)
+,fDecayX(0)
+,fDecayY(0)
 ,fLostInItsTpcMatching(0)
 ,fTrackToClusterChi2CutITS(0)
 ,fProbeZAtCutOffCheck(0)
+,fProbeReconstructionError(99)
 {
 	// def. c-tor
 }
@@ -97,6 +103,7 @@ fITSRec(0)
 ,fBz(0.5)
 ,fSimMat(kFALSE)
 ,fAllowDecay(kFALSE)
+,fAllowAbsorbtion(kFALSE)
 ,fCurrITSLr(-1)
 ,fNClTPC(0)
 ,fNClITS(0)
@@ -106,8 +113,8 @@ fITSRec(0)
 ,fChi2TPC(0)
 ,fChi2ITS(0)
 ,fTPCMap()
-,fSigYITS(3.14e-4) // 5e-4
-,fSigZITS(3.38e-4) // 5e-4
+,fSigYITS(2.25e-4) // 5e-4 // 3.14e-4
+,fSigZITS(2.25e-4) // 5e-4 // 3.38e-4
 ,fITSerrSclY(2.0)
 ,fITSerrSclZ(1.0)
 ,fNITSLrHit(0)
@@ -121,6 +128,7 @@ fITSRec(0)
 ,fTPCft2Chi2(0)
 ,fItsTpcMatchingfMC(0)
 ,fItsTpcMatchingft2(0)
+,fPionDecayGen(0)
 ,fDebugStreamer(0)
 ,fStreamLevel(0)
 ,fTpcClusterAcc(0)
@@ -167,7 +175,7 @@ FT2::~FT2()
 	AliInfo("Destroy");
 	delete[] fKalmanOutward;
 	delete fITSRec;
-  if (fDebugStreamer) delete fDebugStreamer;
+	if (fDebugStreamer) delete fDebugStreamer;
 }
 
 //________________________________________________
@@ -201,10 +209,10 @@ void FT2::InitTPCParaFile(const char *TPCParaFile)
 	
 	fTPCfMCChi2 = (AliNDLocalRegression*)fTPCParaFile->Get("fmcTpcChi2");
 	fTPCft2Chi2 = (AliNDLocalRegression*)fTPCParaFile->Get("ft2TpcChi2");
-
+	
 	fItsTpcMatchingfMC = (AliNDLocalRegression*)fTPCParaFile->Get("fmcITSTPCmatching");
 	fItsTpcMatchingft2 = (AliNDLocalRegression*)fTPCParaFile->Get("ft2ITSTPCmatching");
-
+	
 	fTpcClusterAcc = (TF1*)fTPCParaFile->Get("tpcClusterAcc");
 	
 	//	fTpcClusterAcc = new TF1("fTpcClusterAcc","[0]+[1]/x",80,260);
@@ -263,28 +271,22 @@ void FT2::InitDetector(Bool_t addTPC,Float_t scEdge)
 	AliTPCClusterParam *clsParam = calib->GetClusterParam();
 	clsParam->Instance();
 	clsParam->SetInstance(clsParam);
-	//	fTPCClusterErrorParam = new TF1("fTPCClusterErrorParam","AliTPCClusterParam::SGetError0Par([0],[1],x,[2])",0.,250.);
+	//
 	fTPCClusterErrorParamY = new TF1("fTPCClusterErrorParamY","clusterResolutionYAliRoot(x,[0],[1])",0,250.);
 	fTPCClusterErrorParamZ = new TF1("fTPCClusterErrorParamZ","clusterResolutionZAliRoot(x,[0],[1])",0,250.);
 	// get tpc param from calibDB
 	fTPCParam = calib->GetParameters();
 	// get tpc reco param from calibDB
 	fTPCRecoParam = calib->GetRecoParam(1); // to be checked with marian
-
-	fTPCClusterErrInner = fTPCRecoParam->GetSystematicErrorClusterInner();
-	fTPCClusterErrInnerDeepY = fTPCRecoParam->GetSystematicErrorClusterInnerDeepY();
-	fTPCClusterErrInnerDeepZ = fTPCRecoParam->GetSystematicErrorClusterInnerDeepZ();
-	fTPCClusterErr = fTPCRecoParam->GetSystematicErrorCluster();
-	fTPCSystematicErr = fTPCRecoParam->GetSystematicError();
-	fTPCUseSystematicCorrelation =  fTPCRecoParam->GetUseSystematicCorrelation();
-/*
-	fTPCClusterErrInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
-	fTPCClusterErrInnerDeepY = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepY();
-	fTPCClusterErrInnerDeepZ = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepZ();
-	fTPCClusterErr = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
-	fTPCSystematicErr = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
-	fTPCUseSystematicCorrelation =  AliTPCReconstructor::GetRecoParam()->GetUseSystematicCorrelation();
-*/
+	//
+	fTPCClusterErrInner						= fTPCRecoParam->GetSystematicErrorClusterInner();
+	fTPCClusterErrInnerDeepY			= fTPCRecoParam->GetSystematicErrorClusterInnerDeepY();
+	fTPCClusterErrInnerDeepZ			= fTPCRecoParam->GetSystematicErrorClusterInnerDeepZ();
+	fTPCClusterErr								= fTPCRecoParam->GetSystematicErrorCluster();
+	fTPCSystematicErr							= fTPCRecoParam->GetSystematicError();
+	fTPCUseSystematicCorrelation	= fTPCRecoParam->GetUseSystematicCorrelation();
+	//
+	fPionDecayGen = new TGenPhaseSpace();
 }
 //____________________________________________________
 void FT2::InitTPCPIDResponse()
@@ -293,7 +295,7 @@ void FT2::InitTPCPIDResponse()
 	
 	fPIDResponse = new AliPIDResponse(kTRUE);
 	fPIDResponse->GetTPCResponse().SetUseDatabase(kFALSE);
-	//AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
+	//
 	if (fTPCParam){
 		TVectorD *paramBB = fTPCParam->GetBetheBlochParameters();
 		if (paramBB){
@@ -315,13 +317,12 @@ void FT2::InitEnvLocal()
 	
 	// init with environment of local ITSU generation
 	AliCDBManager* man = AliCDBManager::Instance();
-//	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+	//	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	man->SetDefaultStorage("raw://");
 	
 	man->SetSpecificStorage("GRP/*/*","alien://folder=/alice/data/2010/OCDB");
-//	man->SetSpecificStorage("ITS/*/*", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
-//	man->SetSpecificStorage("TPC/*/*", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/");
 	
+	// Loading same OCDB files as in sim.C/rec.C of LHC13d19
 	man->SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/LS1_upgrade/Ideal",1,0);
 	man->SetSpecificStorage("ITS/Calib/RecoParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal",2,0);
 	man->SetSpecificStorage("ITS/Calib/SimuParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal",1,0);
@@ -334,28 +335,29 @@ void FT2::InitEnvLocal()
 	man->SetSpecificStorage("TPC/Calib/AltroConfig", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",1,0);
 	man->SetSpecificStorage("TPC/Calib/TimeDrift", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",1,0);
 	man->SetSpecificStorage("TPC/Calib/Correction", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",2,0);
-
-	//	man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2010/OCDB");
-	//	man->SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
-	//	man->SetSpecificStorage("ITS/Calib/RecoParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
+	// Loading default OCDB
+	/*
+	 man->SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
+	 man->SetSpecificStorage("ITS/Calib/RecoParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
+	 man->SetDefaultStorage("alien://folder=/alice/data/2010/OCDB");
+	 man->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/ClusterParam", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/RecoParam", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/TimeGain", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/AltroConfig", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/TimeDrift", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 man->SetSpecificStorage("TPC/Calib/Correction", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
+	 */
+	//
 	man->SetRun((Long64_t)fRunNumber);
 	man->Print("");
-	/*
-	 AliCDBManager* man = AliCDBManager::Instance();
-	 man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-	 man->SetSpecificStorage("GRP/GRP/Data",
-	 Form("local://%s",gSystem->pwd()));
-	 man->SetSpecificStorage("ITS/Align/Data",
-	 Form("local://%s",gSystem->pwd()));
-	 man->SetSpecificStorage("ITS/Calib/RecoParam",
-	 Form("local://%s",gSystem->pwd()));
-	 man->SetRun(0);*/
 	//
 	if (fStreamLevel>0) {
 		cout << "CREATING STERAMER TREE" << endl;
 		fDebugStreamer = new TTreeSRedirector("ft2debug.root");
 	}
-
+	
 }
 
 //____________________________________________________
@@ -399,7 +401,7 @@ void FT2::AddTPC(Float_t scEdge)
 			rowRadius =  kTPCRow64Radius + (k-kTPCInnerRows+1)*kTPCMiddleRadialPitch ;
 			pitch = kTPCMiddleRadialPitch;
 			pitchAng = kTPCOuterPadAngularPitch;
-	}
+		}
 		else if (k>=(kTPCInnerRows+kTPCMiddleRows) && k<kTPCRows ){
 			rowRadius = kTPCRow128Radius + (k-kTPCInnerRows-kTPCMiddleRows+1)*kTPCOuterRadialPitch ;
 			pitch = kTPCOuterRadialPitch;
@@ -489,7 +491,7 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 	
 	//
 	// go to innermost radius of ITS (including beam pipe)
-	if (!PropagateToR(fITS->GetRMin(),-1, kTRUE, kFALSE, kTRUE)) {
+	if (!PropagateToR(fITS->GetRMin(),-1, kTRUE, kFALSE, kTRUE,0)) {
 #if DEBUG
 		printf("Track propagatation to ITS RMin=%f failed\n",fITS->GetRMin());
 		fProbe.Print();
@@ -544,7 +546,7 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 		Double_t templateFmcChi2stand = fTPCfMCChi2->Eval(pointChi); // TPC standardized chi2 from either full MC or data
 		Double_t templateFt2Chi2stand = fTPCft2Chi2->Eval(pointChi); // TPC standardized chi2 from ft2 first iteration
 		if(templateFt2Chi2stand==0)templateFt2Chi2stand=templateFmcChi2stand;
-	//	fChi2TPC *=(templateFmcChi2stand/templateFt2Chi2stand);
+		fChi2TPC *=(templateFmcChi2stand/templateFt2Chi2stand);
 #if DEBUG
 		Double_t oldChi2 = fChi2TPC;
 		printf("# fMC chi2? %0.2f\n# FT2 chi2? %0.2f\n# Old Chi2? %0.2f\n# New Chi2? %0.2f\n",templateFmcChi2stand,templateFt2Chi2stand,oldChi2,fChi2TPC);
@@ -607,7 +609,8 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fProbe.fProbeChi2TPC				= fChi2TPC;
 	fProbe.fProbeChi2ITS				= fChi2ITS;
 	fProbe.fIsDecayed = fProbe.fIsAbsorbed = 0;
-	fProbe.fAbsorbtionRadius = fProbe.fDecayRadius = 0.;
+	fProbe.fAbsorbtionRadius = fProbe.fDecayRadius = fProbe.fAbsorbtionX = fProbe.fAbsorbtionY = fProbe.fDecayX = fProbe.fDecayY = 0.;
+	fProbe.fProbeReconstructionError = 99;
 	fProbe.fTrackToClusterChi2CutITS = 0;
 	fProbe.fProbeZAtCutOffCheck = 0.;
 	fProbe.fLostInItsTpcMatching = 0;
@@ -615,18 +618,18 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fProbe.fTPCSignal = 0.;
 	fProbe.fTPCSignalN = 0;
 	//
-/*
-	fProbe.fInnerTrackParameters[7] = {0.};
-	fProbe.fProbeITSClusterIsCls[8] = {0.};
-	fProbe.fProbeITSClusterX[8] = {0.};
-	fProbe.fProbeITSClusterY[8] = {0.};
-	fProbe.fProbeITSClusterZ[8] = {0.};
-	fProbe.fProbeTPCClusterIsCls[160] = {0.};
-	fProbe.fProbeTPCClusterX[160] = {0.};
-	fProbe.fProbeTPCClusterY[160] = {0.};
-	fProbe.fProbeTPCClusterZ[160] = {0.};
-	chiwITS[7] = {0.};
-*/
+	/*
+	 fProbe.fInnerTrackParameters[7] = {0.};
+	 fProbe.fProbeITSClusterIsCls[8] = {0.};
+	 fProbe.fProbeITSClusterX[8] = {0.};
+	 fProbe.fProbeITSClusterY[8] = {0.};
+	 fProbe.fProbeITSClusterZ[8] = {0.};
+	 fProbe.fProbeTPCClusterIsCls[160] = {0.};
+	 fProbe.fProbeTPCClusterX[160] = {0.};
+	 fProbe.fProbeTPCClusterY[160] = {0.};
+	 fProbe.fProbeTPCClusterZ[160] = {0.};
+	 chiwITS[7] = {0.};
+	 */
 	
 	//
 	// Calculate alpha: the rotation angle of the corresponding local system (TPC sector)
@@ -664,58 +667,108 @@ Bool_t FT2::InitProbe(TParticle* part)
 	fProbeIni = fProbe;
 	return kTRUE;
 }
-
 //____________________________________________________
-Int_t FT2::ProbeDecayAbsorb(double* posIni)
+Int_t FT2::ProbeAbsorbtion(double* posIni,double *params)
 {
-	// check if the probe has decayed (return 1) or absorbed (return -1).
 	// if survived, return 0
-	// Before returning, assign to posIni current position
-	double posCurr[3];
-	fProbe.GetXYZ(posCurr);
-	double params[8];
-	AliTrackerBase::MeanMaterialBudget(posIni,posCurr,params);
-	Double_t dist=params[4];
-	//
+	// if absorbed, return 1
 #if DEBUG>5
-	AliInfo(Form("\nNew step length %f from XYZ= %0.2f %0.2f %0.2f\n",dist,posIni[0],posIni[1],posIni[2]));
+	AliInfo(Form("\nNew step length %f from XYZ= %0.2f %0.2f %0.2f\n",params[4],posIni[0],posIni[1],posIni[2]));
 #endif
 	if(params[0]>1.E-5 && params[1]>1.E-5 && params[2]>1.E-5 && params[3]>1.E-5 && params[4]>1.E-5)
 	{
-		if(gRandom->Rndm()<ParticleDecayProbability(dist)) {
-			fProbe.fIsDecayed=kTRUE;
-			fProbe.fIsAbsorbed=kFALSE;
-			fProbe.fDecayRadius=TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
-			return 1;
-		}
 		if(gRandom->Rndm()<ParticleAbsorptionProbability(params[4],params[0],params[2],params[3])){
-			fProbe.fIsDecayed=kFALSE;
-			fProbe.fIsAbsorbed=kTRUE;
-			fProbe.fAbsorbtionRadius=TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
-			return -1;
+			fProbe.fIsAbsorbed				= kTRUE;
+			fProbe.fAbsorbtionRadius	= TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
+			fProbe.fAbsorbtionX				= posIni[0];
+			fProbe.fAbsorbtionY				= posIni[1];
+			return 1;
+	 }
+		else {return 0;}
+	}
+	else {return 0;}
+}
+//____________________________________________________
+Int_t FT2::ProbeDecay(double* posIni,double *params)
+{
+	// if survived, return 0
+	// if decayed, return 1
+	// except for pions, which always decay into muons and can be propagated (small kink), always return 0
+	// probe cannot decay & be absorbed
+#if DEBUG>5
+	AliInfo(Form("\nNew step length %f from XYZ= %0.2f %0.2f %0.2f\n",params[4],posIni[0],posIni[1],posIni[2]));
+#endif
+	if(params[0]>1.E-5 && params[1]>1.E-5 && params[2]>1.E-5 && params[3]>1.E-5 && params[4]>1.E-5)
+	{
+		if(!fProbe.fIsDecayed){
+			if(fProbe.fAbsPdgCode==321){// || fProbe.fAbsPdgCode==211){
+				if(gRandom->Rndm()<ParticleDecayProbability(params[4])){
+					if(fProbe.fAbsPdgCode==211){
+						if(Pion2Muon()){
+							fProbe.fIsDecayed		= kTRUE;
+							fProbe.fDecayRadius	= TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
+							fProbe.fDecayX			= posIni[0];
+							fProbe.fDecayY			= posIni[1];
+						}
+						return 0;
+					}
+					else{
+						fProbe.fIsDecayed			= kTRUE;
+						fProbe.fDecayRadius		= TMath::Sqrt(posIni[0]*posIni[0]+posIni[1]*posIni[1]);
+						fProbe.fDecayX				= posIni[0];
+						fProbe.fDecayY				= posIni[1];
+						return 1;
+					}
+				}
+				else {return 0;}
+			}
+			else {return 0;}
+		}
+		else{
+			return 0;
 		}
 	}
-	for (int j=3;j--;) posIni[j] = posCurr[j];
-	fProbe.fIsAbsorbed = fProbe.fIsDecayed = 0;
-	fProbe.fAbsorbtionRadius = fProbe.fDecayRadius = 0;
-	return 0;
-	//
+	else {return 0;}
 }
-
+//____________________________________________________
+Bool_t FT2::Pion2Muon(){
+	
+	if (!fPionDecayGen) fPionDecayGen = new TGenPhaseSpace();
+	const double piMass = 0.13957;
+	const double mProd[] = {0.1057,0}; // product masses
+	double p[4];
+	//
+	fProbe.GetPxPyPz(p);
+	p[3] = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2] + piMass*piMass);
+	TLorentzVector pion(p);
+	//	  printf(">> "); pion.Print();
+	fPionDecayGen->SetDecay(pion, 2, mProd);
+	fPionDecayGen->Generate();
+	TLorentzVector* muon = fPionDecayGen->GetDecay(0);
+	// modify momentum in tracking coordinates
+	//	  printf("Lab <<"); muon->Print();
+	muon->RotateZ(-fProbe.GetAlpha());
+	double *param = (double*) fProbe.GetParameter();
+	double pt = muon->Pt();
+	if (pt<1e-3) return kFALSE;
+	param[4] = TMath::Sign(1./pt, param[4]);
+	param[2] = muon->Py()/pt;
+	param[3] = muon->Pz()/pt;
+	//
+	return kTRUE;
+	
+}
 //____________________________________________________
 Bool_t FT2::PrepareProbe()
 {
 	// propagate the probe to max allowed R of the setup
 	int nlrITS = fITS->GetNLayers(); // including passive layers
 	//
-	double xyzIni[3];
-	if(fAllowDecay){fProbe.GetXYZ(xyzIni);}
-	//
-	for (int ilr=0;ilr<nlrITS;ilr++) {
+	for (int ilr=0;ilr<nlrITS;ilr++){
 		AliITSURecoLayer* lr = fITS->GetLayer(ilr);
 		//
 		if (lr->IsPassive()) { // cylindric passive layer, just go to this layer
-			if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat)) return kFALSE;
+			if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat,1)) return kFALSE;
 		}
 		else { // active layer, need to simulate the hit positions
 			if (!PassActiveITSLayer(lr)) return kFALSE;
@@ -725,33 +778,34 @@ Bool_t FT2::PrepareProbe()
 			fProbe.fProbeITSClusterX[ilr] = posClsITS[0];
 			fProbe.fProbeITSClusterY[ilr] = posClsITS[1];
 			fProbe.fProbeITSClusterZ[ilr] = posClsITS[2];
-  }
-		if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
+		}
+	 if (TMath::Abs(fProbe.GetZ())>kMaxZITS) break; // exit along z
 	}
 	//
 	fNTPCHits = 0;
+	double xyzIni[3];
 	if (fIsTPC) {
 		const double kTanSectH = 1.76326980708464975e-01; // tangent of  10 degree (sector half opening)
 		if (!fProbe.RotateParamOnly( fProbe.PhiPos() )) {
 			return kFALSE; // start in the frame with X pointing to track position
 		}
-		if (!PropagateToR(fTPCLayers[0].x-0.1,1,kFALSE,fSimMat,fSimMat)) {
+		if (!PropagateToR(fTPCLayers[0].x-0.1,1,kFALSE,fSimMat,fSimMat,1)) {
 			return kFALSE; // reach inner layer
 		}
-		if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
-		
 		//
 		int sector = -1;
 		for (int ilrReset=0;ilrReset<(int)fTPCLayers.size();ilrReset++) {
 			FT2TPCLayer_t &tpcLrReset = fTPCLayers[ilrReset];
 			tpcLrReset.hitSect = -1;
+			fTPCHitLr[ilrReset] = 0;
 		}
 		for (int ilr=0;ilr<(int)fTPCLayers.size();ilr++) {
 #if DEBUG>5
 			printf("At TPC lr %d\n",ilr);
 			fProbe.Print();
 #endif
-			
+			if(fAllowDecay || fAllowAbsorbtion){fProbe.GetXYZ(xyzIni);}
+
 			FT2TPCLayer_t &tpcLr = fTPCLayers[ilr];
 			
 			double phi = fProbe.PhiPos();
@@ -778,25 +832,35 @@ Bool_t FT2::PrepareProbe()
 				return kFALSE; // no materials inside TPC
 			}
 			
+			if(fAllowDecay || fAllowAbsorbtion){
+				double xyzCur[3];
+				fProbe.GetXYZ(xyzCur);
+				double params[8];
+				AliTrackerBase::MeanMaterialBudget(xyzIni,xyzCur,params);
+				//
+				if(fAllowDecay && ProbeDecay(xyzIni,params)){
+					return kFALSE;
+				}
+				//
+				if(fAllowAbsorbtion && ProbeAbsorbtion(xyzIni,params)){
+					return kFALSE;
+				}
+			}
 			fProbe.fProbeZAtCutOffCheck = fProbe.GetZ();
 			if(TMath::Abs(fProbe.GetZ()/fProbe.GetX())>fTpcClusterAcc->Eval(fProbe.GetX())) continue;
 			
 			// cut during cluster seeding, taken from Ruben
 			Double_t kDeltaZ = 10;
-			if(TMath::Abs(fProbe.GetZ())>(/*AliTPCReconstructor::GetCtgRange()*/1.05*fProbe.GetX()+kDeltaZ)) continue ;
-			//if (TMath::Abs(fProbe.GetZ())>kMaxZTPC) break; // exit from the TPC
-// was here before
-			
-			if(fAllowDecay && ProbeDecayAbsorb(xyzIni)) return kFALSE;
-			
+			if(TMath::Abs(fProbe.GetZ())>(1.05*fProbe.GetX()+kDeltaZ)) continue ;
+			//
 			double maxY = kTanSectH*tpcLr.x - fTPCSectorEdge; // max allowed Y in the sector
-			
+			//
 			Double_t z = fProbe.GetZ();
 			if(z>245.) z=245.;
 			
 			Double_t xyz[3];
 			fProbe.GetXYZ(xyz);
-			Double_t pointExB[3] = {TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/250.,xyz[2]/250.,fProbe.PhiPos()};
+			Double_t pointExB[3] = {TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/250.,xyz[2]/250.,TMath::ATan2(xyz[1],xyz[0])};
 			Double_t TPCdistortionRPhi = fTPCDistortionRPhi->Eval(pointExB); // include tpc field distortion in rphi, assuming rphi==Y
 #if DEBUG>3
 			printf("Probe.Y: %f with \n",fProbe.GetY());
@@ -839,6 +903,7 @@ Bool_t FT2::PrepareProbe()
 #if DEBUG>5
 			printf("Register TPC hit at sect:%d, Y:%.4f Z:%.4f\n",sector,fProbe.GetY(),fProbe.GetZ());
 			printf("Layer %i, layer x: %f\n",ilr,tpcLr.x);
+			printf("# of TPC hits? %i\n",fNTPCHits);
 			fProbe.Print();
 #endif
 			//
@@ -878,9 +943,9 @@ Bool_t FT2::PrepareProbe()
 				fProbe.fProbeTPCClusterY[fNTPCHits] = posCls[1];
 				fProbe.fProbeTPCClusterZ[fNTPCHits] = posCls[2];
 				
-				#if DEBUG>5
+#if DEBUG>5
 				printf("-----> %i\n",fNTPCHits);
-				#endif
+#endif
 			}
 			else{
 				//
@@ -910,7 +975,7 @@ Bool_t FT2::PrepareProbe()
 	}
 	// RS: temporary fix: the errors assigned in clusterizer is sqrt(pixel_extent/12)
 	double eta = fProbe.Eta();
-	fITSerrSclZ = 20e-4*(1.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS;
+	fITSerrSclZ = 20e-4*(1.4+0.61*eta*eta)*TMath::Sqrt(1./12.)/fSigZITS; //cm
 	//
 	return kTRUE;
 }
@@ -920,7 +985,6 @@ Bool_t FT2::PrepareProbe()
 Bool_t FT2::ReconstructProbe(TParticle* part)
 {
 	// reconstruct the probe
-	
 	//
 	int sect = -1;
 	fChi2TPC = 0;
@@ -1022,19 +1086,19 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			FT2TPCLayer_t &tpcLr = fTPCLayers[fTPCHitLr[ih]];
 			if (tpcLr.hitSect!=sect) { // rotate to hit sector
 				sect = tpcLr.hitSect;
-				if (!fProbe.Rotate( TMath::DegToRad()*(10.+20.*sect))) return kFALSE;
+				if (!fProbe.Rotate( TMath::DegToRad()*(10.+20.*sect))) {fProbe.fProbeReconstructionError = 1; return kFALSE;}
 			}
 			// go to the padrow
-			if (!fProbe.PropagateTo(tpcLr.x,fBz)) return kFALSE;
-			if (tpcLr.x2x0>0 && !fProbe.CorrectForMeanMaterial(tpcLr.x2x0,0,fProbe.fProbeMass) ) return kFALSE;
+			if (!fProbe.PropagateTo(tpcLr.x,fBz)) {return kFALSE;}
+			if (tpcLr.x2x0>0 && !fProbe.CorrectForMeanMaterial(tpcLr.x2x0,0,fProbe.fProbeMass) ) {fProbe.fProbeReconstructionError = 2; return kFALSE;}
 			//
 			//
 			// cluster errror parameterization
 			Int_t typeROC;
-			Double_t angle = fProbe.GetSnp()*fProbe.GetSnp();
-			Double_t angleProbeY = TMath::Sqrt(TMath::Abs(angle/(1.-angle)));
-			Double_t angle2 = fProbe.GetTgl()*fProbe.GetTgl()*(1+angle/(1-angle));
-			Double_t angleProbeZ = TMath::Sqrt(TMath::Abs(angle2));
+			Double_t angle				= fProbe.GetSnp()*fProbe.GetSnp();
+			Double_t angleProbeY	= TMath::Sqrt(TMath::Abs(angle/(1.-angle)));
+			Double_t angle2				= fProbe.GetTgl()*fProbe.GetTgl()*(1+angle/(1-angle));
+			Double_t angleProbeZ	= TMath::Sqrt(TMath::Abs(angle2));
 			//
 			Double_t zDriftLength = TMath::Abs(fTPCParam->GetZLength(0)-fProbe.GetZ());
 			//
@@ -1106,21 +1170,27 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			printf("DeepY[1]?\t\t%f\n",fTPCClusterErrInnerDeepY[1]);
 			printf("fTPCClusterErr[0]?\t%f\n",fTPCClusterErr[0]);
 			printf("sigma_Z?\t\t%f\n",fTPCClusterErrorParamZ->Eval(zDriftLength));
-			printf("drZ?\t\t\t%f\n",drZ);
+//			printf("drZ?\t\t\t%f\n",drZ);
 			printf("DeepZ[0]?\t\t%f\n",fTPCClusterErrInnerDeepZ[0]);
 			printf("DeepZ[1]?\t\t%f\n",fTPCClusterErrInnerDeepZ[1]);
 			printf("fTPCClusterErr[1]?\t%f\n",fTPCClusterErr[1]);
 			printf("sig_y --> %f\n",tpcSigY);
 			printf("sig_z --> %f\n",tpcSigZ);
-			cout << "------------------------------------------" << endl;
+			printf("------------------------------------------");
 #endif
-			Double_t scaler = 1.0;
+			Double_t scaler = 0.95;
 			double chi = UpdateKalman(&fProbe,tpcLr.hitY,tpcLr.hitZ,TMath::Sqrt(tpcSigY)/scaler,TMath::Sqrt(tpcSigZ)/scaler,kTRUE,scaler,scaler);
-			if (chi<0) return kFALSE;
+			if (chi<0) {fProbe.fProbeReconstructionError = 3; return kFALSE;}
+			if(!(fProbe.fAbsPdgCode==211 && fProbe.fIsDecayed==1)){
+				if (chi>25){
+					fProbe.fProbeReconstructionError = 4;
+					return kFALSE;
+				}
+			}
 			fChi2TPC += chi;
 			fNClTPC++;
 			fTPCMap.SetBitNumber(tpcLr.rowId,kTRUE);
-			
+			//
 			if(ih==0){ // set inner track parameters
 				fProbe.fInnerTrackParameters[0] = fProbe.GetAlpha();
 				fProbe.fInnerTrackParameters[1] = fProbe.GetX();
@@ -1131,13 +1201,9 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 				fProbe.fInnerTrackParameters[6] = fProbe.GetSigned1Pt();
 			}
 		}
-	//	cout << "------------------------------------------" << endl;
-	//	fProbe.Print();
 		AddCovariance();
-	//	fProbe.Print();
-	//	cout << "------------------------------------------" << endl;
 		// go to ITS/TPC matching R, accounting for TGeo materials
-		if (!PropagateToR(fITS->GetRITSTPCRef(),-1,kTRUE, kFALSE, kTRUE)) return kFALSE;
+		if (!PropagateToR(fITS->GetRITSTPCRef(),-1,kTRUE, kFALSE, kTRUE,0)) {fProbe.fProbeReconstructionError = 5; return kFALSE;}
 	}
 	//
 	//
@@ -1157,7 +1223,7 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 		int res = ReconstructOnITSLayer(ilr);
 		if (res<1) nMiss++;
 		if (res<0) break;
-		if (nMiss>maxMiss) return kFALSE;
+		if (nMiss>maxMiss) {fProbe.fProbeReconstructionError = 6; return kFALSE;}
 	} // true hit is present
 	//
 	return fNClTPC>=fMinTPCHits && fNClITS>=fMinITSLrHit;
@@ -1187,7 +1253,7 @@ Double_t FT2::UpdateKalman(AliExternalTrackParam* trc, double y,double z,double 
 #endif
 		return -1;
 	}
-	
+	//
 	if (fStreamLevel>1) {
 		TTreeSRedirector &cstream = *fDebugStreamer;
 		cstream<<"UpdateKalman"<<
@@ -1230,7 +1296,8 @@ void FT2::ResetCovMat(AliExternalTrackParam* trc)
 Bool_t FT2::PropagateToR(double r, int dir,
 												 Bool_t propErr, // propagate errors
 												 Bool_t simMat,  // simulate material effects
-												 Bool_t useTGeo)
+												 Bool_t useTGeo,
+												 Bool_t decAbsAllowed)
 {
 	// propagate track to given R (not X!)
 	double xTgt;
@@ -1243,7 +1310,7 @@ Bool_t FT2::PropagateToR(double r, int dir,
 	}
 	double dx = xTgt-fProbe.GetX();
 	if (dir*dx<0) return kTRUE; // probe is already above given R
-	return PropagateToX(xTgt,dir,propErr,simMat,useTGeo,0);
+	return PropagateToX(xTgt,dir,propErr,simMat,useTGeo,0,decAbsAllowed);
 }
 
 //________________________________________________________________________
@@ -1251,7 +1318,8 @@ Bool_t FT2::PropagateToX(double xTgt, int dir,
 												 Bool_t propErr, // propagate errors
 												 Bool_t simMat,  // simulate material effects
 												 Bool_t useTGeo,
-												 Int_t dECheckptx)
+												 Int_t dECheckptx,
+												 Bool_t decAbsAllowed)
 {
 	// propagate track to given X
 	//
@@ -1282,7 +1350,7 @@ Bool_t FT2::PropagateToX(double xTgt, int dir,
 				if (!ApplyMSEloss(xx0,xrho,param[2],param[3],dECheckptx)) {
 #if DEBUG
 					printf("Failed ApplyMSEloss(%f,%f,%f,%f,%f) in PropagateToX(%.1f,%d,%d,%d,%d)",
-						   xx0,xrho,param[2],param[3]),xTgt,dir,propErr,simMat,useTGeo);
+						   xx0,xrho,param[2],param[3],xTgt,dir,propErr,simMat,useTGeo);
 					fProbe.Print();
 #endif
 					return kFALSE;
@@ -1293,6 +1361,12 @@ Bool_t FT2::PropagateToX(double xTgt, int dir,
 				printf("Failed CorrMeanMat(%f,%f) in PropagateToX(%.1f,%d,%d,%d,%d)",xx0,xrho,xTgt,dir,propErr,simMat,useTGeo);
 				fProbe.Print();
 #endif
+				return kFALSE;
+			}
+			if(fAllowDecay && decAbsAllowed && ProbeDecay(xyz0,param)){
+				return kFALSE;
+			}
+			if(fAllowAbsorbtion && decAbsAllowed && ProbeAbsorbtion(xyz0,param)){
 				return kFALSE;
 			}
 		}
@@ -1307,7 +1381,18 @@ Bool_t FT2::PropagateToX(double xTgt, int dir,
 Bool_t FT2::ApplyMSEloss(double x2X0, double xrho, double A, double Z, int dEcheck)
 {
 	// simulate random modification of track params due to the MS
-	if (x2X0<=0) return kTRUE;
+	if (A==0 || Z==0){
+		static double pos[3];
+		fProbe.GetXYZ(pos);
+		cout << "###" << endl;
+		cout << "POTENTIAL CRASH IN FT2::ApplyMSEloss " << endl;
+		cout << "X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << endl;
+		cout << "R : " << TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]) << endl;
+		cout << "A : " << A << endl;
+		cout << "Z : " << Z << endl;
+		cout << "###" << endl;
+		//		return kTRUE;
+	}
 	//  printf("BeforeMAT: "); fProbe.Print();
 	double alpha = fProbe.GetAlpha(); // store original alpha
 	double mass2 = fProbe.fProbeMass*fProbe.fProbeMass;
@@ -1399,14 +1484,14 @@ Bool_t FT2::ApplyMSEloss(double x2X0, double xrho, double A, double Z, int dEche
 		cout << "Gas   " << fProbe.BetheBlochGas(ptot/fProbe.fProbeMass)*xrho << endl;
 		cout << "Aleph " << fProbe.BetheBlochAleph(ptot/fProbe.fProbeMass)*xrho << endl;
 		//	Double_t dEold=fProbe.BetheBlochSolid(ptot/fProbe.fProbeMass)*xrho;
-	//	printf("dE(old): %f\n",dEold);
+		//	printf("dE(old): %f\n",dEold);
 		printf("MPV: %f\n",mpv);
 		printf("width(4*s): %f\n",width);
 		printf("dE(random): %f\n",dEfluc);
 #endif
 	}
-
-
+	
+	
 	//  printf("X:%e E=%e dE=%e (xrho:%e)-> %e | ptot=%e M2 = %e\n",fProbe.GetX(),etot,dE,xrho,etot+dE,ptot,mass2);
 	if ( TMath::Abs(dE) > 0.3*ptot ) {
 #if DEBUG>1
@@ -1552,7 +1637,7 @@ Bool_t FT2::PassActiveITSLayer(AliITSURecoLayer* lr)
 #endif
 			return kFALSE;
 		}
-		if (!PropagateToX(sens->GetXTF(),1,kFALSE,fSimMat,fSimMat,lrAID)) {
+		if (!PropagateToX(sens->GetXTF(),1,kFALSE,fSimMat,fSimMat,lrAID,1)){
 			return kFALSE;
 		}
 		const TGeoHMatrix* mt = gm->GetMatrixT2L(sens->GetID());
@@ -1714,7 +1799,9 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 #endif
 	}
 	//
-	if (!PropagateToX(sens->GetXTF(),-1,kTRUE, kFALSE, kTRUE,0)) return -1; // account for materials
+	if (!PropagateToX(sens->GetXTF(),-1,kTRUE, kFALSE, kTRUE,0,0)){
+		return -1;
+	} // account for materials
 	//
 	double trCov[3],trPos[2]; // get inward/outward smoothed position
 	const AliExternalTrackParam* trSmooth = GetSmoothedEstimate(ilr,&fProbe,trPos,trCov);
@@ -1750,9 +1837,9 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 	
 	double pmu = rho*dYsearch*dZsearch;
 	if (TMath::IsNaN(pmu) || pmu<0 || pmu>1e6) {
-	  printf("RS: Anomalous pmu: %f*%f*%f | chicut: %f\n",rho,dYsearch,dZsearch,chi2Cut);
-	  printf("RS: Covs: Y %f/%f Z: %f/%f\n",trCov[0],yzcov[0], trCov[2],yzcov[2]);
-//		trSmooth->Print();
+		//	printf("RS: Anomalous pmu: %f*%f*%f | chicut: %f\n",rho,dYsearch,dZsearch,chi2Cut);
+		//	printf("RS: Covs: Y %f/%f Z: %f/%f\n",trCov[0],yzcov[0], trCov[2],yzcov[2]);
+		//	trSmooth->Print();
 	}
 	int nFakeCandRnd = gRandom->Poisson(rho*dYsearch*dZsearch); // expected number of surrounding hits
 	int nFakeCandCorr = 0;
@@ -1874,10 +1961,10 @@ const AliExternalTrackParam* FT2::GetSmoothedEstimate(int ilr,const AliExternalT
 	trCov[2] = trJoint.GetSigmaZ2();
 	//
 	if (trCov[0]>25 || trCov[2]>25) {
-	  printf("ANOMALY: smoothed track at lr %d has too large errors\n",ilr);
-//	  printf("Input    Track: "); trcInw->Print();
-//	  printf("Smoother Track: "); trJoint.Print();
-	  return 0;
+		//  printf("ANOMALY: smoothed track at lr %d has too large errors\n",ilr);
+		//	  printf("Input    Track: "); trcInw->Print();
+		//	  printf("Smoother Track: "); trJoint.Print();
+		return 0;
 	}
 	return &trJoint;
 }
@@ -1905,14 +1992,14 @@ Bool_t FT2::MakeITSKalmanOut()
 	for (int ilA=lr0;ilA<fITS->GetNLayersActive();ilA++) {
 		AliITSURecoLayer* lrA = fITS->GetLayerActive(ilA);
 		if (fNITSHits[ilA]<1 && nclAdd) { // no hits
-			if (!PropagateToR(lrA->GetRMax(),1,kTRUE,kFALSE,fSimMat)) {
+			if (!PropagateToR(lrA->GetRMax(),1,kTRUE,kFALSE,fSimMat,0)) {
 				fProbe.AliExternalTrackParam::operator=(prbSav); return kFALSE;
 			}
 			fKalmanOutward[ilA] = fProbe;
 			continue;
 		}
 		sens = fITSSensHit[ilA][0];
-		if (!fProbe.Rotate(sens->GetPhiTF()) || !PropagateToX(sens->GetXTF(),1,kTRUE, kFALSE, kTRUE,0)) {
+		if (!fProbe.Rotate(sens->GetPhiTF()) || !PropagateToX(sens->GetXTF(),1,kTRUE, kFALSE, kTRUE,0,0)) {
 			fProbe.AliExternalTrackParam::operator=(prbSav); return kFALSE;
 		}
 		fKalmanOutward[ilA] = fProbe;
@@ -1943,7 +2030,7 @@ Double_t FT2::ParticleDecayProbability(Double_t step){
 	
 	if(lifetime==0){return -1;}
 	else{
-		return (1.-TMath::Exp(-step/((energy/mass)*sol*lifetime)));
+		return (Double_t)(1.-TMath::Exp(-step/((energy/mass)*sol*lifetime)));
 	}
 }
 //_________________________________________________________

@@ -10,6 +10,8 @@
 #include "AliNDLocalRegression.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
+#include <TGenPhaseSpace.h>
+
 //#define DEBUG 11
 //#define DEBUG 1
 
@@ -22,7 +24,7 @@ class AliVertex;
 class TF3;
 
 const float kRidiculous = 999999;
-const float kMaxZTPC = 220; // 250
+const float kMaxZITS = 250;
 const double kTrackToler = 1.e-6; // tracking tolerance
 
 class FTProbe : public AliExternalTrackParam
@@ -77,10 +79,15 @@ protected:
 	Bool_t fIsAbsorbed;									// is particle absorbed?
 	Double_t fDecayRadius;								// radius when particle decayed
 	Double_t fAbsorbtionRadius;						// radius when particle was absorbed
+	Double_t fAbsorbtionX;						// X when particle was absorbed
+	Double_t fAbsorbtionY;						// Y when particle was absorbed
+	Double_t fDecayX;						// X when particle decayed
+	Double_t fDecayY;						// Y when particle decayed
 	Bool_t fLostInItsTpcMatching;					// was track lost due to ITS-TPC matching efficiency?
 	Int_t fTrackToClusterChi2CutITS;		// is particle rejected by ITS track to cluster chi2?
 	Double_t chiwITS[7];								// chi2 for each layer of the ITS
 	Double_t fProbeZAtCutOffCheck;	// z coordinate when the probe is check for z
+	Int_t fProbeReconstructionError; //
 	ClassDef(FTProbe,1)
 };
 
@@ -128,12 +135,16 @@ public:
 	void   SetSimMat(Bool_t v=kTRUE) {fSimMat = v;}
 	void   SetTuneOnDataOrMC(Bool_t t=kFALSE) {fTuneOnDataOrMC = t;}
 	void   SetAllowDecay(Bool_t d=kTRUE) {fAllowDecay = d;}
+	void   SetAllowAbsorbtion(Bool_t f=kFALSE) {fAllowAbsorbtion = f;}
 	void   SetMinTPCHits(int v=0)  {fMinTPCHits=v;} // 60
 	void   SetMinITSLrHit(int v=0)  {fMinITSLrHit=v;}
 	void   SetUsePIDForTracking(Bool_t usePID) {fUsePIDForTracking=usePID;}
 	void	 SetRunNumber( Int_t runnumber) {fRunNumber = runnumber;}
 	void   SetStreamLevel(Int_t level) {fStreamLevel = level;}
-	Int_t  ProbeDecayAbsorb(double* posIni);
+	//Int_t  ProbeDecay(double* posIni);
+	Int_t		ProbeDecay(double* posIni,double *params);
+	Int_t		ProbeAbsorbtion(double* posIni,double *params);
+	Bool_t	Pion2Muon();
 	//
 	Int_t    GetNClITSFakes()  const {return fNClITSFakes;}
 	Int_t    GetNClITS()  const {return fNClITS;}
@@ -187,8 +198,8 @@ protected:
 	Bool_t MakeITSKalmanOut();
 	Bool_t PrepareProbe();
 	Bool_t ApplyMSEloss(double x2X0, double xrho, double A, double Z, int dEcheck);
-	Bool_t PropagateToX(double xTgt, int dir,Bool_t propErr,Bool_t simMat,Bool_t useTGeo,Int_t dECheckptx);
-	Bool_t PropagateToR(double xTgt, int dir,Bool_t propErr,Bool_t simMat,Bool_t useTGeo);
+	Bool_t PropagateToX(double xTgt, int dir,Bool_t propErr,Bool_t simMat,Bool_t useTGeo,Int_t dECheckptx, Bool_t decAbsAllowed);
+	Bool_t PropagateToR(double xTgt, int dir,Bool_t propErr,Bool_t simMat,Bool_t useTGeo, Bool_t decAbsAllowed);
 	Bool_t IsZero(double val, double tol=1e-9) const {return TMath::Abs(val)<tol;}
 	Bool_t PassActiveITSLayer(AliITSURecoLayer* lr);
 	Bool_t GetRoadWidth(AliITSURecoLayer* lrA,double *pr,Int_t nstd = 3);
@@ -225,23 +236,24 @@ protected:
 	Double_t fDCA[2],fDCACov[3];   //! dca to vertex and its covariance
 	//
 	FTProbe fProbe;  // track
-	AliExternalTrackParam fProbeIni;       //! initial probe kinematics
-	AliExternalTrackParam* fKalmanOutward; //! parameters of outward kalman
-	Bool_t  fUseKalmanOut;                 //! use KalmanOut estimate for fakes
-	//Double_t              fProbeMass; // probe mass
-	Double_t              fBz;        // bz
-	Bool_t								fTuneOnDataOrMC; // used to tune some parameters on data or MC input; can only be used in second iteration
-	Bool_t                fSimMat;    // simulate material effects in probe preparation
-	Bool_t								fAllowDecay; // necessary for standlone FT2 mode
-	Int_t                 fCurrITSLr; //! current ITS layer under tracking
-	Int_t                 fNClTPC;    //! N used TPC clusters
-	Int_t                 fNClITS;    //! N used ITS clusters
-	Int_t                 fNClITSFakes;    //! N used ITS Fake clusters
-	Int_t                 fITSPatternFake; //! fakes pattern for ITS
-	Int_t                 fITSPattern;     //! pattern for ITS clusters
-	Double_t              fChi2TPC;   //! total chi2 in TPC
-	Double_t              fChi2ITS;   //! total chi2 in ITS
-	TBits                 fTPCMap;    //! tpc hit map
+	AliExternalTrackParam fProbeIni;				//! initial probe kinematics
+	AliExternalTrackParam* fKalmanOutward;	//! parameters of outward kalman
+	Bool_t  fUseKalmanOut;									//! use KalmanOut estimate for fakes
+	//Double_t              fProbeMass;			// probe mass
+	Double_t              fBz;							// bz
+	Bool_t								fTuneOnDataOrMC;	// used to tune some parameters on data or MC input; can only be used in second iteration
+	Bool_t                fSimMat;					// simulate material effects in probe preparation
+	Bool_t								fAllowDecay;			// necessary for standlone FT2 mode
+	Bool_t								fAllowAbsorbtion; // necessary for standlone FT2 mode
+	Int_t                 fCurrITSLr;				//! current ITS layer under tracking
+	Int_t                 fNClTPC;					//! N used TPC clusters
+	Int_t                 fNClITS;					//! N used ITS clusters
+	Int_t                 fNClITSFakes;			//! N used ITS Fake clusters
+  Int_t                 fITSPatternFake;	//! fakes pattern for ITS
+	Int_t                 fITSPattern;			//! pattern for ITS clusters
+	Double_t              fChi2TPC;					//! total chi2 in TPC
+	Double_t              fChi2ITS;					//! total chi2 in ITS
+	TBits                 fTPCMap;					//! tpc hit map
 	//
 	// hit info in the ITS
 	Double_t fSigYITS,fSigZITS;       // nominal ITS layer resolution
@@ -264,7 +276,10 @@ protected:
 	AliNDLocalRegression *fTPCft2Chi2;									// parameterization of the FT2 standardized chi2
 	AliNDLocalRegression *fItsTpcMatchingfMC;						// parameterization of the ITS+TPC matching efficiency in full MC
 	AliNDLocalRegression *fItsTpcMatchingft2;						// parameterization of the ITS+TPC matching efficiency in FT2
+	TGenPhaseSpace* fPionDecayGen;
 
+	TParticle *fParticle;
+	
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
 	Int_t fStreamLevel;
 	TF1 *fTpcClusterAcc;
