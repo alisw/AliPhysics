@@ -14,16 +14,18 @@ enum pairYCutSet { kPairDefault,
 
 enum eventCutSet { kOld = -1, 
 		   kEvtDefault,
-		   kNoPileUpCut,
-		   kPileUpMV,
-		   kPileUpSPD3,		      
 		   kDefaultVtx8,
-		   kDefaultVtx5,//5
+		   kDefaultVtx5,
 		   kMCEvt,
-		   kMCEvtpA2013,
 		   kMCEvtDefault,
+		   kpAEvtDefault,		
+		   kpANoPileUpCut,
+		   kpAPileUpMV,
+		   kpAPileUpSPD3,		      
+		   kMCEvtpA2013,
+		   kMCpAEvtDefault,
 		   kMCEvtNSD,
-		   kMCEvtNSDpA2013, //10
+		   kMCEvtNSDpA2013, 
 		   kMCEvtNSDdefault
 };
 
@@ -31,7 +33,7 @@ AliRsnMiniAnalysisTask * AddTaskMC
 (
  Bool_t      isPP = kFALSE,
  TString     outNameSuffix = "q2010",
- Int_t       evtCutSetID = 6,
+ Int_t       evtCutSetID = 0,
  Int_t       pairCutSetID = 0,
  Int_t       aodFilterBit = 5,
  TString                partname="kStar",
@@ -51,38 +53,20 @@ AliRsnMiniAnalysisTask * AddTaskMC
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kINT7;
-  Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
-  Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
+  UInt_t      triggerMask = AliVEvent::kMB;
+  Bool_t      rmFirstEvtChunk = kFALSE; //needed for pA 2013
+  Bool_t      rejectPileUp = kFALSE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
   Bool_t      useMVPileUpSelection = kFALSE; //
   Int_t       MinPlpContribMV = 5; //default value if used
-  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection
+  Bool_t      useVtxCut2013pA = kFALSE; //default use recommended 2013 pA vtx selection
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   Bool_t      selectDPMJETevtNSDpA = kFALSE; //cut to select in DPMJET true NSD events
   
   if (evtCutSetID==eventCutSet::kOld) {
     triggerMask = AliVEvent::kAnyINT;
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    useVtxCut2013pA = kFALSE;
   }
-  
-  if (evtCutSetID==eventCutSet::kNoPileUpCut) {
-    rmFirstEvtChunk = kTRUE;
-    rejectPileUp = kFALSE;
-  }
-  
-  if (evtCutSetID==eventCutSet::kPileUpMV) {
-    useMVPileUpSelection = kTRUE;
-    MinPlpContribSPD = 3;
-    //MinPlpContribMV = 5; //already set as default
-  }
-  
-  if (evtCutSetID==eventCutSet::kPileUpSPD3) {
-    MinPlpContribSPD = 3;
-  }
-  
+    
   if (evtCutSetID==eventCutSet::kDefaultVtx8){
     vtxZcut = 8.0; //cm
   } 
@@ -90,8 +74,8 @@ AliRsnMiniAnalysisTask * AddTaskMC
   if (evtCutSetID==eventCutSet::kDefaultVtx5){
     vtxZcut = 5.0; //cm
   }
-  
-  if (evtCutSetID==eventCutSet::kMCEvt) {
+
+ if (evtCutSetID==eventCutSet::kMCEvt) {
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
     useVtxCut2013pA = kFALSE;
@@ -99,45 +83,75 @@ AliRsnMiniAnalysisTask * AddTaskMC
     selectDPMJETevtNSDpA = kFALSE;
   }
 
-  if (evtCutSetID==eventCutSet::kMCEvtpA2013) {
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    useVtxCut2013pA = kTRUE;
-    vtxZcut = 1.0e3; //cm
-    selectDPMJETevtNSDpA = kFALSE;
-  }
+ if (evtCutSetID==eventCutSet::kMCEvtDefault) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   useVtxCut2013pA = kFALSE;
+   vtxZcut = 10.0; //cm
+   selectDPMJETevtNSDpA = kFALSE;
+ }
+ 
+ if (evtCutSetID>=eventCutSet::kpAEvtDefault) {
+   triggerMask = AliVEvent::kINT7;
+   rmFirstEvtChunk = kTRUE;
+   rejectPileUp = kTRUE;
+   useVtxCut2013pA = kTRUE;
+ }
+ 
+ if (evtCutSetID==eventCutSet::kpANoPileUpCut) {
+   rmFirstEvtChunk = kTRUE;
+   rejectPileUp = kFALSE;
+ }
   
-  if (evtCutSetID==eventCutSet::kMCEvtDefault) {
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    useVtxCut2013pA = kTRUE;
-    vtxZcut = 10.0; //cm
-    selectDPMJETevtNSDpA = kFALSE;
-  }
+ if (evtCutSetID==eventCutSet::kpAPileUpMV) {
+   useMVPileUpSelection = kTRUE;
+   MinPlpContribSPD = 3;
+   //MinPlpContribMV = 5; //already set as default
+ }
   
-  if (evtCutSetID>=eventCutSet::kMCEvtNSD) {
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    useVtxCut2013pA = kFALSE;
-    vtxZcut = 1.0e3; //cm
-    selectDPMJETevtNSDpA = kTRUE;
-  }
+ if (evtCutSetID==eventCutSet::kpAPileUpSPD3) {
+   MinPlpContribSPD = 3;
+ }
   
-  if (evtCutSetID==eventCutSet::kMCEvtNSDpA2013) {
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    vtxZcut = 1.0e3; //cm
-    selectDPMJETevtNSDpA = kTRUE;
-    useVtxCut2013pA = kTRUE;
-  }
+ if (evtCutSetID==eventCutSet::kMCEvtpA2013) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   useVtxCut2013pA = kTRUE;
+   vtxZcut = 1.0e3; //cm
+   selectDPMJETevtNSDpA = kFALSE;
+ }
   
-  if (evtCutSetID==eventCutSet::kMCEvtNSDdefault) {
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    selectDPMJETevtNSDpA = kTRUE;
-    useVtxCut2013pA = kTRUE;
-    vtxZcut = 10.0; //cm
-  }
+ if (evtCutSetID==eventCutSet::kMCpAEvtDefault) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   useVtxCut2013pA = kTRUE;
+   vtxZcut = 10.0; //cm
+   selectDPMJETevtNSDpA = kFALSE;
+ }
+ 
+ if (evtCutSetID>=eventCutSet::kMCEvtNSD) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   useVtxCut2013pA = kFALSE;
+   vtxZcut = 1.0e3; //cm
+   selectDPMJETevtNSDpA = kTRUE;
+ }
+  
+ if (evtCutSetID==eventCutSet::kMCEvtNSDpA2013) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   vtxZcut = 1.0e3; //cm
+   selectDPMJETevtNSDpA = kTRUE;
+   useVtxCut2013pA = kTRUE;
+ }
+  
+ if (evtCutSetID==eventCutSet::kMCEvtNSDdefault) {
+   rmFirstEvtChunk = kFALSE;
+   rejectPileUp = kFALSE;
+   selectDPMJETevtNSDpA = kTRUE;
+   useVtxCut2013pA = kTRUE;
+   vtxZcut = 10.0; //cm
+ }
   
   //-------------------------------------------
   //pair cuts

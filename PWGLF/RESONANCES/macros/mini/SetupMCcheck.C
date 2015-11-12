@@ -152,7 +152,7 @@ TString SetupMCcheck(Int_t       nmix,
 
   gROOT->LoadMacro("${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini/AddTaskMC.C");
   for (Int_t i=0;i<ERsnSpecie_t::kNrsn;i++){
-    AddTaskMC(isPP, Form("rsn%i",i), 6, 0, 5, partname[i].Data(), pdgCode[i], mass[i], masslow[i], massup[i], nbins[i], charge1[i], charge2[i], d1[i],d2[i], (i==0), "NoSIGN");
+    AddTaskMC(isPP, Form("rsn%i",i), 0, 0, 5, partname[i].Data(), pdgCode[i], mass[i], masslow[i], massup[i], nbins[i], charge1[i], charge2[i], d1[i],d2[i], (i==0), "NoSIGN");
   }  
   ::Info("AnalysisSetup", "Setup successful");
   return out;
