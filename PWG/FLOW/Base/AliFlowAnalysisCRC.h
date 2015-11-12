@@ -806,6 +806,9 @@ public:
  TH1D* GetCRCZDCCorrHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCorrHist[c][eg][h];};
  void SetCRCZDCCFunHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCRCZDCCFunHist[eg][h] = TH;};
  TH1D* GetCRCZDCCFunHist(Int_t const eg, Int_t const h) const {return this->fCRCZDCCFunHist[eg][h];};
+ void SetCRCZDCSpectra(TProfile* const TH, Int_t const eg, Int_t const h) {this->fCRCZDCSpectra[eg][h] = TH;};
+ TProfile* GetCRCZDCSpectra(Int_t const eg, Int_t const h) const {return this->fCRCZDCSpectra[eg][h];};
+
  // 12.c) Covariances:
  void SetCRCZDCCovHist(TH2D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCovHist[c][eg][h] = TH;};
  TH2D* GetCRCZDCCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCovHist[c][eg][h];};
@@ -875,6 +878,9 @@ public:
  TH1D* GetFlowSPZDCFinalPtIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCFinalPtIntHist[c][eg];};
  void SetFlowSPZDCSpectra(TProfile* const TH, Int_t const c) {this->fFlowSPZDCSpectra[c] = TH;};
  TProfile* GetFlowSPZDCSpectra(Int_t const c) const {return this->fFlowSPZDCSpectra[c];};
+ void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[c][eg] = TP;};
+ TProfile* GetFlowSPZDCIntPro(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[c][eg];};
+
  
  // Flow SP VZ
  void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
@@ -1383,6 +1389,7 @@ private:
  TH1D *fCRCZDCCorrHist[2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
  TH1D *fCRCZDCCFunHist[fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
  TH2D *fCRCZDCCovHist[2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! covariances final histo
+ TProfile *fCRCZDCSpectra[fCRCZDCnEtaBin][fCRCMaxnCen]; //! spectra
  
  // CRC Pt differential
  TList *fCRCPtList; //! list to hold CRC histograms
@@ -1461,9 +1468,9 @@ private:
  TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][6]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
- 
+ TProfile *fFlowSPZDCIntPro[fFlowNHarm][fFlowNPro]; //! reference flow
+ TH1D *fFlowSPZDCFinalPtIntHist[fFlowNHarm][fFlowNPro]; //!
  TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
- TH1D *fFlowSPZDCFinalPtIntHist[fCRCMaxnCen][fFlowNPro]; //!
  TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
  
  // Flow QC
