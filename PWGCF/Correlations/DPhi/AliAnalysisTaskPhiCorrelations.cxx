@@ -1812,7 +1812,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 
 	  // skip jets outside of acceptance and too low pt
 	  if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
-	      (jet->Pt() < fJetPtMin))
+	      (jet->Pt() < fJetPtMin) ||
+	      (jet->GetNumberOfConstituents() < fJetConstMin))
 	    continue;
 
 	  // exclude track if part of a jet
