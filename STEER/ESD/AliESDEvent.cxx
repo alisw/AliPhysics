@@ -684,8 +684,7 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const
 
   Int_t ntrkF=ev->GetNumberOfTracks();
   if (ev->GetESDIndicesStored()) { // new format: sparse friends
-    Int_t ntrk=GetNumberOfTracks();
-    for (Int_t i=0; i<ntrk; i++) {
+    for (Int_t i=0; i<ntrkF; i++) {
       AliESDfriendTrack *f=ev->GetTrack(i);
       int esdid = f->GetESDtrackID();
       AliESDtrack* esdt = GetTrack(esdid);
