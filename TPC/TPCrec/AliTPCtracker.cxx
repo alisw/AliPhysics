@@ -178,6 +178,8 @@ AliTPCtracker::AliTPCtracker()
   fClPointersPoolPtr(0),
   fClPointersPoolSize(0),
   fSeedsPool(0),
+  fHelixPool(0),
+  fETPPool(0),
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1)
@@ -425,6 +427,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCParam *par):
   fClPointersPoolPtr(0),
   fClPointersPoolSize(0),
   fSeedsPool(0),
+  fHelixPool(0),
+  fETPPool(0),
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1)
@@ -520,6 +524,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
   fClPointersPoolPtr(0),
   fClPointersPoolSize(0),
   fSeedsPool(0),
+  fHelixPool(0),
+  fETPPool(0),
   fFreeSeedsID(500),
   fNFreeSeeds(0),
   fLastSeedID(-1)
@@ -566,6 +572,10 @@ AliTPCtracker::~AliTPCtracker() {
     }
     delete fSeedsPool;
   }
+  if (fHelixPool) fHelixPool->Delete();
+  delete fHelixPool;
+  if (fETPPool) fETPPool->Delete();
+  delete fETPPool;
 }
 
 
@@ -5253,7 +5263,9 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
   //
   //
   Int_t nentries = array->GetEntriesFast();  
-  AliHelix helixes[nentries];
+  if (!fHelixPool) fHelixPool = new TClonesArray("AliHelix",nentries+50);
+  fHelixPool->Clear();
+  TClonesArray& helixes = *fHelixPool;
   Float_t  xm[nentries];
   Float_t  dz0[nentries];
   Float_t  dz1[nentries];
@@ -5268,7 +5280,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
     AliTPCseed* track = (AliTPCseed*)array->At(i);    
     if (!track) continue;
     track->SetCircular(0);
-    new (&helixes[i]) AliHelix(*track);
+    new (helixes[i]) AliHelix(*track);
     Int_t ncl=0;
     xm[i]=0;
     Float_t dz[2];
@@ -5290,9 +5302,10 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
   for (Int_t i0=0;i0<nentries;i0++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
     if (!track0) continue;    
-    Float_t xc0 = helixes[i0].GetHelix(6);
-    Float_t yc0 = helixes[i0].GetHelix(7);
-    Float_t r0  = helixes[i0].GetHelix(8);
+    AliHelix* hlxi0 = (AliHelix*)helixes[i0];
+    Float_t xc0 = hlxi0->GetHelix(6);
+    Float_t yc0 = hlxi0->GetHelix(7);
+    Float_t r0  = hlxi0->GetHelix(8);
     Float_t rc0 = TMath::Sqrt(xc0*xc0+yc0*yc0);
     Float_t fi0 = TMath::ATan2(yc0,xc0);
     
@@ -5303,9 +5316,10 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
       Int_t lab1=track1->GetLabel();
       if (TMath::Abs(lab0)!=TMath::Abs(lab1)) continue;
       //
-      Float_t xc1 = helixes[i1].GetHelix(6);
-      Float_t yc1 = helixes[i1].GetHelix(7);
-      Float_t r1  = helixes[i1].GetHelix(8);
+      AliHelix* hlxi1 = (AliHelix*)helixes[i1];
+      Float_t xc1 = hlxi1->GetHelix(6);
+      Float_t yc1 = hlxi1->GetHelix(7);
+      Float_t r1  = hlxi1->GetHelix(8);
       Float_t rc1 = TMath::Sqrt(xc1*xc1+yc1*yc1);
       Float_t fi1 = TMath::ATan2(yc1,xc1);
       //
@@ -5314,7 +5328,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
       //
       if (dfi>1.5*TMath::Pi())  dfi-=TMath::Pi();  // take care about edge effect 
       if (dfi<-1.5*TMath::Pi()) dfi+=TMath::Pi();  // 
-      if (TMath::Abs(dfi)>kMaxdPhi&&helixes[i0].GetHelix(4)*helixes[i1].GetHelix(4)<0){
+      if (TMath::Abs(dfi)>kMaxdPhi&&hlxi0->GetHelix(4)*hlxi1->GetHelix(4)<0){
 	//
 	// if short tracks with undefined sign 
 	fi1 =  -TMath::ATan2(yc1,-xc1);
@@ -5357,8 +5371,8 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
 	"lab1="<<lab1<<   
 	"Tr0.="<<track0<<       // seed0
 	"Tr1.="<<track1<<       // seed1
-	"h0.="<<&helixes[i0]<<
-	"h1.="<<&helixes[i1]<<
+	"h0.="<<hlxi0<<
+	"h1.="<<hlxi1<<
 	//
 	"sum="<<sum<<           //the sum of rows with cl in both
 	"sums="<<sums<<         //the sum of shared clusters
@@ -5389,6 +5403,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
 	}
     }
   }    
+  if (fHelixPool) fHelixPool->Clear();
   //  delete [] helixes; // RS moved to stack
   //  delete [] xm;
   //  delete [] dz0;
@@ -5422,7 +5437,9 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   Int_t lastpoint = kMaxRow;
   //
   Int_t nentries = array->GetEntriesFast();  
-  AliExternalTrackParam params[nentries];
+  if (!fETPPool) fETPPool = new TClonesArray("AliExternalTrackParam",nentries+50);
+  else fETPPool->Clear();
+  TClonesArray &params = *fETPPool;
   //
   //
   TStopwatch timer;
@@ -5446,9 +5463,10 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
     quality[i] = (points[2]-points[0])+pt->GetNumberOfClusters();
     //prefer high momenta tracks if overlaps
     quality[i] *= TMath::Sqrt(TMath::Abs(pt->Pt())+0.5);
-    params[i]=(*pt);
-    AliTracker::PropagateTrackParamOnlyToBxByBz(&(params[i]),xref,5.,kTRUE);
-    //    AliTracker::PropagateTrackToBxByBz(&(params[i]),xref,pt->GetMass(),1.,kTRUE); //RS What is the point of 2nd propagation
+    AliExternalTrackParam* parI = new (params[i]) AliExternalTrackParam(*pt);
+    // params[i]=(*pt);
+    AliTracker::PropagateTrackParamOnlyToBxByBz(parI,xref,5.,kTRUE);
+    //    AliTracker::PropagateTrackToBxByBz(parI,xref,pt->GetMass(),1.,kTRUE); //RS What is the point of 2nd propagation
   }
   TMath::Sort(nseed,quality,indexes);
   //
@@ -5459,7 +5477,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
     if (!(array->UncheckedAt(index0))) continue;
     AliTPCseed *s1 = (AliTPCseed*)array->UncheckedAt(index0);  
     if (!s1->IsActive()) continue;
-    AliExternalTrackParam &par0=params[index0];
+    AliExternalTrackParam &par0=*(AliExternalTrackParam*)params[index0];
     for (Int_t i1=i0+1; i1<nseed; i1++) {
       Int_t index1=indexes[i1];
       if (!(array->UncheckedAt(index1))) continue;
@@ -5467,7 +5485,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
       if (!s2->IsActive()) continue;
       if (s2->GetKinkIndexes()[0]!=0)
 	if (s2->GetKinkIndexes()[0] == -s1->GetKinkIndexes()[0]) continue;
-      AliExternalTrackParam &par1=params[index1];
+      AliExternalTrackParam &par1=*(AliExternalTrackParam*)params[index1];
       if (TMath::Abs(par0.GetParameter()[3]-par1.GetParameter()[3])>kCutP3) continue;
       if (TMath::Abs(par0.GetParameter()[1]-par1.GetParameter()[1])>kCutP1) continue;
       if (TMath::Abs(par0.GetParameter()[2]-par1.GetParameter()[2])>kCutP2) continue;
@@ -5563,6 +5581,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   //
   // 4. Delete temporary array
   //
+  if (fETPPool) fETPPool->Clear();
   // delete [] params; // RS moved to stack
   //  delete [] quality;
   //  delete [] indexes;
@@ -5620,13 +5639,16 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
   //  
   //
   //
-  Int_t nentries = array->GetEntriesFast();  
-  AliHelix helixes[nentries];
+  Int_t nentries = array->GetEntriesFast();
+  if (!fHelixPool) fHelixPool = new TClonesArray("AliHelix",nentries+100);
+  fHelixPool->Clear();
+  TClonesArray& helixes = *fHelixPool;
+
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed* track = (AliTPCseed*)array->At(i);    
     if (!track) continue;
     track->SetCircular(0);
-    new (&helixes[i]) AliHelix(*track);
+    new (helixes[i]) AliHelix(*track);
   }
   //
   //
@@ -5642,9 +5664,10 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
     if (!track0) continue;    
     if (TMath::Abs(track0->GetC())<1/kMaxC) continue;
-    Float_t xc0 = helixes[i0].GetHelix(6);
-    Float_t yc0 = helixes[i0].GetHelix(7);
-    Float_t r0  = helixes[i0].GetHelix(8);
+    AliHelix* hlxi0 = (AliHelix*)helixes[i0];
+    Float_t xc0 = hlxi0->GetHelix(6);
+    Float_t yc0 = hlxi0->GetHelix(7);
+    Float_t r0  = hlxi0->GetHelix(8);
     Float_t rc0 = TMath::Sqrt(xc0*xc0+yc0*yc0);
     Float_t fi0 = TMath::ATan2(yc0,xc0);
     
@@ -5652,9 +5675,10 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
       AliTPCseed * track1 = (AliTPCseed*)array->At(i1);
       if (!track1) continue;      
       if (TMath::Abs(track1->GetC())<1/kMaxC) continue;    
-      Float_t xc1 = helixes[i1].GetHelix(6);
-      Float_t yc1 = helixes[i1].GetHelix(7);
-      Float_t r1  = helixes[i1].GetHelix(8);
+      AliHelix* hlxi1 = (AliHelix*)helixes[i1];
+      Float_t xc1 = hlxi1->GetHelix(6);
+      Float_t yc1 = hlxi1->GetHelix(7);
+      Float_t r1  = hlxi1->GetHelix(8);
       Float_t rc1 = TMath::Sqrt(xc1*xc1+yc1*yc1);
       Float_t fi1 = TMath::ATan2(yc1,xc1);
       //
@@ -5685,31 +5709,31 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
       //
       //
       //
-      Int_t npoints = helixes[i0].GetRPHIintersections(helixes[i1], phase, radius,10);
+      Int_t npoints = hlxi0->GetRPHIintersections(*hlxi1, phase, radius,10);
       if (npoints==0) continue;
-      helixes[i0].GetClosestPhases(helixes[i1], phase);
+      hlxi0->GetClosestPhases(*hlxi1, phase);
       //
       Double_t xyz0[3];
       Double_t xyz1[3];
       Double_t hangles[3];
-      helixes[i0].Evaluate(phase[0][0],xyz0);
-      helixes[i1].Evaluate(phase[0][1],xyz1);
+      hlxi0->Evaluate(phase[0][0],xyz0);
+      hlxi1->Evaluate(phase[0][1],xyz1);
 
-      helixes[i0].GetAngle(phase[0][0],helixes[i1],phase[0][1],hangles);
+      hlxi0->GetAngle(phase[0][0],*hlxi1,phase[0][1],hangles);
       Double_t deltah[2],deltabest;
       if (TMath::Abs(hangles[2])<kMinAngle) continue;
 
       if (npoints>0){
 	Int_t ibest=0;
-	helixes[i0].ParabolicDCA(helixes[i1],phase[0][0],phase[0][1],radius[0],deltah[0],2);
+	hlxi0->ParabolicDCA(*hlxi1,phase[0][0],phase[0][1],radius[0],deltah[0],2);
 	if (npoints==2){
-	  helixes[i0].ParabolicDCA(helixes[i1],phase[1][0],phase[1][1],radius[1],deltah[1],2);
+	  hlxi0->ParabolicDCA(*hlxi1,phase[1][0],phase[1][1],radius[1],deltah[1],2);
 	  if (deltah[1]<deltah[0]) ibest=1;
 	}
 	deltabest  = TMath::Sqrt(deltah[ibest]);
-	helixes[i0].Evaluate(phase[ibest][0],xyz0);
-	helixes[i1].Evaluate(phase[ibest][1],xyz1);
-	helixes[i0].GetAngle(phase[ibest][0],helixes[i1],phase[ibest][1],hangles);
+	hlxi0->Evaluate(phase[ibest][0],xyz0);
+	hlxi1->Evaluate(phase[ibest][1],xyz1);
+	hlxi0->GetAngle(phase[ibest][0],*hlxi1,phase[ibest][1],hangles);
 	Double_t radiusbest = TMath::Sqrt(radius[ibest]);
 	//
 	if (deltabest>kMaxDist) continue;
@@ -5767,6 +5791,7 @@ void  AliTPCtracker::FindCurling(const TObjArray * array, AliESDEvent */*esd*/, 
       }
     }
   }
+  if (fHelixPool) fHelixPool->Clear();
   //  delete [] helixes; //RS moved to stack
   if (AliTPCReconstructor::StreamLevel()>1) {
     AliInfo("Time for curling tracks removal");
@@ -5786,7 +5811,6 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
 
   TObjArray kinks(10000);
   Int_t nentries = array->GetEntriesFast();
-  AliHelix helixes[nentries];
   Char_t   sign[nentries];
   UChar_t  nclusters[nentries];
   Float_t  alpha[nentries];
@@ -5798,6 +5822,10 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   Bool_t   circular[nentries];
   Float_t dca[nentries];
   AliKink  *kink         = new AliKink();
+  //
+  if (!fHelixPool) fHelixPool = new TClonesArray("AliHelix",nentries+100);
+  fHelixPool->Clear();
+  TClonesArray& helixes = *fHelixPool;
 
   //const AliESDVertex * primvertex = esd->GetVertex();
   //
@@ -5818,9 +5846,9 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     }
     nclusters[i]=track->GetNumberOfClusters();
     alpha[i] = track->GetAlpha();
-    new (&helixes[i]) AliHelix(*track);
+    AliHelix* hlxi = new (helixes[i]) AliHelix(*track);
     Double_t xyz[3];
-    helixes[i].Evaluate(0,xyz);
+    hlxi->Evaluate(0,xyz);
     sign[i] = (track->GetC()>0) ? -1:1;
     Double_t x,y,z;
     x=160;
@@ -5854,6 +5882,8 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     if (!track0) continue;    
     if (track0->GetNumberOfClusters()<40) continue;
     if (TMath::Abs(1./track0->GetC())>200) continue;
+    AliHelix* hlxi0 = (AliHelix*)helixes[i0];
+    //
     for (Int_t i1=i0+1;i1<nentries;i1++){
       AliTPCseed * track1 = (AliTPCseed*)array->At(i1);
       if (!track1) continue;
@@ -5873,13 +5903,14 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       if (mindcaz<5) continue;
       if (mindcar+mindcaz<20) continue;
       //
+      AliHelix* hlxi1 = (AliHelix*)helixes[i1];
       //
-      Float_t xc0 = helixes[i0].GetHelix(6);
-      Float_t yc0 = helixes[i0].GetHelix(7);
-      Float_t r0  = helixes[i0].GetHelix(8);
-      Float_t xc1 = helixes[i1].GetHelix(6);
-      Float_t yc1 = helixes[i1].GetHelix(7);
-      Float_t r1  = helixes[i1].GetHelix(8);
+      Float_t xc0 = hlxi0->GetHelix(6);
+      Float_t yc0 = hlxi0->GetHelix(7);
+      Float_t r0  = hlxi0->GetHelix(8);
+      Float_t xc1 = hlxi1->GetHelix(6);
+      Float_t yc1 = hlxi1->GetHelix(7);
+      Float_t r1  = hlxi1->GetHelix(8);
 	
       Float_t rmean = (r0+r1)*0.5;
       Float_t delta =TMath::Sqrt((xc1-xc0)*(xc1-xc0)+(yc1-yc0)*(yc1-yc0));
@@ -5887,30 +5918,30 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       if (delta>rmean*0.25) continue;
       if (TMath::Abs(r0-r1)/rmean>0.3) continue; 
       //
-      Int_t npoints = helixes[i0].GetRPHIintersections(helixes[i1], phase, radius,10);
+      Int_t npoints = hlxi0->GetRPHIintersections(*hlxi1, phase, radius,10);
       if (npoints==0) continue;
-      helixes[i0].GetClosestPhases(helixes[i1], phase);
+      hlxi0->GetClosestPhases(*hlxi1, phase);
       //
       Double_t xyz0[3];
       Double_t xyz1[3];
       Double_t hangles[3];
-      helixes[i0].Evaluate(phase[0][0],xyz0);
-      helixes[i1].Evaluate(phase[0][1],xyz1);
+      hlxi0->Evaluate(phase[0][0],xyz0);
+      hlxi1->Evaluate(phase[0][1],xyz1);
 
-      helixes[i0].GetAngle(phase[0][0],helixes[i1],phase[0][1],hangles);
+      hlxi0->GetAngle(phase[0][0],*hlxi1,phase[0][1],hangles);
       Double_t deltah[2],deltabest;
       if (hangles[2]<2.8) continue;
       if (npoints>0){
 	Int_t ibest=0;
-	helixes[i0].ParabolicDCA(helixes[i1],phase[0][0],phase[0][1],radius[0],deltah[0],2);
+	hlxi0->ParabolicDCA(*hlxi1,phase[0][0],phase[0][1],radius[0],deltah[0],2);
 	if (npoints==2){
-	  helixes[i0].ParabolicDCA(helixes[i1],phase[1][0],phase[1][1],radius[1],deltah[1],2);
+	  hlxi0->ParabolicDCA(*hlxi1,phase[1][0],phase[1][1],radius[1],deltah[1],2);
 	  if (deltah[1]<deltah[0]) ibest=1;
 	}
 	deltabest  = TMath::Sqrt(deltah[ibest]);
-	helixes[i0].Evaluate(phase[ibest][0],xyz0);
-	helixes[i1].Evaluate(phase[ibest][1],xyz1);
-	helixes[i0].GetAngle(phase[ibest][0],helixes[i1],phase[ibest][1],hangles);
+	hlxi0->Evaluate(phase[ibest][0],xyz0);
+	hlxi1->Evaluate(phase[ibest][1],xyz1);
+	hlxi0->GetAngle(phase[ibest][0],*hlxi1,phase[ibest][1],hangles);
 	Double_t radiusbest = TMath::Sqrt(radius[ibest]);
 	//
 	if (deltabest>6) continue;
@@ -5980,6 +6011,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
     Double_t cdist1=8.;
     Double_t cdist2=8.;
     Double_t cdist3=0.55; 
+    AliHelix* hlxi = (AliHelix*)helixes[i];
     for (Int_t j =i+1;j<nentries;j++){
       nall++;
       if (sign[j]*sign[i]<1) continue;
@@ -5990,7 +6022,8 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       if ( TMath::Abs(zm[i]-zm[j])>60.) continue;
       if ( TMath::Abs(fim[i]-fim[j])>0.6 && TMath::Abs(fim[i]-fim[j])<5.7 ) continue;
       //AliTPCseed * track1 = (AliTPCseed*)array->At(j);  Double_t phase[2][2],radius[2];    
-      Int_t npoints = helixes[i].GetRPHIintersections(helixes[j], phase, radius,20);
+      AliHelix* hlxj = (AliHelix*)helixes[j];
+      Int_t npoints = hlxi->GetRPHIintersections(*hlxj, phase, radius,20);
       if (npoints<1) continue;
       // cuts on radius      
       if (npoints==1){
@@ -6002,11 +6035,11 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       //      
       Double_t delta1=10000,delta2=10000;
       // cuts on the intersection radius
-      helixes[i].LinearDCA(helixes[j],phase[0][0],phase[0][1],radius[0],delta1);
+      hlxi->LinearDCA(*hlxj,phase[0][0],phase[0][1],radius[0],delta1);
       if (radius[0]<20&&delta1<1) continue; //intersection at vertex
       if (radius[0]<10&&delta1<3) continue; //intersection at vertex
       if (npoints==2){ 
-	helixes[i].LinearDCA(helixes[j],phase[1][0],phase[1][1],radius[1],delta2);
+	hlxi->LinearDCA(*hlxj,phase[1][0],phase[1][1],radius[1],delta2);
 	if (radius[1]<20&&delta2<1) continue;  //intersection at vertex
 	if (radius[1]<10&&delta2<3) continue;  //intersection at vertex	
       }
@@ -6014,13 +6047,13 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       Double_t distance1 = TMath::Min(delta1,delta2);
       if (distance1>cdist1) continue;  // cut on DCA linear approximation
       //
-      npoints = helixes[i].GetRPHIintersections(helixes[j], phase, radius,20);
-      helixes[i].ParabolicDCA(helixes[j],phase[0][0],phase[0][1],radius[0],delta1);
+      npoints = hlxi->GetRPHIintersections(*hlxj, phase, radius,20);
+      hlxi->ParabolicDCA(*hlxj,phase[0][0],phase[0][1],radius[0],delta1);
       if (radius[0]<20&&delta1<1) continue; //intersection at vertex
       if (radius[0]<10&&delta1<3) continue; //intersection at vertex
       //
       if (npoints==2){ 
-	helixes[i].ParabolicDCA(helixes[j],phase[1][0],phase[1][1],radius[1],delta2);	
+	hlxi->ParabolicDCA(*hlxj,phase[1][0],phase[1][1],radius[1],delta2);	
 	if (radius[1]<20&&delta2<1) continue;  //intersection at vertex
 	if (radius[1]<10&&delta2<3) continue;  //intersection at vertex	
       }            
@@ -6525,6 +6558,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   //  delete[] nclusters;
   //  delete[] sign;
   // delete[] helixes;
+  if (fHelixPool) fHelixPool->Clear();
   kinks.Delete();
   //delete kinks;
 

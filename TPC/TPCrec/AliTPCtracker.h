@@ -269,6 +269,8 @@ private:
    AliTPCclusterMI** fClPointersPoolPtr; //! pointer on the current free slot in the pool
    Int_t fClPointersPoolSize; // number of seeds holding the cluster arrays
    TClonesArray* fSeedsPool;            //! pool of seeds
+   TClonesArray* fHelixPool;            //! pool of helises
+   TClonesArray* fETPPool;              //! pool of helises
    TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
    Int_t fNFreeSeeds;                   //! number of seeds freed in the pool
    Int_t fLastSeedID;                   //! id of the pool seed on which is returned by the NextFreeSeed method
