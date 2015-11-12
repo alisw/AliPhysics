@@ -122,18 +122,18 @@ int AliHLTTriggerCTPRE::DoInit(int argc, const char** argv)
     return -ENOMEM;
   }
 
-  // get path from triggername, use default object otherwise
-  TString cdbPath;
-  if (!fName.IsNull()) {
-    cdbPath="HLT/ConfigHLT/";
-    cdbPath+=fName;
-  } else {
-    cdbPath=fgkDefaultOCDBEntry;
-  }
+  //// get path from triggername, use default object otherwise
+  //TString cdbPath;
+  //if (!fName.IsNull()) {
+  //  cdbPath="HLT/ConfigHLT/";
+  //  cdbPath+=fName;
+  //} else {
+  //  cdbPath=fgkDefaultOCDBEntry;
+  //}
 
-  // -- Check if CDB object is AliHLTESDTrackCuts or TObjString 
-  //    and configure from it. Replace "-" by "_._" if needed in the cdbPath
-  retCode = ConfigureFromCDBObject(cdbPath);
+  //// -- Check if CDB object is AliHLTESDTrackCuts or TObjString 
+  ////    and configure from it. Replace "-" by "_._" if needed in the cdbPath
+  //retCode = ConfigureFromCDBObject(cdbPath);
 
   // -- Configure from the command line parameters if specified
   if (retCode>=0 && argc>0)
