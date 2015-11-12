@@ -2,7 +2,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
                                                               const char *jetcontname   = "Jets",
                                                               const char *mctrkcontname = "MCParticles",
                                                               const char *mcjetcontname = "MCJets",
-                                                              Double_t jetradius = 0.2,
+                                                              Double_t jetRadius = 0.2,
                                                               const char *type  = "TPC",
                                                               TString fileout   = "standard",
                                                               Bool_t corrMode   =  kFALSE,
@@ -13,8 +13,8 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
                                                               Bool_t useWeight  =  kFALSE,
                                                               const char *patt  =  "",
                                                               Int_t debug       = 1,
-                                                              Double_t taggingradius = 0.4,
-                                                              TString cutfile = "",
+                                                              Double_t tagRadius = 0.4,
+                                                              TString cutflname = "",
                                                               Float_t minC = 0., Float_t maxC = 100.,
                                                               const char *taskname = "HFjetsContainer"
                                                               )
@@ -43,7 +43,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
     AliParticleContainer *mctrackCont  = hfTask->AddParticleContainer(mctrkcontname);
     
     TString strType(type);
-    AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetradius);
+    AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetRadius);
   }
 
   // Set data or corrections mode
