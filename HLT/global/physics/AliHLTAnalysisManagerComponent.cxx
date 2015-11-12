@@ -60,6 +60,12 @@
 #include "TROOT.h"
 #include "TTreeStream.h"
 
+#include "TGeoManager.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliHLTLogging.h"
+
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -171,6 +177,28 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   // see header file for class documentation
   HLTInfo("----> AliHLTAnalysisManagerComponent::DoInit");
 
+  if (!gGeoManager)
+{
+   AliCDBPath path("GRP","Geometry","Data");
+   if(path.GetPath())
+    {
+      //      HLTInfo("configure from entry %s", path.GetPath());
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+      if (pEntry) 
+	{
+	  gGeoManager = (TGeoManager*) pEntry->GetObject();
+	  
+	  if(!gGeoManager)
+	    {
+	       HLTFatal("can not get gGeoManager from OCDB");
+	    }
+	}
+      else
+	{
+	    HLTFatal("can not fetch object \"%s\" from OCDB", path.GetPath().Data());
+	}
+    }
+}
   //process arguments
   ProcessOptionString(GetComponentArgs());
 
@@ -188,7 +216,7 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 
   if (fAddTaskMacro.Length()>0) 
   {
-    HLTInfo("Intializing task: %s\n",fAddTaskMacro.Data());
+    HLTInfo("Executing the macro: %s\n",fAddTaskMacro.Data());
     gROOT->Macro(fAddTaskMacro);
   }
 
@@ -473,7 +501,7 @@ AliHLTAnalysisManagerComponent::stringMap* AliHLTAnalysisManagerComponent::Token
 
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    Printf("%s : %s", i->first.data(), i->second.data());
+    HLTInfo("%s : %s", i->first.data(), i->second.data());
   }
   return options;
 }
