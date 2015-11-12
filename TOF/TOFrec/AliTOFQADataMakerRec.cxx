@@ -113,9 +113,9 @@ Modified by fbellini on 14/06/2010
 
 ClassImp(AliTOFQADataMakerRec)
 
-Int_t AliTOFQADataMakerRec::fgNbinsMultiplicity=200; //number of bins in multiplicity plot
+Int_t AliTOFQADataMakerRec::fgNbinsMultiplicity=2000; //number of bins in multiplicity plot
 Int_t AliTOFQADataMakerRec::fgRangeMinMultiplicity=0;//min range in multiplicity plot
-Int_t AliTOFQADataMakerRec::fgRangeMaxMultiplicity=200;//max range in multiplicity plot
+Int_t AliTOFQADataMakerRec::fgRangeMaxMultiplicity=2000;//max range in multiplicity plot
 Int_t AliTOFQADataMakerRec::fgNbinsTime=250;//number of bins in time plot
 const Float_t AliTOFQADataMakerRec::fgkNbinsWidthTime=2.44;//width of bins in time plot
 Float_t AliTOFQADataMakerRec::fgRangeMinTime=0.0;//range min in time plot
@@ -350,13 +350,18 @@ void AliTOFQADataMakerRec::InitRaws()
   TH2F * h24 = new TH2F("hTOFchannelEfficiencyMap","TOF channels (HWok && efficient && !noisy && !problematic);sector;strip",  72, 0., 18., 91, 0., 91.);
   TH2F * h25 = new TH2F("hTOFhitsCTTM","Map of hit pads according to CTTM numbering;LTM index;bit index",  72, 0., 72., 23, 0., 23.);
   TH2F * h26 = new TH2F("hTOFmacropadCTTM","Map of hit macropads according to CTTM numbering;LTM index; bit index",  72, 0., 72., 23, 0., 23.);
+  h26->SetOption("colz");
   TH2F * h27 = new TH2F("hTOFmacropadDeltaPhiTime","#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX",  18, 0., 180., 20, 0., 20.0);
+  h27->SetOption("colz");
   TH2I * h28 = new TH2I("hBXVsCttmBit","BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24); 
+  h28->SetOption("colz");
   TH2F * h29 = new TH2F("hTimeVsCttmBit","TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime); 
+  h29->SetOption("colz");
   TH2F * h30 = new TH2F("hTOFRawHitMap24","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
   h30->SetOption("colz");
   TH2I * h31 =  new TH2I("hHitMultiVsDDL","TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72.,fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  TH1I * h32 =  new TH1I("hNfiredMacropad","Number of fired TOF macropads per event; number of fired macropads; Events ", 1584, 0, 1584);
+  h31->SetOption("colz");
+  TH1I * h32 =  new TH1I("hNfiredMacropad","Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50);
 
 
   h25->GetYaxis()->SetTickLength(-0.02);
@@ -1498,11 +1503,8 @@ void AliTOFQADataMakerRec::SetDefaultMultiHistogramRange()
   //
   // set default histogram ranges (tuned on 2011 pp collisions)
   // 
-  SetMultiplicityHistoRange (0, 200);
-  SetNbinsMultiplicityHisto(200);
-  //AliInfo("Setting Multiplicity histogram ranges to default values.");
-  //AliInfo(Form("multMin = %i - multMax = %i - nMultBins = %i",
-  //	       fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity));
+  SetMultiplicityHistoRange (0, AliTOFQADataMakerRec::fgRangeMaxMultiplicity);
+  SetNbinsMultiplicityHisto(AliTOFQADataMakerRec::fgNbinsMultiplicity);
   return;
 }
 
@@ -1514,10 +1516,6 @@ void AliTOFQADataMakerRec::SetDefaultTimeHistogramRange()
   // 
   SetNbinsTimeHisto(250);
   SetTimeHistoRange (0.0,610.);   
-  
-  // AliInfo("Setting Time histogram ranges to default values:");
-  // AliInfo(Form("timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i",
-  //	       fgRangeMinTime, fgRangeMaxTime,fgNbinsTime));
   return;
 }
 
