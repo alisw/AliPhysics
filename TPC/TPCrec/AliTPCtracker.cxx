@@ -213,7 +213,10 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->SetSector(sec);
   //  Int_t index = i&0xFFFF;
   int row = track->GetRow();
-  if (sec>=fkParam->GetNInnerSector()) track->SetRow(row+fkParam->GetNRowLow()); 
+  if (sec>=fkParam->GetNInnerSector()) {
+    row += fkParam->GetNRowLow();
+    track->SetRow(row);
+  }
   track->SetClusterIndex2(row, i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;
@@ -1454,7 +1457,7 @@ Int_t  AliTPCtracker::LoadClusters()
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
   //if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
 
-
+  /*
   static int maxClus[18][2][kMaxRow]={0};
   int maxAcc=0,nclEv=0, capacity=0;
   for (int isec=0;isec<18;isec++) {
@@ -1469,7 +1472,7 @@ Int_t  AliTPCtracker::LoadClusters()
     }
   }
   printf("RS:AccumulatedSpace: %d for %d | pointers: %d\n",maxAcc,nclEv,capacity);
-
+  */
   return 0;
 }
 
