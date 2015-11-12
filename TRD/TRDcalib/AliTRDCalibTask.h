@@ -136,7 +136,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   TH1F        *fNbTRDTrackOffline;               //! nb ESD tracks with TRD clusters
   TH1F        *fNbTRDTrackStandalone;            //! nb ESD tracks with TRD clusters
   TH2F        *fNbTPCTRDtrack;                   //! nb TPC and TRD tracks when problems
-  TH2F        *fNbGoodTracks;                    //! nb of good tracks
+  TH2F        *fNbGoodTracks;                    //! nb of good tracks versus centrality
+  TH1F        *fNbGoodTracks1D;                  //! nb of good tracks
    
   TH1F        *fNbTimeBin;                       //! nb Time Bin
   TH1F        *fNbTimeBinOffline;                //! nb Time Bin offline
@@ -229,7 +230,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 7); 
+  ClassDef(AliTRDCalibTask, 8); 
 };
 
 #endif
