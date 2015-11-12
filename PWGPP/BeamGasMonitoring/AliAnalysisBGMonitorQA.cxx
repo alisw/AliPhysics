@@ -98,7 +98,7 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
 void AliAnalysisBGMonitorQA::CreateOutputObjects()
 {
     // Called once
-    
+    if(fUseTree==kTRUE){
     fTreeTrack = new TTree("TreeTrack","Track Properties");
     
     fTreeTrack->Branch("ntr",&ntr,"ntr/s"); // number of trigger classes
@@ -151,7 +151,8 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
     fTreeTrack->Branch("BGFlagC",&BGFlagC,"BGFlagC[nbunch]/I"); // V0C BG flag for PF protection
     fTreeTrack->Branch("BBFlagA",&BBFlagA,"BBFlagA[nbunch]/I"); // V0A BG flag for PF protection
     fTreeTrack->Branch("BBFlagC",&BBFlagC,"BBFlagC[nbunch]/I"); // V0C BG flag for PF protection
-    if(fUseTree==kTRUE)PostData(2, fTreeTrack);
+    PostData(3, fTreeTrack);
+    }
     
     if(fList != NULL){
         delete fList;
@@ -172,7 +173,6 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
     
     
    
-    
     
     TH1F *hNumEffPurityBC[3][3][3];
     TH1F *hDenomEffBC[3][3][3];
@@ -264,7 +264,7 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
         for(int j=0; j<3; j++){
             for(int k=0; k<3; k++){
                 Int_t check000 = i*100+j*10+k;
-                for ( int l=0; l<8;l++){
+                for ( int l=0; l<7;l++){
                     if(check000==bunchinputarray[l]){
 
         hNumEffPurityBC[i][j][k] = new TH1F(Form("hNumEffPurityBC%d_V0%d_Flag%d",i,j,k),"; #V0flags in PF", 35, 0, 35);
@@ -727,7 +727,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<8;l++){
+                        for ( int l=0; l<7;l++){
                         if(check000==bunchinputarray[l]){
                         if(SelGoodEvent[i][j][k]) {
                             ((TH1F*)fList->FindObject(Form("hDenomPurityBC%d_V0%d_Flag%d",i,j,k)))->Fill(ii-1);
@@ -802,7 +802,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<8;l++){
+                        for ( int l=0; l<7;l++){
                             if(check000==bunchinputarray[l]){
                         
                         //cout<< "AD i  = " <<i<<", AD j   = "<<j<< ",   AD k  = " <<k<<endl;
@@ -894,7 +894,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<8;l++){
+                        for ( int l=0; l<7;l++){
                             if(check000==bunchinputarray[l]){
                                 if(SelGoodEvent[i][j][k]) {
                                     ((TH1F*)fList2->FindObject(Form("hDenomPurityBC_HM%d_V0%d_Flag%d",i,j,k)))->Fill(ii-1);
@@ -969,7 +969,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<8;l++){
+                        for ( int l=0; l<7;l++){
                             if(check000==bunchinputarray[l]){
                                 
                                 //cout<< "AD i  = " <<i<<", AD j   = "<<j<< ",   AD k  = " <<k<<endl;
