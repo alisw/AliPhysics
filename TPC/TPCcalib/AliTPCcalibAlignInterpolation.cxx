@@ -364,14 +364,14 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   TVectorF vecNClTPC(72);
   TVectorF vecNClTPCused(72);
   for (Int_t isec=0; isec<72;isec++){
-    vecNClTPC=esdFriend->GetNclustersTPC(isec);
-    vecNClTPCused=esdFriend->GetNclustersTPCused(isec);
+    vecNClTPC[isec]=esdFriend->GetNclustersTPC(isec);
+    vecNClTPCused[isec]=esdFriend->GetNclustersTPCused(isec);
   }
   Long64_t gid = esdEvent->GetHeader()->GetEventIdAsLong(); 
   Int_t timeStamp= esdEvent->GetTimeStamp();
   (*fStreamer)<<"eventInfo"<< // store event info - used to calculate per sector currents
     "gid="<<gid<<
-    "timeStamp"<<timeStamp<<
+    "timeStamp="<<timeStamp<<
     "nPrimTrack="<<nPrimTracks<<
     "nPrimTrackSPD="<<nPrimTracksSPD<<
     "nTracks="<<nTracks<<
