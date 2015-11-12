@@ -42,6 +42,7 @@ class AliGenEposReader : public AliGenReader
   virtual Int_t NextEvent();
   virtual TParticle* NextParticle();
   virtual void RewindEvent();
+  virtual void ChangeFile(char* fNewFileName);
   AliGenEposReader & operator=(const AliGenEposReader &rhs);
 
  protected:
@@ -51,6 +52,7 @@ class AliGenEposReader : public AliGenReader
   Int_t fCurrentParticle;
   TTree *fTreeNtuple;
   TTree *fTreeHeader;
+  TFile *fFile;
   AliGenEventHeader* fGenEventHeader;   // AliGenEventHeader
   std::multimap<Int_t,Int_t> fMothersMap;
 
@@ -96,6 +98,6 @@ class AliGenEposReader : public AliGenReader
  private:
   Int_t EposToPdg(Int_t code);
   void Copy(TObject&) const;
-  ClassDef(AliGenEposReader,1)
+  ClassDef(AliGenEposReader,2)
 };
 #endif

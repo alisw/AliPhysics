@@ -41,6 +41,7 @@ AliGenEposReader::AliGenEposReader():
   fNparticle(0),
   fTreeNtuple(0),
   fTreeHeader(0),
+  fFile(0),
   fCurrentEvent(0),
   fCurrentParticle(0),
   fGenEventHeader(0),
@@ -64,6 +65,7 @@ AliGenEposReader::AliGenEposReader(const AliGenEposReader &reader):
   fNparticle(0),
   fTreeNtuple(0),
   fTreeHeader(0),
+  fFile(0),
   fCurrentEvent(0),
   fCurrentParticle(0),
   fGenEventHeader(0),
@@ -81,16 +83,15 @@ AliGenEposReader::AliGenEposReader(const AliGenEposReader &reader):
   reader.Copy(*this);
 }
     
-AliGenEposReader::~AliGenEposReader(){ delete fTreeNtuple; }
+AliGenEposReader::~AliGenEposReader(){ delete fTreeNtuple; delete fFile;}
 
 void AliGenEposReader::Init()
 {
   //reset file and open a new root file
-  TFile *file=0;
-  if (!file) {
-    file = new TFile(fFileName);
+  if (!fFile) {
+    fFile = new TFile(fFileName);
     AliInfo(Form("File %s opened", fFileName));
-    file->cd();
+    fFile->cd();
   }
   else {
     AliError(Form("Couldn't open input file: %s", fFileName));
@@ -151,7 +152,7 @@ Int_t  AliGenEposReader::NextEvent()
   Int_t nentries = (Int_t) fTreeNtuple->GetEntries();
   if(fCurrentEvent < nentries){
 	fTreeNtuple->GetEvent(fCurrentEvent);
-        if (np>(Int_t)zus.size()) Init();
+        if (np>(Int_t)zus.size()) AliFatal("Current event has more particles than expected. Something went wrong!");
         fGenEventHeader = new AliGenEpos3EventHeader();
         ((AliGenEpos3EventHeader*)fGenEventHeader)->SetIversn(fIversn);
         ((AliGenEpos3EventHeader*)fGenEventHeader)->SetLaproj(fLaproj);
@@ -208,6 +209,17 @@ Int_t AliGenEposReader::EposToPdg(Int_t code)
 void  AliGenEposReader::RewindEvent()
 {
   fCurrentParticle = 0; 
+}
+
+void  AliGenEposReader::ChangeFile(char* fNewFileName)
+{ 
+  if(fFile && fFile->IsOpen()) fFile->Close();
+  AliInfo(Form("File %s closed", fFileName));
+  fFileName = fNewFileName;
+  fFile=0;
+  fCurrentEvent=0;
+  Init();
+  RewindEvent();
 }
 
 AliGenEposReader&  AliGenEposReader::operator=(const  AliGenEposReader& rhs)
