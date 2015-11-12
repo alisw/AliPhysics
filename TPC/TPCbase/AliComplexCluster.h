@@ -99,7 +99,7 @@ class AliTPCTrackerPoint  {
   UChar_t   fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
   UChar_t   fErrZ;       ///< z error estimate - in  mm - 50 mum precision
   UChar_t   fErrY;       ///< y error estimate - in  mm - 50 mum precision
-  //  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
+  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
 
   /// \cond CLASSIMP
   //  ClassDef(AliTPCTrackerPoint, 2);
