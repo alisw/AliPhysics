@@ -635,7 +635,7 @@ Bool_t AliRDHFJetsCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex
   esdTrack.RelateToVertex(primary,0.,3.); 
 
   if(!cuts->IsSelected(&esdTrack)) {
-    printf("IsDaughterSelected Track rejected by IsSelected\n");
+    AliDebug(AliLog::kInfo, "IsDaughterSelected Track rejected by IsSelected");
     retval = kFALSE;
   }
 
