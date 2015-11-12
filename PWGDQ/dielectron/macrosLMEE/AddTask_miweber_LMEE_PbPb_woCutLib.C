@@ -75,12 +75,12 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   
-  // AliAnalysisDataContainer *cOutputHist2 =
-  //   mgr->CreateContainer(Form("%s_CF",directoryBaseName.Data()),
-  //                        TList::Class(),
-  //                        AliAnalysisManager::kOutputContainer,
-  //                        outputFileName.Data());
-  // //                         "miweber_LMEE_PbPb_CF.root");
+  AliAnalysisDataContainer *cOutputHist2 =
+    mgr->CreateContainer(Form("%s_CF",directoryBaseName.Data()),
+                         TList::Class(),
+                         AliAnalysisManager::kOutputContainer,
+                         outputFileName.Data());
+  //                         "miweber_LMEE_PbPb_CF.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer(Form("%s_EventStat",directoryBaseName.Data()),
@@ -92,7 +92,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
-  //mgr->ConnectOutput(task, 2, cOutputHist2);
+  mgr->ConnectOutput(task, 2, cOutputHist2);
   mgr->ConnectOutput(task, 3, cOutputHist3);
   
   return task;
