@@ -21,6 +21,12 @@ class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeo
   Float_t TotalEnergy() const {return fTotalEnergy;} 
   Int_t   Trials() const {return fTrials;}
   Int_t   GetTrueNPart() const {return fNPart;}
+  Bool_t  GetSpectatorsInTheStack() const {return fAreSpectatorsInTheStack;}
+  Bool_t  GetFragmentationFromData() const {return fIsDataFragmentationSet;}
+  Int_t   GetFreeProjSpecn() const {return  fFreeProjSpecn;}
+  Int_t   GetFreeProjSpecp() const {return  fFreeProjSpecp;}
+  Int_t   GetFreeTargSpecn() const {return  fFreeTargSpecn;}
+  Int_t   GetFreeTargSpecp() const {return  fFreeTargSpecp;}
  	  
   // Setters
   void SetTotalEnergy(Float_t energy)  {fTotalEnergy=energy;}
@@ -32,6 +38,10 @@ class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeo
       {jet1 = fJet1; jet2 = fJet2; jet3 = fJetFsr1; jet4 = fJetFsr2;}
   void SetTrials(Int_t trials) {fTrials = trials;}
   void SetTrueNPart(Int_t npart) {fNPart = npart;} 
+  void SetSpectatorsInTheStack(Bool_t what) {fAreSpectatorsInTheStack=what;}
+  void SetDataFromFragmentation(Bool_t what) {fIsDataFragmentationSet=what;}
+  void SetFreeSpectators(Int_t specnproj, Int_t specpproj, Int_t specntarg, Int_t specptarg) 
+       {fFreeProjSpecn=specnproj; fFreeProjSpecp=specpproj; fFreeTargSpecn=specntarg; fFreeTargSpecp=specptarg;}
  
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
@@ -41,8 +51,15 @@ protected:
   TLorentzVector  fJet2;             // 4-Momentum-Vector of second  triggered jet     
   TLorentzVector  fJetFsr1;          // 4-Momentum-Vector of first   triggered jet  
   TLorentzVector  fJetFsr2;          // 4-Momentum-Vector of second  triggered jet     
+  // Added by Chiara O. for spectator generation
+  Bool_t  fAreSpectatorsInTheStack;  // check whether spectators are in the stack
+  Bool_t  fIsDataFragmentationSet;   // check if the data driven correction is switched on
+  Int_t       fFreeProjSpecn;        // Num. of spectator neutrons from projectile nucleus
+  Int_t       fFreeProjSpecp;        // Num. of spectator protons from projectile nucleus
+  Int_t       fFreeTargSpecn;	     // Num. of spectator neutrons from target nucleus
+  Int_t       fFreeTargSpecp;	     // Num. of spectator protons from target nucleus
   
-  ClassDef(AliGenHijingEventHeader,5) // Event header for hijing event
+  ClassDef(AliGenHijingEventHeader,6) // Event header for hijing event
 };
 
 #endif

@@ -17,6 +17,7 @@ class THijing;
 class TParticle;
 class TClonesArray;
 class TGraph;
+class TF1;
 
 
 class AliGenHijing : public AliGenMC
@@ -61,7 +62,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetRandomPz(Bool_t flag = 0)      {fRandomPz   = flag;}
     virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
     virtual void    SetSigmaNN(Float_t val)           {fSigmaNN    = val;}    
-    virtual void    SetNoElas(Bool_t b)               {fNoElas     = b; }	    
+    virtual void    SetNoElas(Bool_t b)               {fNoElas     = b; }	  
+    virtual void    SetDataDrivenSpectators()	      {fDataFragmentation = kTRUE;}
 
 // Getters
     virtual TString GetReferenceFrame()  const {return fFrame;}
@@ -82,6 +84,11 @@ class AliGenHijing : public AliGenMC
 	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180./TMath::Pi();}
      THijing       *GetTHijing()                         const {return fHijing;}
     virtual Float_t GetSigmaNN()                         const {return fSigmaNN;}
+    virtual Bool_t  HasDataDrivenSpectators()	         const {return fDataFragmentation;}
+    virtual Int_t   GetFreeProjSpecn()	         const {return  fFreeProjSpecn;}
+    virtual Int_t   GetFreeProjSpecp()	         const {return  fFreeProjSpecp;}
+    virtual Int_t   GetFreeTargSpecn()	         const {return  fFreeTargSpecn;}
+    virtual Int_t   GetFreeTargSpecp()	         const {return  fFreeTargSpecp;}
 
 // Physics Routines
     virtual Bool_t  ProvidesCollisionGeometry() const {return kTRUE;}
@@ -133,6 +140,14 @@ class AliGenHijing : public AliGenMC
     AliGenHijingEventHeader     fHeader; // MC Header
     Float_t     fSigmaNN;        // If not -1 set sigmaNN (HIPR1) 
     Bool_t      fNoElas;         // If true switch off elastic scattering
+    // Added by Chiara to consider fragments production from data
+    Bool_t      fDataFragmentation; // Spectators w. data driven correction
+    Int_t 	fFreeProjSpecn;// Num. of spectator neutrons from projectile nucleus
+    Int_t 	fFreeProjSpecp;// Num. of spectator protons from projectile nucleus
+    Int_t 	fFreeTargSpecn;    // Num. of spectator neutrons from target nucleus
+    Int_t 	fFreeTargSpecp;    // Num. of spectator protons from target nucleus
+    TF1		*fFragmNeutrons;   // data driven correction for nuclear fragment formation
+    TF1		*fFragmProtons;   // data driven correction for nuclear fragment formation
 
  private:
     AliGenHijing(const AliGenHijing &Hijing);
@@ -144,7 +159,10 @@ class AliGenHijing : public AliGenMC
     Bool_t DaughtersSelection(const TParticle* iparticle);
     // check if stable
     Bool_t Stable(const TParticle*  particle) const;
+    // calculate no. of free spectators from data driven parametrization
+    Int_t FreeSpectatorsn(Float_t b, Int_t nSpecn);
+    Int_t FreeSpectatorsp(Float_t b, Int_t nSpecp);
     
-    ClassDef(AliGenHijing, 9) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 10) // AliGenerator interface to Hijing
 };
 #endif

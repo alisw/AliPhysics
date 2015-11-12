@@ -25,7 +25,9 @@ AliGenHijingEventHeader::AliGenHijingEventHeader():
     fJet1(0., 0., 0., 0.),
     fJet2(0., 0., 0., 0.),
     fJetFsr1(0., 0., 0., 0.),
-    fJetFsr2(0., 0., 0., 0.)
+    fJetFsr2(0., 0., 0., 0.),
+    fAreSpectatorsInTheStack(kFALSE),
+    fIsDataFragmentationSet(kFALSE)
 {
     // Constructor
 }
@@ -38,7 +40,10 @@ AliGenHijingEventHeader::AliGenHijingEventHeader(const char* name):
     fJet1(0., 0., 0., 0.),
     fJet2(0., 0., 0., 0.),
     fJetFsr1(0., 0., 0., 0.),
-    fJetFsr2(0., 0., 0., 0.)
+    fJetFsr2(0., 0., 0., 0.),
+    fAreSpectatorsInTheStack(kFALSE),
+    fIsDataFragmentationSet(kFALSE)
+
 {
     // Copy Constructor
 }
