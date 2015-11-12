@@ -358,6 +358,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   Int_t nPrimTracks= (esdEvent->GetPrimaryVertex()!=NULL)? esdEvent->GetPrimaryVertex()->GetNContributors():0;
   Int_t nPrimTracksSPD= (esdEvent->GetPrimaryVertexSPD()!=NULL)? esdEvent->GetPrimaryVertexSPD()->GetNContributors():0;
   Int_t nTracks = esdEvent->GetNumberOfTracks();  // Get number of tracks in ESD
+  Int_t nSPD=  esdEvent->GetMultiplicity()->GetNumberOfITSClusters(0,1);
+  Int_t nSDD=  esdEvent->GetMultiplicity()->GetNumberOfITSClusters(2,3);
+  Int_t nSSD=  esdEvent->GetMultiplicity()->GetNumberOfITSClusters(4,5);
   if (nTracks==0) return;
   if (!fStreamer) fStreamer = new TTreeSRedirector("ResidualHistos.root","recreate");
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
@@ -372,6 +375,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   (*fStreamer)<<"eventInfo"<< // store event info - used to calculate per sector currents
     "gid="<<gid<<
     "timeStamp="<<timeStamp<<
+    "nSPD="<<nSPD<<
+    "nSDD="<<nSDD<<
+    "nSSD="<<nSSD<<
     "nPrimTrack="<<nPrimTracks<<
     "nPrimTrackSPD="<<nPrimTracksSPD<<
     "nTracks="<<nTracks<<
