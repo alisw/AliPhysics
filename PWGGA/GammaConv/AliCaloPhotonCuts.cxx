@@ -1823,11 +1823,11 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 //    Double_t vertex[3] = {0,0,0};
 //    event->GetPrimaryVertex()->GetXYZ(vertex);
 
-    if(!cluster->IsEMCAL() && !cluster->IsPHOS()){AliError("Cluster is neither EMCAL nor PHOS, returning");return kFALSE;}
+  if(!cluster->IsEMCAL() && !cluster->IsPHOS()){AliError("Cluster is neither EMCAL nor PHOS, returning");return kFALSE;}
 
-    Float_t clusterPosition[3] = {0,0,0};
-    cluster->GetPosition(clusterPosition);
-    Double_t clusterR = TMath::Sqrt( clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1] );
+  Float_t clusterPosition[3] = {0,0,0};
+  cluster->GetPosition(clusterPosition);
+  Double_t clusterR = TMath::Sqrt( clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1] );
   if(fHistClusterRBeforeQA) fHistClusterRBeforeQA->Fill(clusterR,weight);
 
 //cout << "+++++++++ Cluster: x, y, z, R" << clusterPosition[0] << ", " << clusterPosition[1] << ", " << clusterPosition[2] << ", " << clusterR << "+++++++++" << endl;
@@ -1907,29 +1907,28 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
             Float_t clusM02 = (Float_t) cluster->GetM02();
             Float_t clusM20 = (Float_t) cluster->GetM20();
       if(fExtendedMatchAndQA > 0 && fExtendedMatchAndQA < 3){
-                if(inTrack->Charge() > 0) {
+        if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           if(inTrack->P() < 0.75) fHistClusterdEtadPhiPosTracksP_000_075BeforeQA->Fill(dEta, dPhi, weight);
           else if(inTrack->P() < 1.25) fHistClusterdEtadPhiPosTracksP_075_125BeforeQA->Fill(dEta, dPhi, weight);
           else fHistClusterdEtadPhiPosTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
-                }
-                else{
+        } else {
           fHistClusterdEtadPhiNegTracksBeforeQA->Fill(dEta, dPhi, weight);
           if(inTrack->P() < 0.75) fHistClusterdEtadPhiNegTracksP_000_075BeforeQA->Fill(dEta, dPhi, weight);
           else if(inTrack->P() < 1.25) fHistClusterdEtadPhiNegTracksP_075_125BeforeQA->Fill(dEta, dPhi, weight);
           else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
-                }
+        }
         fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt(), weight);
         fHistClusterdPhidPtBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
         fHistClusterM20M02BeforeQA->Fill(clusM20, clusM02, weight);
-            }
+      }
 
-            Bool_t match_dEta = (abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
-            Bool_t match_dPhi = kFALSE;
-            if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
-            else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
+      Bool_t match_dEta = (abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
+      Bool_t match_dPhi = kFALSE;
+      if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
+      else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
-            if(match_dEta && match_dPhi){
+      if(match_dEta && match_dPhi){
             //if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
         matched = kTRUE;
       } else {
@@ -1940,7 +1939,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
           if(inTrack->Charge() > 0) fHistClusterdEtadPhiPosTracksAfterQA->Fill(dEta, dPhi, weight);
           else fHistClusterdEtadPhiNegTracksAfterQA->Fill(dEta, dPhi, weight);
           fHistClusterM20M02AfterQA->Fill(clusM20, clusM02, weight);
-                }
+        }
       }  
     }
     delete trackParam;
@@ -1996,7 +1995,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
       const AliExternalTrackParam *in = esdt->GetInnerParam();
       if (!in){AliError("Could not get InnerParam of Track, continue");continue;}
       trackParam = new AliExternalTrackParam(*in);
-    }else if(aodev){
+    } else if(aodev) {
       if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
         inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       } else {
