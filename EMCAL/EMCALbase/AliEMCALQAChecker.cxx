@@ -150,12 +150,10 @@ void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArr
     CheckRaws(test, list);
     //printf ("checkers for task %d \n", index) ;		
 	}
-	
 	if ( index == AliQAv1::kREC)
 	{
     CheckRecPoints(test, list);
 	}
-	
 	if ( index == AliQAv1::kESD )
 	{
     CheckESD(test, list);
@@ -201,7 +199,6 @@ Double_t AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
 ///
 void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 {
-  
   // Setting the thresholds
   Float_t ratioThresh = 0.9;   // threshold for calibration ratio = good towers/all towers (default 0.9)
   Float_t ThreshG     = 0.5;   // threshold for L1 Gamma triggers (default 0.5)
@@ -289,12 +286,12 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  for(Int_t ix = 1; ix <= hdata->GetNbinsX(); ix++) {
 	    for(Int_t iy = 1; iy <= hdata->GetNbinsY(); iy++) {
 	      binContent = hdata->GetBinContent(ix, iy) ; 
-				if (binContent < 1.2 && binContent > 0.8) nGoodTower++ ;
+				//if (binContent < 1.2 && binContent > 0.8) nGoodTower++ ;
 	    }
 	  }
-	  rv = nGoodTower/nTot ; 
+	  //rv = nGoodTower/nTot ; 
 	  // printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
-	  if(fText){
+	  /*if(fText){
 	    lstF->Add(fText->Clone()) ;
 	    fText->Clear() ; 
 	    
@@ -310,7 +307,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      fText->SetFillColor(3) ;
 	      fText->AddText(Form("EMCAL = OK, ENJOY...")); 
 	    }
-	  }// fText
+	  }// fText*/
 	}// calib histo checking done
       }// histograms NOT NULL
        //  ========================================================================================
@@ -350,7 +347,6 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      for(Int_t iy = 1; iy <=  hL1GammaPatch->GetNbinsY(); iy++) {
 		Double_t binContent = hL1GammaPatch->GetBinContent(ix, iy) ; 
 		if (binContent != 0) {
-		  
 		  //  fill counter for TRUs
 		  // binContentTRU[(Int_t)((ix-1)/24)][(Int_t)((iy-1)/4)] += binContent;// OLD TRU SCHEME
 		  binContentTRU[(Int_t)((ix-1)/8)][(Int_t)((iy-1)/12)] += binContent;  // NEW TRU SCHEME
@@ -370,7 +366,6 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		}
 	      }
 	    }
-	    
 	    //  check TRUs
 	    for(Int_t ix = 1; ix <=  2; ix++) {
 	      for(Int_t iy = 1; iy <= AliEMCALTriggerMappingV2::fNTotalTRU/2; iy++) {
@@ -381,7 +376,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	      }
 	    }
 	    
-	    if(fTextL1[0]){
+	   /* if(fTextL1[0]){
 	      lstF->Add(fTextL1[0]->Clone()) ;
 	      fTextL1[0]->Clear() ; 
 	      
@@ -404,8 +399,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		  }
 		  }
 		*/
-	      }
-	    }// fTextL1[0]
+	      //}
+	    //}// fTextL1[0]
 	  }//  L1 gamma patch checking done
 	}//  if (specie != calibSpecieId) ..
       }// hL1GammaPatch NOT NULL
@@ -448,7 +443,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		}
 	      }
 	    }
-	    
+	    /*
 	    if(fTextL1[1]){
 	      lstF->Add(fTextL1[1]->Clone()) ;
 	      fTextL1[1]->Clear() ; 
@@ -468,8 +463,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 		  }
 		*/
 		
-	      }
-	    }// fTextL1[1]
+	      //}
+	    //}// fTextL1[1]
 	  } //  L1 Jet patch checking done
 	} //  if (specie != calibSpecieId) ..
       }//  hL1JetPatch NOT NULL
