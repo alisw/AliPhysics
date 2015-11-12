@@ -47,6 +47,8 @@
 #include <functional>
 #include <AliLog.h>
 #include <sys/resource.h>
+#include <stdlib.h>
+#include <string>
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
@@ -86,21 +88,32 @@ int main(int argc, char **argv)
   // in the event.
 
   //RS: use maximum stack size
-  const rlim_t kStackSize = 64L * 1024L * 1024L;   // min stack size = 64 Mb
+  const long kMB = 1024L * 1024L;
+  rlim_t newStackSize = 64L;   // new default stack size = 64 Mb
+  // check if it was overriden by env.var
+  const char* envStack = getenv("ALIROOT_STACK_SIZE"); // expect size in MB
+  if (envStack) {
+    rlim_t envSiz = atoll(envStack);
+    if (envSiz<8) {
+      AliFatalGeneralF("AliRoot","ALIROOT_STACK_SIZE=%s must request stack size in MB, 8MB at least",envStack);
+    }
+    newStackSize = envSiz;
+  }
+  newStackSize *= kMB;
   struct rlimit rl;
   int result;
   result = getrlimit(RLIMIT_STACK, &rl);
   if (result == 0) {
-    rlim_t oldss = rl.rlim_cur, newss = kStackSize;
-    if (newss > rl.rlim_max) {
-      AliWarningGeneralF("AliRoot","Requestested new stack size %ld > hard limit %ld",newss,rl.rlim_max);
-      newss = rl.rlim_max;
+    rlim_t oldss = rl.rlim_cur;
+    if (newStackSize > rl.rlim_max) {
+      AliWarningGeneralF("AliRoot","Requestested new stack size %ld > hard limit %ld MB",newStackSize/kMB,rl.rlim_max/kMB);
+      newStackSize = rl.rlim_max;
     }
-    if (rl.rlim_cur < kStackSize) {
-      rl.rlim_cur = kStackSize;
+    if (rl.rlim_cur < newStackSize) {
+      rl.rlim_cur = newStackSize;
       result = setrlimit(RLIMIT_STACK, &rl);
       if (result != 0)	fprintf(stderr, "setrlimit returned result = %d\n", result);
-      else AliInfoGeneralF("AliRoot","Set stack size from %ld to %ld, hard limit: %ld",oldss,rl.rlim_cur,rl.rlim_max);
+      else AliInfoGeneralF("AliRoot","Set stack size from %ld to %ld MB",oldss/kMB,rl.rlim_cur/kMB);
     }
   }
   
