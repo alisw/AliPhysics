@@ -522,16 +522,20 @@ Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetSectorZ(UShort_t det, Char_t ring, UShort_t sec)
 {
-  Int_t      hybrid    = sec / 2;
-  Int_t      q        = (ring == 'I' || ring == 'i') ? 0 : 1;
-
-  const Double_t zs[][2] = { { 320.266, -999999 }, 
-			    {  83.666,  74.966 },
-			    { -63.066, -74.966 } };
+  Int_t          hybrid  = sec / 2;
+  Int_t          q       = (ring == 'I' || ring == 'i') ? 0 : 1;
+  Int_t          r       = q == 0 ? 1 : 0;
+  const Double_t zs[][2] = { { 320.266+1.5, -999999 }, 
+			     {  83.666,     74.966+.5 },
+			     { -63.066+.5, -74.966 } };
   if (det > 3 || zs[det-1][q] == -999999) return -999999;
 
   Double_t z = zs[det-1][q];
-  if ((hybrid % 2) == 0) z -= .5;
+  switch (det) {
+  case 1: if ((hybrid % 2) == 1) z -= .5; break;
+  case 2: if ((hybrid % 2) == r) z -= .5; break;
+  case 3: if ((hybrid % 2) == q) z -= .5; break;
+  }
 
   return z;
 }
