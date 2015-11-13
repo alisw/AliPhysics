@@ -564,7 +564,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
     if (!trackIn) continue;
     if (!trackOut) continue;
     
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) track->GetFriendTrack();
     if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
     if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
@@ -809,7 +809,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
     AliESDtrack *track = event->GetTrack(itrack);
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(itrack);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
     if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
     if (TMath::Abs(track->Pt())<kMinPt) continue;
@@ -1542,7 +1542,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
     AliESDtrack * trackITS = event->GetTrack(i); 
     if (!trackITS) continue;
     if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
-    itsfriendTrack = esdFriend->GetTrack(i);
+    itsfriendTrack = (AliESDfriendTrack*)trackITS->GetFriendTrack();
     if (!itsfriendTrack) continue;
     if (!itsfriendTrack->GetITSOut()) continue;
      

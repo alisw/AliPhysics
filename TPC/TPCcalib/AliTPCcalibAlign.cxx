@@ -479,7 +479,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
-    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
+    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -519,12 +519,12 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       TObject *calibObject=0;
       AliTPCseed *seed0 = 0,*seed1=0;
       //
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
+      friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
+      friendTrack = (AliESDfriendTrack*) track1->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -680,13 +680,13 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0,*seed1=0;
     //
-    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
+    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (index1>0){
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
+      friendTrack = (AliESDfriendTrack*) event->GetTrack(index1)->GetFriendTrack();  //(AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;

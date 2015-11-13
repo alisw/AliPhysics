@@ -387,7 +387,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     if (primVtxDCA < 3 && track->GetNcls(0) > 3 && track->GetKinkIndex(0) == 0 && ncls > 100) fHistQA->Fill(meanP, track->GetTPCsignal(), 5);
 
     // Get seeds
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();//esdFriend->GetTrack(i);
     if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
@@ -1343,8 +1343,8 @@ void AliTPCcalibGainMult::ProcessV0s(AliESDEvent * event){
     if (TMath::Abs(eta)>1) continue;
     //
     //
-    AliESDfriendTrack *friendTrackP = esdFriend->GetTrack(pindex);
-    AliESDfriendTrack *friendTrackN = esdFriend->GetTrack(nindex);
+    AliESDfriendTrack *friendTrackP = (AliESDfriendTrack*)trackP->GetFriendTrack();//esdFriend->GetTrack(pindex);
+    AliESDfriendTrack *friendTrackN = (AliESDfriendTrack*)trackN->GetFriendTrack();//esdFriend->GetTrack(nindex);
     if (!friendTrackP) continue;
     if (!friendTrackN) continue;
     TObject *calibObject;
@@ -1448,7 +1448,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
       if (!isPair) continue;
       TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
       Int_t eventNumber = event->GetEventNumberInFile(); 
-      Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
+      Bool_t hasFriend=(esdFriend) ? track0->GetFriendTrack() : 0;// (esdFriend->GetTrack(itrack0)!=0):0; 
       Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
       AliInfo(Form("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS));
       //
@@ -1475,9 +1475,9 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
 	  "\n";      
       }
       //
-      AliESDfriendTrack *friendTrack0 = esdFriend->GetTrack(itrack0);
+      AliESDfriendTrack *friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack(); //esdFriend->GetTrack(itrack0);
       if (!friendTrack0) continue;
-      AliESDfriendTrack *friendTrack1 = esdFriend->GetTrack(itrack1);
+      AliESDfriendTrack *friendTrack1 = (AliESDfriendTrack*)track1->GetFriendTrack(); //esdFriend->GetTrack(itrack1);
       if (!friendTrack1) continue;
       TObject *calibObject;
       AliTPCseed *seed0 = 0;   
@@ -1663,8 +1663,8 @@ void AliTPCcalibGainMult::ProcessKinks(const AliESDEvent * event){
     if (TMath::Abs(eta)>1) continue;
     //
     //
-    AliESDfriendTrack *friendTrackM = esdFriend->GetTrack(kink->GetIndex(0));
-    AliESDfriendTrack *friendTrackD = esdFriend->GetTrack(kink->GetIndex(1));
+    AliESDfriendTrack *friendTrackM = (AliESDfriendTrack*)trackM->GetFriendTrack();// esdFriend->GetTrack(kink->GetIndex(0));
+    AliESDfriendTrack *friendTrackD = (AliESDfriendTrack*)trackD->GetFriendTrack();//esdFriend->GetTrack(kink->GetIndex(1));
     if (!friendTrackM) continue;
     if (!friendTrackD) continue;
     TObject *calibObject;
@@ -1708,7 +1708,7 @@ void AliTPCcalibGainMult::DumpHPT(const AliESDEvent * event){
     if (!trackIn) continue;
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
     if ((status&AliESDtrack::kITSrefit)==0) continue;
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack(); //esdFriend->GetTrack(i);
     if (!friendTrack) continue;
     AliExternalTrackParam * itsOut = (AliExternalTrackParam *)(friendTrack->GetITSOut());
     if (!itsOut) continue;

@@ -490,7 +490,7 @@ void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
    if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
 
-   AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+   AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
    if (!friendTrack) continue;
    TObject *calibObject;
    AliTPCseed *seed = 0;   
@@ -1056,7 +1056,7 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
       if (!isPair) continue;
       TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
       Int_t eventNumber = event->GetEventNumberInFile(); 
-      Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
+      Bool_t hasFriend=(esdFriend) ? track0->GetFriendTrack() : 0;//( esdFriend->GetTrack(itrack0)!=0):0; 
       Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
       printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
 
@@ -1068,9 +1068,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
       Int_t ntracksSPD = vertexSPD->GetNContributors();
       Int_t ntracksTPC = vertexTPC->GetNContributors();
       //
-      AliESDfriendTrack *friendTrack0 = esdFriend->GetTrack(itrack0);
+      AliESDfriendTrack *friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack();//esdFriend->GetTrack(itrack0);
       if (!friendTrack0) continue;
-      AliESDfriendTrack *friendTrack1 = esdFriend->GetTrack(itrack1);
+      AliESDfriendTrack *friendTrack1 = (AliESDfriendTrack*)track1->GetFriendTrack();//esdFriend->GetTrack(itrack1);
       if (!friendTrack1) continue;
       TObject *calibObject;
       AliTPCseed *seed0 = 0;   

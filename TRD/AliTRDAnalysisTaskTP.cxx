@@ -190,7 +190,7 @@ void AliTRDAnalysisTaskTP::UserExec(Option_t *)
     if (ptu) if (track->GetP() < kMinPtLow) continue;
     if (ptu) if (track->GetP() < kMinPt0 && track->GetTPCNcls()<kMinNclLow) continue;
 
-    AliESDfriendTrack *friendtrack = fESDfriend->GetTrack(itrack);
+    AliESDfriendTrack *friendtrack = track->GetFriendTrack(itrack);
     if (!friendtrack){ 
     continue;
     }

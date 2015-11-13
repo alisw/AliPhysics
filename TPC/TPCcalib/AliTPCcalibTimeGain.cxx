@@ -339,23 +339,22 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
   //
   // Process in case of cosmic event
   //
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!esdFriend) {
+  if (!event->FindListObject("AliESDfriend")) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
   //
   UInt_t time = event->GetTimeStamp();
-  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
+  Int_t nTracks = event->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
-  for (Int_t i=0;i<nFriendTracks;++i) {
+  for (Int_t i=0;i<nTracks;++i) {
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;        
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
@@ -402,23 +401,22 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
   //
   // Process in case of beam event
   //
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!esdFriend) {
+  if (!event->FindListObject("AliESDfriend")) {
    Printf("ERROR: ESDfriend not available");
    return;
   }
   //
   UInt_t time = event->GetTimeStamp();
-  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
+  Int_t nTracks = event->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
-  for (Int_t i=0;i<nFriendTracks;++i) { // begin track loop
+  for (Int_t i=0;i<nTracks;++i) { // begin track loop
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
         
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
@@ -501,7 +499,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     for(Int_t idaughter = 0; idaughter < 2; idaughter++) { // daughter loop
       Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
       AliESDtrack * trackP = event->GetTrack(index);
-      AliESDfriendTrack *friendTrackP = esdFriend->GetTrack(index);
+      AliESDfriendTrack *friendTrackP = (AliESDfriendTrack*)trackP->GetFriendTrack();
       if (!friendTrackP) continue;
       const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
       const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();

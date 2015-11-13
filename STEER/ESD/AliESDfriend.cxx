@@ -113,6 +113,21 @@ AliESDfriend::~AliESDfriend() {
   fESDADfriend=0;
 }
 
+void AliESDfriend::ResetSoft()
+{
+  // Reset friend information, used for the shalow copy
+  for (int i=fTracks.GetEntriesFast();i--;) fTracks[i]->Clear();
+  fTracks.Clear();    
+  for (Int_t i=0;i<72;i++)
+  {
+    fNclustersTPC[i]=0;
+    fNclustersTPCused[i]=0;
+  }
+  delete fESDVZEROfriend; fESDVZEROfriend=0;
+  delete fESDTZEROfriend; fESDTZEROfriend=0;
+  delete fESDADfriend; fESDADfriend=0;
+}
+
 
 void AliESDfriend::Reset()
 {
@@ -129,24 +144,6 @@ void AliESDfriend::Reset()
   delete fESDTZEROfriend; fESDTZEROfriend=0;
   delete fESDADfriend; fESDADfriend=0;
 }  
-
-void AliESDfriend::Clear(Option_t*)
-{
-  //
-  // Reset friend information, used for the shalow copy
-  //
-  for (int i=fTracks.GetEntriesFast();i--;) fTracks[i]->Clear();
-  fTracks.Clear();
-  for (Int_t i=0;i<72;i++)
-  {
-    fNclustersTPC[i]=0;
-    fNclustersTPCused[i]=0;
-  }
-  delete fESDVZEROfriend; fESDVZEROfriend=0;
-  delete fESDTZEROfriend; fESDTZEROfriend=0;
-  delete fESDADfriend; fESDADfriend=0;
-}  
-
 
 void AliESDfriend::SetVZEROfriend(const AliESDVZEROfriend * obj)
 {

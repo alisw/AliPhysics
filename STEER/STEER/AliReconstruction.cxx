@@ -4570,7 +4570,7 @@ void AliReconstruction::ResetFriends()
   //
   if (!fesdf) return;
   // RS now friends for writing contain shallow copy of non-persistent friend tracks of AliESDtracks
-  fesdf->Clear();
+  fesdf->ResetSoft(); // soft reset: Tracks are Cleared rather then Deleted
   //  fesdf->~AliESDfriend();
   //  new (fesdf) AliESDfriend(); // Reset...
 }

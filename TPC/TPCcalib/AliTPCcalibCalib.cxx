@@ -151,7 +151,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
 
   for (Int_t i=0;i<ntracks;++i) {
     AliESDtrack *track = event->GetTrack(i);     
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
     fCurrentFriendTrack=friendTrack;

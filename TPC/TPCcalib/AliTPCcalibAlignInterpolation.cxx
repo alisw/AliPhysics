@@ -408,7 +408,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)esdTrack->GetFriendTrack();
     if (!friendTrack) continue;      
     if (esdTrack->GetITSNcls()<4) continue;
     Double_t mass = esdTrack->GetMass();  // particle mass    

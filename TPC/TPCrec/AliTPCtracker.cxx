@@ -8673,7 +8673,6 @@ void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
   for (int itr=ntr;itr--;) {
     AliESDtrack* trc = esd->GetTrack(itr);
     AliESDfriendTrack* trcF = (AliESDfriendTrack*)trc->GetFriendTrack();
-    if (!trcF && esdF) trcF = (AliESDfriendTrack*)esdF->GetTrack(itr); // might be reattached
     if (!trcF) continue;
     AliTPCseed* seed = (AliTPCseed*)trcF->GetTPCseed();
     if (seed) {

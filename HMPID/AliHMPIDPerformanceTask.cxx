@@ -356,7 +356,7 @@ void AliHMPIDPerformanceTask::UserExec(Option_t *)
 
     fvTofSignal = fEsdTrack->GetTOFsignal();
     
-    fEsdFriendTrack=fESDfriend->GetTrack(iTrack);
+    fEsdFriendTrack= fEsdTrack->GetFriendTrack();// fESDfriend->GetTrack(iTrack);
     
     //___ fill HMP stuff
     fvHmpChi2 = fEsdTrack -> GetHMPIDchi2();

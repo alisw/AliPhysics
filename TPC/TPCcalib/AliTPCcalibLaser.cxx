@@ -623,10 +623,10 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   Int_t n=fESD->GetNumberOfTracks();
   Int_t counter=0;
   for (Int_t i=0;i<n;++i) {
-    AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
-    if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
     if (!track) continue;
+    AliESDfriendTrack *friendTrack=(AliESDfriendTrack*)track->GetFriendTrack();
+    if (!friendTrack) continue;
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(track->GetZ()));
     if (binC>336) continue; //remove CE background
     TObject *calibObject=0;

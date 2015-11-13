@@ -68,8 +68,8 @@ public:
   void Ls() const {
 	  return fTracks.ls();
   }
-  virtual void Clear(Option_t* opt="");
   void Reset();
+  void ResetSoft();
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() const { return TestBit(23); }
