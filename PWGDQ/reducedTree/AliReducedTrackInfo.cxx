@@ -1,0 +1,73 @@
+/*
+***********************************************************
+  Implementation of AliReducedTrackInfo
+  Contact: iarsene@cern.ch
+  2015/04/08
+  *********************************************************
+*/
+
+#ifndef ALIREDUCEDTRACKINFO_H
+#include "AliReducedTrackInfo.h"
+#endif
+
+#include <TMath.h>
+#include "AliReducedBaseTrack.h"
+
+ClassImp(AliReducedTrackInfo)
+
+//_______________________________________________________________________________
+AliReducedTrackInfo::AliReducedTrackInfo() :
+  AliReducedBaseTrack(),
+  fTrackId(0),
+  fStatus(0),
+  fTPCPhi(0.0),
+  fTPCPt(0.0),
+  fTPCEta(0.0),
+  fMomentumInner(0.0),
+  fDCA(),
+  fTrackLength(0.0),
+  fITSclusterMap(0),
+  fITSsignal(0.0),
+  fITSnSig(),
+  fITSchi2(0.0),
+  fTPCNcls(0),
+  fTPCCrossedRows(0),
+  fTPCNclsF(0),
+  fTPCNclsShared(0),
+  fTPCClusterMap(0),
+  fTPCsignal(0),
+  fTPCsignalN(0),
+  fTPCnSig(),
+  fTPCchi2(0.0),
+  fTOFbeta(0.0),
+  fTOFtime(0.0),
+  fTOFdx(0.0),
+  fTOFdz(0.0),
+  fTOFmismatchProbab(0.0),
+  fTOFchi2(0.0),
+  fTOFnSig(),
+  fTOFdeltaBC(0),
+  fTRDntracklets(),
+  fTRDpid(),
+  fTRDpidLQ2D(),
+  fCaloClusterId(-999),
+  fQualityFlags(0)
+{
+  //
+  // Constructor
+  //
+  fDCA[0] = 0.0; fDCA[1]=0.0;
+  for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.; }
+  fTRDntracklets[0]=0; fTRDntracklets[1]=0;
+  fTRDpid[0]=-999.; fTRDpid[1]=-999.;
+  fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
+}
+
+
+//_______________________________________________________________________________
+AliReducedTrackInfo::~AliReducedTrackInfo()
+{
+  //
+  // De-Constructor
+  //
+}
