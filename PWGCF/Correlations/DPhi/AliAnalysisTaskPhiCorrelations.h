@@ -156,6 +156,8 @@ public:
   Float_t GetJetEtaMax() const { return fJetEtaMax; }
   void SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
   Float_t GetJetPtMin() const { return fJetPtMin; }
+  void SetJetConstMin(Int_t constMin) { fJetConstMin = constMin; }
+  Int_t GetJetConstMin() const { return fJetConstMin; }
 
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
