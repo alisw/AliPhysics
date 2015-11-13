@@ -650,7 +650,7 @@ void AliMUONCalibrationData::PatchSt1DCSAliases(TMap& hvMap)
   ///
   /// This method fixes that.
   
-  if ( ( hvMap.GetUniqueID() & PatchHVDCSAliasesSt1WasAppliedMask() ) == PatchHVDCSAliasesSt1WasAppliedMask() )
+  if ( ( hvMap.GetUniqueID() & PatchHVDCSAliasesSt1WasAppliedMask() ) == PatchHVDCSAliasesSt1WasAppliedMask() || ( hvMap.GetUniqueID() == 42 ) )
   {
     // already clean object. Do nothing
     AliWarningClass("Patching already done for St1 DCS aliases on this map. Not doing it again.");
