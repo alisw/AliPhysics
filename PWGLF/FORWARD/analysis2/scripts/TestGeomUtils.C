@@ -22,6 +22,7 @@ TestGeomUtils(Bool_t init=false, ULong_t run=138190)
     cdb->SetDefaultStorageFromRun(run);
     cdb->SetRun(run);
     AliGeomManager::LoadGeometry();
+    AliGeomManager::ApplyAlignObjsFromCDB("FMD");
   }
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
   if (init) {    
