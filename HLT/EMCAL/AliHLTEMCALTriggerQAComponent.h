@@ -28,9 +28,10 @@
 class AliEMCALTriggerQA;
 class AliEMCALTriggerPatchInfo;
 class AliEMCALTriggerBitConfig;
+class AliEMCALGeometry;
+class AliEMCALTriggerFastOR;
 class AliHLTCaloTriggerPatchDataStruct;
 class AliHLTEMCALGeometry;
-class AliEMCALGeometry;
 
 /**
  * @class AliHLTEMCALTriggerQAComponent
@@ -72,6 +73,7 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
+  bool CheckInputDataType(const AliHLTComponentDataType &datatype);
 
 protected:
   /** interface function, see @ref AliHLTComponent for description */
@@ -79,9 +81,18 @@ protected:
 
    /** interface function, see @ref AliHLTComponent for description */
    virtual int Deinit();
+
+   /** process trigger patches contained in block **/
+   void ProcessTriggerPatches(const AliHLTComponentBlockData* block);
+
+   /** process trigger FastORs contained in block **/
+   void ProcessTriggerFastors(const AliHLTComponentBlockData* block);
    
    /** converts the HLT trigger patch flat structure into an AliEMCALTriggerPatchInfo object */
    void HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const;
+
+   /** converts the HLT trigger FastOR flat structure into an AliEMCALTriggerFastOR object */
+   void HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const;
 
    /** initialise the geometry */
    void InitialiseGeometry();

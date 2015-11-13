@@ -12,18 +12,25 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <vector>
+
 #include <TObjArray.h>
 #include <THashList.h>
 #include <TH1.h>
 
-#include "AliHLTCaloTriggerPatchDataStruct.h"
-
-#include "AliHLTEMCALDefinitions.h"
+#include "AliEMCALTriggerConstants.h"
+#include "AliEMCALTriggerFastOR.h"
 #include "AliEMCALTriggerQA.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerBitConfig.h"
-#include "AliHLTEMCALGeometry.h"
 #include "AliEMCALGeometry.h"
+
+#include "AliHLTCaloTriggerPatchDataStruct.h"
+#include "AliHLTCaloTriggerHeaderStruct.h"
+#include "AliHLTCaloTriggerDataStruct.h"
+
+#include "AliHLTEMCALDefinitions.h"
+#include "AliHLTEMCALGeometry.h"
 
 #include "AliHLTEMCALTriggerQAComponent.h"
 
@@ -45,31 +52,30 @@ AliHLTEMCALTriggerQAComponent::~AliHLTEMCALTriggerQAComponent()
   if (fGeometry) delete fGeometry;
 }
 
-int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, const AliHLTComponentBlockData* /*blocks*/,
+int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 					   AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
 					   std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   //patch in order to skip calib events
   if (!IsDataEvent()) return 0;
 
-  // This component subscribes to a single input component
-  const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTEMCALDefinitions::fgkTriggerPatchDataType);
-  if (!block) return 0;
-  
-  AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
-  if (!hltpatchPtr) return 0;
+  if (!blocks) return 0;
 
-  UInt_t nPatches = block->fSize/sizeof(AliHLTCaloTriggerPatchDataStruct);
-  UInt_t specification = block->fSpecification;
+  const AliHLTComponentBlockData* iter = 0;
+  
+  for (Int_t ndx = 0; ndx < evtData.fBlockCnt; ndx++) {
+    iter = blocks + ndx;
     
-  AliEMCALTriggerPatchInfo patch;
-  patch.SetTriggerBitConfig(fTriggerBitConfig);
-  
-  for(UInt_t ipatch = 0; ipatch < nPatches; ipatch++) {
-    HLTPatch2Patch(hltpatchPtr[ipatch], patch);
-    fTriggerQAPtr->ProcessPatch(&patch);
+    if(!CheckInputDataType(iter->fDataType)) continue;
+
+    if (iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerPatchDataType) {
+      ProcessTriggerPatches(iter);
+    }
+    else if (iter->fDataType == (kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL)) {
+      ProcessTriggerFastors(iter);
+    }
   }
-  
+
   fTriggerQAPtr->EventCompleted();
   
   fLocalEventCount++;
@@ -80,9 +86,9 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& /*evt
 
   while ((histo = static_cast<TH1*>(next()))) {
     if (histo->GetEntries() > 0) {
-      Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL , specification);
+      Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL , 0);
       if (fHistoResetOnPush && nbytes > 0) {
-	histo->Reset();
+        histo->Reset();
       }
     }
   }
@@ -90,11 +96,63 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& /*evt
   return 0;
 }
 
+void AliHLTEMCALTriggerQAComponent::ProcessTriggerPatches(const AliHLTComponentBlockData* block)
+{
+  AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
+  if (!hltpatchPtr) return;
+
+  UInt_t nPatches = block->fSize/sizeof(AliHLTCaloTriggerPatchDataStruct);
+
+  AliEMCALTriggerPatchInfo patch;
+  patch.SetTriggerBitConfig(fTriggerBitConfig);
+  
+  for(UInt_t ipatch = 0; ipatch < nPatches; ipatch++) {
+    HLTPatch2Patch(hltpatchPtr[ipatch], patch);
+    fTriggerQAPtr->ProcessPatch(&patch);
+  }
+}
+
+void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentBlockData* block)
+{
+  AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
+  if (!hltpatchPtr) return;
+  
+  AliHLTCaloTriggerHeaderStruct* triggerhead = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(block->fPtr);
+  AliHLTCaloTriggerDataStruct *dataptr = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t* >(block->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
+
+  AliEMCALTriggerFastOR fastor;
+  
+  HLTDebug("Received %d fastor triggers", triggerhead->fNfastor);
+  for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
+    HLTFastor2Fastor(dataptr[datacount], fastor);
+    fTriggerQAPtr->ProcessFastor(&fastor);
+  }
+}
+
+bool AliHLTEMCALTriggerQAComponent::CheckInputDataType(const AliHLTComponentDataType &datatype)
+{
+  vector <AliHLTComponentDataType> validTypes;
+  GetInputDataTypes(validTypes);
+
+  for(UInt_t i = 0; i < validTypes.size(); i++) {
+    if (datatype == validTypes.at(i)) {
+      return true;
+    }
+  }
+
+  HLTDebug("Invalid Datatype");
+  return false;
+}
+
 void AliHLTEMCALTriggerQAComponent::HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const
 {
   const TVector3 vect(0,0,0);
-  
-  patch.Initialize(htlpatch.fCol, htlpatch.fRow, htlpatch.fSize, htlpatch.fADC, 0, 0., htlpatch.fBitMask, vect, fGeometry->GetGeometryPtr());
+  patch.Initialize(htlpatch.fCol, htlpatch.fRow, htlpatch.fSize, htlpatch.fADC, htlpatch.fOfflineADC, 0., htlpatch.fBitMask, vect, fGeometry->GetGeometryPtr());
+}
+
+void AliHLTEMCALTriggerQAComponent::HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const
+{  
+  fastor.Initialize(htlfastor.fAmplitude, htlfastor.fL1TimeSum, htlfastor.fRow, htlfastor.fCol, fGeometry->GetGeometryPtr());
 }
 
 const char* AliHLTEMCALTriggerQAComponent::GetComponentID()
@@ -107,6 +165,7 @@ void AliHLTEMCALTriggerQAComponent::GetInputDataTypes(std::vector<AliHLTComponen
 {
   list.clear();
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerPatchDataType);
+  list.push_back(kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL);
 }
 
 AliHLTComponentDataType AliHLTEMCALTriggerQAComponent::GetOutputDataType()
@@ -136,9 +195,28 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
 
   for (int i = 0; i < argc; i++) {
     TString option(argv[i]);
-    if (option.Contains("-newTriggerBitConfig")) fTriggerBitConfig = new AliEMCALTriggerBitConfigNew;
-    if (option.Contains("-oldTriggerBitConfig")) fTriggerBitConfig = new AliEMCALTriggerBitConfigOld;
-    if (option.Contains("-noHistoReset")) fHistoResetOnPush = kFALSE;
+    if (option == "-newTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigNew;
+    if (option == "-oldTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigOld;
+    if (option == "-noHistoReset") fHistoResetOnPush = kFALSE;
+    if (option.BeginsWith("-debugLevel")) {
+      option.Remove(0, 11);
+      Int_t dl = option.Atoi();
+      if (dl >= 0) fTriggerQAPtr->SetDebugLevel(dl);
+    }
+    if (option.BeginsWith("-thJE")) {
+      option.Remove(0, 5);
+      Int_t th = option.Atoi();
+      if (th >= 0) {
+	fTriggerQAPtr->SetTrigThr(EMCALTrigger::kEMCalRecalcL1Jet, th);
+      }
+    }
+    if (option.BeginsWith("-thGA")) {
+      option.Remove(0, 5);
+      Int_t th = option.Atoi();
+      if (th >= 0) {
+	fTriggerQAPtr->SetTrigThr(EMCALTrigger::kEMCalRecalcL1Gamma, th);
+      }
+    }
   }
 
   // if not specified use new trigger bit config
