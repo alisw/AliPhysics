@@ -3,11 +3,12 @@
 ///
 
 #include "AliFemtoBasicEventCut.h"
+#include "TObjString.h"
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoBasicEventCut)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoBasicEventCut);
+  /// \endcond
 #endif
 
 AliFemtoBasicEventCut::AliFemtoBasicEventCut():
@@ -82,6 +83,26 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event)
 
   return goodEvent;
 }
+TList* AliFemtoBasicEventCut::AppendSettings(TList *settings,
+                                             const TString &prefix) const
+{
+  settings->AddVector(
+
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.mult.min=%d", fEventMult[0])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.mult.max=%d", fEventMult[1])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.vertex.min=%f", fVertZPos[0])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.vertex.max=%f", fVertZPos[1])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.psiep.min=%f", fPsiEP[0])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.psiep.max=%f", fPsiEP[1])),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.accept_bad_vertex=%d", fAcceptBadVertex)),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.accept_only_physics=%d", fAcceptOnlyPhysics)),
+    new TObjString(prefix + TString::Format("AliFemtoBasicEventCut.trigger=%d", fSelectTrigger)),
+
+  NULL);
+
+  return settings;
+}
+
 //------------------------------
 AliFemtoString AliFemtoBasicEventCut::Report()
 {
@@ -101,4 +122,3 @@ bool AliFemtoBasicEventCut::GetAcceptBadVertex()
 {
   return fAcceptBadVertex;
 }
-
