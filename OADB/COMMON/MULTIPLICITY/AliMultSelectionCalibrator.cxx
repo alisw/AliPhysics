@@ -490,7 +490,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //Default Stuff
     TH1F * hDummy[lNEstimators];
     for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 100, 0, 10);
+        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
         hDummy[iEst]->SetDirectory(0);
     }
 

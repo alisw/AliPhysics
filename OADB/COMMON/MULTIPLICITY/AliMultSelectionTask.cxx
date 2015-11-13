@@ -94,7 +94,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkTrigger(AliVEvent::kMB),
+fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -161,7 +161,7 @@ fInput(0)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkTrigger(AliVEvent::kMB),
+fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -999,10 +999,59 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
     if (sel) {
         sel->SetName("MultSelection");
+    }
+    
+    //=====================================================================
+    //Option to override estimators from alternate oadb file
+    if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE ){
+        AliInfo("Extra option detected: Load estimators from OADB file called: ");
+        AliInfoF(" path: %s", fAlternateOADBForEstimators.Data() );
+        
+        TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
+        Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");
+        if ( lFoundFileAlter == 1 ) {
+            AliFatal("Couldn't find requested alternate calibration! Quitting!");
+        }
+        
+        //Get Object for this run
+        TObject *lObjAcquiredAlter = 0x0;
+        lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
+        if (!lObjAcquiredAlter) {
+            AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+        }
+        if (!lObjAcquiredAlter) {
+            // This should not happen...
+            AliFatal("Really cannot find any OADB object - giving up!");
+        }
+        
+        //Actually, it's not required that we keep a copy of this object in memory. We only need to grab
+        //the definitions... This can be much optimized!
+        AliOADBMultSelection *fOadbMultSelectionAlter = (AliOADBMultSelection*) lObjAcquiredAlter;
+        AliMultSelection* selAlter = fOadbMultSelectionAlter->GetMultSelection();
+        
+        //Sweep all estimators from standard OADB and replace their definitions...
+        TString lTempStr;
+        for(Int_t iEst=0; iEst<sel->GetNEstimators(); iEst++){
+            lTempStr = sel->GetEstimator(iEst)->GetName();
+            AliMultEstimator *lEstim = selAlter->GetEstimator( lTempStr.Data() );
+            if ( !lEstim ){
+                AliWarning(Form("Estimator named %s: no scaling factor applied!",sel->GetEstimator(iEst)->GetName()));
+            }else{
+                sel->GetEstimator(iEst)->SetDefinition ( lEstim->GetDefinition().Data() );
+            }
+        }
+        //That should be it...
+    }
+    //=====================================================================
+    
+    if (sel) {
+        sel->SetName("MultSelection");
         //Optimize evaluation
         sel->Setup(fInput);
     }
-    AliInfo("Successfully set up! Inspect MultSelection:");
+    AliInfo("---> Successfully set up! Inspect MultSelection:");
     if (sel){ sel->PrintInfo(); } else { AliWarning("Weird. No AliMultSelection found..."); }
     return 0;
 }
