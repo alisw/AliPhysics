@@ -869,7 +869,7 @@ protected:
    * 
    * @param asPar If true, possibly as par
    */
-  void LoadOADB(Bool_t asPar=false)
+  void LoadOADB(Bool_t asPar=true)
   {
     Bool_t usePar = asPar;
     fRailway->UsePar(usePar); // Disabled pars temporarily
