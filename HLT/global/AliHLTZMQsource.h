@@ -11,18 +11,15 @@
 // 
 
 #include "AliHLTComponent.h"
+#include "AliZMQhelpers.h"
 #include <TList.h>
-#include <map>
-#include <string>
 
 class TFile;
 
-class AliHLTZMQsource : public AliHLTComponent  {
+class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
   public:
     AliHLTZMQsource();
     virtual ~AliHLTZMQsource();
-
-    typedef map<std::string,std::string> stringMap;
 
     const char* GetComponentID();
     AliHLTComponentDataType GetOutputDataType();
@@ -31,9 +28,7 @@ class AliHLTZMQsource : public AliHLTComponent  {
     TComponentType GetComponentType() { return AliHLTComponent::kSource;}
     AliHLTComponent* Spawn();
 
-    //new option parser
-    static stringMap* TokenizeOptionString(const TString str);
-    int ProcessOptionString(TString arguments);
+    //overload AliOptionParser
     int ProcessOption(TString option, TString value);
 
   protected:
