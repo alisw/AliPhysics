@@ -51,7 +51,7 @@ public:
   AliSpectraBothPID(BothPIDType_t pidType);
   virtual  ~AliSpectraBothPID() {}
 
-  void FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrack * track, AliSpectraBothTrackCuts * trackCuts) ;
+  void FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrack * track, AliSpectraBothTrackCuts * trackCuts,Int_t idGen) ;
   void SetNSigmaCut(Float_t nsigma) { fNSigmaPID = nsigma; }
   void SetPIDtype(BothPIDType_t pidType){fPIDType=pidType;}
   void SetShiftTPC(Float_t shift){fshiftTPC=shift;}
