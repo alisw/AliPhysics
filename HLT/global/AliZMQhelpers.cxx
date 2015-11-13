@@ -128,7 +128,7 @@ int alizmq_socket_type(std::string config)
   else if (config.compare(0,4,"XSUB")==0) return ZMQ_XSUB;
   else if (config.compare(0,4,"XPUB")==0) return ZMQ_XPUB;
   
-  printf("Invalid socket type %s\n", config.c_str());
+  //printf("Invalid socket type %s\n", config.c_str());
   return -1;
 }
 
@@ -164,7 +164,10 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 
   std::size_t found = config.find_first_of("@>-+");
   if (found == 0)
-  {printf("misformed socket config string %s\n", config.c_str()); return 1;}
+  {
+    //printf("misformed socket config string %s\n", config.c_str());
+    return -1;
+  }
   
   zmqSocketMode = alizmq_socket_type(config);
   
@@ -178,9 +181,17 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     newSocket=false;
     int lingerValue = 0;
     rc = zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-    if (rc!=0) {printf("cannot set linger 0 on socket before closing\n"); return -1;}
+    if (rc!=0) 
+    {
+      //printf("cannot set linger 0 on socket before closing\n");
+      return -2;
+    }
     rc = zmq_close(socket);
-    if (rc!=0) {printf("zmq_close() says: %s\n",zmq_strerror(errno));}
+    if (rc!=0)
+    {
+      //printf("zmq_close() says: %s\n",zmq_strerror(errno));
+      return -3;
+    }
   }
 
   socket  = zmq_socket(context, zmqSocketMode);
@@ -192,7 +203,11 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
   rc += zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeout, sizeof(timeout));
-  if (rc!=0) {printf("cannot set socket options\n"); return -1;}
+  if (rc!=0)
+  {
+    //printf("cannot set socket options\n");
+    return -4;
+  }
 
   //by default subscribe to everything if we happen to be SUB
   rc = zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
@@ -207,9 +222,13 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     if ( rc==0 || newSocket ) break;
     usleep(100000);
   }
-  if (rc!=0) {printf("cannot attach to %s\n",zmqEndpoints.c_str()); return -1;}
+  if (rc!=0) 
+  {
+    //printf("cannot attach to %s\n",zmqEndpoints.c_str());
+    return -5;
+  }
 
-  printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
+  //printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
   //reset the object containers
   return zmqSocketMode;
@@ -249,7 +268,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
   rc = zmq_msg_send(&topicMsg, socket, ZMQ_SNDMORE);
   if (rc<0) 
   {
-    printf("unable to send topic: %s\n", topic.c_str());
+    //printf("unable to send topic: %s\n", topic.c_str());
     zmq_msg_close(&topicMsg);
     return rc;
   }
@@ -260,7 +279,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
   rc = zmq_msg_send(&dataMsg, socket, flags);
   if (rc<0) 
   {
-    printf("unable to send data: %s\n", data.c_str());
+    //printf("unable to send data: %s\n", data.c_str());
     zmq_msg_close(&dataMsg);
     return rc;
   }
@@ -274,7 +293,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
   if (rc<0) 
   {
-    printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
+    //printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
     return rc;
   }
 
@@ -286,7 +305,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_msg_send(&dataMsg, socket, flags);
   if (rc<0) 
   {
-    printf("unable to send data: %s %s\n", tmessage->GetName(), zmq_strerror(errno));
+    //printf("unable to send data: %s %s\n", tmessage->GetName(), zmq_strerror(errno));
     zmq_msg_close(&dataMsg);
     return rc;
   }
