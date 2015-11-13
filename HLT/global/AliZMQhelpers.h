@@ -82,14 +82,15 @@ void alizmq_deleteTObject(void*, void* object);
 //simple option parser class
 class AliOptionParser {
 public:
+  //implement this to process one option at a time
+  virtual int ProcessOption(TString /*option*/, TString /*value*/) {return 0;}
+  
   //call this to parse the args
   int ProcessOptionString(TString arguments);
   int ProcessOptionString(int argc, char** argv);
-  //implement this to process one option at a time
-  int ProcessOption(TString /*option*/, TString /*value*/) {return 0;}
+
   //convert argc/argv into a TString of options
-  TString GetFullArgString(int argc, char** argv);
-private:
-  stringMap* TokenizeOptionString(const TString str);
+  static TString GetFullArgString(int argc, char** argv);
+  static stringMap* TokenizeOptionString(const TString str);
 };
 
