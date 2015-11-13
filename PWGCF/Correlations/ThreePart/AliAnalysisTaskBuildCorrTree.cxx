@@ -38,7 +38,7 @@
 #include "TMath.h"
 #include <AliFilteredTrack.h>
 #include <AliEventplane.h>
-#include<iostream>
+// #include<iostream>
 #include <sstream>
 
 ClassImp(AliAnalysisTaskBuildCorrTree)
@@ -232,7 +232,7 @@ void AliAnalysisTaskBuildCorrTree::FinishTaskOutput()
 {
   // end of the processing
     TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject("trackCount")) ;
-    if (hist) cout << "FinishTaskOutput: " << hist->GetEntries() << " events(s)" << endl;
+    if (hist) AliWarning(Form("FinishTaskOutput: %i events(s)" ,(int)hist->GetEntries()));
 }
 
 void AliAnalysisTaskBuildCorrTree::Terminate(Option_t *)
@@ -307,30 +307,9 @@ Bool_t AliAnalysisTaskBuildCorrTree::IsSelectedTrackAOD(AliVParticle* t)
   GetDCA(DCAtang,DCAlong,AODt);
   if((AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2)))   FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,1);
   else FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,0);
-//   isselected = isselected&&(AODt->TestFilterBit(BIT(4)));  //filter bits: BIT(4) = standard cuts, loose DCA; BIT(5) standard cuts, tight DCA 
-// //  if(isselected) cout << "FilterBitPassed"<<endl;
-//   isselected = isselected&&(AODt->GetFilterMap()&AliVTrack::kITSrefit);
-// //   if(isselected) cout << "ITSrefit passed"<<endl;
-// //   isselected = isselected&&((AODt->GetFilterMap()&AliAODTrack::kTPCrefit)||fCollisionType==PbPb);//in the PbPb AODs it seems this is not set.
-// //   if(isselected) cout << "TPCrefit passed"<<endl;
-//   isselected = isselected&&(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2));//in first or second ITS layer
-// //   if(isselected) cout << "ITS any passed"<<endl;
-// //   isselected = isselected&&(AODt->HasPointOnITSLayer(2));//in second ITS layer
-// //   if(isselected) cout << "ITS layer 2 passed"<<endl;
-//   isselected = isselected&&(AODt->GetTPCNcls()>70);
-// //   if(isselected) cout << "more than 70 TPC clusters"<<endl;
-//   isselected = isselected&&(abs(DCAtang)<0.5);//cm. DCA less then 0.5 cm in transverse direction.
-// //   if(isselected) cout << "DCA tang passed"<<endl;
-//   isselected = isselected&&(abs(DCAlong)<3);//cm. DCA less then 3 cm in the longitudinal direction.
-// //   if(isselected) cout << "DCA long passed"<<endl;
   //Hybrid tracks give flat distributions
   if(AODt->IsHybridGlobalConstrainedGlobal()||AODt->TestFilterBit(BIT(4))||AODt->TestFilterBit(BIT(5))||AODt->TestFilterBit(BIT(6))) isselected = true;
   else isselected = false;
-//   if(fCutMask == 0) isselected = AODt->IsHybridGlobalConstrainedGlobal();
-//   else if(fCutMask == 1) isselected = AODt->TestFilterBit(BIT(4));
-//   else if(fCutMask == 2) isselected = AODt->TestFilterBit(BIT(5));
-//   else if(fCutMask == 3) isselected = AODt->TestFilterBit(BIT(6));
-//   else isselected = AODt->IsHybridGlobalConstrainedGlobal(); // defaults to global hybrid.  
   if( (AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,1);
   if(!(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,0);
   return isselected; 
@@ -514,7 +493,7 @@ void AliAnalysisTaskBuildCorrTree::SetMixingScheme(Int_t MaxNEventMix, Int_t Min
 {
   fMaxNEventMix= MaxNEventMix;
   fMinNofTracksMix = MinNofTracksMix;
-  cout << MBinEdges.GetSize()<<endl;
+  AliWarning(Form("%i", MBinEdges.GetSize()));
   for(int i=0; i<MBinEdges.GetSize()-1; ++i)
     if(MBinEdges.At(i) > MBinEdges.At(i+1)) AliFatal("edges are not sorted");
   for(int i=0; i<ZBinEdges.GetSize()-1; ++i)

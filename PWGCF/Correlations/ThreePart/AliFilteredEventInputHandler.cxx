@@ -62,7 +62,6 @@ Bool_t AliFilteredEventInputHandler::Init(TTree* tree, Option_t* opt)
     fTree = tree;
     if (!fTree) return kFALSE;
     fTree->GetEntries();
-
 //     SetInactiveBranches(" ");
 //     SetActiveBranches("DstTree");
 //     
@@ -72,8 +71,7 @@ Bool_t AliFilteredEventInputHandler::Init(TTree* tree, Option_t* opt)
     // Get pointer to AOD event
     if (!fEvent) fEvent = new AliFilteredEvent();
     
-    tree->GetBranch("Event")->SetAddress(&fEvent);
-    
+    tree->SetBranchAddress("Event",&fEvent);
 //     fEvent->ReadFromTree(fTree);
     
     return kTRUE;

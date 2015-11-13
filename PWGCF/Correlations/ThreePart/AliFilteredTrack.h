@@ -117,21 +117,21 @@ class AliFilteredTrack : public AliVTrack {
   virtual void Print(Option_t *option="") const;
 
   template<typename T> void Set(const T p[kNofDim]);
-  void Set(const AliVParticle& track);
-  void Set(const AliAODTrack& track);
-  void SetCharge(const AliVParticle& track);
-  void SetEff(float eff){feff = eff;}
+  void  Set(const AliVParticle& track);
+  void  Set(const AliAODTrack& track);
+  void  SetCharge(const AliVParticle& track);
+  void  SetEff(float eff){feff = eff;}
   float GetEff(){return feff;}
-  bool IsGlobalHybrid(){return TestBit(kGlobalHybrid);}
-  bool IsBIT4(){return TestBit(kBIT4);}
-  bool IsBIT5(){return TestBit(kBIT5);}
-  bool IsBIT6(){return TestBit(kBIT6);}
-  void SetGlobal(){SetBit(kGlobalHybrid);}
-  void SetBIT4(){SetBit(kBIT4);}
-  void SetBIT5(){SetBit(kBIT5);}
-  void SetBIT6(){SetBit(kBIT6);}
-  void SetAODFilterBits(const AliAODTrack * t);
-  void Calculate(bool bCalculateMommentumComponents=true);
+  bool  IsGlobalHybrid(){return TestBit(kGlobalHybrid);}
+  bool  IsBIT4(){return TestBit(kBIT4);}
+  bool  IsBIT5(){return TestBit(kBIT5);}
+  bool  IsBIT6(){return TestBit(kBIT6);}
+  void  SetGlobal(){SetBit(kGlobalHybrid);}
+  void  SetBIT4(){SetBit(kBIT4);}
+  void  SetBIT5(){SetBit(kBIT5);}
+  void  SetBIT6(){SetBit(kBIT6);}
+  void  SetAODFilterBits(const AliAODTrack * t);
+  void  Calculate(bool bCalculateMommentumComponents=true);
 
  protected:
  private:
