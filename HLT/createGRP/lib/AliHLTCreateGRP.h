@@ -25,7 +25,7 @@ class AliDCSSensor;
 class AliHLTCreateGRP : public TObject
 {
 public:
-	int CreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Bool_t defaults);
+	int CreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Int_t defaults);
 	
 private:
 	UInt_t createDetectorMask(TObjArray* listOfDetectors);

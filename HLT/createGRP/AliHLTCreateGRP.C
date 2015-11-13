@@ -17,15 +17,15 @@
 
 #include <stdio.h>
 
-Int_t AliHLTCreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Bool_t defaults)
+Int_t AliHLTCreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Int_t defaults)
 {
 	printf("Running ALICE HLT GRP Creation\n");
-	gSystem->Load("./lib/libAliHLTCreateGRP");
+	gSystem->Load("$ALICE_SOURCE/HLT/createGRP/lib/libAliHLTCreateGRP");
 	
 	AliHLTCreateGRP* GrpBuilder = new AliHLTCreateGRP;
 	
 	int retVal = GrpBuilder->CreateGRP(runNumber, detectorList, beamType, runType, startShift, endShift, defaults);
 	
 	delete GrpBuilder;
-	return(retVal);
+	return(retVal == 0 ? 2 : 0);
 }

@@ -39,7 +39,7 @@ static const TString kLOCAL_STORAGE_DEFINE = "local://";
 /** Static define of T-HCDB */
 static const char* THCDB_BASE_FOLDER = getenv("ALIHLT_T_HCDBDIR");
 
-int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Bool_t defaults)
+int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Int_t defaults)
 {
 	int l3Polarity;
 	float l3Current;
@@ -178,10 +178,11 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	AliCDBMetaData meta("HLT", 0, aliroot_version, "GRP entry created online for HLT");
 	AliCDBPath path("GRP", "GRP", "Data");
 	int runmin, runmax;
-	if (defaults)
+	if (defaults == 2)
 	{
 		runmin = 0;
 		runmax = 999999999;
+		printf("Creating Default Object\n");
 	}
 	else
 	{

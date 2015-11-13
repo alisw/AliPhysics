@@ -12,7 +12,8 @@ RUN_TYPE=PHYSICS
 let START_SHIFT=`date +%s`-300
 END_SHIFT=`date +%s`
 
-USE_DEFAULT_VALUES=kTRUE
+#0: Use values from dim, 1: use default values, 2: use default values and create default object for all run numbers
+USE_DEFAULT_VALUES=2
 
 echo Starting ALICE GRP Creation with Run Number $RUN_NUMBER, Detector List $DETECTOR_LIST, Beam Type $BEAM_TYPE, Run Type $RUN_TYPE
 
@@ -20,7 +21,7 @@ aliroot -l -q -b "AliHLTCreateGRP.C($RUN_NUMBER, \"$DETECTOR_LIST\", \"$BEAM_TYP
 
 retVal=$?
 
-if [ $retVal -eq 0 ]; then
+if [ $retVal -eq 2 ]; then
     echo "GRP Creation finished successfully"
 else
     echo "GRP Creation failed"
