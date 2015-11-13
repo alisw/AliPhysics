@@ -1,6 +1,3 @@
-#ifndef __AliZMQhelpers__
-#define __AliZMQhelpers__
-
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 //see header file for details
 //
@@ -479,16 +476,22 @@ TString AliOptionParser::GetFullArgString(int argc, char** argv)
 //______________________________________________________________________________
 int AliOptionParser::ProcessOptionString(TString arguments)
 {
-  //process passed options
+  //process passed options, return number of processed valid options
   stringMap* options = TokenizeOptionString(arguments);
+  int nOptions=0;
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //printf("  %s : %s\n", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
+    if (ProcessOption(i->first,i->second)<0)
+    {
+      nOptions=-1;
+      break;
+    }
+    nOptions++;
   }
   delete options; //tidy up
 
-  return 1;
+  return nOptions;
 }
 
 //______________________________________________________________________________
@@ -556,5 +559,3 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
   return options;
 }
 
-
-#endif

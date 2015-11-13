@@ -1,3 +1,5 @@
+#ifndef __AliZMQhelpers__
+#define __AliZMQhelpers__
 
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
@@ -94,3 +96,4 @@ public:
   static stringMap* TokenizeOptionString(const TString str);
 };
 
+#endif
