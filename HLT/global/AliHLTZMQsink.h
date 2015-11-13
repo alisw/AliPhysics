@@ -11,10 +11,11 @@
 */
 
 #include "AliHLTComponent.h"
+#include "AliZMQhelpers.h"
 #include <map>
 #include <string>
 
-class AliHLTZMQsink : public AliHLTComponent {
+class AliHLTZMQsink : public AliHLTComponent, public AliOptionParser {
 public:
   
   typedef map<std::string,std::string> stringMap;
