@@ -212,7 +212,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   }
   if (rc!=0) {printf("cannot attach to %s\n",zmqEndpoints.c_str()); return -1;}
 
-  Printf("socket mode: %s, endpoints: %s",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
+  printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
   //reset the object containers
   return zmqSocketMode;
@@ -300,7 +300,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
 void alizmq_deleteTObject(void*, void* object)
 {
   //delete the TBuffer, for use in zmq_msg_init_data(...) only.
-  //Printf("deleteObject called! ZMQ just sent and destroyed the message!");
+  //printf("deleteObject called! ZMQ just sent and destroyed the message!\n");
   TObject* tobject = static_cast<TObject*>(object);
   delete tobject;
 }
@@ -483,7 +483,7 @@ int AliOptionParser::ProcessOptionString(TString arguments)
   stringMap* options = TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    //Printf("  %s : %s", i->first.data(), i->second.data());
+    //printf("  %s : %s\n", i->first.data(), i->second.data());
     ProcessOption(i->first,i->second);
   }
   delete options; //tidy up
