@@ -532,7 +532,7 @@ public:
   void   SetFriendNotStored(Bool_t v) {v ? (fFlags|=AliVTrack::kSkipFriend) : (fFlags&=(~AliVTrack::kSkipFriend));}
   Bool_t GetFriendNotStored()    const {return IsOn(AliVTrack::kSkipFriend);}
   void   SetFriendTrackID(int id)      {fFrTrackID = UShort_t(id+1);}
-  Int_t  GetFriendTrackID()      const {Int_t(fFrTrackID)-1;}
+  Int_t  GetFriendTrackID()      const {return Int_t(fFrTrackID)-1;}
 
 protected:
   
