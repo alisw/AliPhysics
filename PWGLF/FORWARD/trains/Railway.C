@@ -178,6 +178,20 @@ struct Railway
    * @name Loading stuff 
    */
   /** 
+   * Set whether to use pars.  On return, the argument is set to the
+   * old value.  So to temporaruly turn off pars, do
+   * 
+   * @code 
+   Bool_t usePar = false;
+   fRailway->UsePar(usePar); // usePar is now old value 
+   // Load real libraries 
+   fRailway->UsePar(usePar); // Restore old value 
+   * @endcode 
+   * 
+   * @param use Whether to use pars or not.  On return contains old value 
+   */
+  virtual void UsePar(Bool_t& use) {}
+  /** 
    * Load a library 
    * 
    * @param name   Name of library 

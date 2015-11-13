@@ -678,7 +678,7 @@ protected:
     if (opt.EqualTo("NONE",TString::kIgnoreCase)) return;
 
     // Possibly load as PAR
-    fRailway->LoadLibrary("OADB");
+    LoadOADB();
 
     AliPhysicsSelection* ps = 0;
     AliInputEventHandler* input = 
@@ -743,8 +743,8 @@ protected:
     if (!inp) return;
 
     // Possibly load as PAR
-    fRailway->LoadLibrary("OADB");
-
+    LoadOADB();
+    
     Bool_t mult = true; // true;
     AliAnalysisTask* task = 0;
     if (mult) {
@@ -863,6 +863,18 @@ protected:
       ::Warning("FindCar", "Task \"%s\" not found in train", 
 		name.Data());
     return task;
+  }
+  /** 
+   * Load OADB
+   * 
+   * @param asPar If true, possibly as par
+   */
+  void LoadOADB(Bool_t asPar=false)
+  {
+    Bool_t usePar = asPar;
+    fRailway->UsePar(usePar); // Disabled pars temporarily
+    fRailway->LoadLibrary("OADB");
+    fRailway->UsePar(usePar); // Set to old value 
   }
   /* @} */
   /** 
