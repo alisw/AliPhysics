@@ -173,6 +173,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetUseTOFPID(Bool_t opt=kTRUE){fUseTOFPID=opt;}
   void SetUseTPCPIDOnlyIfNoTOF(Bool_t opt=kTRUE){fUseTPCPIDOnlyIfNoTOF=opt;}
   void SetMaxMomForTPCPid(Double_t mom){fMaxMomForTPCPid=mom;}
+  void SetUsePidTag(Bool_t opt=kTRUE){fUsePidTag=opt;}
   void SetnSigmaTPCforPionSel(Double_t nsl, Double_t nsh){
     fnSigmaTPCPionLow=nsl; fnSigmaTPCPionHi=nsh;}
   void SetnSigmaTOFforPionSel(Double_t nsl, Double_t nsh){
@@ -270,6 +271,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fUseTOFPID;            /// switch use/not use TOF PID
   Bool_t fUseTPCPIDOnlyIfNoTOF; /// use TPC PID only for tracks that without TOF
   Double_t fMaxMomForTPCPid;    /// upper momentum limit to apply TPC PID
+  Bool_t fUsePidTag;            /// flag to control usage of PID tagging
   Double_t fnSigmaTPCPionLow;   /// Low cut value on n. of sigmas for pi TPC PID
   Double_t fnSigmaTPCPionHi;    /// High cut value on n. of sigmas for pi TPC PID
   Double_t fnSigmaTOFPionLow;   /// Low cut value on n. of sigmas for pi TOF PID

@@ -100,6 +100,7 @@ fUseTPCPID(kFALSE),
 fUseTOFPID(kFALSE),
 fUseTPCPIDOnlyIfNoTOF(kFALSE),
 fMaxMomForTPCPid(1.),
+fUsePidTag(kFALSE),
 fnSigmaTPCPionLow(5.),
 fnSigmaTPCPionHi(5.),
 fnSigmaTOFPionLow(5.),
@@ -191,6 +192,7 @@ fUseTPCPID(source.fUseTPCPID),
 fUseTOFPID(source.fUseTOFPID),
 fUseTPCPIDOnlyIfNoTOF(source.fUseTPCPIDOnlyIfNoTOF),
 fMaxMomForTPCPid(source.fMaxMomForTPCPid),
+fUsePidTag(source.fUsePidTag),
 fnSigmaTPCPionLow(source.fnSigmaTPCPionLow),
 fnSigmaTPCPionHi(source.fnSigmaTPCPionHi),
 fnSigmaTOFPionLow(source.fnSigmaTOFPionLow),
@@ -279,6 +281,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fUseTOFPID = source.fUseTOFPID;
   fUseTPCPIDOnlyIfNoTOF = source.fUseTPCPIDOnlyIfNoTOF;
   fMaxMomForTPCPid = source.fMaxMomForTPCPid;
+  fUsePidTag = source.fUsePidTag;
   fnSigmaTPCPionLow = source.fnSigmaTPCPionLow;
   fnSigmaTPCPionHi = source.fnSigmaTPCPionHi;
   fnSigmaTOFPionLow = source.fnSigmaTOFPionLow;
@@ -3244,8 +3247,7 @@ void AliAnalysisVertexingHF::SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoD
   //
   /// Set the selection bit for PID
   //
-  //AliCodeTimerAuto("",0);
-  if(cuts->GetPidHF()) {
+  if(fUsePidTag && cuts->GetPidHF()) {
     Bool_t usepid=cuts->GetIsUsePID();
     cuts->SetUsePID(kTRUE);
     if(cuts->IsSelectedPID(rd))
