@@ -168,6 +168,7 @@ install(FILES
             ConfigVertexingHF_Pb_Cent2080.C
             ConfigVertexingHF_Pb_AllCent.C
             ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
