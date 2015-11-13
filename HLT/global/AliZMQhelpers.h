@@ -89,7 +89,7 @@ public:
   
   //call this to parse the args
   int ProcessOptionString(TString arguments);
-  int ProcessOptionString(int argc, char** argv);
+  int ProcessOptionString(int argc, char** argv) { return ProcessOptionString(GetFullArgString(argc,argv)); }
 
   //convert argc/argv into a TString of options
   static TString GetFullArgString(int argc, char** argv);
