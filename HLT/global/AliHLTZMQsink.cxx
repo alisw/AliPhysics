@@ -97,7 +97,11 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   Int_t retCode=0;
 
   //process arguments
-  ProcessOptionString(GetComponentArgs());
+  if (ProcessOptionString(GetComponentArgs())<0) 
+  {
+    HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
+    return -1;
+  }
 
   int rc = 0;
   //init ZMQ context
@@ -305,90 +309,3 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   return 1; 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-//______________________________________________________________________________
-int AliHLTZMQsink::ProcessOptionString(TString arguments)
-{
-  //process passed options
-  HLTMessage("Argument string: %s\n", arguments.Data());
-  stringMap* options = TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  {
-    HLTMessage("  %s : %s", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
-  }
-  delete options; //tidy up
-
-  return 1; 
-}
-
-//______________________________________________________________________________
-AliHLTZMQsink::stringMap* AliHLTZMQsink::TokenizeOptionString(const TString str)
-{
-  //options have the form:
-  // -option value
-  // -option=value
-  // -option
-  // --option value
-  // --option=value
-  // --option
-  // option=value
-  // option value
-  // (value can also be a string like 'some string')
-  //
-  // options can be separated by ' ' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
-  
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
-  //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^ =]+))(?==?))"
-                    "(?(1)[^ =]+(?=[= $])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^ =]+=))"
-                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^ =]+))");
-
-  stringMap* options = new stringMap;
-
-  TArrayI pos;
-  const TString mods="";
-  Int_t start = 0;
-  while (1) {
-    Int_t prevStart=start;
-    TString optionStr="";
-    TString valueStr="";
-    
-    //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
-    if (nOption>0)
-    {
-      optionStr = str(pos[6],pos[7]-pos[6]);
-      optionStr=optionStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-
-    //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
-    if (nValue>0)
-    {
-      valueStr = str(pos[0],pos[1]-pos[0]);
-      valueStr=valueStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-    
-    //skip empty entries
-    if (nOption>0 || nValue>0)
-    {
-      (*options)[optionStr.Data()] = valueStr.Data();
-    }
-    
-    if (start>=str.Length()-1 || start==prevStart ) break;
-  }
-
-  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  //{
-  //  printf("%s : %s\n", i->first.data(), i->second.data());
-  //}
-  return options;
-}

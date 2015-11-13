@@ -18,8 +18,6 @@
 class AliHLTZMQsink : public AliHLTComponent, public AliOptionParser {
 public:
   
-  typedef map<std::string,std::string> stringMap;
-
   AliHLTZMQsink();
   virtual ~AliHLTZMQsink();
 
@@ -31,9 +29,7 @@ public:
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
-  //new option parser
-  static stringMap* TokenizeOptionString(const TString str);
-  int ProcessOptionString(TString arguments);
+  //overload from AliOptionParser
   int ProcessOption(TString option, TString value);
 
 protected:
