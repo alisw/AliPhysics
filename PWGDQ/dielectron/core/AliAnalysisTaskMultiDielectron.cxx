@@ -127,7 +127,13 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   // Add all histogram manager histogram lists to the output TList
   //
 
-  if (!fListHistos.IsEmpty()||!fListCF.IsEmpty()) return; //already initialised
+  // ---| set owner ship of lists |---------------------------------------------
+  fListDielectron.SetOwner();
+  fListHistos.SetOwner();
+  fListCF.SetOwner();
+
+  // ---| skip list initialisation if already done |----------------------------
+  if (!fListHistos.IsEmpty()||!fListCF.IsEmpty()) return;
 
 //   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 //   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
