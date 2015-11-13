@@ -123,7 +123,7 @@ private:
   AliHLTEMCALRawAnalyzerComponentSTU &operator=(const AliHLTEMCALRawAnalyzerComponentSTU &ref);
 
   /** Pointer to the raw data reader which reads from memory */
-  AliRawReaderMemory                  *fRawReaderMemoryPtr;            //!transient
+  //AliRawReaderMemory                  *fRawReaderMemoryPtr;            //!transient
 
   /** STU Raw Digit Maker */
   AliHLTEMCALSTURawDigitMaker         *fSTURawDigitMaker;

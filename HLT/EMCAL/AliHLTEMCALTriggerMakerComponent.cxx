@@ -167,11 +167,29 @@ AliHLTComponent* AliHLTEMCALTriggerMakerComponent::Spawn(){
 
 int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   InitialiseGeometry();
+  Int_t onlinethresh[2]; memset(onlinethresh, 0, sizeof(Int_t) *2);
+  Float_t offlinethresh[2]; memset(offlinethresh, 0, sizeof(Float_t) *2);
+  for(Int_t iarg = 0; iarg < argc; iarg++){
+    TString argstring(argv[iarg]);
+    if(argstring.Contains("-gammaoffthresh")){
+      offlinethresh[0] = TString(argv[iarg+1]).Atof();
+    } else if(argstring.Contains("-gammaonthresh")){
+      onlinethresh[0] = TString(argv[iarg+1]).Atoi();
+    } else if(argstring.Contains("-jetoffthresh")){
+      offlinethresh[1] = TString(argv[iarg+1]).Atof();
+    } else if(argstring.Contains("-jetonthresh")){
+      onlinethresh[1] = TString(argv[iarg+1]).Atoi();
+    }
+  }
   fTriggerMakerPtrCells = new AliHLTEMCALTriggerMaker;
   fTriggerMakerPtrCells->SetOrigin(AliHLTEMCALTriggerMaker::kOriginCELLS);
+  fTriggerMakerPtrCells->SetGammaThreshold(offlinethresh[0]);
+  fTriggerMakerPtrCells->SetJetThreshold(offlinethresh[1]);
   fTriggerMakerPtrCells->Initialise(fGeometry);
   fTriggerMakerPtrFastor = new AliHLTEMCALTriggerMaker;
   fTriggerMakerPtrFastor->SetOrigin(AliHLTEMCALTriggerMaker::kOriginRECAL);
+  fTriggerMakerPtrCells->SetGammaThreshold(onlinethresh[0]);
+  fTriggerMakerPtrCells->SetJetThreshold(onlinethresh[1]);
   fTriggerMakerPtrFastor->Initialise(fGeometry);
   return 0;
 }

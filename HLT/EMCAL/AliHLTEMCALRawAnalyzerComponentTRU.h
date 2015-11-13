@@ -104,10 +104,10 @@ class AliHLTEMCALRawAnalyzerComponentTRU :  public AliHLTCaloProcessor, protecte
   AliHLTEMCALRawAnalyzerComponentTRU & operator = (const AliHLTEMCALRawAnalyzerComponentTRU &);
 
   /** Pointer to the raw data reader which reads from memory */
-  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
+  //AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
 
   /** Pointer to the raw stream */
-  AliCaloRawStreamV3* fAltroRawStreamPtr;              //!transient
+  //AliCaloRawStreamV3* fAltroRawStreamPtr;              //!transient
 
 
   ClassDef(AliHLTEMCALRawAnalyzerComponentTRU, 0)

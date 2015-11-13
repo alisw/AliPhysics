@@ -109,6 +109,17 @@ public:
    */
   Int_t FindPatches();
 
+  /**
+   * Set the threshold for jet trigger patches
+   * @param threshold Threshold to be applied
+   */
+  void SetJetThreshold(Float_t threshold) { fJetThreshold = threshold; }
+
+  /**
+   *
+   */
+  void SetGammaThreshold(Float_t threshold) { fGammaThreshold = threshold; }
+
 protected:
   /**
    * Convert raw patches found by the trigger patch finders into HLT EMCAL trigger patches.
@@ -137,6 +148,11 @@ private:
   AliEMCALTriggerPatchFinder<float>             *fPatchFinder;
   /** Grid with ADC values used for the trigger patch finding */
   AliEMCALTriggerDataGrid<float>                *fADCValues;
+
+  /** offline threshold for gamma patches */
+  Float_t                                       fGammaThreshold;
+  /** offline threshold for jet patches */
+  Float_t                                       fJetThreshold;
 
   ClassDef(AliHLTEMCALTriggerMaker, 1);
 };

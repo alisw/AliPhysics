@@ -159,10 +159,10 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   AliHLTCaloSanityInspector *fSanityInspectorPtr;     //!transient  /** Pointer to object which may check the integrity of the data */
 
   /** Pointer to the raw data reader which reads from memory */
-  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
+  //AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
   
   /** Pointer to the raw stream */
-  AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
+  //AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
 
   /** detector */
   TString fDetector;                                  // detector string id

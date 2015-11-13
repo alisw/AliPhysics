@@ -277,7 +277,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
     }
     HLTDebug("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
   }
-  fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
+  fDigitStructPtr->fTime = channelData->fTime; // * 0.0000001; //TODO
   fDigitStructPtr->fCrazyness = channelData->fCrazyness;
   fDigitStructPtr->fModule = coord.fModuleId;
   fDigitStructPtr = tmpDigit;

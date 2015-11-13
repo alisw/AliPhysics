@@ -48,7 +48,7 @@ AliHLTEMCALSTURawDigitMaker::~AliHLTEMCALSTURawDigitMaker() {
   if(fTriggerData) delete fTriggerData;
 }
 
-void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliRawReader *reader, AliEMCALTriggerSTURawStream *stustream){
+void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *stustream){
 
   //std::cout << "Start Processing STU data" << std::endl;
   HLTDebug("Start post processing the raw digit maker");

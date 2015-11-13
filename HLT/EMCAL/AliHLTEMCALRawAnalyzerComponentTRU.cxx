@@ -48,9 +48,7 @@ ClassImp(AliHLTEMCALRawAnalyzerComponentTRU);
 AliHLTEMCALRawAnalyzerComponentTRU::AliHLTEMCALRawAnalyzerComponentTRU( ):AliHLTCaloProcessor(),
     AliHLTCaloConstantsHandler("EMCAL"),
     fTRUhandler(0),
-    fDebug(false),
-    fRawReaderMemoryPtr(0),
-    fAltroRawStreamPtr(0)
+    fDebug(false)
 {
   //Constructor
 
@@ -103,12 +101,8 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoInit( int argc, const char** argv )
     }
   }
 
-  fRawReaderMemoryPtr = new AliRawReaderMemory();
-  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, "EMCAL");
-
   fTRUhandler = new AliHLTEMCALTRURawDigitMaker();
   fTRUhandler->Initialize(GetRunNo());
-  fTRUhandler->SetRawReader(dynamic_cast<AliCaloRawStreamV3 *>(fAltroRawStreamPtr));
 
   return iResult;
 }
@@ -118,16 +112,6 @@ int
 AliHLTEMCALRawAnalyzerComponentTRU::DoDeinit()
 {
   //comment
-  if(fAltroRawStreamPtr)
-  {
-    delete fAltroRawStreamPtr;
-    fAltroRawStreamPtr = 0;
-  }
-
-  if (fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
-  fRawReaderMemoryPtr=NULL;
-  if (fAltroRawStreamPtr) delete fAltroRawStreamPtr;
-  fAltroRawStreamPtr=NULL;
   if(fTRUhandler) delete fTRUhandler;
 
   return 0;
@@ -245,21 +229,25 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
   Short_t channelCount     = 0;
 
   AliHLTCaloTriggerRawDigitDataStruct *digitDataPtr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct*>(outputPtr);
-  //fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  //fRawReaderMemoryPtr->SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
-  fRawReaderMemoryPtr->AddBuffer(reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize ), iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
-  fRawReaderMemoryPtr->Reset();
-  fRawReaderMemoryPtr->NextEvent();
+  AliRawReaderMemory rawReaderMemoryPtr;
+  rawReaderMemoryPtr.SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
+  rawReaderMemoryPtr.SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
 
+  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, "EMCAL");
+  rawReaderMemoryPtr.Reset();
+  rawReaderMemoryPtr.NextEvent();
+
+
+  fTRUhandler->SetRawReader(&altroRawStreamPtr);
   fTRUhandler->Reset();
 
-  if(fAltroRawStreamPtr->NextDDL()) {
+  if(altroRawStreamPtr.NextDDL()) {
     int cnt = 0;
-    while(fAltroRawStreamPtr->NextChannel()) {
-      if( fAltroRawStreamPtr->GetCaloFlag() == 2) { // These are the level1 triggers
+    while(altroRawStreamPtr.NextChannel()) {
+      if( altroRawStreamPtr.GetCaloFlag() == 2) { // These are the level1 triggers
         std::vector <AliCaloBunchInfo> bunchlist;
-        while (fAltroRawStreamPtr->NextBunch())
-          bunchlist.push_back( AliCaloBunchInfo(fAltroRawStreamPtr->GetStartTimeBin(), fAltroRawStreamPtr->GetBunchLength(), fAltroRawStreamPtr->GetSignals() ) );
+        while (altroRawStreamPtr.NextBunch())
+          bunchlist.push_back( AliCaloBunchInfo(altroRawStreamPtr.GetStartTimeBin(), altroRawStreamPtr.GetBunchLength(), altroRawStreamPtr.GetSignals() ) );
         if (bunchlist.size() == 0) continue;
 
         fTRUhandler->Add(bunchlist);
