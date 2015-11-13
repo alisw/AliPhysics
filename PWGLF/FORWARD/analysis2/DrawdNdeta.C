@@ -481,7 +481,7 @@ struct dNdetaDrawer
 	  		   "+(x<-2.4)*2*TMath::Pi()*[0]*TMath::Power(x+2.2,2)",
 	  		   -6, 6);
 #else 
-	  TF1* f = new TF1("corr", "1+[0]+(x<-2.4)*sqrt(2)*[0]*pow(x+2.2,2)");
+	  TF1* f = new TF1("corr", "1+[0]+(x<-2.3)*sqrt(2)*[0]*pow(x+2.3,2)");
 #endif 
 	  f->SetParameter(0,delta);
 	  Info("", "Applying correction for IP_delta=%f", delta);
