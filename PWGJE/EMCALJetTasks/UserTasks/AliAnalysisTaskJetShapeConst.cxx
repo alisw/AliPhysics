@@ -3,11 +3,13 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TLorentzVector.h>
+#include <TTree.h>
 
 #include <AliParticleContainer.h>
 #include <AliJetContainer.h>
 #include <AliRhoParameter.h>
 #include <AliEmcalJet.h>
+#include <AliVParticle.h>
 
 #include "AliAnalysisTaskJetShapeConst.h"
 
@@ -50,7 +52,9 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   // Create user output.
 
   AliAnalysisTaskJetShapeBase::UserCreateOutputObjects();
-
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
   fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; #it{p}_{T, jet} - #it{p}_{T, Emb Track};Entries", 500,-10.,110.);
   fOutput->Add(fhptjetSMinusSingleTrack);
   
@@ -63,7 +67,8 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fhAreaJet = new TH1F("fhAreaJet", "Area (matched jets); Area", 400., 0., 4);
   fOutput->Add(fhAreaJet);
   
-
+  TH1::AddDirectory(oldStatus);
+  
   PostData(1, fOutput);
 }
 

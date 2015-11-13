@@ -35,15 +35,15 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskJetShapeBase {
   Float_t         fDeriv1st;                                       ///< 1st derivative
   Float_t         fDeriv2nd;                                       ///< 2nd derivative
   Bool_t          fPartialExclusion;                               ///< randomly esclude areas according to Ncoll
-  TH2F          **fh2MSubPtSubAll;                                 ///!<! subtracted jet mass vs subtracted jet pT
-  TH2F          **fh2PtTrueSubFacV1;                               ///!<! true pT vs -(rho+rhom)*V1
-  TH2F          **fh2PtRawSubFacV1;                                ///!<! raw pT vs -(rho+rhom)*V1
-  TH2F          **fh2PtCorrSubFacV1;                               ///!<! subtracted pT vs -(rho+rhom)*V1
-  TH2F          **fh2NConstSubFacV1;                               ///!<! N constituents vs -(rho+rhom)*V1
-  TH2F          **fh2PtTrueSubFacV2;                               ///!<! true pT vs 0.5(rho+rhom)^2*V2
-  TH2F          **fh2PtRawSubFacV2;                                ///!<! raw pT vs 0.5(rho+rhom)^2*V2
-  TH2F          **fh2PtCorrSubFacV2;                               ///!<! subtracted pT vs 0.5(rho+rhom)^2*V2
-  TH2F          **fh2NConstSubFacV2;                               ///!<! N constituents vs 0.5(rho+rhom)^2*V2
+  TH2F          **fh2MSubPtSubAll;                                 //!<! subtracted jet mass vs subtracted jet pT
+  TH2F          **fh2PtTrueSubFacV1;                               //!<! true pT vs -(rho+rhom)*V1
+  TH2F          **fh2PtRawSubFacV1;                                //!<! raw pT vs -(rho+rhom)*V1
+  TH2F          **fh2PtCorrSubFacV1;                               //!<! subtracted pT vs -(rho+rhom)*V1
+  TH2F          **fh2NConstSubFacV1;                               //!<! N constituents vs -(rho+rhom)*V1
+  TH2F          **fh2PtTrueSubFacV2;                               //!<! true pT vs 0.5(rho+rhom)^2*V2
+  TH2F          **fh2PtRawSubFacV2;                                //!<! raw pT vs 0.5(rho+rhom)^2*V2
+  TH2F          **fh2PtCorrSubFacV2;                               //!<! subtracted pT vs 0.5(rho+rhom)^2*V2
+  TH2F          **fh2NConstSubFacV2;                               //!<! N constituents vs 0.5(rho+rhom)^2*V2
 
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
