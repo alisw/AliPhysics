@@ -25,13 +25,14 @@ class AliRsnCutEventUtils : public AliRsnCut {
   void           SetRemoveFirstEvtInChunk(Bool_t doit = kTRUE) {fIsRmFirstEvInChunck = doit;}
   void           SetUseMVPlpSelection(Bool_t useMVPlpSelection = kFALSE) { fUseMVPlpSelection = useMVPlpSelection;}
   void           SetUseVertexSelection2013pA(Bool_t vtxpA2013 = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pA = vtxpA2013; fMaxVtxZ = maxVtxZ;}
+  void           SetUseVertexSelection2013pAIDspectra(Bool_t enable = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pAspectra = enable; fUseVertexSelection2013pA = kFALSE; fMaxVtxZ = maxVtxZ;}
   Bool_t         IsSelected(TObject *object);
   AliAnalysisUtils* GetAnalysisUtils() { return fUtils; }
   void           SetAnalysisUtils(AliAnalysisUtils* utils){ fUtils = utils; }
   void           SetMinPlpContribMV(Int_t minPlpContribMV) { fMinPlpContribMV = minPlpContribMV;}
   void           SetMinPlpContribSPD(Int_t minPlpContribSPD) { fMinPlpContribSPD = minPlpContribSPD;}
   void           SetFilterNSDeventsDPMJETpA2013(Bool_t doit = kFALSE) {fFilterNSDeventsDPMJETpA2013 = doit;}
-
+  Bool_t         IsVertexSelected2013pAIDspectra(AliVEvent *event);
  private:
   
   Bool_t              fIsRmFirstEvInChunck; // if kTRUE, remove the first event in the chunk (pA2013)
@@ -40,12 +41,13 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Int_t               fMinPlpContribMV; // min. n. of MV pile-up contributors
   Int_t               fMinPlpContribSPD; // min. n. of pile-up contributors from SPD
   Bool_t              fUseVertexSelection2013pA;// check and reject vertex of events for pA2013
+  Bool_t              fUseVertexSelection2013pAspectra;// check and reject vertex of events for pA2013
   Double_t            fMaxVtxZ;//max selected z_vtx
   Bool_t              fFilterNSDeventsDPMJETpA2013;//enable filter for NSD events in DPMJET MC for pA
 
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnCutEventUtils, 4)
+  ClassDef(AliRsnCutEventUtils, 5)
     
     };
 

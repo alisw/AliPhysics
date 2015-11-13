@@ -25,6 +25,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fMinPlpContribMV(5),
   fMinPlpContribSPD(5),
   fUseVertexSelection2013pA(kFALSE),
+  fUseVertexSelection2013pAspectra(kFALSE),
   fMaxVtxZ(10.0),
   fFilterNSDeventsDPMJETpA2013(kFALSE),
   fUtils(0x0)
@@ -49,6 +50,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fMinPlpContribMV(copy.fMinPlpContribMV),
   fMinPlpContribSPD(copy.fMinPlpContribSPD),
   fUseVertexSelection2013pA(copy.fUseVertexSelection2013pA),
+  fUseVertexSelection2013pAspectra(copy.fUseVertexSelection2013pAspectra),
   fMaxVtxZ(copy.fMaxVtxZ),
   fFilterNSDeventsDPMJETpA2013(copy.fFilterNSDeventsDPMJETpA2013),
   fUtils(copy.fUtils)
@@ -75,6 +77,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fMinPlpContribMV=copy.fMinPlpContribMV;
   fMinPlpContribSPD=copy.fMinPlpContribSPD;
   fUseVertexSelection2013pA=copy.fUseVertexSelection2013pA;
+  fUseVertexSelection2013pAspectra=copy.fUseVertexSelection2013pAspectra;
   fMaxVtxZ=copy.fMaxVtxZ;
   fFilterNSDeventsDPMJETpA2013=copy.fFilterNSDeventsDPMJETpA2013;
   fUtils=copy.fUtils;
@@ -100,10 +103,6 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    fUtils->SetMinPlpContribSPD(fMinPlpContribSPD);
    fUtils->SetMaxVtxZ(fMaxVtxZ);
 
-   // pile-up check
-   if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt)))
-     return kFALSE;
-  
    //remove first event in chunk 
    if ((fIsRmFirstEvInChunck) && (fUtils->IsFirstEventInChunk(vevt)))
      return kFALSE;
@@ -112,6 +111,14 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    if((fUseVertexSelection2013pA) && (!fUtils->IsVertexSelected2013pA(vevt)))
       return kFALSE;
 
+   //apply vertex selection - for 2013 pPb data
+   if ((fUseVertexSelection2013pAspectra) && IsVertexSelected2013pAIDspectra(vevt))
+     return kTRUE;
+
+   // pile-up check
+   if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt)))
+     return kFALSE;
+   
    //apply filter for NSD events in DPMJET MC for pA
    if (fFilterNSDeventsDPMJETpA2013){
      //Adaptation of snippet received from David D. Chinellato on 07/09/2015 +
@@ -154,4 +161,51 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    }
    
    return kTRUE;
+}
+
+
+Bool_t AliRsnCutEventUtils::IsVertexSelected2013pAIDspectra(AliVEvent *event)
+{
+  // Check whether the event is of AOD or ESD type
+  AliAODEvent *aod = 0x0;
+  AliESDEvent *esd = 0x0;
+  aod = dynamic_cast<AliAODEvent*>(event);
+  esd = dynamic_cast<AliESDEvent*>(event);
+
+  Bool_t fisAOD = kFALSE;
+  if(aod) { 
+    fisAOD = kTRUE; 
+  } else {
+    fisAOD = kFALSE;
+    if(!esd) {
+      AliFatal("Event is neither of AOD nor ESD type");
+      return kFALSE;
+    }
+  }
+  
+  //Roberto's PV selection criteria, implemented 17th April 2013 on ESDs
+  //fbellini modifications for usage with both ESDs and AODs
+   /* vertex selection */
+  
+  Bool_t accept = kFALSE; 
+  const AliVVertex *vertex = fisAOD ? 
+    dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex()) : 
+    dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertex()) ;
+  
+  if (vertex->GetNContributors() < 1) {
+    vertex = fisAOD ? 
+      dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertexSPD()) : 
+      dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD()) ;
+    if (vertex->GetNContributors() < 1) accept = kFALSE;
+    else accept = kTRUE;
+    Double_t cov[6]={0};
+    vertex->GetCovarianceMatrix(cov);
+    Double_t zRes = TMath::Sqrt(cov[5]);
+    if (vertex->IsFromVertexerZ() && (zRes>0.25)) accept = kFALSE;
+  }
+  else accept = kTRUE;    
+  
+  Float_t zvtx = vertex->GetZ();
+  if (TMath::Abs(zvtx) > fMaxVtxZ) accept = kFALSE;
+  return accept; 
 }
