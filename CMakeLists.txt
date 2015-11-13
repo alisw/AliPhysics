@@ -166,6 +166,9 @@ else()
 
   # List of modules for which PARfiles are enabled -- use the cache as global scope and clean it
   set(ALIPARFILES "" CACHE INTERNAL "ALIPARFILES" FORCE)
+  # same for libraries now
+  set(ALILIBSTESTED "" CACHE INTERNAL "ALILIBSTESTED" FORCE)
+  include(AddLibraryTested)
 
   # AliRoot modules
   add_subdirectory(CORRFW)
@@ -194,3 +197,14 @@ else()
   message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
 
 endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
+
+# enable testing
+enable_testing()
+
+# check for usable ROOT
+add_test(ROOT root -l -b -q)
+
+# check loading of libraries
+foreach(lib ${ALILIBSTESTED})
+  add_test(${lib} root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/Tools/macros/LoadLib.C (\"lib${lib}\")" )
+endforeach()
