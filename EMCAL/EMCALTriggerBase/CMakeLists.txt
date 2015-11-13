@@ -34,6 +34,7 @@ set(SRCS
   AliEMCALTriggerPatchInfo.cxx
   AliEMCALTriggerBitConfig.cxx
   AliEMCALTriggerQA.cxx
+  AliEMCALTriggerFastOR.cxx
   )
 
 # Headers from sources
