@@ -182,17 +182,17 @@ stringMap* TokenizeOptionString(const TString str)
   // option value
   // (value can also be a string like 'some string')
   //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
+  // options can be separated by ' ' arbitrarily combined, e.g:
   //"-option option1=value1 --option2 value2, -option4=\'some string\'"
   
   //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))"
-                    "(?(1)[^, =]+(?=[= $])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))"
+  TPRegexp optionRE("(?:(-{1,2})|((?='?[^=]+=?)))"
+                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^ =]+))(?==?))"
+                    "(?(1)[^ =]+(?=[= $])))");
+  TPRegexp valueRE("(?(?!(-{1,2}|[^ =]+=))"
                    "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^, =]+))");
+                   "|[^ =]+))");
 
   stringMap* options = new stringMap;
 
