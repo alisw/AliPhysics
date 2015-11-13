@@ -23,7 +23,7 @@ class AliESDEvent;
 class TH2D;
 class TH1D;
 class TList;
-
+class TVector3;
 
 /** 
  * Calculate the corrections in the base regions
@@ -240,14 +240,14 @@ protected:
    * @param esd ESD event 
    * @param mc  MC event 
    * @param bin Vertex bin
-   * @param vz  @f$IP_{z}@f$ 
+   * @param ip  @f$IP_{z}@f$ 
    * 
    * @return true on success 
    */
   virtual Bool_t ProcessESD(const AliESDEvent& esd, 
 			    const AliMCEvent& mc, 
 			    VtxBin& bin,
-			    Double_t          vz) = 0;
+			    const TVector3& ip) = 0;
   /** 
    * Create corrections objects and store them in passed list
    * 

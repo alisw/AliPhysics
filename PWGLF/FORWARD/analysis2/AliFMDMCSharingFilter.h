@@ -109,7 +109,7 @@ public:
    */
   Bool_t FilterMC(const AliESDFMD&  input, 
 		  const AliMCEvent& event,
-		  Double_t          vz,
+		  const TVector3&   ip, 
 		  AliESDFMD&        output,
 		  TH2D*             primary);
   /** 

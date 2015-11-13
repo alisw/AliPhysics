@@ -94,7 +94,8 @@ AliFMDMCTrackInspector::Event(const AliESDEvent& esdInput,
   AliESDFMD*  esdFMD    = esdInput.GetFMDData();
   if (!esdFMD) return true;
 
-  fTracker.Calculate(*esdFMD, mcInput, fIp[2], cent);
+  TVector3 ip(fIp[0], fIp[1], fIp[2]);
+  fTracker.Calculate(*esdFMD, mcInput, ip, cent);
 
   return PostEvent();
 }

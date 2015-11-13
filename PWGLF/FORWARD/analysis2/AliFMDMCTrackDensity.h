@@ -96,7 +96,7 @@ public:
    */
   Bool_t Calculate(const AliESDFMD&    esd, 
 		   const AliMCEvent&   event, 
-		   Double_t            vz,
+		   const TVector3&     ip, 
 		   AliESDFMD&          output,
 		   TH2D*               primary);
   /** 

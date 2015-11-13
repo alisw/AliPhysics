@@ -20,6 +20,7 @@
 #include "AliAODForwardMult.h"
 #include <TH1.h>
 #include <TH2D.h>
+#include <TH2F.h>
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TList.h>
@@ -264,7 +265,7 @@ AliBaseMCCorrectionsTask::Event(AliESDEvent& esd)
   TVector3 ip(1024,1024,1000);
   Double_t cent      = -1;   // Centrality 
   UShort_t iVzMc     = 0;    // Vertex bin from MC
-  Double_t vZMc      = 1000; // Z coordinate of IP vertex from MC
+  TVector3 ipMc(1024,1024,1000);
   Double_t b         = -1;   // Impact parameter
   Double_t cMC       = -1;   // Centrality estimate from b
   Int_t    nPart     = -1;   // Number of participants 
@@ -288,37 +289,38 @@ AliBaseMCCorrectionsTask::Event(AliESDEvent& esd)
   }		
 
 
-  fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
+  fInspector.ProcessMC(mcEvent, triggers, iVzMc, ipMc, 
 		       b, cMC, nPart, nBin, phiR);
   
-  fInspector.CompareResults(ip.Z(),    vZMc, 
+  fInspector.CompareResults(ip.Z(),    ipMc.Z(), 
 			    cent,      cMC, 
 			    b, nPart,  nBin);
   // Only allow NSD events to contribute 
   // if (!(triggers & AliAODForwardMult::kMCNSD)) return false;
-
   Bool_t isInel   = triggers & AliAODForwardMult::kInel;
   Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;
 
+  
   // Fill the event count histograms 
-  if (isInel)           fHEventsTr->Fill(vZMc);
-  if (isInel && hasVtx) fHEventsTrVtx->Fill(vZMc);
-  fHEvents->Fill(vZMc);
+  if (isInel)           fHEventsTr->Fill(ipMc.Z());
+  if (isInel && hasVtx) fHEventsTrVtx->Fill(ipMc.Z());
+  fHEvents->Fill(ipMc.Z());
 
   // Now find our vertex bin object 
   VtxBin*  bin      = 0;
   UShort_t usedZbin = iVzMc; 
   if (fUseESDVertex) usedZbin = iVz;
+  // if (!hasVtx)       usedZbin = 0;
 
 
   if (usedZbin > 0 && usedZbin <= fVtxAxis.GetNbins()) 
     bin = static_cast<VtxBin*>(fVtxBins->At(usedZbin));
   if (!bin) { 
-    // AliError(Form("No vertex bin object @ %d (%f)", iVzMc, vZMc));
+    // AliError(Form("No vertex bin object @ %d (%f)", iVzMc, ipMc.Z()));
     return false;
   }
 
-  return ProcessESD(esd, *mcEvent, *bin, vZMc);
+  return ProcessESD(esd, *mcEvent, *bin, ipMc);
 }
 
 //____________________________________________________________________

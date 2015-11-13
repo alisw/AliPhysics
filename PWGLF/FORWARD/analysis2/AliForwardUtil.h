@@ -22,6 +22,7 @@ class TH1;
 class TF1;
 class TAxis;
 class TArrayD;
+class TVector3;
 class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
@@ -212,6 +213,53 @@ public:
    * @return Radial distance from beam of the strip 
    */
   static Double_t GetStripR(Char_t ring, UShort_t strip);
+  /** 
+   * Get the location of a sector in Z (in centimeters) 
+   * 
+   * @param det   Detector 
+   * @param ring  Ring 
+   * @param sec   Sector 
+   * 
+   * @return Z position 
+   */
+  static Double_t GetSectorZ(UShort_t det, Char_t ring, UShort_t sec);
+  /** 
+   * Get the azimythal angle of sector (in radians)
+   * 
+   * @param det   Detector
+   * @param ring  Ring
+   * @param sec   Sector 
+   * 
+   * @return Azimuthal angle (in radians)
+   */
+  static Double_t GetSectorPhi(UShort_t det, Char_t ring, UShort_t sec);
+  /** 
+   * Get the coordinates of a strip relative to the interaction point
+   * 
+   * @param det   Detector 
+   * @param ring  Ring
+   * @param sec   Sector 
+   * @param str   Strip 
+   * @param ip   The interaction point
+   * @param pos  On return, the relative position 
+   */
+  static void GetXYZ(UShort_t det, Char_t ring, UShort_t sec,
+		     UShort_t str, const TVector3& ip,
+		     TVector3& pos);
+  /** 
+   * Get the eta and phi of a strip given an interaction point 
+   * 
+   * @param det   Detector 
+   * @param ring  Ring
+   * @param sec   Sector 
+   * @param str   Strip 
+   * @param ip    Interaction point 
+   * @param eta   On return, the eta
+   * @param phi   On return, the phi (in radians)
+   */
+  static void     GetEtaPhi(UShort_t det, Char_t ring, UShort_t sec,
+			    UShort_t str, const TVector3& ip,
+			    Double_t& eta, Double_t& phi);
   /** 
    * Get eta from strip
    * 

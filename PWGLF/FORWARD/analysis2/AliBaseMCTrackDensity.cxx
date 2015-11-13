@@ -9,6 +9,7 @@
 #include <TH1D.h>
 #include <TList.h>
 #include <TROOT.h>
+#include <TVector3.h>
 #include <iostream>
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
@@ -26,7 +27,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
     fNRefs(0),
     fWeights(0),
     fTruthWeights(0),
-    fVz(0), 
+    fIP(0,0,0), 
     fB(0),
     fPhiR(0),
     fDebug(false),
@@ -46,7 +47,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
     fNRefs(0),
     fWeights(0),
     fTruthWeights(0),
-    fVz(0), 
+    fIP(0,0,0), 
     fB(0),
     fPhiR(0),
     fDebug(false),
@@ -66,7 +67,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
     fNRefs(o.fNRefs),
     fWeights(o.fWeights),
     fTruthWeights(o.fTruthWeights),
-    fVz(o.fVz), 
+    fIP(o.fIP), 
     fB(o.fB),
     fPhiR(o.fPhiR),
     fDebug(o.fDebug),
@@ -92,7 +93,7 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
   fDebug                = o.fDebug;
   fWeights              = o.fWeights;
   fTruthWeights         = o.fTruthWeights;
-  fVz                   = o.fVz;
+  fIP.SetXYZ(o.fIP.X(), o.fIP.Y(), o.fIP.Z());
   fB                    = o.fB;
   fPhiR                 = o.fPhiR;
   fTrackGammaToPi0      = o.fTrackGammaToPi0;
@@ -193,9 +194,9 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
   
 
   // Get track-reference stuff 
-  Double_t x      = ref->X();
-  Double_t y      = ref->Y();
-  Double_t z      = ref->Z()-fVz;
+  Double_t x      = ref->X()-fIP.X();
+  Double_t y      = ref->Y()-fIP.Y();
+  Double_t z      = ref->Z()-fIP.Z();
   Double_t rr     = TMath::Sqrt(x*x+y*y);
   Double_t thetaR = TMath::ATan2(rr,z);
   Double_t phiR   = TMath::ATan2(y,x);
@@ -223,9 +224,9 @@ Double_t
 AliBaseMCTrackDensity::GetTrackRefTheta(const AliTrackReference* ref) const
 {
   // Get the incidient angle of the track reference. 
-  Double_t x    = ref->X();
-  Double_t y    = ref->Y();
-  Double_t z    = ref->Z()-fVz;
+  Double_t x    = ref->X()-fIP.X();
+  Double_t y    = ref->Y()-fIP.Y();
+  Double_t z    = ref->Z()-fIP.Z();
   Double_t rr   = TMath::Sqrt(x*x+y*y);
   Double_t theta= TMath::ATan2(rr,z);
   Double_t ang  = TMath::Abs(TMath::Pi()-theta);
@@ -339,7 +340,7 @@ AliBaseMCTrackDensity::ProcessTrack(AliMCParticle* particle,
 //____________________________________________________________________
 Bool_t
 AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
-				     Double_t          vz,
+				     const TVector3&   ip, 
 				     TH2D*             primary)
 {
   // 
@@ -357,7 +358,7 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
   //    True on succes, false otherwise 
   //
   DGUARD(fDebug,3,"MC track density Process a tracks");
-  fVz = vz;
+  fIP.SetXYZ(ip.X(), ip.Y(), ip.Z());
   GetCollisionParameters(event);
   
   AliStack* stack = const_cast<AliMCEvent&>(event).Stack();

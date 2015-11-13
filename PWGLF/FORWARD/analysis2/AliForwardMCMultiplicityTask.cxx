@@ -230,16 +230,16 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   UInt_t   found     = fEventInspector.Process(&esd, triggers, lowFlux, 
 					       ivz, ip, cent, nClusters);
   UShort_t ivzMC    = 0;
-  Double_t vzMC     = 0;
+  TVector3 ipMC(1024, 1024, 0);  
   Double_t phiR     = 0;
   Double_t b        = 0;
   Double_t cMC      = 0;
   Int_t    npart    = 0;
   Int_t    nbin     = 0;
   // UInt_t   foundMC  = 
-  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, cMC,
+  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, ipMC, b, cMC,
 			    npart, nbin, phiR);
-  fEventInspector.CompareResults(ip.Z(), vzMC, cent, cMC, b, npart, nbin);
+  fEventInspector.CompareResults(ip.Z(), ipMC.Z(), cent, cMC, b, npart, nbin);
   fMultEventClassifier.Process(&esd,&fAODRef);
   FILL_SW(individual,kTimingEventInspector);
   
@@ -310,14 +310,14 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
     fHStatus->Fill(kStatusFailSharing);
     return false;
   }
-  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip.Z(),fMCESDFMD,fPrimary)){
+  if (!fSharingFilter.FilterMC(*esdFMD, *mcEvent, ip,fMCESDFMD,fPrimary)){
     AliWarning("MC Sharing filter failed!");
     fHStatus->Fill(kStatusFailSharing);
     return false;
   }
 
   // Store some MC parameters in corners of histogram :-)
-  fPrimary->SetBinContent(0,                      0,                    vzMC);
+  fPrimary->SetBinContent(0,                      0,                ipMC.Z());
   fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,0,                    phiR);
   fPrimary->SetBinContent(fPrimary->GetNbinsX()+1,fPrimary->GetNbinsY(),cMC);
   
