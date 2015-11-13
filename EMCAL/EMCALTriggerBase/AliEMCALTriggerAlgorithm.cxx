@@ -36,7 +36,8 @@ fRowMin(0),
 fRowMax(0),
 fPatchSize(0),
 fBitMask(0),
-fThreshold(0)
+fThreshold(0),
+fOfflineThreshold(0)
 {
 }
 
@@ -47,7 +48,8 @@ fRowMin(rowmin),
 fRowMax(rowmax),
 fPatchSize(bitmask),
 fBitMask(0),
-fThreshold(0)
+fThreshold(0),
+fOfflineThreshold(0)
 {
 }
 
@@ -56,23 +58,26 @@ AliEMCALTriggerAlgorithm<T>::~AliEMCALTriggerAlgorithm() {
 }
 
 template<typename T>
-std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const {
+std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(const AliEMCALTriggerDataGrid<T> &adc, const AliEMCALTriggerDataGrid<T> &offlineAdc) const {
   std::vector<AliEMCALTriggerRawPatch> result;
   T sumadc(0);
+  T sumofflineAdc(0);
   for(int irow = fRowMin; irow < fRowMax - fPatchSize; irow += fPatchSize){
     for(int icol = 0; icol < adc.GetNumberOfCols() - fPatchSize; icol += fPatchSize){
       sumadc = 0;
+      sumofflineAdc = 0;
       for(int jrow = irow; jrow < irow + fPatchSize; jrow++){
         for(int jcol = icol; jcol < icol + fPatchSize; jcol++){
           try{
             sumadc += adc(jcol, jrow);
+	    sumofflineAdc += offlineAdc(jcol, jrow);
           } catch (typename AliEMCALTriggerDataGrid<T>::OutOfBoundsException &e){
 
           }
         }
       }
-      if(sumadc > fThreshold){
-        AliEMCALTriggerRawPatch recpatch(icol, irow, fPatchSize, sumadc);
+      if(sumadc > fThreshold || sumofflineAdc > fOfflineThreshold){
+        AliEMCALTriggerRawPatch recpatch(icol, irow, fPatchSize, sumadc, sumofflineAdc);
         recpatch.SetBitmask(fBitMask);
         result.push_back(recpatch);
       }

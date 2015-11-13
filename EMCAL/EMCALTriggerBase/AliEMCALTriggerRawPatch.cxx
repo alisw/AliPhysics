@@ -25,16 +25,18 @@ AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch():
   fCol0(-1),
   fRow0(-1),
   fSize(-1),
-  fADC(0)
+  fADC(0),
+  fOfflineADC(0)
 {
 }
 
-AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc):
+AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineAdc):
   fBitMask(0),
   fCol0(col0),
   fRow0(row0),
   fSize(size),
-  fADC(adc)
+  fADC(adc),
+  fOfflineADC(offlineAdc)
 {
 }
 

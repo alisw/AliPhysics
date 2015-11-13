@@ -21,6 +21,7 @@
 #include "AliEMCALTriggerDataGrid.h"
 #include "AliEMCALTriggerPatchFinder.h"
 #include "AliEMCALTriggerRawPatch.h"
+#include "AliEMCALTriggerConstants.h"
 
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloTriggerPatchContainerStruct.h"
@@ -37,19 +38,28 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fkGeometryPtr(NULL),
   fPatchFinder(NULL),
   fADCValues(NULL),
-  fOrigin(kOriginCELLS),
-  fGammaThreshold(0),
-  fJetThreshold(0)
+  fADCOfflineValues(NULL),
+  fTriggerBitMasks(NULL),
+  fGammaThresholdOnline(0),
+  fGammaThresholdOffline(0),
+  fJetThresholdOnline(0),
+  fJetThresholdOffline(0),
+  fBkgThresholdOnline(0),
+  fBkgThresholdOffline(0)
 {
 }
 
 AliHLTEMCALTriggerMaker::~AliHLTEMCALTriggerMaker() {
   if(fPatchFinder) delete fPatchFinder;
   if(fADCValues) delete fADCValues;
+  if(fADCOfflineValues) delete fADCOfflineValues;
+  if(fTriggerBitMasks) delete fTriggerBitMasks;
 }
 
 void AliHLTEMCALTriggerMaker::ResetADC(){
   fADCValues->Reset();
+  fADCOfflineValues->Reset();
+  fTriggerBitMasks->Reset();
 }
 
 void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
@@ -60,11 +70,15 @@ void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
   fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetFastORIndexFromCellIndex(fkGeometryPtr->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digit->fModule, digit->fX, digit->fZ), fastorIndex);
   int globCol, globRow;
   fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(fastorIndex, globCol, globRow);
-  (*fADCValues)(globCol, globRow) += digit->fEnergy;
+  (*fADCOfflineValues)(globCol, globRow) += digit->fEnergy;
 }
 
 void AliHLTEMCALTriggerMaker::SetADC(Int_t col, Int_t row, Float_t adc){
   (*fADCValues)(col, row) = adc;
+}
+
+void AliHLTEMCALTriggerMaker::SetBitMask(Int_t col, Int_t row, Int_t bitMask){
+  (*fTriggerBitMasks)(col, row) = bitMask;
 }
 
 Int_t AliHLTEMCALTriggerMaker::FindPatches(){
@@ -75,7 +89,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
   }
   */
   //AliHLTUInt32_t mysize = availableSize;
-  std::vector<AliEMCALTriggerRawPatch> foundpatches = fPatchFinder->FindPatches(*fADCValues);
+  std::vector<AliEMCALTriggerRawPatch> foundpatches = fPatchFinder->FindPatches(*fADCValues, *fADCOfflineValues);
   Int_t patchcount = 0;
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchiter = foundpatches.begin(); patchiter != foundpatches.end(); ++patchiter){
     /*
@@ -85,7 +99,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     }
     */
     AliHLTCaloTriggerPatchDataStruct *next = fTriggerPatchDataPtr + 1;
-    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr, fOrigin);
+    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr);
     fTriggerPatchDataPtr = next;
     patchcount++;
   }
@@ -99,6 +113,12 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
   fADCValues = new AliEMCALTriggerDataGrid<float>;
   fADCValues->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
 
+  fADCOfflineValues = new AliEMCALTriggerDataGrid<float>;
+  fADCOfflineValues->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
+
+  fTriggerBitMasks = new AliEMCALTriggerDataGrid<int>;
+  fTriggerBitMasks->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
+
   fPatchFinder = new AliEMCALTriggerPatchFinder<float>;
   InitializeEMCALPatchFinders();
   if(fkGeometryPtr->GetGeometryPtr()->GetNumberOfSuperModules() > 12){
@@ -107,36 +127,36 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
 }
 
 void AliHLTEMCALTriggerMaker::InitializeEMCALPatchFinders(){
-  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(0, 63, 1<<kL1GammaHigh);
-  if(fGammaThreshold) gammatrigger->SetThreshold(fGammaThreshold);
+  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(0, 63, BIT(EMCALTrigger::kEMCalRecalcL1Gamma));
+  gammatrigger->SetThresholds(fGammaThresholdOnline, fGammaThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(gammatrigger);
-  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(0, 63, 1<<kL1JetHigh);
-  if(fJetThreshold) jettrigger->SetThreshold(fJetThreshold);
+  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(0, 63, BIT(EMCALTrigger::kEMCalRecalcL1Jet));
+  jettrigger->SetThresholds(fJetThresholdOnline, fJetThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
-  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(0, 63, 1<<kL1JetHigh);
+  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(0, 63, BIT(EMCALTrigger::kEMCalRecalcL1Bkg));
   jetmedian->SetPatchSize(8);
-  if(fJetThreshold) jetmedian->SetThreshold(fJetThreshold);
+  jetmedian->SetThresholds(fBkgThresholdOnline, fBkgThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
 
 void AliHLTEMCALTriggerMaker::InitializeDCALPatchFinders(){
-  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(64, 103, 1<<kL1GammaHigh);
-  if(fGammaThreshold) gammatrigger->SetThreshold(fGammaThreshold);
+  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(64, 103, BIT(EMCALTrigger::kEMCalRecalcL1Gamma));
+  gammatrigger->SetThresholds(fGammaThresholdOnline, fGammaThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(gammatrigger);
-  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(64, 103, 1<<kL1JetHigh);
-  if(fJetThreshold) jettrigger->SetThreshold(fJetThreshold);
+  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(64, 103, BIT(EMCALTrigger::kEMCalRecalcL1Jet));
+  jettrigger->SetThresholds(fJetThresholdOnline, fJetThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
-  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(64, 103, 1<<kL1JetHigh);
+  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(64, 103, BIT(EMCALTrigger::kEMCalRecalcL1Jet));
   jetmedian->SetPatchSize(8);
-  if(fJetThreshold) jetmedian->SetThreshold(fJetThreshold);
+  jetmedian->SetThresholds(fBkgThresholdOnline, fBkgThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
 
-void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output, UChar_t origin) const {
+void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output) const {
   output.fCol = input.GetColStart();
   output.fRow = input.GetRowStart();
   output.fSize = input.GetPatchSize();
   output.fADC = input.GetADC();
-  output.fBitMask = input.GetBitmask();
-  output.fOrigin = origin;
+  output.fOfflineADC = input.GetOfflineADC();
+  output.fBitMask = input.GetBitmask() | (*fTriggerBitMasks)(output.fCol, output.fRow);
 }

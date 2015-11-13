@@ -82,7 +82,7 @@ public:
    * @param vertex      Primary vertex of the event
    * @param geom        Pointer to the EMCal geometry object
    */
-  void Initialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+  void Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
    * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
@@ -97,7 +97,7 @@ public:
    * @param geom        Pointer to the EMCal geometry object
    * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
    */
-  static AliEMCALTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+  static AliEMCALTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
    * Recalculate patch kinematic variables
@@ -450,9 +450,9 @@ protected:
   TLorentzVector    fCenterMass;                    ///< CM
   TLorentzVector    fEdge1;                         ///< max eta/ min phi edge
   TLorentzVector    fEdge2;                         ///< min eta/ max phi edge
-  Int_t             fADCAmp;                        ///< online (trigger) ADC amplitude
-  Int_t             fADCOfflineAmp;                 ///< offline (FEE) ADC amplitude
-  Int_t             fTriggerBits;                   ///< trigger bit mask, see definitions in AliEmcalTriggerType and TriggerMakerBits_t (above)
+  UInt_t            fADCAmp;                        ///< online (trigger) ADC amplitude
+  UInt_t            fADCOfflineAmp;                 ///< offline (FEE) ADC amplitude
+  UInt_t            fTriggerBits;                   ///< trigger bit mask, see definitions in AliEmcalTriggerType and TriggerMakerBits_t (above)
   Int_t             fEdgeCell[2];                   ///< cell "bottom lower" edge (min phi, max eta)
   Int_t             fOffSet;                        ///< offset of bit (different in data and MC)
   UChar_t           fCol0;                          ///< Start column
@@ -462,7 +462,7 @@ protected:
   AliEMCALTriggerBitConfig   fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerPatchInfo, 6) // Emcal particle class
+  ClassDef(AliEMCALTriggerPatchInfo, 7) // Emcal particle class
   /// \endcond
 };
 #endif

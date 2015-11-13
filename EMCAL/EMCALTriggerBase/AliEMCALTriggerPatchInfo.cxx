@@ -84,7 +84,7 @@ AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTrig
   return *this;
 }
 
-void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
+void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
 {
   fCol0 = col0;
   fRow0 = row0;
@@ -96,7 +96,7 @@ void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t si
   RecalculateKinematics(patchE, vertex, geom);
 }
 
-AliEMCALTriggerPatchInfo* AliEMCALTriggerPatchInfo::CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
+AliEMCALTriggerPatchInfo* AliEMCALTriggerPatchInfo::CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
 {
   AliEMCALTriggerPatchInfo* patch = new AliEMCALTriggerPatchInfo;
   patch->Initialize(col0, row0, size, adc, offlineAdc, patchE, bitmask, vertex, geom);

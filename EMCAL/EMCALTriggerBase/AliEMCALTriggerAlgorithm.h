@@ -33,7 +33,7 @@ public:
   void SetBitMask(ULong_t bitmask) { fBitMask |= bitmask; }
   void SetPatchSize(Int_t patchsize) { fPatchSize = patchsize; }
 
-  virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc) const;
+  virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc, const AliEMCALTriggerDataGrid<T> &offlineAdc) const;
 
 protected:
   int                               fRowMin;
@@ -41,6 +41,7 @@ protected:
   int                               fPatchSize;
   ULong_t                           fBitMask;
   double                            fThreshold;
+  double                            fOfflineThreshold;
 
   /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerAlgorithm, 1);

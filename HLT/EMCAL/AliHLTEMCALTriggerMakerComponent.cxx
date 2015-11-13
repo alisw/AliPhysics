@@ -27,22 +27,20 @@ ClassImp(AliHLTEMCALTriggerMakerComponent)
 //AliHLTEMCALTriggerMakerComponent gAliHLTEMCALTriggerMakerComponent;
 
 AliHLTEMCALTriggerMakerComponent::AliHLTEMCALTriggerMakerComponent() :
-AliHLTCaloProcessor(),
-fTriggerMakerPtrCells(NULL),
-fTriggerMakerPtrFastor(NULL),
-fGeometry(NULL)
+  AliHLTCaloProcessor(),
+  fTriggerMakerPtr(NULL),
+  fGeometry(NULL)
 {
 }
 
 AliHLTEMCALTriggerMakerComponent::~AliHLTEMCALTriggerMakerComponent() {
-  if(fTriggerMakerPtrCells) delete fTriggerMakerPtrCells;
-  if(fTriggerMakerPtrFastor) delete fTriggerMakerPtrFastor;
+  if(fTriggerMakerPtr) delete fTriggerMakerPtr;
   if(fGeometry) delete fGeometry;
 }
 
 int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
                 AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-                std::vector<AliHLTComponentBlockData>& outputBlocks ){
+                std::vector<AliHLTComponentBlockData>& outputBlocks ){  
   if(!blocks) {
     return 0;
   }
@@ -58,8 +56,9 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
   Int_t digitCount        = 0;
   Int_t ret               = 0;
 
-  fTriggerMakerPtrCells->ResetADC();
-  fTriggerMakerPtrFastor->ResetADC();
+  UInt_t specification = 0;
+
+  fTriggerMakerPtr->ResetADC();
 
   const AliHLTComponentBlockData* iter = 0;
   AliHLTCaloDigitDataStruct *digit = NULL;
@@ -79,7 +78,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
       nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);
       HLTDebug("Block %d received %d digits\n", ndx, nDigits);
       for(Int_t idigit = 0; idigit < nDigits; idigit++){
-        fTriggerMakerPtrCells->AddDigit(digit);
+        fTriggerMakerPtr->AddDigit(digit);
         digit++;
       }
       nDigitsGlob += nDigits;
@@ -88,30 +87,23 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
       AliHLTCaloTriggerDataStruct *dataptr = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t* >(iter->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
       HLTDebug("Block %d received %d fastor triggers", ndx, triggerhead->fNfastor);
       for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
-        fTriggerMakerPtrFastor->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
+        fTriggerMakerPtr->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
+	fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
         dataptr++;
       }
       nfastor += triggerhead->fNfastor;
     }
   }
-
+  
   Int_t npatches = 0;
-  if(nfastor){
-    fTriggerMakerPtrFastor->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
-    npatches = fTriggerMakerPtrFastor->FindPatches();
+  if(nfastor || nDigitsGlob){
+    fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
+    npatches = fTriggerMakerPtr->FindPatches();
     HLTDebug("Found %d patches from fastors\n", npatches);
     outputPtr += npatches;
     mysize += sizeof(AliHLTCaloTriggerPatchDataStruct) * npatches;
   }
-
-  if(nDigitsGlob){
-    fTriggerMakerPtrCells->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
-    npatches = fTriggerMakerPtrCells->FindPatches();
-    HLTDebug("Found %d patches from cells\n", npatches);
-    mysize += sizeof(AliHLTCaloTriggerPatchDataStruct) * npatches;
-    outputPtr += npatches;
-  }
-
+  
   if(mysize != 0){
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
@@ -167,41 +159,37 @@ AliHLTComponent* AliHLTEMCALTriggerMakerComponent::Spawn(){
 
 int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   InitialiseGeometry();
-  Int_t onlinethresh[2]; memset(onlinethresh, 0, sizeof(Int_t) *2);
-  Float_t offlinethresh[2]; memset(offlinethresh, 0, sizeof(Float_t) *2);
+  Float_t jetTh[2] = {0};
+  Float_t gammaTh[2] = {0};
+  Float_t bkgTh[2] = {0};
   for(Int_t iarg = 0; iarg < argc; iarg++){
     TString argstring(argv[iarg]);
-    if(argstring.Contains("-gammaoffthresh")){
-      offlinethresh[0] = TString(argv[iarg+1]).Atof();
-    } else if(argstring.Contains("-gammaonthresh")){
-      onlinethresh[0] = TString(argv[iarg+1]).Atoi();
-    } else if(argstring.Contains("-jetoffthresh")){
-      offlinethresh[1] = TString(argv[iarg+1]).Atof();
+    if(argstring.Contains("-gammaonthresh")){
+      gammaTh[0] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammaoffthresh")){
+      gammaTh[1] = TString(argv[++iarg]).Atof();
     } else if(argstring.Contains("-jetonthresh")){
-      onlinethresh[1] = TString(argv[iarg+1]).Atoi();
+      jetTh[0] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetoffthresh")){
+      jetTh[1] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-bkgonthresh")){
+      bkgTh[0] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-bkgoffthresh")){
+      bkgTh[1] = TString(argv[++iarg]).Atof();
     }
   }
-  fTriggerMakerPtrCells = new AliHLTEMCALTriggerMaker;
-  fTriggerMakerPtrCells->SetOrigin(AliHLTEMCALTriggerMaker::kOriginCELLS);
-  fTriggerMakerPtrCells->SetGammaThreshold(offlinethresh[0]);
-  fTriggerMakerPtrCells->SetJetThreshold(offlinethresh[1]);
-  fTriggerMakerPtrCells->Initialise(fGeometry);
-  fTriggerMakerPtrFastor = new AliHLTEMCALTriggerMaker;
-  fTriggerMakerPtrFastor->SetOrigin(AliHLTEMCALTriggerMaker::kOriginRECAL);
-  fTriggerMakerPtrCells->SetGammaThreshold(onlinethresh[0]);
-  fTriggerMakerPtrCells->SetJetThreshold(onlinethresh[1]);
-  fTriggerMakerPtrFastor->Initialise(fGeometry);
+  fTriggerMakerPtr = new AliHLTEMCALTriggerMaker;
+  fTriggerMakerPtr->SetGammaThresholds(gammaTh[0], gammaTh[1]);
+  fTriggerMakerPtr->SetJetThresholds(jetTh[0], jetTh[1]);
+  fTriggerMakerPtr->SetBkgThresholds(bkgTh[0], bkgTh[1]);
+  fTriggerMakerPtr->Initialise(fGeometry);
   return 0;
 }
 
 int AliHLTEMCALTriggerMakerComponent::Deinit(){
-  if(fTriggerMakerPtrCells){
-    delete fTriggerMakerPtrCells;
-    fTriggerMakerPtrCells = 0;
-  }
-  if(fTriggerMakerPtrFastor){
-    delete fTriggerMakerPtrFastor;
-    fTriggerMakerPtrFastor = 0;
+  if(fTriggerMakerPtr){
+    delete fTriggerMakerPtr;
+    fTriggerMakerPtr = 0;
   }
   if(fGeometry){
     delete fGeometry;

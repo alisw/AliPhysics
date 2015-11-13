@@ -82,9 +82,7 @@ protected:
 
 private:
    /** Pointer to the trigger maker from cells */
-   AliHLTEMCALTriggerMaker                    *fTriggerMakerPtrCells;       //! Transient
-    /** Pointer to trigger maker from fastors */
-   AliHLTEMCALTriggerMaker                    *fTriggerMakerPtrFastor;      //! Transient
+   AliHLTEMCALTriggerMaker                    *fTriggerMakerPtr;            //! Transient
    /** EMCAL geometry data */
    AliHLTEMCALGeometry                        *fGeometry;                   //! Transient
 
@@ -94,7 +92,7 @@ private:
    /** Assignment operator, not implemented */
    AliHLTEMCALTriggerMakerComponent & operator = (const AliHLTEMCALTriggerMakerComponent);
 
-	ClassDef(AliHLTEMCALTriggerMakerComponent, 1);
+   ClassDef(AliHLTEMCALTriggerMakerComponent, 1);
 };
 
 #endif
