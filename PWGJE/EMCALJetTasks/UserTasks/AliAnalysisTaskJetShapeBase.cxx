@@ -36,7 +36,7 @@ ClassImp(AliAnalysisTaskJetShapeBase)
 AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetShapeBase", kTRUE),
   fContainerBase(0),
-  //fContainerSub(1),
+  fContainerSub(1),
   fContainerNoEmb(2),
   fContainerOverlap(3),
   fMinFractionShared(0),
@@ -115,7 +115,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
 AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
-  //fContainerSub(1),
+  fContainerSub(1),
   fContainerNoEmb(2),
   fContainerOverlap(3),
   fMinFractionShared(0),
@@ -361,7 +361,7 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
      if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
-     fOutput->Add(fTreeEmb);
+     //fOutput->Add(fTreeEmb);
   }
 
   if(fUseSumw2) {
@@ -496,7 +496,7 @@ void AliAnalysisTaskJetShapeBase::SetTree(TTree *tree) {
    fFromTree = kTRUE;
    fTreeEmb = (TTree*)tree->Clone(Form("%sCpShC", tree->GetName()));
    AliInfo(Form("Input tree set %d (%p -> %p)", fTreeEmb->GetNbranches(), tree, fTreeEmb));
-   
+   fTreeEmb->SetDirectory(0x0);
    
    return;
 }
@@ -522,8 +522,8 @@ void AliAnalysisTaskJetShapeBase::SetTreeFromFile(TString filename, TString tree
    }
    SetTree(tree);
    
-   //f->Close();
-   //delete f;
+   f->Close();
+   delete f;
 
    return;
 }

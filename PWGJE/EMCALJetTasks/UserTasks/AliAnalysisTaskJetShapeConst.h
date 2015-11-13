@@ -14,6 +14,9 @@
 
 #include "AliAnalysisTaskJetShapeBase.h"
 
+class TH2F;
+class TH1F;
+
 class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskJetShapeBase {
  public:
 
@@ -31,12 +34,11 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskJetShapeBase {
 
   
  private:
-  Int_t                               fContainerSub;               /// subtracted jets to be analyzed
-
-  TH1F 	        *fhptjetSMinusSingleTrack;                         ///!<! pT distribution of jets subtracting the pT of the embedded track
-  TH2F          *fhJet1vsJetTag;                                   ///!<! N jet vs N jet tagged
-  TH1F          *fhNconstit;                                       ///!<! number of constituents of the matched jets
-  TH1F          *fhAreaJet;                                        ///!<! area of the matched jet
+  
+  TH1F 	        *fhptjetSMinusSingleTrack;                         //!<! pT distribution of jets subtracting the pT of the embedded track
+  TH2F          *fhJet1vsJetTag;                                   //!<! N jet vs N jet tagged
+  TH1F          *fhNconstit;                                       //!<! number of constituents of the matched jets
+  TH1F          *fhAreaJet;                                        //!<! area of the matched jet
 
   
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented

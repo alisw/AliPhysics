@@ -9,8 +9,8 @@
 /// \author Chiara Bianchin
 /// \date November 2015
 
-#ifndef AliAnalysisTaskJetShapeBase_H
-#define AliAnalysisTaskJetShapeBase_H
+#ifndef ALIANALYSISTASKJETSHAPEBASE_H
+#define ALIANALYSISTASKJETSHAPEBASE_H
 
 class TH1;
 class TH2;
@@ -71,6 +71,8 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Bool_t         SamePart(const TLorentzVector* part1, const TLorentzVector* part2, Double_t dist = 1e-6) const;
   
   Int_t                               fContainerBase;              ///< jets to be analyzed
+  Int_t                               fContainerSub;               ///< subtracted jets to be analyzed
+
   Int_t                               fContainerNoEmb;             ///< subtracted jets from Pb-Pb only events
   Int_t                               fContainerOverlap;           ///< jets (jetO) with a pT cut selection to reject overlapping embedded single track (used only in single track embedding) 
   Double_t                            fMinFractionShared;          ///< only fill histos for jets if shared fraction larger than X
@@ -82,7 +84,7 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Bool_t                              fOverlap;                    ///< activate the check on overlap between single particle embedded and jetO (jet with a pT of at least 5 Gev/c)
   Double_t                               fRadius;                    ///< Radius that define overlap
                                                                     
-  TTree           *fTreeJetBkg;                                    ///!<! tree with jet and bkg variables
+  TTree           *fTreeJetBkg;                                    //!<! tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       ///< jet1(AA) vector  
   TLorentzVector  *fJet2Vec;                                       ///< jet2(probe) vector
   TLorentzVector  *fJetSubVec;                                     ///< subtracted AA jet vector
@@ -96,24 +98,24 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Int_t           fMinLabelEmb;                                    ///< min label of embedded particles
   Int_t           fMaxLabelEmb;                                    ///< max label of embedded particles
   Bool_t          fSmallSyst;                                      ///< flag for the axes ranges in pPb
-  TH2F          **fh2MSubMatch;                                    ///!<! subtracted jet mass vs match index (0: no match; 1:match)
-  TH2F          **fh2MSubPtRawAll;                                 ///!<! subtracted jet mass vs subtracted jet pT
-  TH3F          **fh3MSubPtRawDRMatch;                             ///!<! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
-  TH3F          **fh3MSubPtTrueLeadPt;                             ///!<! subtracted jet mass vs true jet pT vs LeadPt for matched jets for matched jets 
-  TH3F          **fh3MTruePtTrueLeadPt;                            ///!<! true jet mass vs true jet pT vs LeadPt for matched jets for matched jets
-  TH3F          **fh3PtTrueDeltaMLeadPt;                           ///!<! true jet pT vs (Msub - Mtrue) vs LeadPt for matched jets
-  TH3F          **fh3PtTrueDeltaMRelLeadPt;                        ///!<! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
-  THnSparse     **fhnMassResponse;                                 ///!<! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
-  THnSparse     **fhnDeltaMass;                                    ///!<! deltaM vs deltapT
-  THnSparse      *fhnDeltaMassAndBkgInfo;                          ///!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
-  TH1F 	        *fhNJetsSelEv;                                      ///!<! number of selected signal jets per event
-  TH2F          *fhRjetTrvspTj;                                     ///!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-  TH2F          *fhJetEtaPhi;                                       ///!<! eta-phi distribution of the selected signal jets
-  TH1F 	        *fhpTTracksJet1;
-  TH1F 	        *fhpTTracksJetO;
-  TH1F 	        *fhpTTracksCont;
-  TH1F 	        *fhptjetSMinusSingleTrack;                         ///!<! pT distribution of jets subtracting the pT of the embedded track
-  TTree         *fTreeEmb;                                         ///!<! tree with the TLorentzVector of the jet detector and particle level
+  TH2F          **fh2MSubMatch;                                    //!<! subtracted jet mass vs match index (0: no match; 1:match)
+  TH2F          **fh2MSubPtRawAll;                                 //!<! subtracted jet mass vs subtracted jet pT
+  TH3F          **fh3MSubPtRawDRMatch;                             //!<! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
+  TH3F          **fh3MSubPtTrueLeadPt;                             //!<! subtracted jet mass vs true jet pT vs LeadPt for matched jets for matched jets 
+  TH3F          **fh3MTruePtTrueLeadPt;                            //!<! true jet mass vs true jet pT vs LeadPt for matched jets for matched jets
+  TH3F          **fh3PtTrueDeltaMLeadPt;                           //!<! true jet pT vs (Msub - Mtrue) vs LeadPt for matched jets
+  TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //!<! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
+  THnSparse     **fhnMassResponse;                                 //!<! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
+  THnSparse     **fhnDeltaMass;                                    //!<! deltaM vs deltapT
+  THnSparse      *fhnDeltaMassAndBkgInfo;                          //!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
+  TH1F 	        *fhNJetsSelEv;                                      //!<! number of selected signal jets per event
+  TH2F          *fhRjetTrvspTj;                                     //!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
+  TH2F          *fhJetEtaPhi;                                       //!<! eta-phi distribution of the selected signal jets
+  TH1F 	        *fhpTTracksJet1;                                   //!<!
+  TH1F 	        *fhpTTracksJetO;                                   //!<!
+  TH1F 	        *fhpTTracksCont;                                   //!<!
+  TH1F 	        *fhptjetSMinusSingleTrack;                         //!<! pT distribution of jets subtracting the pT of the embedded track
+  TTree         *fTreeEmb;                                         //!<! tree with the TLorentzVector of the jet detector and particle level
   Bool_t        fFromTree;                                         ///< Input embedding from tree
   TString       fPathTreeinputFile;                                ///< path to the file where the external input Tree is (can be from alien)
   TString       fTreeinputName;                                    ///< name of the external input Tree
