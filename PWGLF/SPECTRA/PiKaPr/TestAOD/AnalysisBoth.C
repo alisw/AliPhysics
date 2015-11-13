@@ -85,7 +85,8 @@ enum {
  kuseeffcorrectionfromfile=0x4000, //use the efficiency from the file specfied in config file			
  kusePIDcontaminatiofromfile=0x8000, //use the PID contamination from the file specfied in config file
  kuseseccontaminatiofromfile=0x10000, //use the secondary contamination from the file specfied in config file
- kusespecialbinninginDCAfits=0x20000 //use constum binning in the dca fit 	
+ kusespecialbinninginDCAfits=0x20000, //use constum binning in the dca fit 
+ kusePIDfits=0x40000 //raw yields from fits
  							
 };	
 
@@ -106,6 +107,9 @@ void TOFMatchingForNch(TH1* h);
 void TOFPIDsignalmatchingApply(TH1* h, Float_t factor);
 void CalculateDoubleCounts(TH1* doubleconunts,TH1F** rawspectra,Int_t ipar, Bool_t dataflag);
 void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrtab);
+void RawYieldFromFits(TString hnamein, AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts,TList* lfits,TH1F** primaryfractionfromfit);
+void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit);
+void Rescallesecondarycontaimation(TH1F* contfit, TH1F* contWDfit , TH1F* contMatfit ,TH1F* primaryfit, TH1F* primaryfractionfromfit);
 
 TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHistoManager* hman,TFormula* dcacutxy);
 TF1* TrackingEff_geantflukaCorrection(Int_t ipart, Int_t icharge);
@@ -127,9 +131,10 @@ TH1F* ReBinDCAHisto(TH1* h);
 
 void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString outnamemc="",TString configfile="",TString customoutfilename="")
 {
+	cout<<"A"<<endl;
 	gStyle->SetOptStat(0);	
 	TH1::AddDirectory(kFALSE);
-	#if defined(__CINT__)
+	/*#if defined(__CINT__)
 	gSystem->Load("libCore");
 	gSystem->Load("libPhysics");
 	gSystem->Load("libTree");
@@ -146,8 +151,10 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	gSystem->Load("libPWGLFspectra");
   	
   	gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TestAOD/QAPlotsBoth.C");
-	#endif
+	#endif*/
 
+	
+	cout<<"A"<<endl;
 	Double_t mass[3];
 	mass[0]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 	mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
@@ -206,18 +213,53 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	TH1F* spectraLeonardo[6];
 	
 	TH1F* corrLeonardo[6];
+	TH1F* primaryfractionfromfitdata[6];
+	TH1F* primaryfractionfromfitmc[6];
+
+
+
         TH1F* doubleconuntsdata[3]; 
 	 TH1F* doubleconuntsMC[3]; 
 	//GetSpectra(managerdata,rawspectradata,true);
 	//GetSpectra(managermc,rawspectramc,true,true);
-	
-	GetPtHistFromPtDCAhisto("hHistPtRecSigma","SpectraMC",managermc,rawspectramc,dcacutxy);
-	GetPtHistFromPtDCAhisto("hHistPtRecSigma","SpectraDATA",managerdata,rawspectradata,dcacutxy);
-	GetPtHistFromPtDCAhisto("hHistPtRecTruePrimary","eff",managermc,eff,dcacutxy);
+	TList* lfits=new TList();
 	GetPtHistFromPtDCAhisto("hHistPtRecTrue","conPID",managermc,contPID,dcacutxy);
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaSecondaryWeakDecay","conWD",managermc,contWD,dcacutxy);
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaSecondaryMaterial","conMat",managermc,contMat,dcacutxy);
 	GetPtHistFromPtDCAhisto("hHistPtRecSigmaPrimary","conPIDprimary",managermc,contPIDpri,dcacutxy);
+	if((options&kusePIDfits)==kusePIDfits)
+	{
+		GetPtHistFromPtDCAhisto("hHistPtRecPrimary","eff",managermc,eff,dcacutxy);
+		TString tmpnames[]={"PionPlus","KaonPlus","ProtonPlus","PionMinus","KaonMinus","ProtonMinus"};
+		for (int i=0;i<6;i++)
+		{
+			rawspectramc[i]=(TH1F*)eff[i]->Clone(Form("SpectraMC%s",tmpnames[i].Data()));
+			rawspectradata[i]=(TH1F*)eff[i]->Clone(Form("SpectraDATA%s",tmpnames[i].Data()));
+			rawspectramc[i]->SetTitle(Form("SpectraMC%s",tmpnames[i].Data()));
+			rawspectradata[i]->SetTitle(Form("SpectraDATA%s",tmpnames[i].Data()));
+			rawspectramc[i]->Reset();
+			rawspectradata[i]->Reset();
+			
+			primaryfractionfromfitdata[i]=(TH1F*)eff[i]->Clone(Form("primaryfractionfromfitdata%s",tmpnames[i].Data()));
+			primaryfractionfromfitmc[i]=(TH1F*)eff[i]->Clone(Form("primaryfractionfromfitmc%s",tmpnames[i].Data()));
+			primaryfractionfromfitdata[i]->SetTitle(Form("primaryfractionfromfitdata%s",tmpnames[i].Data()));
+			primaryfractionfromfitmc[i]->SetTitle(Form("primaryfractionfromfitmc%s",tmpnames[i].Data()));
+			primaryfractionfromfitdata[i]->Reset();
+			primaryfractionfromfitmc[i]->Reset();
+
+			
+		
+		}	
+		RawYieldFromFits("hHistPtRecSigma",managermc,rawspectramc,tcutsmc,lfits,primaryfractionfromfitmc);
+		RawYieldFromFits("hHistPtRecSigma",managerdata,rawspectradata,tcutsdata,lfits,primaryfractionfromfitdata);
+	}
+	else
+	{
+		GetPtHistFromPtDCAhisto("hHistPtRecTruePrimary","eff",managermc,eff,dcacutxy);
+		GetPtHistFromPtDCAhisto("hHistPtRecSigma","SpectraMC",managermc,rawspectramc,dcacutxy);
+		GetPtHistFromPtDCAhisto("hHistPtRecSigma","SpectraDATA",managerdata,rawspectradata,dcacutxy);
+
+	}
 
 	
 	Double_t neventsmcall = 1 ;  //if loop over MC is done after or befor events cuts this will be changed 
@@ -474,8 +516,7 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 		rawspectramc[i]->Scale(1./neventsmc,"width");
 		MCTruth[i]->Scale(1./neventsmcall,"width");
 		spectraLeonardo[i]->Scale(1./neventsdata,"width");
-	
-	
+		
 	
 		lout->Add(rawspectradata[i]);
 		lout->Add(rawspectramc[i]);
@@ -535,6 +576,12 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 			{
 				cout<<"CONT FIT"<<endl;
 				contfit[i]->Print("all");
+				if(((options&kusePIDfits)==kusePIDfits)&&!((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile))
+				{
+					confinal[i]->Reset();	
+					if(!((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile))					
+						Rescallesecondarycontaimation(contfit[i],contWDfit[i],contMatfit[i],primaryfit[i],primaryfractionfromfitdata[i]);
+				}	
 				if((options&kuseprimaryPIDcont)||(i!=1&&i!=4)) //if we do not use cont PId only for primary  and this is a kaon that do not use fit
 					confinal[i]->Add(contfit[i]);
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],confinal[i]);
@@ -615,7 +662,8 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	lout->Write("output",TObject::kSingleKey);	
 	listqa->Write("outputQA",TObject::kSingleKey);
 	canvaslist->Write("outputcanvas",TObject::kSingleKey);
-
+	if(lfits->GetEntries()>0)
+		lfits->Write("PIDfits",TObject::kSingleKey);
 	fout->Close();
 	//Normaliztionwithbin0integrals();
 
@@ -837,7 +885,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge))->Clone();
 					Double_t minentries=100;
-					debug<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
+					debug<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<" "<<minentries<<endl;
 					debug<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
 					cout<<hToFit->GetEntries()<<" "<<hmc1->GetEntries()<<" "<<hmc2->GetEntries()<<" "<<hmc3->GetEntries()<<endl;
                                         cout<<((fitsettings&0x1)&&hmc2->GetEntries()<=minentries)<<" "<<((fitsettings&0x2)&&hmc3->GetEntries()<=minentries)<<endl;
@@ -1030,9 +1078,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 
 
 						}
-						
-						
-						debug<<v1<<" "<<ev1<<" "<<v2<<" "<<ev2<<" "<<v3<<" "<<ev3<<" "<<" "<<cov<<endl;
+						debug<<v1<<" "<<ev1<<" "<<v2<<" "<<ev2<<" "<<v3<<" "<<ev3<<" "<<" "<<cov<<" "<<endl;
 					
 	    					// becuase dca cut range is not a fit range the results from TFractionFitter should be rescale
 						// This can be done in two ways or use input histograms or output histograms
@@ -1041,7 +1087,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						
  						// Method 1 input histo 	
 
-						debug<<hToFit->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc1->Integral(binFitRange[0],binFitRange[1])<<hmc2->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc3->Integral(binFitRange[0],binFitRange[1])<<endl;
+						debug<<hToFit->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc1->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc2->Integral(binFitRange[0],binFitRange[1])<<" "<<hmc3->Integral(binFitRange[0],binFitRange[1])<<endl;
 						Float_t normalizationdata=hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))/hToFit->Integral(binFitRange[0],binFitRange[1]);
 						debug<<normalizationdata<<" "<<hToFit->Integral(hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]))<<endl;	
 						normalizationdata*=corrforrebinning[0];
@@ -1060,8 +1106,12 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						normalizationmc3*=corrforrebinning[3];
 
 						debug<<"After Nor"<<endl;
+						cout<<"A"<<endl;
 						debug<<v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2<<" "<<ev2*normalizationmc2<<" "<<v3*normalizationmc3<<" "<<ev3*normalizationmc3<<" "<<endl;
+						cout<<"B"<<endl;
 						debug<<1.0-v1*normalizationmc1<<" "<<ev1*normalizationmc1<<" "<<v2*normalizationmc2+v3*normalizationmc3<<" "<<TMath::Sqrt(ev2*ev2*normalizationmc2*normalizationmc2+ev3*ev3*normalizationmc3*normalizationmc3+cov*normalizationmc3*normalizationmc2)<<endl;
+						cout<<"C"<<endl;
+
 						debug<<"addtional info"<<endl;
 
 
@@ -1956,4 +2006,99 @@ TH1F* ReBinDCAHisto(TH1* h)
 	hout->Sumw2();
 	return hout;
 
+}
+void RawYieldFromFits(TString hnamein, AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts, TList* lfits,TH1F** primaryfractionfromfit)
+{
+	
+	for(Int_t ipart=0;ipart<3;ipart++)
+	{
+		Float_t pttof=cuts->GetPtTOFMatchingPion();
+		if(ipart==1)
+			pttof=cuts->GetPtTOFMatchingKaon();
+		if(ipart==2)
+			pttof=cuts->GetPtTOFMatchingProton();	
+
+		if(!hman->GetNSigHistogram(Form("hHistNSig%sPtTOF",Particle[ipart].Data())))
+					continue;
+		TH2F *nsigTOF= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSig%sPtTOF",Particle[ipart].Data())))->Clone();
+		TH2F *nsigTPC= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSig%sPtTPC",Particle[ipart].Data())))->Clone();
+		for(Int_t icharge=0;icharge<2;icharge++)
+		{
+			Int_t index=ipart+3*icharge;
+			RawYieldFromFitsForParticleType(nsigTOF,nsigTPC,histo[index],icharge,ipart,pttof,lfits,primaryfractionfromfit[index]); 
+			
+		}
+	} 
+
 }			
+void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit)
+{
+	Int_t  charge =(icharge==0?1:-1);
+	Float_t ptmin=minRanges[ipart]*charge;
+	Float_t ptmax=maxRanges[ipart]*charge;
+	Int_t startbin=nsigTOF->GetXaxis()->FindBin(ptmin+charge*0.0001);
+	Int_t stopbin=nsigTOF->GetXaxis()->FindBin(ptmax-charge*0.0001);
+	
+	for (int i=startbin;i!=(stopbin+charge);i=i+charge)	
+	{
+		cout<<i<<" "<<icharge<<" "<<ipart<<" "<<histo->GetTitle()<<endl;
+		TH1F *nsig_data_Proj1=0x0;
+		if(pttof>TMath::Abs(nsigTOF->GetXaxis()->GetBinCenter(i)))	
+			nsig_data_Proj1=(TH1F*)nsigTPC->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigTPC->GetName(),nsigTPC->GetXaxis()->GetBinLowEdge(i),nsigTPC->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+		else
+			nsig_data_Proj1=(TH1F*)nsigTOF->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigTOF->GetName(),nsigTOF->GetXaxis()->GetBinLowEdge(i),nsigTOF->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+
+		TF1* f=new TF1(Form("FitFun_%d_%d_%d",icharge,ipart,i),"gausn",-3,3);
+		nsig_data_Proj1->Fit(Form("FitFun_%d_%d_%d",icharge,ipart,i),"R");
+		
+		lfits->Add(nsig_data_Proj1);
+		lfits->Add(primaryfractionfromfit);
+		Float_t yield=f->GetParameter(0)/ nsig_data_Proj1->GetXaxis()->GetBinWidth(1);
+		Float_t yielderror=f->GetParError(0)/nsig_data_Proj1->GetXaxis()->GetBinWidth(1);
+		Int_t bintofill=histo->GetXaxis()->FindBin(TMath::Abs(nsigTOF->GetXaxis()->GetBinCenter(i)));
+		cout<<yield<<" "<<yielderror<<" "<<nsig_data_Proj1->GetXaxis()->GetBinWidth(1)<<" "<<bintofill<<endl;
+		histo->SetBinContent(bintofill,yield);
+		histo->SetBinError(bintofill,yielderror);
+		
+		Float_t fract=yield/nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-2.999),nsig_data_Proj1->GetXaxis()->FindBin(2.999));
+		Float_t fracterror=fract*yielderror/yield;
+		primaryfractionfromfit->SetBinContent(bintofill,fract);
+		primaryfractionfromfit->SetBinError(bintofill,fracterror);
+
+
+		TVirtualFitter*  fitter=TVirtualFitter::GetFitter();
+		delete fitter;
+	}
+}
+void Rescallesecondarycontaimation(TH1F* contfit, TH1F* contWDfit, TH1F* contMatfit, TH1F* primaryfit, TH1F* primaryfractionfromfit)
+{
+		for (int i=1;i<=contfit->GetXaxis()->GetNbins();i++)
+		{
+			Float_t vcontfit=contfit->GetBinContent(i);
+			Float_t vcontWDfit=contWDfit->GetBinContent(i);
+			Float_t vcontMatfit=contMatfit->GetBinContent(i);
+			Float_t vprimaryfit=primaryfit->GetBinContent(i);
+			Float_t vprimaryfractionfromfit=primaryfractionfromfit->GetBinContent(i);
+			if(vcontfit>0.0)
+			{
+				vprimaryfit=vprimaryfractionfromfit*vprimaryfit;
+				vcontfit=vcontfit/(vcontfit+vprimaryfit);
+				vcontWDfit=vcontWDfit/(vcontfit+vprimaryfit);
+				vcontMatfit=vcontWDfit/(vcontfit+vprimaryfit);
+				
+				contfit->SetBinError(i,contfit->GetBinError(i)*vcontfit/contfit->GetBinContent(i));
+				contfit->SetBinContent(i,vcontfit);
+				if(contWDfit->GetBinContent(i)>0.0)
+					contWDfit->SetBinError(i,contWDfit->GetBinError(i)*vcontWDfit/contWDfit->GetBinContent(i));
+				contWDfit->SetBinContent(i,vcontWDfit);
+				if(contMatfit->GetBinContent(i)>0.0)
+					contMatfit->SetBinError(i,contMatfit->GetBinError(i)*vcontMatfit/contMatfit->GetBinContent(i));
+				contMatfit->SetBinContent(i,vcontMatfit);
+				if(primaryfit->GetBinContent(i)>0.0)
+					primaryfit->SetBinError(i,primaryfit->GetBinError(i)*vprimaryfit/primaryfit->GetBinContent(i));
+				primaryfit->SetBinContent(i,vprimaryfit);
+
+			}
+
+		}
+}

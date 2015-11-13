@@ -364,13 +364,13 @@ TH1* AliSpectraBothHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particl
     baseId = kHistPtRecSigmaSecondaryWeakDecayPionPlus;
     break;
   case kHistNSigTPC:
-    baseId = kHistNSigPionTPC;
+    baseId = kHistNSigTruePionPtTPC;
     break;
   case kHistNSigTOF:
-    baseId = kHistNSigPionTOF;
+    baseId = kHistNSigTruePionPtTOF;
     break;
   case kHistNSigTPCTOF:
-    baseId = kHistNSigPionTPCTOF;
+    baseId = kHistNSigTruePionPtTPCTOF;
     break;
   default:
     baseId = -1;
