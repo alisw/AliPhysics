@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name, Bool_t lCalib = kFALSE);
+    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
@@ -110,7 +110,10 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    
+    //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
+    Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -178,7 +181,7 @@ private:
     Bool_t fEvSel_Triggered;                //!
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
     Bool_t fEvSel_HasNoInconsistentVertices;//!
-    Bool_t fEvSel_PassesTrackletVsCluster;  //! 
+    Bool_t fEvSel_PassesTrackletVsCluster;  //!
 
     //Other Selections: more dedicated filtering to be studied!
 
@@ -199,6 +202,8 @@ private:
     
     Float_t fQuantiles[100]; //! percentiles
     Int_t fNDebug; // number of percentiles
+    
+    Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 
     
     //Data needed for Monte Carlo
     Int_t fMC_NColl;

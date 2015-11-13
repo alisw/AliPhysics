@@ -94,6 +94,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
+fkDebugAliCentrality ( kFALSE ),
 fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -146,6 +147,7 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fAliCentralityV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -158,9 +160,10 @@ fInput(0)
 
 }
 
-AliMultSelectionTask::AliMultSelectionTask(const char *name, Bool_t lCalib)
+AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
+fkDebugAliCentrality ( kFALSE ),
 fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -213,6 +216,7 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fAliCentralityV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -225,6 +229,11 @@ fInput(0)
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
     if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
+    
+    //Special Debug Options (more to be added as needed)
+    // A - Debug AliCentrality
+    
+    if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
 }
 
 
@@ -253,10 +262,6 @@ AliMultSelectionTask::~AliMultSelectionTask()
 //________________________________________________________________________
 void AliMultSelectionTask::UserCreateOutputObjects()
 {
-
-    if ( fkCalibration )
-        OpenFile(2);
-
     //------------------------------------------------
     
     //Create Input Information
@@ -389,6 +394,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
                 fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
             }
         }
+        //Debug functionality
+        if ( fkDebugAliCentrality ){
+            fTreeEvent->Branch("fAliCentralityV0M",&fAliCentralityV0M,"fAliCentralityV0M/F");
+        }
+        
     }
     //------------------------------------------------
     // Set up objects
@@ -467,6 +477,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Float_t multADA =0;
     Float_t multADC =0;
     Float_t multAD =0;
+    
+    //Reset to be sure!
+    fkDebugAliCentrality = 0;
 
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
@@ -492,6 +505,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
     if(!lVAD) {
         AliWarning("ERROR:lVAD not available\n");
     }
+    
+    //if requested, grab AliCentrality value for this event
+    if( fkDebugAliCentrality ){
+        AliCentrality* centrality;
+        centrality = lVevent->GetCentrality();
+        fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
+    } 
     
     //------------------------------------------------
     //Information from MC (thanks to Alberica)
@@ -862,7 +882,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 lThisQuantile = 199;
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
-                continue;
             }else{
                 lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( lSelection->GetEstimator(iEst)->GetValue() ));
                 //cleanup: discard events according to criteria stored in OADB object
@@ -1051,8 +1070,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         //Optimize evaluation
         sel->Setup(fInput);
     }
+    
     AliInfo("---> Successfully set up! Inspect MultSelection:");
-    if (sel){ sel->PrintInfo(); } else { AliWarning("Weird. No AliMultSelection found..."); }
+    if (sel){ sel->PrintInfo(); } else { AliWarning("Weird! No AliMultSelection found..."); }
+    AliInfo("---> Inspect Event Selection Criteria:");
+    AliMultSelectionCuts* selcuts = fOadbMultSelection->GetEventCuts();
+    if (selcuts){ sel->Print(); } else { AliWarning("Weird! No AliMultSelectionCuts found..."); }
+    
     return 0;
 }
 
