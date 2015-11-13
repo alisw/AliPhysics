@@ -114,9 +114,10 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
     if(TString(cutmask).CompareTo("ExclusiveGlobal")==0) fCutMask = 5;    
   }
   void SetDstTree(bool tree = false){fisDstTree = tree;}
-  
+  void SetMaxTracksPerEvent(int i){fMaxTracksperEvent = i;}
 //   void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
+  void SetMoreOutputs(bool out = true){fMoreOutputs = out;}
   TF1* pTdistribution(TH1D* hist, const char* name);
   
  protected:
@@ -160,6 +161,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   AliCentrality*    fCentrality;   //! centrality object
   const AliVVertex* fVertexobj; //! Vertex object
   Int_t 	    fRun; //The run we are in.
+  Int_t		    fNEventsProcessed; // number of events
   Double_t 	    fVertex[3];//vertex
   Period 	    fperiod;
   CollisionType     fCollisionType;
@@ -169,6 +171,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
   Bool_t 	    fQA;//if true, correlations are not build.
   Bool_t 	    fqatask;//if true AliCorrelation3p_noQA is used.
+  Bool_t	    fMoreOutputs;//If true, more outputs are given.
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
   TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.
@@ -184,6 +187,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   TArrayD 	    fZBinEdges; //Edges for vZ binning.
   Int_t 	    fMaxNEventMix; //Maximum number of events per bin for event mixing.
   Int_t		    fMinNofTracksMix;//Minimum number of mixing tracks.
+  Int_t		    fMaxTracksperEvent;//
   TString 	    fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
   Trigger 	    ftrigger;
   Double_t 	    fCentralityPercentile;	

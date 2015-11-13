@@ -69,6 +69,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fCentrality(NULL)
   , fVertexobj(NULL)
   , fRun(130848)
+  , fNEventsProcessed(0)
   , fVertex()
   , fperiod(AliAnalysisTaskCorrelation3p::P10h)
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
@@ -78,6 +79,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fgenerate(kFALSE)
   , fQA(kFALSE)
   , fqatask(kFALSE)
+  , fMoreOutputs(kFALSE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -92,6 +94,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fZBinEdges(TArrayD())  
   , fMaxNEventMix(100)
   , fMinNofTracksMix(10)
+  , fMaxTracksperEvent(-1)
   , fCentralityEstimator("V0M")
   , ftrigger(AliAnalysisTaskCorrelation3p::tracks)
   , fCentralityPercentile(0)
@@ -141,6 +144,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fCentrality(NULL)
   , fVertexobj(NULL)
   , fRun(130848)
+  , fNEventsProcessed(0)
   , fVertex()
   , fperiod(AliAnalysisTaskCorrelation3p::P10h)
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
@@ -150,6 +154,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fgenerate(kFALSE)
   , fQA(kFALSE)  
   , fqatask(kFALSE)
+  , fMoreOutputs(kFALSE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -164,6 +169,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fZBinEdges(TArrayD())  
   , fMaxNEventMix(100)
   , fMinNofTracksMix(10)
+  , fMaxTracksperEvent(-1)
   , fCentralityEstimator("V0M")
   , ftrigger(AliAnalysisTaskCorrelation3p::tracks)
   , fCentralityPercentile(0)
@@ -242,6 +248,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
   fOutput = new THashList;
   fOutput->SetOwner();
   if(!fQA&&!fqatask){
+    if(fMoreOutputs) AliWarning("Creating User Output Objects.");
     //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
     AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
     fCorrelator=correlator;
@@ -261,6 +268,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
     poolMgr->SetTargetValues(MinNofTracks,1.0E-4,1.0);
     correlator->InitEventMixing(poolMgr);
+    correlator->SetNMaxMixed(fMaxTracksperEvent);
     
     //initialize track worker and add to the output if appropriate
     TString tracksname;
@@ -326,6 +334,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     InitializeQAhistograms();
   }
   // all tasks must post data once for all outputs
+  if(fMoreOutputs) AliWarning("Posting once for all outputs.");
 
   PostData(1, fOutput);
 }
@@ -400,6 +409,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
     else delete allrelevantParticles;
     //Post the output
   }
+  fNEventsProcessed +=1;
+  if(fMoreOutputs&&(fNEventsProcessed%10000 ==0)) AliWarning(Form("Number of Events finished:%i",fNEventsProcessed));
   PostData(1, fOutput);
 }
 
@@ -407,7 +418,7 @@ void AliAnalysisTaskCorrelation3p::FinishTaskOutput()
 {
   // end of the processing
     TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject("trackCount")) ;
-    if (hist) cout << "FinishTaskOutput: " << hist->GetEntries() << " events(s)" << endl;
+    if (hist) AliWarning(Form("FinishTaskOutput: %i events(s)",(int)hist->GetEntries()));
 }
 
 void AliAnalysisTaskCorrelation3p::Terminate(Option_t *)
@@ -633,24 +644,6 @@ Bool_t AliAnalysisTaskCorrelation3p::IsSelectedTrackAOD(AliVParticle* t)
   Double_t DCAtang=-999.0;
   Double_t DCAlong=-999.0;
   GetDCA(DCAtang,DCAlong,AODt);
-//   if((AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2)))   FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,1);
-//   else FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,0);
-//   isselected = isselected&&(AODt->TestFilterBit(BIT(4)));  //filter bits: BIT(4) = standard cuts, loose DCA; BIT(5) standard cuts, tight DCA 
-// //  if(isselected) cout << "FilterBitPassed"<<endl;
-//   isselected = isselected&&(AODt->GetFilterMap()&AliVTrack::kITSrefit);
-// //   if(isselected) cout << "ITSrefit passed"<<endl;
-// //   isselected = isselected&&((AODt->GetFilterMap()&AliAODTrack::kTPCrefit)||fCollisionType==PbPb);//in the PbPb AODs it seems this is not set.
-// //   if(isselected) cout << "TPCrefit passed"<<endl;
-//   isselected = isselected&&(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2));//in first or second ITS layer
-// //   if(isselected) cout << "ITS any passed"<<endl;
-// //   isselected = isselected&&(AODt->HasPointOnITSLayer(2));//in second ITS layer
-// //   if(isselected) cout << "ITS layer 2 passed"<<endl;
-//   isselected = isselected&&(AODt->GetTPCNcls()>70);
-// //   if(isselected) cout << "more than 70 TPC clusters"<<endl;
-//   isselected = isselected&&(abs(DCAtang)<0.5);//cm. DCA less then 0.5 cm in transverse direction.
-// //   if(isselected) cout << "DCA tang passed"<<endl;
-//   isselected = isselected&&(abs(DCAlong)<3);//cm. DCA less then 3 cm in the longitudinal direction.
-// //   if(isselected) cout << "DCA long passed"<<endl;
   //Hybrid tracks give flat distributions
   if(fCutMask == 0) isselected = AODt->IsHybridGlobalConstrainedGlobal();
   else if(fCutMask == 1) isselected = AODt->TestFilterBit(BIT(4));
@@ -1157,43 +1150,43 @@ void AliAnalysisTaskCorrelation3p::execgenerate()
   TGraphAsymmErrors * v3graph = dynamic_cast<TGraphAsymmErrors*>(settings->Get("v3ptdist"));
   settings->Close();
   if(dynamic_cast<TH1*>(fOutput->FindObject("trackCount"))->GetEntries()==0&&!(NJetPairs==0&&NJetTriplets==0&&NFLOWparticles==0&&NFlat==0)){
-    cout << "This will now generate "<<11*nevents << " events where each event contains the following:"<<endl;
+    AliWarning(Form("This will now generate %i events where each event contains the following:",11*nevents));
     if((NJetPairs!=0&&Njetpart_a==0)||(NJetTriplets!=0&&Njetpart_a_3==0)){
       if(NFLOWparticles ==0 && NFlat!=0){
-	cout << "    1 trigger and "<<NFlat<<" associated particles, uniformly distributed in the phase space covered."<<endl;
+	AliWarning(Form("    1 trigger and %i associated particles, uniformly distributed in the phase space covered.",NFlat));
       }
       if(NFLOWparticles !=0 && NFlat==0 && (v2!=0||v3!=0)){
-	if(v2!=0)cout << "    1 trigger with a v2 of "<< v2*20.0/100.0 << " and "<<NFLOWparticles<<" associated particles from flow ";
-	if(v2==0)cout << "    1 uniformly distributed trigger and "<<NFLOWparticles<<" associated particles from flow ";
-	if(v2!=0&&v3!=0) cout <<"with a v2 of " <<v2 <<"and a v3 of"<<v3<<endl;
-	if(v2!=0&&v3==0) cout <<"with a v2 of " <<v2 <<endl;
-	if(v2==0&&v3!=0) cout <<"with a v3 of " <<v3<<endl;
+	if(v2!=0)AliWarning(Form("    1 trigger with a v2 of %f and %i associated particles from flow ",v2*20.0/100.0,(int)NFLOWparticles));
+	if(v2==0)AliWarning(Form("    1 uniformly distributed trigger and %i associated particles from flow ",(int)NFLOWparticles));
+	if(v2!=0&&v3!=0) AliWarning(Form("with a v2 of %f and a v3 of %f",v2,v3));
+	if(v2!=0&&v3==0) AliWarning(Form("with a v2 of %f", v2 ));
+	if(v2==0&&v3!=0) AliWarning(Form("with a v3 of %f",v3));
       }
       if(NFLOWparticles !=0 && NFlat!=0){
-	if(v2!=0)cout << "    1 trigger with a v2 of "<< v2*20.0/100.0 << ","<<NFlat<<" uniformly distributed (background) associated particles and "<<NFLOWparticles<<" associated particles from flow ";
-	if(v2==0)cout << "    1 uniformly distributed trigger ,"<<NFlat<<" uniformly distributed (background) associated particles and "<<NFLOWparticles<<" associated particles from flow ";
-	if(v2!=0&&v3!=0) cout <<"with a v2 of " <<v2 <<"and a v3 of"<<v3<<endl;
-	if(v2!=0&&v3==0) cout <<"with a v2 of " <<v2 <<endl;
-	if(v2==0&&v3!=0) cout <<"with a v3 of " <<v3<<endl;	
+	if(v2!=0)AliWarning(Form("    1 trigger with a v2 of %f,%i uniformly distributed (background) associated particles and %i associated particles from flow ",v2*20.0/100.0,NFlat,(int)NFLOWparticles));
+	if(v2==0)AliWarning(Form("    1 uniformly distributed trigger ,%i uniformly distributed (background) associated particles and %i associated particles from flow ",NFlat,(int)NFLOWparticles));
+	if(v2!=0&&v3!=0) AliWarning(Form("with a v2 of %f and a v3 of %f",v2,v3));
+	if(v2!=0&&v3==0) AliWarning(Form("with a v2 of %f",v2));
+	if(v2==0&&v3!=0) AliWarning(Form("with a v3 of %f",v3));	
       }
     }
     if(NJetPairs!=0&&Njetpart_a!=0){
-      cout << "    "<<NJetPairs<<" correlated Dijets, where the nearside contains 1 trigger and "<<Njetpart_n-1<<" associated, spread around the jet axis with a width of "<<nearwidth<<" radians,"<<endl;
-      cout << "    and the away side contains "<< Njetpart_a<<" associated particles , spread around the jet axis with a width of "<< awaywidth<<" radians."<<endl;
+      AliWarning(Form("    %i correlated Dijets, where the nearside contains 1 trigger and %i associated, spread around the jet axis with a width of %f radians,",NJetPairs,Njetpart_n-1,nearwidth));
+      AliWarning(Form("    and the away side contains %i associated particles, spread around the jet axis with a width of %f radians.",Njetpart_a, awaywidth));
     }
     if(NJetTriplets!=0&&Njetpart_a_3!=0){
-      cout << "    "<<NJetTriplets<<" correlated Jet triplets, where the nearside contains 1 trigger and "<<Njetpart_n_3-1<<" associated, spread around the jet axis with a width of "<<nearwidth_3<<" radians,"<<endl;
-      cout << "    and the away side jets contain "<< Njetpart_a_3<<" associated particles each, spread around the jet axis with a width of "<< awaywidth<<" radians."<<endl;
-      cout << "    the away side jets are split in angular distance by "<<Trijetawaysplitting<<" radians."<<endl;
+      AliWarning(Form("    %i correlated Jet triplets, where the nearside contains 1 trigger and %i associated, spread around the jet axis with a width of %f radians,",NJetTriplets,Njetpart_n_3-1,nearwidth_3));
+      AliWarning(Form("    and the away side jets contain %i associated particles each, spread around the jet axis with a width of %f radians.",Njetpart_a_3,awaywidth));
+      AliWarning(Form("    the away side jets are split in angular distance by %f radians.",Trijetawaysplitting));
     }
     if(NFLOWparticles !=0 &&!((NJetPairs!=0&&Njetpart_a==0)||(NJetTriplets!=0&&Njetpart_a_3==0))){
-      cout << "   "<<NFLOWparticles<<" associated particles from flow ";
-      if(v2!=0&&v3!=0) cout <<"with a v2 of " <<v2 <<"and a v3 of"<<v3<<endl;
-      if(v2!=0&&v3==0) cout <<"with a v2 of " <<v2 <<endl;
-      if(v2==0&&v3!=0) cout <<"with a v3 of " <<v3<<endl;	
+      AliWarning(Form("   %f associated particles from flow ",Trijetawaysplitting));
+      if(v2!=0&&v3!=0) AliWarning(Form("with a v2 of %f and a v3 of %f",v2 ,v3));
+      if(v2!=0&&v3==0) AliWarning(Form("with a v2 of %f", v2));
+      if(v2==0&&v3!=0) AliWarning(Form("with a v3 of %f", v3));	
     }
     if(NFlat !=0 &&!((NJetPairs!=0&&Njetpart_a==0)||(NJetTriplets!=0&&Njetpart_a_3==0))){
-      cout << "    "<<NFlat<<" associated particles, uniformly distributed in the phase space covered."<<endl;
+      AliWarning(Form("    %i associated particles, uniformly distributed in the phase space covered.",NFlat));
     }
   }
   Double_t Pii = TMath::Pi();
@@ -1207,7 +1200,7 @@ void AliAnalysisTaskCorrelation3p::execgenerate()
   int nTotal = 0;
   for(Int_t iev=0;iev<nevents;iev++){
     int evnr = dynamic_cast<TH1*>(fOutput->FindObject("trackCount"))->GetEntries();
-    if(evnr%100==0) cout << "event no: "<<evnr <<endl;
+    if(evnr%100==0) AliWarning(Form("event no: %i",evnr));
     allrelevantParticles.Clear();
     nTrig = 0;
     nAss = 0;
@@ -1683,19 +1676,19 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
   tree->Branch("NFlat",&NFlat,"NFlat/I");
 
   
-  cout << "This parser reads in parameters for particle generation."<<endl<<endl;
-  cout << "The defaults is one Phi back to back jet pair with the following parameters:"<<endl;
-  cout << "   # events = "<< nevents<<endl;
-  cout << "   # particles in near side jet = "<<Njetpart_n<<endl;
-  cout << "   width of the near side jet   = "<<nearwidth<<" [radians]"<<endl;
-  cout << "   # particles in away side jet = "<<Njetpart_a<<endl;
-  cout << "   width of the away side jet   = "<<awaywidth<<" [radians]"<<endl<<endl;
-  cout << "In addition you can choose to add three-jet objects and v2 and v3."<<endl<<endl<<endl;
-  cout << "The toy MC can be initialized with a realistic pT distribution,"<<endl;
-  cout << "parametrized from real Data. The production must have"<<endl;
-  cout << "an AnalysisResults.root file located in ../../LHC1xx relative to this folder."<<endl;
-  cout << "Standard is no pT distribution."<<endl<<endl<<endl;
-  cout << "To use standard values, please type 0, to use other values type 1:";
+  AliWarning("This parser reads in parameters for particle generation.");
+  AliWarning("The defaults is one Phi back to back jet pair with the following parameters:");
+  AliWarning(Form("   # events = %i", nevents));
+  AliWarning(Form("   # particles in near side jet = %i",Njetpart_n)) ;
+  AliWarning(Form("   width of the near side jet   = %f [radians]",awaywidth));
+  AliWarning(Form("   # particles in away side jet = %i",Njetpart_a));
+  AliWarning(Form("   width of the away side jet   = %f [radians]",awaywidth));
+  AliWarning("In addition you can choose to add three-jet objects and v2 and v3.");
+  AliWarning("The toy MC can be initialized with a realistic pT distribution,");
+  AliWarning("parametrized from real Data. The production must have");
+  AliWarning("an AnalysisResults.root file located in ../../LHC1xx relative to this folder.");
+  AliWarning("Standard is no pT distribution.");
+  AliWarning("To use standard values, please type 0, to use other values type 1:");
   bool worked = false;
   string input;
   while(!worked){
@@ -1703,44 +1696,42 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
     getline(cin, input);
     stringstream ss(input);
     ss>>defaultv;
-    if(ss.fail()) {cout <<endl<< "You need to enter either 1 or 0:"; continue;}
+    if(ss.fail()) {AliWarning("You need to enter either 1 or 0:"); continue;}
     if(defaultv==0){//just write the defaults to file.
       tree->Fill();
       tree->Write();
       settings->Close();
       return;}
     if(defaultv==1){worked=true;}
-    else cout <<endl<< "You need to enter either 1 or 0:";
+    else AliWarning("You need to enter either 1 or 0:");
   }
   worked = false;
-  cout <<endl<<endl;
   while(!worked){
-    cout <<"Please enter the number of events per (data) event:";
+    AliWarning("Please enter the number of events per (data) event:");
     int nev;
     getline(cin, input);
     stringstream ss(input);
     ss>>nev;
-    if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+    if(ss.fail()) { AliWarning("You need to enter an integer:"); continue;}
     else {nevents=nev;worked = true;}
   }
   worked = false;
-  cout <<endl<<endl;
   if(nevents==0){
-    cout << "You entered 0 events, finishing"<<endl;
+    AliWarning("You entered 0 events, finishing");
     tree->Fill();
     tree->Write();
     settings->Close();
     return;}
   while(!worked){
-    cout <<"Please provide the real data period you want to extrapolate the pT distribution from: LHC1";
+    AliWarning("Please provide the real data period you want to extrapolate the pT distribution from: LHC1");
     getline(cin, input);
     const char* period = input.c_str();
-    cout<<endl<<"You choose LHC"<<period<<"."<<endl;
-    cout << "Will now try to open the file ../../LHC1"<<period<<"/results.root"<<endl;
+    AliWarning(Form("You choose LHC %s.",period));
+    AliWarning(Form("Will now try to open the file ../../LHC1%s/results.root",period));
     TFile * AResults = TFile::Open(Form("../../LHC1%s/results.root",period),"READ");
-    if(!AResults){cout << "File not found. Defaulting to no pT distribution. Please restart and provide the file if the parametrization is nessecary."<<endl;worked = true;}
+    if(!AResults){AliWarning("File not found. Defaulting to no pT distribution. Please restart and provide the file if the parametrization is nessecary.");worked = true;}
     else{
-      if(AResults->IsZombie()){cout << "File not found. Defaulting to no pT distribution. Please restart and provide the file if the parametrization is nessecary."<<endl;worked =true;}
+      if(AResults->IsZombie()){AliWarning("File not found. Defaulting to no pT distribution. Please restart and provide the file if the parametrization is nessecary.");worked =true;}
       else{
 	TString cent = TString("");
 	//In the PbPb case, one needs to provide the correct centrality bins:
@@ -1748,23 +1739,23 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
 	  TList * list = AResults->GetListOfKeys();
 	  TObjArray * CentBins = new TObjArray(20);
 	  CentBins->SetOwner(true);
-	  cout << "Please provide the centrality window from the following alternatives:"<<endl;
+	  AliWarning("Please provide the centrality window from the following alternatives:");
 	  int j = 1;
 	  for(int i = 0;i<list->GetEntries();i++){
 	    TObjString * name = new TObjString(list->At(i)->GetName());
-	    if(name->String().Contains("BinM")&&!name->String().Contains("Z")){cout<<j<<": " << name->String().Data()<<endl; CentBins->AddAt(name,j);j++;}
+	    if(name->String().Contains("BinM")&&!name->String().Contains("Z")){AliWarning(Form("%i: %s",j,name->String().Data())); CentBins->AddAt(name,j);j++;}
 	    else delete name;
 	  }
 	  bool worked2 = false;
 	  while(!worked2){
-	    cout << "Please type in the number of the preferred multiplicity bin: ";
+	    AliWarning("Please type in the number of the preferred multiplicity bin: ");
 	    getline(cin, input);
 	    stringstream ss(input);
 	    ss>>j;	  
-	    if(ss.fail()){cout << "You need to enter an integer from the list above."<<endl;continue;}
+	    if(ss.fail()){AliWarning("You need to enter an integer from the list above.");continue;}
 	    else{
 	      TObjString * tmp = dynamic_cast<TObjString*>(CentBins->At(j));
-	      if(!tmp){cout << "You need to enter an integer from the list above:"<<endl;continue;}
+	      if(!tmp){AliWarning("You need to enter an integer from the list above:");continue;}
 	      else {cent.Append(tmp->GetString().Data());worked2 = true;}
 	    }
 	  }
@@ -1774,17 +1765,17 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
 	TH1D * associatedpT;
 	if(cent.CompareTo("") == 0){
 	  TDirectory * statsdir =  AResults->GetDirectory("bin_stats");
-	  if(!statsdir){cout << "Could not locate directory bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary."<<endl; worked = true; continue;}
+	  if(!statsdir){AliWarning("Could not locate directory bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary."); worked = true; continue;}
 	  triggerpT = dynamic_cast<TH1D*>(statsdir->Get("trigger_pT"));
 	  associatedpT = dynamic_cast<TH1D*>(statsdir->Get("associated_pT"));
 	}
 	else{
 	  TDirectory * statsdir = AResults->GetDirectory(Form("%s/bin_stats",cent.Data()));
-	  if(!statsdir){cout << "Could not locate directory "<< cent.Data() <<"/bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary."<<endl; worked = true; continue;}
+	  if(!statsdir){AliWarning(Form("Could not locate directory %s/bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary.",cent.Data())); worked = true; continue;}
 	  triggerpT = dynamic_cast<TH1D*>(statsdir->Get("trigger_pT"));
 	  associatedpT = dynamic_cast<TH1D*>(statsdir->Get("associated_pT"));	  
 	}
-	if(!triggerpT||!associatedpT){cout << "Could not locate histograms in directory "<< cent.Data() <<"/bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary."<<endl; worked = true; continue;}
+	if(!triggerpT||!associatedpT){AliWarning(Form("Could not locate histograms in directory %s/bin_stats in results.root. Defaulting to no pT distribution. Please provide the correct file if the parametrization is nessecary.",cent.Data())); worked = true; continue;}
 	TF1* funct = pTdistribution(triggerpT,"triggerpT");
 	TF1* funca = pTdistribution(associatedpT,"associatedpT");
 	settings->cd();
@@ -1798,199 +1789,186 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
   }
   worked = false;
     while(!worked){
-    cout <<"Please enter the number of dijets per event:";
+    AliWarning("Please enter the number of dijets per event:");
     int njets;
     getline(cin, input);
     stringstream ss(input);
     ss>>njets;
-    if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+    if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
     else {NJetPairs=njets;worked = true;}
   }  
   worked = false;
-  cout <<endl<<endl;
   if(NJetPairs !=0){//or there is no point
     while(!worked){
-      cout <<"Please enter the number of particles in the nearside in dijets:";
+      AliWarning("Please enter the number of particles in the nearside in dijets:");
       int npart;
       getline(cin, input);
       stringstream ss(input);
       ss>>npart;
-      if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
-      if(Njetpart_n<1.0){cout << endl<< "The number you enter must be an integer bigger then 1"<<endl; continue;}
+      if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
+      if(Njetpart_n<1.0){AliWarning("The number you enter must be an integer bigger then 1"); continue;}
       else {Njetpart_n=npart;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
     while(!worked){
-      cout <<"Please enter the width of the near side jet of the dijet in radians (double):";
+      AliWarning("Please enter the width of the near side jet of the dijet in radians (double):");
       double width;
       getline(cin, input);
       stringstream ss(input);
       ss>>width;
-      if(ss.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter a double:"); continue;}
       else {nearwidth=width;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
     while(!worked){
-      cout <<"Please enter the number of particles in the awayside jet of the dijet :";
+      AliWarning("Please enter the number of particles in the awayside jet of the dijet :");
       int npart;
       getline(cin, input);
       stringstream ss(input);
       ss>>npart;
-      if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
       else {Njetpart_a=npart;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
       while(!worked){
-      cout <<"Please enter the width of the away side jet in radians (double):";
+      AliWarning("Please enter the width of the away side jet in radians (double):");
       double width;
       getline(cin, input);
       stringstream ss(input);
       ss>>width;
-      if(ss.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter a double:"); continue;}
       else {awaywidth=width;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
   }
   while(!worked){
-    cout <<"Please enter the number of trijets per event:";
+    AliWarning("Please enter the number of trijets per event:");
     int njets;
     getline(cin, input);
     stringstream ss(input);
     ss>>njets;
-    if(ss.fail()) {cout <<endl<< "You need to enter an integer:"<<endl; continue;}
+    if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
     else {NJetTriplets=njets;worked = true;}
   }  
   worked = false;
-  cout <<endl<<endl;
   if(NJetTriplets!=0){//or there is no point
     while(!worked){
-      cout <<"Please enter the number of particles in the nearside in jet triplet:";
+      AliWarning("Please enter the number of particles in the nearside in jet triplet:");
       int npart;
       getline(cin, input);
       stringstream ss(input);
       ss>>npart;
-      if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
-      if(Njetpart_n<1.0){cout << endl<< "The number you enter must be an integer bigger then 1"<<endl; continue;}
+      if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
+      if(Njetpart_n<1.0){AliWarning("The number you enter must be an integer bigger then 1"); continue;}
       else {Njetpart_n=npart;worked = true;}
     }      
     worked = false;
-    cout <<endl<<endl;
     while(!worked){
-      cout <<"Please enter the width of the near side jet of the jet triplet in radians (double):";
+      AliWarning("Please enter the width of the near side jet of the jet triplet in radians (double):");
       double width;
       getline(cin, input);
       stringstream ss(input);
       ss>>width;
-      if(ss.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+      if(ss.fail()) {AliWarning( "You need to enter a double:"); continue;}
       else {nearwidth_3=width;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
     while(!worked){
-      cout <<"Please enter the number of particles in the awayside jets of the jet triplet :";
+      AliWarning("Please enter the number of particles in the awayside jets of the jet triplet :");
       int npart;
       getline(cin, input);
       stringstream ss(input);
       ss>>npart;
-      if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
       else {Njetpart_a_3=npart;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
       while(!worked){
-      cout <<"Please enter the width of the away side jets in radians (double):";
+      AliWarning("Please enter the width of the away side jets in radians (double):");
       double width;
       getline(cin, input);
       stringstream ss(input);
       ss>>width;
-      if(ss.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter a double:"); continue;}
       else {awaywidth_3=width;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
     while(!worked){
-      cout <<"Please enter the maximum value of the away side dijet splitting in radians (double):";
+      AliWarning("Please enter the maximum value of the away side dijet splitting in radians (double):");
       double width;
       getline(cin, input);
       stringstream ss(input);
       ss>>width;
-      if(ss.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+      if(ss.fail()) {AliWarning("You need to enter a double:"); continue;}
       else {Trijetawaysplitting=width;worked = true;}
     }  
     worked = false;
-    cout <<endl<<endl;
   }  
   
   while(!worked){
-    cout <<"Please enter the number of particles from flow per event:";
+    AliWarning("Please enter the number of particles from flow per event:");
     int nflow;
     getline(cin, input);
     stringstream ss(input);
     ss>>nflow;
-    if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+    if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
     else {NFLOWparticles=nflow;worked = true;}
   }  
   worked = false;
-  cout <<endl<<endl;
   if(NFLOWparticles!=0){
     while(!worked){
-      cout << "If you want to use a realistic pT distributed flow from ../../flowpt.root, please enter 1. If you want to manually insert v2 and v3, please enter 0:";
+      AliWarning("If you want to use a realistic pT distributed flow from ../../flowpt.root, please enter 1. If you want to manually insert v2 and v3, please enter 0:");
       int yesno;
       getline(cin,input);
       stringstream ss(input);
       ss>>yesno;
-      if(ss.fail()||(yesno!=0&&yesno!=1)){cout << endl<< "You need to enter either 1 or 0:"<<endl;continue;}
+      if(ss.fail()||(yesno!=0&&yesno!=1)){AliWarning("You need to enter either 1 or 0:");continue;}
       else{
 	if(yesno == 0){
 	  bool inworked =false;
 	  while(!inworked){
-	    cout <<"Please enter v2 (double) to add flow:";
+	    AliWarning("Please enter v2 (double) to add flow:");
 	    double v2l;
 	    getline(cin, input);
 	    stringstream ss1(input);
 	    ss1>>v2l;
-	    if(ss1.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+	    if(ss1.fail()) {AliWarning("You need to enter a double:"); continue;}
 	    else {v2=v2l;inworked = true;}
 	    }  
 	  inworked = false;
 	  while(!inworked){
-	    cout <<"Please enter v3 (double) to add flow:";
+	    AliWarning("Please enter v3 (double) to add flow:");
 	    double v3l;
 	    getline(cin, input);
 	    stringstream ss1(input);
 	    ss1>>v3l;
-	    if(ss1.fail()) {cout <<endl<< "You need to enter a double:"; continue;}
+	    if(ss1.fail()) {AliWarning("You need to enter a double:"); continue;}
 	    else {v3=v3l;inworked = true;}
 	    }  
-	  cout <<endl<<endl;
 	  worked = true;
 	}
 	if(yesno == 1){
-	  cout << "Trying to open ../../flowpt.root"<<endl;
+	  AliWarning("Trying to open ../../flowpt.root");
 	  TFile * flowpt = TFile::Open("../../flowpt.root","READ");
-	  if(!flowpt){cout << "File not found. Defaulting to no flow distribution. Please restart and provide the file if the parametrization is nessecary."<<endl;}
+	  if(!flowpt){AliWarning("File not found. Defaulting to no flow distribution. Please restart and provide the file if the parametrization is nessecary.");}
 	  else{
-	    if(flowpt->IsZombie()){cout << "File not found. Defaulting to no flow distribution. Please restart and provide the file if the parametrization is nessecary."<<endl;}
+	    if(flowpt->IsZombie()){AliWarning("File not found. Defaulting to no flow distribution. Please restart and provide the file if the parametrization is nessecary.");}
 	    else{
 	      bool worked3 = false;
-	      cout << "Please choose a centrality range for the flow:"<<endl;
-	      cout << "1   -    0%- 5%"<<endl;
-	      cout << "2   -    5%-10%"<<endl;
-	      cout << "3   -   10%-20%"<<endl;
-	      cout << "4   -   20%-30%"<<endl;
-	      cout << "5   -   30%-40%"<<endl;
-	      cout << "6   -   40%-50%"<<endl;
-	      cout << "Your choice:";
+	      AliWarning("Please choose a centrality range for the flow:");
+	      AliWarning("1   -    0%- 5%");
+	      AliWarning("2   -    5%-10%");
+	      AliWarning("3   -   10%-20%");
+	      AliWarning("4   -   20%-30%");
+	      AliWarning("5   -   30%-40%");
+	      AliWarning("6   -   40%-50%");
+	      AliWarning("Your choice:");
 	      int choice;
 	      while(!worked3){
 		getline(cin, input);
 		stringstream ss1(input);
 		ss1>>choice;
-		if(ss1.fail()) {cout <<endl<< "You need to enter an integer of the ones above:"; continue;}
+		if(ss1.fail()) {AliWarning("You need to enter an integer of the ones above:"); continue;}
 		else {worked3 = true;}
 	      }
 	      TGraphAsymmErrors * v2graph;
@@ -2013,7 +1991,7 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
 	      if(choice == 6){
 		v2graph = dynamic_cast<TGraphAsymmErrors*>(flowpt->Get("v240t50prc"));
 		v3graph = dynamic_cast<TGraphAsymmErrors*>(flowpt->Get("v340t50prc"));}	
-	      if(!v2graph||!v3graph){cout << "The file does not contain the expected distributions. Please provide the correct file. Defaulting to no flow."<<endl;worked = true; continue;}
+	      if(!v2graph||!v3graph){AliWarning("The file does not contain the expected distributions. Please provide the correct file. Defaulting to no flow.");worked = true; continue;}
 	      settings->cd();
 	      v2graph->Write("v2ptdist");
 	      v3graph->Write("v3ptdist");
@@ -2028,12 +2006,12 @@ void AliAnalysisTaskCorrelation3p::Askforgensettings()
   
   worked=kFALSE;
   while(!worked){
-    cout <<"Please enter the number of background associated particles with a flat distribution:";
+   AliWarning("Please enter the number of background associated particles with a flat distribution:");
     int nflat;
     getline(cin, input);
     stringstream ss(input);
     ss>>nflat;
-    if(ss.fail()) {cout <<endl<< "You need to enter an integer:"; continue;}
+    if(ss.fail()) {AliWarning("You need to enter an integer:"); continue;}
     else {NFlat=nflat;worked = true;}
   }  
   worked = false;  

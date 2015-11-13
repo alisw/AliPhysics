@@ -1,30 +1,7 @@
 #ifndef __CINT__
 #include "AliAnalysisTaskCorrelation3p.h"
 #endif
-AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPbTree (const char* name = "ThreePartTracksPbPb",
-						      const char* centrality = "V0M",
-						      const Double_t MinTriggerPt = 4.0,
-						      const Double_t MaxTriggerPt = 8.0,
-						      const Double_t MinAssociatedPt = 1.0,
-						      const Double_t MaxAssociatedPt = 2.0,
-						      const Double_t Acceptancecut = 0.8,
-						      const char* period = "11h",
-						      const Int_t MaxNEventsMix = 10,
-						      const Int_t MinNTracksMix = 2000,
-						      const Int_t NMBins = 6,
-						      const Double_t Mbin0 = 0.,
-						      const Double_t Mbin1 = 5.,
-						      const Double_t Mbin2 = 10.,
-						      const Double_t Mbin3 = 20.,
-						      const Double_t Mbin4 = 40.,
-						      const Double_t Mbin5 = 60.,
-						      const Double_t Mbin6 = 90.,
-						      const Double_t Mbin7 = 90.,
-						      const char * file = "LHC11hWeight.root",
-						      const char * cutmask = "GlobalHybrid",
-						      const Int_t binver = 1,
-						      const Int_t Zbinver =1
-							 )
+AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPbTree ()
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for PbPb data 
   //Defaults to 10h data with MB trigger.
@@ -39,7 +16,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPbTree (const char* name =
     ::Error("AddTaskThreePartTracks", "This task requires an input event handler");
     return NULL;
   }
-  
+  gROOT->LoadMacro("TaskConfig.C");
   const char* fname = Form("%s_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
   const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
   AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), "");
@@ -53,10 +30,14 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPbTree (const char* name =
   task->SetAcceptanceCut(Acceptancecut);
   task->SetTrackCut(cutmask);
   task->SetBinVer(binver);
-//   task->SetQAtask(true);
+  task->SetMaxTracksPerEvent(maxntracksmix);
+  task->SetMoreOutputs(MoreOutput);
+  
+  if(QAonly)  task->SetQA();
+  if(QAtask)  task->SetQAtask(true);
   task->SetDstTree(true);
-//  if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
-   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
+  if(TString(file).CompareTo("")!=0&&grid)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
+  if(TString(file).CompareTo("")!=0&&!grid)  task->SetWeights(Form("%s",file));
 
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
@@ -70,40 +51,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPbTree (const char* name =
   if(NMBins>6) Mbin[7] = Mbin7;
   TArrayD tMbin(NMBins+1, Mbin);
   //z vertex binning.
-  Int_t NZBins   =   19;
-  Double_t Zbin0 = -10.;
-  Double_t Zbin1 = -8.5;
-  Double_t Zbin2 = -7.5;
-  Double_t Zbin3 = -6.5;
-  Double_t Zbin4 = -5.5;
-  Double_t Zbin5 = -4.5;
-  Double_t Zbin6 = -3.5;
-  Double_t Zbin7 = -2.5;
-  Double_t Zbin8 = -1.5;
-  Double_t Zbin9 = -0.5;
-  Double_t Zbin10 = 0.5;
-  Double_t Zbin11 = 1.5;						      
-  Double_t Zbin12 = 2.5;						      
-  Double_t Zbin13 = 3.5;						      
-  Double_t Zbin14 = 4.5;						      
-  Double_t Zbin15 = 5.5;						      
-  Double_t Zbin16 = 6.5;						      
-  Double_t Zbin17 = 7.5;						      
-  Double_t Zbin18 = 8.5;						      
-  Double_t Zbin19 = 10.;  
-  if(Zbinver==2){
-    NZBins=    9;
-    Zbin0 = -10.;
-    Zbin1 = -7.5;
-    Zbin2 = -5.5;
-    Zbin3 = -3.5;
-    Zbin4 = -1.5;
-    Zbin5 =  1.5;
-    Zbin6 =  3.5;
-    Zbin7 =  5.5;
-    Zbin8 =  7.5;
-    Zbin9 =  10.;
-  }
   Double_t *Zbin = new Double_t[NZBins+1];
   Zbin[0] = Zbin0;
   Zbin[1] = Zbin1;
