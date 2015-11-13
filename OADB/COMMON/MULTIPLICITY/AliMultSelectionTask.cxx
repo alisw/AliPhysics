@@ -254,8 +254,8 @@ AliMultSelectionTask::~AliMultSelectionTask()
 void AliMultSelectionTask::UserCreateOutputObjects()
 {
 
-    OpenFile(2);
-    // Called once
+    if ( fkCalibration )
+        OpenFile(2);
 
     //------------------------------------------------
     
