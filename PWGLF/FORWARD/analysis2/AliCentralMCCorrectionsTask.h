@@ -202,13 +202,13 @@ protected:
    * @param esd   ESD event 
    * @param mc    MC event
    * @param bin   Vertex bin 
-   * @param vz    @f$IP_{z}@f$ 
+   * @param ip    @f$IP_{z}@f$ 
    * 
    * @return true on success
    */
   Bool_t ProcessESD(const AliESDEvent& esd, const AliMCEvent& mc, 
 		    AliBaseMCCorrectionsTask::VtxBin& bin,
-		    Double_t vz);
+		    const TVector3& ip);
   /** 
    * Create corrections objects and store them in passed list
    * 

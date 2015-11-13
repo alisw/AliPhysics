@@ -17,6 +17,7 @@
 class AliMCEvent;
 class TH2F;
 class AliStack;
+class TVector3;
 
 /** 
  * This class inspects the event 
@@ -84,7 +85,7 @@ public:
    * @param triggers  On return, the triggers fired 
    * @param ivz       On return, the found vertex bin (1-based).  A zero
    *                  means outside of the defined vertex range
-   * @param vz        On return, the z position of the interaction
+   * @param ip        On return, the z position of the interaction
    * @param b         On return, impact parameter [fm] (if available)
    * @param c         On return, centrality estimate [%] (if available)
    * @param npart     On return, number of participants (if available)
@@ -96,7 +97,7 @@ public:
   UInt_t ProcessMC(AliMCEvent*       event, 
 		   UInt_t&           triggers,
 		   UShort_t&         ivz, 
-		   Double_t&         vz,
+		   TVector3&         ip,
 		   Double_t&         b,
 		   Double_t&         c,
 		   Int_t&            npart, 
@@ -154,6 +155,7 @@ protected:
   virtual Bool_t CheckFastPartition(bool) const { return false; }
 
   TH1F* fHVertex;  // Histogram of vertex 
+  TH2F* fHVertexXY;// Histogram of vertex (xy)
   TH1F* fHPhiR;    // Histogram of event plane 
   TH1F* fHB;       // Histogram of impact parameter 
   TH1F* fHMcC;     // Histogram of centrality derived from imp. par.

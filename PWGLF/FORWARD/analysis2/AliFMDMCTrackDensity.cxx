@@ -309,7 +309,7 @@ AliFMDMCTrackDensity::StoreParticle(AliMCParticle*       particle,
 Bool_t
 AliFMDMCTrackDensity::Calculate(const AliESDFMD&  input, 
 				const AliMCEvent& event,
-				Double_t          vz,
+				const TVector3&   ip,
 				AliESDFMD&        output, 
 				TH2D*             primary)
 {
@@ -337,13 +337,18 @@ AliFMDMCTrackDensity::Calculate(const AliESDFMD&  input,
       Char_t   er = (eq == 0 ? 'I' : 'O');
       UShort_t ns = (eq == 0 ?  20 :  40);
       UShort_t nt = (eq == 0 ? 512 : 256);
-      for (UShort_t es = 0; es < ns; es++) 
-	for (UShort_t et = 0; et < nt; et++) 
-	  output.SetEta(ed, er, es, et, input.Eta(ed, er, es, et));
+      for (UShort_t es = 0; es < ns; es++) {
+	for (UShort_t et = 0; et < nt; et++) {
+	  Double_t eta, phi;
+	  AliForwardUtil::GetEtaPhi(ed, er, es, et, ip, eta, phi);
+	  output.SetEta(ed, er, es, et, eta); // input.Eta(ed, er, es, et);
+	  // output.SetPhi(ed, er, es, et, phi*TMath::RadToDeg());
+	}
+      }
     }
   }
 
-  return ProcessTracks(event, vz, primary);
+  return ProcessTracks(event, ip, primary);
 }
 
 #define PFV(N,VALUE)					\

@@ -77,7 +77,7 @@ public:
    * @return true 
    */
   Bool_t Calculate(const AliMCEvent&   event, 
-		   Double_t            vz,
+		   const TVector3&     ip, 
 		   TH2D&               output,
 		   TH2D*               primary);
   void Print(Option_t* option="") const;

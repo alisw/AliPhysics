@@ -161,7 +161,7 @@ Bool_t AliCentralMCMultiplicityTask::Event(AliESDEvent& esd)
   TH2D&              hist    = fAODMCCentral.GetHistogram();
 
 
-  fTrackDensity.Calculate(*mcEvent, ip.Z(), hist, NULL);
+  fTrackDensity.Calculate(*mcEvent, ip, hist, NULL);
   bin->Correct(hist, fUseSecondary, fUseAcceptance, false);
 
   return true;

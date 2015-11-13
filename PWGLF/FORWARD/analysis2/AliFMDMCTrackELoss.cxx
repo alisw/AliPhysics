@@ -426,7 +426,7 @@ AliFMDMCTrackELoss::StoreParticle(AliMCParticle*       particle,
 Bool_t
 AliFMDMCTrackELoss::Calculate(const AliESDFMD&  input, 
 			      const AliMCEvent& event,
-			      Double_t          vz,
+			      const TVector3&   ip,
 			      Double_t          cent)
 {
   // 
@@ -445,7 +445,7 @@ AliFMDMCTrackELoss::Calculate(const AliESDFMD&  input,
   //
   Clear();
   fEvent.fCent = cent;
-  fEvent.fIpZ  = vz;
+  fEvent.fIpZ  = ip.Z();
 
   // Copy eta values to output 
   for (UShort_t ed = 1; ed <= 3; ed++) { 
@@ -460,7 +460,7 @@ AliFMDMCTrackELoss::Calculate(const AliESDFMD&  input,
     }
   }
 
-  Bool_t ret = ProcessTracks(event, vz, 0);
+  Bool_t ret = ProcessTracks(event, ip, 0);
 
   if (fTree) fTree->Fill();
 

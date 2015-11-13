@@ -109,12 +109,13 @@ AliSPDMCTrackDensity::StoreParticle(AliMCParticle* particle,
 				    AliTrackReference*   ref) const
 {
   Double_t w = AliBaseMCTrackDensity::StoreParticle(particle, mother, ref);
-  Double_t r = ref->R();
-  Double_t x = ref->X();
-  Double_t y = ref->Y();
-  Double_t z = ref->Z();
-
-  Double_t zr = z-fVz;
+  // Double_t r = ref->R();
+  Double_t x = ref->X()-fIP.X();
+  Double_t y = ref->Y()-fIP.Y();
+  Double_t z = ref->Z()-fIP.Z();
+  Double_t r = TMath::Sqrt(x*x+y*y);
+  
+  Double_t zr = z; // -fVz;
   Double_t th = TMath::ATan2(r,zr);
   if (th < 0) th += 2*TMath::Pi();
   Double_t et = -TMath::Log(TMath::Tan(th/2));
@@ -129,7 +130,7 @@ AliSPDMCTrackDensity::StoreParticle(AliMCParticle* particle,
 //____________________________________________________________________
 Bool_t
 AliSPDMCTrackDensity::Calculate(const AliMCEvent& event, 
-				Double_t          vz,
+				const TVector3&   ip, 
 				TH2D&             output, 
 				TH2D*             primary)
 {
@@ -149,7 +150,7 @@ AliSPDMCTrackDensity::Calculate(const AliMCEvent& event,
   //
   fOutput = &output;
 
-  return ProcessTracks(event, vz, primary);
+  return ProcessTracks(event, ip, primary);
 }
 #define PF(N,V,...)					\
   AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)

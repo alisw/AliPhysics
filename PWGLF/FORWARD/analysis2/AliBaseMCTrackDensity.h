@@ -10,6 +10,7 @@
  * 
  */
 #include <TNamed.h>
+#include <TVector3.h>
 class TList;
 class TH1D;
 class TH2D;
@@ -144,7 +145,7 @@ protected:
    * @return true 
    */
   Bool_t ProcessTracks(const AliMCEvent&   event, 
-		       Double_t            vz,
+		       const TVector3&     ip, 
 		       TH2D*               primary);
   /** 
    * Process a single track 
@@ -265,7 +266,7 @@ protected:
   TH1D*             fNRefs;          // Number of track-references per track
   AliBaseMCWeights* fWeights;        // MC weights
   AliBaseMCWeights* fTruthWeights;   // MC truth weights
-  Double_t          fVz;             // IP z-coordinate of this event
+  TVector3          fIP;             // IP z-coordinate of this event
   Double_t          fB;              // Impact parameter of this event
   Double_t          fPhiR;           // Reaction plane  of this event
   Bool_t            fDebug;          // Debug flag

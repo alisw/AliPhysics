@@ -28,6 +28,7 @@
 #include <TMath.h>
 #include <TError.h>
 #include <TROOT.h>
+#include <TVector3.h>
 #define FIT_OPTIONS "RNS"
 
 //====================================================================
@@ -519,17 +520,8 @@ Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 
 #if 1
 //_____________________________________________________________________
-Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
-					 UShort_t sec, UShort_t strip, 
-					 Double_t zvtx)
+Double_t AliForwardUtil::GetSectorZ(UShort_t det, Char_t ring, UShort_t sec)
 {
-  // Calculate eta from strip with vertex (redundant with
-  // AliESDFMD::Eta but support displaced vertices)
-  //
-  // Slightly more optimized version that uses less branching 
-  
-  // Get R of the strip
-  Double_t   r         = GetStripR(ring, strip);
   Int_t      hybrid    = sec / 2;
   Int_t      q        = (ring == 'I' || ring == 'i') ? 0 : 1;
 
@@ -540,12 +532,76 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
 
   Double_t z = zs[det-1][q];
   if ((hybrid % 2) == 0) z -= .5;
+
+  return z;
+}
+Double_t AliForwardUtil::GetSectorPhi(UShort_t d, Char_t ring, UShort_t sec)
+{
+  UShort_t nSec = (ring == 'I' || ring == 'i') ? 20 : 40;
+  Double_t base = float(sec+.5) / nSec * TMath::TwoPi();
+  switch (d) {
+  case 1:  base += TMath::Pi()/2;  break;
+  case 2:  break; 
+  case 3:  base = TMath::Pi() - base; break;
+  default: return 1000;
+  }
+  if (base < 0)              base += TMath::TwoPi();
+  if (base > TMath::TwoPi()) base -= TMath::TwoPi();
+  return base;
+}
   
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
+					 UShort_t sec, UShort_t strip, 
+					 Double_t zvtx)
+{
+  // Calculate eta from strip with vertex (redundant with
+  // AliESDFMD::Eta but support displaced vertices)
+  //
+  // Slightly more optimized version that uses less branching 
+  
+  // Get R of the strip
+  Double_t   r     = GetStripR(ring, strip);
+  Double_t   z     = GetSectorZ(det, ring, sec);   
   Double_t   theta = TMath::ATan2(r,z-zvtx);
   Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
   
   return eta;
 }
+void AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
+			    UShort_t sec, UShort_t strip,
+			    const TVector3& ip,
+			    TVector3& pos)
+{
+  Double_t   rD      = GetStripR(ring, strip);
+  Double_t   phiD    = GetSectorPhi(det,ring, sec);
+  Double_t   zD      = GetSectorZ(det, ring, sec);
+  Double_t   xD      = rD*TMath::Cos(phiD);
+  Double_t   yD      = rD*TMath::Sin(phiD);
+  Double_t   dX      = xD-ip.X();
+  Double_t   dY      = yD-ip.Y();
+  Double_t   dZ      = zD-ip.Z();
+  pos.SetXYZ(dX, dY, dZ);
+}
+void AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
+			       UShort_t sec, UShort_t strip,
+			       const TVector3& ip,
+			       Double_t& eta, Double_t& phi)
+{
+  TVector3 pos;
+  GetXYZ(det, ring, sec, strip, ip, pos);
+  Double_t   r       = TMath::Sqrt(TMath::Power(pos.X(),2)+
+				   TMath::Power(pos.Y(),2));
+  phi                = TMath::ATan2(pos.Y(), pos.X());
+  Double_t   theta   = TMath::ATan2(r, pos.Z());
+  Double_t   tant    = TMath::Tan(theta/2);
+  if (TMath::Abs(theta) < 1e-9) {
+    ::Warning("GetEtaPhi","tan(theta/2)=%f very small");
+    return;
+  }
+  eta = -TMath::Log(tant);
+}
+
 void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
 					UShort_t  strip,
 					Double_t& eta, Double_t& phi , 

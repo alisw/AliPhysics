@@ -43,6 +43,7 @@
 AliFMDMCEventInspector::AliFMDMCEventInspector()
   : AliFMDEventInspector(), 
     fHVertex(0),
+    fHVertexXY(0),
     fHPhiR(0), 
     fHB(0),
     fHMcC(0),
@@ -64,6 +65,7 @@ AliFMDMCEventInspector::AliFMDMCEventInspector()
 AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
   : AliFMDEventInspector("fmdEventInspector"), 
     fHVertex(0),
+    fHVertexXY(0),
     fHPhiR(0), 
     fHB(0),
     fHMcC(0),
@@ -89,6 +91,7 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
 AliFMDMCEventInspector::AliFMDMCEventInspector(const AliFMDMCEventInspector& o)
   : AliFMDEventInspector(o), 
     fHVertex(0),
+    fHVertexXY(0),
     fHPhiR(0), 
     fHB(0),
     fHMcC(0),
@@ -165,6 +168,13 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fHVertex->SetDirectory(0);
   // fHVertex->Sumw2();
   fList->Add(fHVertex);
+
+  fHVertexXY = new TH2F("vertexXY", "True vertex distribution",
+			100, -1, 1, 100, -1, 1);
+  fHVertexXY->SetDirectory(0);
+  fHVertexXY->SetXTitle("x [cm]");
+  fHVertexXY->SetYTitle("y [cm]");
+  fList->Add(fHVertexXY);
 
   fHPhiR = new TH1F("phiR", "Event plane", 120, 0, 2*TMath::Pi());
   fHPhiR->SetXTitle("#Phi_{R} [radians]");
@@ -307,7 +317,7 @@ UInt_t
 AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event, 
 				  UInt_t&           triggers,
 				  UShort_t&         ivz, 
-				  Double_t&         vz,
+				  TVector3&         ip,
 				  Double_t&         b,
 				  Double_t&         c,
 				  Int_t&            npart, 
@@ -513,12 +523,13 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   // Get the primary vertex from EG 
   TArrayF vtx;
   genHeader->PrimaryVertex(vtx);
-  vz = vtx[2];
+  ip.SetXYZ(vtx[0], vtx[1], vtx[2]);
 
-  DMSG(fDebug, 2, "vz=%f, phiR=%f, b=%f, npart=%d, nbin=%d", 
-       vz, phiR, b, npart, nbin);
+  DMSG(fDebug, 0, "ip=(%f,%f,%f), phiR=%f, b=%f, npart=%d, nbin=%d", 
+       vtx[0], vtx[1], vtx[2], phiR, b, npart, nbin);
 
-  fHVertex->Fill(vz);
+  fHVertex->Fill(vtx[2]);
+  fHVertexXY->Fill(vtx[0], vtx[1]);
   fHPhiR->Fill(phiR);
   fHB->Fill(b);
   fHMcC->Fill(c);
@@ -540,15 +551,15 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     if (!fDisplacedVertex.ProcessMC(event)) 
       return kBadVertex;
     if (fDisplacedVertex.IsSatellite())
-      vz = fDisplacedVertex.GetVertexZ();
+      ip.SetZ(fDisplacedVertex.GetVertexZ());
   }
 
   // Check for the vertex bin 
-  ivz = fVtxAxis.FindBin(vz);
+  ivz = fVtxAxis.FindBin(ip.Z());
   if (ivz <= 0 || ivz > fHEventsTr->GetXaxis()->GetNbins()) { 
     if (fDebug > 3) {
       AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
-		      vz, fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); }
+		      ip.Z(), fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); }
     ivz = 0;
     return kBadVertex;
   }

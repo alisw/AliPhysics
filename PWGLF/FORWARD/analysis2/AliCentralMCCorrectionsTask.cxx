@@ -29,6 +29,7 @@
 #include "AliCentralCorrAcceptance.h"
 #include "AliForwardUtil.h"
 #include "AliMultiplicity.h"
+#include <TVector3.h>
 #include <TH1.h>
 #include <TH2D.h>
 #include <TDirectory.h>
@@ -88,13 +89,13 @@ Bool_t
 AliCentralMCCorrectionsTask::ProcessESD(const AliESDEvent& esd, 
 					const AliMCEvent& mc, 
 					AliBaseMCCorrectionsTask::VtxBin& bin,
-					Double_t          vz)
+					const TVector3& ip)
 {
   AliCentralMCCorrectionsTask::VtxBin& vb = 
     static_cast<AliCentralMCCorrectionsTask::VtxBin&>(bin);
 
   // Now process our input data and store in own ESD object 
-  fTrackDensity.Calculate(mc, vz, *vb.fHits, bin.fPrimary);
+  fTrackDensity.Calculate(mc, ip, *vb.fHits, bin.fPrimary);
   
   // Get the ESD object
   const AliMultiplicity* spdmult = esd.GetMultiplicity();

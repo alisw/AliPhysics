@@ -33,6 +33,7 @@
 #include <TTree.h>
 #include <TList.h>
 #include <TROOT.h>
+#include <TVector3.h>
 #include <iostream>
 
 //====================================================================
@@ -86,11 +87,11 @@ Bool_t
 AliForwardMCCorrectionsTask::ProcessESD(const AliESDEvent& esd, 
 					const AliMCEvent& mc, 
 					AliBaseMCCorrectionsTask::VtxBin& bin,
-					Double_t          vz)
+					const TVector3& ip)
 {
   AliESDFMD* esdFMD = esd.GetFMDData();
   const Float_t maxMult = 100;
-  fTrackDensity.Calculate(*esdFMD, mc, vz, fESDFMD, bin.fPrimary);
+  fTrackDensity.Calculate(*esdFMD, mc, ip, fESDFMD, bin.fPrimary);
   bin.fCounts->Fill(0.5);
 
   AliForwardMCCorrectionsTask::VtxBin& vb = 
