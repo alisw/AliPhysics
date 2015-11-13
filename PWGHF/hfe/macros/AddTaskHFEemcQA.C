@@ -30,13 +30,12 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     }
   
   // +++ EMCal MB
+  // INT8
   AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqa);
   hfecalqa->SelectCollisionCandidates(AliVEvent::kINT8);
   hfecalqa->SetElecIDsparse(FillElecSparse);
   hfecalqa->SetTenderSwitch(UseTender);
-  hfecalqa->SetEMCalTriggerEG1(thEG1ADC);
-  hfecalqa->SetEMCalTriggerEG2(thEG2ADC);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeHFEemcQAINT8";
@@ -45,13 +44,12 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   mgr->ConnectInput(hfecalqa, 0, cinput);
   mgr->ConnectOutput(hfecalqa, 1, coutput1); 
   
+  // INT7
   AliAnalysisTaskHFEemcQA *hfecalqa7 = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqa7);
   hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
   hfecalqa7->SetElecIDsparse(FillElecSparse);
   hfecalqa7->SetTenderSwitch(UseTender);
-  hfecalqa7->SetEMCalTriggerEG1(thEG1ADC);
-  hfecalqa7->SetEMCalTriggerEG2(thEG2ADC);
   
   TString containerName7 = mgr->GetCommonFileName();
   containerName7 += ":PWGHF_hfeHFEemcQAINT7";
