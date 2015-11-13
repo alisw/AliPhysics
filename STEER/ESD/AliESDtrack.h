@@ -531,6 +531,8 @@ public:
   //
   void   SetFriendNotStored(Bool_t v) {v ? (fFlags|=AliVTrack::kSkipFriend) : (fFlags&=(~AliVTrack::kSkipFriend));}
   Bool_t GetFriendNotStored()    const {return IsOn(AliVTrack::kSkipFriend);}
+  void   SetFriendTrackID(int id)      {fFrTrackID = UShort_t(id+1);}
+  Int_t  GetFriendTrackID()      const {Int_t(fFrTrackID)-1;}
 
 protected:
   
@@ -545,6 +547,7 @@ protected:
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   TBits    fTPCSharedMap;  // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
 
+  UShort_t fFrTrackID;             // id of friend in the ESDfriend
 
 
   ULong_t   fFlags;          // Reconstruction status flags 
@@ -673,11 +676,12 @@ protected:
   Int_t *fTOFcluster;               //[fNtofClusters]
                                     // TOF clusters matchable with the track
 
+  //
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,71)  //ESDtrack 
+  ClassDef(AliESDtrack,72)  //ESDtrack 
 };
 
 

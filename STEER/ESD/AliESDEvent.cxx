@@ -1504,6 +1504,7 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev)
     AliESDfriendTrack *f = (AliESDfriendTrack*)t->GetFriendTrack();
     AliESDfriendTrack *fcopy = ev->AddTrack(f,kTRUE); // create shallow copy
     fcopy->SetESDtrackID(i);
+    t->SetFriendTrackID(nfadd);
     f->SetESDtrackID(nfadd++);
   }
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());

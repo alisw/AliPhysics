@@ -197,6 +197,7 @@ AliESDtrack::AliESDtrack() :
   fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
+  fFrTrackID(0),
   fFlags(0),
   fID(0),
   fLabel(0),
@@ -317,6 +318,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTPCFitMap(track.fTPCFitMap),
   fTPCClusterMap(track.fTPCClusterMap),
   fTPCSharedMap(track.fTPCSharedMap),
+  fFrTrackID(track.fFrTrackID),
   fFlags(track.fFlags),
   fID(track.fID),
   fLabel(track.fLabel),
@@ -495,6 +497,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
+  fFrTrackID(0),
   fFlags(0),
   fID(),
   fLabel(0),
@@ -694,6 +697,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
+  fFrTrackID(0),
   fFlags(0),
   fID(0),
   fLabel(0),
@@ -981,6 +985,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
   fTPCClusterMap = source.fTPCClusterMap; 
   fTPCSharedMap  = source.fTPCSharedMap;  
   // the simple stuff
+  fFrTrackID = source.fFrTrackID;
   fFlags    = source.fFlags; 
   fID       = source.fID;             
   fLabel    = source.fLabel;
