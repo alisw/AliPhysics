@@ -26,14 +26,9 @@
 //zmq payloads, maybe a AliZMQmessage class which would by default be multipart and provide
 //easy access to payloads based on topic or so (a la HLT GetFirstInputObject() etc...)
 
-typedef map<std::string,std::string> stringMap;
-
 //methods
 TObject* UnpackMessage( zmq_msg_t message);
-TString GetFullArgString(int argc, char** argv);
 int ProcessOptionString(TString arguments);
-stringMap* TokenizeOptionString(const TString str);
-int ProcessOption(TString option, TString value);
 void deleteObject(void*, void*);
 int UpdatePad(TObject*);
 
@@ -71,7 +66,8 @@ int main(int argc, char** argv)
   int mainReturnCode=0;
 
   //process args
-  if (ProcessOptionString(GetFullArgString(argc,argv))!=0) return 1;
+  int noptions = ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv));
+  if (noptions<1) return 1;
 
   //init stuff
   //globally enable schema evolution for serializing ROOT objects
@@ -186,36 +182,6 @@ void deleteObject(void*, void* hint)
   delete object;
 }
 
-//______________________________________________________________________________
-int ProcessOption(TString option, TString value)
-{
-  //process option
-  //to be implemented by the user
-  
-  //if (option.EqualTo("ZMQpollIn"))
-  //{
-  //  fZMQpollIn = (value.EqualTo("0"))?kFALSE:kTRUE;
-  //}
- 
-  if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
-  {
-    fPollInterval = round(value.Atof()*1e6);
-  }
-  if (option.EqualTo("PollTimeout"))
-  {
-    fPollTimeout = round(value.Atof()*1e3);
-  }
-  else if (option.EqualTo("ZMQconfigIN") || option.EqualTo("in") )
-  {
-    fZMQconfigIN = value;
-  }
-  if (option.EqualTo("Verbose"))
-  {
-    fVerbose=kTRUE;
-  }
-  return 0; 
-}
-
 //_______________________________________________________________________________________
 TObject* UnpackMessage( zmq_msg_t message )
 {
@@ -224,105 +190,42 @@ TObject* UnpackMessage( zmq_msg_t message )
   return AliHLTMessage::Extract(data, size);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//_______________________________________________________________________________________
-TString GetFullArgString(int argc, char** argv)
-{
-  TString argString;
-  TString argument="";
-  if (argc>0) {
-    for (int i=1; i<argc; i++) {
-      argument=argv[i];
-      if (argument.IsNull()) continue;
-      if (!argString.IsNull()) argString+=" ";
-      argString+=argument;
-    }  
-  }
-  return argString;
-}
-
 //______________________________________________________________________________
 int ProcessOptionString(TString arguments)
 {
   //process passed options
-  stringMap* options = TokenizeOptionString(arguments);
+  stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
+  int nOptions = 0;
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    Printf("  %s : %s", i->first.data(), i->second.data());
-    if (ProcessOption(i->first,i->second) != 0) return 1;
+    //Printf("  %s : %s", i->first.data(), i->second.data());
+    const TString& option = i->first;
+    const TString& value = i->second;
+    if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
+    {
+      fPollInterval = round(value.Atof()*1e6);
+    }
+    else if (option.EqualTo("PollTimeout"))
+    {
+      fPollTimeout = round(value.Atof()*1e3);
+    }
+    else if (option.EqualTo("ZMQconfigIN") || option.EqualTo("in") )
+    {
+      fZMQconfigIN = value;
+    }
+    else if (option.EqualTo("Verbose"))
+    {
+      fVerbose=kTRUE;
+    }
+    else
+    {
+      nOptions=-1;
+      break;
+    }
+    nOptions++;
   }
   delete options; //tidy up
 
-  return 0; 
-}
-
-//______________________________________________________________________________
-stringMap* TokenizeOptionString(const TString str)
-{
-  //options have the form:
-  // -option value
-  // -option=value
-  // -option
-  // --option value
-  // --option=value
-  // --option
-  // option=value
-  // option value
-  // (value can also be a string like 'some string')
-  //
-  // options can be separated by ' ' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2 -option4=\'some string\'"
-  
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
-  //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^ =]+))(?==?))"
-                    "(?(1)[^ =]+(?=[= $])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^ =]+=))"
-                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^ =]+))");
-
-  stringMap* options = new stringMap;
-
-  TArrayI pos;
-  const TString mods="";
-  Int_t start = 0;
-  while (1) {
-    Int_t prevStart=start;
-    TString optionStr="";
-    TString valueStr="";
-    
-    //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
-    if (nOption>0)
-    {
-      optionStr = str(pos[6],pos[7]-pos[6]);
-      optionStr=optionStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-
-    //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
-    if (nValue>0)
-    {
-      valueStr = str(pos[0],pos[1]-pos[0]);
-      valueStr=valueStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-    
-    //skip empty entries
-    if (nOption>0 || nValue>0)
-    {
-      (*options)[optionStr.Data()] = valueStr.Data();
-    }
-    
-    if (start>=str.Length()-1 || start==prevStart ) break;
-  }
-
-  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  //{
-  //  printf("%s : %s\n", i->first.data(), i->second.data());
-  //}
-  return options;
+  return nOptions; 
 }
 

@@ -27,10 +27,7 @@ typedef std::map<std::string,std::string> stringMap;
 
 //methods
 TObject* UnpackMessage(zmq_msg_t* message);
-TString GetFullArgString(Int_t argc, char** argv);
 Int_t ProcessOptionString(TString arguments);
-stringMap* TokenizeOptionString(const TString str);
-Int_t ProcessOption(TString option, TString value);
 Int_t InitZMQ();
 void* InitZMQsocket(void* context, Int_t socketMode, const char* configs);
 void* work(void* param);
@@ -419,110 +416,59 @@ Int_t Merge(TObject* object, TCollection* mergeList)
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//_______________________________________________________________________________________
-TString GetFullArgString(Int_t argc, char** argv)
-{
-  TString argString;
-  TString argument="";
-  if (argc>0) {
-    for (Int_t i=1; i<argc; i++) {
-      argument=argv[i];
-      if (argument.IsNull()) continue;
-      if (!argString.IsNull()) argString+=" ";
-      argString+=argument;
-    }  
-  }
-  return argString;
-}
-
 //______________________________________________________________________________
 Int_t ProcessOptionString(TString arguments)
 {
   //process passed options
   Int_t nOptions=0;
-  stringMap* options = TokenizeOptionString(arguments);
+  stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
-    if (ProcessOption(i->first,i->second)>0)
-      nOptions++;
+    const TString& option = i->first; 
+    const TString& value = i->second;
+    if (option.EqualTo("reset")) 
+    {
+      ResetOutputData();
+    }
+    else if (option.EqualTo("ResetOnSend"))
+    {
+      fResetOnSend = value.Contains("0")?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("MaxObjects"))
+    {
+      fMaxObjects = value.Atoi();
+    }
+    else if (option.EqualTo("ZMQconfigIN") || option.EqualTo("in"))
+    {
+      fZMQconfigIN = value;
+    }
+    else if (option.EqualTo("ZMQconfigOUT") || option.EqualTo("out"))
+    {
+      fZMQconfigOUT = value;
+    }
+    else if (option.EqualTo("ZMQconfigMON") || option.EqualTo("mon"))
+    {
+      fZMQconfigMON = value;
+    }
+    else if (option.EqualTo("Verbose"))
+    {
+      fVerbose=kTRUE;
+    }
+    else if (option.EqualTo("pushback-period"))
+    {
+      fPushbackPeriod=value.Atoi();
+    }
     else
+    {
+      Printf("unrecognized option %s",option.Data());
       break;
+    }
+    nOptions++;
   }
   delete options; //tidy up
 
   return nOptions; 
-}
-
-//______________________________________________________________________________
-stringMap* TokenizeOptionString(const TString str)
-{
-  //options have the form:
-  // -option value
-  // -option=value
-  // -option
-  // --option value
-  // --option=value
-  // --option
-  // option=value
-  // option value
-  // (value can also be a string like 'some string')
-  //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
-  
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
-  //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^ =]+))(?==?))"
-                    "(?(1)[^ =]+(?=[= $])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^ =]+=))"
-                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^ =]+))");
-
-  stringMap* options = new stringMap;
-
-  TArrayI pos;
-  const TString mods="";
-  Int_t start = 0;
-  while (1) {
-    Int_t prevStart=start;
-    TString optionStr="";
-    TString valueStr="";
-    
-    //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
-    if (nOption>0)
-    {
-      optionStr = str(pos[6],pos[7]-pos[6]);
-      optionStr=optionStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-
-    //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
-    if (nValue>0)
-    {
-      valueStr = str(pos[0],pos[1]-pos[0]);
-      valueStr=valueStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-    
-    //skip empty entries
-    if (nOption>0 || nValue>0)
-    {
-      (*options)[optionStr.Data()] = valueStr.Data();
-    }
-    
-    if (start>=str.Length()-1 || start==prevStart ) break;
-  }
-
-  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  //{
-  //  printf("%s : %s\n", i->first.data(), i->second.data());
-  //}
-  return options;
 }
 
 //_______________________________________________________________________________________
@@ -531,7 +477,7 @@ int main(Int_t argc, char** argv)
   Int_t mainReturnCode=0;
 
   //process args
-  TString argString = GetFullArgString(argc,argv);
+  TString argString = AliOptionParser::GetFullArgString(argc,argv);
   if (ProcessOptionString(argString)<=0)
   {
     printf("options: \n");
