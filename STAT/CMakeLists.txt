@@ -33,6 +33,7 @@ set(SRCS
     TKDSpline.cxx
     TStatToolkit.cxx
     AliNDLocalRegression.cxx
+    AliExternalInfo.cxx
   )
 
 # Headers from sources

@@ -18,5 +18,6 @@
 #pragma link C++ class TStatToolkit+;
 #pragma link C++ class AliNDLocalRegression+;
 
+#pragma link C++ class AliExternalInfo+;
 
 #endif
