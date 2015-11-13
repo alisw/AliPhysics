@@ -29,6 +29,7 @@
 #include "AliESDfriendTrack.h" 
 #include "AliMathBase.h" 
 #include "AliTPCseed.h"
+#include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
 
 #include "AliKFParticle.h"
@@ -471,7 +472,7 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
     //
     // Reapply transformation
     //
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
       if (cluster &&cluster->GetX()>10){
         Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
@@ -625,7 +626,7 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
     //
     for  (Int_t itype=0; itype<2; itype++){
       AliTPCseed * seed = (itype==0) ? seed0: seed1;      
-      for (Int_t irow=0; irow<159; irow++){
+      for (Int_t irow=0; irow<kMaxRow; irow++){
 	AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
 	if (cluster &&cluster->GetX()>10){
 	  Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
@@ -799,8 +800,8 @@ AliExternalTrackParam * AliTPCcalibV0::RefitTrack(AliTPCseed *seed, AliTPCCorrec
   Int_t ncl=0;
   //
   Bool_t isOK=kTRUE;
-  for (Int_t index0=0; index0<159; index0++){
-    Int_t irow= (xstart<xstop)? index0:159-index0;
+  for (Int_t index0=0; index0<kMaxRow; index0++){
+    Int_t irow= (xstart<xstop)? index0:kMaxRow-1-index0;
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);  //cluster in local system
     if (!cluster) continue;
     if (cluster->GetX()<xmin) continue;

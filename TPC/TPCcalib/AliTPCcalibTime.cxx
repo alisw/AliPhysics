@@ -47,6 +47,7 @@ Comments to be written here:
 #include "AliRelAlignerKalman.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCParam.h"
+#include "AliTPCreco.h"
 #include "AliTPCTracklet.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibLaser.h"
@@ -575,7 +576,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
     if (seed) {
       tpcSeeds.AddAt(seed,i);
       Int_t nA=0, nC=0;
-      for (Int_t irow=159;irow>0;irow--) {
+      for (Int_t irow=kMaxRow;irow--;) {
 	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
 	if (!cl) continue;
 	if ((cl->GetDetector()%36)<18) nA++;
@@ -818,7 +819,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
     Int_t nA=0, nC=0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     if (seed) {
-      for (Int_t irow=159;irow>0;irow--) {
+      for (Int_t irow=kMaxRow;irow--;) {
 	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
 	if (!cl) continue;
 	if ((cl->GetDetector()%36)<18) nA++;
@@ -1366,7 +1367,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
   //2.a Refit inner
   // 
   Int_t sideIn=0;
-  for (Int_t irow=0;irow<159;irow++) {
+  for (Int_t irow=0;irow<kMaxRow;irow++) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -1393,7 +1394,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
   //2.b Refit outer
   //
   Int_t sideOut=0;
-  for (Int_t irow=159;irow>0;irow--) {
+  for (Int_t irow=kMaxRow;irow--;) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;

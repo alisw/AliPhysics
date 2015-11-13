@@ -25,6 +25,7 @@
 #include "TObjArray.h"
 #include "TLinearFitter.h"
 #include "AliTPCseed.h"
+#include "AliTPCreco.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
 #include "TTreeStream.h"
@@ -59,7 +60,7 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
 
   //TODO: only kalman works
   
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (c && RejectCluster(c)) continue;
     if (c&&c->GetDetector()==sector)
@@ -68,7 +69,7 @@ AliTPCTracklet::AliTPCTracklet(const AliTPCseed *track,Int_t sector,
 
   if (storeClusters) {
     fClusters=new AliTPCclusterMI[fNClusters];
-    for (Int_t i=0;i<160;++i) {
+    for (Int_t i=0;i<kMaxRow;++i) {
       AliTPCclusterMI *c=track->GetClusterPointer(i);
       if (c && RejectCluster(c)) continue;
       if (c&&c->GetDetector()==sector)
@@ -204,7 +205,7 @@ void AliTPCTracklet::FitKalman(const AliTPCseed *seed,Int_t sector) {
   covar[14]=0;  // keep pt
   Float_t xmin=1000, xmax=-10000;
   Int_t imin=158, imax=0;
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<kMaxRow;i++) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c) continue;
     if (c->GetDetector()!=sector)  continue;
@@ -317,7 +318,7 @@ void AliTPCTracklet::FitLinear(const AliTPCseed *track,Int_t sector,
   }
   Double_t xmax=-1.;
   Double_t xmin=1000.;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (c && RejectCluster(c)) continue;
     if (c&&c->GetDetector()==sector) {
@@ -427,7 +428,7 @@ void AliTPCTracklet::FitRiemann(const AliTPCseed *track,Int_t sector) {
   fy.SetFormula("hyp2");
   Double_t xmax=-1.;
   Double_t xmin=1000.;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (c && RejectCluster(c)) continue;
     if (c&&c->GetDetector()==sector) {
@@ -461,7 +462,7 @@ void AliTPCTracklet::FitRiemann(const AliTPCseed *track,Int_t sector) {
   Double_t oldx=0.;
   Double_t oldy=R;
   Double_t phi=0.;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (c && RejectCluster(c)) continue;
     if (c&&c->GetDetector()==sector) {
@@ -552,7 +553,7 @@ TObjArray AliTPCTracklet::CreateTracklets(const AliTPCseed *track,
 // most clusters.
 
   Int_t sectors[72]={0};
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (c && RejectCluster(c)) continue;
     if (c)

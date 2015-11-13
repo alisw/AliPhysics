@@ -155,6 +155,7 @@ TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
+#include "AliTPCreco.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
@@ -543,7 +544,7 @@ Float_t AliTPCcalibTimeGain::GetTPCdEdx(AliTPCseed * seed) {
   Double_t signal = 0;
   //
   if (!fUseCookAnalytical) {
-    signal = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,fUseMax,0,159,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
+    signal = (1/fMIP)*seed->CookdEdxNorm(fLowerTrunc,fUpperTrunc,fUseMax,0,kMaxRow,fUseShapeNorm,fUsePosNorm,fUsePadNorm,0);
   } else {
     signal = (1/fMIP)*seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,fUseMax);
   }

@@ -67,6 +67,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "AliTracker.h"
 #include "AliTPCTransform.h"
 #include "AliTPCROC.h"
+#include "AliTPCreco.h"
 #include "TStatToolkit.h"
 
 ClassImp(AliTPCcalibGainMult)
@@ -403,7 +404,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
       Double_t dipAngleTgl  = trackIn->GetTgl();
       //
-      for (Int_t irow =0; irow<160;irow++)    {
+      for (Int_t irow =0; irow<kMaxRow;irow++)    {
 	const AliTPCTrackerPoints::Point * point = seed->GetTrackPoint(irow);
 	if (point==0) continue;
 	AliTPCclusterMI * cl = seed->GetClusterPointer(irow);
@@ -414,17 +415,17 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       }
       //
       Int_t row0 = 0;
-      Int_t row1 = 160;
+      Int_t row1 = kMaxRow;
       //
       Double_t signalShortMax = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,0,62);
       Double_t signalMedMax   = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,63,126);
-      Double_t signalLongMax  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,127,159);
+      Double_t signalLongMax  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,127,kMaxRow);
       Double_t signalMax      = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,1,row0,row1);
       Double_t signalArrayMax[4] = {signalShortMax, signalMedMax, signalLongMax, signalMax};
       //
       Double_t signalShortTot = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,0,62);
       Double_t signalMedTot   = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,63,126);
-      Double_t signalLongTot  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,127,159); 
+      Double_t signalLongTot  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,127,kMaxRow); 
       //
       Double_t signalTot      = 0;
       //
@@ -433,7 +434,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       Double_t mipSignalShort = fUseMax ? signalShortMax : signalShortTot;
       Double_t mipSignalMed   = fUseMax ? signalMedMax   : signalMedTot;
       Double_t mipSignalLong  = fUseMax ? signalLongMax  : signalLongTot;
-      Double_t mipSignalOroc  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,fUseMax,63,159);
+      Double_t mipSignalOroc  = seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,fUseMax,63,kMaxRow);
       Double_t signal =  fUseMax ? signalMax  : signalTot;
       //
       fHistQA->Fill(meanP, mipSignalShort, 0);
@@ -444,8 +445,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       // normalize pad regions to their common mean
       //
-      Float_t meanMax = (63./159)*signalArrayMax[0] + (64./159)*signalArrayMax[1] + (32./159)*signalArrayMax[2];
-      Float_t meanTot = (63./159)*signalArrayTot[0] + (64./159)*signalArrayTot[1] + (32./159)*signalArrayTot[2]; 
+      Float_t meanMax = (63./kMaxRow)*signalArrayMax[0] + (64./kMaxRow)*signalArrayMax[1] + (32./kMaxRow)*signalArrayMax[2];
+      Float_t meanTot = (63./kMaxRow)*signalArrayTot[0] + (64./kMaxRow)*signalArrayTot[1] + (32./kMaxRow)*signalArrayTot[2]; 
       //MY SUGGESTION COMMENT NEXT LINE
       //      if (meanMax < 1e-5 || meanTot < 1e-5) continue;      
       //AND INTRODUCE NEW LINE
@@ -501,7 +502,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       Int_t ncl[3] = {0,0,0};
       //
 
-      for (Int_t irow=0; irow < 159; irow++){
+      for (Int_t irow=0; irow < kMaxRow; irow++){
 	Int_t padRegion = 0;
 	if (irow > 62) padRegion = 1;
 	if (irow > 126) padRegion = 2;
@@ -971,82 +972,82 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
   //
   // suffix - 3 or 4 -  number of padrows before and after given row to define findable row
   //
-  Double_t ncl20All  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,159,3);
+  Double_t ncl20All  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,kMaxRow,3);
   Double_t ncl20IROC = seed->CookdEdxAnalytical(0.,1, 1 ,0,63,3);
-  Double_t ncl20OROC = seed->CookdEdxAnalytical(0.,1, 1 ,64,159,3);
+  Double_t ncl20OROC = seed->CookdEdxAnalytical(0.,1, 1 ,64,kMaxRow,3);
   Double_t ncl20OROC0= seed->CookdEdxAnalytical(0.,1, 1 ,64,128,3);
-  Double_t ncl20OROC1= seed->CookdEdxAnalytical(0.,1, 1 ,129,159,3);
+  Double_t ncl20OROC1= seed->CookdEdxAnalytical(0.,1, 1 ,129,kMaxRow,3);
   //
-  Double_t ncl20All4  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,159,3,4);
+  Double_t ncl20All4  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,kMaxRow,3,4);
   Double_t ncl20IROC4 = seed->CookdEdxAnalytical(0.,1, 1 ,0,63,3,4);
-  Double_t ncl20OROC4 = seed->CookdEdxAnalytical(0.,1, 1 ,64,159,3,4);
+  Double_t ncl20OROC4 = seed->CookdEdxAnalytical(0.,1, 1 ,64,kMaxRow,3,4);
   Double_t ncl20OROC04= seed->CookdEdxAnalytical(0.,1, 1 ,64,128,3,4);
-  Double_t ncl20OROC14= seed->CookdEdxAnalytical(0.,1, 1 ,129,159,3,4);
+  Double_t ncl20OROC14= seed->CookdEdxAnalytical(0.,1, 1 ,129,kMaxRow,3,4);
   //
-  Double_t ncl20All3  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,159,3,3);
+  Double_t ncl20All3  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,kMaxRow,3,3);
   Double_t ncl20IROC3 = seed->CookdEdxAnalytical(0.,1, 1 ,0,63,3,3);
-  Double_t ncl20OROC3 = seed->CookdEdxAnalytical(0.,1, 1 ,64,159,3,3);
+  Double_t ncl20OROC3 = seed->CookdEdxAnalytical(0.,1, 1 ,64,kMaxRow,3,3);
   Double_t ncl20OROC03= seed->CookdEdxAnalytical(0.,1, 1 ,64,128,3,3);
-  Double_t ncl20OROC13= seed->CookdEdxAnalytical(0.,1, 1 ,129,159,3,3);
+  Double_t ncl20OROC13= seed->CookdEdxAnalytical(0.,1, 1 ,129,kMaxRow,3,3);
   //
-  Double_t ncl21All  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,159,2);
+  Double_t ncl21All  = seed->CookdEdxAnalytical(0.0,1, 1 ,0,kMaxRow,2);
   Double_t ncl21IROC = seed->CookdEdxAnalytical(0.,1, 1 ,0,63,2);
-  Double_t ncl21OROC = seed->CookdEdxAnalytical(0.,1, 1 ,64,159,2);
+  Double_t ncl21OROC = seed->CookdEdxAnalytical(0.,1, 1 ,64,kMaxRow,2);
   Double_t ncl21OROC0= seed->CookdEdxAnalytical(0.,1, 1 ,64,128,2);
-  Double_t ncl21OROC1= seed->CookdEdxAnalytical(0.,1, 1 ,129,159,2);
+  Double_t ncl21OROC1= seed->CookdEdxAnalytical(0.,1, 1 ,129,kMaxRow,2);
   // calculate truncated dEdx - mean rms M2 ... 
   Int_t ifrac=0;
   for (Int_t ifracDown=0; ifracDown<1; ifracDown++){
     for (Int_t ifracUp=0; ifracUp<11; ifracUp++){
       Double_t fracDown = 0.0+Double_t(ifracDown)*0.05;
       Double_t fracUp = 0.5+Double_t(ifracUp)*0.05;
-      vecAllMax[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,0,159,0);
+      vecAllMax[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,0,kMaxRow,0);
       vecIROCMax[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,0,63,0);
-      vecOROCMax[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,64,159,0);
+      vecOROCMax[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,64,kMaxRow,0);
       vecOROC0Max[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,64,128,0);
-      vecOROC1Max[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,129,159,0);
+      vecOROC1Max[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 1 ,129,kMaxRow,0);
       //
-      vecAllTot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,0);
+      vecAllTot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,0);
       vecIROCTot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,0);
-      vecOROCTot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,0);
+      vecOROCTot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,0);
       vecOROC0Tot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,0);
-      vecOROC1Tot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,0);
+      vecOROC1Tot[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,0);
       //
-      vecAllTotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,0,2,1);
+      vecAllTotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,0,2,1);
       vecIROCTotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,0,2,1);
-      vecOROCTotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,0,2,1);
+      vecOROCTotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,0,2,1);
       vecOROC0TotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,0,2,1);
-      vecOROC1TotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,0,2,1);
+      vecOROC1TotLog[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,0,2,1);
       //
-      vecAllTotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,4,2,1);
+      vecAllTotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,4,2,1);
       vecIROCTotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,4,2,1);
-      vecOROCTotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,4,2,1);
+      vecOROCTotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,4,2,1);
       vecOROC0TotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,4,2,1);
-      vecOROC1TotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,4,2,1);
+      vecOROC1TotUp[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,4,2,1);
       //
-      vecAllTotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,5,2,1);
+      vecAllTotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,5,2,1);
       vecIROCTotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,5,2,1);
-      vecOROCTotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,5,2,1);
+      vecOROCTotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,5,2,1);
       vecOROC0TotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,5,2,1);
-      vecOROC1TotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,5,2,1);
+      vecOROC1TotDown[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,5,2,1);
       //
-      vecAllTotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,1,2,0);
+      vecAllTotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,1,2,0);
       vecIROCTotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,1,2,0);
-      vecOROCTotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,1,2,0);
+      vecOROCTotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,1,2,0);
       vecOROC0TotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,1,2,0);
-      vecOROC1TotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,1,2,0);
+      vecOROC1TotRMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,1,2,0);
       //
-      vecAllTotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,6,2,1);
+      vecAllTotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,6,2,1);
       vecIROCTotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,6,2,1);
-      vecOROCTotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,6,2,1);
+      vecOROCTotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,6,2,1);
       vecOROC0TotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,6,2,1);
-      vecOROC1TotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,6,2,1);
+      vecOROC1TotM2[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,6,2,1);
       //
-      vecAllTotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,159,8,2,1);
+      vecAllTotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,kMaxRow,8,2,1);
       vecIROCTotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,0,63,8,2,1);
-      vecOROCTotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,159,8,2,1);
+      vecOROCTotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,kMaxRow,8,2,1);
       vecOROC0TotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,64,128,8,2,1);
-      vecOROC1TotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,159,8,2,1);
+      vecOROC1TotMS[ifrac]= seed->CookdEdxAnalytical(fracDown,fracUp, 0 ,129,kMaxRow,8,2,1);
       truncUp[ifrac]=fracUp;
       truncDown[ifrac]=fracDown;
       ifrac++;
@@ -1396,7 +1397,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
   AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
   const Double_t kMinPt=4;
   const Double_t kMinPtMax=0.8;
-  const Double_t kMinNcl=159*0.5;
+  const Double_t kMinNcl=kMaxRow*0.5;
   const Double_t kMaxDelta[5]={2,600,0.02,0.02,0.1};
   Int_t ntracks=event->GetNumberOfTracks(); 
   const Double_t kMaxImpact=80;
@@ -1515,7 +1516,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
       Int_t nclA0=0, nclC0=0;     // number of clusters
       Int_t nclA1=0, nclC1=0;     // number of clusters
       //      
-      for (Int_t irow=0; irow<159; irow++){
+      for (Int_t irow=0; irow<kMaxRow; irow++){
 	AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
 	AliTPCclusterMI *cluster1=seed1->GetClusterPointer(irow);
 	if (cluster0){
@@ -1538,7 +1539,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
       deltaTimeCluster=0.5*(track1->GetZ()-track0->GetZ())/param->GetZWidth();
       if (nclA0>nclC0) deltaTimeCluster*=-1; // if A side track
       //
-      for (Int_t irow=0; irow<159; irow++){
+      for (Int_t irow=0; irow<kMaxRow; irow++){
 	AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
 	if (cluster0 &&cluster0->GetX()>10){
 	  Double_t x0[3]={ static_cast<Double_t>(cluster0->GetRow()),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
@@ -2048,7 +2049,7 @@ Double_t AliTPCcalibGainMult::GetTruncatedMeanPosition(Double_t q0, Double_t q1,
   //         
   const Int_t row1=63;
   const Int_t row2=64+36;
-  const Int_t nRows=159;
+  const Int_t nRows=kMaxRow;
   Double_t qmean=(q0+q1+q2)/3.;
   Double_t wmean=(q0*row1+q1*(row2-row1)+q2*(nRows-row2))/nRows;
   TVectorD vecdEdxEqualW(ntracks);

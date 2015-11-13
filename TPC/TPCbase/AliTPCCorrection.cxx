@@ -2451,7 +2451,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	Int_t dtype=5;
 	Double_t array[10];
 	Int_t first3=TMath::Max(irow-3,0);
-	Int_t last3 =TMath::Min(irow+3,159);
+	Int_t last3 =TMath::Min(irow+3,159-1);
 	Int_t counter=0;
 	if ((*ltr->GetVecSec())[irow]>=0 && err) {
 	  for (Int_t jrow=first3; jrow<=last3; jrow++){

@@ -52,6 +52,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCRecoParam.h"
+#include "AliTPCreco.h"
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliPID.h"
 #include "TSystem.h"
@@ -388,7 +389,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
 
   //
   const Int_t nPointsAlloc=AliTPCcalibAlignInterpolation_kMaxPoints; 
-  const Int_t kMaxLayer=159;
+  const Int_t kMaxLayer=kMaxRow;
   AliExternalTrackParam trackArrayITS[kMaxLayer];
   AliExternalTrackParam trackArrayTRD[kMaxLayer];
   AliExternalTrackParam trackArrayTOF[kMaxLayer];
@@ -760,7 +761,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   //
   // 
-  const Int_t knPoints=159;
+  const Int_t knPoints=kMaxRow;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
   TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
