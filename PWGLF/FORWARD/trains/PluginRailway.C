@@ -116,6 +116,26 @@ struct PluginRailway : public Railway
    */
   virtual ~PluginRailway() {}
   /** 
+   * Set whether to use pars.  On return, the argument is set to the
+   * old value.  So to temporaruly turn off pars, do
+   * 
+   * @code 
+   Bool_t usePar = false;
+   fRailway->UsePar(usePar); // usePar is now old value 
+   // Load real libraries 
+   fRailway->UsePar(usePar); // Restore old value 
+   * @endcode 
+   * 
+   * @param use Whether to use pars or not.  On return contains old value 
+   */
+  void UsePar(Bool_t& use)
+  {
+    Bool_t tmp = fUsePars;
+    fUsePars   = use;
+    use        = tmp;
+  }
+    
+  /** 
    * Load a library/PAR/script 
    * 
    * @param name   Name 
