@@ -555,6 +555,7 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     {
       optionStr = str(pos[6],pos[7]-pos[6]);
       optionStr=optionStr.Strip(TString::kBoth,'\'');
+      optionStr=optionStr.Strip(TString::kLeading,'-');
       start=pos[1]; //update the current character to the end of match
     }
 
