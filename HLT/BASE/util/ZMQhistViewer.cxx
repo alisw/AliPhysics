@@ -52,9 +52,26 @@ TObjArray fDrawables;
 
 ULong64_t iterations=0;
 
+const char* fUSAGE = 
+    "ZMQhstViewer: Draw() all ROOT drawables in a message\n"
+    "options: \n"
+    " -in : data in\n"
+    " -sleep : how long to sleep in between requests for data (if applicable)\n"
+    " -timeout : how long to wait for the server to reply\n"
+    " -Verbose : be verbose\n"
+    ;
+
 //_______________________________________________________________________________________
 int main(int argc, char** argv)
 {
+  //process args
+  int noptions = ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv));
+  if (noptions<=0) 
+  {
+    printf("%s",fUSAGE);
+    return 1;
+  }
+
   TH1::AddDirectory(kFALSE);
   TDirectory::AddDirectory(kFALSE);
   gApp = new TApplication("viewer", &argc, argv); 
@@ -64,10 +81,6 @@ int main(int argc, char** argv)
   gSystem->ProcessEvents();
   
   int mainReturnCode=0;
-
-  //process args
-  int noptions = ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv));
-  if (noptions<1) return 1;
 
   //init stuff
   //globally enable schema evolution for serializing ROOT objects
@@ -205,7 +218,7 @@ int ProcessOptionString(TString arguments)
     {
       fPollInterval = round(value.Atof()*1e6);
     }
-    else if (option.EqualTo("PollTimeout"))
+    else if (option.EqualTo("PollTimeout") || option.EqualTo("timeout"))
     {
       fPollTimeout = round(value.Atof()*1e3);
     }

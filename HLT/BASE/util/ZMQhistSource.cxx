@@ -34,6 +34,19 @@ float fHistRangeLow = -0.5;
 float fHistRangeHigh = 0.5;
 int fHistNBins = 100;
     
+const char* fUSAGE = 
+    "ZMQhstSource: send a randomly filled ROOT histogram\n"
+    "options: \n"
+    " -out : data out\n"
+    " -name : name of the histogram\n"
+    " -sleep : how long to sleep between sending a new one\n"
+    " -distribution : the pdf of the distribution\n"
+    " -range : the range of the histogram, comma separated, e.g. -12.,12.\n"
+    " -nbins : how many bins\n"
+    " -count : how many histograms to send before quitting (0 is never quit)\n"
+    " -entries : how many entries in the histogram before sending\n"
+    ;
+
 int ProcessOptionString(TString arguments);
 
 //_______________________________________________________________________________________
@@ -43,7 +56,11 @@ int main(int argc, char** argv)
   int rc = 0;
 
   //process args
-  if (ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv))<0) return 1;
+  if (ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv))<=0)
+  {
+    printf("%s", fUSAGE);
+    return 1;
+  }
   
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
@@ -90,7 +107,7 @@ int ProcessOptionString(TString arguments)
   stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
   for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    Printf("  %s : %s", i->first.data(), i->second.data());
+    //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first;
     const TString& value = i->second;
     if (option.EqualTo("name")) 

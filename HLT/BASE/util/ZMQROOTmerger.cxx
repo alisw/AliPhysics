@@ -70,6 +70,18 @@ void* fZMQmon = NULL;        //the request-reply socket, here we request the mer
 void* fZMQout = NULL;        //the monitoring socket, here we publish a copy of the data
 void* fZMQin  = NULL;        //the in socket - entry point for the data to be merged.
 
+const char* fUSAGE = 
+    "ZMQROOTmerger options: Merge() all ROOT mergeables in the message.\n"
+    "merge based on what GetName() returns, the merged data can be retrieved at any time.\n"
+    " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
+    " -out : data out\n"
+    " -mon : monitoring socket\n"
+    " -Verbose : print some info\n"
+    " -pushback-period : push the merged data once every n ms\n"
+    " -ResetOnSend : always reset after send\n"
+    " -MaxObjects : merge after this many objects are in (default 1)\n"
+    " -reset : reset NOW\n";
+
 void* work(void* /*param*/)
 {
   return NULL;
@@ -434,14 +446,7 @@ int main(Int_t argc, char** argv)
   TString argString = AliOptionParser::GetFullArgString(argc,argv);
   if (ProcessOptionString(argString)<=0)
   {
-    printf("options: \n");
-    printf("in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n");
-    printf("out : data out\n");
-    printf("mon : monitoring socket\n");
-    printf("Verbose : print some info\n");
-    printf("pushback-period : push the merged data once every n ms\n");
-    printf("ResetOnSend : always reset after send\n");
-    printf("reset : reset NOW\n");
+    printf("%s",fUSAGE);
     return 1;
   }
 
