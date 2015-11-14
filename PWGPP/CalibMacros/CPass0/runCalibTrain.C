@@ -107,6 +107,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
 
 
   //
+  /*
   Bool_t okTPC = detStr.Contains("TPC");
   Bool_t useTPCcrv=kTRUE;
   Bool_t writeITSTP = kFALSE;
@@ -115,6 +116,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv, detStr.Contains("TOF") ? 10.0:-1);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE); 
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001);
+  */
   //
   // dummy task to clean geometry in Terminate >>>>
   CleanGeom* clgmTask = new CleanGeom("cleanGeom");
