@@ -47,7 +47,7 @@ AliAnalysisTaskSAJF* AddTaskEmcalJets_pPb_Eliane(
 	AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet,usedTracks,outClusName,minTrackPt,minClusterPt,0.005,radius,RecScheme,"Jet",minJetPt);
 	//const UInt_t type           = AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet | AliEmcalJetTask::kR040Jet,
 	//but the last info should match the "radius" info,
-	//I don'T know if this is checked within the code to avoide confusion
+	//I don't know if this is checked within the code to avoide confusion
 	nJets=jetFinderTask->GetName();
 
 
