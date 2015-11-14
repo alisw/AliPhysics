@@ -322,53 +322,6 @@ void ResetOutputData()
   fMergeObjectMap.DeleteAll();
 }
 
-//______________________________________________________________________________
-Int_t ProcessOption(TString option, TString value)
-{
-  //process option
-  //to be implemented by the user
-  
-  //if (option.EqualTo("ZMQpollIn"))
-  //{
-  //  fZMQpollIn = (value.EqualTo("0"))?kFALSE:kTRUE;
-  //}
- 
-  if (option.EqualTo("reset")) 
-  {
-    ResetOutputData();
-  }
-  else if (option.EqualTo("ResetOnSend"))
-  {
-    fResetOnSend = value.Contains("0")?kFALSE:kTRUE;
-  }
-  else if (option.EqualTo("MaxObjects"))
-  {
-    fMaxObjects = value.Atoi();
-  }
-  else if (option.EqualTo("ZMQconfigIN") || option.EqualTo("in"))
-  {
-    fZMQconfigIN = value;
-  }
-  else if (option.EqualTo("ZMQconfigOUT") || option.EqualTo("out"))
-  {
-    fZMQconfigOUT = value;
-  }
-  else if (option.EqualTo("ZMQconfigMON") || option.EqualTo("mon"))
-  {
-    fZMQconfigMON = value;
-  }
-  else if (option.EqualTo("Verbose"))
-  {
-    fVerbose=kTRUE;
-  }
-  else if (option.EqualTo("pushback-period"))
-  {
-    fPushbackPeriod=value.Atoi();
-  }
-
-  return 1; 
-}
-
 //_______________________________________________________________________________________
 Int_t InitZMQ()
 {
@@ -462,6 +415,7 @@ Int_t ProcessOptionString(TString arguments)
     else
     {
       Printf("unrecognized option %s",option.Data());
+      nOptions=-1;
       break;
     }
     nOptions++;
