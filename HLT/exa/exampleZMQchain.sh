@@ -13,17 +13,17 @@ trap cleanupAndExit SIGTERM
 trap cleanupAndExit SIGQUIT
 trap cleanupAndExit SIGHUP
 
-sourceout=${1-"PUSH>ipc:///tmp/example_mergerin"}
-
 histograms=( "hXTRKVtx" "hYTRKVtx" "hZTRKVtx" "hXTRKDefMult" "hYTRKDefMult"  "hZTRKDefMult" )
 sourcePID=()
 for hist in ${histograms[@]}; do
   echo "starting histogram source ${hist}"
-  ZMQhistSource name=${hist} entries=10 sleep=0.01 distribution="exp(-0.5*((x-0.)/0.1)**2)" range="'-0.5,0.5'" out=${sourceout} &>/dev/null &
+  ZMQhistSource name=${hist} entries=10 sleep=0.01 distribution="exp(-0.5*((x-0.)/0.1)**2)" range="'-0.5,0.5'" out="PUSH>ipc:///tmp/example_proxyin" &>/dev/null &
   sourcePID+=(${!})
 done
 
-ZMQROOTmerger in="PULL@ipc:///tmp/example_mergerin" out="PUB@ipc:///tmp/example_mergerout" MaxObjects=10 pushback-period=100&
+ZMQproxy  in="PULL@ipc:///tmp/example_proxyin" out="PUSH@ipc:///tmp/example_proxyout"&
+sourcePID+=(${!})
+ZMQROOTmerger in="PULL>ipc:///tmp/example_proxyout" out="PUB@ipc:///tmp/example_mergerout" MaxObjects=10 pushback-period=100&
 sourcePID+=(${!})
 ZMQhistViewer in="SUB>ipc:///tmp/example_mergerout" &
 sourcePID+=(${!})
