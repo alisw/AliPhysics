@@ -448,15 +448,39 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlPromptMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlPromptMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlPromptMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlBFeeddownMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlBFeeddownMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlBFeeddownMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0PromptMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0PromptMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0PromptMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0BFeeddownMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0BFeeddownMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0BFeeddownMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusPromptMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusPromptMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusPromptMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusBFeeddownMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusBFeeddownMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusBFeeddownMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaPromptMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaPromptMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaPromptMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
 
   THnSparse* fHistoEleLambdaPtvsV0dlRSAway;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlRS1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
@@ -517,7 +541,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,16); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,17); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

@@ -193,6 +193,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassMCS(0),
   fHistoEleXiMassMCS1(0),
   fHistoEleXiMassMCS2(0),
+  fHistoEleXiMassPromptMCS(0),
+  fHistoEleXiMassPromptMCS1(0),
+  fHistoEleXiMassPromptMCS2(0),
+  fHistoEleXiMassBFeeddownMCS(0),
+  fHistoEleXiMassBFeeddownMCS1(0),
+  fHistoEleXiMassBFeeddownMCS2(0),
   fHistoEleXiMassMCGen(0),
   fHistoEleXiMassvsElePtMCS(0),
   fHistoEleXiMassvsElePtMCGen(0),
@@ -404,6 +410,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassMCS(0),
   fHistoEleXiMassMCS1(0),
   fHistoEleXiMassMCS2(0),
+  fHistoEleXiMassPromptMCS(0),
+  fHistoEleXiMassPromptMCS1(0),
+  fHistoEleXiMassPromptMCS2(0),
+  fHistoEleXiMassBFeeddownMCS(0),
+  fHistoEleXiMassBFeeddownMCS1(0),
+  fHistoEleXiMassBFeeddownMCS2(0),
   fHistoEleXiMassMCGen(0),
   fHistoEleXiMassvsElePtMCS(0),
   fHistoEleXiMassvsElePtMCGen(0),
@@ -1318,16 +1330,18 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
-	Double_t cont[3];
+	Double_t cont[4];
 	cont[0] = exobj->InvMass(2,pdgdg);
 	cont[1] = exobj->Pt();
-	cont[2] = fCentrality;
+	cont[2] = exobj->Getd0Prong(0)*trk->Charge();
+	cont[3] = fCentrality;
 	fHistoEleXiMass->Fill(cont);
 
-	Double_t cont_flip[3];
+	Double_t cont_flip[4];
 	cont_flip[0] = mexi_flip;
 	cont_flip[1] = ptexi_flip;
-	cont_flip[2] = fCentrality;
+	cont_flip[2] = 0.0;
+	cont_flip[3] = fCentrality;
 
 	Double_t cont2[3];
 	cont2[0] = exobj->InvMass(2,pdgdg);
@@ -1365,7 +1379,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 				fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
 				for(Int_t ih=0;ih<23;ih++){
 					Double_t cont_eleptvscutvars[3];
-					cont_eleptvscutvars[0] = trk->Pt();
+					cont_eleptvscutvars[0] = exobj->Pt();
 					cont_eleptvscutvars[2] = fCentrality;
 
 					if(ih==0){
@@ -1459,7 +1473,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 
 				for(Int_t ih=0;ih<23;ih++){
 					Double_t cont_eleptvscutvars[3];
-					cont_eleptvscutvars[0] = trk->Pt();
+					cont_eleptvscutvars[0] = exobj->Pt();
 					cont_eleptvscutvars[2] = fCentrality;
 
 					if(ih==0){
@@ -1545,9 +1559,31 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 				Int_t pdgcode = mcxic->GetPdgCode();
 				cont2[1] = mcele->Pt();
 				if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
+						Int_t labmotherxic = mcxic->GetMother();
+						Bool_t isbottomfd = kFALSE;
+						if(labmotherxic>=0)
+						{
+							AliAODMCParticle *motherxic = (AliAODMCParticle*)mcArray->At(labmotherxic);
+							Int_t pdgmotherxic = motherxic->GetPdgCode();
+							if(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332){
+								isbottomfd = kTRUE;
+							}
+						}
+
 						fHistoEleXiMassMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassMCS1->Fill(cont);
 						else  fHistoEleXiMassMCS2->Fill(cont);
+
+						if(isbottomfd){
+							fHistoEleXiMassBFeeddownMCS->Fill(cont);
+							if(trk->Charge()>0) fHistoEleXiMassBFeeddownMCS1->Fill(cont);
+							else  fHistoEleXiMassBFeeddownMCS2->Fill(cont);
+						}else{
+							fHistoEleXiMassPromptMCS->Fill(cont);
+							if(trk->Charge()>0) fHistoEleXiMassPromptMCS1->Fill(cont);
+							else  fHistoEleXiMassPromptMCS2->Fill(cont);
+						}
+
 						fHistoEleXiMassvsElePtMCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleXiMassvsElePtMCS1->Fill(cont2);
 						else fHistoEleXiMassvsElePtMCS2->Fill(cont2);
@@ -1583,22 +1619,15 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							cont_eleptvsxiptvsxicpt[3] = cont_eleptvsxipt[2];
 							fHistoElePtvsXiPtvsXicPtMCS->Fill(cont_eleptvsxiptvsxicpt);
 
-							Int_t labmotherxic = mcxic->GetMother();
-							if(labmotherxic>=0){
-								AliAODMCParticle *motherxic = (AliAODMCParticle*)mcArray->At(labmotherxic);
-								Int_t pdgmotherxic = motherxic->GetPdgCode();
-								if(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332){
-									fHistoElePtvsd0BFeeddownMCS->Fill(cont_eleptvsd0);
-								}else{
-									fHistoElePtvsd0PromptMCS->Fill(cont_eleptvsd0);
-								}
+							if(isbottomfd){
+								fHistoElePtvsd0BFeeddownMCS->Fill(cont_eleptvsd0);
 							}else{
 								fHistoElePtvsd0PromptMCS->Fill(cont_eleptvsd0);
 							}
 
 							for(Int_t ih=0;ih<23;ih++){
 								Double_t cont_eleptvscutvars[3];
-								cont_eleptvscutvars[0] = trk->Pt();
+								cont_eleptvscutvars[0] = exobj->Pt();
 								cont_eleptvscutvars[2] = fCentrality;
 
 								if(ih==0){
@@ -1807,16 +1836,17 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
-	Double_t cont[3];
+	Double_t cont[4];
 	cont[0] = mexi;
 	cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
-	cont[2] = fCentrality;
-	fHistoEleXiMass->Fill(cont);
+	cont[2] = 0.0;
+	cont[3] = fCentrality;
 
-	Double_t cont_flip[3];
+	Double_t cont_flip[4];
 	cont_flip[0] = mexi_flip;
 	cont_flip[1] = ptexi_flip;
-	cont_flip[2] = fCentrality;
+	cont_flip[2] = 0.0;
+	cont_flip[3] = fCentrality;
 
 	Double_t cont2[3];
 	cont2[0] = mexi;
@@ -1948,7 +1978,6 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 		fElectronTracks->AddLast(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
 	}
 
-	if(!fWriteEachVariableTree) return;
 
 	Int_t pdgEle = -9999;
 	Int_t pdgEleMother = -9999;
@@ -1964,9 +1993,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 		pdgEle = mcetrk->GetPdgCode();
 		if(abs(pdgEle)!=11) return;
 
-		fHistoBachPtMCS->Fill(trk->Pt());
-
 		Bool_t hfe_flag = kFALSE;
+		Bool_t gamma_flag = kFALSE;
 		Int_t labemother = mcetrk->GetMother();
 		if(labemother>=0){
 			AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
@@ -1975,12 +2003,22 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 			if(abs(pdgEleMother)>4000&&abs(pdgEleMother)<4400){
 				hfe_flag = kTRUE;
 			}
+			if(abs(pdgEleMother)==22){
+				gamma_flag = kTRUE;
+			}
 		}
+
+		if(!gamma_flag){
+			fHistoBachPtMCS->Fill(trk->Pt());
+		}
+
 		if(!hfe_flag) return;
 		mcepx = mcetrk->Px();
 		mcepy = mcetrk->Py();
 		mcepz = mcetrk->Pz();
 	}
+
+	if(!fWriteEachVariableTree) return;
 
 
 	for(Int_t i=0;i<26;i++){
@@ -2289,10 +2327,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 
 	Double_t InvMassEleXi = sqrt(pow(eE+cascE,2)-pow(epx+cascpx,2)-pow(epy+cascpy,2)-pow(epz+cascpz,2));
 
-	Double_t cont[3];
+	Double_t cont[4];
 	cont[0] = InvMassEleXi;
 	cont[1] = mcpart->Pt();
-	cont[2] = fCentrality;
+	cont[2] = 0.0;
+	cont[3] = fCentrality;
 	Double_t cont2[3];
 	cont2[0] = InvMassEleXi;
 	cont2[1] = mcepart->Pt();
@@ -2561,84 +2600,84 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[3]=		{10	,100		,10};
-  Double_t xmin_base[3]={1.3,0		,0.00};
-  Double_t xmax_base[3]={3.3,20.	,100};
+  Int_t bins_base[4]=		{10	,100	, 20   ,10};
+  Double_t xmin_base[4]={1.3,0		, -0.1 ,0.00};
+  Double_t xmax_base[4]={3.3,20.	, 0.1  ,100};
 
-  fHistoEleXiMass = new THnSparseF("fHistoEleXiMass","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMass = new THnSparseF("fHistoEleXiMass","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMass);
-  fHistoEleXiMassRS = new THnSparseF("fHistoEleXiMassRS","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRS = new THnSparseF("fHistoEleXiMassRS","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRS);
-  fHistoEleXiMassWS = new THnSparseF("fHistoEleXiMassWS","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWS = new THnSparseF("fHistoEleXiMassWS","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWS);
-  fHistoEleXiMassRSMix = new THnSparseF("fHistoEleXiMassRSMix","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMix = new THnSparseF("fHistoEleXiMassRSMix","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMix);
-  fHistoEleXiMassWSMix = new THnSparseF("fHistoEleXiMassWSMix","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMix = new THnSparseF("fHistoEleXiMassWSMix","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMix);
-  fHistoEleXiMassRSSide = new THnSparseF("fHistoEleXiMassRSSide","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSide = new THnSparseF("fHistoEleXiMassRSSide","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSide);
-  fHistoEleXiMassWSSide = new THnSparseF("fHistoEleXiMassWSSide","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSide = new THnSparseF("fHistoEleXiMassWSSide","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide);
-  fHistoEleXiMassRS1 = new THnSparseF("fHistoEleXiMassRS1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRS1 = new THnSparseF("fHistoEleXiMassRS1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRS1);
-  fHistoEleXiMassWS1 = new THnSparseF("fHistoEleXiMassWS1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWS1 = new THnSparseF("fHistoEleXiMassWS1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWS1);
-  fHistoEleXiMassRSMix1 = new THnSparseF("fHistoEleXiMassRSMix1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMix1 = new THnSparseF("fHistoEleXiMassRSMix1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMix1);
-  fHistoEleXiMassWSMix1 = new THnSparseF("fHistoEleXiMassWSMix1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMix1 = new THnSparseF("fHistoEleXiMassWSMix1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMix1);
-  fHistoEleXiMassRSSide1 = new THnSparseF("fHistoEleXiMassRSSide1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSide1 = new THnSparseF("fHistoEleXiMassRSSide1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSide1);
-  fHistoEleXiMassWSSide1 = new THnSparseF("fHistoEleXiMassWSSide1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSide1 = new THnSparseF("fHistoEleXiMassWSSide1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide1);
-  fHistoEleXiMassRS2 = new THnSparseF("fHistoEleXiMassRS2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRS2 = new THnSparseF("fHistoEleXiMassRS2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRS2);
-  fHistoEleXiMassWS2 = new THnSparseF("fHistoEleXiMassWS2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWS2 = new THnSparseF("fHistoEleXiMassWS2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWS2);
-  fHistoEleXiMassRSMix2 = new THnSparseF("fHistoEleXiMassRSMix2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMix2 = new THnSparseF("fHistoEleXiMassRSMix2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMix2);
-  fHistoEleXiMassWSMix2 = new THnSparseF("fHistoEleXiMassWSMix2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMix2 = new THnSparseF("fHistoEleXiMassWSMix2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMix2);
-  fHistoEleXiMassRSSide2 = new THnSparseF("fHistoEleXiMassRSSide2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSide2 = new THnSparseF("fHistoEleXiMassRSSide2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSide2);
-  fHistoEleXiMassWSSide2 = new THnSparseF("fHistoEleXiMassWSSide2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSide2 = new THnSparseF("fHistoEleXiMassWSSide2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide2);
 
-  fHistoEleXiMassRSAway = new THnSparseF("fHistoEleXiMassRSAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSAway = new THnSparseF("fHistoEleXiMassRSAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSAway);
-  fHistoEleXiMassWSAway = new THnSparseF("fHistoEleXiMassWSAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSAway = new THnSparseF("fHistoEleXiMassWSAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSAway);
-  fHistoEleXiMassRSMixAway = new THnSparseF("fHistoEleXiMassRSMixAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMixAway = new THnSparseF("fHistoEleXiMassRSMixAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMixAway);
-  fHistoEleXiMassWSMixAway = new THnSparseF("fHistoEleXiMassWSMixAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMixAway = new THnSparseF("fHistoEleXiMassWSMixAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMixAway);
-  fHistoEleXiMassRSSideAway = new THnSparseF("fHistoEleXiMassRSSideAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSideAway = new THnSparseF("fHistoEleXiMassRSSideAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSideAway);
-  fHistoEleXiMassWSSideAway = new THnSparseF("fHistoEleXiMassWSSideAway","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSideAway = new THnSparseF("fHistoEleXiMassWSSideAway","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSideAway);
-  fHistoEleXiMassRS1Away = new THnSparseF("fHistoEleXiMassRS1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRS1Away = new THnSparseF("fHistoEleXiMassRS1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRS1Away);
-  fHistoEleXiMassWS1Away = new THnSparseF("fHistoEleXiMassWS1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWS1Away = new THnSparseF("fHistoEleXiMassWS1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWS1Away);
-  fHistoEleXiMassRSMix1Away = new THnSparseF("fHistoEleXiMassRSMix1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMix1Away = new THnSparseF("fHistoEleXiMassRSMix1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMix1Away);
-  fHistoEleXiMassWSMix1Away = new THnSparseF("fHistoEleXiMassWSMix1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMix1Away = new THnSparseF("fHistoEleXiMassWSMix1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMix1Away);
-  fHistoEleXiMassRSSide1Away = new THnSparseF("fHistoEleXiMassRSSide1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSide1Away = new THnSparseF("fHistoEleXiMassRSSide1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSide1Away);
-  fHistoEleXiMassWSSide1Away = new THnSparseF("fHistoEleXiMassWSSide1Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSide1Away = new THnSparseF("fHistoEleXiMassWSSide1Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide1Away);
-  fHistoEleXiMassRS2Away = new THnSparseF("fHistoEleXiMassRS2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRS2Away = new THnSparseF("fHistoEleXiMassRS2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRS2Away);
-  fHistoEleXiMassWS2Away = new THnSparseF("fHistoEleXiMassWS2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWS2Away = new THnSparseF("fHistoEleXiMassWS2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWS2Away);
-  fHistoEleXiMassRSMix2Away = new THnSparseF("fHistoEleXiMassRSMix2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSMix2Away = new THnSparseF("fHistoEleXiMassRSMix2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSMix2Away);
-  fHistoEleXiMassWSMix2Away = new THnSparseF("fHistoEleXiMassWSMix2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSMix2Away = new THnSparseF("fHistoEleXiMassWSMix2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSMix2Away);
-  fHistoEleXiMassRSSide2Away = new THnSparseF("fHistoEleXiMassRSSide2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassRSSide2Away = new THnSparseF("fHistoEleXiMassRSSide2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassRSSide2Away);
-  fHistoEleXiMassWSSide2Away = new THnSparseF("fHistoEleXiMassWSSide2Away","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassWSSide2Away = new THnSparseF("fHistoEleXiMassWSSide2Away","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide2Away);
 
   Int_t bins_base_elept[3]=		{10	,100		,10};
@@ -2691,13 +2730,25 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoElePtWSMix=new TH2F("fHistoElePtWSMix","Wrong-sign e pt",100,0.,10.,10,0.,100.);
   fOutputAll->Add(fHistoElePtWSMix);
 
-  fHistoEleXiMassMCS = new THnSparseF("fHistoEleXiMassMCS","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassMCS = new THnSparseF("fHistoEleXiMassMCS","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCS);
-  fHistoEleXiMassMCS1 = new THnSparseF("fHistoEleXiMassMCS1","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassMCS1 = new THnSparseF("fHistoEleXiMassMCS1","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCS1);
-  fHistoEleXiMassMCS2 = new THnSparseF("fHistoEleXiMassMCS2","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassMCS2 = new THnSparseF("fHistoEleXiMassMCS2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCS2);
-  fHistoEleXiMassMCGen = new THnSparseF("fHistoEleXiMassMCGen","",3,bins_base,xmin_base,xmax_base);
+  fHistoEleXiMassPromptMCS = new THnSparseF("fHistoEleXiMassPromptMCS","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassPromptMCS);
+  fHistoEleXiMassPromptMCS1 = new THnSparseF("fHistoEleXiMassPromptMCS1","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassPromptMCS1);
+  fHistoEleXiMassPromptMCS2 = new THnSparseF("fHistoEleXiMassPromptMCS2","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassPromptMCS2);
+  fHistoEleXiMassBFeeddownMCS = new THnSparseF("fHistoEleXiMassBFeeddownMCS","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassBFeeddownMCS);
+  fHistoEleXiMassBFeeddownMCS1 = new THnSparseF("fHistoEleXiMassBFeeddownMCS1","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassBFeeddownMCS1);
+  fHistoEleXiMassBFeeddownMCS2 = new THnSparseF("fHistoEleXiMassBFeeddownMCS2","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassBFeeddownMCS2);
+  fHistoEleXiMassMCGen = new THnSparseF("fHistoEleXiMassMCGen","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCGen);
   fHistoEleXiMassvsElePtMCS = new THnSparseF("fHistoEleXiMassvsElePtMCS","",3,bins_base_elept,xmin_base_elept,xmax_base_elept);
   fOutputAll->Add(fHistoEleXiMassvsElePtMCS);
@@ -2899,9 +2950,9 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
 		Double_t xmin_eleptvscutvars[3];
 		Double_t xmax_eleptvscutvars[3];
 
-		bins_eleptvscutvars[0] = 50;//electron pT bin
+		bins_eleptvscutvars[0] = 20;//electron pT bin
 		xmin_eleptvscutvars[0] = 0.;
-		xmax_eleptvscutvars[0] = 5.;
+		xmax_eleptvscutvars[0] = 20.;
 		bins_eleptvscutvars[2] = 10;//centrality bin
 		xmin_eleptvscutvars[2] = 0.;
 		xmax_eleptvscutvars[2] = 100.;
@@ -3728,7 +3779,14 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			Float_t etamin, etamax;
 			esdcuts->GetEtaRange(etamin,etamax);
 			if(fabs(mcpart->Eta())<etamax){
-				fHistoBachPtMCGen->Fill(mcpart->Pt());
+				Bool_t gamma_flag = kFALSE;
+				Int_t labmother = mcpart->GetMother();
+				if(labmother>=0){
+					AliAODMCParticle *mcmother = (AliAODMCParticle*) mcArray->At(labmother);
+					Int_t pdgmother = mcmother->GetPdgCode();
+					if(TMath::Abs(pdgmother)==22) gamma_flag = kTRUE;
+				}
+				if(!gamma_flag) fHistoBachPtMCGen->Fill(mcpart->Pt());
 			}
 			FillMCEleROOTObjects(mcpart, mcArray);
 		}
