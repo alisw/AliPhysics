@@ -134,6 +134,7 @@ fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
 fnSPDClusters1(0),
+fnContributors(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -204,6 +205,7 @@ fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
 fnSPDClusters1(0),
+fnContributors(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -372,6 +374,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //A.T. FIXME change into AliMultVariable
         //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
         //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
+        fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
+        
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
         
         fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
@@ -597,6 +601,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
+    //Number of contributors from best primary vertex
+    fnContributors = -1;
+    fnContributors = lPrimaryBestESDVtx -> GetNContributors();
+    
     if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ) {
         //FIXME Passed default 10.0cm selection!
         fEvSel_VtxZCut = kTRUE;

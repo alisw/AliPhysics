@@ -183,12 +183,13 @@ private:
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
     Bool_t fEvSel_HasNoInconsistentVertices;//!
     Bool_t fEvSel_PassesTrackletVsCluster;  //!
-
+    
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
     Int_t   fnSPDClusters0;            //!
     Int_t   fnSPDClusters1;            //!
+    Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
