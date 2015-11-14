@@ -21,7 +21,7 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, TStrin
     
     //Special options interpreting: will be taken care of by the task
     // A - Add Extra AliCentrality V0M branch for cross-checks
-    
+    // A - Add Extra AliPPVsMultUtils V0M branch for cross-checks    
     
     AliMultSelectionTask *taskMultSelection = new AliMultSelectionTask("taskMultSelection", lExtraOptions.Data(), lCalibration);
     mgr->AddTask(taskMultSelection);

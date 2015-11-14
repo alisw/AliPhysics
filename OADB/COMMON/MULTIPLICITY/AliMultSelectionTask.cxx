@@ -94,7 +94,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
 fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -148,6 +148,7 @@ fEvSel_PassesTrackletVsCluster(0),
 fEvSel_VtxZ(0),
 fNDebug(13),
 fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -163,7 +164,7 @@ fInput(0)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
 fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -217,6 +218,7 @@ fEvSel_PassesTrackletVsCluster(0),
 fEvSel_VtxZ(0),
 fNDebug(13),
 fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -232,8 +234,10 @@ fInput(0)
     
     //Special Debug Options (more to be added as needed)
     // A - Debug AliCentrality
+    // B - Debug AliPPVsMultUtils
     
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
+    if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
 }
 
 
@@ -398,7 +402,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         if ( fkDebugAliCentrality ){
             fTreeEvent->Branch("fAliCentralityV0M",&fAliCentralityV0M,"fAliCentralityV0M/F");
         }
-        
+        if ( fkDebugAliPPVsMultUtils ){
+            fTreeEvent->Branch("fPPVsMultUtilsV0M",&fPPVsMultUtilsV0M,"fPPVsMultUtilsV0M/F");
+        }
     }
     //------------------------------------------------
     // Set up objects
@@ -477,9 +483,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Float_t multADA =0;
     Float_t multADC =0;
     Float_t multAD =0;
-    
-    //Reset to be sure!
-    fkDebugAliCentrality = 0;
 
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
@@ -506,12 +509,23 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliWarning("ERROR:lVAD not available\n");
     }
     
+    //Not Acquired!
+    fAliCentralityV0M = -1;
     //if requested, grab AliCentrality value for this event
     if( fkDebugAliCentrality ){
         AliCentrality* centrality;
         centrality = lVevent->GetCentrality();
-        fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
-    } 
+        if ( centrality ){
+            fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
+        }
+    }
+    
+    //Not Acquired!
+    fPPVsMultUtilsV0M = -1;
+    //if requested, grab AliCentrality value for this event
+    if( fkDebugAliPPVsMultUtils ){
+        fPPVsMultUtilsV0M = fUtils->GetMultiplicityPercentile( lVevent, "V0M" );
+    }
     
     //------------------------------------------------
     //Information from MC (thanks to Alberica)

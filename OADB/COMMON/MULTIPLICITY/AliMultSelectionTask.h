@@ -114,6 +114,7 @@ private:
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
+    Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -204,6 +205,7 @@ private:
     Int_t fNDebug; // number of percentiles
     
     Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 
+    Float_t fPPVsMultUtilsV0M; //! percentiles from AliPPVsMultUtils (for debugging)
     
     //Data needed for Monte Carlo
     Int_t fMC_NColl;
