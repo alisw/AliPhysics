@@ -17,6 +17,7 @@
 /// \param maxRtrack: Double_t, maximum cluster track distance
 /// \param minCellEne: Double_t, minimum cell energy
 /// \param referenceFileName: TString, name of reference file
+/// \param referenceSMFileName: TString, name of reference file for SM by SM calib.
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
@@ -36,7 +37,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Double_t minTime = -20.,
 							     Double_t maxTime = 20.,
 							     Bool_t   pileupFromSPDFlag = kFALSE,
-							     TString  referenceFileName = "")//Reference.root
+							     TString  referenceFileName = "",
+							     TString  referenceSMFileName = "")//Reference.root
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -76,8 +78,13 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
+
+  if(referenceSMFileName.Length()!=0){
+    taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_LHC15i.root");
+  }
+
   //taskmbemcal->PrintInfo();
-  
+
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName(); 
 
   // Create containers for input/output

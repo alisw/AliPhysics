@@ -58,6 +58,7 @@
 
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
+#include "AliEmcalTriggerPatchInfoAP.h"
 
 #include "AliAnalysisTaskHFEemcQA.h"
 
@@ -88,6 +89,10 @@ fVtxY(0),
 fTrigMulti(0),
 fHistClustE(0),
 fEMCClsEtaPhi(0),
+fHistClustEEG1(0),
+fHistClustEEG2(0),
+fEMCClsEtaPhiEG1(0),
+fEMCClsEtaPhiEG2(0),
 fHistoNCls(0),
 fHistoNClsE1(0),
 fHistoNClsE2(0),
@@ -134,7 +139,10 @@ fEleCanSPDOr(0),
 fInvmassULS(0),
 fInvmassLS(0),
 fSparseElectron(0),
-fvalueElectron(0)
+fvalueElectron(0),
+fTriggersInfo(0),
+fThresholdEG2(89),
+fThresholdEG1(140)
 {
     // Constructor
     
@@ -169,6 +177,10 @@ fVtxY(0),
 fTrigMulti(0),
 fHistClustE(0),
 fEMCClsEtaPhi(0),
+fHistClustEEG1(0),
+fHistClustEEG2(0),
+fEMCClsEtaPhiEG1(0),
+fEMCClsEtaPhiEG2(0),
 fHistoNCls(0),
 fHistoNClsE1(0),
 fHistoNClsE2(0),
@@ -215,7 +227,10 @@ fEleCanSPDOr(0),
 fInvmassULS(0),
 fInvmassLS(0),
 fSparseElectron(0),
-fvalueElectron(0)
+fvalueElectron(0),
+fTriggersInfo(0),
+fThresholdEG2(89),
+fThresholdEG1(140)
 {
     //Default constructor
     
@@ -287,6 +302,19 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList->Add(fEMCClsEtaPhi);
+    
+    fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
+    fOutputList->Add(fHistClustEEG1);
+   
+    fHistClustEEG2 = new TH1F("fHistClustEEG2", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
+    fOutputList->Add(fHistClustEEG2);
+    
+    fEMCClsEtaPhiEG1 = new TH2F("fEMCClsEtaPhiEG1","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList->Add(fEMCClsEtaPhiEG1);
+   
+    fEMCClsEtaPhiEG2 = new TH2F("fEMCClsEtaPhiEG2","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList->Add(fEMCClsEtaPhiEG2);  
+    //
     
     fHistoNCls = new TH1F("fHistoNCls","No of EMCAL cluster in the event;N^{EMC}_{cls};counts",150,0,150);
     fOutputList->Add(fHistoNCls);
@@ -604,8 +632,17 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fHistClustE->Fill(clustE);
             fEMCClsEtaPhi->Fill(emceta,emcphi);
             fHistoNCells->Fill(clustE,clust->GetNCells());
-            //fHistoNCells->Fill(clust->GetNCells());
-            
+            Bool_t hasfiredEG1=0;
+            Bool_t hasfiredEG2=0;
+            FindPatches(hasfiredEG1,hasfiredEG2,emceta,emcphi);
+            if(hasfiredEG1){
+            	fHistClustEEG1->Fill(clustE);
+            	fEMCClsEtaPhiEG1->Fill(emceta,emcphi);
+            }
+            if(hasfiredEG2){
+            	fHistClustEEG2->Fill(clustE);
+            	fEMCClsEtaPhiEG2->Fill(emceta,emcphi);
+            }
             NclustAll++;
             if(clustE>0.1)NclustE1++;
             if(clustE>0.2)NclustE2++;
@@ -965,6 +1002,25 @@ void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *tr
     }
     fFlagPhotonicElec = flagPhotonicElec;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskHFEemcQA::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta,Double_t emcphi){
+    fTriggersInfo = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers")); 
+	if(!fTriggersInfo) return;
+	Int_t nPatch = fTriggersInfo->GetEntries();;
+	AliEmcalTriggerPatchInfo* patch=0;
+	for( int iPatch = 0; iPatch < nPatch; iPatch++ ){
+			patch = (AliEmcalTriggerPatchInfo*)fTriggersInfo->At( iPatch );
+			if(patch->GetADCAmp()<fThresholdEG2) continue;
+			if(patch->GetEtaMin()>emceta) continue;
+			if(patch->GetEtaMax()<emceta) continue;
+			if(patch->GetPhiMin()>emcphi) continue;
+			if(patch->GetPhiMax()<emcphi) continue;
+			if(patch->GetADCAmp()>fThresholdEG2)  hasfiredEG2=1;
+			if(patch->GetADCAmp()>fThresholdEG1)  hasfiredEG1=1;
+	}
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskHFEemcQA::Terminate(Option_t *) 
 {

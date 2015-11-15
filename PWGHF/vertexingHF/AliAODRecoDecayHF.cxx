@@ -46,7 +46,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF() :
   fListOfCuts(),
   fd0err(0x0), 
   fProngID(0x0),
-  fSelectionMap(0)
+  fSelectionMap(0),
+  fIsFilled(1) 
 {
   //
   // Default Constructor
@@ -62,7 +63,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fListOfCuts(),
   fd0err(0x0),
   fProngID(0x0),
-  fSelectionMap(0)
+  fSelectionMap(0),
+  fIsFilled(1)
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -79,7 +81,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fListOfCuts(),
   fd0err(0x0),
   fProngID(0x0),
-  fSelectionMap(0)
+  fSelectionMap(0),
+  fIsFilled(1)
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -98,7 +101,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
   fListOfCuts(),
   fd0err(0x0),
   fProngID(0x0), 
-  fSelectionMap(0)
+  fSelectionMap(0),
+  fIsFilled(1)
 {
   //
   // Constructor that can used for a "MC" object
@@ -118,7 +122,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   fListOfCuts(source.fListOfCuts),
   fd0err(0x0),
   fProngID(0x0),
-  fSelectionMap(source.fSelectionMap)
+  fSelectionMap(source.fSelectionMap),
+  fIsFilled(source.fIsFilled)
 {
   //
   // Copy constructor
@@ -147,6 +152,7 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
   fEventPrimaryVtx = source.fEventPrimaryVtx;
   fListOfCuts = source.fListOfCuts;
   fSelectionMap = source.fSelectionMap;
+  fIsFilled=source.fIsFilled;
 
   if(source.GetOwnPrimaryVtx()) {
     delete fOwnPrimaryVtx;
@@ -460,5 +466,17 @@ void AliAODRecoDecayHF::Getd0MeasMinusExpProng(Int_t ip, Double_t magf, Double_t
   Double_t sinThetap=(pxt*Py()-pyt*Px())/(Pt()*PtProng(ip));
   diff=d0meas-lxy*sinThetap;
   errdiff=TMath::Sqrt(errd0meas*errd0meas+errlxy2*sinThetap*sinThetap);
+}
+//_____________________________
+void AliAODRecoDecayHF::DeleteRecoD(){
+  // Delete data members to reduce the size of AliAOD.VertexingHF.root
+  // They will be recomputed at the analysis level
+  AliAODRecoDecay::DeleteRecoD();// delete data members of AliAODRecoDecay
+  if(fOwnPrimaryVtx) {delete fOwnPrimaryVtx; fOwnPrimaryVtx=NULL;}
+  if(fd0err) {
+   delete [] fd0err;fd0err=NULL; 
+  }
+  SetIsFilled(0);
 
+  return;
 }

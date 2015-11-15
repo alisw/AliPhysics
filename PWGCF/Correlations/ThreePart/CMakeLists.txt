@@ -31,6 +31,7 @@ set(SRCS
   AliCorrelation3p.cxx
   AliCorrelation3p_noQA.cxx
   AliFilteredEvent.cxx
+  AliFilteredEventInputHandler.cxx
   AliFilteredTrack.cxx
   AliThreeParticleCorrelator.cxx
    )

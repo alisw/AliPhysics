@@ -144,7 +144,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Bool_t fEvSel_INELgtZERO                 = kFALSE ;
     Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
     Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
-    Float_t fEvSel_VtxZ                      = 10.0 ;
     Int_t fRunNumber;
 
     //SetBranchAddresses for event Selection Variables
@@ -154,7 +153,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fTree->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
-    fTree->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
 
     //============================================================
@@ -196,6 +194,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Int_t lThisRunIndex = -1;
     //Buffer file with run-by-run TTree objects needed for later processing
 
+    Int_t iVtxZ_index = -1;
+    TString lTempStr;
+    
     TFile *fOutput = new TFile (fBufferFileName.Data(), "RECREATE");
     TTree *sTree[lMaxQuantiles];
     cout<<"Creating Trees..."<<endl;
@@ -209,6 +210,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 sTree[iRun]->Branch(Form("%s", fInput->GetVariable(iQvar)->GetName()  ),
                                     &fInput->GetVariable(iQvar)->GetRValueInteger(),Form("%s/I",fInput->GetVariable(iQvar)->GetName()));
             }
+            //For future reference
+            lTempStr = fInput->GetVariable(iQvar)->GetName();
+            if ( lTempStr.EqualTo("fEvSel_VtxZ") ) iVtxZ_index = iQvar;
         }
     }
 
@@ -274,10 +278,12 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         //Perform Event selection
         Bool_t lSaveThisEvent = kTRUE; //let's be optimistic
 
+        Float_t lLocalVtxZ = fInput->GetVariable(iVtxZ_index)->GetValue();
+
         //Check Selections as they are in the fMultSelectionCuts Object
         if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
-        if( TMath::Abs(fEvSel_VtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
+        if( TMath::Abs(lLocalVtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?
         if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins    ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
@@ -484,7 +490,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //Default Stuff
     TH1F * hDummy[lNEstimators];
     for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 100, 0, 10);
+        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
         hDummy[iEst]->SetDirectory(0);
     }
 
@@ -572,6 +578,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
     
+    AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -587,6 +595,7 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
+    fInput->AddVariable( fEvSel_VtxZ );
     
     //============================================================
     

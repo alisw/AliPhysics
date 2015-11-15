@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name, Bool_t lCalib = kFALSE);
+    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
@@ -88,6 +88,10 @@ public:
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
     
+    //override for getting estimator definitions from different OADB file
+    //FIXME: should preferably be protected, extra functionality required
+    void SetAlternateOADBforEstimators ( TString lFile ){ fAlternateOADBForEstimators = lFile.Data(); }
+    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
@@ -106,10 +110,16 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    
+    //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
+    Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
+    Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
+    
+    TString fAlternateOADBForEstimators;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
@@ -149,6 +159,9 @@ private:
     AliMultVariable *fZpaTower;
     AliMultVariable *fZpcTower;
     
+    //Event selection snippet for VtxZ as AliMultVariable
+    AliMultVariable *fEvSel_VtxZ;
+    
     // A.T.
     Float_t fAmplitude_V0A1;   //!
     Float_t fAmplitude_V0A2;   //!
@@ -169,14 +182,14 @@ private:
     Bool_t fEvSel_Triggered;                //!
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
     Bool_t fEvSel_HasNoInconsistentVertices;//!
-    Bool_t fEvSel_PassesTrackletVsCluster;  //! 
-
+    Bool_t fEvSel_PassesTrackletVsCluster;  //!
+    
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
     Int_t   fnSPDClusters0;            //!
     Int_t   fnSPDClusters1;            //!
-    Float_t fEvSel_VtxZ; //! the actual value
+    Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
@@ -191,6 +204,9 @@ private:
     
     Float_t fQuantiles[100]; //! percentiles
     Int_t fNDebug; // number of percentiles
+    
+    Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 
+    Float_t fPPVsMultUtilsV0M; //! percentiles from AliPPVsMultUtils (for debugging)
     
     //Data needed for Monte Carlo
     Int_t fMC_NColl;

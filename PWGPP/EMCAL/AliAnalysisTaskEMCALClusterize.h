@@ -24,8 +24,6 @@ class TClonesArray;
 
 // EMCAL
 class AliEMCALGeometry;
-class AliEMCALCalibData;
-class AliCaloCalibPedestal;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecPoint;
@@ -182,8 +180,6 @@ private:
   Bool_t                 fLoadGeomMatrices;        ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
 
   // OCDB
-  AliEMCALCalibData     *fCalibData;               ///<  EMCAL calib data
-  AliCaloCalibPedestal  *fPedestalData;            ///<  EMCAL pedestal
   TString                fOCDBpath;                ///<  Path with OCDB location
   Bool_t                 fAccessOCDB;              ///<  Need to access info from OCDB (not really)   
 
@@ -267,7 +263,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 29) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 30) ;
   /// \endcond
 
 };

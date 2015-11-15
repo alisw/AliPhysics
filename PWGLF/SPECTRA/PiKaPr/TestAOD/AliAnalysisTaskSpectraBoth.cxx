@@ -281,8 +281,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			continue;	
 			
     		ntracks++;
-		if(fmakePIDQAhisto)
-    			fPID->FillQAHistos(fHistMan, track, fTrackCuts);
+	
     		
 		//calculate DCA for AOD track
     		if(dca==-999.)
@@ -302,6 +301,11 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
     		Bool_t rec[3]={false,false,false};
 		Bool_t sel[3]={false,false,false};
     		Int_t idRec  = fPID->GetParticleSpecie(fHistMan,track, fTrackCuts,rec);
+		Int_t idGen     =kSpUndefined;
+		Bool_t isPrimary           = kFALSE;
+		Bool_t isSecondaryMaterial = kFALSE; 
+		Bool_t isSecondaryWeak     = kFALSE; 
+
 		for(int irec=kSpPion;irec<kNSpecies;irec++)
     		{
    
@@ -337,10 +341,10 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			/* MC Part */
 			if (arrayMC||stack) 
 			{
-				Bool_t isPrimary           = kFALSE;
-			 	Bool_t isSecondaryMaterial = kFALSE; 
-			 	Bool_t isSecondaryWeak     = kFALSE; 
-			 	Int_t idGen     =kSpUndefined;
+				//Bool_t isPrimary           = kFALSE;
+			 //	Bool_t isSecondaryMaterial = kFALSE; 
+			 //	Bool_t isSecondaryWeak     = kFALSE; 
+			 //	Int_t idGen     =kSpUndefined;
 			 	Int_t pdgcode=0;
 				Int_t motherpdg=-1;
 				if (ifAODEvent==AliSpectraBothTrackCuts::kAODobject)
@@ -426,8 +430,13 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  
 		  		if (isPrimary&&irec==kSpPion)
 					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of reconstrutsed primaries in defined eta
-		  
-		  	//nsigma cut (reconstructed nsigma	
+
+				if(track->Pt()>fTrackCuts->GetPtTOFMatching(irec)&&(!fTrackCuts->CheckTOFMatchingParticleType(irec)))
+					continue;
+
+				//in case of pt depended TOF cut we have to remove particles with pt above their TOF cut but below max TOF cut
+
+	
 				if(fUseMinSigma)
 				{
 					if(idRec == kSpUndefined)
@@ -509,7 +518,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),2);
 		else if(sel[1]&&sel[2]) //p+k
 			fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),3);
-
+		if(fmakePIDQAhisto)
+    			fPID->FillQAHistos(fHistMan, track, fTrackCuts,idGen);
 	
 	
   	} // end loop on tracks

@@ -77,6 +77,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliPIDResponse.h"
 
 //__________________________________________________________________________
@@ -944,23 +945,31 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   fCountRefit+= icountRefit;
 
   AliDebug(2,Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
 
   for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
     AliAODRecoDecayHF* charmCandidate=0x0;
     switch (fDecayChannel){
     case 2:{
       charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
+      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate);
       break;
     }
-    case 21:
+    case 21:{
+      charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
+      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE);//DStar
+      break;
+    }
     case 22:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
+      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE);//Cascade
       break;
     }
     case 31:
     case 32:
     case 33:{
       charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
+      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate);
       break;
     }
     case 4:{
@@ -1181,7 +1190,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
     if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
   } // end loop on candidate
-
+  delete vHF;
   fCountReco+= icountReco;
   fCountRecoAcc+= icountRecoAcc;
   fCountRecoITSClusters+= icountRecoITSClusters;

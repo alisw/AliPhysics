@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFFilter(TString configPWG3d2h="$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C", Bool_t registerFile=kTRUE)
+AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFFilter(TString configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_pPbRHF.C", Bool_t registerFile=kTRUE)
 {
  
   // Get the pointer to the existing analysis manager via the static access method.

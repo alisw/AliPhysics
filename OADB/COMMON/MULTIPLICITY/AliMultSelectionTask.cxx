@@ -94,7 +94,8 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkTrigger(AliVEvent::kMB),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -133,6 +134,7 @@ fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
 fnSPDClusters1(0),
+fnContributors(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -146,6 +148,8 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -158,10 +162,11 @@ fInput(0)
 
 }
 
-AliMultSelectionTask::AliMultSelectionTask(const char *name, Bool_t lCalib)
+AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkTrigger(AliVEvent::kMB),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -200,6 +205,7 @@ fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
 fnSPDClusters1(0),
+fnContributors(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -213,6 +219,8 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
 //Histos
@@ -225,6 +233,13 @@ fInput(0)
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
     if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
+    
+    //Special Debug Options (more to be added as needed)
+    // A - Debug AliCentrality
+    // B - Debug AliPPVsMultUtils
+    
+    if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
+    if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
 }
 
 
@@ -253,10 +268,6 @@ AliMultSelectionTask::~AliMultSelectionTask()
 //________________________________________________________________________
 void AliMultSelectionTask::UserCreateOutputObjects()
 {
-
-    OpenFile(2);
-    // Called once
-
     //------------------------------------------------
     
     //Create Input Information
@@ -298,6 +309,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fZncTower = new AliMultVariable("fZncTower");
     fZpaTower = new AliMultVariable("fZpaTower");
     fZpcTower = new AliMultVariable("fZpcTower");
+
+    fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -324,6 +337,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZncTower );
     fInput->AddVariable( fZpaTower );
     fInput->AddVariable( fZpcTower );
+    fInput->AddVariable( fEvSel_VtxZ );
     
     if( fkCalibration ) {
         fTreeEvent = new TTree("fTreeEvent","Event");
@@ -356,11 +370,12 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
         fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
-        fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
         
         //A.T. FIXME change into AliMultVariable
         //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
         //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
+        fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
+        
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
         
         fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
@@ -386,6 +401,13 @@ void AliMultSelectionTask::UserCreateOutputObjects()
             for ( Int_t iq=0; iq<fNDebug; iq++){
                 fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
             }
+        }
+        //Debug functionality
+        if ( fkDebugAliCentrality ){
+            fTreeEvent->Branch("fAliCentralityV0M",&fAliCentralityV0M,"fAliCentralityV0M/F");
+        }
+        if ( fkDebugAliPPVsMultUtils ){
+            fTreeEvent->Branch("fPPVsMultUtilsV0M",&fPPVsMultUtilsV0M,"fPPVsMultUtilsV0M/F");
         }
     }
     //------------------------------------------------
@@ -460,7 +482,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //fnSPDClusters = -1;
     fnSPDClusters0 = -1;
     fnSPDClusters1 = -1;
-    fEvSel_VtxZ = -100;
+    fEvSel_VtxZ ->SetValue( -100 );
 
     Float_t multADA =0;
     Float_t multADC =0;
@@ -489,6 +511,24 @@ void AliMultSelectionTask::UserExec(Option_t *)
     AliVAD *lVAD = lVevent->GetADData();
     if(!lVAD) {
         AliWarning("ERROR:lVAD not available\n");
+    }
+    
+    //Not Acquired!
+    fAliCentralityV0M = -1;
+    //if requested, grab AliCentrality value for this event
+    if( fkDebugAliCentrality ){
+        AliCentrality* centrality;
+        centrality = lVevent->GetCentrality();
+        if ( centrality ){
+            fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
+        }
+    }
+    
+    //Not Acquired!
+    fPPVsMultUtilsV0M = -1;
+    //if requested, grab AliCentrality value for this event
+    if( fkDebugAliPPVsMultUtils ){
+        fPPVsMultUtilsV0M = fUtils->GetMultiplicityPercentile( lVevent, "V0M" );
     }
     
     //------------------------------------------------
@@ -561,11 +601,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
+    //Number of contributors from best primary vertex
+    fnContributors = -1;
+    fnContributors = lPrimaryBestESDVtx -> GetNContributors();
+    
     if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ) {
         //FIXME Passed default 10.0cm selection!
         fEvSel_VtxZCut = kTRUE;
     }
-    fEvSel_VtxZ = lBestPrimaryVtxPos[2] ; //Set for later use 
+    fEvSel_VtxZ -> SetValue( lBestPrimaryVtxPos[2] ); //Set for later use
     
     //===============================================
     // End Event Selection Variables Section
@@ -860,14 +904,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 lThisQuantile = 199;
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
-                continue;
             }else{
                 lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( lSelection->GetEstimator(iEst)->GetValue() ));
                 //cleanup: discard events according to criteria stored in OADB object
                 //Check Selections as they are in the fMultSelectionCuts Object
                 if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
                 if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
-                if( TMath::Abs(fEvSel_VtxZ)          > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
+                if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
                 if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
                 if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
                 if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
@@ -997,11 +1040,65 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
     if (sel) {
         sel->SetName("MultSelection");
+    }
+    
+    //=====================================================================
+    //Option to override estimators from alternate oadb file
+    if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE ){
+        AliInfo("Extra option detected: Load estimators from OADB file called: ");
+        AliInfoF(" path: %s", fAlternateOADBForEstimators.Data() );
+        
+        TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
+        Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");
+        if ( lFoundFileAlter == 1 ) {
+            AliFatal("Couldn't find requested alternate calibration! Quitting!");
+        }
+        
+        //Get Object for this run
+        TObject *lObjAcquiredAlter = 0x0;
+        lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
+        if (!lObjAcquiredAlter) {
+            AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+        }
+        if (!lObjAcquiredAlter) {
+            // This should not happen...
+            AliFatal("Really cannot find any OADB object - giving up!");
+        }
+        
+        //Actually, it's not required that we keep a copy of this object in memory. We only need to grab
+        //the definitions... This can be much optimized!
+        AliOADBMultSelection *fOadbMultSelectionAlter = (AliOADBMultSelection*) lObjAcquiredAlter;
+        AliMultSelection* selAlter = fOadbMultSelectionAlter->GetMultSelection();
+        
+        //Sweep all estimators from standard OADB and replace their definitions...
+        TString lTempStr;
+        for(Int_t iEst=0; iEst<sel->GetNEstimators(); iEst++){
+            lTempStr = sel->GetEstimator(iEst)->GetName();
+            AliMultEstimator *lEstim = selAlter->GetEstimator( lTempStr.Data() );
+            if ( !lEstim ){
+                AliWarning(Form("Estimator named %s: no scaling factor applied!",sel->GetEstimator(iEst)->GetName()));
+            }else{
+                sel->GetEstimator(iEst)->SetDefinition ( lEstim->GetDefinition().Data() );
+            }
+        }
+        //That should be it...
+    }
+    //=====================================================================
+    
+    if (sel) {
+        sel->SetName("MultSelection");
         //Optimize evaluation
         sel->Setup(fInput);
     }
-    AliInfo("Successfully set up! Inspect MultSelection:");
-    if (sel){ sel->PrintInfo(); } else { AliWarning("Weird. No AliMultSelection found..."); }
+    
+    AliInfo("---> Successfully set up! Inspect MultSelection:");
+    if (sel){ sel->PrintInfo(); } else { AliWarning("Weird! No AliMultSelection found..."); }
+    AliInfo("---> Inspect Event Selection Criteria:");
+    AliMultSelectionCuts* selcuts = fOadbMultSelection->GetEventCuts();
+    if (selcuts){ sel->Print(); } else { AliWarning("Weird! No AliMultSelectionCuts found..."); }
+    
     return 0;
 }
 

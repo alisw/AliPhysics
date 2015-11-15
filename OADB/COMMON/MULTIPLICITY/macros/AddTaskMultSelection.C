@@ -1,4 +1,4 @@
-AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, const TString lMasterJobSessionFlag = "")
+AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a Multiplicity Selection Task
     // Get the pointer to the existing analysis manager via the static access method.
@@ -18,7 +18,12 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, const 
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliMultSelectionTask *taskMultSelection = new AliMultSelectionTask("taskMultSelection", lCalibration);
+    
+    //Special options interpreting: will be taken care of by the task
+    // A - Add Extra AliCentrality V0M branch for cross-checks
+    // A - Add Extra AliPPVsMultUtils V0M branch for cross-checks    
+    
+    AliMultSelectionTask *taskMultSelection = new AliMultSelectionTask("taskMultSelection", lExtraOptions.Data(), lCalibration);
     mgr->AddTask(taskMultSelection);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     

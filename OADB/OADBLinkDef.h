@@ -31,5 +31,6 @@
 #pragma link C++ class AliOADBMultSelection+;
 #pragma link C++ class AliMultSelectionTask+;
 #pragma link C++ class AliMultSelectionCalibrator+;
+#pragma link C++ class AliMultSelectionCalibratorMC+;
 
 #endif

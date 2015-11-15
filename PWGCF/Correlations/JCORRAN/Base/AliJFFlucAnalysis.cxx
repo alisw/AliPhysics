@@ -355,6 +355,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	Eta_config[kSubB][0] = -1*fEta_max;
 	Eta_config[kSubB][1] = -1*fEta_min; 
 	
+
+
 	// use complex variable instead of doulbe Qn // 
 	TComplex QnA[kNH];
 	TComplex QnB[kNH];
@@ -387,7 +389,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//initiation
 	for(int ih=0; ih<kNH; ih++){
 		for(int ik=0; ik<nKL ; ik++){
-				vn2[ih][ik] = -999;
+				vn2[ih][ik] =    -999;
 				for(int ihh=0; ihh<kNH; ihh++){
 						for(int ikk=0; ikk<nKL; ikk++){
 								vn2_vn2[ih][ik][ihh][ikk] = -999;
@@ -451,13 +453,19 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
 	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3]; 
 
+
 	// New correlattors (Modified by You's corretion term for self-correlations)
+	//
 	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
 	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
+
+
+	
 	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
+ // 2nd term for slef correlation correct
 	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] );
 	// add higher order SC results
@@ -484,6 +492,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
+	// use this to avoid self-correlation
+	// vn2vn2_mean -> nV4V4V2V2 like this.
+	//
 	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() );
 	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() ) ;
 
@@ -491,10 +502,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() );
 	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() );
 
-	//
-	//
 
 	if(IsSCptdep == kTRUE){
+		cout << "additional pt loop.... " << endl;
 		const int SCNH =6; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
 		double ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
@@ -560,7 +570,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		}	
 
 	}//pt dep done
-
 
 	AnaEntry++;
 }

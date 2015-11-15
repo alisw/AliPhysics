@@ -57,7 +57,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //calibTask->SetMaxEvent(-1);
   
   if (strstr(type.Data(),"A-A")) {
-    calibTask->SetMaxNbTracks(1600);
+    calibTask->SetMaxNbTracks(4000);
   }
   else calibTask->SetMaxNbTracks(999999999);
   if(!isLHC10) calibTask->SetRejectPileUpWithTOFOrITS(kTRUE);

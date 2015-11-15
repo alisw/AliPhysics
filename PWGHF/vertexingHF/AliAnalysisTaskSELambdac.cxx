@@ -692,7 +692,7 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
 
   //  const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
 
-  fNentries=new TH1F("fNentries", "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of Lc selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 11,-0.5,10.5);
+  fNentries=new TH1F("fNentries", "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of Lc selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 12,-0.5,14.5);
 
   //ROS: qui il bin assignment e' modellato su D0 ma sicuramente iv arie
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -706,6 +706,7 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(9,"PID=1");
   fNentries->GetXaxis()->SetBinLabel(10,"PID=2");
   fNentries->GetXaxis()->SetBinLabel(11,"PID=3");
+  fNentries->GetXaxis()->SetBinLabel(15,"no. of not on-the-fly rec Lc");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   hisname.Form("hMass");
@@ -1454,14 +1455,12 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   Int_t nSelectedloose[1]={0};
   Int_t nSelectedtight[1]={0};
 
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()){
-      d->SetOwnPrimaryVtx(vtx1);
-      unsetvtx=kTRUE;
-    }
 
     //Filter bit selection and QA:
     fhSelectBit->Fill(1);
@@ -1472,6 +1471,17 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       if(fLcCut&&!d->HasSelectionBit(AliRDHFCuts::kLcCuts))		continue;
       if(fLcPIDCut&&!d->HasSelectionBit(AliRDHFCuts::kLcPID))		continue;
     }
+
+    if(!(vHF->FillRecoCand(aod,d))) {////Fill the data members of the candidate only if they are empty.
+      fNentries->Fill(15); //monitor how often this fails 
+      continue;
+    }
+     Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()){
+      d->SetOwnPrimaryVtx(vtx1);
+      unsetvtx=kTRUE;
+    }
+
 
     Int_t isSelectedTracks = fRDCutsProduction->IsSelected(d,AliRDHFCuts::kTracks,aod);
     if(!isSelectedTracks) continue;
@@ -1556,7 +1566,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 
   }
 
-  
+  delete vHF;
+   
   PostData(1,fOutput); 
   if (fFillVarHists) PostData(3,fOutputMC);
   if (fPriorsHists) PostData(5,fAPriori);

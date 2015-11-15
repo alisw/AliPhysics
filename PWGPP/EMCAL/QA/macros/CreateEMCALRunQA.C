@@ -287,9 +287,10 @@ Int_t DrawOccupancy(Long_t  run , TString period, TString pass, TString fTrigger
   title += " Summed energy map";
   hEnergyMapReal->SetTitle(title);
   AutoZoom(hEnergyMapReal,"miny")->DrawCopy("colz");
+  if(nSupMod<=12){
   if(SavePlots==2) c1->SaveAs(Energy);
   if(SavePlots) c1->SaveAs(Energy2);
-  c1->Write();
+  c1->Write();}
   delete c1;
 
 
@@ -344,7 +345,8 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
 
   set_plot_style();
   gStyle->SetPalette(1);
-   // gStyle->SetOptStat(1);
+  set_plot_style();
+ // gStyle->SetOptStat(1);
  TH1::AddDirectory(kFALSE);
   TString outfilename;
   TString outfilename2;
@@ -425,6 +427,91 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   c1->Write();
   delete c1;
 
+  if(pass!="simu"){
+
+
+ TCanvas* c1a = new TCanvas("TimeVsAbsId", "Cell Id Vs time ", 600, 600);
+  c1a->SetLogz();
+  c1a->SetFillColor(0);
+  c1a->SetBorderSize(0);
+  c1a->SetFrameBorderMode(0);
+
+  TH2F*  hTimeAbsId =(TH2F *)outputList->FindObject("EMCAL_hTimeId");
+  if(!hTimeAbsId) { Error(__FUNCTION__,Form("EMCAL_hTimeId: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
+  FormatRunHisto(hTimeAbsId,Form("cell Id Vs Time%s",legend),"cell absId");
+  hTimeAbsId->SetMinimum(3);
+  AutoZoom(hTimeAbsId,"maxx")->DrawCopy("colz");
+  outfilename =  QAPATH + "TimeAbsIdRun" + fTrigger(r) + ".pdf" ;
+  outfilename2 = QAPATH + "TimeAbsRun" + fTrigger(r) + ".png" ;
+
+  if(SavePlots==2) c1a->SaveAs(outfilename);
+  if(SavePlots) c1a->SaveAs(outfilename2);
+  c1a->Write();
+  delete c1a;
+  }
+
+ // TCanvas* c1aLG = new TCanvas("TimeVsAbsIdLG", "Cell Id Vs time LG ", 600, 600);
+ //  c1aLG->SetLogz();
+ //  c1aLG->SetFillColor(0);
+ //  c1aLG->SetBorderSize(0);
+ //  c1aLG->SetFrameBorderMode(0);
+
+ //  TH2F*  hTimeAbsIdLG =(TH2F *)outputList->FindObject("EMCAL_hTimeIdLG");
+ //  if(!hTimeAbsIdLG) { Error(__FUNCTION__,Form("EMCAL_hTimeIdLG: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
+ //  FormatRunHisto(hTimeAbsIdLG,Form("cell Id Vs Time LG%s",legend),"cell absId");
+
+ //  AutoZoom(hTimeAbsIdLG,"maxx")->DrawCopy("colz");
+ //  outfilename =  QAPATH + "TimeAbsIdRunLG" + fTrigger(r) + ".pdf" ;
+ //  outfilename2 = QAPATH + "TimeAbsRunLG" + fTrigger(r) + ".png" ;
+
+ //  if(SavePlots==2) c1a->SaveAs(outfilename);
+ //  if(SavePlots) c1a->SaveAs(outfilename2);
+ //  c1a->Write();
+ //  delete c1a;
+
+TCanvas* c1b = new TCanvas("EVsAbsId", "Cell Id Vs E ", 600, 600);
+  c1b->SetLogz();
+  c1b->SetFillColor(0);
+  c1b->SetBorderSize(0);
+  c1b->SetFrameBorderMode(0);
+
+  TH2F*  hEAbsId =(TH2F *)outputList->FindObject("EMCAL_hAmpId");
+  if(!hEAbsId) { Error(__FUNCTION__,Form("EMCAL_hAmpId: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
+  FormatRunHisto(hEAbsId,Form("cell Id Vs E%s",legend),"cell absId");
+  hEAbsId->SetMinimum(3);
+
+  AutoZoom(hEAbsId,"maxx")->DrawCopy("colz");
+  outfilename =  QAPATH + "EAbsIdRun" + fTrigger(r) + ".pdf" ;
+  outfilename2 = QAPATH + "EAbsIdRun" + fTrigger(r) + ".png" ;
+
+  if(SavePlots==2) c1b->SaveAs(outfilename);
+  if(SavePlots) c1b->SaveAs(outfilename2);
+  c1b->Write();
+  delete c1b;
+
+// TCanvas* c1bLG = new TCanvas("EVsAbsIdLG", "Cell Id Vs E LG", 600, 600);
+//   c1bLG->SetLogz();
+//   c1bLG->SetFillColor(0);
+//   c1bLG->SetBorderSize(0);
+//   c1bLG->SetFrameBorderMode(0);
+
+//   TH2F*  hEAbsIdLG =(TH2F *)outputList->FindObject("EMCAL_hAmpIdLG");
+//   if(!hEAbsIdLG) { Error(__FUNCTION__,Form("EMCAL_hAmpIdLG: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
+//   FormatRunHisto(hEAbsIdLG,Form("cell Id Vs E%s",legend),"cell absId ");
+
+//   AutoZoom(hEAbsIdLG,"maxx")->DrawCopy("colz");
+//   outfilename =  QAPATH + "EAbsIdRunLG" + fTrigger(r) + ".pdf" ;
+//   outfilename2 = QAPATH + "EAbsIdRunLG" + fTrigger(r) + ".png" ;
+
+//   if(SavePlots==2) c1bLG->SaveAs(outfilename);
+//   if(SavePlots) c1bLG->SaveAs(outfilename2);
+//   c1bLG->Write();
+//   delete c1bLG;
+
+
+
+  if(pass!="muon_calo_pass1"){
+
   TCanvas  * c2 = new TCanvas("ClusterVsTrack ","Correlation calo Mult Vs Track Multiplicity", 600, 600);
   c2->SetLogz();
   c2->SetFillColor(0);
@@ -437,10 +524,14 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   AutoZoom(hClusterVsTrack,"maxx,maxy",1)->DrawCopy("colz");
   outfilename = QAPATH + "CaloTrackMult" + fTrigger(r) + ".pdf";
   outfilename2 = QAPATH + "CaloTrackMult" + fTrigger(r) + ".png";
+  // if(pass!="muon_calo_pass1"){
   if(SavePlots==2) c2->SaveAs(outfilename);
   if(SavePlots) c2->SaveAs(outfilename2);
+
   c2->Write();
+
   delete c2;
+
 
   TCanvas* c3 = new TCanvas("ClusterEVsTrack ","Correlation E calo Vs Track Multiplicity", 600, 600);
   c3->SetLogz();
@@ -454,10 +545,16 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   AutoZoom(hClusterEVsTrack,"maxx,maxy",1)->DrawCopy("colz");
   outfilename =  QAPATH + "ETrackMult" + fTrigger(r) + ".pdf";
   outfilename2 = QAPATH + "ETrackMult" + fTrigger(r) + ".png";
+  // if(pass!="muon_calo_pass1"){
   if(SavePlots==2) c3->SaveAs(outfilename);
   if(SavePlots) c3->SaveAs(outfilename2);
-  c3->Write();
+
+   c3->Write();
+   //}
   delete c3;
+  }
+
+
 
   TCanvas* c4 = new TCanvas("ClusterEVsV0 ","Correlation E calo Vs V0 signal", 600, 600);
   c4->SetLogz();
@@ -476,6 +573,26 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   c4->Write();
   delete c4;
 
+ TCanvas* c6 = new TCanvas("SumCellEvsSM","sum cell energy vs  SM", 600, 600);
+  c6->SetLogz();
+  c6->SetFillColor(0);
+  c6->SetBorderSize(0);
+  c6->SetFrameBorderMode(0);
+ TH2F* hSumCellEVsSM =(TH2F*)outputList->FindObject("EMCAL_hSumCellsAmp_Mod");
+  FormatRunHisto(hSumCellEVsSM,Form("Sum cell energy vs  SM%s",legend));
+
+  AutoZoom(hSumCellEVsSM,"maxx,maxy",1)->DrawCopy("colz");
+  outfilename = QAPATH +"SumCellEVsSM" + fTrigger(r) + ".pdf";
+  outfilename2 = QAPATH +"SumCellEVsSM" + fTrigger(r) + ".png";
+  if(SavePlots==2) c6->SaveAs(outfilename);
+  if(SavePlots) c6->SaveAs(outfilename2);
+  c6->Write();
+  delete c6;
+
+
+
+
+
   TCanvas* c5 = new TCanvas("CellsperCluster","Nb of cells per cluster for each SM", 600, 600);
   c5->SetLogz();
   c5->SetFillColor(0);
@@ -488,7 +605,7 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
     {
       c5->cd(ism+1);
       gPad->SetLogz();
-      if(TString(Form("Nb of cells per cluster%s Mod %d",legend,ism)).Length() > 60) { Error(__FUNCTION__,"Title too long!"); return -6;}
+      if(TString(Form("Nb cells per clus%s Mod %d",legend,ism)).Length() > 60) { Error(__FUNCTION__,"Title too long!"); return -6;}
       AutoZoom(HistoPerMod((TH2F*)outputList->FindObject(Form("EMCAL_hNCellsPerCluster_Mod%i",ism)),Form("Nb of cells per cluster%s Mod %d",legend,ism)),"all",1)->DrawCopy("colz");
     }
 
@@ -498,6 +615,7 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   if(SavePlots) c5->SaveAs(outfilename2);
   c5->Write();
   delete c5;
+
 
   if (outputList) outputList->Delete();
 
@@ -869,7 +987,7 @@ Int_t TrendingEMCALTree(Long_t RunId,TString fCalorimeter,TString system,TString
 	  fitMass->SetParameter(5,MggSM[ism]->GetBinContent(MggSM[ism]->FindBin(0.20)));
 
 	  if(MggSM[ism]->GetEntries()<1000){ MggSM[ism]->Rebin(5);} else {MggSM[ism]->Rebin();}
-	  MggSM[ism]->Fit("fitMass", "WL R +","",0.05, 0.30);
+	  MggSM[ism]->Fit("fitMass", "WL R +","",0.1, 0.30);
 	  MggSM[ism]->SetTitle(Form("Pi0 Mass for super module %i",ism));
 	  MggSM[ism]->SetTitleSize(0.1);
 	  MggSM[ism]->SetXTitle("Pi0 Mass");
@@ -1009,9 +1127,12 @@ Int_t TrendingEMCALTree(Long_t RunId,TString fCalorimeter,TString system,TString
       NTClusters=fhE->IntegralAndError(fhE->GetXaxis()->FindBin(0.),fhE->GetXaxis()->FindBin(200.),NTClustersRMS);
       cout<<"********************************** nb total de clusters ***************************************************"<<endl;
       NCClusters=fhECharged->IntegralAndError(fhECharged->GetXaxis()->FindBin(0.),fhECharged->GetXaxis()->FindBin(50.),NCClustersRMS);
-      NMatchClustersP = NCClusters/NTClusters;
-      cout<<"     ici se trouve la valeur recherchée: "<<NMatchClustersP<<" "<<endl;
+      if(NTClusters!=0)NMatchClustersP = NCClusters/NTClusters;
+      else{NMatchClustersP=0;}
+      //cout<<"   here is searched value "<<NMatchClustersP<<" "<<endl;
+      if(NCClusters!=0)
       NMatchClustersPRMS = NMatchClustersP* TMath::Sqrt(TMath::Power(NCClustersRMS/NCClusters,2)+TMath::Power(NTClustersRMS/NTClusters,2));
+      else{NMatchClustersPRMS=1;}
       ClusterMean=fhNClusters->GetMean();
       ClusterRMS=fhNClusters->GetMeanError();
       CellMean=fhNCells->GetMean();

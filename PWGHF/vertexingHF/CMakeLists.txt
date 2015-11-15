@@ -52,26 +52,27 @@ set(SRCS
   AliRDHFCutsLctoeleLambdafromAODtracks.cxx
   AliRDHFCutsLctopK0sfromAODtracks.cxx
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
-  AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
-  AliAnalysisVertexingHF.cxx
-  AliAnalysisTaskSEVertexingHF.cxx
-  AliAnalysisTaskMEVertexingHF.cxx
-  AliAnalysisTaskSESelectHF.cxx
-  AliAnalysisTaskSECompareHF.cxx
-  AliAnalysisTaskSEDplus.cxx
-  AliAnalysisTaskSEDs.cxx
-  AliAnalysisTaskSELambdac.cxx
+  AliRDHFCutsXictoeleXifromAODtracks.cxx
+  AliAnalysisVertexingHF.cxx 
+  AliAnalysisTaskSEVertexingHF.cxx 
+  AliAnalysisTaskMEVertexingHF.cxx 
+  AliAnalysisTaskSESelectHF.cxx 
+  AliAnalysisTaskSECleanupVertexingHF.cxx
+  AliAnalysisTaskSECompareHF.cxx 
+  AliAnalysisTaskSEDplus.cxx 
+  AliAnalysisTaskSEDs.cxx 
+  AliAnalysisTaskSELambdac.cxx 
   AliAnalysisTaskSED0Mass.cxx
+  AliAnalysisTaskSELambdacTMVA.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
+  AliAnalysisTaskSECharmFraction.cxx 
+  AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
-  AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
-  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
-  AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
   AliCFVertexingHF2Prong.cxx
@@ -82,12 +83,14 @@ set(SRCS
   AliCFTaskVertexingHFCutVarFDSub.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
-  AliAnalysisTaskSEDStarSpectra.cxx
+  AliAnalysisTaskSEDStarSpectra.cxx 
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
   AliHFMassFitter.cxx
+  AliHFMassFitterVAR.cxx
+  AliHFMultiTrials.cxx
   AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
   AliNormalizationCounter.cxx
@@ -110,10 +113,10 @@ set(SRCS
   cutVarFDsub/AliHFCutVarFDsubMinimiser.cxx
   upgrade/AliAnalysisTaskSELambdacUp.cxx
   upgrade/AliAnalysisTaskCountLcEta.cxx
-  AliAnalysisTaskSELc2V0bachelorTMVA.cxx
-  AliAnalysisTaskSELambdacTMVA.cxx
-  AliHFMultiTrials.cxx
-  AliHFMassFitterVAR.cxx
+  AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
+  AliAnalysisTaskSELc2V0bachelorTMVA.cxx 
+  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
+  AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   )
 
 # Headers from sources
@@ -158,12 +161,14 @@ install(FILES
             AddD2HTrain.C
 	    AddGoodRuns.C
             ConfigVertexingHF.C
+            ConfigVertexingHF_pPbRHF.C
             ConfigVertexingHF_highmult.C
             ConfigVertexingHF_pp_LambdaC.C
             ConfigVertexingHF_TrackRel.C
             ConfigVertexingHF_Pb_Cent2080.C
             ConfigVertexingHF_Pb_AllCent.C
             ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C

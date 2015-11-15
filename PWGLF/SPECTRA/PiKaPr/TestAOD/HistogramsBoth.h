@@ -104,23 +104,23 @@ namespace AliSpectraNameSpaceBoth
       kHistPIDTPCProtonRec,                              
       kNHistPID =kHistPIDTPCProtonRec,                           
       
-      kHistNSigPionTPC,                              
-      kHistNSigKaonTPC,                              
-      kHistNSigProtonTPC,                       // NSigma separation plot    
+      kHistNSigTruePionPtTPC,                              
+      kHistNSigTrueKaonPtTPC,                              
+      kHistNSigTrueProtonPtTPC,                       // NSigma separation plot    
       kHistNSigPionPtTPC,                              
       kHistNSigKaonPtTPC,                              
       kHistNSigProtonPtTPC,                              
       
-      kHistNSigPionTOF,                              
-      kHistNSigKaonTOF,                              
-      kHistNSigProtonTOF,                              
+      kHistNSigTruePionPtTOF,                              
+      kHistNSigTrueKaonPtTOF,                              
+      kHistNSigTrueProtonPtTOF,                              
       kHistNSigPionPtTOF,                              
       kHistNSigKaonPtTOF,                              
       kHistNSigProtonPtTOF,                              
      
-      kHistNSigPionTPCTOF,                              
-      kHistNSigKaonTPCTOF,                              
-      kHistNSigProtonTPCTOF,                             
+      kHistNSigTruePionPtTPCTOF,                              
+      kHistNSigTrueKaonPtTPCTOF,                              
+      kHistNSigTrueProtonPtTPCTOF,                             
       kHistNSigPionPtTPCTOF,
       kHistNSigKaonPtTPCTOF,                              
       kHistNSigProtonPtTPCTOF,                              
