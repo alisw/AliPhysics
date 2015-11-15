@@ -17,8 +17,9 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliEMCALTriggerBitConfig.h"
-#include "TObject.h"
+#include "AliEMCALTriggerConstants.h"
 
+#include <TObject.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 
@@ -28,6 +29,8 @@ class TArrayI;
 typedef bool DetectorType_t;
 const DetectorType_t kEMCALdet = true;
 const DetectorType_t kDCALPHOSdet = false;
+
+typedef UInt_t EMCALTriggerBitType;
 
 /**
  * @class AliEmcalTriggerPatchInfo
@@ -40,7 +43,7 @@ const DetectorType_t kDCALPHOSdet = false;
  * -# highest patch energy, also for events that did not fire the trigger (bits 22, 23 kRecalc... (using both online and offline info, use bit 25 to distinguish)
  */
 class AliEMCALTriggerPatchInfo: public TObject {
- public:
+public:
 
   /**
    * Default constructor
@@ -68,16 +71,6 @@ class AliEMCALTriggerPatchInfo: public TObject {
   virtual ~AliEMCALTriggerPatchInfo();
 
   /**
-   * @enum Bit definition for special trigger bits
-   */
-  enum TriggerMakerBits_t {
-    kRecalcJetBitNum = 22,   ///< Trigger bit for recalculated jet patches
-    kRecalcGammaBitNum = 23, ///< Trigger bit for recalculated gamma patches
-    kMainTriggerBitNum = 24, ///< Trigger bit indicating the main (highest energy) trigger patch of a given type per event
-    kSimpleOfflineBitNum = 25///< Trigger bit indicating that the patch was created by the offline trigger algorithm
-  };
-
-  /**
    * Initialize patch
    * @param col0        Start column of the patch
    * @param row0        Start row of the patch
@@ -91,7 +84,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
    */
   void Initialize(UChar_t col0, UChar_t row0, UChar_t size, Int_t adc, Int_t offlineAdc, Double_t patchE, Int_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
-    /**
+  /**
    * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
    * @param col0        Start column of the patch
    * @param row0        Start row of the patch
@@ -210,7 +203,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
    * @param cells Output array of cell indices corresponding to the given trigger patch
    */
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
-  
+
   /**
    * Get the starting row of the patch
    * @return Starting row of the patch
@@ -230,66 +223,37 @@ class AliEMCALTriggerPatchInfo: public TObject {
   UChar_t GetPatchSize() const { return fPatchSize; }
 
   /**
+   * Check whether a trigger bit is set
+   * @param bitnumber Bit number to be tested
+   * @return True if the bit is set
+   */
+  Bool_t   TestTriggerBit(EMCALTriggerBitType bitnumber) const { return TESTBIT(fTriggerBits, bitnumber); }
+
+  /**
    * Check whether patch is an EMCAL Level0 patch
    * @return True if patch is an EMCAL Level0 patch, false otherwise
    */
-  Bool_t   IsLevel0() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetLevel0Bit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsLevel0() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetLevel0Bit()); }
   /**
    * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the trigger electronics or the trigger simulation
    * @return True if patch matches the trigger condition, false otherwise
    */
-  Bool_t   IsJetLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsJetLow() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetJetLowBit()); }
   /**
    * Check whether patch is an EMCAL Level1 jet patch passing the high threshold, found by the trigger electronics or the trigger simulation
    * @return True if patch matches the trigger condition, false otherwise
    */
-  Bool_t   IsJetHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsJetHigh() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetJetHighBit()); }
   /**
    * Check whether patch is an EMCAL Level1 gamma patch passing the low threshold, found by the trigger electronics or the trigger simulation
    * @return True if patch matches the trigger condition, false otherwise
    */
-  Bool_t   IsGammaLow() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
+  Bool_t   IsGammaLow() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetGammaLowBit()); }
   /**
    * Check whether patch is an EMCAL Level1 gamma patch passing the high threshold, found by the trigger electronics or the trigger simulation
    * @return True if patch matches the trigger condition, false otherwise
    */
-  Bool_t   IsGammaHigh() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
-  /**
-   * Check whether patch is the main EMCAL trigger patch of a given trigger type, found by the trigger electronics or the trigger simulation
-   * @return True if patch is the main trigger patch, false otherwise
-   */
-  Bool_t   IsMainTrigger() const { return (Bool_t)((fTriggerBits >> kMainTriggerBitNum)&(!(fTriggerBits >> kSimpleOfflineBitNum))&1); }
-  /**
-   * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the simple offline trigger
-   * @return True if patch matches the trigger condition, false otherwise
-   */
-  Bool_t   IsJetLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetLowBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
-  /**
-   * Check whether patch is an EMCAL Level1 jet patch passing the high threshold, found by the simple offline trigger
-   * @return True if patch matches the trigger condition, false otherwise
-   */
-  Bool_t   IsJetHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetJetHighBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
-  /**
-   * Check whether patch is an EMCAL Level1 gamma patch passing the low threshold, found by the simple offline trigger
-   * @return True if patch matches the trigger condition, false otherwise
-   */
-  Bool_t   IsGammaLowSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaLowBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
-  /**
-   * Check whether patch is an EMCAL Level1 gamma patch passing the high threshold, found by the simple offline trigger
-   * @return True if patch matches the trigger condition, false otherwise
-   */
-  Bool_t   IsGammaHighSimple() const { return (Bool_t)((fTriggerBits >> (fOffSet + fTriggerBitConfig.GetGammaHighBit()))&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
-  /**
-   * Check whether patch is the main EMCAL trigger patch of a given trigger type, found by the simple offline trigger
-   * @return True if patch is the main trigger patch, false otherwise
-   */
-  Bool_t   IsMainTriggerSimple() const { return (Bool_t)((fTriggerBits >> kMainTriggerBitNum)&(fTriggerBits >> kSimpleOfflineBitNum)&1); }
-  /**
-   * Check whether patch is found by the simple offline trigger (on offline amplitudes)
-   * @return True if the patch is found by the simple offline trigger, false otherwise
-   */
-  Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> kSimpleOfflineBitNum)&1); }
-
+  Bool_t   IsGammaHigh() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetGammaHighBit()); }
   /**
    * Check whether patch is in the EMCal
    * @return True if the patch is in the EMCal
@@ -328,17 +292,27 @@ class AliEMCALTriggerPatchInfo: public TObject {
    */
   const TLorentzVector &GetLorentzVectorEdge2() const { return fEdge2; }
 
-  // Recalculated max patches
+  // Recalculated patches
   /**
    * Check if the patch is a recalculated jet patch
    * @return True if the patch is a recalculated jet patch, false otherwise
    */
-  Bool_t   IsRecalcJet() const { return (Bool_t) ((fTriggerBits >> kRecalcJetBitNum)&1); }
+  Bool_t   IsRecalcL0() const { return TESTBIT(fTriggerBits, EMCALTrigger::kEMCalRecalcL0); }
+  /**
+   * Check if the patch is a recalculated jet patch
+   * @return True if the patch is a recalculated jet patch, false otherwise
+   */
+  Bool_t   IsRecalcJet() const { return TESTBIT(fTriggerBits, EMCALTrigger::kEMCalRecalcL1Jet); }
   /**
    * Check if the patch is a recalculated gamma patch
    * @return True if the patch is a recalculated gamma patch, false otherwise
    */
-  Bool_t   IsRecalcGamma() const { return (Bool_t) ((fTriggerBits >> kRecalcGammaBitNum)&1); }
+  Bool_t   IsRecalcGamma() const { return TESTBIT(fTriggerBits, EMCALTrigger::kEMCalRecalcL1Gamma); }
+  /**
+   * Check if the patch is a recalculated gamma patch
+   * @return True if the patch is a recalculated gamma patch, false otherwise
+   */
+  Bool_t   IsRecalcBkg() const { return TESTBIT(fTriggerBits, EMCALTrigger::kEMCalRecalcL1Bkg); }
 
   /**
    * Set the starting row
@@ -430,11 +404,6 @@ class AliEMCALTriggerPatchInfo: public TObject {
   void SetEdgeCell( Int_t x, Int_t y ) { fEdgeCell[0] = x; fEdgeCell[1] = y; }
 
   /**
-   * Mark patch as created by the simple offline trigger
-   */
-  void SetOfflineSimple() { fTriggerBits |= 1 << kSimpleOfflineBitNum; }
-
-  /**
    * Define Lorentz vector of the given trigger patch
    * @param lv Lorentz vector to be defined
    * @param v Patch vector position
@@ -473,7 +442,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
   const AliEMCALTriggerBitConfig *GetTriggerBitConfig() const { return &fTriggerBitConfig; }
 
 
- protected:
+protected:
   static const Double_t fgkEMCL1ADCtoGeV;
   //TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
 

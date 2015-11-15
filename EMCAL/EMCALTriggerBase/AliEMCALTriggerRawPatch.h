@@ -5,6 +5,7 @@
 
 #include <Riosfwd.h>
 #include <TObject.h>
+#include "AliEMCALTriggerConstants.h"
 
 /**
  * @class AliEmcalTriggerRawPatch
@@ -18,7 +19,6 @@
  */
 class AliEMCALTriggerRawPatch : public TObject {
 public:
-
   /**
    * Dummy constructor
    */
