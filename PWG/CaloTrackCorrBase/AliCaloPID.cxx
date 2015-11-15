@@ -21,6 +21,7 @@
 // ---- ANALYSIS system ----
 #include "AliCaloPID.h"
 #include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
 #include "AliVCaloCells.h"
 #include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
@@ -1078,13 +1079,14 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     //In case of ESDs, by default without match one entry with negative index, no match, reject.
     if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
     {
-      Int_t iESDtrack = cluster->GetTrackMatchedIndex();
+      Int_t iESDtrack = ((AliESDCaloCluster*)cluster)->GetTracksMatched()->At(0); //cluster->GetTrackMatchedIndex();
+      
       if(iESDtrack >= 0) track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
       else return kFALSE;
       
       if (!track)
       {
-        AliWarning("Null matched track in ESD when index is OK!");
+        AliWarning(Form("Null matched track in ESD for index %d",iESDtrack));
         return kFALSE;
       }
     }
