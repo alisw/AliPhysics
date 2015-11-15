@@ -24,27 +24,27 @@ template<typename T>
 class AliEMCALTriggerAlgorithm : public TObject {
 public:
   AliEMCALTriggerAlgorithm();
-  AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
+  AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask);
   virtual ~AliEMCALTriggerAlgorithm();
 
   void SetRowMin(Int_t rowmin) { fRowMin = rowmin; }
   void SetRowMax(Int_t rowmax) { fRowMax = rowmax; }
-  void SetThreshold(Double_t threshold) { fThreshold = threshold; }
-  void SetBitMask(ULong_t bitmask) { fBitMask |= bitmask; }
+  void SetThresholds(Float_t th, Float_t offTh) { fThreshold = th; fOfflineThreshold = offTh; }
+  void SetBitMask(UInt_t bitmask) { fBitMask = bitmask; }
   void SetPatchSize(Int_t patchsize) { fPatchSize = patchsize; }
 
   virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc, const AliEMCALTriggerDataGrid<T> &offlineAdc) const;
 
 protected:
-  int                               fRowMin;
-  int                               fRowMax;
-  int                               fPatchSize;
-  ULong_t                           fBitMask;
-  double                            fThreshold;
-  double                            fOfflineThreshold;
+  Int_t                             fRowMin;
+  Int_t                             fRowMax;
+  Int_t                             fPatchSize;
+  UInt_t                           fBitMask;
+  Float_t                           fThreshold;
+  Float_t                           fOfflineThreshold;
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerAlgorithm, 1);
+  ClassDef(AliEMCALTriggerAlgorithm, 2);
   /// \endcond
 };
 

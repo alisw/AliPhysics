@@ -42,12 +42,12 @@ fOfflineThreshold(0)
 }
 
 template<typename T>
-AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask):
 TObject(),
 fRowMin(rowmin),
 fRowMax(rowmax),
-fPatchSize(bitmask),
-fBitMask(0),
+fPatchSize(0),
+fBitMask(bitmask),
 fThreshold(0),
 fOfflineThreshold(0)
 {
@@ -70,7 +70,7 @@ std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(co
         for(int jcol = icol; jcol < icol + fPatchSize; jcol++){
           try{
             sumadc += adc(jcol, jrow);
-	    sumofflineAdc += offlineAdc(jcol, jrow);
+            sumofflineAdc += offlineAdc(jcol, jrow);
           } catch (typename AliEMCALTriggerDataGrid<T>::OutOfBoundsException &e){
 
           }
