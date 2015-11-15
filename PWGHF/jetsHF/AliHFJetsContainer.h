@@ -12,7 +12,7 @@
 #include "TNamed.h"
 #include "TArrayD.h"
 
-#include "AliHFjetsUtils.h"
+#include "AliHFJetsUtils.h"
 
 class AliCFContainer;
 class TCollection;
@@ -79,7 +79,7 @@ class AliHFJetsContainer : public TNamed
   /* TH2D *GetPurity2D(); */
   TH1D *GetPurityVariable(const char* method, Int_t flavour, Int_t variable);
   // Fill container
-  virtual void FillStep(CFSteps step=kCFStepEventSelected,const TArrayD *point=0x0);
+  virtual void FillStep(CFSteps step = kCFStepEventSelected, const TArrayD *point = NULL, Double_t weight = 1.);
 
  protected:
   /* TH1D *GetEfficiencyPt(const char* method, Int_t flavour); */
@@ -88,8 +88,8 @@ class AliHFJetsContainer : public TNamed
   // for standard container
   AliCFContainer* fContainer;    // correction framework for B-jets 
   Int_t fNbins[fgkCFVars];           // number of bins for each variable
-  Double_t **fBinning;     // set of bins for each variable
-  const char **fAxisTitle; // axis title for each variable
+  Double_t **fBinning;     //! set of bins for each variable
+  const char **fAxisTitle; //! axis title for each variable
   void CreateContainer(TString name, TString title, Int_t nvars, Int_t *nbins, Double_t **binning, const char *axistitle[]); // create containers belonging to this class
  
   void CreateCustomContainer(const Int_t nvars, const char* varnames[], Int_t *nbins, Double_t **binning, const char*  axistitle[]);
@@ -101,7 +101,7 @@ class AliHFJetsContainer : public TNamed
   void SetStepNames(AliCFContainer* container); // sets analysis step names
   const char* GetStepTitle(CFSteps step); // gets analysis step names
   TH1* StepsRatio(CFSteps num, CFSteps denom, Int_t var1, Int_t var2=-1); // 1D/2D ratio between 2 steps 
-  ClassDef(AliHFJetsContainer, 1)    // containers for HF b-jets analysis
+  ClassDef(AliHFJetsContainer, 2)    // containers for HF b-jets analysis
 };
 
 #endif

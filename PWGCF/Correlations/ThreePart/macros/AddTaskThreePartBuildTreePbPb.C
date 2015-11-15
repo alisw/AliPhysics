@@ -4,10 +4,10 @@
 AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = "ThreePartBuildTreePbPb",
 						      const char* centrality = "V0M",
 						      const Double_t MinPt = 1.0,
-						      const Double_t MaxPt = 16.0,
+						      const Double_t MaxPt = 100.0,
 						      const Double_t Acceptancecut = 0.9,
 						      const char* period = "10h",
-						      UInt_t offlineTriggerMask = AliVEvent::kMB,
+						      UInt_t offlineTriggerMask = AliVEvent::kMB + AliVEvent::kSemiCentral + AliVEvent::kCentral,
 						      const Int_t MaxNEventsMix = 10,
 						      const Int_t MinNTracksMix = 2000,
 						      const Int_t NMBins = 7,
@@ -43,7 +43,7 @@ AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = 
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB + AliVEvent::kSemiCentral + AliVEvent::kCentral);
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
   }
@@ -91,6 +91,9 @@ AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = 
   if(NZBins>4) Zbin[5] = Zbin5;
   TArrayD tZbin(NZBins+1, Zbin);  
   task->SetMixingScheme(MaxNEventsMix,MinNTracksMix,tMbin,tZbin);
+  task->SelectCollisionCandidates(offlineTriggerMask);
+
+  
   mgr->AddTask(task);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

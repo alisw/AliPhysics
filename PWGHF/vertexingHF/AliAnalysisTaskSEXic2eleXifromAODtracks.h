@@ -233,6 +233,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleXiMassMCS;         //!<! e-Xi mass spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassMCS1;         //!<! e-Xi mass spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassMCS2;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassPromptMCS;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassPromptMCS1;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassPromptMCS2;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassBFeeddownMCS;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassBFeeddownMCS1;         //!<! e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassBFeeddownMCS2;         //!<! e-Xi mass spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassMCGen;         //!<! e-Xi mass spectra (Efficiency denominator)
   THnSparse* fHistoEleXiMassvsElePtMCS;         //!<! e-Xi mass-ept spectra (Efficiency numerator)
   THnSparse* fHistoEleXiMassvsElePtMCGen;         //!<! e-Xi mass-ept spectra (Efficiency denominator)
@@ -336,7 +342,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,15); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,16); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

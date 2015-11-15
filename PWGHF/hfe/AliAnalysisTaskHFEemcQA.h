@@ -14,7 +14,7 @@ class AliHFEpidQAmanager;
 class AliCFManager;
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
-
+class AliEmcalTriggerPatchInfo;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
@@ -42,7 +42,9 @@ public:
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
-    
+    void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };  
+    void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };  
+    void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -74,6 +76,10 @@ private:
     TH2F        *fTrigMulti;//!trigger multiplicity
     TH1F        *fHistClustE;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
+    TH1F        *fHistClustEEG1;//! Cluster Energy, Trigger patch > ThresholdEG1
+    TH1F        *fHistClustEEG2;//! Cluster Energy, Trigger patch > ThresholdEG1
+    TH2F        *fEMCClsEtaPhiEG1;//! EMC cluster eta and phi, Trigger patch > ThresholdEG1
+    TH2F        *fEMCClsEtaPhiEG2;//! EMC cluster eta and phi, Trigger patch > ThresholdEG2
     TH1F        *fHistoNCls;//! No of clusters per event
     TH1F        *fHistoNClsE1;//! No of clusters per event
     TH1F        *fHistoNClsE2;//! No of clusters per event
@@ -123,6 +129,10 @@ private:
     
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
+    
+    TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker  
+    Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
+    Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches
     
     AliAnalysisTaskHFEemcQA(const AliAnalysisTaskHFEemcQA&); // not implemented
     AliAnalysisTaskHFEemcQA& operator=(const AliAnalysisTaskHFEemcQA&); // not implemented

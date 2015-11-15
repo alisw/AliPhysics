@@ -31,6 +31,7 @@
 #include <AliAnalysisManager.h>
 #include <TRandom3.h>
 #include "THn.h"
+#include "TTimeStamp.h"
 
 
 using std::vector;
@@ -59,11 +60,13 @@ class AliThreeParticleCorrelator : public TNamed {
     , fVz(0)
     , fMultiplicity(0)
     , fRandom()
+    , fMaxMixedPerEvent(-1)
 {  
-//     fRandom = new TRandom3();
-//     fRandom->SetSeed(0);
-//     delete gRandom;
-//     gRandom = fRandom;
+    fRandom = new TRandom3();
+    TTimeStamp now;
+    fRandom->SetSeed(now.GetNanoSec());
+    delete gRandom;
+    gRandom = fRandom;
   }
   AliThreeParticleCorrelator(const AliThreeParticleCorrelator& other)
     : TNamed(other)
@@ -84,13 +87,18 @@ class AliThreeParticleCorrelator : public TNamed {
     , fVz(other.fVz)
     , fMultiplicity(other.fMultiplicity)
     , fRandom(other.fRandom)
+    , fMaxMixedPerEvent(other.fMaxMixedPerEvent)
   {
-/*    delete gRandom;
-    gRandom = fRandom;  */  
+    if(fRandom)delete fRandom;
+    fRandom = new TRandom3();
+    TTimeStamp now;
+    fRandom->SetSeed(now.GetNanoSec());
+    delete gRandom;
+    gRandom = fRandom;  
   }
 
   /// destructor
-  virtual ~AliThreeParticleCorrelator() {delete fRandom;}
+  virtual ~AliThreeParticleCorrelator() {if(fRandom){delete fRandom;}}
 
   AliThreeParticleCorrelator& operator=(const AliThreeParticleCorrelator& other){
     // assignment operator
@@ -197,18 +205,10 @@ class AliThreeParticleCorrelator : public TNamed {
     fMultiplicity = m;
   }
   
-//   /// Set the efficiency weights.
-//   void SetWeights(TObject* weights, int type){
-//     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
-//       (*o)->SetWeight(weights,type);
-//       //And for all ME workers.
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-//     }
-//   }
-    
+  /// Set the maximum number of tracks kept in the mixed event pool
+  
+  void SetNMaxMixed(Int_t i){fMaxMixedPerEvent = i;}
+  
   /// get ME analysis object corresponding to parameter
   C* GetCorrespondingME(C* o, int type=0) {
     for (unsigned i=0, e=fCorrelations.size(); i<e; i++) {
@@ -241,6 +241,12 @@ class AliThreeParticleCorrelator : public TNamed {
     
     if (!arrayParticles) return -EINVAL;
 
+    //Create a new TObjArray that is owner to be able to cherry pick a subset of the tracks.
+    //To fill with tracks and pions:
+    TObjArray* Mixedparticles = NULL;
+    Mixedparticles = new TObjArray();
+    Mixedparticles->SetOwner();//In order for it to work in the event pool.
+    
     //And for all ME workers.
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
@@ -248,15 +254,17 @@ class AliThreeParticleCorrelator : public TNamed {
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
     
     //Fill the vector for all objects in fCorrelations.
-    MakeTriggers(arrayParticles, factiveTriggers,fCorrelations.begin(),fCorrelations.end());
+    MakeTriggers(arrayParticles, Mixedparticles, factiveTriggers,fCorrelations.begin(),fCorrelations.end());
 
     //Fill the associated vector
 //     TObjArray* associatedTracks=
-    MakeAssociated(arrayParticles, fAssociated,true);
+    MakeAssociated(arrayParticles,Mixedparticles, fAssociated,true);
 //     if (!associatedTracks) return -1;//The function failed somehow.
     //Process the signal 3p and 2p correlations for all workers.
     int iResult=ProcessEvent(factiveTriggers, fAssociated);
-
+    factiveTriggers.clear();
+    fAssociated.clear();
+    delete arrayParticles;
     //Event Mixing
     if (fEventPoolMgr) {
       AliEventPool* pool=fEventPoolMgr->GetEventPool(fMultiplicity, fVz);
@@ -267,13 +275,14 @@ class AliThreeParticleCorrelator : public TNamed {
 	if (pool->IsReady()) {
 	  //Correlate triggers from this event with past associated:
 	  //Fill the vector for all objects in fCorrelationsME.
-	  MakeTriggers(arrayParticles, factiveTriggersME,fMECorrelations.begin(),fMECorrelations.end());
+	  MakeTriggers(Mixedparticles, factiveTriggersME,fMECorrelations.begin(),fMECorrelations.end());
 	  //Fill the vector for all objects in fCorrelationsMETrigger.
-	  MakeTriggers(arrayParticles, factiveTriggersMETrigger,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
+	  MakeTriggers(Mixedparticles, factiveTriggersMETrigger,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	  //Fill the vector for all objects in fCorrelationsMETA.
-	  MakeTriggers(arrayParticles, factiveTriggersMETA,fMETACorrelations.begin(),fMETACorrelations.end());
+	  MakeTriggers(Mixedparticles, factiveTriggersMETA,fMETACorrelations.begin(),fMETACorrelations.end());
 	  //Fill the vector for all objects in fCorrelationsMETA2.
-	  MakeTriggers(arrayParticles, factiveTriggersMETA2,fMETA2Correlations.begin(),fMETA2Correlations.end());	  
+	  MakeTriggers(Mixedparticles, factiveTriggersMETA2,fMETA2Correlations.begin(),fMETA2Correlations.end());	
+	  MakeAssociatedM(Mixedparticles, fAssociated,true);
 	  for (int nEvent=0; nEvent<EventsInPool; nEvent++) {
 	    for(int mEvent=nEvent+1;mEvent<EventsInPool;mEvent++){
 	      // all particles from different events
@@ -319,8 +328,8 @@ class AliThreeParticleCorrelator : public TNamed {
 	    }//end inner loop
 	  }//End mixed event loop
 	}//End poolisready
-	if (arrayParticles->GetEntriesFast()>0) {//update event pool
-	  EventsInPool=pool->UpdatePool(arrayParticles);
+	if (Mixedparticles->GetEntriesFast()>0) {//update event pool
+	  EventsInPool=pool->UpdatePool(Mixedparticles);
 	}//End update event Pool
       }//End ifPOOl
       
@@ -345,11 +354,8 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if (*assoc==(*i)->GetTrigger()) continue;//Trigger and associated pointer are the same particle.
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=assoc+1, eassoc2 = associated.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
 	  if(*assoc2==(*i)->GetTrigger()) {continue;}//Do not fill if they are the same or one is the trigger
 	  if(*assoc==*assoc2) continue;
-// 	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
-// 	  (*i)->Correlate(*assoc2,*assoc, NAssociated);
 	  (*i)->Correlate(*assoc,*assoc2, 1.0);
 	  (*i)->Correlate(*assoc2,*assoc, 1.0);	  
 	}//loop over second associated
@@ -372,7 +378,6 @@ class AliThreeParticleCorrelator : public TNamed {
       Int_t NA2 = (Int_t)(NAssociated2-1)*gRandom->Rndm();//gives the index of one associatedmixed between 0 and NAssociated2-1
       for (typename std::vector<AliActiveTrigger*>::const_iterator i=activeTriggers.begin(), e=activeTriggers.end(); i!=e; i++) {
 	(*i)->Incrementtrigger();//Fill histogram for number of triggers.
-// 	if(!((*i)->CheckAssociated(associated[NA1])&&(*i)->CheckAssociated(associatedmixed[NA2])))continue;
 	(*i)->Correlate(associated[NA1],associatedmixed[NA2],1);
 	(*i)->Correlate(associatedmixed[NA2],associated[NA1],1);
       }
@@ -383,18 +388,11 @@ class AliThreeParticleCorrelator : public TNamed {
       for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
 	if(*assoc==(*i)->GetTrigger()) continue;//It is possible for this to happen with associated and trigger from same event
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
 	  if(*assoc==*assoc2||*assoc2 == (*i)->GetTrigger()) continue;//if associated are the samme or trigger is equal to the second associated.
-// 	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
-// 	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
 	  (*i)->Correlate(*assoc,*assoc2,1.0);//Fill with the number of associated in the other list.
 	}//loop over second associated
 	if (twop)(*i)->Correlate(*assoc);//2p correlation
 	} // loop over first associated
-// 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
-// 	  if (dynamic_cast<AliVParticle*>(*assoc2)==i->GetTrigger()) continue;
-// 	  if (i->CheckAssociated(*assoc2))i->Correlate(*assoc2);//2p correlation
-// 	}//second loop so all mixed tracks get filled in 2p correlation.
     } // loop over triggers
     return 0;
   }
@@ -417,6 +415,27 @@ class AliThreeParticleCorrelator : public TNamed {
     }//end while loop
     return ;
   }
+  template <class InputIterator>
+  void MakeTriggers(const TObjArray* arrayParticles, TObjArray* outarrayParticles,std::vector<AliActiveTrigger*>& triggers,InputIterator firstAnalysisObject, InputIterator endAnalysisObject) {
+    /// create a particle array with reduced data objects
+    /// for trigger particles containing only potential triggers.
+    if (!arrayParticles||!outarrayParticles) return ;
+    triggers.clear();
+    TIter nexttrigger(arrayParticles);
+    TObject* otrigger=NULL;
+    while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+      AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+      if (!ptrigger) continue;
+      for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {
+	if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	triggers.push_back(new AliActiveTrigger(*o, ptrigger));
+	AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(ptrigger));
+	outarrayParticles->Add(outtrigger);
+      }
+    }//end while loop
+    return ;
+  }
+  
   
   void MakeAssociated(const TObjArray* arrayParticles,std::vector<AliVParticle*>& associated, bool makehist=kFALSE) {
     /// Create clone of particle array using a reduced track class and
@@ -434,6 +453,53 @@ class AliThreeParticleCorrelator : public TNamed {
       if (o==e) continue;// next particle if current one does not pass cuts (no break anywhere).
       associated.push_back(associatedp);	
     } // loop over particle
+    return ;
+  }
+  void MakeAssociatedM(const TObjArray* arrayParticles,std::vector<AliVParticle*>& associated, bool makehist=kFALSE) {
+    /// Create clone of particle array using a reduced track class and
+    if (!arrayParticles) return ;
+    associated.clear();
+    TIter iassociated(arrayParticles);
+    TObject* o1=NULL;
+    while ((o1=iassociated())!=NULL) {
+      // loop over first particle
+      AliVParticle* associatedp=dynamic_cast<AliVParticle*>(o1);
+      if (!associatedp) continue;
+      // scope for local iterators
+      typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();//fine, since mixed events has the same function for ass selection as at least one signal.
+      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, makehist)) break;
+      if (o==e) continue;// next particle if current one does not pass cuts (no break anywhere).
+      associated.push_back(associatedp);	
+    } // loop over particle
+    return ;
+  }
+    
+  void MakeAssociated(const TObjArray* arrayParticles,TObjArray* outarrayParticles,std::vector<AliVParticle*>& associated, bool makehist=kFALSE) {
+    /// Create clone of particle array using a reduced track class and
+    if (!arrayParticles||!outarrayParticles) return ;
+    associated.clear();
+    TIter iassociated(arrayParticles);
+    TObject* o1=NULL;
+    while ((o1=iassociated())!=NULL) {
+      // loop over first particle
+      AliVParticle* associatedp=dynamic_cast<AliVParticle*>(o1);
+      if (!associatedp) continue;
+      // scope for local iterators
+      typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();//fine, since mixed events has the same function for ass selection as at least one signal.
+      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, makehist)) break;
+      if (o==e) continue;// next particle if current one does not pass cuts (no break anywhere).
+      associated.push_back(associatedp);	
+    } // loop over particle
+
+    double nass = associated.size();
+    Double_t fraction = 1.1;
+    if(nass>fMaxMixedPerEvent&&(fMaxMixedPerEvent>0))fraction = fMaxMixedPerEvent/nass;
+//       AliWarning(Form("%f",fraction ));
+    for (typename std::vector<AliVParticle*>::const_iterator assoc=associated.begin(), eassoc=associated.end(); assoc!=eassoc; assoc++) {
+      if(gRandom->Rndm()>fraction)continue;
+      AliFilteredTrack * outass = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(*assoc));
+      outarrayParticles->Add(outass);
+    }
     return ;
   }
   
@@ -469,10 +535,11 @@ class AliThreeParticleCorrelator : public TNamed {
   Double_t fVz;//Vertex in z
   Double_t fMultiplicity;//Multiplicity in %
   TRandom3 * fRandom;//to be able to pick mixed event tracks.
+  Double_t fMaxMixedPerEvent;//limit on the size of each event in the pool
   
   
   
- ClassDef(AliThreeParticleCorrelator, 2)
+ ClassDef(AliThreeParticleCorrelator, 3)
 };
 
 #endif

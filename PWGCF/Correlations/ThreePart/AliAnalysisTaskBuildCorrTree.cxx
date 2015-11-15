@@ -38,7 +38,7 @@
 #include "TMath.h"
 #include <AliFilteredTrack.h>
 #include <AliEventplane.h>
-#include<iostream>
+// #include<iostream>
 #include <sstream>
 
 ClassImp(AliAnalysisTaskBuildCorrTree)
@@ -200,6 +200,7 @@ void AliAnalysisTaskBuildCorrTree::UserExec(Option_t* /*option*/)
   //Find out if it is AOD or ESD.  
   fisESD=pEvent->IsA()==AliESDEvent::Class();
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  if(fisESD)return;//ESD analysis not implemented
   fRun = pEvent->GetRunNumber();
   fEvent->SetRunNr(fRun);
   
@@ -231,7 +232,7 @@ void AliAnalysisTaskBuildCorrTree::FinishTaskOutput()
 {
   // end of the processing
     TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject("trackCount")) ;
-    if (hist) cout << "FinishTaskOutput: " << hist->GetEntries() << " events(s)" << endl;
+    if (hist) AliWarning(Form("FinishTaskOutput: %i events(s)" ,(int)hist->GetEntries()));
 }
 
 void AliAnalysisTaskBuildCorrTree::Terminate(Option_t *)
@@ -256,14 +257,8 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
     if (!IsSelected(t)) continue;
 
     TClonesArray& tracks = *(fEvent->GetTracks());
-    AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*t);
-    if(t->IsA()==AliAODTrack::Class()){
-      AliAODTrack *AODt = dynamic_cast<AliAODTrack*>(t);
-      if(AODt->IsHybridGlobalConstrainedGlobal())reducedParticle->SetGlobal();
-      if(AODt->TestFilterBit(BIT(4)))reducedParticle->SetBIT4();
-      if(AODt->TestFilterBit(BIT(5)))reducedParticle->SetBIT5();
-      if(AODt->TestFilterBit(BIT(6)))reducedParticle->SetBIT6();
-    }
+    AliAODTrack *AODt = dynamic_cast<AliAODTrack*>(t);
+    AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*AODt);
     if(fCollisionType==AliAnalysisTaskBuildCorrTree::PbPb){
       FillHistogram("selectedTracksperRun",fRunFillValue);
       FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
@@ -312,30 +307,9 @@ Bool_t AliAnalysisTaskBuildCorrTree::IsSelectedTrackAOD(AliVParticle* t)
   GetDCA(DCAtang,DCAlong,AODt);
   if((AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2)))   FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,1);
   else FillHistogram("TrackDCAandonITS",DCAtang,DCAlong,0);
-//   isselected = isselected&&(AODt->TestFilterBit(BIT(4)));  //filter bits: BIT(4) = standard cuts, loose DCA; BIT(5) standard cuts, tight DCA 
-// //  if(isselected) cout << "FilterBitPassed"<<endl;
-//   isselected = isselected&&(AODt->GetFilterMap()&AliVTrack::kITSrefit);
-// //   if(isselected) cout << "ITSrefit passed"<<endl;
-// //   isselected = isselected&&((AODt->GetFilterMap()&AliAODTrack::kTPCrefit)||fCollisionType==PbPb);//in the PbPb AODs it seems this is not set.
-// //   if(isselected) cout << "TPCrefit passed"<<endl;
-//   isselected = isselected&&(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2));//in first or second ITS layer
-// //   if(isselected) cout << "ITS any passed"<<endl;
-// //   isselected = isselected&&(AODt->HasPointOnITSLayer(2));//in second ITS layer
-// //   if(isselected) cout << "ITS layer 2 passed"<<endl;
-//   isselected = isselected&&(AODt->GetTPCNcls()>70);
-// //   if(isselected) cout << "more than 70 TPC clusters"<<endl;
-//   isselected = isselected&&(abs(DCAtang)<0.5);//cm. DCA less then 0.5 cm in transverse direction.
-// //   if(isselected) cout << "DCA tang passed"<<endl;
-//   isselected = isselected&&(abs(DCAlong)<3);//cm. DCA less then 3 cm in the longitudinal direction.
-// //   if(isselected) cout << "DCA long passed"<<endl;
   //Hybrid tracks give flat distributions
   if(AODt->IsHybridGlobalConstrainedGlobal()||AODt->TestFilterBit(BIT(4))||AODt->TestFilterBit(BIT(5))||AODt->TestFilterBit(BIT(6))) isselected = true;
   else isselected = false;
-//   if(fCutMask == 0) isselected = AODt->IsHybridGlobalConstrainedGlobal();
-//   else if(fCutMask == 1) isselected = AODt->TestFilterBit(BIT(4));
-//   else if(fCutMask == 2) isselected = AODt->TestFilterBit(BIT(5));
-//   else if(fCutMask == 3) isselected = AODt->TestFilterBit(BIT(6));
-//   else isselected = AODt->IsHybridGlobalConstrainedGlobal(); // defaults to global hybrid.  
   if( (AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,1);
   if(!(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,0);
   return isselected; 
@@ -354,7 +328,7 @@ if(AODt->TestBit(AliAODTrack::kIsDCA)){
   DCAlong = AODt->ZAtDCA();
 }
 else{
-  if(fVertex){
+  if(fVertexobj){
     Double_t fBzkg = dynamic_cast<AliAODEvent*>(InputEvent())->GetMagneticField();
     Double_t* dca = new Double_t[2];
     Double_t* dcacov = new Double_t[3];
@@ -433,9 +407,9 @@ void AliAnalysisTaskBuildCorrTree::InitializeQAhistograms()
 
   fOutput->Add(new TH3D("TrackDCAandonITS","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers",50,-2,2,50,-5,5,2,-0.5,1.5));
   fOutput->Add(new TH3D("TrackDCAandonITSselected","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers for selected events",50,-2,2,50,-5,5,2,-0.5,1.5));
-  fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,4000,50,0,100));
-  fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
-  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
+  fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,12000,50,0,100));
+  fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,12000,50,0,100));
+  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 12000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
@@ -446,7 +420,7 @@ void AliAnalysisTaskBuildCorrTree::InitializeQAhistograms()
   
   fOutput->Add(new TH1D("centrality", "Centrality",  100,  0, 100));
   fOutput->Add(new TH1D("multiplicity", "Multiplicity of tracklets",  100,  0, fMaxNumberOfTracksInPPConsidered));
-  fOutput->Add(new TH2D("centVsNofTracks", "centVsNofTracks", 100, 0, 100, 100, 0, 2000));
+  fOutput->Add(new TH2D("centVsNofTracks", "centVsNofTracks", 100, 0, 100, 100, 0, 12000));
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
 
@@ -519,7 +493,7 @@ void AliAnalysisTaskBuildCorrTree::SetMixingScheme(Int_t MaxNEventMix, Int_t Min
 {
   fMaxNEventMix= MaxNEventMix;
   fMinNofTracksMix = MinNofTracksMix;
-  cout << MBinEdges.GetSize()<<endl;
+  AliWarning(Form("%i", MBinEdges.GetSize()));
   for(int i=0; i<MBinEdges.GetSize()-1; ++i)
     if(MBinEdges.At(i) > MBinEdges.At(i+1)) AliFatal("edges are not sorted");
   for(int i=0; i<ZBinEdges.GetSize()-1; ++i)

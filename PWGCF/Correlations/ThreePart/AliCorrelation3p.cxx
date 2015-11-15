@@ -30,14 +30,14 @@
 #include "TRegexp.h"
 #include "TPRegexp.h"
 #include "TStyle.h"
-#include <iostream>
+// #include <iostream>
 #include <cerrno>
 #include <memory>
 #include <set>
 #include "TParameter.h"
 #include "TF1.h"
 
-using namespace std;
+// using namespace std;
 
 ClassImp(AliCorrelation3p)
 
@@ -51,11 +51,6 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
   , fhPhiEtaDeltaPhi12Cut1(0.5*TMath::Pi())
   , fhPhiEtaDeltaPhi12Cut2(0.25*TMath::Pi())
   , fAcceptanceCut(0.8)
-//   , fWeights(NULL)
-//   , fWeightshpT(NULL)
-//   , fhighpt(NULL)
-//   , fMultWeightIndex(0)
-//   , fVZWeightIndex(0)
   , fMixedEvent(NULL)
   , fMBinEdges(MBinEdges)
   , fZBinEdges(ZBinEdges)
@@ -80,11 +75,6 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   , fhPhiEtaDeltaPhi12Cut1(other.fhPhiEtaDeltaPhi12Cut1)
   , fhPhiEtaDeltaPhi12Cut2(other.fhPhiEtaDeltaPhi12Cut2)
   , fAcceptanceCut(other.fAcceptanceCut)  
-//   , fWeights(NULL)
-//   , fWeightshpT(NULL)
-//   , fhighpt(NULL)
-//   , fMultWeightIndex(0)
-//   , fVZWeightIndex(0)
   , fMixedEvent((other.fMixedEvent!=NULL?(new AliCorrelation3p(*other.fMixedEvent)):NULL))
   , fMBinEdges(other.fMBinEdges)
   , fZBinEdges(other.fZBinEdges)
@@ -178,7 +168,7 @@ int AliCorrelation3p::Init(const char* arguments)
       if(param.CompareTo("pp")==0)   fCollisionType=pp;
       if(param.CompareTo("PbPb")==0) fCollisionType=PbPb;
       if(param.CompareTo("pPb")==0)  fCollisionType=pPb;
-      cout << "Collision Type set to: "<<param<<endl;
+      AliWarning(Form("Collision Type set to: %s",param.Data()));
       continue;
     }
      key="triggertype=";
@@ -187,7 +177,7 @@ int AliCorrelation3p::Init(const char* arguments)
       param.ReplaceAll(key, "");
       if(param.CompareTo("tracks")==0) fTriggerType=tracks;
       if(param.CompareTo("pi0")==0)    fTriggerType=pi0;
-      cout << "Trigger Type set to: "<<param<<endl;
+      AliWarning(Form("Trigger Type set to: %s",param.Data()));
       continue;
     }
   }
@@ -196,11 +186,11 @@ int AliCorrelation3p::Init(const char* arguments)
   if (!fHistograms) return -ENOMEM;
   fHistograms->SetOwner(kTRUE);
   TString infoTriggerPt;
-  if (fMaxTriggerPt > fMinTriggerPt) infoTriggerPt.Form("%f < pt < %f", fMinTriggerPt, fMaxTriggerPt);
-  else infoTriggerPt.Form("pt > %f", fMinTriggerPt);
+  if (fMaxTriggerPt > fMinTriggerPt) infoTriggerPt.Form("%4.2f < pt < %4.2f", fMinTriggerPt, fMaxTriggerPt);
+  else infoTriggerPt.Form("pt > %4.2f", fMinTriggerPt);
   TString infoAssociatedPt;
-  if (fMaxAssociatedPt > fMinAssociatedPt) infoAssociatedPt.Form("%f < pt < %f", fMinAssociatedPt, fMaxAssociatedPt);
-  else infoAssociatedPt.Form("pt > %f", fMinAssociatedPt);
+  if (fMaxAssociatedPt > fMinAssociatedPt) infoAssociatedPt.Form("%4.2f < pt < %4.2f", fMinAssociatedPt, fMaxAssociatedPt);
+  else infoAssociatedPt.Form("pt > %4.2f", fMinAssociatedPt);
   AliInfo(Form("initializing %s for trigger %s and associated particle %s", GetName(), infoTriggerPt.Data(), infoAssociatedPt.Data()));
   // avoid the objects to be added to the global directory 
   bool statusAddDirectory=TH1::AddDirectoryStatus();
@@ -310,7 +300,7 @@ int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVPart
 {
   /// fill histograms from particles, fills each histogram exactly once.
   Double_t fillweight = 1.0;
-  if (!ptrigger || !p1 || !p2) {cout << "failed fill"<<endl;return -EINVAL;}
+  if (!ptrigger || !p1 || !p2) {AliWarning("failed fill");return -EINVAL;}
   if ((ptrigger->Pt()<=p1->Pt())||(ptrigger->Pt()<=p2->Pt())) {return 0;}
   const double Pii=TMath::Pi();
   HistFill(GetNumberHist(kHistNassoc,fMBin,fVzBin),weight);
@@ -386,17 +376,16 @@ void AliCorrelation3p::Print(Option_t *option) const
       bNoRuler=true;
       continue;
     }
-    cout << "unknown option '" << token << "'" << endl;
+    AliWarning(Form("unknown option '%s'",token.Data()) );
   }
   if (!bNoRuler)
-    cout << "====================================================================" << endl;
+    AliWarning( "====================================================================" );
   TObject::Print();
-  cout << "p=" << this << endl;
   if (fHistograms) {
     fHistograms->Print();
   }
   if (fMixedEvent) {
-    cout << "  ---- mixed event -------------------------------------------------" << endl;
+    AliWarning("  ---- mixed event -------------------------------------------------" );
     fMixedEvent->Print(Form("%s noruler", option));
   }
 }
@@ -1079,7 +1068,7 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
   TH3F* hist23d = dynamic_cast<TH3F*>(addedhist);   
   if(hist11d&&hist21d){
     Int_t nbinsx1 = hist11d->GetNbinsX();
-    if(nbinsx1!=hist21d->GetNbinsX()){cout <<"The histograms do not match! TH1D* with different x dimensions."<<endl;
+    if(nbinsx1!=hist21d->GetNbinsX()){AliWarning("The histograms do not match! TH1D* with different x dimensions.");
     return ;}
     for(int x=0; x<=nbinsx1+1;x++){
       Double_t content1 = histtoadd->GetBinContent(x);
@@ -1120,10 +1109,10 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
   }
   else if(hist12d&&hist22d){
     Int_t nbinsx1 = hist12d->GetNbinsX();
-    if(nbinsx1!=hist22d->GetNbinsX()){cout <<"The histograms do not match! TH2D* with different x dimensions."<<endl;
+    if(nbinsx1!=hist22d->GetNbinsX()){AliWarning("The histograms do not match! TH2D* with different x dimensions.");
     return ;}
     Int_t nbinsy1 = hist12d->GetNbinsY();
-    if(nbinsy1!=hist22d->GetNbinsY()){cout <<"The histograms do not match! TH2D* with different y dimensions."<<endl;
+    if(nbinsy1!=hist22d->GetNbinsY()){AliWarning("The histograms do not match! TH2D* with different y dimensions.");
     return ;}
     for(int x=0; x<=nbinsx1+1;x++){
       for(int y=0; y<=nbinsy1+1;y++){
@@ -1166,13 +1155,13 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
     }
   else if(hist13d&&hist23d){
     Int_t nbinsx1 = hist13d->GetNbinsX();
-    if(nbinsx1!=hist23d->GetNbinsX()){cout <<"The histograms do not match! TH3D* with different x dimensions."<<endl;
+    if(nbinsx1!=hist23d->GetNbinsX()){AliWarning("The histograms do not match! TH3D* with different x dimensions.");
     return ;}
     Int_t nbinsy1 = hist13d->GetNbinsY();
-    if(nbinsy1!=hist23d->GetNbinsY()){cout <<"The histograms do not match! TH3D* with different y dimensions."<<endl;
+    if(nbinsy1!=hist23d->GetNbinsY()){AliWarning("The histograms do not match! TH3D* with different y dimensions.");
     return ;}
     Int_t nbinsz1 = hist13d->GetNbinsZ();
-    if(nbinsz1!=hist23d->GetNbinsZ()){cout <<"The histograms do not match! TH2D* with different z dimensions."<<endl;
+    if(nbinsz1!=hist23d->GetNbinsZ()){AliWarning("The histograms do not match! TH2D* with different z dimensions.");
     return ;}
     for(int x=0; x<=nbinsx1+1;x++){
       for(int y=0; y<=nbinsy1+1;y++){
@@ -1216,7 +1205,7 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
     }
   }
   else{
-    cout <<"The histograms do not match!"<<endl;
+    AliWarning("The histograms do not match!");
     return ;    
   }
 }
@@ -1279,7 +1268,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   TFile * outfile;
   TString dir = TString(scalingmethod);
   TDirectory * mixeddir=NULL;
-  if(recreate){ outfile = new TFile("results.root","RECREATE");outfile->cd();cout << "Recreate"<<endl;}
+  if(recreate){ outfile = new TFile("results.root","RECREATE");outfile->cd();AliWarning("Recreate");}
   else{
     outfile = new TFile("results.root","UPDATE");
   }
@@ -1287,10 +1276,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
   if(TString("").CompareTo(scalingmethod)!=0){
     if(dir.Contains("/")){
       TObjArray *dirs=dir.Tokenize("/");
-//       cout << dir.Data()<<endl;
       if(dirs->GetEntries()>1){
-// 	cout << dirs->At(0)->GetName()<<endl;
-// 	cout << dirs->At(1)->GetName()<<endl;
 	TDirectory * processdir;
 	processdir = outfile->GetDirectory((dirs->At(0))->GetName());
 	if(!processdir)processdir = outfile->mkdir((dirs->At(0))->GetName());
@@ -1335,7 +1321,6 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       if(mixeddir) mixeddir->cd();
       else outfile->cd();
       dirmzbin = gDirectory->mkdir(GetNameHist("Bin",mb,zb));
-//       cout <<GetNameHist("Bin",mb,zb)<<endl;
       binstats = dirmzbin->mkdir("bin_stats");
       dirmzbinsig = dirmzbin->mkdir("same_event");
       dirmzbinmixed = dirmzbin->mkdir("mixed_event");

@@ -61,8 +61,8 @@ AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing,
   _vertex_xy = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
-    48, -1.0f, 1.0f,
-    48, -1.0f, 1.0f
+    48, -0.3f, 0.3f,
+    48, -0.3f, 0.3f
   );
 
   // only create _collection_size histograms if this is the passing event cut monitor
@@ -468,8 +468,8 @@ AliFemtoPionLambdaCutMonitor::Pair::Fill(const AliFemtoPair *pair)
       const AliFemtoTrack *pion = pair->Track2()->Track();
 
       // get true momentums
-      const AliFemtoThreeVector& momentum_1 = *mc_1->GetTrueMomentum(),
-                                 momentum_2 = *mc_2->GetTrueMomentum();
+      const AliFemtoThreeVector &momentum_1 = *mc_1->GetTrueMomentum(),
+                                &momentum_2 = *mc_2->GetTrueMomentum();
 
       // get true mass and calculate true energy
       const float m1 = mc_1->GetMass(),
@@ -490,7 +490,9 @@ AliFemtoPionLambdaCutMonitor::Pair::Fill(const AliFemtoPair *pair)
       const float tQ = pow(m1 * m1 - m2 * m2, 2) / p_sum.m2(),
                   q2 = tQ - p_diff.m2(),
 
-                  mc_kstar = TMath::Sqrt(q2 >= 0 ? q2 : 0.0) / 2.0;
+                  mc_kstar = q2 > 0
+                           ? TMath::Sqrt(q2) / 2.0
+                           : 0.0;
 
       // kstar calculation
       fMCTrue_kstar->Fill(kstar, mc_kstar);

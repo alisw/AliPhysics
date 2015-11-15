@@ -29,7 +29,6 @@ AliFilteredTrack::AliFilteredTrack()
   , fPt(0.0)
   , fPhi(0.0)
   , fTheta(0.0)
-  , fFilterBits(0)
   , feff(-1.0)
   , fP()
   , fOneOverPt(0.0)
@@ -66,8 +65,7 @@ AliFilteredTrack::AliFilteredTrack(const AliFilteredTrack& other)
   , fPt(0.0)
   , fPhi(0.0)
   , fTheta(0.0)
-  , fFilterBits(0)
-  , feff(-1.0)
+  , feff(other.feff)
   , fP()
   , fOneOverPt(0.0)
   , fPtot(0.0)
@@ -109,6 +107,21 @@ AliFilteredTrack::AliFilteredTrack(const TMCParticle& other)
   Set(p);
   if (other.GetKF()<0) SetBit(kSignBit);
   else ResetBit(kSignBit);
+}
+
+AliFilteredTrack::AliFilteredTrack(const AliAODTrack& other)
+  : AliVTrack()
+  , fPt(0.0)
+  , fPhi(0.0)
+  , fTheta(0.0)
+  , feff(-1.0)
+  , fP()
+  , fOneOverPt(0.0)
+  , fPtot(0.0)
+  , fEta(-20.0)
+{
+  // copy constructor
+  Set(other);
 }
 
 AliFilteredTrack& AliFilteredTrack::operator=(const AliFilteredTrack& other)
@@ -169,7 +182,19 @@ void AliFilteredTrack::Set(const AliVParticle& track)
   fPhi = track.Phi();
   fTheta = track.Theta();
   SetCharge(track);
+  
+  Calculate();
+}
 
+void AliFilteredTrack::Set(const AliAODTrack& track)
+{
+  // calculate internal members once from the momentum vector
+  fPt = track.Pt();
+  fPhi = track.Phi();
+  fTheta = track.Theta();
+  SetCharge(track);
+  SetAODFilterBits(&track);
+  
   Calculate();
 }
 
@@ -180,6 +205,20 @@ void AliFilteredTrack::SetCharge(const AliVParticle& track)
   else if (track.Charge()==-3&&dynamic_cast<const AliMCParticle*>(&track)) SetBit(kSignBit);
   else ResetBit(kSignBit);
 }
+
+void AliFilteredTrack::SetAODFilterBits(const AliAODTrack* t)
+{
+  // The filter bits are stored in bits of TObject
+  if(t->IsHybridGlobalConstrainedGlobal()){SetBit(kGlobalHybrid);}
+  else {ResetBit(kGlobalHybrid);}
+  if(t->TestFilterBit(BIT(4)))SetBit(kBIT4);
+  else ResetBit(kBIT4);
+  if(t->TestFilterBit(BIT(5)))SetBit(kBIT5);
+  else ResetBit(kBIT5);
+  if(t->TestFilterBit(BIT(6)))SetBit(kBIT6);
+  else ResetBit(kBIT6);  
+}
+
 
 void AliFilteredTrack::Clear(Option_t * /*option*/)
 {

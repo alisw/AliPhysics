@@ -139,7 +139,7 @@ AliHFsubtractBFDcuts::~AliHFsubtractBFDcuts() {
 
 void AliHFsubtractBFDcuts::InitHistos(){
   // mass, pt, normLXY, cosPointXY, normL, cosPoint, LXY, L
-  Int_t dimAxes[8]={500  ,24 ,200 ,100   ,200 ,100   ,100  ,100  };
+  Int_t dimAxes[8]={500  ,96 ,200 ,100   , 200,100   , 100 ,100  };
   Double_t  min[8]={  1.7, 0.,  0.,  0.99,  0.,  0.99,  0. ,  0. };
   Double_t  max[8]={  2.2,24.,100.,  1.  ,100.,  1.  ,  1.0,  1.0};
   fTHnData=new THnSparseF("fCutsDataFD","fCutsDataFD",8,dimAxes,min,max);
@@ -161,7 +161,7 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnData->GetAxis(7)->SetTitle("Decay length (cm)");
 
   // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
-  Int_t dimAxesMC[10]={24 ,200 ,100   ,20 ,24 ,200 ,100   ,100  ,100  ,2 };
+  Int_t dimAxesMC[10]={96 ,200 ,100   ,20 ,24 ,200 ,100   ,100  ,100  ,2 };
   Double_t  minMC[10]={ 0.,  0.,  0.99, 0., 0.,  0.,  0.99,  0. ,  0. ,0.};
   Double_t  maxMC[10]={24.,100.,  1.  ,20.,24.,100.,  1.  ,  1.0,  1.0,2.};
   fTHnMC=new THnSparseF("fCutsMCFD","fCutsMCFD",10,dimAxesMC,minMC,maxMC);
@@ -186,7 +186,7 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnMC->GetAxis(9)->SetName("ContainsElectron");
   fTHnMC->GetAxis(9)->SetTitle("ContainsElectron");
 
-  Int_t dimAxesGen[6]={24 ,20 ,24 ,100 ,100 ,2 };
+  Int_t dimAxesGen[6]={96 ,20 ,24 ,100 ,100 ,2 };
   Double_t  minGen[6]={ 0., 0., 0.,  0.,  0.,0.};
   Double_t  maxGen[6]={24.,20.,24.,  1.,  1.,2.};
   fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",6,dimAxesGen,minGen,maxGen);

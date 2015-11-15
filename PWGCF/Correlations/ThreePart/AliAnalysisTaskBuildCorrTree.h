@@ -8,7 +8,7 @@
 #include "TString.h"
 #include "TArrayD.h"
 #include "AliFilteredEvent.h"
-#include <iosfwd>
+// #include <iosfwd>
 class AliESDtrackCuts;
 class AliAODTrack;
 class AliCentrality;
@@ -16,7 +16,7 @@ class TText;
 class TList;
 class TTree;
 class TF1;
-using namespace std;
+// using namespace std;
 
 class AliAnalysisTaskBuildCorrTree : public AliAnalysisTaskSE {
   public:

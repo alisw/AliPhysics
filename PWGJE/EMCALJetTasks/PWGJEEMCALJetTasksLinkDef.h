@@ -69,6 +69,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
+#pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
 #pragma link C++ class AliAnalysisTaskJetShapeConst+;
 #pragma link C++ class AliAnalysisTaskJetShapeGR+;

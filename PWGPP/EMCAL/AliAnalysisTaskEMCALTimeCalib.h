@@ -32,6 +32,7 @@
 /// 2015.07.17 additional selection criteria for clusters with low gain cell 
 /// 2015.10.09 Modification to be consistent with OADB. Info about calibration constant
 ///            for cell with absId=0 is kept in 'underflow bin' 
+/// 2015.11.11 Modification to calibrate run by run by additional L1 phase
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -76,9 +77,11 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxRtrack(0),
     fMinCellEnergy(0),
     fReferenceFileName(),
+    fReferenceRunByRunFileName(),
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
+    fReferenceFile(0),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -98,6 +101,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeLGSum(),
     fhAllAverageBC(),
     fhAllAverageLGBC(),
+    fhRefRuns(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
     fhRawTimeVsIdBC(),
@@ -114,7 +118,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
   //  virtual void   LocalInit();
-  virtual Bool_t Notify();
+  //virtual Bool_t Notify();
+  virtual void   NotifyRun();
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -131,6 +136,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMaxRtrack()         { return fMaxRtrack         ; }
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
+  TString  GetReferenceRunByRunFileName() { return fReferenceRunByRunFileName ; }
   TString  GetGeometryName()      { return fGeometryName      ; }
   Double_t GetMinTime()           { return fMinTime           ; }
   Double_t GetMaxTime()           { return fMaxTime           ; }
@@ -146,6 +152,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMaxRtrack        (Double_t v) { fMaxRtrack        = v ; }	   
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
+  void SetReferenceRunByRunFileName(TString  v) { fReferenceRunByRunFileName= v ; }
   void SetGeometryName     (TString  v) { fGeometryName     = v ; }
   void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
   void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
@@ -154,12 +161,14 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SwitchOnPileupFromSPD()  { fPileupFromSPD = kTRUE ; }
   void SwitchOffPileupFromSPD() { fPileupFromSPD = kFALSE ; }
 
-
   void SetDefaultCuts();
   void LoadReferenceHistos();
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
+  void LoadReferenceRunByRunHistos();
 
- private:
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
+  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root");
+
+  private:
   
   virtual void PrepareTOFT0maker();
   Bool_t SetEMCalGeometry();
@@ -197,14 +206,15 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   Double_t       fMinCellEnergy;        ///< minimum cell energy
 
-  TString        fReferenceFileName ;   //!<! name of reference file
+  TString        fReferenceFileName ;   //!<! name of reference file (for one period)
+  TString        fReferenceRunByRunFileName ;   //!<! name of reference file (run-by-run)
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
   Double_t       fMinTime ;             ///< minimum cluster time after correction
   Double_t       fMaxTime ;             ///< maximum cluster time after correction
 
-
+  TFile         *fReferenceFile;        ///< file with reference for SM 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
   TH1F          *fhEvtTimeHeader;       //!<! spectrum time from header
@@ -229,6 +239,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   // histos with reference values after the first iteration  
   TH1F		*fhAllAverageBC   [kNBCmask]; ///> 4 BCmask High gain
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
+
+  // histo with reference values run-by-run after the first iteration 
+  TH1F		*fhRefRuns; ///> 20 entries per run: nSM
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM

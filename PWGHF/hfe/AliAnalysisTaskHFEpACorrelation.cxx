@@ -19,11 +19,15 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: October 9, 2015.							      //
+//		version: November 13, 2015.							          //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
-//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
+//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)            //
+//                                                                    //
+//      Updates                                                       //
+//      Henrique Zanoli (h.zanoli@cern.ch)                            //
+//      Alexis Mas (aleximas@if.usp.br)                               //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -2833,7 +2837,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
-        
+
         if(fIsMC  && atrack->GetLabel()>=0)
         {
             if(fIsAOD)
@@ -2846,11 +2850,17 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                     if (fMCparticle->IsPrimary())
                     {
                         fMCEffPID_beforePID->Fill(fMCparticle->Pt());
+                        Int_t Mother_pdg;
                         
-                        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-                        
-                        Int_t Mother_pdg = fMCparticleMother->GetPdgCode();
-                        
+                        if (fMCparticle->GetMother()>0)
+                        {
+                            fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                            Mother_pdg = fMCparticleMother->GetPdgCode();
+
+                        }
+                        else
+                            Mother_pdg = 0;
+
                         if( TMath::Abs(Mother_pdg)==22 || TMath::Abs(Mother_pdg)==111 || TMath::Abs(Mother_pdg)==221)
                         {
                             fpTMCGeneratedBKG->Fill(fMCparticle->Pt());

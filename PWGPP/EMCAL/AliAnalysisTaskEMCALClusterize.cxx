@@ -47,8 +47,6 @@
 #include "AliEMCALClusterizerv2.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
-#include "AliCaloCalibPedestal.h"
-#include "AliEMCALCalibData.h"
 
 #include "AliAnalysisTaskEMCALClusterize.h"
 
@@ -64,7 +62,6 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fEvent(0)
 , fGeom(0),               fGeomName("") 
 , fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
-, fCalibData(0),          fPedestalData(0)
 , fOCDBpath(""),          fAccessOCDB(kFALSE)
 , fDigitsArr(0),          fClusterArr(0),             fCaloClusterArr(0)
 , fRecParam(0),           fClusterizer(0)
@@ -104,7 +101,6 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fEvent(0)
 , fGeom(0),                 fGeomName("") 
 , fGeomMatrixSet(kFALSE),   fLoadGeomMatrices(kFALSE)
-, fCalibData(0),            fPedestalData(0)
 , fOCDBpath(""),            fAccessOCDB(kFALSE)
 , fDigitsArr(0),            fClusterArr(0),             fCaloClusterArr(0)
 , fRecParam(0),             fClusterizer(0)
@@ -405,7 +401,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 }  
 
 //_________________________________________________
-/// Access to OCDB stuff, avoid.
+/// Access to OCDB stuff, avoid. 
+/// Not sure it works anymore.
 //_________________________________________________
 Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
 {
@@ -437,37 +434,12 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   // EMCAL from RAW OCDB
   if (fOCDBpath.Contains("alien:"))
   {
-    cdb->SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
-    cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","alien://Folder=/alice/data/2010/OCDB");
+    cdb->SetSpecificStorage("EMCAL/Calib/Data","raw://");
+    cdb->SetSpecificStorage("EMCAL/Calib/Time","raw://");
+    cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","raw://");
   }
   
   TString path = cdb->GetDefaultStorage()->GetBaseFolder();
-  
-  // init parameters:
-  
-  // Get calibration parameters
-  if(!fCalibData)
-  {
-    AliCDBEntry *entry = (AliCDBEntry*) 
-    AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
-    
-    if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
-  }
-  
-  if(!fCalibData)
-    AliFatal("Calibration parameters not found in CDB!");
-  
-  // Get calibration parameters
-  if(!fPedestalData)
-  {
-    AliCDBEntry *entry = (AliCDBEntry*) 
-    AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
-    
-    if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
-  }
-  
-  if(!fPedestalData)
-    AliFatal("Dead map not found in CDB!");
   
   return kTRUE;
 }
@@ -1110,12 +1082,12 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
   //First init the clusterizer
   delete fClusterizer;
   if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
-    fClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData, fPedestalData);
+    fClusterizer = new AliEMCALClusterizerv1 (fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
-    fClusterizer = new AliEMCALClusterizerv2(fGeom, fCalibData, fPedestalData);
+    fClusterizer = new AliEMCALClusterizerv2(fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN)
   { 
-    fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
+    fClusterizer = new AliEMCALClusterizerNxN(fGeom);
     fClusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
     fClusterizer->SetNColDiff(fRecParam->GetNColDiff());
   } 
@@ -1133,6 +1105,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
   fClusterizer->SetTimeCut               ( fRecParam->GetTimeCut()             );
   fClusterizer->SetTimeMin               ( fRecParam->GetTimeMin()             );
   fClusterizer->SetTimeMax               ( fRecParam->GetTimeMax()             );
+  fClusterizer->SetTimeCalibration       ( fRecParam->IsTimeCalibrationOn()    );  
   fClusterizer->SetInputCalibrated       ( kTRUE                               );
   fClusterizer->SetJustClusters          ( kTRUE                               );  
   

@@ -75,8 +75,6 @@ if(FASTJET_FOUND)
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
 
-    message(INFO "fastjet libs: ${FASTJET_LIBS}")
-
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -106,7 +104,8 @@ if(FASTJET_FOUND)
     fastjetplugins
     siscone_spherical
     siscone
-    ${FASTJET_LIBS}
+    fastjettools
+    fastjet
     )
 endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")

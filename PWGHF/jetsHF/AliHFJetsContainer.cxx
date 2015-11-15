@@ -137,9 +137,6 @@ void AliHFJetsContainer::Copy(TObject& c) const
     target.fContainer = dynamic_cast<AliCFContainer *> (fContainer->Clone());
 	if (fCustomVarNames)
 		target.fCustomVarNames = dynamic_cast<TList *> (fCustomVarNames->Clone());
-	if (fCustomVarNames)
-		target.fCustomVarNames = dynamic_cast<TList *> (fCustomVarNames->Clone());
-
 }
 
 //----------------------------------------------------------------
@@ -557,16 +554,16 @@ TH1D *AliHFJetsContainer::GetPurityVariable(const char* method, Int_t flavour, I
 // }
 
 //----------------------------------------------------------------
-void AliHFJetsContainer::FillStep(CFSteps step,const TArrayD *point){
+void AliHFJetsContainer::FillStep(CFSteps step, const TArrayD *point, Double_t weight){
 
 	Int_t expectedvars=fCustomVarNames->GetEntries()+4;
 	Int_t givenvars=point->GetSize();
 
-	if (expectedvars!=givenvars){
+	if (expectedvars != givenvars){
 		AliError(Form(MSGERROR("Wrong number of values: expected %d, provided %d!"), expectedvars, givenvars));
 	}
 
-	fContainer->Fill(point->GetArray(), step, 1.);
+	fContainer->Fill(point->GetArray(), step, weight);
 }
 
 //----------------------------------------------------------------
