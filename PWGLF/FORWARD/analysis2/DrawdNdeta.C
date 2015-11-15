@@ -334,7 +334,7 @@ struct dNdetaDrawer
 	 meanIpy, refY, dy);
     if (TMath::Abs(dx) < 1e-3 && TMath::Abs(dy) < 1e-3) return;
     Double_t       delta = TMath::Sqrt(dx*dx+dy*dy);
-    fDelta = delta/10;
+    fDelta = delta;
   }
 		  
   /* @} */
@@ -478,12 +478,16 @@ struct dNdetaDrawer
 	  TF1* f = new TF1("corr",
 	  		   "1+[0]"
 	  		   "+(x<0)*sqrt(2)*[0]"
-	  		   "+(x<-2.4)*2*TMath::Pi()*[0]*TMath::Power(x+2.2,2)",
+	  		   "+(x<[1])*[2]*[0]*TMath::Power(x-[1],2)",
 	  		   -6, 6);
 #else 
-	  TF1* f = new TF1("corr", "1+[0]+(x<-2.3)*sqrt(2)*[0]*pow(x+2.3,2)");
-#endif 
+	  TF1* f = new TF1("corr", "1+[2]*([0]+(x<[1])*pow([0]*(x-[1]),2))");
+#endif
+	  f->SetParNames("delta","eta0","a");
 	  f->SetParameter(0,delta);
+	  f->SetParameter(1,-2.0);
+	  f->SetParameter(2,.10); //TMath::Sqrt(2)); // 0.5);
+	  f->Print();
 	  Info("", "Applying correction for IP_delta=%f", delta);
 	  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
 	    Double_t c   = h->GetBinContent(i);
@@ -492,7 +496,7 @@ struct dNdetaDrawer
 	    Double_t e   = h->GetBinError(i);
 	    Double_t eta = h->GetXaxis()->GetBinCenter(i);
 	    Double_t cor = f->Eval(eta);
-	    Info("", "%5.2f -> %7.4f", eta, cor);
+	    // Info("", "%5.2f -> %7.4f", eta, cor);
 	    h->SetBinContent(i, c*cor);
 	    h->SetBinError(i, e*cor);
 	  }
