@@ -367,7 +367,7 @@ void AliESDCaloCluster::SetPosition(Float_t *x)
 //______________________________________________________________________________
 Int_t AliESDCaloCluster::GetTrackMatchedIndex(Int_t i) const
 {
-  if (fTracksMatched && i > 0 && i < fTracksMatched->GetSize())  {
+  if (fTracksMatched && i >= 0 && i < fTracksMatched->GetSize())  {
     return fTracksMatched->At(i);
   }
   else {
