@@ -181,7 +181,7 @@ TAxis AliQnCorrectionsAxes::MakeAxis(Double_t binArray[][2]){
 //____________________________________________________________________________________
 void AliQnCorrectionsAxes::SetNchannels(Int_t nchannels){
     
-  Double_t channelArray[][2] = {{-0.5, 2}, {-0.5+nchannels, nchannels}};
+  Double_t channelArray[][2] = {{-0.5, 2.0}, {-0.5+nchannels, (Double_t)nchannels}};
 
   SetAxis(fDim-1, 0, channelArray, "Channel number");
   
