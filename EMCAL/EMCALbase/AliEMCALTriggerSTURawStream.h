@@ -101,7 +101,8 @@ class AliEMCALTriggerSTURawStream: public TObject
 
     //static const Int_t max_payload_size = kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw 
     //                                    + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw ;
-    static const Int_t max_payload_size = 915 + 1937 ;
+    //static const Int_t max_payload_size = 915 + 1937 ;
+    static const Int_t max_payload_size = 1937 ;
 
     static const Int_t max_L0GammaPatchIndex  = 3100 ;  // (48-1)*(64-1)  = 2961  (EMCAL)
                                                         // (48-1)*(40-1)  = 1833  (DCAL)

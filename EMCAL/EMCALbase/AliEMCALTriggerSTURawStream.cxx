@@ -114,10 +114,6 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream(AliRawReader* rawReader
   fFrameReceived(0)       ,
   fFwVersion(0)     
 {
-  //
-  fRawReader->Reset();
-  fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
-  //
   for(int i=0;i<max_L0GammaPatchIndex;i++) 
     fL0GammaPatchIndex[i]     = 0 ;
   for(int i=0;i<max_L1Gamma;          i++)
@@ -195,7 +191,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 
   Int_t   poffset = 0     ;
   //firmware vesion confirmation (DCAL)
-  Bool_t  isDCALfirst = ((word32[20] & 0x0000f000) == 0x0000d000)? kTRUE : kFALSE ;//DCAL first
+  //Bool_t  isDCALfirst = ((word32[20] & 0x0000f000) == 0x0000d000)? kTRUE : kFALSE ;//DCAL first
   
   //payload type selector
   if(false){}
@@ -230,33 +226,57 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     fDetector       = kEMCAL    ;
   }
   
-  else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL                           )){
-    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
-    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
-    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
-    fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCAL                                       ;
+  else if(iword==(kPayLoadSizeV2_DCAL                            )){
+    poffset         = 0         ;
+    fPayload        = V2DCAL    ;
+    fDetector       = kDCAL     ;
   }
-  
-  else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
-    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
-    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
-    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
-    fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCALRaw                                    ;
+
+  else if(iword==(kPayLoadSizeV2_EMCAL                           )){
+    poffset         = 0         ;
+    fPayload        = V2EMCAL   ;
+    fDetector       = kEMCAL    ;
   }
-  
-  else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL                           )){
-    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
-    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw    ;//DCAL  first
-    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
-    fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCAL                                       ;
+
+  else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw )){
+    poffset         = 0           ;
+    fPayload        = V2DCALRaw   ;
+    fDetector       = kDCAL       ;
   }
-  
-  else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
-    poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
-    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw   ;//DCAL  first
-    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
-    fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCALRaw                                    ;
+
+  else if(iword==(kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
+    poffset         = 0           ;
+    fPayload        = V2EMCALRaw  ;
+    fDetector       = kEMCAL      ;
   }
+
+  //else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL                           )){
+  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
+  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
+  //  fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCAL                                       ;
+  //}
+  //
+  //else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
+  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
+  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
+  //  fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCALRaw                                    ;
+  //}
+  //
+  //else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL                           )){
+  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
+  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw    ;//DCAL  first
+  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
+  //  fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCAL                                       ;
+  //}
+  //
+  //else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
+  //  poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
+  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw   ;//DCAL  first
+  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
+  //  fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCALRaw                                    ;
+  //}
   
   else{
     AliError(Form("STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32", eqId, eqSize, iword));
@@ -269,6 +289,14 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     case V0Raw      :    case V1Raw      :    case V2EMCALRaw :    case V2DCALRaw  :  case V1_2Raw :  {fGetRawData=1;  break;}
     default :    {}
   }//end case
+
+  //std::cout <<"Selected DDL Configuration : "
+  //          <<" eqId : "    << eqId
+  //          <<" eqSize : "  << eqSize
+  //          <<" detector : "<< fDetector
+  //          <<" payload : " << fPayload
+  //          <<" RawData : " << fGetRawData
+  //          <<endl;
 
   int index         = poffset;
   int offset        = 0;
@@ -349,7 +377,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       for(int i=0;i<3;i++) fJ[i][0] = word32[index++] ;
       for(int i=0;i<3;i++) fG[i][1] = word32[index++] ;
       for(int i=0;i<3;i++) fJ[i][1] = word32[index++] ;
-      fRho            = word32[index++]        & 0x3FFFFFFF   ;
+      fRho            = word32[index++]        & 0x000FFFFF   ;
       fRegionEnable   = word32[index++] ;
       fFrameReceived  = word32[index++] ;
       fFwVersion      = ( word32[index]        & 0x0000FFFF)  ;
@@ -358,9 +386,9 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       offset = index  ;      
       
       fL1GammaThreshold [0] = GetThreshold(fG[0][0], fG[1][0], fG[2][0], fV0A, fV0C); 
-      fL1JetThreshold   [0] = GetThreshold(/*fJ[0][0], fJ[1][0],*/0,0, fJ[2][0], fV0A, fV0C);
+      fL1JetThreshold   [0] = GetThreshold(fJ[0][0], fJ[1][0], fJ[2][0], fV0A, fV0C);
       fL1GammaThreshold [1] = GetThreshold(fG[0][1], fG[1][1], fG[2][1], fV0A, fV0C); 
-      fL1JetThreshold   [1] = GetThreshold(/*fJ[0][1], fJ[1][1],*/0,0, fJ[2][1], fV0A, fV0C);
+      fL1JetThreshold   [1] = GetThreshold(fJ[0][1], fJ[1][1], fJ[2][1], fV0A, fV0C);
       nJetThresh    = 2;
       nGammaThresh  = 2;
       break;
@@ -386,9 +414,9 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       offset = index  ;
       
       fL1GammaThreshold [0] = GetThreshold(fG[0][0], fG[1][0], fG[2][0], fV0A, fV0C); 
-      fL1JetThreshold   [0] = GetThreshold(/*fJ[0][0], fJ[1][0],*/0,0, fJ[2][0], fV0A, fV0C);
+      fL1JetThreshold   [0] = GetThreshold(fJ[0][0], fJ[1][0], fJ[2][0], fV0A, fV0C);
       fL1GammaThreshold [1] = GetThreshold(fG[0][1], fG[1][1], fG[2][1], fV0A, fV0C); 
-      fL1JetThreshold   [1] = GetThreshold(/*fJ[0][1], fJ[1][1],*/0,0, fJ[2][1], fV0A, fV0C);
+      fL1JetThreshold   [1] = GetThreshold(fJ[0][1], fJ[1][1], fJ[2][1], fV0A, fV0C);
       nGammaThresh  = 2;
       nJetThresh    = 2;
       break;
