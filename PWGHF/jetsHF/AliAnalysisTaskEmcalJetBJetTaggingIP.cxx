@@ -273,8 +273,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 		this->fMatchingPar2 = 0.25;
 		this->fMinJetMCPt = 1.;
 		if(!this->DoJetMatching()){
-			Printf("Matching failed at some point!!");
-			return kFALSE;
+		//	Printf("Matching failed at some point!!");
 		}}
 
 	// Loop over all available jets
@@ -300,7 +299,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 			AliEmcalJet* jet2 = 0;
 			while ((jet2 = jets2->GetNextJet())){
 
-				fhist_jet_pt_mc->Fill( jet2->Pt() - fJetsContMC->GetRhoVal() * jet2->Area());
+				fhist_jet_pt_mc->Fill( jet2->Pt() - fJetsContMC->GetRhoVal() * jet2->Area(),fCurrentWeight);
 			}
 
 			curjetMatched = curjet->MatchedJet();
@@ -328,9 +327,9 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 
 		// Standard track counting algorithm
 
-		fhist_Jet_Pt->Fill(jetPt);
-		fhist_Jet_Eta_Phi->Fill(curjet->Eta(), curjet->Phi());
-		fhist_Jet_Nconst_Pt->Fill(jetPt, curjet->GetNumberOfTracks());
+		fhist_Jet_Pt->Fill(jetPt,fCurrentWeight);
+		fhist_Jet_Eta_Phi->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+		fhist_Jet_Nconst_Pt->Fill(jetPt, curjet->GetNumberOfTracks(),fCurrentWeight);
 		Double_t n3value = -9999.;
 		Bool_t isFromConversion = kFALSE;
 		//Printf("HERE0");
@@ -656,8 +655,9 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelected()
 	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
 
 	//Set Event weight to 0new
-	if(fNTrials>0 && fIsMC)	fCurrentWeight = fXsection/fNTrials;
-	else fCurrentWeight = 1.;
+	fCurrentWeight=1.; // Temporary fix for wrong weighting
+	//if(fNTrials>0 && fIsMC)	fCurrentWeight = fXsection/fNTrials;
+	//else fCurrentWeight = 1.;
 
 	if(fIsMC && fSelectPtHard) {
 		fMCHeader = NULL;

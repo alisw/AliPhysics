@@ -44,7 +44,7 @@ public:
   AliHFJetsTaggingVertex &operator=(const AliHFJetsTaggingVertex &corr);
   
   Int_t FindVertices(const AliEmcalJet *jet,
-                     map_AliAODTrk     &fAODTrackInfo,
+                     map_AliAODTrk     *fAODTrackInfo,
                      TClonesArray      *fTrackArrayIn,
                      AliAODEvent       *aod,
                      AliESDVertex      *v1,
