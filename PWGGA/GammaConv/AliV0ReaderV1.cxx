@@ -96,6 +96,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fPtHardBin(0),
 	fUseMassToZero(kTRUE),
 	fProduceV0findingEffi(kFALSE),
+	fCurrentInvMassPair(NULL),
 	fHistograms(NULL),
 	fHistoMCGammaPtvsR(NULL),
 	fHistoMCGammaPtvsPhi(NULL),
@@ -503,6 +504,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
 					AliAODConversionPhoton * currentConversionPhoton = (AliAODConversionPhoton*)(fConversionGammas->At(fConversionGammas->GetEntriesFast()-1));
 					currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
 					if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
+					currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
 				} else {
 					new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
 				}
@@ -650,6 +652,13 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
 	// Set Dilepton Mass (moved down for same eta compared to old)
 	fCurrentMotherKF->SetMass(fCurrentMotherKF->M());
+	
+	// Calculating invariant mass
+	Double_t mass=-99.0, mass_width=-99.0, Pt=-99.0, Pt_width=-99.0;
+	AliKFParticle fCurrentMotherKFForMass(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
+	fCurrentMotherKFForMass.GetMass(mass,mass_width);
+	fCurrentMotherKFForMass.GetPt(Pt,Pt_width);
+	fCurrentInvMassPair=mass;
 
 	// Apply Photon Cuts
 

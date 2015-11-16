@@ -181,6 +181,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		Int_t 				fPtHardBin;					// ptHard bin from file
 		Bool_t				fUseMassToZero;				// switch on setting the mass to 0 for AODConversionPhotons
 		Bool_t				fProduceV0findingEffi;		// enable histograms for V0finding efficiency
+		Float_t				fCurrentInvMassPair;		// Invariant mass of the pair
 		TList				*fHistograms;				// list of histograms for V0 finding efficiency
 		TH2F				*fHistoMCGammaPtvsR;		// histogram with all converted gammas vs Pt and R (eta < 0.9)
 		TH2F				*fHistoMCGammaPtvsPhi;		// histogram with all converted gammas vs Pt and Phi (eta < 0.9)

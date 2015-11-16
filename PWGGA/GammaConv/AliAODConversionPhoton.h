@@ -45,6 +45,9 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		void CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex);
 		void SetMassToZero() { SetE(P()); }
 		
+		void SetInvMassPair(Float_t mass) {fInvMassPair=mass;}
+		Float_t GetInvMassPair(){return fInvMassPair;}
+		
 		void SetIsTrueConvertedPhoton(){
 			fCaloPhoton = 0;
 			fCaloPhotonMCFlags = 1;	
@@ -90,6 +93,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 		Bool_t fCaloPhoton;
 		Long_t fCaloClusterRef;
 		Int_t fNCaloPhotonMCLabels;
+		Float_t fInvMassPair;
         Int_t fNCaloPhotonMotherMCLabels;
         Int_t fCaloPhotonMCFlags;
         Int_t fCaloPhotonMCLabels[20];
