@@ -409,7 +409,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)esdTrack->GetFriendTrack();
     if (!friendTrack) continue;      
     if (esdTrack->GetITSNcls()<4) continue;
     Double_t mass = esdTrack->GetMass();  // particle mass    
@@ -763,7 +763,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   // 
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
-  const Int_t knPoints=159;
+  const Int_t knPoints=kMaxRow;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
   TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
