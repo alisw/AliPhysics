@@ -246,6 +246,11 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhCentralityV0A;  //! centrality from V0A
    TH1F     *fhCentralityV0C;  //! centrality from V0C
    TH1F     *fhCentralityZNA;  //! centrality from ZNA
+   TH1F     *fhCentralityV0MTT;  //! centrality V0 multiplicity A+C when TT is present
+   TH1F     *fhCentralityV0ATT;  //! centrality from V0A when TT is present
+   TH1F     *fhCentralityV0CTT;  //! centrality from V0C when TT is present
+   TH1F     *fhCentralityZNATT;  //! centrality from ZNA when TT is present
+
 
    TH1D     *fhTrackMultiplicity; //! multiplicity of tracks
    TH1D     *fhTrackMultiplicityTT; //! multiplicity of tracks in event with TT track
@@ -281,7 +286,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 6); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 7); // Charged jet analysis for pA
 
 };
 #endif

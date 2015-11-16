@@ -16,7 +16,8 @@
 # Libraries from subdirectories
 add_subdirectory(pid)
 add_subdirectory(EVCHAR)
-add_subdirectory(EVCHAR/EventPlaneFramework)
+add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrections)
+add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
