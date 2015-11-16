@@ -88,6 +88,7 @@ fhKTAreaPt(0x0),
 fhJetPhi(0x0),  fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
+ fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
 fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
@@ -136,6 +137,7 @@ fhKTAreaPt(0x0),
 fhJetPhi(0x0), fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
+fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
  fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
@@ -544,6 +546,10 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    //___________________
    // Get centrality
    Double_t centralityPercentile    = -1.0; //KINE
+   Double_t centralityPercentileV0A = -1.0;
+   Double_t centralityPercentileV0C = -1.0;
+   Double_t centralityPercentileV0M = -1.0;
+   Double_t centralityPercentileZNA = -1.0;
 
    if(fCollisionSystem != kpp){   //KINE Check MC event vertex
       AliCentrality* tmpCentrality = InputEvent()->GetCentrality();
@@ -551,10 +557,6 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          fHistEvtSelection->Fill(4);
          return kFALSE; //post data is in UserExec
       }
-      Double_t centralityPercentileV0A = -1.0;
-      Double_t centralityPercentileV0C = -1.0;
-      Double_t centralityPercentileV0M = -1.0;
-      Double_t centralityPercentileZNA = -1.0;
       if(tmpCentrality != NULL){
          centralityPercentile    = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
          centralityPercentileV0A = tmpCentrality->GetCentralityPercentile("V0A");
@@ -1089,7 +1091,14 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       if(centralityPercentile > -0.1){
          fh2TrackMultVsCent->Fill(centralityPercentile,mult);
          if(trackTT) fh2TrackMultVsCentTT->Fill(centralityPercentile,multTT);
-      } 
+      }
+  
+      if(trackTT){ 
+         fhCentralityV0MTT->Fill((Float_t) centralityPercentileV0M);
+         fhCentralityV0ATT->Fill((Float_t) centralityPercentileV0A);
+         fhCentralityV0CTT->Fill((Float_t) centralityPercentileV0C);
+         fhCentralityZNATT->Fill((Float_t) centralityPercentileZNA);
+      }
    }
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //  H+JET IN RECONSTRUCTED DATA  
@@ -1374,7 +1383,18 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //-------------------------
    fhCentralityZNA = new TH1F("hCentralityZNA","hCentralityZNA",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityZNA);
-
+   //-------------------------
+   fhCentralityV0MTT = (TH1F*) fhCentralityV0M->Clone("fhCentralityV0MTT");
+   if(bHistRec) fOutput->Add(fhCentralityV0MTT);
+   //-------------------------
+   fhCentralityV0ATT = (TH1F*) fhCentralityV0A->Clone("fhCentralityV0ATT");
+   if(bHistRec) fOutput->Add(fhCentralityV0ATT); 
+   //-------------------------
+   fhCentralityV0CTT = (TH1F*) fhCentralityV0C->Clone("fhCentralityV0CTT");
+   if(bHistRec) fOutput->Add(fhCentralityV0CTT); 
+   //-------------------------
+   fhCentralityZNATT = (TH1F*) fhCentralityZNA->Clone("fhCentralityZNATT");
+   if(bHistRec) fOutput->Add(fhCentralityZNATT);
    //-----------------------------------------------------
    //   track multiplicity
    fhTrackMultiplicity = new TH1D("fhTrackMultiplicity","fhTrackMultiplicity",1000,0,1000);
