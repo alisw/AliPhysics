@@ -326,7 +326,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginVZERO);
   if (!pBlock) {
     //cout<<"No VZERO input block at event"<<endl;
-    ALIHLTERRORGUARD(1, "No VZERO input block at event %d", GetEventCount());
+    HLTInfo("No VZERO input block at event %d", GetEventCount());
     return 0;
   }
   
