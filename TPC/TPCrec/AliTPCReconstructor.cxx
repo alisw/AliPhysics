@@ -72,6 +72,7 @@ TVectorD *  AliTPCReconstructor::fgExtendedRoads=0;
 TVectorD *  AliTPCReconstructor::fgPrimaryDCACut=0;
 Double_t    AliTPCReconstructor::fgPrimaryZ2XCut = 0;
 Double_t    AliTPCReconstructor::fgZOutSectorCut = 0;
+Bool_t      AliTPCReconstructor::fgCompactClusters = kFALSE;
 
 AliTPCReconstructor::AliTPCReconstructor():
 AliReconstructor(),

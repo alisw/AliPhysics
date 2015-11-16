@@ -611,20 +611,20 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
   //
   //
   //
-  
-  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  if (!transform) {
-    AliFatal("Tranformations not in calibDB");    
-    return;
+  if ( !AliTPCReconstructor::GetCompactClusters() ) {
+    AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+    if (!transform) {
+      AliFatal("Tranformations not in calibDB");    
+      return;
+    }
+    transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+    Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
+    Int_t i[1]={fSector};
+    transform->Transform(x,i,0,1);
+    c.SetX(x[0]);
+    c.SetY(x[1]);
+    c.SetZ(x[2]);
   }
-  transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
-  Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
-  Int_t i[1]={fSector};
-  transform->Transform(x,i,0,1);
-  c.SetX(x[0]);
-  c.SetY(x[1]);
-  c.SetZ(x[2]);
-  //
   //
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
     c.SetType(-(c.GetType()+3));  //edge clusters

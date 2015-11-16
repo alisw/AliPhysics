@@ -55,6 +55,7 @@ public:
   static  const Double_t * GetPrimaryDCACut()  { return (fgPrimaryDCACut)? fgPrimaryDCACut->GetMatrixArray():0; }
   static        Double_t   GetPrimaryZ2XCut()  { return fgPrimaryZ2XCut; }
   static        Double_t   GetZOutSectorCut()  { return fgZOutSectorCut; }
+  static        Bool_t     GetCompactClusters() { return fgCompactClusters;}
 
   static  void SetSystematicError( TVectorD *vec)  { fSystematicErrors=vec;}
   static  void SetSystematicErrorCluster( TVectorD *vec ) { fSystematicErrorClusters=vec;}
@@ -62,6 +63,7 @@ public:
   static  void SetPrimaryDCACut( TVectorD *dcacut )        { fgPrimaryDCACut=dcacut;}
   static  void SetPrimaryZ2XCut( double v )                { fgPrimaryZ2XCut=v; }
   static  void SetZOutSectorCut( double v )                { fgZOutSectorCut=v; }
+  static  void SetCompactClusters(Bool_t v)                { fgCompactClusters=v;}
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
@@ -80,6 +82,7 @@ private:
   static TVectorD            * fgPrimaryDCACut;       // only primaries passing DCAYZ cut are reconstructed
   static Double_t              fgPrimaryZ2XCut;       // cut on Z2X for fast primaries reco 
   static Double_t              fgZOutSectorCut;       // cut on Z going on other side of CE 
+  static Bool_t                fgCompactClusters;     // if true, cluster coordinates will be set to 0 in clusterizer
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
