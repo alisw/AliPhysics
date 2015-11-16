@@ -58,7 +58,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fMCRingSums(),
     fPrimary(0),
     fEventInspector(),
-    fMultEventClassifier(),
+    // fMultEventClassifier(),
     fESDFixer(),
     fSharingFilter(),
     fDensityCalculator(),
@@ -81,7 +81,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fMCRingSums(),
     fPrimary(0),
     fEventInspector("event"),
-    fMultEventClassifier("multClass"),
+    // fMultEventClassifier("multClass"),
     fESDFixer("esdFizer"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
@@ -240,7 +240,7 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
   fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, ipMC, b, cMC,
 			    npart, nbin, phiR);
   fEventInspector.CompareResults(ip.Z(), ipMC.Z(), cent, cMC, b, npart, nbin);
-  fMultEventClassifier.Process(&esd,&fAODRef);
+  // fMultEventClassifier.Process(&esd,&fAODRef);
   FILL_SW(individual,kTimingEventInspector);
   
   //Store all events

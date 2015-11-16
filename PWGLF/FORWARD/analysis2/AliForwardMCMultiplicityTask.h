@@ -123,7 +123,7 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
+  // AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -178,7 +178,7 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
+  // const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -268,7 +268,7 @@ protected:
   TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDMCEventInspector    fEventInspector;    // Algorithm
-  AliMultEventClassifier    fMultEventClassifier;//Event class
+  // AliMultEventClassifier    fMultEventClassifier;//Event class
   AliFMDESDFixer            fESDFixer;          // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm

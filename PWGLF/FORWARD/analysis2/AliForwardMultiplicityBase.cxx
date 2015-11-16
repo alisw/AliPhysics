@@ -55,7 +55,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fHistos(),
     fAODFMD(false),
     fAODEP(false),
-    fAODRef(),
+    // fAODRef(),
     fRingSums(),
     fDoTiming(false),
     fHTiming(0),
@@ -184,7 +184,7 @@ AliForwardMultiplicityBase::CreateBranches(AliAODHandler* ah)
 {
   TObject* obj   = &fAODFMD; ah->AddBranch("AliAODForwardMult", &obj);
   TObject* epobj = &fAODEP;  ah->AddBranch("AliAODForwardEP", &epobj);
-  TObject* rmobj = &fAODRef; ah->AddBranch("AliAODMultEventClass", &rmobj);
+  // TObject* rmobj = &fAODRef; ah->AddBranch("AliAODMultEventClass", &rmobj);
 
   if (!fStorePerRing) return;
   
