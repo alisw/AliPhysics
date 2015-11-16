@@ -285,26 +285,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
   if (!fbJetArray)
     fbJetArray = new TClonesArray("AliAODVertex", 0);
   
-  //Fill V0 tracks AODTrack map array
-  
-  std::vector<Int_t> TrkIDs;
-  if (fDoFillV0Trks) FillV0trks(TrkIDs);
-
-  map_AliAODTrk               fAODgTrkMap;       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
-  fAODgTrkMap.clear();
-  
-  for (Int_t iTrk = 0; iTrk < fEvent->GetNumberOfTracks(); ++iTrk) {
+  map_AliAODTrk *fAODgTrkMap = new map_AliAODTrk();       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
+  if (!FillMapWithAODtracks(fAODgTrkMap)) {
     
-    AliAODTrack *track = static_cast<AliAODTrack *>(fEvent->GetTrack(iTrk));
-    
-    Int_t trkID = track->GetID();
-    if (trkID < 0) continue;
-    
-    Bool_t trkBelongToV0 = (fDoFillV0Trks) ? IsV0(trkID, TrkIDs) : kFALSE;
-    fAODgTrkMap[trkID] = std::make_pair(track, trkBelongToV0);
+    AliError(MSGERROR("Error filling aod tracks info"));
+    return;
   }
-  
-  //End AODTrack Map
   
   // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
   AliAODVertex *pVtx = (AliAODVertex *)fEvent->GetPrimaryVertex();
@@ -351,7 +337,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
     
     fbJetArray->Clear();
   }
-  
+  delete fAODgTrkMap;
   delete esdVtx;
 }
 
@@ -464,25 +450,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode() {
     fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepEventSelected, 0, 0, ptJetGen_wBkgRej, aVtxDisp, NULL, NULL, jetMC, NULL, partonnatMC, ptpartMC, fMCWeight);
   } // end loop on jets
 
-  //Fill V0 tracks AODTrack map array
-  
-  vector <Int_t> TrkIDs;
-  if (fDoFillV0Trks) FillV0trks(TrkIDs);
-  
-  map_AliAODTrk               fAODgTrkMap;       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
-  fAODgTrkMap.clear();
-  
-  for (Int_t iTrk = 0; iTrk < fEvent->GetNumberOfTracks(); ++iTrk) {
+  map_AliAODTrk *fAODgTrkMap = new map_AliAODTrk();       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
+  if (!FillMapWithAODtracks(fAODgTrkMap)) {
     
-    AliAODTrack *track = static_cast<AliAODTrack *>(fEvent->GetTrack(iTrk));
-    Int_t trkID = track->GetID();
-    if (trkID < 0) continue;
-    
-    Bool_t trkBelongToV0 = (fDoFillV0Trks) ? IsV0(trkID, TrkIDs) : kFALSE;
-    fAODgTrkMap[trkID] = make_pair(track, trkBelongToV0);
+    AliError(MSGERROR("Error filling aod tracks info"));
+    return;
   }
-
-  //End AODTrack Map
   
   // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
   AliAODVertex *pVtx = (AliAODVertex *)fEvent->GetPrimaryVertex();
@@ -796,6 +769,36 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays() {
   return kTRUE;
 }
 
+//-------------------------------------------------------------------------------------
+Bool_t AliAnalysisTaskEmcalJetBtagSV::FillMapWithAODtracks(map_AliAODTrk *fAODgTrkMap) {
+  
+  if (fAODgTrkMap) fAODgTrkMap->clear();
+  else {
+    
+    AliWarning(MSGWARNING("Map not found"));
+    return kFALSE;
+  }
+  //Fill V0 tracks AODTrack map array
+  
+  std::vector<Int_t> TrkIDs;
+  if (fDoFillV0Trks) FillV0trks(TrkIDs);
+  
+  for (Int_t iTrk = 0; iTrk < fEvent->GetNumberOfTracks(); ++iTrk) {
+    
+    AliAODTrack *track = static_cast<AliAODTrack *>(fEvent->GetTrack(iTrk));
+    
+    Int_t trkID = track->GetID();
+    
+    if (trkID < 0) continue;
+    if (!track->GetFilterMap() && !track->GetTPCNcls()) continue;
+    
+    Bool_t trkBelongToV0 = (fDoFillV0Trks) ? IsV0(trkID, TrkIDs) : kFALSE;
+    fAODgTrkMap->insert(std::pair<Int_t, std::pair<AliAODTrack *, Bool_t> >(trkID, make_pair(track, trkBelongToV0)));
+  }
+  
+  return kTRUE;
+}
+
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetBtagSV::FillV0trks(std::vector<Int_t> &TrkIDs) {
   
@@ -824,6 +827,7 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::FillV0trks(std::vector<Int_t> &TrkIDs) {
 
   return kTRUE;
 }
+
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetBtagSV::IsV0(Int_t trkId, std::vector<Int_t> &vTrks) {
   
