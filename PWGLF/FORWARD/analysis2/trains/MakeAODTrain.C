@@ -76,7 +76,7 @@ protected:
     if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
 
     // --- Task to copy header information ---------------------------
-    CoupleCar("AddTaskCopyHeader.C", fOptions.Get("copy"));
+    CoupleCar("AddTaskCopyHeader.C", Form("\"%s\"", fOptions.Get("copy")));
 
     // --- Get options -----------------------------------------------
     ULong_t  run  = fOptions.AsInt("run", 0);
