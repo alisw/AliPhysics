@@ -964,6 +964,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 
 bool IsADReady(Int_t run)
 {
+
+  if(run<200000) return false;
   bool result=true;
   
   AliCDBManager *man = AliCDBManager::Instance();
