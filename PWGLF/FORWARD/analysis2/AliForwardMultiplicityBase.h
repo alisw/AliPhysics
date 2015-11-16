@@ -26,7 +26,7 @@ class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
 class AliFMDEventPlaneFinder;
-class AliMultEventClassifier;
+// class AliMultEventClassifier;
 class AliAODHandler;
 class AliESDEvent;
 class TH2D;
@@ -178,14 +178,14 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  virtual AliMultEventClassifier& GetMultEventClassifier() = 0;
+  // virtual AliMultEventClassifier& GetMultEventClassifier() = 0;
   /** 
    * Get a reference to the event inspector. User must override this
    * to return proper object
    * 
    * @return Reference to the event inspector 
    */
-  virtual const AliMultEventClassifier& GetMultEventClassifier() const = 0;
+  // virtual const AliMultEventClassifier& GetMultEventClassifier() const = 0;
   /**
    * Get reference to the ESDFixer algorithm 
    * 
