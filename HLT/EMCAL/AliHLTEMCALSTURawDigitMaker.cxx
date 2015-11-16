@@ -113,7 +113,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
       //std::cout << "STU has raw data" << std::endl;
       HLTDebug("| STU => TRU raw data are there!\n");
 
-      Int_t nTRU = 32;//fGeometry->GetNTotalTRU();
+      Int_t nTRU = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU();
       for (Int_t i = 0; i < nTRU; i++) {
         iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(i, 0);
 
