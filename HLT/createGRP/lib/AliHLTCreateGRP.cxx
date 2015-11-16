@@ -52,7 +52,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	
 	if (defaults)
 	{
-		printf("WARNING: Defaults mode enable, creating GRP with some defaults value for tests!\n");
+		printf("WARNING: Defaults mode enabled, creating GRP with some default values for tests!\n");
 	
 		dipoleCurrent = 5.999e+03; //Valid settings for running
 		l3Current = 3.000e+04;
