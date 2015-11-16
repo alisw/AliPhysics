@@ -106,7 +106,7 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
+  // AliMultEventClassifier& GetMultEventClassifier() { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -149,7 +149,7 @@ public:
    * 
    * @return Reference to the event inspector 
    */
-  const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
+  // const AliMultEventClassifier& GetMultEventClassifier() const { return fMultEventClassifier; }
   /**
    * Get reference to the ESDFixer algorithm 
    * 
@@ -219,7 +219,7 @@ protected:
 
   AliESDFMD               fESDFMD;            // Sharing corrected ESD object
   AliFMDEventInspector    fEventInspector;    // Algorithm
-  AliMultEventClassifier  fMultEventClassifier;//Event class
+  // AliMultEventClassifier  fMultEventClassifier;//Event class
   AliFMDESDFixer          fESDFixer;          // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
@@ -227,7 +227,7 @@ protected:
   AliFMDHistCollector     fHistCollector;     // Algorithm
   AliFMDEventPlaneFinder  fEventPlaneFinder;  // Algorithm
 
-  ClassDef(AliForwardMultiplicityTask,7) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityTask,8) // Forward multiplicity class
 };
 
 #endif

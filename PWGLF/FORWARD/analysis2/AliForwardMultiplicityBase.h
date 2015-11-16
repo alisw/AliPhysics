@@ -299,7 +299,7 @@ protected:
       fHistos(),
       fAODFMD(),
       fAODEP(),
-      fAODRef(),
+      // fAODRef(),
       fRingSums(),
       fDoTiming(false), 
       fHTiming(0),
@@ -377,13 +377,13 @@ protected:
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
   AliAODForwardEP        fAODEP;        // Output object
-  AliAODMultEventClass   fAODRef;       // Reference multiplicity
+  // AliAODMultEventClass   fAODRef;       // Reference multiplicity
   AliForwardUtil::Histos fRingSums;     // Cache histograms 
   Bool_t                 fDoTiming;     // Whether to do timing or not
   TProfile*              fHTiming;      // Timing histogram 
   TH1*                   fHStatus;      // Status histogram
   UInt_t                 fAddMask;      // For which triggers to add internally
-  ClassDef(AliForwardMultiplicityBase,6) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,7) // Forward multiplicity class
 };
 
 #endif
