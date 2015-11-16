@@ -553,7 +553,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   fGammaPhotonProp(1)  = gamma->GetArmenterosAlpha();
   fGammaPhotonProp(2)  = gamma->GetPsiPair();
   fGammaPhotonProp(3) = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
-  fGammaPhotonProp(4) = gamma->GetMass();
+  fGammaPhotonProp(4) = gamma->GetInvMassPair();
   
   fGammaConvCoord(0) = gamma->GetConversionX();
   fGammaConvCoord(1) = gamma->GetConversionY();
