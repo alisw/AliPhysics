@@ -14,6 +14,7 @@
 # include "AliGenDPMjetEventHeader.h"
 # include "AliGenGeVSimEventHeader.h"
 # include "AliGenHerwigEventHeader.h"
+# include "AliGenHijingEventHeader.h"
 # include "AliGenCocktailEventHeader.h"
 # include "AliPDG.h"
 # include <TROOT.h>
@@ -141,7 +142,7 @@ struct ShortHeader {
     fEG         = kUnknown;
   }
 
-  enum {
+  enum EG_t {
     kUnknown = 0,
     kPythia,
     kHijing,

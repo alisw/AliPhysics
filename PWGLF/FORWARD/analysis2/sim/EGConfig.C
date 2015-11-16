@@ -112,7 +112,7 @@ protected:
     TString tit(Form("Pythia6 %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
 		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
 		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
-		     Int_t(grp->energy), minB, maxB));
+		     Int_t(grp->energy)));
 
     TString t(tune);
     t.ToUpper();
