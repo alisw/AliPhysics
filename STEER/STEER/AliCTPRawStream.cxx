@@ -205,51 +205,45 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
 
   // Read IRs
   Int_t iword = 72;
+  //Int_t iii=72;
+  //while(iii<fRawReader->GetDataSize()){
+  // printf("%i %02x %02x %02x %02x \n",iii,data[iii+3],data[iii+2],data[iii+1],data[iii]);
+  // iii+=4;
+  //}
   UInt_t ddl2=data[iword+3];
-  //printf("ddl2= %i \n",ddl2);
-  if(ddl2){
-    ULong64_t irdata[3564];
-    UInt_t irsize = 0;
-    UInt_t orbit = 0xffffffff;
-    Bool_t incomplete = kFALSE, transerr = kFALSE;
-    while (iword < fRawReader->GetDataSize()) {
-      if((data[iword+3]&0xc0) == 0xc0){   // DDL2
-        if(orbit != 0xffffffff){
-	 new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
-         irsize=0;
-	}
-        orbit = data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16);
-      }  
-      else if((data[iword+3]&0x80)==0x80){
-        irdata[irsize]=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
-      }
-      else if((data[iword+3]&0x40)==0x40){
-        ULong64_t word2=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
-	irdata[irsize] += word2<<30;
-	irsize++;
-      }
-      else{
-        ULong64_t word=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
-        if(word==0x1fffffff)incomplete=kTRUE;
-	else if(word==0x3fffffff)transerr=kTRUE;
-	else{
-          AliWarning(Form("Invalid interaction record (%d %d)",iword,fRawReader->GetDataSize()));
-	}
-      }
-      iword += 4;
-      continue;
+  UInt_t* atr=(UInt_t*)fRawReader->GetAttributes();
+  if(atr)printf("Attributes: 0x%x 0x%x 0x%x \n",atr[0],atr[1],atr[2]);
+  else printf("No attribute \n");
+  printf("ddl2= 0x%x \n",ddl2);
+  Int_t ret=0;
+  if(ddl2==0){ // DDL1 first
+   ret = GetDDL1Data(data,iword);
+   if(ret){ // Also DDL2 present
+    Int_t ret2=GetDDL2Data(data,iword);
+    if(ret2){
+     AliWarning(Form("Invalid interaction record: DDL1-DDL2-DDL1 %i",iword));
     }
-    if (orbit != 0xffffffff) {
-       new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
-    }
+   }
   }else{
-  // DDL1 (old code)
+   // DDL2 first
+   ret=GetDDL2Data(data,iword);
+   if(ret){
+    AliWarning(Form("Invalid interaction record: DDL2-DDL1 %i",iword));
+   }
+  }
+  // Restore the raw-reader state!!
+  fRawReader->RequireHeader(kTRUE);
+ return kTRUE;
+}
+Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
+{
+  printf("Doing DDL1 \n");
   UChar_t level = 0;
   UInt_t *irdata = NULL;
   UInt_t irsize = 0;
   UInt_t orbit = 0;
   Bool_t incomplete = kFALSE, transerr = kFALSE;
-  while (iword < fRawReader->GetDataSize()) {
+  while ((iword < fRawReader->GetDataSize()) && (data[iword+3]==0)) {
     if (data[iword+1] & 0x80) {
       UChar_t flag = ((data[iword+1] >> 4) & 0x3);
       if (flag == 0) {
@@ -302,10 +296,47 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
       AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
     irdata = NULL; irsize = 0;
   }
-  }
-  // Restore the raw-reader state!!
-  fRawReader->RequireHeader(kTRUE);
- return kTRUE;
+ if((iword>=fRawReader->GetDataSize())) return 0;
+ return 1;
+}
+Int_t AliCTPRawStream::GetDDL2Data(UChar_t* data,Int_t& iword)
+{
+   printf("Doing DDL2 \n");
+   ULong64_t irdata[3564];
+   UInt_t irsize = 0;
+   UInt_t orbit = 0xffffffff;
+   Bool_t incomplete = kFALSE, transerr = kFALSE;
+   while ((iword < fRawReader->GetDataSize()) && ((data[iword+3]+data[iword+2]) !=0)) {
+      if((data[iword+3]&0xc0) == 0xc0){   // DDL2
+        if(orbit != 0xffffffff){
+	 new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+         irsize=0;
+	}
+        orbit = data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16);
+      }  
+      else if((data[iword+3]&0x80)==0x80){
+        irdata[irsize]=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
+      }
+      else if((data[iword+3]&0x40)==0x40){
+        ULong64_t word2=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
+	irdata[irsize] += word2<<30;
+	irsize++;
+      }
+      else{
+        ULong64_t word=data[iword]+(data[iword+1]<<8)+(data[iword+2]<<16)+((data[iword+3]&0x3f)<<24);
+        if(word==0x1fffffff)incomplete=kTRUE;
+	else if(word==0x3fffffff)transerr=kTRUE;
+	else{
+          AliWarning(Form("Invalid interaction record (%d %d)",iword,fRawReader->GetDataSize()));
+	}
+      }
+      iword += 4;
+    }
+    if (orbit != 0xffffffff) {
+       new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+    }
+ if((iword>=fRawReader->GetDataSize())) return 0;
+ return 1;
 }
 Bool_t AliCTPRawStream::GetPayloadRun1(UChar_t *data)
 {

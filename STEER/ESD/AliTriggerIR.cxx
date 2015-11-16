@@ -111,8 +111,8 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, ULong64_t *words, Bool_t
      fIntRun2 = new ULong64_t[fNWord2];
      fBC2   = new UShort_t[fNWord2];
      for(UInt_t i = 0; i < fNWord2; i++) {
-        fIntRun2[i] = words[i] & 0xffffffffffff000>>12;
-        fBC2[i] = words[i] & 0xFFF;
+        fIntRun2[i] = (words[i] & 0xffffffffffff000ull)>>12;
+        fBC2[i] = words[i] & 0xFFFull;
      }
   }
 }

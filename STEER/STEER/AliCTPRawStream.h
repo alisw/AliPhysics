@@ -37,6 +37,8 @@ class AliCTPRawStream: public TObject {
     UChar_t   GetClusterMask() const { return fClusterMask; }// Provide the trigger cluster mask
     Bool_t    GetPayloadRun1(UChar_t* data);
     Bool_t    GetPayloadRun2(UChar_t* data);
+    Int_t     GetDDL1Data(UChar_t* data,Int_t& iword);
+    Int_t     GetDDL2Data(UChar_t* data,Int_t& iword);
 
     Int_t     GetNIRs() const { return fIRArray.GetEntriesFast(); }
     const TClonesArray &GetAllIRs() const { return fIRArray; }
