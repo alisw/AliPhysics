@@ -21,7 +21,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliFMDEventInspector.h"
-#include "AliMultEventClassifier.h"
+// #include "AliMultEventClassifier.h"
 #include "AliFMDESDFixer.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
@@ -108,7 +108,7 @@ AliForwardMultiplicityBase::Book()
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
   fNeededCorrections = what;
 
-  GetMultEventClassifier().CreateOutputObjects(fList);
+  // GetMultEventClassifier().CreateOutputObjects(fList);
   GetESDFixer()           .CreateOutputObjects(fList);
   GetSharingFilter()	  .CreateOutputObjects(fList);
   GetDensityCalculator()  .CreateOutputObjects(fList);
@@ -609,7 +609,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   PFB("Make timing histogram", fDoTiming);
   PFV("Trigger mask for adding", AliAODForwardMult::GetTriggerString(fAddMask));
   // gROOT->IncreaseDirLevel();
-  GetMultEventClassifier().Print(option);
+  // GetMultEventClassifier().Print(option);
   GetESDFixer()           .Print(option);        
   GetSharingFilter()      .Print(option);
   GetDensityCalculator()  .Print(option);
