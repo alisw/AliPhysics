@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliAnalysisTaskSED0Correlations.h 63031 2013-06-17 13:30:19Z arossi $ */
 
 //*************************************************************************
 // Class AliAnalysisTaskSED0Correlations
@@ -92,7 +92,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
   void SetSpeed(Bool_t speed) {fSpeed=speed;}
-  
+  void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
+ 
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
 
@@ -155,8 +156,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fSignRight_HighPt;		// Right bound of "signal region" range - from 8 GeV/c
   Int_t     fPoolNum;			// Number of the pool for the analyzed event
   Bool_t    fSpeed;			// Speed up the execution removing bins and histos
+  Bool_t    fMergePools;	// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
 
-  ClassDef(AliAnalysisTaskSED0Correlations,6); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,7); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
