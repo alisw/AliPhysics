@@ -50,10 +50,12 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     dijetcorrelations->SetEqualT1T2Demand(T1T2Equal);
     dijetcorrelations->SetFinerBinsME(fineBinsME);
     
-    // dijetcorrelations->SetAlphaAngle(alphaB2B);
+   // dijetcorrelations->SetDiJetAlphaAngle(TMath::Pi())/8);
+    dijetcorrelations->SetDiJetAlphaAngle(0.392699);
     //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
     
     dijetcorrelations->SetBkgSE(bkgSE);
+    dijetcorrelations->SetBkgSEBothSide(kTRUE);
     
     
     
