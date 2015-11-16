@@ -92,7 +92,8 @@ AliDielectronV0Cuts::AliDielectronV0Cuts() :
   fPIDCutType(kBoth),
   fOrbit(0),
   fPeriod(0),
-  fBunchCross(0)
+  fBunchCross(0),
+  fEventId(-1)
 {
   //
   // Default costructor
@@ -112,7 +113,8 @@ AliDielectronV0Cuts::AliDielectronV0Cuts(const char* name, const char* title) :
   fPIDCutType(kBoth),
   fOrbit(0),
   fPeriod(0),
-  fBunchCross(0)
+  fBunchCross(0),
+  fEventId(-1)
 {
   //
   // Named contructor
@@ -314,11 +316,16 @@ Bool_t AliDielectronV0Cuts::IsNewEvent(const AliVEvent *ev)
 
   //  printf(" current ev %d %d %d \n",fBunchCross, fOrbit, fPeriod);
   //  printf(" new event %p %d %d %d \n",ev, ev->GetBunchCrossNumber(), ev->GetOrbitNumber(), ev->GetPeriodNumber());
+ 
+  // NOTE: if event number in file is not enough then use in addition the inputfilename
+  //  (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetInputFileName()
 
-  if( fBunchCross == ev->GetBunchCrossNumber() ) {
-    if( fOrbit == ev->GetOrbitNumber() )         {
-      if( fPeriod == ev->GetPeriodNumber() )     {
+  if( fEventId == ev->GetEventNumberInFile() )     {
+    if( fBunchCross == ev->GetBunchCrossNumber() ) {
+      if( fOrbit == ev->GetOrbitNumber() )         {
+	if( fPeriod == ev->GetPeriodNumber() )     {
 	return kFALSE;
+	}
       }
     }
   }
@@ -326,6 +333,8 @@ Bool_t AliDielectronV0Cuts::IsNewEvent(const AliVEvent *ev)
   fBunchCross = ev->GetBunchCrossNumber();
   fOrbit      = ev->GetOrbitNumber();
   fPeriod     = ev->GetPeriodNumber();
+  fEventId    = ev->GetEventNumberInFile();
+
   return kTRUE;
 }
 
