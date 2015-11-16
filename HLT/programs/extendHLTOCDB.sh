@@ -9,15 +9,12 @@ sourceRun="241544"
 main ()
 {
   if [[ -z "$@" ]]; then
-    echo "update the OCDB dir with the most recent versions of selected CDB objects"
-    echo "extend the validity of those objects to infinity"
-    echo "normally the target CDB will already be filled with the default entries"
-    echo "and only the entries without defaults (some GRP/*/* entries) will be missing"
-    echo "* first prepare a copy of the default objects using e.g.:"
-    echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(999999,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
+    echo "extend/modify the validity of OCDB objects"
+    echo "* first prepare a copy of the default objects for someRunNumbr using e.g.:"
+    echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(someRunNumber,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
     echo
     echo "example:"
-    echo "  ${0##*/} ocdbSource=local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=local://OCDB/2015/ cdbEntries=*/*/*"
+    echo "  ${0##*/} ocdbSource=local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=local://OCDB/2015/ cdbEntries=*/*/* sourceRun=<someRunNumber> firstRun=<begin target validity range> lastRun=<end target validity range>"
     return 1
   fi
 
