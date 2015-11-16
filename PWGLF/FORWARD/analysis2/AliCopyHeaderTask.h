@@ -11,6 +11,7 @@
  */
 #include <AliAnalysisTaskSE.h>
 class AliESDVertex;
+class AliMultSelection;
 
 /**
  * Task to copy header from ESD to AOD 
@@ -28,7 +29,13 @@ public:
    */
   AliCopyHeaderTask(const char* name="header") 
     : AliAnalysisTaskSE(name),
-      fCalculateRefMult(true)
+      fCalculateRefMult(true),
+      fCopyCentrality(true),
+      fCopyTracklets(false),
+      fCopyV0(false),
+      fCopyAD(false),
+      fCopyZDC(false),
+      fMultSelection(0)
   {
     fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
   }
@@ -37,10 +44,7 @@ public:
    * 
    * @param other Object to copy from 
    */
-  AliCopyHeaderTask(const AliCopyHeaderTask& other) 
-    : AliAnalysisTaskSE(other),
-      fCalculateRefMult(other.fCalculateRefMult)
-  {}
+  AliCopyHeaderTask(const AliCopyHeaderTask& other);
   /** 
    * Destructor
    */
@@ -52,13 +56,7 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliCopyHeaderTask& operator=(const AliCopyHeaderTask& other) 
-  {
-    if (this == &other) return *this;
-    AliAnalysisTaskSE::operator=(other);
-    fCalculateRefMult = other.fCalculateRefMult;
-    return *this;
-  }
+  AliCopyHeaderTask& operator=(const AliCopyHeaderTask& other);
   /** 
    * @{ 
    * @name Implementation of interface methods
@@ -68,7 +66,7 @@ public:
    * (Grid/Proof) sub-job.
    * 
    */
-  virtual void   UserCreateOutputObjects() {}
+  virtual void  UserCreateOutputObjects();
   /** 
    * Called at the beginning of the master job 
    * 
@@ -91,6 +89,7 @@ public:
    */
   virtual void   Terminate(Option_t *option);
   /* @} */
+  virtual void SetCopyOptions(const TString& what);
   /** 
    * Set whether to calculate the reference multiplicity.  This is
    * optional because the calculation could be processor/memory heavy.
@@ -100,6 +99,37 @@ public:
    * @f$|\eta|<0.8@f$.
    */
   virtual void SetCalculateRefMult(Bool_t calc=true) { fCalculateRefMult=calc;}
+  /** 
+   * Set whether to copy centrality information (from
+   * AliMultSelectionTask) to the output.
+   * 
+   * @param copy If true, copy centrality object to separate branch on AOD 
+   */
+  virtual void SetCopyCentrality(Bool_t copy=true) { fCopyCentrality = copy; }
+  /** 
+   * Set whether to copy tracklet information to the output.
+   * 
+   * @param copy If true, copy tracklets to the AOD 
+   */
+  virtual void SetCopyTracklets(Bool_t copy=true) { fCopyTracklets = copy; }
+  /** 
+   * Whether to copy V0 data to output
+   * 
+   * @param copy If true, copy V0 data to output
+   */
+  virtual void SetCopyV0(Bool_t copy) { fCopyV0 = copy; }
+  /** 
+   * Whether to copy AD data to output
+   * 
+   * @param copy If true, copy AD data to output
+   */
+  virtual void SetCopyAD(Bool_t copy) { fCopyAD = copy; }
+  /** 
+   * Whether to copy ZDC data to output
+   * 
+   * @param copy If true, copy ZDC data to output
+   */
+  virtual void SetCopyZDC(Bool_t copy) { fCopyZDC = copy; }
   /** 
    * Connect this task to the train. 
    * 
@@ -115,9 +145,16 @@ protected:
    * @param type  Type of vertex 
    */
   void CopyVertex(AliAODEvent& aod, const AliESDVertex* vtx, Int_t type); 
-
+  
   Bool_t fCalculateRefMult; // Whether to calculate reference multiplicity
-  ClassDef(AliCopyHeaderTask,2); // Task to copy header from ESD to AOD
+  Bool_t fCopyCentrality;   // Whether to copy centrality information
+  Bool_t fCopyTracklets;    // Whether to copy tracklets
+  Bool_t fCopyV0;           // Whether to copy V0 data 
+  Bool_t fCopyAD;           // Whether to copy AD data 
+  Bool_t fCopyZDC;          // Whether to copy ZDC data 
+  AliMultSelection* fMultSelection; //! 
+  
+  ClassDef(AliCopyHeaderTask,3); // Task to copy header from ESD to AOD
 };
 
 #endif

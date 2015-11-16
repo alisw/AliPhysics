@@ -19,6 +19,8 @@
 #include "AliAODVertex.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
+#include "AliAODHandler.h"
 
 ClassImp(AliCopyHeaderTask)
 #if 0 
@@ -26,6 +28,89 @@ ClassImp(AliCopyHeaderTask)
 #endif
 
 
+//____________________________________________________________________
+AliCopyHeaderTask&
+AliCopyHeaderTask::operator=(const AliCopyHeaderTask& other) 
+{
+  if (this == &other) return *this;
+  AliAnalysisTaskSE::operator=(other);
+  fCalculateRefMult = other.fCalculateRefMult;
+  fCopyCentrality   = other.fCopyCentrality;
+  fCopyTracklets    = other.fCopyTracklets;
+  fCopyV0           = other.fCopyV0;
+  fCopyAD           = other.fCopyAD;
+  fCopyZDC          = other.fCopyZDC;
+  if (fMultSelection) {
+    delete fMultSelection;
+    fMultSelection = 0;
+  }
+  if (other.fMultSelection)
+    fMultSelection = new AliMultSelection(*other.fMultSelection);
+  return *this;
+}
+
+//____________________________________________________________________
+AliCopyHeaderTask::AliCopyHeaderTask(const AliCopyHeaderTask& other) 
+  : AliAnalysisTaskSE(other),
+    fCalculateRefMult(other.fCalculateRefMult),
+    fCopyCentrality(other.fCopyCentrality),
+    fCopyTracklets(other.fCopyTracklets),
+    fCopyV0(other.fCopyV0),
+    fCopyAD(other.fCopyAD),
+    fCopyZDC(other.fCopyZDC),
+    fMultSelection(0)
+{
+  if (other.fMultSelection) 
+    fMultSelection = new AliMultSelection(*other.fMultSelection);
+}
+
+//____________________________________________________________________
+void
+AliCopyHeaderTask::SetCopyOptions(const TString& what)
+{
+  TObjArray* tokens = what.Tokenize(",");
+  TObject*   token  = 0;
+  TIter      next(tokens);
+  while ((token = next())) {
+    TString opt(token->GetName());
+    Bool_t  enable = true;
+    Int_t   rem    = 0;
+    if      (opt.BeginsWith("+")) { rem = 1; enable = true;  }
+    else if (opt.BeginsWith("-")) { rem = 1; enable = false; }
+    if (rem > 0) opt.Remove(0,1);
+
+    opt.ToLower();
+
+    if      (opt.BeginsWith("cent")) SetCopyCentrality(enable);
+    else if (opt.BeginsWith("trac")) SetCopyTracklets(enable);
+    else if (opt.BeginsWith("v0") || opt.BeginsWith("vzero"))
+      SetCopyV0(enable);
+    else if (opt.BeginsWith("ad"))   SetCopyAD(enable);
+    else if (opt.BeginsWith("zdc"))  SetCopyZDC(enable);
+    else if (opt.BeginsWith("ref")) SetCalculateRefMult(enable);
+  }
+  tokens->Delete();
+}
+    
+
+  
+//____________________________________________________________________
+void
+AliCopyHeaderTask::UserCreateOutputObjects()
+{
+  if (!fCopyCentrality) return;
+  
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler*      ah = 
+    dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
+  if (!ah) {
+    AliWarning("No AOD output handler set in analysis manager");
+    return;
+  }
+
+  fMultSelection = new AliMultSelection("MultSelection");
+  ah->AddBranch("AliMultSelection", &fMultSelection);
+}
 //____________________________________________________________________
 void
 AliCopyHeaderTask::UserExec(Option_t*)
@@ -95,6 +180,10 @@ AliCopyHeaderTask::UserExec(Option_t*)
   aodHeader->SetZDCP2Energy(esd->GetZDCP2Energy());
   aodHeader->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
 
+  // --- V channel equalization factors ------------------------------
+  aodHeader->SetVZEROEqFactors(esd->GetVZEROEqFactors());
+  
+  
   // --- Interacting beams -------------------------------------------
   AliESDHeader* esdHeader = esd->GetHeader();
   if (esdHeader) { 
@@ -138,23 +227,107 @@ AliCopyHeaderTask::UserExec(Option_t*)
   }
   // --- Copy multiplicity object ------------------------------------
   // AliAnalysisTaskESDfilter::ConvertTracklets(const AliESDEvent& esd)
-  AliMultiplicity* mul       = esd->GetMultiplicity();
-  AliAODTracklets* tracklets = (aod->GetTracklets());
-  if (mul && mul->GetNumberOfTracklets() > 0 && tracklets) {
-    Int_t nTracklets =  mul->GetNumberOfTracklets();
-    tracklets->CreateContainer(nTracklets);
-    for (Int_t i = 0; i < nTracklets; i++) {
-      tracklets->SetTracklet(i,
-			     mul->GetTheta(i),
-			     mul->GetPhi(i),
-			     mul->GetDeltaPhi(i),
-			     mul->GetLabel(i, 0),
-			     mul->GetLabel(i, 1));
+  if (fCopyTracklets) {
+    AliMultiplicity* mul       = esd->GetMultiplicity();
+    AliAODTracklets* tracklets = (aod->GetTracklets());
+    if (mul && mul->GetNumberOfTracklets() > 0 && tracklets) {
+      Int_t nTracklets =  mul->GetNumberOfTracklets();
+      tracklets->CreateContainer(nTracklets);
+      for (Int_t i = 0; i < nTracklets; i++) {
+	tracklets->SetTracklet(i,
+			       mul->GetTheta(i),
+			       mul->GetPhi(i),
+			       mul->GetDeltaPhi(i),
+			       mul->GetLabel(i, 0),
+			       mul->GetLabel(i, 1));
+      }
+      tracklets->SetFiredChipMap      (mul->GetFiredChipMap());
+      tracklets->SetFastOrFiredChipMap(mul->GetFastOrFiredChipMap());
+      tracklets->SetFiredChips        (0, mul->GetNumberOfFiredChips(0));
+      tracklets->SetFiredChips        (1, mul->GetNumberOfFiredChips(1));
     }
-    tracklets->SetFiredChipMap      (mul->GetFiredChipMap());
-    tracklets->SetFastOrFiredChipMap(mul->GetFastOrFiredChipMap());
-    tracklets->SetFiredChips        (0, mul->GetNumberOfFiredChips(0));
-    tracklets->SetFiredChips        (1, mul->GetNumberOfFiredChips(1));
+  }
+
+  // --- Copy V0 data ------------------------------------------------
+  if (fCopyV0) {
+    AliAODVZERO* vzeroData = aod->GetVZEROData();
+    *vzeroData = *(esd->GetVZEROData());
+  }
+  // --- Copy V0 data ------------------------------------------------
+  if (fCopyAD) {
+    AliAODAD* adData = aod->GetADData();
+    *adData = *(esd->GetADData());
+  }
+  // --- Copy ZDC data ------------------------------------------------
+  if (fCopyZDC) {
+    AliESDZDC* esdZDC = esd->GetZDCData();    
+    AliAODZDC* zdcAOD = aod->GetZDCData();
+    zdcAOD->SetZEM1Energy(esdZDC->GetZEM1Energy());
+    zdcAOD->SetZEM2Energy(esdZDC->GetZEM2Energy());
+    zdcAOD->SetZNCTowers(esdZDC->GetZNCTowerEnergy(),
+			 esdZDC->GetZNCTowerEnergyLR());
+    zdcAOD->SetZNATowers(esdZDC->GetZNATowerEnergy(),
+			 esdZDC->GetZNATowerEnergyLR());
+    zdcAOD->SetZPCTowers(esdZDC->GetZPCTowerEnergy(),
+			 esdZDC->GetZPCTowerEnergyLR());
+    zdcAOD->SetZPATowers(esdZDC->GetZPATowerEnergy(),
+			 esdZDC->GetZPATowerEnergyLR());
+    zdcAOD->SetZDCParticipants(esdZDC->GetZDCParticipants(),
+			       esdZDC->GetZDCPartSideA(),
+			       esdZDC->GetZDCPartSideC());
+    zdcAOD->SetZDCImpactParameter(esdZDC->GetImpactParameter(),
+				  esdZDC->GetImpactParamSideA(),
+				  esdZDC->GetImpactParamSideC());
+    zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
+    zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
+    if(esdZDC->IsZNChit()){
+      Int_t cable = 10;
+      if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+	if(esdZDC->GetZNCTDCChannel()>0)
+	  cable = esdZDC->GetZNCTDCChannel();
+	else
+	  cable = 16;
+      }
+      zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(cable, 0)); //RUN1
+    }
+    if(esdZDC->IsZNAhit()){
+      Int_t cable = 12; 
+      if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+	if(esdZDC->GetZNATDCChannel()>0)
+	  cable = esdZDC->GetZNATDCChannel();
+	else
+	  cable = 18;
+      }
+      zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(cable, 0));
+    }
+    if(esdZDC->IsZPChit()){
+      Int_t cable = 11;
+      if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+	if(esdZDC->GetZPCTDCChannel()>0)
+	  cable = esdZDC->GetZPCTDCChannel();
+	else
+	  cable = 17;
+      }
+      zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(cable, 0));
+    }
+    if(esdZDC->IsZPAhit()){
+      Int_t cable = 13;
+      if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
+	if(esdZDC->GetZPATDCChannel()>0)
+	  cable = esdZDC->GetZPATDCChannel();
+	else
+	  cable = 19; 
+      }
+      zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(cable, 0));
+    }
+  }
+  // --- Copy centrality estimates -----------------------------------
+  if (fMultSelection) {
+    TObject*          outO  = InputEvent()->FindListObject("MultSelection");
+    if (outO) {
+      AliMultSelection* outS = static_cast<AliMultSelection*>(outO);
+      fMultSelection->Set(outS);
+    }
   }
 }
 

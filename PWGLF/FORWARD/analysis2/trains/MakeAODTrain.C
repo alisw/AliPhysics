@@ -45,7 +45,8 @@ public:
     fOptions.Add("secmap", "Use secondary maps to correct", false);
     fOptions.Add("mc-tracks", "Enable MC track filter", false);
     fOptions.Add("max-strips", "NUMBER", 
-                 "Maximum consequtive strips (MC)", 2); 
+                 "Maximum consequtive strips (MC)", 2);
+    fOptions.Add("copy","LIST","',' separated list of things to copy","cent");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -75,7 +76,7 @@ protected:
     if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
 
     // --- Task to copy header information ---------------------------
-    CoupleCar("AddTaskCopyHeader.C", "");
+    CoupleCar("AddTaskCopyHeader.C", fOptions.Get("copy"));
 
     // --- Get options -----------------------------------------------
     ULong_t  run  = fOptions.AsInt("run", 0);

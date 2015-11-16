@@ -14,13 +14,14 @@
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTaskSE*
-AddTaskCopyHeader()
+AddTaskCopyHeader(const char* what="")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliCopyHeaderTask", "libPWGLFforward2");
 
   // --- Create task -------------------------------------------------
   AliCopyHeaderTask* task = new AliCopyHeaderTask;
+  task->SetCopyOptions(what);
   if (!task->Connect()) {
     delete task;
     task = 0;
