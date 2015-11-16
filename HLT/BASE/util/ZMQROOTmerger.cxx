@@ -237,7 +237,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   //topic
   AliHLTDataTopic dataTopic;
   memcpy(&dataTopic, zmq_msg_data(topicMsg),std::min(zmq_msg_size(topicMsg),sizeof(dataTopic)));
-  if (fVerbose) Printf("in: data: %s", dataTopic.Description().c_str());
+  if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(), zmq_msg_size(dataMsg));
   TObject* object = UnpackMessage(dataMsg );
   if (object)
   {
@@ -306,9 +306,10 @@ Int_t DoSend(void* socket)
     
     Int_t flags = ( objectNumber < fMergeObjectMap.GetEntries()-1 ) ? ZMQ_SNDMORE : 0;    
     rc = alizmq_msg_send(topic, fMergeObjectMap.GetValue(object), socket, flags, 0);
+    if (fVerbose) Printf("sent object %s size %i bytes",fMergeObjectMap.GetValue(object)->GetName(),rc);
     if (rc<0)
     {
-      Printf("could not send object");
+      if (fVerbose) Printf("could not send object");
       break;
     }
     objectNumber++;
