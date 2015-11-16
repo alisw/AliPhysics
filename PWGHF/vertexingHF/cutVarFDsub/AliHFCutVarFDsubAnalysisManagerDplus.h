@@ -18,7 +18,8 @@ protected:
 
   Double_t fNevents; // Event count for normalisation
   Bool_t fPID; ///flag to activate the PID (it adds a cut on THnSparse)
-
+  Int_t fPIDAxis; ///axis on THnSparses which corresponds to PID
+  
   AliHFCutVarFDsubAnalysisManagerDplus(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); /// Copy constructor
   AliHFCutVarFDsubAnalysisManagerDplus operator=(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); // Assignment operator
 
@@ -66,10 +67,10 @@ public:
   TList* GetResiduals() const {return fResiduals;}
   TList* GetPulls() const {return fPulls;}
 
-  void SetPID(Bool_t isPIDon) {fPID = isPIDon;}
+  void SetPID(Bool_t isPIDon=kTRUE, Int_t PIDaxis=7) {fPID = isPIDon; fPIDAxis = PIDaxis;}
   
   /// \cond CLASSDEF
-  ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 2);
+  ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 3);
   /// \endcond
 };
 #endif // ALIHFCUTVARFDSUBANALYSISMANAGERDPLUS_H

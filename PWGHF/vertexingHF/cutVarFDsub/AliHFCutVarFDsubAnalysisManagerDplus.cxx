@@ -24,6 +24,7 @@ AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus()
   : AliHFCutVarFDsubAnalysisManager()
   , fNevents(0.)
   , fPID(kTRUE)
+  , fPIDAxis(7)
 {
   /// Default constructor
 }
@@ -151,7 +152,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* M
     fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(dataAxesNo[iAxis],MCGenAxesNo[iAxis],MCCutAxesNo[iAxis],axesName[iAxis]));
   }
   if(fPID) {
-    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(7,(UInt_t)-1,7,"PID"));
+    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(fPIDAxis,(UInt_t)-1,fPIDAxis,"PID"));
   }
 }
 
