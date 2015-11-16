@@ -1,5 +1,6 @@
 #ifdef __CINT__
 
+#pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMeanPtRaw+;
 #pragma link C++ class AlidNdPtAcceptanceCuts+;
 #pragma link C++ class AlidNdPtAnalysis+;
