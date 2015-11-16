@@ -211,7 +211,7 @@ void  AliGenEposReader::RewindEvent()
   fCurrentParticle = 0; 
 }
 
-void  AliGenEposReader::ChangeFile(char* fNewFileName)
+void  AliGenEposReader::ChangeFile(const Text_t *fNewFileName)
 { 
   if(fFile && fFile->IsOpen()) fFile->Close();
   AliInfo(Form("File %s closed", fFileName));

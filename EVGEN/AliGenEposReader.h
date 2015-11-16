@@ -42,7 +42,7 @@ class AliGenEposReader : public AliGenReader
   virtual Int_t NextEvent();
   virtual TParticle* NextParticle();
   virtual void RewindEvent();
-  virtual void ChangeFile(char* fNewFileName);
+  virtual void ChangeFile(const Text_t *fNewFileName);
   AliGenEposReader & operator=(const AliGenEposReader &rhs);
 
  protected:
@@ -98,6 +98,6 @@ class AliGenEposReader : public AliGenReader
  private:
   Int_t EposToPdg(Int_t code);
   void Copy(TObject&) const;
-  ClassDef(AliGenEposReader,2)
+  ClassDef(AliGenEposReader,3)
 };
 #endif
