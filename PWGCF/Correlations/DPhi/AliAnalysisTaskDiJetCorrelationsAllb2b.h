@@ -14,6 +14,7 @@
 #include <TList.h>
 #include <TObjArray.h>
 #include <THn.h>
+#include <iosfwd>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"
@@ -73,9 +74,9 @@ public:
     
     
     void    SetCorr2plus1or1plus1(Bool_t twoplus1){ftwoplus1 = twoplus1;}
-    //void    SetEffCorrection(TH3F *hEff){fThnEff = hEff;}
-    void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
+    void    SetDiJetAlphaAngle(Double_t alpha){fAlpha = alpha;}
     void    SetBkgSE(Bool_t BkgSE){fBkgSE = BkgSE;}
+    void    SetBkgSEBothSide(Bool_t BkgSEbothside){fBkgSEBothSide = BkgSEbothside;}
     void    SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
     void    SetResonanceCut(Bool_t resCut){fCutResonances = resCut;}
     void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
@@ -287,6 +288,7 @@ private:
     Bool_t    fuseVarPtBins;
     Double_t  fAlpha;
     Bool_t    fBkgSE;
+    Bool_t    fBkgSEBothSide;
     
     TH1F     *fHistNEvents;
     TH1F     *fHistCent;
