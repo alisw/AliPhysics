@@ -106,13 +106,13 @@ main()
   echo "***********************" 2>&1 | tee -a copy.log
   if [[ $filesAreLocal -eq 0 ]]; then
     if [[ "$fileAccessMethod" == "alien_cp" ]]; then
-      echo "alien_find $path AliESDfriends_v1.root | egrep ^/ > $alienFileList" 2>&1 | tee -a copy.log
-      alien_find $path "AliESDfriends_v1.root" | egrep "^/" >  $alienFileList
+      echo "alien_find $path CalibObjects.root | egrep ^/ > $alienFileList" 2>&1 | tee -a copy.log
+      alien_find $path "CalibObjects.root" | egrep "^/" >  $alienFileList
       echo "alien_find done"
       echo
     else 
-      echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
-      aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+      echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"CalibObjects.root\")" 2>&1 | tee -a copy.log
+      aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"CalibObjects.root\")" 2>&1 | tee -a copy.log
       echo "MAKEALIENLIST done"
       echo
     fi
