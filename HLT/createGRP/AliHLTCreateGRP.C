@@ -20,7 +20,7 @@
 Int_t AliHLTCreateGRP(Int_t runNumber, TString detectorList, TString beamType, TString runType, UInt_t startShift, UInt_t endShift, Int_t defaults)
 {
 	printf("Running ALICE HLT GRP Creation\n");
-	gSystem->Load("$ALICE_SOURCE/HLT/createGRP/lib/libAliHLTCreateGRP");
+	gSystem->Load("libAliHLTCreateGRP");
 	
 	AliHLTCreateGRP* GrpBuilder = new AliHLTCreateGRP;
 	
