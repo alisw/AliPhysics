@@ -12,6 +12,7 @@
 #include "TList.h"
 #include "TObjArray.h"
 #include "THnSparse.h"
+#include <iostream>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -37,7 +38,7 @@
 
 #include "AliAnalysisTaskDiJetCorrelationsAllb2b.h"
 
-
+using namespace std;
 
 ClassImp(AliAnalysisTaskDiJetCorrelationsAllb2b)
 ClassImp(AliDPhiBasicParticleDiJet)
@@ -68,6 +69,7 @@ fuseVarCentBins(kFALSE),
 fuseVarPtBins(kFALSE),
 fAlpha(0),
 fBkgSE(kTRUE),
+fBkgSEBothSide(kTRUE),
 fHistNEvents(0),
 fHistCent(0),
 fHistT1CorrTrack(0),
@@ -126,6 +128,7 @@ fuseVarCentBins(kFALSE),
 fuseVarPtBins(kFALSE),
 fAlpha(0),
 fBkgSE(kTRUE),
+fBkgSEBothSide(kTRUE),
 fHistNEvents(0),
 fHistCent(0),
 fHistT1CorrTrack(0),
@@ -188,6 +191,7 @@ fuseVarCentBins(source.fuseVarCentBins),
 fuseVarPtBins(source.fuseVarPtBins),
 fAlpha(source.fAlpha),
 fBkgSE(source.fBkgSE),
+fBkgSEBothSide(source.fBkgSEBothSide),
 fHistNEvents(source.fHistNEvents),
 fHistCent(source.fHistCent),
 fHistT1CorrTrack(source.fHistT1CorrTrack),
@@ -266,6 +270,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b& AliAnalysisTaskDiJetCorrelationsAllb2b::
     fuseVarPtBins = orig.fuseVarPtBins;
     fAlpha= orig.fAlpha;
     fBkgSE = orig.fBkgSE;
+    fBkgSEBothSide = orig.fBkgSEBothSide;
     fHistNEvents = orig.fHistNEvents;
     fHistCent = orig.fHistCent;
     fHistT1CorrTrack = orig.fHistT1CorrTrack;
@@ -430,7 +435,9 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
             return;
         }
     }
-    if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
+    
+   
+   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
     Float_t bSign = 0;
     bSign = (aod->GetMagneticField() > 0) ? 1 : -1;
     fHistNEvents->Fill(1);
@@ -441,6 +448,8 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         AliCentrality *centralityObj = 0x0;
         centralityObj = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
         fCentrOrMult = centralityObj->GetCentralityPercentile("V0M");
+        
+       
         
         if (fCentrOrMult == 0)
             
@@ -463,6 +472,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         if((abs(fCentrOrMult)) < 0. || (abs(fCentrOrMult)) > 100.00)return;
     }
+    
     else if(!fSetSystemValue){ // pp, pPb
         Double_t count = -1, mineta = -1.0, maxeta = 1.0;
         AliAODTracklets* tracklets = aod->GetTracklets();
@@ -477,7 +487,9 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
     fHistNEvents->Fill(2); //
     fHistCent->Fill(fCentrOrMult);
+  
     
+   
     
     //Require 1 vertex (no TPC stand-alone) with a minimum number of tracks and z-coordinate in a limited range
     Double_t zVertex = 0;
@@ -502,8 +514,9 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
     }
     
-    //  cout<<"zvertex:"<<zVertex<<endl;
+  
     fHistQA[0]->Fill(zVertex);
+    cout<<"zvertex:"<<zVertex<<endl;
     
     fHistNEvents->Fill(4);
     
@@ -598,7 +611,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         {
             Bool_t isOnlyT1 = kTRUE;
             // Trigger 2
-            for(Int_t entryT2=0; entryT2<fTrackArray->GetEntries() /*&& !k1plus1_T2_loop*/; entryT2++){
+            for(Int_t entryT2=0; entryT2<fTrackArray->GetEntries(); entryT2++){
                 TObject* obj1 = fTrackArray->At(entryT2);
                 AliAODTrack* fAodTracksT2 = (AliAODTrack*)obj1;
                 if(fAodTracksT2->Pt() >= fTrigger2pTLowThr && fAodTracksT2->Pt() <= fTrigger2pTHighThr){
@@ -609,11 +622,32 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                     //check if trigger particles have a delta phi = pi +/- alpha
                     if(ftwoplus1){
                         if(!fBkgSE)TrigDPhi12 -= TMath::Pi();
-                        else if(fBkgSE)TrigDPhi12 -= 0.5*TMath::Pi();
+                        
+                        
+                        else if(fBkgSE){
+                            //shift defined area of delta phi
+                            if(TrigDPhi12>TMath::Pi()) TrigDPhi12 -= TMath::TwoPi();
+                            
+                            if(fBkgSEBothSide){
+                                //look at delta phi = +/- pi/2
+                                if(TrigDPhi12<0)
+                                    TrigDPhi12 += 0.5*TMath::Pi();
+                                else if(TrigDPhi12>0)
+                                    TrigDPhi12 -= 0.5*TMath::Pi();
+                            }else if(!fBkgSEBothSide){
+                                TrigDPhi12 -= 0.5*TMath::Pi();
+                            }
+                        }
+                        
                     }
                     
                     fHistTrigDPhi->Fill(TrigDPhi12);
-                    if(ftwoplus1 && TMath::Abs(TrigDPhi12)>(TMath::Pi())/8) continue;
+                    if(ftwoplus1){
+                        
+                        if(!fBkgSEBothSide && TMath::Abs(TrigDPhi12)>(fAlpha)) continue;
+                        if(fBkgSEBothSide && TMath::Abs(TrigDPhi12)>(fAlpha/2)) continue;
+                    
+                    }
                     
                     
                     Double_t effvalueT1 = GetTrackWeight( fAodTracksT1->Eta(), fAodTracksT1->Pt(),fCentrOrMult, zVertex);

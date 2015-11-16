@@ -33,12 +33,13 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 	Double_t neventsmc =  ecuts_mc->NumberOfPhysSelEvents();
 	
 	
-	
+cout<<"AAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<endl;	
 	for(Int_t ipart=0;ipart<3;ipart++)
 	{
 			
 			for(Int_t imethod=0;imethod<3;imethod++)
 			{
+				cout<<"AAAAAAAAAAAAAAAAAA "<<hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data()))<<endl;
 				if(!hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))
 					continue;
 				 TH2F *nsig_data = (TH2F*)((TH2F*)hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
@@ -58,8 +59,8 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 					continue;
 				 
 
-				Int_t ibin=1;
-				Float_t binsize=nsig_mc->GetXaxis()->GetBinWidth(1);
+				Int_t ibin=nsig_mc->GetXaxis()->FindBin(-3);
+				//Float_t binsize=nsig_mc->GetXaxis()->GetBinWidth(1);
 
 				TH1F* maxposdata=(TH1F*)nsig_data->ProjectionX(Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1);
 				maxposdata->Reset();
@@ -68,8 +69,8 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 				maxposmc->Reset();
 				maxposmc->SetTitle(";p_{T} (GeV/c);max in (-2,2)");
 
-	
-				 while (ibin*binsize<3.0)
+				cout<<ibin<<" AAAAAAAAAAA "<<		nsig_mc->GetXaxis()->GetBinCenter(ibin)<<endl;
+				 while (nsig_mc->GetXaxis()->GetBinCenter(ibin)<3.0)
 				 {
 					// TCanvas* c=new TCanvas(Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),700,500);
 					

@@ -107,8 +107,8 @@ void TOFMatchingForNch(TH1* h);
 void TOFPIDsignalmatchingApply(TH1* h, Float_t factor);
 void CalculateDoubleCounts(TH1* doubleconunts,TH1F** rawspectra,Int_t ipar, Bool_t dataflag);
 void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrtab);
-void RawYieldFromFits(TString hnamein, AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts,TList* lfits,TH1F** primaryfractionfromfit);
-void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit);
+void RawYieldFromFits(AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts,TList* lfits,TH1F** primaryfractionfromfit);
+void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit,TH2F* nsigtrueTOF,TH2F* nsigtrueTPC);
 void Rescallesecondarycontaimation(TH1F* contfit, TH1F* contWDfit , TH1F* contMatfit ,TH1F* primaryfit, TH1F* primaryfractionfromfit);
 
 TH1F* GetOneHistFromPtDCAhisto(TString name,TString hnameout,AliSpectraBothHistoManager* hman,TFormula* dcacutxy);
@@ -250,8 +250,11 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 			
 		
 		}	
-		RawYieldFromFits("hHistPtRecSigma",managermc,rawspectramc,tcutsmc,lfits,primaryfractionfromfitmc);
-		RawYieldFromFits("hHistPtRecSigma",managerdata,rawspectradata,tcutsdata,lfits,primaryfractionfromfitdata);
+		RawYieldFromFits(managermc,rawspectramc,tcutsmc,lfits,primaryfractionfromfitmc);
+		RawYieldFromFits(managerdata,rawspectradata,tcutsdata,lfits,primaryfractionfromfitdata);
+
+		
+
 	}
 	else
 	{
@@ -2007,7 +2010,7 @@ TH1F* ReBinDCAHisto(TH1* h)
 	return hout;
 
 }
-void RawYieldFromFits(TString hnamein, AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts, TList* lfits,TH1F** primaryfractionfromfit)
+void RawYieldFromFits(AliSpectraBothHistoManager* hman,TH1F** histo,AliSpectraBothTrackCuts* cuts, TList* lfits,TH1F** primaryfractionfromfit)
 {
 	
 	for(Int_t ipart=0;ipart<3;ipart++)
@@ -2022,16 +2025,27 @@ void RawYieldFromFits(TString hnamein, AliSpectraBothHistoManager* hman,TH1F** h
 					continue;
 		TH2F *nsigTOF= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSig%sPtTOF",Particle[ipart].Data())))->Clone();
 		TH2F *nsigTPC= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSig%sPtTPC",Particle[ipart].Data())))->Clone();
+		TH2F *nsigtrueTOF=0x0;
+		TH2F *nsigtrueTPC=0x0;
+		TString nametmp(histo[0]->GetName());
+		if(nametmp.Contains("MC"))
+		{
+			nsigtrueTOF= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSigTrue%sPtTOF",Particle[ipart].Data())))->Clone();
+			nsigtrueTPC= (TH2F*)((TH2F*)hman->GetNSigHistogram(Form("hHistNSigTrue%sPtTPC",Particle[ipart].Data())))->Clone();
+
+		}
+		
 		for(Int_t icharge=0;icharge<2;icharge++)
 		{
 			Int_t index=ipart+3*icharge;
-			RawYieldFromFitsForParticleType(nsigTOF,nsigTPC,histo[index],icharge,ipart,pttof,lfits,primaryfractionfromfit[index]); 
+			RawYieldFromFitsForParticleType(nsigTOF,nsigTPC,histo[index],icharge,ipart,pttof,lfits,primaryfractionfromfit[index],nsigtrueTOF,nsigtrueTPC); 
 			
+					
 		}
 	} 
 
 }			
-void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit)
+void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int_t icharge, Int_t ipart,Float_t pttof,TList* lfits,TH1F* primaryfractionfromfit,TH2F* nsigtrueTOF,TH2F* nsigtrueTPC)
 {
 	Int_t  charge =(icharge==0?1:-1);
 	Float_t ptmin=minRanges[ipart]*charge;
@@ -2043,10 +2057,25 @@ void RawYieldFromFitsForParticleType(TH2F* nsigTOF,TH2F* nsigTPC,TH1F* histo,Int
 	{
 		cout<<i<<" "<<icharge<<" "<<ipart<<" "<<histo->GetTitle()<<endl;
 		TH1F *nsig_data_Proj1=0x0;
-		if(pttof>TMath::Abs(nsigTOF->GetXaxis()->GetBinCenter(i)))	
+		TH1F *nsigtrue_data_Proj1=0x0;
+		if(pttof>TMath::Abs(nsigTOF->GetXaxis()->GetBinCenter(i)))
+		{	
 			nsig_data_Proj1=(TH1F*)nsigTPC->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigTPC->GetName(),nsigTPC->GetXaxis()->GetBinLowEdge(i),nsigTPC->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+			if(nsigtrueTPC)
+			{
+				nsigtrue_data_Proj1=(TH1F*)nsigtrueTPC->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigtrueTPC->GetName(),nsigtrueTPC->GetXaxis()->GetBinLowEdge(i),nsigtrueTPC->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+				lfits->Add(nsigtrue_data_Proj1);
+			}	
+		}
 		else
+		{
 			nsig_data_Proj1=(TH1F*)nsigTOF->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigTOF->GetName(),nsigTOF->GetXaxis()->GetBinLowEdge(i),nsigTOF->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+			if(nsigtrueTOF)
+			{
+				nsigtrue_data_Proj1=(TH1F*)nsigtrueTOF->ProjectionY(Form("%s[%.2f,%.2f] %s",nsigtrueTOF->GetName(),nsigtrueTOF->GetXaxis()->GetBinLowEdge(i),nsigtrueTOF->GetXaxis()->GetBinUpEdge(i),histo->GetName()),i,i);
+				lfits->Add(nsigtrue_data_Proj1);
+			}	
+		}
 
 		TF1* f=new TF1(Form("FitFun_%d_%d_%d",icharge,ipart,i),"gausn",-3,3);
 		nsig_data_Proj1->Fit(Form("FitFun_%d_%d_%d",icharge,ipart,i),"R");
