@@ -467,6 +467,7 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
     }
     
     TLorentzVector vAssocRndm;
+    TLorentzVector vAssocRndmRgap;
     TLorentzVector vThrustRndm;
     
     //-------------------------------------
@@ -493,9 +494,10 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
           } else {
             dphiAssocRndm = fhistos->fhIphiAssocFromFile[fCentralityBin][fptaBin]->GetRandom();
           }
-          //vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiTrigger + dphiAssocRndm, 0); // Randomize eta and phi
+          vAssocRndmRgap.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiTrigger + dphiAssocRndm, 0); // Randomize eta and phi
           vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); // Randomize only eta
         } else {
+          vAssocRndmRgap.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); //set randomized assoc  TLorentz vector
           vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); //set randomized assoc  TLorentz vector
         }
         
@@ -505,8 +507,9 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
         double geoAccCorrRndm = (fsamplingMethod == 0 || fPhiGapBinNear<0 ) ? GetGeoAccCorrFlat(dEtaRndm) : GetGeoAccCorrIncl(dEtaRndm);
         
         jt = vAssocRndm.Perp(vThrustRndm.Vect());
+        double jtRgap = vAssocRndmRgap.Perp(vThrustRndm.Vect());
         
-        // TODO : shadowing of iKlongBin
+        // Klong bins
         int jKlongBin = fcard->GetBin(kLongType, vThrustRndm.Vect().Dot(vAssocRndm.Vect())/vThrustRndm.P());
         if(jKlongBin>=0){ // 
           if(jt>1e-3) { //here we used and BgFidCut
@@ -522,20 +525,27 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
                 fhistos->fhJTKlongBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               }
             }
+          }
+        }
+        int iKlongBinRgap = fcard->GetBin(kLongType, vThrustRndm.Vect().Dot(vAssocRndmRgap.Vect())/vThrustRndm.P());
+        if (iKlongBinRgap>=0){
+          if(jtRgap>1e-3){
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTKlongBgR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              if(fill2DBackground) fhistos->fhDphiDetaKlongR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocKlongR[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(fpta, fTrackPairEfficiency);
-
+              fhistos->fhJTKlongBgR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
+              if(fill2DBackground) fhistos->fhDphiDetaKlongR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
+              fhistos->fhBgAssocKlongR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(fpta, fTrackPairEfficiency);
+              
               // Fill the background histogram for signed pairs
               if(fIsLikeSign){
-                fhistos->fhJTKlongBgRLikeSign[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTKlongBgRLikeSign[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               } else {
-                fhistos->fhJTKlongBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTKlongBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               }
             }
           }
         }
+        
+        // xlong bins
         int iXeBin = fcard->GetBin(kXeType, vThrustRndm.Vect().Dot(vAssocRndm.Vect())/pow(vThrustRndm.P(),2) );
         if(iXeBin>=0){
           if(jt>1e-3) { //here we used and BgFidCut
@@ -551,20 +561,27 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
                 fhistos->fhJTBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               }
             }
+          }
+        }
+        int iXeBinRgap = fcard->GetBin(kXeType, vThrustRndm.Vect().Dot(vAssocRndmRgap.Vect())/pow(vThrustRndm.P(),2) );
+        if(iXeBinRgap>=0){
+          if(jtRgap>1e-3){
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTBgR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              if(fill2DBackground) fhistos->fhDphiDetaXeR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocXeR[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(fpta, fTrackPairEfficiency);
-
+              fhistos->fhJTBgR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
+              if(fill2DBackground) fhistos->fhDphiDetaXeR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
+              fhistos->fhBgAssocXeR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(fpta, fTrackPairEfficiency);
+              
               // Fill the background histograms for signed pairs
               if(fIsLikeSign){
-                fhistos->fhJTBgRLikeSign[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTBgRLikeSign[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               } else {
-                fhistos->fhJTBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               }
             }
           }
         }
+        
+        // pta bins
         if(fptaBin>=0){
           if(jt>1e-3) { //here we used and BgFidCut
             for(int iEtaGap=0; iEtaGap<=fEtaGapBin; iEtaGap++){
@@ -579,19 +596,21 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
                 fhistos->fhJTPtaBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
               }
             }
+          } // if jt > 1e-3
+          if(jtRgap>1e-3){
             for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTPtaBgR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+              fhistos->fhJTPtaBgR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               if(fill2DBackground) fhistos->fhDphiDetaPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
               fhistos->fhBgAssocPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(fpta, fTrackPairEfficiency);
-
+              
               //Fill the background histograms for signed pairs
               if(fIsLikeSign){
-                fhistos->fhJTPtaBgRLikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTPtaBgRLikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               } else {
-                fhistos->fhJTPtaBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+                fhistos->fhJTPtaBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
               }
             } // RGap
-          } // if jt > 1e-3 
+          } // if jtRgap > 1e-3
         } // if fptaBin >= 0
       } //trials
     } // Eta Gap Random
