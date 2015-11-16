@@ -104,7 +104,8 @@ AliAnalysisTaskSE(),
   fSignLeft_HighPt(0),
   fSignRight_HighPt(0),
   fPoolNum(0),
-  fSpeed(kTRUE)   
+  fSpeed(kTRUE),
+  fMergePools(kFALSE)   
 {
   // Default constructor
 
@@ -154,7 +155,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fSignLeft_HighPt(0),
   fSignRight_HighPt(0),
   fPoolNum(0),
-  fSpeed(kTRUE)      
+  fSpeed(kTRUE),
+  fMergePools(kFALSE)         
 {
   // Default constructor
 
@@ -222,7 +224,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fSignLeft_HighPt(source.fSignLeft_HighPt),
   fSignRight_HighPt(source.fSignRight_HighPt),
   fPoolNum(source.fPoolNum),
-  fSpeed(source.fSpeed)   
+  fSpeed(source.fSpeed),
+  fMergePools(source.fMergePools)      
 {
   // Copy constructor
 }
@@ -317,7 +320,8 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fSignRight_HighPt = orig.fSignRight_HighPt;
   fPoolNum = orig.fKaonCorr;
   fSpeed = orig.fKaonCorr;   
-
+  fMergePools = orig.fMergePools;
+  
   return *this; //returns pointer of the class
 }
 
@@ -644,7 +648,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     }
                 
     if(NMCevents && !isMCeventgood){
-      if(fDebug>2) std::cout << "The MC event " << eventType << " not interesting for this analysis: skipping" << std::endl;
+      if(fDebug > 2) std::cout << "The MC event " << eventType << " not interesting for this analysis: skipping" << std::endl;
       return; 
     }
     fNentries->Fill(19); //event with particular production type                
@@ -696,7 +700,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   //Pool definition
   Double_t MultipOrCent = fCorrelatorTr->GetCentrality();
   Double_t zVtxPosition = vtx1->GetZ();
-  fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
+  if(!fMergePools) fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
   
   //vtx1->Print();
   TString primTitle = vtx1->GetTitle();
@@ -787,23 +791,22 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         if(!fReadMC) {
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
             if(!fMixing && !fAlreadyFilled) {
- 	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
+ 	         ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+	         ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
             }
-	    CalculateCorrelations(d); //correlations on real data
-
-	  }
+	        CalculateCorrelations(d); //correlations on real data
+	      }
         } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
             Int_t pdgDgD0toKpi[2]={321,211};
     	    Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
             if (labD0>-1) {
               if(!fMixing && !fAlreadyFilled) {
-		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-		((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+		        ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+                ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	      CalculateCorrelations(d,labD0,mcArray);
-	    }
+	          CalculateCorrelations(d,labD0,mcArray);
+	        }
           }
         }
 
@@ -1108,12 +1111,12 @@ void AliAnalysisTaskSED0Correlations::Terminate(Option_t */*option*/)
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSED0Correlations::CheckD0Origin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {
+Int_t AliAnalysisTaskSED0Correlations::CheckD0Origin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
   printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
-
+	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
   mother = mcPartCandidate->GetMother();
@@ -1162,7 +1165,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   Double_t binMaxMix[4] = {3.*TMath::Pi()/2.,2.1848,1.6,3.};  //is the maximum for all the bins
 
   Int_t nPoolForHistos=1;
-  if(fSpeed) nPoolForHistos= fCutsTracks->GetNZvtxPoolBins()*fCutsTracks->GetNCentPoolBins(); //multeplicity of histos in case of correct pools treatment: sum(SE_i/ME_i)
+  if(!fMergePools) nPoolForHistos= fCutsTracks->GetNZvtxPoolBins()*fCutsTracks->GetNCentPoolBins(); //multeplicity of histos in case of correct pools treatment: sum(SE_i/ME_i)
  
   for(Int_t i=0;i<fNPtBinsCorr;i++) {
 
@@ -1325,9 +1328,9 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       	  }
           else { //signal range is 1.7968 to 1.9528, plus 1 bin L and R for sidebands
             nBins = 43;
-      	    mBin = 1.7968; 
+      	    mBin = 1.7968;
           }
-     
+     	
           Double_t varBins[nBins+1];
           varBins[0] = 1.5848;
           varBins[1] = 1.6048;
@@ -1511,9 +1514,9 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       	  }
           else { //signal range is 1.7968 to 1.9528, plus 1 bin L and R for sidebands
             nBins = 43;
-      	    mBin = 1.7968; 
+      	    mBin = 1.7968;
           }
-     
+     	
           Double_t varBins[nBins+1];
           varBins[0] = 1.5848;
           varBins[1] = 1.6048;
@@ -1794,7 +1797,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
   Bool_t execPoolTr = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
   Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
   Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-
+		
   Int_t NofEventsinPool = 1;
   if(fMixing) {
     NofEventsinPool = fCorrelatorTr->GetNofEventsInPool(); 
@@ -1811,7 +1814,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       AliInfo("AliHFCorrelator::Cannot process the track array");
       continue;
     }
-
+	
     for(Int_t iTrack = 0; iTrack<fCorrelatorTr->GetNofTracks(); iTrack++){ // looping on track candidates
 
       Bool_t runcorrelation = fCorrelatorTr->Correlate(iTrack);
@@ -2027,7 +2030,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
   Bool_t execPoolTr = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
   Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
   Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-
+		
   Int_t NofEventsinPool = 1;
   if(fMixing) {
     NofEventsinPool = fCorrelatorTr->GetNofEventsInPool(); 
@@ -2045,7 +2048,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
       AliInfo("AliHFCorrelator::Cannot process the track array");
       continue;
     }
-
+	
     for(Int_t iTrack = 0; iTrack<fCorrelatorTr->GetNofTracks(); iTrack++){ // looping on track candidates
 
       Bool_t runcorrelation = fCorrelatorTr->Correlate(iTrack);
@@ -2263,6 +2266,10 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18; fillSpWeigD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18; fillSpWeigD0bar[1] = 2.18;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
+    else if(!fSpeed) { // Full Minv range in THnSparse!
+      if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
+      if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
+    }
     
     if(fReadMC == 0) {
       //sparse fill for data (tracks, K+-, K0) + weighted
@@ -2275,8 +2282,8 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
         if(!fSpeed) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(fillSpWeigD0bar,pTorig*wg);
       }
       if(!fAlreadyFilled) {
- 	((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
- 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	   ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
+ 	   ((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
       }
     }
 
@@ -2314,13 +2321,13 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
          }
       } 
       if(!fAlreadyFilled) {
-	((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_Bin%d",part.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
+	    ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_Bin%d",part.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
         if (origTr>=1&&origTr<=8) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF_Bin%d",part.Data(),ptbin)))->Fill(d0orig);
         if (origTr>=1&&origTr<=8) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig);
-	((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
+        ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
         ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
         ((TH1F*)fOutputStudy->FindObject(Form("histOrig_%s_Bin%d",part.Data(),ptbin)))->Fill(origTr);
- 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+ 	    ((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
       }
     }//end MC case
 
@@ -2358,6 +2365,11 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18;} //in RSB bin!
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
+    else if(!fSpeed) { // Full Minv range in THnSparse!
+      if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
+      if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
+    }    
+    
     
     if(fReadMC == 0) {
       //sparse fill for data (tracks, K+-, K0)
@@ -2376,7 +2388,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSED0Correlations::CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {
+Int_t AliAnalysisTaskSED0Correlations::CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
   //
   // checks on particle (#) origin:
   // 0) Not HF
@@ -2390,7 +2402,7 @@ Int_t AliAnalysisTaskSED0Correlations::CheckTrackOrigin(TClonesArray* arrayMC, A
   // 8) b hadronization
   //
   if(fDebug>2) printf("AliAnalysisTaskSED0Correlations::CheckTrkOrigin() \n");
-
+	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
   mother = mcPartCandidate->GetMother();
@@ -2592,5 +2604,9 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "--------------------------\n";
   cout << "Soft Pi Cut = "<<fSoftPiCut<<"\n";
   cout << "--------------------------\n";
+  cout << "Speed (1 SBL/SBR bin) = "<<fSpeed<<"\n";
+  cout << "--------------------------\n";
+  cout << "All entries in Pool0 = "<<fMergePools<<"\n";
+  cout << "--------------------------\n";  
 }
 
