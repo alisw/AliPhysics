@@ -68,8 +68,6 @@ set(SRCS
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
-  AliAnalysisTaskSECharmFraction.cxx 
-  AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx

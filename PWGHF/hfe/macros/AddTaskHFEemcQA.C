@@ -36,6 +36,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqa->SelectCollisionCandidates(AliVEvent::kINT8);
   hfecalqa->SetElecIDsparse(FillElecSparse);
   hfecalqa->SetTenderSwitch(UseTender);
+  hfecalqa->SetThresholdEG1(thEG1ADC);
+  hfecalqa->SetThresholdEG2(thEG2ADC);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeHFEemcQAINT8";
@@ -50,6 +52,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
   hfecalqa7->SetElecIDsparse(FillElecSparse);
   hfecalqa7->SetTenderSwitch(UseTender);
+  hfecalqa7->SetThresholdEG1(thEG1ADC);
+  hfecalqa7->SetThresholdEG2(thEG2ADC);
   
   TString containerName7 = mgr->GetCommonFileName();
   containerName7 += ":PWGHF_hfeHFEemcQAINT7";
@@ -65,8 +69,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqaL07->SelectCollisionCandidates(AliVEvent::kEMC7);
   hfecalqaL07->SetElecIDsparse(FillElecSparse);
   hfecalqaL07->SetTenderSwitch(UseTender);
-  hfecalqaL07->SetEMCalTriggerEG1(thEG1ADC);
-  hfecalqaL07->SetEMCalTriggerEG2(thEG2ADC);
+  hfecalqaL07->SetThresholdEG1(thEG1ADC);
+  hfecalqaL07->SetThresholdEG2(thEG2ADC);
 
   TString containerNameL07 = mgr->GetCommonFileName();
   containerNameL07 += ":PWGHF_hfeHFEemcQAEMC7";
@@ -81,8 +85,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqaL08->SelectCollisionCandidates(AliVEvent::kEMC8);
   hfecalqaL08->SetElecIDsparse(FillElecSparse);
   hfecalqaL08->SetTenderSwitch(UseTender);
-  hfecalqaL08->SetEMCalTriggerEG1(thEG1ADC);
-  hfecalqaL08->SetEMCalTriggerEG2(thEG2ADC);
+  hfecalqaL08->SetThresholdEG1(thEG1ADC);
+  hfecalqaL08->SetThresholdEG2(thEG2ADC);
   
   TString containerNameL08 = mgr->GetCommonFileName();
   containerNameL08 += ":PWGHF_hfeHFEemcQAEMC8";
@@ -99,11 +103,11 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
       AliAnalysisTaskHFEemcQA *hfecalqaTrig01 = new AliAnalysisTaskHFEemcQA("emcqa");
       mgr->AddTask(hfecalqaTrig01);
       hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-      hfecalqaTrig01->SetEMCalTriggerEG1(kTRUE);
+      hfecalqaTrig01->SetThresholdEG1(kTRUE);
       hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
       hfecalqaTrig01->SetTenderSwitch(UseTender);
-      hfecalqaTrig01->SetEMCalTriggerEG1(thEG1ADC);
-      hfecalqaTrig01->SetEMCalTriggerEG2(thEG2ADC);
+      hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
+      hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
 
       TString containerName01 = mgr->GetCommonFileName();
       containerName01 += ":PWGHF_hfeHFEemcQATrigGAEG1";
@@ -116,11 +120,11 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
       AliAnalysisTaskHFEemcQA *hfecalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
       mgr->AddTask(hfecalqaTrig02);
       hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-      hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
+      hfecalqaTrig02->SetThresholdEG2(kTRUE);
       hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
       hfecalqaTrig02->SetTenderSwitch(UseTender);
-      hfecalqaTrig02->SetEMCalTriggerEG1(thEG1ADC);
-	  hfecalqaTrig02->SetEMCalTriggerEG2(thEG2ADC);
+      hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
+	  hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
   
       TString containerName02 = mgr->GetCommonFileName();
       containerName02 += ":PWGHF_hfeHFEemcQATrigGAEG2";
@@ -137,8 +141,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
       hfecalqaTrig0->SelectCollisionCandidates(AliVEvent::kEMCEGA);
       hfecalqaTrig0->SetElecIDsparse(FillElecSparse);
       hfecalqaTrig0->SetTenderSwitch(UseTender);
-      hfecalqaTrig0->SetEMCalTriggerEG1(thEG1ADC);
-      hfecalqaTrig0->SetEMCalTriggerEG2(thEG2ADC);
+      hfecalqaTrig0->SetThresholdEG1(thEG1ADC);
+      hfecalqaTrig0->SetThresholdEG2(thEG2ADC);
 
       TString containerName1 = mgr->GetCommonFileName();
       containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
@@ -154,8 +158,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
   hfecalqaTrig1->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   hfecalqaTrig1->SetElecIDsparse(FillElecSparse);
   hfecalqaTrig1->SetTenderSwitch(UseTender);
-  hfecalqaTrig1->SetEMCalTriggerEG1(thEG1ADC);
-  hfecalqaTrig1->SetEMCalTriggerEG2(thEG2ADC);
+  hfecalqaTrig1->SetThresholdEG1(thEG1ADC);
+  hfecalqaTrig1->SetThresholdEG2(thEG2ADC);
   
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeHFEemcQATrigJE";
