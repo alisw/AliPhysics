@@ -51,7 +51,8 @@ AliTriggerIR::AliTriggerIR():
   fIntRun2(NULL),
   fBC2(NULL),
   fIncomplete2(kFALSE),
-  fTransErr2(kFALSE)
+  fTransErr2(kFALSE),
+  fDDLflag(0)
 {
   // Default constructor
 }
@@ -70,7 +71,8 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
   fIntRun2(NULL),
   fBC2(NULL),
   fIncomplete2(kFALSE),
-  fTransErr2(kFALSE)
+  fTransErr2(kFALSE),
+  fDDLflag(1)
 {
    //  Standard constructor for DDL1 (run1)
    //
@@ -101,7 +103,8 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, ULong64_t *words, Bool_t
   fIntRun2(NULL),
   fBC2(NULL),
   fIncomplete2(incomplete),
-  fTransErr2(transerr)
+  fTransErr2(transerr),
+  fDDLflag(2)
 {
    //  Standard constructor for DDL2
    //
@@ -131,7 +134,8 @@ AliTriggerIR::AliTriggerIR(const AliTriggerIR &rec):
   fIntRun2(NULL),
   fBC2(NULL),
   fIncomplete2(rec.fIncomplete2),
-  fTransErr2(rec.fTransErr2)
+  fTransErr2(rec.fTransErr2),
+  fDDLflag(rec.fDDLflag)
 {
   // Copy constructor
   //
@@ -193,7 +197,7 @@ AliTriggerIR &AliTriggerIR::operator =(const AliTriggerIR& rec)
   }  
   fIncomplete2 = rec.fIncomplete2;
   fTransErr2 = rec.fTransErr2;
-
+  fDDLflag=rec.fDDLflag;
   return *this;
 }
 
@@ -213,7 +217,7 @@ AliTriggerIR::~AliTriggerIR()
 void AliTriggerIR::Print( const Option_t* ) const
 {
   // Print
-  cout << "Trigger Interaction Record:" << endl; 
+  cout << "Trigger Interaction Record DDL"<<fDDLflag<<":" << endl; 
   cout << " Orbit:                0x" << hex << fOrbit << dec << endl;
   cout << "       Number of signals:    " << fNWord << endl;
   for (UInt_t i = 0; i < fNWord; i++)

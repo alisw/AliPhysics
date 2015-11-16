@@ -38,6 +38,7 @@ public:
   void SetOrbit(UInt_t orbit) {fOrbit=orbit;}
   void SetIncomplete(Bool_t flag) {fIncomplete=flag;}
   void SetTransErr(Bool_t flag) {fTransErr=flag;}
+  void SetDDLflag(Int_t flag){fDDLflag=flag;};
 
   //  Getters
   UInt_t GetOrbit() const {return fOrbit;}
@@ -52,6 +53,7 @@ public:
   Bool_t GetIncomplete2() const {return fIncomplete2;}
   Bool_t GetTransErr() const {return fTransErr;}
   Bool_t GetTransErr2() const {return fTransErr2;}
+  Int_t  GetDDLflag(){return fDDLflag;};
   virtual void   Print( const Option_t* opt ="" ) const;
 
 private:
@@ -67,8 +69,9 @@ private:
   UShort_t  *fBC2;         //[fNWord2]
   Bool_t    fIncomplete2;   // flag which says if the IR is incomplete or not
   Bool_t    fTransErr2;     // flag which says if there was a transmission error (gap) or not
+  Int_t     fDDLflag;       // 1=DDL1, 2=DDL2, 3=DDL1+DDL2
 
-  ClassDef( AliTriggerIR, 3 )  // Trigger Interaction Record (one per orbit)
+  ClassDef( AliTriggerIR, 4 )  // Trigger Interaction Record (one per orbit)
 };
 
 #endif
