@@ -327,15 +327,21 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
       UShort_t    nstr = (q == 0 ? 512 : 256);
 
       RingHistos* histos = GetRingHistos(d, r);
-      if (!histos) continue;
+      if (!histos) {
+	AliWarningF("No histograms for FMD%d%c", d, r);
+	continue;
+      }
       
       for(UShort_t s = 0; s < nsec;  s++) {
 	for(UShort_t t = 0; t < nstr; t++) {
 	  Float_t mult = input.Multiplicity(d,r,s,t);
 	  
 	  // Keep dead-channel information. 
-	  if (mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) 
+	  if (mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) {
+	    DMSG(fDebug,4,"FMD%d%c[%2d,%3d]=%f is invalid, too large, or <0",
+		 d, r, s, t);
 	    continue;
+	  }
 
 	  // Get the pseudo-rapidity 
 	  Double_t eta1 = input.Eta(d,r,s,t);
