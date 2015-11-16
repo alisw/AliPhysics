@@ -68,3 +68,4 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES ../AliHLTCreateGRP.C DESTINATION HLT/createGRP)
