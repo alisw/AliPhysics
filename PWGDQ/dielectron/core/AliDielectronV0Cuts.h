@@ -50,7 +50,7 @@ public:
   void SetPdgCodes(Int_t mother, Int_t negDaughter, Int_t posDaughter) {fMotherPdg=mother; fNegPdg=negDaughter; fPosPdg=posDaughter;}
   void SetExcludeTracks(Bool_t exclude) {fExcludeTracks=exclude;}
   void SetDefaultPID(Int_t def, PIDCutType type=kBoth) {fPID=def; fPIDCutType=type; }
-  void ResetUniqueEventNumbers() { fOrbit=0; fPeriod=0; fBunchCross=0; }
+  void ResetUniqueEventNumbers() { fOrbit=0; fPeriod=0; fBunchCross=0; fEventId=-1; }
 
   // cut information
   virtual void Print(const Option_t* option = "") const;
@@ -71,11 +71,12 @@ private:
   UInt_t fOrbit;                            // orbit number
   UInt_t fPeriod;                           // period number
   UShort_t fBunchCross;                     // bunch cross number
+  Int_t fEventId;                           // event number in file
 
   AliDielectronV0Cuts(const AliDielectronV0Cuts &c);
   AliDielectronV0Cuts &operator=(const AliDielectronV0Cuts &c);
 
-  ClassDef(AliDielectronV0Cuts,3)          // cut class for V0 candidates
+  ClassDef(AliDielectronV0Cuts,4)          // cut class for V0 candidates
 };
 
 #endif
