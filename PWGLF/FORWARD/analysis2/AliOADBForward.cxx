@@ -870,6 +870,7 @@ AliOADBForward::CopyEntry(const TString& table,
   Table* t = FindTable(table);
   if (!t) return false;
 
+  Printf("Copy entry: table mode: %s", Mode2String(t->fMode));
   Entry* e = t->Get(oldRunNo, t->fMode, oldSys, oldSNN, oldField, mc, sat);
   if (!e) return false;
 
