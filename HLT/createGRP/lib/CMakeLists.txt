@@ -21,7 +21,7 @@ if(NOT DIM_FOUND)
     message( FATAL_ERROR "createGRP needs DIM! Please provide correct -DDIMDIR to cmake!" )
 endif()
 
-message( STATUS "DIMDIR set, building HLT createGRP library with dim libraries from ${DIM_LIBRARIES}" )
+message( STATUS "DIMDIR set, building HLT createGRP library" )
 
 # Module include folder
 include_directories(${CREATEGRPDIR}
