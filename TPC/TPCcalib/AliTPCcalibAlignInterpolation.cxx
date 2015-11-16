@@ -39,6 +39,7 @@
 #include "AliTrackerBase.h"
 #include "AliGeomManager.h"
 #include "TVectorF.h"
+#include "TStopwatch.h"
 //#include "THnBase.h"
 #include "THn.h"
 #include "AliSysInfo.h"
@@ -408,7 +409,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)esdTrack->GetFriendTrack();
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
     if (!friendTrack) continue;      
     if (esdTrack->GetITSNcls()<4) continue;
     Double_t mass = esdTrack->GetMass();  // particle mass    
@@ -752,7 +753,7 @@ void  AliTPCcalibAlignInterpolation::CreateDistortionMapsFromFile(const char * i
   //
 }
 
-void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t maxStat, Int_t selHis){
+void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime, Int_t stopTime, Int_t maxStat, Int_t selHis){
   /**
    * Trees with point-track residuals to residual histogram
    * @param residualList  text file with tree list
@@ -761,7 +762,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   //
   // 
-  const Int_t knPoints=kMaxRow;
+  ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
+  const Int_t knPoints=159;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
   TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
@@ -770,6 +772,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   TVectorF *vecR=0;
   TVectorF *vecPhi=0;
   TVectorF *vecZ=0;
+  Int_t timeStamp=0;
   AliExternalTrackParam *param = 0;
   //
   TString  esdList0 = gSystem->GetFromPipe(TString::Format("cat %s",residualList).Data());
@@ -779,24 +782,43 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   THn *hisToFill[6]={calibInterpolation->GetHisITSDRPhi(), calibInterpolation->GetHisITSTRDDRPhi(),  calibInterpolation->GetHisITSTOFDRPhi(), calibInterpolation->GetHisITSDZ(), calibInterpolation->GetHisITSTRDDZ(),  calibInterpolation->GetHisITSTOFDZ()};
   Int_t currentTrack=0;  
   TFile * fout = 0;
-  if (selHis<0)  fout=TFile::Open("ResidualHistograms.root","recreate");
-  if (selHis>=0) fout=TFile::Open(TString::Format("ResidualHistograms_His%d.root",selHis).Data(),"recreate");
-
+  if (selHis<0)  {
+    if (startTime<=0) fout=TFile::Open("ResidualHistograms.root","recreate");
+    if (startTime>0) fout=TFile::Open(TString::Format("ResidualHistograms_Time%d.root",startTime).Data(),"recreate");
+  }
+  if (selHis>=0) {
+    if (startTime<=0)  fout=TFile::Open(TString::Format("ResidualHistograms_His%d.root",selHis).Data(),"recreate");
+    if (startTime>0)    fout=TFile::Open(TString::Format("ResidualHistograms_His%d_Time%d.root",selHis,startTime).Data(),"recreate");
+  }
+  TH1 * hisTime=0;
+  if (startTime>0) hisTime=new TH1F("hisTrackTime","hisTrackTime",(stopTime-startTime)/20,startTime,stopTime);
+  TStopwatch timerAll;
+  
   for (Int_t ihis=0; ihis<6; ihis++){    
     if (selHis>=0 && ihis!=selHis) continue;
     for (Int_t iesd=0; iesd<nesd; iesd++){
+      TStopwatch timerFile;
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta"); 
       if (!tree) continue;
+      ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "ProcessignFile \t %s\n",esdArray->At(iesd)->GetName());
       AliSysInfo::AddStamp("xxx",ihis,iesd,currentTrack);
+      TBranch *br = tree->GetBranch("timeStamp");
       tree->SetBranchAddress("vecR.",&vecR);
       tree->SetBranchAddress("vecPhi.",&vecPhi);
       tree->SetBranchAddress("vecZ.",&vecZ);
       tree->SetBranchAddress("track.",&param);
+      br->SetAddress(&timeStamp);
       tree->SetBranchAddress(branches[ihis],&vecDelta);
+      
       Int_t ntracks=tree->GetEntries();
       for (Int_t itrack=0; itrack<ntracks; itrack++){
+	if (startTime>0){
+	  br->GetEntry(itrack);
+	  if (timeStamp<startTime  || timeStamp>stopTime) continue;
+	  hisTime->Fill(timeStamp);
+	}
 	tree->GetEntry(itrack);
 	currentTrack++;
 	if (maxStat>0 &&currentTrack>maxStat) break;
@@ -811,10 +833,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  hisToFill[ihis]->Fill(xxx);	  
 	}	
       }
-    }
+      timerFile.Print();
+    }    
     fout->cd();
     hisToFill[ihis]->Write();
   }
+  if (hisTime) hisTime->Write();
+  ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","End of processing\n");
+  timerAll.Print();
   delete fout;
 }
 

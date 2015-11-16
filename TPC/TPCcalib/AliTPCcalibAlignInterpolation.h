@@ -34,7 +34,7 @@ public :
   void   CreateDistortionMapsFromFile(const char * inputFile, const char *outputFile);
   void   SetSyswatchStep(Int_t step){fSyswatchStep=(step==0)?1:step;} // step with which sys. usage is sampled
   //
-  static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t maxStat=1000000, Int_t selHist=-1);
+  static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime=-1, Int_t stopTime=-1,  Int_t maxStat=1000000, Int_t selHist=-1);
   static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
