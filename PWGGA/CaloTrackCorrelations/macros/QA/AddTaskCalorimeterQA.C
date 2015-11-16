@@ -153,6 +153,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
                           bBadMap,
                           bTiCalib);  
   
+  if(bBadMap) 
+    cu->SwitchOnBadChannelsRemoval();
+  
   cu->SetDebug(-1);
   if(printSettings) cu->Print("");	
   

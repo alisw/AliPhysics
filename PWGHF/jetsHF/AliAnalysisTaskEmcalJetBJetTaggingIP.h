@@ -46,6 +46,7 @@ public:
 	//Standard setters
 	void SetMC(Bool_t val = kTRUE){fIsMC = val;};
 	void SetUseAtlasSignTC(Bool_t val = kTRUE){fUseAtlasSignTCCalculation = kTRUE; };
+
 	void SetEventSelectionMethod(int i = 0){fUseEventSelection = i;};
 	void SetJetSelectionMethod(int i = 0){fUseJetSelection = i;};
 	void SetJetTaggerMCMethod(int i = 0){fUseMCTagger = i;};

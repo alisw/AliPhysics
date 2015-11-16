@@ -136,6 +136,7 @@ protected:
   
   // temporary
   Bool_t    GetArrays();
+  Bool_t    FillMapWithAODtracks(map_AliAODTrk *fAODgTrkMap);
   Bool_t    FillV0trks(std::vector<Int_t> &TrkIDs);
   Bool_t    IsV0(Int_t trkId, std::vector<Int_t> &vTrks);
   
@@ -160,7 +161,7 @@ private:
   TString     fMcJetContName;        //  Name of the found jet array
   TString     fMcTrkContName;        //  Name of the found track array
   TString     fMcRhoTaskName;        //  Name of the rho task
-  TString     fFiredClass;           // emcal trigger class
+  TString     fFiredClass;           //  emcal trigger class
   
   Double_t    fTaggingRadius;        // radius used in tagging the jet flavour
   
