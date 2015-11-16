@@ -40,7 +40,7 @@ void colladaBufferExample2()
                 colladaBuffer->AddNewLambertMaterial(Form("lambert%d",iter),emission,ambient,diffuse,0.5);
              
                 // add shape to the buffer
-                colladaBuffer->AddBox(Form("cube%d",iter),0.5,0.5,0.5,translation,rotation,scale,Form("lambert%d",iter));
+                colladaBuffer->AddBox(Form("cube%d",iter),0.5,0.5,0.5,translation,rotation,scale,"",Form("lambert%d",iter));
                 iter++;
             }
         }

@@ -22,4 +22,5 @@
 #pragma link C++ class AliStorageAdministratorPanelMarkEvent+;
 #pragma link C++ class AliStorageAdministratorPanelListEvents+;
 #pragma link C++ class AliStorageAdministratorPanelSetStorageParams+;
+#pragma link C++ class AliStorageTypes+;
 

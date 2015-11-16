@@ -10,6 +10,7 @@
 #include <TThread.h>
 #include <TFile.h>
 #include "TMutex.h"
+#include <TTimeStamp.h>
 
 using namespace std;
 
@@ -55,6 +56,10 @@ int main(int argc, char **argv)
             {
                 cout<<"Received event. Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
                 
+                TTimeStamp ts(event->GetTimeStamp());
+                cout<<"Timestamp:"<<ts.AsString()<<endl;
+                
+                /*
                 cout<<event->GetPeriodNumber()<<endl;
                 cout<<event->GetOrbitNumber()<<endl;
                 cout<<event->GetBunchCrossNumber()<<endl;
@@ -62,7 +67,7 @@ int main(int argc, char **argv)
                 {
                     if(strcmp(event->GetESDRun()->GetTriggerClass(i),"")){
                         cout<<event->GetESDRun()->GetTriggerClass(i)<<endl;}
-                }
+                }*/
                 delete event;event=0;
             }
             else

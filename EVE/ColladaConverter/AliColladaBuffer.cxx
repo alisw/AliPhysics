@@ -126,42 +126,97 @@ void AliColladaBuffer::SetupScene()
     fXml->NewAttr(visualSceneInstance,0,"url","#test");
 }
 
-void AliColladaBuffer::AddShape(const char *name,TEveGeoShapeExtract *shapeExtract,const char* materialName)
+XMLNodePointer_t AliColladaBuffer::AddVisualSceneGeometry(TString name, TString parent)
+{
+    XMLNodePointer_t parentNode = FindNodeById(parent);
+    
+    if(parentNode==0)
+    {
+        if(parent.EqualTo("")) // if parent was not specifed, add to main scene
+        {
+            cout<<"Parent was not specified. Adding shape to main scene."<<endl;
+            parentNode = fVisualScene;
+        }
+        else // if parent was specified, but doesn't exist yet, create it
+        {
+            cout<<"As parent:"<<parent<<" was not found, I will create it for you."<<endl;
+            parentNode = CreateNode(parent);
+        }
+    }
+    XMLNodePointer_t geom = fXml->NewChild(parentNode,0,"node");
+    fXml->NewAttr(geom,0,"id",name.Data());
+    return geom;
+}
+
+XMLNodePointer_t AliColladaBuffer::FindNodeById(TString id)
+{
+    for(XMLNodePointer_t node : fVisualSceneNodes){
+        if(id.EqualTo(fXml->GetAttr(node,"id"))){
+            return node;
+        }
+    }
+    return 0;
+}
+
+XMLNodePointer_t AliColladaBuffer::CreateNode(TString name,TString parent)
+{
+    XMLNodePointer_t currentNode = FindNodeById(name);
+    
+    if(currentNode==0)  // if node with this id doesn't exists yet, create it
+    {
+        XMLNodePointer_t parentNode = FindNodeById(parent);
+        
+        if(parentNode==0 || parent.EqualTo(""))
+        {
+            cout<<"Parent of node to be created doesn't exist:"<<parent<<". Adding to main scene."<<endl;
+            parentNode = fVisualScene;
+        }
+        
+        XMLNodePointer_t node = fXml->NewChild(parentNode,0,"node");
+        fXml->NewAttr(node,0,"id",name.Data());
+        fVisualSceneNodes.push_back(node);
+        
+        currentNode = node;
+    }
+    else
+    {
+        cout<<"Node name is not unique, you should fix that. Skipping this shape."<<endl;
+    }
+    return currentNode;
+}
+
+void AliColladaBuffer::AddShape(const char *name,TEveGeoShapeExtract *shapeExtract,TString parent,const char* materialName)
 {
     // get TEveGeoShape object
     TEveGeoShape *shape = TEveGeoShape::ImportShapeExtract(shapeExtract);
-    
-//    cout<<shape->GetShape()->ClassName()<<"\t\t"<<name<<endl;
-    
     // make buffer3D from TGeoShape and add it to Collada file
-    AddShape(name,shape->GetShape()->MakeBuffer3D(),shapeExtract->GetTrans(),materialName);
+    AddShape(name,shape->GetShape()->MakeBuffer3D(),shapeExtract->GetTrans(),parent,materialName);
 }
 
-void AliColladaBuffer::AddBox(const char* name,double width, double height, double depth, double translation[3], double rotation[3], double scale[3],const char* materialName)
+void AliColladaBuffer::AddBox(const char* name,double width, double height, double depth, double translation[3], double rotation[3], double scale[3],TString parent,const char* materialName)
 {
     TGeoBBox *box = new TGeoBBox(width/2,height/2,depth/2);
     double trans[16];
     GetTransMatrixFromParams(trans,translation,rotation,scale);
-    AddShape(name,box->MakeBuffer3D(),trans,materialName);
+    AddShape(name,box->MakeBuffer3D(),trans,parent,materialName);
     delete box;
 }
 
-void AliColladaBuffer::AddShape(const char* name,TGeoShape *shape, double translation[3], double rotation[3], double scale[3],const char* materialName)
+void AliColladaBuffer::AddShape(const char* name,TGeoShape *shape, double translation[3], double rotation[3], double scale[3],TString parent,const char* materialName)
 {
     double trans[16];
     GetTransMatrixFromParams(trans,translation,rotation,scale);
-    AddShape(name,shape->MakeBuffer3D(),trans,materialName);
+    AddShape(name,shape->MakeBuffer3D(),trans,parent,materialName);
 }
 
-void AliColladaBuffer::AddShape(const char* name,TBuffer3D *buffer, double translation[3],double rotation[3], double scale[3],const char* materialName)
+void AliColladaBuffer::AddShape(const char* name,TBuffer3D *buffer, double translation[3],double rotation[3], double scale[3],TString parent, const char* materialName)
 {
     double trans[16];
     GetTransMatrixFromParams(trans,translation,rotation,scale);
-    AddShape(name,buffer,trans,materialName);
-    
+    AddShape(name,buffer,trans,parent,materialName);
 }
 
-void AliColladaBuffer::AddShape(const char* name,TBuffer3D *buffer, double trans[16],const char* materialName)
+void AliColladaBuffer::AddShape(const char* name,TBuffer3D *buffer, double trans[16],TString parent,const char* materialName)
 {
     TString verticesString = "\n";
     TString normalString = "\n";
@@ -319,7 +374,7 @@ void AliColladaBuffer::AddShape(const char* name,TBuffer3D *buffer, double trans
     }
     transformationString+= "\n";
     
-    AddShapeToCollada(name,verticesString,verticesArray.size(),normalString,trianglesString,trianglesArray.size(),transformationString,materialName);
+    AddShapeToCollada(name,verticesString,verticesArray.size(),normalString,trianglesString,trianglesArray.size(),transformationString,materialName,parent);
 }
 
 
@@ -328,7 +383,8 @@ void AliColladaBuffer::AddShapeToCollada(const char* name,
                                        const char* normalString,
                                        const char* trianglesString,int trianglesSize,
                                        const char* transformationString,
-                                       const char* materialName)
+                                       const char* materialName,
+                                       TString parent)
 {
     XMLNodePointer_t geometry = fXml->NewChild(fLibraryGeometries, 0, "geometry");
     fXml->NewAttr(geometry,0,"id",Form("%s-lib",name));
@@ -389,11 +445,15 @@ void AliColladaBuffer::AddShapeToCollada(const char* name,
     fXml->NewChild(triangles,0,"p",trianglesString);
     
     // add shape to scene
-    XMLNodePointer_t node = fXml->NewChild(fVisualScene,0,"node");
+    XMLNodePointer_t geomNode = AddVisualSceneGeometry(name,parent);
     
-    fXml->NewChild(node,0,"matrix",transformationString);// transformation matrix
+    if(geomNode==0){
+        cout<<"Couldn't add geometry to scene. Ignoring..."<<endl;
+        return;
+    }
+    fXml->NewChild(geomNode,0,"matrix",transformationString);// transformation matrix
     
-    XMLNodePointer_t instanceGeometry = fXml->NewChild(node,0,"instance_geometry");
+    XMLNodePointer_t instanceGeometry = fXml->NewChild(geomNode,0,"instance_geometry");
     fXml->NewAttr(instanceGeometry,0,"url",Form("#%s-lib",name));
     
     XMLNodePointer_t technique = fXml->NewChild(fXml->NewChild(instanceGeometry,0,"bind_material"),0,"technique_common");
