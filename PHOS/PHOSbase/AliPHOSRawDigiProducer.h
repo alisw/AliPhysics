@@ -36,6 +36,7 @@ public:
   void SetEmcMinAmp(Float_t emcMin) { fEmcMinE=emcMin; }
   void SetCpvMinAmp(Float_t cpvMin) { fCpvMinE=cpvMin; }
   void SetSampleQualityCut(Float_t qcut) { fSampleQualityCut=qcut; }
+  void SetSubtractL1phase(Bool_t a=kTRUE){ fSubtractL1phase=a ; }
 
 protected:
 
@@ -49,6 +50,7 @@ protected:
   Double_t CalibrateT(Double_t amp, Int_t* relId, Bool_t isLowGain) ; //calibrate time
 
 private:
+  Bool_t  fSubtractL1phase ;         // To correct time for L1phase
   Float_t fEmcMinE ;                 // minimum energy of digit (ADC)
   Float_t fCpvMinE ;                 // minimum energy of digit (ADC)
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
@@ -62,7 +64,7 @@ private:
   Int_t *fADCValuesLG;               //! Array og low-gain ALTRO samples
   Int_t *fADCValuesHG;               //! Array og high-gain ALTRO samples
 
-  ClassDef(AliPHOSRawDigiProducer,7)
+  ClassDef(AliPHOSRawDigiProducer,8)
 };
 
 #endif

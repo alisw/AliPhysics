@@ -38,6 +38,7 @@ public:
   Float_t GetTimeGateAmpThresh()      const { return fTimeGateAmpThresh ;      }
   Float_t GetTimeGateLow()            const { return fTimeGateLow ;            }
   Float_t GetTimeGateHigh()           const { return fTimeGateHigh ;           }
+  Bool_t  GetSubtractL1phase()        const { return fSubtractL1phase;         }
 
   const char* GetNonlinearityCorrectionVersion()const{return fNonlinearityCorrVersion.Data();}
 
@@ -66,6 +67,8 @@ public:
   void SetTimeGateAmpThresh(Float_t thrs=10)         { fTimeGateAmpThresh     = thrs ;  }
   void SetTimeGateLow(Float_t gate=1.e-7)            { fTimeGateLow = gate ;            }
   void SetTimeGateHigh(Float_t gate=1.e-8)           { fTimeGateHigh = gate;            }
+  void SetSubtractL1phase(Bool_t a=kTRUE)            { fSubtractL1phase = a ;          }
+  
   void SetNonlinearityCorrectionVersion(const char * ver="Gustavo2005");
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
@@ -97,6 +100,7 @@ protected:
   Bool_t  fEMCSubtractPedestals;   // EMC: true if pedestal should be subtracted (in non-ZS)
   Bool_t  fEMCUnfold;              // EMC: true if overlapped clusters should be unfolded
   Bool_t  fEMCEnergyCorrectionOn;  // EMC: if true do non-linear correction of cluster energy
+  Bool_t  fSubtractL1phase;        // EMC: should one sabtract L1 phase in time calculation
   TString fEMCFitterVersion ;      // EMC: AliPHOSRawFitter version
   TString fNonlinearityCorrVersion ;// EMC: choose which version of nenlinearity correction
   Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
@@ -111,7 +115,7 @@ protected:
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
   static TObject* fgkTrigParams;   // PHOS trigger parameters
 
-  ClassDef(AliPHOSRecoParam,12)
+  ClassDef(AliPHOSRecoParam,13)
 };
 
 #endif

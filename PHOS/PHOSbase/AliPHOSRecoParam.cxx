@@ -48,6 +48,7 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCEnergyCorrectionOn(kTRUE),
+  fSubtractL1phase(kTRUE),
   fEMCFitterVersion(""),
   fNonlinearityCorrVersion(""),
   fGlobalAltroOffset(0),
@@ -80,6 +81,7 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fEMCSubtractPedestals(kTRUE),
   fEMCUnfold(kTRUE),
   fEMCEnergyCorrectionOn(kTRUE),
+  fSubtractL1phase(kTRUE),
   fEMCFitterVersion(""),
   fNonlinearityCorrVersion(""),
   fGlobalAltroOffset(0),
@@ -114,6 +116,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fEMCSubtractPedestals   = recoParam.fEMCSubtractPedestals;
     fEMCUnfold              = recoParam.fEMCUnfold;
     fEMCEnergyCorrectionOn  = recoParam.fEMCEnergyCorrectionOn;
+    fSubtractL1phase        = recoParam.fSubtractL1phase ;
     fEMCFitterVersion       = recoParam.fEMCFitterVersion;
     fNonlinearityCorrVersion= recoParam.fNonlinearityCorrVersion;
     fGlobalAltroOffset      = recoParam.fGlobalAltroOffset;
@@ -145,6 +148,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tEMCSubtractPedestals   = %d\n"
 		  "\tEMCUnfold              = %d\n"
 		  "\tEMCEnergyCorrectionOn  = %d\n"
+		  "\tSubtractL1phase        = %d\n"
 		  "\tEMCFitterVersion       = %s\n"
 		  "\tGlobalAltroOffset      = %d\n"
 		  "\tGlobalAltroThreshold   = %d\n"
@@ -170,6 +174,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  fEMCSubtractPedestals,
 		  fEMCUnfold,
 		  fEMCEnergyCorrectionOn,
+		  fSubtractL1phase,
 		  fEMCFitterVersion.Data(),
 		  fGlobalAltroOffset,
 		  fGlobalAltroThreshold,

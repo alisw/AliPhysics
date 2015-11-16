@@ -49,6 +49,7 @@ AliPHOSCalibData * AliPHOSRawDigiProducer::fgCalibData  = 0 ;
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   TObject(),
+  fSubtractL1phase(kTRUE),
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
@@ -75,6 +76,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(AliRawReader *rawReader,
 					       AliAltroMapping **mapping):
   TObject(),
+  fSubtractL1phase(kTRUE),
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
@@ -102,6 +104,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(AliRawReader *rawReader,
 //--------------------------------------------------------------------------------------
 AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp):
   TObject(),
+  fSubtractL1phase(kTRUE),
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
@@ -132,6 +135,7 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
 
   if(&dp == this) return *this;
 
+  fSubtractL1phase = dp.fSubtractL1phase ;
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
   fSampleQualityCut = dp.fSampleQualityCut ;
@@ -258,10 +262,12 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
 //      time = CalibrateT(time,relId,!caloFlag) ;
       // subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
       //Very strange behaviour of electronics, but cross-checkes several times...
-      if( fRawStream->GetL1Phase()<55.*1.e-9 ) //for phase=0,25,50
-        time -= fRawStream->GetL1Phase();
-      else //for phase 75
-        time += 25.*1.e-9 ;
+      if(fSubtractL1phase){
+        if( fRawStream->GetL1Phase()<55.*1.e-9 ) //for phase=0,25,50
+          time -= fRawStream->GetL1Phase();
+        else //for phase 75
+          time += 25.*1.e-9 ;
+      }
       
       if(energy <= 0.) 
 	continue;
