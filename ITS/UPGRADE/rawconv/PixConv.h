@@ -8,7 +8,7 @@
 #define _BIG_ENDIAN_  // store data in big endian format
 #endif
 
-#define _DEBUG_PIX_CONV_ // uncomment for debug mode
+//#define _DEBUG_PIX_CONV_ // uncomment for debug mode
 
 class PixConv
 {
@@ -92,14 +92,6 @@ public:
 		   ,unsigned short &link   // updated on change, don't modify returned value
 		   ,unsigned short &cycle);// updated on change, don't modify returned value
   
-  short ReadNextHitRecord(unsigned short &link,   // updated on change, don't modify returned value
-			  unsigned short &cycle,  // updated on change, don't modify returned value
-			  unsigned short &chip,   // updated on change, don't modify returned value
-			  unsigned char &region,  // updated on change, don't modify returned value
-			  unsigned char &dColID,  // updated on every call, can be modified
-			  unsigned short &pixID,  // updated on every call, can be modified
-			  unsigned char &hitsPattern  // updated on every call, can be modified
-			  );
   int UnexpectedEOF(const char* message) const;
   //
   void Print() const;
@@ -153,7 +145,7 @@ protected:
   //
   unsigned char*         fWrBuffer;  //! write buffer
   unsigned char*         fBufferPointer;  //! current pointer in reading 
-  unsigned char*         fBufferEnd;  //! end of filled buffer
+  unsigned char*         fBufferEnd;  //! end of filled buffer + 1
   int                    fWrBufferSize; //! buffer size
   int                    fWrBufferFill; //! entries in the buffer
   //
@@ -344,7 +336,7 @@ inline void PixConv::EraseInBuffer(int nbytes)
 inline bool PixConv::GetFromBuffer(unsigned char &v)
 {
   // read character value from buffer
-  if (fBufferPointer>fBufferEnd && !LoadInBuffer()) return false; // upload or finish
+  if (fBufferPointer>=fBufferEnd && !LoadInBuffer()) return false; // upload or finish
   v = *fBufferPointer++;
   return true;
 }
@@ -353,7 +345,7 @@ inline bool PixConv::GetFromBuffer(unsigned char &v)
 inline bool PixConv::GetFromBuffer(unsigned short &v)
 {
   // read short value from buffer
-  if (fBufferPointer>fBufferEnd-(sizeof(short)-1) && !LoadInBuffer()) return false; // upload or finish
+  if (fBufferPointer>=fBufferEnd-(sizeof(short)-1) && !LoadInBuffer()) return false; // upload or finish
 #ifdef _BIG_ENDIAN_
   v = ((*fBufferPointer++)<<8)|(*fBufferPointer++);
 #else
@@ -368,7 +360,7 @@ inline bool PixConv::GetFromBuffer(unsigned short &v)
 inline bool PixConv::GetFromBuffer(unsigned int &v, int nbytes)
 {
   // read nbytes characters to int from buffer (no check for nbytes>4)
-  if (fBufferPointer>fBufferEnd-(nbytes-1) && !LoadInBuffer()) return false; // upload or finish
+  if (fBufferPointer>=fBufferEnd-(nbytes-1) && !LoadInBuffer()) return false; // upload or finish
   v = 0;
 #ifdef _BIG_ENDIAN_
   for (int ib=nbytes;ib--;) v |= (unsigned int)((*fBufferPointer++)<<(8<<ib));
@@ -382,7 +374,7 @@ inline bool PixConv::GetFromBuffer(unsigned int &v, int nbytes)
 inline bool PixConv::GetFromBuffer(unsigned long long &v, int nbytes)
 {
   // read nbytes characters to int from buffer (no check for nbytes>8)
-  if (fBufferPointer>fBufferEnd-(nbytes-1) && !LoadInBuffer()) return false; // upload or finish
+  if (fBufferPointer>=fBufferEnd-(nbytes-1) && !LoadInBuffer()) return false; // upload or finish
   v = 0;
 #ifdef _BIG_ENDIAN_
   for (int ib=nbytes;ib--;) v |= (unsigned int)((*fBufferPointer++)<<(8<<ib));

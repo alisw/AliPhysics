@@ -33,8 +33,8 @@ void read(const char* inp, bool conv2ColRow=1)
   //
   printf("Read %d hits in %d cycles\n",nhitsTot,nCycles);
   //
-  if (res==PixConv::kEOF) printf("EOF reached successfully\n");
-  else                    printf("ERROR was produced\n");
+  if (!res || res==PixConv::kEOF) printf("EOF reached successfully\n");
+  else                            printf("ERROR was produced: %d\n",res);
   //
 }
 

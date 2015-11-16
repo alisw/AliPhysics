@@ -163,6 +163,9 @@ int PixConv::ProcDoubleCol(short reg, short dcol)
 //_____________________________________
 void PixConv::ExpandBuffer(int add)
 {
+#ifdef _DEBUG_PIX_CONV_
+  printf("ExpandBuffer: %d -> %d\n",fWrBufferSize,fWrBufferSize+add);
+#endif
   unsigned char* bfcopy = new unsigned char[(fWrBufferSize+=add)];
   if (fWrBufferFill) memcpy(bfcopy,fWrBuffer,fWrBufferFill*sizeof(unsigned char));
   delete[] fWrBuffer;
@@ -226,6 +229,9 @@ int PixConv::LoadInBuffer(int chunk)
   //
   if (fWrBufferSize<(chunk+save)) ExpandBuffer(chunk+save+1000);
   fBufferPointer = fWrBuffer;
+#ifdef _DEBUG_PIX_CONV_
+  printf("LoadInBuffer: %d bytes placed with offset %d\n",chunk,save);
+#endif
   int nc = (int)fread(fWrBuffer+save, sizeof(char), chunk, fIOFile);
   fWrBufferFill = save + nc;
   fBufferEnd = fWrBuffer + fWrBufferFill;
@@ -242,102 +248,6 @@ void PixConv::ResetMap()
   fRows.clear();
   fRowIDs.clear();
   fLinkPool.clear();
-}
-
-//_____________________________________
-short PixConv::ReadNextHitRecord(unsigned short &link,   // updated on change, don't modify returned value
-				 unsigned short &cycle,  // updated on change, don't modify returned value
-				 unsigned short &chip,   // updated on change, don't modify returned value
-				 unsigned char &region,  // updated on change, don't modify returned value
-				 unsigned char &dColID,  // updated on every call, can be modified
-				 unsigned short &pixID,  // updated on every call, can be modified
-				 unsigned char &hitsPattern  // updated on every call, can be modified
-				 )
-{
-  // fill in provided dest array (size must be at least 2*nrows) hits in the next double column data,
-  // set dcol ID and if needed (on change) update region, chip, evid
-  // On success return o
-  //
-  hitsPattern = 0;
-  pixID = 0;
-  dColID = 0;
-  //
-  unsigned char dataC=0;
-  unsigned char framestartdata=0;
-  unsigned short dataS=0;
-  unsigned int dataI=0;
-  //
-  while(1) {
-    //
-    if (!GetFromBuffer(dataC)) return kEOF;
-    //
-    if (dataC==kLINKHEADER) { // new link header
-      if (!GetFromBuffer(link) || // link ID
-	  !GetFromBuffer(cycle))  // cycle ID
-	return UnexpectedEOF("LINK_HEADER");
-      continue;
-    }
-    //
-    if (dataC==kLINKTRAILER) { // new link header
-      if (!GetFromBuffer(dataS)) UnexpectedEOF("LINK_TRAILER"); // link ID
-      if (dataS!=link) {
-	printf("Error: Link trailer for linkID=%d found while current linkID=%d\n",dataS,link);
-	return kError;
-      }
-      if (!GetFromBuffer(dataS)) return UnexpectedEOF("LINK_TRAILER"); // cycle ID
-      if (dataS!=cycle) {
-	printf("Error: Link trailer for cycle=%d found while current cycle=%d\n",dataS,cycle);
-	return kError;
-      }
-      continue;
-    }
-    // ---------- chip info ?
-    unsigned char dataCM = dataC&(~kMaskChipID);
-    //
-    if (dataCM==kCHIPHEADER) {
-      chip = dataC & kMaskChipID; 
-      if (!GetFromBuffer(framestartdata)) return UnexpectedEOF("CHIP_HEADER");
-      continue;
-    }
-    //
-    if (dataCM==kCHIPEMPTY) {
-      chip = dataC & kMaskChipID; 
-      if (!GetFromBuffer(framestartdata)) return UnexpectedEOF("CHIP_EMPTY:FrameStartData");
-      if (!GetFromBuffer(dataC)) return UnexpectedEOF("CHIP_EMPTY:ReservedWord");
-      continue;
-    }
-    //
-    if (dataCM==kCHIPTRAILER) {
-      if (!GetFromBuffer(framestartdata)) return UnexpectedEOF("CHIP_HEADER:FrameStartData");
-      continue;
-    }
-    //
-    // --------- region info ?
-    dataCM = dataC&kREGION;
-    if (dataCM==kREGION) {
-      region = dataC & kMaskRegion;
-      continue;
-    }
-    //
-    // -------- hit data
-    StepBackInBuffer(); // need to reinterpred as short
-    if (!GetFromBuffer(dataS)) return UnexpectedEOF("CHIPDATA");
-    //
-    unsigned short dataSM = dataS & (~kMaskDColID); // check hit data mask
-    if (dataSM==kDATASHORT) { // single hit
-      dColID  = (dataS>>10) & kMaskEncoder;
-      pixID = dataS & kMaskPixID;
-      break;
-    }
-    if (dataSM==kDATALONG) { // multiple hits
-      dColID  = (dataS>>10) & kMaskEncoder;
-      pixID = dataS & kMaskPixID;
-      if (!GetFromBuffer(hitsPattern)) return UnexpectedEOF("CHIP_DATA_LONG:Pattern");
-      break;
-    }
-  }
-  //
-  return 0;
 }
 
 //_____________________________________

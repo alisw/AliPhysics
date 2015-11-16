@@ -112,7 +112,7 @@ void digits2raw(const char* dataDir="./",int nev=-1,int evStart=0)
 		for (int idig=0;idig<ndig;idig++) {
 		  short row = rowcol[sortInd[idig]]>>16;
 		  short col = rowcol[sortInd[idig]]&0xffff;
-		  printf("**AddPixel: col %d row %d\n",col,row);
+		  //printf("**AddPixel: col %d row %d\n",col,row);
 		  converter.AddPixel(row,col);
 		  nhitTot++;
 		}
