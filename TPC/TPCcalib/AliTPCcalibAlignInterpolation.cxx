@@ -191,19 +191,19 @@ Bool_t  AliTPCcalibAlignInterpolation::RefitITStrack(AliESDfriendTrack *friendTr
   
   for (Int_t iPoint=0;iPoint<nPoints;iPoint++){
     pointarray->GetPoint(spacepoint,sortedIndex[iPoint]);
+    int lr = AliGeomManager::VolUIDToLayer(spacepoint.GetVolumeID())-1;
+    if (lr<0||lr>=6) continue;
     Double_t xyz[3] = {(Double_t)spacepoint.GetX(),(Double_t)spacepoint.GetY(),(Double_t)spacepoint.GetZ()};
     Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
     trackITS.Global2LocalPosition(xyz,alpha);
     if (xyz[0]>kMaxRadius) break;  // use only ITS points - maybe we should indexes of elements
     if (!trackITS.Rotate(alpha)) return kFALSE;
     if (!AliTrackerBase::PropagateTrackToBxByBz(&trackITS,xyz[0],mass,1,kFALSE)) return kFALSE;
-    int lr = AliGeomManager::VolUIDToLayer(spacepoint.GetVolumeID())-1;
-    if (lr<0||lr>=6) continue;
     Double_t pos[2] = {xyz[1], xyz[2]};
     const Double_t* cov = sigma2[lr];
     volId = spacepoint.GetVolumeID();
-    layerId = AliGeomManager::VolUIDToLayer(volId,modId);
-    //      if (layerId ==AliGeomManager::kSDD1 || layerId ==AliGeomManager::kSDD2) cov[0]*=16.; cov[2]*=16.;}      
+    //    layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+    //     if (layerId ==AliGeomManager::kSDD1 || layerId ==AliGeomManager::kSDD2) cov[0]*=16.; cov[2]*=16.;}      
     double chi2cl = trackITS.GetPredictedChi2(pos,cov);
     chi2 += chi2cl;
     npoints++;
@@ -513,13 +513,12 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     //
     // 4.) Propagate  ITS tracks outward
     // 
-    //  
     Bool_t itsOK=kTRUE;
     int npUpdITS = 0;
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++) {
       //trackArrayITS[iPoint].SetUniqueID(0);
       AliTPCclusterMI &cluster=clusterArray[iPoint];
-      if (cluster.GetDetector()==0) continue;
+      if (cluster.GetVolumeId()==0) continue;
       Float_t fxyz[3] = {0};
       cluster.GetGlobalXYZ(fxyz);
       Double_t xyz[3]={fxyz[0],fxyz[1],fxyz[2]};
@@ -550,7 +549,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       if (!trdOK && !tofOK) break; // no sense to continue;
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       //      if (cluster==NULL) continue;
-      if (cluster.GetDetector()==0) continue;
+      if (cluster.GetVolumeId()==0) continue;
       Float_t fxyz[3] = {0};
       cluster.GetGlobalXYZ(fxyz);
       Double_t alpha = TMath::ATan2(fxyz[1],fxyz[0]);            
@@ -608,7 +607,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){
 	AliTPCclusterMI &cluster=clusterArray[iPoint];
 	//if (cluster==NULL) continue;
-	if (cluster.GetDetector()==0) continue;
+	if (cluster.GetVolumeId()==0) continue;
 
 	(*fStreamer)<<"interpolation"<<
           "itrack="<<fTrackCounter<<  // total track #
@@ -654,7 +653,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       vecR[counter] = -999;
       //
       AliTPCclusterMI &cluster=clusterArray[iPoint];
-      if (cluster.GetDetector()==0) continue;
+      if (cluster.GetVolumeId()==0) continue;
       Double_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
       //if (zsignSector*cluster.GetZ()<0.) continue;
       //
