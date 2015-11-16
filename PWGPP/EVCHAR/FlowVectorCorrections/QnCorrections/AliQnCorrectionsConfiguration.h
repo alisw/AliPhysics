@@ -93,7 +93,7 @@ class AliQnCorrectionsConfiguration : public TObject {
   //void SetScaling(Bool_t set)             {fScaleQvec          =set;}
 
   
-  Bool_t UseCalibrationDirectoryNameAllEvents(Bool_t b=kFALSE)      {fUseLabel=(b ? kFALSE : kTRUE);}
+  Bool_t UseCalibrationDirectoryNameAllEvents(Bool_t b=kFALSE)      {fUseLabel=(b ? kFALSE : kTRUE); return fUseLabel;}
 
   //void SetCorrectionFlag(AliQnCorrectionsSteps::CorrectionSteps flag);  // which correction has to be applied at some point
 
