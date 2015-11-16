@@ -148,8 +148,14 @@ public:
       TList* det = GetDetectorList(parent);
       if (!det) return false;
 
-      TList* res = QATrender::GetSubList(det, "FitResults");
-      if (!res) return false;
+      TList* res = QATrender::GetSubList(det, "FitResults",false);
+      if (!res) {
+	res = QATrender::GetSubList(det, "elossResults",false);
+	if (!res) {
+	  Warning("ProcessEnergyLoss", "Neither FitResults nor elossResults found");
+	  return false;
+	}
+      }
       
       ExtractYQuantity(res, Form("FMD%d%c_chi2",  fD, fR), fChi2);
       ExtractYQuantity(res, Form("FMD%d%c_c",     fD, fR), fC);
@@ -157,8 +163,14 @@ public:
       ExtractYQuantity(res, Form("FMD%d%c_xi",    fD, fR), fXi);
       ExtractYQuantity(res, Form("FMD%d%c_sigma", fD, fR), fSigma);
 
-      TH1* status = QATrender::GetHistogram(res, "status");
-      if (!status) return false;
+      TH1* status = QATrender::GetHistogram(res, "status",false);
+      if (!status) {
+	status = QATrender::GetHistogram(res, "elossStatus",false);
+	if (!status) {
+	  Warning("ProcessEnergyLoss", "Neither status nor elossStatus found");
+	  return false;
+	}
+      }
       fFitStatus->nLow        = UShort_t(status->GetBinContent(3));
       fFitStatus->nCandidates = UShort_t(status->GetBinContent(4));
       fFitStatus->nFitted     = UShort_t(status->GetBinContent(5));
@@ -695,7 +707,7 @@ public:
       return false;
     }
     
-    if (!GetLists()) { 
+    if (!GetLists(false)) { 
       // Error("ProcessOne", "Failed to get lists from %s", filename);
       return false;
     }
@@ -726,8 +738,11 @@ public:
 	  fn = gSystem->ConcatFileName(gSystem->DirName(filename),
 				       *psub);
       }
+      Info("ProcessOne", "Trying %s", fn.Data());
       ret = GetInputLists(fn);
       if (ret) break;
+      Info("ProcessOne", "No success, try the next");
+      psub++;
     }
     if (!ret) return false;
     
@@ -787,8 +802,8 @@ public:
       Warning("CleanStack", "No histograms in stack %s", stack->GetName());
       return;
     }
-    Printf("Stack to clean %s", stack->GetName());
-    l->ls();
+    // Printf("Stack to clean %s", stack->GetName());
+    // l->ls();
     
     // Clean up list of histogram.  Histograms with no entries or 
     // no functions are deleted.  We have to do this using the TObjLink 
@@ -1096,7 +1111,9 @@ public:
     const char* rpUrl = "http://alimonitor.cern.ch/runview/?run=";
     QABase::WriteLinks();
 
-    TFile* results = TFile::Open("QAresults.root", "READ");
+    TFile* results = 0;
+    if (!gSystem->AccessPathName("QAresults.root"))
+      results = TFile::Open("QAresults.root", "READ");
     if (results) { 
       *fHtml << "<h3>QA results</h3>\n"
 	     << "<ul>\n"
@@ -1181,12 +1198,14 @@ public:
    * 
    * @return Pointer to the list 
    */
-  static TList* GetSubList(const TList* parent, const char* name)
+  static TList* GetSubList(const TList* parent, const char* name, 
+			   Bool_t verbose=true)
   {
     TList* tmp = static_cast<TList*>(parent->FindObject(name));
     if (!tmp) { 
-      Error("GetLists", "List %s not found in %s", name, 
-	    parent->GetName());
+      if (verbose) 
+	Error("GetSubLists", "List %s not found in %s", name, 
+	      parent->GetName());
       return 0;
     }
     return tmp;
@@ -1197,7 +1216,7 @@ public:
    * 
    * @return true on success
    */    
-  Bool_t GetLists()
+  Bool_t GetLists(Bool_t verbose=true)
   {
     if (!fCurrentFile) return 0;
     
@@ -1210,8 +1229,9 @@ public:
 	const char* folder3 = "forwardQAResults";
 	forward = static_cast<TList*>(fCurrentFile->Get(folder3));
 	if (!forward) {
-	  Error("GetLists", "List %s/%s/%s not found in %s", 
-		folder, folder2, folder3, fCurrentFile->GetName());
+	  if (verbose) 
+	    Error("GetLists", "List %s/%s/%s not found in %s", 
+		  folder, folder2, folder3, fCurrentFile->GetName());
 	  return false;
 	}
       }
@@ -1243,13 +1263,16 @@ public:
    * 
    * @return Pointer to object or null
    */
-  static TObject* GetObject(const TList* list, const char* name)
+  static TObject* GetObject(const TList* list, 
+			    const char* name, 
+			    Bool_t verbose=true)
   {
     if (!list) return 0;
     TObject* o = list->FindObject(name);
     if (!o) { 
-      Error("GetObject", "Failed to find object %s in %s", 
-	    name, list->GetName());
+      if (verbose) 
+	Error("GetObject", "Failed to find object %s in %s", 
+	      name, list->GetName());
       return 0;
     }
     return o;
@@ -1262,9 +1285,10 @@ public:
    * 
    * @return Pointer to object or null
    */
-  static TH1* GetHistogram(const TList* list, const char* name)
+  static TH1* GetHistogram(const TList* list, const char* name,
+			   Bool_t verbose=true)
   {
-    return static_cast<TH1*>(GetObject(list, name));
+    return static_cast<TH1*>(GetObject(list, name, verbose));
   }
   /** 
    * Draw some text on a pad 
