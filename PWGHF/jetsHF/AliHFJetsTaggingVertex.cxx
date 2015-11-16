@@ -77,7 +77,7 @@ AliHFJetsTaggingVertex &AliHFJetsTaggingVertex::operator=(const AliHFJetsTagging
 
 //_____________________________________________________________________________________
 Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
-                                           map_AliAODTrk     &fAODTrackInfo,
+                                           map_AliAODTrk     *fAODTrackInfo,
                                            TClonesArray      *fTrackArrayIn,
                                            AliAODEvent       *aod,
                                            AliESDVertex      *v1,
@@ -131,7 +131,7 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
       continue;
     }
     
-    AliAODTrack *tmpAODtrk = fAODTrackInfo[jTrkID].first;
+    AliAODTrack *tmpAODtrk = (fAODTrackInfo->at(jTrkID)).first;
     
     if (!fCutsHFjets->IsDaughterSelected(tmpAODtrk, v1, esdtrcuts)) continue;
     
@@ -140,7 +140,7 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
     arrESDtrkInfo.push_back(make_pair(jTrkID, tmpESDtrk));
   }
   
-  Int_t nGoodTrks = arrESDtrkInfo.size();
+  Int_t nGoodTrks = (Int_t)arrESDtrkInfo.size();
   AliInfoF(MSGINFO("Number of good tracks = %d"), nGoodTrks);
   
   if (nGoodTrks < 2) {
@@ -171,13 +171,14 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
         
         if (vert) {
           
-          vert->AddDaughter(fAODTrackInfo[jTrkID_1].first);
-          vert->AddDaughter(fAODTrackInfo[jTrkID_2].first);
+          vert->AddDaughter((fAODTrackInfo->at(jTrkID_1)).first);
+          vert->AddDaughter((fAODTrackInfo->at(jTrkID_2)).first);
           
           if ( !fCutsHFjets->IsVertexSelected(vert, aod, magzkG, vtxRes) ) continue;
           
           
-          Int_t nTrkBelongToV0 = (fAODTrackInfo[jTrkID_1].second + fAODTrackInfo[jTrkID_2].second);
+          Int_t nTrkBelongToV0 = (fAODTrackInfo->at(jTrkID_1)).second +
+                                 (fAODTrackInfo->at(jTrkID_2)).second;
           
           new ((* arrVtxHF)[nSecndVxtHF]) AliAODVertex(* vert);
           arrVtxDisp.push_back(make_pair(vtxRes, nTrkBelongToV0));
@@ -199,13 +200,15 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
           
           if (vert) {
             
-            vert->AddDaughter(fAODTrackInfo[jTrkID_1].first);
-            vert->AddDaughter(fAODTrackInfo[jTrkID_2].first);
-            vert->AddDaughter(fAODTrackInfo[jTrkID_3].first);
+            vert->AddDaughter((fAODTrackInfo->at(jTrkID_1)).first);
+            vert->AddDaughter((fAODTrackInfo->at(jTrkID_2)).first);
+            vert->AddDaughter((fAODTrackInfo->at(jTrkID_3)).first);
 
             if (!fCutsHFjets->IsVertexSelected(vert, aod, magzkG, vtxRes)) continue;
 
-            Int_t nTrkBelongToV0 = (fAODTrackInfo[jTrkID_1].second + fAODTrackInfo[jTrkID_2].second + fAODTrackInfo[jTrkID_3].second);
+            Int_t nTrkBelongToV0 = (fAODTrackInfo->at(jTrkID_1)).second +
+                                   (fAODTrackInfo->at(jTrkID_2)).second +
+                                   (fAODTrackInfo->at(jTrkID_1)).second;
             
             new ((* arrVtxHF)[nSecndVxtHF]) AliAODVertex(* vert);
             arrVtxDisp.push_back(make_pair(vtxRes, nTrkBelongToV0));
