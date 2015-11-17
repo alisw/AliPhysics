@@ -66,6 +66,7 @@
 #include <string>
 #include <cstdio>
 #include <cstddef>
+#include <algorithm>
 #include <stdint.h>
 #include "RConfig.h"
 #include "TFile.h"
