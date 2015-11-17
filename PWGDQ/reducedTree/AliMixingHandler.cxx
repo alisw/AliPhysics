@@ -51,7 +51,7 @@ AliMixingHandler::AliMixingHandler() :
   //
   Float_t dummyCentRange[2] = {0.0,100.};
   Float_t dummyZRange[2] = {-10.0,10.};
-  Float_t dummyEPRange[2] = {-0.5*TMath::Pi(),0.5*TMath::Pi()};
+  Float_t dummyEPRange[2] = {(Float_t)(-0.5*TMath::Pi()),(Float_t)(0.5*TMath::Pi())};
   fCentralityLimits.Set(2,dummyCentRange);
   fEventVertexLimits.Set(2,dummyZRange);
   fEventPlaneLimits.Set(2,dummyEPRange);
@@ -86,7 +86,7 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   //
   Float_t dummyCentRange[2] = {0.0,100.};
   Float_t dummyZRange[2] = {-10.0,10.};
-  Float_t dummyEPRange[2] = {-0.5*TMath::Pi(),0.5*TMath::Pi()};
+  Float_t dummyEPRange[2] = {(Float_t)(-0.5*TMath::Pi()),(Float_t)(0.5*TMath::Pi())};
   fCentralityLimits.Set(2,dummyCentRange);
   fEventVertexLimits.Set(2,dummyZRange);
   fEventPlaneLimits.Set(2,dummyEPRange);
