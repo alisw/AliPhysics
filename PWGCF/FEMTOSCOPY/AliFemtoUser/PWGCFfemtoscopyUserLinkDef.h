@@ -55,6 +55,7 @@
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
 #pragma link C++ class AliFemtoAnalysisAzimuthalPbPb;
+#pragma link C++ class AliFemtoAnalysisAzimuthalPbPb2Order;
 #pragma link C++ class AliFemtoPairCutRadialDistanceLM;
 #pragma link C++ class AliFemtoPicoEventRP;
 #pragma link C++ class AliFemtoCorrFctnPairFractions;
