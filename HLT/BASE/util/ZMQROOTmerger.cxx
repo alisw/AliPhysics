@@ -52,6 +52,8 @@ TString fZMQconfigIN  = "PUSH";
 TString fZMQsubscriptionIN = "";
 TString fZMQconfigOUT  = "PULL";
 TString fZMQconfigMON  = "REP";
+Int_t   fZMQmaxQueueSize = 10;
+Int_t   fZMQtimeout = 10;
 
 Bool_t  fResetOnSend = kFALSE;
 
@@ -341,11 +343,11 @@ Int_t InitZMQ()
   //init or reinit stuff
   Int_t rc = 0;
   printf("in:  ");
-  rc += alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), 0, 200);
+  rc += alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("out: ");
-  rc += alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), 0, 200);
+  rc += alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("mon: ");
-  rc += alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), 0, 200);
+  rc += alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
   return 0;
 }
 
@@ -424,6 +426,14 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("pushback-period"))
     {
       fPushbackPeriod=value.Atoi();
+    }
+    else if (option.EqualTo("ZMQmaxQueueSize"))
+    {
+      fZMQmaxQueueSize=value.Atoi();
+    }
+    else if (option.EqualTo("ZMQtimeout"))
+    {
+      fZMQtimeout=value.Atoi();
     }
     else
     {
