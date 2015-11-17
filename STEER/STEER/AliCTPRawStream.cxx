@@ -242,11 +242,13 @@ Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
   UInt_t *irdata = NULL;
   UInt_t irsize = 0;
   UInt_t orbit = 0;
+  UInt_t norbits = 0;
   Bool_t incomplete = kFALSE, transerr = kFALSE;
   while ((iword < fRawReader->GetDataSize()) && (data[iword+3]==0)) {
     if (data[iword+1] & 0x80) {
       UChar_t flag = ((data[iword+1] >> 4) & 0x3);
       if (flag == 0) {
+        norbits++;
 	if (irdata) {
 	  new (fIRArray[fIRArray.GetEntriesFast()])
 	    AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
@@ -296,6 +298,7 @@ Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
       AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
     irdata = NULL; irsize = 0;
   }
+ if(norbits != 5)AliWarning(Form("Number of orbits !=% : %i",norbits));
  if((iword>=fRawReader->GetDataSize())) return 0;
  return 1;
 }
@@ -304,11 +307,13 @@ Int_t AliCTPRawStream::GetDDL2Data(UChar_t* data,Int_t& iword)
    printf("Doing DDL2 \n");
    ULong64_t irdata[3564];
    UInt_t irsize = 0;
-   UInt_t orbit = 0xffffffff;
+   UInt_t orbit = 0x0;
+   UInt_t norbits=0;
    Bool_t incomplete = kFALSE, transerr = kFALSE;
    while ((iword < fRawReader->GetDataSize()) && ((data[iword+3]+data[iword+2]) !=0)) {
       if((data[iword+3]&0xc0) == 0xc0){   // DDL2
-        if(orbit != 0xffffffff){
+        norbits++;
+        if(irsize != 0){
 	 new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
          irsize=0;
 	}
@@ -332,9 +337,10 @@ Int_t AliCTPRawStream::GetDDL2Data(UChar_t* data,Int_t& iword)
       }
       iword += 4;
     }
-    if (orbit != 0xffffffff) {
+    if (irsize != 0) {
        new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
     }
+ if(norbits != 5)AliWarning(Form("Number of orbits !=% : %i",norbits));
  if((iword>=fRawReader->GetDataSize())) return 0;
  return 1;
 }
