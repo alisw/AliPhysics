@@ -1811,6 +1811,7 @@ Int_t AliITStrackerMI::AliITSlayer::InsertCluster(AliITSRecPoint *cl) {
   //This function adds a cluster to this layer
   //--------------------------------------------------------------------
   if (fN==AliITSRecoParam::GetMaxClusterPerLayer()) {
+    AliWarningGeneralF("AliITStrackerMI::AliITSlayer","Number of clusters for layer R=%.2f exceeds limit of %d",fR,fN);
     return 1;
   }
   fCurrentSlice=-1;
