@@ -13,16 +13,12 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Bool_t bUsePhiEtaWeights,
                              TString PhiEtaWeightsFileName,
                              Bool_t bUseVZERO=kFALSE,
-                             Bool_t bUseVZEROCalib=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              Bool_t bRecenterZDC=kFALSE,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
                              Float_t ZDCGainAlpha=0.395,
-                             Bool_t bInvertZDC=kFALSE,
-                             Bool_t bEventCutsQA=kFALSE,
-                             Bool_t bTrackCutsQA=kFALSE,
+                             Bool_t bCutsQA=kFALSE,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
@@ -34,6 +30,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Bool_t bCalculateFlow=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
+                             Bool_t bSetQAZDC=kFALSE,
+                             Int_t MinMulZN=1,
+                             Float_t MaxDevZN=9.,
                              Bool_t bCenFlattening=kTRUE,
                              TString CenWeightsFileName="",
                              const char* suffix="") {
@@ -74,6 +73,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
+ Bool_t bDivSigma=kFALSE;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -109,7 +109,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskFEname += CRCsuffix;
  taskFEname += suffix;
  // create instance of the class
- Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
  taskFE->SetCentralityEstimator("V0M");
@@ -141,7 +140,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  cutsEvent->SetQA(bEventCutsQA);
+  cutsEvent->SetQA(bCutsQA);
  }
  else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
@@ -162,7 +161,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
   // enable the qa plots
-  cutsEvent->SetQA(bEventCutsQA);
+  cutsEvent->SetQA(bCutsQA);
   // explicit multiplicity outlier cut
   cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
   if (sDataSet == "2011")
@@ -182,7 +181,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   cutsRP->SetCutMC(kTRUE);
   cutsRP->SetPtRange(ptMin,ptMax);
   cutsRP->SetEtaRange(etaMin,etaMax);
-  cutsRP->SetQA(bTrackCutsQA);
+  cutsRP->SetQA(bCutsQA);
   if(bUseVZERO) {
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
@@ -192,7 +191,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   cutsPOI->SetCutMC(kTRUE);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
-  cutsPOI->SetQA(bTrackCutsQA);
+  cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD") {
   // Track cuts for RPs
@@ -206,8 +205,8 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cutsRP->SetPhiMin(0.);
    cutsRP->SetPhiMax(TMath::TwoPi());
    // options for the reweighting
-   cutsRP->SetVZEROgainEqualizationPerRing(bUseVZEROCalib);
-   cutsRP->SetApplyRecentering(bUseVZEROCalib);
+   cutsRP->SetVZEROgainEqualizationPerRing(bUseVZERO);
+   cutsRP->SetApplyRecentering(bUseVZERO);
    cutsRP->SetDivSigma(bDivSigma);
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
@@ -215,7 +214,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cutsRP->SetMinimalTPCdedx(-999999999);
    cutsRP->SetPtRange(ptMin,ptMax);
    cutsRP->SetEtaRange(etaMin,etaMax);
-   cutsRP->SetQA(bTrackCutsQA);
+   cutsRP->SetQA(bCutsQA);
   }
   // Track cuts for POIs
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
@@ -226,7 +225,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
-  cutsPOI->SetQA(bTrackCutsQA);
+  cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {
   cutsRP = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
@@ -311,9 +310,12 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
- taskQC->SetInvertZDC(bInvertZDC);
+ taskQC->SetInvertZDC(bUseZDC);
  taskQC->SetCorrWeight(sCorrWeight);
  taskQC->SetUsePtWeights(bUsePtWeights);
+ taskQC->SetQAZDCCuts(bSetQAZDC);
+ taskQC->SetMinMulZN(MinMulZN);
+ taskQC->SetMaxDevZN(MaxDevZN);
  
  if(bCenFlattening && sDataSet=="2011") {
   TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");

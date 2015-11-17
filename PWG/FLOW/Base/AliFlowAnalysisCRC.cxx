@@ -286,7 +286,11 @@ fCRC2RbRList(NULL),
 fFlowSPZDCList(NULL),
 fFlowQCList(NULL),
 fFlowSPVZList(NULL),
-fVariousList(NULL)
+fVariousList(NULL),
+fQAZDCCuts(kFALSE),
+fQAZDCCutsFlag(kTRUE),
+fMinMulZN(1),
+fMaxDevZN(5.)
 {
  // constructor
  
@@ -929,6 +933,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   this->CalculateCRCQVec();
   if(fUseCRCRecenter) this->RecenterCRCQVec();
   if(fRecenterZDC) this->RecenterCRCQVecZDC();
+  if(fQAZDCCuts) fQAZDCCutsFlag = this->PassQAZDCCuts();
   this->CalculateCRCCorr();
   if(fCalculateCRC2) this->CalculateCRC2Cor();
   if(fUseVZERO) this->CalculateCRCVZERO();
@@ -962,6 +967,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
  // p) cache run number
  fCachedRunNum = fRunNum;
  
+ fQAZDCCutsFlag = kTRUE;
 // printf("Make done \n");
  
 } // end of AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
@@ -16596,6 +16602,13 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
  for(Int_t c=0; c<10; c++) {
   fPtWeightsHist[c] = NULL;
  }
+ for(Int_t h=0; h<fCRCnCen; h++) {
+  for (Int_t c=0; c<2; c++) {
+   fhZNCentroid[h][c] = NULL;
+   fhZNSpectra[h][c] = NULL;
+  }
+  fhZNCvsZNA[h] = NULL;
+ }
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForVarious()
 
 //=======================================================================================================================
@@ -16685,6 +16698,16 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
  fVariousList->Add(fMultHist);
  fCenHist = new TH1D("Centrality","Centrality",100,0.,100.);
  fVariousList->Add(fCenHist);
+ for(Int_t h=0; h<fCRCnCen; h++) {
+  for (Int_t c=0; c<2; c++) {
+   fhZNCentroid[h][c] = new TH2F(Form("fhZNCentroid[%d][%d]",h,c), Form("fhZNCentroid[%d][%d]",h,c), 200,-3.5,3.5,200,-3.5,3.5);
+   fVariousList->Add(fhZNCentroid[h][c]);
+   fhZNSpectra[h][c] = new TH1F(Form("fhZNSpectra[%d][%d]",h,c), Form("fhZNSpectra[%d][%d]",h,c), 100, 0., 100.);
+   fVariousList->Add(fhZNSpectra[h][c]);
+  }
+  fhZNCvsZNA[h] = new TH2F(Form("hZNCvsZNA[%d]",h),Form("hZNCvsZNA[%d]",h), 100, 0., 100., 100, 0., 100.);
+  fVariousList->Add(fhZNCvsZNA[h]);
+ }
  
 } // end of void AliFlowAnalysisCRC::BookEverythingForVarious()
 
@@ -17727,6 +17750,7 @@ Int_t AliFlowAnalysisCRC::GetCRCCenBin(Double_t Centrality)
  if (Centrality>80. && Centrality<90.) CenBin=9;
  if (Centrality>90. && Centrality<100.) CenBin=10;
  if (CenBin>=fCRCnCen) CenBin=-1;
+ if (fCRCnCen==1) CenBin=0;
  return CenBin;
 } // end of AliFlowAnalysisCRC::GetCRCCenBin(Double_t Centrality)
 
@@ -17875,6 +17899,50 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 
 }
 
+//=======================================================================================================================
+
+Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
+{
+ Bool_t PassZDCcuts=kTRUE;
+
+ // ZDC-C (eta < -8.8)
+ Double_t ZCRe = fZDCFlowVect[0].X();
+ Double_t ZCIm = fZDCFlowVect[0].Y();
+ Double_t ZCM  = fZDCFlowVect[0].GetMult()/1380.;
+ // ZDC-A (eta > 8.8)
+ Double_t ZARe = fZDCFlowVect[1].X();
+ Double_t ZAIm = fZDCFlowVect[1].Y();
+ Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
+
+ if( fInvertZDC ) ZARe = -ZARe;
+ // cut on multiplicity
+ if( ZCM<1. || ZAM<1. ) PassZDCcuts = kFALSE;
+ // exclude ZDC bad runs
+ if(fRunNum==137638 || fRunNum==137639 || fRunNum==138469 || fRunNum==139028 || fRunNum==139029) PassZDCcuts = kFALSE;
+
+ // cut on #neutrons
+ if( ZCM<fMinMulZN || ZAM<fMinMulZN ) {
+  PassZDCcuts = kFALSE;
+//  printf("low mult : %e %e \n",ZCM,ZAM);
+ }
+ // cut on centroid position
+ Double_t SigZNC = 0.2679;
+ Double_t SigZNA = 0.2749;
+ if( sqrt(ZCRe*ZCRe+ZCIm*ZCIm)>fMaxDevZN*SigZNC || sqrt(ZARe*ZARe+ZAIm*ZAIm)>fMaxDevZN*SigZNA ) {
+  PassZDCcuts = kFALSE;
+//  printf("out cent : %e %e \n",sqrt(ZCRe*ZCRe+ZCIm*ZCIm),sqrt(ZARe*ZARe+ZAIm*ZAIm));
+ }
+ // fill QA plots
+ if(PassZDCcuts) {
+  fhZNCentroid[fCenBin][0]->Fill(ZCRe,ZCIm);
+  fhZNCentroid[fCenBin][1]->Fill(ZARe,ZAIm);
+  fhZNSpectra[fCenBin][0]->Fill(ZCM);
+  fhZNSpectra[fCenBin][1]->Fill(ZAM);
+  fhZNCvsZNA[fCenBin]->Fill(ZCM,ZAM);
+ }
+
+ return PassZDCcuts;
+}
 
 //=======================================================================================================================
 
@@ -18877,6 +18945,8 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
  if( ZCM<1. || ZAM<1. ) return;
  // exclude ZDC bad runs
  if(fRunNum==137638 || fRunNum==137639 || fRunNum==138469 || fRunNum==139028 || fRunNum==139029) return;
+// ZDC QA cuts
+ if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
  
  for(Int_t hr=0; hr<fFlowNHarm; hr++) {
   
@@ -24126,6 +24196,17 @@ void AliFlowAnalysisCRC::GetPointersForVarious()
   this->SetCenWeightsHist(CenWeightsHist);
  }
  
+ for(Int_t h=0; h<fCRCnCen; h++) {
+  for (Int_t c=0; c<2; c++) {
+   TH2F* ZNCentroid = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNCentroid[%d][%d]",h,c)));
+   if(ZNCentroid) this->SetZNCentroid(ZNCentroid,h,c);
+   TH1F* ZNSpectra = dynamic_cast<TH1F*>(fVariousList->FindObject(Form("fhZNSpectra[%d][%d]",h,c)));
+   if(ZNSpectra) this->SetZNSpectra(ZNSpectra,h,c);
+  }
+  TH2F* ZNCvsZNA = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNCvsZNA[%d]",h)));
+  if(ZNCvsZNA) this->SetZNCvsZNA(ZNCvsZNA,h);
+ }
+
 } // end void AliFlowAnalysisCRC::GetPointersForVarious()
 
 //=======================================================================================================================
