@@ -65,8 +65,8 @@ void testTrackerCA() {
   rec->SetRecoParam(par);
   //
   rec->Init();
-  AliITSUCATracker *tracker = new AliITSUCATracker();
-  tracker->SetPhiCut(0.15f);
+  AliITSUCATracker *tracker = new AliITSUCATracker(rec);
+  tracker->SetPhiCut(0.3f);
   //tracker->SetThetaBin(0.03f);
   tracker->SetChi2Cut(3000);
   tracker->Init(rec);
