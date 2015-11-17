@@ -19,8 +19,8 @@ const double LambdaMass = 1.115683,
 
 
 const float kstar_min = 0.0, kstar_max = 1.0,
-               kt_min = 0.0,    kt_max = 3.5,
-               mt_min = 1.5,    mt_max = 10.5; 
+               kt_min = 0.0,    kt_max = 4.0,
+               mt_min = 0.0,    mt_max = 4.0;
 
 const float q_o_min = 0.0, q_o_max = 7.5,
             q_s_min = -5.0, q_s_max = 5.0;
@@ -72,7 +72,7 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar():
 
   fNumerator_mT->Sumw2();
   fDenominator_mT->Sumw2();
-  
+
   fNumerator_qq->Sumw2();
   fDenominator_qq->Sumw2();
 }
@@ -174,19 +174,10 @@ void AliFemtoCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair)
   fDenominator_qq->Fill(aPair->QSideCMS(), aPair->QOutCMS());
 }
 
-
 float AliFemtoCorrFctnKStar::CalcMt(const AliFemtoPair* aPair)
 {
-  const double mass_lam_2 = LambdaMass * LambdaMass,
-                mass_pi_2 = PionMass * PionMass;
-  
-  AliFemtoThreeVector p1 = aPair->Track1()->V0()->MomV0(),
-                      p2 = aPair->Track2()->Track()->P();
-  
-  const float et1 = TMath::Sqrt(mass_lam_2 + p1.x() * p1.x() + p1.y() * p1.y()),
-              et2 = TMath::Sqrt(mass_pi_2 + p2.x() * p2.x() + p2.y() * p2.y()),
-               pt = p1.x() * p2.x() + p1.y() * p2.y();
-  
-  const float mt = mass_lam_2 + mass_pi_2 + 2 * (et1 * et2 - pt);
-  return mt;
+  const double mass_1 = aPair->Track1()->FourMomentum().m(),
+               mass_2 = aPair->Track2()->FourMomentum().m();
+  const double avg_mass = (mass_1 + mass_2) / 2.0;
+  return TMath::Sqrt(avg_mass * avg_mass + ::pow(aPair->KT(), 2));
 }
