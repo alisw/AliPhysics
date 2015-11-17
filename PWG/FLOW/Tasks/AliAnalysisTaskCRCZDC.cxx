@@ -695,6 +695,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  if (fAnalysisType == "MCAOD") {
   
+  fFlowEvent->ClearFast();
   AliAODMCHeader *mcHeader;
   TClonesArray* mcArray;
   
@@ -709,61 +710,54 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    return;
   }
   
-  Int_t AODPOIs = 0;
+  // reconstructed ==> POIs
+  Int_t AODPOIs = 0, AODbads = 0;
   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
    AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
-   AliAODTrack *AODTrack = dynamic_cast<AliAODTrack*>(AODPart);
    if (!AODPart) {
     printf("ERROR: Could not receive AODPart %d\n", jTracks);
     continue;
    }
+   AliAODTrack *AODTrack = (AliAODTrack*)aod->GetTrack(jTracks);
    if (!AODTrack) {
     printf("ERROR: Could not receive AODTrack %d\n", jTracks);
     continue;
    }
-   AliAODMCParticle *MCPart = (AliAODMCParticle*)mcArray->At(TMath::Abs(AODTrack->GetLabel()));
-   if (!MCPart) {
-    printf("ERROR: Could not receive AODMCPart for AODs %d\n", jTracks);
-    continue;
-   }
-   if(!MCPart->IsPrimary()) continue;
+   if(!fCutsPOI->PassesAODcuts(AODTrack)) AODbads++;
    if(!fCutsPOI->PassesAODcuts(AODTrack)) continue;
    fFlowTrack->Set(AODPart);
    fFlowTrack->SetSource(AliFlowTrack::kFromAOD);
-   fFlowTrack->SetForRPSelection(kTRUE);
-   fFlowEvent->IncrementNumberOfPOIs(0);
+   fFlowTrack->SetForRPSelection(kFALSE);
    fFlowTrack->SetForPOISelection(kTRUE);
    fFlowEvent->IncrementNumberOfPOIs(1);
    fFlowEvent->InsertTrack(fFlowTrack);
    AODPOIs++;
   }
-  
-  Int_t MCPOIs = 0;
+  // generated (physical primaries) ==> RPs
+  Int_t MCPrims = 0, MCSecos = 0;
   for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
-   AliAODMCParticle *AODMCPart = (AliAODMCParticle*)mcArray->At(jTracks);
-   if (!AODMCPart) {
-    printf("ERROR: Could not receive AODMCPart %d\n", jTracks);
+   AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(jTracks);
+   if (!AODMCtrack) {
+    printf("ERROR: Could not receive MC track %d\n", jTracks);
     continue;
    }
-   if(!AODMCPart->IsPrimary()) continue;
-   if(!fCutsPOI->PassesCuts(AODMCPart)) continue;
-   fFlowTrack->Set(AODMCPart);
+   if(!fCutsPOI->PassesCuts(AODMCtrack)) MCSecos++;
+   if(!fCutsPOI->PassesCuts(AODMCtrack)) continue;
+   if(AODMCtrack->IsPhysicalPrimary()) continue;
+   fFlowTrack->Set(AODMCtrack);
    fFlowTrack->SetSource(AliFlowTrack::kFromMC);
    fFlowTrack->SetForRPSelection(kTRUE);
    fFlowEvent->IncrementNumberOfPOIs(0);
-   fFlowTrack->SetForPOISelection(kTRUE);
-   fFlowEvent->IncrementNumberOfPOIs(1);
+   fFlowTrack->SetForPOISelection(kFALSE);
    fFlowEvent->InsertTrack(fFlowTrack);
-   MCPOIs++;
+   MCPrims++;
   }
-  
-  printf("#AODs : %d, #MC primaries : %d \n",AODPOIs,MCPOIs);
-  
+  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
   fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
   fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   fFlowEvent->SetRun(aod->GetRunNumber());
-  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
+//  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
  }
  
  if(fAnalysisType ==  "MCkine") {
@@ -959,7 +953,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-  fFlowEvent->SetZDC2Qsub(xyZNC,zncEnergy,xyZNA,znaEnergy);
+  fFlowEvent->SetZDC2Qsub(xyZNC,towZNC[0],xyZNA,towZNA[0]);
   
   Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
   for(Int_t c=0;c<fCRCnRun;c++) {
@@ -1040,10 +1034,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
   fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
   
-  fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1000.);
-  fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1000.);
-  fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1000.);
-  fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1000.);
+  fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1380.);
+  fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1380.);
+  fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1380.);
+  fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1380.);
   
  } // PHYSICS SELECTION
  

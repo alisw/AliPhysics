@@ -109,7 +109,10 @@ fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
 fCenWeightsHist(NULL),
-fCorrWeight("TPCuVZuZDCu")
+fCorrWeight("TPCuVZuZDCu"),
+fQAZDCCuts(kFALSE),
+fMinMulZN(1),
+fMaxDevZN(5.)
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -223,7 +226,10 @@ fCenBinWidth(10.),
 fQVecList(NULL),
 fDataSet(""),
 fCenWeightsHist(NULL),
-fCorrWeight("TPCuVZuZDCu")
+fCorrWeight("TPCuVZuZDCu"),
+fQAZDCCuts(kFALSE),
+fMinMulZN(1),
+fMaxDevZN(5.)
 {
  // Dummy constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -303,6 +309,9 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetRecenterZDC(fRecenterZDC);
  fQC->SetDivSigma(fDivSigma);
  fQC->SetInvertZDC(fInvertZDC);
+ fQC->SetQAZDCCuts(fQAZDCCuts);
+ fQC->SetMinMulZN(fMinMulZN);
+ fQC->SetMaxDevZN(fMaxDevZN);
  fQC->SetTestSin(fCRCTestSin);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);

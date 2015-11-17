@@ -189,6 +189,12 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
+ void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
+ Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
+ void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
+ Int_t GetMinMulZN() const {return this->fMinMulZN;};
+ void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
+ Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -271,6 +277,9 @@ private:
  TList *fQVecList;       // list with weights
  TH1D* fCenWeightsHist;
  TH1D* fPtWeightsHist[10];
+ Bool_t fQAZDCCuts;
+ Int_t fMinMulZN;
+ Float_t fMaxDevZN;
  
  ClassDef(AliAnalysisTaskCRC, 2);
 };
