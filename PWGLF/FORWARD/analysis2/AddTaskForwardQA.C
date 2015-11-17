@@ -69,7 +69,7 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   // Set whether to make the correction object 
   task->GetEnergyFitter().SetDoMakeObject(kFALSE);
   // Set the low cut used for energy
-  task->GetEnergyFitter().SetLowCut(0.4);
+  task->GetEnergyFitter().SetLowCut(0.5);
   // Set the number of bins to subtract from maximum of distributions
   // to get the lower bound of the fit range
   task->GetEnergyFitter().SetFitRangeBinWidth(4);

@@ -192,7 +192,8 @@ void RerunELossFits(Bool_t forceSet=false,
     if (nEvAcc > 0 && sys > 0) {
       Long_t minEvents = 0;
       switch (sys) {
-      case 1: minEvents = 1000000; break; // At least 1M
+      //case 1: minEvents = 1000000; break; // At least 1M
+      case 1: minEvents = 500000; break; // At least 1M
       case 2: minEvents = 10000;   break; // At least 10k
       case 3:                             // Fall-through
       case 4: minEvents = 100000;  break; // At least 100k
@@ -248,6 +249,7 @@ void RerunELossFits(Bool_t forceSet=false,
     fitter->SetNParticles(maxPart);
     fitter->SetDoMakeObject(true);
     fitter->SetMinEntries(10000);
+    if (fitter->GetLowCut() < .5) fitter->SetLowCut(0.55);
     if (flags & 0x2)  fitter->SetDebug(3);
     if (flags & 0x1)
       fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
