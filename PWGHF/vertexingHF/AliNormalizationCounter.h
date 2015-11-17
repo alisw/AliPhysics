@@ -59,7 +59,9 @@ class AliNormalizationCounter : public TNamed
   void Add(const AliNormalizationCounter*);
   void SetESD(Bool_t flag){fESD=flag;}
   void SetStudyMultiplicity(Bool_t flag, Float_t etaRange){ fMultiplicity=flag; fMultiplicityEtaRange=etaRange; }
-  void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE, Int_t multiplicity=-9999);
+  void SetStudySpherocity(Bool_t flag, Double_t nsteps=100.){fSpherocity=flag;
+    fSpherocitySteps=nsteps;}
+  void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE, Int_t multiplicity=-9999, Double_t spherocity=-99.);
   void StoreCandidates(AliVEvent*, Int_t nCand=0,Bool_t flagFilter=kTRUE);
   TH1D* DrawAgainstRuns(TString candle="candid(filter)",Bool_t drawHist=kTRUE);
   TH1D* DrawRatio(TString candle1="candid(filter)",TString candle2="triggered");
@@ -73,23 +75,30 @@ class AliNormalizationCounter : public TNamed
   Bool_t GetStudyMultiplicity(){ return fMultiplicity; }
   Float_t GetStudyMultplicityEtaRange() { return fMultiplicityEtaRange; }
   Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity);
+  Double_t GetNEventsForNormSpheroOnly(Double_t minspherocity, Double_t maxspherocity);
+  Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity, Double_t minspherocity, Double_t maxspherocity);
   TH1D* DrawNEventsForNorm(Bool_t drawRatio=kFALSE);
 
  private:
   AliNormalizationCounter(const AliNormalizationCounter &source);
   AliNormalizationCounter& operator=(const AliNormalizationCounter& source);
   Int_t Multiplicity(AliVEvent* event);
+  void FillCounters(TString name, Int_t runNumber, Int_t multiplicity, Double_t spherocity);
+
+
   AliCounterCollection fCounters; /// internal counter
   Bool_t fESD; /// flag for ESD vs AOD
   Bool_t fMultiplicity; /// flag for multiplicity
   Float_t fMultiplicityEtaRange;
+  Bool_t fSpherocity; // flag for spherocity
+  Double_t fSpherocitySteps;  // binning in spherocity
   TH2F *fHistTrackFilterEvMult; /// hist to store no of filter candidates vs no of tracks in the event
   TH2F *fHistTrackAnaEvMult;/// hist to store no of analysis candidates vs no of tracks in the event
   TH2F *fHistTrackFilterSpdMult; /// hist to store no of filter candidates vs  SPD multiplicity
   TH2F *fHistTrackAnaSpdMult;/// hist to store no of analysis candidates vs SPD multiplicity 
 
   /// \cond CLASSIMP    
-  ClassDef(AliNormalizationCounter,6);
+  ClassDef(AliNormalizationCounter,7);
   /// \endcond
 };
 #endif
