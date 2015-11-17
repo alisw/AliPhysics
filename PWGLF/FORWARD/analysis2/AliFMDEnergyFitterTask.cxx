@@ -213,7 +213,7 @@ AliFMDEnergyFitterTask::Event(AliESDEvent& esd)
   AliESDFMD* esdFMD = esd.GetFMDData();
 
   // Fix up ESD 
-  fESDFixer.Fix(*esdFMD, ip.Z());
+  fESDFixer.Fix(*esdFMD, ip);
 
   // Do the energy stuff 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 

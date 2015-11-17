@@ -256,7 +256,7 @@ AliForwardQATask::Event(AliESDEvent& esd)
   AliESDFMD* esdFMD = esd.GetFMDData();
 
   // Fix up the the ESD 
-  GetESDFixer().Fix(*esdFMD, ip.Z());
+  GetESDFixer().Fix(*esdFMD, ip);
   
   // Run the energy loss fitter 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
