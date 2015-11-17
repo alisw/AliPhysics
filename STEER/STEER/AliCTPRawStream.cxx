@@ -298,7 +298,7 @@ Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
       AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
     irdata = NULL; irsize = 0;
   }
- if(norbits != 5)AliWarning(Form("Number of orbits !=% : %i",norbits));
+ if(norbits != 5)AliWarning(Form("Number of orbits != %i",norbits));
  if((iword>=fRawReader->GetDataSize())) return 0;
  return 1;
 }
@@ -340,7 +340,7 @@ Int_t AliCTPRawStream::GetDDL2Data(UChar_t* data,Int_t& iword)
     if (irsize != 0) {
        new (fIRArray[fIRArray.GetEntriesFast()]) AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
     }
- if(norbits != 5)AliWarning(Form("Number of orbits !=% : %i",norbits));
+ if(norbits != 5)AliWarning(Form("Number of orbits != %i",norbits));
  if((iword>=fRawReader->GetDataSize())) return 0;
  return 1;
 }
