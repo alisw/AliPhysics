@@ -176,6 +176,12 @@ public:
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
+  // TRD setting
+  void SetUseTRDEtaCorrection(Bool_t useTRDEtaCorrection = kTRUE) { fUseTRDEtaCorrection = useTRDEtaCorrection; };
+  Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
+
+
+
   // TOF setting
   void SetTOFtail(Float_t tail=0.9){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
@@ -257,6 +263,7 @@ private:
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
   AliTRDdEdxParams * fTRDdEdxParams; //! TRD dEdx Response for truncated mean signal
+  Bool_t fUseTRDEtaCorrection;          // Use TRD eta correction
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
@@ -300,6 +307,7 @@ private:
   void InitializeTRDResponse();
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
   void SetTRDdEdxParams();
+  void SetTRDEtaMaps();
 
   //TOF
   void SetTOFPidResponseMaster();
@@ -357,7 +365,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 14);  //PID response handling
+  ClassDef(AliPIDResponse, 16);  //PID response handling
 };
 
 #endif

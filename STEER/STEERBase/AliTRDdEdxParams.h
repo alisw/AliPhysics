@@ -16,6 +16,10 @@
 //  Xianguo Lu <lu@physi.uni-heidelberg.de>
 //
 
+//
+// modified 10/08/15 by Lucas Altenkaemper <altenkaemper@physi.uni-heidelberg.de>
+//
+
 #ifndef ALITRDDEDXPARAMS_H
 #define ALITRDDEDXPARAMS_H
 
@@ -24,7 +28,7 @@
 #include "TString.h"
 
 //maximum number of array size
-#define MAXSIZE 100
+#define MAXSIZE 160
 
 class AliTRDdEdxParams: public TNamed
 {
@@ -32,22 +36,22 @@ class AliTRDdEdxParams: public TNamed
   AliTRDdEdxParams(const TString name="name", const TString title="title");
   void Print(Option_t* option = "") const;
 
-  const TVectorF& GetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls) const { return GetParameter(fMeanPar,  itype, nch, ncls);}
-  const TVectorF& GetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls) const { return GetParameter(fSigmaPar, itype, nch, ncls);}
+  const TVectorF& GetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection) const { return GetParameter(fMeanPar,  itype, nch, ncls, etaCorrection);}
+  const TVectorF& GetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection) const { return GetParameter(fSigmaPar, itype, nch, ncls, etaCorrection);}
 
-  void SetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]){ SetParameter(fMeanPar,  itype, nch, ncls, npar, vals); }
-  void SetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]){ SetParameter(fSigmaPar, itype, nch, ncls, npar, vals); } 
+  void SetMeanParameter( const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[], const Bool_t etaCorrection){ SetParameter(fMeanPar,  itype, nch, ncls, npar, vals, etaCorrection); }
+  void SetSigmaParameter(const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[], const Bool_t etaCorrection){ SetParameter(fSigmaPar, itype, nch, ncls, npar, vals, etaCorrection); }
 
  private:
-  const TVectorF& GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls) const;
-  void SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[]);
+  const TVectorF& GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection) const;
+  void SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[], const Bool_t etaCorrection);
 
   TVectorF fMeanPar[MAXSIZE];
   TVectorF fSigmaPar[MAXSIZE];
 
-  Int_t GetIter(const Int_t itype, const Int_t nch, const Int_t ncls) const;
+  Int_t GetIter(const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection) const;
 
-  ClassDef(AliTRDdEdxParams,2);
+  ClassDef(AliTRDdEdxParams,3);
 };
 
 #endif

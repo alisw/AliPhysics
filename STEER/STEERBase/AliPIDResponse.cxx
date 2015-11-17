@@ -1,4 +1,5 @@
 /**************************************************************************
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -97,6 +98,7 @@ fUseTPCMultiplicityCorrection(kFALSE),
 fUseTPCNewResponse(kTRUE),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
+fUseTRDEtaCorrection(kFALSE),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -170,6 +172,7 @@ fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
 fUseTPCNewResponse(other.fUseTPCNewResponse),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
+fUseTRDEtaCorrection(other.fUseTRDEtaCorrection),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -233,6 +236,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fUseTPCNewResponse=other.fUseTPCNewResponse;
     fTRDPIDResponseObject=NULL;
     fTRDdEdxParams=NULL;
+    fUseTRDEtaCorrection=other.fUseTRDEtaCorrection;
     fEMCALPIDParams=NULL;
     fTOFtail=0.9;
     fTOFPIDParams=NULL;
@@ -667,6 +671,7 @@ void AliPIDResponse::ExecNewRun()
   SetTRDPidResponseMaster();
   //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
   SetTRDdEdxParams();
+  SetTRDEtaMaps();
   InitializeTRDResponse();
 
   // ===| TOF part |============================================================
@@ -682,6 +687,7 @@ void AliPIDResponse::ExecNewRun()
   InitializeHMPIDResponse();
 
   if (fCurrentEvent) fTPCResponse.SetMagField(fCurrentEvent->GetMagneticField());
+  if (fCurrentEvent) fTRDResponse.SetMagField(fCurrentEvent->GetMagneticField());
 }
 
 //______________________________________________________________________________
@@ -1753,13 +1759,71 @@ void AliPIDResponse::SetTRDdEdxParams()
     AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
 
     fTRDdEdxParams = (AliTRDdEdxParams*)(cont.GetObject(fRun, "default"));
-    //fTRDdEdxParams->Print();
 
     if(!fTRDdEdxParams){
       AliError(Form("TRD dEdx Params default not found"));
     }
   }
 }
+
+//______________________________________________________________________________
+void AliPIDResponse::SetTRDEtaMaps()
+{
+  //
+  // Load the TRD eta correction map from the OADB
+  //
+
+    if (fIsMC) fUseTRDEtaCorrection == kFALSE;
+    if (fUseTRDEtaCorrection == kFALSE) {
+      //  fTRDResponse.SetEtaCorrMap(0,0x0);
+	AliInfo("Request to disable TRD eta correction -> Eta correction has been disabled");
+        return;
+    }
+    TH2D* etaMap[1];
+    etaMap[0] = 0x0;
+
+
+    const TString containerName = "TRDEtaCorrectionMap";
+    AliOADBContainer cont(containerName.Data());
+
+    const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxEtaCorrectionParams.root", fOADBPath.Data());
+
+    const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
+    if (statusCont){
+	AliFatal("Failed initializing TRD Eta Correction settings from OADB");
+        return;
+    }
+    else{
+	AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+
+	TObject* etaarray=(TObject*)cont.GetObject(fRun);
+
+	if(etaarray){
+		etaMap[0] = (TH2D *)etaarray->FindObject("TRDEtaMap");
+		fTRDResponse.SetEtaCorrMap(0,etaMap[0]);
+	}
+	else{
+	    AliError(Form("TRD Eta Correction Params not found"));
+	    fUseTRDEtaCorrection = kFALSE;
+            return;
+	    //fTRDResponse.SetEtaCorrMap(0,0x0);
+	}
+
+
+
+	if (!etaMap) {
+	    AliError(Form("TRD Eta Correction Params not found"));
+	    fUseTRDEtaCorrection = kFALSE;
+            return;
+	    //fTRDResponse.SetEtaCorrMap(0,0x0);
+	}
+
+
+    }
+
+
+}
+
 
 //______________________________________________________________________________
 void AliPIDResponse::SetTOFPidResponseMaster()
@@ -2324,7 +2388,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTRD(const AliVParticle *vtrack, AliPID:
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
 
-  return fTRDResponse.GetNumberOfSigmas(track,type);
+  return fTRDResponse.GetNumberOfSigmas(track,type, fUseTRDEtaCorrection);
 }
 
 //______________________________________________________________________________
@@ -2425,7 +2489,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTRD(const AliVPartic
   // Signal minus expected Signal for TRD
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fTRDResponse.GetSignalDelta(track,type,ratio);
+  val=fTRDResponse.GetSignalDelta(track,type,ratio,fUseTRDEtaCorrection);
 
   return GetTRDPIDStatus(track);
 }

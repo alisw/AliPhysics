@@ -48,6 +48,7 @@ fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kTRUE),
 fUseTPCMultiplicityCorrection(kTRUE),
+fUseTRDEtaCorrection(kTRUE),
 fUserDataRecoPass(-1)
 {
   //
@@ -71,6 +72,7 @@ fTunedOnDataMask(0),
 fRecoPassTuned(0),
 fUseTPCEtaCorrection(kTRUE),
 fUseTPCMultiplicityCorrection(kTRUE),
+fUseTRDEtaCorrection(kTRUE),
 fUserDataRecoPass(-1)
 {
   //
@@ -157,6 +159,8 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 
     fPIDResponse->SetUseTPCEtaCorrection(fUseTPCEtaCorrection);
     fPIDResponse->SetUseTPCMultiplicityCorrection(fUseTPCMultiplicityCorrection);
+
+    fPIDResponse->SetUseTRDEtaCorrection(fUseTRDEtaCorrection);
   }
 
   fPIDResponse->InitialiseEvent(event,fRecoPass);
