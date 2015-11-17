@@ -229,7 +229,7 @@ AliFMDESDFixer::FindTargetNoiseFactor(const AliESDFMD& esd, Bool_t check) const
 
 //____________________________________________________________________
 void
-AliFMDESDFixer::Fix(AliESDFMD& esd, Double_t zvtx)
+AliFMDESDFixer::Fix(AliESDFMD& esd, const TVector3& ip)
 {
 
   const AliFMDCorrNoiseGain* ng  = 0;
@@ -259,7 +259,7 @@ AliFMDESDFixer::Fix(AliESDFMD& esd, Double_t zvtx)
 	  if (CheckDead(d,r,s,t,mult)) nDead++;
 	  
 	  // Possibly re-calculate eta 
-	  if (fRecalculateEta) RecalculateEta(d,r,s,t,zvtx,eta,mult,cosTheta);
+	  if (fRecalculateEta) RecalculateEta(d,r,s,t,ip,eta,mult,cosTheta);
 
 	  // Possibly correct for poor treatment of ZS in reconstruction. 
 	  if (ng && mult != AliESDFMD::kInvalidMult) {
@@ -298,13 +298,15 @@ AliFMDESDFixer::CheckDead(UShort_t d, Char_t r, UShort_t s, UShort_t t,
 //____________________________________________________________________
 void
 AliFMDESDFixer::RecalculateEta(UShort_t d, Char_t r, UShort_t s, UShort_t t,
-			       Double_t zvtx, Double_t& eta, Double_t& mult, 
+			       const TVector3& ip, Double_t& eta, Double_t& mult, 
 			       Double_t& cosTheta)
 {
-  Double_t oldEta = eta;
-  Double_t newEta = AliForwardUtil::GetEtaFromStrip(d,r,s,t, zvtx);
-  eta             = newEta;
-
+  Double_t oldEta = eta, newEta = eta, newPhi=0;
+  // Double_t newEta = AliForwardUtil::GetEtaFromStrip(d,r,s,t, zvtx);
+  // eta             = newEta;
+  AliForwardUtil::GetEtaPhi(d, r, s, t, ip, newEta, newPhi);
+  eta = newEta;
+  
   fEtaChange->Fill(newEta-oldEta);
 
   if (mult == AliESDFMD::kInvalidMult) return;

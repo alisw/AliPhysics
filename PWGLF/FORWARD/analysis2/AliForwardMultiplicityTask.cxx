@@ -207,7 +207,7 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
   AliESDFMD* esdFMD = esd.GetFMDData();  
 
   // Fix up the the ESD 
-  GetESDFixer().Fix(*esdFMD, ip.Z());
+  GetESDFixer().Fix(*esdFMD, ip);
 
   // Apply the sharing filter (or hit merging or clustering if you like)
   START_SW(individual);

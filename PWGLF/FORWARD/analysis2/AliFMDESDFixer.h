@@ -5,6 +5,7 @@
 class TH1;
 class TList;
 class AliESDFMD;
+class TVector3;
 
 /**
  * Class to fix up an ESD object for various small issues. 
@@ -56,9 +57,9 @@ public:
    * Fix the ESD object 
    * 
    * @param esd ESD object 
-   * @param ipZ IP Z--coordinate
+   * @param ip  IP coordinates
    */
-  void Fix(AliESDFMD& esd, Double_t ipZ);
+  void Fix(AliESDFMD& esd, const TVector3& ip);
 
   /** 
    * @{ 
@@ -205,13 +206,13 @@ protected:
    * @param r          Ring
    * @param s          Sector 
    * @param t          Strip 
-   * @param vz         Ip Z-coordinate
+   * @param ip         Ip coordinates
    * @param mult       In/out multiplicity
    * @param eta        In/out eta 
    * @param cosTheta   On return, the cosine of theta or null
    */
   void RecalculateEta(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-		      Double_t vz, Double_t& mult, Double_t& eta, 
+		      const TVector3& ip, Double_t& mult, Double_t& eta, 
 		      Double_t& cosTheta);
   /** 
    * Correct for noise suppression
