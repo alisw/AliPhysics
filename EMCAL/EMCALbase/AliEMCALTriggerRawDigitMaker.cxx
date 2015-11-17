@@ -281,7 +281,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	AliEMCALTriggerRawDigit* dig = 0x0;
 
 	fRawReader->Reset();
-	fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL());
+	fRawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL(),AliDAQ::GetFirstSTUDDL());
 
 	AliRawVEvent *event = (AliRawEvent*)fRawReader->GetEvent();
 	if (!event) {
