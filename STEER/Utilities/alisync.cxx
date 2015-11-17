@@ -170,7 +170,7 @@ void downloadFile(const JobInfo &info,
     unlink(tmpdest.c_str());
   } else {
     assert(gGrid);
-    dieIf(gGrid->Mkdir(tmpoutdir, "-p") != 0, 1, "Unable to create %s\n", tmpoutdir);
+    dieIf(gGrid->Mkdir(tmpoutdir, "-p") == 0, 1, "Unable to create %s\n", tmpoutdir);
     tmpdest = dest;
   }
   free(tmpoutdir);
