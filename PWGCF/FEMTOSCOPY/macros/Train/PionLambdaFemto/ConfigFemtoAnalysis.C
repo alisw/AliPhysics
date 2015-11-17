@@ -43,18 +43,20 @@ struct MacroParams {
   unsigned short analysis_configurations;
 };
 
-void BuildConfiguration(const TString&,
-                        AliFemtoAnalysisPionLambda::AnalysisParams&,
-                        AliFemtoAnalysisPionLambda::CutParams&,
-                        MacroParams&
-                        );
+void BuildConfiguration(
+  const TString&,
+  AliFemtoAnalysisPionLambda::AnalysisParams&,
+  AliFemtoAnalysisPionLambda::CutParams&,
+  MacroParams&
+);
 
 AliFemtoManager*
 ConfigFemtoAnalysis(const TString& param_str = "")
 {
+  std::cout << "[ConfigFemtoAnalysis]\n";
+
   const double PionMass = 0.13956995,
              LambdaMass = 1.115683;
-
 
   // Get the default configurations
   AFAPL::AnalysisParams analysis_config = AFAPL::DefaultConfig();
@@ -158,7 +160,6 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     }
 
     manager->AddAnalysis(analysis);
-
   }
 
   return manager;

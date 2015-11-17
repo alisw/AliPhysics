@@ -51,21 +51,21 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
 
   if (analysis_config.mult_ranges.empty()) {
-    analysis_config.mult_ranges.push_back(std::pair<float, float> (0.0, 300));
+    // analysis_config.mult_ranges.push_back(std::pair<float, float> (0.0, 300));
+    analysis_config.mult_ranges.push_back(0.0);
+    analysis_config.mult_ranges.push_back(300.0);
   }
 
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
-  rdr->SetFilterBit(7);
-  rdr->SetCentralityPreSelection(0.001, 910);
-
-   rdr->SetEPVZERO(kTRUE);
-   rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-   rdr->SetCentralityFlattening(kFALSE);
-   // rdr->SetReadV0(1);
-   rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+    rdr->SetFilterBit(7);
+    rdr->SetEPVZERO(kTRUE);
+    rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+    rdr->SetCentralityFlattening(kFALSE);
+    rdr->SetReadV0(0);
+    rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   // rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
@@ -86,14 +86,19 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   double ktrng[3] = {0.01, 0.7, 100.0};
   int numOfkTbins = 2;
 
-  for (std::vector<std::pair<float, float>>::iterator mult_range = analysis_config.mult_ranges.begin();
-       mult_range != analysis_config.mult_ranges.end();
-       ++mult_range) {
+ //  for (std::vector<std::pair<float, float>>::iterator mult_range = analysis_config.mult_ranges.begin();
+//        mult_range != analysis_config.mult_ranges.end();
+//        ++mult_range) {
+
+  for (int mult_it = 0; mult_it + 1 < analysis_config.mult_ranges.size(); mult_it += 2) {
 
     int ichg = 0;
     aniter++;
-    const double mult_low = mult_range->first,
-                mult_high = mult_range->second;
+//     const double mult_low = mult_range->first,
+//                 mult_high = mult_range->second;
+
+    const double mult_low = analysis_config.mult_ranges[mult_it],
+                mult_high = analysis_config.mult_ranges[mult_it + 1];
 
     AliFemtoSimpleAnalysis *analysis = new AliFemtoVertexMultAnalysis(
       analysis_config.vertex_bins,
@@ -155,8 +160,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
 
 //     track_cut1->SetEta(-0.8, 0.8);
     track_cut1->SetMass(PionMass);
-    track_cut1->SetNSigmaPion(-0.2, 0.2);
-    track_cut1->SetPt(0.24, 2.0);
+    track_cut1->SetNSigmaPion(-0.02, 0.02);
+    track_cut1->SetPt(0.3, 1.0);
     track_cut1->SetRapidity(-0.8, 0.8);
     track_cut1->SetDCA(0.5, 4.0);
 //     track_cut1->SetMostProbablePion();
@@ -309,7 +314,8 @@ struct AnalysisParams {
           vertex_max;
 
   UInt_t mult_bins;
-  std::vector< std::pair<float, float> > mult_ranges;
+//   std::vector< std::pair<float, float> > mult_ranges;
+  std::vector<float> mult_ranges;
 
   UInt_t num_events_to_mix;
   UInt_t min_coll_size;
@@ -342,9 +348,6 @@ BuildConfiguration(const TString &text,
                    MacroParams &mac
                    )
 {
-
-
-
   std::cout << "I-BuildConfiguration:" << TBase64::Encode(text) << " \n";
   //   std::cout << "   '" << text << "'\n";
 
@@ -387,9 +390,9 @@ BuildConfiguration(const TString &text,
         //          01 : minus,lambda
         //          10 : plus,antilambda
         //          11 : plus,lambda
-        const short code = (short(plus) << 1) + short(lambda);
+//         const short code = (short(plus) << 1) + short(lambda);
 //         mac.analysis_configurations.insert(code);
-        mac.analysis_configurations |= (1 << code);
+//         mac.analysis_configurations |= (1 << code);
       } else {
         std::cout << "W-BuildConfiguration: WARNING: Bad analysis_configuration '" << line << "'\n";
       }
