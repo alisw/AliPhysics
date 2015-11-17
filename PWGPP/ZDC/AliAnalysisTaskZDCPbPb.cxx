@@ -69,6 +69,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
     fhZPASpectrum(0x0),
     fhZEM1Spectrum(0x0),
     fhZEM2Spectrum(0x0),
+    fhZNCpmcUncalib(0x0),
+    fhZNApmcUncalib(0x0),
+    fhZPCpmcUncalib(0x0),
+    fhZPApmcUncalib(0x0),
     fhZNCpmc(0x0),	 
     fhZNApmc(0x0),	 
     fhZPCpmc(0x0),	 
@@ -98,6 +102,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
     fhZPASpectrum(0x0),
     fhZEM1Spectrum(0x0),
     fhZEM2Spectrum(0x0),
+    fhZNCpmcUncalib(0x0),
+    fhZNApmcUncalib(0x0),
+    fhZPCpmcUncalib(0x0),
+    fhZPApmcUncalib(0x0),
     fhZNCpmc(0x0),	 
     fhZNApmc(0x0),	 
     fhZPCpmc(0x0),	 
@@ -141,6 +149,10 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
   fhZPASpectrum(ana.fhZPASpectrum),
   fhZEM1Spectrum(ana.fhZEM1Spectrum),
   fhZEM2Spectrum(ana.fhZEM2Spectrum),
+  fhZNCpmcUncalib(ana.fhZNCpmcUncalib),
+  fhZNApmcUncalib(ana.fhZNApmcUncalib),
+  fhZPCpmcUncalib(ana.fhZPCpmcUncalib),
+  fhZPApmcUncalib(ana.fhZPApmcUncalib),
   fhZNCpmc(ana.fhZNCpmc),       
   fhZNApmc(ana.fhZNApmc),       
   fhZPCpmc(ana.fhZPCpmc),       
@@ -185,26 +197,35 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fhTDCZNDiff->GetXaxis()->SetTitle("TDC_{ZNC}-TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNDiff);     
   
-  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 200,0., 200000.);
+  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 250,0., 250000.);
   fOutput->Add(fhZNCSpectrum);      
-  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 200,0., 200000.) ;
+  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 250,0., 250000.) ;
   fOutput->Add(fhZNASpectrum);      
-  fhZPCSpectrum = new TH1F("fhZPCSpectrum", "ZPC signal", 100,0., 50000.) ;
+  fhZPCSpectrum = new TH1F("fhZPCSpectrum", "ZPC signal", 100,0., 80000.) ;
   fOutput->Add(fhZPCSpectrum);      
-  fhZPASpectrum = new TH1F("fhZPASpectrum", "ZPA signal", 100,0., 50000.) ;
+  fhZPASpectrum = new TH1F("fhZPASpectrum", "ZPA signal", 100,0., 80000.) ;
   fOutput->Add(fhZPASpectrum);      
   fhZEM1Spectrum = new TH1F("fhZEM1Spectrum", "ZEM1 signal", 100,0., 2500.);
   fOutput->Add(fhZEM1Spectrum);      
   fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 100,0., 2500.);
   fOutput->Add(fhZEM2Spectrum);      
   
-  fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",200, 0., 200000.);
+  fhZNCpmcUncalib = new TH1F("fhZNCpmcUncalib","ZNC PMC NO ENERGY calibration",200, 0., 2500.);
+  fOutput->Add(fhZNCpmcUncalib);      
+  fhZNApmcUncalib = new TH1F("fhZNApmcUncalib","ZNA PMC NO ENERGY calibration",200, 0., 2500.); 
+  fOutput->Add(fhZNApmcUncalib);      
+  fhZPCpmcUncalib = new TH1F("fhZPCpmcUncalib","ZPC PMC NO ENERGY calibration",200, 0., 2500.); 
+  fOutput->Add(fhZPCpmcUncalib);      
+  fhZPApmcUncalib = new TH1F("fhZPApmcUncalib","ZPA PMC NO ENERGY calibration",200, 0., 2500.); 
+  fOutput->Add(fhZPApmcUncalib);      
+  
+  fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",250, 0., 250000.);
   fOutput->Add(fhZNCpmc);      
-  fhZNApmc = new TH1F("fhZNApmc","ZNA PMC",200, 0., 200000.); 
+  fhZNApmc = new TH1F("fhZNApmc","ZNA PMC",250, 0., 250000.); 
   fOutput->Add(fhZNApmc);      
-  fhZPCpmc = new TH1F("fhZPCpmc","ZPC PMC",100, 0., 50000.); 
+  fhZPCpmc = new TH1F("fhZPCpmc","ZPC PMC",100, 0., 80000.); 
   fOutput->Add(fhZPCpmc);      
-  fhZPApmc = new TH1F("fhZPApmc","ZPA PMC",100, 0., 50000.); 
+  fhZPApmc = new TH1F("fhZPApmc","ZPA PMC",100, 0., 80000.); 
   fOutput->Add(fhZPApmc);      
   
   fhZNCCentroid = new TH2F("fhZNCCentroid","Centroid over ZNC",70,-3.5,3.5,70,-3.5,3.5); 
@@ -284,6 +305,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
     const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
     //    
+    fhZNCpmcUncalib->Fill(towZNC[0]);    
+    fhZNApmcUncalib->Fill(towZNA[0]);    
+    fhZPCpmcUncalib->Fill(towZPC[0]);    
+    fhZPApmcUncalib->Fill(towZPA[0]);    
+    //    
     fhZNCpmc->Fill(towZNC[0]);    
     fhZNApmc->Fill(towZNA[0]);    
     fhZPCpmc->Fill(towZPC[0]);    
@@ -293,14 +319,13 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     esdZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
     
     fhZNCCentroid->Fill(xyZNC[0], xyZNC[1]); 
-    fhZNACentroid->Fill(xyZNA[0], xyZNA[1]); 
-    
-    const Double_t * towZNCLG = esdZDC->GetZN1TowerEnergyLR();
-    const Double_t * towZNALG = esdZDC->GetZN2TowerEnergyLR();
-    fhPMCZNCemd->Fill(towZNCLG[0]);   
-    fhPMCZNAemd->Fill(towZNALG[0]);   
-  
+    fhZNACentroid->Fill(xyZNA[0], xyZNA[1]);   
   }
+    
+  const Double_t * towZNCLG = esdZDC->GetZN1TowerEnergyLR();
+  const Double_t * towZNALG = esdZDC->GetZN2TowerEnergyLR();
+  fhPMCZNCemd->Fill(towZNCLG[0]);   
+  fhPMCZNAemd->Fill(towZNALG[0]);   
     
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;

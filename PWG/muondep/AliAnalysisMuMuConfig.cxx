@@ -34,191 +34,504 @@
 #include "Riostream.h"
 #include "TColor.h"
 #include "TStyle.h"
+#include "TSystem.h"
+#include "AliLog.h"
+#include <set>
+#include <cassert>
+#include "TMap.h"
+#include "THashList.h"
 
 ClassImp(AliAnalysisMuMuConfig)
 
+namespace {
+
+  Bool_t GetKeyValue(const TString& str, const char separator, TString& key, TString& value)
+  {
+    /// Get a key value pair, separated by separator character
+    key=value="";
+    if ( !str.CountChar(separator) ) return kFALSE;
+    Int_t index = str.Index(separator);
+    key = str(0,index);
+    key.Remove(TString::kBoth,' ');
+    value = str(index+1,str.Length()-index-1);
+    return kTRUE;
+  }
+  
+  void DecodeRunRanges(const TString& runranges, std::set<int>& runs)
+  {
+    /// From a string of form A-D,F,H,W-Y,Z return a set containing
+    /// A,B,C,D,F,H,W,X,Y,Z
+    TObjArray* ranges = runranges.Tokenize(",");
+    TObjString* s;
+    TIter next(ranges);
+    
+    while ( ( s = static_cast<TObjString*>(next())))
+    {
+      int first = s->String().Atoi();
+      int last = first;
+      
+      if ( s->String().Contains("-") )
+      {
+        TString sfirst,slast;
+        GetKeyValue(s->String(),'-',sfirst,slast);
+        last = slast.Atoi();
+        assert(first==sfirst.Atoi());
+      }
+      for (int i = first; i <= last; ++i )
+      {
+        runs.insert(i);
+      }
+    }
+    delete ranges;
+  }
+  
+  void PrintRunInfo(const std::map<AliAnalysisMuMuConfig::EPerRunInfo,std::string>& map)
+  {
+    if ( map.count(AliAnalysisMuMuConfig::kMBTriggerClassName) )
+    {
+      std::cout << "MB=" << map.find(AliAnalysisMuMuConfig::kMBTriggerClassName)->second << " ";
+    }
+    if ( map.count(AliAnalysisMuMuConfig::kMULTriggerClassName) )
+    {
+      std::cout << "MUL=" << map.find(AliAnalysisMuMuConfig::kMULTriggerClassName)->second << " ";
+    }
+    if ( map.count(AliAnalysisMuMuConfig::kMSLTriggerClassName) )
+    {
+      std::cout << "MSL=" << map.find(AliAnalysisMuMuConfig::kMSLTriggerClassName)->second << " ";
+    }
+    if ( map.count(AliAnalysisMuMuConfig::kMSHTriggerClassName) )
+    {
+      std::cout << "MSH=" << map.find(AliAnalysisMuMuConfig::kMSHTriggerClassName)->second << " ";
+    }
+    if ( map.count(AliAnalysisMuMuConfig::kCentralityName) )
+    {
+      std::cout << "CENT=" << map.find(AliAnalysisMuMuConfig::kCentralityName)->second << " ";
+    }
+    std::cout << std::endl;
+  }
+  
+}
+
+const char* AliAnalysisMuMuConfig::DimuonTriggerKey() const { return "DimuonTrigger"; }
+const char* AliAnalysisMuMuConfig::MuonTriggerKey() const { return "MuonTrigger"; }
+const char* AliAnalysisMuMuConfig::MinbiasTriggerKey() const { return  "MinbiasTrigger"; }
+const char* AliAnalysisMuMuConfig::EventSelectionKey() const { return "EventSelection"; }
+const char* AliAnalysisMuMuConfig::PairSelectionKey() const { return "PairSelection"; }
+const char* AliAnalysisMuMuConfig::CentralitySelectionKey() const { return "Centrality"; }
+const char* AliAnalysisMuMuConfig::FitTypeKey() const { return "FitType"; }
+const char* AliAnalysisMuMuConfig::CompactGraphKey() const { return "CompactGraphs"; }
+const char* AliAnalysisMuMuConfig::OCDBPathKey() const { return "OCDBPath"; }
+
 //_____________________________________________________________________________
-AliAnalysisMuMuConfig::AliAnalysisMuMuConfig(const char* beamYear) : TObject(),
-fLists(new TObjArray),
+AliAnalysisMuMuConfig::AliAnalysisMuMuConfig() : TObject(),
+fMap(0x0),
 fOCDBPath("raw://"),
-fIsCompactGraphs(kFALSE)
+fIsCompactGraphs(kFALSE),
+fPerRunInfo()
 {
   // ctor
-  
-  fLists->SetOwner(kTRUE);
-  
-  fLists->Add(new TObjArray); // list for real data
-  fLists->Add(new TObjArray); // list for simulations
-
-  DefineDefaults(beamYear);  
 }
 
 //_____________________________________________________________________________
 AliAnalysisMuMuConfig::~AliAnalysisMuMuConfig()
 {
   // dtor
-  delete fLists;
+  delete fMap;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuConfig::DefineDefaults(const char* beamYear)
+AliAnalysisMuMuConfig::AliAnalysisMuMuConfig(const AliAnalysisMuMuConfig& other)
 {
-  // define some sensible defaults
-  
-  TString sbeam(beamYear);
-  
-  SetList(kDimuonTriggerList,kTRUE,"CMULLO-B-NOPF-MUON");
-  SetList(kMuonTriggerList,kTRUE,"CMSNGL-B-NOPF-MUON");
-  SetList(kEventSelectionList,kTRUE,"ALL");
-  SetList(kPairSelectionList,kTRUE,"pRABSETAPDCAMATCHLOWPAIRYPAIRPTIN0.0-15.0"); //pRABSETAPDCAMATCHLOWPAIRYPAIRPTIN0.0-15.0 //pRABSETAMATCHLOWPAIRYPAIRPTIN0.0-15.0 //pRABSETAMATCHLOWPAIRY
-  SetList(kCentralitySelectionList,kTRUE,"V0A");
-SetList(kFitTypeList,kTRUE,"func=PSICB2:histoType=minvJPsi:rebin=2:range=2.2;3.9,func=PSINA60NEW:histoType=minvJPsi:rebin=2:range=1.5;4.2,func=PSICB2:histoType=minvPsiP:rebin=2:range=2.0;4.2,func=PSICOUNT:histoType=minv");
-//  SetList(kFitTypeList,kTRUE,"func=PSICB2:histoType=minvJPsi:rebin=2:range=2.2;3.9,func=PSICOUNT:histoType=minv");
-  
-  //,func=PSINA60NEW:histoType=minvJPsi:rebin=2:range=1.5;4.2
-  //func=PSINA60NEW:histoType=minvJPsi:range=1.6;4.0:rebin=2,func=PSINA60NEW:histoType=minvPsiP:range=1.4;5.0:rebin=2
-  //:alJPsi=1.0469:nlJPsi=4.1687:auJPsi=2.2517:nuJPsi=3.0778 (JPsi tails from raw spectra)
-  //:alPsiP=1.0289:nlPsiP=3.86131:auPsiP=2.2737:nuPsiP=2.8995 (JPsi tails from AccxEff corr spectra to apply to PsiP spectra)
-  
-  if (sbeam=="pPb2013" || sbeam=="Pbp2013")
+  if ( &other != this )
   {
-    SetList(kDimuonTriggerList,kFALSE,"CMUL7-B-NOPF-MUON");
-    SetList(kMuonTriggerList,kFALSE,"CMSL7-B-NOPF-MUON");
-    SetList(kMinbiasTriggerList,kFALSE,"CINT7-B-NOPF-ALLNOTRD");
-    SetList(kEventSelectionList,kFALSE,"PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00");//,PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50,PSALLHASSPD,PSALL
-    SetList(kPairSelectionList,kFALSE,"pRABSETAPDCAMATCHLOWPAIRYPAIRPTIN0.0-15.0");
-    SetList(kCentralitySelectionList,kFALSE,"V0A");
+    fOCDBPath = other.fOCDBPath;
+    fIsCompactGraphs = other.fIsCompactGraphs;
+    if (other.fMap)
+    {
+      fMap = static_cast<TMap*>(other.fMap->Clone());
+    }
+    fPerRunInfo = other.fPerRunInfo;
+  }
+}
+
+//_____________________________________________________________________________
+AliAnalysisMuMuConfig& AliAnalysisMuMuConfig::operator=(const AliAnalysisMuMuConfig& other)
+{
+  if ( &other != this )
+  {
+    fOCDBPath = other.fOCDBPath;
+    fIsCompactGraphs = other.fIsCompactGraphs;
+    delete fMap;
+    fMap = 0x0;
+    if (other.fMap)
+    {
+      fMap = static_cast<TMap*>(other.fMap->Clone());
+    }
+    fPerRunInfo = other.fPerRunInfo;
+  }
+  return *this;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::Add(const char* key, const TString& line)
+{
+  /// Add a configuration element, in the form :
+  /// key : line
+  /// where line is "actual_value [sim] [real]
+  
+  UInt_t dataType(0);
+  
+  if ( !line.Contains("SIM",TString::kIgnoreCase) &&
+      !line.Contains("REAL",TString::kIgnoreCase) )
+  {
+    // no REAL or SIM keyword = REAL
+    dataType |= kReal;
+  }
+  else if ( line.Contains("SIM",TString::kIgnoreCase) )
+  {
+    dataType |= kSim;
+    if ( line.Contains("REAL",TString::kIgnoreCase) )
+    {
+      dataType |= kReal;
+    }
+  }
+  else if ( line.Contains("REAL",TString::kIgnoreCase) )
+  {
+    dataType |= kReal;
+  }
+  
+  TObjArray* a = line.Tokenize(" ");
+  TString es = static_cast<TObjString*>(a->First())->String();
+  delete a;
+  
+  THashList* list = static_cast<THashList*>(Map()->GetValue(key));
+  if (!list)
+  {
+    list = new THashList;
+    list->SetOwner(kTRUE);
+    Map()->Add(new TObjString(key),list);
+    
+  }
+  
+  TObjString* s = static_cast<TObjString*>(list->FindObject(es));
+  if ( !s )
+  {
+    s = new TObjString(es);
+    s->SetUniqueID(dataType);
+    list->Add(s);
+  }
+  else
+  {
+    s->SetUniqueID(dataType);
+    s->String() = es;
+  }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::Clear(Option_t*)
+{
+  /// Clear the internal map
+  if (fMap) fMap->DeleteAll();
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::First(const char* key, Bool_t simulation) const
+{
+  THashList* list = static_cast<THashList*>(Map()->GetValue(key));
+  TIter next(list);
+  TObjString* s;
+  
+  UInt_t test(kReal);
+  
+  if ( simulation )
+  {
+    test = kSim;
+  }
+
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    if ( s->GetUniqueID() & test )
+    {
+      return s->String();
+    }
+  }
+  return "";
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetMBTriggerClassName(Int_t runNumber) const
+{
+  if ( fPerRunInfo.count(runNumber) )
+  {
+    return (fPerRunInfo.find(runNumber)->second).find(kMBTriggerClassName)->second;
+  }
+  return "";
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetMULTriggerClassName(Int_t runNumber) const
+{
+  if ( fPerRunInfo.count(runNumber) )
+  {
+    return (fPerRunInfo.find(runNumber)->second).find(kMULTriggerClassName)->second;
+  }
+  return "";
+}
+
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetMSLTriggerClassName(Int_t runNumber) const
+{
+  if ( fPerRunInfo.count(runNumber) )
+  {
+    return (fPerRunInfo.find(runNumber)->second).find(kMSLTriggerClassName)->second;
+  }
+  return "";
  
-//    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt");
-    
-SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.:range=2.0;5.0,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt");
-    
-//    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.2;4.7.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.2;4.7.:rebin=2:histoType=mpt");
-    
-    //,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt //Removed because bad results for pPb mean pt
+}
 
-//    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt");
-    
-    //,func=PSIPSIPRIMENA60NEWVWG:rebin=2:histoType=minv:tails=mctails
-    //func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctailsJPsi&PsiP, func=PSIPSIPRIMECB2VWG;MPT2CB2VWGPOL2:rebin=2:histoType=minv&mpt:tails=mctailsJsi&PsiP(We can think about somth like this to make the combined fits),func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:alJPsi=0.984:nlJPsi=5.839:auJPsi=1.972:nuJPsi=3.444
-    //func=PSIPSIPRIMECB2VWGINDEPTAILS:rebin=2:tails=mctails:histoType=minv,
-    //Tails key migth be unneccesary since we have already different fitting function names(think about it)
-  }
-  else if (sbeam=="pp2012_7")
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetMSHTriggerClassName(Int_t runNumber) const
+{
+  if ( fPerRunInfo.count(runNumber) )
   {
-    //    SetList(kDimuonTriggerList,kFALSE,"CMUL7-S-NOPF-MUON");
-    SetList(kDimuonTriggerList,kFALSE,"CMUL7-S-NOPF-MUON");
-    SetList(kMuonTriggerList,kFALSE,"CMSL7-S-NOPF-MUON");
-    SetList(kMinbiasTriggerList,kFALSE,"CINT7-S-NOPF-ALLNOTRD");
-    SetList(kEventSelectionList,kFALSE,"PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00");
-    SetList(kPairSelectionList,kFALSE,"pRABSETAPDCAMATCHLOWPAIRYPAIRPTIN0.0-15.0");
-    SetList(kCentralitySelectionList,kFALSE,"V0A");
-    
-    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt");//:sigmapsip=1.0
-    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2POL4EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt");
+    return (fPerRunInfo.find(runNumber)->second).find(kMSHTriggerClassName)->second;
+  }
+  return "";
+  
+}
 
-    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWVWG:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.0;5.0:fsigmapsip=1.1,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=0.9,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.,func=PSIPSIPRIMECB2POL2EXP:rebin=2:histoType=minv:tails=mctails:range=2.2;4.7:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.0;5.0:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=0.9,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.,func=PSIPSIPRIMENA60NEWPOL2EXP:range=2.2;4.7:rebin=2:histoType=minv:tails=mctails:fsigmapsip=1.1,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2:range=2.2;4.7:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.0;5.:rebin=2:histoType=mpt,func=MPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP:range=2.2;4.7:rebin=2:histoType=mpt");
-    
-//SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:rebin=2:histoType=mpt");
-    //MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2
-    //func=PSIPSIPRIMECB2VWGINDEPTAILS:rebin=2:tails=mctails:histoType=minv,
-    //func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctailsJPsi&PsiP, func=PSIPSIPRIMECB2VWG;MPT2CB2VWGPOL2:rebin=2:histoType=minv&mpt:tails=mctailsJsi&PsiP(We can think about somth like this to make the combined fits),func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:alJPsi=0.984:nlJPsi=5.839:auJPsi=1.972:nuJPsi=3.444
-    //Tails key migth be unneccesary since we have already different fitting function names(think about it)
+//_____________________________________________________________________________
+TString AliAnalysisMuMuConfig::GetCentralityName(Int_t runNumber) const
+{
+  if ( fPerRunInfo.count(runNumber) )
+  {
+    return (fPerRunInfo.find(runNumber)->second).find(kCentralityName)->second;
+  }
+  return "";
+  
+}
+
+#if 0
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::GetDimuonPaths(TObjArray& paths, Bool_t simulation) const
+{
+  /// Fill the paths array with the paths /event/trigger/paircut/centrality
+  
+  paths.Clear();
+  
+  TObjArray* triggerArray = GetListElements(DimuonTriggerKey(),simulation);
+  TObjArray* eventTypeArray = GetListElements(EventSelectionKey(),simulation);
+  TObjArray* pairCutArray = GetListElements(PairSelectionKey(),simulation);
+  TObjArray* centralityArray = GetListElements(CentralitySelectionKey(),simulation);
+  
+  TIter nextTrigger(triggerArray);
+  TIter nextEventType(eventTypeArray);
+  TIter nextPairCut(pairCutArray);
+  TIter nextCentrality(centralityArray);
+  
+  TObjString* trigger;
+  TObjString* eventType;
+  TObjString* pairCut;
+  TObjString* centrality;
+  
+  while ( ( trigger = static_cast<TObjString*>(nextTrigger())) )
+  {
+    nextEventType.Reset();
+    while ( ( eventType = static_cast<TObjString*>(nextEventType())) )
+    {
+      nextPairCut.Reset();
+      while ( ( pairCut = static_cast<TObjString*>(nextPairCut())) )
+      {
+        nextCentrality.Reset();
+        while ( ( centrality = static_cast<TObjString*>(nextCentrality()) ) )
+        {
+          paths.Add(new TObjString(Form("/%s/%s/%s/%s/",eventType->String().Data(),
+                                        trigger->String().Data(),
+                                        centrality->String().Data(),
+                                        pairCut->String().Data())));
+        }
+      }
+    }
   }
   
-  else if (sbeam=="pp2012_8")
-  {
-    //    SetList(kDimuonTriggerList,kFALSE,"CMUL7-S-NOPF-MUON");
-    SetList(kDimuonTriggerList,kFALSE,"CMUL8-S-NOPF-MUON");
-    SetList(kMuonTriggerList,kFALSE,"CMSL7-8-NOPF-MUON");
-    SetList(kMinbiasTriggerList,kFALSE,"CINT8-S-NOPF-ALLNOTRD");
-    SetList(kEventSelectionList,kFALSE,"PSALLHASSPDSPDZQA_RES0.25_ZDIF0.50SPDABSZLT10.00");
-    SetList(kPairSelectionList,kFALSE,"pRABSETAPDCAMATCHLOWPAIRYPAIRPTIN0.0-15.0");
-    SetList(kCentralitySelectionList,kFALSE,"V0A");
-    SetList(kFitTypeList,kFALSE,"func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctails,func=MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2:rebin=2:histoType=mpt");
-    //MPTPSIPSIPRIMECB2VWG_BKGMPTPOL2
-    //func=PSIPSIPRIMECB2VWGINDEPTAILS:rebin=2:tails=mctails:histoType=minv,
-    //func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:tails=mctailsJPsi&PsiP, func=PSIPSIPRIMECB2VWG;MPT2CB2VWGPOL2:rebin=2:histoType=minv&mpt:tails=mctailsJsi&PsiP(We can think about somth like this to make the combined fits),func=PSIPSIPRIMECB2VWG:rebin=2:histoType=minv:alJPsi=0.984:nlJPsi=5.839:auJPsi=1.972:nuJPsi=3.444
-    //Tails key migth be unneccesary since we have already different fitting function names(think about it)
-  }
-
+  delete triggerArray;
+  delete eventTypeArray;
+  delete pairCutArray;
+  delete centralityArray;
 }
+#endif
 
 //_____________________________________________________________________________
-TString AliAnalysisMuMuConfig::GetList(ETypeList type, Bool_t simulation) const
-{
-  /// Get the value for a given list. If simulation=true and the list is not
-  /// there for that type, the list from real data is returned
-  TObjArray* array = static_cast<TObjArray*>(fLists->At(simulation));
-  TObjString* str = static_cast<TObjString*>(array->At(type));
-  if ( !str && simulation )
-  {
-    return GetList(type,kFALSE);
-  }
-  return str->String();
-}
-
-//_____________________________________________________________________________
-TObjArray* AliAnalysisMuMuConfig::GetListElements(ETypeList type, Bool_t simulation) const
+TObjArray* AliAnalysisMuMuConfig::GetListElements(const char* key, Bool_t simulation) const
 {
   /// Get list as an array (to be deleted by the user)
-  TString list = GetList(type,simulation);
-  return list.Tokenize(",");
+  
+  TObjArray* a = new TObjArray;
+  a->SetOwner(kTRUE);
+  
+  THashList* list = static_cast<THashList*>(Map()->GetValue(key));
+  
+  TIter next(list);
+  TObjString* s;
+  TString rv;
+  UInt_t test(kReal);
+  
+  if ( simulation )
+  {
+    test = kSim;
+  }
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    if ( s->GetUniqueID() & test )
+    {
+      a->Add(new TObjString(*s));
+    }
+  }
+  return a;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuConfig::SetList(ETypeList type, Bool_t simulation, const char* list)
+TString AliAnalysisMuMuConfig::GetTriggerClassName(ETriggerType tt, Int_t runNumber) const
 {
-  /// Set the list of a given type
-  TObjArray* array = static_cast<TObjArray*>(fLists->At(simulation));
-  TObjString* str = static_cast<TObjString*>(array->At(type));
-  if (!str)
+  // get the triggerclass to for a given trigger type and run number
+  
+  if ( tt == kMB )
   {
-    str = new TObjString;
-    array->AddAt(str,type);
+    return GetMBTriggerClassName(runNumber);
   }
-  str->String() = list;
+  else if ( tt == kMUL )
+  {
+    return GetMULTriggerClassName(runNumber);
+  }
+  else if ( tt == kMSL)
+  {
+    return GetMSLTriggerClassName(runNumber);
+  }
+  else if ( tt == kMSH)
+  {
+    return GetMSHTriggerClassName(runNumber);
+  }
+  else
+  {
+    AliError(Form("Unknown trigger type %d ???",tt));
+  }
+  return "";
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuConfig::ShowLists(const char* title, ETypeList type, const char separator, const TString& opt) const
+TString AliAnalysisMuMuConfig::GetTriggerTypeName(ETriggerType tt)
 {
-  /// Show the real and sim list of a given type
-  
-  std::cout << title << std::endl;
-  
-  TString list;
-  
-  if ( opt.Contains("REAL",TString::kIgnoreCase) )
+  // get the name of the trigger type
+  if ( tt == kMB )
   {
-    list = GetList(type,kFALSE);
-    ShowList("real",list,separator);
+    return "MB";
   }
-  if ( opt.Contains("SIM",TString::kIgnoreCase) )
+  else if ( tt == kMUL )
   {
-    list = GetList(type,kTRUE);
-    ShowList("sim",list,separator);
+    return "MUL";
   }
+  else if ( tt == kMSL)
+  {
+    return "MSL";
+  }
+  else if ( tt == kMSH)
+  {
+    return "MSH";
+  }
+  return "";
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuConfig::ShowList(const char* title, const TString& list, const char separator) const
+Bool_t AliAnalysisMuMuConfig::Has(const char* key, const char* value, Bool_t simulation) const
 {
-  /// Show the list content
+  THashList* list = static_cast<THashList*>(Map()->GetValue(key));
+  TIter next(list);
+  TObjString* s;
   
-  TObjArray* parts = list.Tokenize(separator);
-
-  TIter next(parts);
-  TObjString* str;
+  UInt_t test(kReal);
   
-  std::cout << "   " << title << " (" << parts->GetEntries() << ")" << std::endl;
-  
-  while ( ( str = static_cast<TObjString*>(next()) ) )
+  if ( simulation )
   {
-    std::cout << "       " << str->String().Data() << std::endl;
+    test = kSim;
   }
   
-  delete parts;
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    if ( ( s->GetUniqueID() & test ) && ( s->String() == value ) )
+    {
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuConfig::HasRunInformation(std::set<int>& runs, Bool_t show) const
+{
+  /// Return true if we have run information for all the runs in the set.
+  /// if show=true, show that information for all those runs
+  
+  std::set<int>::size_type n(0);
+  
+  std::set<int>::const_iterator it;
+  std::map<int,std::map<AliAnalysisMuMuConfig::EPerRunInfo,std::string> >::const_iterator mit;
+
+  for ( it = runs.begin(); it != runs.end(); ++it )
+  {
+    int runNumber = *it;
+    
+    mit = fPerRunInfo.find(runNumber);
+    
+    if ( mit != fPerRunInfo.end() )
+    {
+      ++n;
+      if ( show )
+      {
+        std::cout << Form("RUN %09d ",runNumber);
+        PrintRunInfo(mit->second);
+      }
+    }
+    else
+    {
+      if ( show )
+      {
+        std::cout << "Missing information for run " << runNumber << std::endl;
+      }
+    }
+  }
+  
+  return n == runs.size();
+}
+
+//_____________________________________________________________________________
+TMap* AliAnalysisMuMuConfig::Map() const
+{
+  /// Return (and initialize, if needed) the internal map
+  if (!fMap)
+  {
+    fMap = new TMap;
+    fMap->SetOwnerKeyValue(kTRUE,kTRUE);
+  }
+  return fMap;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::ShowList(const char* key, Bool_t simulation) const
+{
+  /// Show the list for a given key
+
+  TObjArray* a = GetListElements(key,simulation);
+  TObjString* s;
+  
+  TIter next(a);
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    std::cout << "    " << s->String() << std::endl;
+  }
+  
+  delete a;
 }
 
 //_____________________________________________________________________________
@@ -229,22 +542,189 @@ void AliAnalysisMuMuConfig::Print(Option_t* opt) const
   /// Use opt = "SIM" to show only things relevant to simulation
   /// Use opt = "REAL SIM" or "" to show everything
   
+  std::cout << "OCDBPath : " << fOCDBPath << std::endl;
+  std::cout << "Use compact graphs : " << fIsCompactGraphs << std::endl;
   TString sopt(opt);
   sopt.ToUpper();
   
+  if ( sopt == "RAW")
+  {
+    TIter nextKey(Map());
+    TObjString* key;
+
+    while ( ( key = static_cast<TObjString*>(nextKey()) ) )
+    {
+      THashList* list = static_cast<THashList*>(Map()->GetValue(key->String()));
+      TIter next(list);
+      TObjString* s;
+      while ( ( s = static_cast<TObjString*>(next())))
+      {
+        std::cout << Form("%s [%u]",s->String().Data(),s->GetUniqueID()) << std::endl;
+      }
+    }
+    return;
+  }
+    
   if (sopt.Length()==0)
   {
     sopt = "REAL SIM";
   }
   
-  ShowLists("Dimuon triggers",kDimuonTriggerList,',',sopt.Data());
-  ShowLists("Muon triggers",kMuonTriggerList,',',sopt.Data());
-  ShowLists("MB triggers",kMinbiasTriggerList,',',sopt.Data());
-  ShowLists("Event selection",kEventSelectionList,',',sopt.Data());
-  ShowLists("Pair selection",kPairSelectionList,',',sopt.Data());
-  ShowLists("Centrality selection",kCentralitySelectionList,',',sopt.Data());
-  ShowLists("Fit types",kFitTypeList,',',sopt.Data());
+  TIter next(Map());
+  TObjString* key;
+  
+  while ( ( key = static_cast<TObjString*>(next()) ) )
+  {
+    std::cout << key->String() << ":" << std::endl;
+    
+    if ( sopt.Contains("REAL",TString::kIgnoreCase) )
+    {
+      std::cout << "  Real:" << std::endl;
+      ShowList(key->String(),kFALSE);
+    }
+    if ( sopt.Contains("SIM",TString::kIgnoreCase) )
+    {
+      std::cout << "  Sim:" << std::endl;
+      ShowList(key->String(),kTRUE);
+    }
+  }
 }
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::SetRunInfo(const TString& runranges, const TString& runinfo)
+{
+  /// Associate the run info (specified in string runinfo) to each of the runs
+  /// defined by the string runranges
+  
+  std::set<int> runs;
+  
+  DecodeRunRanges(runranges,runs);
+  
+  std::set<int>::const_iterator it;
+  
+  std::map<AliAnalysisMuMuConfig::EPerRunInfo,std::string> mapForOneRun;
+  
+  TObjArray* info = runinfo.Tokenize(" ");
+  TIter next(info);
+  TObjString*s ;
+  while ( ( s = static_cast<TObjString*>(next())))
+  {
+    TString key,value;
+    GetKeyValue(s->String(),'=',key,value);
+    if (!key.CompareTo("MB",TString::kIgnoreCase))
+    {
+      mapForOneRun[kMBTriggerClassName]=value;
+    }
+    if (!key.CompareTo("MUL",TString::kIgnoreCase))
+    {
+      mapForOneRun[kMULTriggerClassName]=value;
+    }
+    if (!key.CompareTo("MSL",TString::kIgnoreCase))
+    {
+      mapForOneRun[kMSLTriggerClassName]=value;
+    }
+    if (!key.CompareTo("MSH",TString::kIgnoreCase))
+    {
+      mapForOneRun[kMSHTriggerClassName]=value;
+    }
+    if (!key.CompareTo("CENT",TString::kIgnoreCase))
+    {
+      mapForOneRun[kCentralityName]=value;
+    }
+  }
+  
+  for ( it = runs.begin(); it != runs.end(); ++it )
+  {
+    int runNumber = *it;
+    fPerRunInfo[runNumber] = mapForOneRun;
+  }
+  
+  delete info;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuConfig::ReadFromFile(const char* inputfile)
+{
+  /// Read configuration from external file.
+  
+  TString filename = gSystem->ExpandPathName(inputfile);
+  std::ifstream in(filename.Data());
+  if (in.bad())
+  {
+    AliError(Form("Cannot read input file %s",filename.Data()));
+    return;
+  }
+  
+  std::string line;
+  
+  std::vector<TString> selectionKeys;
+  
+  selectionKeys.push_back(DimuonTriggerKey());
+  selectionKeys.push_back(MuonTriggerKey());
+  selectionKeys.push_back(MinbiasTriggerKey());
+  selectionKeys.push_back(EventSelectionKey());
+  selectionKeys.push_back(PairSelectionKey());
+  selectionKeys.push_back(CentralitySelectionKey());
+  selectionKeys.push_back(FitTypeKey());
+  
+  // read per run info
+  while (std::getline(in,line))
+  {
+    TString sline(line.c_str());
+    if ( sline.BeginsWith("#") ) continue;
+    if ( sline.BeginsWith("//") ) continue;
+    if (!sline.Contains(":")) continue;
+    
+    TString left, right; // relative to ":"
+    
+    if (!GetKeyValue(sline, ':',left,right)) continue;
+    
+    if ( left.Atoi() )
+    {
+      // we assume left is a run range, so we define runinfo
+      SetRunInfo(left,right);
+    }
+    else if ( !left.CompareTo(OCDBPathKey(),TString::kIgnoreCase) )
+    {
+      fOCDBPath = right;
+      fOCDBPath.Remove(TString::kBoth,' ');
+    }
+    else if ( !left.CompareTo(CompactGraphKey(),TString::kIgnoreCase) )
+    {
+      right.Remove(TString::kBoth,' ');
+      if ( !right.CompareTo("yes",TString::kIgnoreCase) ||
+          !right.CompareTo("on",TString::kIgnoreCase) ||
+          !right.CompareTo("1",TString::kIgnoreCase) )
+      {
+        fIsCompactGraphs = kTRUE;
+      }
+      else
+      {
+        fIsCompactGraphs = kFALSE;
+      }
+    }
+    else {
+      
+      Bool_t found(kFALSE);
+      
+      for ( std::vector<TString>::size_type i = 0; i < selectionKeys.size(); ++i )
+      {
+        if ( ! left.CompareTo(selectionKeys[i],TString::kIgnoreCase) )
+        {
+          Add(selectionKeys[i],right);
+          found = kTRUE;
+        }
+      }
+
+      if (!found)
+      {
+        std::cerr << "Unable to decode line : " << std::endl;
+        std::cerr << line << std::endl;
+      }
+    }
+  }
+}
+
 
 //_____________________________________________________________________________
 void AliAnalysisMuMuConfig::SetColorScheme()
@@ -268,3 +748,5 @@ void AliAnalysisMuMuConfig::SetColorScheme()
   
   gStyle->SetOptStat(0);
 }
+
+

@@ -6,6 +6,8 @@
 #define ALIFEMTOCORRFCTN_KSTAR_H_
 
 class TH1D;
+class TH2F;
+
 
 #include "AliFemtoCorrFctn.h"
 
@@ -41,6 +43,9 @@ public:
   /// Add K* of pairs from mied events
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
+  /// calculate $m_{T}$ of pair
+  static float CalcMt(const AliFemtoPair* aPair);
+
 protected:
 
   /// K* of pairs in same event
@@ -48,6 +53,18 @@ protected:
 
   /// K* of pairs in different event
   TH1D *fDenominator;
+
+  /// K* vs kT
+  TH2F *fNumerator_kT;
+  TH2F *fDenominator_kT;
+
+  /// K* vs mT
+  TH2F *fNumerator_mT;
+  TH2F *fDenominator_mT;
+
+  /// K* vs mT
+  TH2F *fNumerator_qq;
+  TH2F *fDenominator_qq;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
