@@ -11,6 +11,9 @@
 #include <TString.h>
 
 namespace EMCALTrigger {
+
+const Double_t kEMCL1ADCtoGeV = 0.07874;             ///< Conversion from EMCAL Level1 ADC to energy
+
 /**
  * \enum EMCalTriggerType_t
  * \brief Definition of different trigger patch types
