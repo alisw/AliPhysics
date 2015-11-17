@@ -12,15 +12,16 @@ ClassImp(AliAnalysisTaskPrepareInputForEmbedding)
 //________________________________________________________________________________________________
 AliAnalysisTaskPrepareInputForEmbedding::AliAnalysisTaskPrepareInputForEmbedding() : AliAnalysisTaskEmcalJet("AliAnalysisTaskPrepareInputForEmbedding", kTRUE),
 fContainer(0),
-fMinFractionShared(0.5),
+fMinFractionShared(-1),
 fLeadingJetOnly(0),
 fTreeJets(0),
-fJetDet(0),
-fJetPart(0),
-fJetDetL(0),
-fJetPartL(0),
+fJetDet(),
+fJetPart(),
+fJetDetL(),
+fJetPartL(),
 fNumberOfJets(0),
-fhFractionSharedpT(0)
+fhFractionSharedpT(0),
+fNAccJets(0)
 {
    /// default constructor
    //fJetGenSub = new TLorentzVector();
@@ -35,15 +36,16 @@ fhFractionSharedpT(0)
 //________________________________________________________________________________________________
 AliAnalysisTaskPrepareInputForEmbedding::AliAnalysisTaskPrepareInputForEmbedding(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE),
 fContainer(0),
-fMinFractionShared(0.5),
+fMinFractionShared(-1),
 fLeadingJetOnly(0),
 fTreeJets(0),
-fJetDet(0),
-fJetPart(0),
-fJetDetL(0),
-fJetPartL(0),
+fJetDet(),
+fJetPart(),
+fJetDetL(),
+fJetPartL(),
 fNumberOfJets(0),
-fhFractionSharedpT(0)
+fhFractionSharedpT(0),
+fNAccJets(0)
 
 {
    /// standard constructor
@@ -56,13 +58,12 @@ fhFractionSharedpT(0)
 void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    /// Create output
    AliAnalysisTaskEmcal::UserCreateOutputObjects();
-   AliInfo("Sei qui?");
-   fJetDet = new TLorentzVector();
-   fJetPart  = new TLorentzVector();
 
-   fJetDetL = new TLorentzVector();
-   fJetPartL  = new TLorentzVector();
-
+   fJetDet.SetPtEtaPhiM(0,0,0,0);
+   fJetPart.SetPtEtaPhiM(0,0,0,0);
+   fJetDetL.SetPtEtaPhiM(0,0,0,0);
+   fJetPartL.SetPtEtaPhiM(0,0,0,0);
+   
    fTreeJets = new TTree("fTreeJet", "fTreeJet");
    if(fLeadingJetOnly){
       fTreeJets->Branch("fJetDetL", &fJetDetL);
@@ -84,8 +85,12 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    
    fNumberOfJets = new TH1F("fNumberOfJets", "Number of Jets", 6, -0.5, 5.5);
    fOutput->Add(fNumberOfJets);
+   
    fhFractionSharedpT = new TH2F("fhFractionSharedpT", "Reco/particle shared #it{p}_{T} fraction;#it{p}_{T} (GeV/c); Fraction shared #it{p}_{T}", nBinsPt, minPt, maxPt, nBinsFraction, minFraction, maxFraction);
    fOutput->Add(fhFractionSharedpT);
+   
+   fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
+   fOutput->Add(fNAccJets);
    
 }
 
@@ -94,7 +99,6 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskPrepareInputForEmbedding::Run(){
    /// Run code before FillHistograms()
       
-   
    return kTRUE;
 }
 //________________________________________________________________________________________________
@@ -111,21 +115,21 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
    }
    
    //TVector for leading jet
-   fJetDetL ->SetPtEtaPhiM(0,0,0,0);
-   fJetPartL->SetPtEtaPhiM(0,0,0,0);
+   fJetDetL .SetPtEtaPhiM(0,0,0,0);
+   fJetPartL.SetPtEtaPhiM(0,0,0,0);
+      
+   Int_t count = 0;
+   jetCont->ResetCurrentID();
    
-   if(!fLeadingJetOnly) {
-      fTreeJets->SetBranchAddress("fJetDet", &fJetDet);
-      fTreeJets->SetBranchAddress("fJetPart",&fJetPart);
-   } else {
-      fTreeJets->SetBranchAddress("fJetDetL", &fJetDetL);
-      fTreeJets->SetBranchAddress("fJetPartL",&fJetPartL);
-   }
+   while((jet = jetCont->GetNextJet())) {
+      Bool_t acc = jetCont->AcceptJet(jet);
+      if(!acc) {
+      	 continue;
+      }
+      fJetDet  .SetPtEtaPhiM(0,0,0,0);
+      fJetPart .SetPtEtaPhiM(0,0,0,0);
       
-   while((jet = jetCont->GetNextAcceptJet())) {
-      fJetDet  ->SetPtEtaPhiM(0,0,0,0);
-      fJetPart ->SetPtEtaPhiM(0,0,0,0);
-      
+      count++;
       fNumberOfJets->Fill(0);
       
       AliEmcalJet *jetP = jet->ClosestJet();
@@ -133,26 +137,27 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       fNumberOfJets->Fill(1);
       Double_t fraction = jetCont->GetFractionSharedPt(jet);
       //fill the TLorentsVectors with the jet 4-vectors
-      //Printf("MC jet %p, Fraction %.4f, pT %f, eta %f, phi %f",jetP, fraction, jetA->Pt(), jetA->Eta(), jetA->Phi());
+      //Printf("MC jet %p, Fraction %.4f, pT %f, eta %f, phi %f, m  %f",jetP, fraction, jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
       fhFractionSharedpT->Fill(jet->Pt(), fraction);
-      //if(fMinFractionShared>0. && fraction>fMinFractionShared) {
+      if(fMinFractionShared<0. || fraction>fMinFractionShared) {
       	 fNumberOfJets->Fill(2);
-      	 fJetDet ->SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
-      	 fJetPart->SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
+      	 fJetDet .SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
+      	 fJetPart.SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
       	
-      	 if(fJetDet->Pt() > fJetDetL->Pt()){
-      	    fJetDetL->SetPtEtaPhiM(fJetDet->Pt(), fJetDet->Eta(), fJetDet->Phi(), fJetDet->M());
-      	    fJetPartL->SetPtEtaPhiM(fJetPart->Pt(), fJetPart->Eta(), fJetPart->Phi(), fJetPart->M());
+      	 if(fJetDet.Pt() > fJetDetL.Pt()){
+      	    fJetDetL.SetPtEtaPhiM(fJetDet.Pt(), fJetDet.Eta(), fJetDet.Phi(), fJetDet.M());
+      	    fJetPartL.SetPtEtaPhiM(fJetPart.Pt(), fJetPart.Eta(), fJetPart.Phi(), fJetPart.M());
       	 
       	 }
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
-      //}
-      
+      	 
+      }
       
    }
+   fNAccJets->Fill(count);
    
    if(fLeadingJetOnly) {
-      if(fJetPartL->Pt() > 0){ // fill only when there is a leading jet
+      if(fJetPartL.Pt() > 0){ // fill only when there is a leading jet
       	 fTreeJets->Fill();
       }
    }
@@ -166,16 +171,12 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
 AliAnalysisTaskPrepareInputForEmbedding::~AliAnalysisTaskPrepareInputForEmbedding() {
    /// Destructor.
    
-   delete fJetDet  ;
-   delete fJetPart ;
-
-   delete fJetDetL ;
-   delete fJetPartL;
-}
+ }
 
 //________________________________________________________________________________________________
 
 void AliAnalysisTaskPrepareInputForEmbedding::Terminate(Option_t *) 
 {
    /// Called once at the end of the analysis.
+
 }
