@@ -133,7 +133,7 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   } else if (trainConfig == 5) {
     eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
   } else if (trainConfig == 6) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Gamma pp 2-76TeV
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Gamma pp 2.76TeV
   } else if (trainConfig == 7) {
     eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
   } else if (trainConfig == 8) {
