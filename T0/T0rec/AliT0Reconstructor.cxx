@@ -600,11 +600,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      timecent = fTime0vertex[i0];
 	    timefull = -9999; 
 	    if (i0<12) 
-	      if(alldata[i0+1][iHit]>1) 
+            {
+	      if(alldata[i0+1][iHit]>1)
 		timefull = (Float_t(alldata[i0+1][iHit]) - timecent)* channelWidth* 0.001;
 	      else 
 		if(alldata[i0+45][iHit]>1) 
 		  timefull = (Float_t(alldata[i0+45][iHit]) - timecent)* channelWidth* 0.001;
+            }
 	    frecpoints.SetTimeFull(i0, iHit,timefull) ;
 	  }
 	}
