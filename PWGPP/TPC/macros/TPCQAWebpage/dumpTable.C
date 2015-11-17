@@ -238,6 +238,7 @@ void dumpWebPeriodTable(TTree* tree, const char * tableName  ){
   <a class=\"tooltip\" data-tooltip=\"Run1: ~ 0.08, Run2: < Run1\" href=\"resolutionMIP_vs_run.png\">Resolution of MIPs</a><br>\n \
   <a class=\"tooltip\" data-tooltip=\"Run1: ~ 0.065, Run2: < Run1\" href=\"resolutionMeandEdxEle_vs_run.png\">Resolution of mean electron energy loss</a><br>\n \
   <a class=\"tooltip\" data-tooltip=\"35 +/- 3\" href=\"ElectroMIPSeparation_vs_run.png\">Separation between electron and MIPs energy loss</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\"\" href=\"SeparationPower_vs_run.png\">Separation Power between electron and MIPs energy loss</a><br>\n \
   <a class=\"tooltip\" data-tooltip=\"Check with Marian\" href=\"MIPattachSlopes_vs_run.png\">Attachment parameter p1</a><br>\n \
   <b>Vertex</b><br>\n \
   <a class=\"tooltip\" data-tooltip=\"Has to be stable over the period\" href=\"meanVertX_vs_run.png\">Mean of Vertex X</a><br>\n \
