@@ -309,6 +309,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   c1->SaveAs("meanMIP_vs_run.png");
   c1->Clear();
 
+
   /****** Mean MIP Resolution ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"resolutionMIP:run","",marA1,colPosA,1.0);
   gr->SetName("resolutionMIP:run");
@@ -369,6 +370,27 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("resolutionMeandEdxEle_vs_run.png");
+  c1->Clear();
+
+  /****** Separation Power ******/
+  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"PIDSepPow_comb2:run","",marA1,colPosA,1.0);
+  // TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"(meanMIPele-meanMIP)/(0.5*(resolutionMIP*meanMIP+resolutionMIPele*meanMIPele)):run","",marA1,colPosA,1.0);
+  gr->SetName("(meanMIPele-meanMIP)/(0.5*(resolutionMIP*meanMIP+resolutionMIPele*meanMIPele)):run");
+  gr->GetHistogram()->SetYTitle("Separation Power");
+  gr->GetHistogram()->SetTitle("(MIP_ele-meanMIP)/(0.5*(sigma(MIP)+sigma(MIP_ele))");
+  // ComputeRange(tree, "meanMIP", plotmean, plotoutlier);
+  gr->GetHistogram()->SetMinimum(0);
+  gr->GetHistogram()->SetMaximum(20);
+//  gr->GetHistogram()->SetMinimum(mip_min);
+//  gr->GetHistogram()->SetMaximum(mip_max);
+  gr->GetXaxis()->LabelsOption("v");
+  gr->Draw("AP");
+
+  PlotStatusLines(tree,"PIDSepPow_comb2:run","");
+  PlotTimestamp(entries,entries_tree,c1);
+  TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
+  TStatToolkit::DrawStatusGraphs(oaMultGr);
+  c1->SaveAs("SeparationPower_vs_run.png");
   c1->Clear();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,7 +514,8 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetYTitle("Multiplicites of Primary Tracks");
   gr->GetHistogram()->SetTitle("|DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, #Cluster > 70");
   ComputeRange(tree, "meanMult_comb2", plotmean, plotoutlier);
-  gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  // gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
+  gr->GetHistogram()->SetMinimum(0);
   gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
 //  gr->GetHistogram()->SetMinimum(0);  //gr->GetHistogram()->SetMinimum(mult_min);
 //  gr->GetHistogram()->SetMaximum(100);  //gr->GetHistogram()->SetMaximum(mult_max);
