@@ -18,6 +18,9 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <sys/stat.h>
+#include <limits.h>
+#include <libgen.h>
 
 #include "RConfig.h"
 #include "TFile.h"
@@ -84,6 +87,25 @@ void dieIf(bool condition, int exitCode, const char *fmt, ...)
   exit(exitCode);
 }
 
+// Helper for recursive directory creation
+static void recursiveLocalMkdir(const char *dir) {
+  char tmp[PATH_MAX];
+  char *p = NULL;
+  size_t len;
+  
+  snprintf(tmp, sizeof(tmp),"%s",dir);
+  len = strlen(tmp);
+  if(tmp[len - 1] == '/')
+          tmp[len - 1] = 0;
+  for(p = tmp + 1; *p; p++)
+          if(*p == '/') {
+                  *p = 0;
+                  mkdir(tmp, S_IRWXU);
+                  *p = '/';
+          }
+  mkdir(tmp, S_IRWXU);
+}
+
 struct JobInfo {
   std::string filename;
   time_t startTime;
@@ -115,16 +137,6 @@ struct NotMatchPathSeparator
   }
 };
 
-
-std::string
-basename( std::string const& pathname )
-{
-  return std::string( 
-      std::find_if(pathname.rbegin(), pathname.rend(),
-                   MatchPathSeparator()).base(),
-      pathname.end());
-}
-
 static std::vector<JobInfo> gJobs;
 
 // Downloading of files:
@@ -144,14 +156,26 @@ void downloadFile(const JobInfo &info,
   if (outdir.compare(0, prefix.size(), prefix) == 0)
     useAtomic = false;
 
-  std::string tmpdest = outdir + "/." + basename(info.filename) + ".tmp";
-  std::string dest = outdir + "/" + basename(info.filename);
+  char *relDir = strdup(dirname(strdup(info.filename.c_str())));
+  char *tmpFilename = strdup(basename(strdup(info.filename.c_str())));
+  std::string tmpdest = outdir + "/" + relDir + "/." + tmpFilename + ".tmp";
+  char *tmpoutdestCpy = strdup(tmpdest.c_str());
+  char *tmpoutdir = strdup(dirname(tmpoutdestCpy));
+  std::string dest = outdir + "/" + info.filename;
   // If destination is a local file, remove old temporary file.
   // else we really copy directly where we want to be.
-  if (useAtomic)
+  if (useAtomic) {
+    recursiveLocalMkdir(tmpoutdir);
     unlink(tmpdest.c_str());
-  else
+  } else {
+    assert(gGrid);
+    dieIf(gGrid->Mkdir(tmpoutdir, "-p") != 0, 1, "Unable to create %s\n", tmpoutdir);
     tmpdest = dest;
+  }
+  free(tmpoutdir);
+  free(relDir);
+  free(tmpFilename);
+
   // If no regexps specified, simply use TFile::Cp. If regular
   // expressions specified, copy only the tkeys that match those files.
   if (regexps.empty())
