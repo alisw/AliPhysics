@@ -57,7 +57,9 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,// 40 or 25
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 179,// was 104
+    kGsteps = 35,// number of steps for coherent fraction (step size = 0.02)
+    kRcohsteps = 7,// number of steps for coherent source radius
+    kDENtypes = 4 + kRcohsteps*kGsteps // = 4 + kGsteps*RcohSteps
   };
 
   static const Int_t fKbinsT     = 7;// Set fKstep as well !!!!
