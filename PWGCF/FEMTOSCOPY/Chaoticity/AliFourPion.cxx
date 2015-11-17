@@ -3476,12 +3476,12 @@ void AliFourPion::UserExec(Option_t *)
 		  //
 		  // Full Weight reconstruction
 		  
-		  for(Int_t RcohIndex=0; RcohIndex<7; RcohIndex++){// Rcoh 
+		  for(Int_t RcohIndex=0; RcohIndex<kRcohsteps; RcohIndex++){// Rcoh 
 		    t12 = exp(-pow(RcohIndex/FmToGeV * qinv12,2)/2.);
 		    t23 = exp(-pow(RcohIndex/FmToGeV * qinv23,2)/2.);
 		    t13 = exp(-pow(RcohIndex/FmToGeV * qinv13,2)/2.);
-		    for(Int_t GIndex=0; GIndex<25; GIndex++){
-		      Int_t FillBin = 5 + RcohIndex*25 + GIndex;
+		    for(Int_t GIndex=0; GIndex<kGsteps; GIndex++){
+		      Int_t FillBin = 5 + RcohIndex*kGsteps + GIndex;
 		      Float_t G = 0.02*GIndex;
 		      if(RcohIndex!=6){
 			T12 = (-2*G*(1-G)*t12 + sqrt(pow(2*G*(1-G)*t12,2) + 4*pow(1-G,2)*weight12CC[2])) / (2*pow(1-G,2));
@@ -3904,7 +3904,7 @@ void AliFourPion::UserExec(Option_t *)
 		    
 		    // Full Weight reconstruction
 		    for(Int_t type=0; type<3; type++){// C2 interpolation, c3 fit, C3 fit
-		      for(Int_t RcohIndex=0; RcohIndex<7; RcohIndex++){// Rcoh=0,1,2,3,4,5 fm, then Rcoh=Rch
+		      for(Int_t RcohIndex=0; RcohIndex<kRcohsteps; RcohIndex++){// Rcoh=0,1,2,3,4,5 fm, then Rcoh=Rch
 			if(RcohIndex>1 && RcohIndex<6) continue;// save cpu time
 			if(fCollisionType!=0 && RcohIndex!=6) continue;// save cpu time
 			t12 = exp(-pow(RcohIndex/FmToGeV * qinv12,2)/2.);
@@ -3914,8 +3914,8 @@ void AliFourPion::UserExec(Option_t *)
 			t24 = exp(-pow(RcohIndex/FmToGeV * qinv24,2)/2.);
 			t34 = exp(-pow(RcohIndex/FmToGeV * qinv34,2)/2.);
 						
-			for(Int_t GIndex=0; GIndex<25; GIndex++){// 25 is enough
-			  Int_t FillBin = 5 + RcohIndex*25 + GIndex;
+			for(Int_t GIndex=0; GIndex<kGsteps; GIndex++){
+			  Int_t FillBin = 5 + RcohIndex*kGsteps + GIndex;
 			  Float_t G = 0.02*GIndex;
 			  
 			  if(type==0){// From C2

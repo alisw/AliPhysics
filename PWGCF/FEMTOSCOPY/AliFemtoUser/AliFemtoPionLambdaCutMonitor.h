@@ -126,8 +126,8 @@ public:
 
     TH1F *_minv;
     TH2F *_ypt;
-    TH2F *_dedx_pt_pro;
-    TH2F *_dedx_pt_pi;
+    TH2F *_dedx_p_pro;
+    TH2F *_dedx_p_pi;
     TH1F *fCosPointingAngle;
 
     TH1F *fMCTrue_minv;
@@ -149,7 +149,6 @@ public:
     TH1F *_minv;
     TH1F *fAvgSep_pion;
     TH1F *fAvgSep_proton;
-
 
     TH2F *fMCTrue_minv;
     TH2F *fMCTrue_kstar;

@@ -59,8 +59,9 @@ public:
   /// No settings are added by this class. Simply returns the incoming TList.
   ///
   /// \param A list to append settings to.
+  /// \param prefix An optional prefix to prepend to the beginning of each setting
   /// \return The same pointer as the parameter
-  virtual TList* AppendSettings(TList*) const;
+  virtual TList* AppendSettings(TList*, const TString& prefix="") const;
 
   virtual AliFemtoString Report() = 0; ///< A user-written method to return a string describing cuts
   virtual AliFemtoEventCut* Clone();   ///< Returns NULL - users should overload.
@@ -77,7 +78,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventCut, 1);
+  ClassDef(AliFemtoEventCut, 2);
   /// \endcond
 #endif
 };
@@ -128,7 +129,8 @@ inline TList* AliFemtoEventCut::ListSettings() const
   return AppendSettings(new TList());
 }
 
-inline TList* AliFemtoEventCut::AppendSettings(TList *setting_list) const
+inline TList* AliFemtoEventCut::AppendSettings(TList *setting_list,
+                                               const TString &prefix) const
 {
   return setting_list;
 }

@@ -14,8 +14,12 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include <map>
+#include <string>
+#include <set>
 
 class TObjArray;
+class TMap;
 
 class AliAnalysisMuMuConfig : public TObject
 {
@@ -29,27 +33,64 @@ public:
     kGreen=1502
   };
   
-  enum ETypeList
+  enum ETriggerType
   {
-    kDimuonTriggerList=0, // list of dimuon triggers to consider
-    kMuonTriggerList=1, // list of single muon triggers to consider
-    kMinbiasTriggerList=2,   // list of minbias triggers to consider
-    kEventSelectionList=3, // list of event types to consider
-    kPairSelectionList=4, // list of pair cuts to consider
-    kCentralitySelectionList=5, // list of centrality cuts to consider
-    kFitTypeList=7 // list of fit types to perform    
+    kMB=1,
+    kMUL=2,
+    kMSL=3,
+    kMSH=4
   };
   
-  AliAnalysisMuMuConfig(const char* beamYear="pPb2013");
+  enum EPerRunInfo
+  {
+    kMBTriggerClassName=0,
+    kMULTriggerClassName,
+    kMSLTriggerClassName,
+    kMSHTriggerClassName,
+    kCentralityName
+  };
+
+  AliAnalysisMuMuConfig();
   virtual ~AliAnalysisMuMuConfig();
 
-  TObjArray* GetListElements(ETypeList type, Bool_t simulation) const;
+  AliAnalysisMuMuConfig(const AliAnalysisMuMuConfig& other);
+  AliAnalysisMuMuConfig& operator=(const AliAnalysisMuMuConfig& other);
 
-  TString GetList(ETypeList type, Bool_t simulation) const;
+  void Add(const char* key, const TString& line);
 
-  void SetList(ETypeList type, Bool_t simulation, const char* list);
+  void ReadFromFile(const char* inputfile);
+  
+  /** @name Per Run Information
+   *  Methods to retrieve some run-dependent information
+   */
+  ///@{
+  /** Switch board to the GetXXTriggerClassName methods below */
+  TString GetTriggerClassName(ETriggerType tt, Int_t runNumber) const;
+  /** Get the name of the Minimum Bias (MB) trigger class */
+  TString GetMBTriggerClassName(Int_t runNumber) const;
+  /** Get the name of the dimuon unlike sign (MUL) trigger class */
+  TString GetMULTriggerClassName(Int_t runNumber) const;
+  /** Get the name of the single muon low pt threshold (MSL) trigger class */
+  TString GetMSLTriggerClassName(Int_t runNumber) const;
+  /** Get the name of the single muon high pt threshold (MSH) trigger class */
+  TString GetMSHTriggerClassName(Int_t runNumber) const;
+  /** Get the name of the centrality selection used (e.g. V0A, PP) */
+  TString GetCentralityName(Int_t runNumber) const;
+  /** Do we have run information for all those runs ? */
+  Bool_t HasRunInformation(std::set<int>& runs, Bool_t show=kFALSE) const;
+  /** Set Run info */
+  void SetRunInfo(const TString& runranges, const TString& runinfo);
+  ///@}
+  
+  ///  Convenience method to retrieve the first element of lists
+  TString First(const char* key, Bool_t simulation=kFALSE) const;
 
-//  TString AppendToList(ETypeList type, Bool_t simulation, const char* list);
+  /// Do we have value for the given type and data type ?
+  Bool_t Has(const char* key, const char* value, Bool_t simulation=kFALSE) const;
+
+  void Clear(Option_t* = "");
+  
+  static TString GetTriggerTypeName(ETriggerType tt);
 
   void SetColorScheme();
   
@@ -63,22 +104,49 @@ public:
   
   void Print(Option_t* opt="") const;
   
-  void DefineDefaults(const char* beamYear);
+  /** @name Configuration keys
+   *  Valid keys to be used in the configuration file or in the query methods
+   */
+  ///@{
+  /// Used to specify the list of dimuon trigger classnames used
+  const char* DimuonTriggerKey() const;
+  /// Used to specify the list of single muon trigger classnames used
+  const char* MuonTriggerKey() const;
+  /// Used to specify the list of minimum bias trigger classnames used
+  const char* MinbiasTriggerKey() const;
+  /// Used to specify the list of event selections used
+  const char* EventSelectionKey() const;
+  /// Used to specify the list of pair selections used
+  const char* PairSelectionKey() const;
+  /// Used to specify the list of centralities used
+  const char* CentralitySelectionKey() const;
+  /// Used to specify the list of fits used
+  const char* FitTypeKey() const;
+  /// Used to specify whether or not to use compact graphs
+  const char* CompactGraphKey() const;
+  /// Used to specify OCDB path
+  const char* OCDBPathKey() const;
+  ///@}
   
-private:
-  
-  void ShowLists(const char* title, ETypeList type, const char separator=',', const TString& sopt="ALL") const;
-  
-  void ShowList(const char* title, const TString& list, const char separator=',') const;
+  TObjArray* GetListElements(const char* type, Bool_t simulation) const;
 
 private:
-
-  TObjArray* fLists; // storage for lists
   
-  TString fOCDBPath; // OCDB to be used (raw:// by default)
-  Bool_t fIsCompactGraphs; // whether the graph produced should be compact
+  enum EDataType { kSim = 1<<0, kReal = 1<<1 };
+  
+  void ShowList(const char* key, Bool_t isSimulation) const;
+ 
+public:
+  TMap* Map() const;
+  
+private:
 
-  ClassDef(AliAnalysisMuMuConfig,2) // class to hold configuration of AliAnalysisMuMu(Evolution) class
+  mutable TMap* fMap; ///< internal map of configuration values
+  TString fOCDBPath; ///< OCDB to be used (raw:// by default)
+  Bool_t fIsCompactGraphs; ///< whether the graph produced should be compact
+  std::map<int,std::map<AliAnalysisMuMuConfig::EPerRunInfo,std::string> > fPerRunInfo; ///< per run information
+
+  ClassDef(AliAnalysisMuMuConfig,4) // class to hold configuration of AliAnalysisMuMu(Evolution) class
 };
 
 #endif

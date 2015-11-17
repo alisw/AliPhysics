@@ -72,7 +72,7 @@ AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing,
                                       "# pions;"
                                       "# lambdas;",
                                       100, -0.5, 2000.5,
-                                      10, -0.5, 10.5);
+                                      11, -0.5, 10.5);
      _collection_size_fail = (TH2I*)_collection_size_pass->Clone("collection_size_f");
   } else {
      _collection_size_pass = NULL;
@@ -249,8 +249,8 @@ AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,
   , fLambdaType(ltype)
   , _minv(NULL)
   , _ypt(NULL)
-  , _dedx_pt_pro(NULL)
-  , _dedx_pt_pi(NULL)
+  , _dedx_p_pro(NULL)
+  , _dedx_p_pi(NULL)
   , fCosPointingAngle(NULL)
   , fMCTrue_minv(NULL)
   , fMCTrue_ypt(NULL)
@@ -279,24 +279,24 @@ AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,
     140, -1.4, 1.4,
     100, 0.0, 3.0);
 
-  _dedx_pt_pro = new TH2F(
+  _dedx_p_pro = new TH2F(
     "dEdX_Pro" + pf,
     TString::Format(title_format,
-                    "dE/dx vs p_{T} (Proton Daughter)",
-                    "p_{T} (GeV);"
+                    "dE/dx vs p (Proton Daughter)",
+                    "p (GeV);"
                     "dE/dx;"
                     "dN/(p_{T} $\\cdot$ dE/dx)"),
-     128, 0, 2.2,
+     128, 0, 6.0,
      128, 0, 500);
 
-  _dedx_pt_pi = new TH2F(
+  _dedx_p_pi = new TH2F(
     "dEdX_Pi" + pf,
     TString::Format(title_format,
-                    "dE/dx vs p_{T} (Pion Daughter)",
-                    "p_{T} (GeV);"
+                    "dE/dx vs p (Pion Daughter)",
+                    "p (GeV);"
                     "dE/dx;"
                     "dN/(p_{T} $\\cdot$ dE/dx)"),
-     128, 0, 2.2,
+     128, 0, 6.0,
      128, 0, 500.0);
 
   fCosPointingAngle = new TH1F(
@@ -320,7 +320,7 @@ AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,
       TString::Format(title_format,
                       "(MC) \\eta vs p_{T}",
                       "\\eta;"
-                      "p_{T} (GeV);"
+                      "p (GeV);"
                       "dN/(p_{T} $\\cdot$ \\eta)"),
       140, -1.4, 1.4,
       100, 0.0, 3.0);
@@ -338,8 +338,8 @@ AliFemtoPionLambdaCutMonitor::Lambda::Fill(const AliFemtoV0* track)
 
                minv = (type_is_lambda) ? track->MassLambda() : track->MassAntiLambda(),
 
-            pt_pion = (type_is_lambda) ? track->PtNeg() : track->PtPos(),
-          pt_proton = (type_is_lambda) ? track->PtPos() : track->PtNeg(),
+             p_pion = (type_is_lambda) ? track->MomNeg().Mag() : track->MomPos().Mag(),
+           p_proton = (type_is_lambda) ? track->MomPos().Mag() : track->MomNeg().Mag(),
 
            eta_pion = (type_is_lambda) ? track->EtaNeg() : track->EtaPos(),
          eta_proton = (type_is_lambda) ? track->EtaPos() : track->EtaNeg(),
@@ -356,8 +356,8 @@ AliFemtoPionLambdaCutMonitor::Lambda::Fill(const AliFemtoV0* track)
 
   _minv->Fill(minv);
   _ypt->Fill(eta, pt);
-  _dedx_pt_pro->Fill(pt_proton, dedx_proton);
-  _dedx_pt_pi->Fill(pt_pion, dedx_pion);
+  _dedx_p_pro->Fill(p_proton, dedx_proton);
+  _dedx_p_pi->Fill(p_pion, dedx_pion);
   fCosPointingAngle->Fill(track->CosPointingAngle());
 
   if (fMCTrue_minv) {
@@ -381,8 +381,8 @@ AliFemtoPionLambdaCutMonitor::Lambda::GetOutputList()
 
   output->Add(_minv);
   output->Add(_ypt);
-  output->Add(_dedx_pt_pro);
-  output->Add(_dedx_pt_pi);
+  output->Add(_dedx_p_pro);
+  output->Add(_dedx_p_pi);
   output->Add(fCosPointingAngle);
 
   if (fMCTrue_minv) {
@@ -427,8 +427,6 @@ AliFemtoPionLambdaCutMonitor::Pair::Pair(const bool passing,
     TString::Format(title_format,
       "AvgSep Proton Daughter", "Average Separation (cm)"),
     144, 0.0, 20.0);
-
-  cout << "[PAIR] MONTE CARLO : " << is_mc_analysis << "\n";
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(
@@ -565,12 +563,12 @@ void AliFemtoPionLambdaCutMonitor::_init()
     144, 0.120, .158);
   _pion_minv_fail = (TH1F*)_pion_minv_pass->Clone("MinvFail");
 
-  _pion_dedx_pt_pass = new TH2F(
+  _pion_dedx_p_pass = new TH2F(
     "dEdX_Pt_Pass",
     "dE/dx vs p_{T}; p_{T} (GeV); dE/dx; dN/(p_{T} $\\cdot$ dE/dx)",
      128, 0, 500,
      128, 0, 1.5);
-  _pion_dedx_pt_fail = (TH2F*)_pion_dedx_pt_pass->Clone("dEdX_Pt_Fail");
+  _pion_dedx_pt_fail = (TH2F*)_pion_dedx_p_pass->Clone("dEdX_Pt_Fail");
 
   _pion_ypt_pass = new TH2F(
     "YPt_Pass",
@@ -598,7 +596,7 @@ void AliFemtoPionLambdaCutMonitor::_init()
     "dE/dx vs p_{T} (Proton Daughter); p_{T} (GeV); dE/dx",
      128, 0, 2.2,
      128, 0, 500);
-  _lambda_dedx_pt_pro_fail = (TH2F*)_lambda_dedx_pt_pro_pass->Clone("dEdX_Pro_Fail");
+  _lambda_dedx_p_pro_fail = (TH2F*)_lambda_dedx_p_pro_pass->Clone("dEdX_Pro_Fail");
 
   _lambda_dedx_pt_pi_pass = new TH2F(
     "dEdX_Pi_Pass",
@@ -642,7 +640,7 @@ TList* AliFemtoPionLambdaCutMonitor::GetOutputList()
   pion_objs->SetName("Pion");
   pion_objs->Add(_pion_minv_pass);
   pion_objs->Add(_pion_minv_fail);
-  pion_objs->Add(_pion_dedx_pt_pass);
+  pion_objs->Add(_pion_dedx_p_pass);
   pion_objs->Add(_pion_dedx_pt_fail);
   pion_objs->Add(_pion_ypt_pass);
   pion_objs->Add(_pion_ypt_fail);
