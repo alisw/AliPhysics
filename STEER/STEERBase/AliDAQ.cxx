@@ -79,7 +79,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   18,   // TRD
   72,   // TOF
   14,   // HMPID
-  20,   // PHOS
+  21,   // PHOS
   10,   // CPV
   6,    // PMD
   20,   // MUONTRK
