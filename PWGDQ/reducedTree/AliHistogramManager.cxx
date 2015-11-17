@@ -424,7 +424,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
 	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
-    if(axLabels && axLabels[idim].Data()!='\0') 
+    if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
     fUsedVars[vars[idim]] = kTRUE;
   }
@@ -487,7 +487,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
 	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
-    if(axLabels && axLabels[idim].Data()!='\0') 
+    if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
     fUsedVars[vars[idim]] = kTRUE;
   }
