@@ -147,7 +147,7 @@ bool AliHLTEMCALTriggerQAComponent::CheckInputDataType(const AliHLTComponentData
 void AliHLTEMCALTriggerQAComponent::HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const
 {
   const TVector3 vect(0,0,0);
-  patch.Initialize(htlpatch.fCol, htlpatch.fRow, htlpatch.fSize, htlpatch.fADC, htlpatch.fOfflineADC, 0., htlpatch.fBitMask, vect, fGeometry->GetGeometryPtr());
+  patch.Initialize(htlpatch.fCol, htlpatch.fRow, htlpatch.fSize, htlpatch.fADC, htlpatch.fOfflineADC, EMCALTrigger::kEMCL1ADCtoGeV*htlpatch.fADC, htlpatch.fBitMask, vect, fGeometry->GetGeometryPtr());
 }
 
 void AliHLTEMCALTriggerQAComponent::HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const
