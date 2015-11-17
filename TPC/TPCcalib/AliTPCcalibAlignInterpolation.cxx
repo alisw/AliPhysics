@@ -438,6 +438,8 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   TVectorF deltaTOF0(kMaxLayer), deltaTOF1(kMaxLayer); 
   TVectorF vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer), vecSec(kMaxLayer);
   static int evCnt=0;
+  Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParamNonConst()->GetUseComposedCorrection();
+  transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(kFALSE);
   
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
@@ -487,8 +489,6 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     // 3.a) Make a local copy of clusters and apply transformation
     //
     //
-    Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParamNonConst()->GetUseComposedCorrection();
-    transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(kFALSE);
     for (Int_t iPoint=kMaxLayer;iPoint--;){
       //
       // reset track interpolation statuses
