@@ -42,6 +42,7 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
   fHistPtDEtaDPhiClusTrack(0),
   fHistClustDx(0),
   fHistClustDz(0),
+  fNAccJets(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -87,6 +88,7 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) :
   fHistPtDEtaDPhiClusTrack(0),
   fHistClustDx(0),
   fHistClustDz(0),
+  fNAccJets(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -183,7 +185,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       
       histname = "fHistJetsPtArea_";
       histname += i;
-      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 30, 0, 3);
+      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 50, 0, 1);
       fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} (GeV/c)");
       fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
       fOutput->Add(fHistJetsPtArea[i]);
@@ -199,7 +201,7 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       if (!(GetJetContainer()->GetRhoName().IsNull())) {
 	histname = "fHistJetsCorrPtArea_";
 	histname += i;
-	fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 30, 0, 3);
+	fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 50, 0, 1);
 	fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
 	fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
 	fOutput->Add(fHistJetsCorrPtArea[i]);
@@ -221,6 +223,9 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
   fHistClustDz = new TH1F("fHistClustDz","fHistClustDz;Dz",1000,0.,1.);
   fOutput->Add(fHistClustDz);
 
+  fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
+  fOutput->Add(fNAccJets);
+  
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -255,9 +260,10 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   }
 
   if (fJetsCont) {
+     Int_t count = 0;
     AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
     while(jet) {
-
+       count++;
       fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
       fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
 
@@ -270,7 +276,7 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
       }
       jet = fJetsCont->GetNextAcceptJet(); 
     }
-    
+    fNAccJets->Fill(count);
     jet = fJetsCont->GetLeadingJet();
     if(jet) fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
   }
