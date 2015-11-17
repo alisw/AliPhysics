@@ -1,6 +1,9 @@
 AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
-   TString njet = "Jet_AKTChargedR040_PicoTracks_pT0150_E_scheme", 
-   Double_t R = 0.4, 
+   TString njet = "Jet_AKTChargedR040_PicoTracks_pT0150_E_scheme",
+   /*TString njetClosest = "Jet_AKTChargedR040_MCParticlesSelected_pT0150_E_scheme",*/
+   Double_t R = 0.4,
+   Double_t jetptcut = 1,
+   Double_t jetareacut = 0.6,
    TString ntrack = "PicoTracks", 
    TString accType = "TPC", 
    Bool_t  useLeadingJet = kFALSE){
@@ -23,9 +26,15 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
     AliParticleContainer *partCont  = task->AddParticleContainer(ntrack);
        
     AliJetContainer *jetCont  = task->AddJetContainer(njet, accType, R);
-    //jetCont->SetRhoName(rhoname);
-    //jetCont->SetRhoMassName(rhoMname);
-    jetCont->ConnectParticleContainer(partCont);
+    if(jetCont){
+       //jetCont->SetRhoName(rhoname);
+       //jetCont->SetRhoMassName(rhoMname);
+       jetCont->ConnectParticleContainer(partCont);
+       jetCont->SetJetPtCut(jetptcut);
+       jetCont->SetPercAreaCut(jetareacut);
+       
+    }
+    //AliJetContainer *jetContClosest  = task->AddJetContainer(njetClosest, accType, R);
     
     mgr->AddTask(task);
     
