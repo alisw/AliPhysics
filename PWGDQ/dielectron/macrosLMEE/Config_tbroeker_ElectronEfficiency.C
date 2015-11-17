@@ -27,6 +27,16 @@ const Double_t PtBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0,10.0,20.0
 };
+Bool_t doPairing = kTRUE;
+// mee bins
+const Double_t MeeMin    = 0.;
+const Double_t MeeMax    = 5.;
+const Int_t    nBinsMee  = 500;
+// ptee bins
+const Double_t PteeMin   = 0.;
+const Double_t PteeMax   = 6.;
+const Int_t    nBinsPtee = 600;
+
 // run dependency (currently only "TPC_dEdx_P_run")
 // run string must be sorted in increasing order!
 //AOD_115_goodPID //TString sRuns("167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
@@ -48,8 +58,6 @@ const Bool_t    reqVertex = kTRUE;
 const Double_t  vertexZcut = 10.;
 const Double_t  CentMin =  -2.;
 const Double_t  CentMax = 102.;
-// track cuts
-const Bool_t    checkV0dauEle = kTRUE;
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
@@ -116,6 +124,28 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
     anaFilter->AddCuts(pInCut);
   }
   if(cutInstance != 23) anaFilter->AddCuts( SetupPIDcuts(cutInstance) );
+  
+  AliDielectronV0Cuts *noconv = new AliDielectronV0Cuts("IsGamma","IsGamma");
+  // which V0 finder you want to use
+  noconv->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll(default), kOffline or kOnTheFly
+  // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+  noconv->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+  // add default PID cuts (defined in AliDielectronPID)
+  // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+  //noconv->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+  // add the pair cuts for V0 candidates
+  noconv->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.00, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.00, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kR,                             3.0,  90.00, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
+  noconv->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+
+  anaFilter->AddCuts( noconv );
+  
+  // selection or rejection of V0 tracks
+  noconv->SetExcludeTracks(kTRUE);
   std::cout << "...cuts added!" <<std::endl; 
   
 //  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
