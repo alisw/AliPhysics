@@ -487,7 +487,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     // 3.a) Make a local copy of clusters and apply transformation
     //
     //
-    Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParam()->GetUseComposedCorrection();
+    Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParamNonConst()->GetUseComposedCorrection();
     transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(kFALSE);
     for (Int_t iPoint=kMaxLayer;iPoint--;){
       //
@@ -713,6 +713,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("FittTree",fTrackCounter,4,0,0);  
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("FillHistos",fTrackCounter,5,0,0);  
   }
+  transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection( backupUseComposedCorrection);
   //
  // end of track loop
 }
@@ -862,7 +863,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   TH1 * hisTime=0;
   if (startTime>0) hisTime=new TH1F("hisTrackTime","hisTrackTime",(stopTime-startTime)/20,startTime,stopTime);
   TStopwatch timerAll;
-  UShort_t npValid;
+  UShort_t npValid=1;
   for (Int_t ihis=0; ihis<6; ihis++){    
     if (selHis>=0 && ihis!=selHis) continue;
     for (Int_t iesd=0; iesd<nesd; iesd++){
@@ -879,7 +880,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       tree->SetBranchAddress("vecZ.",&vecZ);
       tree->SetBranchAddress("track.",&param);
       br->SetAddress(&timeStamp);
-      tree->SetBranchAddress("npValid",&npValid);
+      if (tree->GetBranch("npValid")!=NULL) tree->SetBranchAddress("npValid",&npValid);
       tree->SetBranchAddress(branches[ihis],&vecDelta);
       
       Int_t ntracks=tree->GetEntries();
