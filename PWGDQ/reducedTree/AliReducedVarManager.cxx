@@ -14,6 +14,7 @@
 using std::cout;
 using std::endl;
 using std::flush;
+using std::ifstream;
 #include <fstream>
 
 #include <TString.h>
