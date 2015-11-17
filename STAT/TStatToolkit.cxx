@@ -2523,10 +2523,11 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   // estimate number of output fits
   histo->GetListOfAxes()->Print();
   ULong64_t nfits = 1, fitCount=0;
+  printf("index\tdim\t|\tnbins\tgrouping\tstep\tnfits\n");
   for (int i=1;i<ndim;i++) {
     int idim = axOrd[i];
     nfits *= TMath::Max(1,nbins[idim]/binSt[idim]);
-    printf("%d %d | %d %d %lld\n",i,idim,nbins[idim],binSt[idim],nfits);
+    printf("%d %d | %d %d %d %lld\n",i,idim,nbins[idim],binGr[idim], binSt[idim],nfits);
   }
   printf("Expect %lld nfits\n",nfits);
   ULong64_t fitProgress = nfits/100;
@@ -2661,6 +2662,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     //
     if (((++fitCount)%fitProgress)==0) {
       printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits); 
+      AliSysInfo::AddStamp("fitCout", 1,fitCount,100*double(fitCount)/nfits);
     }
     //
     //next global bin in which target dimention will be looped
