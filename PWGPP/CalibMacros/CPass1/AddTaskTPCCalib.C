@@ -249,6 +249,27 @@ void AddCalibAlign(TObject* task){
   myTask->AddJob(calibAlign);
 }
 
+void AddCalibAlignInterpolation(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task; 
+  AliTPCcalibAlignInterpolation *calibAlign = new AliTPCcalibAlignInterpolation("alignTPCInterpolation","Space point distortion calibration using interpolation",0);
+  calibAlign->SetDebugLevel(debugLevel);
+  calibAlign->SetStreamLevel(streamLevel);
+  calibAlign->SetStreamLevelTrack(0);
+  calibAlign->SetSyswatchStep(0);
+  //  Uncomenting following 2 lines we can enable extendad version of infromation dump
+  //  calibAlign->SetStreamLevelTrack(AliTPCcalibAlignInterpolation::kStremInterpolation);
+  //  calibAlign->SetSyswatchStep(10);
+
+  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  ::Info("AddCalibAlignInterpolation");
+  calibAlign->Dump();
+  myTask->AddJob(calibAlign);
+}
+
 
 void AddCalibLaser(TObject* task){
   //
@@ -290,6 +311,7 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibTimeGain(task);
   AddCalibTime(task);
   //AddCalibCosmic(task);
+  AddCalibAlignInterpolation(task);
 }
 
 
