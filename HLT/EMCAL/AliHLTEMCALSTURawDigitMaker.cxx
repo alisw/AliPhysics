@@ -48,17 +48,15 @@ AliHLTEMCALSTURawDigitMaker::~AliHLTEMCALSTURawDigitMaker() {
   if(fTriggerData) delete fTriggerData;
 }
 
-void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *stustream){
+void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *stustream, Int_t detector){
 
-  //std::cout << "Start Processing STU data" << std::endl;
   HLTDebug("Start post processing the raw digit maker");
   Int_t idx;
 
   AliHLTCaloTriggerRawDigitDataStruct *hltdig(NULL);
 
-  //std::cout << "Before check for payload" << std::endl;
+
   if (stustream && stustream->ReadPayLoad()) {
-    //std::cout << "STU stream has payload" << std::endl;
     fTriggerData->SetL1DataDecoded(1);
 
     for (int i = 0; i < 2; i++) {
@@ -108,14 +106,13 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
     TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
     fDCSConfigSTU->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
 
-    //std::cout << "Before check for raw data" << std::endl;
     if (stustream->GetRawData()) {
-      //std::cout << "STU has raw data" << std::endl;
       HLTDebug("| STU => TRU raw data are there!\n");
 
-      Int_t nTRU = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU();
+      //Int_t nTRU = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU();
+      Int_t nTRU = detector == 0 ? 32 : 14;
       for (Int_t i = 0; i < nTRU; i++) {
-        iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(i, 0);
+        iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(i, detector);
 
         UInt_t adc[96]; for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 
@@ -135,7 +132,8 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
     for (Int_t i = 0; i < stustream->GetNL0GammaPatch(); i++) {
       stustream->GetL0GammaPatch(i, iTRU, x);
 
-      iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, 0);
+      //if(iTRU >= 32) iTRU -= 32;
+      iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, detector);
 
       const Int_t sizePatchL0 = 4;
 
@@ -158,7 +156,9 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
     for (int ithr = 0; ithr < 2; ithr++) {
       for (Int_t i = 0; i < stustream->GetNL1GammaPatch(ithr); i++) {
         if (stustream->GetL1GammaPatch(i, ithr, iTRU, x, y)) { // col (0..23), row (0..3)
-          iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, 0);
+
+          //if(iTRU >= 32)iTRU -= 32;
+          iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, detector);
 
           HLTDebug("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
 
@@ -168,7 +168,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
           vx = vx - int(sizeL1gsubr.X()) * int(sizeL1gpatch.X()) + 1;
 
-          if (vx >= 0 && vy < 63) {
+          if (vx >= 0 && vy < 105) {
             if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
               HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
               SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);

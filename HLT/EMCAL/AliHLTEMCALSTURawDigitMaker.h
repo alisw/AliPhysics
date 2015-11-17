@@ -44,7 +44,7 @@ public:
   /**
    * Post process digits
    */
-  void ProcessSTUStream(AliEMCALTriggerSTURawStream *stustream);
+  void ProcessSTUStream(AliEMCALTriggerSTURawStream *stustream, Int_t detector);
 
   /**
    * Set the geometry ptr for this class
