@@ -168,6 +168,7 @@ public:
    * @param lowCut Low cut
    */
   void SetLowCut(Double_t lowCut=0.3) { fLowCut = lowCut; }
+  Double_t GetLowCut() const { return fLowCut; }
   /** 
    * Set the number of bins to subtract 
    * 
