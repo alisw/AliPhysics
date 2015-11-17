@@ -45,6 +45,8 @@ public:
   void SetVertexZ(Double_t zmin, Double_t zmax) { fVtxZmin=zmin; fVtxZmax=zmax; }
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
+  void SetRequireCompleteDAQ(Bool_t req =kTRUE) { f2015IsIncompleteDAQ=req;
+     }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   void SetCentralityRange(Double_t min, Double_t max) { fCentMin=min; fCentMax=max; }
@@ -79,6 +81,7 @@ private:
   EVtxType fVtxType;                // vertex type
   Bool_t fRequire13sel;             //bit to select event and vertex selection proposed for 2013 in 
                                     //https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
+  Bool_t f2015IsIncompleteDAQ;	    // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
   AliAnalysisUtils fUtils;          //data member to use utility class for event and vertex selection in 2013
   
 
