@@ -18,8 +18,9 @@ TH2D* MakeOneRing(UShort_t      d,
 		  Int_t&        nDead, 
 		  std::ostream* deadScript)
 {
-  AliFMDGeometry*   geom = AliFMDGeometry::Instance();
-  AliFMDParameters* pars = AliFMDParameters::Instance();
+  AliFMDGeometry*   geom  = AliFMDGeometry::Instance();
+  AliFMDParameters* pars  = AliFMDParameters::Instance();
+  Float_t           konst = pars->GetDACPerMIP();
 
   UShort_t nS = (r == 'I' || r == 'i' ?  20 :  40);
   UShort_t nT = (r == 'I' || r == 'i' ? 512 : 256);
@@ -34,7 +35,7 @@ TH2D* MakeOneRing(UShort_t      d,
   hOK->SetDirectory(0);
   
   if (deadScript)
-    *deadScript << "\n // FMD" << d << r << std::endl;
+    *deadScript << "\n  // === FMD" << d << r << " === " << std::endl;
   // Loop over all sectors and strips in this ring 
   Int_t nOK  = 0;
   Int_t nAll = 0;
@@ -50,15 +51,53 @@ TH2D* MakeOneRing(UShort_t      d,
       Double_t q, eta, phi, theta;
       AliFMDGeometry::XYZ2REtaPhiTheta(x, y, z, q, eta, phi, theta);
       if (phi < 0) phi += 2*TMath::Pi();
-
+      TString reason;
+      
       // Check if this is a dead channel or not 
       Bool_t isDead = pars->IsDead(d, r, s, t);
+      if (isDead) {
+	if (deadScript)
+	  Warning("", "FMD%d%c[%2d,%3d] is dead because OCDB says so");	
+	reason = "OCDB";
+      }
+      
+      // Pedestal, noise, gain 
+      Double_t ped   = pars->GetPedestal     (d, r, s, t);
+      Double_t noise = pars->GetPedestalWidth(d, r, s, t);
+      Double_t gain  = pars->GetPulseGain    (d, r, s, t);
+      if (ped < 10) {
+	if (!isDead && deadScript) {
+	  reason = "Low pedestal";
+	  Warning("", "FMD%d%c[%2d,%3d] is dead because pedestal %f < 10",
+		  d, r, s, t, ped);
+	}
+	isDead = true;
+      }
+      Float_t corr  = 0;
+      if (noise > .5 && gain > .5) corr = noise / (gain * konst);
+      if (corr > 0.05 || corr <= 0) {
+	if (!isDead && deadScript) {
+	  reason = "high noise/low gain";
+	  Warning("", "FMD%d%c[%2d,%3d] is dead because %f/(%f*%f)=%f > 0.05 or negative",
+		  d, r, s, t, noise, gain, konst, corr);
+	}
+	isDead = true;
+      }
+      
+      
+      
 
       // Special check for FMD2i - upper part of sectors 16/17 have 
       // have anomalous gains and/or noise - common sources are 
       // power regulartors for bias currents and the like 
       Int_t VA = t/128;
-      if(d==2 && r=='I' && VA>1 && (s==16 || s==17)) isDead =true;
+      if(d==2 && r=='I' && VA>1 && (s==16 || s==17)) {
+	if (!isDead && deadScript) {
+	  reason = "I say so";
+	  Warning("", "FMD%d%c[%2d,%3d] is dead because I say so", d, r, s, t);
+	}
+	isDead =true;
+      }
 
       // Find the eta bin number and corresponding overflow bin
       Int_t etaBin = hAll->GetXaxis()->FindBin(eta);
@@ -79,7 +118,9 @@ TH2D* MakeOneRing(UShort_t      d,
 	nDead++;
 	if (deadScript)
 	  *deadScript << "  filter->AddDead(" << d << ",'" << r << "'," 
-		      << s << ',' << t << ");" << std::endl;
+		      << std::setw(2) << s << ','
+		      << std::setw(3) << t << "); // "
+		      << reason << std::endl;
       }
     }
   }
@@ -145,9 +186,11 @@ void ExtractAcceptance(Int_t   runNo=121526,
   else if (runNo <= 170718) year = 2011;
   else if (runNo <= 194306) year = 2012;
   else if (runNo <= 197709) year = 2013;
+  else if (runNo <= 208364) year = 2014;
+  else                      year = 2015;
   if (year <= 0) { 
-    Error("", "Couldn't deduce the year from the run number");
-    return;
+    Warning("", "Couldn't deduce the year from the run number");
+    // return;
   }
 
   // --- Initialisations ------------------------------------------
@@ -226,7 +269,7 @@ void ExtractAcceptance(Int_t   runNo=121526,
 	     << "//    system    = " << sys << "\n"
 	     << "//    sqrt{sNN} = " << sNN << "GeV\n"
 	     << "//    L3 field  = " << fld << "kG\n"
-	     << "void deadstrips(AliFMDSharingFilter* filter)\n"
+	     << "void deadstrips(AliFMDESDFixer* filter)\n"
 	     << "{" << std::endl;
   
   // --- Loop over verticies and rings -------------------------------
