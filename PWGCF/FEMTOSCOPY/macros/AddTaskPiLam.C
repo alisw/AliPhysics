@@ -69,7 +69,6 @@ AliAnalysisTaskFemto* AddTaskPiLam(TString params,
                           ? default_name
                           : TString::Format("%s_%s", default_name, subwagon_suffix);
 
-
   cout << "[AddTaskPiLam]\n";
   cout << "   macro: '" << macro_filename << "'\n";
   cout << "   params: '" << params << "'\n";
@@ -83,10 +82,13 @@ AliAnalysisTaskFemto* AddTaskPiLam(TString params,
                                               .ReplaceAll("\n", "\\n")
                                               .ReplaceAll("\t", "\\t") + '"';
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(task_name,
-                                                             macro_filename,
-                                                             analysis_params,
-                                                             kFALSE);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(
+    task_name,
+    macro_filename,
+    analysis_params,
+    kFALSE
+  );
+
   mgr->AddTask(taskfemto);
 
   const char *filename = AliAnalysisManager::GetCommonFileName();
