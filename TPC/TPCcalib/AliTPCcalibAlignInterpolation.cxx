@@ -189,8 +189,6 @@ Bool_t  AliTPCcalibAlignInterpolation::RefitITStrack(AliESDfriendTrack *friendTr
   //
   // Propagate track through ITS space points
   AliTrackPoint spacepoint;
-  chi2=0;
-  npoints=0; 
   Int_t volId=0,modId=0,layerId=0;
   
   for (Int_t iPoint=0;iPoint<nPoints;iPoint++){
@@ -1007,7 +1005,7 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   }else{
     tree->AddFriend(treeFriend,TString::Format("%s",friendAlias).Data());
     tree->SetAlias(TString::Format("%sOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<2&&%s.chi2G>0&&%s.rmsG<2&&%s.rmsG/%s.rms<2",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data());
-    tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
+    tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
   }
   return tree;
 }
