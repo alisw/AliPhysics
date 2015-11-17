@@ -40,6 +40,8 @@
 #include "AliGeomManager.h"
 #include "TVectorF.h"
 #include "TStopwatch.h"
+#include "TProfile.h"
+#include "TGraphErrors.h"
 //#include "THnBase.h"
 #include "THn.h"
 #include "AliSysInfo.h"
@@ -187,6 +189,8 @@ Bool_t  AliTPCcalibAlignInterpolation::RefitITStrack(AliESDfriendTrack *friendTr
   //
   // Propagate track through ITS space points
   AliTrackPoint spacepoint;
+  chi2=0;
+  npoints=0; 
   Int_t volId=0,modId=0,layerId=0;
   
   for (Int_t iPoint=0;iPoint<nPoints;iPoint++){
@@ -814,7 +818,7 @@ void  AliTPCcalibAlignInterpolation::CreateDistortionMapsFromFile(const char * i
   //
 }
 
-void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime, Int_t stopTime, Int_t maxStat, Int_t selHis){
+void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime, Int_t stopTime, Int_t maxStat, Int_t selHis,const char * residualInfoFile ){
   /**
    * Trees with point-track residuals to residual histogram
    * @param residualList  text file with tree list
@@ -824,6 +828,12 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   // 
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
+  // Load current information file
+  TFile *finfo = TFile::Open(residualInfoFile);
+  TTree *treeInfo=0;
+  if (finfo) treeInfo=(TTree*)finfo->Get("sumaryInfo");
+
+
   const Int_t knPoints=kMaxRow;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
@@ -997,7 +1007,7 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   }else{
     tree->AddFriend(treeFriend,TString::Format("%s",friendAlias).Data());
     tree->SetAlias(TString::Format("%sOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<2&&%s.chi2G>0&&%s.rmsG<2&&%s.rmsG/%s.rms<2",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data());
-    tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
+    tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
   }
   return tree;
 }
@@ -1038,4 +1048,356 @@ void AliTPCcalibAlignInterpolation::ExtractTPCGasData()
   fX0TPC  = par[1]>0 ? par[4]/par[1] : 28.94;
   //
   AliInfoF("Propagation in TPC will use rho=%.2f X0=%.2f",fRhoTPC,fX0TPC);
+}
+
+
+void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int_t skip){
+  //
+  /// Code to query statistical event information from the ResidualTrees.root file 
+  /// output written to file residualInfo.root
+  ///   \param const char * inputList - ascii file with input list
+  ///   \param Int_t timeInterval     - length of time interval (beginning of time intervals rounded)
+  ///   \param id                     - additional ID added to the tree
+  ///   \param skip                   - parameter skip file
+  /// Algorithm:
+  ///   1.) Cache information per files - beginTime and endTime for file
+  ///   2.) Cache information per time interval
+
+  /*
+    run=240204;
+    GetResidualStatInfo("cat residual.list",300,run,1);
+  */
+  TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
+  Int_t nFiles=array->GetEntries();
+  if (nFiles<=0) {
+    ::Error("GetResidualStatInfo. Wrong input list",inputList);
+    return;
+  }
+  TStopwatch timer;
+  //
+  // 1.) Cache information per files - beginTime and endTime for file
+  //
+  TStopwatch timer1;
+  TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
+  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
+    timer.Start();
+    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());
+    TFile * f = TFile::Open(array->At(iFile)->GetName());
+    if (f==NULL) continue;
+    TTree * treeInfo = (TTree*)f->Get("eventInfo");
+    if (treeInfo==NULL) continue;
+    Int_t entriesInfo=treeInfo->GetEntries();
+    Int_t entries=treeInfo->Draw("B1","1","goff");
+    Double_t maxTime=TMath::MaxElement(entries,treeInfo->GetV1());
+    Double_t minTime=TMath::MinElement(entries,treeInfo->GetV1());
+    Double_t meanTime=TMath::Mean(entries,treeInfo->GetV1());
+    TObjString fname(array->At(iFile)->GetName());
+    (*pcstream)<<"summary1"<<
+      "iFile="<<iFile<<
+      "fname.="<<&fname<<
+      "events="<<entriesInfo<<
+      "minTime="<<minTime<<
+      "maxTime="<<maxTime<<
+      "meanTime="<<meanTime<<
+      "\n";
+    timer.Print();
+  }
+  delete pcstream;
+  ::Info("GetResidualStatInfo","Total time");
+  timer1.Print();
+  //
+  // 2.) Cache information per time interval
+  //
+  TStopwatch timer2;
+  pcstream = new TTreeSRedirector("residualInfo.root", "update");
+  TTree * treeSummary1=(TTree*)(pcstream->GetFile()->Get("summary1"));
+  Int_t entries = treeSummary1->Draw("minTime","1","goff");
+  Long64_t minTime = TMath::MinElement(entries, treeSummary1->GetV1());
+  entries = treeSummary1->Draw("maxTime","1","goff");
+  Long64_t maxTime = TMath::MaxElement(entries, treeSummary1->GetV1());
+  minTime=timeInterval*(minTime/timeInterval);
+  maxTime=timeInterval*(1+(maxTime/timeInterval));
+  Int_t nIntervals=(maxTime-minTime)/timeInterval;
+  Int_t nIntervalsQA=(maxTime-minTime)/15;
+  //
+  TH1F  * hisEvent= new TH1F("hisEvent","hisEvent",nIntervalsQA,minTime,maxTime);
+  const Int_t nSec=81; // 72 sector +5 sumarry info+ 4 medians
+  TProfile * profArrayNcl[nSec]={0};
+  TProfile * profArrayNclUsed[nSec]={0};
+  TGraphErrors * grArrayNcl[nSec]={0};
+  TGraphErrors * grArrayNclUsed[nSec]={0};
+  TProfile * profArrayITSNcl[3]={0};
+  TGraphErrors * grArrayITSNcl[3]={0};
+  
+  for (Int_t isec=0; isec<nSec; isec++){
+    profArrayNcl[isec]=new TProfile(TString::Format("TPCnclSec%d",isec).Data(), TString::Format("TPCnclSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
+    profArrayNclUsed[isec]=new TProfile(TString::Format("TPCnclUsedSec%d",isec).Data(), TString::Format("TPCnclUsedSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
+  }
+   for (Int_t iits=0; iits<3; iits++){
+    profArrayITSNcl[iits]=new TProfile(TString::Format("ITSnclSec%d",iits).Data(), TString::Format("ITSnclSec%d",iits).Data(), nIntervalsQA,minTime,maxTime);    
+  }
+
+  TVectorF *vecNClTPC=0;
+  TVectorF *vecNClTPCused=0;
+  Int_t nITS[3]={0};
+  Int_t timeStamp=0;
+  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
+    timer.Start();
+    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());    
+    TFile * f = TFile::Open(array->At(iFile)->GetName());
+    if (f==NULL) continue;
+    TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
+    if (treeInfo==NULL) continue;
+    treeInfo->SetBranchAddress("vecNClTPC.",&vecNClTPC);
+    treeInfo->SetBranchAddress("vecNClTPCused.",&vecNClTPCused);
+    treeInfo->SetBranchAddress("nSPD",&nITS[0]);
+    treeInfo->SetBranchAddress("nSDD",&nITS[1]);
+    treeInfo->SetBranchAddress("nSSD",&nITS[2]);
+    Bool_t hasTimeStamp=(treeInfo->GetBranch("timeStamp")!=NULL);
+    if (hasTimeStamp) treeInfo->SetBranchAddress("timeStamp",&timeStamp);
+    if (!hasTimeStamp) ((TBranch*)(treeInfo->GetListOfBranches()->At(1)))->SetAddress(&timeStamp);
+    Int_t treeEntries=treeInfo->GetEntries();
+    for (Int_t iEntry=0; iEntry<treeEntries; iEntry++){
+      treeInfo->GetEntry(iEntry);
+      hisEvent->Fill(timeStamp);
+      for (Int_t isec=0; isec<72; isec++){
+	profArrayNcl[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	profArrayNclUsed[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	if (isec<36){
+	  if (isec<18) 	profArrayNcl[72]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if (isec>=18) profArrayNcl[73]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if (isec<18) 	profArrayNclUsed[72]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	  if (isec>=18) profArrayNclUsed[73]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	}else{
+	  if ((isec%36)<18)  profArrayNcl[74]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if ((isec%36)>=18) profArrayNcl[75]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if ((isec%36)<18)  profArrayNclUsed[74]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	  if ((isec%36)>=18) profArrayNclUsed[75]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	}
+	profArrayNcl[76]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	profArrayNclUsed[76]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+      }
+      profArrayNcl[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[0])));
+      profArrayNcl[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[18])));
+      profArrayNcl[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[36])));
+      profArrayNcl[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[54])));
+      //
+      profArrayNclUsed[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[0])));
+      profArrayNclUsed[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[18])));
+      profArrayNclUsed[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[36])));
+      profArrayNclUsed[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[54])));
+      for (Int_t iits=0; iits<3; iits++){
+	profArrayITSNcl[iits]->Fill(timeStamp,nITS[iits]);
+      }
+    }
+    timer.Print();
+  }
+  timer2.Print();
+  TGraphErrors grEvent(hisEvent);
+  (*pcstream)<<"sumaryTime"<<
+    "id="<<id<<
+    "grEvent.="<<&grEvent;
+  for (Int_t isec=0; isec<nSec; isec++){
+    grArrayNcl[isec] = new TGraphErrors((profArrayNcl[isec]));
+    grArrayNclUsed[isec] = new TGraphErrors((profArrayNclUsed[isec]));
+    (*pcstream)<<"sumaryTime"<<
+      TString::Format("grNcl%d.=",isec).Data()<<grArrayNcl[isec]<<
+      TString::Format("grNclUsed%d.=",isec).Data()<<grArrayNclUsed[isec];
+  }
+  for (Int_t iits=0; iits<3; iits++){
+    grArrayITSNcl[iits] = new TGraphErrors((profArrayITSNcl[iits]));
+    (*pcstream)<<"sumaryTime"<<
+      TString::Format("grITSNcl%d.=",iits).Data()<<grArrayITSNcl[iits];
+  }
+  
+  
+  (*pcstream)<<"sumaryTime"<<"\n";
+  for (Int_t isec=0; isec<nSec; isec++){
+    delete 	profArrayNcl[isec];
+    delete 	profArrayNclUsed[isec];
+    delete 	grArrayNcl[isec];
+    delete 	grArrayNclUsed[isec];
+  }
+  delete hisEvent;
+  delete pcstream;
+
+  printf("StatInfo.minTime\t%d\n",minTime);
+  printf("StatInfo.maxTime\t%d\n",maxTime);
+  delete array;
+}
+
+
+void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int_t skip){
+  //
+  /// Code to query statistical event information from the ResidualTrees.root file 
+  /// output written to file residualInfo.root
+  ///   \param const char * inputList - ascii file with input list
+  ///   \param Int_t timeInterval     - length of time interval (beginning of time intervals rounded)
+  ///   \param id                     - additional ID added to the tree
+  ///   \param skip                   - parameter skip file
+  /// Algorithm:
+  ///   1.) Cache information per files - beginTime and endTime for file
+  ///   2.) Cache information per time interval
+
+  /*
+    run=240204;
+    GetResidualStatInfo("cat residual.list",300,run,1);
+  */
+  TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
+  Int_t nFiles=array->GetEntries();
+  if (nFiles<=0) {
+    ::Error("GetResidualStatInfo. Wrong input list",inputList);
+    return;
+  }
+  TStopwatch timer;
+  //
+  // 1.) Cache information per files - beginTime and endTime for file
+  //
+  TStopwatch timer1;
+  TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
+  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
+    timer.Start();
+    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());
+    TFile * f = TFile::Open(array->At(iFile)->GetName());
+    if (f==NULL) continue;
+    TTree * treeInfo = (TTree*)f->Get("eventInfo");
+    if (treeInfo==NULL) continue;
+    Int_t entriesInfo=treeInfo->GetEntries();
+    Int_t entries=treeInfo->Draw("B1","1","goff");
+    Double_t maxTime=TMath::MaxElement(entries,treeInfo->GetV1());
+    Double_t minTime=TMath::MinElement(entries,treeInfo->GetV1());
+    Double_t meanTime=TMath::Mean(entries,treeInfo->GetV1());
+    TObjString fname(array->At(iFile)->GetName());
+    (*pcstream)<<"summary1"<<
+      "iFile="<<iFile<<
+      "fname.="<<&fname<<
+      "events="<<entriesInfo<<
+      "minTime="<<minTime<<
+      "maxTime="<<maxTime<<
+      "meanTime="<<meanTime<<
+      "\n";
+    timer.Print();
+  }
+  delete pcstream;
+  ::Info("GetResidualStatInfo","Total time");
+  timer1.Print();
+  //
+  // 2.) Cache information per time interval
+  //
+  TStopwatch timer2;
+  pcstream = new TTreeSRedirector("residualInfo.root", "update");
+  TTree * treeSummary1=(TTree*)(pcstream->GetFile()->Get("summary1"));
+  Int_t entries = treeSummary1->Draw("minTime","1","goff");
+  Long64_t minTime = TMath::MinElement(entries, treeSummary1->GetV1());
+  entries = treeSummary1->Draw("maxTime","1","goff");
+  Long64_t maxTime = TMath::MaxElement(entries, treeSummary1->GetV1());
+  minTime=timeInterval*(minTime/timeInterval);
+  maxTime=timeInterval*(1+(maxTime/timeInterval));
+  Int_t nIntervals=(maxTime-minTime)/timeInterval;
+  Int_t nIntervalsQA=(maxTime-minTime)/15;
+  //
+  TH1F  * hisEvent= new TH1F("hisEvent","hisEvent",nIntervalsQA,minTime,maxTime);
+  const Int_t nSec=81; // 72 sector +5 sumarry info+ 4 medians
+  TProfile * profArrayNcl[nSec]={0};
+  TProfile * profArrayNclUsed[nSec]={0};
+  TGraphErrors * grArrayNcl[nSec]={0};
+  TGraphErrors * grArrayNclUsed[nSec]={0};
+  TProfile * profArrayITSNcl[3]={0};
+  TGraphErrors * grArrayITSNcl[3]={0};
+  
+  for (Int_t isec=0; isec<nSec; isec++){
+    profArrayNcl[isec]=new TProfile(TString::Format("TPCnclSec%d",isec).Data(), TString::Format("TPCnclSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
+    profArrayNclUsed[isec]=new TProfile(TString::Format("TPCnclUsedSec%d",isec).Data(), TString::Format("TPCnclUsedSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
+  }
+   for (Int_t iits=0; iits<3; iits++){
+    profArrayITSNcl[iits]=new TProfile(TString::Format("ITSnclSec%d",iits).Data(), TString::Format("ITSnclSec%d",iits).Data(), nIntervalsQA,minTime,maxTime);    
+  }
+
+  TVectorF *vecNClTPC=0;
+  TVectorF *vecNClTPCused=0;
+  Int_t nITS[3]={0};
+  Int_t timeStamp=0;
+  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
+    timer.Start();
+    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());    
+    TFile * f = TFile::Open(array->At(iFile)->GetName());
+    if (f==NULL) continue;
+    TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
+    if (treeInfo==NULL) continue;
+    treeInfo->SetBranchAddress("vecNClTPC.",&vecNClTPC);
+    treeInfo->SetBranchAddress("vecNClTPCused.",&vecNClTPCused);
+    treeInfo->SetBranchAddress("nSPD",&nITS[0]);
+    treeInfo->SetBranchAddress("nSDD",&nITS[1]);
+    treeInfo->SetBranchAddress("nSSD",&nITS[2]);
+    Bool_t hasTimeStamp=(treeInfo->GetBranch("timeStamp")!=NULL);
+    if (hasTimeStamp) treeInfo->SetBranchAddress("timeStamp",&timeStamp);
+    if (!hasTimeStamp) ((TBranch*)(treeInfo->GetListOfBranches()->At(1)))->SetAddress(&timeStamp);
+    Int_t treeEntries=treeInfo->GetEntries();
+    for (Int_t iEntry=0; iEntry<treeEntries; iEntry++){
+      treeInfo->GetEntry(iEntry);
+      hisEvent->Fill(timeStamp);
+      for (Int_t isec=0; isec<72; isec++){
+	profArrayNcl[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	profArrayNclUsed[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	if (isec<36){
+	  if (isec<18) 	profArrayNcl[72]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if (isec>=18) profArrayNcl[73]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if (isec<18) 	profArrayNclUsed[72]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	  if (isec>=18) profArrayNclUsed[73]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	}else{
+	  if ((isec%36)<18)  profArrayNcl[74]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if ((isec%36)>=18) profArrayNcl[75]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	  if ((isec%36)<18)  profArrayNclUsed[74]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	  if ((isec%36)>=18) profArrayNclUsed[75]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+	}
+	profArrayNcl[76]->Fill(timeStamp, (*vecNClTPC)[isec]);
+	profArrayNclUsed[76]->Fill(timeStamp, (*vecNClTPCused)[isec]);
+      }
+      profArrayNcl[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[0])));
+      profArrayNcl[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[18])));
+      profArrayNcl[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[36])));
+      profArrayNcl[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[54])));
+      //
+      profArrayNclUsed[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[0])));
+      profArrayNclUsed[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[18])));
+      profArrayNclUsed[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[36])));
+      profArrayNclUsed[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[54])));
+      for (Int_t iits=0; iits<3; iits++){
+	profArrayITSNcl[iits]->Fill(timeStamp,nITS[iits]);
+      }
+    }
+    timer.Print();
+  }
+  timer2.Print();
+  TGraphErrors grEvent(hisEvent);
+  (*pcstream)<<"sumaryTime"<<
+    "id="<<id<<
+    "grEvent.="<<&grEvent;
+  for (Int_t isec=0; isec<nSec; isec++){
+    grArrayNcl[isec] = new TGraphErrors((profArrayNcl[isec]));
+    grArrayNclUsed[isec] = new TGraphErrors((profArrayNclUsed[isec]));
+    (*pcstream)<<"sumaryTime"<<
+      TString::Format("grNcl%d.=",isec).Data()<<grArrayNcl[isec]<<
+      TString::Format("grNclUsed%d.=",isec).Data()<<grArrayNclUsed[isec];
+  }
+  for (Int_t iits=0; iits<3; iits++){
+    grArrayITSNcl[iits] = new TGraphErrors((profArrayITSNcl[iits]));
+    (*pcstream)<<"sumaryTime"<<
+      TString::Format("grITSNcl%d.=",iits).Data()<<grArrayITSNcl[iits];
+  }
+  
+  
+  (*pcstream)<<"sumaryTime"<<"\n";
+  for (Int_t isec=0; isec<nSec; isec++){
+    delete 	profArrayNcl[isec];
+    delete 	profArrayNclUsed[isec];
+    delete 	grArrayNcl[isec];
+    delete 	grArrayNclUsed[isec];
+  }
+  delete hisEvent;
+  delete pcstream;
+
+  printf("StatInfo.minTime\t%d\n",minTime);
+  printf("StatInfo.maxTime\t%d\n",maxTime);
+  delete array;
 }
