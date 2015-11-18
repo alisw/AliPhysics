@@ -150,28 +150,30 @@ void downloadFile(const JobInfo &info,
   gSystem->Load("libTreePlayer");
 
   static const std::string prefix = "alien://"; 
-  if (info.filename.compare(0, prefix.size(), prefix) == 0
-      || outdir.compare(0, prefix.size(), prefix) == 0)
-    TGrid::Connect("alien://");
-  bool useAtomic = true;
-  if (outdir.compare(0, prefix.size(), prefix) == 0)
-    useAtomic = false;
+  // Keep track wether destination or source is actually alien
+  bool isAlienDest = outdir.compare(0, prefix.size(), prefix) == 0;
+  bool isAlienSrc = info.filename.compare(0, prefix.size(), prefix) == 0;
 
-  char *relDir = strdup(dirname(strdup(info.filename.c_str())));
+  if (isAlienSrc || isAlienDest)
+    TGrid::Connect("alien://");
+
+  char *relDir = strdup(dirname(strdup(info.filename.c_str() + (isAlienSrc ? prefix.size() : 0))));
   char *tmpFilename = strdup(basename(strdup(info.filename.c_str())));
   std::string tmpdest = outdir + "/" + relDir + "/." + tmpFilename + ".tmp";
   char *tmpoutdestCpy = strdup(tmpdest.c_str());
   char *tmpoutdir = strdup(dirname(tmpoutdestCpy));
-  std::string dest = outdir + "/" + info.filename;
+  std::string dest = outdir + "/" + relDir + "/" + tmpFilename;
+
   // If destination is a local file, remove old temporary file.
   // else we really copy directly where we want to be.
-  if (useAtomic) {
+  if (isAlienDest == false) {
     recursiveLocalMkdir(tmpoutdir);
     unlink(tmpdest.c_str());
   } else {
     assert(gGrid);
-    assert(strncmp("alien://", tmpoutdir, 8) == 0);
-    dieIf(gGrid->Mkdir(tmpoutdir+8, "-p") == 0, 1, "Unable to create %s\n", tmpoutdir);
+    assert(strncmp("alien://", tmpoutdir, prefix.size()) == 0);
+    dieIf(gGrid->Mkdir(tmpoutdir+prefix.size(), "-p") == 0, 
+          1, "Unable to create %s\n", tmpoutdir);
     tmpdest = dest;
   }
   free(tmpoutdir);
@@ -229,7 +231,7 @@ void downloadFile(const JobInfo &info,
     dest->Close();
   }
   // In case the file is local, we need to move it in place.
-  if (useAtomic) 
+  if (!isAlienDest) 
     if (rename(tmpdest.c_str(), dest.c_str()))
     {
       unlink(tmpdest.c_str());
