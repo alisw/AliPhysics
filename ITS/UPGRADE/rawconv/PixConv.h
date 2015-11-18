@@ -347,9 +347,11 @@ inline bool PixConv::GetFromBuffer(unsigned short &v)
   // read short value from buffer
   if (fBufferPointer>=fBufferEnd-(sizeof(short)-1) && !LoadInBuffer()) return false; // upload or finish
 #ifdef _BIG_ENDIAN_
-  v = ((*fBufferPointer++)<<8)|(*fBufferPointer++);
+  v = (*fBufferPointer++)<<8;
+  v |= (*fBufferPointer++);
 #else
-  v = (*fBufferPointer++)|((*fBufferPointer++)<<8);
+  v = (*fBufferPointer++);
+  v |= (*fBufferPointer++)<<8;
   //  v = * reinterpret_cast<unsigned short*>(fBufferPointer);
   //  fBufferPointer+=sizeof(short);
 #endif
