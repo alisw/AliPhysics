@@ -1,4 +1,4 @@
-void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI="local://") {
+void MakeITSRecoParam_2015(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult, const char* cdbURI="local://") {
 //========================================================================
 //
 // Steering macro for ITS reconstruction parameters
