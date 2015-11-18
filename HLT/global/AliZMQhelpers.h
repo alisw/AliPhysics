@@ -41,10 +41,13 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
-int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
+int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression=0);
+int alizmq_msg_add(aliZMQmsg* message, std::string& topic, std::string& data);
+int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
+
 //helpers for accessing data via iterators
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, AliHLTDataTopic& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object);
@@ -58,6 +61,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
 
 //deallocate an object - callback for ZMQ
 void alizmq_deleteTObject(void*, void* object);
+void alizmq_deleteTopic(void*, void* object);
 
 //simple zmq multi part message class
 //behaves like a map.

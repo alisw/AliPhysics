@@ -235,21 +235,66 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags)
+int alizmq_msg_add(aliZMQmsg* message, std::string& topic, std::string& data)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, topic.size());
+  memcpy(zmq_msg_data(topicMsg),topic.data(),topic.size());
+
+  //prepare data msg
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( dataMsg, data.size());
+  memcpy(zmq_msg_data(dataMsg),data.data(),data.size());
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
+  if (rc<0) return -1;
+  memcpy(zmq_msg_data(topicMsg), topic, sizeof(*topic));
+
+  //prepare data msg
+  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, compression);
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
+       alizmq_deleteTObject, tmessage);
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_send(aliZMQmsg* message, void* socket, int flagsUser)
 {
   int nBytes=0;
   int rc = 0;
+  int flags = flagsUser | ZMQ_SNDMORE;
+ 
   for (aliZMQmsg::iterator i=message->begin(); i!=message->end(); ++i)
   {
     zmq_msg_t* topic = i->first;
     zmq_msg_t* data = i->second;
 
-    int flags = ZMQ_SNDMORE;
     rc = zmq_msg_send(topic, socket, flags);
     if (rc<0) break;
     nBytes+=rc;
 
-    if (&*i == &*message->rbegin()) flags=0; //last frame
+    if (&*i == &*message->rbegin()) flags=flagsUser; //last frame
     rc = zmq_msg_send(data, socket, flags);
     if (rc<0) break;
     nBytes+=rc;
@@ -321,6 +366,15 @@ void alizmq_deleteTObject(void*, void* object)
   delete tobject;
 }
 
+//______________________________________________________________________________
+void alizmq_deleteTopic(void*, void* object)
+{
+  //delete the TBuffer, for use in zmq_msg_init_data(...) only.
+  //printf("deleteObject called! ZMQ just sent and destroyed the message!\n");
+  AliHLTDataTopic* topic = static_cast<AliHLTDataTopic*>(object);
+  delete topic;
+}
+
 
 //_______________________________________________________________________________________
 int alizmq_msg_close(aliZMQmsg* message)
@@ -333,6 +387,7 @@ int alizmq_msg_close(aliZMQmsg* message)
     int rc2 = zmq_msg_close(i->second);
     delete (i->second); i->second=NULL;
   }
+  message->clear();
   return 0;
 }
 
