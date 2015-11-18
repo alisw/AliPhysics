@@ -116,9 +116,11 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
     
     // Loop over all the time steps in the signal
     for(Int_t i = 0; i < signalLength; i++){
-      fSignals[xBin][zBin][timeBin] = signal[i];
-      fActiveTime[timeBin] = kTRUE;
-      fHasSignalTime[timeBin] = kTRUE;
+      if (timeBin > -1 && timeBin < fgkNTimeBins) {
+	fSignals[xBin][zBin][timeBin] = signal[i];
+	fActiveTime[timeBin] = kTRUE;
+	fHasSignalTime[timeBin] = kTRUE;
+      }
       timeBin--; // The time bins come in reverse order from raw data
     }
   } else { // Production flags
