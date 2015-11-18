@@ -1,5 +1,5 @@
 export BASEDIR=/cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages
-export ALIEN_DIR=$BASEDIR/AliEn-Runtime/v2-19-xrd2-4
+export ALIEN_DIR=$BASEDIR/AliEn-Runtime/v2-19-le-2
 export ROOTSYS=$BASEDIR/ROOT/v5-34-30-alice-7
 export ALICE_ROOT=$BASEDIR/AliRoot/v5-07-10-1
 export ALICE_PHYSICS=$BASEDIR/AliPhysics/v5-07-10-01-1
@@ -17,5 +17,4 @@ export PATH=$ALICE_ROOT/bin:$PATH
 export PATH=$ALICE_PHYSICS/bin:$PATH
 export GSHELL_ROOT=$ALIEN_DIR/api
 export GSHELL_NO_GCC=1
-
 
