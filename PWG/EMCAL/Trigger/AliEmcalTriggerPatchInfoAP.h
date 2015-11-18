@@ -26,6 +26,10 @@
 class AliEMCALGeometry;
 class TArrayI;
 
+typedef bool DetectorType_t;
+const DetectorType_t kEMCALdet = true;
+const DetectorType_t kDCALPHOSdet = false;
+
 /**
  * \class AliEmcalTriggerPatchInfo
  * \brief Main data structure storing all relevant information of EMCAL/DCAL trigger patches
@@ -52,6 +56,43 @@ class AliEmcalTriggerPatchInfo: public TObject {
     kMainTriggerBitNum = 24, ///< Trigger bit indicating the main (highest energy) trigger patch of a given type per event
     kSimpleOfflineBitNum = 25///< Trigger bit indicating that the patch was created by the offline trigger algorithm
   };
+
+  /**
+   * Initialize patch
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param bitmask     Trigger bit mask of the patch
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   */
+  void Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+
+  /**
+   * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param bitmask     Trigger bit mask of the patch
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
+   */
+  static AliEmcalTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+
+  /**
+   * Recalculate patch kinematic variables
+   * @param patchE      Energy of the patch (sum of cell amplitudes)
+   * @param vertex      Primary vertex of the event
+   * @param geom        Pointer to the EMCal geometry object
+   */
+  void RecalculateKinematics(Double_t patchE, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
    * Access \f$ \phi \f$ angle of the geometric center of the trigger patch
@@ -354,6 +395,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t             fOffSet;                        ///< offset of bit (different in data and MC)
   Int_t             fCol0;                          ///< Start column
   Int_t             fRow0;                          ///< Start row
+  UChar_t           fPatchSize;                     ///< Trigger patch size
+  DetectorType_t    fDetectorType;                  ///< Detector type (EMCal or DCal/PHOS)
   AliEmcalTriggerBitConfig   fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP

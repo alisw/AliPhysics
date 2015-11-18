@@ -29,11 +29,11 @@ public:
 
   void SetRowMin(Int_t rowmin);
   void SetRowMax(Int_t rowmax);
-  void SetThreshold(Double_t threshold);
+  void SetThresholds(Double_t threshold);
   void SetBitMask(ULong_t bitmask);
   void SetPatchSize(Int_t patchsize);
 
-  virtual std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc) const;
+  virtual std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc, const AliEmcalTriggerDataGridAP<T> &offlineAdc) const;
 
 protected:
   int                               fRowMin;
@@ -41,6 +41,7 @@ protected:
   int                               fPatchSize;
   ULong_t                           fBitMask;
   double                            fThreshold;
+  double                            fOfflineThreshold;
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerAlgorithmAP, 1);
