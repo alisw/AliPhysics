@@ -1,0 +1,57 @@
+#!/bin/bash
+
+free
+echo _____________________________________________
+echo "HOME IS $HOME"
+ls $HOME
+length=`echo $HOME |wc -c`
+if   (( $length >= 100 )) ;
+then
+     echo "WARNING: The home directory $HOME is longer than 100 char"
+     OLDHOME=$HOME
+     NEWHOME="/tmp/alien_home_dir.${ALIEN_PROC_ID}"
+     echo "CHANGING HOME TO $NEWHOME"
+     ln -s "$HOME" "$NEWHOME"
+     export HOME=$NEWHOME
+fi
+echo _____________________________________________
+
+export PRODUCTION_METADATA="$ALIEN_JDL_LPMMETADATA"
+
+if [ "$1" = "OCDB" ]; then
+    echo "Setting env for generating OCDB.root"
+    
+    export OCDB_SNAPSHOT_CREATE="kTRUE"
+    export OCDB_SNAPSHOT_FILENAME="OCDB.root"
+    
+    touch OCDB.generating.job
+    
+    shift
+fi
+
+if [ -f simrun.sh ]; then
+    echo "Calling simrun.sh with $*"
+    chmod a+x simrun.sh
+    ./simrun.sh $*
+
+    error=$?
+
+    if [ $error -ne 0 ]; then
+        echo "*! Command 'simrun.sh $*' exited with error code $error"
+        echo "Command 'simrun.sh $*' exited with error code $error" > validation_error.message
+        exit $error
+    fi
+fi
+if [ ! -f jstiller_AliESDs.root ]; then
+    echo "*! Could not find jstiller_AliESDs.root, the simulation/reconstruction chain failed!"
+    echo "Could not find jstiller_AliESDs.root, the simulation/reconstruction chain failed!" > validation_error.message
+    exit 2
+fi
+
+if [ ! -z "$NEWHOME" ]; then
+    echo "DELETING $NEWHOME"
+    export HOME=$OLDHOME
+    rm -rf $NEWHOME
+fi
+
+exit 0
