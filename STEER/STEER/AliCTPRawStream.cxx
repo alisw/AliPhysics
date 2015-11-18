@@ -212,9 +212,10 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
   //}
   UInt_t ddl2=data[iword+3];
   UInt_t* atr=(UInt_t*)fRawReader->GetAttributes();
-  if(atr)printf("Attributes: 0x%x 0x%x 0x%x \n",atr[0],atr[1],atr[2]);
-  else printf("No attribute \n");
-  printf("ddl2= 0x%x \n",ddl2);
+  if(atr){
+    AliDebug(1,Form("USER ATTRIBUTES 0x%x 0x%x 0x%x\n",atr[0],atr[1],atr[2]));
+  }else AliDebug(1,"NO USER ATTRIBUTE found.");
+  //printf("ddl2= 0x%x \n",ddl2);
   Int_t ret=0;
   if(ddl2==0){ // DDL1 first
    ret = GetDDL1Data(data,iword);
@@ -237,7 +238,7 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
 }
 Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
 {
-  printf("Doing DDL1 \n");
+  AliDebug(1,"Doing DDL1");
   UChar_t level = 0;
   UInt_t *irdata = NULL;
   UInt_t irsize = 0;
@@ -304,7 +305,7 @@ Int_t AliCTPRawStream::GetDDL1Data(UChar_t* data,Int_t& iword)
 }
 Int_t AliCTPRawStream::GetDDL2Data(UChar_t* data,Int_t& iword)
 {
-   printf("Doing DDL2 \n");
+   AliDebug(1,"Doing DDL2");
    ULong64_t irdata[3564];
    UInt_t irsize = 0;
    UInt_t orbit = 0x0;
