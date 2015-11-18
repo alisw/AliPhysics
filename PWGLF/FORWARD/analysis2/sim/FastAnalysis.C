@@ -882,6 +882,25 @@ struct FastAnalysis : public TSelector
     Printf("FastAnalysis::ProofExec: %s", lne.Data());
     return gROOT->ProcessLine(lne);
   }
+  static Bool_t ProofLoad(const char* file, const char* opt)
+  {
+    const char* real = gSystem->Which(gROOT->GetMacroPath(),
+				      file, kReadPermission);
+    if (!real) {
+      ::Warning("ProofLoad", "%s not found in load path: %s",
+		file, gROOT->GetMacroPath());
+      delete real;
+      return false;
+    }
+    Long_t ret = ProofExec(Form("Load(\"%s+%s\",true)",real, opt));
+    if (ret != 0) {
+      ::Warning("ProofLoad", "Failed to load %s+%s", real, opt);
+      delete real;
+      return false;
+    }
+    delete real;
+    return true;
+  }
   /** 
    * Extract key value pair from string 
    * 
@@ -909,7 +928,8 @@ struct FastAnalysis : public TSelector
    * 
    * @return true on success, false otherwise 
    */
-  static Bool_t SetupProof(TUrl& url, const char* opt)
+  static Bool_t SetupProof(TUrl& url, const char* opt,
+			   const char* extra)
   {
     Long_t ret = 0;
     gROOT->LoadClass("TProof", "libProof");
@@ -926,68 +946,180 @@ struct FastAnalysis : public TSelector
     TString fwd = phy + "/PWGLF/FORWARD/analysis2";
     TString mkLib = gSystem->GetMakeSharedLib();
     mkLib.ReplaceAll("-std=c++14", "-std=c++98");
-
+    gROOT->SetMacroPath(Form("%s:%s/sim", 
+			     gROOT->GetMacroPath(), fwd.Data()));
     ProofExec(Form("Exec(\"gSystem->SetMakeSharedLib(\\\"%s\\\")\")",
 		   mkLib.Data()));
 
-    ret = ProofExec(Form("Load(\"%s/sim/FastAnalysis.C+%s\",true)",
-			 fwd.Data(), opt));
-    if (ret != 0) {
-      Printf("Error: FastAnalysis::SetupProof: Failed to load");
-      return false;
-    }
+    if (!ProofLoad("FastAnalysis.C", opt)) return false;
+    if (!extra || extra[0] == '\0') return true;
+    if (!ProofLoad(extra, opt)) return false;
+
     return true;
   }
-  
-  /** 
-   * Run a selector 
-   * 
-   * @param url Url to process 
-   * 
-   * @return true on success, false on error
-   */
-  static Bool_t Run(const char* url, const char* output, const char* opt="g")
-  {
-    Long64_t     nev     = -1;
-    TString      type    = "INEL";
-    Int_t        monitor = -1;
-    Bool_t       verbose = false;
-    TUrl         u(url);
-    TString      uout    = "";
-    TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
-    TObjString*  token   = 0;
-    TIter        nextToken(opts);
-    while ((token = static_cast<TObjString*>(nextToken()))) {
-      TString& str = token->String();
-      if (str.IsNull()) continue;
 
-      if (str.EqualTo("verbose")) {
-	verbose = true;
-	continue;
-      }
-      TString  key, val;
-      if (!Str2KeyVal(str,key,val)) {
-	if (!uout.IsNull()) uout.Append("&");
-	uout.Append(str);
-	continue;
-      }
-      
-      if      (key.EqualTo("events")) nev     = val.Atoll();
-      else if (key.EqualTo("type"))   type    = val;
-      else if (key.EqualTo("monitor"))monitor = val.Atoi();
-      else {
-	if (!uout.IsNull()) uout.Append("&");
-	uout.Append(str);
-      }
+  //==================================================================
+  /**
+   * A class that implements construction of specific analysers.
+   * Sub-classes should implement the Make function to either return a
+   * fast analyser of the requested type, or null.
+   * 
+   */
+  struct Maker : public TNamed
+  {
+    /** DTOR */
+    virtual ~Maker() {}
+    /** 
+     * Pure virtual function to implement 
+     * 
+     * @param subtype Type of analyser 
+     * @param monitor Monitor period 
+     * @param verbose Verbosity 
+     * @param uout    Possible options 
+     * 
+     * @return Analyer or null
+     */
+    virtual FastAnalysis* Make(const TString& subtype,
+			       Int_t          monitor,
+			       Bool_t         verbose,
+			       TString&       uout) = 0;
+    /** 
+     * List available sub-types
+     */
+    virtual void List() const = 0;
+    /** 
+     * Script to load 
+     */
+    virtual const char* Script() const = 0;
+  protected:
+    /** CTOR */
+    Maker(const char* type="");    
+    ClassDef(Maker,0);
+  };
+  //==================================================================
+#ifndef __CINT__ 
+  /** 
+   * A class that can create analysers from different makers. 
+   */
+  struct Factory : public TObject
+  {
+    /** 
+     * Singleton function 
+     */
+    static Factory& Instance()
+    {
+      static Factory* instance = 0;
+      if (!instance) instance = new Factory;
+      return *instance;
     }
-    opts->Delete();
-    u.SetOptions(uout);
+    /** 
+     * Make an analysis. 
+     * 
+     * @param type     Type of analyser
+     * @param subtype  Sub-type of analyser
+     * @param monitor  Monitor period in seconds 
+     * @param verbose  Whether to be verbose 
+     *
+     * @param uout     Possible options.  A maker can modify this to
+     *                 extract optoins for the analyser .
+     * 
+     * @return analyser or null
+     */
+    FastAnalysis* Make(const TString& type,
+		       const TString& subtype,
+		       Int_t          monitor,
+		       Bool_t         verbose,
+		       TString&       uout)
+    {
+      Bool_t help = (type.EqualTo("help",TString::kIgnoreCase) ||
+		     type.EqualTo("list",TString::kIgnoreCase));
+      TIter next(&fList);
+      Maker* maker = 0;
+      while ((maker = static_cast<Maker*>(next()))) {
+	if (!help && !type.EqualTo(maker->GetName(), TString::kIgnoreCase))
+	  continue;
+	if (help) Printf("%s", maker->GetName());
+	if (help ||
+	    subtype.EqualTo("help", TString::kIgnoreCase) ||
+	    subtype.EqualTo("list", TString::kIgnoreCase)) {
+	  maker->List();
+	  continue;
+	}
+	    
+	FastAnalysis* a = maker->Make(subtype,monitor,verbose,uout);
+	if (a) return a;
+      }
+      return 0;      
+    }
+    const char* Script(const TString& type) const
+    {
+      TIter next(&fList);
+      Maker* maker = 0;
+      while ((maker = static_cast<Maker*>(next()))) {
+	if (!type.EqualTo(maker->GetName(), TString::kIgnoreCase))
+	  continue;
+	return maker->Script();
+      }
+      return 0;
+    }
+    /** 
+     * Register maker 
+     * 
+     * @param m Maker 
+     */
+    void Register(Maker* m)
+    {
+      fList.Add(m);
+    }
+  private: 
+    Factory() : fList() {}
+    TList fList;
+  };
+#endif
+  /** 
+   * Run an analysis.  Argument URL has format of 
+   *
+   *  protocol://[[user@[password:]]host]/file?[options]#treeName
+   * 
+   * where 
+   *
+   * - protocol can be @c local, @c lite, or @c proof 
+   * - user@password:host gives Proof credentials and master 
+   * - file is either a data file, or contains a list of file names 
+   * - options are options for the execution environment 
+   * - treeName is the input tree name 
+   * 
+   * @param url     Processing and input URL
+   * @param output  Output file name 
+   * @param a       Analyser 
+   * @param nev     Max number of events
+   * @param offset  Offset in events
+   * @param monitor Monitor period in seconds (<0 disables)
+   * @param verbose Whether to be verbose 
+   * @param opt     Optimization used 
+   * 
+   * @return        true on success
+   */
+  static Bool_t Run(const char*   url,
+		    const char*   output,
+		    FastAnalysis* a,
+		    const char*   script,
+		    Long64_t      nev=-1,
+		    Long64_t      offset=0,
+		    Int_t         monitor=-1,
+		    Bool_t        verbose=false,
+		    const char*   opt="")
+    
+  {
+    if (!a) {
+      Printf("Error: FastAnalysis::Run: No analyser given");
+      return false;
+    }
+    TUrl u(url);
     if (!u.IsValid()) {
       Printf("Error: FastAnalysis::Run: URL %s is invalid", u.GetUrl());
       return false;
     }
-    FastAnalysis* analysis = Make(type,verbose,monitor);
-    if (!analysis) return false;
 
     TString treeName = u.GetAnchor();
     if (treeName.IsNull()) treeName = "T";
@@ -1022,33 +1154,102 @@ struct FastAnalysis : public TSelector
     TString       proto    = u.GetProtocol();
     Bool_t        isProof  = (proto.EqualTo("proof") || proto.EqualTo("lite"));
     if (isProof) {
-      if (!SetupProof(u,opt)) return false;
+      if (!SetupProof(u,opt,script)) return false;
       chain->SetProof();
     }
 
     Printf("===================================================\n"
 	   "\n"
-	   " Processing chain %s with selector %p\n"
-	   " Type: %s, maxEvents: %lld\n"
+	   " Processing chain %s with selector %s\n"
+	   " Max events: %lld\n"
+	   " Event offset: %lld\n"
 	   " URL: %s\n"
 	   "\n"
 	   "===================================================",
-	   chain->GetName(), analysis, type.Data(), nev, u.GetUrl());
+	   chain->GetName(), a->GetName(), nev, offset, u.GetUrl());
     if (nev < 0) nev = TChain::kBigNumber;
-    Long64_t ret = chain->Process(analysis, "", nev, 0);
-    
-    TFile* out = TFile::Open(output, "RECREATE");
-    analysis->GetOutputList()->Write("out",TObject::kSingleKey);
-    out->Write();
-    Printf("Saved in %s", out->GetName());
+    Long64_t ret = chain->Process(a, "", nev, offset);
+
+    if (output && output[0] != '\0') {
+      TFile* out = TFile::Open(output, "RECREATE");
+      a->GetOutputList()->Write("out",TObject::kSingleKey);
+      out->Write();
+      Printf("Saved in %s", out->GetName());
+    }
 
     return ret > 0;
+  }
+  
+  /** 
+   * Run this.  
+   * 
+   * @param url     Url to process 
+   * @param output  Output file 
+   * @param opt     Compilation options 
+   * 
+   * @return true on success
+   */
+  static Bool_t Run(const char* url,
+		    const char* output,
+		    const char* opt="g")
+  {
+    Long64_t     nev     = -1;
+    Long64_t     off     = 0;
+    TString      type    = "";
+    TString      sub     = "";
+    Int_t        monitor = -1;
+    Bool_t       verbose = false;
+    TUrl         u(url);
+    TString      uout    = "";
+    TObjArray*   opts    = TString(u.GetOptions()).Tokenize("&");
+    TObjString*  token   = 0;
+    TIter        nextToken(opts);
+    while ((token = static_cast<TObjString*>(nextToken()))) {
+      TString& str = token->String();
+      if (str.IsNull()) continue;
+
+      if (str.EqualTo("verbose")) {
+	verbose = true;
+	continue;
+      }
+      TString  key, val;
+      if (!Str2KeyVal(str,key,val)) {
+	if (!uout.IsNull()) uout.Append("&");
+	uout.Append(str);
+	continue;
+      }
+      
+      if      (key.EqualTo("events"))  nev     = val.Atoll();
+      else if (key.EqualTo("offset"))  off     = val.Atoll();
+      else if (key.EqualTo("type"))    type    = val;
+      else if (key.EqualTo("subtype")) sub     = val;
+      else if (key.EqualTo("monitor")) monitor = val.Atoi();
+      else {
+	if (!uout.IsNull()) uout.Append("&");
+	uout.Append(str);
+      }
+    }
+    opts->Delete();
+    FastAnalysis* a = Factory::Instance().Make(type,sub, monitor,verbose,uout);
+    const char*   s = Factory::Instance().Script(type);
+    if (type.EqualTo("help",TString::kIgnoreCase) ||
+	type.EqualTo("list",TString::kIgnoreCase) ||
+	sub .EqualTo("help",TString::kIgnoreCase) ||
+	sub .EqualTo("list",TString::kIgnoreCase)) return false;
+    u.SetOptions(uout);
+
+    return Run(u.GetUrl(), output, a, s, nev, off, monitor, verbose, opt);
   }    
   
   ClassDef(FastAnalysis,1);
 };
 
-
+FastAnalysis::Maker::Maker(const char* type)
+  : TNamed(type, "")
+{
+  // Automatically register 
+  FastAnalysis::Factory::Instance().Register(this);
+}
 
 
 //

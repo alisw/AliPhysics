@@ -112,18 +112,6 @@ struct dNdetaAnalysis : public FastAnalysis
     
     return ret;
   }
-  /** 
-   * Create a new analysis object
-   * 
-   * @param type The type 
-   * @param verbose Whether to be verbose 
-   * @param monitor Monitor frequency 
-   * 
-   * @return newly created object, or null
-   */
-  static FastAnalysis* Make(const char* type,
-			    Bool_t verbose,
-			    Int_t monitor);
   ClassDef(dNdetaAnalysis,1);
 };
 
@@ -857,7 +845,7 @@ struct MultAnalysis : public CentAnalysis
    */
   virtual Bool_t ProcessHeader()
   {
-    if (fEventMult < 0) return false;
+    // if (fEventMult < 0) return false;
     fCentBin = fCentAxis->FindBin(Int_t(fEventMult)-.1)+1;
     Printf("Event multiplicity: %d -> bin %d", Int_t(fEventMult), fCentBin);
     return true;
@@ -869,37 +857,58 @@ struct MultAnalysis : public CentAnalysis
 /*
  * The function to make our analyser 
  */
-FastAnalysis*
-dNdetaAnalysis::Make(const char* type,
-		     Bool_t verbose,
-		     Int_t monitor)
+struct dNdetaMaker : public FastAnalysis::Maker
 {
-  TString t(type);
-  if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
-  else if (t.EqualTo("NSD"))     return new NSDAnalysis(verbose,monitor);
-  else if (t.EqualTo("INELGt0")) return new INELGt0Analysis(verbose,monitor);
-  else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
-    TString w(t(4, t.Length()-4));
-    if (!(w.BeginsWith("RefMult") ||
-	  w.BeginsWith("ZNA") || 
-	  w.BeginsWith("ZNC") || 
-	  w.BeginsWith("ZPA") || 
-	  w.BeginsWith("ZPC") || 
-	  w.BeginsWith("V0M") ||
-	  w.BeginsWith("V0A") ||
-	  w.BeginsWith("V0C") ||
-	  w.BeginsWith("B"))) {
-      Printf("Warning: dNdetaAnalysis::Make: Unknown estimator: %s", w.Data());
-      return 0;
+  dNdetaMaker() : FastAnalysis::Maker("dNdeta") {}
+  
+  FastAnalysis*  Make(const TString& subtype,
+		      Int_t          monitor,
+		      Bool_t         verbose,
+		      TString&       uopt)
+  {
+    TString t(subtype);
+    if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
+    else if (t.EqualTo("NSD"))     return new NSDAnalysis(verbose,monitor);
+    else if (t.EqualTo("INELGt0")) return new INELGt0Analysis(verbose,monitor);
+    else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
+      TString w(t(4, t.Length()-4));
+      if (!(w.BeginsWith("RefMult") ||
+	    w.BeginsWith("ZNA") || 
+	    w.BeginsWith("ZNC") || 
+	    w.BeginsWith("ZPA") || 
+	    w.BeginsWith("ZPC") || 
+	    w.BeginsWith("V0M") ||
+	    w.BeginsWith("V0A") ||
+	    w.BeginsWith("V0C") ||
+	    w.BeginsWith("B"))) {
+	Printf("Warning: dNdetaAnalysis::Make: Unknown estimator: %s",
+	       w.Data());
+	return 0;
+      }
+      if (t.BeginsWith("MULT"))
+	return new MultAnalysis(w, verbose, monitor);
+      else
+	return new CentAnalysis(w, verbose, monitor);
     }
-    if (t.BeginsWith("MULT"))
-      return new MultAnalysis(w, verbose, monitor);
-    else
-      return new CentAnalysis(w, verbose, monitor);
+    Printf("Error: dNdetaAnalysis::Run: Invalid spec: %s", t.Data());
+    return 0;
   }
-  Printf("Error: dNdetaAnalysis::Run: Invalid spec: %s", t.Data());
-  return 0;
-}
+  void List() const
+  {
+    Printf(" INEL            - inelastic");
+    Printf(" INELGt0         - inelastic with at least 1 particle in |eta|<1");
+    Printf(" NSD             - Non-single diffractive");
+    Printf(" CENT<est>       - Centrality classes. <est> is one of ");
+    Printf("  ZNA            - ZNA signal");
+    Printf("  ZNC            - ZNC signal");
+    Printf("  ZPA            - ZPA signal");
+    Printf("  ZPC            - ZPC signal");
+    Printf("  V0M            - V0-A + -C");
+    Printf("  V0A            - V0-A");
+    Printf("  V0C            - V0-C");
+  }
+  const char* Script() const {   return __FILE__;  }
+};
 //
 // EOF
 //

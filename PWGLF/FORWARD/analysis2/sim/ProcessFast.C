@@ -26,7 +26,10 @@ ProcessFast(const char* url,
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
   gROOT->LoadMacro(Form("%s/sim/FastAnalysis.C+%s",fwd.Data(),opt));
   gROOT->LoadMacro(Form("%s/sim/dNdetaAnalysis.C+%s",fwd.Data(),opt));
+  gROOT->LoadMacro(Form("%s/sim/spectraAnalysis.C+%s",fwd.Data(),opt));
 
+  new dNdetaMaker;
+  new spectraMaker;
 
   return FastAnalysis::Run(url, out, opt);
 }
