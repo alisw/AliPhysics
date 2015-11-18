@@ -1,7 +1,12 @@
 #include "AliAnalysisTaskMuMu.h"
 
+
 #include "AliAnalysisManager.h"
+#include "AliAnalysisMuMuBase.h"
 #include "AliAnalysisMuMuBinning.h"
+#include "AliAnalysisMuMuCutCombination.h"
+#include "AliAnalysisMuMuCutElement.h"
+#include "AliAnalysisMuMuCutRegistry.h"
 #include "AliAnalysisMuonUtility.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
@@ -18,6 +23,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMergeableCollection.h"
+#include "AliMultSelection.h"
 #include "AliMuonTrackCuts.h"
 #include "Riostream.h"
 #include "TCanvas.h"
@@ -29,19 +35,14 @@
 #include "TList.h"
 #include "TMath.h"
 #include "TObjString.h"
+#include "TParameter.h"
 #include "TPaveText.h"
 #include "TProfile.h"
 #include "TRegexp.h"
 #include "TROOT.h"
-#include "TParameter.h"
 #include <algorithm>
 #include <cassert>
-#include "AliAnalysisMuMuBase.h"
-#include "AliAnalysisMuMuCutRegistry.h"
-#include "AliAnalysisMuMuCutElement.h"
-#include "AliAnalysisMuMuCutCombination.h"
 #include <set>
-
 ///
 /// AliAnalysisTaskMuMu : steering class for muon analysis
 ///
@@ -80,7 +81,8 @@ fCountInBins(kFALSE),
 fbinWhat(""),
 fbinQuantity(""),
 fbinFlavor(""),
-fDisableHistoLoop(kFALSE)
+fDisableHistoLoop(kFALSE),
+fLegacyCentrality(kFALSE)
 {
   /// Constructor with a predefined list of triggers to consider
   /// Note that we take ownership of cutRegister
@@ -190,6 +192,37 @@ void AliAnalysisTaskMuMu::SetCountInBins( const char* binWhat, const char* binQu
   fDisableHistoLoop = disableHistoLoop;
 }
 
+
+//_____________________________________________________________________________
+float AliAnalysisTaskMuMu::CentralityFromCentrality(const char* estimator) const
+{
+  AliCentrality* centrality = Event()->GetCentrality();
+  if ( centrality )
+  {
+    return centrality->GetCentralityPercentile(estimator);
+  }
+  else
+  {
+    AliWarning("Did not find Centrality !");
+    return -9999.0;
+  }
+}
+
+//_____________________________________________________________________________
+float AliAnalysisTaskMuMu::CentralityFromMultSelection(const char* estimator) const
+{
+  AliMultSelection* multSelection = static_cast<AliMultSelection*>(Event()->FindListObject("MultSelection"));
+  if ( multSelection )
+  {
+    return multSelection->GetMultiplicityPercentile(estimator);
+  }
+  else
+  {
+    AliWarning("Did not find MultSelection !");
+    return -9999.0;
+  }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerClassName)
 {
@@ -218,14 +251,26 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
     }
     else
     {
-      fcent = Event()->GetCentrality()->GetCentralityPercentile(estimator.Data());
+      if  (fLegacyCentrality)
+      {
+        fcent = CentralityFromCentrality(estimator.Data());
+      }
+      else
+      {
+        fcent = CentralityFromMultSelection(estimator.Data());
+      }
     }
-    //      if ( fcent < 0.) FillHistos(eventSelection,triggerClassName,"MV0");
-    //      if ( fcent == 0.) FillHistos(eventSelection,triggerClassName,"0V0");
     
     if ( isPP || r->IsInRange(fcent) )
     {
       FillHistos(eventSelection,triggerClassName,r->AsString());
+      
+      // FIXME: this filling of global centrality histo is misplaced somehow...
+      TH1* hcent = fHistogramCollection->Histo(Form("/%s/%s/V0M/Centrality",eventSelection,triggerClassName));
+      if (hcent)
+      {
+        hcent->Fill(fcent);
+      }
     }
   }
   delete centralities;
@@ -239,7 +284,7 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
 {
   /// Fill histograms for /physics/triggerClassName/centrality
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAuto(Form("/%s/%s/%s",eventSelection,triggerClassName,centrality),0);
   
   TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
