@@ -829,9 +829,9 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           mcPt = dau->Pt(); mcEta = dau->Eta(); mcPhi = dau->Phi();
           if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
           if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
-          if(!fStack->IsPhysicalPrimary(iDau)) continue;
-          if(dau->PdgCode() ==  11){ d1.SetPtEtaPhiM(dau->Pt(),dau->Eta(),dau->Phi(),0.0005109989); lab1 = iDau; }
-          if(dau->PdgCode() == -11){ d2.SetPtEtaPhiM(dau->Pt(),dau->Eta(),dau->Phi(),0.0005109989); lab2 = iDau; }
+          //if(!fStack->IsPhysicalPrimary(iDau)) continue;
+          if(dau->PdgCode() ==  11){ d1.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab1 = iDau; }
+          if(dau->PdgCode() == -11){ d2.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab2 = iDau; }
         }
         if(lab1 < 0 || lab2 < 0) continue;
         mee  = (d1+d2).M();
