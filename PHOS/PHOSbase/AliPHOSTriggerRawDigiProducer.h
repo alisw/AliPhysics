@@ -60,8 +60,9 @@ private:
   AliRawReader            * fRawReader;       //! Raw data reader
   AliCaloRawStreamV3      * fRawStream;       //! Calorimeter decoder of ALTRO format
   AliPHOSTriggerRawReader * fTriggerReader;   //! TriggerRawReader
+  static const Int_t fgkSTUDDL = 20; //! DDL ID of the PHOS STU
 
-  ClassDef(AliPHOSTriggerRawDigiProducer,1)
+  ClassDef(AliPHOSTriggerRawDigiProducer,2)
 };
 
 #endif

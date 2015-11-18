@@ -61,10 +61,11 @@ private:
   AliPHOSPulseGenerator   * fPulseGenerator ; //! Class with pulse shape parameters
   AliRawReader            * fRawReader;       //! Raw data reader
   AliCaloRawStreamV3      * fRawStream;       //! Calorimeter decoder of ALTRO format
-  Int_t *fADCValuesLG;               //! Array og low-gain ALTRO samples
-  Int_t *fADCValuesHG;               //! Array og high-gain ALTRO samples
+  Int_t *fADCValuesLG;               //! Array of low-gain ALTRO samples
+  Int_t *fADCValuesHG;               //! Array of high-gain ALTRO samples
+  static const Int_t fgkSTUDDL = 20; //! DDL ID of the PHOS STU
 
-  ClassDef(AliPHOSRawDigiProducer,8)
+  ClassDef(AliPHOSRawDigiProducer,9)
 };
 
 #endif

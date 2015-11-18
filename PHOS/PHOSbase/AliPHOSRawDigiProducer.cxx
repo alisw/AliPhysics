@@ -192,6 +192,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
   fitter->SetCalibData(fgCalibData) ;
   
   while (fRawStream->NextDDL()) {
+    // Skip STU DDL
+    if (fRawStream->GetDDLNumber() == 20) continue; 
     while (fRawStream->NextChannel()) {
       relId[0] = 5 - fRawStream->GetModule() ; // counts from 1 to 5
       relId[1] = 0;                            // 0=EMC

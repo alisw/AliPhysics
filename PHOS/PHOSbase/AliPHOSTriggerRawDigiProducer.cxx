@@ -71,8 +71,9 @@ void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
   Int_t iDigit=0 ;
 
   while (fRawStream->NextDDL()) {
+    // Skip STU DDL
+    if (fRawStream->GetDDLNumber() == 20) continue; 
     while (fRawStream->NextChannel()) {
-
       if (fRawStream->IsTRUData()) {
 	fTriggerReader->ReadFromStream(fRawStream);
       }// IsTRUData

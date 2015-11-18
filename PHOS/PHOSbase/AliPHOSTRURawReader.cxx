@@ -22,8 +22,8 @@
  */
 
 #include "AliPHOSTRURawReader.h"
-
 #include "AliCaloRawStreamV3.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSTRURawReader)
 
@@ -83,6 +83,11 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
   const UShort_t * const signal = rawStream->GetSignals(); // stream of 10-bit words, buffered as 16-bit words
   const Int_t signalLength = rawStream->GetBunchLength();  // The length of the signal in time steps
   const Int_t index = rawStream->GetColumn();  // For some reason the index of the readout channel is given by GetColumn function
+  Int_t timeBin = rawStream->GetStartTimeBin(); // Find the time bin of the first time step
+  if (timeBin <0 || timeBin >= fgkNTimeBins) {
+    AliError(Form("Wrong number of time bins: %d (<0 or >%d!)\n",timeBin,fgkNTimeBins));
+    return;
+  }
   
   Int_t channelIndex = index;
 
@@ -100,8 +105,7 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
    *  Channels 112-123: production flags
    */
   
-  Int_t timeBin = rawStream->GetStartTimeBin(); // Find the time bin of the first time step
-  
+      
   if(channelIndex < fgkNReadoutChannels){  // Channel data
     
     /* Channel data:
