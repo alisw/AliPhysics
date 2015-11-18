@@ -122,6 +122,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     TH2F*                       hPositronNSigmaPiondEdxP;   //
     TH2F*                       hPositronNSigmaITSP;        //
     TH2F*                       hPositronNSigmaTOFP;        //
+    TH2F*			hInvMassPair;               //
     Float_t                     fGammaPt;                   //
     Float_t                     fGammaTheta;                //
     Float_t                     fGammaChi2NDF;              //

@@ -191,6 +191,9 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,50,0.,1.,50,0.,1.);
   fOutput->Add(fh3PtJetAreaDRConst);
 
+  fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
+  fOutput->Add(fNAccJets);
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -261,7 +264,9 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   if(!jetCont) return kFALSE;
   jetCont->ResetCurrentID();
+  Int_t count = 0;
   while((jet1 = jetCont->GetNextAcceptJet())) {
+     count++;
     Double_t ptJet1 =  jet1->Pt() - jetCont->GetRhoVal()*jet1->Area();
     fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
 
@@ -311,6 +316,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     fh3PtJet1VsDeltaEtaDeltaPhi[fCentBin]->Fill(ptJet1,jet1->Eta()-jet2->Eta(),dPhi);
     fh2PtJet1VsDeltaR[fCentBin]->Fill(ptJet1,jet1->DeltaR(jet2));
   }
+  fNAccJets->Fill(count);
   return kTRUE;
 }
 

@@ -21,13 +21,37 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/reducedTree)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-		    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
-		   )   
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                   )
 
 # Sources in alphabetical order
 set(SRCS
-      AliAnalysisTaskReducedTree.cxx
-      AliReducedEvent.cxx
+      AliAnalysisTaskReducedEventProcessor.cxx
+      AliAnalysisTaskReducedTreeMaker.cxx
+      AliHistogramManager.cxx
+      AliMixingHandler.cxx
+      AliReducedAnalysisTaskSE.cxx
+      AliReducedAnalysisTest.cxx
+      AliReducedBaseEvent.cxx
+      AliReducedBaseTrackCut.cxx
+      AliReducedBaseTrack.cxx
+      AliReducedCaloClusterInfo.cxx
+      AliReducedEventCut.cxx
+      AliReducedEventInfo.cxx
+      AliReducedEventPlaneInfo.cxx
+      AliReducedFMDInfo.cxx
+      AliReducedInfoCut.cxx
+      AliReducedPairInfo.cxx
+      AliReducedTrackInfo.cxx
+      AliReducedVarManager.cxx
+      AliResonanceFits.cxx
    )
 
 # Headers from sources
@@ -92,5 +116,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install the macros
-install(DIRECTORY
-        DESTINATION PWGDQ/reducedTree)
+install(DIRECTORY macros DESTINATION PWGDQ/reducedTree)

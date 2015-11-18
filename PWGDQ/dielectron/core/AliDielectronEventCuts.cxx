@@ -56,6 +56,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fCentMax(0.),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
+  f2015IsIncompleteDAQ(kFALSE),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -90,6 +91,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fCentMax(0.),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
+  f2015IsIncompleteDAQ(kFALSE),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -231,6 +233,12 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     if(nContribTPC > maxCut || nContribTPC < minCut) return kFALSE;
   }
 
+  //incomplete DAQ events rejection Run2 data 2015
+  Bool_t IncompleteDAQ = ev->IsIncompleteDAQ();
+  if(f2015IsIncompleteDAQ && IncompleteDAQ){
+    return kFALSE;
+  }
+
   // run rejection
   Int_t run = ev->GetRunNumber();
   if(fRun.GetNrows()) {
@@ -273,6 +281,12 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 	if(vary>max) return kFALSE;
       }
     }
+  }
+
+  //incomplete DAQ events rejection Run2 data 2015
+  Bool_t IncompleteDAQ = ev->IsIncompleteDAQ();
+  if(f2015IsIncompleteDAQ && IncompleteDAQ){
+    return kFALSE;
   }
 
   // run rejection
@@ -461,6 +475,8 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
     printf("Cut %02d: vertex and event selection for 2013 pPb data taking required \n",iCut);   iCut++; } 
   if(fRequireV0and) {
     printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
+  if(f2015IsIncompleteDAQ){
+    printf("Cut %02d: IncompleteDAQ Events are rejected\n",iCut); iCut++; }
 
 }
 

@@ -1669,7 +1669,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
   // method to retrieve daughters from trackID and reconstruct secondary vertex
   // save the TRefs to the candidate AliAODRecoDecayHF3Prong rd
   // and fill on-the-fly the data member of rd 
-  if(rd->GetIsFilled()!=0)return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2 already refilled)
+  if(rd->GetIsFilled()!=0)return kTRUE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2 already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
 
   TObjArray *threeTrackArray   = new TObjArray(3);
@@ -1739,7 +1739,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   // method to retrieve daughters from trackID and reconstruct secondary vertex
   // save the TRefs to the candidate AliAODRecoDecayHF2Prong rd
   // and fill on-the-fly the data member of rd 
-  if(rd->GetIsFilled()!=0)return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1:standard dAOD, 2 already refilled)
+  if(rd->GetIsFilled()!=0)return kTRUE;//if 0: reduced dAOD. skip if rd is already filled (1:standard dAOD, 2 already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
   
   Double_t dispersion;
@@ -1797,7 +1797,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
 Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rCasc, Bool_t DStar){
   // method to retrieve daughters from trackID 
   // and fill on-the-fly the data member of rCasc and their AliAODRecoDecayHF2Prong daughters
-  if(rCasc->GetIsFilled()!=0) return kFALSE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2: already refilled)
+  if(rCasc->GetIsFilled()!=0) return kTRUE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2: already refilled)
   if(!fAODMap)MapAODtracks(event);//fill the AOD index map if it is not yet done
   TObjArray *twoTrackArrayCasc    = new TObjArray(2);
  

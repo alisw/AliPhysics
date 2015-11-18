@@ -828,9 +828,9 @@ AliVTrack * AliCalorimeterUtils::GetMatchedTrack(AliVCluster* cluster,
   if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
   {
     if( index >= 0 ) iTrack = index;
-    else             iTrack = cluster->GetTrackMatchedIndex();
-          
-    track = dynamic_cast<AliVTrack*> ( event->GetTrack(iTrack) );
+    else             iTrack = ((AliESDCaloCluster*)cluster)->GetTracksMatched()->At(0); //cluster->GetTrackMatchedIndex();
+              
+    track = dynamic_cast<AliVTrack*> ( event->GetTrack(iTrack) );    
   }
   else // AODs
   {        

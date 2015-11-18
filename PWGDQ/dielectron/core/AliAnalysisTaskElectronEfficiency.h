@@ -64,11 +64,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(const Option_t*);
   
+  void          SetDoPairing(Bool_t b=kTRUE)                  {fDoPairing=b;}
   void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
   void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
   void          SetCentralityRange(Double_t min, Double_t max){fCentMin=min; fCentMax=max;}
-  void          SetCheckV0daughterElectron(Bool_t bCheckV0)   {fCheckV0daughterElectron=bCheckV0;}
   void          SetCutInjectedSignal(Bool_t bCutInj)          {fCutInjectedSignal=bCutInj;}
   void          SetNminEleInEventForRej(UInt_t nEle)          {fNminEleInEventForRej=nEle;}
   void          SetEtaRangeGEN(Double_t min, Double_t max)    {fEtaMinGEN=min; fEtaMaxGEN=max;}
@@ -83,9 +83,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   
-  void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins) {
-    /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;
-    /**/          fNptBins=Nptbins; fNetaBins=Netabins; fNphiBins=Nphibins;
+  void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins, Int_t Nmeebins=0, Double_t *Meebins=0x0, Int_t Npteebins=0, Double_t *Pteebins=0x0) {
+    /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;   fMeeBins=Meebins; fPteeBins=Pteebins;
+    /**/          fNptBins=Nptbins; fNetaBins=Netabins; fNphiBins=Nphibins; fNmeeBins=Nmeebins; fNpteeBins=Npteebins;
     /**/        }
   void          SetRunBins(TString runs)                      { fsRunBins=runs; }
   void          AttachTrackCuts(AliAnalysisFilter *cuts)      { fvTrackCuts.push_back(cuts); }
@@ -121,11 +121,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH1*              fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
   TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
+  Bool_t            fDoPairing;
   Bool_t            fSelectPhysics;           // Whether to use physics selection
   UInt_t            fTriggerMask;             // Event trigger mask
   AliAnalysisCuts*  fEventFilter;             // event filter
   Bool_t            fRequireVtx;
-  Bool_t            fCheckV0daughterElectron;
   Bool_t            fCutInjectedSignal;       // this flag is needed because the function IsInjectedSignal() doesnt behave properly when there are no injected signals. (e.g. in p-Pb MC)
   UInt_t            fNminEleInEventForRej;    // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
   Int_t             fSupportedCutInstance;    // for debugging
@@ -165,6 +165,14 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //std::vector<TH3F*>             fvReco_Pio; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Kao; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
+  
+  Int_t                           fNmeeBins;
+  Int_t                           fNpteeBins;
+  Double_t*                       fMeeBins;
+  Double_t*                       fPteeBins;
+  TH2F*                           fNgenPairs;
+  std::vector<TH2F*>              fvRecoPairs;
+  std::vector<TH2F*>              fvRecoPairs_poslabel;
   
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   

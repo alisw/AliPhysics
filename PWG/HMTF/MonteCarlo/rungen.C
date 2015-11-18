@@ -23,6 +23,8 @@
 #include "AliMC.h"
 #include "AliGenReaderHepMC.h"
 #include "AliGenExtFile.h"
+#include "AliGenEposReader.h"
+#include "AliGenEpos3EventHeader.h"
 
 #endif
 
@@ -36,8 +38,14 @@ TString defaultMultThresholds = "10,20,30";
 TString defaultScaling        = "1,1,1";
 TString hepMCFile             = "";
 
-typedef enum {kPhojet = -1, kHepMC = -2, kPyTuneMonash2013=14, kPyTuneCDFA=100,kPyTuneAtlasCSC=306, kPyTuneCMS6D6T=109, kPyTunePerugia0=320,  kPyTunePerugia2011 = 350} Tune_t;
-void fastGen(Tune_t tune = kPyTuneCDFA , Float_t energy=7000, Int_t nev = 1,const Int_t nMultClasses=2, const Int_t* multThresholds=0, const Int_t* scaling=0);
+const char * fEposFilename1 = "epos1.root";
+const char * fEposFilename2 = "epos2.root";
+const char * flagFile1 = "flag1";
+const char * flagFile2 = "flag2";
+const char * finishEpos = "finishepos";
+
+typedef enum {kPhojet = -1, kHepMC = -2, kEpos3111 = -3111, kPyTuneMonash2013=14, kPyTuneCDFA=100,kPyTuneAtlasCSC=306, kPyTuneCMS6D6T=109, kPyTunePerugia0=320,  kPyTunePerugia2011 = 350} Tune_t;
+void fastGen(Tune_t tune = kPyTuneCDFA , Float_t energy=7000, Int_t nev = 1,const Int_t nMultClasses=2, const Int_t* multThresholds=0, const Int_t* scaling=0, Int_t maxEposevents=100);
 
 AliGenerator*  CreateGenerator(Tune_t tune, Float_t energy);
 
@@ -46,7 +54,9 @@ void rungen(Tune_t tune = kPyTuneCDFA,
             Int_t nev=10,
             const TString sMultThresholds=defaultMultThresholds.Data(), //array of thresholds in multiplicity
             const TString sScaling=defaultScaling.Data(),		//array of downscaling factors
-            const char * hepmcfileloc = "dummy.hepmc")
+            const char * hepmcfileloc = "dummy.hepmc",
+	    Int_t maxEposevents=100 					//number of events per epos file
+           )
 {
   // Simulation and reconstruction
   TStopwatch timer;
@@ -75,13 +85,13 @@ void rungen(Tune_t tune = kPyTuneCDFA,
   delete sobjMultThresholds;
   delete sobjScaling;
   // Generate!
-  fastGen(tune, energy, nev, nMultClasses, locMultThresholds, locScaling);
+  fastGen(tune, energy, nev, nMultClasses, locMultThresholds, locScaling, maxEposevents);
 
   timer.Stop();
   timer.Print();
 }
 
-void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses, const Int_t* multThresholds, const Int_t* scaling)
+void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses, const Int_t* multThresholds, const Int_t* scaling, Int_t maxEposevents)
 {
   // Add all particles to the PDG database
   AliPDG::AddParticlesToPdgDataBase();
@@ -124,8 +134,27 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
   //  Header
   AliHeader* header = rl->GetHeader();
   //
+  Int_t iev;
+
+  Int_t multArray[nMultClasses]; //array of counters of rejected events for different multiplicity classes
+  for (Int_t i=0; i<nMultClasses; i++) {
+    multArray[i]=0;
+    std::cout<<"Thresholds and scaling factors: nMultClasses="<<nMultClasses<<"; multArray["<<i<<"]="<<multArray[i]<<"; multThresholds["<<i<<"]="<<multThresholds[i]<<"; scaling["<<i<<"]="<<scaling[i]<<std::endl;
+  }
+
+  Int_t flagGenerate=1; //flag for Epos3 processing
+  Int_t Eposevents=0; //counter of processed Epos events (non-downscaled)
   //  Create and Initialize Generator
+  if (tune==kEpos3111) {
+    flagGenerate=0;
+    while (!flagGenerate) {
+      if (!(gSystem->AccessPathName(flagFile1))) flagGenerate=1;
+      else sleep(1);
+    }
+  }
+
   AliGenerator *gener = CreateGenerator(tune,energy);
+
   gener->Init();
   // if nsd switch off single diffraction
   gener->SetStack(stack);
@@ -133,13 +162,6 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
   //
   //                        Event Loop
   //
-  Int_t iev;
-     
-  Int_t multArray[nMultClasses]; //array of counters of rejected events for different multiplicity classes
-  for (Int_t i=0; i<nMultClasses; i++) {
-    multArray[i]=0;
-    std::cout<<"Thresholds and scaling factors: nMultClasses="<<nMultClasses<<"; multArray["<<i<<"]="<<multArray[i]<<"; multThresholds["<<i<<"]="<<multThresholds[i]<<"; scaling["<<i<<"]="<<scaling[i]<<std::endl;
-  }
 
   for (iev = 0; iev < nev; iev++) { // Warning: In case an event is skipped because of the
                                     // downscaling thresholds below the iev counter is decremented 
@@ -150,9 +172,30 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
     stack->Reset();
     rl->MakeTree("K");
     //	stack->ConnectTree();
-    
+    while (!flagGenerate) {     //  this loop is activated only for tune==kEpos3111
+      if ( !(gSystem->AccessPathName(flagFile1)) ) {
+        flagGenerate=1;
+        ( (AliGenEposReader*) ((AliGenExtFile*)gener)->Reader() )->ChangeFile(fEposFilename1);
+      }
+      else if ( !(gSystem->AccessPathName(flagFile2)) ) {
+        flagGenerate=2;
+        ( (AliGenEposReader*) ((AliGenExtFile*)gener)->Reader() )->ChangeFile(fEposFilename2);
+      }
+      else sleep(1);
+    }
+     
     //  Generate event
     gener->Generate();
+
+    if (tune==kEpos3111) {
+      Eposevents++;
+    //  cout<<flagGenerate<<" "<<Eposevents<<endl;
+      if (Eposevents==maxEposevents) {
+        Eposevents=0;
+        if (flagGenerate==1) { gSystem->Unlink(flagFile1); gSystem->Unlink(fEposFilename1); flagGenerate=0; }
+        else if (flagGenerate==2) { gSystem->Unlink(flagFile2); gSystem->Unlink(fEposFilename2); flagGenerate=0; }
+      }
+    }
     //  Analysis
     //    Int_t npart = stack->GetNprimary();
     Int_t npart = stack->GetNtransported();
@@ -196,6 +239,8 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
     rl->WriteKinematics("OVERWRITE"); // Can I move this (or not call it for every event?)
 
   } // event loop
+
+  if (tune==kEpos3111) gSystem->Exec(Form("touch %s",finishEpos));
     //
     //                         Termination
     //  Generator
@@ -204,7 +249,7 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
   rl->WriteHeader("OVERWRITE");
   gener->Write();
   rl->Write();
-    
+
 }
 
 
@@ -237,6 +282,17 @@ AliGenerator*  CreateGenerator(Tune_t tune, Float_t energy)
     return gener;
     
   }
+
+  else if (tune == kEpos3111) {
+
+    AliGenEposReader *reader = new AliGenEposReader();
+    reader->SetFileName(hepMCFile.Data());
+    AliGenExtFile *gener = new AliGenExtFile(-1);
+    gener->SetReader(reader);
+
+    return gener;    
+  }
+
   if (tune != kPyTuneMonash2013 && tune != kPyTuneAtlasCSC && tune != kPyTuneCDFA && tune != kPyTuneCMS6D6T && tune != kPyTunePerugia0 && tune != kPyTunePerugia2011) {
     
     Printf("Unknown pythia tune, quitting");

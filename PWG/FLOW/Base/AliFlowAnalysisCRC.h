@@ -188,6 +188,7 @@ public:
  // 2i.) Charge-Rapidity Correlations
  virtual void RecenterCRCQVec();
  virtual void RecenterCRCQVecZDC();
+ virtual Bool_t PassQAZDCCuts();
  virtual void CalculateCRCCorr();
  virtual void CalculateCRCVZERO();
  virtual void CalculateCRCZDC();
@@ -696,6 +697,8 @@ public:
  Bool_t GetDivSigma() const {return this->fDivSigma;};
  void SetInvertZDC(Bool_t const cCRC) {this->fInvertZDC = cCRC;};
  Bool_t GetInvertZDC() const {return this->fInvertZDC;};
+ void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
+ Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
  Bool_t GetTestSin() const {return this->fCRCTestSin;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
@@ -843,6 +846,12 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
+ void SetZNCentroid(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCentroid[eg][h] = n;};
+ TH2F* GetZNCentroid(Int_t const eg, Int_t const h) const {return this->fhZNCentroid[eg][h];};
+ void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
+ TH1F* GetZNSpectra(Int_t const eg, Int_t const h) const {return this->fhZNSpectra[eg][h];};
+ void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
+ TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
  
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  void SetPtDiffRangePt(Double_t min, Double_t max) {this->fPtDiffMinPt=min; this->fPtDiffMaxPt=max;}
@@ -954,6 +963,10 @@ public:
  CorrelationWeights GetCorrWeightVZ() const {return this->fCorrWeightVZ;};
  void SetCorrWeightZDC(CorrelationWeights weights) {this->fCorrWeightZDC = weights;};
  CorrelationWeights GetCorrWeightZDC() const {return this->fCorrWeightZDC;};
+ void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
+ Int_t GetMinMulZN() const {return this->fMinMulZN;};
+ void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
+ Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
  
 private:
  
@@ -1497,6 +1510,13 @@ private:
  TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights
  Double_t fCenWeightEbE;
+ TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
+ TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra
+ TH2F* fhZNCvsZNA[fCRCMaxnCen]; //! ZNA-ZNC correlation
+ Bool_t fQAZDCCuts;
+ Bool_t fQAZDCCutsFlag;
+ Int_t fMinMulZN;
+ Float_t fMaxDevZN;
  
  ClassDef(AliFlowAnalysisCRC, 4);
  

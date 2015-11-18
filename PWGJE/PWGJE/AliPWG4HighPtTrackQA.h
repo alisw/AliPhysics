@@ -218,7 +218,9 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtNClustersNClustersFitMap;           //! pT vs ncls vs ncls from fit map
   TH3F *fPtRelUncertainty1PtNCrossedRows;      //! Pt vs relUncertainty1Pt vs NCrossedRows
   TH3F *fPtRelUncertainty1PtNCrossedRowsFit;   //! Pt vs relUncertainty1Pt vs NCrossedRowsFitMap
-
+  
+  TH2F *fPtTPCSignalN;                         //! Pt vs TPCsignalN
+  
   TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
   TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track
   TH3F *fPtChi2GoldPhi;                        //! Pt vs Chi2 between global and TPC constrained track vs phi
@@ -246,6 +248,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,8) 
+  ClassDef(AliPWG4HighPtTrackQA,9)
 };
 #endif

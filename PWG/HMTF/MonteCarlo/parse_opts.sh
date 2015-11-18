@@ -39,7 +39,7 @@ parse_args() {
 }
 
 help() {
-    printf "%-40s" "$*"
+    printf "%-45s" "$*"
 }
 
 setvar() {

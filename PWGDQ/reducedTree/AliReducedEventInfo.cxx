@@ -1,180 +1,37 @@
 /*
 ***********************************************************
-  Implementation of reduced ESD information classes for
-  quick analysis.
-  Contact: i.c.arsene@gsi.de, i.c.arsene@cern.ch
-  2012/06/21
+  Implementation of AliReducedEventInfo class.
+  Contact: iarsene@cern.ch
+  2015/04/15
   *********************************************************
 */
 
-#ifndef ALIREDUCEDEVENT_H
-#include "AliReducedEvent.h"
+#ifndef ALIREDUCEDEVENTINFO_H
+#include "AliReducedEventInfo.h"
 #endif
 
-#include <TMath.h>
-#include <TClonesArray.h>
-#include <TClass.h>
+#include <iostream>
+#include "AliReducedBaseEvent.h"
+#include "AliReducedCaloClusterInfo.h"
+#include "AliReducedFMDInfo.h"
+#include "AliReducedPairInfo.h"
+#include "AliReducedTrackInfo.h"
+#include "AliReducedEventPlaneInfo.h"
 
-ClassImp(AliReducedTrack)
-ClassImp(AliReducedPair)
-ClassImp(AliReducedFMD)
-ClassImp(AliReducedEvent)
-ClassImp(AliReducedEventFriend)
-ClassImp(AliReducedCaloCluster)
+ClassImp(AliReducedEventInfo)
 
-TClonesArray* AliReducedEvent::fgTracks = 0;
-TClonesArray* AliReducedEvent::fgCandidates = 0;
-TClonesArray* AliReducedEvent::fgCaloClusters = 0;
-TClonesArray* AliReducedEvent::fgFMD1 = 0;
-TClonesArray* AliReducedEvent::fgFMD2I = 0;
-TClonesArray* AliReducedEvent::fgFMD2O = 0;
-TClonesArray* AliReducedEvent::fgFMD3I = 0;
-TClonesArray* AliReducedEvent::fgFMD3O = 0;
-
-//_______________________________________________________________________________
-AliReducedTrack::AliReducedTrack() :
-  fTrackId(-1),
-  fStatus(0),
-  fGlobalPhi(0.0),
-  fGlobalPt(0.0),
-  fGlobalEta(0.0),
-  fTPCPhi(0.0),
-  fTPCPt(0.0),
-  fTPCEta(0.0),
-  fMomentumInner(0.0),
-  fDCA(),
-  fTrackLength(0.0),
-  fITSclusterMap(0),
-  fITSsignal(0.0),
-  fITSnSig(),
-  fITSchi2(0.0),
-  fTPCNcls(0),
-  fTPCCrossedRows(0),
-  fTPCNclsF(0),
-  fTPCNclsIter1(0),
-  fTPCClusterMap(0),
-  fTPCsignal(0),
-  fTPCsignalN(0),
-  fTPCnSig(),
-  fTPCchi2(0.0),
-  fTOFbeta(0.0),
-  fTOFnSig(),
-  fTOFdeltaBC(0),
-  fTRDntracklets(),
-  fTRDpid(),
-  fTRDpidLQ2D(),
-  fCaloClusterId(-999),
-  fBayesPID(),
-  fFlags(0),
-  fMoreFlags(0)
-{
-  //
-  // Constructor
-  //
-  fDCA[0] = 0.0; fDCA[1]=0.0;
-  for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.;} 
-  for(Int_t i=0; i<3; ++i) {fBayesPID[i]=-999.;}
-  fTRDpid[0]=-999.; fTRDpid[1]=-999.;
-  fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
-}
-
-
-//_______________________________________________________________________________
-AliReducedTrack::~AliReducedTrack()
-{
-  //
-  // De-Constructor
-  //
-}
-
-
-//_______________________________________________________________________________
-AliReducedPair::AliReducedPair() :
-  fCandidateId(-1),
-  fPairType(-1), 
-  fLegIds(),
-  fMass(),
-  fPhi(0.0),
-  fPt(0.0),
-  fEta(0.0),
-  fLxy(0.0),
-  fLxyErr(0.0),
-  fPointingAngle(0.0),
-  fChisquare(0.0),
-  fMCid(0)
-{
-  //
-  // Constructor
-  //
-  fLegIds[0] = -1; fLegIds[1] = -1;
-  fMass[0]=-999.; fMass[1]=-999.; fMass[2]=-999.; fMass[3]=-999.;
-}
-
-
-//_______________________________________________________________________________
-AliReducedPair::AliReducedPair(const AliReducedPair &c) :
-  TObject(c),
-  fCandidateId(c.CandidateId()),
-  fPairType(c.PairType()),
-  fLegIds(),
-  fMass(),
-  fPhi(c.Phi()),
-  fPt(c.Pt()),
-  fEta(c.Eta()),
-  fLxy(c.Lxy()),
-  fLxyErr(c.LxyErr()),
-  fPointingAngle(c.PointingAngle()),
-  fChisquare(c.Chi2()),
-  fMCid(c.MCid())
-{
-  //
-  // copy constructor
-  //
-  fLegIds[0] = c.LegId(0);
-  fLegIds[1] = c.LegId(1);
-  fMass[0] = c.Mass(0); fMass[1] = c.Mass(1); fMass[2] = c.Mass(2); fMass[3] = c.Mass(3);
-}
-
-
-//_______________________________________________________________________________
-AliReducedPair::~AliReducedPair() {
-  //
-  // destructor
-  //
-}
-
-
-//_______________________________________________________________________________
-AliReducedFMD::AliReducedFMD() :
-  fMultiplicity(0),
-  //fEta(0.0),
-  fId(0)
-{
-  AliReducedFMD::Class()->IgnoreTObjectStreamer();
-  //
-  // Constructor
-  //
-}
-
-
-//_______________________________________________________________________________
-AliReducedFMD::~AliReducedFMD()
-{
-  //
-  // De-Constructor
-  //
-}
-
+TClonesArray* AliReducedEventInfo::fgCandidates = 0;
+TClonesArray* AliReducedEventInfo::fgCaloClusters = 0;
+const Float_t AliReducedEventInfo::fgkZdcNalpha = 1.0;
+TClonesArray* AliReducedEventInfo::fgFMD = 0;
 
 //____________________________________________________________________________
-AliReducedEvent::AliReducedEvent() :
-  TObject(),
-  fEventTag(0),
+AliReducedEventInfo::AliReducedEventInfo() :
+  AliReducedBaseEvent(),
   fEventNumberInFile(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fRunNo(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
@@ -183,8 +40,6 @@ AliReducedEvent::AliReducedEvent() :
   fIsSPDPileup(kFALSE),
   fIsSPDPileupMultBins(kFALSE),
   fIRIntClosestIntMap(),
-  fIsFMDReduced(kTRUE),
-  fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
   fNVtxTPCContributors(0),
@@ -193,12 +48,9 @@ AliReducedEvent::AliReducedEvent() :
   fNPMDtracks(0),
   fNTRDtracks(0),
   fNTRDtracklets(0),
-  fCentrality(),
-  fCentQuality(0),
   fNV0candidates(),
-  fNDielectronCandidates(0),
-  fNtracks(),
   fSPDntracklets(0),
+  fSPDnSingle(0),
   fVZEROMult(),
   fZDCnEnergy(),
   fZDCpEnergy(),
@@ -209,27 +61,20 @@ AliReducedEvent::AliReducedEvent() :
   fT0start(0),
   fT0pileup(kFALSE),
   fT0sattelite(kFALSE),
-  fTracks(0x0),
   fCandidates(0x0),
-  fNFMDchannels(),
-  fFMDtotalMult(),
-  fFMD1(0x0),
-  fFMD2I(0x0),
-  fFMD2O(0x0),
-  fFMD3I(0x0),
-  fFMD3O(0x0),
   fNCaloClusters(0),
-  fCaloClusters(0x0)
+  fCaloClusters(0x0),
+  fFMD(0x0)
 {
   //
   // Constructor
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
-  for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
-  for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
+  for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
-  fNtracks[0]=0; fNtracks[1]=0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
+  for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -237,20 +82,16 @@ AliReducedEvent::AliReducedEvent() :
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
-  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
-  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
 }
 
 
 //____________________________________________________________________________
-AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
-  TObject(),
-  fEventTag(0),
+AliReducedEventInfo::AliReducedEventInfo(const Char_t* name) :
+  AliReducedBaseEvent(name),
   fEventNumberInFile(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fRunNo(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
@@ -259,8 +100,6 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   fIsSPDPileup(kFALSE),
   fIsSPDPileupMultBins(kFALSE),
   fIRIntClosestIntMap(),
-  fIsFMDReduced(kTRUE),
-  fVtx(),
   fNVtxContributors(0),
   fVtxTPC(),
   fNVtxTPCContributors(0),
@@ -269,12 +108,9 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   fNPMDtracks(0),
   fNTRDtracks(0),
   fNTRDtracklets(0),
-  fCentrality(),
-  fCentQuality(0),
   fNV0candidates(),
-  fNDielectronCandidates(0),
-  fNtracks(),
   fSPDntracklets(0),
+  fSPDnSingle(0),
   fVZEROMult(),
   fZDCnEnergy(),
   fZDCpEnergy(),
@@ -285,28 +121,20 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   fT0start(0),
   fT0pileup(kFALSE),
   fT0sattelite(kFALSE),
-  fTracks(0x0),
   fCandidates(0x0),
-  fNFMDchannels(),
-  fFMDtotalMult(),
-  fFMD1(0x0),
-  fFMD2I(0x0),
-  fFMD2O(0x0),
-  fFMD3I(0x0),
-  fFMD3O(0x0),
   fNCaloClusters(0),
-  fCaloClusters(0x0)
-//fFMDMult()
+  fCaloClusters(0x0),
+  fFMD(0x0)
 {
   //
   // Constructor
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
-  for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
-  for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
+  for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
-  fNtracks[0]=0; fNtracks[1]=0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
+  for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
+  for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -314,30 +142,20 @@ AliReducedEvent::AliReducedEvent(const Char_t* /*name*/) :
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
-  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
-  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
   
-  if(!fgTracks) fgTracks = new TClonesArray("AliReducedTrack", 100000);
-  fTracks = fgTracks;
-  if(!fgCandidates) fgCandidates = new TClonesArray("AliReducedPair", 100000);
+  if(!fgCandidates) fgCandidates = new TClonesArray("AliReducedPairInfo", 100000);
   fCandidates = fgCandidates;
-  if(!fgCaloClusters) fgCaloClusters = new TClonesArray("AliReducedCaloCluster", 50000);
+  if(!fgCaloClusters) fgCaloClusters = new TClonesArray("AliReducedCaloClusterInfo", 50000);
   fCaloClusters = fgCaloClusters;
-  if(!fgFMD1) fgFMD1 = new TClonesArray("AliReducedFMD", 10240);
-  fFMD1 = fgFMD1;
-  if(!fgFMD2I) fgFMD2I = new TClonesArray("AliReducedFMD", 10240);
-  fFMD2I = fgFMD2I;
-  if(!fgFMD2O) fgFMD2O = new TClonesArray("AliReducedFMD", 10240);
-  fFMD2O = fgFMD2O;
-  if(!fgFMD3I) fgFMD3I = new TClonesArray("AliReducedFMD", 10240);
-  fFMD3I = fgFMD3I;
-  if(!fgFMD3O) fgFMD3O = new TClonesArray("AliReducedFMD", 10240);
-  fFMD3O = fgFMD3O;
+  if(!fgFMD) fgFMD = new TClonesArray("AliReducedFMDInfo", 40000);
+  fFMD = fgFMD;
+  if(!fgTracks) fgTracks = new TClonesArray("AliReducedTrackInfo", 100000);
+  fTracks = fgTracks;
 }
 
 
 //____________________________________________________________________________
-AliReducedEvent::~AliReducedEvent()
+AliReducedEventInfo::~AliReducedEventInfo()
 {
   //
   // De-Constructor
@@ -345,180 +163,17 @@ AliReducedEvent::~AliReducedEvent()
   //ClearEvent();
 }
 
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::MultVZEROA() const
-{
-  //
-  // Total VZERO multiplicity in A side
-  //
-  Float_t mult=0.0;
-  for(Int_t i=32;i<64;++i)
-    mult += fVZEROMult[i];
-  return mult;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::MultVZEROC() const
-{
-  //
-  // Total VZERO multiplicity in C side
-  //
-  Float_t mult=0.0;
-  for(Int_t i=0;i<32;++i)
-    mult += fVZEROMult[i];
-  return mult;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::MultVZERO() const
-{
-  //
-  // Total VZERO multiplicity
-  //
-  return MultVZEROA()+MultVZEROC();
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::MultRingVZEROA(Int_t ring) const 
-{
-  //
-  //  VZERO multiplicity in a given ring on A side
-  //
-  if(ring<0 || ring>3) return -1.0;
-
-  Float_t mult=0.0;
-  for(Int_t i=32+8*ring; i<32+8*(ring+1); ++i)
-    mult += fVZEROMult[i];
-  return mult;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::MultRingVZEROC(Int_t ring) const 
-{
-  //
-  //  VZERO multiplicity in a given ring on C side
-  //
-  if(ring<0 || ring>3) return -1.0;
-
-  Float_t mult=0.0;
-  for(Int_t i=8*ring; i<8*(ring+1); ++i)
-    mult += fVZEROMult[i];
-  return mult;
-}
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::AmplitudeTZEROA() const
-{
-  //
-  // Total TZERO multiplicity in A side
-  //
-  Float_t mult=0.0;
-  for(Int_t i=12;i<24;++i)
-    mult += fT0amplitude[i];
-  return mult;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::AmplitudeTZEROC() const
-{
-  //
-  // Total TZERO multiplicity in C side
-  //
-  Float_t mult=0.0;
-  for(Int_t i=0;i<12;++i)
-    mult += fT0amplitude[i];
-  return mult;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::AmplitudeTZERO() const
-{
-  //
-  // Total TZERO multiplicity
-  //
-  return AmplitudeTZEROA()+AmplitudeTZEROC();
-}
-
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::EnergyZDCA() const
-{
-  //
-  // Total ZDC energy in A side
-  //
-  Float_t energy=0.0;
-  for(Int_t i=6;i<10;++i){
-      if(fZDCnEnergy[i]>0.) {
-  Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], gZdcNalpha);
-    energy += zdcNenergyAlpha;}
-  }
-  return energy;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::EnergyZDCC() const
-{
-  //
-  // Total ZDC energy in C side
-  //
-  Float_t energy=0.0;
-  for(Int_t i=1;i<5;++i){
-      if(fZDCnEnergy[i]>0.) {
-    Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], gZdcNalpha);
-    energy += zdcNenergyAlpha;}
-  }
-  return energy;
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::EnergyZDC() const
-{
-  //
-  // Total ZDC energy   
-  //
-  return EnergyZDCA()+EnergyZDCC();
-}
-
-
-//____________________________________________________________________________
-Float_t AliReducedEvent::EnergyZDCn(Int_t ch) const
-{
-  //
-  // Total ZDC energy in channel
-  //
-  Float_t energy=0;
-  if(ch<0 || ch>9) return -999.;
-      if(fZDCnEnergy[ch]>0.) {
-  			energy = TMath::Power(fZDCnEnergy[ch], gZdcNalpha);
-		}
-  return energy;
-
-}
-
-
 //_____________________________________________________________________________
-void AliReducedEvent::ClearEvent() {
+void AliReducedEventInfo::ClearEvent() {
   //
   // clear the event
   //
+  AliReducedBaseEvent::ClearEvent();
+  
   if(fTracks) fTracks->Clear("C");
   if(fCandidates) fCandidates->Clear("C");
   if(fCaloClusters) fCaloClusters->Clear("C");
-  if(fFMD1) fFMD1->Clear("C");
-  if(fFMD2I) fFMD2I->Clear("C");
-  if(fFMD2O) fFMD2O->Clear("C");
-  if(fFMD3I) fFMD3I->Clear("C");
-  if(fFMD3O) fFMD3O->Clear("C");
+  if(fFMD) fFMD->Clear("C");
   fEventTag = 0;
   fEventNumberInFile = -999;
   fL0TriggerInputs=0;
@@ -533,20 +188,21 @@ void AliReducedEvent::ClearEvent() {
   fIsPhysicsSelection = kTRUE;
   fIsSPDPileup = kFALSE;
   fIsSPDPileupMultBins = kFALSE;
-  fIsFMDReduced = kTRUE;
   fNVtxContributors = 0;
   fNVtxTPCContributors = 0;
   fCentQuality = 0;
-  for(Int_t i=0;i<4;++i) fCentrality[i] = -1.0;
+  for(Int_t i=0;i<7;++i) fCentrality[i] = -1.0;
   fNV0candidates[0] = 0; fNV0candidates[1] = 0;
   fNpileupSPD=0;
   fNpileupTracks=0;
   fNPMDtracks=0;
   fNTRDtracks=0;
   fNTRDtracklets=0;
-  fNDielectronCandidates = 0;
   fNtracks[0] = 0; fNtracks[1] = 0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = 0;
+  fSPDnSingle = 0;
+  for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
+  for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.; fVtxTPC[i]=-999.;}
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
@@ -559,119 +215,33 @@ void AliReducedEvent::ClearEvent() {
   fT0zVertex = -999.;
   fT0start = -999.;
   fT0sattelite = kFALSE;
-  for(Int_t i=0; i<5; ++i)  fNFMDchannels[i]=0.0;
-  for(Int_t i=0; i<5; ++i)  fFMDtotalMult[i]=0.0;
 }
-
 
 //_______________________________________________________________________________
-AliReducedEventFriend::AliReducedEventFriend() :
- fQvector(),
- fEventPlaneStatus()
-{
-  //
-  // default constructor
-  //
-  for(Int_t idet=0; idet<kNdetectors; ++idet) {
-    for(Int_t ih=0; ih<fgkNMaxHarmonics; ++ih) {
-      fEventPlaneStatus[idet][ih] = 0;
-      for(Int_t ic=0; ic<2; ++ic)
-	fQvector[idet][ih][ic] = 0.0;
-    }
-  }
-}
-
-
-//____________________________________________________________________________
-AliReducedEventFriend::~AliReducedEventFriend()
-{
-  //
-  // De-Constructor
-  //
-  ClearEvent();
-}
-
-
-//_____________________________________________________________________________
-void AliReducedEventFriend::ClearEvent() {
-  //
-  // clear the event
-  //
-  for(Int_t idet=0; idet<kNdetectors; ++idet) {
-    for(Int_t ih=0; ih<fgkNMaxHarmonics; ++ih) {
-      fEventPlaneStatus[idet][ih] = 0;
-      for(Int_t ic=0; ic<2; ++ic)
-	fQvector[idet][ih][ic] = 0.0;
-    }
-  }
-}
-
-
-//____________________________________________________________________________
-void AliReducedEventFriend::CopyEvent(const AliReducedEventFriend* event) {
-  //
-  // copy information from another event to this one
-  //
-  for(Int_t idet=0; idet<kNdetectors; ++idet) {
-    for(Int_t ih=0; ih<fgkNMaxHarmonics; ++ih) {
-      fQvector[idet][ih][0] = event->Qx(idet, ih+1);
-      fQvector[idet][ih][1] = event->Qy(idet, ih+1);
-      fEventPlaneStatus[idet][ih] = event->GetEventPlaneStatus(idet, ih+1);
-    }
-  }
-}
-
-
-//_____________________________________________________________________________
-AliReducedCaloCluster::AliReducedCaloCluster() :
- fType(kUndefined),
- fEnergy(-999.),
- fTrackDx(-999.),
- fTrackDz(-999.),
- fM20(-999.),
- fM02(-999.),
- fDispersion(-999.)
-{
-  //
-  // default constructor
-  //
-}
-
-
-//_____________________________________________________________________________
-AliReducedCaloCluster::~AliReducedCaloCluster()
-{
-  //
-  // destructor
-  //
-}
-
-
-//_______________________________________________________________________________
-void AliReducedEvent::GetQvector(Double_t Qvec[][2], Int_t det,
+void AliReducedEventInfo::GetQvector(Double_t Qvec[][2], Int_t det,
                                  Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
-				 Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
+				 Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)/*=NULL*/) {
   //
   // Get the event plane for a specified detector
   //
-  if(det==AliReducedEventFriend::kTPC || 
-     det==AliReducedEventFriend::kTPCptWeights ||
-     det==AliReducedEventFriend::kTPCpos ||
-     det==AliReducedEventFriend::kTPCneg) {
+  if(det==AliReducedEventPlaneInfo::kTPC || 
+     det==AliReducedEventPlaneInfo::kTPCptWeights ||
+     det==AliReducedEventPlaneInfo::kTPCpos ||
+     det==AliReducedEventPlaneInfo::kTPCneg) {
     GetTPCQvector(Qvec, det, etaMin, etaMax, IsTrackSelected);
     return;
   }
-  if(det==AliReducedEventFriend::kVZEROA ||
-     det==AliReducedEventFriend::kVZEROC) {
+  if(det==AliReducedEventPlaneInfo::kVZEROA ||
+     det==AliReducedEventPlaneInfo::kVZEROC) {
     GetVZEROQvector(Qvec, det);   
     return;
   }
-  if(det==AliReducedEventFriend::kZDCA ||
-     det==AliReducedEventFriend::kZDCC) {
+  if(det==AliReducedEventPlaneInfo::kZDCA ||
+     det==AliReducedEventPlaneInfo::kZDCC) {
     GetZDCQvector(Qvec, det);
     return;
   }
-  if(det==AliReducedEventFriend::kFMD) {
+  if(det==AliReducedEventPlaneInfo::kFMD) {
     //TODO implementation
     return;
   }
@@ -680,31 +250,31 @@ void AliReducedEvent::GetQvector(Double_t Qvec[][2], Int_t det,
 
 
 //_________________________________________________________________
-Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det, 
+Int_t AliReducedEventInfo::GetTPCQvector(Double_t Qvec[][2], Int_t det, 
                                      Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
-				     Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
+				     Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)/*=NULL*/) {
   //
   // Construct the event plane using tracks in the barrel
   //
-  if(!(det==AliReducedEventFriend::kTPC ||
-       det==AliReducedEventFriend::kTPCpos ||
-       det==AliReducedEventFriend::kTPCneg))
+  if(!(det==AliReducedEventPlaneInfo::kTPC ||
+       det==AliReducedEventPlaneInfo::kTPCpos ||
+       det==AliReducedEventPlaneInfo::kTPCneg))
     return 0;
   Int_t nUsedTracks = 0;
   Short_t charge = 0;
-  AliReducedTrack* track=0x0;
+  AliReducedTrackInfo* track=0x0;
   Double_t weight=0.0; Double_t absWeight = 0.0; Double_t x=0.0; Double_t y=0.0; 
   TIter nextTrack(fTracks);
-  while((track=static_cast<AliReducedTrack*>(nextTrack()))) {
+  while((track=static_cast<AliReducedTrackInfo*>(nextTrack()))) {
     if(track->Eta()<etaMin) continue;
     if(track->Eta()>etaMax) continue;
     charge = track->Charge();
-    if(det==AliReducedEventFriend::kTPCpos && charge<0) continue;
-    if(det==AliReducedEventFriend::kTPCneg && charge>0) continue;
+    if(det==AliReducedEventPlaneInfo::kTPCpos && charge<0) continue;
+    if(det==AliReducedEventPlaneInfo::kTPCneg && charge>0) continue;
     
     if(IsTrackSelected && !IsTrackSelected(track)) continue;
     absWeight = 1.0;
-    if(det==AliReducedEventFriend::kTPCptWeights) {
+    if(det==AliReducedEventPlaneInfo::kTPCptWeights) {
       absWeight = track->Pt();
       if(absWeight>2.0) absWeight = 2.0;    // pt is the weight used for the event plane
     }
@@ -737,25 +307,26 @@ Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det,
 
 
 //____________________________________________________________________________
-void AliReducedEvent::SubtractParticleFromQvector(
-	AliReducedTrack* particle, Double_t Qvec[][2], Int_t det, 
+void AliReducedEventInfo::SubtractParticleFromQvector(
+	AliReducedTrackInfo* particle, Double_t Qvec[][2], Int_t det, 
         Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
-	Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
+	Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)/*=NULL*/) {
   //
   // subtract a particle from the event Q-vector
   //
+  //if(!particle) {std::cout<<"subtraction particle doesn't exist"<<std::endl; return;}
   Float_t eta = particle->Eta();
   if(eta<etaMin) return;
   if(eta>etaMax) return;
   
   Float_t charge = particle->Charge();
-  if(det==AliReducedEventFriend::kTPCpos && charge<0) return;
-  if(det==AliReducedEventFriend::kTPCneg && charge>0) return;
+  if(det==AliReducedEventPlaneInfo::kTPCpos && charge<0) return;
+  if(det==AliReducedEventPlaneInfo::kTPCneg && charge>0) return;
   
   if(IsTrackSelected && !IsTrackSelected(particle)) return;
   
   Double_t weight=0.0; Double_t absWeight = 0.0;
-  if(det==AliReducedEventFriend::kTPCptWeights) {
+  if(det==AliReducedEventPlaneInfo::kTPCptWeights) {
     absWeight = particle->Pt();
     if(absWeight>2.0) absWeight = 2.0;
   }
@@ -789,7 +360,7 @@ void AliReducedEvent::SubtractParticleFromQvector(
 
 
 //_________________________________________________________________
-void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det) {
+void AliReducedEventInfo::GetVZEROQvector(Double_t Qvec[][2], Int_t det) {
   //
   // Get the reaction plane from the VZERO detector for a given harmonic
   //
@@ -798,7 +369,7 @@ void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det) {
 
 
 //_________________________________________________________________
-void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vzeroMult) {
+void AliReducedEventInfo::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vzeroMult) {
   //
   // Get the reaction plane from the VZERO detector for a given harmonic
   //
@@ -813,8 +384,8 @@ void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vz
   //        channel 8: 22.5
   //        channel 9: 22.5 + 45
   //       
-  if(!(det==AliReducedEventFriend::kVZEROA ||
-       det==AliReducedEventFriend::kVZEROC))
+  if(!(det==AliReducedEventPlaneInfo::kVZEROA ||
+       det==AliReducedEventPlaneInfo::kVZEROC))
     return; 
   
   const Double_t kX[8] = {0.92388, 0.38268, -0.38268, -0.92388, -0.92388, -0.38268, 0.38268, 0.92388};    // cosines of the angles of the VZERO sectors (8 per ring)
@@ -822,8 +393,8 @@ void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vz
   Int_t phi;
   
   for(Int_t iChannel=0; iChannel<64; ++iChannel) {
-    if(iChannel<32 && det==AliReducedEventFriend::kVZEROA) continue;
-    if(iChannel>=32 && det==AliReducedEventFriend::kVZEROC) continue;
+    if(iChannel<32 && det==AliReducedEventPlaneInfo::kVZEROA) continue;
+    if(iChannel>=32 && det==AliReducedEventPlaneInfo::kVZEROC) continue;
     phi=iChannel%8;
     //  1st harmonic  
     Qvec[0][0] += vzeroMult[iChannel]*kX[phi];
@@ -848,7 +419,7 @@ void AliReducedEvent::GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vz
 
 
 //_________________________________________________________________
-void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det) const {
+void AliReducedEventInfo::GetZDCQvector(Double_t Qvec[][2], Int_t det) const {
   //
   // Get the reaction plane from the ZDC detector for a given harmonic
   //
@@ -857,14 +428,14 @@ void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det) const {
 
 
 //_________________________________________________________________
-void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t* zdcEnergy) const {
+void AliReducedEventInfo::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t* zdcEnergy) const {
   //
   // Construct the event plane using the ZDC
   // ZDC has 2 side (A and C) with 4 calorimeters on each side  
   // The XY position of each calorimeter is specified by the 
   // zdcNTowerCenters_x and zdcNTowerCenters_y arrays
-  if(!(det==AliReducedEventFriend::kZDCA ||
-       det==AliReducedEventFriend::kZDCC ))
+  if(!(det==AliReducedEventPlaneInfo::kZDCA ||
+       det==AliReducedEventPlaneInfo::kZDCC ))
     return; 
  
 
@@ -878,12 +449,12 @@ void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t
   Float_t zdcNTowerCentersY[4] = {0.0};
 
 
-  if(det==AliReducedEventFriend::kZDCA){
+  if(det==AliReducedEventPlaneInfo::kZDCA){
     zdcNTowerCentersX[0] =  zdcTowerCenter; zdcNTowerCentersX[1] =-zdcTowerCenter;
     zdcNTowerCentersX[2] =  zdcTowerCenter; zdcNTowerCentersX[3] =-zdcTowerCenter;
   }
 
-  if(det==AliReducedEventFriend::kZDCC){
+  if(det==AliReducedEventPlaneInfo::kZDCC){
     zdcNTowerCentersX[0] = -zdcTowerCenter; zdcNTowerCentersX[1] = zdcTowerCenter;
     zdcNTowerCentersX[2] = -zdcTowerCenter; zdcNTowerCentersX[3] = zdcTowerCenter;
   }
@@ -895,8 +466,8 @@ void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t
   for(Int_t ih=0; ih<6; ih++) {Qvec[ih][0] = 0.0; Qvec[ih][1] = 0.0;}   // harmonic Q-vector
   Float_t zdcNCentroidSum = 0;
     
-  for(Int_t iTow=(det==AliReducedEventFriend::kZDCA ? 6 : 1); iTow<(det==AliReducedEventFriend::kZDCA ? 10 : 5); ++iTow) {
-    //if(fZDCnEnergy[i+(det==AliReducedEventFriend::kZDCA ? 4 : 0)]>0.0) {
+  for(Int_t iTow=(det==AliReducedEventPlaneInfo::kZDCA ? 6 : 1); iTow<(det==AliReducedEventPlaneInfo::kZDCA ? 10 : 5); ++iTow) {
+    //if(fZDCnEnergy[i+(det==AliReducedEventPlaneInfo::kZDCA ? 4 : 0)]>0.0) {
     //  1st harmonic  
     Qvec[0][0] += zdcEnergy[iTow]*zdcNTowerCentersX[(iTow-1)%5];
     Qvec[0][1] += zdcEnergy[iTow]*zdcNTowerCentersY[(iTow-1)%5];
@@ -935,3 +506,177 @@ void AliReducedEvent::GetZDCQvector(Double_t Qvec[][2], Int_t det, const Float_t
   }   // end loop over channels
   return;
 }
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::EnergyZDCA() const
+{
+  //
+  // Total ZDC energy in A side
+  //
+  Float_t energy=0.0;
+  for(Int_t i=6;i<10;++i){
+      if(fZDCnEnergy[i]>0.) {
+  Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], fgkZdcNalpha);
+    energy += zdcNenergyAlpha;}
+  }
+  return energy;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::EnergyZDCC() const
+{
+  //
+  // Total ZDC energy in C side
+  //
+  Float_t energy=0.0;
+  for(Int_t i=1;i<5;++i){
+      if(fZDCnEnergy[i]>0.) {
+    Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], fgkZdcNalpha);
+    energy += zdcNenergyAlpha;}
+  }
+  return energy;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::EnergyZDC() const
+{
+  //
+  // Total ZDC energy   
+  //
+  return EnergyZDCA()+EnergyZDCC();
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::EnergyZDCn(Int_t ch) const
+{
+  //
+  // Total ZDC energy in channel
+  //
+  Float_t energy=0;
+  if(ch<0 || ch>9) return -999.;
+      if(fZDCnEnergy[ch]>0.) {
+  			energy = TMath::Power(fZDCnEnergy[ch], fgkZdcNalpha);
+		}
+  return energy;
+
+}
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::MultVZEROA() const
+{
+  //
+  // Total VZERO multiplicity in A side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=32;i<64;++i)
+    mult += fVZEROMult[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::MultVZEROC() const
+{
+  //
+  // Total VZERO multiplicity in C side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=0;i<32;++i)
+    mult += fVZEROMult[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::MultVZERO() const
+{
+  //
+  // Total VZERO multiplicity
+  //
+  return MultVZEROA()+MultVZEROC();
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::MultRingVZEROA(Int_t ring) const 
+{
+  //
+  //  VZERO multiplicity in a given ring on A side
+  //
+  if(ring<0 || ring>3) return -1.0;
+
+  Float_t mult=0.0;
+  for(Int_t i=32+8*ring; i<32+8*(ring+1); ++i)
+    mult += fVZEROMult[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::MultRingVZEROC(Int_t ring) const 
+{
+  //
+  //  VZERO multiplicity in a given ring on C side
+  //
+  if(ring<0 || ring>3) return -1.0;
+
+  Float_t mult=0.0;
+  for(Int_t i=8*ring; i<8*(ring+1); ++i)
+    mult += fVZEROMult[i];
+  return mult;
+}
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::AmplitudeTZEROA() const
+{
+  //
+  // Total TZERO multiplicity in A side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=12;i<24;++i)
+    mult += fT0amplitude[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::AmplitudeTZEROC() const
+{
+  //
+  // Total TZERO multiplicity in C side
+  //
+  Float_t mult=0.0;
+  for(Int_t i=0;i<12;++i)
+    mult += fT0amplitude[i];
+  return mult;
+}
+
+
+//____________________________________________________________________________
+Float_t AliReducedEventInfo::AmplitudeTZERO() const
+{
+  //
+  // Total TZERO multiplicity
+  //
+  return AmplitudeTZEROA()+AmplitudeTZEROC();
+}
+
+//_________________________________________________________________________________
+Double_t AliReducedEventInfo::GetQvectorFMD(Int_t c, Double_t etamin, Double_t etamax){
+  Double_t q=0.0;
+  AliReducedFMDInfo* fmd = new AliReducedFMDInfo();
+  TIter nextFMD(fFMD);
+  for(Int_t it=0; it<fFMD->GetEntriesFast(); ++it) {
+    fmd = (AliReducedFMDInfo*)nextFMD();
+    if(!fmd) continue;
+    if(fmd->Eta()>etamin&&fmd->Eta()<etamax){
+      if(c==0) q+=fmd->Multiplicity()*TMath::Cos(2.*fmd->Phi());
+      if(c==1) q+=fmd->Multiplicity()*TMath::Sin(2.*fmd->Phi());
+    }
+  }
+  return q;
+}
+

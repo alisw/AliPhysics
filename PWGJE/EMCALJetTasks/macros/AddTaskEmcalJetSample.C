@@ -65,7 +65,7 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
     jetCont->SetRhoName(nrho);
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
-    jetCont->SetZLeadingCut(0.98,0.98);
+    //jetCont->SetZLeadingCut(0.98,0.98);
     jetCont->SetPercAreaCut(jetareacut);
     jetCont->SetJetPtCut(jetptcut);
     jetCont->SetLeadingHadronType(leadhadtype);
