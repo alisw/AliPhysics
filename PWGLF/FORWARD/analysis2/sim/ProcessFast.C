@@ -10,7 +10,8 @@
 Bool_t
 ProcessFast(const char* url,
 	    const char* out,
-	    const char* opt="g")
+	    const char* opt="g",
+	    const char* extra=0)
 {
   TString mkLib = gSystem->GetMakeSharedLib();
   mkLib.ReplaceAll("-std=c++14", "-std=c++98");
@@ -21,15 +22,16 @@ ProcessFast(const char* url,
     fwd = gSystem->ExpandPathName("${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2");
   gSystem->AddIncludePath(Form("-I${ALICE_ROOT}/include "
 			       "-I${ALICE_PHYSICS}/include "
-			       "-I%s/include",
+			       "-I%s/sim",
 			       fwd.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
-  gROOT->LoadMacro(Form("%s/sim/FastAnalysis.C+%s",fwd.Data(),opt));
-  gROOT->LoadMacro(Form("%s/sim/dNdetaAnalysis.C+%s",fwd.Data(),opt));
-  gROOT->LoadMacro(Form("%s/sim/spectraAnalysis.C+%s",fwd.Data(),opt));
-
-  new dNdetaMaker;
-  new spectraMaker;
+  gROOT->LoadMacro(Form("FastAnalysis.C+%s",opt));
+  gROOT->LoadMacro(Form("dNdetaAnalysis.C+%s",opt));
+  gROOT->LoadMacro(Form("spectraAnalysis.C+%s",opt));
+  if (extra && extra[0] != '\0') gROOT->LoadMacro(Form("%s+%s",extra, opt));
+    
+  // new dNdetaMaker;
+  // new spectraMaker;
 
   return FastAnalysis::Run(url, out, opt);
 }

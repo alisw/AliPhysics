@@ -859,8 +859,21 @@ struct MultAnalysis : public CentAnalysis
  */
 struct dNdetaMaker : public FastAnalysis::Maker
 {
+  /** 
+   * CTOR 
+   */
   dNdetaMaker() : FastAnalysis::Maker("dNdeta") {}
   
+  /** 
+   * Create an analyser or return 0. 
+   * 
+   * @param subtype  Sub-type to make  
+   * @param monitor  Monitor period (in seconds)
+   * @param verbose  Verbosity 
+   * @param uopt     Possibly additiona options 
+   *  
+   * @return Newly allocated analyser or null
+   */
   FastAnalysis*  Make(const TString& subtype,
 		      Int_t          monitor,
 		      Bool_t         verbose,
@@ -893,6 +906,10 @@ struct dNdetaMaker : public FastAnalysis::Maker
     Printf("Error: dNdetaAnalysis::Run: Invalid spec: %s", t.Data());
     return 0;
   }
+  /** 
+   * Show list of possible sub-types
+   * 
+   */
   void List() const
   {
     Printf(" INEL            - inelastic");
@@ -907,8 +924,16 @@ struct dNdetaMaker : public FastAnalysis::Maker
     Printf("  V0A            - V0-A");
     Printf("  V0C            - V0-C");
   }
+  /** 
+   * Get name of script to load 
+   */
   const char* Script() const {   return __FILE__;  }
 };
+
+// ------------------------------------------------------------------
+// Create instance of maker
+dNdetaMaker* _dNdetaMaker = new dNdetaMaker;
+
 //
 // EOF
 //

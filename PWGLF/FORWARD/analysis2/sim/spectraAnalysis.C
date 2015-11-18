@@ -11,6 +11,9 @@ class TParticle;
 #endif
 #include "FastAnalysis.C"
 
+/** 
+ * Analyser to analyse the pT spectra and particle ratios 
+ */
 struct spectraAnalysis : public FastAnalysis
 {
   enum {
@@ -25,6 +28,12 @@ struct spectraAnalysis : public FastAnalysis
     kPColor  = kBlue+2,
     kOColor  = kMagenta+2
   };
+  /** 
+   * Constructor 
+   * 
+   * @param verbose 
+   * @param monitor 
+   */
   spectraAnalysis(Bool_t verbose=false, Int_t monitor=0)
     : FastAnalysis(verbose,monitor),
       fNpi(0),
@@ -40,6 +49,15 @@ struct spectraAnalysis : public FastAnalysis
       fO2piRatio(0)      
   {
   }
+  /** 
+   * Create a spectrum histogram 
+   * 
+   * @param pdg 
+   * @param col 
+   * @param sty 
+   * 
+   * @return 
+   */
   TH1* CreateSpectra(UInt_t pdg, Color_t col, Style_t sty)
   {
     TH1* h = new TH1D(dNdptName(pdg), "",   100, 0, 10);
@@ -54,6 +72,15 @@ struct spectraAnalysis : public FastAnalysis
     fOutput->Add(h);
     return h;
   }
+  /** 
+   * Create a ratio histogram 
+   * 
+   * @param pdg 
+   * @param col 
+   * @param sty 
+   * 
+   * @return 
+   */
   TH1* CreateRatio(UInt_t pdg, Color_t col, Style_t sty)
   {
     TH1* h = new TH1D(RatioName(pdg), "", 100, 0, 10);
@@ -69,7 +96,10 @@ struct spectraAnalysis : public FastAnalysis
     return h;
   }
   /** 
-   * Called on each slave at start of processing
+   * Called on each slave at start
+   * of processing.  Histograms
+   * should be added to the output
+   * here.
    */
   virtual void SlaveBegin(TTree*)
   {
@@ -83,7 +113,17 @@ struct spectraAnalysis : public FastAnalysis
     fP2piRatio = CreateRatio(2212, kPColor, kPSty);
     fO2piRatio = CreateRatio(0,    kOColor, kOSty);
   }
+  /** 
+   * Process header.  Implement to make event selection 
+   * 
+   * 
+   * @return true if event is accepted 
+   */
   Bool_t ProcessHeader() { return true; }
+  /** 
+   * Process all particles 
+   * 
+   */
   void ProcessParticles()
   {
     fNpi = fNK = fNP = fNO = 0;
@@ -108,6 +148,13 @@ struct spectraAnalysis : public FastAnalysis
     else                     { fdNdptO ->Fill(pT); fNO++; }
     return true;
   }
+  /** 
+   * Name of spectrum histogram 
+   * 
+   * @param pdg Particle code 
+   * 
+   * @return Name 
+   */
   static const char* dNdptName(UInt_t pdg) 
   {
     switch (pdg) {
@@ -117,6 +164,13 @@ struct spectraAnalysis : public FastAnalysis
     }
     return "dNdptO";
   }
+  /** 
+   * Name of ratio histograms
+   * 
+   * @param pdg Particle code 
+   * 
+   * @return Name 
+   */
   static const char* RatioName(UInt_t pdg) 
   {
     switch (pdg) {
@@ -125,6 +179,13 @@ struct spectraAnalysis : public FastAnalysis
     }
     return "OtoPiRatio";
   }
+  /** 
+   * Scale a spectrum by the number of events and the bin width
+   * 
+   * @param pdg Particle number 
+   * 
+   * @return true on succes
+   */
   Bool_t Scale(UInt_t pdg)
   {
     TH1* h = static_cast<TH1*>(GetOutputObject(dNdptName(pdg), TH1::Class()));
@@ -136,6 +197,15 @@ struct spectraAnalysis : public FastAnalysis
     h->Scale(1./fOK, "width");
     return true;
   }
+  /** 
+   * Fill the mean and rms of a ratio into a histogram 
+   * 
+   * @param r    Histogram to fill 
+   * @param bin  Bin number 
+   * @param pdg  Particle ID
+   * 
+   * @return 
+   */
   Bool_t Ratio(TH1* r, Int_t bin, UInt_t pdg)
   {
     TH1* h = static_cast<TH1*>(GetOutputObject(RatioName(pdg),
@@ -206,8 +276,20 @@ struct spectraAnalysis : public FastAnalysis
  */
 struct spectraMaker : public FastAnalysis::Maker
 {
+  /**
+   * CTOR 
+   */
   spectraMaker() : FastAnalysis::Maker("spectra") {}
-  
+  /** 
+   * Create an analyser or return 0. 
+   * 
+   * @param subtype  Sub-type to make  
+   * @param monitor  Monitor period (in seconds)
+   * @param verbose  Verbosity 
+   * @param uopt     Possibly additiona options 
+   *  
+   * @return Newly allocated analyser or null
+   */
   FastAnalysis*  Make(const TString& subtype,
 		      Int_t          monitor,
 		      Bool_t         verbose,
@@ -215,12 +297,24 @@ struct spectraMaker : public FastAnalysis::Maker
   {
     return new spectraAnalysis(verbose,monitor);
   }
+  /** 
+   * Show list of possible sub-types
+   * 
+   */
   void List() const
   {
   }
+  /** 
+   * Get name of script to load 
+   */
   const char* Script() const { return __FILE__; }
 };
 
 
+// ------------------------------------------------------------------
+// Create instance of maker 
+spectraMaker* _spectraMaker = new spectraMaker;
 
-  
+//
+// EOF
+// 
