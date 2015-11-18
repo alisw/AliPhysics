@@ -216,12 +216,13 @@ void downloadFile(const JobInfo &info,
       if (tree)
       {
         tree->SetBranchStatus("*",1);
-        for (size_t ei = 0, ee = tree->GetEntries(); ei != ee; ++ei)
-        {
-          tree->GetEntry(ei, 1);
-        }
+        TTree *cloned = tree->CloneTree();
+        dest->WriteTObject(cloned, oldKey->GetName());
+        delete cloned;
       }
-      dest->WriteTObject(content, oldKey->GetName());
+      else
+        dest->WriteTObject(content, oldKey->GetName());
+      delete content;
     }
     src->Close();
     dest->WriteKeys();
