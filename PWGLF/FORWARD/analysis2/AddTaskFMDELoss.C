@@ -32,7 +32,8 @@ AliAnalysisTask*
 AddTaskFMDELoss(Bool_t        mc, 
 		Bool_t        onlyMB=false, 
 		const Char_t* config="elossFitConfig.C",
-		const Char_t* corrs="")
+		const Char_t* corrs="",
+		const Char_t* extraDead="")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -56,6 +57,9 @@ AddTaskFMDELoss(Bool_t        mc,
   // For MC input we explicitly disable the noise correction 
   if (mc) task->GetESDFixer().SetRecoNoiseFactor(4);
 
+  // If we get extra dead map from outside, add it here
+  if (extraDead && extraDead[0] != '\0') task->GetESDFixer().AddDead(extraDead);
+  
   // --- General -----------------------------------------------------
   // If set, only collect statistics for MB.  This is to prevent a
   // bias when looping over data where the MB trigger is downscaled.

@@ -4,11 +4,14 @@
 #include "AliForwardUtil.h"
 #include "AliForwardCorrectionManager.h"
 #include "AliFMDCorrNoiseGain.h"
+#include "AliLog.h"
 #include <TH1.h>
 #include <TList.h>
 #include <TObjArray.h>
 #include <TROOT.h>
 #include <TMath.h>
+#include <TSystem.h>
+#include <TInterpreter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -169,7 +172,17 @@ AliFMDESDFixer::AddDead(const Char_t* script)
 {
   if (!script || script[0] == '\0') return;
   
-  gROOT->Macro(Form("%s((AliFMDESDFixer*)%p);", script, this));
+  const char* scr = gSystem->Which(gROOT->GetMacroPath(), script);
+  if (!scr) {
+    AliWarningF("%s not found in %s", script, gROOT->GetMacroPath());
+    return;
+  }
+  AliInfoF("Reading additional dead strips from %s", scr);
+  
+  gROOT->Macro(Form("%s((AliFMDESDFixer*)%p);", scr, this));
+
+  gInterpreter->UnloadFile(scr);
+  delete scr;
 }
 
 //____________________________________________________________________

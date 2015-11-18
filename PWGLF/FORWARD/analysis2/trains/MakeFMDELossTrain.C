@@ -31,6 +31,7 @@ public:
     fOptions.Add("only-mb", "Only collect statistics from MB events");
     fOptions.Add("config",  "FILE", "Configuration", "elossFitConfig.C");
     fOptions.Add("corr",    "DIR",  "Corrections dir", "");
+    fOptions.Add("dead",    "FILE", "Additional dead-map script", "");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -71,16 +72,25 @@ protected:
     Bool_t   onlyMB = fOptions.AsBool("only-mb");
     TString  config = fOptions.Get("config"); 
     TString  corrs  = "";
+    TString  dead   = "";
     if (fOptions.Has("corr")) corrs = fOptions.Get("corr"); 
+    if (fOptions.Has("dead")) dead = fOptions.Get("dead"); 
 
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,\"%s\",\"%s\"", 
-					mc, onlyMB,  
-					config.Data(), 
-					corrs.Data()));
+    AliAnalysisTask* task = 
+      CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,\"%s\",\"%s\",\"%s\"", 
+					  mc, onlyMB,  
+					  config.Data(), 
+					  corrs.Data(),
+					  dead.Data()));
+    if (!task)
+      Fatal("CoupleCars", "Failed to add energy loss task");
+    
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), config), true);
     if (!corrs.IsNull())
       fRailway->LoadAux(Form("%s/fmd_corrections.root",corrs.Data()), true);
+    if (!dead.IsNull())
+      fRailway->LoadAux(Form("%s",dead.Data()), true);
     
   }
   /** 

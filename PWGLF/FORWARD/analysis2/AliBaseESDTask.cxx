@@ -154,7 +154,7 @@ AliBaseESDTask::Configure(const char* macro)
   AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
   gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));
 
-  Info("Configure", "Unloading configuration script");
+  AliInfoF("Unloading configuration script %s", config);
   gInterpreter->UnloadFile(config);
 
   delete config;
