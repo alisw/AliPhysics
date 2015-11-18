@@ -37,7 +37,7 @@ public:
     void Dissociate();
     
     //Use internal map
-    void Setup(Long_t runNo);
+    void Setup();
     TH1F* FindHisto(AliMultEstimator* e);
     void Print(Option_t* option="") const;
     

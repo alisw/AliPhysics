@@ -9,7 +9,8 @@ typedef enum {kMultSelTrigger = -200,
     kMultSelINELgtZERO = -202,
     kMultSelTrackletsVsClusters = -203,
     kMultSelRejectPileupInMultBins = -204,
-    kMultSelCheckConsistencySPDandTrackVertices = -205
+    kMultSelCheckConsistencySPDandTrackVertices = -205,
+    kMultSelNonZeroNContribs = -206
 } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
 
 class AliESDEvent;
@@ -28,7 +29,8 @@ public:
         fEvSel_INELgtZERO(o.fEvSel_INELgtZERO),
         fEvSel_TrackletsVsClusters(o.fEvSel_TrackletsVsClusters),
         fEvSel_RejectPileupInMultBins(o.fEvSel_RejectPileupInMultBins),
-        fEvSel_CheckConsistencySPDandTrackVertices(o.fEvSel_CheckConsistencySPDandTrackVertices)
+        fEvSel_CheckConsistencySPDandTrackVertices(o.fEvSel_CheckConsistencySPDandTrackVertices),
+        fEvSel_NonZeroNContribs(o.fEvSel_NonZeroNContribs)
     {}
     AliMultSelectionCuts& operator=(const AliMultSelectionCuts& o);
     ~AliMultSelectionCuts();
@@ -49,6 +51,8 @@ public:
     void   SetRejectPileupInMultBinsCut(Bool_t lSetting)    { fEvSel_RejectPileupInMultBins = lSetting; }
     Bool_t GetVertexConsistencyCut()                        { return fEvSel_CheckConsistencySPDandTrackVertices; }
     void   SetVertexConsistencyCut(Bool_t lSetting)         { fEvSel_CheckConsistencySPDandTrackVertices = lSetting; }
+    Bool_t GetNonZeroNContribs()                        { return fEvSel_NonZeroNContribs; }
+    void   SetNonZeroNContribs(Bool_t lSetting)         { fEvSel_NonZeroNContribs = lSetting; }
     
     void SetErrorCode(Int_t lCode)   { fErrorCode = lCode; }
     Int_t GetErrorCode() const   { return fErrorCode; }
@@ -68,7 +72,10 @@ private:
     Bool_t fEvSel_TrackletsVsClusters; // Apply standard Tracklets Vs Clusters cut
     Bool_t fEvSel_RejectPileupInMultBins; // Reject IsPileupFromSPDInMultBins()
     Bool_t fEvSel_CheckConsistencySPDandTrackVertices; //Check consistency
+    Bool_t fEvSel_NonZeroNContribs; //at least one contributor to PV
     
-    ClassDef(AliMultSelectionCuts, 1)
+    ClassDef(AliMultSelectionCuts, 2)
+    //1 - original implementation 
+    //2 - added NonZeroNContribs
 };
 #endif

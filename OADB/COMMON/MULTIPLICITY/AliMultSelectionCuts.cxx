@@ -29,7 +29,8 @@ AliMultSelectionCuts::AliMultSelectionCuts() :
     fEvSel_INELgtZERO (kTRUE),
     fEvSel_TrackletsVsClusters (kTRUE),
     fEvSel_RejectPileupInMultBins (kTRUE),
-    fEvSel_CheckConsistencySPDandTrackVertices (kTRUE)
+    fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
+    fEvSel_NonZeroNContribs( kFALSE )
 {
   // Constructor
   
@@ -41,7 +42,8 @@ AliMultSelectionCuts::AliMultSelectionCuts(const char * name, const char * title
     fEvSel_INELgtZERO (kTRUE),
     fEvSel_TrackletsVsClusters (kTRUE),
     fEvSel_RejectPileupInMultBins (kTRUE),
-    fEvSel_CheckConsistencySPDandTrackVertices (kTRUE) 
+    fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
+    fEvSel_NonZeroNContribs( kFALSE )
 {
   // Constructor
   
@@ -60,6 +62,7 @@ AliMultSelectionCuts& AliMultSelectionCuts::operator=(const AliMultSelectionCuts
     fEvSel_TrackletsVsClusters = o.fEvSel_TrackletsVsClusters;
     fEvSel_RejectPileupInMultBins = o.fEvSel_RejectPileupInMultBins;
     fEvSel_CheckConsistencySPDandTrackVertices = o.fEvSel_CheckConsistencySPDandTrackVertices;
+    fEvSel_NonZeroNContribs = o.fEvSel_NonZeroNContribs;
     return *this;
 }
 //________________________________________________________________
@@ -76,6 +79,7 @@ void AliMultSelectionCuts::Print(Option_t *option) const {
   Printf(" Tracklets vs Clusters.............: [%i]", fEvSel_TrackletsVsClusters);
   Printf(" Reject Pileup SPD (mult bins).....: [%i]", fEvSel_RejectPileupInMultBins);
   Printf(" SPD and Track vertex consistency..: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
+  Printf(" Non Zero NContribs to PV..........: [%i]", fEvSel_NonZeroNContribs);
 }
 //________________________________________________________________
 /* Deprecated

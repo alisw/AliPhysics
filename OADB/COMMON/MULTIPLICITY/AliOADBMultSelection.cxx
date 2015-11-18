@@ -181,7 +181,16 @@ void AliOADBMultSelection::Browse(TBrowser *b)
         cutsFolder->SetOwner();
         estFolder->SetOwner();
         for(Int_t iEst=0; iEst<fCalibList->GetEntries(); iEst++) histoFolder->Add(GetCalibHisto(iEst));
-        cutsFolder->Add(new TObjString(Form("Vz: %f", GetEventCuts()->GetVzCut())));
+        
+        //Info for Event Selection: Printouts 
+        cutsFolder->Add(new TObjString(Form("Vertex Z cut: %f", GetEventCuts()->GetVzCut())));
+        cutsFolder->Add(new TObjString(Form("Physics Selection: %i", GetEventCuts()->GetTriggerCut())));
+        cutsFolder->Add(new TObjString(Form("INEL > 0: %i", GetEventCuts()->GetINELgtZEROCut())));
+        cutsFolder->Add(new TObjString(Form("Tracklets Vs Clusters: %i", GetEventCuts()->GetTrackletsVsClustersCut())));
+        cutsFolder->Add(new TObjString(Form("Reject Pileup SPD (mult bins): %i", GetEventCuts()->GetRejectPileupInMultBinsCut())));
+        cutsFolder->Add(new TObjString(Form("SPD and Track Vertex Consistency: %i", GetEventCuts()->GetVertexConsistencyCut())));
+        cutsFolder->Add(new TObjString(Form("NContribs to PV > 0: %i", GetEventCuts()->GetNonZeroNContribs())));
+        
         const long lNEstimators = fSelection->GetNEstimators();
         TFolder *lEst[lNEstimators];
         for(Int_t iEst=0; iEst<lNEstimators; iEst++){
@@ -216,7 +225,7 @@ TH1F* AliOADBMultSelection::FindHisto(AliMultEstimator* e)
     return static_cast<TH1F*>(ret->Value());
 }
 //________________________________________________________________
-void AliOADBMultSelection::Setup(Long_t runNo)
+void AliOADBMultSelection::Setup()
 {
     if (fMap) {
         delete fMap;
@@ -232,7 +241,7 @@ void AliOADBMultSelection::Setup(Long_t runNo)
         AliMultEstimator* e = sel->GetEstimator(iEst);
         if (!e) continue;
         
-        TString name(Form("hCalib_%ld_%s", runNo, e->GetName()));
+        TString name(Form("hCalib_%s", e->GetName()));
         TH1F*   h = GetCalibHisto(name);
         if (!h) continue;
         

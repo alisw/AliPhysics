@@ -510,7 +510,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Get AD Multiplicity Information
     AliVAD *lVAD = lVevent->GetADData();
     if(!lVAD) {
-        AliWarning("ERROR:lVAD not available\n");
+        //commented out for smaller logs!
+        //AliWarning("ERROR:lVAD not available\n");
     }
     
     //Not Acquired!
@@ -897,7 +898,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         TString lThisCalibHistoName;
         Float_t lThisQuantile = -1;
         for(Long_t iEst=0; iEst<lSelection->GetNEstimators(); iEst++) {
-            lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,lSelection->GetEstimator(iEst)->GetName());
+            //Changed: no need for run number, object already matches required one
+            lThisCalibHistoName = Form("hCalib_%s",lSelection->GetEstimator(iEst)->GetName());
             lThisCalibHisto = 0x0;
             lThisCalibHisto = fOadbMultSelection->GetCalibHisto( lThisCalibHistoName );
             if ( ! lThisCalibHisto ){
@@ -914,6 +916,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
                 if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
                 if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
+                if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    ) lThisQuantile = 206;
+                
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }
@@ -1034,7 +1038,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     // De-couple histograms from the underlying file
     fOadbMultSelection->Dissociate();
     // Update cache map from estimator to histogram for fast look-up
-    fOadbMultSelection->Setup(fCurrentRun);
+    fOadbMultSelection->Setup();
     
     //Make sure naming convention is followed!
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
@@ -1359,6 +1363,9 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lProductionName = "LHC15f";
     if ( fCurrentRun >= 235196 && fCurrentRun <= 236866 ) lProductionName = "LHC15i";
     if ( fCurrentRun >= 237003 && fCurrentRun <= 238622 ) lProductionName = "LHC15j";
+
+    //Pb-Pb Run 2 (experimental) 
+    if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
     
     return lProductionName;
 }
