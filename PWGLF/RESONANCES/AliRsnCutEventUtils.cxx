@@ -103,21 +103,18 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    fUtils->SetMinPlpContribSPD(fMinPlpContribSPD);
    fUtils->SetMaxVtxZ(fMaxVtxZ);
 
+   Bool_t accept = kTRUE;
    //remove first event in chunk 
-   if ((fIsRmFirstEvInChunck) && (fUtils->IsFirstEventInChunk(vevt)))
-     return kFALSE;
+   if ((fIsRmFirstEvInChunck) && (fUtils->IsFirstEventInChunk(vevt))) accept = kFALSE;
+
+   //apply vertex selection - for 2013 pPb data
+   if ((fUseVertexSelection2013pAspectra) && (!IsVertexSelected2013pAIDspectra(vevt))) accept = kFALSE;
    
    //apply vertex selection - for 2013 pPb data
-   if((fUseVertexSelection2013pA) && (!fUtils->IsVertexSelected2013pA(vevt)))
-      return kFALSE;
-
-   //apply vertex selection - for 2013 pPb data
-   if ((fUseVertexSelection2013pAspectra) && IsVertexSelected2013pAIDspectra(vevt))
-     return kTRUE;
-
+   if((fUseVertexSelection2013pA) && (!fUtils->IsVertexSelected2013pA(vevt))) accept = kFALSE;
+     
    // pile-up check
-   if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt)))
-     return kFALSE;
+   if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt))) accept = kFALSE;
    
    //apply filter for NSD events in DPMJET MC for pA
    if (fFilterNSDeventsDPMJETpA2013){
@@ -155,12 +152,13 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
      dpmHeader->GetNDiffractive(nsd1, nsd2, ndd);
      if ( ((dpmHeader->ProjectileParticipants()==nsd1) && (ndd==0)) || 
 	  ((dpmHeader->ProjectileParticipants()==nsd2) && (ndd==0))  ) {
-       Printf("fFilterNSDeventsDPMJETpA2013 just rejected a non-NSD event!");
-       return kFALSE;  
+       AliInfo("fFilterNSDeventsDPMJETpA2013 rejected a non-NSD event!");
+       accept = kFALSE;
      }
+     else  accept = kTRUE;   
    }
    
-   return kTRUE;
+   return accept;
 }
 
 
