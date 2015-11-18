@@ -126,7 +126,7 @@ TGraph* GetStat(TString className="CVHMV0M-B-NOPF-CENTNOTRD",Bool_t lumi=1, Bool
     t->GetEntry(r);
     if (!partition->String().Contains(part.Data())) continue;
     if (!lhcState->String().Contains("STABLE")) continue;
-    if (lhcPeriod->String().Contains("LHC15k")) continue;
+    if (!lhcPeriod->String().Contains("LHC15m")) continue;
     if (run<225000) continue;
     hTimeStart->Fill(Form("%i",run),timeStart);
     hTimeEnd->Fill(Form("%i",run),timeEnd);
@@ -211,7 +211,7 @@ TGraph* GetStat(TString className="CVHMV0M-B-NOPF-CENTNOTRD",Bool_t lumi=1, Bool
   return gStat;
 }
 
-void integrated_lumi(Bool_t goodOnly=1){
+void integrated_lumi(Bool_t goodOnly=0){
   nGoodRuns+= nGoodRuns15f;
   nGoodRuns+= nGoodRuns15h;
   nGoodRuns+= nGoodRuns15i;
