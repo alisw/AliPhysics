@@ -60,6 +60,8 @@
 
 #include "AliEmcalJet.h"
 
+#include "AliMultSelection.h"
+
 #include "AliHelperPID.h"
 #include "AliAnalysisUtils.h"
 #include "TMap.h"
@@ -177,6 +179,7 @@ fRemoveWeakDecaysInMC(kFALSE),
 fFillYieldRapidity(kFALSE),
 fFillCorrelationsRapidity(kFALSE),
 fUseDoublePrecision(kFALSE),
+fUseNewCentralityFramework(kFALSE),
 fFillpT(kFALSE),
 fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00"),
 fTrackEtaMax(.9),
@@ -507,6 +510,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
   settingsTree->Branch("fFillCorrelationsRapidity", &fFillYieldRapidity,"fFillCorrelationsRapidity/O");
+  settingsTree->Branch("fUseNewCentralityFramework", &fUseNewCentralityFramework,"fUseNewCentralityFramework/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -1147,133 +1151,143 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
   Double_t centrality = 0;
   
-  AliCentrality *centralityObj = 0;
-
   if (fCentralityMethod.Length() > 0)
   {
-    if (fCentralityMethod == "ZNA_MANUAL")
+    if (fUseNewCentralityFramework) 
     {
-      Bool_t zna = kFALSE;
-      for(Int_t j = 0; j < 4; ++j) {
-	if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
-	  zna = kTRUE;
-	}
-      }
+      AliMultSelection *multSelection = (AliMultSelection*) inputEvent->FindListObject("MultSelection");
+      if (!multSelection)
+        AliFatal("MultSelection not found in input event");
+        
+      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
+    }
+    else 
+    {
+      AliCentrality *centralityObj = 0;
 
-//       Printf("%d %f", zna, fZNAtower[0]);
-      if (zna)
+      if (fCentralityMethod == "ZNA_MANUAL")
       {
-	// code from Chiara O (23.10.12)
-	const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
-	Float_t znacut[4] = {681., 563., 413., 191.};
-	
-	if(fZNAtower[0]>znacut[0]) centrality = 1;
-	else if(fZNAtower[0]>znacut[1]) centrality = 21;
-	else if(fZNAtower[0]>znacut[2]) centrality = 41;
-	else if(fZNAtower[0]>znacut[3]) centrality = 61;
-	else centrality = 81;
+        Bool_t zna = kFALSE;
+        for(Int_t j = 0; j < 4; ++j) {
+          if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
+            zna = kTRUE;
+          }
+        }
+
+  //       Printf("%d %f", zna, fZNAtower[0]);
+        if (zna)
+        {
+          // code from Chiara O (23.10.12)
+          const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
+          Float_t znacut[4] = {681., 563., 413., 191.};
+          
+          if(fZNAtower[0]>znacut[0]) centrality = 1;
+          else if(fZNAtower[0]>znacut[1]) centrality = 21;
+          else if(fZNAtower[0]>znacut[2]) centrality = 41;
+          else if(fZNAtower[0]>znacut[3]) centrality = 61;
+          else centrality = 81;
+        }
+        else
+          centrality = -1;
       }
-      else
-	centrality = -1;
-    }
-    else if (fCentralityMethod == "ZNAC") // pp
-    {
-      // values from Cvetan
-      const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
-      const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
-
-      Double_t enZNA = 1.13 * towZNA[0];
-      Double_t enZNC = towZNC[0];
-      Double_t enZN = enZNA + enZNC;
-
-      Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
-      
-      if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
-      else if(enZN > znaccut[2]) centrality = 91;
-      else if(enZN > znaccut[3]) centrality = 81;
-      else if(enZN > znaccut[4]) centrality = 71;
-      else if(enZN > znaccut[5]) centrality = 61;
-      else if(enZN > znaccut[6]) centrality = 51;
-      else if(enZN > znaccut[7]) centrality = 1;
-      else centrality = -1;
-
-     ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
-    }
-    else if (fCentralityMethod == "TRACKS_MANUAL")
-    {
-      // for pp
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-      centrality = tracks->GetEntriesFast();
-      if (centrality > 40)
-	centrality = 41;
-//       Printf("%d %f", tracks->GetEntriesFast(), centrality);
-      delete tracks;
-    }
-    else if (fCentralityMethod == "V0A_MANUAL")
-    {
-      // for pp
-      
-      //Total multiplicity in the VZERO A detector
-      Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
-      Float_t MV0AScaled=0.;
-      if (fMap){
-	TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
-	if(sf)MV0AScaled=MV0A*sf->GetVal();
-      }
-      
-      if (MV0AScaled > 0)
-	centrality = MV0AScaled;
-      else
-	centrality = -1;
-    }
-    else if (fCentralityMethod == "nano")
-    {
-//       fAOD->GetHeader()->Dump();
-//       Printf("%p %p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), dynamic_cast<AliNanoAODHeader*> ((TObject*) (fAOD->GetHeader())), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
-
-      Int_t error = 0;
-      centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data()), &error) / 100 - 1.0;
-      if (error != TInterpreter::kNoError)
-	centrality = -1;
-    }
-   else if (fCentralityMethod == "PPVsMultUtils")
-     {
-         if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
-       else centrality = -1;
-    }
-   else
-    {
-      if (fAOD)
-	centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
-      else if (fESD)
-	centralityObj = fESD->GetCentrality();
-      
-      if (centralityObj)
-	centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
-	//centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-      else
-	centrality = -1;
-      
-      if (fAOD)
+      else if (fCentralityMethod == "ZNAC") // pp
       {
-	// remove outliers
-	if (centrality == 0)
-	{
-	  if (fAOD->GetVZEROData())
-	  {
-	    Float_t multV0 = 0;
-	    for (Int_t i=0; i<64; i++)
-	      multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
-	    if (multV0 < 19500)
-	    {
-	      centrality = -1;
-	      AliInfo("Rejecting event due to too small V0 multiplicity");
-	    }
-	  }
-	}
+        // values from Cvetan
+        const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
+        const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
+
+        Double_t enZNA = 1.13 * towZNA[0];
+        Double_t enZNC = towZNC[0];
+        Double_t enZN = enZNA + enZNC;
+
+        Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
+        
+        if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
+        else if(enZN > znaccut[2]) centrality = 91;
+        else if(enZN > znaccut[3]) centrality = 81;
+        else if(enZN > znaccut[4]) centrality = 71;
+        else if(enZN > znaccut[5]) centrality = 61;
+        else if(enZN > znaccut[6]) centrality = 51;
+        else if(enZN > znaccut[7]) centrality = 1;
+        else centrality = -1;
+
+      ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
+      }
+      else if (fCentralityMethod == "TRACKS_MANUAL")
+      {
+        // for pp
+        TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+        centrality = tracks->GetEntriesFast();
+        if (centrality > 40)
+          centrality = 41;
+  //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
+        delete tracks;
+      }
+      else if (fCentralityMethod == "V0A_MANUAL")
+      {
+        // for pp
+        
+        //Total multiplicity in the VZERO A detector
+        Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
+        Float_t MV0AScaled=0.;
+        if (fMap){
+          TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
+          if(sf)MV0AScaled=MV0A*sf->GetVal();
+        }
+        
+        if (MV0AScaled > 0)
+          centrality = MV0AScaled;
+        else
+          centrality = -1;
+      }
+      else if (fCentralityMethod == "nano")
+      {
+  //       fAOD->GetHeader()->Dump();
+  //       Printf("%p %p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), dynamic_cast<AliNanoAODHeader*> ((TObject*) (fAOD->GetHeader())), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
+
+        Int_t error = 0;
+        centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data()), &error) / 100 - 1.0;
+        if (error != TInterpreter::kNoError)
+          centrality = -1;
+      }
+    else if (fCentralityMethod == "PPVsMultUtils")
+      {
+          if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
+        else centrality = -1;
+      }
+    else
+      {
+        if (fAOD)
+          centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
+        else if (fESD)
+          centralityObj = fESD->GetCentrality();
+        
+        if (centralityObj)
+          centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+          //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+        else
+          centrality = -1;
+        
+        if (fAOD)
+        {
+          // remove outliers
+          if (centrality == 0)
+          {
+            if (fAOD->GetVZEROData())
+            {
+              Float_t multV0 = 0;
+              for (Int_t i=0; i<64; i++)
+                multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
+              if (multV0 < 19500)
+              {
+                centrality = -1;
+                AliInfo("Rejecting event due to too small V0 multiplicity");
+              }
+            }
+          }
+        }
       }
     }
-    
     AliInfo(Form("Centrality is %f", centrality));
   }
   
