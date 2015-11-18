@@ -29,24 +29,25 @@ public:
   MakeAODTrain(const  TString& name) 
     : TrainSetup(name)
   {
-    fOptions.Add("run",   "NUMBER",  "Run number for corrs", 0);
-    fOptions.Add("sys",   "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", 0);
-    fOptions.Add("snn",   "ENERGY",  "Center of mass energy in GeV", 0);
-    fOptions.Add("field", "STRENGTH","L3 field strength in kG", 0);
+    fOptions.Add("run",  "NUMBER",  "Run number for corrs", 0);
+    fOptions.Add("sys",  "SYSTEM",  "1:pp, 2:PbPb, 3:pPb", 0);
+    fOptions.Add("snn",  "ENERGY",  "Center of mass energy in GeV", 0);
+    fOptions.Add("field","STRENGTH","L3 field strength in kG", 0);
+    fOptions.Add("corr", "DIR",     "Corrections dir", "");
+    fOptions.Add("dead", "FILE",    "Additional dead-map script", "");
+    fOptions.Add("copy", "LIST",    "',' separated list to copy","cent");
+    fOptions.Add("max-strips", "NUMBER", 
+                 "Maximum consequtive strips (MC)", 2);
     fOptions.Add("forward-config", "FILE", "Forward configuration", 
 		 "ForwardAODConfig.C");
     fOptions.Add("central-config", "FILE", "Central configuration", 
 		 "CentralAODConfig.C");
     fOptions.Add("no-central","Do not at SPD cluster task",false);
-    fOptions.Add("cent",  "Use centrality");
-    fOptions.Add("tpc-ep", "Use TPC event plane");
+    fOptions.Add("cent",      "Use centrality");
+    fOptions.Add("tpc-ep",    "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
-    fOptions.Add("corr", "DIR", "Corrections dir", "");
-    fOptions.Add("secmap", "Use secondary maps to correct", false);
+    fOptions.Add("secmap",    "Use secondary maps to correct", false);
     fOptions.Add("mc-tracks", "Enable MC track filter", false);
-    fOptions.Add("max-strips", "NUMBER", 
-                 "Maximum consequtive strips (MC)", 2);
-    fOptions.Add("copy","LIST","',' separated list of things to copy","cent");
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -85,15 +86,19 @@ protected:
     UShort_t fld  = fOptions.AsInt("field", 0);
     UShort_t mSt  = fOptions.AsInt("max-strips", 2);
     Bool_t   sec  = fOptions.Has("secmap");
-    TString  cor  = "";
-    if (fOptions.Has("corr")) cor = fOptions.Get("corr"); 
+    TString  corr = "";
+    TString  dead = "";
+    if (fOptions.Has("corr")) corr = fOptions.Get("corr"); 
+    if (fOptions.Has("dead")) dead = fOptions.Get("dead"); 
     
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
-    AliAnalysisTask* fwd = CoupleCar("AddTaskForwardMult.C",
-				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
-					mc, run, sys, sNN, fld, 
-					fwdConfig.Data(), cor.Data()));
+    AliAnalysisTask* fwd =
+      CoupleCar("AddTaskForwardMult.C",
+		Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\",\"%s\"", 
+		     mc, run, sys, sNN, fld, 
+		     fwdConfig.Data(), corr.Data(),
+		     dead.Data()));
     if (!fwd)
       Fatal("CoupleCars", "Failed to add forward task");
 
@@ -107,6 +112,10 @@ protected:
 			      fwd, mSt));
     }
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
+    if (!corr.IsNull()) 
+      fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
+    if (!dead.IsNull())
+      fRailway->LoadAux(Form("%s",dead.Data()), true);
 
     // --- Add the task ----------------------------------------------
     Bool_t noCentral = fOptions.Has("no-central");
@@ -117,21 +126,17 @@ protected:
       cen = CoupleCar("AddTaskCentralMult.C",
 		      Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
 			   mc, run, sys, sNN, fld, 
-			   cenConfig.Data(), cor.Data()));
+			   cenConfig.Data(), corr.Data()));
+      if (cen) {
+	fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
+	if (!corr.IsNull())
+	  fRailway->LoadAux(Form("%s/spd_corrections.root",corr.Data()), true);
+      }	
     }
-    if (cen)
-      fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
     // --- Add MC particle task --------------------------------------
     if (mc && fOptions.Has("mc-tracks")) 
       CoupleCar("AddTaskMCParticleFilter.C","");
-
-    if (!cor.IsNull()) {
-      if (fwd) 
-	fRailway->LoadAux(Form("%s/fmd_corrections.root",cor.Data()), true);
-      if (cen) 
-	fRailway->LoadAux(Form("%s/spd_corrections.root",cor.Data()), true);
-    }
   }
   //__________________________________________________________________
   /** 

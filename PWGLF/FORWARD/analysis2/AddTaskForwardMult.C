@@ -44,7 +44,8 @@ AddTaskForwardMult(Bool_t   mc,
 		   UShort_t sNN=0,
 		   Short_t  field=0,
 		   const char* config="ForwardAODConfig.C",
-		   const char* corrs=0)
+		   const char* corrs=0,
+		   cosnt char* dead=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -62,6 +63,9 @@ AddTaskForwardMult(Bool_t   mc,
   else    task = new AliForwardMultiplicityTask("Forward");
   task->Configure(config);
 
+  // --- Possible set extra dead channels ----------------------------
+  if (dead && dead[0] != '\0') task->GetESDFixer().AddDead(dead);
+  
   // --- Set alternative corrections path ----------------------------
   AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
   if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs);
