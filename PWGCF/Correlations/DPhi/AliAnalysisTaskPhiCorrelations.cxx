@@ -1785,10 +1785,13 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	AliFatal("Cannot access jets without AOD");
 
       // retrieve jet array
-      TClonesArray *jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
-      if (!jetArray) {
-	fAOD->Print();
-	AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+      TClonesArray *jetArray = 0x0;
+      if (fJetBranchName.Length() > 0) {
+	jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
+	if (!jetArray) {
+	  fAOD->Print();
+	  AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+	}
       }
 
       const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
