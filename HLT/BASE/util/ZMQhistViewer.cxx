@@ -59,8 +59,8 @@ const char* fUSAGE =
     "ZMQhstViewer: Draw() all ROOT drawables in a message\n"
     "options: \n"
     " -in : data in\n"
-    " -sleep : how long to sleep in between requests for data (if applicable)\n"
-    " -timeout : how long to wait for the server to reply\n"
+    " -sleep : how long to sleep in between requests for data in s (if applicable)\n"
+    " -timeout : how long to wait for the server to reply (s)\n"
     " -Verbose : be verbose\n"
     " -select : only show selected histograms (by regexp)"
     " -drawoptions : what draw option to use"
@@ -102,11 +102,16 @@ int main(int argc, char** argv)
     //send a request if we are using REQ
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
-      if (fVerbose) Printf("sending request");
-      zmq_send(fZMQin, "*", 1, ZMQ_SNDMORE);
       TString request;
-      if (fSelectionRegexp) request = fSelectionRegexp->GetPattern();
-      zmq_send(fZMQin, request.Data(), 4, 0);
+      if (fSelectionRegexp) request = "select="+fSelectionRegexp->GetPattern();
+      TString requestTopic;
+      if (fSelectionRegexp) requestTopic = "CONFIG";
+
+      if (fVerbose) Printf("sending request %s %s",requestTopic.Data(), request.Data());
+      zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
+      zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
+      zmq_send(fZMQin, "", 0, ZMQ_SNDMORE);
+      zmq_send(fZMQin, "", 0, 0);
     }
     
     //wait for the data
@@ -118,7 +123,7 @@ int main(int argc, char** argv)
     if (!sockets[0].revents & ZMQ_POLLIN)
     {
       //server died
-      Printf("connection timed out");
+      Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
       fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
       if (fZMQsocketModeIN < 0) return 1;
       continue;
@@ -156,6 +161,7 @@ int UpdatePad(TObject* object)
   TObject* drawable = fDrawables.FindObject(name);
   int padIndex = fDrawables.IndexOf(drawable);
 
+  if (fVerbose) Printf("in: %s", name);
   Bool_t selected = kTRUE;
   if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
   if (!selected) return 0;

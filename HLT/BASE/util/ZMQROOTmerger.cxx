@@ -57,6 +57,8 @@ Int_t   fZMQtimeout = 0;
 
 Bool_t  fResetOnSend = kFALSE;
 
+TPRegexp* fSendSelection = NULL;
+
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
 TMap fMergeListMap;          //map with the lists of objects to be merged in
@@ -82,7 +84,10 @@ const char* fUSAGE =
     " -pushback-period : push the merged data once every n ms\n"
     " -ResetOnSend : always reset after send\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
-    " -reset : reset NOW\n";
+    " -reset : reset NOW\n"
+    " -select : set the selection regex for sending out objects,\n" 
+    "           valid for one reply if used in a request,\n"
+    ;
 
 void* work(void* /*param*/)
 {
@@ -188,23 +193,25 @@ Int_t Run()
 //_____________________________________________________________________
 Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
+  string tmp;
+  tmp.assign((char*)zmq_msg_data(topicMsg),zmq_msg_size(topicMsg));
   if (strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6)==0)
   {
     //reconfigure (first send a reply to not cause problems on the other end)
     std::string requestBody;
     requestBody.assign(static_cast<char*>(zmq_msg_data(dataMsg)), zmq_msg_size(dataMsg));
 
-    std::string reply = "Reconfiguring...";
-    zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
-    zmq_send(socket, reply.c_str(), reply.size(), 0);
+    //std::string reply = "Reconfiguring...";
+    //zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
+    //zmq_send(socket, reply.c_str(), reply.size(), 0);
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
   else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
   {
     //do nothing, maybe log, send back an empty info reply
-    zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
-    zmq_send(socket, 0, 0, 0);
+    //zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
+    //zmq_send(socket, 0, 0, 0);
     return 1;
   }
   else
@@ -228,7 +235,12 @@ Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 //_____________________________________________________________________
 Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  return DoSend(socket);
+  int rc = DoSend(socket);
+
+  //reset the "one shot" options to default values
+  if (fVerbose) Printf("unsetting fSendSelection=%s",fSendSelection->GetPattern().Data());
+  delete fSendSelection; fSendSelection=NULL;
+  return rc;
 }
 
 //_____________________________________________________________________
@@ -296,36 +308,47 @@ Int_t DoSend(void* socket)
 {
   //send back merged data, one object per frame
 
+  aliZMQmsg message;
   Int_t rc = 0;
-  TIter mapIter(&fMergeObjectMap);
   TObject* object = NULL;
-  Int_t objectNumber=0;
-  while ((object = mapIter.Next()))
+  TObject* key = NULL;
+  
+  TIter mapIter(&fMergeObjectMap);
+  while ((key = mapIter.Next()))
   {
     //the topic
     AliHLTDataTopic topic = kAliHLTDataTypeTObject;
     //the data
-    
-    Int_t flags = ( objectNumber < fMergeObjectMap.GetEntries()-1 ) ? ZMQ_SNDMORE : 0;    
-    rc = alizmq_msg_send(topic, fMergeObjectMap.GetValue(object), socket, flags, 0);
-    if (fVerbose) Printf("sent object %s size %i bytes",fMergeObjectMap.GetValue(object)->GetName(),rc);
-    if (rc<0)
-    {
-      if (fVerbose) Printf("could not send object");
-      break;
-    }
-    objectNumber++;
+    object = fMergeObjectMap.GetValue(key);
 
-    if (fResetOnSend)
+    const char* objectName = object->GetName();
+    if (fSendSelection && !fSendSelection->Match(objectName)) 
     {
-      ResetOutputData();
-      if (fVerbose) Printf("data reset on send");
+      if (fVerbose) Printf("     object %s did NOT make the selection %s", 
+                           objectName, fSendSelection->GetPattern().Data());
+      continue;
     }
+
+    rc = alizmq_msg_add(&message, &topic, object);
   }
+
+  //send
+  int sentBytes = alizmq_msg_send(&message, socket, 0);
+  if (fVerbose) Printf("merger sent %i bytes", sentBytes);
+  if (sentBytes<0)
+  {
+    alizmq_msg_close(&message);
+  }
+
   //always at least send an empty reply if we are replying
-  if (objectNumber==0 && alizmq_socket_type(socket)==ZMQ_REP)
+  if (sentBytes==0 && alizmq_socket_type(socket)==ZMQ_REP)
     alizmq_msg_send("INFO","NODATA",socket,0);
 
+  if (fResetOnSend)
+  {
+    ResetOutputData();
+    if (fVerbose) Printf("data reset on send");
+  }
   fLastPushBackTime.Set();
 
   return 0;
@@ -434,6 +457,12 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("ZMQtimeout"))
     {
       fZMQtimeout=value.Atoi();
+    }
+    else if (option.EqualTo("select"))
+    {
+      delete fSendSelection;
+      fSendSelection = new TPRegexp(value);
+      if (fVerbose) Printf("setting new regex %s",fSendSelection->GetPattern().Data());
     }
     else
     {
