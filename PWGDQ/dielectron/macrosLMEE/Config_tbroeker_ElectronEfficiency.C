@@ -1,4 +1,4 @@
-TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20");
+TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20;test");
 
 
 TObjArray*  arrNames=names.Tokenize(";");
@@ -141,11 +141,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   noconv->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
   noconv->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
   noconv->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
-
+  // selection or rejection of V0 tracks
+  if(cutInstance < 20)  
   anaFilter->AddCuts( noconv );
   
-  // selection or rejection of V0 tracks
-  noconv->SetExcludeTracks(kTRUE);
+  
   std::cout << "...cuts added!" <<std::endl; 
   
 //  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
@@ -547,6 +547,9 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  if(cutInstance == 20){
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
   }
   pidCuts = pid;   
   return pidCuts;

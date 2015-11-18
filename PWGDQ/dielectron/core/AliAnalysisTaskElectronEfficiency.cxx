@@ -841,8 +841,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
           AliESDtrack *track = fESD->GetTrack(iTracks);
           if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }  
-          if(TMath::Abs(track->GetLabel()) == lab1) track1 = track; 
-          if(TMath::Abs(track->GetLabel()) == lab2) track2 = track; 
+          if(TMath::Abs(track->GetLabel()) == lab1){ track1 = track; lab1 = track->GetLabel(); }
+          if(TMath::Abs(track->GetLabel()) == lab2){ track2 = track; lab2 = track->GetLabel(); } 
         }
         if(!(track1 && track2)) continue;
         for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
