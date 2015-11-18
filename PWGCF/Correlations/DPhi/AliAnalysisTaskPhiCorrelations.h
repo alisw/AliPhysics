@@ -137,6 +137,7 @@ public:
   void   SetFillYieldRapidity(Bool_t flag) { fFillYieldRapidity = flag; }
   void   SetFillCorrelationsRapidity(Bool_t flag) { fFillCorrelationsRapidity = flag; }
   void   SetUseDoublePrecision(Bool_t flag) { fUseDoublePrecision = flag; }
+  void   SetUseNewCentralityFramework(Bool_t flag) { fUseNewCentralityFramework = flag; }
 
   AliHelperPID* GetHelperPID() { return fHelperPID; }
   void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -276,6 +277,7 @@ private:
   Bool_t fFillYieldRapidity;     // fill a control histogram centrality vs pT vs y
   Bool_t fFillCorrelationsRapidity; // fills correlation histograms with rapidity instead of pseudorapidity (default: kFALSE)
   Bool_t fUseDoublePrecision;    // use double precision for AliTHn
+  Bool_t fUseNewCentralityFramework; // use the AliMultSelection framework
 
   Bool_t fFillpT;                // fill sum pT instead of number density
 
@@ -286,7 +288,7 @@ private:
   Float_t fJetPtMin;             // minimum pt to accept jet
   Int_t   fJetConstMin;          // minimum number of constituents
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 56); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 57); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle
