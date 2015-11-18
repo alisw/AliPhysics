@@ -75,11 +75,11 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   
   TH3F             *fh3PtJetDEtaDPhiConst;        //!pt jet vs delta eta vs delta phi of constituents
   TH3F             *fh3PtJetAreaDRConst;          //!pt jet vs Area vs delta R of constituents
-
+  TH1              *fNAccJets;                    //! number of jets per event
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTagger, 8)
+  ClassDef(AliAnalysisTaskEmcalJetTagger, 9)
 };
 #endif
 

@@ -47,13 +47,21 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetCentralityRange(CentMin, CentMax);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
-  task->SetCheckV0daughterElectron(checkV0dauEle);
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
   //MC related
   task->SetCutInjectedSignal(CutInjectedSignals);
   //output related
-  task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
+  if(doPairing){
+    Double_t MeeBins[nBinsMee+1];
+    for(Int_t i=0;i<=nBinsMee;i++) { MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee; }
+    Double_t PteeBins[nBinsPtee+1];
+    for(Int_t i=0;i<=nBinsPtee;i++) { PteeBins[i] = PteeMin + i*(PteeMax-PteeMin)/nBinsPtee; }
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins,nBinsMee,MeeBins,nBinsPtee,PteeBins);
+    task->SetDoPairing(kTRUE);
+  }
+  else
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
   task->SetRunBins(sRuns);
   if (deactivateTree) task->SetWriteTree(kFALSE);
   else                task->SetWriteTree(writeTree);

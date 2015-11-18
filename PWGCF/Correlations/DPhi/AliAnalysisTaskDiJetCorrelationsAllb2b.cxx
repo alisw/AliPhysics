@@ -516,7 +516,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
   
     fHistQA[0]->Fill(zVertex);
-    cout<<"zvertex:"<<zVertex<<endl;
+   // cout<<"zvertex:"<<zVertex<<endl;
     
     fHistNEvents->Fill(4);
     

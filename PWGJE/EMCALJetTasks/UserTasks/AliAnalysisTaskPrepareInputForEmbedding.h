@@ -40,17 +40,18 @@ private:
    Double_t     fMinFractionShared;           ///< minimum pT fraction shared between reco and part level jets
    Bool_t       fLeadingJetOnly;              ///< fill TTrees with leading jet only
    TTree        *fTreeJets;                   //!<! tree with the TLorentzVector of the jet detector and particle level
-   TLorentzVector *fJetDet;                   ///< reconstucted jets
-   TLorentzVector *fJetPart;                  ///< particle level jet
-   TLorentzVector *fJetDetL;                  ///< reconstucted leading jet
-   TLorentzVector *fJetPartL;                 ///< particle level leading jet
+   TLorentzVector fJetDet;                    ///< reconstucted jets
+   TLorentzVector fJetPart;                   ///< particle level jet
+   TLorentzVector fJetDetL;                   ///< reconstucted leading jet
+   TLorentzVector fJetPartL;                  ///< particle level leading jet
    TH1F         *fNumberOfJets;               //!<! histograms with number of jets selected
    TH2F         *fhFractionSharedpT;         //!<! histogram pT jet (area based), fraction shared pT with Pythia jet
+   TH1F         *fNAccJets;                  //!<! number of jets per event
    
    AliAnalysisTaskPrepareInputForEmbedding(const AliAnalysisTaskPrepareInputForEmbedding&);
    AliAnalysisTaskPrepareInputForEmbedding &operator=(const AliAnalysisTaskPrepareInputForEmbedding&);
    
-   ClassDef(AliAnalysisTaskPrepareInputForEmbedding, 2)
+   ClassDef(AliAnalysisTaskPrepareInputForEmbedding, 3)
 };
 #endif
 

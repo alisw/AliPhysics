@@ -75,7 +75,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fIsPbPb(0),
   fCentClass(10),
   fInit(0),
-  fNVariables(26),
+  fNVariables(27),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -128,6 +128,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
   fPtNClustersNClustersFitMap(0x0),
+  fPtTPCSignalN(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -153,7 +154,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   //
   // Constructor
   //
-  SetNVariables(26);
+  SetNVariables(27);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -182,7 +183,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fIsPbPb(0),
   fCentClass(10),
   fInit(0),
-  fNVariables(26),
+  fNVariables(27),
   fVariables(0x0),
   fITSClusterMap(0),
   fAvgTrials(1),
@@ -235,6 +236,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
   fPtNClustersNClustersFitMap(0x0),
+  fPtTPCSignalN(0x0),
   fPtRelUncertainty1PtNCrossedRows(0x0),
   fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
@@ -262,7 +264,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   //
   AliDebug(2,Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
-  SetNVariables(26);
+  SetNVariables(27);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -483,6 +485,13 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   Double_t *binsSigma1Pt2=new Double_t[fgkNSigma1Pt2Bins+1];
   for(Int_t i=0; i<=fgkNSigma1Pt2Bins; i++) binsSigma1Pt2[i]=(Double_t)fgkSigma1Pt2Min + (fgkSigma1Pt2Max-fgkSigma1Pt2Min)/fgkNSigma1Pt2Bins*(Double_t)i ;
 
+  
+  Int_t fgkTPCsignalNBins=80;
+  Float_t fgkTPCsignalNMin = 0.5;
+  Float_t fgkTPCsignalNMax = 160.5;
+  Double_t *binsTPCsignalN=new Double_t[fgkTPCsignalNBins+1];
+  for(Int_t i=0; i<=fgkTPCsignalNBins; i++) binsTPCsignalN[i]=(Double_t)fgkTPCsignalNMin + (fgkTPCsignalNMax-fgkTPCsignalNMin)/fgkTPCsignalNBins*(Double_t)i ;
+  
 
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
   fHistList->Add(fNEventAll);
@@ -672,7 +681,10 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
 
   fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi","fPtChi2ITSPhi; #it{p}_{T, track}; #chi^{2}_{ITS};#varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtChi2ITSPhi);
-
+  
+  fPtTPCSignalN = new TH2F("fPtTPCSignalN", "fPtTPCSignalN ; #it{p}_{T, track}; TPCsignalN",fgkNPtBins, binsPt, fgkTPCsignalNBins, binsTPCsignalN);
+  fHistList->Add(fPtTPCSignalN);
+  
   fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2 ",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
   fHistList->Add(fPtSigmaY2);
 
@@ -708,6 +720,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
 
   fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt","fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})",fgkNPtBins,binsPt);
   fHistList->Add(fProfPtPtSigma1Pt);
+  
+
 
   TH1::AddDirectory(oldStatus); 
 
@@ -733,6 +747,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   if(binsSigmaSnp2)         delete [] binsSigmaSnp2;
   if(binsSigmaTgl2)         delete [] binsSigmaTgl2;
   if(binsSigma1Pt2)         delete [] binsSigma1Pt2;
+  if(binsTPCsignalN)        delete [] binsTPCsignalN;
 }
 
 //________________________________________________________________________
@@ -1035,6 +1050,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     23: #crossed rows from fit map
     24: (#crossed rows)/(#findable clusters) from fit map
     25: chi2ITS
+    26: TPCsignalN
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1236,6 +1252,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     fVariables->SetAt(crossedRowsTPCNClsFFit,24);
 
     fVariables->SetAt(track->GetITSchi2(),25);
+    
+    fVariables->SetAt(track->GetTPCsignalN(), 26);
 
     TBits fitmap = track->GetTPCFitMap();
     fPtNClustersNClustersFitMap->Fill(track->Pt(),track->GetTPCNcls(),(float)fitmap.CountBits());
@@ -1342,6 +1360,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
     fVariables->SetAt(crossedRowsTPCNClsFFit,24); //(#crossed rows)/(#findable clusters) from fit map
 
     fVariables->SetAt(0.,25);
+    
+    fVariables->SetAt(aodtrack->GetTPCsignalN(), 26);
+    
 
     fPtAll->Fill(fVariables->At(0));
 
@@ -1431,6 +1452,8 @@ void AliPWG4HighPtTrackQA::FillHistograms()
 
   if(fVariables->At(6)>0.)
     fPtChi2ITSPhi->Fill(fVariables->At(0),fVariables->At(25)/fVariables->At(6),fVariables->At(1));
+  
+  fPtTPCSignalN->Fill(fVariables->At(0),fVariables->At(26));
 
 }
 

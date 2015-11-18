@@ -42,6 +42,7 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
 
   TH1                        *fHistClustDx; //!
   TH1                        *fHistClustDz; //!
+  TH1                        *fNAccJets;    //! number of jets per event
 
   AliJetContainer            *fJetsCont;                   //!Jets
   AliParticleContainer       *fTracksCont;                 //!Tracks
@@ -51,6 +52,6 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&);            // not implemented
   AliAnalysisTaskEmcalJetSample &operator=(const AliAnalysisTaskEmcalJetSample&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSample, 5) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetSample, 6) // jet sample analysis task
 };
 #endif

@@ -6,12 +6,24 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliReducedEvent+;
-#pragma link C++ class AliReducedEventFriend+;
-#pragma link C++ class AliReducedTrack+;
-#pragma link C++ class AliReducedPair+;
-#pragma link C++ class AliReducedFMD+;
-#pragma link C++ class AliReducedCaloCluster+;
-#pragma link C++ class AliAnalysisTaskReducedTree+;
+#pragma link C++ class AliAnalysisTaskReducedEventProcessor+;
+#pragma link C++ class AliAnalysisTaskReducedTreeMaker+;
+#pragma link C++ class AliHistogramManager+;
+#pragma link C++ class AliMixingHandler+;
+#pragma link C++ class AliReducedAnalysisTaskSE+;
+#pragma link C++ class AliReducedAnalysisTest+;
+#pragma link C++ class AliReducedBaseEvent+;
+#pragma link C++ class AliReducedBaseTrackCut+;
+#pragma link C++ class AliReducedBaseTrack+;
+#pragma link C++ class AliReducedCaloClusterInfo+;
+#pragma link C++ class AliReducedEventCut+;
+#pragma link C++ class AliReducedEventInfo+;
+#pragma link C++ class AliReducedEventPlaneInfo+;
+#pragma link C++ class AliReducedFMDInfo+;
+#pragma link C++ class AliReducedInfoCut+;
+#pragma link C++ class AliReducedPairInfo+;
+#pragma link C++ class AliReducedTrackInfo+;
+#pragma link C++ class AliReducedVarManager+;
+#pragma link C++ class AliResonanceFits+;
 
 #endif

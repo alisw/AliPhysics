@@ -92,6 +92,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   hPositronNSigmaPiondEdxP(NULL),
   hPositronNSigmaITSP(NULL),
   hPositronNSigmaTOFP(NULL),
+  hInvMassPair(NULL),
   //  hElecAsymP(NULL),
   //  fTrueList(NULL),
   //  hTrueResolutionR(NULL),
@@ -182,6 +183,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   hPositronNSigmaPiondEdxP(NULL),
   hPositronNSigmaITSP(NULL),
   hPositronNSigmaTOFP(NULL),
+  hInvMassPair(NULL),
   //  hGammaXY(NULL),
   //  hGammaZR(NULL),
   //  hElecAsymP(NULL),
@@ -283,6 +285,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     fESDList->Add(hGammaCosinePointingAngle);
     hGammaInvMass = new TH1F( "Gamma_InvMass","",200, 0, 0.2);
     fESDList->Add(hGammaInvMass);
+    
     hElecPt = new TH2F("Electron_Positron_Pt","Electron_Positron_Pt",250,0,25,250,0,25);
     fESDList->Add(hElecPt);
     hElecEta = new TH2F("Electron_Positron_Eta","Electron_Positron_Eta",600,-1.5,1.5,600,-1.5,1.5);
@@ -347,6 +350,11 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     hPositronNSigmaITSP =  new TH2F("Positron_NSigmaITS_P","Positron_NSigmaITS_P",100, 0.05, 20, 200, -10, 10);
     SetLogBinningXTH2(hPositronNSigmaITSP);
     fESDList->Add(hPositronNSigmaITSP);
+    
+    hInvMassPair	= new TH2F("Gamma_InvMassPair_Pt","Gamma invariant mass vs Pt",200,0,0.2,250,0,25);
+    hInvMassPair->SetXTitle("mass (GeV/c)");
+    hInvMassPair->SetYTitle("p_{T} (GeV/c)");		
+    fESDList->Add(hInvMassPair);
     
   //     hGammaXY = new TH2F("Gamma_ConversionPoint_XY","Gamma_ConversionPoint_XY",960,-120,120,960,-120,120);
   //     fESDList->Add(hGammaXY);
@@ -545,7 +553,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   fGammaPhotonProp(1)  = gamma->GetArmenterosAlpha();
   fGammaPhotonProp(2)  = gamma->GetPsiPair();
   fGammaPhotonProp(3) = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
-  fGammaPhotonProp(4) = gamma->GetMass();
+  fGammaPhotonProp(4) = gamma->GetInvMassPair();
   
   fGammaConvCoord(0) = gamma->GetConversionX();
   fGammaConvCoord(1) = gamma->GetConversionY();
@@ -660,6 +668,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
   hGammaArmenteros->Fill(gamma->GetArmenterosAlpha(),gamma->GetArmenterosQt());
   hGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(gamma,fInputEvent));
   hGammaInvMass->Fill(gamma->GetMass());
+  hInvMassPair->Fill(gamma->GetInvMassPair(),gamma->GetPhotonPt());
   //  hGammaXY->Fill(gamma->GetConversionX(),gamma->GetConversionY());
   //  hGammaZR->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
 

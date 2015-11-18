@@ -74,6 +74,7 @@ set(SRCS
   AliFemtoAvgSepCorrFctn.cxx
   AliFemtoCutMonitorParticlePtPDGV0.cxx
   AliFemtoAnalysisAzimuthalPbPb.cxx
+  AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoPairCutRadialDistanceLM.cxx
   AliFemtoPicoEventRP.cxx
   AliFemtoPairCutRadialDistanceKK.cxx

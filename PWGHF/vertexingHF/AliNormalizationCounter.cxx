@@ -35,6 +35,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
+#include <TObjArray.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <AliPhysicsSelection.h>
@@ -51,6 +52,8 @@ fCounters(),
 fESD(kFALSE),
 fMultiplicity(kFALSE),
 fMultiplicityEtaRange(1.0),
+fSpherocity(kFALSE),
+fSpherocitySteps(100.),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -66,6 +69,8 @@ fCounters(name),
 fESD(kFALSE),
 fMultiplicity(kFALSE),
 fMultiplicityEtaRange(1.0),
+fSpherocity(kFALSE),
+fSpherocitySteps(100.),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -102,6 +107,7 @@ void AliNormalizationCounter::Init()
   //variables initialization
   fCounters.AddRubric("Event","triggered/V0AND/PileUp/PbPbC0SMH-B-NOPF-ALLNOTRD/Candles0.3/PrimaryV/countForNorm/noPrimaryV/zvtxGT10/!V0A&Candle03/!V0A&PrimaryV/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
   if(fMultiplicity)  fCounters.AddRubric("Multiplicity", 5000);
+  if(fSpherocity)  fCounters.AddRubric("Spherocity", (Int_t)fSpherocitySteps+1);
   fCounters.AddRubric("Run", 1000000);
   fCounters.Init();
   fHistTrackFilterEvMult=new TH2F("FiltCandidvsTracksinEv","FiltCandidvsTracksinEv",10000,-0.5,9999.5,200,-0.5,199.5);
@@ -154,7 +160,7 @@ Stores the variables used for normalization as function of run number
 returns kTRUE if the event is to be counted for normalization
 (pass event selection cuts OR has no primary vertex)
  */
-void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc, Int_t multiplicity){
+void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc, Int_t multiplicity, Double_t spherocity){
   //
 
   Bool_t isEventSelected = rdCut->IsEventSelected(event);
@@ -171,7 +177,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   Int_t runNumber = event->GetRunNumber();
  
   // Evaluate the multiplicity
-  if(multiplicity==-9999) Multiplicity(event);
+  if(fMultiplicity && multiplicity==-9999) Multiplicity(event);
 
   //Find CINT1B
   AliESDEvent *eventESD = (AliESDEvent*)event;
@@ -180,10 +186,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   //event must be either physics or MC
   if(!(event->GetEventType() == 7||event->GetEventType() == 0))return;
   
-  if(fMultiplicity) 
-    fCounters.Count(Form("Event:triggered/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-  else 
-    fCounters.Count(Form("Event:triggered/Run:%d",runNumber));
+  FillCounters("triggered",runNumber,multiplicity,spherocity);
 
   //Find V0AND
   AliTriggerAnalysis trAn; /// Trigger Analysis
@@ -194,12 +197,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
     v0B = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0C);
     v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
   }
-  if(v0A&&v0B){
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:V0AND/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else
-      fCounters.Count(Form("Event:V0AND/Run:%d",runNumber));
-  }
+  if(v0A&&v0B) FillCounters("V0AND",runNumber,multiplicity,spherocity);
   
   //FindPrimary vertex  
   // AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
@@ -212,50 +210,30 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   AliAODEvent *eventAOD = (AliAODEvent*)event;
   TString trigclass=eventAOD->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")){
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:PbPbC0SMH-B-NOPF-ALLNOTRD/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else 
-      fCounters.Count(Form("Event:PbPbC0SMH-B-NOPF-ALLNOTRD/Run:%d",runNumber));
+    FillCounters("PbPbC0SMH-B-NOPF-ALLNOTRD",runNumber,multiplicity,spherocity);
   }
 
   //FindPrimary vertex  
   if(isEventSelected){
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:PrimaryV/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else
-      fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
+    FillCounters("PrimaryV",runNumber,multiplicity,spherocity);
     flagPV=kTRUE;
   }else{
     if(rdCut->GetWhyRejection()==0){
-      if(fMultiplicity) 
-	fCounters.Count(Form("Event:noPrimaryV/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-      else
-	fCounters.Count(Form("Event:noPrimaryV/Run:%d",runNumber));
+      FillCounters("noPrimaryV",runNumber,multiplicity,spherocity);
     }
     //find good vtx outside range
     if(rdCut->GetWhyRejection()==6){
-      if(fMultiplicity) {
-	fCounters.Count(Form("Event:zvtxGT10/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-	fCounters.Count(Form("Event:PrimaryV/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-      } else {
-	fCounters.Count(Form("Event:zvtxGT10/Run:%d",runNumber));
-	fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
-      }
+      FillCounters("zvtxGT10",runNumber,multiplicity,spherocity);
+      FillCounters("PrimaryV",runNumber,multiplicity,spherocity);
       flagPV=kTRUE;
     }
     if(rdCut->GetWhyRejection()==1){
-      if(fMultiplicity) 
-	fCounters.Count(Form("Event:PileUp/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-      else
-	fCounters.Count(Form("Event:PileUp/Run:%d",runNumber));
+      FillCounters("PileUp",runNumber,multiplicity,spherocity);
     }
   }
   //to be counted for normalization
   if(rdCut->CountEventForNormalization()){
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:countForNorm/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else 
-      fCounters.Count(Form("Event:countForNorm/Run:%d",runNumber));
+    FillCounters("countForNorm",runNumber,multiplicity,spherocity);
   }
 
 
@@ -264,26 +242,17 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   for(Int_t i=0;i<trkEntries&&!flag03;i++){
     AliAODTrack *track=(AliAODTrack*)event->GetTrack(i);
     if((track->Pt()>0.3)&&(!flag03)){
-      if(fMultiplicity) 
-	fCounters.Count(Form("Event:Candles0.3/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-      else
-	fCounters.Count(Form("Event:Candles0.3/Run:%d",runNumber));
+      FillCounters("Candles0.3",runNumber,multiplicity,spherocity);
       flag03=kTRUE;
       break;
     }
   }
   
   if(!(v0A&&v0B)&&(flag03)){ 
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:!V0A&Candle03/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else 
-      fCounters.Count(Form("Event:!V0A&Candle03/Run:%d",runNumber));
+    FillCounters("!V0A&Candle03",runNumber,multiplicity,spherocity);
   }
   if(!(v0A&&v0B)&&flagPV){
-    if(fMultiplicity) 
-      fCounters.Count(Form("Event:!V0A&PrimaryV/Run:%d/Multiplicity:%d",runNumber,multiplicity));
-    else
-      fCounters.Count(Form("Event:!V0A&PrimaryV/Run:%d",runNumber));
+    FillCounters("!V0A&PrimaryV",runNumber,multiplicity,spherocity);
   }
   
   return;
@@ -449,7 +418,82 @@ Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t minmultiplicity, Int_t
   Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
   return sumEvtNorm - noVtxzGT10;
 }
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity, Double_t minspherocity, Double_t maxspherocity){
 
+  if(!fMultiplicity || !fSpherocity) {
+    AliInfo("You must activate both multiplicity and spherocity in the counters to use this method!");
+    return 0.;
+  }
+
+  TString listofruns = fCounters.GetKeyWords("Multiplicity");
+  TString listofruns2 = fCounters.GetKeyWords("Spherocity");
+  TObjArray* arr=listofruns2.Tokenize(",");
+  Int_t nSphVals=arr->GetEntries();
+
+  Int_t nmultbins = maxmultiplicity - minmultiplicity;
+  Int_t minSphToInteger=minspherocity*fSpherocitySteps;
+  Int_t maxSphToInteger=maxspherocity*fSpherocitySteps;
+  Int_t nstbins = maxSphToInteger - minSphToInteger;
+  Double_t sumnoPV=0., sumZvtx=0., sumPv=0., sumEvtNorm=0.;
+  for (Int_t ibin=0; ibin<=nmultbins; ibin++) {
+    if(!listofruns.Contains(Form("%d",ibin+minmultiplicity))) continue;
+    for (Int_t ibins=0; ibins<nstbins; ibins++) {
+      Bool_t analyze=kFALSE;
+      for(Int_t j=0; j<nSphVals; j++) if((((TObjString*)arr->At(j))->String()).Atoi()==(ibins+minSphToInteger)) analyze=kTRUE;
+      if(!analyze) continue;
+      if(listofruns2.Contains(",") && !listofruns2.Contains(Form("%d",ibins+minSphToInteger))) continue;
+      TString suffix;suffix.Form("/Multiplicity:%d/Spherocity:%d",ibin+minmultiplicity,ibins+minSphToInteger);
+      TString zvtx;zvtx.Form("zvtxGT10%s",suffix.Data());
+      TString noPV;noPV.Form("noPrimaryV%s",suffix.Data());
+      TString pV;pV.Form("PrimaryV%s",suffix.Data());
+      TString tbc;tbc.Form("countForNorm%s",suffix.Data());
+      sumnoPV += GetSum(noPV.Data());
+      sumZvtx += GetSum(zvtx.Data());
+      sumPv += GetSum(pV.Data());
+      sumEvtNorm += GetSum(tbc.Data());
+    }
+  }
+  delete arr;
+  Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
+  return sumEvtNorm - noVtxzGT10;
+}
+
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetNEventsForNormSpheroOnly(Double_t minspherocity, Double_t maxspherocity){
+
+  if(!fSpherocity) {
+    AliInfo("Sorry, you didn't activate the sphericity in the counter!");
+    return 0.;
+  }
+
+  TString listofruns = fCounters.GetKeyWords("Spherocity");
+  TObjArray* arr=listofruns.Tokenize(",");
+  Int_t nSphVals=arr->GetEntries();
+
+  Int_t minSphToInteger=minspherocity*fSpherocitySteps;
+  Int_t maxSphToInteger=maxspherocity*fSpherocitySteps;
+  Int_t nstbins = maxSphToInteger - minSphToInteger;
+  Double_t sumnoPV=0., sumZvtx=0., sumPv=0., sumEvtNorm=0.;
+  for (Int_t ibin=0; ibin<nstbins; ibin++) {
+    Bool_t analyze=kFALSE;
+    for(Int_t j=0; j<nSphVals; j++) if((((TObjString*)arr->At(j))->String()).Atoi()==(ibin+minSphToInteger)) analyze=kTRUE;
+    if(!analyze) continue;
+   
+    TString suffix;suffix.Form("/Spherocity:%d",ibin+minSphToInteger);
+    TString zvtx;zvtx.Form("zvtxGT10%s",suffix.Data());
+    TString noPV;noPV.Form("noPrimaryV%s",suffix.Data());
+    TString pV;pV.Form("PrimaryV%s",suffix.Data());
+    TString tbc;tbc.Form("countForNorm%s",suffix.Data());
+    sumnoPV += GetSum(noPV.Data());
+    sumZvtx += GetSum(zvtx.Data());
+    sumPv += GetSum(pV.Data());
+    sumEvtNorm += GetSum(tbc.Data());
+  }
+  delete arr;
+  Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
+  return sumEvtNorm - noVtxzGT10;
+}
 //___________________________________________________________________________
 Double_t AliNormalizationCounter::GetSum(TString candle,Int_t minmultiplicity, Int_t maxmultiplicity){
   // counts events of given type in a given multiplicity range
@@ -528,4 +572,20 @@ Int_t AliNormalizationCounter::Multiplicity(AliVEvent* event){
   }
 
   return multiplicity;
+}
+
+//___________________________________________________________________________
+void AliNormalizationCounter::FillCounters(TString name, Int_t runNumber, Int_t multiplicity, Double_t spherocity){
+
+
+  Int_t sphToInteger=spherocity*fSpherocitySteps;
+  if(fMultiplicity  && !fSpherocity) 
+    fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d",name.Data(),runNumber,multiplicity));
+  else if(fMultiplicity  && fSpherocity) 
+    fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d/Spherocity:%d",name.Data(),runNumber,multiplicity,sphToInteger));
+  else if(!fMultiplicity  && fSpherocity) 
+    fCounters.Count(Form("Event:%s/Run:%d/Spherocity:%d",name.Data(),runNumber,sphToInteger));
+  else 
+    fCounters.Count(Form("Event:%s/Run:%d",name.Data(),runNumber));
+  return;
 }
