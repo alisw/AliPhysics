@@ -48,12 +48,12 @@ Int_t Merge(TObject* object, TCollection* list);
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
-TString fZMQconfigIN  = "PUSH";
+TString fZMQconfigIN  = "PULL";
 TString fZMQsubscriptionIN = "";
-TString fZMQconfigOUT  = "PULL";
+TString fZMQconfigOUT  = "PUSH";
 TString fZMQconfigMON  = "REP";
 Int_t   fZMQmaxQueueSize = 10;
-Int_t   fZMQtimeout = 10;
+Int_t   fZMQtimeout = 0;
 
 Bool_t  fResetOnSend = kFALSE;
 
@@ -342,12 +342,12 @@ Int_t InitZMQ()
 {
   //init or reinit stuff
   Int_t rc = 0;
-  printf("in:  ");
-  rc += alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
-  printf("out: ");
-  rc += alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), fZMQtimeout, fZMQmaxQueueSize);
-  printf("mon: ");
-  rc += alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
+  rc = alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
+  printf("in:  (%s) %s\n", alizmq_socket_name(rc), fZMQconfigIN.Data());
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), fZMQtimeout, fZMQmaxQueueSize);
+  printf("out: (%s) %s\n", alizmq_socket_name(rc), fZMQconfigOUT.Data());
+  rc = alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
+  printf("mon: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigMON.Data());
   return 0;
 }
 
