@@ -487,7 +487,6 @@ void AliEMCALTriggerQA::CreateTH2(const char *name, const char *title, int nbins
     return;
   }
   TH2* hist = new TH2D(name, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
-  hist->SetOption("colz");
   fHistos->Add(hist);
 }
 
