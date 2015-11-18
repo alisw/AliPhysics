@@ -42,13 +42,13 @@ AliEmcalTriggerPatchFinderAP<T>::~AliEmcalTriggerPatchFinderAP() {
 }
 
 template<typename T>
-std::vector<AliEmcalTriggerRawPatchAP> AliEmcalTriggerPatchFinderAP<T>::FindPatches(const AliEmcalTriggerDataGridAP<T> &adc) const{
+std::vector<AliEmcalTriggerRawPatchAP> AliEmcalTriggerPatchFinderAP<T>::FindPatches(const AliEmcalTriggerDataGridAP<T> &adc, const AliEmcalTriggerDataGridAP<T> &offlineAdc) const{
   std::vector<AliEmcalTriggerRawPatchAP> result;
   for(typename std::vector<AliEmcalTriggerAlgorithmAP<T> *>::const_iterator algiter = fTriggerAlgorithms.begin();
       algiter != fTriggerAlgorithms.end();
       ++algiter)
   {
-    std::vector<AliEmcalTriggerRawPatchAP> tmp = (*algiter)->FindPatches(adc);
+    std::vector<AliEmcalTriggerRawPatchAP> tmp = (*algiter)->FindPatches(adc, offlineAdc);
     for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchiter = tmp.begin(); patchiter != tmp.end(); ++patchiter){
       result.push_back(*patchiter);
     }

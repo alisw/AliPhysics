@@ -32,6 +32,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
   fRow0(-1),
   fCol0(-1),
+  fPatchSize(0),
+  fDetectorType(kEMCALdet),
   fTriggerBitConfig()
 {
   fEdgeCell[0] = -1;
@@ -55,6 +57,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInf
   fOffSet(p.fOffSet),
   fRow0(p.fRow0),
   fCol0(p.fCol0),
+  fPatchSize(p.fPatchSize),
+  fDetectorType(p.fDetectorType),
   fTriggerBitConfig(p.fTriggerBitConfig)
 {
   // .
@@ -91,6 +95,103 @@ AliEmcalTriggerPatchInfo &AliEmcalTriggerPatchInfo::operator=(const AliEmcalTrig
 
   return *this;
 }
+void AliEmcalTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
+{
+  fCol0 = col0;
+  fRow0 = row0;
+  fPatchSize = size;
+  fADCAmp = adc;
+  fADCOfflineAmp = offlineAdc;
+  fTriggerBits = bitmask;
+  SetEdgeCell(col0*2, row0*2);
+  RecalculateKinematics(patchE, vertex, geom);
+}
+
+AliEmcalTriggerPatchInfo* AliEmcalTriggerPatchInfo::CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
+{
+  AliEmcalTriggerPatchInfo* patch = new AliEmcalTriggerPatchInfo;
+  patch->Initialize(col0, row0, size, adc, offlineAdc, patchE, bitmask, vertex, geom);
+  return patch;
+}
+
+void AliEmcalTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVector3& vertex, const AliEMCALGeometry* geom)
+{
+  if (!geom) {
+    AliError("EMCal geometry pointer not set! Unable to recalculate the trigger patch kinematics!");
+    return;
+  }
+
+  // get the absolute trigger ID
+  Int_t absId=-1;
+  geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0, fRow0, absId);
+  // convert to the 4 absId of the cells composing the trigger channel
+  Int_t cellAbsId[4]={-1,-1,-1,-1};
+  geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+
+  // get low left edge (eta max, phi min)
+  TVector3 edge1;
+  geom->GetGlobal(cellAbsId[0], edge1);
+  Int_t colEdge1 = fCol0, rowEdge1 = fRow0, absIdEdge1 = absId, cellIdEdge1 = cellAbsId[0]; // Used in warning for invalid patch position
+
+  // get up right edge (eta min, phi max)
+  // get the absolute trigger ID
+  Int_t posOffset = fPatchSize - 1;
+
+  geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0+posOffset, fRow0+posOffset, absId);
+  geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+  TVector3 edge2;
+  geom->GetGlobal(cellAbsId[3], edge2);
+  Int_t colEdge2 = fCol0+posOffset, rowEdge2 = fRow0+posOffset, absIdEdge2 = absId, cellIdEdge2 = cellAbsId[3]; // Used in warning for invalid patch position
+
+  // get the geometrical center as an average of two diagonally
+  // adjacent patches in the center
+  // picking two diagonally closest cells from the patches
+  posOffset = fPatchSize / 2 - 1;
+
+  geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0+posOffset, fRow0+posOffset, absId);
+  geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+  TVector3 center1;
+  geom->GetGlobal(cellAbsId[3], center1);
+
+  posOffset = fPatchSize / 2;
+
+  geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0+posOffset, fRow0+posOffset, absId);
+  geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+  TVector3 center2;
+  geom->GetGlobal(cellAbsId[0], center2);
+
+  TVector3 centerGeo(center1);
+  centerGeo += center2;
+  centerGeo *= 0.5;
+
+  // relate all to primary vertex
+  TVector3 edge1tmp = edge1, edge2tmp = edge2; // Used in warning for invalid patch position
+  centerGeo -= vertex;
+  edge1 -= vertex;
+  edge2 -= vertex;
+  // Check for invalid patch positions
+  if(!(edge1[0] || edge1[1] || edge1[2])){
+    AliWarning(Form("Inconsistency in patch position for edge1: [%f|%f|%f]", edge1[0], edge1[1], edge1[2]));
+    AliWarning("Original vectors:");
+    AliWarning(Form("edge1: [%f|%f|%f]", edge1tmp[0], edge1tmp[1], edge1tmp[2]));
+    AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
+    AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge1, rowEdge1, absIdEdge1, cellIdEdge1));
+  }
+  if(!(edge2[0] || edge2[1] || edge2[2])){
+    AliWarning(Form("Inconsistency in patch position for edge2: [%f|%f|%f]", edge2[0], edge2[1], edge2[2]));
+    AliWarning("Original vectors:");
+    AliWarning(Form("edge2: [%f|%f|%f]", edge2tmp[0], edge2tmp[1], edge2tmp[2]));
+    AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
+    AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
+  }
+
+  fCenterMass.SetPxPyPzE(0,0,0,0);
+
+  SetCenterGeo(centerGeo, patchE);
+  SetEdge1(edge1, patchE);
+  SetEdge2(edge2, patchE);
+}
+
 
 /**
  * Return cell indices of the given patch in the cell array

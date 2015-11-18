@@ -49,7 +49,7 @@ public:
    * @param adc Data grid with ADC values
    * @return List of trigger patches found by all trigger algorithms assigned to this trigger patch finder.
    */
-  std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc) const;
+  std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc, const AliEmcalTriggerDataGridAP<T> &offlineAdc) const;
 
 protected:
   std::vector<AliEmcalTriggerAlgorithmAP<T> *>                 fTriggerAlgorithms;      ///< Trigger algoritms to be used
