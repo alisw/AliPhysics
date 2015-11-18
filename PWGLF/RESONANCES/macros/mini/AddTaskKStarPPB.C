@@ -10,8 +10,7 @@ enum pairYCutSet { kPairDefault,
 		   kCentral
                  };
 
-enum eventCutSet { kOld = -1, 
-		   kEvtDefault,
+enum eventCutSet { kEvtDefault = 0,
 		   kNSD,
 		   kNSDpA2013,
 		   kNSDpA2013spectra,
@@ -64,33 +63,28 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask = AliVEvent::kINT7;
+  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection from AliAnalysisUtils
+  Bool_t      useVtxCut2013pAspectra = kFALSE; //set to use 2013 pA vtx selection applied for pi/K/p analysis
   Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
   Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
   Bool_t      useMVPileUpSelection = kFALSE; //
   Int_t       MinPlpContribMV = 5; //default value if used
-  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection from AliAnalysisUtils
-  Bool_t      useVtxCut2013pAspectra = kFALSE; //set to use 2013 pA vtx selection applied for pi/K/p analysis
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   Bool_t      selectDPMJETevtNSDpA = kFALSE; //cut to select in DPMJET true NSD events
-  
-  if (evtCutSetID==eventCutSet::kOld) {
-    triggerMask = AliVEvent::kAnyINT;
-    rmFirstEvtChunk = kFALSE;
-    rejectPileUp = kFALSE;
-    useVtxCut2013pA = kFALSE;
-  }
 
   if (evtCutSetID==eventCutSet::kNSD) {
+    useVtxCut2013pA = kFALSE;
+    useVtxCut2013pAspectra = kFALSE;
     rejectPileUp = kFALSE;
     vtxZcut = 1.0e3; //cm
-    useVtxCut2013pA = kFALSE;
   }
   
   if (evtCutSetID==eventCutSet::kNSDpA2013) {
+    useVtxCut2013pA = kFALSE;
+    useVtxCut2013pAspectra = kFALSE;
     rejectPileUp = kFALSE;
     vtxZcut = 1.0e3; //cm
-    useVtxCut2013pA = kTRUE;
   }
   
   if (evtCutSetID==eventCutSet::kNSDpA2013spectra) {
@@ -244,9 +238,6 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    // -- EVENT CUTS (same for all configs) ---------------------------------------------------------
    //  
    // cut on primary vertex:
-   // - 2nd argument --> |Vz| range
-   // - 3rd argument --> minimum required number of contributors to vtx
-   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
    //if (isPP) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup 
    //set check for pileup in 2013
@@ -260,7 +251,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
      cutEventUtils->SetFilterNSDeventsDPMJETpA2013(selectDPMJETevtNSDpA);
      ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: NSD selection in DPMJET pA: %s", (selectDPMJETevtNSDpA?"ON":"OFF")));  
    }
- 
+   
    if (useMVPileUpSelection){
      cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
      cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
@@ -276,9 +267,15 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutEventUtils);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
-   // set cuts in task
+   if (!useVtxCut2013pAspectra && !useVtxCut2013pA) {
+     eventCuts->AddCut(cutVertex);
+     eventCuts->SetCutScheme(Form("%s&%s", cutEventUtils->GetName(), cutVertex->GetName()));
+   } else {
+     eventCuts->AddCut(cutEventUtils);
+     eventCuts->SetCutScheme(Form("%s", cutEventUtils->GetName()));
+   }
+   
+     // set cuts in task
    task->SetEventCuts(eventCuts);
    
    //
