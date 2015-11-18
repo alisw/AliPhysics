@@ -18,13 +18,13 @@ TString bitNames[NBITS] = {
 "kMUON",
 "kHighMult",
 "kEMC1",
-"kCINT5",
+"kINT5",
 "kCMUS5",
-"kMUSH7",
-"kMUL7",
-"kMUU7",
+"kMuonSingleHighPt8",
+"kMuonLikeLowPt8",
+"kMuonUnlikeLowPt8",
 "kEMC7",
-"kMUS7",
+"kMuonSingleLowPt8",
 "kPHI1",
 "kPHI78",
 "kEMCEJE",
@@ -59,6 +59,9 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TTree* t = (TTree*) f->Get("trending");
   TObjArray* classes = new TObjArray();
   TObjString* activeDetectors = new TObjString();
+  TObjString* partition = new TObjString();
+  TObjString* lhcState = new TObjString();
+  TObjString* lhcPeriod = new TObjString();
   Int_t run                = 0;
   Int_t fill               = 0;
   Double_t run_duration    = 0;
@@ -112,99 +115,180 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("alias_lumi_reconstructed",&alias_lumi_reconstructed);
   t->SetBranchAddress("alias_lumi_accepted",&alias_lumi_accepted);
   t->SetBranchAddress("activeDetectors",&activeDetectors);
+  t->SetBranchAddress("partition",&partition);
+  t->SetBranchAddress("lhcState",&lhcState);
+  t->SetBranchAddress("lhcPeriod",&lhcPeriod);
   t->SetBranchAddress("timeStart",&timeStart);
   t->SetBranchAddress("timeEnd",&timeEnd);
 
   Int_t nRuns = t->GetEntries();
+  const Int_t nDetectors=19;
+  TH2D* hActiveDetectors    = new TH2D("hActiveDetectors","Active detectors",nRuns,0,nRuns,nDetectors,0,nDetectors);
+  TH1D* hInteractionRate    = new TH1D("hInteractionRate","INEL interaction rate [Hz]",nRuns,0,nRuns);
+  TH1D* hMu                 = new TH1D("hMu","Average number of INEL collisions per BC",nRuns,0,nRuns);
+  TH1D* hBCs                = new TH1D("hBCs","Number of colliding bunches",nRuns,0,nRuns);
+  TH1D* hDuration           = new TH1D("hDuration","Duration, s",nRuns,0,nRuns);
+  TH1D* hLumiSeen           = new TH1D("hLumiSeen","Luminosity seen, nb-1",nRuns,0,nRuns);
   TH2D* hClassL0BvsRun      = new TH2D("hClassL0BVsRun","Class L0B vs run",nRuns,0,nRuns,1,0,1);
   TH2D* hClassL2AvsRun      = new TH2D("hClassL2AVsRun","Class L2A vs run",nRuns,0,nRuns,1,0,1);
   TH2D* hClassLifetimeVsRun = new TH2D("hClassLifetimeVsRun","Lifetime class-by-class vs run",nRuns,0,nRuns,1,0,1);
   TH2D* hClassLumiVsRun     = new TH2D("hClassLumiVsRun","Luminosity class-by-class vs run",nRuns,0,nRuns,1,0,1);
-  hClassL0BvsRun->SetBit(TH1::kCanRebin);
-  hClassL2AvsRun->SetBit(TH1::kCanRebin);
-  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
-  hClassLumiVsRun->SetBit(TH1::kCanRebin);
-  for (Int_t r=0;r<nRuns;r++){
-    t->GetEntry(r);
-    printf("run=%i\n",run);
-    hClassL0BvsRun->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hClassL2AvsRun->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hClassLifetimeVsRun->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hClassLumiVsRun->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    for (Int_t i=0;i<classes->GetEntriesFast();i++){
-      TString className = classes->At(i)->GetName();
-      if      (className.Contains("-A-"))      continue;
-      else if (className.Contains("-C-"))      continue;
-      else if (className.Contains("-E-"))      continue;
-      else if (className.Contains("-AC-"))     continue;
-      else if (className.Contains("-ACE-"))    continue;
-      else if (className.Contains("-GA-"))     continue;
-      else if (className.Contains("-GC-"))     continue;
-      else if (className.Contains("1A-ABCE-")) continue;
-      else if (className.Contains("1C-ABCE-")) continue;
-      else if (className.Contains("C0LSR-ABCE-")) continue;
-//      printf("%30s %12lli %10lli %10lli %10lli %10lli %10lli\n",className.Data(),L0B[i],L0A[i],L1B[i],L1A[i],L2B[i],L2A[i]);
-      hClassL0BvsRun->Fill(Form("%i",run),className.Data(),Double_t(class_l0b[i]));
-      hClassL2AvsRun->Fill(Form("%i",run),className.Data(),Double_t(class_l2a[i]));
-      hClassLifetimeVsRun->Fill(Form("%i",run),className.Data(),class_lifetime[i]);
-      hClassLumiVsRun    ->Fill(Form("%i",run),className.Data(),class_lumi[i]);
-    }
-  }
-  
-  hClassL0BvsRun->LabelsDeflate("Y");
-  hClassL2AvsRun->LabelsDeflate("Y");
-  hClassLifetimeVsRun->LabelsDeflate("Y");
-  hClassLumiVsRun->LabelsDeflate("Y");
+  TH2D* hRecorded           = new TH2D("hRecorded","Recorded",nRuns,0,nRuns,1,0,1);  
+  TH2D* hReconstructed      = new TH2D("hReconstructed","Reconstructed",nRuns,0,nRuns,1,0,1);  
+  TH2D* hAccepted           = new TH2D("hAccepted","Accepted",nRuns,0,nRuns,1,0,1);  
+  TH2D* hLumiRecorded       = new TH2D("hLumiRecorded","Lumi recorded",nRuns,0,nRuns,1,0,1);  
+  TH2D* hLumiReconstructed  = new TH2D("hLumiReconstructed","Lumi reconstructed",nRuns,0,nRuns,1,0,1);  
+  TH2D* hLumiAccepted       = new TH2D("hLumiAccepted","Lumi accepted",nRuns,0,nRuns,1,0,1);  
 
   map<Int_t,Int_t> fills;
-  TH1D* hRecorded[NBITS]          = {0x0};
-  TH1D* hReconstructed[NBITS]     = {0x0};
-  TH1D* hAccepted[NBITS]          = {0x0};
-  TH1D* hRejected[NBITS]          = {0x0};
-  TH1D* hAcceptedFraction[NBITS]  = {0x0};
-  TH1D* hRejectedFraction[NBITS]  = {0x0};
-  TH1D* hLumiRecorded[NBITS]      = {0x0};
-  TH1D* hLumiReconstructed[NBITS] = {0x0};
-  TH1D* hLumiAccepted[NBITS]      = {0x0};
-  
-
-  const Int_t nDetectors=19;
-
-  TH2D* hActiveDetectors = new TH2D("hActiveDetectors","Active detectors",nRuns,0,nRuns,nDetectors,0,nDetectors);
-  TH1D* hInteractionRate = new TH1D("hInteractionRate","INEL interaction rate [Hz]",nRuns,0,nRuns);
-  TH1D* hMu       = new TH1D("hMu","Average number of INEL collisions per BC",nRuns,0,nRuns);
-  TH1D* hBCs      = new TH1D("hBCs","Number of colliding bunches",nRuns,0,nRuns);
-  TH1D* hDuration = new TH1D("hDuration","Duration, s",nRuns,0,nRuns);
-  TH1D* hLumiSeen = new TH1D("hLumiSeen","Luminosity seen, nb-1",nRuns,0,nRuns);
 
   TString detName[nDetectors]={"ACORDE","AD","CPV","EMCAL","FMD","HMPID","ITSSPD","ITSSDD","ITSSSD","MUONTRK","MUONTRG","PHOS","PMD","T0","TOF","TPC","TRD","VZERO","ZDC"};
   for (Int_t iDet=0;iDet<nDetectors;iDet++) hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,detName[iDet].Data());
-  
+  hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
+  hClassL2AvsRun     ->SetBit(TH1::kCanRebin);
+  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
+  hClassLumiVsRun    ->SetBit(TH1::kCanRebin);
+  hRecorded          ->SetBit(TH1::kCanRebin);
+  hReconstructed     ->SetBit(TH1::kCanRebin);
+  hAccepted          ->SetBit(TH1::kCanRebin);
+  hLumiRecorded      ->SetBit(TH1::kCanRebin);
+  hLumiReconstructed ->SetBit(TH1::kCanRebin);
+  hLumiAccepted      ->SetBit(TH1::kCanRebin);
+
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
-    hActiveDetectors->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hInteractionRate->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hMu->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hBCs->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hDuration->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    hLumiSeen->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-    for (Int_t iDet=0;iDet<nDetectors;iDet++) {
-     hActiveDetectors->Fill(Form("%i",run),detName[iDet].Data(),activeDetectors->String().Contains(detName[iDet].Data()));
-    }
-    hInteractionRate->SetBinContent(r+1,interactionRate);
-    hMu->SetBinContent(r+1,mu);
-    hBCs->SetBinContent(r+1,nBCsPerOrbit);
-    hDuration->SetBinContent(r+1,run_duration);
-    hLumiSeen->SetBinContent(r+1,lumi_seen);
+    if (!partition->String().Contains("PHYSICS_1")) continue;
+    if (!lhcState->String().Contains("STABLE")) continue;
+    char* srun = Form("%i",run);
+    hInteractionRate->Fill(srun,interactionRate);
+    hMu             ->Fill(srun,mu);
+    hBCs            ->Fill(srun,nBCsPerOrbit);
+    hDuration       ->Fill(srun,run_duration);
+    hLumiSeen       ->Fill(srun,lumi_seen);
     fills[run]=fill;
+    for (Int_t iDet=0;iDet<nDetectors;iDet++) {
+     hActiveDetectors->Fill(srun,detName[iDet].Data(),activeDetectors->String().Contains(detName[iDet].Data()));
+    }
+    for (Int_t i=0;i<classes->GetEntriesFast();i++){
+      TString className = classes->At(i)->GetName();
+      if      (className.Contains("-A-"))         continue;
+      else if (className.Contains("-C-"))         continue;
+      else if (className.Contains("-E-"))         continue;
+      else if (className.Contains("-AC-"))        continue;
+      else if (className.Contains("-ACE-"))       continue;
+      else if (className.Contains("-GA-"))        continue;
+      else if (className.Contains("-GC-"))        continue;
+      else if (className.Contains("1A-ABCE-"))    continue;
+      else if (className.Contains("1C-ABCE-"))    continue;
+      else if (className.Contains("C0LSR-ABCE-")) continue;
+      hClassL0BvsRun     ->Fill(srun,className.Data(),Double_t(class_l0b[i]));
+      hClassL2AvsRun     ->Fill(srun,className.Data(),Double_t(class_l2a[i]));
+      hClassLifetimeVsRun->Fill(srun,className.Data(),class_lifetime[i]);
+      hClassLumiVsRun    ->Fill(srun,className.Data(),class_lumi[i]);
+    }
+    for (Int_t ibit=0;ibit<NBITS;ibit++) {
+      if (alias_recorded[ibit]<1) continue;
+      hRecorded         ->Fill(srun,bitNames[ibit],alias_recorded[ibit]);
+      hReconstructed    ->Fill(srun,bitNames[ibit],alias_reconstructed[ibit]);
+      hAccepted         ->Fill(srun,bitNames[ibit],alias_accepted[ibit]);
+      hLumiRecorded     ->Fill(srun,bitNames[ibit],alias_lumi_recorded[ibit]);
+      hLumiReconstructed->Fill(srun,bitNames[ibit],alias_lumi_reconstructed[ibit]);
+      hLumiAccepted     ->Fill(srun,bitNames[ibit],alias_lumi_accepted[ibit]);
+    }
   }
+  hInteractionRate   ->LabelsDeflate("X");
+  hMu                ->LabelsDeflate("X");
+  hBCs               ->LabelsDeflate("X");
+  hDuration          ->LabelsDeflate("X");
+  hLumiSeen          ->LabelsDeflate("X");
+  hActiveDetectors   ->LabelsDeflate("X");
+  hClassL0BvsRun     ->LabelsDeflate("XY");
+  hClassL2AvsRun     ->LabelsDeflate("XY");
+  hClassLifetimeVsRun->LabelsDeflate("XY");
+  hClassLumiVsRun    ->LabelsDeflate("XY");
+  hRecorded          ->LabelsDeflate("XY");
+  hReconstructed     ->LabelsDeflate("XY");
+  hAccepted          ->LabelsDeflate("XY");
+  hLumiRecorded      ->LabelsDeflate("XY");
+  hLumiReconstructed ->LabelsDeflate("XY");
+  hLumiAccepted      ->LabelsDeflate("XY");
   
+  SetHisto(hActiveDetectors);
+  SetHisto(hInteractionRate);
+  SetHisto(hMu);
+  SetHisto(hBCs);
+  SetHisto(hDuration);
+  SetHisto(hLumiSeen);
+  SetHisto(hClassL0BvsRun);
+  SetHisto(hClassL2AvsRun);
+  SetHisto(hClassLifetimeVsRun);
+  SetHisto(hClassLumiVsRun);
+  SetHisto(hRecorded);
+  SetHisto(hReconstructed);
+  SetHisto(hAccepted);
+  SetHisto(hLumiRecorded);
+  SetHisto(hLumiReconstructed);
+  SetHisto(hLumiAccepted);
   
+  TCanvas* cActiveDetectors = new TCanvas("active_detectors","Active Detectors",1800,500);
+  cActiveDetectors->SetMargin(0.05,0.01,0.18,0.06);
+  hActiveDetectors->GetYaxis()->SetLabelOffset(0.001);
+  hActiveDetectors->SetMaximum(2);
+  hActiveDetectors->Draw("col");
+  AddFillSeparationLines(hMu,fills);
+  gPad->Print("detectors.png");
+  gPad->Print("global_properties.pdf(");
+
+  TCanvas* cInteractionRate = new TCanvas("cInteractionRate","Interaction Rate",1800,500);
+  cInteractionRate->SetMargin(0.05,0.01,0.18,0.06);
+  hInteractionRate->SetFillColor(0);
+  hInteractionRate->Draw();
+  AddFillSeparationLines(hMu,fills);
+  gPad->Print("rate.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMu = new TCanvas("mu","mu",1800,500);
+  cMu->SetMargin(0.05,0.01,0.18,0.06);
+  hMu->SetFillColor(0);
+  hMu->Draw("h");
+  AddFillSeparationLines(hMu,fills);
+  gPad->Print("mu.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cBCs = new TCanvas("bcs","bcs",1800,500);
+  cBCs->SetMargin(0.05,0.01,0.18,0.06);
+  hBCs->SetFillColor(0);
+  hBCs->Draw("h");
+  AddFillSeparationLines(hBCs,fills);
+  gPad->Print("bcs.png");
+  gPad->Print("global_properties.pdf");
   
+  TCanvas* cDuration = new TCanvas("duration","duration",1800,500);
+  cDuration->SetMargin(0.05,0.01,0.18,0.06);
+  hDuration->SetTitle(Form("Duration in seconds: total= %.0f s = %.0f h",hDuration->Integral(),hDuration->Integral()/3600));
+  hDuration->Draw("h");
+  AddFillSeparationLines(hDuration,fills);
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cLumiSeen = new TCanvas("lumiseen","lumi seen",1800,500);
+  cLumiSeen->SetMargin(0.05,0.01,0.18,0.06);
+  hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.3f",hLumiSeen->Integral()));
+  hLumiSeen->Draw("h");
+  AddFillSeparationLines(hLumiSeen,fills);
+  gPad->Print("global_properties.pdf)");
+  
+  TFile* fglobal = new TFile("global_properties.root","recreate");
+  hActiveDetectors->Write();
+  hInteractionRate->Write();
+  hMu->Write();
+  hBCs->Write();
+  hDuration->Write();
+  hLumiSeen->Write();
+  fglobal->Close();
+
   TFile* fclassL0B = new TFile("class_L0B_counts.root","recreate");
   TCanvas* cClassL0B = new TCanvas("cClassL0B","Class L0B vs run",1800,900);
   gPad->SetMargin(0.15,0.01,0.08,0.06);
-  SetHisto(hClassL0BvsRun);
   hClassL0BvsRun->Draw("col");
   gPad->Print("class_L0B_counts.pdf(");
   hClassL0BvsRun->Write();
@@ -225,7 +309,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TFile* fclassL2A = new TFile("class_L2A_counts.root","recreate");
   TCanvas* cClassL2A = new TCanvas("cClassL2A","Class L2A vs run",1800,900);
   gPad->SetMargin(0.15,0.01,0.08,0.06);
-  SetHisto(hClassL2AvsRun);
   hClassL2AvsRun->Draw("col");
   gPad->Print("class_L2A_counts.pdf(");
   hClassL2AvsRun->Write();
@@ -246,7 +329,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TFile* fclassLifetime = new TFile("class_lifetime.root","recreate");
   TCanvas* cClassLifetime = new TCanvas("cClassLifetime","Lifetime class-by-class vs run",1800,900);
   gPad->SetMargin(0.15,0.01,0.08,0.06);
-  SetHisto(hClassLifetimeVsRun);
   hClassLifetimeVsRun->Draw("col");
   gPad->Print("class_lifetime.pdf(");
   hClassLifetimeVsRun->Write();
@@ -265,10 +347,11 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("class_lifetime.pdf]");
   fclassLifetime->Close();
   
+  return;
+  
   TFile* fclassLumi = new TFile("class_lumi.root","recreate");
   TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
   gPad->SetMargin(0.15,0.01,0.08,0.06);
-  SetHisto(hClassLumiVsRun);
   hClassLumiVsRun->Draw("col");
   gPad->Print("class_lumi.pdf(");
 //  TCanvas* clumi = new TCanvas("clumi","lumi vs run",1800,500);
@@ -285,56 +368,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("class_lumi.pdf]");
   fclassLumi->Close();
   
-  SetHisto(hActiveDetectors);
-  SetHisto(hInteractionRate);
-  SetHisto(hMu);
-  SetHisto(hBCs);
-  SetHisto(hDuration);
-  SetHisto(hLumiSeen);
-
-  TCanvas* cActiveDetectors = new TCanvas("active_detectors","Active Detectors",1800,500);
-  cActiveDetectors->SetMargin(0.05,0.01,0.18,0.06);
-  hActiveDetectors->GetYaxis()->SetLabelOffset(0.001);
-  hActiveDetectors->SetMaximum(2);
-  hActiveDetectors->Draw("col");
-  AddFillSeparationLines(hMu,fills);
-  gPad->Print("global_properties.pdf(");
-
-  TCanvas* cInteractionRate = new TCanvas("cInteractionRate","Interaction Rate",1800,500);
-  cInteractionRate->SetMargin(0.05,0.01,0.18,0.06);
-  hInteractionRate->SetFillColor(0);
-  hInteractionRate->Draw();
-  AddFillSeparationLines(hMu,fills);
-  gPad->Print("global_properties.pdf");
-
-  TCanvas* cMu = new TCanvas("mu","mu",1800,500);
-  cMu->SetMargin(0.05,0.01,0.18,0.06);
-  hMu->SetFillColor(0);
-  hMu->Draw("h");
-  AddFillSeparationLines(hMu,fills);
-  gPad->Print("global_properties.pdf");
-
-  TCanvas* cBCs = new TCanvas("bcs","bcs",1800,500);
-  cBCs->SetMargin(0.05,0.01,0.18,0.06);
-  hBCs->SetFillColor(0);
-  hBCs->Draw("h");
-  AddFillSeparationLines(hBCs,fills);
-  gPad->Print("global_properties.pdf");
-  
-  TCanvas* cDuration = new TCanvas("duration","duration",1800,500);
-  cDuration->SetMargin(0.05,0.01,0.18,0.06);
-  hDuration->SetTitle(Form("Duration in seconds: total= %.0f s = %.0f h",hDuration->Integral(),hDuration->Integral()/3600));
-  hDuration->Draw("h");
-  AddFillSeparationLines(hDuration,fills);
-  gPad->Print("global_properties.pdf");
-
-  TCanvas* cLumiSeen = new TCanvas("lumiseen","lumi seen",1800,500);
-  cLumiSeen->SetMargin(0.05,0.01,0.18,0.06);
-  hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.3f",hLumiSeen->Integral()));
-  hLumiSeen->Draw("h");
-  AddFillSeparationLines(hLumiSeen,fills);
-  gPad->Print("global_properties.pdf)");
-
   TCanvas* dummy = new TCanvas("dummy","dummy",1800,500);
   gPad->SetMargin(0.05,0.01,0.18,0.06);
   gPad->Print("alias_event_statistics.pdf[");
@@ -353,35 +386,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   cRejectedFraction->SetLogy();
 
   for (Int_t ibit=0;ibit<NBITS;ibit++) {
-    const char* bitName = bitNames[ibit];
-
-    hRecorded[ibit]          = new TH1D(Form("hRecorded%02i"         ,ibit),Form("Recorded: %s"          ,bitName),nRuns,0,nRuns);
-    hReconstructed[ibit]     = new TH1D(Form("hReconstructed%02i"    ,ibit),Form("Reconstructed: %s"     ,bitName),nRuns,0,nRuns);
-    hAccepted[ibit]          = new TH1D(Form("hAccepted%02i"         ,ibit),Form("Accepted: %s"          ,bitName),nRuns,0,nRuns);
-    hRejected[ibit]          = new TH1D(Form("hRejected%02i"         ,ibit),Form("Rejected: %s"          ,bitName),nRuns,0,nRuns);
-    hLumiRecorded[ibit]      = new TH1D(Form("hLumiRecorded%02i"     ,ibit),Form("Lumi recorded: %s"     ,bitName),nRuns,0,nRuns);
-    hLumiReconstructed[ibit] = new TH1D(Form("hLumiReconstructed%02i",ibit),Form("Lumi reconstructed: %s",bitName),nRuns,0,nRuns);
-    hLumiAccepted[ibit]      = new TH1D(Form("hLumiAccepted%02i"     ,ibit),Form("Lumi accepted: %s"     ,bitName),nRuns,0,nRuns);
-    
-    for (Int_t r=0;r<nRuns;r++){
-      t->GetEntry(r);
-      hRecorded[ibit]         ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hReconstructed[ibit]    ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hAccepted[ibit]         ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hRejected[ibit]         ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hLumiRecorded[ibit]     ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hLumiReconstructed[ibit]->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-      hLumiAccepted[ibit]     ->GetXaxis()->SetBinLabel(r+1,Form("%i",run));
-//      printf("recorded = %i",alias_recorded[ibit]);
-//      printf("reconstructed = %i",alias_reconstructed[ibit]);
-      hRecorded[ibit]         ->SetBinContent(r+1,alias_recorded[ibit]);
-      hReconstructed[ibit]    ->SetBinContent(r+1,alias_reconstructed[ibit]);
-      hAccepted[ibit]         ->SetBinContent(r+1,alias_accepted[ibit]);
-      hRejected[ibit]         ->SetBinContent(r+1,alias_reconstructed[ibit]-alias_accepted[ibit]);
-      hLumiRecorded[ibit]     ->SetBinContent(r+1,alias_lumi_recorded[ibit]);
-      hLumiReconstructed[ibit]->SetBinContent(r+1,alias_lumi_reconstructed[ibit]);
-      hLumiAccepted[ibit]     ->SetBinContent(r+1,alias_lumi_accepted[ibit]);
-    }
     if (hRecorded[ibit]->Integral()<1) continue;
     printf("bit=%i %s\n",ibit,bitName);
 
@@ -457,13 +461,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   dummy->Print("alias_lumi_statistics.pdf]");
   dummy->Print("accepted_fraction.pdf]");
   dummy->Print("rejected_fraction.pdf]");
-
-  TFile* fglobal = new TFile("global_properties.root","recreate");
-  hMu->Write();
-  hBCs->Write();
-  hDuration->Write();
-  hLumiSeen->Write();
-  fglobal->Close();
 
   TFile* fstat = new TFile("accepted_event_statistics.root","recreate");
   for (Int_t ibit=0;ibit<NBITS;ibit++) {
