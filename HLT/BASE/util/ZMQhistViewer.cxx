@@ -50,6 +50,9 @@ TApplication* gApp;
 TCanvas* fCanvas;
 TObjArray fDrawables;
 
+TPRegexp* fSelectionRegexp = NULL;
+TString fDrawOptions;
+
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
@@ -59,6 +62,8 @@ const char* fUSAGE =
     " -sleep : how long to sleep in between requests for data (if applicable)\n"
     " -timeout : how long to wait for the server to reply\n"
     " -Verbose : be verbose\n"
+    " -select : only show selected histograms (by regexp)"
+    " -drawoptions : what draw option to use"
     ;
 
 //_______________________________________________________________________________________
@@ -99,7 +104,9 @@ int main(int argc, char** argv)
     {
       if (fVerbose) Printf("sending request");
       zmq_send(fZMQin, "*", 1, ZMQ_SNDMORE);
-      zmq_send(fZMQin, "", 4, 0);
+      TString request;
+      if (fSelectionRegexp) request = fSelectionRegexp->GetPattern();
+      zmq_send(fZMQin, request.Data(), 4, 0);
     }
     
     //wait for the data
@@ -148,6 +155,10 @@ int UpdatePad(TObject* object)
   
   TObject* drawable = fDrawables.FindObject(name);
   int padIndex = fDrawables.IndexOf(drawable);
+
+  Bool_t selected = kTRUE;
+  if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
+  if (!selected) return 0;
  
   if (drawable)
   {
@@ -159,7 +170,7 @@ int UpdatePad(TObject* object)
     fDrawables.RemoveAt(padIndex);
     delete drawable;
     fDrawables.AddAt(object, padIndex);
-    object->Draw();
+    object->Draw(fDrawOptions);
     gPad->Modified(kTRUE);
   }
   else
@@ -229,6 +240,15 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("Verbose"))
     {
       fVerbose=kTRUE;
+    }
+    else if (option.EqualTo("select"))
+    {
+      delete fSelectionRegexp;
+      fSelectionRegexp=new TPRegexp(value);
+    }
+    else if (option.EqualTo("drawoptions"))
+    {
+      fDrawOptions = value;
     }
     else
     {
