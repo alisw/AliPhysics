@@ -296,7 +296,44 @@ struct SysErrorAdder
     }
     return gse;
   }
+  static SysErrorAdder* Create(const TString& t,
+			       const TString& s,
+			       UShort_t       e,
+			       const TString& c);
 };
+/**
+ * For pp INEL results
+ * 
+ */
+struct OfflineAdder : public SysErrorAdder
+{
+  /** 
+   * Constructor 
+   * 
+   * @param sys Collision system 
+   * @param sNN Collision energy
+   */
+  OfflineAdder(const TString& sys, UShort_t sNN)
+    : SysErrorAdder(sys, sNN, "OFFLINE")
+  {
+  }
+  /** 
+   * Get trigger systematic error 
+   * 
+   * @param low   On return, the low error 
+   * @param high  On return, the high error
+   */
+  virtual void GetTrigger(Double_t& low, Double_t& high) const
+  {
+    low  = 0;
+    high = 0;
+  }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    return -1;
+  }
+};
+
 /**
  * For pp INEL results
  * 
@@ -344,7 +381,7 @@ struct INELAdder : public SysErrorAdder
   }
 };
 /**
- * For pp INEL results
+ * For pp INEL>0 results
  * 
  */
 struct INELGt0Adder : public SysErrorAdder
@@ -574,3 +611,29 @@ struct CENTAdder : public SysErrorAdder
     return SysErrorAdder::Make(h, l);
   }
 };
+
+
+SysErrorAdder*
+SysErrorAdder::Create(const TString& t,
+		      const TString& s,
+		      UShort_t       e,
+		      const TString& c)
+{
+  TString tt(t);
+  tt.ToUpper();
+
+  SysErrorAdder* a = 0;
+  if (tt.EqualTo("OFFLINE")    ||tt.EqualTo("UNKNOWN"))a=new OfflineAdder(s,e);
+  else if (tt.EqualTo("INEL")  ||tt.EqualTo("MBOR"))   a=new INELAdder(s,e);
+  else if (tt.EqualTo("INEL>0")||tt.EqualTo("INELGT0"))a=new INELGt0Adder(s,e);
+  else if (tt.EqualTo("NSD")   ||tt.EqualTo("V0AND"))  a=new NSDAdder(s,e);
+  else                                                 a=new CENTAdder(s,e,c);
+  Info("Create", "Created %s adder for %s/%s/%hu/%s: %p",
+       a->GetTriggerString(), t.Data(), s.Data(), e, c.Data(), a);
+  return a;
+}
+
+
+//
+// EOF
+//
