@@ -439,8 +439,10 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"rmsMult","run",condition);
     SaveGraph(tree,"meanMultPos","run",condition);
     SaveGraph(tree,"rmsMultPos","run",condition);
+    SaveGraph(tree,"errorMultPos","run",condition);
     SaveGraph(tree,"meanMultNeg","run",condition);
     SaveGraph(tree,"rmsMultNeg","run",condition);
+    SaveGraph(tree,"errorMultNeg","run",condition);
     SaveGraph(tree,"vertAll","run",condition);
     SaveGraph(tree,"vertOK","run",condition);
 
@@ -1754,8 +1756,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     static Double_t rmsMult=0;
     static Double_t meanMultPos=0;
     static Double_t rmsMultPos=0;
+    static Double_t errorMultPos=0;
     static Double_t meanMultNeg=0;
     static Double_t rmsMultNeg=0;
+    static Double_t errorMultNeg=0;
     static Double_t vertAll = 0;
     static Double_t vertOK = 0;
     
@@ -1850,6 +1854,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
 
     meanMultPos    = his1D->GetMean();
     rmsMultPos     = his1D->GetRMS();
+    errorMultPos   = his1D->GetRMS() / TMath::Sqrt(his1D->GetEntries());
     GetStatInfo(his1D,infoMultPos,0);
     delete his1D;
     
@@ -1862,6 +1867,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
 
     meanMultNeg    = his1D->GetMean();
     rmsMultNeg     = his1D->GetRMS();
+    errorMultNeg   = his1D->GetRMS() / TMath::Sqrt(his1D->GetEntries());
     GetStatInfo(his1D,infoMultNeg,0);
 
     delete his1D;
@@ -1893,8 +1899,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
       "rmsMult="<<rmsMult<<
       "meanMultPos="<<meanMultPos<<
       "rmsMultPos="<<rmsMultPos<<
+      "errorMultPos="<<errorMultPos<<
       "meanMultNeg="<<meanMultNeg<<
-      "rmsMultNeg="<<rmsMultNeg;          
+      "rmsMultNeg="<<rmsMultNeg<<          
+      "errorMultNeg="<<errorMultNeg;
     return 0;
 }
 

@@ -52,12 +52,24 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     
     if ( lPeriodName.Contains("LHC10h") ){
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
-        lCalib->GetEventCuts()->SetVzCut(1e+6);
+        lCalib->GetEventCuts()->SetVzCut(10.0);
         lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
         lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
         lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE );
         lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
         lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
+        lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
+    }
+    
+    if ( lPeriodName.Contains("LHC15m") ){
+        cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
+        lCalib->GetEventCuts()->SetVzCut(10.0);
+        lCalib->GetEventCuts()->SetTriggerCut                (kFALSE );
+        lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
+        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE );
+        lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
+        lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
+        lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
     //============================================================
@@ -71,6 +83,18 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     //============================================================
     
     AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+    if( lPeriodName.Contains("LHC10h") ) {
+        fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0M -> SetAnchorPoint      ( 81.0    ) ;
+        fEstV0M -> SetAnchorPercentile ( 90.0    ) ;
+    }
+    if( lPeriodName.Contains("LHC15m") ) {
+        fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0M -> SetAnchorPoint      ( 115.0    ) ;
+        fEstV0M -> SetAnchorPercentile ( 87.5    ) ;
+    }
+    
+    
     AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "(fAmplitude_V0A)");
     AliMultEstimator *fEstV0C = new AliMultEstimator("V0C", "", "(fAmplitude_V0C)");
     
@@ -92,17 +116,20 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
     fEstRefMultEta8->SetIsInteger(kTRUE);
     
+    //Changes in new version: create AliMultSelection here
+    AliMultSelection *lMultSel = new AliMultSelection();
+    lCalib->SetMultSelection(lMultSel);
+    
     //Univeral: V0
     lCalib->GetMultSelection() -> AddEstimator( fEstV0M );
     lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
     lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
     
     //Testing!
-    AliMultEstimator *fEstV0MAnchored = new AliMultEstimator("V0MAnchored", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
-    fEstV0MAnchored -> SetUseAnchor        ( kTRUE   ) ;
-    fEstV0MAnchored -> SetAnchorPoint      ( 81.0    ) ;
-    fEstV0MAnchored -> SetAnchorPercentile ( 90.0    ) ;
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0MAnchored );
+    if( lPeriodName.Contains("LHC10h") ){
+        AliMultEstimator *fEstV0MNonAnchored = new AliMultEstimator("V0MNonAnchored", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+        lCalib->GetMultSelection() -> AddEstimator( fEstV0MNonAnchored );
+    }
     
     //Anchoring test
     
@@ -129,8 +156,8 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     
     if( !lPeriodName.Contains("test") ){
         //Per Period calibration: standard locations...
-        lCalib -> SetInputFile  ( Form("/home/daviddc/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
-        lCalib -> SetBufferFile ( Form("/home/daviddc/work/fast/buffer-%s.root", lPeriodName.Data() ) );
+        lCalib -> SetInputFile  ( Form("~/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
+        lCalib -> SetBufferFile ( Form("~/work/fast/buffer-%s.root", lPeriodName.Data() ) );
         lCalib -> SetOutputFile ( Form("OADB-%s.root", lPeriodName.Data() ) );
         lCalib -> Calibrate     ();
     }else{

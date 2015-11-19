@@ -7,6 +7,7 @@
 #define ALIFEMTOMODELCORRFCTNKSTAR_H
 
 class TH1F;
+class TH2F;
 
 #include "AliFemtoModelCorrFctn.h"
 #include "AliFemtoAvgSepCorrFctn.h"
@@ -110,10 +111,10 @@ protected:
   TH1F *fResDen;
 
   /// Numerator of only true pairs
-  TH1F *fTrueNum;
+  TH2F *fTrueNum;
 
   /// Denominator of only true pairs
-  TH1F *fTrueDen;
+  TH2F *fTrueDen;
 
 private:
 

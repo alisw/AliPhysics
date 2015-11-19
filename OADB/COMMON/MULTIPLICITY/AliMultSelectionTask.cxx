@@ -52,6 +52,7 @@ class AliESDAD; //AD
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliAODHandler.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -95,7 +96,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
-fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -147,6 +148,7 @@ fEvSel_INELgtZERO(0),
 fEvSel_HasNoInconsistentVertices(0), 
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
+fEvSelCode(0),
 fNDebug(13),
 fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
@@ -166,7 +168,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
-fkTrigger(AliVEvent::kMB), fAlternateOADBForEstimators(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -218,6 +220,7 @@ fEvSel_INELgtZERO(0),
 fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
+fEvSelCode(0),
 fNDebug(13),
 fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
@@ -247,12 +250,12 @@ AliMultSelectionTask::~AliMultSelectionTask()
 {
     //------------------------------------------------
     // DESTRUCTOR
-    //------------------------------------------------
+    //------------------------------------------------//
 
-    if (fTreeEvent) {
-        delete fTreeEvent;
-        fTreeEvent = 0x0;
-    }
+    //if (fTreeEvent) {
+    //    delete fTreeEvent;
+    //    fTreeEvent = 0x0;
+    //}
     if (fESDtrackCuts) {
       delete fESDtrackCuts;
       fESDtrackCuts = 0x0;
@@ -397,6 +400,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         }
         
         if( fkDebug ){
+            fTreeEvent->Branch("fEvSelCode",      &fEvSelCode, "fEvSelCode/I");
             //Fixme: Save first 5 quantiles, should be enough for debugging
             for ( Int_t iq=0; iq<fNDebug; iq++){
                 fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
@@ -893,6 +897,18 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if(lVerbose) lSelection -> PrintInfo();
         if(lVerbose) Printf( "--- Evaluate -3-");
         
+        //Event Selection Code: No need to do this for all estimators ...
+        lSelection->SetEvSelCode(0); //No Problem!
+        if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lSelection->SetEvSelCode(200);
+        if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lSelection->SetEvSelCode(201);
+        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      ) lSelection->SetEvSelCode(202);
+        if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lSelection->SetEvSelCode(203);
+        if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lSelection->SetEvSelCode(204);
+        if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lSelection->SetEvSelCode(205);
+        if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    ) lSelection->SetEvSelCode(206);
+        //Just in case you want to store it for debugging
+        fEvSelCode = lSelection->GetEvSelCode();
+        
         //Determine Quantiles from calibration histogram
         TH1F *lThisCalibHisto = 0x0;
         TString lThisCalibHistoName;
@@ -908,17 +924,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }else{
                 lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( lSelection->GetEstimator(iEst)->GetValue() ));
-                //cleanup: discard events according to criteria stored in OADB object
-                //Check Selections as they are in the fMultSelectionCuts Object
-                if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
-                if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
-                if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      ) lThisQuantile = 202;
-                if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
-                if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
-                if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
-                if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    ) lThisQuantile = 206;
-                
-                if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
+                if( iEst < fNDebug ) {
+                    fQuantiles[iEst] = lThisQuantile; //Debug, please
+                }
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }
         }
@@ -933,6 +941,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // reset procedure, so in case the object has disappeared, we
         // need to re-add it.  This is particulary needed on Proof(Lite)
         AliVEvent*        input = InputEvent();
+        
+        //if on-the-fly AOD generation, switch to connect to the resulting AOD
+        AliVEventHandler *lhandler = 0x0;
+        lhandler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+        AliAODHandler* lAodOutputHandler = dynamic_cast<AliAODHandler*> (lhandler);
+        if ( lAodOutputHandler ){
+            input = lAodOutputHandler->GetAOD();
+        }
+        
         TObject*          outO  = input->FindListObject("MultSelection");
         AliMultSelection* outS  = 0;
         if (!outO) {

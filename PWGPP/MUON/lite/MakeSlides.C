@@ -60,7 +60,7 @@ void EscapeSpecialCharsForRegex ( TString& str )
 
 
 //_________________________________
-Int_t GetPage ( TString pattern, TString filename, TString trigger = "" )
+Int_t GetPage ( TString pattern, TString filename, TString trigger = "", Bool_t warnIfMissing = kTRUE )
 {
   TString convertedFilename = PdfToTxt(filename);
 
@@ -104,7 +104,7 @@ Int_t GetPage ( TString pattern, TString filename, TString trigger = "" )
   }
   inFile.close();
   delete patternArr;
-  if ( foundPage < 0 ) printf("Warning: cannot find %s\n",pattern.Data());
+  if ( foundPage < 0 && warnIfMissing ) printf("Warning: cannot find %s\n",pattern.Data());
 
   return foundPage;
 }
@@ -170,9 +170,9 @@ void MakeDefaultItem ( ofstream& outFile, TString defaultItem = "" )
 }
 
 //_________________________________
-Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile, TString trigger = "" )
+Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile, TString trigger = "", Bool_t warnIfMissing = kTRUE )
 {
-  Int_t pageNum = GetPage(pattern,filename,trigger);
+  Int_t pageNum = GetPage(pattern,filename,trigger,warnIfMissing);
   if ( pageNum<0 ) {
     return kFALSE;
   }
@@ -236,7 +236,7 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << " \\begin{itemize}" << endl;
   outFile << "  \\item Run Type: PHYSICS" << endl;
   outFile << "  \\item Duration: at least 10 min" << endl;
-  outFile << "  \\item GDC mStream Recording:	Yes" << endl;
+  outFile << "  \\item GDC mStream Recording: Yes" << endl;
   outFile << "  \\item Period: " << period.Data() << endl;
   outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK ] as Readout" << endl;
   outFile << "  \\item Quality: globally GOOD and NOT BAD for readout Detectors" << endl;
@@ -509,6 +509,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     TString currTrig = trigList->At(itrig)->GetName();
     TString shortTrig = GetTriggerShort(currTrig);
     MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
+    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);

@@ -1,0 +1,41 @@
+User="__USER__";
+
+Jobtag={
+  "comment: fast EPOS v3.111 simulation, test production"
+};
+
+Executable="__TARGETDIR__/__RUNSCRIPT__";
+Arguments="__MYARGS__";
+
+split="production:1-__NJOBS__";
+SplitArguments = "a #alien_counter# b";
+# Packages to be used
+Packages = {
+   "VO_ALICE@AliPhysics::vAN-20151119-1",
+   "VO_ALICE@EPOS::v3.111-8"
+};
+
+# Time to live
+TTL="36000";
+
+InputFile= {"LF:__TARGETDIR__/rungen.C",
+            "LF:__TARGETDIR__/LoadLibs.C",
+            "LF:__TARGETDIR__/pp.optns"
+};
+
+Output = {
+        "log_archive.zip:gen*.log,*.C,stdout,stderr@disk=1",
+        "root_archive.zip:Kinematics*.root,galice.root,@disk=2"
+};
+
+# Output directory
+OutputDir="__TARGETDIR__/#alien_counter_05i#";
+
+# validation command
+Validationcommand ="__TARGETDIR__/validation.sh";
+
+# Resubmit failed jobs until DONE rate reaches this percentage
+MasterResubmitThreshold = "90%";
+
+# email
+Email="igor.lakomov@cern.ch";
