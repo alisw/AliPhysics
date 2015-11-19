@@ -470,35 +470,6 @@ void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
     value = o->GetUniqueID();
 }
   
-#if 0
-//_____________________________________________________________________
-Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
-{
-  // Get max R of ring
-  // 
-  // Optimized version that has a cache 
-  static TArrayD inner;
-  static TArrayD outer; 
-  if (inner.GetSize() <= 0 || outer.GetSize() <= 0) {
-    const Double_t minR[] = {  4.5213, 15.4 };
-    const Double_t maxR[] = { 17.2,    28.0 };
-    const Int_t    nStr[] = { 512,     256  };
-    for (Int_t q = 0; q < 2; q++) { 
-      TArrayD& a = (q == 0 ? inner : outer);
-      a.Set(nStr[q]);
-
-      for (Int_t it = 0; it < nStr[q]; it++) {
-	Double_t   rad     = maxR[q] - minR[q];
-	Double_t   segment = rad / nStr[q];
-	Double_t   r       = minR[q] + segment*strip;
-	a[it]              = r;
-      }
-    }
-  }
-  if (ring == 'I' || ring == 'i') return inner.At(strip);
-  return outer.At(strip);
-}
-#else
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 {
@@ -516,19 +487,23 @@ Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
 
   return r;
 }
-#endif
 
-#if 1
+namespace {
+  const Double_t kInvalidValue = -9999;
+}
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetSectorZ(UShort_t det, Char_t ring, UShort_t sec)
 {
   Int_t          hybrid  = sec / 2;
   Int_t          q       = (ring == 'I' || ring == 'i') ? 0 : 1;
   Int_t          r       = q == 0 ? 1 : 0;
-  const Double_t zs[][2] = { { 320.266+1.5, -999999 }, 
+  const Double_t zs[][2] = { { 320.266+1.5, kInvalidValue }, 
 			     {  83.666,     74.966+.5 },
 			     { -63.066+.5, -74.966 } };
-  if (det > 3 || zs[det-1][q] == -999999) return -999999;
+  if (det > 3 || zs[det-1][q] == kInvalidValue) {
+    ::Warning("GetSectorZ", "Unknown sub-detector FMD%d%c", det, ring);
+    return kInvalidValue;
+  }
 
   Double_t z = zs[det-1][q];
   switch (det) {
@@ -539,6 +514,8 @@ Double_t AliForwardUtil::GetSectorZ(UShort_t det, Char_t ring, UShort_t sec)
 
   return z;
 }
+
+//_____________________________________________________________________
 Double_t AliForwardUtil::GetSectorPhi(UShort_t d, Char_t ring, UShort_t sec)
 {
   UShort_t nSec = (ring == 'I' || ring == 'i') ? 20 : 40;
@@ -547,7 +524,9 @@ Double_t AliForwardUtil::GetSectorPhi(UShort_t d, Char_t ring, UShort_t sec)
   case 1:  base += TMath::Pi()/2;  break;
   case 2:  break; 
   case 3:  base = TMath::Pi() - base; break;
-  default: return 1000;
+  default:
+    ::Warning("GetSectorPhi", "Unknown detector %d", d);
+    return kInvalidValue;
   }
   if (base < 0)              base += TMath::TwoPi();
   if (base > TMath::TwoPi()) base -= TMath::TwoPi();
@@ -572,6 +551,8 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   
   return eta;
 }
+
+//_____________________________________________________________________
 void AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
 			    UShort_t sec, UShort_t strip,
 			    const TVector3& ip,
@@ -580,13 +561,20 @@ void AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
   Double_t   rD      = GetStripR(ring, strip);
   Double_t   phiD    = GetSectorPhi(det,ring, sec);
   Double_t   zD      = GetSectorZ(det, ring, sec);
+  if (phiD == kInvalidValue || zD == kInvalidValue) {
+    pos.SetXYZ(kInvalidValue,kInvalidValue,kInvalidValue);
+    return;
+  }
   Double_t   xD      = rD*TMath::Cos(phiD);
   Double_t   yD      = rD*TMath::Sin(phiD);
-  Double_t   dX      = xD-ip.X();
-  Double_t   dY      = yD-ip.Y();
+  Double_t   iX      = ip.X(); if (iX > 100) iX = 0; // No X
+  Double_t   iY      = ip.Y(); if (iY > 100) iY = 0; // No Y
+  Double_t   dX      = xD-iX;
+  Double_t   dY      = yD-iY;
   Double_t   dZ      = zD-ip.Z();
   pos.SetXYZ(dX, dY, dZ);
 }
+//_____________________________________________________________________
 void AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
 			       UShort_t sec, UShort_t strip,
 			       const TVector3& ip,
@@ -594,18 +582,31 @@ void AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
 {
   TVector3 pos;
   GetXYZ(det, ring, sec, strip, ip, pos);
+  if (pos.X() == kInvalidValue ||
+      pos.Y() == kInvalidValue ||
+      pos.Z() == kInvalidValue) {
+    ::Warning("GetEtaPhi", "Invalid position for FMD%d%c[%2d,%3d]=(%f,%f,%f)",
+	      det, ring, sec, strip, pos.X(), pos.Y(), pos.Z());    
+    eta = kInvalidValue;
+    phi = kInvalidValue;
+  }
   Double_t   r       = TMath::Sqrt(TMath::Power(pos.X(),2)+
 				   TMath::Power(pos.Y(),2));
-  phi                = TMath::ATan2(pos.Y(), pos.X());
   Double_t   theta   = TMath::ATan2(r, pos.Z());
   Double_t   tant    = TMath::Tan(theta/2);
   if (TMath::Abs(theta) < 1e-9) {
     ::Warning("GetEtaPhi","tan(theta/2)=%f very small");
+    eta = kInvalidValue;
+    phi = kInvalidValue;
     return;
   }
+  phi = TMath::ATan2(pos.Y(), pos.X());
   eta = -TMath::Log(tant);
+  if (phi < 0)              phi += TMath::TwoPi();
+  if (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
 }
 
+//_____________________________________________________________________
 void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
 					UShort_t  strip,
 					Double_t& eta, Double_t& phi , 
@@ -632,36 +633,6 @@ void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
   if (phi < 0) phi += TMath::TwoPi();
 }
 
-#else
-//_____________________________________________________________________
-Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
-					 UShort_t sec, UShort_t strip, 
-					 Double_t zvtx)
-{
-  // Calculate eta from strip with vertex (redundant with
-  // AliESDFMD::Eta but support displaced vertices)
-  
-  //Get max R of ring
-  Double_t   r         = GetStripR(ring, strip);
-  Int_t      hybrid    = sec / 2;
-  Bool_t     inner     = (ring == 'I' || ring == 'i');
-  Double_t   z         = 0;
-
-
-  switch (det) { 
-  case 1: z = 320.266;                     break;
-  case 2: z = (inner ?  83.666 :  74.966); break;
-  case 3: z = (inner ? -63.066 : -74.966); break; 
-  default: return -999999;
-  }
-  if ((hybrid % 2) == 0) z -= .5;
-  
-  Double_t   theta = TMath::ATan2(r,z-zvtx);
-  Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
-  
-  return eta;
-}
-#endif
 
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip, 
@@ -673,7 +644,7 @@ Double_t AliForwardUtil::GetPhiFromStrip(Char_t ring, UShort_t strip,
 
   // Unknown x,y -> no change
   if (yvtx > 999 || xvtx > 999) return phi;
-  
+
   //Get max R of ring
   Double_t r   = GetStripR(ring, strip);
   Double_t amp = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx) / r;
