@@ -133,9 +133,10 @@ LOCALDIR="output/${DIRNAME}"
 LIBSOPTIONS="0"
 THRESHOLD="10,20"
 SCALING="1,1"
+RUNSCRIPT="run_sim.sh"
 
 if [[ "${LOCAL_PREPARE}" = "yes" || "${GRID_PREPARE}" = "yes" ]]; then
-    . ${SCRIPTDIR}/prepare_runscript.sh run_sim.sh
+    . ${SCRIPTDIR}/prepare_runscript.sh $RUNSCRIPT
 
     if [ ${TUNE} = "DIPSY" ]; then
 	# prepare DIPSY config
@@ -218,25 +219,34 @@ fi
 # prepare files for grid if enabled
 if [ ${GRID_PREPARE} = "yes" ]; then
 
-    cp ${SCRIPTDIR}/template.jdl ${JDLFILE}
-    sed -i -e s#__MYARGS__#"-b -r sim -d $dir -t $tune -e $energy -m $threshold -f $scaling -N ${NEV}"# ${JDLFILE}
+    if [ ${TUNE} = "EPOS3111" ]; then
+       cp ${SCRIPTDIR}/templateEPOS3111.jdl ${JDLFILE}
+    else
+       cp ${SCRIPTDIR}/template.jdl ${JDLFILE}
+    fi
+
+    sed -i -e s#__MYARGS__## ${JDLFILE}
     sed -i -e s#__TARGETDIR__#${ALIENDIR}# ${JDLFILE}
     sed -i -e s#__NJOBS__#${NJOBS}# ${JDLFILE}
     sed -i -e s#__RUNSCRIPT__#${RUNSCRIPT}# ${JDLFILE}
-    sed -i -e s#__USERPATH__#"${ALIEN_USERNAME:0:1}\/${ALIEN_USERNAME}"# ${JDLFILE}
     sed -i -e s#__USER__#"${ALIEN_USERNAME}"# ${JDLFILE}
 
     if [ ${GRID_COPY} = "yes" ]; then
 	# create directory and upload files
 	alien_mkdir -p ${ALIENDIR/alien:/}
+        echo "copying LoadLibs.C to alien:${ALIENDIR}"
 	alien_cp ${SCRIPTDIR}/LoadLibs.C alien:${ALIENDIR}
+        echo "copying rungen.C to alien:${ALIENDIR}"
 	alien_cp ${SCRIPTDIR}/rungen.C alien:${ALIENDIR}
+        echo "copying validation.sh to alien:${ALIENDIR}"
 	alien_cp ${SCRIPTDIR}/validation.sh alien:${ALIENDIR}
 	for FILE in ${FILESTOCOPY}; do
+            echo "copying ${FILE} to alien:${ALIENDIR}"
 	    alien_cp ${CURRENTDIR}/${FILE} alien:${ALIENDIR}
 	done
 
 	# upload JDL
+        echo "copying ${JDLFILE} to alien:${ALIENDIR}"
 	alien_cp ${JDLFILE} alien:${ALIENDIR}
 
 	echo "The JDL file has been prepared, to be submitted by e.g.:"
