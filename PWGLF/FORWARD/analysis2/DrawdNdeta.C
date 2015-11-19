@@ -14,6 +14,7 @@
  * @ingroup pwglf_forward_dndeta
  */
 #include <TH1.h>
+#include <TH2.h>
 #include <TColor.h>
 #include <THStack.h>
 #include <TGraphErrors.h>
@@ -433,11 +434,10 @@ struct dNdetaDrawer
    * @return true on success 
    */
   Bool_t GetEmpirical(const TString& prx,
-		      Bool_t    useCen,
-		      TObject*& fwdEmp,
-		      TObject*& cenEmp,
-		      TString&  empName,
-		      Double_t  delta=0)   
+		      Bool_t         useCen,
+		      TObject*&      fwdEmp,
+		      TObject*&      cenEmp,
+		      TString&       empName)   
   {
     empName = "";
     TString path(prx);
@@ -473,7 +473,7 @@ struct dNdetaDrawer
       if (fwdEmp->IsA()->InheritsFrom(TH1::Class())) {
 	TH1* h = static_cast<TH1*>(fwdEmp);
 	h->SetDirectory(0);
-	if (delta) {
+	if (fDelta) {
 #if 0
 	  TF1* f = new TF1("corr",
 	  		   "1+[0]"
@@ -484,11 +484,11 @@ struct dNdetaDrawer
 	  TF1* f = new TF1("corr", "1+[2]*([0]+(x<[1])*pow([0]*(x-[1]),2))");
 #endif
 	  f->SetParNames("delta","eta0","a");
-	  f->SetParameter(0,delta);
+	  f->SetParameter(0,fDelta);
 	  f->SetParameter(1,-2.0);
 	  f->SetParameter(2,.10); //TMath::Sqrt(2)); // 0.5);
-	  f->Print();
-	  Info("", "Applying correction for IP_delta=%f", delta);
+	  // f->Print();
+	  Info("", "Applying correction for IP_delta=%f", fDelta);
 	  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
 	    Double_t c   = h->GetBinContent(i);
 	    if (c < 1e-6) continue;
@@ -676,6 +676,10 @@ struct dNdetaDrawer
       Warning("Run", "Empirical correction already applied");
       fEmpirical = "__task__";
     }
+    TH2* vertexXY = static_cast<TH2*>(sums->FindObject("vertexAccXY"));
+    if (vertexXY && fDelta <= 0)
+      SetDelta(vertexXY->GetMean(1), vertexXY->GetMean(2));
+    
     // --- Get information on the run --------------------------------
     FetchInformation(forward);
 
@@ -796,8 +800,19 @@ struct dNdetaDrawer
 	"file://${ALICE_PHYSICS}/OADB/PWGLF/FORWARD/EMPIRICAL",
 	0 };
       const char** ptr = test;
+      Bool_t ok = false;
       while (*ptr) {
-	if (GetEmpirical(*ptr, useCen, fwdEmp, cenEmp, fEmpirical, fDelta)) break;
+	const char*  testf[] = { "", "empirical_000138190.root", 0 };
+	const char** ptr2 = testf;
+	while (*ptr2) {
+	  TString path(gSystem->ConcatFileName(*ptr, *ptr2));
+	  if (GetEmpirical(*ptr, useCen, fwdEmp, cenEmp, fEmpirical)) {
+	    ok = true;
+	    break;
+	  }
+	  ptr2++;
+	}
+	if (ok) break;
 	ptr++;
       }
     }
@@ -1928,6 +1943,10 @@ struct dNdetaDrawer
     // --- Put statement on corrections used on the plot -------------
     TString corrs;
     if (!fEmpirical.IsNull()) corrs.Append("Emperical");
+    if (fDelta > 0) {
+      if (!corrs.IsNull()) corrs.Append("+");
+      corrs.Append("IP_{xy}");
+    }
     if (!fFinalMC.IsNull())   {
       if (!corrs.IsNull()) corrs.Append("+");
       corrs.Append("Final MC");
@@ -3147,21 +3166,9 @@ struct dNdetaDrawer
 	   fSysString->GetTitle(), snn, trg.Data(), mth.Data(),
 	   tgt.Data());
 
-    TString a;
-    if      (trg.EqualTo("INEL") || trg.EqualTo("MBOR")) {
-      a = "INELAdder(s,e)";
-      trg = "INEL";
-    }
-    else if (trg.EqualTo("INEL>0") || trg.EqualTo("INELGt0")) {
-      trg = "INELGt0";
-      a = "INELGt0Adder(s,e)";
-    }
-    else if (trg.EqualTo("NSD") || trg.EqualTo("V0AND")) {
-      a = "NSDAdder(s,e)";
-      trg = "NSD";
-    }
-    else
-      a = "CENTAdder(s,e,c)";
+    if      (trg.EqualTo("INEL") || trg.EqualTo("MBOR"))      trg = "INEL";
+    else if (trg.EqualTo("INEL>0") || trg.EqualTo("INELGt0")) trg = "INELGt0";
+    else if (trg.EqualTo("NSD") || trg.EqualTo("V0AND"))      trg = "NSD";
     
 
     std::ofstream outs("gse.C");
@@ -3174,7 +3181,7 @@ struct dNdetaDrawer
 	 << "  TString mkLib = gSystem->GetMakeSharedLib();\n"
 	 << "  mkLib.ReplaceAll(\"-std=c++14\", \"-std=c++98\");\n"
 	 << "  gSystem->SetMakeSharedLib(mkLib);\n"      
-	 << "  TString gseDir(gSystem->ExpandPathName(\"${HOME}/GraphSysErr\"));\n"
+	 << "  TString gseDir(gSystem->ExpandPathName(\"~/GraphSysErr\"));\n"
 	 << "  TString phyDir(gSystem->ExpandPathName(\"${ALICE_PHYSICS}\"));\n"
 	 << "  gROOT->SetMacroPath(Form(\"%s:%s/PWGLF/FORWARD/analysis2/dndeta:%s\",gseDir.Data(),phyDir.Data(),gROOT->GetMacroPath()));\n"
 	 << "  gSystem->AddIncludePath(Form(\"-I%s\",gseDir.Data()));\n"
@@ -3188,7 +3195,7 @@ struct dNdetaDrawer
 	 << "  TList*   r = new TList;\n"
 	 << "  THStack* l = new THStack(\"l\",\"l\");\n"
 	 << "  gROOT->Macro(Form(\"%s((THStack*)%p,0,20)\",m.Data(),l));\n"
-	 << "  SysErrorAdder* a = new " << a << ";\n"
+	 << "  SysErrorAdder* a = SysErrorAdder::Create(t,s,e,c);\n"
 	 << "  TIter  n(l->GetHists());\n"
 	 << "  TH1*   h = 0;\n"
 	 << "  Bool_t f = true;\n"
