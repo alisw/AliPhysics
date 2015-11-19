@@ -571,31 +571,6 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
 void AliAnalysisTaskUpcPhi::RunAODMC(AliAODEvent *aod)
 {
 
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerInputsMC[0] = kFALSE;//0SM2
-  fTriggerInputsMC[1] = fL0inputs & (1 << 0);//0VBA
-  fTriggerInputsMC[2] = fL0inputs & (1 << 1);//0VBC
-  fTriggerInputsMC[3] = fL0inputs & (1 << 9);//0OMU
-
-  fGenPart->Clear("C");
-
-  TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!arrayMC) return;
-
-  Int_t nmc=0;
-  //loop over mc particles
-  for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
-    AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
-    if(!mcPart) continue;
-
-    if(mcPart->GetMother() >= 0) continue;
-
-    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
-    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
-    part->SetPdgCode(mcPart->GetPdgCode());
-    part->SetUniqueID(imc);
-  }//loop over mc particles
-
 }//RunAODMC
 
 
@@ -603,6 +578,43 @@ void AliAnalysisTaskUpcPhi::RunAODMC(AliAODEvent *aod)
 void AliAnalysisTaskUpcPhi::RunESDtrig()
 {
 
+//input event
+  AliESDEvent *esd = (AliESDEvent*) InputEvent();
+  if(!esd) return;
+
+  fRunNum = esd ->GetRunNumber();
+  //Trigger
+  TString trigger = esd->GetFiredTriggerClasses();
+  
+  if(trigger.Contains("CCUP4-B")) fHistCcup4TriggersPerRun->Fill(fRunNum); //CCUP4 triggers
+  if(trigger.Contains("CCUP7-B")) fHistCcup7TriggersPerRun->Fill(fRunNum); //CCUP7 triggers
+  if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
+  
+  if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  
+  fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
+  if(trigger.Contains("CINT1-B") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
+  
+  if(trigger.Contains("CVLN_B2-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - synchronously downscaled
+  if(trigger.Contains("CVLN_R1-B")) fHistCvlnTriggersPerRun->Fill(fRunNum); //CVLN triggers - randomly downscaled
+  
+  if(esd->GetHeader()->IsTriggerInputFired("1ZED")) fHistZedTriggersPerRun->Fill(fRunNum); //1ZED trigger inputs
+  
+   //MB, Central and SemiCentral triggers
+  AliCentrality *centrality = esd->GetCentrality();
+  UInt_t selectionMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  //Double_t percentile = centrality->GetCentralityPercentile("V0M");
+  Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
+  
+  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
+  
+  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
+
+  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
+
+  
+PostData(3, fListTrig);
 
 }
 //_____________________________________________________________________________
@@ -615,6 +627,172 @@ void AliAnalysisTaskUpcPhi::RunESDhist()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPhi::RunESDtree()
 {
+
+//input event
+  AliESDEvent *esd = (AliESDEvent*) InputEvent();
+  if(!esd) return;
+  
+  //input data
+  const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  fDataFilnam->Clear();
+  fDataFilnam->SetString(filnam);
+  fEvtNum = ((TTree*) GetInputData(0))->GetTree()->GetReadEntry();
+  fRunNum = esd->GetRunNumber();
+
+   //Trigger
+  TString trigger = esd->GetFiredTriggerClasses();
+  
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
+  fTrigger[4]  = trigger.Contains("CINT6-B"); // MB trigger
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if(!isMC && !isTriggered ) return;
+
+  //trigger inputs
+  fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
+  fL1inputs = esd->GetHeader()->GetL1TriggerInputs();
+  
+  //Event identification
+  fPerNum = esd->GetPeriodNumber();
+  fOrbNum = esd->GetOrbitNumber();
+  fBCrossNum = esd->GetBunchCrossNumber();
+
+  //primary vertex
+  AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+  fVtxContrib = fESDVertex->GetNContributors();
+  fVtxPos[0] = fESDVertex->GetX();
+  fVtxPos[1] = fESDVertex->GetY();
+  fVtxPos[2] = fESDVertex->GetZ();
+  Double_t CovMatx[6];
+  fESDVertex->GetCovarianceMatrix(CovMatx); 
+  fVtxErr[0] = CovMatx[0];
+  fVtxErr[1] = CovMatx[1];
+  fVtxErr[2] = CovMatx[2];
+  fVtxChi2 = fESDVertex->GetChi2();
+  fVtxNDF = fESDVertex->GetNDF();
+    
+  //SPD primary vertex
+  AliESDVertex *fSPDVertex = (AliESDVertex*) esd->GetPrimaryVertexSPD();
+  fSpdVtxPos[0] = fSPDVertex->GetX();
+  fSpdVtxPos[1] = fSPDVertex->GetY();
+  fSpdVtxPos[2] = fSPDVertex->GetZ();
+
+  //Tracklets
+  fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
+
+  //VZERO, ZDC
+  AliESDVZERO *fV0data = esd->GetVZEROData();
+  AliESDZDC *fZDCdata = esd->GetESDZDC();
+  
+  fV0Adecision = fV0data->GetV0ADecision();
+  fV0Cdecision = fV0data->GetV0CDecision();
+  fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+
+  
+  fNLooseITSTracks = 0;
+  fNLooseTPCTracks = 0;
+  
+  /*/Track loop - loose cuts
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+    if( !trk ) continue;
+    if((trk->TestFilterBit(1<<0))) fNLooseTPCTracks++;
+    if((trk->TestFilterBit(1<<1))) fNLooseITSTracks++;
+      
+  }//Track loop -loose cuts
+  /*/
+  
+  Int_t nGoodTracks=0;
+  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+   //ITSsa track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+
+      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+      if(trk->GetITSNcls() < 4)continue;
+      if(trk->GetTPCchi2()/trk->GetITSNcls() > 2.5)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
+ 
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+      
+  fPhiESDTracks->Clear("C");  
+  if(nGoodTracks == 2){
+
+  	  for(Int_t i=0; i<2; i++){
+                AliESDtrack *trk = dynamic_cast<AliESDtrack*>(esd->GetTrack(TrackIndex[i]));
+                if( !trk ) continue;
+		
+		fPIDITSMuon[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kMuon);
+		fPIDITSElectron[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kElectron);
+		fPIDITSPion[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion);
+		fPIDITSKaon[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon);
+		fPIDITSProton[i] = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kProton);
+		
+		new((*fPhiESDTracks)[i]) AliESDtrack(*trk);
+		}
+			
+  fITSTree ->Fill();
+  }
+  
+  nGoodTracks=0;
+  
+   //TPC track loop
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = esd->GetTrack(itr);
+    if( !trk ) continue;
+    
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(trk->GetTPCNcls() < 70)continue;
+      if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
+      if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
+      trk->GetImpactParameters(dca[0],dca[1]);
+      if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;      
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+      
+  fPhiESDTracks->Clear("C");  
+  if(nGoodTracks == 2){
+
+  	  for(Int_t i=0; i<2; i++){
+                AliESDtrack *trk = dynamic_cast<AliESDtrack*>(esd->GetTrack(TrackIndex[i]));
+                if( !trk ) continue;
+		
+		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDTPCPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+		fPIDTPCKaon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kKaon);
+		fPIDTPCProton[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kProton);
+		
+		new((*fPhiESDTracks)[i]) AliESDtrack(*trk);
+		}
+			
+  fTPCTree ->Fill();
+  }
+  
+  PostData(1, fITSTree);
+  PostData(2, fTPCTree);
 
 
 }//RunESD
