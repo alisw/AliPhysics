@@ -74,7 +74,7 @@ ClassImp(AliNDLocalRegression)
 
 TObjArray *AliNDLocalRegression::fgVisualCorrection=0;
 // instance of correction for visualization
-
+Int_t AliNDLocalRegression::fgVerboseLevel=1000;
 
 AliNDLocalRegression::AliNDLocalRegression():
   TNamed(),           
@@ -604,6 +604,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
    */
 
   const Double_t kScale=0.5;  
+  const Double_t singularity_tolerance = 1e-35;
   //
   // 1.)  Make backup of original parameters
   //
@@ -667,7 +668,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
   for (Int_t iDim=0; iDim<nDims; iDim++){nbinsAxis[iDim]=his->GetAxis(iDim)->GetNbins();}  
   Int_t nBins=vecParamOrig->GetEntries();
   for (Int_t iBin=0; iBin<nBins; iBin++){   // loop over bins
-    if (iBin%10==0) printf("%d\n",iBin);
+    if (iBin%fgVerboseLevel==0) printf("%d\n",iBin);
     //
     his->GetBinContent(iBin,binIndex);
     for (Int_t iDim=0; iDim<nDims; iDim++) { // fill common info for bin of interest
@@ -686,6 +687,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     vecXk=matParam0;
     //
     //  neiborhood loop
+    Int_t constCounter=0;
     for (Int_t iDim=0; iDim<nDims; iDim++){         // loop in n dim
       for (Int_t iSide=-1; iSide<=1; iSide+=2){     // left right loop
 	for (Int_t jDim=0; jDim<nDims; jDim++) binIndexSide[jDim]= binIndex[jDim];
@@ -695,6 +697,8 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	binIndexSide[iDim]+=iSide;      
 	if (binIndexSide[iDim]<0) binIndexSide[iDim]=0;
 	if (binIndexSide[iDim]>his->GetAxis(iDim)->GetNbins())  binIndexSide[iDim]=his->GetAxis(iDim)->GetNbins();
+	Bool_t isConst=binIndexSide[iDim]>0 &&binIndexSide[iDim]<=his->GetAxis(iDim)->GetNbins(); 
+	if (isConst)  constCounter++;
 	Double_t localCenter=his->GetAxis(iDim)->GetBinCenter(binIndex[iDim]);
 	Double_t sideCenter= his->GetAxis(iDim)->GetBinCenter(binIndexSide[iDim]);
 	Double_t position=   (iSide<0) ? his->GetAxis(iDim)->GetBinLowEdge(binIndex[iDim]) :  his->GetAxis(iDim)->GetBinUpEdge(binIndex[iDim]);
@@ -778,15 +782,21 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     //
     vecYk = vecZk-matHk*vecXk;                 // Innovation or measurement residual
     matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
-    matSk.Invert();
-    matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
-    vecXk += matKk*vecYk;                      //  updated vector 
-    covXk2 = (mat1-(matKk*matHk));
-    covOut =  covXk2*covXk; 
-    //
-    vecParamUpdated->AddAt(new TVectorD(nParams,vecXk.GetMatrixArray()), iBin); 
-    vecCovarUpdated->AddAt(new TMatrixD(covOut), iBin); 
-    
+    Double_t determinant= matSk.Determinant();
+    if (TMath::Abs(determinant)<singularity_tolerance ) {
+      vecParamUpdated->AddAt(new TVectorD(*((TVectorD*)(fLocalFitParam->At(iBin)))),iBin); 
+      vecCovarUpdated->AddAt(new TMatrixD(*((TMatrixD*)(fLocalFitCovar->At(iBin)))),iBin);
+      AliDebug(1,TString::Format("Update matrix not possible matSk.Determinant() too small, skipping bin %d",iBin).Data());
+    }else{
+      matSk.Invert();
+      matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
+      vecXk += matKk*vecYk;                      //  updated vector 
+      covXk2 = (mat1-(matKk*matHk));
+      covOut =  covXk2*covXk; 
+      //
+      vecParamUpdated->AddAt(new TVectorD(nParams,vecXk.GetMatrixArray()), iBin); 
+      vecCovarUpdated->AddAt(new TMatrixD(covOut), iBin); 
+    }
     if (pcstream){
       TMatrixD vecZkBinCheck(matrixTransformBin,TMatrixD::kMult,matParam0); 
       TVectorD vecPos(nDims,binCenter);
@@ -796,6 +806,8 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
        (*pcstream)<<"checkBin"<<       // check agreement in all sides
 	 "iBin="<<iBin<<               // bin index
 	 "vecPos.="<<&vecPos<<         // bin position
+	 "determinant="<<determinant<<  // determinant
+	 "constCounter="<<constCounter<<
 	 //
 	 "vecXk0.="<<vecXk0<<          // original parameter vector
 	 "vecXk.="<<&vecXk<<           // parameter vector at bin after update
@@ -824,3 +836,37 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
   return 0;
 }
 
+void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
+  //
+  //
+  //
+  const Int_t kMaxDim=100;
+  Int_t nBins=fHistPoints->GetNbins();
+  
+  TVectorD binLocal(fNParameters);
+  TVectorF binIndexF(fNParameters);
+  
+  //
+  for (Int_t iBin=0; iBin<nBins; iBin++){   // loop over bins
+    if (iBin%fgVerboseLevel==0) printf("%d\n",iBin);
+    fHistPoints->GetBinContent(iBin,fBinIndex);
+    for (Int_t iDim=0; iDim<fNParameters; iDim++) { // fill common info for bin of interest
+      binIndexF[iDim]=fBinIndex[iDim];
+      fBinCenter[iDim]= fHistPoints->GetAxis(iDim)->GetBinCenter(fBinIndex[iDim]);
+      fBinDelta[iDim] = fHistPoints->GetAxis(iDim)->GetBinWidth(fBinIndex[iDim]);
+    }
+    
+    for (Int_t iDim=0; iDim<fNParameters; iDim++){
+      for (Int_t jDim=0; jDim<fNParameters; jDim++) binLocal[jDim]=fBinCenter[jDim];
+      for (Int_t iDiv=0; iDiv<nDiv; iDiv++){
+	binLocal[iDim]=fBinCenter[iDim]+(fBinDelta[iDim]*iDiv)/nDiv;
+	Double_t value=Eval(binLocal.GetMatrixArray());
+	stream<<
+	  "bin.="<<&binLocal<<
+	  "binIndexF.="<<&binIndexF<<
+	  "value="<<value<<
+	  "\n";
+      }
+    }
+  }
+}

@@ -40,6 +40,7 @@ class AliNDLocalRegression : public TNamed {
   TTreeSRedirector *GetStreamer(){return fStreamer;}
   void SetStreamer( TTreeSRedirector *streamer){ fStreamer=streamer;}
   Bool_t AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *indexes, Double_t *relWeight, TTreeSRedirector* pcstream);
+  void DumpToTree(Int_t div, TTreeStream & stream);
   //
   // function to access the Local Regression from the TFormula
   static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position=0);
@@ -57,7 +58,7 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2);
   static Double_t GetCorrND(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
-
+  static void SetVerboseLevel(Int_t verbose){ fgVerboseLevel=TMath::Max(verbose,1);}
  public:
   Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction);
 
@@ -86,6 +87,7 @@ protected:
   TMatrixD  *fLocalRobustStat;        // local robust statistic
 protected:
   static TObjArray *fgVisualCorrection; ///< array of orrection for visualization
+  static Int_t fgVerboseLevel;          ///< verbose level
   Int_t    *fBinIndex;                  //[fNParameters] working arrays current bin index
   Double_t *fBinCenter;                 //[fNParameters] working current local variables - bin center
   Double_t *fBinDelta;                  //[fNParameters] working current local variables - bin delta
