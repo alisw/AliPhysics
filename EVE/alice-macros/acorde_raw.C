@@ -32,7 +32,8 @@ UChar_t g_acorde_raw_transp_off = 60;
 
 void acorde_raw()
 {
-
+    printf("*** RAW ACORDE ***");
+    
   // From Mario RC
 
   AliEveEventManager::GetMaster()->AssertGeometry();

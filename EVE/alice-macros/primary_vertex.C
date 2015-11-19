@@ -167,6 +167,8 @@ make_vertex_box(const AliESDVertex* v, Bool_t use_sigma, Float_t fx, Float_t fy,
 TEveStraightLineSet*
 primary_vertex(Bool_t use_sigma=kTRUE, Float_t fx=1, Float_t fy=1, Float_t fz=1)
 {
+    printf("*** Primary Vertex ***");
+    
   AliESDEvent  *esd = AliEveEventManager::GetMaster()->AssertESD();
   const AliESDVertex *pv  = esd->GetPrimaryVertex();
   if ( ! pv->GetStatus()) {

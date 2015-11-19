@@ -413,9 +413,17 @@ void AliEveSaveViews::SaveWithDialog()
         const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
         const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
         const char *system;
+        
         if(strcmp(fESDEvent->GetBeamType(),"")!=0)
         {
-            system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+            if(strcmp(fESDEvent->GetBeamType(),"A-A"))
+            {
+                system = "Colliding system:Pb-Pb";
+            }
+            else
+            {
+                system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+            }
         }
         else
         {

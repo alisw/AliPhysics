@@ -35,6 +35,8 @@
 
 void muon_raw()
 {
+    printf("*** RAW MUON ***");
+    
   // load mapping
   AliMpCDB::LoadAll(kFALSE);
 

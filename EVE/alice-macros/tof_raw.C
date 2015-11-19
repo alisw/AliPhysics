@@ -19,6 +19,8 @@
 
 void tof_raw(Int_t newDecoder = 2)
 {
+    printf("*** RAW TOF ***");
+    
   AliRawReader *rawReader = AliEveEventManager::AssertRawReader();
 
   TClonesArray *array = 0x0;

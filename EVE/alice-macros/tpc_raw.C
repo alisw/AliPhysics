@@ -72,6 +72,8 @@ void renderHLTClusters(TTree* clustersTree);
 // mode = 3 - show both 2D and 3D sectors
 void tpc_raw(Int_t mode = 3)
 {
+    printf("*** RAW TPC ***");
+    
   gStyle->SetPalette(1, 0);
 
   AliEveEventManager::GetMaster()->AssertGeometry();

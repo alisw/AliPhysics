@@ -17,6 +17,8 @@
 
 void t0_raw()
 {
+    printf("*** RAW T0 ***");
+    
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
 
   gStyle->SetPalette(1, 0);

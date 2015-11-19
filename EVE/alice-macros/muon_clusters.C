@@ -45,6 +45,8 @@ void add_muon_clusters(TIter* next, TEvePointSet* clusterList)
 //______________________________________________________________________________
 void muon_clusters()
 {
+    printf("*** RecPoints MUON ***");
+    
   // load clusters
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("MUON");

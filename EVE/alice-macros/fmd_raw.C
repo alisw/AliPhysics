@@ -8,6 +8,8 @@
 
 void fmd_raw()
 {
+    printf("*** RAW FMD ***");
+    
   gStyle->SetPalette(1);
   AliEveFMDLoader* gFmdLoader = AliEveFMDLoader::Instance();
   gFmdLoader->LoadRaw();

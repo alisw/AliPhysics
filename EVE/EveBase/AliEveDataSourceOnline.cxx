@@ -8,6 +8,7 @@
 
 #include "AliEveDataSourceOnline.h"
 #include "AliEveConfigManager.h"
+#include "AliEveInit.h"
 
 #include "AliZMQManager.h"
 #include "AliOnlineReconstructionUtil.h"
@@ -25,18 +26,18 @@ using namespace std;
 ClassImp(AliEveDataSourceOnline)
 
 AliEveDataSourceOnline::AliEveDataSourceOnline(bool storageManager) :
-    AliEveDataSource(storageManager),
-    fEventListenerThread(0),
-    fStorageManagerWatcherThread(0),
-    fEventInUse(1),
-    fWritingToEventIndex(0),
-    fIsNewEventAvaliable(false),
-    fFailCounter(0),
-    fStorageDown(false),
-    fHasEventFromStorageManager(false),
-    fFinished(false),
-    fStorageManager(storageManager),
-    fEventManager(0)
+AliEveDataSource(storageManager),
+fEventListenerThread(0),
+fStorageManagerWatcherThread(0),
+fEventInUse(1),
+fWritingToEventIndex(0),
+fIsNewEventAvaliable(false),
+fFailCounter(0),
+fStorageDown(false),
+fHasEventFromStorageManager(false),
+fFinished(false),
+fStorageManager(storageManager),
+fEventManager(0)
 {
     fEventManager = AliEveEventManager::GetMaster();
     
@@ -105,16 +106,65 @@ void AliEveDataSourceOnline::GetNextEvent()
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->Lock();
 #endif
-                    if(fEventInUse == 0){fWritingToEventIndex = 1;}
-                    else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-                    cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
-                    if(fCurrentEvent[fWritingToEventIndex])
+                    TEnv settings;
+                    AliEveInit::GetConfig(&settings);
+                    const char *requiredTriggerClass = settings.GetValue("trigger.class.filter", "");
+                    
+                    bool matchesTriggerClass = false;
+                    
+                    
+                    if(strcmp(requiredTriggerClass,"none")!=0)
                     {
-                        delete fCurrentEvent[fWritingToEventIndex];
-                        fCurrentEvent[fWritingToEventIndex]=0;
+                        // check if required trigger class fired
+
+                        ULong64_t mask = 1;
+                        ULong64_t triggerMask = tmpEvent->GetTriggerMask();
+                        ULong64_t triggerMaskNext50 = tmpEvent->GetTriggerMaskNext50();
+                        
+                        mask=1;
+                        
+                        for(int i=0;i<50;i++)
+                        {
+                            if(mask & triggerMask)
+                            {
+                                if(strcmp(tmpEvent->GetESDRun()->GetTriggerClass(i),requiredTriggerClass)==0)
+                                {
+                                    cout<<"\n\n\nMatching trigger class\n\n\n"<<endl;
+                                    matchesTriggerClass=true;
+                                }
+                            }
+                            if(mask & triggerMaskNext50)
+                                {
+                                if(strcmp(tmpEvent->GetESDRun()->GetTriggerClass(i+50),requiredTriggerClass)==0)
+                                {
+                                    cout<<"\n\n\nMatching trigger class\n\n\n"<<endl;
+                                    matchesTriggerClass=true;
+                                }
+                            }
+                            mask = mask<<1;
+                        }
+                    //
                     }
-                    fCurrentEvent[fWritingToEventIndex] = tmpEvent;
-                    fIsNewEventAvaliable = true;
+                    else
+                    {
+                        matchesTriggerClass = true;
+                    }
+                    
+                    if(matchesTriggerClass)
+                    {
+                        if(fEventInUse == 0){fWritingToEventIndex = 1;}
+                        else if(fEventInUse == 1){fWritingToEventIndex = 0;}
+                        cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
+                        if(fCurrentEvent[fWritingToEventIndex])
+                        {
+                            delete fCurrentEvent[fWritingToEventIndex];
+                            fCurrentEvent[fWritingToEventIndex]=0;
+                        }
+                        fCurrentEvent[fWritingToEventIndex] = tmpEvent;
+                        
+                        
+                        fIsNewEventAvaliable = true;
+                    }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->UnLock();
 #endif
@@ -235,7 +285,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         
         if(resultEvent)
         {
-//            DestroyElements();
+            //            DestroyElements();
             fCurrentData.fESD = resultEvent;
         }
         else
@@ -268,7 +318,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         
         if(resultEvent)
         {
-//            DestroyElements();
+            //            DestroyElements();
             fCurrentData.fESD = resultEvent;
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
@@ -302,7 +352,7 @@ void AliEveDataSourceOnline::NextEvent()
         fEventManager->SetHasEvent(true);
         fEventManager->AfterNewEventLoaded();
         fEventManager->NewEventLoaded();
-
+        
         fHasEventFromStorageManager = false;
     }
     else if(fIsNewEventAvaliable)
@@ -385,11 +435,11 @@ void AliEveDataSourceOnline::MarkCurrentEvent()
 
 void AliEveDataSourceOnline::StorageManagerOk()
 {
-//    Emit("StorageManagerOk()");
+    //    Emit("StorageManagerOk()");
 }
 void AliEveDataSourceOnline::StorageManagerDown()
 {
-//    Emit("StorageManagerDown()");
+    //    Emit("StorageManagerDown()");
 }
 
 void AliEveDataSourceOnline::EventServerOk()

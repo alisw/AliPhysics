@@ -14,6 +14,7 @@
 #include <AliESDEvent.h>
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
+#include <AliEveAODTracks.h>
 #include "AliEveDataSource.h"
 
 #include <TEveEventManager.h>
@@ -39,18 +40,18 @@ public:
     
     AliEveEventManager(EDataSource defaultDataSource=kSourceOffline);
     static AliEveEventManager* GetMaster();
-
+    
     // getters for data from current data source:
-//    AliRunLoader*        GetRunLoader()     const { return fCurrentData->fRunLoader; }
+    //    AliRunLoader*        GetRunLoader()     const { return fCurrentData->fRunLoader; }
     TFile*               GetESDFile()       const { return fCurrentData->fESDFile; }
     TTree*               GetESDTree()       const { return fCurrentData->fESDTree; }
     TTree*               GetHLTESDTree()    const { return fCurrentData->fHLTESDTree; }
     AliESDEvent*         GetESD()           const { return fCurrentData->fESD;     }
-//    AliESDfriend*        GetESDfriend()     const { return fCurrentData->fESDfriend; }
-//    TFile*               GetAODFile()       const { return fCurrentData->fAODFile; }
-//    TTree*               GetAODTree()       const { return fCurrentData->fAODTree; }
-//    AliAODEvent*         GetAOD()           const { return fCurrentData->fAOD;     }
-
+    //    AliESDfriend*        GetESDfriend()     const { return fCurrentData->fESDfriend; }
+    //    TFile*               GetAODFile()       const { return fCurrentData->fAODFile; }
+    //    TTree*               GetAODTree()       const { return fCurrentData->fAODTree; }
+    //    AliAODEvent*         GetAOD()           const { return fCurrentData->fAOD;     }
+    
     //static getters for drawing macros
     static Int_t  CurrentEventId();
     static Bool_t HasRunLoader();
@@ -81,17 +82,36 @@ public:
     void          SetSaveViews(bool save){fSaveViews=save;}
     void          SetESDtracksByCategory(bool set){fDrawESDtracksByCategory=set;}
     void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
-    void          SetESDcolorsByCategory(Color_t colors[9]){fESDdrawer->SetColorsByCategory(colors);}
-    void          SetESDwidth(Width_t width){fESDdrawer->SetWidth(width);}
-    void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
-    void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}
+    void          SetAODtracksByPID(bool set){fDrawAODtracksByPID=set;}
+    
+    void          SetESDcolorsByCategory(Color_t colors[9])
+    {
+        fESDdrawer->SetColorsByCategory(colors);
+        fAODdrawer->SetColorsByCategory(colors);
+    }
+    void          SetESDwidth(Width_t width)
+    {
+        fESDdrawer->SetWidth(width);
+        fAODdrawer->SetWidth(width);
+    }
+    void          SetESDdashNoRefit(bool dashNoRefit)
+    {
+        fESDdrawer->SetDashNoRefit(dashNoRefit);
+        fAODdrawer->SetDashNoRefit(dashNoRefit);
+    }
+    void          SetESDdrawNoRefit(bool drawNoRefit)
+    {
+        fESDdrawer->SetDrawNoRefit(drawNoRefit);
+        fAODdrawer->SetDrawNoRefit(drawNoRefit);
+    }
+    
     
     // global and transient elements:
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,Bool_t replace, Bool_t update);
     TEveElement*  FindGlobal(const TString& tag);
     static void   RegisterTransient(TEveElement* element);
-//    static void   RegisterTransientList(TEveElement* element);
+    //    static void   RegisterTransientList(TEveElement* element);
     void          DestroyTransients();
     
     // data sources:
@@ -103,13 +123,13 @@ public:
     
 
     static void SetCdbUri(TString path);
-
+    
     // getters and setters for info about events:
     Int_t          GetEventId() const {return fEventId;}
     virtual Int_t  GetMaxEventId(Bool_t refreshESD=kFALSE) const;
     int            GetCurrentRun() {return fCurrentRun;}
-//    Bool_t         IsEventAvailable() const {return fHasEvent;}
-
+    //    Bool_t         IsEventAvailable() const {return fHasEvent;}
+    
     void           SetEventId(int eventId)    { fEventId=eventId;}
     void           SetCurrentRun(int run){fCurrentRun = run;}
     void           SetTrigSel(Int_t trig);
@@ -120,7 +140,7 @@ public:
     virtual void          AfterNewEventLoaded();
     AliEveMacroExecutor*  GetExecutor() const { return fExecutor; }
     AliEveEventSelector*  GetEventSelector() const { return fPEventSelector; }
-
+    
     Bool_t InitOCDB(int runNo);
     
     // signals:
@@ -149,12 +169,12 @@ private:
     AliEveDataSource* fDataSourceOffline;  // pointer to offline data source
     AliEveDataSource* fDataSourceHLTZMQ;   // pointer to HLT ZMQ data source
     
-
+    
     Bool_t   fAutoLoad;              // Automatic loading of events (online)
     Float_t  fAutoLoadTime;          // Auto-load time in seconds
     TTimer*  fAutoLoadTimer;         // Timer for automatic event loading
     Bool_t   fAutoLoadTimerRunning;  // State of auto-load timer.
-
+    
     
     TMap*             fGlobal;          // Map of global elements
     Bool_t            fGlobalReplace;   // Are global replace
@@ -165,16 +185,17 @@ private:
     AliEveMacroExecutor*  fExecutor;        // Executor for std macros
     AliEveSaveViews*      fViewsSaver;      // views saver
     AliEveESDTracks*      fESDdrawer;       // drawer of ESD tracks
+    AliEveAODTracks*      fAODdrawer;       // drawer of AOD tracks
     AliEveEventSelector*  fPEventSelector;  // Event filter
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?
     AliMagF*  fgMagField;      // Global pointer to magnetic field.
-
+    
     
     bool fSaveViews;
     bool fDrawESDtracksByCategory;
     bool fDrawESDtracksByType;
-    bool fFirstEvent;
+    bool fDrawAODtracksByPID;
     
     ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
 };

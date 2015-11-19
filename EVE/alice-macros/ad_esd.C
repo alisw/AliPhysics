@@ -21,19 +21,21 @@ class AliEveADModule;
 
 void ad_esd(Int_t maxCharge = 300, Bool_t showLegend = kFALSE)
 {
-  gStyle->SetPalette(1, 0);
-
-  AliESDAD *adESD = AliEveEventManager::GetMaster()->AssertESD()->GetADData();
-
-  gEve->DisableRedraw();
-
-  AliEveADModule* esdA = new AliEveADModule("AD_ESD_A", kTRUE, maxCharge, showLegend);
-  esdA->LoadEsd(adESD);
-
-
-  AliEveADModule* esdC = new AliEveADModule("AD_ESD_C", kFALSE, maxCharge, showLegend);
-  esdC->LoadEsd(adESD);
-  
-  
-  gEve->EnableRedraw();
+    printf("*** ESD AD ***");
+    
+    gStyle->SetPalette(1, 0);
+    
+    AliESDAD *adESD = AliEveEventManager::GetMaster()->AssertESD()->GetADData();
+    
+    gEve->DisableRedraw();
+    
+    AliEveADModule* esdA = new AliEveADModule("AD_ESD_A", kTRUE, maxCharge, showLegend);
+    esdA->LoadEsd(adESD);
+    
+    
+    AliEveADModule* esdC = new AliEveADModule("AD_ESD_C", kFALSE, maxCharge, showLegend);
+    esdC->LoadEsd(adESD);
+    
+    
+    gEve->EnableRedraw();
 }

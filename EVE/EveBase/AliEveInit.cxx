@@ -75,6 +75,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     bool dashNoRefit      = settings.GetValue("tracks.noRefit.dash",true);    // dash no-refit tracks
     bool drawNoRefit      = settings.GetValue("tracks.noRefit.show",true);    // show no-refit tracks
     bool tracksByType     = settings.GetValue("tracks.byType.show",true);     // colorize tracks by PID
+    bool aodTracksByPID   = settings.GetValue("tracks.aod.byPID.show",true);  // colorize AOD tracks by PID
     bool tracksByCategory = settings.GetValue("tracks.byCategory.show",false);// colorize tracks by reconstruction quality
 
     bool autoloadEvents   = settings.GetValue("events.autoload.set",false);   // set autoload by default
@@ -235,6 +236,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     man->SetESDtracksByCategory(tracksByCategory);
     man->SetESDtracksByType(tracksByType);
+    man->SetAODtracksByPID(aodTracksByPID);
     
     man->SetSaveViews(saveViews);
     man->SetAutoLoad(autoloadEvents);// set autoload by default

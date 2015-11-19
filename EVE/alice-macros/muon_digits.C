@@ -92,6 +92,8 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
 //______________________________________________________________________________
 void muon_digits()
 {
+    printf("*** DIGITS MUON ***");
+    
   // load digits
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("MUON");

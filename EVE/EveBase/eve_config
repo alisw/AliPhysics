@@ -5,6 +5,8 @@
 #                                                               #
 #===============================================================#
 
+trigger.class.filter:       none
+
 HLTESDtree.show:        	0
 MUON.show:              	1
 axes.show:                  1
@@ -15,6 +17,7 @@ tracks.noRefit.dash:		1
 tracks.noRefit.show:		1
 tracks.byType.show:     	1
 tracks.byCategory.show:		0
+tracks.aod.byPID.show:      1
 
 tracks.byType.electron:     600
 tracks.byType.muon:         416

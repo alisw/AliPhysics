@@ -185,6 +185,8 @@ void add_esd_muon_tracks(AliESDEvent* esd, AliMUONESDInterface* data,
 //______________________________________________________________________________
 void esd_muon_tracks(Bool_t showClusters, Bool_t showDigits)
 {
+    printf("*** ESD MUON ***");
+    
   // load ESD
   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   if (esd->GetNumberOfMuonTracks() == 0 && !gEve->GetKeepEmptyCont()) return;

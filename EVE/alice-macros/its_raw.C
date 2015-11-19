@@ -29,6 +29,8 @@ void its_raw(Int_t mode            = 63,
              Bool_t check_empty    = kTRUE,
              Bool_t scaled_modules = kFALSE)
 {
+    printf("*** RAW ITS ***");
+    
   AliRawReader *rawReader = AliEveEventManager::AssertRawReader();
 
   TEveUtil::LoadMacro("its_common_foos.C");

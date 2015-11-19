@@ -21,6 +21,8 @@ class AliEveVZEROModule;
 
 void vzero_raw()
 {
+    printf("*** RAW VZero ***");
+    
   gStyle->SetPalette(1, 0);
 
   AliRawReader *reader = AliEveEventManager::AssertRawReader();

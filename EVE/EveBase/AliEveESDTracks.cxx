@@ -259,29 +259,29 @@ TEveTrackList* AliEveESDTracks::TPCtracks()
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
         ++count;
-	AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
         if (!trf) continue;
-	AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-	if (!tr) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
         AliEveTrack* track = MakeTPCtrack(tr, trf, cont);
         if (!track) continue;
         
         cont->AddElement(track);
     }
     /*
-    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
-    {
-        ++count;
-	AliESDtrack* tr = esd->GetTrack(n);
-        if (!tr) continue;
-	if (!esd_friend->GetTrack(n)) continue;
-        if (!esd_friend->GetTrack(n)) continue;
-        AliEveTrack* track = MakeTPCtrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-        if (!track) continue;
-        
-        cont->AddElement(track);
-    }
-    */
+     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+     {
+     ++count;
+     AliESDtrack* tr = esd->GetTrack(n);
+     if (!tr) continue;
+     if (!esd_friend->GetTrack(n)) continue;
+     if (!esd_friend->GetTrack(n)) continue;
+     AliEveTrack* track = MakeTPCtrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+     if (!track) continue;
+     
+     cont->AddElement(track);
+     }
+     */
     cont->SetTitle(Form("N=%d", count));
     cont->MakeTracks();
     
@@ -308,15 +308,15 @@ TEveTrackList* AliEveESDTracks::ITStracks()
     Int_t count = 0;
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
-      ++count;
-      AliESDfriendTrack* trf = esd_friend->GetTrack(n);
-      if (!trf) continue;
-      AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-      if (!tr) continue;
-      AliEveTrack* track = MakeITStrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-      if (!track) continue;      
-      
-      cont->AddElement(track);
+        ++count;
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        if (!trf) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
+        AliEveTrack* track = MakeITStrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+        if (!track) continue;
+        
+        cont->AddElement(track);
     }    
     /*
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
@@ -356,15 +356,15 @@ TEveTrackList* AliEveESDTracks::ITSstandaloneTracks()
     Int_t count = 0;
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
-      ++count;
-      AliESDfriendTrack* trf = esd_friend->GetTrack(n);
-      if (!trf) continue;
-      AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-      if (!tr) continue;
-      AliEveTrack* track = MakeITSstandaloneTrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-      if (!track) continue;
-      
-      cont->AddElement(track);
+        ++count;
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        if (!trf) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
+        AliEveTrack* track = MakeITSstandaloneTrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+        if (!track) continue;
+        
+        cont->AddElement(track);
     }    
     /*
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)

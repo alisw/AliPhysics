@@ -136,6 +136,8 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyleNeg,TEveTrackPropagator* rnrS
 
 AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
 {
+     printf("*** ESD V0s ***");
+    
   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();

@@ -155,7 +155,7 @@ Bool_t     plotcells[] = {kFALSE , kTRUE};  /// Display cells in clusters or clu
 ///
 void emcal_esdclustercells()
 {
-    //printf("Execute emcal_esdclustercells\n");
+    printf("*** ESD EMCal ***");
     
     //--------------------
     // Access to esd event
@@ -354,12 +354,16 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
         Float_t eta   =  0 ;
         Int_t iphi    = -1 ;
         Int_t ieta    = -1 ;
+
+        AliLog::SetModuleDebugLevel("EMCAL",100);
         
         for(Int_t icell = 0; icell < fCaloCluster->GetNCells(); icell++)
         {
             id  = fCaloCluster->GetCellAbsId(icell);
             
             amp = fCellsEM->GetCellAmplitude(id); // GeV
+            
+
             
             //if(amp < 0.1) continue ;
             
@@ -369,12 +373,20 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
             //            printf("CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
             //                   icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
             
-            if(fabs(eta)>0.7){ // something is wrong
+            if(fabs(eta)>0.7)  // something is wrong
+            {
                 cout<<"\n\nWrong eta values for EMCAL\n\n"<<endl;
-                cout<<"Run number in AliEveEventManager:"<<AliEveEventManager::GetCurrentRun()<<endl;
                 AliCDBManager::Instance()->Print();
                 AliEveEventManager::AssertGeometry()->Print();
                 AliEveEventManager::AssertMagField()->Print();
+                
+                cout<<"Alignment matrices form ESD:"<<endl;
+                
+                for(Int_t mod = 0; mod < 20; mod++)
+                {
+                    cout<<"mod:"<<mod<<endl;
+                    AliEveEventManager::AssertESD()->GetEMCALMatrix(mod)->Print();
+                }
             }
             
             fHistoEM->Fill(eta,GetPhi(phi),amp);

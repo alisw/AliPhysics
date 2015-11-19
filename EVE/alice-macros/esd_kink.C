@@ -109,6 +109,8 @@ AliEveKink* esd_make_kink(TEveTrackPropagator* rnrStyleMoth,TEveTrackPropagator*
 
 AliEveKinkList* esd_kink()
 {
+    printf("*** ESD Kinks ***");
+    
   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   AliEveKinkList* cont = new AliEveKinkList("ESD kink");
   cont->SetMainColor(3); // green

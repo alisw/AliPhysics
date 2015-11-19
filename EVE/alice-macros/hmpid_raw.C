@@ -23,6 +23,8 @@
 
 void hmpid_raw()
 {
+    printf("*** RAW HMPID ***");
+    
   const Char_t *name[] = { "HMPID0", "HMPID1", "HMPID2", "HMPID3",
 			   "HMPID4", "HMPID5", "HMPID6" };
 
