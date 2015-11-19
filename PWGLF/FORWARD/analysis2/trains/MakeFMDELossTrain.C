@@ -32,6 +32,7 @@ public:
     fOptions.Add("config",  "FILE", "Configuration", "elossFitConfig.C");
     fOptions.Add("corr",    "DIR",  "Corrections dir", "");
     fOptions.Add("dead",    "FILE", "Additional dead-map script", "");
+    fOptions.Add("low-cut", "VALUE","Low cut on eloss", -1);
     fOptions.Set("type", "ESD");
   }
 protected:
@@ -70,6 +71,7 @@ protected:
     // --- Check if this is MC ---------------------------------------
     Bool_t   mc     = HasMCHandler();
     Bool_t   onlyMB = fOptions.AsBool("only-mb");
+    Double_t lowCut = fOptions.AsDouble("low-cut", -1);
     TString  config = fOptions.Get("config"); 
     TString  corrs  = "";
     TString  dead   = "";
@@ -78,8 +80,8 @@ protected:
 
     // --- Add the task ----------------------------------------------
     AliAnalysisTask* task = 
-      CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,\"%s\",\"%s\",\"%s\"", 
-					  mc, onlyMB,  
+      CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,%f,\"%s\",\"%s\",\"%s\"", 
+					  mc, onlyMB,  lowCut,
 					  config.Data(), 
 					  corrs.Data(),
 					  dead.Data()));
