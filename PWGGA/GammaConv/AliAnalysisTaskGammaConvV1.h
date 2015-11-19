@@ -110,6 +110,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hESDConvGammaR;									//!
 		TH1F 								**hESDConvGammaEta;									//!
 		TH1F 								**hESDConvGammaPhi;									//!
+        TH1F                                **hESDConvGammaPsiPair;                             //!
+        TH2F 								**hESDConvGammaPsiPairPt;							//!
 		TTree 								**tESDConvGammaPtDcazCat;							//!
 		Float_t 							fPtGamma;											//!
 		Float_t 							fDCAzPhoton;										//!
@@ -136,10 +138,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH2F 								**hESDMotherPi0PtOpenAngle;							//!
 		TH2F 								**hESDMotherEtaPtOpenAngle;
 		THnSparseF 							**sPtRDeltaROpenAngle;
-    TH1F                                **hESDMotherEtaSlice0;                              //!
-    TH1F                                **hESDMotherEtaSlice1;                              //!
-    TH1F                                **hESDMotherEtaSlice2;                              //!
-    TH1F                                **hESDMotherEtaSlice3;                              //!
+		TH1F                                **hESDMotherEtaSlice0;                              //!
+		TH1F                                **hESDMotherEtaSlice1;                              //!
+		TH1F                                **hESDMotherEtaSlice2;                              //!
 		TH1I 								**hMCHeaders;										//!
 		TH1F 								**hMCAllGammaPt;									//!
 		TH1F 								**hMCDecayGammaPi0Pt;								//!
@@ -300,7 +301,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 25);
+		ClassDef(AliAnalysisTaskGammaConvV1, 26);
 };
 
 #endif
