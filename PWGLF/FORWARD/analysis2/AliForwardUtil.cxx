@@ -488,9 +488,6 @@ Double_t AliForwardUtil::GetStripR(Char_t ring, UShort_t strip)
   return r;
 }
 
-namespace {
-  const Double_t kInvalidValue = -9999;
-}
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetSectorZ(UShort_t det, Char_t ring, UShort_t sec)
 {
@@ -553,17 +550,17 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
 }
 
 //_____________________________________________________________________
-void AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
-			    UShort_t sec, UShort_t strip,
-			    const TVector3& ip,
-			    TVector3& pos)
+Bool_t AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
+			      UShort_t sec, UShort_t strip,
+			      const TVector3& ip,
+			      TVector3& pos)
 {
   Double_t   rD      = GetStripR(ring, strip);
   Double_t   phiD    = GetSectorPhi(det,ring, sec);
   Double_t   zD      = GetSectorZ(det, ring, sec);
   if (phiD == kInvalidValue || zD == kInvalidValue) {
     pos.SetXYZ(kInvalidValue,kInvalidValue,kInvalidValue);
-    return;
+    return false;
   }
   Double_t   xD      = rD*TMath::Cos(phiD);
   Double_t   yD      = rD*TMath::Sin(phiD);
@@ -573,22 +570,21 @@ void AliForwardUtil::GetXYZ(UShort_t det, Char_t ring,
   Double_t   dY      = yD-iY;
   Double_t   dZ      = zD-ip.Z();
   pos.SetXYZ(dX, dY, dZ);
+  return true;
 }
 //_____________________________________________________________________
-void AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
-			       UShort_t sec, UShort_t strip,
-			       const TVector3& ip,
-			       Double_t& eta, Double_t& phi)
+Bool_t AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
+				 UShort_t sec, UShort_t strip,
+				 const TVector3& ip,
+				 Double_t& eta, Double_t& phi)
 {
   TVector3 pos;
-  GetXYZ(det, ring, sec, strip, ip, pos);
-  if (pos.X() == kInvalidValue ||
-      pos.Y() == kInvalidValue ||
-      pos.Z() == kInvalidValue) {
+  if (!GetXYZ(det, ring, sec, strip, ip, pos)) {
     ::Warning("GetEtaPhi", "Invalid position for FMD%d%c[%2d,%3d]=(%f,%f,%f)",
 	      det, ring, sec, strip, pos.X(), pos.Y(), pos.Z());    
     eta = kInvalidValue;
     phi = kInvalidValue;
+    return false;
   }
   Double_t   r       = TMath::Sqrt(TMath::Power(pos.X(),2)+
 				   TMath::Power(pos.Y(),2));
@@ -598,19 +594,21 @@ void AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
     ::Warning("GetEtaPhi","tan(theta/2)=%f very small");
     eta = kInvalidValue;
     phi = kInvalidValue;
-    return;
+    return false;
   }
   phi = TMath::ATan2(pos.Y(), pos.X());
   eta = -TMath::Log(tant);
   if (phi < 0)              phi += TMath::TwoPi();
   if (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
+
+  return true;
 }
 
 //_____________________________________________________________________
-void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
-					UShort_t  strip,
-					Double_t& eta, Double_t& phi , 
-					Double_t  ipX, Double_t  ipY)
+Bool_t AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
+					  UShort_t  strip,
+					  Double_t& eta, Double_t& phi , 
+					  Double_t  ipX, Double_t  ipY)
 {
   Double_t rs  = GetStripR(r, strip);
   Double_t sx  = rs*TMath::Cos(phi);
@@ -624,13 +622,17 @@ void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
     ::Warning("GetEtaPhiFromStrip",
 	      "eta=%f -> theta=%f tan(theta)=%f invalid (no change)",
 	      eta, the, tth);
-    return;
+    return false;
   }
   Double_t z   = rs / tth;
-  // Printf("IP(x,y)=%f,%f S(x,y)=%f,%f D(x,y)=%f,%f R=%f theta=%f tan(theta)=%f z=%f", ipX, ipY, sx, sy, dx, dy, rv, the, TMath::Tan(the), z);
+  // Printf("IP(x,y)=%f,%f S(x,y)=%f,%f D(x,y)=%f,%f R=%f theta=%f "
+  //        "tan(theta)=%f z=%f",
+  //        ipX, ipY, sx, sy, dx, dy, rv, the, TMath::Tan(the), z);
   eta          = -TMath::Log(TMath::Tan(TMath::ATan2(rv,z)/2));
   phi          = TMath::ATan2(dy,dx);
   if (phi < 0) phi += TMath::TwoPi();
+
+  return true;
 }
 
 

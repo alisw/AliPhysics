@@ -36,6 +36,10 @@ class AliAnalysisTaskSE;
 class AliForwardUtil : public TObject
 {
 public:
+  enum {
+    /** Value if things cannot be calculated */
+    kInvalidValue = -9999
+  };
   enum { 
     kSkipRing = (1 << 19) // Bit for skipping a histogram
   };
@@ -242,10 +246,12 @@ public:
    * @param str   Strip 
    * @param ip   The interaction point
    * @param pos  On return, the relative position 
+   *
+   * @return true on success 
    */
-  static void GetXYZ(UShort_t det, Char_t ring, UShort_t sec,
-		     UShort_t str, const TVector3& ip,
-		     TVector3& pos);
+  static Bool_t GetXYZ(UShort_t det, Char_t ring, UShort_t sec,
+		       UShort_t str, const TVector3& ip,
+		       TVector3& pos);
   /** 
    * Get the eta and phi of a strip given an interaction point 
    * 
@@ -256,10 +262,12 @@ public:
    * @param ip    Interaction point 
    * @param eta   On return, the eta
    * @param phi   On return, the phi (in radians)
+   *
+   * @return true on success 
    */
-  static void     GetEtaPhi(UShort_t det, Char_t ring, UShort_t sec,
-			    UShort_t str, const TVector3& ip,
-			    Double_t& eta, Double_t& phi);
+  static Bool_t GetEtaPhi(UShort_t det, Char_t ring, UShort_t sec,
+			  UShort_t str, const TVector3& ip,
+			  Double_t& eta, Double_t& phi);
   /** 
    * Get eta from strip
    * 
@@ -279,10 +287,11 @@ public:
    * @param ipX    IP X coordinate 
    * @param ipY    IP Y coordinate 
    * 
+   * @return true on success 
    */
-  static void GetEtaPhiFromStrip(Char_t r, UShort_t strip,
-				 Double_t& eta, Double_t& phi , 
-				 Double_t ipX,  Double_t ipY);
+  static Bool_t GetEtaPhiFromStrip(Char_t r, UShort_t strip,
+				   Double_t& eta, Double_t& phi , 
+				   Double_t ipX,  Double_t ipY);
   /** 
    * Get the azimuthal angle of a strip
    * 
@@ -641,7 +650,7 @@ public:
     TH2D* fFMD3i; // Histogram for FMD3i
     TH2D* fFMD3o; // Histogram for FMD3o
 
-    ClassDef(Histos,2) 
+    ClassDef(Histos,2);
   };
 
   //__________________________________________________________________
@@ -752,7 +761,7 @@ public:
     UShort_t fkNSector; // Number of sectors 
     UShort_t fkNStrip;  // Number of strips 
 
-    ClassDef(RingHistos,1) 
+    ClassDef(RingHistos,1);
   };
   /* @} */
 
@@ -827,7 +836,7 @@ private:
   ~AliForwardUtil() {}
   
 
-  ClassDef(AliForwardUtil,1) // Utilities - do not make object
+  ClassDef(AliForwardUtil,1);// Utilities - do not make object
 };
 
 // #ifdef LOG_NO_DEBUG
