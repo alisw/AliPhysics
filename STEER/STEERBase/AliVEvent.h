@@ -45,6 +45,7 @@ public:
   enum EDataLayoutType { kESD, kMC, kAOD, kMixed, kFlat };
   enum EOfflineTriggerTypes { 
       kMB                = BIT( 0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
+      kINT1              = BIT( 0), // V0A | V0C | SPD minimum bias trigger
       kINT7              = BIT( 1), // V0AND trigger, offline V0 selection
       kMUON              = BIT( 2), // Muon trigger, offline SPD or V0 selection
       kHighMult          = BIT( 3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
