@@ -109,8 +109,8 @@ main()
   # init alien 
   [[ -z $ALIEN_ROOT && -n $ALIEN_DIR ]] && ALIEN_ROOT=$ALIEN_DIR
   #if ! haveAlienToken; then
-  #  $ALIEN_ROOT/api/bin/alien-token-destroy
-    $ALIEN_ROOT/api/bin/alien-token-init $alienUserName
+  #  alien-token-destroy
+    alien-token-init $alienUserName
   #fi
   #if ! haveAlienToken; then
   #  if [[ $allOutputToLog -eq 1 ]]; then
@@ -256,7 +256,7 @@ main()
 
     #check token
     #if ! haveAlienToken; then
-    #  $ALIEN_ROOT/api/bin/alien-token-init $alienUserName
+    #  alien-token-init $alienUserName
     #  #source /tmp/gclient_env_$UID
     #fi
     
@@ -432,7 +432,7 @@ alien_find()
 {
   # like a regular alien_find command
   # output is a list with md5 sums and ctimes
-  executable="$ALIEN_ROOT/api/bin/gbbox find"
+  executable="gbbox find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
 
@@ -499,7 +499,7 @@ haveAlienToken()
   [[ -z $maxExpireTime ]] && maxExpireTime=4000
   [[ -z $ALIEN_ROOT ]] && echo "no ALIEN_ROOT!" && return 1
   now=$(date "+%s")
-  tokenExpirationTime=$($ALIEN_ROOT/api/bin/alien-token-info|grep Expires)
+  tokenExpirationTime=$(alien-token-info|grep Expires)
   tokenExpirationTime=$(date -d "${tokenExpirationTime#*:}" "+%s")
   secondsToExpire=$(( tokenExpirationTime-now ))
   if [[ $secondsToExpire -lt $maxExpireTime ]]; then
@@ -538,11 +538,11 @@ EOF
     fi
   else
     if which timeout &>/dev/null; then
-      echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
-      timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      echo timeout $copyTimeout alien_cp $src $dst
+      timeout $copyTimeout alien_cp $src $dst
     else
-      echo $ALIEN_ROOT/api/bin/alien_cp $src $dst
-      $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      echo alien_cp $src $dst
+      alien_cp $src $dst
     fi
   fi
 }

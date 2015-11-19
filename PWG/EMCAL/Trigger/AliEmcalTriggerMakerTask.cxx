@@ -18,7 +18,7 @@
 #include <TObjArray.h>
 
 #include "AliEmcalTriggerBitConfig.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliLog.h"
@@ -27,14 +27,10 @@
 ClassImp(AliEmcalTriggerMakerTask)
 /// \endcond
 
-/**
- * Dummy constructor
- */
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   AliAnalysisTaskEmcal(),
   fTriggerMaker(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
-  fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
@@ -50,7 +46,6 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   AliAnalysisTaskEmcal(),
   fTriggerMaker(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
-  fCaloTriggerSetupOutName("EmcalTriggersSetup"),
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
@@ -62,9 +57,6 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fTriggerMaker = new AliEmcalTriggerMakerKernel;
 }
 
-/**
- * Destructor
- */
 AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
   if(fTriggerMaker) delete fTriggerMaker;
   if(fTriggerBitConfig) delete fTriggerBitConfig;
@@ -146,8 +138,6 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   }
 
   fTriggerMaker->SetGeometry(fGeom);
-  fTriggerMaker->SetRunNumber(InputEvent()->GetRunNumber());
-  fTriggerMaker->SetMC(MCEvent() != NULL);
   fTriggerMaker->Init();
 }
 
@@ -164,14 +154,16 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   fTriggerMaker->ReadCellData(fCaloCells);
   fTriggerMaker->ReadTriggerData(fCaloTriggers);
   fTriggerMaker->BuildL1ThresholdsOffline(fV0);
+  fTriggerMaker->SetIsMC(MCEvent());
   TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent());
-  AliEmcalTriggerPatchInfo *recpatch = NULL;
+  AliEmcalTriggerPatchInfoAPV1 *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
+    recpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(*patchIter);
     if(fDoQA){
-      if(recpatch->IsJetHigh() || recpatch->IsJetLow()) triggerstring = "EJE";
-      if(recpatch->IsGammaHigh() || recpatch->IsGammaLow()) triggerstring = "EGA";
+      if(recpatch->IsJetHigh() || recpatch->IsJetLow() || recpatch->IsJetHighSimple() || recpatch->IsJetLowSimple()) triggerstring = "EJE";
+      if(recpatch->IsGammaHigh() || recpatch->IsGammaLow() || recpatch->IsGammaHighSimple() || recpatch->IsGammaLowSimple()) triggerstring = "EGA";
       if(recpatch->IsLevel0()) triggerstring = "EL0";
       if(recpatch->IsRecalcJet()) triggerstring = "REJE";
       if(recpatch->IsRecalcGamma()) triggerstring = "REGA";
@@ -187,7 +179,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
         }
       }
     }
-    new((*fCaloTriggersOut)[patchcounter++]) AliEmcalTriggerPatchInfo(*recpatch);
+    new((*fCaloTriggersOut)[patchcounter++]) AliEmcalTriggerPatchInfoAPV1(*recpatch);
   }
   return true;
 }

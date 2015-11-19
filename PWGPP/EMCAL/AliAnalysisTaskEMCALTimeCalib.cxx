@@ -443,7 +443,8 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     for (Int_t j = 0; j < kNSM ;  j++) 
     {
-      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
+      //fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
+      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,1100,-350.0,750.0);
       fhTimeDsupBC[j][i]->SetYTitle(" Time (ns) "); 
       fhTimeDsupBC[j][i]->SetXTitle(" E (GeV) "); 
     }

@@ -70,6 +70,7 @@ set(SRCS
   Trigger/AliEmcalTriggerMakerKernel.cxx
   Trigger/AliEmcalTriggerMakerTask.cxx
   Trigger/AliEmcalTriggerPatchInfoAP.cxx
+  Trigger/AliEmcalTriggerPatchInfoAPV1.cxx
   Trigger/AliEmcalTriggerSetupInfo.cxx
   Trigger/AliEmcalTriggerDecision.cxx
   Trigger/AliEmcalTriggerDecisionContainer.cxx
