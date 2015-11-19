@@ -11,6 +11,7 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
+#include "AliESDTZERO.h"
 #include "AliESDfriend.h"
 #include "AliESDInputHandler.h"
 #include "AliESDTZEROfriend.h"
@@ -40,7 +41,7 @@ AliT0CalibAnalysisTask::AliT0CalibAnalysisTask(const char *name)
   fMultiplicity(-99999),
   fTriggerinput(0x0), fZDCbg(kFALSE),
   fTOFtracks(0), fT0tofTrack(0),
-  fESDpid(new AliESDpid())
+  fESDpid(new AliESDpid()), fPFPbit(0)
 {
   // Constructor
 
@@ -111,8 +112,9 @@ void AliT0CalibAnalysisTask::UserCreateOutputObjects()
   fT0OutTree->Branch("centralityTRK", &fcentralityTRK);
   for ( Int_t i=0; i<24; i++) {
     fT0OutTree->Branch(Form("amp%i", i+1), &famp[i]);
+    fT0OutTree->Branch(Form("amp%i_new", i+1), &famp_new[i]);
     fT0OutTree->Branch(Form("time%i", i+1), &ftime[i]);
-   fT0OutTree->Branch(Form("fRawTime%i", i+1), &fRawTime[i]);
+    fT0OutTree->Branch(Form("fRawTime%i", i+1), &fRawTime[i]);
   } 
   for ( Int_t i=0; i<5; i++) {
     fT0OutTree->Branch(Form("fOrA%i", i+1), &fOrA[i]);
@@ -126,6 +128,8 @@ void AliT0CalibAnalysisTask::UserCreateOutputObjects()
   //ZDC background
  fT0OutTree->Branch("zbg", &fZDCbg);
  fESDpid = new AliESDpid();
+ //PFP
+ fT0OutTree->Branch("bitPFP", &fPFPbit);
 
   fOutputList->Add(fT0OutTree);
  
@@ -141,9 +145,9 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
   fVertex= fVertexSPD =  fMeanAC = fMeanA =  fMeanC =  fTrackletSPD = fNcont = -99999;
   fMultV0A=fMultV0C=fTimeV0A=fTimeV0C=fMultiplicity = -99999;
   
-  for (Int_t i=0; i<24; i++) 
-    famp[i] = ftime[i] = fRawTime[i] = -9999;
-  
+  for (Int_t i=0; i<24; i++)	{
+    famp[i] = famp_new[i] = ftime[i] = fRawTime[i] = -9999;
+  }
   for ( Int_t i0=0; i0<5; i0++) {
     fTVDC[i0]=-9999;
     fOrC[i0]=-9999;
@@ -177,7 +181,7 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	// printf(" VZERO MULT \n");
 	AliESDTZERO* tz= (AliESDTZERO*) fESD->GetESDTZERO();
 	
-	const Double32_t *amp, *time, *mean ;
+	const Double32_t *amp, *time, *mean,*amp_new ;
 	fVertex= fVertexSPD =  fMeanAC = fMeanA =  fMeanC = fTrackletSPD = fNcont =-99999;
 	fMultV0A=fMultV0C=fTimeV0A=fTimeV0C=fMultiplicity = -99999;
 	
@@ -187,7 +191,6 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	TString triggers = fESD->GetFiredTriggerClasses();
 	fTrigger.SetString(triggers.Data());
 	TString inputtriggers =fESD-> GetHeader()->GetFiredTriggerInputs();
-	// cout<<inputtriggers<<endl;
 	fTriggerinput.SetString(inputtriggers.Data());
 	fEvent=fESD->GetEventNumberInFile();
 	fT0Trigger=fESD->GetT0Trig();
@@ -239,27 +242,24 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	fSumampC = tz->GetMultC();
 	fSumampA = tz->GetMultA();
 	amp=fESD->GetT0amplitude();
+	amp_new = tz->GetT0NewAmplitude();
 	time=fESD->GetT0time();
 	for (Int_t i=0; i<24; i++){ 
-	  if( time[i]>100 && amp[i]>0.1){
-	    famp[i] = amp[i];
+	  if( time[i]>100 ) {
 	    ftime[i] = time[i];
+	    if( amp[i]>0.1)  famp[i] = amp[i];
+	    if(amp_new)famp_new[i] = amp_new[i];	
 	  }
 	}
-	
 	//new raw OrA OrC TVDC all CFD
 	for (Int_t ii=0; ii<5; ii++){ 
 	  orA   = tz->GetOrA(ii);
 	  orC   = tz->GetOrC(ii);
 	  tvdc  = tz->GetTVDC(ii);
-	  //	printf("@@@@@  new signasl %d  %f %f %f \n",ii, orA, orC, tvdc);
 	  if(ii==0) {
 	    fOrA[ii] = orA;
 	    fOrC[ii] = orC;
 	    fTVDC[ii] = tvdc;
-	    //  cout<<tvdc<<" "<<fT0Trigger<<endl;
-	    // if (tvdc>-5 && tvdc<5 && tvdc!=0) 
-	    //  cout<<"@@@@@@@@@ "<< tvdc<<" "<<fT0Trigger<<endl;
 	  } else {
 	    if ( ii>0 && fOrA[ii-1] !=orA)	fOrA[ii] = orA;
 	    else fOrA[ii]=-9999;
@@ -283,7 +283,9 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	  fcentralityTRK = centrality->GetCentralityPercentile("TRK"); // returns the centrality 
 	  fcentralityZDC = centrality->GetCentralityPercentile("ZEMvsZDC"); // returns the 
 	}	
-      
+	// PFP bit
+	fPFPbit = tz->GetT0PileupBits();
+       
       } //selected
     } //ESD
 
