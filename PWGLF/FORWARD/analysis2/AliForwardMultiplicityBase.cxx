@@ -573,11 +573,8 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     thisList->Add(phiAcc);
     dndetaRings->Add(resPhi);
 
-    AliInfoF("%s\n"
-	     "\tNormalization eta:  %d\n"
-	     "\tNormalization phi:  %d\n",
-	     *ptr, 
-	     Int_t(etaCov->GetMaximum()), Int_t(phiAcc->GetMaximum()));
+    DMSG(fDebug,1, "%s Normalization eta=%8d phi=%8d",
+	 ptr, Int_t(etaCov->GetMaximum()), Int_t(phiAcc->GetMaximum()));
 
     ptr++;
   }
