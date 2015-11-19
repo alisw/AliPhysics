@@ -20,7 +20,7 @@
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerDataGridAP.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEmcalTriggerPatchFinderAP.h"
 #include "AliEmcalTriggerAlgorithmAP.h"
 #include "AliEmcalTriggerRawPatchAP.h"
@@ -36,9 +36,6 @@
 ClassImp(AliEmcalTriggerMakerKernel)
 /// \endcond
 
-/**
- * Constructor
- */
 AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   TObject(),
   fBadChannels(),
@@ -52,17 +49,12 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
   fIsMC(kFALSE),
-  fRunNumber(-1),
-  fRejectOffAcceptancePatches(kFALSE),
   fDebugLevel(0)
 {
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
 }
 
-/**
- * Destructor
- */
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fPatchAmplitudes;
   delete fPatchADCSimple;
@@ -70,11 +62,9 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fLevel0TimeMap;
   delete fTriggerBitMap;
   delete fPatchFinder;
+  delete fLevel0PatchFinder;
 }
 
-/**
- * Initialize the trigger maker - Create data grids and allocate space for the data
- */
 void AliEmcalTriggerMakerKernel::Init(){
   fPatchAmplitudes = new AliEmcalTriggerDataGridAP<double>;
   fPatchADCSimple = new AliEmcalTriggerDataGridAP<double>;
@@ -105,7 +95,6 @@ void AliEmcalTriggerMakerKernel::Init(){
 }
 
 void AliEmcalTriggerMakerKernel::Reset(){
-
   fPatchAmplitudes->Reset();
   fPatchADC->Reset();
   fPatchADCSimple->Reset();
@@ -174,6 +163,8 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
 }
 
 void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzerodata){
+  // get the V0 value and compute and set the offline thresholds
+  // get V0, compute thresholds and save them as global parameters
   ULong64_t v0S = vzerodata->GetTriggerChargeA() + vzerodata->GetTriggerChargeC();
   for (Int_t i = 0; i < 4; ++i) {
     // A*V0^2/2^32+B*V0/2^16+C
@@ -192,18 +183,48 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   inputevent->GetPrimaryVertex()->GetXYZ(vertexpos);
   TVector3 vertexvec(vertexpos);
 
-  // dig out common data (thresholds)
-  // 0 - jet high, 1 - gamma high, 2 - jet low, 3 - gamma low
-  // get the V0 value and compute and set the offline thresholds
-  // get V0, compute thresholds and save them as global parameters
+  Int_t isMC = fIsMC ? 1 : 0;
+  Int_t offset = (1 - isMC) * fTriggerBitConfig->GetTriggerTypesEnd();
+
+  // Create trigger bit masks. They are needed later to remove
+  // trigger bits from the trigger bit mask for non-matching patch types
+  Int_t jetPatchMask =  1 << fTriggerBitConfig->GetJetHighBit()
+      | 1 << fTriggerBitConfig->GetJetLowBit()
+      | 1 << (fTriggerBitConfig->GetJetHighBit() + fTriggerBitConfig->GetTriggerTypesEnd())
+      | 1 << (fTriggerBitConfig->GetJetLowBit() + fTriggerBitConfig->GetTriggerTypesEnd()),
+      gammaPatchMask = fTriggerBitConfig->GetGammaHighBit()
+      | 1 << fTriggerBitConfig->GetGammaLowBit()
+      | 1 << (fTriggerBitConfig->GetGammaHighBit() + fTriggerBitConfig->GetTriggerTypesEnd())
+      | 1 << (fTriggerBitConfig->GetGammaLowBit() + fTriggerBitConfig->GetTriggerTypesEnd());
+
   std::vector<AliEmcalTriggerRawPatchAP> patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
   TObjArray *result = new TObjArray(1000);
   for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
+    // Apply offline and recalc selection
+    Int_t offlinebits = 0;
+    if(patchit->GetPatchSize() == 2){
+      if(patchit->GetADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetGammaHighBit());
+      if(patchit->GetOfflineADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetGammaHighBit());
+      if(patchit->GetADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
+      if(patchit->GetOfflineADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
+    } else if (patchit->GetPatchSize() == 16){
+      if(patchit->GetADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetHighBit());
+      if(patchit->GetOfflineADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
+      if(patchit->GetADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
+      if(patchit->GetOfflineADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
+    }
+    // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
     Int_t onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
-    AliEmcalTriggerPatchInfo *fullpatch = AliEmcalTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
+    if(patchit->GetPatchSize() == 2) onlinebits &= gammaPatchMask;
+    else if(patchit->GetPatchSize() == 16) onlinebits &= jetPatchMask;
+    else onlinebits = 0;
+    if(!(onlinebits || offlinebits)) continue;
+    // convert
+    AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * kEMCL1ADCtoGeV,
         patchit->GetBitmask() | onlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
+    fullpatch->SetOffSet(offset);
     result->Add(fullpatch);
   }
 
@@ -211,7 +232,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   std::vector<AliEmcalTriggerRawPatchAP> l0patches = fLevel0PatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
   for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     if(!CheckForL0(patchit->GetColStart(), patchit->GetRowStart())) continue;
-    AliEmcalTriggerPatchInfo *fullpatch = AliEmcalTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
+    AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * kEMCL1ADCtoGeV,
         1, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
@@ -221,12 +242,6 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   return result;
 }
 
-/**
- * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
- * in the same TRU
- * \param trg Triggers object with the pointer set to the patch to inspect
- * \return True if the patch is accepted, false otherwise.
- */
 Bool_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
   if(col < 0 || row < 0){
     AliError(Form("Patch outside range [col %d, row %d]", col, row));
