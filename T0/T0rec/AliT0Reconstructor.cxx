@@ -927,7 +927,7 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
   for (int iii=12; iii<24; iii++) ind[iii]=57;
   ind[24]=5;
   ind[25]=55;
-  for (Int_t in=0; in<26;  in++)
+  for (Int_t in=0; in<24;  in++)
     {
       /*      if(in==24|| in==25)
 	printf(" MPD %i %i %i data %i %i \n",
