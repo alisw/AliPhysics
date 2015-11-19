@@ -1467,11 +1467,19 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
   ip.SetZ(vertex->GetZ());
   const AliESDVertex* vertexXY = esd.GetPrimaryVertex();
     
-  
-  if(!vertexXY->IsFromVertexerZ()) {
-    ip.SetX(vertexXY->GetX());
-    ip.SetY(vertexXY->GetY());
-  }
+  DMSG(fDebug, 2, "Read vertex: Primary (%f,%f,%f) [%3s] SPD (%f,%f,%f) [%3s]",
+       vertexXY->GetX(), vertexXY->GetY(), vertexXY->GetZ(),
+       vertexXY->IsFromVertexerZ() ? "Z" : "XYZ",
+       vertex  ->GetX(), vertex  ->GetY(), vertex  ->GetZ(),
+       vertex  ->IsFromVertexerZ() ? "Z" : "XYZ");
+
+  // If from vertexer Z, we get the mean of X and Y
+  ip.SetX(vertexXY->GetX());
+  ip.SetY(vertexXY->GetY());
+  // if(!vertexXY->IsFromVertexerZ()) {
+  //   ip.SetX(vertexXY->GetX());
+  //   ip.SetY(vertexXY->GetY());
+  // }
   return kVtxOK;
 }
 
