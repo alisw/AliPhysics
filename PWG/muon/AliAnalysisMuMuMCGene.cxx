@@ -27,7 +27,9 @@
 ClassImp(AliAnalysisMuMuMCGene)
 
 //_____________________________________________________________________________
-AliAnalysisMuMuMCGene::AliAnalysisMuMuMCGene() : AliAnalysisMuMuBase()
+AliAnalysisMuMuMCGene::AliAnalysisMuMuMCGene() : AliAnalysisMuMuBase(),
+fParticlesOfInterest(),
+fPDGCodeOfInterest()
 {
   /// ctor
   
@@ -118,11 +120,7 @@ void AliAnalysisMuMuMCGene::FillHistosForMCEvent(const char* eventSelection,
                                                  const char* centrality)
 {
   // Fill MCEvent-wise histograms
-  
-//  AliGenEventHeader* genHeader = GetGenEventHeader(*(Event()));
-  
-  AliAODMCHeader* aodMCHeader = static_cast<AliAODMCHeader*> (static_cast<const AliAODEvent*>(Event())->FindListObject(AliAODMCHeader::StdBranchName()));
-  
+    
   Int_t nMCTracks = MCEvent()->GetNumberOfTracks(); // MC number of MC tracks
   
   AliVParticle* p(0x0);
