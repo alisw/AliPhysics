@@ -12,6 +12,7 @@
 #include <TMath.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <TVector3.h>
 #include <iostream>
 #include <iomanip>
 
@@ -319,6 +320,11 @@ AliFMDESDFixer::RecalculateEta(UShort_t d, Char_t r, UShort_t s, UShort_t t,
   // eta             = newEta;
   AliForwardUtil::GetEtaPhi(d, r, s, t, ip, newEta, newPhi);
   eta = newEta;
+  if (TMath::Abs(eta) < 1) {
+    ::Warning("RecalculateEta",
+	      "FMD%d%c[%2d,%3d] (%f,%f,%f) eta=%f phi=%f (was %f)",
+	      d, r, s, t, ip.X(), ip.Y(), ip.Z(), eta, newPhi, oldEta);
+  }
   
   fEtaChange->Fill(newEta-oldEta);
 
