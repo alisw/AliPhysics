@@ -28,6 +28,7 @@ const float AliTPCChebCorr::fgkY2XHSpan = TMath::Tan(TMath::Pi()/AliTPCChebCorr:
 //____________________________________________________________________
 AliTPCChebCorr::AliTPCChebCorr()
   : TNamed()
+  ,fNRows(0)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
   ,fNStacksZ(0)
@@ -46,6 +47,7 @@ AliTPCChebCorr::AliTPCChebCorr()
 AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title, 
 			       int nps, int nzs, float zmaxAbs)
   : TNamed(name,title)
+  ,fNRows(kNRows)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
   ,fNStacksZ(0)
@@ -100,8 +102,8 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[2],const f
 	int id = GetParID(iz,isc,isl);
 	AliInfoF("Doing param #%03d Iz:%d Sect:%02d Slice:%d | %+.1f<Z<%+.1f %+.3f<y2x<%+.3f",
 		 id,iz,isc,isl,bmn[1],bmx[1],bmn[0],bmx[0]);
-	if (useS) fParams[id] = new  AliCheb2DStackS(fun,kNRows,dimOut,bmn,bmx,np,prec);
-	else      fParams[id] = new  AliCheb2DStackF(fun,kNRows,dimOut,bmn,bmx,np,prec);
+	if (useS) fParams[id] = new  AliCheb2DStackS(fun,fNRows,dimOut,bmn,bmx,np,prec);
+	else      fParams[id] = new  AliCheb2DStackF(fun,fNRows,dimOut,bmn,bmx,np,prec);
       }
     }
   }
@@ -140,8 +142,8 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[][2],const
 	int id = GetParID(iz,isc,isl);
 	AliInfoF("Doing param #%03d Iz:%d Sect:%02d Slice:%d | %+.1f<Z<%+.1f %+.3f<y2x<%+.3f",
 		 id,iz,isc,isl,bmn[1],bmx[1],bmn[0],bmx[0]);
-	if (useS) fParams[id] = new  AliCheb2DStackS(fun,kNRows,dimOut,bmn,bmx,np,prec);
-	else      fParams[id] = new  AliCheb2DStackF(fun,kNRows,dimOut,bmn,bmx,np,prec);
+	if (useS) fParams[id] = new  AliCheb2DStackS(fun,fNRows,dimOut,bmn,bmx,np,prec);
+	else      fParams[id] = new  AliCheb2DStackF(fun,fNRows,dimOut,bmn,bmx,np,prec);
       }
     }
   }

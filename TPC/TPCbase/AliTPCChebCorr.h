@@ -82,6 +82,7 @@ class AliTPCChebCorr : public TNamed
   int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
   //
  protected:
+  Int_t    fNRows;                  // number of slices along the radius (e.g. rows)
   Int_t    fNStacksSect;            // number of stacks per sector in phi
   Int_t    fNStacksZSect;           // number of stacks per sector (side) in Z 
   Int_t    fNStacksZ;               // number of stacks in Z
