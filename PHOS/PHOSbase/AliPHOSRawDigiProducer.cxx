@@ -40,6 +40,8 @@
 #include "AliPHOSCalibData.h"
 #include "AliPHOSPulseGenerator.h"
 #include "AliCaloRawStreamV3.h"
+#include "AliDAQ.h"
+#include "AliRawReader.h"
 #include "AliLog.h"
 
 ClassImp(AliPHOSRawDigiProducer)
@@ -99,6 +101,8 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(AliRawReader *rawReader,
   GetCalibrationParameters() ; 
 
   fRawStream = new AliCaloRawStreamV3(rawReader,"PHOS",mapping);
+  // Select only data in ALTRO format and skip STU, the last PHOS DDL
+  rawReader->Select("PHOS",0,AliDAQ::NumberOfDdls("PHOS")-2);
 
 }
 //--------------------------------------------------------------------------------------
@@ -193,7 +197,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
   
   while (fRawStream->NextDDL()) {
     // Skip STU DDL
-    if (fRawStream->GetDDLNumber() == 20) continue; 
+    if (fRawStream->GetDDLNumber() == fgkSTUDDL) continue; 
     while (fRawStream->NextChannel()) {
       relId[0] = 5 - fRawStream->GetModule() ; // counts from 1 to 5
       relId[1] = 0;                            // 0=EMC
