@@ -250,12 +250,12 @@ AliMultSelectionTask::~AliMultSelectionTask()
 {
     //------------------------------------------------
     // DESTRUCTOR
-    //------------------------------------------------
+    //------------------------------------------------//
 
-    if (fTreeEvent) {
-        delete fTreeEvent;
-        fTreeEvent = 0x0;
-    }
+    //if (fTreeEvent) {
+    //    delete fTreeEvent;
+    //    fTreeEvent = 0x0;
+    //}
     if (fESDtrackCuts) {
       delete fESDtrackCuts;
       fESDtrackCuts = 0x0;
