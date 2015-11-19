@@ -865,7 +865,7 @@ struct dNdetaDrawer
 	MakeSysError(tmp, cen, fwd, f);
 	delete f;
 
-	if (fOptions & kNoCentral) { 
+	if (fOptions & kNoCentral && tmp) { 
 	  // Split Sys error into two histograms 
 	  const char* nme  = tmp->GetName();
 	  TH1* tmpp = static_cast<TH1*>(tmp->Clone(Form("%s_a", nme)));
@@ -945,6 +945,11 @@ struct dNdetaDrawer
       fCentMeth = new TNamed("centEstimator", tmp.Data()); // default");
       fCentMeth->SetUniqueID(1);
     }
+    if (fSysString && fSysString->GetUniqueID() != 1 &&
+	fCentMin == 0 && fCentMax == 0) {
+      fCentMin = 0;
+      fCentMax = 100;
+    }
 
     if (fTriggerEff < 0) { 
       // Allow complete overwrite by passing negative number 
@@ -973,6 +978,12 @@ struct dNdetaDrawer
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
     if (fCentAxis) {
+      Printf("Centrality axis: %d [%f,%f] vs [%f,%f]",
+	     fCentAxis->GetNbins(),
+	     fCentAxis->GetXmin(),
+	     fCentAxis->GetXmax(),
+	     fCentMin,
+	     fCentMax);
       TArrayD  bins(fCentAxis->GetNbins()+1);
       Int_t    nBins = 0;
       Double_t high  = -1;
@@ -1287,7 +1298,7 @@ struct dNdetaDrawer
     if (norm->GetMaximum() < 1000) {
       Warning("FetchCentResults", "Too few events in %s: %ld",
 	      list->GetName(), Long_t(norm->GetMaximum()));
-      return 0;
+      // return 0;
     }
     
     TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
