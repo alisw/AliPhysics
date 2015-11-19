@@ -22,6 +22,7 @@ TTree *statusTree;
 
 drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char* runType="pp") {
   //
+
   if (gSystem->Exec("ls qaConfig.C")==0)
     gROOT->LoadMacro(  "qaConfig.C");
   else {
@@ -166,7 +167,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   TCanvas *c1 = new TCanvas("can","can",canvas_width,canvas_height);
   c1->SetGrid(3);
   c1->cd();
-
+  gPad->SetTicks(1,2);
   // c1->SetRightMargin(SpaceForLegend/canvas_width);
   double leftlegend  = 1 - 180./c1->GetWw();
   double rightlegend = 1 - 10./c1->GetWw();
@@ -504,9 +505,9 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 
 
   /****** Mean Mult  ******/
-  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMultPos:run:rmsMultPos","",marA1,colPosA,1.0,sh_gr1);
+  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMultPos:run:errorMultPos","",marA1,colPosA,1.0,sh_gr1);
   gr->SetName("meanMultPos:run");
-  TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMultNeg:run:rmsMultPos","",marA2,colNegA,1.0,sh_gr2);
+  TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMultNeg:run:errorMultPos","",marA2,colNegA,1.0,sh_gr2);
   gr1->SetName("gr1");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMult_comb2:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
@@ -516,9 +517,9 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   ComputeRange(tree, "meanMult_comb2", plotmean, plotoutlier);
   // gr->GetHistogram()->SetMinimum(plotmean-3*plotoutlier);
   gr->GetHistogram()->SetMinimum(0);
-  gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
-//  gr->GetHistogram()->SetMinimum(0);  //gr->GetHistogram()->SetMinimum(mult_min);
-//  gr->GetHistogram()->SetMaximum(100);  //gr->GetHistogram()->SetMaximum(mult_max);
+  gr->GetHistogram()->SetMaximum(plotmean+2*plotoutlier);
+ // gr->GetHistogram()->SetMinimum(10);  //gr->GetHistogram()->SetMinimum(mult_min);
+ // gr->GetHistogram()->SetMaximum(20);  //gr->GetHistogram()->SetMaximum(mult_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
   gr1->Draw("P");
@@ -1149,7 +1150,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->Draw("AP");
 
   PlotStatusLines(tree,"electroMIPSeparation:run","");
-  PlotTimestamp(entries,entries_tree,c1);
+  PlotTimestamp(entries,entries_tree,c12);
   TStatToolkit::AddStatusPad(c12, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c12->SaveAs("ElectroMIPSeparation_vs_run.png");
