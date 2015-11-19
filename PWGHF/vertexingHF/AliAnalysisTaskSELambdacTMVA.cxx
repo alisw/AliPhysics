@@ -113,6 +113,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fLcPIDCut(kFALSE),    
 		fKeepLcNotFromQuark(kFALSE),
 		fIsHijing(kFALSE),
+		fKeepBkgNt(kTRUE),
 		fSyst(2),
 		fNentries(0),
 		fPIDResponse(0),
@@ -226,6 +227,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fLcPIDCut(kFALSE),    
 	fKeepLcNotFromQuark(kFALSE),
 	fIsHijing(kFALSE),
+	fKeepBkgNt(kTRUE),
 	fSyst(2),
 	fNentries(0),
 	fPIDResponse(0),
@@ -406,18 +408,18 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fHistNEvents->Sumw2();
 	fOutput->Add(fHistNEvents);
 
-	fhPIDmassLcPt = new TH2F("hPIDmassLcPt","hPIDmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhPIDmassLcPtSig = new TH2F("hPIDmassLcPtSig","hPIDmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhPIDmassLcPtSigc = new TH2F("hPIDmassLcPtSigc","hPIDmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhPIDmassLcPtSigb = new TH2F("hPIDmassLcPtSigb","hPIDmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhMCmassLcPt = new TH2F("hMCmassLcPt","hMCmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhMCmassLcPtSig = new TH2F("hMCmassLcPtSig","hMCmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhMCmassLcPtSigc = new TH2F("hMCmassLcPtSigc","hMCmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhMCmassLcPtSigb = new TH2F("hMCmassLcPtSigb","hMCmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhProbmassLcPt = new TH2F("hProbmassLcPt","hProbmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhProbmassLcPtSig = new TH2F("hProbmassLcPtSig","hProbmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhProbmassLcPtSigc = new TH2F("hProbmassLcPtSigc","hProbmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
-	fhProbmassLcPtSigb = new TH2F("hProbmassLcPtSigb","hProbmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,200,fLowmasslimit,fUpmasslimit);
+	fhPIDmassLcPt = new TH2F("hPIDmassLcPt","hPIDmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhPIDmassLcPtSig = new TH2F("hPIDmassLcPtSig","hPIDmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhPIDmassLcPtSigc = new TH2F("hPIDmassLcPtSigc","hPIDmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhPIDmassLcPtSigb = new TH2F("hPIDmassLcPtSigb","hPIDmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhMCmassLcPt = new TH2F("hMCmassLcPt","hMCmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhMCmassLcPtSig = new TH2F("hMCmassLcPtSig","hMCmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhMCmassLcPtSigc = new TH2F("hMCmassLcPtSigc","hMCmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhMCmassLcPtSigb = new TH2F("hMCmassLcPtSigb","hMCmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPt = new TH2F("hProbmassLcPt","hProbmassLcPt;3-Prong p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSig = new TH2F("hProbmassLcPtSig","hProbmassLcPtSig;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSigc = new TH2F("hProbmassLcPtSigc","hProbmassLcPtSigc;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhProbmassLcPtSigb = new TH2F("hProbmassLcPtSigb","hProbmassLcPtSigb;3-Prong signal p_{T} GeV/c;Invariant mass pK#pi (GeV/c)",150,0.,15.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
 	fOutput->Add(fhPIDmassLcPt);
 	fOutput->Add(fhPIDmassLcPtSig);
 	fOutput->Add(fhPIDmassLcPtSigc);
@@ -701,6 +703,30 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		fOutput->Add(fhPtPhiLcKstarb[i]);
 		fOutput->Add(fhPtPhiLcDeltab[i]);
 	}
+
+
+	fhPtMisIdpKpi = new TH1F("hMisIdpKpi","pKpi id'd as piKp",30,0,30);
+	fhPtMisIdpiKp = new TH1F("hMisIdpiKp","piKp id'd as pKpi",30,0,30);
+	fhPtCorrId = new TH1F("hCorrId","Correctly id'd pKpi",30,0,30);
+	fOutput->Add(fhPtMisIdpKpi);
+	fOutput->Add(fhPtMisIdpiKp);
+	fOutput->Add(fhPtCorrId);
+	fhInvMassMisIdpKpi = new TH2F("hInvMassIdpKpi","inv mass pKpi id'd as piKp",300,0.,30.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhInvMassMisIdpiKp = new TH2F("hInvMassIdpiKp","inv mass piKp id'd as pKpi",300,0.,30.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fOutput->Add(fhInvMassMisIdpKpi);
+	fOutput->Add(fhInvMassMisIdpiKp);
+
+	fhPtMisIdpKpiProb = new TH1F("hMisIdpKpiProb","pKpi id'd as piKp, most prob. PID",30,0,30);
+	fhPtMisIdpiKpProb = new TH1F("hMisIdpiKpProb","piKp id'd as pKpi, most prob. PID",30,0,30);
+	fhPtCorrIdProb = new TH1F("hCorrIdProb","Correctly id'd pKpi, most prob. PID",30,0,30);
+	fOutput->Add(fhPtMisIdpKpiProb);
+	fOutput->Add(fhPtMisIdpiKpProb);
+	fOutput->Add(fhPtCorrIdProb);
+	fhInvMassMisIdpKpiProb = new TH2F("hInvMassIdpKpiProb","inv mass pKpi id'd as piKp most prob. PID",300,0.,30.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fhInvMassMisIdpiKpProb = new TH2F("hInvMassIdpiKpProb","inv mass piKp id'd as pKpi most prob. PID",300,0.,30.,(fUpmasslimit-fLowmasslimit)/0.002,fLowmasslimit,fUpmasslimit);
+	fOutput->Add(fhInvMassMisIdpKpiProb);
+	fOutput->Add(fhInvMassMisIdpiKpProb);
+
 
 	// fhChi2 = new TH1F("fhChi2", "Chi2",100,0.,10.);
 	// fhChi2->Sumw2();
@@ -1037,6 +1063,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		fNentries->Fill(11);
 
 		FillMassHists(aod,d,arrayMC,selection,selectionProb);
+
+
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
 		if(fIsLc>=1 && fIsLc <= 2) fNentries->Fill(16);
@@ -1358,70 +1386,99 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection, Int_t selectionProb) {
 	/// fill mass hists
 	Bool_t IsInjected = 0;
+	Double_t invMassLcpKpi = d->InvMassLcpKpi();
+	Double_t invMassLcpiKp = d->InvMassLcpiKp();
+	Bool_t ispKpiMC =	0;
+	Bool_t ispiKpMC = 0;
+
 	if(fReadMC) {
+		ispKpiMC = IspKpiMC(d,arrayMC); 
+		ispiKpMC = IspiKpMC(d,arrayMC); 
 		AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
 		if(!fIsHijing) IsInjected = fVertUtil->IsCandidateInjected(d,mcHeader2,arrayMC); //for dedicated MC set to 0
 
 		//signal
 		if(fIsLc>=1) {
 			//MC PID
-			fhMCmassLcPtSig->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
-			if(fIsLc==1) fhMCmassLcPtSigc->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
-			else if(fIsLc==2) fhMCmassLcPtSigb->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
+			fhMCmassLcPtSig->Fill(d->Pt(),ispKpiMC ? invMassLcpKpi : invMassLcpiKp);
+			if(fIsLc==1) fhMCmassLcPtSigc->Fill(d->Pt(),ispKpiMC ? invMassLcpKpi : invMassLcpiKp);
+			else if(fIsLc==2) fhMCmassLcPtSigb->Fill(d->Pt(),ispKpiMC ? invMassLcpKpi : invMassLcpiKp);
 			//Real PID
 			if(selection==1){
-				fhPIDmassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi());
-				if(fIsLc==1) fhPIDmassLcPtSigc->Fill(d->Pt(),d->InvMassLcpKpi());
-				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),d->InvMassLcpKpi());
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi);
+				if(fIsLc==1) fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi);
+				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi);
 			}
 			else if(selection==2){
-				fhPIDmassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp());
-				if(fIsLc==1) fhPIDmassLcPtSigc->Fill(d->Pt(),d->InvMassLcpiKp());
-				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),d->InvMassLcpiKp());
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp);
+				if(fIsLc==1) fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp);
+				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp);
 			}
 			else if(selection==3){
-				fhPIDmassLcPtSig->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
-				fhPIDmassLcPtSig->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp,0.5);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi,0.5);
 				if(fIsLc==1) {
-					fhPIDmassLcPtSigc->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
-					fhPIDmassLcPtSigc->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp,0.5);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi,0.5);
 				}
 				else if(fIsLc==2) {
-					fhPIDmassLcPtSigb->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
-					fhPIDmassLcPtSigb->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp,0.5);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi,0.5);
 				}
 			}
 			//max prob PID
 			if(selectionProb==1) {
-				fhProbmassLcPtSig->Fill(d->Pt(), d->InvMassLcpKpi());
-				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), d->InvMassLcpKpi());
-				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), d->InvMassLcpKpi());
+				fhProbmassLcPtSig->Fill(d->Pt(), invMassLcpKpi);
+				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), invMassLcpKpi);
+				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), invMassLcpKpi);
 			}
 			else if(selectionProb==2) {
-				fhProbmassLcPtSig->Fill(d->Pt(), d->InvMassLcpiKp());
-				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), d->InvMassLcpiKp());
-				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), d->InvMassLcpiKp());
+				fhProbmassLcPtSig->Fill(d->Pt(), invMassLcpiKp);
+				if(fIsLc==1)fhProbmassLcPtSigc->Fill(d->Pt(), invMassLcpiKp);
+				if(fIsLc==2)fhProbmassLcPtSigb->Fill(d->Pt(), invMassLcpiKp);
 			}
+
+			// mis id'd signal candidates
+			if(ispKpiMC && selection==2){ //RDHF PID
+			 	fhPtMisIdpKpi->Fill(fCandidateVars[0]);
+				fhInvMassMisIdpKpi->Fill(fCandidateVars[0],invMassLcpiKp);
+			}
+			else if(ispiKpMC && selection==1){
+			 	fhPtMisIdpiKp->Fill(fCandidateVars[0]);
+				fhInvMassMisIdpiKp->Fill(fCandidateVars[0],invMassLcpKpi);
+			}
+			else fhPtCorrId->Fill(fCandidateVars[0]);
+
+			if(ispKpiMC && selectionProb==2){ //PID using max prob. criteria
+			 	fhPtMisIdpKpiProb->Fill(fCandidateVars[0]);
+				fhInvMassMisIdpKpiProb->Fill(fCandidateVars[0],invMassLcpiKp);
+			}
+			else if(ispiKpMC && selectionProb==1){
+			 	fhPtMisIdpiKpProb->Fill(fCandidateVars[0]);
+				fhInvMassMisIdpiKpProb->Fill(fCandidateVars[0],invMassLcpKpi);
+			}
+			else fhPtCorrIdProb->Fill(fCandidateVars[0]);
+
 		}
 	}
 	//Bkg
 	if(!fReadMC || (fIsLc==0 && (!IsInjected || fSyst ==0))) { //data or non-injected background or pp background
 		//MC PID
-		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
+		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),ispKpiMC ? invMassLcpKpi : invMassLcpiKp);
 		//Real PID
 		if(selection==1){
-			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi);
 		}
 		else if(selection==2){
-			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpiKp());
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp);
 		}
 		else if(selection==3){
-			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpiKp(),0.5);
-			fhPIDmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi(),0.5);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp,0.5);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi,0.5);
 		}
 		//max prob PID
-		if(selectionProb==1) fhProbmassLcPt->Fill(d->Pt(),d->InvMassLcpKpi());
-		else if(selectionProb==2)	fhProbmassLcPt->Fill(d->Pt(),d->InvMassLcpiKp());
+		if(selectionProb==1) fhProbmassLcPt->Fill(d->Pt(),invMassLcpKpi);
+		else if(selectionProb==2)	fhProbmassLcPt->Fill(d->Pt(),invMassLcpiKp);
 	}
 }
 
@@ -1433,6 +1490,8 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	//
 	/// Function to fill NTuple with candidate's variables
 	//
+
+	if(fReadMC && !fKeepBkgNt && fIsLc==0) return; //don't continue if bkg and only want signal
 
 	Bool_t IsInjected   = 0;
 	Bool_t IsLc		= 0;
