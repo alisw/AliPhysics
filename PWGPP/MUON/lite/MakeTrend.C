@@ -212,16 +212,18 @@ void CopyDir(TDirectory *source) {
 
 
 //_____________________________________________________________________________
-Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_ChamberEffMap MUON.TrigEfficiencyMap MUON.TriggerEfficiencyMap" )
+UInt_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_ChamberEffMap MUON.TrigEfficiencyMap MUON.TriggerEfficiencyMap" )
 {
   LoadLibs();
+
+  UInt_t info = 0;
 
   TString outFilename = GetBaseName(qaFileName);
   TString inFullPath = GetFullPath(qaFileName);
   TString outFullPath = GetFullPath(outFilename);
   if ( inFullPath == outFullPath ) {
     printf("Warning: input and output are same file!\n");
-    return kFALSE;
+    return info;
   }
 
   if ( inFullPath.BeginsWith("alien") && ! gGrid ) TGrid::Connect("alien://");
@@ -229,10 +231,15 @@ Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_Chamb
   TObjArray* dirList = dirNames.Tokenize(" ");
   TFile* outFile = TFile::Open(outFilename,"RECREATE");
   TFile* inFile = TFile::Open(qaFileName);
-  for ( Int_t idir=0; idir<dirList->GetEntries(); idir++ ) {
+  TIter next(dirList);
+  TObjString* objStr = 0x0;
+  while ( (objStr=static_cast<TObjString*>(next())) ) {
     inFile->cd();
-    TObject* obj = inFile->Get(dirList->At(idir)->GetName());
+    TString currDir = objStr->String();
+    TObject* obj = inFile->Get(currDir.Data());
     if ( ! obj ) continue;
+    if ( currDir == "MUON_QA" ) info |= trackQA;
+    else info |= trigQA;
     outFile->cd();
     CopyDir(static_cast<TDirectory*>(obj));
   }
@@ -240,7 +247,7 @@ Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_Chamb
   delete inFile;
   delete dirList;
 
-  return kTRUE;
+  return info;
 }
 
 
@@ -356,8 +363,8 @@ void AddTrigVars ( TString filename, TList &parList )
 //_____________________________________________________________________________
 void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool_t usePhysicsSelection = kTRUE, UInt_t mask = (trackQA|trigQA) )
 {
-  Bool_t isOk = GetQAInfo(qaFile);
-  if ( ! isOk ) return;
+  UInt_t info = GetQAInfo(qaFile);
+  if ( info == 0 ) return;
 
   TString inFilename = GetBaseName(qaFile);
 
@@ -365,8 +372,8 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
   if ( inFilename.Contains("barrel") ) {
     TString outerInFilename(qaFile);
     outerInFilename.ReplaceAll("barrel","outer");
-    isOk = GetQAInfo(outerInFilename);
-    if ( isOk ) {
+    info = GetQAInfo(outerInFilename);
+    if ( info ) {
       // Merge outer and barrel
       TString fileList = GetBaseName(outerInFilename);
       fileList += " " + inFilename;
@@ -376,19 +383,21 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
         printf("Merged files: %s => %s\n",fileList.Data(),inFilename.Data());
         CheckMergedOverlap(fileList);
         gSystem->Exec(Form("rm %s",fileList.Data())); // Remove QAresults_barrel and outer
-        forceTerminate = (trackQA|trigQA); // Re-do terminate when merging barrel and outer
+        forceTerminate = info; // Re-do terminate when merging barrel and outer
       }
     }
   }
 
-  terminateQA(inFilename,isMC,usePhysicsSelection,mask,forceTerminate);
+  UInt_t checkedMask = mask&info;
+
+  terminateQA(inFilename,isMC,usePhysicsSelection,checkedMask,forceTerminate);
 
   TList parList;
   parList.SetOwner();
   AddTreeVariable(parList, "run", 'I', runNumber);
 
   // function for trigger
-  AddTrigVars(inFilename.Data(),parList);
+  if ( checkedMask & trigQA ) AddTrigVars(inFilename.Data(),parList);
 
   TFile* outFile = TFile::Open("trending.root","RECREATE");
   TTree* tree = new TTree("trending","trending");
