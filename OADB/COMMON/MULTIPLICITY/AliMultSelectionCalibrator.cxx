@@ -682,6 +682,9 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
     
+    //vertex-Z
+    AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -697,7 +700,7 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
-    
+    fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
     
 }
