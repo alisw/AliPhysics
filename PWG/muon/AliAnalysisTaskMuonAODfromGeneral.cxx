@@ -84,10 +84,6 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   static int ncall=0;
   // Task making a Muon AOD
   // Get input data
-  TChain *chain = (TChain*)GetInputData(0);
-  Long64_t ientry = chain->GetReadEntry();
-  ientry=ientry;
-
   if (!fOrgAOD) return;
   
   Int_t nTracks=fOrgAOD->GetNumberOfTracks();

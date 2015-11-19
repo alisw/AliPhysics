@@ -35,8 +35,8 @@ AliAnalysisMuMuMinv::AliAnalysisMuMuMinv(TH2* accEffHisto, Bool_t computeMeanPt,
 : AliAnalysisMuMuBase(),
 fcomputeMeanPt(computeMeanPt),
 fAccEffHisto(0x0),
-fsystLevel(systLevel),
 fMinvBinSeparator("+"),
+fsystLevel(systLevel),
 fBinsToFill(0x0)
 {
   // FIXME : find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")

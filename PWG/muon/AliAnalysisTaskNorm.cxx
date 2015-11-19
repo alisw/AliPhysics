@@ -1245,7 +1245,7 @@ TList* AliAnalysisTaskNorm::BuildListOfNormFactor(const TObjArray *trig ) {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskNorm::FillEventCounters( Int_t runNr, TList *triggerList, TList *normFactorList, TList *centralityList, TList *spdPileUpList, TList *trackletsList, TList *v0AMultList, Bool_t physsel, Bool_t isVertex, TString sVertexCut, Bool_t outofbunchpileup) {
+void AliAnalysisTaskNorm::FillEventCounters( Int_t runNr, TList *triggerList, TList *normFactorList, TList *centralityList, TList *spdPileUpList, TList * /*trackletsList*/, TList * /*v0AMultList*/, Bool_t physsel, Bool_t isVertex, TString sVertexCut, Bool_t /*outofbunchpileup*/) {
 
   TIter nextTriggerKey(triggerList);
   TObjString *triggerKey = 0x0;
