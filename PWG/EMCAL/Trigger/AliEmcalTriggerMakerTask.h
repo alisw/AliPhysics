@@ -4,12 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskEmcal.h"
+#include "AliEmcalTriggerMakerKernel.h"
 #include <TString.h>
 
 class TClonesArray;
 class THistManager;
 class AliEmcalTriggerBitConfig;
-class AliEmcalTriggerMakerKernel;
 class AliVVZERO;
 
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
@@ -27,19 +27,86 @@ public:
     kNewConfig = 1 ///< New configuration, distiction between high and low threshold
   };
 
+  /**
+   * Dummy constructor
+   */
   AliEmcalTriggerMakerTask();
+
+  /**
+   * Main constructor, initializing also AliAnalysisTaskEmcal and Create
+   * the Kernel.
+   * @param name Name of the task
+   * @param doQA If true we switch on QA
+   */
   AliEmcalTriggerMakerTask(const char *name, Bool_t doQA = kFALSE);
+
+  /**
+   * Destructor
+   */
   virtual ~AliEmcalTriggerMakerTask();
 
+  /**
+   * Initializing output objects. Kernel is initialized in
+   * ExecOnce as geometry - which depends on the run number -
+   * is needed for this.
+   */
   virtual void      UserCreateOutputObjects();
+
+  /**
+   * Initialize the trigger maker kernel. This function is called
+   * for the first event in order to obtain the run number from it.
+   * Also initialises AliAnalysisTaskEmcal.
+   */
   virtual void      ExecOnce();
+
+  /**
+   * Run trigger patch finding.
+   *
+   * As the patch finding is implemented in the class AliEmcalTriggerMakerKernel,
+   * the analysis task only takes care about propagating necessary information to
+   * the kernel (ADCs, cell energy, V0 amplitudes), steering the patch finder, and
+   * appending the output to the ESD event.
+   *
+   * @return Always true.
+   */
   virtual Bool_t    Run();
 
+  /**
+   * Switch on basic QA of the trigger maker
+   * @param doQA If true QA is switched on.
+   */
   void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
+
+  /**
+   * Set the name of the output container
+   * @param name Name of the output container
+   */
   void SetCaloTriggersOutName(const char *name)     { fCaloTriggersOutName      = name; }
-  void SetCaloTriggerSetupOutName(const char *name) { fCaloTriggerSetupOutName  = name; }
+
+  /**
+   * Set the name of the V0 input object
+   * @param name Name of the V0 input object
+   */
   void SetV0InName(const char *name) { fV0InName      = name; }
+
+  /**
+   * Trigger bit configuration to be used in the trigger patch maker.
+   * @param bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
+   */
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
+
+  void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) {
+    if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdJetLow(a, b, c);
+  }
+  void SetTriggerThresholdJetHigh  ( Int_t a, Int_t b, Int_t c ) {
+    if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdJetHigh(a, b, c);
+  }
+  void SetTriggerThresholdGammaLow ( Int_t a, Int_t b, Int_t c ) {
+    if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaLow(a, b, c);
+  }
+  void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) {
+    if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaHigh(a, b, c);
+  }
 
 
 protected:
@@ -50,7 +117,6 @@ protected:
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
   TString                                 fCaloTriggersOutName;       ///< name of output track array
-  TString                                 fCaloTriggerSetupOutName;   ///< name of output track array
   TString                                 fV0InName;                  ///< name of output track array
   TriggerMakerBitConfig_t                 fUseTriggerBitConfig;       ///< type of trigger config
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
@@ -62,7 +128,9 @@ private:
   AliEmcalTriggerMakerTask(const AliEmcalTriggerMakerTask &);
   AliEmcalTriggerMakerTask &operator=(const AliEmcalTriggerMakerTask &);
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerMakerTask, 1);
+  /// \endcond
 };
 
 #endif

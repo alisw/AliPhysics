@@ -34,6 +34,7 @@
 #pragma link C++ class AliEmcalTriggerMakerKernel+;
 #pragma link C++ class AliEmcalTriggerMakerTask+;
 #pragma link C++ class AliEmcalTriggerPatchInfo+;
+#pragma link C++ class AliEmcalTriggerPatchInfoAPV1+;
 #pragma link C++ class AliEmcalTriggerSetupInfo+;
 #pragma link C++ class AliEsdSkimTask+;
 #pragma link C++ class AliEsdTrackExt+;
