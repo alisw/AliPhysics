@@ -28,8 +28,12 @@ public:
     Long_t GetNEstimators () { return fNEsts; }
     
     //User Functions to get percentiles
-    Float_t GetMultiplicityPercentile(TString lName);
+    Float_t GetMultiplicityPercentile(TString lName, Bool_t lEmbedEvSel = kFALSE);
     Float_t GetZ(TString lName) { return GetEstimator(lName.Data())->GetZ(); }
+    
+    //Setter and Getter for Event Selection code
+    Int_t GetEvSelCode() const { return fEvSelCode; }
+    void SetEvSelCode(Int_t lEvSelCodeProv) { fEvSelCode = lEvSelCodeProv; }
     
     //Master "Evaluate"
     void Evaluate ( AliMultInput *lInput );
@@ -40,9 +44,12 @@ public:
     TList *GetEstimatorList() { return fEstimatorList; } 
     
 private:
-    Long_t fNEsts; //Number of estimators
+    Long_t fNEsts;    //Number of estimators
+    Int_t fEvSelCode; //Event Selection code
     TList *fEstimatorList; //List containing all AliMultEstimators
     
-    ClassDef(AliMultSelection, 1)
+    ClassDef(AliMultSelection, 2)
+    // 1 - original implementation
+    // 2 - added fEvSelCode for EvSel bypass + getter changed
 };
 #endif

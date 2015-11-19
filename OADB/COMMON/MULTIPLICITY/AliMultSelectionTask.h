@@ -203,6 +203,7 @@ private:
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
+    Int_t fEvSelCode; //Final code in event selection 
     Int_t fNDebug; // number of percentiles
     
     Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 

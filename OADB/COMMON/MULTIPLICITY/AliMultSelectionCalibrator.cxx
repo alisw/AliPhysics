@@ -557,7 +557,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     lBoundaries[0] = 0;
                     for(Long_t iB=1; iB<hTemporary->GetNbinsX()+1; iB++) {
                         lBoundaries[iB] = lBoundaries[iB-1]+hTemporary->GetBinContent(iB);
-                        cout<<"lBoundaries["<< iB<< "] = "<<lBoundaries[iB]<<endl;
                     }
                     //This won't follow what was requested (it cannot, mathematically)
                     hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNBins,lLowEdge,lHighEdge);
