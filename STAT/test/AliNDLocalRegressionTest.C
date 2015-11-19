@@ -17,10 +17,10 @@
 
 #include "THn.h"
 #include "TCanvas.h"
-#include "AliNDLocalRegression.h"
+#include "AliNDLocalRegression.h" 
 #include "TStyle.h"
 #include "TPaveText.h"
-
+ 
 void UnitTestGaussNoise();
 void UnitTestStreamer();
 Bool_t UnitTestContrain();
@@ -266,7 +266,7 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   //
   // 1.) generate random input points
   //
-  for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+  for (Int_t ipoint=0; ipoint<TMath::Abs(npoints); ipoint++){
     for (Int_t idim=0; idim<ndim; idim++){
       xyz[idim]=gRandom->Rndm();
     }
@@ -292,14 +292,16 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   //
   // 2.) Make local fits 
   //
-  pfitNDIdeal->SetStreamer(pcstreamOutIdeal);
-  pfitNDGaus0->SetStreamer(pcstreamOutGaus0);
-  pfitNDGaus1->SetStreamer(pcstreamOutGaus1);
-  pfitNDGaus2->SetStreamer(pcstreamOutGaus2);
-  pfitNDGaus3->SetStreamer(pcstreamOutGaus3);
-  pfitNDBreit0->SetStreamer(pcstreamOutBreit0);
-  pfitNDBreit1->SetStreamer(pcstreamOutBreit1);
-  pfitNDBreit2->SetStreamer(pcstreamOutBreit2);
+  if (npoints>0){
+    pfitNDIdeal->SetStreamer(pcstreamOutIdeal);
+    pfitNDGaus0->SetStreamer(pcstreamOutGaus0);
+    pfitNDGaus1->SetStreamer(pcstreamOutGaus1);
+    pfitNDGaus2->SetStreamer(pcstreamOutGaus2);
+    pfitNDGaus3->SetStreamer(pcstreamOutGaus3);
+    pfitNDBreit0->SetStreamer(pcstreamOutBreit0);
+    pfitNDBreit1->SetStreamer(pcstreamOutBreit1);
+    pfitNDBreit2->SetStreamer(pcstreamOutBreit2);
+  }
   //
   pfitNDIdeal->SetHistogram((THn*)(hN->Clone()));
   pfitNDGaus0->SetHistogram((THn*)(hN->Clone()));
@@ -325,6 +327,7 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit1
   pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Breit2 without outlier filtering
   //
+  if (npoints<0) return;  // callgrind mode of operation
   pfitNDIdeal->AddVisualCorrection(pfitNDIdeal,1);
   pfitNDGaus0->AddVisualCorrection(pfitNDGaus0,2);
   pfitNDGaus1->AddVisualCorrection(pfitNDGaus1,3);
