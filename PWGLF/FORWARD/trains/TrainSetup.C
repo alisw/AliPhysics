@@ -794,7 +794,7 @@ protected:
     TString cmd(p);
     if (!args.IsNull()) 
       cmd.Append(TString::Format("(%s)", args.Data()));
-    
+    Info("CoupleCar", "Execute %s", cmd.Data());
     Int_t err;
     Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
     if (!ret) { 
