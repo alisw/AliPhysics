@@ -89,7 +89,8 @@ TH2D* MakeOneRing(UShort_t      d,
 
       // Special check for FMD2i - upper part of sectors 16/17 have 
       // have anomalous gains and/or noise - common sources are 
-      // power regulartors for bias currents and the like 
+      // power regulartors for bias currents and the like
+#if 0
       Int_t VA = t/128;
       if(d==2 && r=='I' && VA>1 && (s==16 || s==17)) {
 	if (!isDead && deadScript) {
@@ -98,7 +99,8 @@ TH2D* MakeOneRing(UShort_t      d,
 	}
 	isDead =true;
       }
-
+#endif
+      
       // Find the eta bin number and corresponding overflow bin
       Int_t etaBin = hAll->GetXaxis()->FindBin(eta);
       Int_t ovrBin = hAll->GetBin(etaBin, nPhi+1); 
