@@ -724,7 +724,9 @@ AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu,
   if (CHECKPAR(fSigma,  fESigma,  maxRelError)) qual++;
   if (CHECKPAR(fSigmaN, fESigmaN, maxRelError)) qual++;
   // Large penalty for large sigma - often a bad fit. (factor was 10)
-  if (fSigma > 4*fXi)                          qual -= 4; 
+  if (fSigma > 4*fXi)                          qual -= 4;
+  if (fXi    < 0.01)                           qual -= 2;
+  if (fSigma < 0.01)                           qual -= 2;
   //Info("CalculateQuality", "FMD%d%c [%3d] sigma=%f xi=%f sigma/xi=%f qual=%d",
   //     fDet, fRing, fBin, fSigma, fXi, fSigma/fXi, qual);
   qual += FindMaxWeight(2*maxRelError, leastWeight, fN);
