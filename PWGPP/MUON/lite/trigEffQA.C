@@ -467,7 +467,10 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     }
     
     TList* trigEffList = (TList*)file->FindObjectAny("triggerChamberEff");
-    if ( ! trigEffList ) printf("Warning: histo list not found in %s. Check directly in file\n", filename.Data());
+    if ( ! trigEffList ) {
+      printf("Warning: histo list not found in %s.\n", filename.Data());
+      continue;
+    }
     if ( trigEffList->GetEntries() == 0 ) {
       printf("Warning: empty trigger list in file %s. Probably no MUON info there. Skip.\n", filename.Data());
       continue;
