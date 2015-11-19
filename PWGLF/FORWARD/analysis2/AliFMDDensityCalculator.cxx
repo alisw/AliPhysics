@@ -439,14 +439,16 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  if (fRecalculatePhi) {
 	    // Correct for (x,y) off set of the interaction point 
 	    // AliForwardUtil::GetEtaPhiFromStrip(r,t,eta,phi,ip.X(),ip.Y());
-	    AliForwardUtil::GetEtaPhi(d,r,s,t,ip,eta,phi);
-	    DMSG(fDebug, 10, "IP(x,y,z)=%f,%f,%f Eta=%f -> %f Phi=%f -> %f",
-		 ip.X(), ip.Y(), ip.Z(), oldEta, eta, oldPhi, phi);
-	    if (TMath::Abs(eta) < 1) {
-	      AliWarningF("FMD%d%c[%2d,%3d] (%f,%f,%f) eta=%f phi=%f (was %f)",
+	    if (!AliForwardUtil::GetEtaPhi(d,r,s,t,ip,eta,phi) ||
+		TMath::Abs(eta) < 1) {
+	      AliWarningF("FMD%d%c[%2d,%3d] (%f,%f,%f) eta=%f phi=%f (%f)",
 			  d, r, s, t, ip.X(), ip.Y(), ip.Z(), eta,
 			  phi, oldEta);
-	    }	    
+	      eta = oldEta;
+	      phi = oldPhi;
+	    }
+	    DMSG(fDebug, 10, "IP(x,y,z)=%f,%f,%f Eta=%f -> %f Phi=%f -> %f",
+		 ip.X(), ip.Y(), ip.Z(), oldEta, eta, oldPhi, phi);
 	  }
 	  ADD_TIMER(timer,rePhiTime);
 	  START_TIMER(timer);
