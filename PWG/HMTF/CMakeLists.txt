@@ -73,6 +73,7 @@ install (FILES
 
 set (INPUT_FILES
   MonteCarlo/template.jdl
+  MonteCarlo/templateEPOS3111.jdl
   MonteCarlo/DIPSYpp_HepMC.in
   MonteCarlo/crmc_template.param
   MonteCarlo/pp.optns
