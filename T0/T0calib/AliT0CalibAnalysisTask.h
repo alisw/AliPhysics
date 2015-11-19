@@ -79,6 +79,7 @@ class AliT0CalibAnalysisTask : public AliAnalysisTaskSE {
   Float_t fTVDC[5];
 
   Float_t famp[24];
+ Float_t famp_new[24];	
   Float_t ftime[24];
   Float_t fRawTime[24];
   Bool_t fT0pileup[3];
@@ -88,6 +89,7 @@ class AliT0CalibAnalysisTask : public AliAnalysisTaskSE {
   Int_t fTOFtracks;
   Float_t fT0tofTrack;
   AliESDpid* fESDpid;  //! esd pid
+  TBits fPFPbit; //PFP bits
   
   AliT0CalibAnalysisTask(const AliT0CalibAnalysisTask&); // not implemented
   AliT0CalibAnalysisTask& operator=(const AliT0CalibAnalysisTask&); // not implemented
