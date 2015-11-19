@@ -524,6 +524,7 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
   fETPPool(0),
   fFreeSeedsID(500),
   fNFreeSeeds(0),
+  fLastSeedID(-1),
   fAccountDistortions(0)
 {
   //------------------------------------
@@ -1956,10 +1957,10 @@ void AliTPCtracker::FillClusterArray(TObjArray* array) const{
 }
 
 
-Int_t AliTPCtracker::Transform(AliTPCclusterMI * cluster){
+void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   //
   // transformation
-  // RS: return sector in which the cluster appears accounting for eventual distortions
+  //
   const double kMaxY2X = AliTPCTransform::GetMaxY2X();  // tg of sector angular span
   const double kSinSect = TMath::Sin(TMath::Pi()/9), kCosSect = TMath::Cos(TMath::Pi()/9);
   //
@@ -1967,26 +1968,13 @@ Int_t AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   AliTPCTransform *transform = calibDB->GetTransform() ;
   if (!transform) {
     AliFatal("Tranformations not in calibDB");
-    return -1;
+    return;
   }
   if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);  
 
-  //RS: If requestested, check if cluster goes outside of sector angular boundaries
-  //Note: if we use variable dead zone definition (following distortions) this is not needed
-  if (fAccountSectorChange) {
-    float yMax = x[0]*kMaxY2X;
-    if (x[1]>yMax) {
-      cluster->SetSectorChanged(kTRUE);
-      AliTPCTransform::RotateToSectorUp(x,idROC);
-    }
-    else if (x[1]<-yMax) {
-      cluster->SetSectorChanged(kTRUE);
-      AliTPCTransform::RotateToSectorDown(x,idROC);    
-    }
-  }
   //
   // in debug mode  check the transformation
   //
@@ -2027,7 +2015,6 @@ Int_t AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     cluster->SetY(posC[1]);
     cluster->SetZ(posC[2]);
   }
-  return idROC;
 }
 
 void  AliTPCtracker::ApplyXtalkCorrection(){

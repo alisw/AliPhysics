@@ -83,7 +83,7 @@ public:
   Int_t LoadInnerSectors();
   Int_t LoadOuterSectors();
   virtual void FillClusterArray(TObjArray* array) const;
-  Int_t Transform(AliTPCclusterMI * cluster);
+  void Transform(AliTPCclusterMI * cluster);
   void ApplyTailCancellation();
   void ApplyXtalkCorrection();
   void CalculateXtalkCorrection();
@@ -291,7 +291,6 @@ private:
    Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
    Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
-   Int_t fAccountSectorChange;          //! flag to move distorted clusters to sector of their corrected position
    //
    ClassDef(AliTPCtracker,5) 
 };
