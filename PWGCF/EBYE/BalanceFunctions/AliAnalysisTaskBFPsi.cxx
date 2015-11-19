@@ -1589,15 +1589,29 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
 
-
-      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-      
-      
-      // Kinematics cuts from ESD track cuts
+       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+
+      // for extra DCA cuts
+      Double_t pos[3];
+      Double_t v[3];
+      Float_t dcaXY = 0.;
+      Float_t dcaZ  = 0.;
       
+      // for constrained TPConly tracks
+      if(fnAODtrackCutBit == 128){
+	dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+	dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      }
+      else{
+	const AliVVertex *vertex = event->GetPrimaryVertex();
+	vertex->GetXYZ(v);
+	aodTrack->GetXYZ(pos);
+	dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+	dcaZ   = pos[2] - v[2];
+      }
+
       // Extra DCA cuts (for systematic studies [!= -1])
       if( fDCAxyCut != -1 && fDCAzCut != -1){
 	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
@@ -1879,12 +1893,28 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================end of PID (so far only for electron rejection)===============================//
       
-      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-            
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+
+      // for extra DCA cuts
+      Double_t pos[3];
+      Double_t v[3];
+      Float_t dcaXY = 0.;
+      Float_t dcaZ  = 0.;
+      
+      // for constrained TPConly tracks
+      if(fnAODtrackCutBit == 128){
+	dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+	dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      }
+      else{
+	const AliVVertex *vertex = event->GetPrimaryVertex();
+	vertex->GetXYZ(v);
+	aodTrack->GetXYZ(pos);
+	dcaXY  = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+	dcaZ   = pos[2] - v[2];
+      }
       
       // Extra DCA cuts (for systematic studies [!= -1])
       if( fDCAxyCut != -1 && fDCAzCut != -1){
