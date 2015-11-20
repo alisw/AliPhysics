@@ -335,10 +335,7 @@ Int_t DoSend(void* socket)
   //send
   int sentBytes = alizmq_msg_send(&message, socket, 0);
   if (fVerbose) Printf("merger sent %i bytes", sentBytes);
-  if (sentBytes<0)
-  {
-    alizmq_msg_close(&message);
-  }
+  alizmq_msg_close(&message);
 
   //always at least send an empty reply if we are replying
   if (sentBytes==0 && alizmq_socket_type(socket)==ZMQ_REP)
