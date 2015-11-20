@@ -57,7 +57,7 @@ public:
 	        Char_t    GetDetectorId() const { return fDetectorId; }
 	       UChar_t    GetLevel() const { return fLevel; }
 	        Bool_t    IsActive() const { return fIsActive; }
-		UInt_t    GetIndexCTP() const { return fIndexCTP; }
+		UInt_t    GetIndexCTP() const;
 		UInt_t    GetIndexSwitch() const { return fIndexSwitch; }
 
            virtual void   Print( const Option_t* opt ="" ) const;

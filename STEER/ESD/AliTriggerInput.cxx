@@ -201,3 +201,13 @@ TString AliTriggerInput::GetModule() const
 
   return name;
 }
+UInt_t AliTriggerInput::GetIndexCTP() const
+{
+ if(fIndexCTP==0){
+   for(UInt_t i=0;i<24;i++){
+     if((1<<i) & fMask) return (i+1);
+   }
+  return 0;
+ }
+ return fIndexCTP;
+}
