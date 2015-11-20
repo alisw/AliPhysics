@@ -84,26 +84,10 @@ public:
     void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
     void          SetAODtracksByPID(bool set){fDrawAODtracksByPID=set;}
     
-    void          SetESDcolorsByCategory(Color_t colors[9])
-    {
-        fESDdrawer->SetColorsByCategory(colors);
-        fAODdrawer->SetColorsByCategory(colors);
-    }
-    void          SetESDwidth(Width_t width)
-    {
-        fESDdrawer->SetWidth(width);
-        fAODdrawer->SetWidth(width);
-    }
-    void          SetESDdashNoRefit(bool dashNoRefit)
-    {
-        fESDdrawer->SetDashNoRefit(dashNoRefit);
-        fAODdrawer->SetDashNoRefit(dashNoRefit);
-    }
-    void          SetESDdrawNoRefit(bool drawNoRefit)
-    {
-        fESDdrawer->SetDrawNoRefit(drawNoRefit);
-        fAODdrawer->SetDrawNoRefit(drawNoRefit);
-    }
+    void          SetESDcolorsByCategory(Color_t colors[9]){fESDdrawer->SetColorsByCategory(colors);}
+    void          SetESDwidth(Width_t width){fESDdrawer->SetWidth(width);}
+    void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
+    void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}
     
     
     // global and transient elements:

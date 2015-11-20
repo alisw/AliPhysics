@@ -7,71 +7,27 @@
 
 #include "AliEveAODTracks.h"
 
-#include <TString.h>
-#include <TSystem.h>
-#include <TROOT.h>
-#include <TMath.h>
-#include <TGListTree.h>
-
-
-#include <AliAODEvent.h>
-#include <AliExternalTrackParam.h>
-#include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
 #include <AliEveEventManager.h>
 #include <AliEveInit.h>
+#include <AliAODEvent.h>
+
+#include <TGListTree.h>
 
 #include <iostream>
 
 using namespace std;
 
-AliEveAODTracks::AliEveAODTracks() :
-fUseIPonFailedITSrefit(kFALSE),
-fTrueField(kTRUE),
-fRKstepper(kFALSE),
-fDashNoRefit(true),
-fDrawNoRefit(false),
-fWidth(1)
-{
-    // default color scheme by category:
-    fColorsByCategory[0] = kMagenta;
-    fColorsByCategory[1] = kMagenta+1;
-    fColorsByCategory[2] = kMagenta+2;
-    fColorsByCategory[3] = kRed;
-    fColorsByCategory[4] = kRed+1;
-    fColorsByCategory[5] = kRed+2;
-    fColorsByCategory[6] = kGreen;
-    fColorsByCategory[7] = kGreen+1;
-    fColorsByCategory[8] = kGreen+2;
-}
+AliEveAODTracks::AliEveAODTracks() : fDrawNoRefit(true)
+{}
 
 AliEveAODTracks::~AliEveAODTracks()
-{
-    
-}
-
-
-void AliEveAODTracks::SetupPropagator(TEveTrackPropagator* trkProp,Float_t magF, Float_t maxR)
-{
-    if (fTrueField)
-    {
-        trkProp->SetMagFieldObj(new AliEveMagField);
-    }
-    else
-    {
-        trkProp->SetMagField(magF);
-    }
-    if (fRKstepper)
-    {
-        trkProp->SetStepper(TEveTrackPropagator::kRungeKutta);
-    }
-    trkProp->SetMaxR(maxR);
-}
+{}
 
 TString AliEveAODTracks::GetTitle(AliAODTrack* t)
 {
     TString s("");
-    /*
+    
     Int_t label = t->GetLabel(), index = t->GetID();
     TString idx(index == kMinInt ? "<undef>" : Form("%d", index));
     TString lbl(label == kMinInt ? "<undef>" : Form("%d", label));
@@ -79,42 +35,14 @@ TString AliEveAODTracks::GetTitle(AliAODTrack* t)
     Double_t p[3], v[3];
     t->GetXYZ(v);
     t->GetPxPyPz(p);
-    Double_t pt    = t->Pt();
-    Double_t ptsig = TMath::Sqrt(t->GetSigma1Pt2());
-    Double_t ptsq  = pt*pt;
-    Double_t ptm   = pt / (1.0 + pt*ptsig);
-    Double_t ptM   = pt / (1.0 - pt*ptsig);
     
     s = Form("Index=%s, Label=%s\nChg=%d, Pdg=%d\n"
-             "pT = %.3f + %.3f - %.3f [%.3f]\n"
              "P  = (%.3f, %.3f, %.3f)\n"
              "V  = (%.3f, %.3f, %.3f)\n",
-             idx.Data(), lbl.Data(), t->Charge(), AliPID::ParticleCode(t->GetPID()),
-             pt, ptM - pt, pt - ptm, ptsig*ptsq,
+             idx.Data(), lbl.Data(), t->Charge(), AliPID::ParticleCode(t->GetMostProbablePID()),
              p[0], p[1], p[2],
              v[0], v[1], v[2]);
     
-    Int_t   o;
-    s += "Det (in,out,refit,pid):\n";
-    o  = AliESDtrack::kITSin;
-    s += Form("ITS (%d,%d,%d,%d)  ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
-    o  = AliESDtrack::kTPCin;
-    s += Form("TPC(%d,%d,%d,%d)\n",   t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
-    o  = AliESDtrack::kTRDin;
-    s += Form("TRD(%d,%d,%d,%d) ",    t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
-    o  = AliESDtrack::kTOFin;
-    s += Form("TOF(%d,%d,%d,%d)\n",   t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
-    o  = AliESDtrack::kHMPIDout;
-    s += Form("HMPID(out=%d,pid=%d)\n", t->IsOn(o), t->IsOn(o<<1));
-    s += Form("ESD pid=%d", t->IsOn(AliESDtrack::kESDpid));
-    
-    if (t->IsOn(AliESDtrack::kESDpid))
-    {
-        Double_t pid[5];
-        t->GetESDpid(pid);
-        s += Form("\n[%.2f %.2f %.2f %.2f %.2f]", pid[0], pid[1], pid[2], pid[3], pid[4]);
-    }
-    */
     return s;
 }
 
@@ -122,8 +50,7 @@ void AliEveAODTracks::AddParam(AliEveTrack* track, const AliExternalTrackParam* 
 {
     // Add additional track parameters as a path-mark to track.
     
-    if (tp == 0)
-        return;
+    if (tp == 0) return;
     
     Double_t pbuf[3], vbuf[3];
     tp->GetXYZ(vbuf);
@@ -135,21 +62,9 @@ void AliEveAODTracks::AddParam(AliEveTrack* track, const AliExternalTrackParam* 
     track->AddPathMark(pm);
 }
 
-
-
 AliEveTrack* AliEveAODTracks::MakeTrack(AliAODTrack *at, TEveTrackList* cont)
 {
     // Make a standard track representation and put it into given container.
-    
-    // Choose which parameters to use a track's starting point.
-    // If gkFixFailedITSExtr is TRUE (FALSE by default) and
-    // if ITS refit failed, take track parameters at inner TPC radius.
-    
-    Bool_t innerTaken = kFALSE;
-    if ( ! at->IsOn(AliESDtrack::kITSrefit) && fUseIPonFailedITSrefit)
-    {
-        innerTaken = kTRUE;
-    }
     
     AliEveTrack* track = new AliEveTrack(at, cont->GetPropagator());
     track->SetAttLineAttMarker(cont);
@@ -157,13 +72,9 @@ AliEveTrack* AliEveAODTracks::MakeTrack(AliAODTrack *at, TEveTrackList* cont)
     track->SetElementTitle(GetTitle(at));
     track->SetSourceObject(at);
     
-    // Add inner/outer track parameters as path-marks.
-    if (at->IsOn(AliESDtrack::kTPCrefit))
+    if (at->IsOn(AliAODTrack::kTPCrefit))
     {
-        if ( ! innerTaken)
-        {
-            AddParam(track, at->GetInnerParam());
-        }
+        AddParam(track, at->GetInnerParam());
         AddParam(track, at->GetOuterParam());
     }
     
@@ -179,8 +90,9 @@ TEveElementList* AliEveAODTracks::ByPID()
     
     TEnv settings;
     AliEveInit::GetConfig(&settings);
+
+    Width_t width = settings.GetValue("tracks.width",1);
     Color_t colors[15];
-    // default color scheme by type:
     colors[0] = settings.GetValue("tracks.byType.electron",600);
     colors[1] = settings.GetValue("tracks.byType.muon",416);
     colors[2] = settings.GetValue("tracks.byType.pion",632);
@@ -197,18 +109,13 @@ TEveElementList* AliEveAODTracks::ByPID()
     colors[13]= settings.GetValue("tracks.byType.elecon",920);
     colors[14]= settings.GetValue("tracks.byType.unknown",920);
     
-    AliAODEvent *aod = AliEveEventManager::GetMaster()->AssertAOD();
-    
+
     TEveElementList* cont = new TEveElementList("AOD Tracks by PID");
     gEve->AddElement(cont);
     
     const Int_t   nCont = 15;
-    const Float_t maxR  = 520;
-    const Float_t magF  = 0.1*aod->GetMagneticField();
-    
     TEveTrackList *tl[nCont];
     Int_t          tc[nCont];
-    Int_t          count = 0;
     
     tl[0] = new TEveTrackList("Electrons");
     tl[1] = new TEveTrackList("Muons");
@@ -228,20 +135,23 @@ TEveElementList* AliEveAODTracks::ByPID()
 
     for (int i=0; i<15; i++) {
         tc[i] = 0;
-        SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
+        tl[i]->GetPropagator()->SetMagFieldObj(new AliEveMagField());
+        tl[i]->GetPropagator()->SetMaxR(520);
         tl[i]->SetMainColor(colors[i]);
-        tl[i]->SetLineWidth(fWidth);
+        tl[i]->SetLineWidth(width);
         cont->AddElement(tl[i]);
     }
     
     int pid = -1;
+    int count = 0;
+    AliAODEvent *aod = AliEveEventManager::GetMaster()->AssertAOD();
     AliAODTrack* at = NULL;
     
     for (Int_t n = 0; n < aod->GetNumberOfTracks(); ++n)
     {
         at = (AliAODTrack*)aod->GetTrack(n);
         
-        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+        bool good_cont = (at->IsOn(AliAODTrack::kITSin) && (!at->IsOn(AliAODTrack::kTPCin)));
         
         if(good_cont || fDrawNoRefit)
         {
