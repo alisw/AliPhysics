@@ -159,7 +159,7 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
 	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect);
-  printf("Time span: %10u:%10u TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
+  printf("Time span: %ld:%ld TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
 	 GetTimeDependent() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {

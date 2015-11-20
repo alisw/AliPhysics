@@ -29,6 +29,7 @@
  *****************************************************************************/
 
 #include <TNamed.h>
+#include <time.h>
 #include "AliCheb2DStack.h"
 
 class AliTPCChebCorr : public TNamed
@@ -64,11 +65,11 @@ class AliTPCChebCorr : public TNamed
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
   const AliCheb2DStack* GetParam(int sector, float y2x, float z) const;
   //
-  UInt_t   GetTimeStampStart()                   const {return fTimeStampStart;}
-  UInt_t   GetTimeStampEnd()                     const {return fTimeStampEnd;}
-  UInt_t   GetTimeStampCenter()                  const {return (fTimeStampStart>>1)+(fTimeStampEnd>>1);}
-  void     SetTimeStampStart(UInt_t t=0)               {fTimeStampStart = t;}
-  void     SetTimeStampEnd(UInt_t t=0xffffffff)        {fTimeStampEnd = t;}
+  time_t   GetTimeStampStart()                   const {return fTimeStampStart;}
+  time_t   GetTimeStampEnd()                     const {return fTimeStampEnd;}
+  time_t   GetTimeStampCenter()                  const {return (fTimeStampStart+fTimeStampEnd)/2;}
+  void     SetTimeStampStart(time_t t=0)               {fTimeStampStart = t;}
+  void     SetTimeStampEnd(time_t t=0xffffffff)        {fTimeStampEnd = t;}
   //
   void     Print(const Option_t* opt="")         const;
   void     Eval(int sector, int row, float y2x, float z,float *corr) const;
@@ -77,6 +78,9 @@ class AliTPCChebCorr : public TNamed
   Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   static   float GetAngGap()                    {return fgkAngGap;}
+  //
+  virtual  Bool_t   IsCorrection()               const {return kTRUE;}
+  virtual  Bool_t   IsDistortion()               const {return kFALSE;}
   //
  protected:
   //
@@ -90,8 +94,8 @@ class AliTPCChebCorr : public TNamed
   Int_t    fNStacks;                // total number of stacks
   Float_t  fZMaxAbs;                // zmax abs
   //
-  UInt_t   fTimeStampStart;         // time stamp for start of validity
-  UInt_t   fTimeStampEnd;           // time stamp for end of validity
+  time_t   fTimeStampStart;         // time stamp for start of validity
+  time_t   fTimeStampEnd;           // time stamp for end of validity
   //
   // precalculated parameters
   Float_t  fZScaleI;                // 1/Zspan of single stack
