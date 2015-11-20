@@ -1159,9 +1159,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       fTimeStart = grpObj->GetTimeStart();
       fTimeEnd = grpObj->GetTimeEnd();
     }
-    if (fNOrderedEvents) {
-      fOrderedTimeStamps.resize(fNOrderedEvents);
-      time_t deltaT = fTimeEnd - fTimeStart;
+    time_t deltaT = fTimeEnd - fTimeStart;
+    if (fNOrderedEvents && deltaT>0) {
+      fOrderedTimeStamps.resize(fNOrderedEvents);      
       double tau = fLumiDecayH*3600.;
       double wt = 1.-TMath::Exp(-double(deltaT)/tau);
       for (int i=fNOrderedEvents;i--;) {
@@ -2703,7 +2703,7 @@ time_t AliSimulation::GenerateTimeStamp() const
   static int counter=0;
   if (fUseTimeStampFromCDB)
     if (fOrderedTimeStamps.size()) {
-      if (counter>=fNOrderedEvents) counter = 0; // in case of overflow, restart
+      if (counter>=fOrderedTimeStamps.size()) counter = 0; // in case of overflow, restart
       return fOrderedTimeStamps[counter++];
     }
     else return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
