@@ -20,7 +20,7 @@ class AliEveMacro;
 
 class AliEveMacroExecutor : public TObject
 {
-  friend class AliEveMacroExecutorWindow;
+//  friend class AliEveMacroExecutorWindow;
 
 public:
   AliEveMacroExecutor();

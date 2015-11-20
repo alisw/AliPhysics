@@ -49,17 +49,5 @@ if(ZEROMQ_FOUND)
     add_definitions(-DZMQ)
 endif(ZEROMQ_FOUND)
 
-# alihlteve executable
-set(SRCSHLT
-    alihlteve_main.cxx
-)
-
-add_executable(alihlteve ${SRCSHLT})
-target_link_libraries(alihlteve EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree VMC STEER ESD CDB AOD RAWDatabase RAWDatarec Thread ANALYSIS HLTbase GenVector GeomPainter Proof Gui XMLParser ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim Ged RGL AliHLTHOMER ANALYSISaliceBase XMLIO RAWDatasim HistPainter ITSsim Spectrum ${LIB_FTGL} GLEW STEERBase EveBase Eve Core Rint ASImage)
-
-if(ZEROMQ_FOUND)
-    target_link_libraries(alihlteve EveBase Eve Rint MONITORzmq)
-endif(ZEROMQ_FOUND)
-
 # Installation
-install(TARGETS alieve alihlteve RUNTIME DESTINATION bin)
+install(TARGETS alieve RUNTIME DESTINATION bin)

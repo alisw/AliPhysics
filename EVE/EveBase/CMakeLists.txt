@@ -51,13 +51,10 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Sources in alphabetical order
 set(SRCS
     AliEveAODTracks.cxx
-    AliEveApplication.cxx
     AliEveCascade.cxx
     AliEveCascadeEditor.cxx
     AliEveCascadeListEditor.cxx
     AliEveConfigManager.cxx
-    AliEveCosmicRayFitter.cxx
-    AliEveCosmicRayFitterEditor.cxx
     AliEveDataSource.cxx
     AliEveDataSourceOffline.cxx
     AliEveESDTracks.cxx
@@ -66,40 +63,25 @@ set(SRCS
     AliEveEventManagerEditor.cxx
     AliEveEventSelector.cxx
     AliEveEventSelectorWindow.cxx
-    AliEveFileDialog.cxx
-    AliEveGedEditor.cxx
     AliEveGeomGentle.cxx
-    AliEveHF.cxx
-    AliEveHFEditor.cxx
-    AliEveHFListEditor.cxx
     AliEveInit.cxx
-    AliEveJetPlane.cxx
-    AliEveJetPlaneEditor.cxx
-    AliEveJetPlaneGL.cxx
-    AliEveKineTools.cxx
     AliEveKink.cxx
     AliEveKinkEditor.cxx
     AliEveKinkListEditor.cxx
     AliEveMacro.cxx
     AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx
-    AliEveMacroExecutorWindow.cxx
     AliEveMagField.cxx
-    AliEveMainWindow.cxx
     AliEveMultiView.cxx
     AliEvePreferencesWindow.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
     AliEveTrack.cxx
-    AliEveTrackFitter.cxx
-    AliEveTrackFitterEditor.cxx
     AliEveTracklet.cxx
-    AliEveUtil.cxx
     AliEveV0.cxx
     AliEveV0Editor.cxx
     AliEveV0ListEditor.cxx
-    AliEveVSDCreator.cxx
    )
 
 # Sources if ZMQ installed

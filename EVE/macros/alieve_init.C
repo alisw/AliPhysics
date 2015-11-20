@@ -48,7 +48,6 @@
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
 #include <AliEveMacro.h>
-#include <AliEveMacroExecutorWindow.h>
 #include <AliEveEventSelectorWindow.h>
 #include <AliEveDataSourceOffline.h>
 #include <AliEveTrackFitter.h>

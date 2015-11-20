@@ -46,9 +46,7 @@
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
 #include <AliEveMacro.h>
-#include <AliEveMacroExecutorWindow.h>
 #include <AliEveEventSelectorWindow.h>
-#include <AliEveTrackFitter.h>
 #include <AliEveGeomGentle.h>
 #include <AliEveDataSourceOffline.h>
 #include <AliEveDataSourceHLTZMQ.h>
@@ -145,20 +143,8 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     //==============================================================================
     // Additional GUI components
     //==============================================================================
-    
-    // Macro / data selection
+
     TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-    slot->StartEmbedding();
-    AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
-    AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
-    slot->StopEmbedding("DataSelection");
-    exewin->PopulateMacros();
-    
-    // Event selection tab
-    slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-    slot->StartEmbedding();
-    new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, man->GetEventSelector());
-    slot->StopEmbedding("Selections");
     
     // QA viewer
     /*
@@ -183,10 +169,6 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     //==============================================================================
     // AliEve objects - global tools
     //==============================================================================
-    
-    AliEveTrackFitter* fitter = new AliEveTrackFitter();
-    gEve->AddToListTree(fitter, 1);
-    gEve->AddElement(fitter, gEve->GetEventScene());
     
     AliEveTrackCounter* g_trkcnt = new AliEveTrackCounter("Primary Counter");
     gEve->AddToListTree(g_trkcnt, kFALSE);

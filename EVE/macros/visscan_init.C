@@ -41,7 +41,6 @@
 #include <AliEveMacro.h>
 #include <AliEveMacroExecutorWindow.h>
 #include <AliEveEventSelectorWindow.h>
-#include <AliEveTrackFitter.h>
 #include <AliCDBManager.h>
 
 #include <AliEveDataSourceOffline.h>
@@ -286,10 +285,6 @@ void visscan_init(const TString& cdburi = "",
     //==============================================================================
     // AliEve objects - global tools
     //==============================================================================
-    
-    AliEveTrackFitter* fitter = new AliEveTrackFitter();
-    gEve->AddToListTree(fitter, 1);
-    gEve->AddElement(fitter, gEve->GetEventScene());
     
     AliEveTrackCounter* g_trkcnt = new AliEveTrackCounter("Primary Counter");
     gEve->AddToListTree(g_trkcnt, kFALSE);

@@ -21,7 +21,7 @@ add_subdirectory(Converter)
 add_subdirectory(ColladaConverter)
 add_subdirectory(aliconvertertest)
 
-# EVE: alieve & alihlteve executables
+# EVE: alieve executable
 add_subdirectory(alieve_main)
 
 # Installing the macros

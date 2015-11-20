@@ -26,10 +26,6 @@
 
 #include <Getline.h>
 
-// DEV Version includes
-#include <AliEveApplication.h>
-#include <AliEveMainWindow.h>
-
 #include "AliEveInit.h"
 
 #include <iostream>
@@ -57,12 +53,6 @@ int main(int argc, char **argv)
     gInterpreter->AddIncludePath(Form("%s/PWG0", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
-    
-    // TabCom fails on double-colon in macro-path.
-    // I fixed this in ROOT sometime ago ... could be removed
-    // when we go to 5.26.
-//    TPMERegexp doubleColon(":{2,}", "og");
-//    doubleColon.Substitute(macPath, ":");
 
     gROOT->SetMacroPath(macPath);
 

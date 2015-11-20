@@ -18,7 +18,6 @@
 
 #include "AliEveEventManager.h"
 #include "AliEveMacroExecutor.h"
-#include "AliEveMacroExecutorWindow.h"
 #include "AliEveMacro.h"
 #include "AliEvePreferencesWindow.h"
 
