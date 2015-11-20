@@ -19,6 +19,7 @@
 #include <time.h>
 #include <string>
 #include <map>
+#include "TFile.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -31,6 +32,7 @@ TObject* UnpackMessage( zmq_msg_t message);
 int ProcessOptionString(TString arguments);
 void deleteObject(void*, void*);
 int UpdatePad(TObject*);
+int DumpToFile(TObject* object);
 
 //configuration vars
 Bool_t fVerbose = kFALSE;
@@ -38,6 +40,9 @@ TString fZMQconfigIN  = "PULL>tcp://localhost:60211";
 int fZMQsocketModeIN=-1;
 TString fZMQsubscriptionIN = "";
 TString fFilter = "";
+
+TString fFileName="";
+TFile* fFile=NULL;
 
 int fPollInterval = 0;
 int fPollTimeout = 1000; //1s
@@ -64,6 +69,7 @@ const char* fUSAGE =
     " -Verbose : be verbose\n"
     " -select : only show selected histograms (by regexp)"
     " -drawoptions : what draw option to use"
+    " -file : dump input to file"
     ;
 
 //_______________________________________________________________________________________
@@ -82,6 +88,7 @@ int main(int argc, char** argv)
   gApp = new TApplication("viewer", &argc, argv); 
   gApp->SetReturnFromRun(true);
   //gApp->Run();
+  
   fCanvas = new TCanvas();
   gSystem->ProcessEvents();
   
@@ -138,6 +145,11 @@ int main(int argc, char** argv)
         TObject* object;
         alizmq_msg_iter_data(i, object);
         if (object) UpdatePad(object);
+
+        if (!fFileName.IsNull()) 
+        {
+          DumpToFile(object);
+        }
       }
       alizmq_msg_close(&message);
 
@@ -145,11 +157,21 @@ int main(int argc, char** argv)
     gSystem->ProcessEvents();
     usleep(fPollInterval);
   }//main loop
+  delete fFile; fFile=0;
 
   //destroy ZMQ sockets
   zmq_close(fZMQin);
   zmq_ctx_destroy(fZMQcontext);
   return mainReturnCode;
+}
+
+//______________________________________________________________________________
+int DumpToFile(TObject* object)
+{
+  Option_t* fileMode="RECREATE";
+  if (!fFile) fFile = new TFile(fFileName,fileMode);
+  if (fVerbose) Printf("writing object %s to %s",object->GetName(), fFileName.Data());
+  return object->Write(object->GetName(),TObject::kOverwrite);
 }
 
 //______________________________________________________________________________
@@ -255,6 +277,10 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("drawoptions"))
     {
       fDrawOptions = value;
+    }
+    else if (option.EqualTo("file"))
+    {
+      fFileName = value;
     }
     else
     {
