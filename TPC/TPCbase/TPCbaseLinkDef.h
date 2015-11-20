@@ -144,6 +144,7 @@
 #pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 
 #pragma link C++ class AliTPCChebCorr+;       // Wrapper for Chebyshev-parameterized corrections
+#pragma link C++ class AliTPCChebDist+;       // Wrapper for Chebyshev-parameterized distortions
 
 #endif
 

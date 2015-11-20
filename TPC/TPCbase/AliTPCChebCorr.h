@@ -60,6 +60,7 @@ class AliTPCChebCorr : public TNamed
   Float_t  GetZMax()                             const {return fZMaxAbs;}
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}
   Int_t    GetNStacksSector()                    const {return fNStacksSect;}
+  Int_t    GetNRows()                            const {return fNRows;}
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
   const AliCheb2DStack* GetParam(int sector, float y2x, float z) const;
   //

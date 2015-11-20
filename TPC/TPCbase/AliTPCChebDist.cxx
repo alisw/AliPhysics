@@ -21,23 +21,17 @@
 
 ClassImp(AliTPCChebDist)
 
-
-const float AliTPCChebDist::fgkAngGap = 5e-4; // allow some empty ang. space between sectors
-const float AliTPCChebDist::fgkY2XHSpan = TMath::Tan(TMath::Pi()/AliTPCChebDist::kNSectors - AliTPCChebDist::fgkAngGap);
+Float_t AliTPCChebDist::fgRMinTPC = 83.65; //RS Make sure these are correct radii to use
+Float_t AliTPCChebDist::fgRMaxTPC = 247.7;
+Int_t   AliTPCChebDist::fgNSlices = AliTPCChebCorr::kNRows+10; // check
 
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist()
-  : TNamed()
-  ,fNStacksSect(0)
-  ,fNStacksZSect(0)
-  ,fNStacksZ(0)
-  ,fNStacks(0)
-  ,fZMaxAbs(-1)
-  ,fTimeStampStart(0)
-  ,fTimeStampEnd(0xffffffff)
-  ,fZScaleI(0)
-  ,fY2XScaleI(0)
-  ,fParams(0)
+  : AliTPCChebCorr()
+  ,fXMin(fgRMinTPC)
+  ,fXMax(fgRMaxTPC)
+  ,fDX(0)
+  ,fDXInv(0)
 {
 // def. c-tor  
 }
@@ -45,148 +39,35 @@ AliTPCChebDist::AliTPCChebDist()
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist(const char* name, const char* title, 
 			       int nps, int nzs, float zmaxAbs)
-  : TNamed(name,title)
-  ,fNStacksSect(0)
-  ,fNStacksZSect(0)
-  ,fNStacksZ(0)
-  ,fNStacks(0)
-  ,fZMaxAbs(-1)
-  ,fTimeStampStart(0)
-  ,fTimeStampEnd(0xffffffff)
-  ,fZScaleI(0)
-  ,fY2XScaleI(0)
-  ,fParams(0)
+  :AliTPCChebCorr(name,title,nps,nzs,zmaxAbs)
+  ,fXMin(fgRMinTPC)
+  ,fXMax(fgRMaxTPC)
 {
   // c-tor
-  SetBinning(nps,nzs,zmaxAbs);
+  fNRows = fgNSlices;
+  if (fNRows<2) AliFatalF("Number of rows=%d cannot be<2",fNRows);
+  fDX = (fXMax-fXMin)/(fNRows-1);
+  if (fDX<=0)  AliFatalF("X boundaries are not invreasing: %f %f",fXMin,fXMax);
+  fDXInv = 1./fDX;
   //
 }
 
 //____________________________________________________________________
-AliTPCChebDist::~AliTPCChebDist()
+void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distortion) const
 {
-  // d-tor
-  if (fParams) for (int i=fNStacks;i--;) delete fParams[i];
-  delete[] fParams;
-}
-
-//____________________________________________________________________
-void AliTPCChebDist::Parameterize(stFun_t fun,int dimOut,const int np[2],const float* prec)
-{
-  // build parameterizations for 2->dimout, on the same grid of np[0]xnp[1] points for
-  // every output dimension, optionally with prec[i] precision for i-th dimension
-  //
-  if (TestBit(kParamDone)) {
-    AliError("Parameterization is already done");
-    return;
+  // Calculate distortion for point with x,y,z sector corrdinates (sector id in 0-71 format)
+  int ixLow = X2Slice(x);
+  float tz[2] = {y2x,z}; // params use row, Y/X, Z
+  const AliCheb2DStack* chpar = GetParam(sector,y2x,z);
+  float distUp[3], scl = (x-Slice2X(ixLow))*fDXInv; // lever arm for interpolation
+  chpar->Eval(ixLow  , tz, distortion);
+  if (ixLow<fNRows-1) {
+    chpar->Eval(ixLow+1, tz, distUp);
+    for (int i=3;i--;) distortion[i] += scl*(distUp[i]-distortion[i]); // linear interpolation
+  }
+  else { // we are at the last slice, extrapolate
+    chpar->Eval(ixLow-1, tz, distUp);
+    for (int i=3;i--;) distortion[i] += scl*(distortion[i]-distUp[i]); // linear extrapolation   
   }
   //
-  if (fZMaxAbs<0) AliFatal("First the binning and Z limits should be set");
-  //
-  float bmn[2],bmx[2];
-  Bool_t useS = GetUseShortPrec();  // float or short representation for param
-  fParams = new AliCheb2DStack*[fNStacks];
-  //
-  for (int iz=0;iz<fNStacksZ;iz++) {
-    bmn[1] = iz/fZScaleI - fZMaxAbs;     // boundaries in Z
-    bmx[1] = iz<fNStacksZ-1 ? (iz+1)/fZScaleI - fZMaxAbs : fZMaxAbs;
-    for (int isc=0;isc<kNSectors;isc++) {
-      int isc72 = isc;
-      if (iz<fNStacksZSect) isc72 += 18; // change side
-      fun(isc72,0,0);
-      for (int isl=0;isl<fNStacksSect;isl++) {
-	bmn[0] = -fgkY2XHSpan+isl/fY2XScaleI; // boundaries in phi
-	bmx[0] = isl<fNStacksSect-1 ?  -fgkY2XHSpan+(isl+1)/fY2XScaleI : fgkY2XHSpan;
-	int id = GetParID(iz,isc,isl);
-	AliInfoF("Doing param #%03d Iz:%d Sect:%02d Slice:%d | %+.1f<Z<%+.1f %+.3f<y2x<%+.3f",
-		 id,iz,isc,isl,bmn[1],bmx[1],bmn[0],bmx[0]);
-	if (useS) fParams[id] = new  AliCheb2DStackS(fun,kNRows,dimOut,bmn,bmx,np,prec);
-	else      fParams[id] = new  AliCheb2DStackF(fun,kNRows,dimOut,bmn,bmx,np,prec);
-      }
-    }
-  }
-  //
-  SetBit(kParamDone);
-  //
 }
-
-//____________________________________________________________________
-void AliTPCChebDist::Parameterize(stFun_t fun,int dimOut,const int np[][2],const float* prec)
-{
-  // build parameterizations for 2->dimout, on the same grid of np[0]xnp[1] points for
-  // every output dimension, optionally with prec[i] precision for i-th dimension
-  //
-  if (TestBit(kParamDone)) {
-    AliError("Parameterization is already done");
-    return;
-  }
-  //
-  float bmn[2],bmx[2];
-  float y2xMax = TMath::Tan(TMath::Pi()/kNSectors); // half-sector span
-  //
-  fParams = new AliCheb2DStack*[fNStacks];
-  Bool_t useS = GetUseShortPrec();  // float or short representation for param
-  //
-  for (int iz=0;iz<fNStacksZ;iz++) {
-    bmn[1] = iz/fZScaleI-fZMaxAbs;     // boundaries in Z
-    bmx[1] = iz<fNStacksZ-1 ? (iz+1)/fZScaleI-fZMaxAbs : fZMaxAbs;
-    for (int isc=0;isc<kNSectors;isc++) {
-      int isc72 = isc;
-      if (iz<fNStacksZSect) isc72 += 18; // change side
-      fun(isc72,0,0);
-      for (int isl=0;isl<fNStacksSect;isl++) {
-	bmn[0] = -y2xMax+isl/fY2XScaleI; // boundaries in phi
-	bmx[0] = isl<fNStacksSect-1 ?  -fgkY2XHSpan+(isl+1)/fY2XScaleI : fgkY2XHSpan;
-	int id = GetParID(iz,isc,isl);
-	AliInfoF("Doing param #%03d Iz:%d Sect:%02d Slice:%d | %+.1f<Z<%+.1f %+.3f<y2x<%+.3f",
-		 id,iz,isc,isl,bmn[1],bmx[1],bmn[0],bmx[0]);
-	if (useS) fParams[id] = new  AliCheb2DStackS(fun,kNRows,dimOut,bmn,bmx,np,prec);
-	else      fParams[id] = new  AliCheb2DStackF(fun,kNRows,dimOut,bmn,bmx,np,prec);
-      }
-    }
-  }
-  //
-  SetBit(kParamDone);
-  //
-}
-
-//____________________________________________________________________
-void AliTPCChebDist::Print(const Option_t* opt) const
-{
-  // print itself
-  printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector\n",
-	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
-	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect);
-  printf("Time span: %10u:%10u TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
-	 GetTimeDependent() ? "ON":"OFF");
-  TString opts = opt; opts.ToLower();
-  if (opts.Contains("p") && TestBit(kParamDone)) {
-    for (int iz=0;iz<fNStacksZ;iz++) {
-      for (int isc=0;isc<kNSectors;isc++) {
-	for (int isl=0;isl<fNStacksSect;isl++) {
-	  int id = GetParID(iz,isc,isl);
-	  printf("Z%d Sector%02d Slice%d: ",iz,isc,isl);
-	  GetParam(id)->Print(opt);
-	}
-      }
-    }
-  }
-}
-
-//____________________________________________________________________
-void AliTPCChebDist::SetBinning(int nps,int nzs, float zmxAbs)
-{
-  // set binning, limits
-  fNStacksSect = nps;
-  fNStacksZSect = nzs;
-  fNStacksZ = nzs*2; // nzs is the number of bins per side!
-  fZMaxAbs  = zmxAbs;
-  fNStacks  = fNStacksZ*fNStacksSect*kNSectors;
-  //  
-  if (zmxAbs<1e-8 || nzs<1 || nps<1) AliFatalF("Wrong settings: |Zmax|:%f Nz:%d Nphi:%d",
-					       zmxAbs,nzs,nps);
-  fZScaleI   = nzs/zmxAbs;
-  fY2XScaleI = nps/(2*TMath::Tan(TMath::Pi()/kNSectors));
-  //
-}
-

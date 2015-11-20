@@ -59,6 +59,7 @@ set(SRCS
     AliTPCCalPad.cxx
     AliTPCCalROC.cxx
     AliTPCChebCorr.cxx
+    AliTPCChebDist.cxx
     AliTPCclusterInfo.cxx
     AliTPCclusterMI.cxx
     AliTPCClusterParam.cxx
