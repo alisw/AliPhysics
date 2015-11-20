@@ -115,6 +115,7 @@ private:
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
+    Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -212,7 +213,9 @@ private:
     //Data needed for Monte Carlo
     Int_t fMC_NColl;
     Int_t fMC_NPart;
-
+    Int_t fMC_NchV0A;
+    Int_t fMC_NchV0C;
+    
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     

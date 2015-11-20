@@ -61,6 +61,7 @@ class AliESDAD; //AD
 #include "AliGenEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
@@ -95,7 +96,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -154,6 +155,8 @@ fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
+fMC_NchV0A(-1),
+fMC_NchV0C(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -167,7 +170,7 @@ fInput(0)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -226,6 +229,8 @@ fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
+fMC_NchV0A(-1),
+fMC_NchV0C(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -240,9 +245,11 @@ fInput(0)
     //Special Debug Options (more to be added as needed)
     // A - Debug AliCentrality
     // B - Debug AliPPVsMultUtils
+    // M - Extra MC variables
     
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
+    if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE; 
 }
 
 
@@ -381,8 +388,12 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
         
-        fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
-        fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+        if( fkDebugIsMC ) {
+            fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
+            fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+            fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
+            fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
+        }
         //A.T. FIXME change into AliMultVariable
         //ZDC info (only booleans: the rest will be done in the loop automatically)
         fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
@@ -491,7 +502,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Float_t multADA =0;
     Float_t multADC =0;
     Float_t multAD =0;
-
+    
+    fMC_NchV0A = -1;
+    fMC_NchV0C = -1;
+    
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
 
@@ -541,32 +555,61 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Don't forget to set: some of the "ifs" may not be there
     fMC_NColl = -1;
     fMC_NPart = -1;
-    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-    AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
-    AliMCEvent*  mcEvent=0;
-    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
-        AliGenHijingEventHeader* hHijing=0;
-        AliGenDPMjetEventHeader* dpmHeader=0;
-        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-        if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
-            hHijing = (AliGenHijingEventHeader*)mcGenH;
-        else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-            TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-            hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
-            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
-        }
-        else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-            dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-        }
-        if(hHijing)   {
-            fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
-            fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
-        }
-        if(dpmHeader) {
-            fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
-            fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+    
+    if ( fkDebugIsMC ) {
+        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+        AliStack*    stack=0;
+        AliMCEvent*  mcEvent=0;
+        
+
+        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+            
+            //Npart and Ncoll information
+            AliGenHijingEventHeader* hHijing=0;
+            AliGenDPMjetEventHeader* dpmHeader=0;
+            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+                hHijing = (AliGenHijingEventHeader*)mcGenH;
+            else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+            }
+            else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+                dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+            }
+            if(hHijing)   {
+                fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+                fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+            }
+            if(dpmHeader) {
+                fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
+                fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+            }
+            
+            //Nch information in V0A and V0C acceptance
+            //Initialize counters to valid!
+            fMC_NchV0A = 0;
+            fMC_NchV0C = 0;
+            //----- Loop on Stack ----------------------------------------------------------------
+            for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
+            {   // This is the begining of the loop on tracks
+                TParticle* particleOne = stack->Particle(iCurrentLabelStack);
+                if(!particleOne) continue;
+                if(!particleOne->GetPDG()) continue;
+                Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+                if(TMath::Abs(lThisCharge)<0.001) continue;
+                if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+                
+                //Double_t gpt = particleOne -> Pt();
+                Double_t geta = particleOne -> Eta();
+        
+                if( 2.8 < geta && geta < 5.1 ) fMC_NchV0A++;
+                if(-3.7 < geta && geta <-1.7 ) fMC_NchV0C++;
+            }//End of loop on tracks
+            //----- End Loop on Stack ------------------------------------------------------------
         }
     }
     //------------------------------------------------
