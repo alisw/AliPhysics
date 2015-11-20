@@ -197,7 +197,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   socket  = zmq_socket(context, zmqSocketMode);
 
   //set socket options
-  int lingerValue = 10;
+  int lingerValue = 0;
   rc += zmq_setsockopt(socket,  ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
