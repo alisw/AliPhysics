@@ -141,6 +141,8 @@ private:
     AliMultVariable *fAmplitude_OnlineV0C;
     //Integer Variables 
     AliMultVariable *fnSPDClusters;
+    AliMultVariable *fnSPDClusters0;
+    AliMultVariable *fnSPDClusters1;
     AliMultVariable *fnTracklets; //tracklet estimator
     AliMultVariable *fRefMultEta5; //tracklet estimator
     AliMultVariable *fRefMultEta8; //tracklet estimator
@@ -188,8 +190,6 @@ private:
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
-    Int_t   fnSPDClusters0;            //!
-    Int_t   fnSPDClusters1;            //!
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.

@@ -296,6 +296,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //SPD Related
     fnSPDClusters         = new AliMultVariable("fnSPDClusters");
     fnSPDClusters->SetIsInteger( kTRUE );
+    fnSPDClusters0         = new AliMultVariable("fnSPDClusters0");
+    fnSPDClusters0->SetIsInteger( kTRUE );
+    fnSPDClusters1         = new AliMultVariable("fnSPDClusters1");
+    fnSPDClusters1->SetIsInteger( kTRUE );
+    
     //AD Related
     fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
@@ -382,8 +387,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
         
         //A.T. FIXME change into AliMultVariable
-        //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
-        //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
         
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
@@ -495,8 +498,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_HasNoInconsistentVertices = kFALSE;
     fEvSel_INELgtZERO             = kFALSE; 
     //fnSPDClusters = -1;
-    fnSPDClusters0 = -1;
-    fnSPDClusters1 = -1;
+    fnSPDClusters -> SetValueInteger(-1);
+    fnSPDClusters0 -> SetValueInteger( -1) ;
+    fnSPDClusters1 -> SetValueInteger( -1) ;
     fEvSel_VtxZ ->SetValue( -100 );
 
     Float_t multADA =0;
@@ -823,7 +827,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Integer Estimators
     fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
     fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
-
+    fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
+    fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));
     //===============================================
     //This part requires separation of AOD and ESD
     //===============================================
