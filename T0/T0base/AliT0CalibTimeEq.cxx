@@ -409,7 +409,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 	  SetCFDvalue(i,1,qt1[i]);
 	  ped[i]=cfdvalue[52+i];
 	  SetCFDvalue(i,3,ped[i]);
-	  printf(" !!! AliT0CalibTimeEq pmt %i pedestal %f \n ", i, ped[i]);
+	  AliInfo(Form(" !!! AliT0CalibTimeEq pmt %i pedestal %f \n ", i, ped[i]) );
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt
