@@ -28,9 +28,7 @@
 //easy access to payloads based on topic or so (a la HLT GetFirstInputObject() etc...)
 
 //methods
-TObject* UnpackMessage( zmq_msg_t message);
 int ProcessOptionString(TString arguments);
-void deleteObject(void*, void*);
 int UpdatePad(TObject*);
 int DumpToFile(TObject* object);
 
@@ -224,22 +222,6 @@ int UpdatePad(TObject* object)
   gSystem->ProcessEvents();
   fCanvas->Update();
   return 0;
-}
-
-//______________________________________________________________________________
-void deleteObject(void*, void* hint)
-{
-  //delete the TMessage, for use in zmq_msg_init_data(...) only.
-  TObject* object = static_cast<TObject*>(hint);
-  delete object;
-}
-
-//_______________________________________________________________________________________
-TObject* UnpackMessage( zmq_msg_t message )
-{
-  size_t size = zmq_msg_size(&message);
-  void* data = zmq_msg_data(&message);
-  return AliHLTMessage::Extract(data, size);
 }
 
 //______________________________________________________________________________
