@@ -11,7 +11,7 @@
   AliNDLocalRegressionTest(10000,2,"cos(7*x[0]/pi)*sin(11*x[1]/pi)",0.1);
   //
   AliNDLocalRegressionTest(10000,2,"x[0]+x[1]",0.1);
- 
+
 */
 
 
@@ -20,7 +20,7 @@
 #include "AliNDLocalRegression.h" 
 #include "TStyle.h"
 #include "TPaveText.h"
- 
+
 void UnitTestGaussNoise();
 void UnitTestStreamer();
 Bool_t UnitTestContrain();
@@ -381,10 +381,13 @@ Bool_t UnitTestContrain(){
   AliNDLocalRegression *regressionUpdate0 = (AliNDLocalRegression *)regression0->Clone();
   AliNDLocalRegression *regressionUpdate1 = (AliNDLocalRegression *)regression1->Clone();
  
-  for (Int_t iter=0; iter<5; iter++){
+  for (Int_t iter=0; iter<3; iter++){
     regressionUpdate0->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, pcstream);
     regressionUpdate1->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight1, pcstream);
   }
+  regressionUpdate1->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight1, pcstream,kTRUE);
+
+
   regressionUpdate0->SetName("pfitNDGaus0_Updated");
   regressionUpdate1->SetName("pfitNDGaus1_Updated");
   AliNDLocalRegression::AddVisualCorrection(regressionUpdate0);
@@ -398,15 +401,21 @@ Bool_t UnitTestContrain(){
   TH1 * his[10]={0};
   TCanvas *canvasUnitTestConstrain = new TCanvas("canvasUnitTestConstrain","canvasUnitTestConstrain");
   treeIn->SetLineColor(4);
-  treeIn->Draw("(pfitNDGaus0_Updated-pfitNDIdeal)>>hisSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","");
+  treeIn->Draw("(pfitNDGaus1_Updated-pfitNDIdeal)>>hisSmoothedC(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","");
   his[0]=treeIn->GetHistogram();
-  his[0]->Fit("gaus","+");
   treeIn->SetLineColor(2);
-  treeIn->Draw("(pfitNDGaus0-pfitNDIdeal)>>hisNotSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","same");
+  treeIn->Draw("(pfitNDGaus0_Updated-pfitNDIdeal)>>hisSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","");
   his[1]=treeIn->GetHistogram();
+  treeIn->SetLineColor(1);
+  treeIn->SetLineColor(1);
+  treeIn->Draw("(pfitNDGaus0-pfitNDIdeal)>>hisNotSmoothed(100,-0.2,0.2)","abs(xyz0-0.5)<0.45&&abs(xyz1-0.05)<0.45","same");
+  his[2]=treeIn->GetHistogram();
+  his[0]->Fit("gaus","+");
   his[1]->Fit("gaus","+");
+  his[2]->Fit("gaus","+");
   his[0]->Draw();
   his[1]->Draw("same");
+  his[2]->Draw("same");
   canvasUnitTestConstrain->SaveAs("canvasUnitTestConstrain.png");
   
 }
