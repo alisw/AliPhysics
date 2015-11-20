@@ -213,7 +213,7 @@ int AliHLTZDCESDRecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData
   // get ZDC raw input data block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginZDC);
   if (!pBlock) {
-    ALIHLTERRORGUARD(1, "No ZDC input block at event %d", GetEventCount());
+    HLTInfo("No ZDC input block at event %d", GetEventCount());
     return 0;
   }
 
