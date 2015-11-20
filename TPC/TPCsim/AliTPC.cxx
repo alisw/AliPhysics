@@ -85,6 +85,7 @@
 #include "AliCTPTimeParams.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStreamV3.h"
+#include "AliTPCTransform.h"
 #include "TTreeStream.h"
 
 ClassImp(AliTPC) 
@@ -1531,6 +1532,14 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   // adding phase to the TreeD user info 
   fLoader->TreeD()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",lhcph));
   //
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  if (tpcrecoparam->GetUseCorrectionMap()) {
+    AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
+    transform->SetCurrentRecoParam(tpcrecoparam);
+    transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
+  }
+  //
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
     if (IsSectorActive(isec)) {
       AliDebug(1,Form("Hits2Digits: Sector %d is active.",isec));
@@ -2104,28 +2113,32 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
   AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
 
+  AliTPCTransform* transform = 0;
+
 //  AliWarning(Form("Flag for ExB correction \t%d",tpcrecoparam->GetUseExBCorrection())); 
 //  AliWarning(Form("Flag for Composed correction \t%d",calib->GetRecoParam()->GetUseComposedCorrection()));
 
-  if (tpcrecoparam->GetUseExBCorrection()) {
-    if (gAlice){ // Set correctly the magnetic field in the ExB calculation
-      if (!calib->GetExB()){
-        AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
-        if (field) {
-	  calib->SetExBField(field);
-        }
+  if (tpcrecoparam->GetUseCorrectionMap()) transform = (AliTPCTransform*) calib->GetTransform();
+  else { // only if Chebyshev maps are not used
+    if (tpcrecoparam->GetUseExBCorrection()) {
+      if (gAlice){ // Set correctly the magnetic field in the ExB calculation
+	if (!calib->GetExB()){
+	  AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
+	  if (field) {
+	    calib->SetExBField(field);
+	  }
+	}
+      }
+    } else if (tpcrecoparam->GetUseComposedCorrection()) {
+      AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); 
+      Double_t bzpos[3]={0,0,0};
+      if (!correctionDist) correctionDist = calib->GetTPCComposedCorrection(field->GetBz(bzpos));
+      
+      if (!correctionDist){
+	AliFatal("Correction map does not exist. Check the OCDB or your setup");
       }
     }
-  } else if (tpcrecoparam->GetUseComposedCorrection()) {
-    AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); 
-    Double_t bzpos[3]={0,0,0};
-    if (!correctionDist) correctionDist = calib->GetTPCComposedCorrection(field->GetBz(bzpos));
-
-    if (!correctionDist){
-      AliFatal("Correction map does not exist. Check the OCDB or your setup");
-    }
   }
-
   Float_t gasgain = fTPCParam->GetGasGain();
   gasgain = gasgain/fGainFactor;
   //  const Int_t timeStamp = 1; //where to get it? runloader->GetHeader()->GetTimeStamp(). https://savannah.cern.ch/bugs/?53025
@@ -2260,35 +2273,42 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	xyz[1]=tpcHit->Y();
 	xyz[2]=tpcHit->Z(); 
 	//
-	// ExB effect - distort hig if specifiend in the RecoParam
-	//
-        if (tpcrecoparam->GetUseExBCorrection()) {
-	  Double_t dxyz0[3],dxyz1[3];
-	  dxyz0[0]=tpcHit->X();
-	  dxyz0[1]=tpcHit->Y();
-	  dxyz0[2]=tpcHit->Z(); 	
-	  if (calib->GetExB()){
-	    calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-	  }else{
-	    AliError("Not valid ExB calibration");
-	    dxyz1[0]=tpcHit->X();
-	    dxyz1[1]=tpcHit->Y();
-	    dxyz1[2]=tpcHit->Z(); 	
-	  }
-	  xyz[0]=dxyz1[0];
-	  xyz[1]=dxyz1[1];
-	  xyz[2]=dxyz1[2]; 	
-        } else if (tpcrecoparam->GetUseComposedCorrection()) {
-        //      Use combined correction/distortion  class AliTPCCorrection
-          if (correctionDist){
-            Float_t distPoint[3]={tpcHit->X(),tpcHit->Y(), tpcHit->Z()};
-            correctionDist->DistortPoint(distPoint, isec);
-            xyz[0]=distPoint[0];
+	if (tpcrecoparam->GetUseCorrectionMap()) {
+	  double xyzD[3] = {xyz[0],xyz[1],xyz[2]};
+	  transform->ApplyDistortionMap(isec,xyzD);
+	  for (int idim=3;idim--;) xyz[idim] = xyzD[idim];
+	}
+	else {
+	  // ExB effect - distort hig if specifiend in the RecoParam
+	  //
+	  if (tpcrecoparam->GetUseExBCorrection()) {
+	    Double_t dxyz0[3],dxyz1[3];
+	    dxyz0[0]=tpcHit->X();
+	    dxyz0[1]=tpcHit->Y();
+	    dxyz0[2]=tpcHit->Z(); 	
+	    if (calib->GetExB()){
+	      calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+	    }else{
+	      AliError("Not valid ExB calibration");
+	      dxyz1[0]=tpcHit->X();
+	      dxyz1[1]=tpcHit->Y();
+	      dxyz1[2]=tpcHit->Z(); 	
+	    }
+	    xyz[0]=dxyz1[0];
+	    xyz[1]=dxyz1[1];
+	    xyz[2]=dxyz1[2]; 	
+	  } else if (tpcrecoparam->GetUseComposedCorrection()) {
+	    //      Use combined correction/distortion  class AliTPCCorrection
+	    if (correctionDist){
+	      Float_t distPoint[3]={tpcHit->X(),tpcHit->Y(), tpcHit->Z()};
+	      correctionDist->DistortPoint(distPoint, isec);
+	      xyz[0]=distPoint[0];
             xyz[1]=distPoint[1];
             xyz[2]=distPoint[2];
-           }      
-        }
-	//
+	    }      
+	  }
+	  //
+	}
 	//
 	//
 	// protection for the nonphysical avalanche size (10**6 maximum)

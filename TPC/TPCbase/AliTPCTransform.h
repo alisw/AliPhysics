@@ -15,6 +15,7 @@
 class AliTPCRecoParam;
 #include "AliTPCChebCorr.h"
 #include "AliTransform.h"
+#include <time.h>
 
 class AliTPCTransform:public AliTransform {
 public:
@@ -29,7 +30,7 @@ public:
   void RotatedGlobal2Global(Int_t sector,Double_t *x) const;
   void Global2RotatedGlobal(Int_t sector,Double_t *x) const;
   void GetCosAndSin(Int_t sector,Double_t &cos,Double_t &sin) const;
-  UInt_t GetCurrentTimeStamp() const { return fCurrentTimeStamp;}
+  time_t GetCurrentTimeStamp() const { return fCurrentTimeStamp;}
   const AliTPCRecoParam * GetCurrentRecoParam() const {return fCurrentRecoParam;}
   AliTPCRecoParam * GetCurrentRecoParamNonConst() const {return fCurrentRecoParam;}
   UInt_t GetCurrentRunNumber() const { return fCurrentRun;}
@@ -41,14 +42,16 @@ public:
   //
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
   void SetCurrentRun(Int_t run){fCurrentRun=run;}
-  void SetCurrentTimeStamp(Int_t timeStamp);
+  void SetCurrentTimeStamp(time_t timeStamp);
   void ApplyTransformations(Double_t *xyz, Int_t volID);
   //
   // new correction maps
   Bool_t  UpdateTimeDependentCache();
-  void    ApplyCorrectionMap(int roc, int row, double xyz[3]);
+  void    ApplyCorrectionMap(int roc, int row, double xyzSect[3]);
+  void    ApplyDistortionMap(int roc, double xyzLab[3]);
   void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3]);
   Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut);
+  void    EvalDistortionMap(int roc, const double xyzSector[3], float res[3]);
   //
   static void RotateToSectorUp(float *x, int& idROC);
   static void RotateToSectorDown(float *x, int& idROC);
@@ -67,7 +70,7 @@ private:
   const AliTPCChebCorr* fCorrMapCache0;      //!<! current correction map0 (for 1st time bin if time-dependent)
   const AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
   Int_t    fCurrentRun;                //!<! current run
-  UInt_t   fCurrentTimeStamp;          //!<! current time stamp
+  time_t   fCurrentTimeStamp;          //!<! current time stamp
   Bool_t   fTimeDependentUpdated;      //!<! flag successful update of time dependent stuff
   /// \cond CLASSIMP
   static const Double_t fgkSin20;       // sin(20)
@@ -79,15 +82,14 @@ private:
 };
 
 //______________________________________________________
-inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyz[3])
+inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
 {
   // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
   float res[3];
-  EvalCorrectionMap(roc, row, xyz, res);
-  for (int i=3;i--;) xyz[i] += res[i];
+  EvalCorrectionMap(roc, row, xyzSect, res);
+  for (int i=3;i--;) xyzSect[i] += res[i];
   //
 }
-
 
 //_________________________________________________
 inline void AliTPCTransform::RotateToSectorUp(float *x, int& idROC)
