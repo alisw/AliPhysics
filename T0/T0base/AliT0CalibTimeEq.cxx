@@ -428,7 +428,6 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 //________________________________________________________________________
 void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
   
-  printf(" @@histo %s \n",hist->GetName() );
   const double window = 3.;  //fit window 
   double meanEstimate, sigmaEstimate; 
   int maxBin;
