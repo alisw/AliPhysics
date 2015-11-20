@@ -132,6 +132,8 @@ fAmplitude_V0C1(0),
 fAmplitude_V0C2(0),
 fAmplitude_V0C3(0),
 fAmplitude_V0C4(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
 fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
@@ -209,6 +211,8 @@ fAmplitude_V0C1(0),
 fAmplitude_V0C2(0),
 fAmplitude_V0C3(0),
 fAmplitude_V0C4(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
 fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
@@ -299,6 +303,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fAmplitude_V0CEq      = new AliMultVariable("fAmplitude_V0CEq");
     fAmplitude_OnlineV0A  = new AliMultVariable("fAmplitude_OnlineV0A");
     fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
+    fAmplitude_V0AADC        = new AliMultVariable("fAmplitude_V0AADC");
+    fAmplitude_V0CADC        = new AliMultVariable("fAmplitude_V0CADC");
     //SPD Related
     fnSPDClusters         = new AliMultVariable("fnSPDClusters");
     fnSPDClusters->SetIsInteger( kTRUE );
@@ -342,6 +348,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fAmplitude_V0CEq );
     fInput->AddVariable( fAmplitude_OnlineV0A );
     fInput->AddVariable( fAmplitude_OnlineV0C );
+    fInput->AddVariable( fAmplitude_V0AADC );
+    fInput->AddVariable( fAmplitude_V0CADC );
     fInput->AddVariable( fnSPDClusters );
     fInput->AddVariable( fnTracklets );
     fInput->AddVariable( fRefMultEta5 );
@@ -803,6 +811,27 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0A->SetValue(multV0A);
     fAmplitude_V0C->SetValue(multV0C);
     
+    //Implementation of V0 ADC information
+    // FIXME: THIS ONLY WORKS IN ESDS FOR NOW
+    Float_t  multV0AADC  = 0;            //  multiplicity from V0 reco side A from ADC
+    Float_t  multV0CADC  = 0;            //  multiplicity from V0 reco side C from ADC
+    fAmplitude_V0AADC->SetValue(0);
+    fAmplitude_V0CADC->SetValue(0);
+    
+    /* FIXME: THIS DOES NOT WORK !!
+     for(Int_t iCh = 0; iCh < 32; iCh++){
+     Double_t mult = lVV0->GetADC(iCh);
+     multV0CADC += mult;
+     }
+     for(Int_t iCh = 32; iCh < 64; iCh++){
+     Double_t mult = lVV0->GetMultiplicity(iCh);
+     multV0AADC += mult;
+     }
+     */
+    
+    fAmplitude_V0AADC->SetValue(multV0AADC);
+    fAmplitude_V0CADC->SetValue(multV0CADC);
+    
     if ( lVerbose ) {
         Printf(" V0A Amplitude: %.5f", multV0A );
         Printf(" V0C Amplitude: %.5f", multV0C );
@@ -874,6 +903,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
+        
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
         fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
         fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );

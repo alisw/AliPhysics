@@ -139,6 +139,9 @@ private:
     AliMultVariable *fAmplitude_V0CEq;
     AliMultVariable *fAmplitude_OnlineV0A;
     AliMultVariable *fAmplitude_OnlineV0C;
+    AliMultVariable *fAmplitude_V0AADC;
+    AliMultVariable *fAmplitude_V0CADC;
+
     //Integer Variables 
     AliMultVariable *fnSPDClusters;
     AliMultVariable *fnSPDClusters0;
