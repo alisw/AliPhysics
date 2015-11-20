@@ -8,7 +8,7 @@
 
    .x $NOTES/aux/rootlogon.C
    .L $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C+
-    
+   // cp   $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C 
 
 */
 
@@ -70,7 +70,7 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
     Float_t theta1=TString(gSystem->Getenv("varTheta1")).Atof();
     ::Info("AliTPCcalibAlignInterpolationM","MakeFit");
     printf("Env varaible:\n%s\t%s\t%s\t%s\t%s\t%s\t\n",inputFile.Data(), inputTree.Data(), gSystem->Getenv("varSec0") , gSystem->Getenv("varSec1"), 	gSystem->Getenv("varTheta0"), gSystem->Getenv("varTheta1"));	          
-    printf("%s\t%s\t%f\t%f\t%f\t%f\t\n",inputFile.Data(), inputTree.Data(), sec0,sec1,theta0,theta1);		      
+    printf("%s\t%s\t%d\t%d\t%f\t%f\t\n",inputFile.Data(), inputTree.Data(), sec0,sec1,theta0,theta1);		      
 
     MakeNDFit(inputFile, inputTree, sec0,sec1,theta0,theta1);		      
   } 
@@ -272,7 +272,7 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
 
   THnF* hN= new THnF("exampleFit","exampleFit", ndim, nbins, xmin,xmax);
   treeDist->SetAlias("isOK","rms>0&&entries>50&&abs(rmsG/rms)<2&&abs(mean-meanG)<6");
-  TCut cutFit="isOK&&abs(mean-meanG)<1.0";
+  TCut cutFit="isOK&&abs(mean-meanG)<6.0";
   TCut cutAcceptFit=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0-0.5,sector1+0.5,theta0,theta1).Data();
   TCut cutAcceptDraw=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0,sector1,theta0,theta1).Data();
   
@@ -283,8 +283,8 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     Int_t hashIndex=fitCorrs[icorr]->GetVisualCorrectionIndex();
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:rmsG/sqrt(entries)", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.00001);
-    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:rmsG/sqrt(entries)", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.00001);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.00001);
+    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.00001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("meanG_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
