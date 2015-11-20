@@ -351,6 +351,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fAmplitude_V0AADC );
     fInput->AddVariable( fAmplitude_V0CADC );
     fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnSPDClusters0 );
+    fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets );
     fInput->AddVariable( fRefMultEta5 );
     fInput->AddVariable( fRefMultEta8 );
