@@ -157,6 +157,9 @@ fMC_NColl(-1),
 fMC_NPart(-1),
 fMC_NchV0A(-1),
 fMC_NchV0C(-1),
+fMC_NchEta05(-1),
+fMC_NchEta08(-1),
+fMC_NchEta10(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -231,6 +234,9 @@ fMC_NColl(-1),
 fMC_NPart(-1),
 fMC_NchV0A(-1),
 fMC_NchV0C(-1),
+fMC_NchEta05(-1),
+fMC_NchEta08(-1),
+fMC_NchEta10(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -396,6 +402,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
             fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
             fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
             fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
+            fTreeEvent->Branch("fMC_NchEta05",      &fMC_NchEta05, "fMC_NchEta05/I");
+            fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
+            fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
         }
         //A.T. FIXME change into AliMultVariable
         //ZDC info (only booleans: the rest will be done in the loop automatically)
@@ -509,6 +518,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
     
     fMC_NchV0A = -1;
     fMC_NchV0C = -1;
+    fMC_NchEta05 = -1;
+    fMC_NchEta08 = -1;
+    fMC_NchEta10 = -1;
     
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
@@ -597,6 +609,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
             //Initialize counters to valid!
             fMC_NchV0A = 0;
             fMC_NchV0C = 0;
+            fMC_NchEta05 = 0;
+            fMC_NchEta08 = 0;
+            fMC_NchEta10 = 0;
             //----- Loop on Stack ----------------------------------------------------------------
             for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
             {   // This is the begining of the loop on tracks
@@ -612,6 +627,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
                 if( 2.8 < geta && geta < 5.1 ) fMC_NchV0A++;
                 if(-3.7 < geta && geta <-1.7 ) fMC_NchV0C++;
+                if(TMath::Abs( geta ) < 1.0 ) fMC_NchEta10++;
+                if(TMath::Abs( geta ) < 0.8 ) fMC_NchEta08++;
+                if(TMath::Abs( geta ) < 0.5 ) fMC_NchEta05++;
             }//End of loop on tracks
             //----- End Loop on Stack ------------------------------------------------------------
         }

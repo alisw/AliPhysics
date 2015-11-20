@@ -215,7 +215,9 @@ private:
     Int_t fMC_NPart;
     Int_t fMC_NchV0A;
     Int_t fMC_NchV0C;
-    
+    Int_t fMC_NchEta05;
+    Int_t fMC_NchEta08;
+    Int_t fMC_NchEta10;
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     
