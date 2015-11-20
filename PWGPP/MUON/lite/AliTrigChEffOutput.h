@@ -20,8 +20,7 @@ class TH1;
 
 class AliTrigChEffOutput : public AliMuonAnalysisOutput {
  public:
-  AliTrigChEffOutput();
-  AliTrigChEffOutput ( TObjArray* outputList );
+  AliTrigChEffOutput ( TObjArray* outputList, const char* name = "" );
   AliTrigChEffOutput ( const char *filename, const char *outputName );
 
   virtual ~AliTrigChEffOutput();

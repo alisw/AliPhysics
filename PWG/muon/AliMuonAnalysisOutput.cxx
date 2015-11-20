@@ -38,23 +38,12 @@ ClassImp(AliMuonAnalysisOutput) // Class implementation in ROOT context
 
 
 //________________________________________________________________________
-AliMuonAnalysisOutput::AliMuonAnalysisOutput() :
-  TObject(),
+AliMuonAnalysisOutput::AliMuonAnalysisOutput ( TObjArray* outputList, const char* name ) :
+  TNamed(name,name),
   fCounterCollection(0x0),
   fMergeableCollection(0x0),
-  fOutputList(0x0)
-//,
-//  fOutputPrototypeList(0x0)
-{
-  /// Default ctor.
-}
-
-//________________________________________________________________________
-AliMuonAnalysisOutput::AliMuonAnalysisOutput ( TObjArray* outputList ) :
-  TObject(),
-  fCounterCollection(0x0),
-  fMergeableCollection(0x0),
-  fOutputList(outputList)
+  fOutputList(outputList),
+  fIsOwner(0)
 //,
 //  fOutputPrototypeList(0x0)
 {
@@ -66,10 +55,11 @@ AliMuonAnalysisOutput::AliMuonAnalysisOutput ( TObjArray* outputList ) :
 
 //________________________________________________________________________
 AliMuonAnalysisOutput::AliMuonAnalysisOutput ( const char *filename, const char* outputName ) :
-  TObject(),
+  TNamed(filename,filename),
   fCounterCollection(0x0),
   fMergeableCollection(0x0),
-  fOutputList(0x0)
+  fOutputList(0x0),
+  fIsOwner(kTRUE)
 //,
 //  fOutputPrototypeList(0x0)
 {
@@ -92,7 +82,7 @@ AliMuonAnalysisOutput::~AliMuonAnalysisOutput()
   //
   /// Destructor
   //
-//  delete fOutputPrototypeList;
+  if ( fIsOwner ) delete fOutputList;
 }
 
 //________________________________________________________________________
@@ -272,4 +262,29 @@ TString AliMuonAnalysisOutput::GetCentralities ( const TString centralityRange )
   AliDebug(2,Form("Centralities in %s: %s",centralityRange.Data(),matchingCentralities.Data()));
 
   return matchingCentralities;
+}
+
+
+//______________________________________________
+Bool_t AliMuonAnalysisOutput::RemoveFromList ( TObject* obj )
+{
+  /// Remove object from the list (to save memory)
+  if ( ! fIsOwner ) {
+    AliError("Operation not permitted: you're not the onwer of the list");
+    return kFALSE;
+  }
+
+  TObject* removedObj = fOutputList->Remove(obj);
+  if ( ! removedObj ) {
+    AliWarning(Form("Cannot find object. Nothing done"));
+    return kFALSE;
+  }
+  AliDebug(1,Form("Removing %s (%s) from output list",removedObj->GetName(),removedObj->ClassName()));
+
+  if ( fCounterCollection == removedObj ) fCounterCollection = 0x0;
+  else if ( fMergeableCollection == removedObj ) fMergeableCollection = 0x0;
+  fOutputList->Compress();
+  delete removedObj;
+
+  return kTRUE;
 }
