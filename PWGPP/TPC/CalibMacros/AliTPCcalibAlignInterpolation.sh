@@ -179,7 +179,7 @@ submitTimeDependent(){
     #  
     # we assume that the run.list and residual list is 
     source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh
-
+    # cp   $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C 
     #
     # 0.) make directory structure
     # 
@@ -314,7 +314,7 @@ submitTimeDependent(){
 		mv ${submitScript} ${submitScript}.sh
 		chmod a+x  ${submitScript}.sh    
 		alilog_info "BEGIN:Processing ND fits at directory $mapDir, file $inputFile, type $ctype side $side sec = $sec"
-		qsub -b y -cwd  -o ${submitScript}.log -e ${submitScript}.err  `pwd`/${submitScript}.sh              
+		$batchCommand  -o ${submitScript}.log -e ${submitScript}.err  `pwd`/${submitScript}.sh              
 	    done;
 	done;
 	alilog_info "END: Processing ND fits at directory $mapDir, file $inputFile, type $ctype "
