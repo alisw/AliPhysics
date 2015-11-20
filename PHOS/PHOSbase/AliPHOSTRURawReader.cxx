@@ -182,7 +182,7 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
         }
         
         if(channel < fgkN4x4TriggerFlags){ // Fill histogram for 4x4 trigger flags
-          xBin = 6 - channel % 7;  // x index in TRU internal 4x4 coordinate system
+          xBin = channel % 7;  // x index in TRU internal 4x4 coordinate system
           zBin = 12 - channel / 7; // z index in TRU internal 4x4 coordinate system
           
           // check if the bit bitIndex is 1
