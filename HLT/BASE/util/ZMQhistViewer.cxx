@@ -20,6 +20,9 @@
 #include <string>
 #include <map>
 #include "TFile.h"
+#include "TSystem.h"
+#include "TThread.h"
+class MySignalHandler;
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -31,6 +34,7 @@
 int ProcessOptionString(TString arguments);
 int UpdatePad(TObject*);
 int DumpToFile(TObject* object);
+void* run(void* arg);
 
 //configuration vars
 Bool_t fVerbose = kFALSE;
@@ -65,14 +69,106 @@ const char* fUSAGE =
     " -sleep : how long to sleep in between requests for data in s (if applicable)\n"
     " -timeout : how long to wait for the server to reply (s)\n"
     " -Verbose : be verbose\n"
-    " -select : only show selected histograms (by regexp)"
-    " -drawoptions : what draw option to use"
-    " -file : dump input to file"
+    " -select : only show selected histograms (by regexp)\n"
+    " -drawoptions : what draw option to use\n"
+    " -file : dump input to file\n"
     ;
+
+//_______________________________________________________________________________________
+class MySignalHandler : public TSignalHandler
+{
+  public:
+	MySignalHandler(ESignals sig) : TSignalHandler(sig) {}
+	Bool_t Notify()
+	{
+		fgTerminationSignaled = true;
+		return TSignalHandler::Notify();
+	}
+	static bool TerminationSignaled() { return fgTerminationSignaled; }
+private:
+	static bool fgTerminationSignaled;
+};
+bool MySignalHandler::fgTerminationSignaled = false;
+
+//_______________________________________________________________________________________
+void* run(void* arg)
+{
+  //main loop
+  while(!MySignalHandler::TerminationSignaled())
+  {
+    errno=0;
+    //send a request if we are using REQ
+    if (fZMQsocketModeIN==ZMQ_REQ)
+    {
+      TString request;
+      if (fSelectionRegexp) request = "select="+fSelectionRegexp->GetPattern();
+      TString requestTopic;
+      if (fSelectionRegexp) requestTopic = "CONFIG";
+
+      if (fVerbose) Printf("sending request %s %s",requestTopic.Data(), request.Data());
+      zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
+      zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
+      zmq_send(fZMQin, "", 0, ZMQ_SNDMORE);
+      zmq_send(fZMQin, "", 0, 0);
+    }
+    
+    //wait for the data
+    zmq_pollitem_t sockets[] = { 
+                                 { fZMQin, 0, ZMQ_POLLIN, 0 }, 
+                               };
+    int rc = zmq_poll(sockets, 1, (fZMQsocketModeIN==ZMQ_REQ)?fPollTimeout:-1);
+
+    if (rc==-1 && errno==ETERM)
+    {
+      Printf("jumping out of main loop");
+      break;
+    }
+
+    if (!sockets[0].revents & ZMQ_POLLIN)
+    {
+      //server died
+      Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
+      fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+      if (fZMQsocketModeIN < 0) return NULL;
+      continue;
+    }
+    else
+    {
+      //get all data (topic+body), possibly many of them
+      aliZMQmsg message;
+      alizmq_msg_recv(&message, fZMQin, 0);
+      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+      {
+        TObject* object;
+        alizmq_msg_iter_data(i, object);
+        if (object) UpdatePad(object);
+
+        if (!fFileName.IsNull()) 
+        {
+          DumpToFile(object);
+        }
+      }
+      alizmq_msg_close(&message);
+
+    }//socket 0
+    gSystem->ProcessEvents();
+    usleep(fPollInterval);
+  }//main loop
+  return NULL;
+}
 
 //_______________________________________________________________________________________
 int main(int argc, char** argv)
 {
+  gSystem->ResetSignal(kSigPipe);
+  gSystem->ResetSignal(kSigQuit);
+  gSystem->ResetSignal(kSigInterrupt);
+  gSystem->ResetSignal(kSigTermination);
+  gSystem->AddSignalHandler(new MySignalHandler(kSigPipe));
+  gSystem->AddSignalHandler(new MySignalHandler(kSigQuit));
+  gSystem->AddSignalHandler(new MySignalHandler(kSigInterrupt));
+  gSystem->AddSignalHandler(new MySignalHandler(kSigTermination));
+  
   //process args
   int noptions = ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv));
   if (noptions<=0) 
@@ -100,66 +196,14 @@ int main(int argc, char** argv)
   fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
   if (fZMQsocketModeIN < 0) return 1;
 
-  //main loop
-  while(1)
-  {
-    errno=0;
-    //send a request if we are using REQ
-    if (fZMQsocketModeIN==ZMQ_REQ)
-    {
-      TString request;
-      if (fSelectionRegexp) request = "select="+fSelectionRegexp->GetPattern();
-      TString requestTopic;
-      if (fSelectionRegexp) requestTopic = "CONFIG";
+  run(NULL);
 
-      if (fVerbose) Printf("sending request %s %s",requestTopic.Data(), request.Data());
-      zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
-      zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
-      zmq_send(fZMQin, "", 0, ZMQ_SNDMORE);
-      zmq_send(fZMQin, "", 0, 0);
-    }
-    
-    //wait for the data
-    zmq_pollitem_t sockets[] = { 
-                                 { fZMQin, 0, ZMQ_POLLIN, 0 }, 
-                               };
-    zmq_poll(sockets, 1, (fZMQsocketModeIN==ZMQ_REQ)?fPollTimeout:-1);
-
-    if (!sockets[0].revents & ZMQ_POLLIN)
-    {
-      //server died
-      Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
-      fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-      if (fZMQsocketModeIN < 0) return 1;
-      continue;
-    }
-    else
-    {
-      //get all data (topic+body), possibly many of them
-      aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQin, 0);
-      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
-      {
-        TObject* object;
-        alizmq_msg_iter_data(i, object);
-        if (object) UpdatePad(object);
-
-        if (!fFileName.IsNull()) 
-        {
-          DumpToFile(object);
-        }
-      }
-      alizmq_msg_close(&message);
-
-    }//socket 0
-    gSystem->ProcessEvents();
-    usleep(fPollInterval);
-  }//main loop
   delete fFile; fFile=0;
 
   //destroy ZMQ sockets
+
   zmq_close(fZMQin);
-  zmq_ctx_destroy(fZMQcontext);
+  zmq_ctx_term(fZMQcontext);
   return mainReturnCode;
 }
 
