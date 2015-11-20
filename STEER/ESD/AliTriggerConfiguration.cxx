@@ -582,12 +582,20 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	 delete tokens;
 	 return kFALSE;
        }
-       AddInput(((TObjString*)tokens->At(0))->String(),
+       if(ntokens==5){
+         AddInput(((TObjString*)tokens->At(0))->String(),
+		     ((TObjString*)tokens->At(1))->String(),
+		     ((TObjString*)tokens->At(2))->String().Atoi(),
+		     ((TObjString*)tokens->At(3))->String().Atoi(),
+		     ((TObjString*)tokens->At(4))->String().Atoi());
+       }else{		     
+         AddInput(((TObjString*)tokens->At(0))->String(),
 		     ((TObjString*)tokens->At(1))->String(),
 		     ((TObjString*)tokens->At(2))->String().Atoi(),
 		     ((TObjString*)tokens->At(3))->String().Atoi(),
 		     ((TObjString*)tokens->At(4))->String().Atoi(),
 		     ((TObjString*)tokens->At(5))->String().Atoi());
+       }		     
        break;
      case 2:
        // Read interaction
