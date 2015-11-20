@@ -39,6 +39,7 @@ public:
                virtual   ~AliTriggerConfiguration();
    //  Setters
        AliTriggerInput*   AddInput(TString &name, TString &det, UChar_t level, UInt_t signature, UChar_t number);
+       AliTriggerInput*   AddInput(TString &name, TString &det, UChar_t level, UInt_t signature, UInt_t indexCTP, UInt_t indexSwitch);
 		Bool_t    AddInput(AliTriggerInput *input);
 
  AliTriggerInteraction*   AddInteraction(TString &name, TString &logic);
