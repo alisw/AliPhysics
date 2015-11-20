@@ -17,6 +17,8 @@
 #include <map>
 #include <unistd.h>
 #include "AliZMQhelpers.h"
+#include <sstream>
+#include <vector>
 
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
@@ -27,7 +29,8 @@ float fSleep = 1e6; //in microseconds
 int fCount = 0;
 int fNentries = 1;
 
-TH1F* fHistogram;
+vector<TH1F*> fHistograms;
+int fNHistos = 1;
 TString fHistName = "histogram";
 TString fHistDistribution = "exp(-0.5*((x-0.)/0.1)**2)";
 float fHistRangeLow = -0.5;
@@ -45,6 +48,7 @@ const char* fUSAGE =
     " -nbins : how many bins\n"
     " -count : how many histograms to send before quitting (0 is never quit)\n"
     " -entries : how many entries in the histogram before sending\n"
+    " -histos : how many histograms per message\n"
     ;
 
 int ProcessOptionString(TString arguments);
@@ -68,14 +72,24 @@ int main(int argc, char** argv)
   if (fZMQsocketModeOUT < 0) return 1;
 
   TF1 formula("histDistribution",fHistDistribution);
-  fHistogram = new TH1F(fHistName, fHistName, fHistNBins, fHistRangeLow, fHistRangeHigh);
+  for (int i = 0; i < fNHistos; i++)
+  {
+    stringstream ss;
+    ss << fHistName.Data();
+    if (i>0) ss << i;
+    fHistograms.push_back(new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh));
+  }
+  
 
   //main loop
   int iterations=0;
   while(fCount==0 || iterations++<fCount)
   {
-    fHistogram->Reset();
-    fHistogram->FillRandom("histDistribution",fNentries);
+    for (int i = 0; i < fNHistos; i++) 
+    {
+      fHistograms[i]->Reset();
+      fHistograms[i]->FillRandom("histDistribution", fNentries);
+    }
     
     AliHLTDataTopic topic = kAliHLTDataTypeTObject;
     
@@ -86,7 +100,14 @@ int main(int argc, char** argv)
       rc = alizmq_msg_recv(&request, fZMQout, 0);
     }
     
-    rc = alizmq_msg_send(topic, fHistogram, fZMQout, 0, 0);
+    for (int i = 0; i < fNHistos - 1; i++) 
+    {
+      rc = alizmq_msg_send(topic, fHistograms[i], fZMQout, ZMQ_SNDMORE, 0);
+      if (rc < 0)
+        printf("unable to send\n");
+    }
+    rc = alizmq_msg_send(topic, fHistograms[fHistograms.size() - 1], fZMQout, 0, 0);
+
     if (rc<0) printf("unable to send\n");
 
     unsigned int microseconds;
@@ -144,6 +165,9 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("entries"))
     {
       fNentries = value.Atoi();
+    }
+    else if (option.EqualTo("histos")) {
+      fNHistos = value.Atoi();
     }
     else
     {
