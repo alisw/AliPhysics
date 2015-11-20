@@ -33,6 +33,9 @@ class AliTPCChebDist : public AliTPCChebCorr
   void     Eval(int sector, float x, float y2x, float z,float *distortion) const;
   void     Eval(int sector, float xtz[3], float *distortion)               const;
   //
+  virtual  Bool_t   IsCorrection()               const {return kFALSE;}
+  virtual  Bool_t   IsDistorttion()              const {return kTRUE;}
+  //
  protected:
   Int_t    X2Slice(float x) const;
   Float_t  Slice2X(int ix)  const;
