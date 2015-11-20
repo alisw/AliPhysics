@@ -28,21 +28,8 @@ ClassImp(AliTrigChEffOutput) // Class implementation in ROOT context
 
 
 //________________________________________________________________________
-AliTrigChEffOutput::AliTrigChEffOutput() :
-  AliMuonAnalysisOutput(),
-  fTrackSelKeys(0x0),
-  fCountTypeKeys(0x0),
-  fHistoTypeKeys(0x0),
-  fEffMethodKeys(0x0),
-  fMatchTrigKeys(0x0)
-{
-  /// Default Ctor.
-
-}
-
-//________________________________________________________________________
-AliTrigChEffOutput::AliTrigChEffOutput ( TObjArray* outputList ) :
-AliMuonAnalysisOutput(outputList),
+AliTrigChEffOutput::AliTrigChEffOutput ( TObjArray* outputList, const char* name ) :
+AliMuonAnalysisOutput(outputList,name),
   fTrackSelKeys(0x0),
   fCountTypeKeys(0x0),
   fHistoTypeKeys(0x0),
