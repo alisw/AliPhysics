@@ -71,7 +71,7 @@ const char* fUSAGE =
     " -Verbose : be verbose\n"
     " -select : only show selected histograms (by regexp)\n"
     " -drawoptions : what draw option to use\n"
-    " -file : dump input to file\n"
+    " -file : dump input to file and exit\n"
     ;
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
@@ -226,7 +226,9 @@ int DumpToFile(TObject* object)
   Option_t* fileMode="RECREATE";
   if (!fFile) fFile = new TFile(fFileName,fileMode);
   if (fVerbose) Printf("writing object %s to %s",object->GetName(), fFileName.Data());
-  return object->Write(object->GetName(),TObject::kOverwrite);
+  int rc = object->Write(object->GetName(),TObject::kOverwrite);
+  MySignalHandler::fgTerminationSignaled=true;
+  return rc;
 }
 
 //______________________________________________________________________________
