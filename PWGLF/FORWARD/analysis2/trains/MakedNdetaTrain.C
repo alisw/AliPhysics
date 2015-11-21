@@ -250,7 +250,7 @@ protected:
     o << "void Draw(const TString& title=\"" << fName << "\",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0xf,\n"
-      << "          UInt_t         flags=0x20487,\n"
+      << "          UInt_t         flags=0x28487,\n"
       << "          UShort_t       fmts=0,\n"
       << "          Double_t       meanIpx=-1,\n"
       << "          Double_t       meanIpy=-1,\n"
