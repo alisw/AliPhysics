@@ -208,7 +208,7 @@ int main(int argc, char** argv)
   run(NULL);
 
   Printf("exiting...");
-  fFile->Close();
+  if (fFile) fFile->Close();
   delete fFile; fFile=0;
 
   //destroy ZMQ sockets
