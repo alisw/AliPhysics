@@ -222,7 +222,6 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseTimeStampFromCDB(0),
   fTimeStart(0),
   fTimeEnd(0),
-  fNOrderedEvents(0),
   fLumiDecayH(10.),
   fOrderedTimeStamps(),
   fQADetectors("ALL"),                  
@@ -1160,19 +1159,19 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       fTimeEnd = grpObj->GetTimeEnd();
     }
     time_t deltaT = fTimeEnd - fTimeStart;
-    if (fNOrderedEvents && deltaT>0) {
-      fOrderedTimeStamps.resize(fNOrderedEvents);      
+    if (deltaT>0) {
+      fOrderedTimeStamps.resize(fNEvents);
       double tau = fLumiDecayH*3600.;
       double wt = 1.-TMath::Exp(-double(deltaT)/tau);
-      for (int i=fNOrderedEvents;i--;) {
+      for (int i=0;i<fNEvents;i++) {
 	double w = wt*gRandom->Rndm();
 	time_t t =  fTimeStart - tau*TMath::Log(1-w);
-	fOrderedTimeStamps.push_back(t);
+	fOrderedTimeStamps[i] = t;
       }
       std::sort(fOrderedTimeStamps.begin(), fOrderedTimeStamps.end());
       //
       AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld with decay tau=%.2f h",
-	       fNOrderedEvents,fTimeStart,fTimeEnd,fLumiDecayH);
+	       fNEvents,fTimeStart,fTimeEnd,fLumiDecayH);
     }
     else AliInfoF("Random TimeStamps will be generated between %ld:%ld",fTimeStart,fTimeEnd);
   }
@@ -2782,11 +2781,10 @@ void AliSimulation::DeactivateDetectorsAbsentInGRP(TObjArray* detArr)
 }
 
 //_____________________________________________________________________________
-void AliSimulation::UseTimeStampFromCDB(Int_t nOrdered,Double_t decayTimeHours)
+void AliSimulation::UseTimeStampFromCDB(Double_t decayTimeHours)
 {
   // Request event time stamp generated within GRP start/end
   // If nOrdered>0, requested number of ordered timestamps will be generated
   fUseTimeStampFromCDB = kTRUE;
-  fNOrderedEvents = nOrdered>0 ? nOrdered : 0;
   if (decayTimeHours>0.1) fLumiDecayH = decayTimeHours;
 }

@@ -144,7 +144,7 @@ public:
   void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
   void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
-  void UseTimeStampFromCDB(Int_t nOrdered=0, Double_t decayTimeHours=10.);
+  void UseTimeStampFromCDB(Double_t decayTimeHours=10.);
   time_t GenerateTimeStamp() const;
   //
   Bool_t          GetUseDetectorsFromGRP()               const {return fUseDetectorsFromGRP;}
@@ -213,7 +213,6 @@ private:
   Bool_t          fUseTimeStampFromCDB;// Flag to generate event time-stamps according to SOR/EOR from GRP
   time_t          fTimeStart;          // SOR time-stamp
   time_t          fTimeEnd;            // EOR time-stamp
-  Int_t           fNOrderedEvents;     // Together with fUseTimeStampFromCDB will provide realistic ordered timestamps
   Float_t         fLumiDecayH;         // luminosity decay time in hours
   std::vector<time_t> fOrderedTimeStamps;  //! optional ordered time stamps
   
