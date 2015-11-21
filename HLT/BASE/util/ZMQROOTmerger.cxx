@@ -238,7 +238,7 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   int rc = DoSend(socket);
 
   //reset the "one shot" options to default values
-  if (fVerbose) Printf("unsetting fSendSelection=%s",fSendSelection->GetPattern().Data());
+  if (fVerbose) Printf("unsetting fSendSelection=%s",(fSendSelection)?fSendSelection->GetPattern().Data():"");
   delete fSendSelection; fSendSelection=NULL;
   return rc;
 }
