@@ -664,7 +664,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Default Stuff
     TH1F * hDummy[lNEstimators];
     for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
+        hDummy[iEst]= new TH1F (Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
         hDummy[iEst]->SetDirectory(0);
     }
     
@@ -679,37 +679,42 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Loop over existing runs and write objects as needed
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         cout<<"Processing run number "<<lRunNumbers[iRun]<<endl;
-        oadbMultSelectionout = new AliOADBMultSelection();
-        cuts              = new AliMultSelectionCuts();
-        cuts = fMultSelectionCuts;
-        fsels             = new AliMultSelection( fSelection );
-
-        //Write in scaling factors!
-        TString lTempDef;
-        for(Int_t iEst=0; iEst<lNEstimators; iEst++){
-            lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
-            lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-            lTempDef.Append(")"); //don't forget parentheses...
-            fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
-        }
-        
-        oadbMultSelectionout->SetEventCuts    (cuts );
-        oadbMultSelectionout->SetMultSelection(fsels);
-        for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-            //Average values
-            fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+        if ( sTreeMC[iRun]->GetEntries() > 10 && sTree[iRun]->GetEntries() > 10 ){
+            oadbMultSelectionout = new AliOADBMultSelection();
+            cuts              = new AliMultSelectionCuts();
+            cuts = fMultSelectionCuts;
+            fsels             = new AliMultSelection( fSelection );
             
-            //Protect from crashes in the general case
-            hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()) );
-            oadbMultSelectionout->AddCalibHisto( hCalibData[iEst]);
-            hCalibData[iEst]->SetDirectory(0);
+            //Write in scaling factors!
+            TString lTempDef;
+            for(Int_t iEst=0; iEst<lNEstimators; iEst++){
+                lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
+                lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                lTempDef.Append(")"); //don't forget parentheses...
+                fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
+            }
+            
+            oadbMultSelectionout->SetEventCuts    (cuts );
+            oadbMultSelectionout->SetMultSelection(fsels);
+            for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
+                //Average values
+                fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+                
+                //Protect from crashes in the general case
+                hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
+                oadbMultSelectionout->AddCalibHisto( hCalibData[iEst]);
+                hCalibData[iEst]->SetDirectory(0);
+            }
+            cout<<"=================================================================================="<<endl;
+            cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
+            fsels->PrintInfo();
+            cuts->Print();
+            cout<<"=================================================================================="<<endl;
+            
+            oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
+        }else{
+            cout<<"Insufficient statistics in either MC or data in run #"<<lRunNumbers[iRun]<<", skipping!"<<endl;
         }
-        cout<<"=================================================================================="<<endl;
-        cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
-        fsels->PrintInfo();
-        cuts->Print();
-        cout<<"=================================================================================="<<endl;
-        oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
     }
     cout<<"Write OADB..."<<endl;
     //pre-write dump

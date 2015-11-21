@@ -670,6 +670,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
     //SPD Related
     AliMultVariable *fnSPDClusters         = new AliMultVariable("fnSPDClusters");
+    AliMultVariable *fnSPDClusters0        = new AliMultVariable("fnSPDClusters0");
+    AliMultVariable *fnSPDClusters1        = new AliMultVariable("fnSPDClusters1");
     fnSPDClusters->SetIsInteger( kTRUE );
     //AD Related
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");

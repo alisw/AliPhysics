@@ -61,6 +61,7 @@ class AliESDAD; //AD
 #include "AliGenEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
@@ -95,7 +96,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -131,6 +132,8 @@ fAmplitude_V0C1(0),
 fAmplitude_V0C2(0),
 fAmplitude_V0C3(0),
 fAmplitude_V0C4(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
 fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
@@ -154,6 +157,11 @@ fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
+fMC_NchV0A(-1),
+fMC_NchV0C(-1),
+fMC_NchEta05(-1),
+fMC_NchEta08(-1),
+fMC_NchEta10(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -167,7 +175,7 @@ fInput(0)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
-fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -203,6 +211,8 @@ fAmplitude_V0C1(0),
 fAmplitude_V0C2(0),
 fAmplitude_V0C3(0),
 fAmplitude_V0C4(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
 fnSPDClusters(0),
 fnTracklets(0), 
 fnSPDClusters0(0),
@@ -226,6 +236,11 @@ fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
 fMC_NPart(-1),
+fMC_NchV0A(-1),
+fMC_NchV0C(-1),
+fMC_NchEta05(-1),
+fMC_NchEta08(-1),
+fMC_NchEta10(-1),
 //Histos
 fHistEventCounter(0),
 fOadbMultSelection(0),
@@ -240,9 +255,11 @@ fInput(0)
     //Special Debug Options (more to be added as needed)
     // A - Debug AliCentrality
     // B - Debug AliPPVsMultUtils
+    // M - Extra MC variables
     
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
+    if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE; 
 }
 
 
@@ -286,9 +303,16 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fAmplitude_V0CEq      = new AliMultVariable("fAmplitude_V0CEq");
     fAmplitude_OnlineV0A  = new AliMultVariable("fAmplitude_OnlineV0A");
     fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
+    fAmplitude_V0AADC        = new AliMultVariable("fAmplitude_V0AADC");
+    fAmplitude_V0CADC        = new AliMultVariable("fAmplitude_V0CADC");
     //SPD Related
     fnSPDClusters         = new AliMultVariable("fnSPDClusters");
     fnSPDClusters->SetIsInteger( kTRUE );
+    fnSPDClusters0         = new AliMultVariable("fnSPDClusters0");
+    fnSPDClusters0->SetIsInteger( kTRUE );
+    fnSPDClusters1         = new AliMultVariable("fnSPDClusters1");
+    fnSPDClusters1->SetIsInteger( kTRUE );
+    
     //AD Related
     fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
@@ -324,7 +348,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fAmplitude_V0CEq );
     fInput->AddVariable( fAmplitude_OnlineV0A );
     fInput->AddVariable( fAmplitude_OnlineV0C );
+    fInput->AddVariable( fAmplitude_V0AADC );
+    fInput->AddVariable( fAmplitude_V0CADC );
     fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnSPDClusters0 );
+    fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets );
     fInput->AddVariable( fRefMultEta5 );
     fInput->AddVariable( fRefMultEta8 );
@@ -375,14 +403,19 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
         
         //A.T. FIXME change into AliMultVariable
-        //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
-        //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
         
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
         
-        fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
-        fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+        if( fkDebugIsMC ) {
+            fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
+            fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+            fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
+            fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
+            fTreeEvent->Branch("fMC_NchEta05",      &fMC_NchEta05, "fMC_NchEta05/I");
+            fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
+            fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
+        }
         //A.T. FIXME change into AliMultVariable
         //ZDC info (only booleans: the rest will be done in the loop automatically)
         fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
@@ -484,14 +517,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_HasNoInconsistentVertices = kFALSE;
     fEvSel_INELgtZERO             = kFALSE; 
     //fnSPDClusters = -1;
-    fnSPDClusters0 = -1;
-    fnSPDClusters1 = -1;
+    fnSPDClusters -> SetValueInteger(-1);
+    fnSPDClusters0 -> SetValueInteger( -1) ;
+    fnSPDClusters1 -> SetValueInteger( -1) ;
     fEvSel_VtxZ ->SetValue( -100 );
 
     Float_t multADA =0;
     Float_t multADC =0;
     Float_t multAD =0;
-
+    
+    fMC_NchV0A = -1;
+    fMC_NchV0C = -1;
+    fMC_NchEta05 = -1;
+    fMC_NchEta08 = -1;
+    fMC_NchEta10 = -1;
+    
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
 
@@ -541,32 +581,67 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Don't forget to set: some of the "ifs" may not be there
     fMC_NColl = -1;
     fMC_NPart = -1;
-    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-    AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
-    AliMCEvent*  mcEvent=0;
-    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
-        AliGenHijingEventHeader* hHijing=0;
-        AliGenDPMjetEventHeader* dpmHeader=0;
-        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-        if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
-            hHijing = (AliGenHijingEventHeader*)mcGenH;
-        else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-            TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-            hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
-            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
-        }
-        else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-            dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-        }
-        if(hHijing)   {
-            fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
-            fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
-        }
-        if(dpmHeader) {
-            fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
-            fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+    
+    if ( fkDebugIsMC ) {
+        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+        AliStack*    stack=0;
+        AliMCEvent*  mcEvent=0;
+        
+
+        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+            
+            //Npart and Ncoll information
+            AliGenHijingEventHeader* hHijing=0;
+            AliGenDPMjetEventHeader* dpmHeader=0;
+            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+                hHijing = (AliGenHijingEventHeader*)mcGenH;
+            else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+            }
+            else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+                dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+            }
+            if(hHijing)   {
+                fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+                fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+            }
+            if(dpmHeader) {
+                fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
+                fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+            }
+            
+            //Nch information in V0A and V0C acceptance
+            //Initialize counters to valid!
+            fMC_NchV0A = 0;
+            fMC_NchV0C = 0;
+            fMC_NchEta05 = 0;
+            fMC_NchEta08 = 0;
+            fMC_NchEta10 = 0;
+            //----- Loop on Stack ----------------------------------------------------------------
+            for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
+            {   // This is the begining of the loop on tracks
+                TParticle* particleOne = stack->Particle(iCurrentLabelStack);
+                if(!particleOne) continue;
+                if(!particleOne->GetPDG()) continue;
+                Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+                if(TMath::Abs(lThisCharge)<0.001) continue;
+                if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+                
+                //Double_t gpt = particleOne -> Pt();
+                Double_t geta = particleOne -> Eta();
+        
+                if( 2.8 < geta && geta < 5.1 ) fMC_NchV0A++;
+                if(-3.7 < geta && geta <-1.7 ) fMC_NchV0C++;
+                if(TMath::Abs( geta ) < 1.0 ) fMC_NchEta10++;
+                if(TMath::Abs( geta ) < 0.8 ) fMC_NchEta08++;
+                if(TMath::Abs( geta ) < 0.5 ) fMC_NchEta05++;
+            }//End of loop on tracks
+            //----- End Loop on Stack ------------------------------------------------------------
         }
     }
     //------------------------------------------------
@@ -738,6 +813,27 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0A->SetValue(multV0A);
     fAmplitude_V0C->SetValue(multV0C);
     
+    //Implementation of V0 ADC information
+    // FIXME: THIS ONLY WORKS IN ESDS FOR NOW
+    Float_t  multV0AADC  = 0;            //  multiplicity from V0 reco side A from ADC
+    Float_t  multV0CADC  = 0;            //  multiplicity from V0 reco side C from ADC
+    fAmplitude_V0AADC->SetValue(0);
+    fAmplitude_V0CADC->SetValue(0);
+    
+    /* FIXME: THIS DOES NOT WORK !!
+     for(Int_t iCh = 0; iCh < 32; iCh++){
+     Double_t mult = lVV0->GetADC(iCh);
+     multV0CADC += mult;
+     }
+     for(Int_t iCh = 32; iCh < 64; iCh++){
+     Double_t mult = lVV0->GetMultiplicity(iCh);
+     multV0AADC += mult;
+     }
+     */
+    
+    fAmplitude_V0AADC->SetValue(multV0AADC);
+    fAmplitude_V0CADC->SetValue(multV0CADC);
+    
     if ( lVerbose ) {
         Printf(" V0A Amplitude: %.5f", multV0A );
         Printf(" V0C Amplitude: %.5f", multV0C );
@@ -780,7 +876,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Integer Estimators
     fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
     fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
-
+    fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
+    fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));
     //===============================================
     //This part requires separation of AOD and ESD
     //===============================================
@@ -808,6 +905,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
+        
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
         fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
         fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );

@@ -15,7 +15,7 @@ AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD
     Info("AliCFSingleTrackEfficiencyTaskForAutomaticQA","Setting up instances");
     
     // The AddTask
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EvTrkSelection/AddSingleTrackEfficiencyTask.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C");
     
     // Charged particles, filter bit 0
     AliCFSingleTrackEfficiencyTask * nchFB0 = AddSingleTrackEfficiencyTask(readAOD,"NchFbit0",AliPID::kPion,0,triggerMask,useCentrality);

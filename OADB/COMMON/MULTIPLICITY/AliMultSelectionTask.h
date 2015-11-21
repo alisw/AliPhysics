@@ -115,6 +115,7 @@ private:
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
+    Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -138,8 +139,13 @@ private:
     AliMultVariable *fAmplitude_V0CEq;
     AliMultVariable *fAmplitude_OnlineV0A;
     AliMultVariable *fAmplitude_OnlineV0C;
+    AliMultVariable *fAmplitude_V0AADC;
+    AliMultVariable *fAmplitude_V0CADC;
+
     //Integer Variables 
     AliMultVariable *fnSPDClusters;
+    AliMultVariable *fnSPDClusters0;
+    AliMultVariable *fnSPDClusters1;
     AliMultVariable *fnTracklets; //tracklet estimator
     AliMultVariable *fRefMultEta5; //tracklet estimator
     AliMultVariable *fRefMultEta8; //tracklet estimator
@@ -187,8 +193,6 @@ private:
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
-    Int_t   fnSPDClusters0;            //!
-    Int_t   fnSPDClusters1;            //!
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
@@ -212,7 +216,11 @@ private:
     //Data needed for Monte Carlo
     Int_t fMC_NColl;
     Int_t fMC_NPart;
-
+    Int_t fMC_NchV0A;
+    Int_t fMC_NchV0C;
+    Int_t fMC_NchEta05;
+    Int_t fMC_NchEta08;
+    Int_t fMC_NchEta10;
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     

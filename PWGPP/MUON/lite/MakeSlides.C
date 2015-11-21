@@ -509,7 +509,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     TString currTrig = trigList->At(itrig)->GetName();
     TString shortTrig = GetTriggerShort(currTrig);
     MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
-    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig);
+    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig,kFALSE);
     MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);

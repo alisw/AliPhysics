@@ -91,7 +91,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[kNPMT0];
 
  for (Int_t i=0; i<kNPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,2000,1000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,10000,12000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
@@ -150,7 +150,7 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
 
  
   for (Int_t i=0; i<kNPMT0; i++) {
-    if(time[i]<9999 &&std::abs(time[i])>1e-8 && amplitude[i]<9999&&std::abs(amplitude[i])>1e-8 )
+    if(time[i]<99999 &&std::abs(time[i])>1e-8 && amplitude[i]<99999&&std::abs(amplitude[i])>1e-8 )
       {
 	if(amplitude[i]<50){
 	  fTimeVSAmplitude[i]->Fill(amplitude[i],time[i]);
