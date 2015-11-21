@@ -21,7 +21,7 @@
 #include <map>
 #include "TFile.h"
 #include "TSystem.h"
-#include "TThread.h"
+#include "signal.h"
 class MySignalHandler;
 
 //this is meant to become a class, hence the structure with global vars etc.
@@ -73,7 +73,6 @@ const char* fUSAGE =
     " -drawoptions : what draw option to use\n"
     " -file : dump input to file\n"
     ;
-
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
 {
@@ -81,14 +80,21 @@ class MySignalHandler : public TSignalHandler
 	MySignalHandler(ESignals sig) : TSignalHandler(sig) {}
 	Bool_t Notify()
 	{
+    Printf("signal received, exiting");
 		fgTerminationSignaled = true;
 		return TSignalHandler::Notify();
 	}
 	static bool TerminationSignaled() { return fgTerminationSignaled; }
-private:
 	static bool fgTerminationSignaled;
 };
 bool MySignalHandler::fgTerminationSignaled = false;
+
+void sig_handler(int signo)
+{
+  if (signo == SIGINT)
+    printf("received SIGINT\n");
+  MySignalHandler::fgTerminationSignaled=true;
+}
 
 //_______________________________________________________________________________________
 void* run(void* arg)
@@ -160,15 +166,6 @@ void* run(void* arg)
 //_______________________________________________________________________________________
 int main(int argc, char** argv)
 {
-  gSystem->ResetSignal(kSigPipe);
-  gSystem->ResetSignal(kSigQuit);
-  gSystem->ResetSignal(kSigInterrupt);
-  gSystem->ResetSignal(kSigTermination);
-  gSystem->AddSignalHandler(new MySignalHandler(kSigPipe));
-  gSystem->AddSignalHandler(new MySignalHandler(kSigQuit));
-  gSystem->AddSignalHandler(new MySignalHandler(kSigInterrupt));
-  gSystem->AddSignalHandler(new MySignalHandler(kSigTermination));
-  
   //process args
   int noptions = ProcessOptionString(AliOptionParser::GetFullArgString(argc,argv));
   if (noptions<=0) 
@@ -196,12 +193,28 @@ int main(int argc, char** argv)
   fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
   if (fZMQsocketModeIN < 0) return 1;
 
+  gSystem->ResetSignal(kSigPipe);
+  gSystem->ResetSignal(kSigQuit);
+  gSystem->ResetSignal(kSigInterrupt);
+  gSystem->ResetSignal(kSigTermination);
+  //gSystem->AddSignalHandler(new MySignalHandler(kSigPipe));
+  //gSystem->AddSignalHandler(new MySignalHandler(kSigQuit));
+  //gSystem->AddSignalHandler(new MySignalHandler(kSigInterrupt));
+  //gSystem->AddSignalHandler(new MySignalHandler(kSigTermination));
+ 
+  if (signal(SIGINT, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGINT\n");
+
   run(NULL);
 
+  Printf("exiting...");
+  fFile->Close();
   delete fFile; fFile=0;
 
   //destroy ZMQ sockets
 
+  int linger=0;
+  zmq_setsockopt(fZMQin, ZMQ_LINGER, &linger, sizeof(linger));
   zmq_close(fZMQin);
   zmq_ctx_term(fZMQcontext);
   return mainReturnCode;
