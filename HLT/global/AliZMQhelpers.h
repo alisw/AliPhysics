@@ -88,6 +88,8 @@ void alizmq_deleteTopic(void*, void* object);
 //simple option parser class
 class AliOptionParser {
 public:
+  AliOptionParser() {}
+  virtual ~AliOptionParser() {}
   //implement this to process one option at a time
   virtual int ProcessOption(TString /*option*/, TString /*value*/) {return 0;}
   
