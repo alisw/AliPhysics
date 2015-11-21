@@ -2144,8 +2144,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       }
     }
     // fill Event header information from the RawEventHeader
-    if (fRawReader){FillRawEventHeaderESD(fesd);}
-    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
+    if (fRawReader){
+      FillRawEventHeaderESD(fesd);
+      FillRawEventHeaderESD(fhltesd);
+    }
+    else { // fill MC info
+      FillMCEventHeaderESD(fesd);
+      FillMCEventHeaderESD(fhltesd);
+    }
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
@@ -3496,6 +3502,7 @@ Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
   }
   return kTRUE;
 }
+
 //_____________________________________________________________________________
 Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 {
@@ -3513,6 +3520,21 @@ Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 
   esd->SetTimeStamp(fRawReader->GetTimestamp());  
   esd->SetEventType(fRawReader->GetType());
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::FillMCEventHeaderESD(AliESDEvent*& esd)
+{
+  // 
+  // Filling information from MC Header
+  // 
+  AliHeader* headerMC = fRunLoader->GetHeader();
+  if (!headerMC || !esd) return kFALSE;
+
+  AliInfo("Filling information from MC Header");
+  esd->SetTimeStamp(headerMC->GetTimeStamp());  
 
   return kTRUE;
 }

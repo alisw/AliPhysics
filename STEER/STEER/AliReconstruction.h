@@ -265,6 +265,7 @@ private:
   Bool_t         FillTriggerESD(AliESDEvent*& esd);
   Bool_t         FillTriggerScalers(AliESDEvent*& esd);
   Bool_t         FillRawEventHeaderESD(AliESDEvent*& esd);
+  Bool_t         FillMCEventHeaderESD(AliESDEvent*& esd);
   void           DeleteRecPoints(const TString& detectors);
   void           DeleteDigits(const TString& detectors);
 
