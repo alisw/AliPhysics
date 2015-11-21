@@ -91,6 +91,9 @@ protected:
   TH2I* fHistTPCtracks_TPCtracklets;
   TH2I* fHistITStracks_ITSOutTracks;
   TH2I* fHistTPCClusterSize_TPCCompressedSize;
+  TH2F* fHistVZEROTrigChargeA_ZNA;
+  TH2F* fHistVZEROTrigChargeC_ZNC;
+  TH2F* fHistVZEROTrigChargeT_ZNT;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };
