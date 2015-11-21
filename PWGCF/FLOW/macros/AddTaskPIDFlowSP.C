@@ -11,6 +11,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
 		      UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 		      Double_t gDCAvtxXY = -1.,
 		      Double_t gDCAvtxZ = -1.,
+		      Double_t gCharge = 0,
 		      Bool_t doQA = kTRUE) {
   //Macro to be used for studies of vn for identified particles
   //The macro uses as an input a configuration macro that 
@@ -41,7 +42,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
     cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,is2011,gAODfilterBit,doQA);        
 
     //Create the POI cut object
-    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,is2011,isPbPb,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,doQA); 
+    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,is2011,isPbPb,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA); 
     
     suffixName[iCentralityBin] = particleSpecies.Data();
     if(isPbPb) {
@@ -234,12 +235,12 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
 					 Double_t gProbPID = 0.9,
 					 Double_t gDCAvtxXY = -1.,
 					 Double_t gDCAvtxZ = -1.,
+					 Double_t gCharge = 0.,
 					 Bool_t doQA = kFALSE) {
   //Part of the code that creates the POI cut objects
   Double_t gEtaMin = -0.8, gEtaMax = 0.8;
   Int_t gMinTPCdedx = 10;
   Bool_t isPID = kTRUE;
-  Int_t gCharge = 0;  
   AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
   AliPID::EParticleType particleType = AliPID::kPion;
 
