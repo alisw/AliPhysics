@@ -80,6 +80,18 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
+  fRawTimeNbins (0),
+  fRawTimeMin   (0),
+  fRawTimeMax   (0),
+  fPassTimeNbins(0),
+  fPassTimeMin  (0),
+  fPassTimeMax  (0),
+  fEnergyNbins  (0),
+  fEnergyMin(0),
+  fEnergyMax(0),
+  fFineNbins(0),
+  fFineTmin(0),
+  fFineTmax(0),
   fReferenceFile(0),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
@@ -211,14 +223,18 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
       AliFatal("*** NO REFERENCE R-B-R FILE");
     } else {
       AliDebug(1,"*** OK TFILE");
-
-
-      AliInfo(Form("runnumber in LoadReferenceRunByRunHistos() %d, %d, InputEvent %p",fRunNumber,InputEvent()->GetRunNumber(),InputEvent()));
+      
+      //AliInfo(Form("runnumber in LoadReferenceRunByRunHistos() %d, %d, InputEvent %p",fRunNumber,InputEvent()->GetRunNumber(),InputEvent()));
       AliInfo(Form("fReferenceFile in LoadReferenceRunByRunHistos() %p",fReferenceFile));
-      fReferenceFile->ls();
-      fhRefRuns=(TH1F*) fReferenceFile->Get(Form("h%d",fRunNumber));
-      AliInfo(Form("Pointer to reference histogram %p",fhRefRuns));
-      if(fhRefRuns==0x0) AliFatal(Form("Reference histogram for run %d does not exist",fRunNumber));
+      //fReferenceFile->ls();
+      fhRefRuns=(TH1C*) fReferenceFile->Get(Form("h%d",fRunNumber));
+      //AliInfo(Form("Pointer to reference histogram %p",fhRefRuns));
+      if(fhRefRuns==0x0) {
+	fhRefRuns=(TH1C*) fReferenceFile->Get("h0");//Default values
+	AliError(Form("Reference histogram for run %d does not exist. Use Default",fRunNumber));
+	//AliFatal(Form("Reference histogram for run %d does not exist",fRunNumber));
+      }
+      if(fhRefRuns==0x0) AliFatal(Form("Default reference histogram does not exist. Run %d.",fRunNumber));
       if(fhRefRuns->GetEntries()==0)AliWarning("fhRefRuns->GetEntries() = 0");
       AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() ));
     }
@@ -319,34 +335,28 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 {
   AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()");
 
-  Double_t fineTmin = -500;
-  Double_t fineTmax =  400;
-  Double_t fineInterval = 0.20;
-  Int_t nfinebin = (fineTmax-fineTmin)/fineInterval;
-  //cout << "<D> nfinebin = " << nfinebin << endl;
-  
-  Int_t nChannels = 17664;
+  const Int_t nChannels = 17664;
   //book histograms
-  fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",nfinebin, fineTmin,fineTmax);
+  fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",fFineNbins, fFineNbins,fFineTmax);
   fhcalcEvtTime->GetXaxis()->SetTitle("T ");
   fhcalcEvtTime->GetYaxis()->SetTitle("Counts (a.u.)");
   
-  fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",nfinebin, fineTmin,fineTmax);
+  fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",fFineNbins, fFineNbins,fFineTmax);
   fhEvtTimeHeader->GetXaxis()->SetTitle("T ");
   fhEvtTimeHeader->GetYaxis()->SetTitle("Counts (a.u.)");
 
-  fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",nfinebin, fineTmin,fineTmax);
+  fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",fFineNbins, fFineNbins,fFineTmax);
   fhEvtTimeDiff->GetXaxis()->SetTitle("#Delta T ");
   fhEvtTimeDiff->GetYaxis()->SetTitle("Counts (a.u.)");
 
   fhEventType = new TH1F("fhEventType","event type",10, 0.,10.);
   fhEventType ->GetXaxis()->SetTitle("Type ");
   fhEventType ->GetYaxis()->SetTitle("Counts (a.u.)");
-  fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,1200,300.0,900.0);
-  fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4000,500.0,700.0);
-  fhTcellvsSM = new TH2F("hTcellvsSM", " T_cell vs SM", 20,0,20,300,300,900);
+  fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4*fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  fhTcellvsSM = new TH2F("hTcellvsSM", " T_cell vs SM", (Int_t)kNSM,0,(Double_t)kNSM,(Int_t)(fRawTimeNbins/2),fRawTimeMin,fRawTimeMax);
   fhEneVsAbsIdHG = new TH2F("fhEneVsAbsIdHG", "energy vs ID for HG",1000,0,18000,200,0,10);
-  fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,100,0,20);
+  fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
   
   for (Int_t i = 0; i < kNBCmask ;  i++)
   {
@@ -392,8 +402,8 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     //raw time histograms
     //high gain
     fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
-			      Form("cell raw time vs ID for high gain BC %d ", i),
-			      nChannels,0.,(Double_t)nChannels,600,300,900);
+				  Form("cell raw time vs ID for high gain BC %d ", i),
+				  nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
     fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
     fhRawTimeVsIdBC[i]->SetYTitle("Time");
 
@@ -418,7 +428,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     //low gain
     fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
 			      Form("cell raw time vs ID for low gain BC %d ", i),
-			      nChannels,0.,(Double_t)nChannels,600,300,900);
+				    nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
     fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
     fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
 
@@ -444,7 +454,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     for (Int_t j = 0; j < kNSM ;  j++) 
     {
       //fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
-      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,1100,-350.0,750.0);
+      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
       fhTimeDsupBC[j][i]->SetYTitle(" Time (ns) "); 
       fhTimeDsupBC[j][i]->SetXTitle(" E (GeV) "); 
     }
@@ -452,12 +462,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
   for (Int_t jj = 0; jj < kNSM ;  jj++) 
   {
-    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E ",jj),500,0.0,20.0,1400,-350.0,350.0);
+    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E ",jj),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
     fhTimeDsup[jj]->SetYTitle(" Time (ns) "); 
     fhTimeDsup[jj]->SetXTitle(" E (GeV) "); 
   }
   
-  fhTimeVsBC = new TH2F("TimeVsBC"," SupMod time_vs_BC ", 4001,-0.5,4000.5,400,200.0,1000.0); 
+  fhTimeVsBC = new TH2F("TimeVsBC"," SupMod time_vs_BC ", 4001,-0.5,4000.5,(Int_t)(fRawTimeNbins/2.),fRawTimeMin,fRawTimeMax); 
   
 
   //add histos to list
@@ -919,6 +929,19 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
   fMaxTime=20.;
+  //histograms
+  fRawTimeNbins  = 600;  // Raw time settings should be like that all the time
+  fRawTimeMin    = 300.; // importent in pass1
+  fRawTimeMax    = 900.;
+  fPassTimeNbins = 1400; // in pass2 should be (600,300,900)
+  fPassTimeMin   = -350.;// in pass3 should be (1400,-350,350)
+  fPassTimeMax   = 350.;
+  fEnergyNbins   = 500;  // default settings
+  fEnergyMin     = 0.;
+  fEnergyMax     = 20.;
+  fFineNbins     = 90; //was 4500 for T0 time studies
+  fFineTmin      = -500;
+  fFineTmax      = 400;
 }
 
 //________________________________________________________________________
@@ -1030,8 +1053,15 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
     delete hAllTimeRMSBC[i];
     delete hAllTimeAvLGBC[i];
     delete hAllTimeRMSLGBC[i];
-  }
 
+    delete h1[i];
+    delete h2[i];
+    delete h3[i];
+    delete h4[i];
+    delete h5[i];
+    delete h6[i];
+  }
+  
   file->Close();
   delete file;
 
