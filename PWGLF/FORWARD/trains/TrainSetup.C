@@ -89,6 +89,7 @@ struct TrainSetup
     fOptions.Add("tender", "WHICH",            "Specify tender supplies","");
     fOptions.Add("ocdb",   "(TENDER_SNAPSHOT)","Enable OCDB",            "");
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
+    fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -746,18 +747,19 @@ protected:
     LoadOADB();
     
     Bool_t mult = true; // true;
-    AliAnalysisTask* task = 0;
+    AliAnalysisTaskSE* task = 0;
     if (mult) {
       gROOT->SetMacroPath(Form("%s:"
 			       "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros",
 			       gROOT->GetMacroPath()));
-      CoupleCar("AddTaskMultSelection.C","false,true");
+      task = CoupleSECar("AddTaskMultSelection.C","false,true");
+      FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
     }
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD) return;
     
-    task = CoupleCar("AddTaskCentrality.C",
-		     Form("true,%s", isAOD ? "true" : "false"));
+    task = CoupleSECar("AddTaskCentrality.C",
+		       Form("true,%s", isAOD ? "true" : "false"));
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(task);
     if (!ctask) return;
