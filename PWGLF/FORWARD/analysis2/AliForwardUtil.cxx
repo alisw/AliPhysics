@@ -849,7 +849,7 @@ Float_t AliForwardUtil::GetCentrality(const AliVEvent& event,
 		"No MultSelection object found in event");
     return GetCentralityCompat(event, method, qual, verbose);
   }
-  AliMultSelection* sel = static_cast<AliMultSelection*>(o);
+  AliMultSelection* sel = static_cast<AliMultSelection*>(o);  
   if (!sel->GetEstimatorList() ||
       sel->GetEstimatorList()->GetEntries() <= 0){
     if (verbose) {
@@ -870,7 +870,7 @@ Float_t AliForwardUtil::GetCentrality(const AliVEvent& event,
     return -1;
   }
   Float_t cent = est->GetPercentile();
-  qual         = Int_t(TMath::Max(0.F, cent-199));
+  qual         = TMath::Max(0, sel->GetEvSelCode()-199);
   if (TMath::Abs(cent-199) < 1e-6) {
     if (verbose)
       ::Warning("AliForwardUtil::GetCentrality",

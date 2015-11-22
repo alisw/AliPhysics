@@ -294,6 +294,13 @@ public:
    */
   virtual Bool_t Book();
   /** 
+   * Called before processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent() { fCacheCent = -10; return true; } 
+  /** 
    * Process a single event 
    * 
    * @return true on success
@@ -1019,7 +1026,8 @@ protected:
   TString         fCentMethod;    // Centrality estimator 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
   Bool_t          fUseUtilPileup; // Check for SPD outliers
-  TF1*            fIpzReweight;   // Re-weighing function 
+  TF1*            fIpzReweight;   // Re-weighing function
+  Double_t        fCacheCent;          // Stored centrality 
   ClassDef(AliBasedNdetaTask,19); // Determine charged particle density
 };
 

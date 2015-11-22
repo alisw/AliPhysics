@@ -470,7 +470,7 @@ AliBaseAODTask::UserExec(Option_t *)
   //    option Not used
   //
   // Main loop
-  DGUARD(fDebug,1,"Analyse the AOD event");
+  DGUARD(fDebug,1,"Analyse the AOD event in UserExec");
   if (!PreEvent()) return;
 
   AliAODEvent* aod = AliForwardUtil::GetAODEvent(this);
