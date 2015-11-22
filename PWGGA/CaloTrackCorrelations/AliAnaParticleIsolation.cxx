@@ -1662,11 +1662,11 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     Float_t dZ  = fCluster->GetTrackDz();
     Float_t dR  = fCluster->GetTrackDx();
     
-    if(fCluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-    {
-      dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(fCluster->GetID(),dZ,dR);
-    }
+//    if(fCluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+//    {
+//      dR = 2000., dZ = 2000.;
+//      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(fCluster->GetID(),dZ,dR);
+//    }
     
     //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
     if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
