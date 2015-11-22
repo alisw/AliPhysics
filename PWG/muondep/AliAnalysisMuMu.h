@@ -233,6 +233,11 @@ private:
   void GetParametersFromMC(TString& fitType, const char* pathCentrPairCut, const char* spectraName, AliAnalysisMuMuBinning::Range* bin) const;
   void GetParametersFromResult(TString& fitType, AliAnalysisMuMuJpsiResult* minvResult) const;
 
+  void GetCollectionsFromAnySubdir(TDirectory& dir,
+                                   AliMergeableCollection*& oc,
+                                   AliCounterCollection*& cc,
+                                   AliAnalysisMuMuBinning*& bin);
+
 private:
 
   void SetNofInputParticles(AliAnalysisMuMuJpsiResult& r);

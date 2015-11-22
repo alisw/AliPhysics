@@ -2365,6 +2365,51 @@ UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList
 }
 
 //_____________________________________________________________________________
+void AliAnalysisMuMu::GetCollectionsFromAnySubdir(TDirectory& dir,
+                                                    AliMergeableCollection*& oc,
+                                                    AliCounterCollection*& cc,
+                                                    AliAnalysisMuMuBinning*& bin)
+{
+  /// Find, within dir and its sub-directories, the objects OC,CC and BIN
+  
+  TList* keys = dir.GetListOfKeys();
+  TIter next(keys);
+  
+  TKey* k;
+  
+  while ( ( k = static_cast<TKey*>(next()) ) )
+  {
+    TObject* object = k->ReadObj();
+    
+    if ( object->InheritsFrom("TDirectory") )
+    {
+      TDirectory* d = static_cast<TDirectory*>(object);
+      GetCollectionsFromAnySubdir(*d,oc,cc,bin);
+      continue;
+    }
+    
+    if ( ( object->InheritsFrom("AliMergeableCollection") ) &&
+        ( strcmp(object->GetName(),"OC")==0 ) )
+    {
+      oc = dynamic_cast<AliMergeableCollection*>(object);
+    }
+
+    if ( ( object->InheritsFrom("AliCounterCollection") ) &&
+        ( strcmp(object->GetName(),"CC")==0 ) )
+    {
+      cc = dynamic_cast<AliCounterCollection*>(object);
+    }
+
+    if ( ( object->InheritsFrom("AliAnalysisMuMuBinning") ) &&
+        ( strncmp(object->GetName(),"BIN",3)==0 ) )
+    {
+      bin = dynamic_cast<AliAnalysisMuMuBinning*>(object);
+    }
+
+  }
+}
+
+//_____________________________________________________________________________
 Bool_t
 AliAnalysisMuMu::GetCollections(const char* rootfile,
                                 AliMergeableCollection*& oc,
@@ -2372,14 +2417,32 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
                                 AliAnalysisMuMuBinning*& bin,
                                 std::set<int>& runnumbers)
 {
+  /// Get access to the mergeable collection, counter collection and binning
+  /// within file rootfile.
+  /// rootfile is a filename, with an optional directory (with the syntax
+  /// (filename.root:directory)
+  /// where the collections are to be found.
+ 
   oc = 0x0;
   cc = 0x0;
   bin = 0x0;
   
-  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(rootfile));
+  TString filename = rootfile;
+  TString dirname = "";
+  
+  if ( filename.CountChar(':') )
+  {
+    dirname = rootfile;
+    Int_t colon = filename.Index(':');
+    filename = filename(0,colon);
+    dirname = dirname(colon+1,strlen(rootfile)-colon);
+    dirname += "/";
+  }
+  
+  TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(filename.Data()));
   if (!f)
   {
-    f = TFile::Open(rootfile);
+    f = TFile::Open(filename.Data());
   }
   
   if ( !f || f->IsZombie() )
@@ -2387,12 +2450,12 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
     return kFALSE;
   }
 
-  f->GetObject("OC",oc);
+  f->GetObject(Form("%sOC",dirname.Data()),oc);
   if (!oc)
   {
-    f->GetObject("MC",oc);
+    f->GetObject(Form("%sMC",dirname.Data()),oc);
   }
-  f->GetObject("CC",cc);
+  f->GetObject(Form("%sCC",dirname.Data()),cc);
   
   TIter next(f->GetListOfKeys());
   TKey* key;
@@ -2405,10 +2468,15 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
     }
   }
   
+  if ( (!oc || !cc) && dirname.Length()==0 )
+  {
+    // one more try, searching in subdirectories as well
+    GetCollectionsFromAnySubdir(*f,oc,cc,bin);
+  }
+  
   if (!oc || !cc)
   {
-    AliErrorClass("Old file. Please upgrade it!");
-    
+    AliError("Could not get OC, CC and BIN. Is that an old file ? Try to upgrade it or check it's the right file...");
     return kFALSE;
   }
   
