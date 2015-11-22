@@ -50,6 +50,7 @@ public:
 		 "dNdetaConfig.C");
     fOptions.Add("mean-ipz", "MU", "Mean of IPz dist.", 0);
     fOptions.Add("var-ipz", "SIGMA", "Variance of IPz dist.", -1);
+    fOptions.Add("no-central","Do not at SPD cluster task",false);
     
   }
 protected:
@@ -122,7 +123,9 @@ protected:
 
     // --- Add the task ----------------------------------------------
     CoupledNdetaCar("Forward", fwdCfg);
-    CoupledNdetaCar("Central", cenCfg);
+    Bool_t noCentral = fOptions.Has("no-central");
+    if (!noCentral)
+      CoupledNdetaCar("Central", cenCfg);
     if (mc) CoupledNdetaCar("MCTruth", mcCfg);
 
   }
