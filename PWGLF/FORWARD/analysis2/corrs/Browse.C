@@ -11,11 +11,12 @@ TObject* Browse(Bool_t fmd=true, Bool_t rw=false)
   TString macro = Form("%s/corrs/ForwardOADBGui.C+", fwd);
   Info("", "Loading macro %s", macro.Data());
   gROOT->LoadMacro(macro);
-  
+
+  TString fn(fmd ? "fmd_corrections.root" : "spd_corrections.root");
   AliOADBForward* db = new AliOADBForward;
-  db->Open(fmd ? "fmd_corrections.root" : "spd_corrections.root", "*", rw);
+  db->Open(fn, "*", rw);
   
-  ForwardOADBGui(db);
+  ForwardOADBGui(db, fn.Data());
 
   return db;
 }
