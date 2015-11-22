@@ -147,11 +147,13 @@ void EscapeSpecialChars ( TString& str )
 }
 
 //_________________________________
-void BeginFrame ( TString title, ofstream& outFile )
+void BeginFrame ( TString title, ofstream& outFile, TString label = "" )
 {
   outFile << endl;
   outFile << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  outFile << "\\begin{frame}" << endl;
+  outFile << "\\begin{frame}";
+  if ( ! label.IsNull() ) outFile << "\\label{" << label.Data() << "}";
+  outFile << endl;
   outFile << " \\frametitle{" << title.Data() << "}" << endl;
 }
 
@@ -170,14 +172,14 @@ void MakeDefaultItem ( ofstream& outFile, TString defaultItem = "" )
 }
 
 //_________________________________
-Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile, TString trigger = "", Bool_t warnIfMissing = kTRUE )
+Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile, TString trigger = "", TString label = "", Bool_t warnIfMissing = kTRUE )
 {
   Int_t pageNum = GetPage(pattern,filename,trigger,warnIfMissing);
   if ( pageNum<0 ) {
     return kFALSE;
   }
 
-  BeginFrame(title,outFile);
+  BeginFrame(title,outFile,label);
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{\\textwidth}" << endl;
   outFile << "  \\centering" << endl;
@@ -212,7 +214,7 @@ Bool_t MakeTriggerSlide ( TString filename, ofstream &outFile )
 Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile, Bool_t outliers = kFALSE )
 {
   TString baseName = outliers ? "eff.-<eff.> for outliers" : "efficiency";
-  BeginFrame(Form("Trigger chamber %s per RPC",baseName.Data()),outFile);
+  BeginFrame(Form("Trigger chamber %s per RPC",baseName.Data()),outFile,outliers?"":"rpcEff");
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{\\textwidth}" << endl;
   outFile << "  \\centering" << endl;
@@ -349,8 +351,10 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\usepackage[absolute,overlay]{textpos}" << endl;
   outFile << "\\usetheme{Madrid}" << endl;
   outFile << "\\useoutertheme{shadow}" << endl;
-
+  outFile << endl;
   outFile << "\\setbeamersize{text margin left=0.5cm, text margin right=0.5cm}" << endl;
+  outFile << endl;
+  outFile << "\\hypersetup{colorlinks,linkcolor=red,urlcolor=blue}" << endl;
   outFile << endl;
   outFile << "% Slightly change the template" << endl;
   outFile << "\\setbeamertemplate{navigation symbols}{} %suppress navigation symbols (bottom-right of frame)" << endl;
@@ -367,6 +371,7 @@ void MakePreamble ( ofstream &outFile )
   outFile << "    \\insertshortauthor%~~(\\insertshortinstitute)" << endl;
   outFile << "   \\end{beamercolorbox}%" << endl;
   outFile << "   \\begin{beamercolorbox}[wd=.6\\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%" << endl;
+  outFile << "    \\hypersetup{hidelinks}%" << endl;
   outFile << "    \\insertshorttitle" << endl;
   outFile << "    \\hspace*{2em}\\insertshortdate{}" << endl;
   outFile << "   \\end{beamercolorbox}%" << endl;
@@ -455,7 +460,8 @@ void StartAppendix ( ofstream &outFile )
   outFile << endl;
   outFile << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   outFile << "\\appendix" << endl;
-  outFile <<"\\changeFootline{A.\\insertframenumber{}}" << endl;
+  outFile << "\\changeFootline{A.\\insertframenumber{}}" << endl;
+  outFile << "\\hypersetup{hidelinks}" << endl;
   outFile << "\\section{\\huge Backup slides}" << endl;
 }
 
@@ -509,13 +515,13 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     TString currTrig = trigList->At(itrig)->GetName();
     TString shortTrig = GetTriggerShort(currTrig);
     MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
-    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig,kFALSE);
+    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig,"",kFALSE);
     MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
     MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
   }
   MakeSingleFigureSlide("averaged number of associated clusters or of the number of chamber hit per track",trackerQA,"Average number of clusters per track and dispersion",outFile);
-  MakeSingleFigureSlide("averaged number of clusters in chamber i per track",trackerQA,"Average number of clusters per chamber",outFile);
+  MakeSingleFigureSlide("averaged number of clusters in chamber i per track",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
 
   StartAppendix(outFile);
   MakeSingleFigureSlide("Physics Selection Cut on selected triggers:",trackerQA,"Physics selection effects",outFile);
