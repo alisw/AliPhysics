@@ -90,9 +90,9 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistTPCtracks_TPCtracklets(NULL)
   , fHistITStracks_ITSOutTracks(NULL)
   , fHistTPCClusterSize_TPCCompressedSize(NULL)
-  , fHistVZEROTrigChargeA_ZNA(NULL)
-  , fHistVZEROTrigChargeC_ZNC(NULL)
-  , fHistVZEROTrigChargeT_ZNT(NULL)
+  , fHistZNA_VZEROTrigChargeA(NULL)
+  , fHistZNC_VZEROTrigChargeC(NULL)
+  , fHistZNT_VZEROTrigChargeT(NULL)
 {
   // see header file for class documentation
   // or
@@ -269,9 +269,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fHistTPCClusterSize_TPCCompressedSize = new TH2I("TPCSize_TPCCompSize", "TPCSize vs TPC compressed size", 50, 0., 10000000., 50, 0., 10000000.);
   fHistTPCtracks_TPCtracklets = new TH2I("TPCntrk_TPCntrl", "TPCntrk vs TPCnTracklets", 50, 0., 25000., 50, 0., 40000.);
   fHistITStracks_ITSOutTracks = new TH2I("ITSntrk_ITSOutntrk", "ITSntrk vs ITSOutntrk", 50, 0., 25000., 50, 0., 25000.);
-  fHistVZEROTrigChargeA_ZNA = new TH2F("VZEROTrigChargeA_ZNA", "VZEROTriggerChargeA vs ZNA", 100, 0., 15000., 100, 0., 1500.);
-  fHistVZEROTrigChargeC_ZNC = new TH2F("VZEROTrigChargeC_ZNC", "VZEROTriggerChargeC vs ZNC", 100, 0., 15000., 100, 0., 1500.);
-  fHistVZEROTrigChargeT_ZNT = new TH2F("VZEROTrigChargeT_ZNT", "VZEROTriggerCharge(A+C) vs ZN(A+C)", 100, 0., 25000., 100, 0., 2500.);
+  fHistZNA_VZEROTrigChargeA = new TH2F("VZEROTrigChargeA_ZNA", "ZNA vs. VZEROTriggerChargeA", 100, 0., 25000., 100, 0., 1500.);
+  fHistZNC_VZEROTrigChargeC = new TH2F("VZEROTrigChargeC_ZNC", "ZNC vs. VZEROTriggerChargeC", 100, 0., 50000., 100, 0., 1500.);
+  fHistZNT_VZEROTrigChargeT = new TH2F("VZEROTrigChargeT_ZNT", " ZN(A+C) vs. VZEROTriggerCharge(A+C)", 100, 0., 75000., 100, 0., 2500.);
 
   return iResult;
 }
@@ -421,12 +421,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       const TObject* o = GetInputObjectFromIndex(ndx);
       if (o)
       {
-        const AliESDVZERO* v = dynamic_cast<const AliESDVZERO*>(o);
-        if (v)
+        const AliESDVZERO* esdVZERO = dynamic_cast<const AliESDVZERO*>(o);
+        if (esdVZERO)
         {
-          for (int i = 0;i < 64;i++) vZEROMultiplicity += v->GetMultiplicity(i);
-          vZEROTriggerChargeA = v->GetTriggerChargeA();
-          vZEROTriggerChargeC = v->GetTriggerChargeC();
+          for (int i = 0;i < 64;i++) vZEROMultiplicity += esdVZERO->GetMultiplicity(i);
+          vZEROTriggerChargeA = esdVZERO->GetTriggerChargeA();
+          vZEROTriggerChargeC = esdVZERO->GetTriggerChargeC();
         }
       }
     }
@@ -595,17 +595,17 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     fHistTPCClusterSize_TPCCompressedSize->Reset();
   
   //VZERO vs ZDC
-  fHistVZEROTrigChargeA_ZNA->Fill(vZEROTriggerChargeA, zdcZNA);
-  if (fHistVZEROTrigChargeA_ZNA->GetEntries() && PushBack(fHistVZEROTrigChargeA_ZNA, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistVZEROTrigChargeA_ZNA->Reset();
+  fHistZNA_VZEROTrigChargeA->Fill(vZEROTriggerChargeA, zdcZNA);
+  if (fHistZNA_VZEROTrigChargeA->GetEntries() && PushBack(fHistZNA_VZEROTrigChargeA, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
+    fHistZNA_VZEROTrigChargeA->Reset();
 
-  fHistVZEROTrigChargeC_ZNC->Fill(vZEROTriggerChargeC, zdcZNC);
-  if (fHistVZEROTrigChargeC_ZNC->GetEntries() && PushBack(fHistVZEROTrigChargeC_ZNC, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistVZEROTrigChargeC_ZNC->Reset();
+  fHistZNC_VZEROTrigChargeC->Fill(vZEROTriggerChargeC, zdcZNC);
+  if (fHistZNC_VZEROTrigChargeC->GetEntries() && PushBack(fHistZNC_VZEROTrigChargeC, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
+    fHistZNC_VZEROTrigChargeC->Reset();
 
-  fHistVZEROTrigChargeT_ZNT->Fill(vZEROTriggerChargeA+vZEROTriggerChargeC, zdcZNA+zdcZNC);
-  if (fHistVZEROTrigChargeT_ZNT->GetEntries() && PushBack(fHistVZEROTrigChargeT_ZNT, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistVZEROTrigChargeT_ZNT->Reset();
+  fHistZNT_VZEROTrigChargeT->Fill(vZEROTriggerChargeA+vZEROTriggerChargeC, zdcZNA+zdcZNC);
+  if (fHistZNT_VZEROTrigChargeT->GetEntries() && PushBack(fHistZNT_VZEROTrigChargeT, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
+    fHistZNT_VZEROTrigChargeT->Reset();
 
   int pushed_something = 0;
   fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
