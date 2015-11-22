@@ -953,7 +953,7 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
       }
       
       Float_t dR = 999., dZ = 999.;
-      fRecoUtils->GetMatchedResiduals(newCluster->GetID(),dR,dZ);
+      fRecoUtils->GetMatchedResiduals(newCluster->GetID(),dZ,dR);
       newCluster->SetTrackDistance(dR,dZ);
     }
     else
