@@ -74,7 +74,8 @@ ClassImp(AliAnalysisMuMu)
 
 //_____________________________________________________________________________
 AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, AliAnalysisMuMuConfig& config) : TObject(),
-fFilename(gSystem->ExpandPathName(filename)),
+fFilename(),
+fDirectory(""),
 fCounterCollection(0x0),
 fBinning(0x0),
 fMergeableCollection(0x0),
@@ -85,7 +86,9 @@ fAssociatedSimulation2(0x0),
 fParticleName(""),
 fConfig(new AliAnalysisMuMuConfig(config))
 {
-  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
+  GetFileNameAndDirectory(filename);
+  
+  GetCollections(fFilename,fDirectory,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
   
   if ( IsSimulation() )
   {
@@ -97,6 +100,7 @@ fConfig(new AliAnalysisMuMuConfig(config))
 //_____________________________________________________________________________
 AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, const char* associatedSimFileName, const char* associatedSimFileName2, const char* configurationFile) : TObject(),
 fFilename(filename),
+fDirectory(""),
 fCounterCollection(0x0),
 fBinning(0x0),
 fMergeableCollection(0x0),
@@ -109,7 +113,9 @@ fConfig(0x0)
 {
   // ctor
   
-  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
+  GetFileNameAndDirectory(filename);
+
+  GetCollections(fFilename,fDirectory,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
   
   if ( IsSimulation() )
   {
@@ -2365,16 +2371,72 @@ UInt_t AliAnalysisMuMu::GetSum(AliCounterCollection& cc, const char* triggerList
 }
 
 //_____________________________________________________________________________
+void AliAnalysisMuMu::GetCollectionsFromAnySubdir(TDirectory& dir,
+                                                    AliMergeableCollection*& oc,
+                                                    AliCounterCollection*& cc,
+                                                    AliAnalysisMuMuBinning*& bin)
+{
+  /// Find, within dir and its sub-directories, the objects OC,CC and BIN
+  
+  TList* keys = dir.GetListOfKeys();
+  TIter next(keys);
+  
+  TKey* k;
+  
+  while ( ( k = static_cast<TKey*>(next()) ) )
+  {
+    TObject* object = k->ReadObj();
+    
+    if ( object->InheritsFrom("TDirectory") )
+    {
+      TDirectory* d = static_cast<TDirectory*>(object);
+      GetCollectionsFromAnySubdir(*d,oc,cc,bin);
+      continue;
+    }
+    
+    if ( ( object->InheritsFrom("AliMergeableCollection") ) &&
+        ( strcmp(object->GetName(),"OC")==0 ) )
+    {
+      oc = dynamic_cast<AliMergeableCollection*>(object);
+      fDirectory = gDirectory->GetName();
+    }
+
+    if ( ( object->InheritsFrom("AliCounterCollection") ) &&
+        ( strcmp(object->GetName(),"CC")==0 ) )
+    {
+      cc = dynamic_cast<AliCounterCollection*>(object);
+      fDirectory = gDirectory->GetName();
+    }
+
+    if ( ( object->InheritsFrom("AliAnalysisMuMuBinning") ) &&
+        ( strncmp(object->GetName(),"BIN",3)==0 ) )
+    {
+      bin = dynamic_cast<AliAnalysisMuMuBinning*>(object);
+      fDirectory = gDirectory->GetName();
+    }
+
+  }
+}
+
+//_____________________________________________________________________________
 Bool_t
 AliAnalysisMuMu::GetCollections(const char* rootfile,
+                                const char* subdir,
                                 AliMergeableCollection*& oc,
                                 AliCounterCollection*& cc,
                                 AliAnalysisMuMuBinning*& bin,
                                 std::set<int>& runnumbers)
 {
+  /// Get access to the mergeable collection, counter collection and binning
+  /// within file rootfile.
+  /// rootfile is a filename, with an optional directory (with the syntax
+  /// (filename.root:directory)
+  /// where the collections are to be found.
+ 
   oc = 0x0;
   cc = 0x0;
   bin = 0x0;
+  
   
   TFile* f = static_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(rootfile));
   if (!f)
@@ -2386,13 +2448,21 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
   {
     return kFALSE;
   }
-
-  f->GetObject("OC",oc);
+  
+  TString dir = subdir;
+  
+  if (dir.Length())
+  {
+    dir.Remove(TString::kBoth,'/');
+    dir += "/";
+  }
+  
+  f->GetObject(Form("%sOC",dir.Data()),oc);
   if (!oc)
   {
-    f->GetObject("MC",oc);
+    f->GetObject(Form("%sMC",dir.Data()),oc);
   }
-  f->GetObject("CC",cc);
+  f->GetObject(Form("%sCC",dir.Data()),cc);
   
   TIter next(f->GetListOfKeys());
   TKey* key;
@@ -2405,10 +2475,15 @@ AliAnalysisMuMu::GetCollections(const char* rootfile,
     }
   }
   
+  if ( (!oc || !cc) && fDirectory.Length()==0 )
+  {
+    // one more try, searching in subdirectories as well
+    GetCollectionsFromAnySubdir(*f,oc,cc,bin);
+  }
+  
   if (!oc || !cc)
   {
-    AliErrorClass("Old file. Please upgrade it!");
-    
+    AliError("Could not get OC, CC and BIN. Is that an old file ? Try to upgrade it or check it's the right file...");
     return kFALSE;
   }
   
@@ -3282,12 +3357,16 @@ void AliAnalysisMuMu::Update()
 
   if (OC())
   {
+    if (fDirectory.Length())
+    {
+      gDirectory->cd(fDirectory.Data());
+    }
     OC()->Write("OC",TObject::kSingleKey|TObject::kOverwrite);
   }
 
   ReOpen(fFilename,"READ");
   
-  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
+  GetCollections(fFilename,fDirectory,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
 }
 
 //_____________________________________________________________________________
@@ -5611,4 +5690,23 @@ Bool_t AliAnalysisMuMu::SetParticleNameFromFileName(const char* filename)
   }
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliAnalysisMuMu::GetFileNameAndDirectory(const char* filename)
+{
+  /// Split the filename[:subdir] into a file name and a subdir
+  
+  fFilename = gSystem->ExpandPathName(filename);
+  
+  fDirectory = "";
+  
+  if ( fFilename.CountChar(':') )
+  {
+    fDirectory = filename;
+    Int_t colon = fFilename.Index(':');
+    fFilename = fFilename(0,colon);
+    fDirectory = fDirectory(colon+1,strlen(filename)-colon);
+  }
+}
+
 

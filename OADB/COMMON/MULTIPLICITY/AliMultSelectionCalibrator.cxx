@@ -673,6 +673,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fnSPDClusters0        = new AliMultVariable("fnSPDClusters0");
     AliMultVariable *fnSPDClusters1        = new AliMultVariable("fnSPDClusters1");
     fnSPDClusters->SetIsInteger( kTRUE );
+    fnSPDClusters0->SetIsInteger( kTRUE );
+    fnSPDClusters1->SetIsInteger( kTRUE );
     //AD Related
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
@@ -699,6 +701,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fMultiplicity_ADA );
     fInput->AddVariable( fMultiplicity_ADC );
     fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnSPDClusters0 );
+    fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
