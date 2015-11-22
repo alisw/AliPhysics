@@ -352,7 +352,8 @@ AliOADBForward::Table::Query(ULong_t        runNo,
   ULong_t  oldRun  = (mode == kNewer ? 0xFFFFFFFF : 0);
   ULong_t  oldTim  = 0;
   ULong_t  oldDist = 0xFFFFFFFF;
-  Int_t    entry  = -1;
+  Int_t    entry  = -1;  
+      
   for (Int_t row = 0; row < nRows; row++) {
     Int_t    ent  = Int_t(fTree->GetV1()[row]);
     ULong_t  run  = ULong_t(fTree->GetV2()[row]);
@@ -361,8 +362,9 @@ AliOADBForward::Table::Query(ULong_t        runNo,
 	
     if (fVerbose) {
       TDatime t(tim);
-      Printf(" %6d | %9ld | %19s ", ent, run > 0x7FFFFFFF ? -1 : run, 
-	     t.AsSQLString());
+      Printf(" %6d | %9ld | %19s   [dist: %9ld vs %9ld, %5s]",
+	     ent, run > 0x7FFFFFFF ? -1 : run, t.AsSQLString(),
+	     dist, oldDist, (tim<oldTim?"older":"newer"));
     }
 
     switch (mode) { 
@@ -383,6 +385,12 @@ AliOADBForward::Table::Query(ULong_t        runNo,
     // If we get here, then we have the best run according to the 
     // criteria 
 	    
+    // Now update last values and set current best entry 
+    oldTim  = tim;
+    oldDist = dist;
+    oldRun  = run;
+    entry   = ent;
+
     // Finally, check the timestamp 
     if (tim < oldTim) continue;
 	
@@ -705,7 +713,7 @@ AliOADBForward::Open(TFile*         file,
   if (tables.EqualTo("*")) {
     if (rw) { 
       Error("Open", "Cannot open with '*' in read/write mode");
-      return false;
+      // return false;
     }
     TList* l = file->GetListOfKeys();
     TIter  next(l);
