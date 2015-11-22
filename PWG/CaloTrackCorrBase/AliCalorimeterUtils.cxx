@@ -1699,6 +1699,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cl
 
 //__________________________________________________________________________________________
 /// Recalculate EMCAL cluster position.
+/// The cluster new position is already modified.
 //__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu)
 {
@@ -1706,20 +1707,45 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
 }
 
 //________________________________________________________________________________
-/// Recalculate track matching
+/// Recalculate track matching and set the new residuals in the cluster.
 //________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
                                                           TObjArray* clusterArray) 
 {   
-  if (fRecalculateMatching) 
+  if (!fRecalculateMatching) return ; 
+  
+  fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo) ;
+  
+  Float_t dZ  = 2000;
+  Float_t dR  = 2000;
+
+  Int_t nClusters = event->GetNumberOfCaloClusters();
+  if(clusterArray) nClusters = clusterArray->GetEntriesFast();
+  
+  AliVCluster * clus = 0;
+
+  for (Int_t iclus =  0; iclus < nClusters ; iclus++)
   {
-    fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo)   ; 
+    if  ( clusterArray ) clus = (AliVCluster*) clusterArray->At(iclus) ;
+    else                 clus = event->GetCaloCluster(iclus) ;
+    
+    if (!clus->IsEMCAL()) continue ;
+    
+    fEMCALRecoUtils->GetMatchedResiduals(clus->GetID(),dZ,dR);
+    
+    if ( TMath::Abs(clus->GetTrackDx()) < 500 )
+      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n",
+                      clus->GetTrackDz(),dZ,clus->GetTrackDx(),dR));
+    
+    clus->SetTrackDistance(dR,dZ);
+    
+  } // cluster loop
+
     //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
     //if(esdevent){
     //  fEMCALRecoUtils->SetClusterMatchedToTrack(esdevent)  ;
     //  fEMCALRecoUtils->SetTracksMatchedToCluster(esdevent) ; 
     //}
-  }
 }
 
 //___________________________________________________________________________
