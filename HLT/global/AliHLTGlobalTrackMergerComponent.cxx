@@ -149,7 +149,7 @@ int AliHLTGlobalTrackMergerComponent::DoEvent(const AliHLTComponentEventData& /*
   //fESD->SetMagneticField(AliTracker::GetBz());
 
   if ((iResult=ProcessBlocks(NULL, fESD, NULL))<0) return iResult;
-  if(!fESD->GetNumberOfTracks()>0) return iResult;
+  if(!(fESD->GetNumberOfTracks()>0)) return iResult;
 
    // merge tracks
    Bool_t isMerged = fGlobalTrackMerger->Merge(fESD);
