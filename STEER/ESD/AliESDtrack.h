@@ -549,7 +549,6 @@ protected:
 
   UShort_t fFrTrackID;             // id of friend in the ESDfriend
 
-
   ULong_t   fFlags;          // Reconstruction status flags 
   Int_t     fID;             // Unique ID of the track
   Int_t     fLabel;          // Track label
