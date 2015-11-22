@@ -432,7 +432,8 @@ alien_find()
 {
   # like a regular alien_find command
   # output is a list with md5 sums and ctimes
-  executable="gbbox find"
+  executable=$(which gbbox)
+  executable+=" find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
 
