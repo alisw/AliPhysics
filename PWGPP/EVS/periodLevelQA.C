@@ -13,35 +13,35 @@ using namespace std;
 #define NMAXCLASSES 100
 
 TString bitNames[NBITS] = {
-"kMB",
-"kINT7",
-"kMUON",
-"kHighMult",
-"kEMC1",
-"kINT5",
-"kCMUS5",
-"kMuonSingleHighPt8",
-"kMuonLikeLowPt8",
-"kMuonUnlikeLowPt8",
-"kEMC7",
-"kMuonSingleLowPt8",
-"kPHI1",
-"kPHI78",
-"kEMCEJE",
-"kEMCEGA",
-"kCentral",
-"kSemiCentral",
-"kDG5",
-"kZED",
-"kSPI78",
-"kINT8",
-"kMuonSingleLowPt8",
-"kMuonSingleHighPt8",
-"kMuonLikeLowPt8",
-"kMuonUnlikeLowPt8",
-"kMuonUnlikeLowPt0",
-"kUserDefined",
-"kTRD"
+    "kINT1",
+    "kINT7",
+    "kMUON",
+    "kHighMult",
+    "kEMC1",
+    "kINT5",
+    "kCMUS5",
+    "kMuonSingleHighPt7",
+    "kMuonLikeLowPt7",
+    "kMuonUnlikeLowPt7",
+    "kEMC7",
+    "kMuonSingleLowPt7",
+    "kPHI1",
+    "kPHI78",
+    "kEMCEJE",
+    "kEMCEGA",
+    "kCentral",
+    "kSemiCentral",
+    "kDG5",
+    "kZED",
+    "kSPI78",
+    "kINT8",
+    "kMuonSingleLowPt8",
+    "kMuonSingleHighPt8",
+    "kMuonLikeLowPt8",
+    "kMuonUnlikeLowPt8",
+    "kMuonUnlikeLowPt0",
+    "kUserDefined",
+    "kTRD"
 };
 
 void SetHisto(TH1D* h);
@@ -347,7 +347,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("class_lifetime.pdf]");
   fclassLifetime->Close();
   
-  return;
+//  return;
   
   TFile* fclassLumi = new TFile("class_lumi.root","recreate");
   TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
