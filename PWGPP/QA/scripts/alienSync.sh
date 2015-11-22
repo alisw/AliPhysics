@@ -158,7 +158,7 @@ main()
   [[ ! -f $localAlienDatabase ]] && forceLocalMD5recalculation=1 && echo "forcing local MD5 sum recalculation" && cp -f $alienFileListCurrent $localAlienDatabase
 
   #since we grep through the files frequently, copy some stuff to tmpfs for fast access
-  tmp=$(mktemp -d 2>/dev/null)
+  tmp=$(mktemp -d /tmp/XXXXXX 2>/dev/null)
   if [[ -d $tmp ]]; then
     cp $localAlienDatabase $tmp
     cp $localFileList $tmp
@@ -365,7 +365,7 @@ main()
   echo '###############################'
   echo "failed to download from alien:"
   echo
-  local tmpfailed=$(mktemp)
+  local tmpfailed=$(mktemp /tmp/XXXXXX)
   [[ "$(cat ${failedDownloadList} | wc -l)" -gt 0 ]] && sort ${failedDownloadList} | uniq -c | awk 'BEGIN{print "#tries\t file" }{print $1 "\t " $2}' | tee ${tmpfailed}
   
   [[ -n ${MAILTO} ]] && echo $logFile | mail -s "alienSync ${alienFindCommand} done" ${MAILTO}
@@ -432,7 +432,8 @@ alien_find()
 {
   # like a regular alien_find command
   # output is a list with md5 sums and ctimes
-  executable="gbbox find"
+  executable=$(which gbbox)
+  executable+=" find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
 

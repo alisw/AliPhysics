@@ -72,16 +72,21 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinCellEnergy    (minCellEne);	   
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
+
+  // pass2
+  if(referenceSMFileName.Length()!=0){
+    taskmbemcal->SetReferenceRunByRunFileName(referenceSMFileName);
+    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+  }
+
+  //pass3
   if(referenceFileName.Length()!=0){   
     taskmbemcal->SetReferenceFileName(referenceFileName);
     taskmbemcal->LoadReferenceHistos();
+    taskmbemcal->SetPassTimeHisto(1400,-350.,350.);
   }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
-
-  if(referenceSMFileName.Length()!=0){
-    taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_LHC15i.root");
-  }
 
   //taskmbemcal->PrintInfo();
 
