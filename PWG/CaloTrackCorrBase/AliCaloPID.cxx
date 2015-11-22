@@ -1103,12 +1103,15 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
     
-    // if track matching was recalculated
-    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn())
-    {
-      dR = 2000., dZ = 2000.;
-      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-    }
+    // Comment out, new value already set in AliCalorimeterUtils::RecalculateClusterTrackMatching()
+    // when executed in the reader.
+//    // if track matching was recalculated
+//    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn())
+//    {
+//      dR = 2000., dZ = 2000.;
+//      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+//      //AliDebug(2,"Residuals, (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n", cluster->GetTrackDz(),dZ,cluster->GetTrackDx(),dR));
+//    }
     
     if(cluster->IsPHOS())
     {
