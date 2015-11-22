@@ -90,7 +90,8 @@ public:
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
-    void SetAlternateOADBforEstimators ( TString lFile ){ fAlternateOADBForEstimators = lFile.Data(); }
+    void SetAlternateOADBforEstimators    ( TString lFile ){ fAlternateOADBForEstimators    = lFile.Data(); }
+    void SetAlternateOADBFullManualBypass ( TString lFile ){ fAlternateOADBFullManualBypass = lFile.Data(); }
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -121,6 +122,7 @@ private:
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
     
     TString fAlternateOADBForEstimators;
+    TString fAlternateOADBFullManualBypass;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils

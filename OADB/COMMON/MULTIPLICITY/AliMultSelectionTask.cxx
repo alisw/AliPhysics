@@ -97,7 +97,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -176,7 +176,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -1122,6 +1122,14 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
     
+    //Full Manual Bypass Mode (DEBUG ONLY)
+    if ( fAlternateOADBFullManualBypass.EqualTo("")==kFALSE ){
+        AliInfo(" Extra option detected: FULL MANUAL BYPASS of OADB Location ");
+        AliInfo(" --- Warning: Use with care ---");
+        AliInfoF(" New complete path: %s", fAlternateOADBFullManualBypass.Data() );
+        fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
+    }
+    
     AliOADBContainer *con = new AliOADBContainer("OADB");
     Int_t lFoundFile = con->InitFromFile(fileName,"MultSel");
     
@@ -1168,6 +1176,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliInfoF(" path: %s", fAlternateOADBForEstimators.Data() );
         
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        
         AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
         Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");
         if ( lFoundFileAlter == 1 ) {
