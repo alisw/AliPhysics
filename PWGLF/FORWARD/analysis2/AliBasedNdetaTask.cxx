@@ -37,7 +37,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false),
-    fIpzReweight(0)
+    fIpzReweight(0),
+    fCacheCent(-10)
 {
   // 
   // Constructor
@@ -63,7 +64,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false),
-    fIpzReweight(0)
+    fIpzReweight(0),
+    fCacheCent(-10)
 {
   // 
   // Constructor
@@ -406,10 +408,6 @@ AliBasedNdetaTask::Book()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums, fTriggerMask);
   
-  fMeanVsC=new TH2D("meanAbsSignalVsCentr",
-		    "Mean absolute signal versus centrality",
-		    400, 0, 20, 100, 0, 100);
-  fSums->Add(fMeanVsC);
 
   if (HasCentrality()) {
     if (fCentAxis.GetXbins()->GetArray()) {
@@ -420,20 +418,37 @@ AliBasedNdetaTask::Book()
       
       fSeenCent = new TH1D("centSeen", "Centralities seen",
 			    a.GetSize()-1, a.GetArray());
+      fMeanVsC=new TH2D("sumVsC",
+			"Integral vs centrality",
+			a.GetSize()-1, a.GetArray(),
+			400, 0, 20000);			
     }
-    else
+    else {
       fSeenCent = new TH1D("centSeen", "Centralities seen",
-			    fCentAxis.GetNbins()+1,
-			    fCentAxis.GetXmin(),
-			    fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));      
+			   fCentAxis.GetNbins()+1,
+			   fCentAxis.GetXmin(),
+			   fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));
+      fMeanVsC=new TH2D("sumVsC",
+			"Integral vs centrality",
+			fCentAxis.GetNbins()+1,
+			fCentAxis.GetXmin(),
+			fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1),
+			400, 0, 20000);			
+    }
   }
-  else
+  else {
     fSeenCent = new TH1D("centSeen", "Null",1, 0, 100);
+    fMeanVsC = new TH2D("sumVsC", "Null",1,0,20000,1,0,100);
+  }
   fSeenCent->SetDirectory(0);
   fSeenCent->SetXTitle(Form("Centrality (%s) [%%]",fCentMethod.Data()));
   fSeenCent->SetYTitle("Events");
   fSeenCent->SetFillStyle(3004);
   fSeenCent->SetFillColor(kYellow-2);
+  fMeanVsC->SetDirectory(0);
+  fMeanVsC->SetXTitle(fSeenCent->GetXaxis()->GetTitle());
+  fMeanVsC->SetYTitle("#int signal");  
+
   fTakenCent = static_cast<TH1D*>(fSeenCent->Clone("centTaken"));
   fTakenCent->SetTitle("Centralities taken by bins");
   fTakenCent->SetFillColor(kCyan-2);
@@ -442,6 +457,7 @@ AliBasedNdetaTask::Book()
   
   fSums->Add(fSeenCent);
   fSums->Add(fTakenCent);
+  fSums->Add(fMeanVsC);
 
   // fSums->ls();
   return true;
@@ -468,20 +484,24 @@ Double_t
 AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 				 AliAODForwardMult* forward)
 {
-  DGUARD(fDebug,1,"Getting centrality from event of object: %s",
+  DGUARD(fDebug,2,"Getting centrality from event of object: %s",
 	 fCentMethod.Data());
+  if (fCacheCent > -1) {
+    // In case we already got the centrality, don't do it again
+    DMSG(fDebug,1,"Returning cached value: %5.1f%%", fCent);
+    return fCacheCent;
+  }
   Int_t   qual    = 0;
   Float_t cent    = forward->GetCentrality();
-  DMSG(fDebug,2,"Centrality stored in AOD forward: %5.1f%%", cent);
-  if (!fCentMethod.IsNull()) 
+  DMSG(fDebug,1,"Centrality stored in AOD forward: %5.1f%%", cent);
+  if (!fCentMethod.IsNull()) {
     cent = AliForwardUtil::GetCentrality(event,fCentMethod,qual,(fDebug > 1));
-  
-  if (cent < 0)    cent = -.5;
-  if (qual <= 0) {// OK centrality 
-    if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
+    DMSG(fDebug,1,"Centrality from mult: %5.1f%% (%d)", cent, qual);
   }
-  return cent;
+  if      (cent < 0 || qual > 0)       cent = -.5; // Bad centrality 
+  else if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
 
+  return fCacheCent = cent;  
 }
 //____________________________________________________________________
 Bool_t
@@ -531,6 +551,9 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   if (HasCentrality()) {
     taken                  = false;    
     Double_t       cent    = GetCentrality(aod, forward);
+
+    fMeanVsC->Fill(cent, data->Integral());
+
     // fSeenCent->Fill(cent);
     DMSG(fDebug,1,"Got event centrality %f", cent);
     
