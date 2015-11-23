@@ -33,6 +33,10 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
+    if(!rl){
+        printf("\ntpc_clusters -- No Run Loader...\n");
+        return 0;
+    }
   rl->LoadRecPoints("TPC");
 
   TTree *cTree = rl->GetTreeR("TPC", false);
