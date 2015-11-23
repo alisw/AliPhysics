@@ -15,11 +15,21 @@ void MakeADPMGainsEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB")
   /*/	    
 
   //2015 after PM termination resistors 
+  /*/
   Double_t a[16] = {1202.8 ,1083.9 ,1140.7 ,1194.4 ,1135.3 ,1110.0 ,1065.3 ,1102.6,
 	   	    1104.9 ,1170.4 ,1210.2 ,1061.4 ,1117.9 ,1204.6 ,1068.4 ,1045.7}; 
 		    
   Double_t b[16] = {7.147 ,5.681 ,6.794 ,8.848 ,6.503 ,7.394 ,6.568 ,5.928,
-  		    6.739 ,6.815 ,6.510 ,6.866 ,6.136 ,6.118 ,6.799 ,6.230}; 
+  		    6.739 ,6.815 ,6.510 ,6.866 ,6.136 ,6.118 ,6.799 ,6.230};
+  /*/ 
+		    
+  //2015 after run  233912 (LHC15h period).
+  Double_t a[16] = {1518.0, 1522.1, 1565.3, 1630.1, 1517.8, 1465.8, 1164.0, 1512.2, 
+  	            1482.2, 1606.7, 1824.3, 1420.4, 1508.8, 1678.5, 1453.7, 1422.9};
+		    
+		    
+  Double_t b[16] = {7.664, 5.681, 6.794, 8.848, 6.503, 7.394, 5.609, 5.928, 
+                    6.739, 6.815, 6.510, 6.866, 6.136, 6.118, 6.799, 6.230};
 		    
   TH2F *gains = new TH2F("ADPMGains", "AD PM gain factors", 16, -0.5, 15.5, 2, -0.5, 1.5);
   for(Int_t channel = 0; channel < 16; ++channel) {
@@ -35,7 +45,7 @@ void MakeADPMGainsEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB")
   md->AddDateToComment();
   md->PrintMetaData();
 
-  AliCDBId id("AD/Calib/PMGains", 0, AliCDBRunRange::Infinity());
+  AliCDBId id("AD/Calib/PMGains", 233912, AliCDBRunRange::Infinity());
   man->Put(gains, id, md);
 
   delete md;
