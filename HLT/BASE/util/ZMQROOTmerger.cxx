@@ -60,6 +60,8 @@ Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 
 TPRegexp* fSendSelection = NULL;
 
+Int_t fRunNumber = 0;
+
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
 TMap fMergeListMap;          //map with the lists of objects to be merged in
@@ -211,9 +213,24 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
   }
   else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
   {
-    //do nothing, maybe log, send back an empty info reply
-    //zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
-    //zmq_send(socket, 0, 0, 0);
+    //check if we have a runnumber in the string
+    string info;
+    info.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
+    size_t runTagPos = info.find("run");
+    size_t runStartPos = info.find("=",runTagPos);
+    size_t runEndPos = info.find(" ");
+    string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
+    if (fVerbose) printf("received run=%s\n",runString.c_str());
+
+    int runnumber = atoi(runString.c_str());
+    
+    if (runnumber!=fRunNumber) 
+    {
+      if (fVerbose) printf("Run changed, resetting!\n");
+      ResetOutputData();
+    }
+   fRunNumber = runnumber; 
+
     return 1;
   }
   else
