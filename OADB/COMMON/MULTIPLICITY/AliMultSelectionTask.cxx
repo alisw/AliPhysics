@@ -997,13 +997,28 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         //Event Selection Code: No need to do this for all estimators ...
         lSelection->SetEvSelCode(0); //No Problem!
-        if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lSelection->SetEvSelCode(200);
-        if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lSelection->SetEvSelCode(201);
-        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      ) lSelection->SetEvSelCode(202);
-        if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lSelection->SetEvSelCode(203);
-        if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lSelection->SetEvSelCode(204);
-        if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lSelection->SetEvSelCode(205);
-        if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    ) lSelection->SetEvSelCode(206);
+        
+        if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrigger);
+        
+        if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejINELgtZERO);
+        
+        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejVzCut);
+        
+        if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejPileupInMultBins);
+        
+        if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejConsistencySPDandTrackVertices);
+        
+        if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrackletsVsClusters);
+        
+        if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNonZeroNContribs);
+        
         //Just in case you want to store it for debugging
         fEvSelCode = lSelection->GetEvSelCode();
         
@@ -1017,7 +1032,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             lThisCalibHisto = 0x0;
             lThisCalibHisto = fOadbMultSelection->GetCalibHisto( lThisCalibHistoName );
             if ( ! lThisCalibHisto ){
-                lThisQuantile = 199;
+                lThisQuantile = AliMultSelectionCuts::kNoCalib;
                 if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }else{

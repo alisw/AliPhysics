@@ -4,20 +4,22 @@
 
 using namespace std;
 
-typedef enum {kMultSelTrigger = -200,
-    kMultSelVzCut = -201,
-    kMultSelINELgtZERO = -202,
-    kMultSelTrackletsVsClusters = -203,
-    kMultSelRejectPileupInMultBins = -204,
-    kMultSelCheckConsistencySPDandTrackVertices = -205,
-    kMultSelNonZeroNContribs = -206
-} CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
-
 class AliESDEvent;
 
 class AliMultSelectionCuts : public TNamed {
-    
 public:
+    //Aliases for error codes
+    typedef enum {
+        kNoCalib                            = 199,
+        kRejTrigger                         = 200,
+        kRejINELgtZERO                      = 201,
+        kRejVzCut                           = 202,
+        kRejPileupInMultBins                = 203,
+        kRejConsistencySPDandTrackVertices  = 204,
+        kRejTrackletsVsClusters             = 205,
+        kRejNonZeroNContribs                = 206
+    } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
+    
     AliMultSelectionCuts();
     AliMultSelectionCuts(const char * name, const char * title = "Event selection cuts for multiplicity estimators");
     AliMultSelectionCuts(const AliMultSelectionCuts& o)

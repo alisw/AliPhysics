@@ -1394,6 +1394,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         if(fTreeSRedirector && dumpToTree && fFillTree) {
 	  downscaleCounter++;
           (*fTreeSRedirector)<<"highPt"<<
+	    "downscaleCounter="<<downscaleConter<<   
             "gid="<<gid<<
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
             "runNumber="<<runNumber<<                // runNumber
