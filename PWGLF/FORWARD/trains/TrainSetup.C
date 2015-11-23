@@ -1065,6 +1065,48 @@ protected:
    * @name Set parameters on a task 
    */
   /** 
+   * Set a unsigned integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 UInt_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%u)",cls,task,what,val));
+  }    
+  /** 
+   * Set a integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Int_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+  }    
+  /** 
+   * Set a integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Long64_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lld)",cls,task,what,val));
+  }    
+  /** 
    * Set a real parameter on the task 
    * 
    * @param task Task 
@@ -1076,7 +1118,7 @@ protected:
 		 Double_t val)
   {
     const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lf)",cls,task,what,val));
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lg)",cls,task,what,val));
   }    
   /** 
    * Set a boolean parameter on the task 
@@ -1156,8 +1198,40 @@ protected:
 		 const char* opt,
 		 const char* defval)
   {
-    TString val = fOptions.AsString(opt,defval);;
+    TString val = fOptions.AsString(opt,defval);
     SetOnTask(task, what, val.Data());
+  }
+  /** 
+   * Set a integer parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Int_t      defval)
+  {
+    Int_t   val = fOptions.AsInt(opt, defval);
+    SetOnTask(task, what, val);
+  }
+  /** 
+   * Set a integer parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Long64_t    defval)
+  {
+    Long64_t   val = fOptions.AsLong(opt, defval);
+    SetOnTask(task, what, val);
   }
   /* @} */
 
