@@ -1041,6 +1041,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
                     fQuantiles[iEst] = lThisQuantile; //Debug, please
                 }
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+                if ( lThisQuantile>100.0 && fEvSelCode == 0 ){
+                    //This means this event hasn't passed
+                    //the anchor point selection, but passed all else!
+                    fEvSelCode = AliMultSelectionCuts::kRejBeyondAnchor;
+                    lSelection->SetEvSelCode(fEvSelCode);
+                }
             }
         }
 
