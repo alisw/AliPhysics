@@ -201,8 +201,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //so we can properly mark the last block for multipart ZMQ sending later
     const AliHLTComponentBlockData* inputBlock = NULL;
     std::vector<int> selectedBlockIdx;
-    int iBlock = 0;
-    for (iBlock = 0;
+    for (int iBlock = 0;
          iBlock < evtData.fBlockCnt;
          iBlock++) 
     {
@@ -223,7 +222,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       }
     }
 
-    if (fSendRunNumber && iBlock>0)
+    if (fSendRunNumber && selectedBlockIdx.size()>0)
     {
       string runNumberString = "run=";
       char tmp[34];
