@@ -365,9 +365,9 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
   fShapesVarNames[4] = "Frac2_Data_or_Detector_Level_or_Embeded";
   fShapesVarNames[5] = "Frac2_Particle_Level";
   fShapesVarNames[6] = "1SubJettiness_Data_or_Detector_Level_or_Embeded";
-  fShapesVarNames[7] = "1Subjettiness_Particle_Level";
-  fShapesVarNames[8] = "2Subjettiness_Data_or_Detector_Level_or_Embeded";
-  fShapesVarNames[9] = "2Subjettiness_Particle_Level";
+  fShapesVarNames[7] = "1SubJettiness_Particle_Level";
+  fShapesVarNames[8] = "2SubJettiness_Data_or_Detector_Level_or_Embeded";
+  fShapesVarNames[9] = "2SubJettiness_Particle_Level";
   fShapesVarNames[10] = "Distance_Between_Two_Hardest_Subjets_Axis_Data_or_Detector_Level_or_Embeded";
   fShapesVarNames[11] = "Distance_Between_Two_Hardest_Subjets_Axis_Particle_Level";
   fShapesVarNames[12]= "Parton_Flavour_Data_or_Detector_Level_or_Embeded";
