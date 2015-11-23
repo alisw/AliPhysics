@@ -95,6 +95,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
     switch(id){
     case MENU_FILE_OPEN:
     {
+        /*
         if(!fFileDialog) fFileDialog = new AliEveFileDialog( gClient->GetRoot(), this, kAliEveFDLocal);
 
         fFileDialog->setMode(kAliEveFDLocal);
@@ -115,7 +116,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
              evMan->SetCdbUri(fFileDialog->GetCDBStoragePath());
              loadFiles();
             }
-        }
+        }*/
         break;
     }
     case MENU_FILE_OPEN_URL:

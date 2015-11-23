@@ -55,13 +55,11 @@ void AliEveEventSelector::SetSelectionString( const TString& str )
     //takes care of producing a list of entries passing selection
 
     TTree* pESDTree    = fPEventManager->GetESDTree();
-    TTree* pHLTESDTree = fPEventManager->GetHLTESDTree();
-    if ((!pESDTree && !pHLTESDTree) || fString==str) return;//don't waist time
+    if (!pESDTree || fString==str) return;//don't waist time
     fString = str;
     if (str == "" ) return;//on reset don't recalculate
 
     if(pESDTree!=0)    pESDTree->Draw( ">>listofentries", fString, "entrylist");
-    if(pHLTESDTree!=0) pHLTESDTree->Draw( ">>listofentries", fString, "entrylist");
 
     fPEntryList = dynamic_cast<TEntryList*>(gDirectory->Get("listofentries"));
 }
@@ -98,16 +96,14 @@ void AliEveEventSelector::UpdateEntryList()
     //update the entrylist from if file changed
 
     TTree* pESDTree = fPEventManager->GetESDTree();
-    TTree* pHLTESDTree = fPEventManager->GetHLTESDTree();
 
-    if (!pESDTree && !pHLTESDTree) return;
+    if (!pESDTree) return;
 
     Long64_t treesize = fPEventManager->GetMaxEventId()+1;
     if (treesize<=fLastTreeSize) return; //nothing changed, do nothing
 
 
     if(pESDTree) pESDTree->Draw(">>+fPEntryList", fString, "entrylist", fLastTreeSize+1, treesize-fLastTreeSize );
-    if(pHLTESDTree) pHLTESDTree->Draw(">>+fPEntryList", fString, "entrylist", fLastTreeSize+1, treesize-fLastTreeSize );
 
     fLastTreeSize = treesize;
 }
@@ -128,17 +124,14 @@ Bool_t AliEveEventSelector::FindNext( Int_t& output )
     static const TEveException kEH("AliEveEventSelector::GetNext ");
 
     TTree* pESDTree = fPEventManager->GetESDTree();
-    TTree* pHLTESDTree = fPEventManager->GetHLTESDTree();
 
-    if (!pESDTree && !pHLTESDTree) return kFALSE;
+    if (!pESDTree) return kFALSE;
 
     Bool_t OfflineHasNext=kFALSE;
-    Bool_t HLTHasNext=kFALSE;
 
     if(pESDTree)   OfflineHasNext = FindNextInTree(pESDTree, output);
-    if(pHLTESDTree)HLTHasNext = FindNextInTree(pHLTESDTree,output);
 
-    return (OfflineHasNext | HLTHasNext);
+    return OfflineHasNext;
 }
 
 Bool_t AliEveEventSelector::FindNextInTree(TTree* tree, Int_t& output)
@@ -217,17 +210,14 @@ Bool_t AliEveEventSelector::FindPrev( Int_t& output )
 {
     //does the magick of selecting the previous event
     TTree* pESDTree = fPEventManager->GetESDTree();
-    TTree* pHLTESDTree = fPEventManager->GetHLTESDTree();
 
-    if (!pESDTree && !pHLTESDTree) return kFALSE;
+    if (!pESDTree) return kFALSE;
 
     Bool_t OfflineHasNext=kFALSE;
-    Bool_t HLTHasNext=kFALSE;
 
     if(pESDTree)    OfflineHasNext = FindPrevInTree(pESDTree, output);
-    if(pHLTESDTree) HLTHasNext = FindPrevInTree(pHLTESDTree,output);
 
-    return (OfflineHasNext | HLTHasNext);
+    return OfflineHasNext;
 }
 
 

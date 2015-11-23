@@ -725,6 +725,8 @@ TEveElementList* AliEveESDTracks::ByType()
     
     int pid = -1;
     AliESDtrack* at = NULL;
+    bool shading = settings.GetValue("tracks.shading",false);
+    int shade = -3;
     
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
     {
@@ -735,11 +737,19 @@ TEveElementList* AliEveESDTracks::ByType()
         if(good_cont || fDrawNoRefit)
         {
             pid = at->GetPID();
+ 
             TEveTrackList* tlist = tl[pid];
             ++tc[pid];
             ++count;
             
             AliEveTrack* track = MakeTrack(at, tlist);
+            
+            if(shading){
+                if((colors[pid]+shade) < 0){shade=0;}
+                track->SetMainColor(colors[pid]+shade);
+                shade++;
+                if(shade>3)shade=-3;
+            }
             
             track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
             tlist->AddElement(track);

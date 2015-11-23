@@ -54,8 +54,6 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
     Fatal("visscan_itsU.C", "OCDB path MUST be specified as the first argument.");
   }
 
-  AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
-
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init(cdburi, path, -1);
 

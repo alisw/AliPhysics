@@ -98,6 +98,8 @@ Bool_t IsBadCluster(Int_t absId, Float_t eMax);
 void SetUpEMCALGeometry(AliESDEvent * esd);
 void SetUpPHOSGeometry (AliESDEvent * esd);
 
+void SetEMCALMatrices(AliESDEvent * esd);
+
 void SetUpEMCALQuads();
 void SetUpPHOSQuads();
 
@@ -125,6 +127,8 @@ TH2F* fHistoEM  = 0; /// Histogram with EMCal signals and location
 TH2F* fHistoPH  = 0; /// Histogram with PHOS signals and location
 //TH2F* fHistoneg = 0;
 //TH2F* fHistopos = 0;
+
+Int_t debug = 10;
 
 TGeoNode* fNodeEM    ; /// EMCAL volumes node
 TGeoNode* fNodePH[4] ; /// PHOS volumes nodes
@@ -155,14 +159,15 @@ Bool_t     plotcells[] = {kFALSE , kTRUE};  /// Display cells in clusters or clu
 ///
 void emcal_esdclustercells()
 {
-    printf("*** ESD EMCal ***");
-    
+    if ( debug > 0 ) printf("Execute emcal_esdclustercells\n");
+    if ( debug > 9 ) AliLog::SetModuleDebugLevel("EMCAL",100);
+
     //--------------------
     // Access to esd event
     //--------------------
-    
+  
     AliESDEvent* esd = AliEveEventManager::AssertESD();
-    
+          
     //-----------------------------------
     // Set geometry, volumes, alignment,
     // 2d histograms once for first event
@@ -175,7 +180,7 @@ void emcal_esdclustercells()
         SetUpEMCALGeometry(esd);
         
         SetUpPHOSGeometry(esd);
-
+        
         fHistoEM  = new TH2F("histoEMcell","EMCal Cell #eta vs #phi vs E",
                              100,-1.5,1.5,80,-pi,pi);
         fHistoPH  = new TH2F("histoPHcell","PHOS Cell #eta vs #phi vs E",
@@ -194,7 +199,51 @@ void emcal_esdclustercells()
         //    fHistopos->Reset();
         //    fHistoneg->Reset();
     }
+  
+    // Do here the setting of the EMCal matrices, 
+    // in case the first event did not have them in the ESD
+    // Do it once.
+    // Get first EMCal/DCal SM matrix in geometry if non null skip.  
+    if ( !fGeomEM->GetMatrixForSuperModule(0) || !fGeomEM->GetMatrixForSuperModule(12) ) 
+      SetEMCALMatrices(esd);
+  
+    // Matrix debugging
+    if ( debug > 9 )
+    {
+      printf("***>>> Begin EMCal ESD alignment matrices ***<<<\n");
     
+      for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+      {
+       if ( esd->GetEMCALMatrix(mod) ) 
+         esd->GetEMCALMatrix(mod)->Print();
+       else 
+         printf("No esd matrix for SM %d\n",mod);
+      }
+      
+      printf("***>>> End EMCal ESD alignment matrices ***<<<\n\n");
+    
+      printf("***>>> Begin EMCal Geometry alignment matrices ***<<<\n");
+    
+      for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+      {
+        if ( fGeomEM->GetMatrixForSuperModule(mod) )
+          fGeomEM->GetMatrixForSuperModule(mod)->Print();
+        else 
+          printf("No geo matrix for SM %d\n",mod);
+      }
+      
+      printf("***>>> End EMCal Geometry alignment matrices ***<<<\n\n");
+    
+      printf("***>>> Begin EMCal OCDB alignment matrices ***<<<\n");
+    
+      AliCDBManager* man = AliCDBManager::Instance();
+      AliCDBEntry *cdb = (AliCDBEntry*)  man->Get("EMCAL/Align/Data");
+    
+      cdb->Print();
+    
+      printf("***>>> End EMCal OCDB alignment matrices ***<<<\n\n");      
+    }
+  
     //---------------------------
     // Set up 3d quads
     //---------------------------
@@ -300,9 +349,12 @@ void AnalyzeClusters(AliESDEvent * esd)
     Int_t ncellEM = fCellsEM->GetNumberOfCells() ;
     Int_t ncellPH = fCellsPH->GetNumberOfCells() ;
     
-    //printf("Number of ESD CaloCells: EM %d PH %d\n",ncellEM,ncellPH);
-    //printf("Number of ESD CaloClusters: %d\n",esd->GetNumberOfCaloClusters());
-    
+    if ( debug > 0 ) 
+    {
+      printf("Number of ESD CaloCells: EM %d PH %d\n",ncellEM,ncellPH);
+      printf("Number of ESD CaloClusters: %d\n",esd->GetNumberOfCaloClusters());
+    }
+  
     Int_t   absIdEMaxCell = -1;
     Float_t eMaxCell      = 0.;
     
@@ -318,10 +370,13 @@ void AnalyzeClusters(AliESDEvent * esd)
         
         if( IsBadCluster(absIdEMaxCell, eMaxCell) ) continue ;
         
-        //    printf("Cluster %d, is EMCAL %d, E %2.2f, eta %2.2f, phi %2.2f\n",
-        //           iclus, fCaloCluster->IsEMCAL(),fClusterMomentum.E(),
-        //           fClusterMomentum.Eta(),fClusterMomentum.Phi()*TMath::RadToDeg());
-        
+        if ( debug > 0 ) 
+        {
+          printf("Cluster %d, is EMCAL %d, E %2.2f, eta %2.2f, phi %2.2f\n",
+                 iclus, fCaloCluster->IsEMCAL(),fClusterMomentum.E(),
+                 fClusterMomentum.Eta(),fClusterMomentum.Phi()*TMath::RadToDeg());
+        }
+      
         // Plot clusters or cells in clusters
         //
         if(fCaloCluster->IsEMCAL()) FillEMCALClusters(absIdEMaxCell);
@@ -337,16 +392,23 @@ void AnalyzeClusters(AliESDEvent * esd)
 /// \param ID number of cell with highest energy in the cluster
 ///
 void FillEMCALClusters(Int_t absIdEMaxCell)
-{
+{  
+    // If any of the matrices is missing, skip analysis 
+    for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+    {
+      if ( !fGeomEM->GetMatrixForSuperModule(mod) )  
+        printf("emcal_esdclustercells.C::FillEMCALClusters() No geo matrix for SM %d, skip this event for EMCal!!!\n",mod);
+    }
+  
     Double_t x=0., y=0., z=0.;
     Int_t iSupMod =  -1 ;
     Int_t iTower  =  -1 ;
     Int_t iIphi   =  -1 ;
     Int_t iIeta   =  -1 ;
-    
+  
     if( plotcells[1] ) // cells in cluster
     {
-        //printf("*** EMCAL cluster cells ***\n");
+        if ( debug > 1 ) printf("\t *** EMCAL cluster cells ***\n");
         
         Float_t amp   = -1 ;
         Int_t   id    = -1 ;
@@ -354,8 +416,6 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
         Float_t eta   =  0 ;
         Int_t iphi    = -1 ;
         Int_t ieta    = -1 ;
-
-        AliLog::SetModuleDebugLevel("EMCAL",100);
         
         for(Int_t icell = 0; icell < fCaloCluster->GetNCells(); icell++)
         {
@@ -363,42 +423,63 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
             
             amp = fCellsEM->GetCellAmplitude(id); // GeV
             
-
-            
             //if(amp < 0.1) continue ;
             
-            // 2d projection view
-            fGeomEM->EtaPhiFromIndex(id,eta,phi);
-            
-            //            printf("CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
-            //                   icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
-            
-            if(fabs(eta)>0.7)  // something is wrong
-            {
-                cout<<"\n\nWrong eta values for EMCAL\n\n"<<endl;
-                AliCDBManager::Instance()->Print();
-                AliEveEventManager::AssertGeometry()->Print();
-                AliEveEventManager::AssertMagField()->Print();
-                
-                cout<<"Alignment matrices form ESD:"<<endl;
-                
-                for(Int_t mod = 0; mod < 20; mod++)
-                {
-                    cout<<"mod:"<<mod<<endl;
-                    AliEveEventManager::AssertESD()->GetEMCALMatrix(mod)->Print();
-                }
-            }
-            
-            fHistoEM->Fill(eta,GetPhi(phi),amp);
-            // 3d view
             //
             fGeomEM->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
             //Gives SuperModule and Tower numbers
             fGeomEM->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
             //Gives label of cell in eta-phi position per each supermodule
+
+            // 2d projection view
+            
+            fGeomEM->EtaPhiFromIndex(id,eta,phi);
+            
+            if ( debug > 1 ) 
+              printf("\t CaloCell %d, ID %d, energy %2.2f,eta %2.2f, phi %2.2f\n",
+                     icell,id,amp,eta,GetPhi(phi)*TMath::RadToDeg());
+            
+            if(TMath::Abs(eta) < 0.7)
+            {
+              fHistoEM->Fill(eta,GetPhi(phi),amp);
+            }
+            else // Workaround
+            {
+              printf("Wrong eta value for EMCal clusters, active workaround!!!!");
+              Float_t etaCluster = fClusterMomentum.Eta();  
+              Float_t phiCluster = fClusterMomentum.Phi();  
+              
+              Int_t iSupModMax =  -1 ;
+              Int_t iTowerMax  =  -1 ;
+              Int_t iIphiMax   =  -1 ;
+              Int_t iIetaMax   =  -1 ;
+              Int_t iphiMax    =  -1 ;
+              Int_t ietaMax    =  -1 ;
+              
+              fGeomEM->GetCellIndex(absIdEMaxCell,iSupModMax,iTowerMax,iIphiMax,iIetaMax);
+              //Gives SuperModule and Tower numbers
+              fGeomEM->GetCellPhiEtaIndexInSModule(iSupModMax,iTowerMax,iIphiMax, iIetaMax,iphiMax,ietaMax);
+              //Gives label of cell in eta-phi position per each supermodule
+
+              Int_t iPhiDiff = iphiMax - iphi;
+              Int_t iEtaDiff = ietaMax - ieta;
+              
+              Float_t etaWA = etaCluster + iEtaDiff*0.014;
+              Float_t phiWA = phiCluster + iPhiDiff*0.014;
+              printf("\t \t Workaround Cell eta = (std %2.2f, wa %2.2f); phi = (std %2.2f, wa %2.2f)\n",eta,etaWA,phi,phiWA);
+              
+              fHistoEM->Fill(etaWA,GetPhi(phiWA),amp);
+            }
+          
+            // 3d view
             
             fGeomEM->RelPosCellInSModule(id, x, y, z);
             
+            if ( debug > 1 ) 
+              printf("\t , SM %d (Nodes %d),  iEta %d,  iPhi %d, x %3.3f, y %3.3f, z %3.3f \n",
+                     iSupMod,fNodeEM->GetNdaughters(),ieta,iphi,x,y,z);
+
+          
             // It should not happen, but in case the OCDB file is not the
             // correct one.
             if(iSupMod >= fNodeEM->GetNdaughters()) continue;
@@ -424,10 +505,12 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
         
         fGeomEM->RelPosCellInSModule(absIdEMaxCell, x, y, z);
         
-        //        Float_t phi = fClusterMomentum.Phi()*TMath::RadToDeg();
-        //        if ( phi < 0 ) phi+=360;
-        //        printf("*** EMCAL cluster position, eta = %f, phi = %f, E = %f, SM = %d, location (x=%f, y=%f, z=%f) ***\n",
-        //               fClusterMomentum.Eta(),phi,fClusterMomentum.E(),iSupMod, x, y ,x);
+        Float_t phi = fClusterMomentum.Phi()*TMath::RadToDeg();
+        if ( phi < 0 ) phi+=360;
+      
+        if(debug > 1)
+          printf("\t *** EMCAL cluster position, eta = %f, phi = %f, E = %f, SM = %d, location (x=%f, y=%f, z=%f) ***\n",
+                 fClusterMomentum.Eta(),phi,fClusterMomentum.E(),iSupMod, x, y ,x);
         
         // Push the data to the 3d visualization tools
         //
@@ -455,7 +538,7 @@ void FillPHOSClusters(Int_t absIdEMaxCell)
     // Plot clusters or cluster cells?
     if( plotcells[0] ) // cells
     {
-        //printf("*** PHOS cluster cells ***\n");
+      if ( debug > 0 ) printf("\t *** PHOS cluster cells ***\n");
         
         Float_t amp   = -1 ;
         Int_t   id    = -1 ;
@@ -490,8 +573,9 @@ void FillPHOSClusters(Int_t absIdEMaxCell)
             //fGeomPH->Local2Global(module,xCell,zCell,xyz); <<-- It crashes here?
             //fHistoPH->Fill(xyz.Eta(),GetPhi(xyz.Phi()),amp);
             
-            //        printf("PHOS CaloCell %d, ID %d, energy %2.3f,eta %f, phi %f\n",
-            //               icell,id,amp,xyz.Eta(),xyz.Phi()*TMath::RadToDeg());
+            if ( debug > 1 ) 
+            printf("\t PHOS CaloCell %d, ID %d, energy %2.3f,eta %f, phi %f\n",
+                    icell,id,amp,xyz.Eta(),xyz.Phi()*TMath::RadToDeg());
             
             // -->>Temporary fix, one should use the previous lines<<--
             if(id == absIdEMaxCell) fHistoPH->Fill(fClusterMomentum.Eta(),GetPhi(fClusterMomentum.Phi()),fClusterMomentum.Energy());
@@ -517,11 +601,15 @@ void FillPHOSClusters(Int_t absIdEMaxCell)
         fGeomPH->AbsToRelNumbering(absIdEMaxCell,relId);
         module = relId[0];
         
-        //        Float_t phi = fClusterMomentum.Phi()*TMath::RadToDeg();
-        //        if ( phi < 0 ) phi+=360;
-        //        printf("*** PHOS cluster position, eta = %f, phi = %f, E = %f, mod %d, location (x=%f, z=%f) ***\n",
-        //               fClusterMomentum.Eta(),phi,fClusterMomentum.E(),module,xCell,zCell);
+        if(debug > 1)
+        {
+          Float_t phi = fClusterMomentum.Phi()*TMath::RadToDeg();
+          if ( phi < 0 ) phi+=360;
         
+          printf("*** PHOS cluster position, eta = %f, phi = %f, E = %f, mod %d, location (x=%f, z=%f) ***\n",
+               fClusterMomentum.Eta(),phi,fClusterMomentum.E(),module,xCell,zCell);
+        }
+      
         fGeomPH->RelPosInModule(relId,xCell,zCell);
         
         // Push the data to the 3d visualization tools
@@ -766,19 +854,8 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
         fGeomEM  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
     }
     
-    //
-    // Set the geometry alignment matrices from the ones stored in the data.
-    //
-    for(Int_t mod = 0; mod < (fGeomEM->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
-    {
-        //printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
-        
-        if( esd->GetEMCALMatrix(mod) )
-            fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-        else // set default identity matrix
-            fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
-    } // loop over super modules
-    
+    SetEMCALMatrices(esd); // Do it outside also if we could not set them here.
+  
     //
     // EMCAL volumes
     //
@@ -826,6 +903,29 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
     //  }
 }
 
+
+
+///
+/// Set the geometry alignment matrices from the ones stored in the data.
+/// Ideally it should be done just in first event, but it has been observed
+/// that the first event does not always contain them (???)
+///
+void SetEMCALMatrices(AliESDEvent * esd)
+{  
+  // Set all the matrices
+  for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+  {
+    if( debug > 1 ) printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
+    
+    if( esd->GetEMCALMatrix(mod) )
+      fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+    else // set default identity matrix
+    {
+      printf("Could not set EMCal geo matrix for SM %d",mod);
+      //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
+    }
+  } // loop over super modules
+}
 
 //______________________________________________________________________________
 ///
@@ -909,7 +1009,7 @@ void SetUpEMCALQuads()
     // per each super-module.
     //
     
-    memset(fQuadsEMCAL,0,20*sizeof(TEveQuadSet*));
+    memset(fQuadsEMCAL,0,fGeomEM->GetNumberOfSuperModules()*sizeof(TEveQuadSet*));
     
     // Quad size
     Float_t quadSizeEMCal = 6  ; // cm, tower side size
@@ -1098,8 +1198,8 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     
     calo3d->SetBarrelRadius(600);
     calo3d->SetEndCapPos(550);
-    calo3d->SetFrameTransparency(100);
     calo3d->SetMaxTowerH(300);
+    calo3d->SetFrameTransparency(100);
     g_histo2d_s2->AddElement(calo3d);
     
     return calo3d;

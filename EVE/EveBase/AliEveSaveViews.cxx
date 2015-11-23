@@ -282,7 +282,9 @@ void AliEveSaveViews::SaveWithDialog()
     bool info        = settings.GetValue("screenshot.info.draw",true);
     bool projections = settings.GetValue("screenshot.projections.draw",true);
     const char *energyLabel= settings.GetValue("screenshot.force.energy","Energy: unknown");
+    const char *systemLabel= settings.GetValue("screenshot.force.system","System: unknown");
     if(strcmp(energyLabel,"")==0)energyLabel="Energy: unknown";
+    if(strcmp(systemLabel,"")==0)systemLabel="System: unknown";
     
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
@@ -427,8 +429,9 @@ void AliEveSaveViews::SaveWithDialog()
         }
         else
         {
-            system = "Colliding system: unknown";
+            system = systemLabel;
         }
+        
         const char *energy;
         if(fESDEvent->GetBeamEnergy()>=0.0000001)
         {

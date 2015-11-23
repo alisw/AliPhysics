@@ -22,7 +22,6 @@
 struct AliEveData {
   TFile        *fESDFile;		// ESD file.
   TTree        *fESDTree;		// ESD tree.
-  TTree        *fHLTESDTree;	// HLT ESD tree.
   AliESDEvent  *fESD;			// ESDEvent object.
   AliESDfriend *fESDfriend;		// ESDfriend object.
   TFile        *fAODFile;		// AOD file.
@@ -35,7 +34,6 @@ struct AliEveData {
   AliEveData()
       : fESDFile(NULL)
       , fESDTree(NULL)
-      , fHLTESDTree(NULL)
       , fESD(NULL)
       , fESDfriend(NULL)
       , fAODFile(NULL)
@@ -50,7 +48,6 @@ struct AliEveData {
   {
     delete fESDFile; fESDFile=NULL;
     delete fESDTree; fESDTree=NULL;
-    delete fHLTESDTree; fHLTESDTree=NULL;
     delete fESD; fESD=NULL;
     delete fESDfriend; fESDfriend=NULL;
     delete fAODFile; fAODFile=NULL;

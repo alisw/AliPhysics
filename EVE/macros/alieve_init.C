@@ -58,7 +58,7 @@
 void alieve_init_import_macros();
 
 void alieve_init(const TString& cdburi = "",
-                 const TString& path   = ".", Int_t event=0,Bool_t showHLTESDTree=kFALSE,
+                 const TString& path   = ".", Int_t event=0,Bool_t,
                  const Text_t* esdfile = 0,
                  const Text_t* aodfile = 0,
                  const Text_t* rawfile = 0,
@@ -110,13 +110,6 @@ void alieve_init(const TString& cdburi = "",
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
     
     dataSource->SetFilesPath(path);
-    
-    if(showHLTESDTree){
-        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
-    }
-    
-    dataSource->SetRawFileName(rawfile);
-    dataSource->SetAssertElements(assert_runloader, assert_esd,assert_aod, assert_raw);
     
     Info("alieve_init", "Opening event %d from '%s' ...", event, path.Data());
     TString name("Event"); // CINT has trouble with direct "Event".

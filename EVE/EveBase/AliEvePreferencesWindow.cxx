@@ -246,14 +246,10 @@ void AliEvePreferencesWindow::ApplyChanges()
     AliEveInit::GetConfig(&settings);
  
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
-    const Text_t* esdfile = 0;
     
-    if(settings.GetValue("HLTESDtree.show", false)){
-        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
-    }
-    else{
-        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kOfflineTree);
-    }
+//    const Text_t* esdfile = 0;
+//    dataSource->SetESDFileName(esdfile);
+    
  
     AliEveInit::AddMacros();
  

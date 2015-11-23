@@ -95,8 +95,6 @@ void visscan_init(const TString& cdburi = "",
     
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
     
-    dataSource->AddAODfriend("AliAOD.VertexingHF.root");
-    
     gInterpreter->AddIncludePath(Form("%s/../src/MONITOR/MONITOR", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(Form("%s/../src/STEER/", gSystem->Getenv("ALICE_ROOT")));
     gInterpreter->AddIncludePath(Form("%s/../src/", gSystem->Getenv("ALICE_ROOT")));

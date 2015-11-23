@@ -30,14 +30,8 @@ fgAODFileName("AliAOD.root"),
 fgGAliceFileName("galice.root"),
 fgRawFileName("raw.root"),
 fEventManager(0),
-fgESDvisibleTrees(kOfflineTree),
-fgAssertRunLoader(false),
-fgAssertESD(false),
-fgAssertAOD(false),
-fgAssertRaw(false),
 fIsOpen(false),
 fESDfriendExists(kFALSE),
-fEventInfo(),
 fgAODfriends(0),
 fgRawFromStandardLoc(false)
 {
@@ -51,43 +45,6 @@ fgRawFromStandardLoc(false)
 
 AliEveDataSourceOffline::~AliEveDataSourceOffline()
 {
-    
-}
-
-
-void AliEveDataSourceOffline::SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf)
-{
-    // Set an event from an external source.
-    // The method is used in the online visualisation.
-    // AOD is not supported.
-    
-    static const TEveException kEH("AliEveEventManager::SetEvent ");
-    
-    if (fIsOpen)
-    {
-        Warning(kEH, "Event-files were open. Closing and switching to external control.");
-        Close();
-    }
-    
-    Info(kEH,"setting it!!! ============================");
-    
-    fCurrentData.fRunLoader = runLoader;
-    fCurrentData.fRawReader = rawReader;
-    fCurrentData.fESD       = esd;
-    fCurrentData.fESDfriend = esdf;
-    fCurrentData.fAOD       = 0;
-    
-    fEventManager->SetEventId(fEventManager->GetEventId()+1);
-    fEventManager->SetHasEvent(true);
-    
-    SetTitle("Online event in memory");
-    SetName ("Online Event");
-    fEventManager->ElementChanged();
-    fEventManager->AfterNewEventLoaded();
-    
-    if (fEventManager->GetAutoLoad()){
-        fEventManager->StartAutoLoadTimer();
-    }
     
 }
 
@@ -133,11 +90,10 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
     
-    fEventInfo.Reset();
     fEventManager->SetHasEvent(false);
     
     Int_t maxEvent = 0;
-    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
+    if ((fCurrentData.fESDTree!=0))
     {
         if(fCurrentData.fESDTree){
             if (event >= fCurrentData.fESDTree->GetEntries())
@@ -145,15 +101,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
             maxEvent = fCurrentData.fESDTree->GetEntries() - 1;
             if (event < 0)
                 event = fCurrentData.fESDTree->GetEntries() + event;
-        }
-        
-        if(fCurrentData.fHLTESDTree){
-            if (event >= fCurrentData.fHLTESDTree->GetEntries())
-                fCurrentData.fHLTESDTree->Refresh();
-            maxEvent = fCurrentData.fHLTESDTree->GetEntries() - 1;
-            if (event < 0)
-                event = fCurrentData.fHLTESDTree->GetEntries() + event;
-            
         }
     }
     else if (fCurrentData.fAODTree)
@@ -207,21 +154,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
 
     fEventManager->DestroyTransients();
     
-//    TEveManager::TRedrawDisabler rd(gEve);
-//    gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
-//    
-//    // !!! MT this is somewhat brutal; at least optionally, one could be
-//    // a bit gentler, checking for objs owning their external refs and having
-//    // additinal parents.
-//    gEve->GetViewers()->DeleteAnnotations();
-//    fTransients->DestroyElements();
-//    for (TEveElement::List_i i = fTransientLists->BeginChildren();
-//         i != fTransientLists->EndChildren(); ++i)
-//    {
-//        (*i)->DestroyElements();
-//    }
-//    DestroyElements();
-    
     AliSysInfo::AddStamp(sysInfoHeader + "PostDestroy");
     
     if (fCurrentData.fESDTree) {
@@ -231,14 +163,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         if (fESDfriendExists)
             fCurrentData.fESD->SetESDfriend(fCurrentData.fESDfriend);
     }
-    if (fCurrentData.fHLTESDTree) {
-        if (fCurrentData.fHLTESDTree->GetEntry(event) <= 0)
-            throw (kEH + "failed getting required event from HLT ESD.");
-        
-        if (fESDfriendExists)
-            fCurrentData.fESD->SetESDfriend(fCurrentData.fESDfriend);
-    }
-    
     if (fCurrentData.fAODTree) {
         if (fCurrentData.fAODTree->GetEntry(event) <= 0)
             throw (kEH + "failed getting required event from AOD.");
@@ -250,7 +174,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     }
     if (fCurrentData.fRawReader)
     {
-        // AliRawReader::GotoEvent(Int_t) works for AliRawReaderRoot/Chain.
         if (fCurrentData.fRawReader->GotoEvent(event) == kFALSE)
         {
             // Use fallback method - iteration with NextEvent().
@@ -267,7 +190,6 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
                 {
                     fCurrentData.fRawReader->RewindEvents();
                     fEventManager->SetEventId(-1);
-//                    fEventId = -1;
                     throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
                 }
                 ++rawEv;
@@ -287,66 +209,11 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
-void AliEveDataSourceOffline::NextEvent()
-{
-    // Loads next event.
-    // Does magick needed for online display when under external event control.
-    
-    static const TEveException kEH("AliEveEventManager::NextEvent ");
-    
-//    if (fAutoLoadTimerRunning){throw (kEH + "Event auto-load timer is running.");}
-    
-    /*
-     if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
-     {
-     cout<<"There is ESD or HLTESD tree"<<endl;
-     Int_t nextevent=0;
-     if (fPEventSelector->FindNext(nextevent))
-     {
-     cout<<"GotoEvent:"<<nextevent<<endl;
-     GotoEvent(nextevent);
-     }
-     }*/
-    /*else*/ if (fEventManager->GetEventId() < GetMaxEventId(kTRUE))
-    {
-        cout<<"GotoEvent:"<<fEventManager->GetEventId()+1<<endl;
-        GotoEvent(fEventManager->GetEventId() + 1);
-    }
-    else
-    {
-        cout<<"Going back to event 0"<<endl;
-        GotoEvent(0);
-    }
-    
-    gSystem->ProcessEvents();
-}
-
-void AliEveDataSourceOffline::PrevEvent()
-{
-    // Loads previous event.
-    static const TEveException kEH("AliEveEventManager::PrevEvent ");
-    
-    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
-    {
-        Int_t nextevent=0;
-        if (fEventManager->GetEventSelector()->FindPrev(nextevent))
-        {
-            GotoEvent(nextevent);
-        }
-    }
-    else if (fEventManager->GetEventId() > 0)
-    {
-        GotoEvent(fEventManager->GetEventId() - 1);
-    }
-}
-
 void AliEveDataSourceOffline::Open()
 {
     // Open event-data from URL specified in path.
     // Attempts to create AliRunLoader() and to open ESD with ESDfriends.
     // Warning is reported if run-loader or ESD is not found.
-    // Global data-members fgAssertRunLoader and fgAssertESD can be set
-    // to throw exceptions instead.
     
     static const TEveException kEH("AliEveEventManager::Open ");
     if (fIsOpen){throw (kEH + "Event-files already opened.");}
@@ -357,20 +224,10 @@ void AliEveDataSourceOffline::Open()
     if ((fCurrentData.fESDFile = TFile::Open(fgESDFileName)))
     {
         fCurrentData.fESD = new AliESDEvent();
+        fCurrentData.fESDTree = readESDTree("esdTree", runNo);
         
-        switch(fgESDvisibleTrees){
-            case kOfflineTree :
-                fCurrentData.fESDTree = readESDTree("esdTree", runNo);
-                break;
-            case kHLTTree :
-                fCurrentData.fHLTESDTree = readESDTree("HLTesdTree", runNo);
-                break;
-            default:
-                fCurrentData.fESDTree    = readESDTree("esdTree", runNo);
-                fCurrentData.fHLTESDTree = readESDTree("HLTesdTree", runNo);
-        }
         
-        if(!fCurrentData.fESDTree && !fCurrentData.fHLTESDTree){
+        if(!fCurrentData.fESDTree){
             // both ESD trees are == 0
             delete fCurrentData.fESDFile; fCurrentData.fESDFile = 0;
             delete fCurrentData.fESD; fCurrentData.fESD = 0;
@@ -379,10 +236,9 @@ void AliEveDataSourceOffline::Open()
         
     }
     else{Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());}
-    if (fCurrentData.fESDTree == 0 && fCurrentData.fHLTESDTree==0)
+    if (fCurrentData.fESDTree == 0)
     {
-        if (fgAssertESD){throw (kEH + "ESD not initialized. Its precence was requested.");}
-        else {Warning(kEH, "ESD not initialized.");}
+        Warning(kEH, "ESD not initialized.");
     }
     
     // Open AOD and registered friends
@@ -428,8 +284,7 @@ void AliEveDataSourceOffline::Open()
     }
     if (fCurrentData.fAODTree == 0)
     {
-        if (fgAssertAOD){throw (kEH + "AOD not initialized. Its precence was requested.");}
-        else {Warning(kEH, "AOD not initialized.");}
+        Warning(kEH, "AOD not initialized.");
     }
     // Open RunLoader from galice.root
     //    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
@@ -467,8 +322,7 @@ void AliEveDataSourceOffline::Open()
     
     if (fCurrentData.fRunLoader == 0)
     {
-        if (fgAssertRunLoader){throw (kEH + "Bootstraping of run-loader failed. Its precence was requested.");}
-        else{Warning(kEH, "Bootstraping of run-loader failed.");}
+        Warning(kEH, "Bootstraping of run-loader failed.");
     }
     // Open raw-data file
     TString rawPath;
@@ -503,7 +357,7 @@ void AliEveDataSourceOffline::Open()
     // no way to detect it.
     // Is this (AccessPathName check) ok for xrootd / alien? Yes, not for http.
     AliLog::EType_t oldLogLevel = (AliLog::EType_t) AliLog::GetGlobalLogLevel();
-    if (fgAssertRaw == kFALSE){AliLog::SetGlobalLogLevel(AliLog::kFatal);}
+    AliLog::SetGlobalLogLevel(AliLog::kFatal);
     
     if (gSystem->AccessPathName(rawPath, kReadPermission) == kFALSE){
         fCurrentData.fRawReader = AliRawReader::Create(rawPath);
@@ -512,12 +366,11 @@ void AliEveDataSourceOffline::Open()
         fCurrentData.fRawReader = AliRawReader::Create(fgRawFileName);
     }
     
-    if (fgAssertRaw == kFALSE){AliLog::SetGlobalLogLevel(oldLogLevel);}
+    AliLog::SetGlobalLogLevel(oldLogLevel);
     
     if (fCurrentData.fRawReader == 0)
     {
-        if (fgAssertRaw){throw (kEH + "raw-data not initialized. Its precence was requested.");}
-        else{Warning(kEH, "raw-data not initialized.");}
+        Warning(kEH, "raw-data not initialized.");
     }
     if (runNo < 0)
     {
@@ -556,14 +409,13 @@ void AliEveDataSourceOffline::Close()
     if (fEventManager->GetAutoLoadRunning()){
         fEventManager->StopAutoLoadTimer();
     }
-    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0)) {
+    if (fCurrentData.fESDTree!=0) {
         delete fCurrentData.fESD;       fCurrentData.fESD       = 0;
         // delete fCurrentData.fESDfriend; // friend tree is deleted with the tree
         fCurrentData.fESDfriend = 0;
         fESDfriendExists = kFALSE;
         
         if(fCurrentData.fESDTree) { delete fCurrentData.fESDTree;   fCurrentData.fESDTree = 0; }
-        if(fCurrentData.fHLTESDTree) { delete fCurrentData.fHLTESDTree;   fCurrentData.fHLTESDTree = 0; }
         delete fCurrentData.fESDFile;   fCurrentData.fESDFile = 0;
     }
     
@@ -604,27 +456,14 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
         return -1;
     }
     
-    if ((fCurrentData.fESDTree!=0) || (fCurrentData.fHLTESDTree!=0))
+    if (fCurrentData.fESDTree!=0)
     {
         if (refreshESD)
         {
-            if(fCurrentData.fESDTree!=0) fCurrentData.fESDTree->Refresh();
-            if(fCurrentData.fHLTESDTree!=0) fCurrentData.fHLTESDTree->Refresh();
+            fCurrentData.fESDTree->Refresh();
             fEventManager->GetEventSelector()->Update();
         }
-        
-        Int_t maxEventId=0;
-        switch(fgESDvisibleTrees){
-            default:
-            case AliEveEventManager::kOfflineTree :
-                maxEventId = fCurrentData.fESDTree->GetEntries() - 1;
-                break;
-            case AliEveEventManager::kHLTTree :
-                maxEventId = fCurrentData.fHLTESDTree->GetEntries() - 1;
-                break;
-        }
-        
-        return maxEventId;
+        return fCurrentData.fESDTree->GetEntries() - 1;
     }
     else if (fCurrentData.fAODTree)
     {
@@ -647,18 +486,6 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
 
 /******************************************************************************/
 
-void AliEveDataSourceOffline::SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
-                                           Bool_t assertAod, Bool_t assertRaw)
-{
-    // Set global flags that detrmine which parts of the event-data must
-    // be present when the event is opened.
-    
-    fgAssertRunLoader = assertRunloader;
-    fgAssertESD = assertEsd;
-    fgAssertAOD = assertAod;
-    fgAssertRaw = assertRaw;
-}
-
 void AliEveDataSourceOffline::SearchRawForCentralReconstruction()
 {
     // Enable searching of raw data in standard location. The path passed to
@@ -666,34 +493,6 @@ void AliEveDataSourceOffline::SearchRawForCentralReconstruction()
     // "alien:///alice/data/2009/LHC09c/000101134/ESDs/pass1/09000101134018.10".
     
     fgRawFromStandardLoc = kTRUE;
-}
-
-void AliEveDataSourceOffline::SetESDFileName(const TString& esd, EVisibleESDTrees shown)
-{
-    fgESDvisibleTrees = shown;
-    // Set file-name for opening ESD, default "AliESDs.root".
-    if (esd.IsNull()) return;
-    
-    fgESDFileName = esd;
-    if (esd.EndsWith(".zip")) fgESDFileName.Form("%s#AliESDs.root",esd.Data());
-}
-
-void AliEveDataSourceOffline::SetESDfriendFileName(const TString& esdf)
-{
-    // Set file-name for opening ESD friend, default "AliESDfriends.root".
-    if (esdf.IsNull()) return;
-    fgESDfriendsFileName = esdf;
-    
-    if (esdf.EndsWith(".zip")) fgESDfriendsFileName.Form("%s#AliESDfriends.root",esdf.Data());
-}
-
-void AliEveDataSourceOffline::SetAODFileName(const TString& aod)
-{
-    // Set file-name for opening AOD, default "AliAOD.root".
-    if (aod.IsNull()) return;
-    fgAODFileName = aod;
-    
-    if (aod.EndsWith(".zip")) fgAODFileName.Form("%s#AliAOD.root",aod.Data());
 }
 
 void AliEveDataSourceOffline::AddAODfriend(const TString& friendFileName)
@@ -712,27 +511,9 @@ void AliEveDataSourceOffline::AddAODfriend(const TString& friendFileName)
     }
 }
 
-void AliEveDataSourceOffline::SetRawFileName(const TString& raw)
-{
-    // Set file-name for opening of raw-data, default "raw.root"
-    if (raw.IsNull()) return;
-    
-    fgRawFileName = raw;
-}
-
-void AliEveDataSourceOffline::SetGAliceFileName(const TString& galice)
-{
-    // Set file-name for opening gAlice, default "galice.root".
-    
-    if ( galice.IsNull()) return;
-    fgGAliceFileName = galice;
-    
-    if (galice.EndsWith(".zip")) fgGAliceFileName.Form("%s#galice.root",galice.Data());
-}
-
 void AliEveDataSourceOffline::SetFilesPath(const TString& urlPath)
 {
-    cout<<"\n\n setting path:"<<urlPath.Data()<<endl;
+    cout<<"\n\nAliEveDataSourceOffline -- setting path:"<<urlPath.Data()<<endl;
     
     TString path = urlPath;
     gSystem->ExpandPathName(path);
@@ -741,23 +522,15 @@ void AliEveDataSourceOffline::SetFilesPath(const TString& urlPath)
         path = gSystem->WorkingDirectory();
     }
     
-    TString sep;
-    if(path.EndsWith(".zip")) // if given a path to root_archive.zip
-        sep= "#";
-    else if(!path.EndsWith("/"))
-        sep = "/";
+    fgESDFileName        = TString::Format("%s/AliESDs.root", path.Data());
+    fgESDfriendsFileName = TString::Format("%s/AliESDfriends.root", path.Data());
+    fgAODFileName        = TString::Format("%s/AliAOD.root", path.Data());
+    fgRawFileName        = TString::Format("%s/raw.root", path.Data());
+    fgGAliceFileName     = TString::Format("%s/galice.root", path.Data());
+
+    AddAODfriend(TString(Form("%s/AliAOD.VertexingHF.root", path.Data())));
     
-    SetESDFileName( TString(Form("%s%sAliESDs.root", path.Data(), sep.Data())) );
-    SetESDfriendFileName(  TString(Form("%s%sAliESDfriends.root", path.Data(), sep.Data())) );
-    SetAODFileName(  TString(Form("%s%sAliAOD.root", path.Data(), sep.Data())) );
-    AddAODfriend(  TString(Form("%s%sAliAOD.VertexingHF.root", path.Data(), sep.Data())) );
-    SetGAliceFileName( TString(Form("%s%sgalice.root", path.Data(), sep.Data())) );
-    SetRawFileName(TString(Form("%s%sraw.root", path.Data(), sep.Data())));
-    
-    if(fIsOpen)
-    {
-        Close(); // close old files
-    }
+    if(fIsOpen){Close();} // close old files
     Open();  // open files with new path
 }
 

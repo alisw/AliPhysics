@@ -68,7 +68,6 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     TEnv settings;
     GetConfig(&settings);
     
-    fShowHLTESDtree       = settings.GetValue("HLTESDtree.show", false);      // show HLT ESD tree
     Width_t width         = settings.GetValue("tracks.width",2);              // width of all ESD tracks
     bool dashNoRefit      = settings.GetValue("tracks.noRefit.dash",true);    // dash no-refit tracks
     bool drawNoRefit      = settings.GetValue("tracks.noRefit.show",true);    // show no-refit tracks
@@ -101,8 +100,6 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     AliEveDataSourceOffline *dataSourceOffline  = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
     AliEveDataSourceHLTZMQ  *dataSourceHLT      = (AliEveDataSourceHLTZMQ*) man->GetDataSourceHLTZMQ();
-    
-    dataSourceOffline->AddAODfriend("AliAOD.VertexingHF.root");
     
     ImportMacros();
     Init();
@@ -226,27 +223,11 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
 
 void AliEveInit::Init()
 {
-    const Text_t* esdfile = 0;
-    const Text_t* aodfile = 0;
-    const Text_t* rawfile = 0;
-    
     cout<<"Adding standard macros"<<endl;
     TEveUtil::AssertMacro("VizDB_scan.C");
     gSystem->ProcessEvents();
     
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
-    
-    dataSource->SetFilesPath(fPath);
-    
-    if(fShowHLTESDtree){
-        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kHLTTree);
-    }
-    else{
-        dataSource->SetESDFileName(esdfile, AliEveDataSourceOffline::kOfflineTree);
-    }
-    
-    dataSource->SetRawFileName(rawfile);
-    dataSource->SetAssertElements(0,0,0,0);
     
     // Open event
     if (fPath.BeginsWith("alien:"))

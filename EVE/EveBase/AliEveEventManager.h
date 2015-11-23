@@ -45,7 +45,6 @@ public:
     //    AliRunLoader*        GetRunLoader()     const { return fCurrentData->fRunLoader; }
     TFile*               GetESDFile()       const { return fCurrentData->fESDFile; }
     TTree*               GetESDTree()       const { return fCurrentData->fESDTree; }
-    TTree*               GetHLTESDTree()    const { return fCurrentData->fHLTESDTree; }
     AliESDEvent*         GetESD()           const { return fCurrentData->fESD;     }
     //    AliESDfriend*        GetESDfriend()     const { return fCurrentData->fESDfriend; }
     //    TFile*               GetAODFile()       const { return fCurrentData->fAODFile; }
