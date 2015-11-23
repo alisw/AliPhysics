@@ -7,17 +7,17 @@ using namespace std;
 class AliESDEvent;
 
 class AliMultSelectionCuts : public TNamed {
-    
 public:
     //Aliases for error codes
-    typedef enum { kNoCalib = 199,
-        kRejTrigger    = 200,
-        kRejVzCut = 201,
-        kRejINELgtZERO   = 202,
-        kRejTrackletsVsClusters = 203,
-        kRejPileupInMultBins = 204,
-        kRejConsistencySPDandTrackVertices = 205,
-        kRejNonZeroNContribs = 206
+    typedef enum {
+        kNoCalib                            = 199,
+        kRejTrigger                         = 200,
+        kRejINELgtZERO                      = 201,
+        kRejVzCut                           = 202,
+        kRejPileupInMultBins                = 203,
+        kRejConsistencySPDandTrackVertices  = 204,
+        kRejTrackletsVsClusters             = 205,
+        kRejNonZeroNContribs                = 206
     } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
     
     AliMultSelectionCuts();
