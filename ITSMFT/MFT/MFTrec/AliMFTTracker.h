@@ -105,6 +105,11 @@ protected:
   Double_t fXExtrapVertexError;
   Double_t fYExtrapVertexError;
 
+  // generator event vertex from Monte-Carlo
+  Double_t fXVertexMC;
+  Double_t fYVertexMC;
+  Double_t fZVertexMC;
+
   Bool_t fBransonCorrection;    // if TRUE, Branson Correction is applied when extrapolating the MUON tracks to the vertex region
 
   Double_t fMinResearchRadiusAtPlane[fNMaxPlanes];

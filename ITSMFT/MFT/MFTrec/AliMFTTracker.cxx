@@ -78,6 +78,9 @@ AliMFTTracker::AliMFTTracker() :
   fZExtrapVertex(0),
   fXExtrapVertexError(0),
   fYExtrapVertexError(0),
+  fXVertexMC(0),
+  fYVertexMC(0),
+  fZVertexMC(0),
   fBransonCorrection(kFALSE)
 {
   AliMFTGeometry *mftGeo = AliMFTGeometry::Instance();
@@ -215,6 +218,7 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
     zVertex = esdVert->GetZ();
     zvr[0] = zVertex - 3.*AliMFTConstants::fPrimaryVertexResZ; // 5 microns
     zvr[1] = zVertex + 3.*AliMFTConstants::fPrimaryVertexResZ; 
+    GetVertexFromMC();
   } else {
     printf("No vertex in ESD! Get it from MC.\n");
     GetVertexFromMC();
@@ -287,9 +291,9 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
   outputTreeMUONTracks->Branch("tracks", &muonTracks);
 
   TTree *outputTreeEvent = new TTree("Events", "Tree of events");
-  outputTreeEvent->Branch("fXVertexMC", &xVertex);
-  outputTreeEvent->Branch("fYVertexMC", &yVertex);
-  outputTreeEvent->Branch("fZVertexMC", &zVertex);
+  outputTreeEvent->Branch("fXVertexMC", &fXVertexMC);
+  outputTreeEvent->Branch("fYVertexMC", &fYVertexMC);
+  outputTreeEvent->Branch("fZVertexMC", &fZVertexMC);
 
   TTree *outputTreeMFTCells = new TTree("MFTCells", "Tree of MFT CA cells");
   TClonesArray *mftCells = new TClonesArray("AliMFTCACell");
@@ -615,6 +619,10 @@ void AliMFTTracker::GetVertexFromMC() {
   TArrayF vtx(3);
   runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
   AliInfo(Form("Primary vertex from MC found in (%f, %f, %f)\n",vtx[0], vtx[1], vtx[2]));
+
+  fXVertexMC = vtx[0];
+  fYVertexMC = vtx[1];
+  fZVertexMC = vtx[2];
 
   fXExtrapVertex = gRandom->Gaus(vtx[0], AliMFTConstants::fPrimaryVertexResX);
   fYExtrapVertex = gRandom->Gaus(vtx[1], AliMFTConstants::fPrimaryVertexResY);
