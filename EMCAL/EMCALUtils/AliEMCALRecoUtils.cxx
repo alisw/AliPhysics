@@ -66,7 +66,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
-  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fUseRunCorrectionFactors(kFALSE),       
+  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
+  fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
@@ -112,6 +114,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
+  fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
+  fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
@@ -175,6 +179,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fTimeRecalibration             = reco.fTimeRecalibration;
   fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
+
+  fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
+  fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
 
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
   
@@ -289,7 +296,12 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
     fEMCALTimeRecalibrationFactors->Clear();
     delete fEMCALTimeRecalibrationFactors;
   }  
-  
+
+  if(fEMCALL1PhaseInTimeRecalibration) {  
+    fEMCALL1PhaseInTimeRecalibration->Clear();
+    delete fEMCALL1PhaseInTimeRecalibration;
+  }
+
   if (fEMCALBadChannelMap) { 
     fEMCALBadChannelMap->Clear();
     delete fEMCALBadChannelMap;
@@ -347,6 +359,9 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   
   RecalibrateCellTime(absID,bc,time);
   
+  //Recalibrate time with L1 phase 
+  RecalibrateCellTimeL1Phase(imod, bc, time);
+
   return kTRUE;
 }
 
@@ -1241,6 +1256,28 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
   TH1::AddDirectory(oldStatus);    
 }
 
+//____________________________________________________
+void AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibration()
+{
+  //Init EMCAL L1 phase 
+  AliDebug(2,"AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibrationFactors()");
+  //In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  fEMCALL1PhaseInTimeRecalibration = new TObjArray(1);
+
+  fEMCALL1PhaseInTimeRecalibration->Add(new TH1C("h0","EMCALL1phaseForSM", 22, 0, 22));
+  for (Int_t i = 0; i < 22; i++) //loop over SMs, default value = 0
+    SetEMCALL1PhaseInTimeRecalibrationForSM(i,0);
+  
+  fEMCALL1PhaseInTimeRecalibration->SetOwner(kTRUE);
+  fEMCALL1PhaseInTimeRecalibration->Compress();
+  
+  //In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);    
+}
+
 //____________________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom, 
                                                  AliVCluster * cluster, 
@@ -1309,6 +1346,10 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   if (!fCellsRecalibrated && IsTimeRecalibrationOn())
     RecalibrateCellTime(absIdMax,bc,time);
 
+  //Recalibrate time with L1 phase 
+  if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
+    RecalibrateCellTimeL1Phase(imod, bc, time);
+
   cluster->SetTOF(time);
 
   AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Time before %f, after %f \n",timeorg,cluster->GetTOF()));
@@ -1368,6 +1409,23 @@ void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & ce
   }
 }
   
+//_______________________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime) const
+{
+  // Recalibrate time of cell with absID  considering the recalibration map 
+  // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
+  if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) {
+    Float_t offsetPerSM=0.;
+    Int_t l1Phase = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
+    if(bc >= l1Phase)
+      offsetPerSM = (bc - l1Phase)*25;
+    else
+      offsetPerSM = (bc - l1Phase + 4)*25;
+    
+    celltime -= offsetPerSM*1.e-9;    ;  
+  }
+}
+
 //______________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom, 
                                                    AliVCaloCells* cells, 

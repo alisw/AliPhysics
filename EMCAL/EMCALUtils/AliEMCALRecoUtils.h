@@ -174,6 +174,27 @@ public:
   void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALTimeRecalibrationFactors = map                 ; }
   void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
   
+  // Time Recalibration with L1 phase
+  Bool_t   IsL1PhaseInTimeRecalibrationOn()          const { return fUseL1PhaseInTimeRecalibration   ; }
+  void     SwitchOffL1PhaseInTimeRecalibration()           { fUseL1PhaseInTimeRecalibration = kFALSE ; }
+  void     SwitchOnL1PhaseInTimeRecalibration()            { fUseL1PhaseInTimeRecalibration = kTRUE  ; 
+    if(!fEMCALL1PhaseInTimeRecalibration) InitEMCALL1PhaseInTimeRecalibration() ; }
+  void     InitEMCALL1PhaseInTimeRecalibration() ;
+
+  void     RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & time) const;
+  TObjArray* GetEMCALL1PhaseInTimeRecalibrationArray() const { return fEMCALL1PhaseInTimeRecalibration ; }
+  Int_t  GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM) const { 
+    if(fEMCALL1PhaseInTimeRecalibration) 
+      return (Int_t) ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->GetBinContent(iSM); 
+    else return 0 ; } 
+  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0) { 
+    if(!fEMCALL1PhaseInTimeRecalibration) InitEMCALL1PhaseInTimeRecalibration();
+    ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->SetBinContent(iSM,c) ; }  
+  
+  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const       { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0) ; }	
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map)            { fEMCALL1PhaseInTimeRecalibration = map  ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h)     { fEMCALL1PhaseInTimeRecalibration->AddAt(h,0)          ; }
+
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
   //-----------------------------------------------------
@@ -373,7 +394,11 @@ private:
   // Time Recalibration 
   Bool_t     fTimeRecalibration;             // Switch on or off the time recalibration
   TObjArray* fEMCALTimeRecalibrationFactors; // Array of histograms with map of time recalibration factors, EMCAL
-  
+
+  // Time Recalibration with L1 phase 
+  Bool_t     fUseL1PhaseInTimeRecalibration;          // Switch on or off the L1 phase in time recalibration
+  TObjArray* fEMCALL1PhaseInTimeRecalibration; // Histogram with map of L1 phase per SM, EMCAL
+
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   // Use Run Dependent Correction
     
