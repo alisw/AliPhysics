@@ -827,12 +827,33 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   // 
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
-  // Load current information file
+  //
+  // 0.) Load current information file and bookd variables
+  // 
+  const Int_t nSec=81;         // 72 sector +5 sumarry info+ 4 medians +
+  TVectorF meanNcl(nSec);      // mean current estator ncl per sector
+  TVectorF meanNclUsed(nSec);  // mean current estator ncl per sector
+  Double_t meanTime=0, maxTime=startTime, minTime=stopTime;
+  Int_t currentTrack=0;  
+
   TFile *finfo = TFile::Open(residualInfoFile);
   TTree *treeInfo=0;
-  if (finfo) treeInfo=(TTree*)finfo->Get("sumaryInfo");
-
-
+  if (finfo) treeInfo=(TTree*)finfo->Get("sumaryTime"); 
+  TGraphErrors * nclArray[nSec]={0};
+  TGraphErrors * nclArrayUsed[nSec]={0};
+  
+  if (treeInfo) {
+    for (Int_t iSec=0; iSec<nSec; iSec++){
+      nclArray[iSec]=0;
+      nclArrayUsed[iSec]=0;
+      treeInfo->SetBranchAddress(TString::Format("grNcl%d.",iSec).Data(),&nclArray[iSec]);
+      treeInfo->SetBranchAddress(TString::Format("grNclUsed%d.",iSec).Data(),&nclArrayUsed[iSec]);
+    }
+    treeInfo->GetEntry(0);
+  }
+  //
+  // 1.) Fill histograms and mean informations
+  //
   const Int_t knPoints=kMaxRow;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
@@ -850,15 +871,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   Int_t nesd = esdArray->GetEntriesFast();  
   //
   THn *hisToFill[6]={calibInterpolation->GetHisITSDRPhi(), calibInterpolation->GetHisITSTRDDRPhi(),  calibInterpolation->GetHisITSTOFDRPhi(), calibInterpolation->GetHisITSDZ(), calibInterpolation->GetHisITSTRDDZ(),  calibInterpolation->GetHisITSTOFDZ()};
-  Int_t currentTrack=0;  
-  TFile * fout = 0;
+  TTreeSRedirector * fout = 0;
   if (selHis<0)  {
-    if (startTime<=0) fout=TFile::Open("ResidualHistograms.root","recreate");
-    if (startTime>0) fout=TFile::Open(TString::Format("ResidualHistograms_Time%d.root",startTime).Data(),"recreate");
+    if (startTime<=0) fout=new TTreeSRedirector("ResidualHistograms.root","recreate");
+    if (startTime>0) fout=new TTreeSRedirector(TString::Format("ResidualHistograms_Time%d.root",startTime).Data(),"recreate");
   }
   if (selHis>=0) {
-    if (startTime<=0)  fout=TFile::Open(TString::Format("ResidualHistograms_His%d.root",selHis).Data(),"recreate");
-    if (startTime>0)    fout=TFile::Open(TString::Format("ResidualHistograms_His%d_Time%d.root",selHis,startTime).Data(),"recreate");
+    if (startTime<=0)  fout=new TTreeSRedirector(TString::Format("ResidualHistograms_His%d.root",selHis).Data(),"recreate");
+    if (startTime>0)   fout=new TTreeSRedirector(TString::Format("ResidualHistograms_His%d_Time%d.root",selHis,startTime).Data(),"recreate");
   }
   TH1 * hisTime=0;
   if (startTime>0) hisTime=new TH1F("hisTrackTime","hisTrackTime",(stopTime-startTime)/20,startTime,stopTime);
@@ -892,6 +912,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	}
 	tree->GetEntry(itrack);
 	currentTrack++;
+	if (timeStamp<minTime) minTime=0;
+	if (timeStamp>maxTime) maxTime=0;
+	meanTime+=timeStamp;
+	if (treeInfo) for (Int_t iSec=0; iSec<nSec; iSec++){
+	  meanNcl[iSec]+=nclArray[iSec]->Eval(timeStamp);
+	  meanNclUsed[iSec]+=nclArrayUsed[iSec]->Eval(timeStamp);
+	}
+
 	if (maxStat>0 &&currentTrack>maxStat) break;
 	//for (Int_t ipoint=0; ipoint<knPoints; ipoint++){
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
@@ -905,15 +933,45 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  hisToFill[ihis]->Fill(xxx);	  
 	}
 	vecR->Clear(); vecPhi->Clear(); vecZ->Clear(); vecDelta->Clear();
+	delete param;
+	param=0;
+	tree->SetBranchAddress("track.",&param);
       }
       timerFile.Print();
     }    
-    fout->cd();
+    fout->GetFile()->cd();
     hisToFill[ihis]->Write();
   }
   if (hisTime) hisTime->Write();
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","End of processing\n");
   timerAll.Print();
+  //
+  // 2.) Fill metadata information
+  //
+  if (currentTrack>0){
+    meanTime/=currentTrack;
+    if (treeInfo) for (Int_t iSec=0; iSec<nSec; iSec++){
+      meanNcl[iSec]/=currentTrack;
+      meanNclUsed[iSec]/=currentTrack;
+    }
+  }
+  (*fout)<<"metaData"<<
+    "startTime="<<startTime<<        // start time  as requested
+    "stopTime="<<stopTime<<          // stop time as requested
+    "meanTime="<<meanTime<<          // mean time 
+    "minTime="<<minTime<<            // minimal time stamp in data sample
+    "maxTime="<<maxTime<<            // maximal time stamp in data sample
+    "ntracksUsed="<<currentTrack<<   // number of tracks acumulated in time interval
+    "meanNcl.="<<&meanNcl<<          // current estimator - mean number of clusters
+    "meanNclUsed.="<<&meanNclUsed;   // current estimator - mean number of clusters
+  
+  for (Int_t iSec=0; iSec<nSec; iSec++){
+    (*fout)<<"metaData"<<
+      TString::Format("grNcl%d.=",iSec).Data()<< nclArray[iSec]<<
+      TString::Format("grNclUsed%d.=",iSec).Data()<< nclArrayUsed[iSec];
+  }
+  (*fout)<<"metaData"<<"\n";
+
   delete fout;
 }
 
