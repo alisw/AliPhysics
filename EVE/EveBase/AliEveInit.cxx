@@ -362,7 +362,8 @@ void AliEveInit::ImportMacros()
     
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     
-    TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+    TString macdir("$(ALICE_ROOT)/EVE/alice-macros/data");
+    macdir += ":$(ALICE_ROOT)/EVE/alice-macros/common";
     gSystem->ExpandPathName(macdir);
     
     TFolder* f = gEve->GetMacroFolder();

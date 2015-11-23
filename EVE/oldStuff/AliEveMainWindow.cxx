@@ -22,11 +22,6 @@
 #include <AliEveTrackCounter.h>
 #include <AliEveDataSourceOffline.h>
 
-#include "../alice-macros/geom_gentle.C"
-#include "../alice-macros/geom_gentle_trd.C"
-#include "../alice-macros/geom_gentle_muon.C"
-
-
 #include "AliEveMainWindow.h"
 #include "AliEveUtil.h"
 #include "AliEveFileDialog.h"
