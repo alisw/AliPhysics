@@ -4,13 +4,14 @@
 
 using namespace std;
 
-typedef enum {kMultSelTrigger = -200,
-    kMultSelVzCut = -201,
-    kMultSelINELgtZERO = -202,
-    kMultSelTrackletsVsClusters = -203,
-    kMultSelRejectPileupInMultBins = -204,
-    kMultSelCheckConsistencySPDandTrackVertices = -205,
-    kMultSelNonZeroNContribs = -206
+typedef enum { kNoCalib = 199,
+    kRejTrigger    = 200,
+    kRejVzCut = 201,
+    kRejINELgtZERO   = 202,
+    kRejTrackletsVsClusters = 203,
+    kRejPileupInMultBins = 204,
+    kRejConsistencySPDandTrackVertices = 205,
+    kRejNonZeroNContribs = 206
 } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
 
 class AliESDEvent;
