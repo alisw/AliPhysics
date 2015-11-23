@@ -1490,23 +1490,30 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 /// \return 
 void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 { //  STU specifics
+
+  Int_t h=0; //helper for TRU-STU conversion
+  // L1 segmentation 
+  // !!!! IMPORTANT THESE ARE in units of MODULES (2*2 towers) !!!!
+  Int_t sizeL1gsubr = 1;
+  Int_t sizeL1gpatch = 2; 
+  Int_t sizeL1jsubr = 2; 
+  Int_t sizeL1Jpatch, detPatchOffset, detPhiOffset;
 for(int det=0;det<2;det++){
 //printf("\n\n\n%d times inside the loop for detector",det);
   if(det==0){	
-   rawReader->Reset();
+    rawReader->Reset();
   	rawReader->Select("EMCAL",AliDAQ::GetFirstSTUDDL(),AliDAQ::GetFirstSTUDDL());
+    sizeL1Jpatch=2; //EMCAL 1 JetPatch = 4*4 subregions of 4x4 towers. = 4*4*2
   }
   else{
   	rawReader->Reset();
   	rawReader->Select("EMCAL",AliDAQ::GetLastSTUDDL(),AliDAQ::GetLastSTUDDL());
+    sizeL1Jpatch=1; //DCAL 1 JetPatch = 2*2 subregions of 4x4 towers= 2*2*1  * 4x4 towers.
   }
-  
-  Int_t h=0; //helper for TRU-STU conversion
-  // L1 segmentation
-  Int_t sizeL1gsubr = 1;
-  Int_t sizeL1gpatch = 2; 
-  Int_t sizeL1jsubr = 4; 
-
+  detPhiOffset = AliEMCALGeoParams::fgkEMCALSTURows*det;
+  detPatchOffset = sizeL1jsubr*sizeL1jsubr*sizeL1Jpatch -1 ;
+  //Printf("detector : %c ", (det==0 ? 'E': 'D'));
+  //Printf("subregion %d   patch %d   detPatchOffset %d   detphiOffset %d ", sizeL1jsubr,sizeL1Jpatch,detPatchOffset,detPhiOffset);
   AliEMCALTriggerSTURawStream inSTU(rawReader);
   // FOR DCAL
   Int_t iEMCALtrig[AliEMCALTriggerMappingV2::fSTURegionNEta][AliEMCALTriggerMappingV2::fSTURegionNPhi]={{0}};
@@ -1520,10 +1527,14 @@ for(int det=0;det<2;det++){
       Int_t fw = inSTU.GetFwVersion();
       //printf("\nFirmware value: 0x%x\n",fw);
       //printf("Firmware masked 0xf000 = 0x%x\n",fw & 0xf000);
-      Int_t sizeL1jpatch = 2+(fw >> 16);
-      //printf("sizeL1jetpatch : %d\n",sizeL1jpatchEta);
+      Int_t sizeL1jpatch = 2+(fw >> 16) ;
+      //Printf("sizeL1jetpatch : %d\n",sizeL1jpatch);
       //Int_t sizeL1jpatch=sizeL1jpatchEta;
       //Int_t sizeL1jpatchPhi ;
+      
+      
+      
+	  //to be checked !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       //printf("Firmware masked 0xf000 = 0x%x\n",fw & 0xf000);
       /*if(fw & 0xf000 == 0xb000){//EMCAL,same dimensions
       	sizeL1jpatchPhi=sizeL1jpatchEta;
@@ -1577,6 +1588,7 @@ for(int det=0;det<2;det++){
 			
       // L1 Gamma patches
       Int_t iTRUSTU, x, y,etaG,phiG;
+      //Printf("Gamma patches");
       //for(detector=0; detector<2;detector++){ // 0 EMCAL , 1 DCAL
      // printf("Number of L1GammaPatches high threshold: %d\n",inSTU.GetNL1GammaPatch(0) );
       	for(Int_t i = 0; i < inSTU.GetNL1GammaPatch(0); i++)
@@ -1592,10 +1604,10 @@ for(int det=0;det<2;det++){
 	        if(!(fGeom->GetPositionInEMCALFromAbsFastORIndex( id, etaG, phiG ))) continue;
 	      	else{
       		      // Position of patch L1G (bottom-left FastOR of the patch)
-	      	  //	    printf("position of the found patch (eta,phi)=([0,47],[0,63]) for EMCAL ([0,15]&&[32,47],[64,103]) for DCAL\n");
-	      	      //printf("\t\t\t(%d,%d)\n\n",etaG,phiG);
-	      	      //etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1
-	      	      	      	      
+	      	  	 //Printf("position of the found patch (eta,phi)=([0,47],[0,63]) for EMCAL ([0,15]&&[32,47],[64,103]) for DCAL\t\t(%d,%d)",etaG,phiG);
+	      	      // etaG = (etaG - sizeL1gsubr) * sizeL1gpatch + 1;
+	      	      // phiG = (phiG - sizeL1gsubr) * sizeL1gpatch + 1;
+	      	     //Printf("position of the found patch (eta,phi) AFTER CORRECTION FOR PATCH size\t\t(%d,%d)",etaG,phiG);
 	      	      FillRawsData(kGL1, etaG, phiG);
 	      	      
 	      // New position in CALORIMETER!
@@ -1631,18 +1643,22 @@ for(int det=0;det<2;det++){
            //printf("Number of L1JetPatches high threshold: %d\n",inSTU.GetNL1JetPatch(0) ); 
            for (Int_t i = 0; i < inSTU.GetNL1JetPatch(0); i++)
 	{
-	  if(inSTU.GetL1JetPatch(i, 0, x, y)) // / col (0,15), row (0,11)
+	  if(inSTU.GetL1JetPatch(i, 0, x, y)) // Position in patches units, should be the other way around (row, col)
 	    {
 	      //GetPositionInEMCALFrom Something that crosses the TRU boundaries.
+	      
 	      //NEED To know how JET PATCHES ARE COMPUTED AND STORED.
 	      //printf("sizeL1jsubr %d\n",sizeL1jsubr);
-	      
-	      Int_t etaJ = sizeL1jsubr * (10-y); // CHECK THIS FOR JETS
+	      //Printf("%dth patch in eta , %dth patch in phi",y , x);
+	      Int_t etaJ = y*sizeL1jsubr*sizeL1jsubr + detPatchOffset;
+	      //Int_t etaJ = sizeL1jsubr * (10-y); // CHECK THIS FOR JETS
 	      //64 EMCAL rows offset when reading DCAL patches 
-	      Int_t phiJ = AliEMCALGeoParams::fgkEMCALSTURows*det + sizeL1jsubr * ((det==0 ? 14 : 8) -x) ;
+	      Int_t phiJ = detPhiOffset + x*sizeL1jsubr*sizeL1jsubr + detPatchOffset;
+	      //Printf("eta and phi EMCAL ([7,39],[7,55]) DCAL ([3,43],[67,99]) \t\t %d,%d\n\n",etaJ,phiJ);
+	      //Int_t phiJ = AliEMCALGeoParams::fgkEMCALSTURows*det + sizeL1jsubr * ((det==0 ? 14 : 8) -x) ;
 	      //printf("det %d JetPatch %d  x and y for jet patch %d\t%d and etaJ and phiJ  %d \t %d\n",det, i, x,y,etaJ, phiJ);
 		  // position of patch L1J (FOR bottom-left)
-	      FillRawsData(kJL1, etaJ, phiJ);
+	      FillRawsData(kJL1, etaJ +2, phiJ);
 					
 	      // loop the sum aplitude of FOR in the jet patch
 	      Int_t iL1JPatchAmp = 0;
