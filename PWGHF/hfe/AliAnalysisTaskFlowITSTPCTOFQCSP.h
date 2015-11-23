@@ -86,12 +86,12 @@ public:
     
     void                                 SetEtaMinPos(Double_t minetapos){fEtaMinimumPositive = minetapos;}
     void                                 SetEtaMinNeg(Double_t minetaneg){fEtaMinimumNegative = minetaneg;}
-
+    
     void                                 SetHistoForCentralityFlattening_Bis(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef);
     Bool_t                               IsEventSelectedForCentrFlattening_Bis(Double_t centvalue);
-
+    
     void                                 SetCentralityMine(Bool_t CentFlatMine){fCentFlatMine = CentFlatMine;}
-
+    
     AliHFEpid *GetPID() const { return fPID; };
     
 private:
@@ -173,6 +173,7 @@ private:
     AliSelectNonHFE      *fNonHFE;//new elienos stuff
     Bool_t               fDCA;//selection PHelectron
     TH2F                 *fITSnsigma;//!TPC n sigma vs p
+    TH2F                 *fITSnsigmaElect;//!TPC n sigma vs p
     TH2F                 *fTPCnsigmaAftITSTOF; //!TPC n sigma vs p
     TH2F                 *fTPCnsigmaAftTOF; //!TPC n sigma vs p
     TH2F                 *fITSnsigmaAftTOF;//!jbd
@@ -212,7 +213,7 @@ private:
     Double_t              fEtaMinimumNegative;//for reso
     TH1F                 *fCentralityAll;//!centall
     Bool_t               fCentFlatMine; //for purity evaluation
-
+    
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowITSTPCTOFQCSP& operator=(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented

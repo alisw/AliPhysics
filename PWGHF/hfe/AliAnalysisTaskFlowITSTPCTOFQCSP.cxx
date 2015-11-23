@@ -182,6 +182,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,fNonHFE(new AliSelectNonHFE)
 ,fDCA(0)
 ,fITSnsigma(0)
+,fITSnsigmaElect(0)
 ,fTPCnsigmaAftITSTOF(0)
 ,fTPCnsigmaAftTOF(0)
 ,fITSnsigmaAftTOF(0)
@@ -311,6 +312,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,fNonHFE(new AliSelectNonHFE)
 ,fDCA(0)
 ,fITSnsigma(0)
+,fITSnsigmaElect(0)
 ,fTPCnsigmaAftITSTOF(0)
 ,fTPCnsigmaAftTOF(0)
 ,fITSnsigmaAftTOF(0)
@@ -647,6 +649,9 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         Float_t fTOFnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTOF(track, AliPID::kElectron) : 1000;
         //   Float_t eDEDX = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE);
         
+        Float_t fTPCnSigmaPI = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kPion) : 1000;
+      
+        
         Double_t CorrectTPCNSigma;
         Double_t mult = fVevent->GetNumberOfESDTracks()/8;
         
@@ -657,6 +662,10 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
         }
         
+        if(TMath::Abs(fTOFnSigma) < fmaxTOFnSigma && TMath::Abs(fTPCnSigma) < fmaxTPCnsigmaLowpT && fTPCnSigmaPI > 4)
+        {
+            fITSnsigmaElect->Fill(track->P(),fITSnSigma);
+        }
         
         
         fITSnsigma->Fill(track->P(),fITSnSigma);
@@ -666,9 +675,9 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         fTPCvsITS->Fill(fTPCnSigma,fITSnSigma);
         fTPCvsTOF->Fill(fTPCnSigma,fTOFnSigma);
         
-       // if( pt >= 0.3){
+        // if( pt >= 0.3){
         if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
-       // }//cuts on nsigma tof full pt range
+        // }//cuts on nsigma tof full pt range
         
         fITSnsigmaAftTOF->Fill(track->P(),fITSnSigma);
         fTPCnsigmaAftTOF->Fill(track->P(),fTPCnSigma);
@@ -1048,6 +1057,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     
     fITSnsigma = new TH2F("fITSnsigma", "ITS - n sigma before HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fITSnsigma);
+  
+    
+    fITSnsigmaElect = new TH2F("fITSnsigmaElect", "fITSnsigmaElect - n sigma before HFE pid",600,0,6,400,-20,20);
+    fOutputList->Add(fITSnsigmaElect);
+
     
     fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma before HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fTPCnsigma);
