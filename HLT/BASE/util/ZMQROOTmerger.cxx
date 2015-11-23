@@ -330,6 +330,11 @@ Int_t DoSend(void* socket)
   //send back merged data, one object per frame
 
   aliZMQmsg message;
+  char tmp[34];
+  int tmpLength = sprintf(tmp,"%i",fRunNumber);
+  string runNumberString = tmp;
+  string infoMessageString = "INFO";
+  alizmq_msg_add(&message, infoMessageString, runNumberString);
   Int_t rc = 0;
   TObject* object = NULL;
   TObject* key = NULL;
