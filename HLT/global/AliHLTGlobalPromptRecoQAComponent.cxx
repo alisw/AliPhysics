@@ -135,6 +135,8 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
         fSkipEvents = argument.Atoi();
       }	else if (argument.CompareTo("-print-stats")==0) {
         fPrintStats = 1;
+      }	else if (argument.CompareTo("-print-stats-verbose")==0) {
+        fPrintStats = 2;
       }	else if (!argument.Contains("pushback-period")) {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -615,7 +617,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     pushed_something = 1;
   }
 
-  if (fPrintStats && pushed_something) //Don't print this for every event if we use a pushback period
+  if (fPrintStats && (fPrintStats == 2 || pushed_something)) //Don't print this for every event if we use a pushback period
   {
     HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %d / %d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %d (%d / %d / %d / %d), TPC-Comp %5.3fx (%d)"
       ", ITSSAP-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %d / %d (%d / %d)",
