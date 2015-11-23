@@ -40,35 +40,41 @@ struct MakeTrackletTrain : public TrainSetup
   MakeTrackletTrain(const char* name)
     : TrainSetup(name)
   {
-    // Define all our options here 
+    // Define all our options here
+    fOptions.Add("trig",          "NAME",  "Trigger to use",           "V0AND");
+    fOptions.Add("cent",          "METHOD","Centrality selector",       "V0M");
+    fOptions.Add("cent-bins",     "Bins",  "Centrality bins",
+		 "0-5-10-20-30-40-50-60-70-80");
+    fOptions.Add("check-reco",             "Check reconstruction",      false);
+    fOptions.Add("sig-n-dev",     "X",     "Cut on weighted distance",  25.);
+    fOptions.Add("scale-dtheta",           "Scale dTheta",              true);
+    fOptions.Add("cut-dtheta",             "Cut dTheta",                false);
+    fOptions.Add("dphi",          "X",     "dPhi window",               0.06);
+    fOptions.Add("dtheta",        "X",     "dTheta window",             0.025);
+    fOptions.Add("phi-shift",     "X",     "Bending shift",             0.0045);
+    fOptions.Add("outlier-phi",   "X",     "Phi outlier cut",           0.005);
+    fOptions.Add("outlier-z-eta", "X",     "Z-Eta outlier cut",         0.05);
+    fOptions.Add("phi-rot",       "X",     "Rotation BG angle",   TMath::Pi());
+    fOptions.Add("inj-scale",     "X",     "Injection BG scale",        1.);
+    fOptions.Add("remove-outliers",        "Whether to remove outliers",true);
+    fOptions.Add("sig-dphi-s",    "X",     "Cut on dPhi-phiBent",       -1.);
+    fOptions.Add("sig-n-std",     "X",     "Cut on weighted distance",  1.5);
+    fOptions.Add("mc-v0-scale",   "X",     "Scaling of MC V0",          1.);
     fOptions.Add("eta-min",       "ETA",   "Least eta",                 -1.8);
     fOptions.Add("eta-max",       "ETA",   "Largest eta",               +1.8);
     fOptions.Add("ipz-min",       "CM",    "Least IPz",                 -10);
     fOptions.Add("ipz-max",       "CM",    "Largest IPz",               +10);
+    fOptions.Add("fill-reco",              "Fill with new reco",        true);
+    fOptions.Add("create-inj",             "Create injection BG",       true);
+    fOptions.Add("create-rot",             "Create rotation BG",        false);
+#if 0
+    // Mixing disabled in task  
+    fOptions.Add("create-mix",             "Create mixed BG",           false);
     fOptions.Add("mix-t-min",     "N",     "Min Trackets to mix",       1);
     fOptions.Add("mix-t-max",     "N",     "Max Trackets to mix",       20000);
     fOptions.Add("mix-t-bins",    "N",     "Tracklet mixing bins",      20000);
     fOptions.Add("mix-ipz-bins",  "N",     "IPz mixing bins",           20);
-    fOptions.Add("cent",          "METHOD","Centrality selector",       "V0M");
-    fOptions.Add("cent-bins",     "Bins",  "Centrality bins",
-		 "0-5-10-20-30-40-50-60-70-80");
-    fOptions.Add("sig-n-std",     "X",     "Cut on weighted distance",  1.5);
-    fOptions.Add("sig-dphi-s",    "X",     "Cut on dPhi-phiBent",       -1);
-    fOptions.Add("mc-v0-scale",   "X",     "Scaling of MC V0",          0.7520);
-    fOptions.Add("fill-reco",              "Fill with new reco",        true);
-    fOptions.Add("create-inj",             "Create injection BG",       true);
-    fOptions.Add("create-rot",             "Create rotation BG",        false);
-    fOptions.Add("create-mix",             "Create mixed BG",           false);
-    fOptions.Add("phi-rot",       "X",     "Rotation BG angle",   TMath::Pi());
-    fOptions.Add("inj-scale",     "X",     "Injection BG scale",        1.);
-    fOptions.Add("scale-dtheta",           "Scale dTheta",              true);
-    fOptions.Add("dphi",          "X",     "dPhi window",               0.06);
-    fOptions.Add("dtheta",        "X",     "dTheta window",             0.025);
-    fOptions.Add("phi-shift",     "X",     "Bending shift",             0.0045);
-    fOptions.Add("remove-outliers",        "Whether to remove outliers",true);
-    fOptions.Add("outlier-phi",   "X",     "Phi outlier cut",           0.005);
-    fOptions.Add("outlier-z-eta", "X",     "Z-Eta outlier cut",         0.05);
-    fOptions.Add("check-reco",             "Check reconstruction",      false);
+#endif
     
   }
   /** 
@@ -164,16 +170,16 @@ struct MakeTrackletTrain : public TrainSetup
    */
   AliAnalysisTaskSE* CreateTask(AliAnalysisManager* mgr)
   {
-    const char*         cls ="AliTrackletTaskMulti";
-    Info("", "Creating task %p", gROOT->GetClass(cls));
-    Long_t              ret =gROOT->ProcessLine(Form("new %s(\"%s\")",cls,cls));
+    Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
+    const char*        cls = "AliTrackletTaskMulti";
+    Long_t             ret = gROOT->ProcessLine(Form("new %s(\"%s\")",cls,cls));
     AliAnalysisTaskSE* task =reinterpret_cast<AliAnalysisTaskSE*>(ret);
     mgr->AddTask(task);
 
     AliAnalysisDataContainer *out =
       mgr->CreateContainer("clist", TList::Class(),
 			   AliAnalysisManager::kOutputContainer,
-			   "trbg.root");
+			   (mc ? "trmc.root" : "trdt.root"));
     mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,out);
 
@@ -194,15 +200,30 @@ struct MakeTrackletTrain : public TrainSetup
     if (sig_dphi_s<0)
       fOptions.Set("sig-dphi-s", TMath::Sqrt(sig_n_std)*dphi);
 
+    // Enable these lines to load the code from PWGUD directory.
+    // These do not seem to be up-to-speed with the latest
+    // developments, so for now, we use private scripts - sigh!
+    //
+    // Note, PWGLF also has these scripts, but it is not clear that
+    // they are anymore current than the ones in PWGUD.
+    // 
     // gROOT->SetMacroPath(Form("%s:$ALICE_PHYSICS/PWGUD/multVScentPbPb",
-    //  gROOT->GetMacroPath()));
-    //  gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGUD/multVScentPbPb");
+    // gROOT->GetMacroPath()));
+    // gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGUD/multVScentPbPb");
     Info("CreateTasks", "Loading code");
     fRailway->LoadAux("AliITSMultRecBg.h");
     fRailway->LoadAux("AliTrackletTaskMulti.h");
     fRailway->LoadSource("AliITSMultRecBg.cxx");
     fRailway->LoadSource("AliTrackletTaskMulti.cxx");
 
+    TString trg = fOptions.Get("trig");
+    trg.ToUpper();
+    UInt_t  sel = AliVEvent::kINT7;
+    if      (trg.EqualTo("MB"))    sel = AliVEvent::kMB;
+    else if (trg.EqualTo("V0AND")) sel = AliVEvent::kINT7;
+    else if (trg.EqualTo("V0OR"))  sel = AliVEvent::kCINT5;
+    else if (trg.EqualTo("ANY"))   sel = AliVEvent::kAny;
+    
     Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
     AliAnalysisTaskSE* task = CreateTask(mgr);
     if (!task) {
@@ -210,28 +231,31 @@ struct MakeTrackletTrain : public TrainSetup
       return;
     }
     SetOnTask(task, "UseMC", mc);
+    SetOnTask(task, "TriggerSelection", sel);
     FromOption(task, "UseCentralityVar", 	"cent", 	"");
+    FromOption(task, "CheckReconstructables",   "check-reco",	false);
+    FromOption(task, "NStdDev",			"sig-n-dev",	25.);
+    FromOption(task, "ScaleDThetaBySin2T",	"scale-dtheta",	false);
+    FromOption(task, "CutOnDThetaX",	        "cut-dtheta",	false);
+    FromOption(task, "PhiWindow",		"dphi",		0.06);
+    FromOption(task, "ThetaWindow",		"dtheta",	0.025);
+    FromOption(task, "PhiShift",		"phi-shift",	0.0045);
+    FromOption(task, "PhiOverlapCut",		"outlier-phi",	0.005);
+    FromOption(task, "ZetaOverlapCut",		"outlier-z-eta",0.05);
+    FromOption(task, "PhiRot",			"phi-rot",	TMath::Pi());
+    FromOption(task, "InjScale",		"inj-scale",	1.);
+    FromOption(task, "RemoveOverlaps",		"remove-outliers",false);
+    FromOption(task, "DPhiSCut",		"sig-dphi-s",	-1.);
+    FromOption(task, "NStdCut",			"sig-n-std",	1.5);
+    FromOption(task, "ScaleMCV0",		"mc-v0-scale",	1.);
     FromOption(task, "EtaMin",			"eta-min",	-.5);
     FromOption(task, "EtaMax",			"eta-max",	+.5);
     FromOption(task, "ZVertexMin",		"ipz-min",	-7.);
     FromOption(task, "ZVertexMax",		"ipz-max",	+7.);
-    FromOption(task, "NStdCut",			"sig-n-std",	1.5);
-    FromOption(task, "DPhiSCut",		"sig-dphi-s",	-1.);
-    FromOption(task, "ScaleMCV0",		"mc-v0-scale",	0.7520);
     FromOption(task, "DoNormalReco",		"fill-reco",	false);
     FromOption(task, "DoInjection",		"create-inj",	false);
     FromOption(task, "DoRotation",		"create-rot",	false);
     // FromOption(task, "DoMixing",		"create-mix",	false);
-    FromOption(task, "PhiRot",			"phi-rot",	TMath::Pi());
-    FromOption(task, "InjScale",		"inj-scale",	1.);
-    FromOption(task, "ScaleDThetaBySin2T",	"scale-dtheta",	false);
-    FromOption(task, "PhiWindow",		"dphi",		0.06);
-    FromOption(task, "ThetaWindow",		"dtheta",	0.025);
-    FromOption(task, "PhiShift",		"phi-shift",	0.0045);
-    FromOption(task, "RemoveOverlaps",		"remove-outliers",false);
-    FromOption(task, "PhiOverlapCut",		"outlier-phi",	0.005);
-    FromOption(task, "ZetaOverlapCut",		"outlier-z-eta",0.05);
-    FromOption(task, "SetCheckReconstructables","check-reco",	false);
 
     TString centBins = fOptions.AsString("cent-bins");
     TObjArray* tokens = centBins.Tokenize("-");
@@ -244,6 +268,14 @@ struct MakeTrackletTrain : public TrainSetup
     const char* cls = "AliTrackletTaskMulti";
     gROOT->ProcessLine(Form("((%s)%p)->SetCentPercentiles((Double_t*)%p,%d)",
 			    cls, task, array.GetArray(), array.GetSize()-1));
+
+#if 0
+    gSystem->RedirectOutput("settings.txt");
+    Printf("=== Settings for %s train === ", mc ? "mc" : "dt");
+    task->Dump();
+    gSystem->RedirectOutput(0);
+#endif
+
   }
   /** 
    * Get the train setup name 
