@@ -37,6 +37,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
   , fZMQneverBlock(kTRUE)
+  , fSendRunNumber(kTRUE)
 {
   //ctor
 }
@@ -200,7 +201,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //so we can properly mark the last block for multipart ZMQ sending later
     const AliHLTComponentBlockData* inputBlock = NULL;
     std::vector<int> selectedBlockIdx;
-    for (int iBlock = 0;
+    int iBlock = 0;
+    for (iBlock = 0;
          iBlock < evtData.fBlockCnt;
          iBlock++) 
     {
@@ -219,6 +221,16 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       {
         selectedBlockIdx.push_back(iBlock);
       }
+    }
+
+    if (fSendRunNumber && iBlock>0)
+    {
+      string runNumberString = "run=";
+      char tmp[34];
+      sprintf(tmp,"%i",GetRunNo()); 
+      runNumberString+=tmp;
+      zmq_send(fZMQout, "INFO", 4, ZMQ_SNDMORE);
+      zmq_send(fZMQout, runNumberString.data(), runNumberString.size(), ZMQ_SNDMORE);
     }
 
     //send the selected blocks
@@ -286,19 +298,23 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
         return -EINVAL;
     }
   }
+  else if (option.EqualTo("SendRunNumber"))
+  {
+    fSendRunNumber=(value.EqualTo("0") || value.EqualTo("no") || value.EqualTo("false"))?kFALSE:kTRUE;
+  }
 
-  if (option.EqualTo("pushback-period"))
+  else if (option.EqualTo("pushback-period"))
   {
     HLTMessage(Form("Setting pushback delay to %i", atoi(value.Data())));
     fPushbackDelayPeriod = atoi(value.Data());
   }
 
-  if (option.EqualTo("IncludePrivateBlocks"))
+  else if (option.EqualTo("IncludePrivateBlocks"))
   {
     fIncludePrivateBlocks=kTRUE;
   }
 
-  if (option.EqualTo("ZMQneverBlock"))
+  else if (option.EqualTo("ZMQneverBlock"))
   {
     if (value.EqualTo("0") || value.EqualTo("no") || value.Contains("false",TString::kIgnoreCase))
       fZMQneverBlock = kFALSE;
