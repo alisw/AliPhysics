@@ -21,8 +21,10 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliESDEvent.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 
@@ -39,6 +41,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
         AliAnalysisTaskSE(),
         fAnalysisUtil(NULL),
         fHistos(NULL),
+        fRequestAnalysisUtil(kTRUE),
         fTriggerStringFromPatches(kFALSE)
 {
   for(int itrg = 0; itrg < kEPRntrig; itrg++){
@@ -54,6 +57,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     AliAnalysisTaskSE(name),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
   for(int itrg = 0; itrg < kEPRntrig; itrg++){
@@ -80,8 +84,11 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   CreateEnergyBinning(energybinning);
   CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
-  TString triggers[15] = {"MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
-  TString patchtype[5] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7"};
+  TString triggers[18] = {"MB", "EMC7", "DMC7",
+      "EJ1", "EJ2", "EG1", "EG2", "EJ1", "EJ2", "EG1", "EG2",
+      "MBexcl", "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl"
+  };
+  TString patchtype[10] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   for(TString *trg = triggers; trg < triggers+15; trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
@@ -117,14 +124,22 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kEPREJ1, patches),
       isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kEPREJ2, patches),
       isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kEPREG1, patches),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kEPREG2, patches);
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kEPREG2, patches),
+      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7") && IsOfflineSelected(kEPRDL0, patches),
+      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1") && IsOfflineSelected(kEPRDJ1, patches),
+      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2") && IsOfflineSelected(kEPRDJ2, patches),
+      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1") && IsOfflineSelected(kEPRDG1, patches),
+      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2") && IsOfflineSelected(kEPRDG2, patches);
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
-  // Fill reference distribution for the primary vertex before any z-cut
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+    // Fill reference distribution for the primary vertex before any z-cut
+    if(fRequestAnalysisUtil){
+      if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
+      if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
+      if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  }
   // Apply vertex z cut
   if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
 
@@ -132,43 +147,67 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
     // Check for exclusive classes
-    if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
+    if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
       fHistos->FillTH1("hEventCountMBexcl", 1);
     }
   }
+
+  // L0 triggers
   if(isEMC7){
     fHistos->FillTH1("hEventCountEMC7", 1);
+    if(!(isEJ1 || isEJ2 || isEG1 || isEG2)){
+      fHistos->FillTH1("hEventCountEMC7excl", 1);
+    }
   }
+  if(isDMC7){
+    fHistos->FillTH1("hEventCountDMC7", 1);
+    if(!(isDJ1 || isDJ2 || isDG1 || isDG2)){
+      fHistos->FillTH1("hEventCountDMC7excl", 1);
+    }
+  }
+
+  // L1 jet triggers
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE1combined", 1);
-    } else {
-      fHistos->FillTH1("hEventCountE1Jonly", 1);
-    }
-
   }
+  if(isDJ1){
+    fHistos->FillTH1("hEventCountEJ1", 1);
+  }
+
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
     // Check for exclusive classes
     if(!isEJ1){
       fHistos->FillTH1("hEventCountEJ2excl", 1);
     }
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE2combined", 1);
-    } else {
-      fHistos->FillTH1("hEventCountE2Jonly", 1);
-    }
-
   }
+  if(isDJ2){
+    fHistos->FillTH1("hEventCountDJ2", 1);
+    // Check for exclusive classes
+    if(!isDJ1){
+      fHistos->FillTH1("hEventCountDJ2excl", 1);
+    }
+  }
+
+  // L1 gamma triggers
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1);
+  }
+  if(isDG1){
+    fHistos->FillTH1("hEventCountDG1", 1);
   }
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
     // Check for exclusive classes
     if(!isEG1){
       fHistos->FillTH1("hEventCountEG2excl", 1);
+    }
+  }
+  if(isDG2){
+    fHistos->FillTH1("hEventCountDG2", 1);
+    // Check for exclusive classes
+    if(!isEG1){
+      fHistos->FillTH1("hEventCountDG2excl", 1);
     }
   }
 
@@ -182,19 +221,31 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
 
   Double_t energy, eta, phi, et;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
+    if(!IsOfflineSimplePatch(*patchIter)) continue;
     AliEmcalTriggerPatchInfo *patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
+
+    bool isDCAL = SelectDCALPatch(*patchIter), isSingleShower = SelectSingleShowerPatch(*patchIter), isJetPatch = SelectJetPatch(*patchIter);
 
     std::vector<TString> patchnames;
-    if(patch->IsJetHighSimple())
-      patchnames.push_back("EJ1");
-    if(patch->IsJetLowSimple())
-      patchnames.push_back("EJ2");
-    if(patch->IsGammaHighSimple())
-      patchnames.push_back("EG1");
-    if(patch->IsGammaLowSimple()){
-      patchnames.push_back("EG2");
-      patchnames.push_back("EMC7");   // Treat EG2 patch also as EMC7 patch (single shower);
+    if(isJetPatch){
+      if(isDCAL){
+        patchnames.push_back("DJ1");
+        patchnames.push_back("DJ2");
+      } else {
+        patchnames.push_back("EJ1");
+        patchnames.push_back("EJ2");
+      }
+    }
+    if(isSingleShower){
+      if(isDCAL){
+        patchnames.push_back("DMC7");
+        patchnames.push_back("DG1");
+        patchnames.push_back("DG2");
+      } else {
+        patchnames.push_back("EMC7");
+        patchnames.push_back("EG1");
+        patchnames.push_back("EG2");
+      }
     }
     if(!patchnames.size()){
       // Undefined patch type - ignore
@@ -212,47 +263,66 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       if(isMinBias){
         FillPatchHistograms("MB", *nameit, energy, et, eta, phi);
         // check for exclusive classes
-        if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
+        if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
           FillPatchHistograms("MBexcl", *nameit, energy, et, eta, phi);
         }
       }
+
       if(isEMC7){
         FillPatchHistograms("EMC7", *nameit, energy, et, eta, phi);
-      }
-      if(isEJ1){
-        FillPatchHistograms("EJ1", *nameit, energy, et, eta, phi);
-        if(isEG1 || isEG2) {
-          FillPatchHistograms("E1combined", *nameit, energy, et, eta, phi);
-        } else {
-          FillPatchHistograms("E1Jonly", *nameit, energy, et, eta, phi);
+        if(!(isEJ1 || isEJ2 || isEG1 || isEG2)){
+          FillPatchHistograms("EMC7excl", *nameit, energy, et, eta, phi);
         }
       }
+      if(isDMC7){
+        FillPatchHistograms("DMC7", *nameit, energy, et, eta, phi);
+        if(!(isDJ1 || isDJ2 || isDG1 || isDG2)){
+          FillPatchHistograms("DMC7excl", *nameit, energy, et, eta, phi);
+        }
+      }
+
+      if(isEJ1){
+        FillPatchHistograms("EJ1", *nameit, energy, et, eta, phi);
+      }
+      if(isDJ1){
+        FillPatchHistograms("DJ1", *nameit, energy, et, eta, phi);
+      }
+
+
       if(isEJ2){
         FillPatchHistograms("EJ2", *nameit, energy, et, eta, phi);
         // check for exclusive classes
         if(!isEJ1){
           FillPatchHistograms("EJ2excl", *nameit, energy, et, eta, phi);
         }
-        if(isEG1 || isEG2){
-          FillPatchHistograms("E2combined", *nameit, energy, et, eta, phi);
-        } else {
-          FillPatchHistograms("E2Jonly", *nameit, energy, et, eta, phi);
+      }
+      if(isDJ2){
+        FillPatchHistograms("DJ2", *nameit, energy, et, eta, phi);
+        // check for exclusive classes
+        if(!isDJ1){
+          FillPatchHistograms("DJ2excl", *nameit, energy, et, eta, phi);
         }
       }
+
       if(isEG1){
         FillPatchHistograms("EG1", *nameit, energy, et, eta, phi);
-        if(!(isEJ1 || isEJ2)){
-          FillPatchHistograms("E1Gonly", *nameit, energy, et, eta, phi);
-        }
       }
+      if(isDG1){
+        FillPatchHistograms("DG1", *nameit, energy, et, eta, phi);
+      }
+
       if(isEG2){
         FillPatchHistograms("EG2", *nameit, energy, et, eta, phi);
         // check for exclusive classes
         if(!isEG1){
           FillPatchHistograms("EG2excl", *nameit, energy, et, eta, phi);
         }
-        if(!(isEJ2 || isEJ1)){
-          FillPatchHistograms("E2Gonly", *nameit, energy, et, eta, phi);
+      }
+      if(isDG2){
+        FillPatchHistograms("DG2", *nameit, energy, et, eta, phi);
+        // check for exclusive classes
+        if(!isDG1){
+          FillPatchHistograms("DG2excl", *nameit, energy, et, eta, phi);
         }
       }
     }
@@ -341,18 +411,24 @@ void AliAnalysisTaskEmcalPatchesRef::CreateLinearBinning(TArrayD& binning, int n
  */
 Bool_t AliAnalysisTaskEmcalPatchesRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kEPREL0) || (trgcls == kEPREG1) || (trgcls == kEPREG2));
+  bool isSingleShower = ((trgcls == kEPREL0) || (trgcls == kEPREG1) || (trgcls == kEPREG2) ||
+      (trgcls == kEPRDL0) || (trgcls == kEPRDG1) || (trgcls == kEPRDG2)),
+      isDCAL = ((trgcls == kEPRDL0) || (trgcls == kEPRDG1) || (trgcls == kEPRDG2) || (trgcls == kEPRDJ1) || (trgcls == kEPRDJ2));
   int nfound = 0;
-  AliEmcalTriggerPatchInfo *patch = NULL;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!patch->IsGammaLowSimple()) continue;
+    bool isDCALpatch = SelectDCALPatch(*patchIter);
+    if(isDCAL){
+      if(!isDCALpatch) continue;
     } else {
-      if(!patch->IsJetLowSimple()) continue;
+      if(isDCALpatch) continue;
     }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+    if(!IsOfflineSimplePatch(*patchIter)) continue;
+    if(isSingleShower){
+      if(!SelectSingleShowerPatch(*patchIter)) continue;
+    } else{
+      if(!SelectJetPatch(*patchIter)) continue;
+    }
+    if(GetPatchEnergy(*patchIter) > fOfflineEnergyThreshold[trgcls]) nfound++;
   }
   return nfound > 0;
 }
@@ -393,6 +469,85 @@ TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const 
     triggerstring += "EG2";
   }
   return triggerstring;
+}
+
+void AliAnalysisTaskEmcalPatchesRef::GetPatchBoundaries(TObject *o, Double_t *boundaries) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    boundaries[0] = patch->GetEtaMin();
+    boundaries[1] = patch->GetEtaMax();
+    boundaries[2] = patch->GetPhiMin();
+    boundaries[3] = patch->GetPhiMax();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch){
+      boundaries[0] = newpatch->GetEtaMin();
+      boundaries[1] = newpatch->GetEtaMax();
+      boundaries[2] = newpatch->GetPhiMin();
+      boundaries[3] = newpatch->GetPhiMax();
+    }
+  }
+
+}
+
+bool AliAnalysisTaskEmcalPatchesRef::IsOfflineSimplePatch(TObject *o) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    return patch->IsOfflineSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsOfflineSimple();
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalPatchesRef::SelectDCALPatch(TObject *o) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    return patch->GetRowStart() >= 64;
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->GetRowStart() >= 64;
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalPatchesRef::SelectSingleShowerPatch(TObject *o) const{
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsGammaLowSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsGammaLowSimple();
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalPatchesRef::SelectJetPatch(TObject *o) const{
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsJetLowSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsJetLowSimple();
+  }
+  return false;
+}
+
+
+double AliAnalysisTaskEmcalPatchesRef::GetPatchEnergy(TObject *o) const {
+  double energy = 0.;
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    energy = patch->GetPatchE();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) energy = newpatch->GetPatchE();
+  }
+  return energy;
 }
 
 

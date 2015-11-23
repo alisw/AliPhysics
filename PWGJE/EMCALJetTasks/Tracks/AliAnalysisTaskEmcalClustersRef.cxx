@@ -22,11 +22,13 @@
 #include <TClonesArray.h>
 #include <THashList.h>
 #include <TLorentzVector.h>
+#include <TMath.h>
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
@@ -49,6 +51,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fHistos(NULL),
     fGeometry(NULL),
     fClusterContainer(""),
+    fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
   for(int itrg = 0; itrg < kECRntrig; itrg++){
@@ -66,6 +69,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fHistos(NULL),
     fGeometry(NULL),
     fClusterContainer(""),
+    fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
   for(int itrg = 0; itrg < kECRntrig; itrg++){
@@ -88,16 +92,16 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
 
   TArrayD energybinning;
   CreateEnergyBinning(energybinning);
-  TArrayD smbinning(14); CreateLinearBinning(smbinning, 14, -0.5, 13.5);
+  TArrayD smbinning(14); CreateLinearBinning(smbinning, 21, -0.5, 20.5);
   TArrayD etabinning; CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
-  TString triggers[17] = {
-      "MB", "EMC7",
-      "EJ1", "EJ2", "EG1", "EG2",
-      "EMC7excl","EG1excl", "EG2excl", "EJ1excl", "EJ2excl",
-      "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
+  TString triggers[18] = {
+      "MB", "EMC7", "DMC7"
+      "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
+      "MBexcl", "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl"
   };
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
+  Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hClusterEnergy%s", trg->Data()), Form("Cluster energy for trigger class %s", trg->Data()), energybinning);
@@ -112,21 +116,21 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hEtaET%s", trg->Data()), Form("Cluster transverse energy vs. eta for trigger class %s", trg->Data()), etabinning, energybinning);
     fHistos->CreateTH2(Form("hEtaEnergyFired%s", trg->Data()), Form("Cluster energy vs. eta for trigger class %s, firing the trigger", trg->Data()), etabinning, energybinning);
     fHistos->CreateTH2(Form("hEtaETFired%s", trg->Data()), Form("Cluster transverse energy vs. eta for trigger class %s, firing the trigger", trg->Data()), etabinning, energybinning);
-    for(int ism = 0; ism < 12; ism++){
+    for(int ism = 0; ism < 20; ism++){
       fHistos->CreateTH2(Form("hEtaEnergySM%d%s", ism, trg->Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s", ism, trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaETSM%d%s", ism, trg->Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s", ism, trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaEnergyFiredSM%d%s", ism, trg->Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaETFiredSM%d%s", ism, trg->Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg->Data()), etabinning, energybinning);
     }
-    for(int isec = 4; isec < 10; isec++){
-      fHistos->CreateTH2(Form("hEtaEnergySec%d%s", isec, trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", isec, trg->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETSec%d%s", isec, trg->Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s", isec, trg->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", isec, trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", isec, trg->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETFiredSec%d%s", isec, trg->Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s, firing the trigger", isec, trg->Data()), etabinning, energybinning);
+    for(int isec = 0; isec < 01; isec++){
+      fHistos->CreateTH2(Form("hEtaEnergySec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaETSec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaETFiredSec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
     }
     for(int ien = 0; ien < 5; ien++){
-      fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
-      fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
+      fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 200, 0, 2*TMath::Pi());
+      fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 200, -0.7, 0.7, 200, 0, 2*TMath::Pi());
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
@@ -161,72 +165,88 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
       isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kECREG1, triggerpatches),
       isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kECREG2, triggerpatches),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7") && IsOfflineSelected(kECREL0, triggerpatches);
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7") && IsOfflineSelected(kECREL0, triggerpatches),
+      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1") && IsOfflineSelected(kECREJ1, triggerpatches),
+      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
+      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1") && IsOfflineSelected(kECREG1, triggerpatches),
+      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2") && IsOfflineSelected(kECREG2, triggerpatches),
+      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7") && IsOfflineSelected(kECREL0, triggerpatches);
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
   // Fill reference distribution for the primary vertex before any z-cut
-  if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  if(fRequestAnalysisUtil){
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
+    if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
+    if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  }
   // Apply vertex z cut
   if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
+    if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
+      fHistos->FillTH1("hEventCountMBexcl", 1);
+    }
   }
+
   if(isEMC7){
     fHistos->FillTH1("hEventCountEMC7", 1);
-    if(!isMinBias){
+    if(!(isEJ1 || isEJ2 || isEG1 || isEG2)){
       fHistos->FillTH1("hEventCountEMC7excl", 1);
     }
   }
+  if(isDMC7){
+    fHistos->FillTH1("hEventCountDMC7", 1);
+    if(!(isDJ1 || isDJ2 || isDG1 || isDG2)){
+      fHistos->FillTH1("hEventCountEMC7excl", 1);
+    }
+  }
+
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
     // Check for exclusive classes
-    if(!(isMinBias)){
+    if(!isEJ1){
       fHistos->FillTH1("hEventCountEJ2excl", 1);
     }
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE2combined", 1);
-    } else {
-      fHistos->FillTH1("hEventCountE2Jonly", 1);
-    }
-
   }
+  if(isDJ2){
+    fHistos->FillTH1("hEventCountDJ2", 1);
+    // Check for exclusive classes
+    if(!isDJ1){
+      fHistos->FillTH1("hEventCountDJ2excl", 1);
+    }
+  }
+
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
-    // Check for exclusive classes
-    if(!(isMinBias || isEJ2)){
-      fHistos->FillTH1("hEventCountEJ1excl", 1);
-    }
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE1combined", 1);
-    } else {
-      fHistos->FillTH1("hEventCountE1Jonly", 1);
-    }
   }
+  if(isDJ1){
+    fHistos->FillTH1("hEventCountDJ1", 1);
+  }
+
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
     // Check for exclusive classes
-    if(!(isMinBias)){
+    if(!(isEG1)){
       fHistos->FillTH1("hEventCountEG2excl", 1);
     }
-    if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE2Gonly", 1);
+  }
+  if(isDG2){
+    fHistos->FillTH1("hEventCountDG2", 1);
+    // Check for exclusive classes
+    if(!(isDG1)){
+      fHistos->FillTH1("hEventCountDG2excl", 1);
     }
   }
+
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1);
-    // Check for exclusive classes
-    if(!(isMinBias || isEG2)){
-      fHistos->FillTH1("hEventCountEG1excl", 1);
-    }
-    if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE1Gonly", 1);
-    }
+  }
+  if(isDG1){
+    fHistos->FillTH1("hEventCountDG1", 1);
   }
 
   TClonesArray *clusterArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fClusterContainer.Data()));
@@ -252,11 +272,20 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     // fill histograms allEta
     if(isMinBias){
       FillClusterHistograms("MB", energy, posvec.Et(), eta, phi, NULL);
+      if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
+        FillClusterHistograms("hMBexcl", energy, posvec.Et(), eta, phi, NULL);
+      }
     }
     if(isEMC7){
       FillClusterHistograms("EMC7", energy, posvec.Et(), eta, phi, NULL);
-      if(!isMinBias){
+      if(!(isEJ1 || isEJ2 || isEG1 || isEG2)){
         FillClusterHistograms("EMC7excl", energy, posvec.Et(), eta, phi, NULL);
+      }
+    }
+    if(isDMC7){
+      FillClusterHistograms("DMC7", energy, posvec.Et(), eta, phi, NULL);
+      if(!(isDJ1 || isDJ2 || isDG1 || isDG2)){
+        FillClusterHistograms("DMC7excl", energy, posvec.Et(), eta, phi, NULL);
       }
     }
     if(isEJ2){
@@ -264,50 +293,56 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       FindPatchesForTrigger("EJ2", triggerpatches, ej2patches);
       FillClusterHistograms("EJ2", energy, posvec.Et(), eta, phi, &ej2patches);
       // check for exclusive classes
-      if(!isMinBias){
+      if(!isEJ1){
         FillClusterHistograms("EJ2excl", energy, posvec.Et(), eta, phi, &ej2patches);
       }
-      if(isEG1 || isEG2){
-        FillClusterHistograms("E2combined", energy, posvec.Et(), eta, phi, &ej2patches);
-      } else {
-        FillClusterHistograms("E2Jonly", energy, posvec.Et(), eta, phi, &ej2patches);
+    }
+    if(isDJ2){
+      TList dj2patches;
+      FindPatchesForTrigger("DJ2", triggerpatches, dj2patches);
+      FillClusterHistograms("DJ2", energy, posvec.Et(), eta, phi, &dj2patches);
+      // check for exclusive classes
+      if(!isDJ1){
+        FillClusterHistograms("DJ2excl", energy, posvec.Et(), eta, phi, &dj2patches);
       }
     }
     if(isEJ1){
       TList ej1patches;
       FindPatchesForTrigger("EJ1", triggerpatches, ej1patches);
       FillClusterHistograms("EJ1", energy, posvec.Et(), eta, phi, &ej1patches);
-      // check for exclusive classes
-      if(!(isMinBias || isEJ2)){
-        FillClusterHistograms("EJ1excl", energy, posvec.Et(), eta, phi, &ej1patches);
-      }
-      if(isEG1 || isEG2) {
-        FillClusterHistograms("E1combined", energy, posvec.Et(), eta, phi, &ej1patches);
-      } else {
-        FillClusterHistograms("E1Jonly", energy, posvec.Et(), eta, phi, &ej1patches);
-      }
+    }
+    if(isDJ1){
+      TList dj1patches;
+      FindPatchesForTrigger("DJ1", triggerpatches, dj1patches);
+      FillClusterHistograms("DJ1", energy, posvec.Et(), eta, phi, &dj1patches);
     }
     if(isEG2){
       TList eg2patches;
       FindPatchesForTrigger("EG2", triggerpatches, eg2patches);
       FillClusterHistograms("EG2", energy, posvec.Et(), eta, phi, &eg2patches);
       // check for exclusive classes
-      if(!isMinBias){
+      if(!isEG1){
         FillClusterHistograms("EG2excl", energy, posvec.Et(), eta, phi, &eg2patches);
       }
-      if(!(isEJ2 || isEJ1)){
-        FillClusterHistograms("E2Gonly", energy, posvec.Et(), eta, phi, &eg2patches);
+    }
+    if(isDG2){
+      TList dg2patches;
+      FindPatchesForTrigger("DG2", triggerpatches, dg2patches);
+      FillClusterHistograms("DG2", energy, posvec.Et(), eta, phi, &dg2patches);
+      // check for exclusive classes
+      if(!isDG1){
+        FillClusterHistograms("DG2excl", energy, posvec.Et(), eta, phi, &dg2patches);
       }
     }
     if(isEG1){
       TList eg1patches;
       FindPatchesForTrigger("EG1", triggerpatches, eg1patches);
       FillClusterHistograms("EG1", energy, posvec.Et(), eta, phi, &eg1patches);
-      if(!(isEG2 || isMinBias))
-        FillClusterHistograms("EG1excl", energy, posvec.Et(), eta, phi, &eg1patches);
-      if(!(isEJ1 || isEJ2)){
-        FillClusterHistograms("E1Gonly", energy, posvec.Et(), eta, phi, &eg1patches);
-      }
+    }
+    if(isDG1){
+      TList dg1patches;
+      FindPatchesForTrigger("DG1", triggerpatches, dg1patches);
+      FillClusterHistograms("DG1", energy, posvec.Et(), eta, phi, &dg1patches);
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
@@ -326,7 +361,10 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(TString triggerclass
     fHistos->FillTH2(Form("hClusterETSM%s", triggerclass.Data()), supermoduleID, transverseenergy);
     fHistos->FillTH2(Form("hEtaEnergySM%d%s", supermoduleID, triggerclass.Data()), eta, energy);
     fHistos->FillTH2(Form("hEtaETSM%d%s", supermoduleID, triggerclass.Data()), eta, transverseenergy);
-    sector = 4 + int(supermoduleID/2);
+    if(supermoduleID < 12)
+      sector = 4 + int(supermoduleID/2); // EMCAL
+    else
+      sector = 13 + int((supermoduleID-12)/2);  // DCAL
     fHistos->FillTH2(Form("hEtaEnergySec%d%s", sector, triggerclass.Data()), eta, energy);
     fHistos->FillTH2(Form("hEtaETSec%d%s", sector, triggerclass.Data()), eta, transverseenergy);
   }
@@ -415,11 +453,12 @@ void AliAnalysisTaskEmcalClustersRef::CreateLinearBinning(TArrayD& binning, int 
 Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const {
   Bool_t hasfound = kFALSE;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
-    Double_t etamin = TMath::Min(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
-        etamax = TMath::Max(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
-        phimin = TMath::Min(mypatch->GetPhiMin(), mypatch->GetPhiMax()),
-        phimax = TMath::Max(mypatch->GetPhiMin(), mypatch->GetPhiMax());
+    Double_t boundaries[4];
+    GetPatchBoundaries(*patchIter, boundaries);
+    Double_t etamin = TMath::Min(boundaries[0], boundaries[1]),
+        etamax = TMath::Max(boundaries[0], boundaries[1]),
+        phimin = TMath::Min(boundaries[2], boundaries[3]),
+        phimax = TMath::Max(boundaries[2], boundaries[3]);
     if(etaclust > etamin && etaclust < etamax && phiclust > phimin && phiclust < phimax){
       hasfound = kTRUE;
       break;
@@ -444,17 +483,30 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
   if(triggerclass == "EG2") myclass = kECREG2;
   if(triggerclass == "EJ1") myclass = kECREJ1;
   if(triggerclass == "EJ2") myclass = kECREJ2;
-  bool isSingleShower = ((myclass == kECREG1) || (triggerclass == kECREG2) || (myclass == kECREL0));
-  AliEmcalTriggerPatchInfo *mypatch = NULL;
+  if(triggerclass == "DMC7") myclass = kECRDL0;
+  if(triggerclass == "DG1") myclass = kECRDG1;
+  if(triggerclass == "DG2") myclass = kECRDG2;
+  if(triggerclass == "DJ1") myclass = kECRDJ1;
+  if(triggerclass == "DJ2") myclass = kECRDJ2;
+  bool isSingleShower = (
+      (myclass == kECREG1) || (triggerclass == kECREG2) || (myclass == kECREL0)
+      || (myclass == kECRDG1) || (triggerclass == kECRDG2) || (myclass == kECRDL0)
+  ),
+      isDCAL = ((myclass == kECRDL0) || (myclass == kECRDG1) || (myclass == kECRDG2) || (myclass == kECRDJ1) || (myclass == kECRDJ2));
+  AliEmcalTriggerPatchInfoAPV1 *mypatch = NULL;
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
-    mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
-    if(!mypatch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!mypatch->IsGammaLowSimple()) continue;
+    if(!IsOfflineSimplePatch(*patchiter)) continue;
+    if(isDCAL){
+      if(!SelectDCALPatch(*patchiter)) continue;
     } else {
-      if(!mypatch->IsJetLowSimple()) continue;
+      if(SelectDCALPatch(*patchiter)) continue;
     }
-    if(mypatch->GetPatchE() > fOfflineEnergyThreshold[myclass]) foundtriggers.Add(mypatch);
+    if(isSingleShower){
+      if(!SelectSingleShowerPatch(*patchiter)) continue;
+    } else {
+      if(!SelectJetPatch(*patchiter)) continue;
+    }
+    if(GetPatchEnergy(*patchiter) > fOfflineEnergyThreshold[myclass]) foundtriggers.Add(mypatch);
   }
 }
 
@@ -468,18 +520,24 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
  */
 Bool_t AliAnalysisTaskEmcalClustersRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kECREL0) || (trgcls == kECREG1) || (trgcls == kECREG2));
+  bool isSingleShower = ((trgcls == kECREL0) || (trgcls == kECREG1) || (trgcls == kECREG2) ||
+      (trgcls == kECRDL0) || (trgcls == kECRDG1) || (trgcls == kECRDG2)),
+      isDCAL = ((trgcls == kECRDL0) || (trgcls == kECRDG1) || (trgcls == kECRDG2) || (trgcls == kECRDJ1) || (trgcls == kECRDJ2));
   int nfound = 0;
-  AliEmcalTriggerPatchInfo *patch = NULL;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!patch->IsGammaLowSimple()) continue;
+    bool isDCALpatch = SelectDCALPatch(*patchIter);
+    if(isDCAL){
+      if(!isDCALpatch) continue;
     } else {
-      if(!patch->IsJetLowSimple()) continue;
+      if(isDCALpatch) continue;
     }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+    if(!IsOfflineSimplePatch(*patchIter)) continue;
+    if(isSingleShower){
+      if(!SelectSingleShowerPatch(*patchIter)) continue;
+    } else{
+      if(!SelectJetPatch(*patchIter)) continue;
+    }
+    if(GetPatchEnergy(*patchIter) > fOfflineEnergyThreshold[trgcls]) nfound++;
   }
   return nfound > 0;
 }
@@ -521,5 +579,83 @@ TString AliAnalysisTaskEmcalClustersRef::GetFiredTriggerClassesFromPatches(const
   return triggerstring;
 }
 
+void AliAnalysisTaskEmcalClustersRef::GetPatchBoundaries(TObject *o, Double_t *boundaries) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    boundaries[0] = patch->GetEtaMin();
+    boundaries[1] = patch->GetEtaMax();
+    boundaries[2] = patch->GetPhiMin();
+    boundaries[3] = patch->GetPhiMax();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch){
+      boundaries[0] = newpatch->GetEtaMin();
+      boundaries[1] = newpatch->GetEtaMax();
+      boundaries[2] = newpatch->GetPhiMin();
+      boundaries[3] = newpatch->GetPhiMax();
+    }
+  }
+
+}
+
+bool AliAnalysisTaskEmcalClustersRef::IsOfflineSimplePatch(TObject *o) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    return patch->IsOfflineSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsOfflineSimple();
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalClustersRef::SelectDCALPatch(TObject *o) const {
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    return patch->GetRowStart() >= 64;
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->GetRowStart() >= 64;
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalClustersRef::SelectSingleShowerPatch(TObject *o) const{
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsGammaLowSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsGammaLowSimple();
+  }
+  return false;
+}
+
+bool AliAnalysisTaskEmcalClustersRef::SelectJetPatch(TObject *o) const{
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsJetLowSimple();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) return newpatch->IsJetLowSimple();
+  }
+  return false;
+}
+
+
+double AliAnalysisTaskEmcalClustersRef::GetPatchEnergy(TObject *o) const {
+  double energy = 0.;
+  AliEmcalTriggerPatchInfo *patch(NULL);
+  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
+    if(!patch->IsOfflineSimple()) return false;
+    energy = patch->GetPatchE();
+  } else {
+    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
+    if(newpatch) energy = newpatch->GetPatchE();
+  }
+  return energy;
+}
 
 } /* namespace EMCalTriggerPtAnalysis */
