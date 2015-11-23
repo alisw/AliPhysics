@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     gEve->GetDefaultViewer()->SetElementName("3D View");
     gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
     gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
-    gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
+    gEve->RegisterGeometryAlias("Default", Form("%s/resources/geometry/default_geo.root", evedir.Data()));
 
     try {
         AliEveConfigManager::InitializeMaster(storageManager);

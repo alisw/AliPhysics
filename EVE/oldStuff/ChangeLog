@@ -579,10 +579,10 @@
 
 2007-03-25  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	* alice-data/alice_fullgeo.root:
+	* resources/geometry/alice_fullgeo.root:
 	Store latest version of ideal geometry.
 
-	* alice-data/gentle_geo.root:
+	* resources/geometry/gentle_geo.root:
 	* alice-macros/geom_gentle.C:
 	New files: reasonably small extract of geometry and a macro to
 	load it.

@@ -94,7 +94,7 @@ void extractGeom(string detector="")
         cout<<"\n\ncouldn't create output file"<<endl;
     }
     
-    TFile *geomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo.root",gSystem->Getenv("ALICE_ROOT")));
+    TFile *geomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo.root",gSystem->Getenv("ALICE_ROOT")));
     TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) geomFile->Get("Gentle");
     TList *list = gse->GetElements(); // list with all sub-detectors in file
     
@@ -317,7 +317,7 @@ void extractGeom(string detector="")
     }
     else if(detector=="MUON1")
     {
-        TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
+        TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
         TEveGeoShapeExtract* gsem = (TEveGeoShapeExtract*) muonGeomFile->Get("Gentle MUON");
         TList *muonList = gsem->GetElements(); // list with all sub-detectors in file
         
@@ -418,7 +418,7 @@ void extractGeom(string detector="")
     }
     else if(detector=="TRD")
     {
-        TFile *trdGeomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo_trd.root",gSystem->Getenv("ALICE_ROOT")));
+        TFile *trdGeomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo_trd.root",gSystem->Getenv("ALICE_ROOT")));
         TEveGeoShapeExtract* gset = (TEveGeoShapeExtract*) trdGeomFile->Get("Gentle TRD");
         TGeoPgon *trdShape = gset->GetShape();
         
@@ -450,7 +450,7 @@ void extractGeom(string detector="")
     }
     else if(detector=="EMCAL")
     {
-        TFile *emcalGeomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo_emcal.root",gSystem->Getenv("ALICE_ROOT")));
+        TFile *emcalGeomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo_emcal.root",gSystem->Getenv("ALICE_ROOT")));
         TEveGeoShapeExtract* gsee = (TEveGeoShapeExtract*) emcalGeomFile->Get("Gentle EMCAL");
         TGeoPgon *emcalShape = gsee->GetShape();
         
@@ -501,7 +501,7 @@ void muon2()
     //                                                                                  //
     //----------------------------------------------------------------------------------//
     
-    TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
+    TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
     TEveGeoShapeExtract* gsem = (TEveGeoShapeExtract*) muonGeomFile->Get("Gentle MUON");
     TList *muonList = gsem->GetElements(); // list with all sub-detectors in file
     
@@ -1106,7 +1106,7 @@ void muon3()
     //                                                                                  //
     //----------------------------------------------------------------------------------//
     
-    TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/alice-data/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
+    TFile *muonGeomFile = TFile::Open(Form("%s/../src/EVE/resources/geometry/gentle_geo_muon.root",gSystem->Getenv("ALICE_ROOT")));
     TEveGeoShapeExtract* gsem = (TEveGeoShapeExtract*) muonGeomFile->Get("Gentle MUON");
     TList *muonList = gsem->GetElements(); // list with all sub-detectors in file
     

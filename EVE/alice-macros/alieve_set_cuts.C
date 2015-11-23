@@ -922,7 +922,7 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
 //   hframe = new TGHorizontalFrame(geometry, 150, 20, kFixedWidth);
 
-//   TGPictureButton* b1 = new TGPictureButton(hframe, gClient->GetPicture("$ALICE_ROOT/EVE/alice-data/ALICE_logo.png"));
+//   TGPictureButton* b1 = new TGPictureButton(hframe, gClient->GetPicture("$ALICE_ROOT/EVE/resources/geometry/ALICE_logo.png"));
 
 //   hframe->AddFrame(b1, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
 

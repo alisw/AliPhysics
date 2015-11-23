@@ -13,43 +13,42 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+# EVE executables
+
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/EVE/aliconvertertest
+include_directories(
+                    ${AliRoot_SOURCE_DIR}/EVE/alieve_main
+                    ${AliRoot_SOURCE_DIR}/EVE/aliconvertertest
                    )
 
 # Additional include folders in alphabetical order
-include_directories(${AliRoot_SOURCE_DIR}/EVE/Converter
+include_directories(
+                    ${ROOT_INCLUDE_DIR}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/EVE/Converter
+                    ${AliRoot_SOURCE_DIR}/EVE/EveBase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
-# alistorage executable
+
+# aliconvertertest executable
 add_executable(aliconvertertest aliconvertertest.cxx)
 target_link_libraries(aliconvertertest Converter STEERBase STEER ESD)
 
-set(MODULE_COMPILE_FLAGS)
-set(MODULE_LINK_FLAGS)
+# alieve executable
+add_executable(alieve alieve_main.cxx)
+target_link_libraries(alieve EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree VMC STEER ESD CDB AOD RAWDatabase RAWDatarec Thread ANALYSIS HLTbase GenVector GeomPainter Proof Gui XMLParser ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim Ged RGL AliHLTHOMER ANALYSISaliceBase XMLIO RAWDatasim HistPainter ITSsim Spectrum ${LIB_FTGL} GLEW  STEERBase EveBase Eve Core Rint ASImage)
 
-if(DATE_FOUND)
-    set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
-endif(DATE_FOUND)
-
-# Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
-
-# System dependent: Modify the way the library is build
-if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
-endif(${CMAKE_SYSTEM} MATCHES Darwin)
-
-# Setting target compile and linking flags
-set_target_properties(aliconvertertest PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
-set_target_properties(aliconvertertest PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
-
-if(PYTHIA6)
-    target_link_libraries(aliconvertertest EVGEN HepMC HepMCParser)
-endif(PYTHIA6)
+if(ZEROMQ_FOUND)
+    target_link_libraries(alieve MONITORzmq)
+    add_definitions(-DZMQ)
+endif(ZEROMQ_FOUND)
 
 # Installation
-install(TARGETS aliconvertertest RUNTIME DESTINATION bin)
+install(TARGETS alieve aliconvertertest RUNTIME DESTINATION bin)

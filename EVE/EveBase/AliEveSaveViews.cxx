@@ -229,7 +229,7 @@ void AliEveSaveViews::SaveForAmore()
         compositeImg->DrawText(292, 74, "time", 13, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
-        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/resources/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
         if(aliceLogo)
         {
             aliceLogo->Scale(64,87);
@@ -396,7 +396,7 @@ void AliEveSaveViews::SaveWithDialog()
     //draw ALICE Logo
     if(logo)
     {
-        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/resources/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
         if(aliceLogo)
         {
             double ratio = 1434./1939.;

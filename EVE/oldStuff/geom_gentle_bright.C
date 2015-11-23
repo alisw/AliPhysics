@@ -17,7 +17,7 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   TEveGeoShape *gsre3;
   
   
-{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
+{ TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   gsre1 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
@@ -151,7 +151,7 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   }
 }
 
-{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
+{ TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_rphi_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   gsre2 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
@@ -238,7 +238,7 @@ void geom_gentle_bright(Bool_t register_as_global=kTRUE)
   }
 }
 
-{ TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
+{ TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_rhoz_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   gsre3 = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();

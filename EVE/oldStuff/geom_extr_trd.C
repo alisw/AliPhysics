@@ -12,7 +12,7 @@ void geom_extr_trd()
   // Extract reasonably top-level mother-volumes of TRD and
   // store them as geo-shape-extract.
 
-  gGeoManager = gEve->GetGeometry("$ALICE_ROOT/EVE/alice-data/alice_fullgeo.root");
+  gGeoManager = gEve->GetGeometry("$ALICE_ROOT/EVE/resources/geometry/alice_fullgeo.root");
 
   TGeoNode* tnode = gGeoManager->GetTopVolume()->FindNode("B077_1");
 

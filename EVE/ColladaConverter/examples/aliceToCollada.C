@@ -101,19 +101,19 @@ void aliceToCollada(const char* outFile="aliceGeom.dae")
     
     // Get TGeo shapes from simplified geometry files
     TEveManager::Create();
-    TFile f("../../alice-data/gentle_geo_muon.root");
+    TFile f("../../resources/geometry/gentle_geo_muon.root");
     TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
     f.Close();
     colladaBuffer->CreateNode("MUON");
     ReadShapes(gse,"MUON");
     
-    TFile f2("../../alice-data/gentle_geo.root");
+    TFile f2("../../resources/geometry/gentle_geo.root");
     gse = (TEveGeoShapeExtract*) f2.Get("Gentle");
     f2.Close();
     colladaBuffer->CreateNode("MAIN");
     ReadShapes(gse,"MAIN");
     
-    TFile f3("../../alice-data/gentle_geo_emcal.root");
+    TFile f3("../../resources/geometry/gentle_geo_emcal.root");
     gse = (TEveGeoShapeExtract*) f3.Get("Gentle EMCAL");
     f3.Close();
     colladaBuffer->CreateNode("EMCAL");

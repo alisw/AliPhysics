@@ -21,7 +21,7 @@
 
 // -----------------------------------------------------------------
 TEveGeoShape* geom_gentle_hlt(Bool_t register_as_global=kTRUE) {
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
@@ -49,7 +49,7 @@ TEveGeoShape* geom_gentle_hlt(Bool_t register_as_global=kTRUE) {
 TEveGeoShape* geom_gentle_rphi() {
   // The resulting geometry is NOT added into the global scene!
 
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rphi_geo.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_rphi_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
@@ -66,7 +66,7 @@ TEveGeoShape* geom_gentle_rphi() {
 TEveGeoShape* geom_gentle_rhoz() {
   // The resulting geometry is NOT added into the global scene!
 
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_rhoz_geo.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_rhoz_geo.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
@@ -76,7 +76,7 @@ TEveGeoShape* geom_gentle_rhoz() {
 
 // -----------------------------------------------------------------
 TEveGeoShape* geom_gentle_trd() {
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_trd.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo_trd.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle TRD");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   gEve->AddGlobalElement(gsre);
@@ -127,7 +127,7 @@ void DrawDeep(TEveGeoShape *gsre) {
 
 TEveGeoShape* geom_gentle_muon(Bool_t updateScene = kTRUE) {
 
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_muon.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo_muon.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   gEve->AddGlobalElement(gsre);

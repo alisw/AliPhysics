@@ -18,7 +18,7 @@
 
 TEveGeoShape* geom_gentle_trd()
 {
-  TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_trd.root");
+  TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo_trd.root");
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle TRD");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   gEve->AddGlobalElement(gsre);
