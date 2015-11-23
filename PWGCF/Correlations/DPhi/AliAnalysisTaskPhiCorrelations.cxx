@@ -528,114 +528,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
  
   if ( fDebug > 3 ) AliInfo( " Processing event in Corrections mode ..." );
   
-  Double_t centrality = 0;
-  
   TObject* mc = fArrayMC;
   if (!mc)
     mc = fMcEvent;
 
-  if (fCentralityMethod.Length() > 0)
-  {
-    if (fCentralityMethod == "MC_b")
-    {
-      AliGenEventHeader* eventHeader = GetFirstHeader();
-      if (!eventHeader)
-      {
-	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
-	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
-	AliError("Event header not found. Skipping this event.");
-	fHistos->FillEvent(0, AliUEHist::kCFStepAnaTopology);
-	return;
-      }
-      
-      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
-      if (!collGeometry)
-      {
-	eventHeader->Dump();
-	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
-      }
-      
-      centrality = collGeometry->ImpactParameter();
-    }
-    else if (fCentralityMethod == "nano")
-    {
-      centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
-    }
-    else if (fCentralityMethod == "PPVsMultUtils")
-      {
-	if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
-	else centrality = -1;
-      }
-    else if (fCentralityMethod == "MCGen_V0M")
-    {
-//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      Float_t MultV0M=0.;
-      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
-        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
-        if (!particle)
-          continue;
-        Int_t pdgabs=TMath::Abs(particle->PdgCode());
-        if(pdgabs==9902210)return; //no diffractive protons
-        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
-        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
-        Float_t eta=particle->Eta();
-        if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
-      }
-      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
-      if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
-      else centrality=-1.;
-    }
-    else if (fCentralityMethod == "MCGen_CL1")
-    {
-//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
-      Float_t MultCL1=0.;
-      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
-        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
-        if (!particle)
-          continue;
-        Int_t pdgabs=TMath::Abs(particle->PdgCode());
-        if(pdgabs==9902210)return; //no diffractive protons
-        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
-        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
-        Float_t eta=particle->Eta();
-        if( eta < -1. || eta > 1.)MultCL1++;
-      }
-      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
-      if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
-      else centrality=-1.;
-    }
-    else
-    {
-      AliCentrality *centralityObj = 0;
-      if (fAOD)
-	centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
-      else if (fESD)
-	centralityObj = fESD->GetCentrality();
-      
-      if (centralityObj)
-      {
-	if (fMCUseUncheckedCentrality)
-	  centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-	else
-	  centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
-      }
-      else
-      {
-	Printf("WARNING: Centrality object is 0");
-	centrality = -1;
-      }
-    }
-
-    AliInfo(Form("Centrality is %f", centrality));
-  }
-  
   // Support for ESD and AOD based analysis
   AliVEvent* inputEvent = fAOD;
   if (!inputEvent)
     inputEvent = fESD;
 
+  Double_t centrality = GetCentrality(inputEvent, mc);
+  
   Float_t bSign = 0;
   
   if (inputEvent)
@@ -1149,148 +1052,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!inputEvent)
     inputEvent = fESD;
 
-  Double_t centrality = 0;
-  
-  if (fCentralityMethod.Length() > 0)
-  {
-    if (fUseNewCentralityFramework) 
-    {
-      AliMultSelection *multSelection = (AliMultSelection*) inputEvent->FindListObject("MultSelection");
-      if (!multSelection)
-        AliFatal("MultSelection not found in input event");
-        
-      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
-    }
-    else 
-    {
-      AliCentrality *centralityObj = 0;
+  Double_t centrality = GetCentrality(inputEvent, 0);
 
-      if (fCentralityMethod == "ZNA_MANUAL")
-      {
-        Bool_t zna = kFALSE;
-        for(Int_t j = 0; j < 4; ++j) {
-          if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
-            zna = kTRUE;
-          }
-        }
-
-  //       Printf("%d %f", zna, fZNAtower[0]);
-        if (zna)
-        {
-          // code from Chiara O (23.10.12)
-          const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
-          Float_t znacut[4] = {681., 563., 413., 191.};
-          
-          if(fZNAtower[0]>znacut[0]) centrality = 1;
-          else if(fZNAtower[0]>znacut[1]) centrality = 21;
-          else if(fZNAtower[0]>znacut[2]) centrality = 41;
-          else if(fZNAtower[0]>znacut[3]) centrality = 61;
-          else centrality = 81;
-        }
-        else
-          centrality = -1;
-      }
-      else if (fCentralityMethod == "ZNAC") // pp
-      {
-        // values from Cvetan
-        const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
-        const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
-
-        Double_t enZNA = 1.13 * towZNA[0];
-        Double_t enZNC = towZNC[0];
-        Double_t enZN = enZNA + enZNC;
-
-        Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
-        
-        if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
-        else if(enZN > znaccut[2]) centrality = 91;
-        else if(enZN > znaccut[3]) centrality = 81;
-        else if(enZN > znaccut[4]) centrality = 71;
-        else if(enZN > znaccut[5]) centrality = 61;
-        else if(enZN > znaccut[6]) centrality = 51;
-        else if(enZN > znaccut[7]) centrality = 1;
-        else centrality = -1;
-
-      ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
-      }
-      else if (fCentralityMethod == "TRACKS_MANUAL")
-      {
-        // for pp
-        TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-        centrality = tracks->GetEntriesFast();
-        if (centrality > 40)
-          centrality = 41;
-  //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
-        delete tracks;
-      }
-      else if (fCentralityMethod == "V0A_MANUAL")
-      {
-        // for pp
-        
-        //Total multiplicity in the VZERO A detector
-        Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
-        Float_t MV0AScaled=0.;
-        if (fMap){
-          TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
-          if(sf)MV0AScaled=MV0A*sf->GetVal();
-        }
-        
-        if (MV0AScaled > 0)
-          centrality = MV0AScaled;
-        else
-          centrality = -1;
-      }
-      else if (fCentralityMethod == "nano")
-      {
-  //       fAOD->GetHeader()->Dump();
-  //       Printf("%p %p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), dynamic_cast<AliNanoAODHeader*> ((TObject*) (fAOD->GetHeader())), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
-
-        Int_t error = 0;
-        centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data()), &error) / 100 - 1.0;
-        if (error != TInterpreter::kNoError)
-          centrality = -1;
-      }
-    else if (fCentralityMethod == "PPVsMultUtils")
-      {
-          if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
-        else centrality = -1;
-      }
-    else
-      {
-        if (fAOD)
-          centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
-        else if (fESD)
-          centralityObj = fESD->GetCentrality();
-        
-        if (centralityObj)
-          centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
-          //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-        else
-          centrality = -1;
-        
-        if (fAOD)
-        {
-          // remove outliers
-          if (centrality == 0)
-          {
-            if (fAOD->GetVZEROData())
-            {
-              Float_t multV0 = 0;
-              for (Int_t i=0; i<64; i++)
-                multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
-              if (multV0 < 19500)
-              {
-                centrality = -1;
-                AliInfo("Rejecting event due to too small V0 multiplicity");
-              }
-            }
-          }
-        }
-      }
-    }
-    AliInfo(Form("Centrality is %f", centrality));
-  }
-  
   Float_t bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
 
   fHistos->SetRunNumber(inputEvent->GetRunNumber());
@@ -1503,6 +1266,224 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (tracksCorrelate)
       delete tracksCorrelate;
   }
+}
+
+Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc)
+{
+  // return centrality
+  
+  if (fCentralityMethod.Length() == 0)
+    return 0;
+  
+  Double_t centrality = 0;
+  
+  if (fUseNewCentralityFramework) 
+  {
+    AliMultSelection *multSelection = (AliMultSelection*) inputEvent->FindListObject("MultSelection");
+    if (!multSelection)
+      AliFatal("MultSelection not found in input event");
+      
+    centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
+    
+    // error handling
+    if (centrality > 198)
+      centrality = -1;
+  }
+  else 
+  {
+    AliCentrality *centralityObj = 0;
+
+    if (fCentralityMethod == "ZNA_MANUAL")
+    {
+      Bool_t zna = kFALSE;
+      for(Int_t j = 0; j < 4; ++j) {
+        if (fESD->GetZDCData()->GetZDCTDCData(12,j) != 0) {
+          zna = kTRUE;
+        }
+      }
+
+//       Printf("%d %f", zna, fZNAtower[0]);
+      if (zna)
+      {
+        // code from Chiara O (23.10.12)
+        const Double_t *fZNAtower = fESD->GetZDCData()->GetZN2TowerEnergy();
+        Float_t znacut[4] = {681., 563., 413., 191.};
+        
+        if(fZNAtower[0]>znacut[0]) centrality = 1;
+        else if(fZNAtower[0]>znacut[1]) centrality = 21;
+        else if(fZNAtower[0]>znacut[2]) centrality = 41;
+        else if(fZNAtower[0]>znacut[3]) centrality = 61;
+        else centrality = 81;
+      }
+      else
+        centrality = -1;
+    }
+    else if (fCentralityMethod == "ZNAC") // pp
+    {
+      // values from Cvetan
+      const Double_t *towZNA = fAOD->GetZDCData()->GetZNATowerEnergy();
+      const Double_t *towZNC = fAOD->GetZDCData()->GetZNCTowerEnergy();
+
+      Double_t enZNA = 1.13 * towZNA[0];
+      Double_t enZNC = towZNC[0];
+      Double_t enZN = enZNA + enZNC;
+
+      Float_t znaccut[8] = {1e9, 797.743, 526.879, 238.595, 107.325, 39.214, 7.633, -100};
+      
+      if(enZN > znaccut[1] && enZN < znaccut[0]) centrality = 96;
+      else if(enZN > znaccut[2]) centrality = 91;
+      else if(enZN > znaccut[3]) centrality = 81;
+      else if(enZN > znaccut[4]) centrality = 71;
+      else if(enZN > znaccut[5]) centrality = 61;
+      else if(enZN > znaccut[6]) centrality = 51;
+      else if(enZN > znaccut[7]) centrality = 1;
+      else centrality = -1;
+
+    ((TH1D*) fListOfHistos->FindObject("ZNA+C_energy"))->Fill(enZN);
+    }
+    else if (fCentralityMethod == "TRACKS_MANUAL")
+    {
+      // for pp
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
+      centrality = tracks->GetEntriesFast();
+      if (centrality > 40)
+        centrality = 41;
+//       Printf("%d %f", tracks->GetEntriesFast(), centrality);
+      delete tracks;
+    }
+    else if (fCentralityMethod == "V0A_MANUAL")
+    {
+      // for pp
+      
+      //Total multiplicity in the VZERO A detector
+      Float_t MV0A=inputEvent->GetVZEROData()->GetMTotV0A();
+      Float_t MV0AScaled=0.;
+      if (fMap){
+        TParameter<float>* sf=(TParameter<float>*)fMap->GetValue(Form("%d",inputEvent->GetRunNumber()));
+        if(sf)MV0AScaled=MV0A*sf->GetVal();
+      }
+      
+      if (MV0AScaled > 0)
+        centrality = MV0AScaled;
+      else
+        centrality = -1;
+    }
+    else if (fCentralityMethod == "nano")
+    {
+//       fAOD->GetHeader()->Dump();
+//       Printf("%p %p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), dynamic_cast<AliNanoAODHeader*> ((TObject*) (fAOD->GetHeader())), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
+
+      Int_t error = 0;
+      centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data()), &error) / 100 - 1.0;
+      if (error != TInterpreter::kNoError)
+        centrality = -1;
+    }
+    else if (fCentralityMethod == "PPVsMultUtils")
+    {
+      if (fAnalysisUtils) centrality = fAnalysisUtils->GetMultiplicityPercentile(inputEvent);
+      else centrality = -1;
+    }
+    else if (fCentralityMethod == "MC_b")
+    {
+      AliGenEventHeader* eventHeader = GetFirstHeader();
+      if (!eventHeader)
+      {
+        // We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+        // (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+        AliError("Event header not found. Skipping this event.");
+        fHistos->FillEvent(0, AliUEHist::kCFStepAnaTopology);
+        return -1;
+      }
+      
+      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+      if (!collGeometry)
+      {
+        eventHeader->Dump();
+        AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
+      }
+      
+      centrality = collGeometry->ImpactParameter();
+    }    
+    else if (fCentralityMethod == "MCGen_V0M")
+    {
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultV0M=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return -1; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
+      }
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
+      if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
+      else centrality=-1.;
+    }
+    else if (fCentralityMethod == "MCGen_CL1")
+    {
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultCL1=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return -1; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( eta < -1. || eta > 1.)MultCL1++;
+      }
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
+      if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
+      else centrality=-1.;
+    }
+    else
+    {
+      if (fAOD)
+        centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
+      else if (fESD)
+        centralityObj = fESD->GetCentrality();
+      
+      if (centralityObj)
+      {
+        if (fMCUseUncheckedCentrality)
+          centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
+        else
+          centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
+      }
+      else
+        centrality = -1;
+      
+      if (fAOD)
+      {
+        // remove outliers
+        if (centrality == 0)
+        {
+          if (fAOD->GetVZEROData())
+          {
+            Float_t multV0 = 0;
+            for (Int_t i=0; i<64; i++)
+              multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
+            if (multV0 < 19500)
+            {
+              centrality = -1;
+              AliInfo("Rejecting event due to too small V0 multiplicity");
+            }
+          }
+        }
+      }
+    }
+  }
+  AliInfo(Form("Centrality is %f", centrality));
+  
+  return centrality;
 }
 
 TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tracks)

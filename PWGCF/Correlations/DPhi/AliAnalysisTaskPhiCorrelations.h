@@ -168,6 +168,7 @@ private:
   void            AnalyseCorrectionMode();                            // main algorithm to get correction maps
   void            AnalyseDataMode();                                  // main algorithm to get raw distributions
   void            Initialize(); 			                // initialize some common pointer
+  Double_t        GetCentrality(AliVEvent* inputEvent, TObject* mc);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
