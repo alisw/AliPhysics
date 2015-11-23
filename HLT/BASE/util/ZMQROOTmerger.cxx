@@ -55,7 +55,8 @@ TString fZMQconfigMON  = "REP";
 Int_t   fZMQmaxQueueSize = 10;
 Int_t   fZMQtimeout = 0;
 
-Bool_t  fResetOnSend = kFALSE;
+Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
+Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 
 TPRegexp* fSendSelection = NULL;
 
@@ -83,6 +84,7 @@ const char* fUSAGE =
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n ms\n"
     " -ResetOnSend : always reset after send\n"
+    " -ResetOnRequest : reset once after reply\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
     " -reset : reset NOW\n"
     " -select : set the selection regex for sending out objects,\n" 
@@ -238,7 +240,9 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   int rc = DoSend(socket);
 
   //reset the "one shot" options to default values
-  if (fVerbose) Printf("unsetting fSendSelection=%s",(fSendSelection)?fSendSelection->GetPattern().Data():"");
+  fResetOnRequest = kFALSE;
+  if (fVerbose && fSendSelection) 
+    Printf("unsetting fSendSelection=%s",fSendSelection->GetPattern().Data());
   delete fSendSelection; fSendSelection=NULL;
   return rc;
 }
@@ -330,6 +334,13 @@ Int_t DoSend(void* socket)
     }
 
     rc = alizmq_msg_add(&message, &topic, object);
+    if (fResetOnSend || fResetOnRequest) 
+    {
+      TPair* pair = fMergeObjectMap.RemoveEntry(key);
+      delete pair->Key();
+      delete pair->Value();
+      delete pair;
+    }
   }
 
   //send
@@ -341,11 +352,6 @@ Int_t DoSend(void* socket)
   if (sentBytes==0 && alizmq_socket_type(socket)==ZMQ_REP)
     alizmq_msg_send("INFO","NODATA",socket,0);
 
-  if (fResetOnSend)
-  {
-    ResetOutputData();
-    if (fVerbose) Printf("data reset on send");
-  }
   fLastPushBackTime.Set();
 
   return 0;
@@ -418,6 +424,10 @@ Int_t ProcessOptionString(TString arguments)
     if (option.EqualTo("reset")) 
     {
       ResetOutputData();
+    }
+    else if (option.EqualTo("ResetOnRequest"))
+    {
+      fResetOnRequest = value.Contains("0")?kFALSE:kTRUE;
     }
     else if (option.EqualTo("ResetOnSend"))
     {
