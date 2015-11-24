@@ -904,6 +904,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       tree->SetBranchAddress(branches[ihis],&vecDelta);
       
       Int_t ntracks=tree->GetEntries();
+      //
       for (Int_t itrack=0; itrack<ntracks; itrack++){
 	if (startTime>0){
 	  br->GetEntry(itrack);
@@ -911,6 +912,11 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  hisTime->Fill(timeStamp);
 	}
 	tree->GetEntry(itrack);
+	const Float_t *vPhi= vecPhi->GetMatrixArray();
+	const Float_t *vR  = vecR->GetMatrixArray();
+	const Float_t *vZ  = vecZ->GetMatrixArray();
+	const Float_t *vDelta  = vecDelta->GetMatrixArray();
+	//
 	currentTrack++;
 	if (timeStamp<minTime) minTime=0;
 	if (timeStamp>maxTime) maxTime=0;
@@ -923,12 +929,12 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	if (maxStat>0 &&currentTrack>maxStat) break;
 	//for (Int_t ipoint=0; ipoint<knPoints; ipoint++){
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
-	  if ((*vecR)[ipoint]<=0 || (*vecDelta)[ipoint]<-990.) continue;
-	  Double_t sector=9.*(*vecPhi)[ipoint]/TMath::Pi();
+	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
+	  Double_t sector=9.*vPhi[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
-	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
-	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
-	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   (*vecZ)[ipoint]/localX, (*vecDelta)[ipoint]};
+	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(sector+0.5)/9.;
+	  Double_t localX = TMath::Cos(deltaPhi)*vR[ipoint];
+	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   vZ[ipoint]/localX, vDelta[ipoint]};
 	  if (xxx[4]==0) continue;
 	  hisToFill[ihis]->Fill(xxx);	  
 	}
