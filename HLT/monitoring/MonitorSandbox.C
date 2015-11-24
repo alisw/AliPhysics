@@ -697,7 +697,7 @@ void ReadEventFromHomer(int timeout = 1000000)
  */
 void FetchRunInformation(int& runNumber, TString& ctpTriggerClasses, TString& detectorList)
 {
-  const char* cmd1 = "ssh cn59 'cat $ECS_PROXY_RUNDIR/log/ECSProxy*.log | grep \"ECS-Proxy received parameter\" | sort | tail -n11 | sed -e \"s/.*ECS-Proxy received parameter //\"'";
+  const char* cmd1 = "ssh `read_nodelist.py --master $HLT_NODELIST_XML` 'cat $ECS_PROXY_RUNDIR/log/ECSProxy*.log | grep \"ECS-Proxy received parameter\" | sort | tail -n11 | sed -e \"s/.*ECS-Proxy received parameter //\"'";
 	FILE* pipe = gSystem->OpenPipe(cmd1, "r");
 	if (pipe == NULL)
 	{
