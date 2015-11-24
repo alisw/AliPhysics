@@ -212,7 +212,7 @@ void UnitTestStreamer(){
 
 
 
-void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(19*x[1]/pi)", Double_t err=1){
+void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(11*x[1]/pi)", Double_t err=0.1){
   //
   // Local regression test method
   //
