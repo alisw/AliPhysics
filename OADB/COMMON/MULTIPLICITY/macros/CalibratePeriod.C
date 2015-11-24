@@ -55,7 +55,7 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
         lCalib->GetEventCuts()->SetVzCut(10.0);
         lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
         lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
-        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE );
+        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kFALSE);
         lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
         lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
@@ -66,7 +66,7 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
         lCalib->GetEventCuts()->SetVzCut(10.0);
         lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
         lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
-        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE );
+        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kFALSE);
         lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
         lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
