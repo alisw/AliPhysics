@@ -87,7 +87,7 @@ void AliTrigChEffOutput::InitKeys()
 }
 
 //___________________________________________________________________________
-TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassNames, TString centrality, TString trackSelection )
+TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassNames, TString centrality, Int_t itrackSel, Int_t imatch, Int_t imethod )
 {
   /// Get the list of objects for the efficiency calculation
   /// merging the splitted output of the fMergeableCollection
@@ -98,14 +98,13 @@ TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassN
   TList* outList = new TList();
   outList->SetOwner();
   TString histoName = "";
-  TString histoPattern = "";
   TH1* histo = 0x0;
   Bool_t isOk = kTRUE;
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
-    histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1, -1);
-    histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
-    histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoPattern));
+    histoName = GetHistoName(kHchamberEff, icount, -1, itrackSel, imatch, imethod);
+    histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoName));
     if ( histo ) {
+      histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1, -1);
       histo->SetName(histoName.Data());
       histo->SetTitle(histoName.Data());
     }
@@ -118,10 +117,10 @@ TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassN
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHslatEff, icount, ich, -1, -1, -1);
-      histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
-      histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoPattern));
+      histoName = GetHistoName(kHslatEff, icount, ich, itrackSel, imatch, imethod);
+      histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoName));
       if ( histo ) {
+        histoName = GetHistoName(kHslatEff, icount, ich, -1, -1, -1);
         histo->SetName(histoName.Data());
         histo->SetTitle(histoName.Data());
       }
@@ -135,10 +134,10 @@ TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassN
   }
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
-      histoName = GetHistoName(kHboardEff, icount, ich, -1, -1, -1);
-      histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
-      histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoPattern));
+      histoName = GetHistoName(kHboardEff, icount, ich, itrackSel, imatch, imethod);
+      histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoName));
       if ( histo ) {
+        histoName = GetHistoName(kHboardEff, icount, ich, -1, -1, -1);
         histo->SetName(histoName.Data());
         histo->SetTitle(histoName.Data());
       }
@@ -151,10 +150,10 @@ TList* AliTrigChEffOutput::GetEffHistoList ( TString physSel, TString trigClassN
     }
   }
   
-  histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1, -1);
-  histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
-  histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoPattern));
+  histoName = GetHistoName(kHcheckBoard, -1, -1, itrackSel, imatch, imethod);
+  histo = static_cast<TH1*>(GetSum(physSel, trigClassNames, centrality, histoName));
   if ( histo ) {
+    histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1, -1);
     histo->SetName(histoName.Data());
     histo->SetTitle(histoName.Data());
   }
