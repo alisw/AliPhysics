@@ -36,7 +36,10 @@ set(CSRCS
 )
 
 add_executable(aliroot ${SRCS} ${CSRCS})
-target_link_libraries(aliroot MUONevaluation MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCutil  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ADbase ADsim ADrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM microcern HLTbase HLTshuttle TRIGGERbase STEER STAT CDB AOD  STEERBase ESD ANALYSIS RAWDatasim RAWDatarec RAWDatabase Rint MLP Gui Physics Geom EG Hist MathCore VMC Matrix Minuit Gpad Graf GenVector Proof Spectrum ANALYSISalice Graf3d HistPainter XMLParser AliHLTHOMER GeomPainter Thread ANALYSISaliceBase XMLIO)
+target_link_libraries(aliroot MUONevaluation MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCutil  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ADbase ADsim ADrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM HLTbase HLTshuttle TRIGGERbase STEER STAT CDB AOD  STEERBase ESD ANALYSIS RAWDatasim RAWDatarec RAWDatabase Rint MLP Gui Physics Geom EG Hist MathCore VMC Matrix Minuit Gpad Graf GenVector Proof Spectrum ANALYSISalice Graf3d HistPainter XMLParser AliHLTHOMER GeomPainter Thread ANALYSISaliceBase XMLIO)
+if(TARGET microcern)
+  target_link_libraries(aliroot microcern)
+endif()
 
 # Installation
 install(TARGETS aliroot RUNTIME DESTINATION bin)

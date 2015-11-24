@@ -260,19 +260,23 @@ else()
   # (f95 comes before gfortran in default module)
   include(CheckLanguage)
 
-  if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-  else()
-    message(STATUS "Using default system Fortran compiler")
-  endif(ROOT_FORTRAN)
+  if(DISABLE_FORTRAN)
+    message(STATUS "Fortran support disabled by user")
+  else(DISABLE_FORTRAN)
+    if(ROOT_FORTRAN)
+      message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
+      set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
+    else()
+      message(STATUS "Using default system Fortran compiler")
+    endif(ROOT_FORTRAN)
 
-  check_language(Fortran)
-  if(CMAKE_Fortran_COMPILER)
-    enable_language(Fortran OPTIONAL)
-  else()
-    message(STATUS "No Fortran support. Disabling LHAPDF, PHYTIA6, MICROCERN, etc.")
-  endif()
+    check_language(Fortran)
+    if(CMAKE_Fortran_COMPILER)
+      enable_language(Fortran OPTIONAL)
+    else()
+      set(DISABLE_FORTRAN FALSE)
+    endif()
+  endif(DISABLE_FORTRAN)
 
   # FastJet
   find_package(FASTJET)
@@ -308,9 +312,8 @@ else()
   # AliRoot modules
   set(ALIROOT_MODULES
       ACORDE AD BCM EMCAL EPOS EVE EVGEN FASTSIM FIT FMD HLT HMPID ITS MFT
-      MONITOR MUON PHOS PMD PYTHIA8 STARLIGHT STAT STRUCT T0 TDPMjet TEvtGen
-      THerwig TOF TPC TRD TRIGGER TTherminator VZERO ZDC ALIGN data GRP OCDB
-      QAref)
+      MONITOR MUON PHOS PMD STARLIGHT STAT STRUCT T0 TEvtGen TOF TPC TRD TRIGGER
+      TTherminator VZERO ZDC ALIGN data GRP OCDB QAref)
 
   # AliRoot modules requiring OpenGL
   set(ALIROOT_MODULES_OPENGL
@@ -324,13 +327,13 @@ else()
 
   # AliRoot modules requiring Fortran
   set(ALIROOT_MODULES_FORTRAN
-      DIME DPMJET HERWIG HIJING LHAPDF MICROCERN PYTHIA6 TEPEMGEN THbtp THijing
-      THydjet TPHIC TUHKMgen TAmpt)
-  if(CMAKE_Fortran_COMPILER)
-    list(APPEND ALIROOT_MODULES "${ALIROOT_MODULES_FORTRAN}")
+      DIME DPMJET HERWIG HIJING LHAPDF MICROCERN PYTHIA6 PYTHIA8 TAmpt TDPMjet
+      TEPEMGEN THbtp THerwig THijing THydjet TPHIC TUHKMgen)
+  if(NOT DISABLE_FORTRAN)
+    list(INSERT ALIROOT_MODULES 0 "${ALIROOT_MODULES_FORTRAN}")
   else()
     string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
-    message(WARNING "The following modules will not be built because no Fortran compiler was found: ${ALIROOT_MODULES_FORTRAN_FLAT}")
+    message(WARNING "The following modules require Fortran and will not be built: ${ALIROOT_MODULES_FORTRAN_FLAT}")
   endif()
 
   # Selectively exclude modules (with -DEXCLUDE_MODULES="mod1;mod2"...)
