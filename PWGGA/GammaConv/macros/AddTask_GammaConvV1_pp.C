@@ -622,6 +622,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     eventCutArray[ 1] = "00075113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
     eventCutArray[ 2] = "00075113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
     eventCutArray[ 3] = "00075113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+  } else if (trainConfig == 105) {  // check # of entries w/ pileup rejection cut for V0HM
+    eventCutArray[ 0] = "00074013"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
+    eventCutArray[ 1] = "00074013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
+    eventCutArray[ 2] = "00074013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
+    eventCutArray[ 3] = "00074013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+  } else if (trainConfig == 106) {  // check # of entries w/o pileup rejection cut for SPHM
+    eventCutArray[ 0] = "00075013"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
+    eventCutArray[ 1] = "00075013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
+    eventCutArray[ 2] = "00075013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
+    eventCutArray[ 3] = "00075013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
   }	else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
