@@ -173,7 +173,7 @@ fCustomBinning(),
 fPtOrder(kTRUE),
 fTriggersFromDetector(0),
 fAssociatedFromDetector(0),
-fMCUseUncheckedCentrality(kFALSE),
+fUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
 fFillYieldRapidity(kFALSE),
@@ -505,7 +505,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
   settingsTree->Branch("fAssociatedFromDetector", &fAssociatedFromDetector,"AssociatedFromDetector/I");
-  settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
+  settingsTree->Branch("fUseUncheckedCentrality", &fUseUncheckedCentrality,"UseUncheckedCentrality/O");
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
@@ -1283,10 +1283,13 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     if (!multSelection)
       AliFatal("MultSelection not found in input event");
       
-    centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
+    if (fUseUncheckedCentrality)
+      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kFALSE);
+    else
+      centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod, kTRUE);
     
     // error handling
-    if (centrality > 198)
+    if (centrality > 100)
       centrality = -1;
   }
   else 
@@ -1453,7 +1456,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       
       if (centralityObj)
       {
-        if (fMCUseUncheckedCentrality)
+        if (fUseUncheckedCentrality)
           centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
         else
           centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
