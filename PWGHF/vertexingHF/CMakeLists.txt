@@ -115,6 +115,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx 
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
+  AliAnalysisTaskSEDvsEventShapes.cxx
   )
 
 # Headers from sources
