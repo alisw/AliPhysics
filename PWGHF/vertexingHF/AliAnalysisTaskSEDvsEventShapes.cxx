@@ -1142,7 +1142,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 
                 if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
                     fSparseSpherocity->Sumw2();
-                    Double_t arrayForSparseSowithMultUnncorr[5]={ptCand, invMass, spherocity, multForCand, countTreta1};
+                    Double_t arrayForSparseSowithMultUnncorr[5]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1};
                     fSparseSpherocity->Fill(arrayForSparseSowithMultUnncorr);
                 }
                 else{
