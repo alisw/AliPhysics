@@ -215,6 +215,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   //   4.) Make local fit
   //
   //  const Double_t kEpsilon=1e-6;
+  Double_t nchi2Cut=-2*TMath::Log(weightCut); // transform probability to nsigma cut 
   if (fHistPoints==NULL){
     AliError("ND histogram not initialized\n");
     return kFALSE;
@@ -269,6 +270,10 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   }
   TVectorD values(entriesVal,tree->GetVal(0));
   TVectorD errors(entriesVal,tree->GetVal(1));
+  Double_t *pvalues = values.GetMatrixArray();
+  Double_t *perrors = errors.GetMatrixArray();
+
+
   // 2.b) variables
   TObjArray pointArray(fNParameters);
   Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara",entries);
@@ -281,6 +286,15 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray kernelArray(fNParameters);
   Int_t entriesKernel = tree->Draw(formulaKernel,selection,"goffpara",entries);
   for (Int_t ipar=0; ipar<fNParameters; ipar++) kernelArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
+  //
+  const Int_t kMaxDim=100;
+  Double_t *pvecVar[kMaxDim]={0};
+  Double_t *pvecKernel[kMaxDim]={0};
+  for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
+    pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
+    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    
+  }
   //
   //
   //
@@ -311,24 +325,24 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
     fitter.ClearPoints();
     // add fit points    
     for (Int_t ipoint=0; ipoint<entriesVal; ipoint++){
-      Double_t weight=1;
+      Double_t sumChi2=0;
       if (fCutType>0 && fRobustRMSLTSCut>0){
 	Double_t localRMS=(*fLocalRobustStat)(ibin,2);
 	Double_t localMean=(*fLocalRobustStat)(ibin,1);
 	Double_t localMedian=(*fLocalRobustStat)(ibin,0);
 	if (fCutType==1){
-	  if (TMath::Abs(values[ipoint]-localMedian)>fRobustRMSLTSCut*localRMS) continue;
+	  if (TMath::Abs(pvalues[ipoint]-localMedian)>fRobustRMSLTSCut*localRMS) continue;
 	}
 	if (fCutType==2){
-	  if (TMath::Abs(values[ipoint]-localMean)>fRobustRMSLTSCut*localRMS) continue;
+	  if (TMath::Abs(pvalues[ipoint]-localMean)>fRobustRMSLTSCut*localRMS) continue;
 	}
       }
       for (Int_t idim=0; idim<fNParameters; idim++){
-	TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
-	TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
-	fBinDelta[idim]=vecVar[ipoint]-fBinCenter[idim];       	
-	weight*=TMath::Gaus(fBinDelta[idim],0,vecKernel[ipoint]);
-	if (weight<weightCut) continue;
+	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
+	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
+	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
+	if (sumChi2>nchi2Cut) continue;
 	if (fUseBinNorm){
 	  binHypFit[2*idim]=fBinDelta[idim]/fBinWidth[idim];
 	  binHypFit[2*idim+1]=binHypFit[2*idim]*binHypFit[2*idim];
@@ -337,8 +351,9 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	  binHypFit[2*idim+1]=fBinDelta[idim]*fBinDelta[idim];
 	}
       }      
-      if (weight<weightCut) continue;
-      fitter.AddPoint(binHypFit,values[ipoint], errors[ipoint]/weight);
+      if (sumChi2>nchi2Cut) continue;
+      Double_t weight=TMath::Exp(-sumChi2*0.5);
+      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]/weight);
     }
     TVectorD * fitParam=new TVectorD(fNParameters*2+1);
     TVectorD * fitQuality=new TVectorD(3);
@@ -384,9 +399,19 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction){
   //
   // Calculate robust statistic information
-  //
-  TRobustEstimator e;
+  // use raw array to make faster calcualtion
+  const Int_t kMaxDim=100;
+  Double_t *pvalues=values.GetMatrixArray();
+  Double_t *pvecVar[kMaxDim]={0};
+  Double_t *pvecKernel[kMaxDim]={0};
+  for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
+    pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
+    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    
+  }
 
+
+  Double_t nchi2Cut=-2*TMath::Log(weightCut); // transform probability to nsigma cut 
   if (robustFraction>1) robustFraction=1;
 
   Int_t nbins = fHistPoints->GetNbins();    // 
@@ -405,16 +430,16 @@ Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &err
     }
     Int_t indexLocal=0;
     for (Int_t ipoint=0; ipoint<npoints; ipoint++){
-      Double_t weight=1;
+      Double_t sumChi2=0;
       for (Int_t idim=0; idim<fNParameters; idim++){
-	TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
-	TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
-	fBinDelta[idim]=vecVar[ipoint]-fBinCenter[idim];       	
-	weight*=TMath::Gaus(fBinDelta[idim],0,vecKernel[ipoint]);
-	if (weight<weightCut) continue;	
+	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
+	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
+	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
+	if (sumChi2>nchi2Cut) continue;
       }      
-      if (weight<weightCut) continue;
-      valueLocal[indexLocal]=values[ipoint];
+      if (sumChi2>nchi2Cut) continue;
+      valueLocal[indexLocal]=pvalues[ipoint];
       indexLocal++;
     }
     Double_t median=0,meanX=0, rmsX=0;
