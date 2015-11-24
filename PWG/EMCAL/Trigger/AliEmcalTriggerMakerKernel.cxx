@@ -63,6 +63,7 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fTriggerBitMap;
   delete fPatchFinder;
   delete fLevel0PatchFinder;
+  if(fTriggerBitConfig) delete fTriggerBitConfig;
 }
 
 void AliEmcalTriggerMakerKernel::Init(){
@@ -222,7 +223,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     // convert
     AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * kEMCL1ADCtoGeV,
-        patchit->GetBitmask() | onlinebits, vertexvec, fGeometry);
+        patchit->GetBitmask() | onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     fullpatch->SetOffSet(offset);
     result->Add(fullpatch);

@@ -23,6 +23,10 @@
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliLog.h"
 
+#include <bitset>
+#include <sstream>
+#include <string>
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMakerTask)
 /// \endcond
@@ -34,7 +38,6 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
-  fTriggerBitConfig(NULL),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -49,7 +52,6 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
-  fTriggerBitConfig(NULL),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -59,7 +61,6 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
 
 AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
   if(fTriggerMaker) delete fTriggerMaker;
-  if(fTriggerBitConfig) delete fTriggerBitConfig;
 }
 
 /**
@@ -108,16 +109,18 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   if (!fInitialized)
     return;
 
-  if(!fTriggerBitConfig){
+  AliEmcalTriggerBitConfig *triggerBitConfig(NULL);
+  if(!triggerBitConfig){
     switch(fUseTriggerBitConfig){
     case kNewConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigNew();
+      triggerBitConfig = new AliEmcalTriggerBitConfigNew();
       break;
     case kOldConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigOld();
+      triggerBitConfig = new AliEmcalTriggerBitConfigOld();
       break;
     }
   }
+  fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
 
   if (!fCaloTriggersOutName.IsNull()) {
     fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfo");
@@ -159,9 +162,13 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   AliEmcalTriggerPatchInfoAPV1 *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
+  AliInfo(Form("Trigger maker - Found %d patches\n", patches->GetEntries()));
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     recpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(*patchIter);
     if(fDoQA){
+      std::bitset<32> triggerbits = recpatch->GetTriggerBits();
+      std::stringstream triggerbitstring;
+      AliDebug(1, Form("Trigger maker - next patch: size %d, trigger bits %s", recpatch->GetPatchSize(), triggerbitstring.str().c_str()));
       if(recpatch->IsJetHigh() || recpatch->IsJetLow() || recpatch->IsJetHighSimple() || recpatch->IsJetLowSimple()) triggerstring = "EJE";
       if(recpatch->IsGammaHigh() || recpatch->IsGammaLow() || recpatch->IsGammaHighSimple() || recpatch->IsGammaLowSimple()) triggerstring = "EGA";
       if(recpatch->IsLevel0()) triggerstring = "EL0";
