@@ -66,8 +66,13 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fEfficiencyErrorHigh(0)
 							   ,fBackgroundErrorLow(0)
 							   ,fBackgroundErrorHigh(0)
+							   ,fConstBackgroundErrorLow(0)
+							   ,fConstBackgroundErrorHigh(0)
+								     ,fConstBackground(0)
 							   ,fBackgroundTPC(0)
 							   ,fBackgroundITS(0)
+							   ,fConstBackgroundTPC(0)
+							   ,fConstBackgroundITS(0)
 							   ,fIsEMCal(kTRUE)
 							   ,fIsData(kFALSE)
 							   ,fDataSet(2009)
@@ -162,8 +167,13 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
 											      ,fEfficiencyErrorHigh(g->fEfficiencyErrorHigh)
 											      ,fBackgroundErrorLow(g->fBackgroundErrorLow)
 											      ,fBackgroundErrorHigh(g->fBackgroundErrorHigh)
+											      ,fConstBackgroundErrorLow(g->fConstBackgroundErrorLow)
+											      ,fConstBackgroundErrorHigh(g->fConstBackgroundErrorHigh)
+											      ,fConstBackground(g->fConstBackground)
 											      ,fBackgroundTPC(0)
 											      ,fBackgroundITS(0)
+											      ,fConstBackgroundTPC(0)
+											      ,fConstBackgroundITS(0)
 											      ,fIsEMCal(g->fIsEMCal)
 											      ,fIsData(g->fIsData)
 											      ,fDataSet(g->fDataSet)
@@ -257,6 +267,7 @@ void AliAnalysisHadEtCorrections::GetTotalEt(Float_t hadEt,Float_t hadEtErr, Boo
   if(!isTPC) pidFracErr = (fNotIDConstITSHigh-fNotIDConstITS)/fNotIDConstITS;
   Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
   Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
+  if(fConstBackground)backgroundFracErr = (fConstBackgroundErrorHigh-fConstBackgroundErrorLow)/2.0;
   //Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr);
   Float_t emEt = 0;
   if(minEt>0){
@@ -307,6 +318,7 @@ Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t i
   Float_t pidFracErr = (fNotIDConstTPCHigh-fNotIDConstTPC)/fNotIDConstTPC;
   Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
   Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
+  if(fConstBackground) backgroundFracErr = (fConstBackgroundErrorHigh-fConstBackgroundErrorLow)/2.0;
   //Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr+fSpectraCalcErrorCorrelation*(neutralFracErr*pidFracErr+neutralFracErr*backgroundFracErr+backgroundFracErr*pidFracErr));
   Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr+fSpectraCalcErrorCorrelation*(neutralFracErr*backgroundFracErr));
   //cout<<"fracerrs neutral "<<neutralFracErr<<" ptcut "<<ptcutFracErr<<" pid "<<pidFracErr<<" efficiency "<<efficiencyFracErr<<" bkgd "<<backgroundFracErr<<" total fracerr "<<fracerr<<endl;
@@ -658,9 +670,11 @@ Float_t AliAnalysisHadEtCorrections::GetNotIDCorrectionNoPID(const float pT){//G
   else{return 0.0;}
 }
 Float_t AliAnalysisHadEtCorrections::GetBackgroundCorrectionTPC(const float pT){//Get background correction for TPC tracks
+  if(fConstBackground){return fConstBackgroundTPC;}
   return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));
 }
 Float_t AliAnalysisHadEtCorrections::GetBackgroundCorrectionITS(const float pT){//Get background correction for ITS tracks
+  if(fConstBackground){return fConstBackgroundITS;}
   return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));
 }
 void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all corrections
@@ -721,6 +735,10 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
   cout<<"                                    TPC          ";
   if(!fBackgroundTPC)cout<<" not set"<<endl;
   else{cout<<" set and has "<<fBackgroundTPC->GetEntries()<<" entries"<<endl;}
+  cout<<endl;
+
+  cout<<"Constant Background correction for ITS tracks is "<<fConstBackgroundITS;
+  cout<<"                                    TPC       is "<<fConstBackgroundTPC;
   cout<<endl;
 
 
