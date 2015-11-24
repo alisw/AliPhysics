@@ -167,9 +167,11 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
     
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClustersCorr );
-    lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
+    if( lPeriodName.Contains("LHC15m") ) {
+        lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClustersCorr );
+        lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
+        lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
+    }
     //============================================================
     // --- Definition of Input/Output ---
     //============================================================
