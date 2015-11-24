@@ -30,6 +30,7 @@ set(SRCS
   AliFemtoShareQualityKTPairCut.cxx
   AliFemtoShareQualityTPCEntranceSepPairCut.cxx
   AliFemtoESDTrackCut.cxx
+  AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
   AliFemtoTPCInnerCorrFctn.cxx
