@@ -118,6 +118,8 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
 //   void SetEfficiencies(){fefficiencies=kTRUE;}
   void Askforgensettings();
   void SetMoreOutputs(bool out = true){fMoreOutputs = out;}
+  void SetStartEvent(int startevent){fStartAtEvent = startevent;}
+  void SetNEvents(int nevents){fNEventsToProcess = nevents;}
   TF1* pTdistribution(TH1D* hist, const char* name);
   
  protected:
@@ -157,11 +159,16 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
 
 
   enum CollisionType{pp,PbPb,pPb};
+  //Task control:
+  Int_t fstarttime;
   //Event characteristics:
-  AliCentrality*    fCentrality;   //! centrality object
-  const AliVVertex* fVertexobj; //! Vertex object
-  Int_t 	    fRun; //The run we are in.
-  Int_t		    fNEventsProcessed; // number of events
+  AliCentrality*    fCentrality;//! centrality object
+  const AliVVertex* fVertexobj;//! Vertex object
+  Int_t 	    fRun;//The run we are in.
+  Int_t		    fNEventsProcessed;// number of events Processed
+  Int_t 	    fNEventsParsed;// number of events the job has Parsed
+  Int_t 	    fNEventsToProcess;// number of events before the task stops.
+  Int_t 	    fStartAtEvent;// start to do correlations after event x.
   Double_t 	    fVertex[3];//vertex
   Period 	    fperiod;
   CollisionType     fCollisionType;
@@ -175,42 +182,42 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
   TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.
-  TRandom3 *	    fRandom;//
-  TClonesArray*     fMcArray;//
+  TRandom3 *	    fRandom;//!
+  TClonesArray*     fMcArray;//!
   //Objects that contain needed/used objects for the task:
-  AliESDtrackCuts*  fTrackCuts;    //! track cuts object
-  TObject*          fCorrelator;   //! correlation steering class
-  Int_t*	    fRunNumberList;  //! List containing the lists over runnumbers.
-  Int_t 	    fNruns; // Number of runs in the choosen period
-  Double_t 	    fRunFillValue; //The bin of the run we are in.
-  TArrayD 	    fMBinEdges; //Contains bin edges in centrality.
-  TArrayD 	    fZBinEdges; //Edges for vZ binning.
-  Int_t 	    fMaxNEventMix; //Maximum number of events per bin for event mixing.
+  AliESDtrackCuts*  fTrackCuts;//! track cuts object
+  TObject*          fCorrelator;//! correlation steering class
+  Int_t*	    fRunNumberList;//! List containing the lists over runnumbers.
+  Int_t 	    fNruns;// Number of runs in the choosen period
+  Double_t 	    fRunFillValue;//The bin of the run we are in.
+  TArrayD 	    fMBinEdges;//Contains bin edges in centrality.
+  TArrayD 	    fZBinEdges;//Edges for vZ binning.
+  Int_t 	    fMaxNEventMix;//Maximum number of events per bin for event mixing.
   Int_t		    fMinNofTracksMix;//Minimum number of mixing tracks.
   Int_t		    fMaxTracksperEvent;//
-  TString 	    fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
+  TString 	    fCentralityEstimator;//! Centrality estimator ("V0M", "ZNA")
   Trigger 	    ftrigger;
   Double_t 	    fCentralityPercentile;	
   Double_t 	    fMultiplicity;
   Int_t 	    fBinVer;
   //cut variables:
   ////event:
-  Double_t	    fMaxVz; //Vertex cut variable.
-  Double_t 	    fMaxMult; //Is set automatically when setting the binning.
-  Double_t 	    fMaxNumberOfTracksInPPConsidered; //Maximum number of tracks in an pp event used for correlations.
+  Double_t	    fMaxVz;//Vertex cut variable.
+  Double_t 	    fMaxMult;//Is set automatically when setting the binning.
+  Double_t 	    fMaxNumberOfTracksInPPConsidered;//Maximum number of tracks in an pp event used for correlations.
   Double_t 	    fNTriggers;//Contains the number of triggers in a given event.
   Double_t 	    fNAssociated;//Number of associated in the event.
   ////tracks:
-  float 	    fAcceptancecut; //maximum eta
+  float 	    fAcceptancecut;//maximum eta
   Double_t 	    fMinTriggerPt;
   Double_t 	    fMaxTriggerPt;
   Double_t 	    fMinAssociatedPt;
   Double_t 	    fMaxAssociatedPt;
   Int_t 	    fMinNClustersTPC;
-  Int_t 	    fCutMask; // To correspond to different cut masks.
+  Int_t 	    fCutMask;//To correspond to different cut masks.
   ////clusters:
   Double_t 	    fMinClusterEnergy;
-  Double_t 	    fMinBCDistance;  //distance to nearest bad channel
+  Double_t 	    fMinBCDistance;//distance to nearest bad channel
   Int_t    	    fMinNCells;
   Double_t 	    fMinM02;
   Bool_t   	    fTOFCutEnabled;

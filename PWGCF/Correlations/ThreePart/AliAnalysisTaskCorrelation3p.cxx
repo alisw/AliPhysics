@@ -66,10 +66,14 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fOutput(NULL)
   , fTextBox(NULL)
   , fOption("")
+  , fstarttime(-1)
   , fCentrality(NULL)
   , fVertexobj(NULL)
   , fRun(130848)
   , fNEventsProcessed(0)
+  , fNEventsParsed(0)
+  , fNEventsToProcess(-1)
+  , fStartAtEvent(1)
   , fVertex()
   , fperiod(AliAnalysisTaskCorrelation3p::P10h)
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
@@ -132,8 +136,6 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   fMBinEdges = MBEdges;
   fZBinEdges = ZBedges;
   DefineSlots();
-  fRandom = new TRandom3();
-  fRandom->SetSeed(0);//Sets a new unique seed each time in TRandom3
 }
 
 AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, const char* opt)
@@ -141,10 +143,14 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fOutput(NULL)
   , fTextBox(NULL)
   , fOption(opt)
+  , fstarttime(-1)
   , fCentrality(NULL)
   , fVertexobj(NULL)
   , fRun(130848)
   , fNEventsProcessed(0)
+  , fNEventsParsed(0)
+  , fNEventsToProcess(-1)
+  , fStartAtEvent(1)
   , fVertex()
   , fperiod(AliAnalysisTaskCorrelation3p::P10h)
   , fCollisionType(AliAnalysisTaskCorrelation3p::PbPb)
@@ -208,8 +214,6 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   fMBinEdges = MBEdges;
   fZBinEdges = ZBedges;
   DefineSlots();
-  fRandom = new TRandom3();
-  fRandom->SetSeed(0);
   }
 
 int AliAnalysisTaskCorrelation3p::DefineSlots()
@@ -241,6 +245,12 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 {
   // create result objects and add to output list
   MakeRunNumbers();//Needs to be done once in the beginning
+  
+  TTimeStamp now;
+  fRandom = new TRandom3();
+  fRandom->SetSeed(now.GetNanoSec());
+  fstarttime = now.GetSec();
+  
   TH1::SetDefaultSumw2(kTRUE);//want the collection of weights on all histograms.
   TString collisiontype;
   if(fCollisionType==pp) collisiontype.Append("pp");
@@ -342,6 +352,9 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 {
   if(fgenerate){execgenerate();return;}//Toy MC generator, skips all data processing.
+  fNEventsParsed +=1;
+  if(fNEventsParsed<fStartAtEvent) return;
+  if(fNEventsToProcess>0&&fNEventsProcessed>=fNEventsToProcess)return;
   // process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}
@@ -410,7 +423,22 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
     //Post the output
   }
   fNEventsProcessed +=1;
-  if(fMoreOutputs&&(fNEventsProcessed%10000 ==0)) AliWarning(Form("Number of Events finished:%i",fNEventsProcessed));
+  if(fMoreOutputs&&((fNEventsProcessed%10000 ==0)||fNEventsProcessed==1)){
+    TTimeStamp now;
+    int timediff = (now.GetSec()-fstarttime);
+    int sec = timediff%60;
+    int min = ((timediff-sec)/60)%60;
+    int hour = (timediff-sec-60*min)/(60*60);
+    if(hour ==0&&min==0){
+    AliWarning(Form("Number of Events finished:%i. Number of Events parsed:%i. Time: %i. Time spent: %i seconds",fNEventsProcessed,fNEventsParsed,now.GetTime(),sec));
+    }
+    if(hour ==0&&min!=0){
+    AliWarning(Form("Number of Events finished:%i. Number of Events parsed:%i. Time: %i. Time spent: %i minutes %i seconds",fNEventsProcessed,fNEventsParsed,now.GetTime(),min,sec));
+    }
+    if(hour !=0&&min!=0){
+    AliWarning(Form("Number of Events finished:%i. Number of Events parsed:%i. Time: %i. Time spent: %i hours %i minutes %i seconds",fNEventsProcessed,fNEventsParsed,now.GetTime(),hour,min,sec));
+    }
+  }
   PostData(1, fOutput);
 }
 
