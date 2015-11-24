@@ -187,7 +187,7 @@ public:
    virtual Bool_t      SubmitMerging();
    static Int_t        SubmitSingleJob(const char *query);
    virtual void        WriteAnalysisFile();
-   virtual void        WriteAnalysisMacro();
+   virtual void        WriteAnalysisMacro(Long64_t nentries=123456789, Long64_t firstentry=0);
    virtual void        WriteMergingMacro();
    virtual void        WriteMergeExecutable();
    virtual void        WriteExecutable();

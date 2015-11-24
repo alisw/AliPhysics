@@ -108,8 +108,8 @@ enum EPluginBits {
    virtual void        EnablePackage(const char *package)                = 0;
    virtual Bool_t      MergeOutputs()                                    = 0;
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0) = 0;
-   virtual void        WriteAnalysisFile()                               = 0;
-   virtual void        WriteAnalysisMacro()                              = 0;
+   virtual void        WriteAnalysisFile() = 0;
+   virtual void        WriteAnalysisMacro(Long64_t nentries=123456789, Long64_t firstentry=0) = 0;
    virtual void        WriteExecutable()                                 = 0;
    virtual void        WriteValidationScript(Bool_t merge=kFALSE)        = 0;
 
