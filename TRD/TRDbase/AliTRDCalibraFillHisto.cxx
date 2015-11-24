@@ -535,14 +535,14 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
       }
     }
     fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit();
-    TString nameee("Ver");
-    nameee += fVersionExBUsed;
-    nameee += "Subver";
-    nameee += fSubVersionExBUsed;
-    nameee += "FirstRun";
-    nameee += fFirstRunExB;
-    nameee += "Nz";
-    fLinearVdriftFit->SetNameCalibUsed(nameee); 
+    //TString nameee("Ver");
+    //nameee += fVersionExBUsed;
+    //nameee += "Subver";
+    //nameee += fSubVersionExBUsed;
+    //nameee += "FirstRun";
+    //nameee += fFirstRunExB;
+    //nameee += "Nz";
+    //fLinearVdriftFit->SetNameCalibUsed(nameee); 
   }
   if(fExbAltFitOn){
     fExbAltFit = new AliTRDCalibraExbAltFit();
@@ -593,49 +593,52 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
     fCalDetGain->~AliTRDCalDet();
     new(fCalDetGain) AliTRDCalDet(*(calDet));
   }else fCalDetGain = new AliTRDCalDet(*(calDet));
-  
-  
-  // title CH2d
-  TString name("Ver");
-  name += fVersionGainUsed;
-  name += "Subver";
-  name += fSubVersionGainUsed;
-  name += "FirstRun";
-  name += fFirstRunGain;
-  name += "Nz";
-  name += fCalibraMode->GetNz(0);
-  name += "Nrphi";
-  name += fCalibraMode->GetNrphi(0);
-
-  fCH2d->SetTitle(name);  
-  
-  // title PH2d
-  TString namee("Ver");
-  namee += fVersionVdriftUsed;
-  namee += "Subver";
-  namee += fSubVersionVdriftUsed;
-  namee += "FirstRun";
-  namee += fFirstRunVdrift;
-  namee += "Nz";
-  namee += fCalibraMode->GetNz(1);
-  namee += "Nrphi";
-  namee += fCalibraMode->GetNrphi(1);
-  
-  fPH2d->SetTitle(namee);  
-
-  // title AliTRDCalibraVdriftLinearFit
-  TString nameee("Ver");
-  nameee += fVersionExBUsed;
-  nameee += "Subver";
-  nameee += fSubVersionExBUsed;
-  nameee += "FirstRun";
-  nameee += fFirstRunExB;
-  nameee += "Nz";
 
   
-  fLinearVdriftFit->SetNameCalibUsed(nameee);  
+  if((fVersionGainUsed > 0) && (fVersionVdriftUsed > 0) && (fVersionExBUsed > 0)) { 
+    // Extra protection to be sure but should normally not happen
+    
+    // title CH2d
+    TString name("Ver");
+    name += fVersionGainUsed;
+    name += "Subver";
+    name += fSubVersionGainUsed;
+    name += "FirstRun";
+    name += fFirstRunGain;
+    name += "Nz";
+    name += fCalibraMode->GetNz(0);
+    name += "Nrphi";
+    name += fCalibraMode->GetNrphi(0);
+    
+    fCH2d->SetTitle(name);  
+    
+    // title PH2d
+    TString namee("Ver");
+    namee += fVersionVdriftUsed;
+    namee += "Subver";
+    namee += fSubVersionVdriftUsed;
+    namee += "FirstRun";
+    namee += fFirstRunVdrift;
+    namee += "Nz";
+    namee += fCalibraMode->GetNz(1);
+    namee += "Nrphi";
+    namee += fCalibraMode->GetNrphi(1);
+    
+    fPH2d->SetTitle(namee);  
+    
+    // title AliTRDCalibraVdriftLinearFit
+    TString nameee("Ver");
+    nameee += fVersionExBUsed;
+    nameee += "Subver";
+    nameee += fSubVersionExBUsed;
+    nameee += "FirstRun";
+    nameee += fFirstRunExB;
+    nameee += "Nz";
+    
+    
+    fLinearVdriftFit->SetNameCalibUsed(nameee);  
 
-
+  }
 
   return kTRUE;
 
@@ -2706,19 +2709,8 @@ void AliTRDCalibraFillHisto::CreatePH2d(Int_t nn)
   //
   // Create the 2D histos
   //
-
-  TString name("Ver");
-  name += fVersionVdriftUsed;
-  name += "Subver";
-  name += fSubVersionVdriftUsed;
-  name += "FirstRun";
-  name += fFirstRunVdrift;
-  name += "Nz";
-  name += fCalibraMode->GetNz(1);
-  name += "Nrphi";
-  name += fCalibraMode->GetNrphi(1);
   
-  fPH2d = new TProfile2D("PH2d",(const Char_t *) name
+  fPH2d = new TProfile2D("PH2d",""
 			 ,fTimeMax,-0.5/fSf,(Float_t) (fTimeMax-0.5)/fSf
 			 ,nn,0,nn);
   fPH2d->SetYTitle("Det/pad groups");
@@ -2733,19 +2725,8 @@ void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
   //
   // Create the 2D histos
   //
-
-  TString name("Ver");
-  name += fVersionGainUsed;
-  name += "Subver";
-  name += fSubVersionGainUsed;
-  name += "FirstRun";
-  name += fFirstRunGain;
-  name += "Nz";
-  name += fCalibraMode->GetNz(0);
-  name += "Nrphi";
-  name += fCalibraMode->GetNrphi(0);
   
-  fCH2d = new TH2I("CH2d",(const Char_t *) name
+  fCH2d = new TH2I("CH2d",""
 		   ,(Int_t)fNumberBinCharge,0,fRangeHistoCharge,nn,0,nn);
   fCH2d->SetYTitle("Det/pad groups");
   fCH2d->SetXTitle("charge deposit [a.u]");
