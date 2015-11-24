@@ -4,9 +4,9 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     
     //Load ALICE stuff
     TString gLibs[] =   {"STEER",
-        "ANALYSIS", "ANALYSISalice", "ANALYSIScalib"};
+        "ANALYSIS", "ANALYSISalice", "ANALYSIScalib","OADB"};
     TString thislib = "lib";
-    for(Int_t ilib = 0; ilib<4; ilib++){
+    for(Int_t ilib = 0; ilib<5; ilib++){
         thislib="lib";
         thislib.Append(gLibs[ilib].Data());
         cout<<"Will load "<<thislib.Data()<<endl;
@@ -64,19 +64,23 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     if ( lPeriodName.Contains("LHC15m") ){
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
         lCalib->GetEventCuts()->SetVzCut(10.0);
-        lCalib->GetEventCuts()->SetTriggerCut                (kFALSE );
+        lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
         lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
         lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kTRUE );
         lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
         lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
-
+    
     //============================================================
     // --- Definition of Input Variables ---
     //============================================================
     
     lCalib->SetupStandardInput();
+    
+    //Changes in new version: create AliMultSelection here
+    AliMultSelection *lMultSel = new AliMultSelection();
+    lCalib->SetMultSelection(lMultSel);
     
     //============================================================
     // --- Definition of Estimators ---
@@ -92,8 +96,22 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
         fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
         fEstV0M -> SetAnchorPoint      ( 115.0    ) ;
         fEstV0M -> SetAnchorPercentile ( 87.5    ) ;
+        
+        AliMultEstimator *fEstnSPDClustersCorr = new AliMultEstimator("SPDClustersCorr", "", "(fnSPDClusters)/(1+((fEvSel_VtxZ)-1.83261)*(0.0057962-((fEvSel_VtxZ)-1.83261)*(-0.00307058)))");
+        fEstnSPDClustersCorr -> SetUseAnchor        ( kTRUE   ) ;
+        fEstnSPDClustersCorr -> SetAnchorPoint      ( 100.0   ) ;
+        fEstnSPDClustersCorr -> SetAnchorPercentile ( 87.0    ) ;
+        
+        AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.84151)*(0.00759815-((fEvSel_VtxZ)-1.84151)*(-0.00340785)))");
+        fEstCL0 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL0 -> SetAnchorPoint      ( 39.5   ) ;
+        fEstCL0 -> SetAnchorPercentile ( 88.9    ) ;
+        
+        AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.8275)*(0.00389886-((fEvSel_VtxZ)-1.8275)*(-0.00283038)))");
+        fEstCL1 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1 -> SetAnchorPoint      ( 40.5   ) ;
+        fEstCL1 -> SetAnchorPercentile ( 88.1    ) ;
     }
-    
     
     AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "(fAmplitude_V0A)");
     AliMultEstimator *fEstV0C = new AliMultEstimator("V0C", "", "(fAmplitude_V0C)");
@@ -116,9 +134,8 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
     fEstRefMultEta8->SetIsInteger(kTRUE);
     
-    //Changes in new version: create AliMultSelection here
-    AliMultSelection *lMultSel = new AliMultSelection();
-    lCalib->SetMultSelection(lMultSel);
+    
+    
     
     //Univeral: V0
     lCalib->GetMultSelection() -> AddEstimator( fEstV0M );
@@ -150,14 +167,22 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
     
+    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClustersCorr );
+    lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
+    lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
     //============================================================
     // --- Definition of Input/Output ---
     //============================================================
     
     if( !lPeriodName.Contains("test") ){
         //Per Period calibration: standard locations...
-        lCalib -> SetInputFile  ( Form("~/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
+        lCalib -> SetInputFile  ( Form("~/work/calibs/Merged%s.root",lPeriodName.Data() ) );
         lCalib -> SetBufferFile ( Form("~/work/fast/buffer-%s.root", lPeriodName.Data() ) );
+        
+        //Local running please
+        lCalib -> SetInputFile  ( Form("~/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
+        lCalib -> SetBufferFile ( "buffer.root" );
+        
         lCalib -> SetOutputFile ( Form("OADB-%s.root", lPeriodName.Data() ) );
         lCalib -> Calibrate     ();
     }else{
