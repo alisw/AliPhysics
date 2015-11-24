@@ -13,6 +13,7 @@ class TList;
 class AliPIDResponse;
 class AliAODEvent;
 class AliESDEvent;
+class TBits;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -79,6 +80,7 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   Double_t fVtxChi2,fVtxNDF;
   Double_t fKfVtxPos[3];
   Double_t fSpdVtxPos[3];
+  TBits fFastOrMap;
   UShort_t fBCrossNum, fNtracklets, fNLooseITSTracks, fNLooseTPCTracks;
   //vzero, zdc
   Double_t fZDCAenergy, fZDCCenergy;
