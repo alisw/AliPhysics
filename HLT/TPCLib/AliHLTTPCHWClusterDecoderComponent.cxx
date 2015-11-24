@@ -34,6 +34,9 @@
 #include "AliHLTTPCHWCFData.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCRawClustersDescriptor.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
+#include "AliDAQ.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -56,6 +59,7 @@ AliHLTTPCHWClusterDecoderComponent::AliHLTTPCHWClusterDecoderComponent()
 fpDecoder(NULL),
 fpClusterMerger(NULL),
 fDoMerge(1),
+fTPCPresent(0),
 fBenchmark("HWClusterDecoder")
 {
   // see header file for class documentation
@@ -125,6 +129,12 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
   
   int iResult=0;
 
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+  fTPCPresent = ((mgr.GetGRPData()->GetDetectorMask() & AliDAQ::kTPC) != 0);
+
+  if (!fTPCPresent) return(iResult);
+
   fpDecoder=new AliHLTTPCHWCFData;
   if (!fpDecoder) iResult=-ENOMEM;
   
@@ -141,6 +151,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTPCHWClusterDecoderComponent::DoDeinit() { 
   // see header file for class documentation   
+  if (!fTPCPresent) return 0;
   if (!fpDecoder) delete fpDecoder;
   fpDecoder=NULL;
   delete fpClusterMerger;
@@ -220,6 +231,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;
+  if (!fTPCPresent) return 0;
   if(!IsDataEvent()) return 0;
 
   if (!fpDecoder) return -ENODEV;

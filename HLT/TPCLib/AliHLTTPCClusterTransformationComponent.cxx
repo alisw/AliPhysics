@@ -29,6 +29,9 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCFastTransformObject.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
+#include "AliDAQ.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -54,6 +57,7 @@ AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent
 fOfflineMode(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
+fTPCPresent(0),
 fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
@@ -120,6 +124,12 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+  fTPCPresent = ((mgr.GetGRPData()->GetDetectorMask() & AliDAQ::kTPC) != 0);
+
+  if (!fTPCPresent) return(iResult);
 
   fOfflineMode = 0;
 
@@ -232,6 +242,8 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;
+
+  if (!fTPCPresent) return iResult;
 
   if (fInitializeByObjectInDoEvent)
   {
