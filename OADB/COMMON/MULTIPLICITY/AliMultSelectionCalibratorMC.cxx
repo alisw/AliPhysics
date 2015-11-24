@@ -455,8 +455,14 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     Double_t *lValues;
 
     //Determine max SPD tracklets: requires finding which estimator is SPD tracklets
-    Int_t iEstSPDtracklets = -1;
-    Int_t iEstSPDclusters = -1;
+    Int_t iEstSPDtracklets     = -1;
+    Int_t iEstSPDclusters      = -1;
+    Int_t iEstSPDtrackletscorr = -1;
+    Int_t iEstCL0  = -1;
+    Int_t iEstCL1  = -1;
+    
+    //FIXME: This can be done in a loop, will be adjusted later (but this will work as is)
+    
     TString lEstName;
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
         lEstName = fSelection->GetEstimator(iEst)->GetName();
@@ -467,6 +473,18 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if ( lEstName.EqualTo("SPDClusters") ) {
             cout<<"-> Found SPD clusters at estimator index position "<<iEst<<"..."<<endl;
             iEstSPDclusters = iEst;
+        }
+        if ( lEstName.EqualTo("SPDClustersCorr") ) {
+            cout<<"-> Found SPD clusters (vz corrected) at estimator index position "<<iEst<<"..."<<endl;
+            iEstSPDtrackletscorr = iEst;
+        }
+        if ( lEstName.EqualTo("CL0") ) {
+            cout<<"-> Found CL0 at estimator index position "<<iEst<<"..."<<endl;
+            iEstCL0 = iEst;
+        }
+        if ( lEstName.EqualTo("CL1") ) {
+            cout<<"-> Found CL1 at estimator index position "<<iEst<<"..."<<endl;
+            iEstCL1 = iEst;
         }
     }
 
@@ -581,7 +599,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitmc[iRun][iEst]->SetParameter(0,1.0);
             
             //remember to not be silly...
-            if( iEst != iEstSPDclusters && iEst != iEstSPDtracklets ){
+            if( iEst != iEstSPDclusters && iEst != iEstSPDtracklets && iEst != iEstCL0 && iEst != iEstCL1 && iEst != iEstSPDtrackletscorr ){
                 profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
                 profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
             }
@@ -741,7 +759,7 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //============================================================
     // --- Definition of Variables for estimators ---
     //============================================================
-
+    
     //Create input variables in AliMultInput Class
     //V0 related
     AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
@@ -754,20 +772,25 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     AliMultVariable *fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
     //SPD Related
     AliMultVariable *fnSPDClusters         = new AliMultVariable("fnSPDClusters");
+    AliMultVariable *fnSPDClusters0        = new AliMultVariable("fnSPDClusters0");
+    AliMultVariable *fnSPDClusters1        = new AliMultVariable("fnSPDClusters1");
     fnSPDClusters->SetIsInteger( kTRUE );
+    fnSPDClusters0->SetIsInteger( kTRUE );
+    fnSPDClusters1->SetIsInteger( kTRUE );
     //AD Related
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
-
+    
     AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
     fRefMultEta5->SetIsInteger( kTRUE );
     AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
     fRefMultEta8->SetIsInteger( kTRUE );
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
-
+    
+    //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
-
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -780,11 +803,12 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     fInput->AddVariable( fMultiplicity_ADA );
     fInput->AddVariable( fMultiplicity_ADC );
     fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnSPDClusters0 );
+    fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
-    fInput->AddVariable( fEvSel_VtxZ );
-
+    fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
-
+    
 }
