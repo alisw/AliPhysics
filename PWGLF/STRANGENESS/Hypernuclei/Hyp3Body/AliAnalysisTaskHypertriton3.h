@@ -165,9 +165,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistTPCdeusignal;                    //!<! TPC PID: deuteron candidates
   TH2F               *fHistTPCprosignal;                    //!<! TPC PID: proton candidates
   TH2F               *fHistTPCpionsignal;                   //!<! TPC PID: \f$\pi^{-}\f$ candidates
-  TH2F               *fHistTPCantideusignal;                //!<! TPC PID: anti-deuteron candidates
-  TH2F               *fHistTPCantiprosignal;                //!<! TPC PID: anti-proton candidates
-  TH2F               *fHistTPCpionplussignal;               //!<! TPC PID: \f$\pi^{+}\f$ candidates
 
   //--> TOF
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$

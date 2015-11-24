@@ -128,9 +128,6 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistTPCdeusignal(0x0),
   fHistTPCprosignal(0x0),
   fHistTPCpionsignal(0x0),
-  fHistTPCantideusignal(0x0),
-  fHistTPCantiprosignal(0x0),
-  fHistTPCpionplussignal(0x0),
   fHistTOFsignal(0x0),
   //fHistTOFdeusignal(0x0),
   //fHistTOFprosignal(0x0),
@@ -452,30 +449,18 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistTPCpid->SetMarkerStyle(kFullCircle);
 
   //Hypertriton prongs
-  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
+  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d(#bar{d}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCdeusignal->SetOption("scat");
   fHistTPCdeusignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
+  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p(#bar{p}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCprosignal->SetOption("scat");
   fHistTPCprosignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{-} PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
+  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{+}(#pi^{-}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpionsignal->SetOption("scat");
   fHistTPCpionsignal->SetMarkerStyle(kFullCircle);
   
-  //Anti-hypertriton prongs
-  fHistTPCantideusignal = new TH2F("fHistTPCantideusignal", "dE/dx after d PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
-  fHistTPCantideusignal->SetOption("scat");
-  fHistTPCantideusignal->SetMarkerStyle(kFullCircle);
-
-  fHistTPCantiprosignal = new TH2F("fHistTPCantiprosignal", "dE/dx after p PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
-  fHistTPCantiprosignal->SetOption("scat");
-  fHistTPCantiprosignal->SetMarkerStyle(kFullCircle);
-
-  fHistTPCpionplussignal= new TH2F("fHistTPCpionplussignal", "dE/dx after  #pi^{+} PID; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
-  fHistTPCpionplussignal->SetOption("scat");
-  fHistTPCpionplussignal->SetMarkerStyle(kFullCircle);
 
   //TOF
   
@@ -643,9 +628,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistTPCdeusignal);
   fOutput->Add(fHistTPCprosignal);
   fOutput->Add(fHistTPCpionsignal);
-  fOutput->Add(fHistTPCantideusignal);
-  fOutput->Add(fHistTPCantiprosignal);
-  fOutput->Add(fHistTPCpionplussignal);
   fOutput->Add(fHistTOFsignal);
   //fOutput->Add(fHistTOFdeusignal);
   //fOutput->Add(fHistTOFprosignal);
@@ -875,9 +857,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t chi2PerClusterTPC, nClustersTPC=0.;
   Double_t p = 0.;
   Float_t mass, beta, time, time0, gamma = 0.;
-  Float_t minPos = 9999.;
-  Float_t nsigma[3] = {9999.,9999.,9999.};
-  Int_t partID = -1;
   AliESDtrack *track = 0x0;
 
 
@@ -1053,11 +1032,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   for(Int_t i=0; i < ntracks; i++) {
     track = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(i));
-    minPos = 9999.;
-    partID = -1;
-    nsigma[0] = 9999.;
-    nsigma[1] = 9999.;
-    nsigma[2] = 9999.;
     
     // Chi2/TPCcls
     nClustersTPC = track->GetTPCclusters(0);
@@ -1099,117 +1073,62 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     
     if(fMC){
       TParticle *tparticleDaughter = stack->Particle(TMath::Abs(label));
-      if(track->GetSign()>0){ // track sign +
-	if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && tparticleDaughter->GetPdgCode() == 1000010020){ //d
-	  fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 1000010020){ //d
+	if(track->GetSign()>0) fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCdeusignal->Fill(-p, track->GetTPCsignal());
+	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFdeusignal->Fill(p,beta);
-	    fHistTOFdeumass->Fill(mass);
-	  }
-	  cdeuteron[nDeuTPC++] = i;
-	  //cdeuteron.push_back(track);
-	  //cmassd.push_back(mass); // da spostare nel if length > 350.?
+	  fHistTOFdeumass->Fill(mass);
 	}
-	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && tparticleDaughter->GetPdgCode() == 2212) { // p
-	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
+	cdeuteron[nDeuTPC++] = i;
+	//cdeuteron.push_back(track);
+	//cmassd.push_back(mass); // da spostare nel if length > 350.?
+      }
+      else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 2212) { // p
+	if(track->GetSign()>0) fHistTPCprosignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCprosignal->Fill(-p, track->GetTPCsignal());
+	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFprosignal->Fill(p,beta);
-	    fHistTOFpromass->Fill(mass);
+	  fHistTOFpromass->Fill(mass);
 	  }
-	  cproton[nProTPC++] = i;
-	  //cproton.push_back(track);
-	  //cmassp.push_back(mass); // da spostare nel if length > 350.?
-	}
-	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == 211) { // pi+
-	  fHistTPCpionplussignal->Fill(p, track->GetTPCsignal());
-	  cpion[nPioTPC++] = i;
-	}
-      } // end of "track sign +"
-      else if(track->GetSign()<0){ // track sign -
-	if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && tparticleDaughter->GetPdgCode() == -1000010020) { //anti-d
-	  fHistTPCantideusignal->Fill(p, track->GetTPCsignal());
-	  //if(track->GetIntegratedLength() > 350.) fHistTOFantideusignal->Fill(p,beta);
-	  cdeuteron[nDeuTPC++] = i;
-	}
-	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && tparticleDaughter->GetPdgCode() == -2212) { //anti-p
-	  fHistTPCantiprosignal->Fill(p, track->GetTPCsignal());
-	  //if(track->GetIntegratedLength() > 350.) fHistTOFantiprosignal->Fill(p,beta);
-	  cproton[nProTPC++] = i;
-	}
-	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == -211) { // pi-
-	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	  //cpion.push_back(track);
-	  cpion[nPioTPC++] = i;
-	}
-      } // end of "track sign -"
+	cproton[nProTPC++] = i;
+	//cproton.push_back(track);
+	//cmassp.push_back(mass); // da spostare nel if length > 350.?
+      }
+      else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 211) { // pi+
+	if(track->GetSign()>0) fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCpionsignal->Fill(-p, track->GetTPCsignal());
+	cpion[nPioTPC++] = i;
+      }
     } // end of MC PID
-    
     else {
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 3) nsigma[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 3) nsigma[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 3) nsigma[2] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron));
-
-      for(Int_t iS = 0; iS < 3; iS++){
-	if(nsigma[iS] < minPos){
-	  minPos = nsigma[iS];
-	  partID = iS;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 3) { //deuteron
+	if(track->GetSign()>0) fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCdeusignal->Fill(-p, track->GetTPCsignal());
+	if(track->GetIntegratedLength() > 350.){
+	  //fHistTOFdeusignal->Fill(p,beta);
+	  fHistTOFdeumass->Fill(mass);
+	  //cmassd.push_back(mass);
 	}
+	cdeuteron[nDeuTPC++] = i;
       }
       
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 3) { // proton
+	if(track->GetSign()>0) fHistTPCprosignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCprosignal->Fill(-p, track->GetTPCsignal());
+	if(track->GetIntegratedLength() > 350.){
+	  //fHistTOFprosignal->Fill(p,beta);
+	  fHistTOFpromass->Fill(mass);
+	  //cmassp.push_back(mass);
+	}
+	cproton[nProTPC++] = i;
+      }
       
-      if(track->GetSign()>0){
-	if(partID == 2) { //deuteron
-	  fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFdeusignal->Fill(p,beta);
-	    fHistTOFdeumass->Fill(mass);
-	    //cmassd.push_back(mass);
-	  }
-	  cdeuteron[nDeuTPC++] = i;
-	}
-	
-	if(partID == 1) { // proton
-	  fHistTPCprosignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFprosignal->Fill(p,beta);
-	    fHistTOFpromass->Fill(mass);
-	    //cmassp.push_back(mass);
-	  }
-	  cproton[nProTPC++] = i;
-	}
-	
-	if(partID == 0) { //pion^+
-	  fHistTPCpionplussignal->Fill(p, track->GetTPCsignal());
-	  cpion[nPioTPC++] = i;
-	}
-	
-      } // end of "track sign +"
-      else if(track->GetSign()<0){
-
-	if(partID == 2) { //deuteron
-	  fHistTPCantideusignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFantideusignal->Fill(p,beta);
-	    fHistTOFdeumass->Fill(mass);
-	    //cmassd.push_back(mass);
-	  }
-	  cdeuteron[nDeuTPC++] = i;
-	}
-	
-	if(partID == 1) { // proton
-	  fHistTPCantiprosignal->Fill(p, track->GetTPCsignal());
-	  if(track->GetIntegratedLength() > 350.){
-	    //fHistTOFantiprosignal->Fill(p,beta);
-	    fHistTOFpromass->Fill(mass);
-	    //cmassp.push_back(mass);
-	  }
-	  cproton[nProTPC++] = i;
-	}
-	if(partID == 0) { //pion^-
-	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	  cpion[nPioTPC++] = i;
-	}
-      }// end of "track sign -"
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 3) { //pion^+
+	if(track->GetSign()>0) fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
+	else if(track->GetSign()<0) fHistTPCpionsignal->Fill(-p, track->GetTPCsignal());
+	cpion[nPioTPC++] = i;
+      }
     } 
   } // end of PID loop
   
@@ -1258,8 +1177,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop cproton.size()
       
       trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cproton[m]));
-      
-      if(fMC) {if(trackD->GetLabel() == trackP->GetLabel()) continue;}
+
+      if(trackD->GetID() == trackP->GetID()) continue;
       
       charge_p = trackP->GetSign();
       
@@ -1295,6 +1214,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cpion[s]));
 	brotherHood = kFALSE;
 
+	
+	if(trackNPi->GetID() == trackP->GetID()) continue;
+	if(trackNPi->GetID() == trackD->GetID()) continue;
+	
+	
 	charge_pi = trackNPi->GetSign();
 
 	if((charge_p*charge_pi)>0) continue;
@@ -1304,10 +1228,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	if(!fESDtrackCutsV0->AcceptTrack(trackNPi)) continue;
 
-	if(fMC){
-	  if(trackNPi->GetLabel() == trackP->GetLabel()) continue;
-	  if(trackNPi->GetLabel() == trackD->GetLabel()) continue;
-	}
+	
 
 	trackNPi->GetImpactParameters(piprim,piprimc);
 	
