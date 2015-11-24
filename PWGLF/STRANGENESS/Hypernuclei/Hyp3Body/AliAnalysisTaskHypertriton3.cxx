@@ -444,7 +444,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
  
   
   //TPC
-  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p (GeV/c); TPC signal", 500, 0., 10, 300, 0, 2100);
+  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpid->SetOption("scat");
   fHistTPCpid->SetMarkerStyle(kFullCircle);
 
@@ -855,7 +855,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   //===PID loop===//
   Int_t ntracks,label, labelM = 0 ;
   Double_t chi2PerClusterTPC, nClustersTPC=0.;
-  Double_t p = 0.;
+  Double_t p, pOverZ = 0.;
   Float_t mass, beta, time, time0, gamma = 0.;
   AliESDtrack *track = 0x0;
 
@@ -1047,9 +1047,10 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(track->GetTPCsignalN()<80) continue;
     
     p = track->GetInnerParam()->GetP(); //track->GetTPCmomentum()
+    pOverZ = p*track->GetSign();
     //if(p<0.2) continue;
     
-    fHistTPCpid->Fill(p, track->GetTPCsignal());
+    fHistTPCpid->Fill(pOverZ, track->GetTPCsignal());
 
     // TOF signal
     mass = 0.;
@@ -1074,8 +1075,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(fMC){
       TParticle *tparticleDaughter = stack->Particle(TMath::Abs(label));
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 1000010020){ //d
-	if(track->GetSign()>0) fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCdeusignal->Fill(-p, track->GetTPCsignal());
+	fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFdeusignal->Fill(p,beta);
 	  fHistTOFdeumass->Fill(mass);
@@ -1085,8 +1085,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	//cmassd.push_back(mass); // da spostare nel if length > 350.?
       }
       else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 2212) { // p
-	if(track->GetSign()>0) fHistTPCprosignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCprosignal->Fill(-p, track->GetTPCsignal());
+	fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFprosignal->Fill(p,beta);
 	  fHistTOFpromass->Fill(mass);
@@ -1096,15 +1095,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	//cmassp.push_back(mass); // da spostare nel if length > 350.?
       }
       else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && TMath::Abs(tparticleDaughter->GetPdgCode()) == 211) { // pi+
-	if(track->GetSign()>0) fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCpionsignal->Fill(-p, track->GetTPCsignal());
+        fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
 	cpion[nPioTPC++] = i;
       }
     } // end of MC PID
     else {
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 3) { //deuteron
-	if(track->GetSign()>0) fHistTPCdeusignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCdeusignal->Fill(-p, track->GetTPCsignal());
+	fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	  //fHistTOFdeusignal->Fill(p,beta);
 	  fHistTOFdeumass->Fill(mass);
@@ -1114,8 +1111,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }
       
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 3) { // proton
-	if(track->GetSign()>0) fHistTPCprosignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCprosignal->Fill(-p, track->GetTPCsignal());
+	fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	  //fHistTOFprosignal->Fill(p,beta);
 	  fHistTOFpromass->Fill(mass);
@@ -1125,8 +1121,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }
       
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 3) { //pion^+
-	if(track->GetSign()>0) fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
-	else if(track->GetSign()<0) fHistTPCpionsignal->Fill(-p, track->GetTPCsignal());
+	fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
 	cpion[nPioTPC++] = i;
       }
     } 
