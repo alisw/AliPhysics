@@ -131,7 +131,7 @@ public:
   void   SetPtOrder(Bool_t flag) { fPtOrder = flag; }
   void   SetTriggersFromDetector(Int_t flag) { fTriggersFromDetector = flag; }
   void   SetAssociatedFromDetector(Int_t flag) { fAssociatedFromDetector = flag; }
-  void   SetMCUseUncheckedCentrality(Bool_t flag) { fMCUseUncheckedCentrality = flag; }
+  void   SetUseUncheckedCentrality(Bool_t flag) { fUseUncheckedCentrality = flag; }
   void   SetCheckCertainSpecies(Int_t species) { fCheckCertainSpecies = species; }
   void   SetRemoveWeakDecaysInMC(Bool_t flag) { fRemoveWeakDecaysInMC = flag; }
   void   SetFillYieldRapidity(Bool_t flag) { fFillYieldRapidity = flag; }
@@ -272,7 +272,7 @@ private:
   Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
   Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
   Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
-  Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
+  Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
   Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
   Bool_t fFillYieldRapidity;     // fill a control histogram centrality vs pT vs y
@@ -289,7 +289,7 @@ private:
   Float_t fJetPtMin;             // minimum pt to accept jet
   Int_t   fJetConstMin;          // minimum number of constituents
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 57); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 58); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle
