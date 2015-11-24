@@ -36,6 +36,7 @@ public:
 
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void SetRequestAnalysisUtil(bool doUse) { fRequestAnalysisUtil = doUse; }
 
 protected:
 
