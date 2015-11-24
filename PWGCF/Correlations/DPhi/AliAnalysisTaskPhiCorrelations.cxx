@@ -375,6 +375,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_V0M", 4100, -100, 4000));
   if (fCentralityMethod == "MCGen_CL1")
     fListOfHistos->Add(new TH1D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 4100, -100, 4000));
+  if (fCentralityMethod == "TRACKS_MANUAL")
+    fListOfHistos->Add(new TH3F("t0time", "t0time;Centrality;Side;Time", 42, -0.5, 41.5, 3, -0.5, 2.5, 200, 0, 2000));
 
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
@@ -1352,6 +1354,10 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       if (centrality > 40)
         centrality = 41;
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
+
+      for (int i=0; i<3; i++)
+        ((TH3F*) fListOfHistos->FindObject("t0time"))->Fill(centrality, i, inputEvent->GetT0TOF()[i]);
+      
       delete tracks;
     }
     else if (fCentralityMethod == "V0A_MANUAL")
