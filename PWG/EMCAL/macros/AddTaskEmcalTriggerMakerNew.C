@@ -1,6 +1,6 @@
 // $Id$
 
-AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMaker(
+AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   const char *triggersOutName     = "EmcalTriggers",
   const char *cellsName           = 0,
   const char *triggersName        = 0,
