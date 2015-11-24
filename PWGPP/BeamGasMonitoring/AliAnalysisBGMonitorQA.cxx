@@ -1007,9 +1007,6 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     } // end of events in trigger loop
     
     if(fUseTree==kTRUE)fTreeTrack->Fill();
-    PostData(1, fList);
-    PostData(2, fList2);
-    if(fUseTree==kTRUE)PostData(3, fTreeTrack);
 }
 
 
