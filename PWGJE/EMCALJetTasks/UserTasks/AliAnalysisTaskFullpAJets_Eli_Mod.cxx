@@ -903,7 +903,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserCreateOutputObjects()
 
 void AliAnalysisTaskFullpAJets_Eli_Mod::UserExecOnce()
 {
-	cout<<"Start of ...FullpAJets_Eli_Mod::UserExecOnce()"<<endl;
+//	cout<<"Start of ...FullpAJets_Eli_Mod::UserExecOnce()"<<endl;
 	// Get the event tracks
 	fOrgTracks = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fTrackName));
 
@@ -913,18 +913,21 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExecOnce()
 	if(fAkTFullName!="")fmyAKTFullJets = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fAkTFullName));
 
 	fIsInitialized=kTRUE;
-	cout<<"End of ...FullpAJets_Eli_Mod::UserExecOnce()"<<endl;
+//	cout<<"End of ...FullpAJets_Eli_Mod::UserExecOnce()"<<endl;
 }
 //________________________________________________________________________
 void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 {
-	cout<<"start of ...FullpAJets_Eli_Mod::UserExec(Option_t *)"<<endl;
+//	cout<<"start of ...FullpAJets_Eli_Mod::UserExec(Option_t *)"<<endl;
+
 	if (fIsInitialized==kFALSE)
 	{
 		UserExecOnce();
 	}
 	// Get pointer to reconstructed event
 	fEvent = InputEvent();
+	  IsEventSelected();
+
 	if (!fEvent)
 	{
 		AliError("Pointer == 0, this can not happen!");
@@ -935,7 +938,6 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 	{
 		return;
 	}
-
 	AliESDEvent* esd = dynamic_cast<AliESDEvent*>(fEvent);
 	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
 
@@ -1036,10 +1038,10 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 		ClusterHisto();
 	}
 
-	cout<<"--- 1"<<endl;
 	InitFullJets();
-	GenerateEMCalRandomConesPt();
-	cout<<"--- 2"<<endl;
+//	cout<<"--- 2"<<endl;
+//ELI check that 	GenerateEMCalRandomConesPt();
+//	cout<<"--- 3"<<endl;
 
 	if (fCalculateRhoJet>=1)
 	{
@@ -1053,9 +1055,9 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 	DeleteJetData(3);
 	fnEvents++;
 	PostData(1,fOutput);
-	cout<<"end of ...FullpAJets_Eli_Mod::UserExec(Option_t *)"<<endl;
-}
 
+//	cout<<"end of ...FullpAJets_Eli_Mod::UserExec(Option_t *)"<<endl;
+}
 //________________________________________________________________________
 void AliAnalysisTaskFullpAJets_Eli_Mod::Terminate(Option_t *) //specify what you want to have done
 {
@@ -1318,20 +1320,21 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::InitChargedJets()
 
 void AliAnalysisTaskFullpAJets_Eli_Mod::InitFullJets()
 {
-	cout<<"start of ...FullpAJets_Eli_Mod::InitFullJets()"<<endl;
+//	cout<<"start of ...FullpAJets_Eli_Mod::InitFullJets()"<<endl;
 	// Preliminary Jet Placement and Selection Cuts
 	Int_t i;
 
-	//ELI commented fnAKTFullJets = fmyAKTFullJets->GetEntries();
+	if(fmyAKTFullJets)fnAKTFullJets = fmyAKTFullJets->GetEntries();
+	else fnAKTFullJets = 0;
 
 	if(fmyKTFullJets)fnKTFullJets = fmyKTFullJets->GetEntries();
 	else fnKTFullJets=0;
 
 	//ELI commented fEMCalJet     = new AlipAJetData("fEMCalJet",kTRUE,fnAKTFullJets);
 	fEMCalFullJet = new AlipAJetData("fEMCalFullJet",kTRUE,fnAKTFullJets);
-	//ELI commented fEMCalPartJet = new AlipAJetData("fEMCalPartJet",kTRUE,fnAKTFullJets);
-	//ELI commented fEMCalPartJetUnbiased = new AlipAJetData("fEMCalPartJetUnbiased",kTRUE,fnAKTFullJets);
-	/*ELI commented
+	/*ELI commented fEMCalPartJet = new AlipAJetData("fEMCalPartJet",kTRUE,fnAKTFullJets);
+	 fEMCalPartJetUnbiased = new AlipAJetData("fEMCalPartJetUnbiased",kTRUE,fnAKTFullJets);
+
 	fEMCalJet->SetSignalCut(fEMCalJetThreshold);
 	fEMCalJet->SetAreaCutFraction(fJetAreaCutFrac);
 	fEMCalJet->SetJetR(fJetR);
@@ -1395,7 +1398,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::InitFullJets()
 		fEMCalRawJets->FillBSJS(fEventCentrality,0.0,fEMCalJetThreshold,fmyAKTFullJets,fEMCalFullJet->GetJets(),fEMCalFullJet->GetTotalJets());
 		//ELI FillBSJS(Double_t eventCentrality, Double_t rho, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList)
 	}
-	cout<<"end of ...FullpAJets_Eli_Mod::InitFullJets()"<<endl;
+//	cout<<"end of ...FullpAJets_Eli_Mod::InitFullJets()"<<endl;
 }
 
 void AliAnalysisTaskFullpAJets_Eli_Mod::GenerateTPCRandomConesPt()
