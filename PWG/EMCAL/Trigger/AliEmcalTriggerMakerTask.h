@@ -9,7 +9,6 @@
 
 class TClonesArray;
 class THistManager;
-class AliEmcalTriggerBitConfig;
 class AliVVZERO;
 
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
@@ -112,8 +111,6 @@ public:
 protected:
 
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
-
-  AliEmcalTriggerBitConfig                *fTriggerBitConfig;         //!<! Trigger bit configuration
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
   TString                                 fCaloTriggersOutName;       ///< name of output track array

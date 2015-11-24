@@ -23,6 +23,7 @@
 #include "AliEmcalTriggerBitConfig.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
+
 class AliEMCALGeometry;
 class TArrayI;
 
@@ -180,6 +181,12 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * @return Starting column of the patch
    */
   Int_t GetColStart() const { return fCol0; }
+
+  /**
+   * Get the size of the patch
+   * @return Size of the patch
+   */
+  Int_t GetPatchSize() const { return fPatchSize; }
 
   /**
    * Check whether patch is an EMCAL Level0 patch
