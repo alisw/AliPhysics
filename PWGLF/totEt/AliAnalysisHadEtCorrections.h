@@ -67,6 +67,8 @@ public:
     TH1D *GetEfficiencyHadronITS(const int cb = -1);// const {return fEfficiencyHadronITS;}
     TH1D *GetBackgroundCorrectionTPC() const {return fBackgroundTPC;}
     TH1D *GetBackgroundCorrectionITS() const {return fBackgroundITS;}
+    Float_t GetConstBackgroundCorrectionTPC() const {return fConstBackgroundTPC;}
+    Float_t GetConstBackgroundCorrectionITS() const {return fConstBackgroundITS;}
 
     //This is stored as the inverse of the correction
     Float_t GetNotIDCorrectionTPC(const float pT);//{return 1.0/(fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT)));}
@@ -84,10 +86,14 @@ public:
     //...and these guys are too
     Float_t GetBackgroundCorrectionTPC(const float pT);//{return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
     Float_t GetBackgroundCorrectionITS(const float pT);//{return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetConstBackgroundCorrectionTPC(){return fConstBackgroundTPC;}
+    Float_t GetConstBackgroundCorrectionITS(){return fConstBackgroundITS;}
     Float_t GetEfficiencyErrorLowBound() const {return fEfficiencyErrorLow;}
     Float_t GetEfficiencyErrorHighBound() const {return fEfficiencyErrorHigh;}
     Float_t GetBackgroundErrorLowBound() const {return fBackgroundErrorLow;}
     Float_t GetBackgroundErrorHighBound() const {return fBackgroundErrorHigh;}
+    Float_t GetConstBackgroundErrorLowBound() const {return fConstBackgroundErrorLow;}
+    Float_t GetConstBackgroundErrorHighBound() const {return fConstBackgroundErrorHigh;}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}
@@ -139,10 +145,16 @@ public:
     void SetEfficiencyHadronITS(TH1D *histo, const int cb);
     void SetBackgroundCorrectionTPC(const TH1D *histo){fBackgroundTPC=(TH1D*) histo;}
     void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
+    void SetConstBackgroundCorrectionTPC(const Float_t val){fConstBackgroundTPC=val;}
+    void SetConstBackgroundCorrectionITS(const Float_t val){fConstBackgroundITS=val;}
     void SetEfficiencyErrorLowBound(const Float_t val){fEfficiencyErrorLow=val;}
     void SetEfficiencyErrorHighBound(const Float_t val){fEfficiencyErrorHigh=val;}
     void SetBackgroundErrorLowBound(const Float_t val){fBackgroundErrorLow=val;}
     void SetBackgroundErrorHighBound(const Float_t val){fBackgroundErrorHigh=val;}
+    void SetConstBackgroundErrorLowBound(const Float_t val){fConstBackgroundErrorLow=val;}
+    void SetConstBackgroundErrorHighBound(const Float_t val){fConstBackgroundErrorHigh=val;}
+    void SetConstBackgroundTrue(){fConstBackground=kTRUE;}
+    void SetConstBackgroundFalse(){fConstBackground=kFALSE;}
     void IsEMCal(Bool_t val){fIsEMCal=val;}
     void IsData(Bool_t val){fIsData=val;}
     void SetDataSet(Int_t val){fDataSet=val;}
@@ -209,8 +221,13 @@ protected:
     Float_t fEfficiencyErrorHigh;//Relative error on efficiency, upper bound
     Float_t fBackgroundErrorLow;//Relative error on efficiency, lower bound
     Float_t fBackgroundErrorHigh;//Relative error on efficiency, upper bound
+    Float_t fConstBackgroundErrorLow;//Relative error on efficiency, lower bound
+    Float_t fConstBackgroundErrorHigh;//Relative error on efficiency, upper bound
+    Bool_t fConstBackground;
     TH1D *fBackgroundTPC;//background correction for the TPC
     TH1D *fBackgroundITS;//background correction for the ITS
+    Float_t fConstBackgroundTPC;//background correction for the TPC
+    Float_t fConstBackgroundITS;//background correction for the ITS
     Bool_t fIsEMCal;//boolean to keep track of whether this is for EMCal or PHOS acceptance
     Bool_t fIsData;//boolean to keep track of whether this is for data or simulation acceptance
     Int_t fDataSet;//integer to keep track of data set
