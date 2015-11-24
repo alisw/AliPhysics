@@ -96,7 +96,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   TArrayD etabinning; CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[18] = {
-      "MB", "EMC7", "DMC7"
+      "MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
       "MBexcl", "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl"
   };
