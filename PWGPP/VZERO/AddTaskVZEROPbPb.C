@@ -27,7 +27,9 @@ AliAnalysisTaskSE* AddTaskVZEROPbPb(Int_t runNumber)
    task->SetEquaMultRange(800,800.);
    task->SetSumEquaMultRange(100,15000.,20000.);
 
-   if(runNumber>194683)
+   if(runNumber>243984)
+     task->SetClassesNames("CTRUE-,CINT7-,C0TVX-");
+   else if(runNumber>194683)
      task->SetClassesNames("CTRUE-,CINT7-,CINT7WU-,CVGO-,CVLN-,CVLNWU-,CMUP3-");
    else if(runNumber>166532)
      task->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-");

@@ -10,7 +10,6 @@ class AliMultSelectionCuts : public TNamed {
 public:
     //Aliases for error codes
     typedef enum {
-        kRejBeyondAnchor                    = 198,
         kNoCalib                            = 199,
         kRejTrigger                         = 200,
         kRejINELgtZERO                      = 201,

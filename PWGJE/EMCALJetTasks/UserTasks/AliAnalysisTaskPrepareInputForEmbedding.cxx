@@ -27,7 +27,7 @@ fNAccJets(0)
    
    SetMakeGeneralHistograms(kTRUE);
    
-   //DefineOutput(2, TTree::Class());
+   DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________________________________
@@ -49,6 +49,7 @@ fNAccJets(0)
    
    SetMakeGeneralHistograms(kTRUE);
    AliInfo("standard constructor");
+   DefineOutput(2, TTree::Class());
 }
 //________________________________________________________________________________________________
 
@@ -70,8 +71,9 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
       fTreeJets->Branch("fJetDet.", fJetDet);
       fTreeJets->Branch("fJetPart.",fJetPart);
    }
-   fOutput->Add(fTreeJets);
-
+   //fOutput->Add(fTreeJets);
+   PostData(2, fTreeJets);
+   
    //check
    const Int_t nBinsPt          = 40;
    const Int_t nBinsFraction    = 101;
