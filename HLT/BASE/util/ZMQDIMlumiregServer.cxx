@@ -455,7 +455,7 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
     //eternal interrupt - exit
     return 0;
   }
-  if (!sockets[0].revents & ZMQ_POLLIN)
+  if (!(sockets[0].revents & ZMQ_POLLIN))
   {
     //server died, reinit socket
     HLTInfo("server not responding...");

@@ -136,7 +136,7 @@ void* run(void* arg)
       break;
     }
 
-    if (!sockets[0].revents & ZMQ_POLLIN)
+    if (!(sockets[0].revents & ZMQ_POLLIN))
     {
       //server died
       Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
