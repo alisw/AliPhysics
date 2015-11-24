@@ -67,7 +67,7 @@ using std::endl;
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi() 
   : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fITSTree(0),fTPCTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fFastOrMap(0),
     fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -87,7 +87,7 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi()
 AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name) 
   : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fITSTree(0),fTPCTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
-    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
+    fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fFastOrMap(0),
     fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
@@ -205,8 +205,9 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fITSTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
   fITSTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fITSTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
-  
   fITSTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  
+  fITSTree ->Branch("FastOrMap", &fFastOrMap);
   
   fITSTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fITSTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -251,6 +252,8 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fTPCTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
   fTPCTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
   fTPCTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  
+  fTPCTree ->Branch("FastOrMap", &fFastOrMap);
   
   fTPCTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fTPCTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
@@ -685,6 +688,9 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 
   //Tracklets
   fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
+  
+  //Fired FO map
+  fFastOrMap = esd->GetMultiplicity()->GetFastOrFiredChips();
 
   //VZERO, ZDC
   AliESDVZERO *fV0data = esd->GetVZEROData();
@@ -699,15 +705,15 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   fNLooseITSTracks = 0;
   fNLooseTPCTracks = 0;
   
-  /*/Track loop - loose cuts
-  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
-    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+  //Track loop - loose cuts
+  for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
+    AliESDtrack *trk = dynamic_cast<AliESDtrack*>(esd->GetTrack(itr));
     if( !trk ) continue;
-    if((trk->TestFilterBit(1<<0))) fNLooseTPCTracks++;
-    if((trk->TestFilterBit(1<<1))) fNLooseITSTracks++;
+    if((trk->GetStatus() & AliESDtrack::kTPCrefit) && (trk->GetStatus() & AliESDtrack::kITSrefit)) fNLooseTPCTracks++;
+    if(trk->GetStatus() & AliESDtrack::kITSpureSA) fNLooseITSTracks++;
       
   }//Track loop -loose cuts
-  /*/
+  
   
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
@@ -716,8 +722,9 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
     if( !trk ) continue;
-
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
+    
+      if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(trk->GetITSNcls() < 4)continue;
       if(trk->GetTPCchi2()/trk->GetITSNcls() > 2.5)continue;
       if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
