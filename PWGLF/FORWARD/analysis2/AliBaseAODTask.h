@@ -302,14 +302,26 @@ protected:
 	    fCentAxis.GetXbins()->GetArray()); 
   }
   /** 
-   * Get the centrality 
+   * Get the centrality.  The trigger mask of the forward object is
+   * not modified
    * 
    * @param event    Our event 
    * @param forward  Our FMD event 
+   * @param qual     On return, the quality flag
    *  
    * @return The centrality percentage 
    */
-  virtual Double_t GetCentrality(AliAODEvent& event,
+  virtual Double_t GetCentrality(AliAODEvent&       event,
+				 AliAODForwardMult* forward,
+				 Int_t&             qual);
+  /**
+   * Get the centrality.  If the quality is bad, set the corresponding
+   * bit on the forward object.
+   *
+   * @param event    Our event 
+   * @param forward  Our FMD event 
+   */
+  virtual Double_t GetCentrality(AliAODEvent&       event,
 				 AliAODForwardMult* forward);
   /** 
    * Get the Z coordinate of the interaction point 

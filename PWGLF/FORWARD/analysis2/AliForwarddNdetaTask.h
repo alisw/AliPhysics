@@ -59,6 +59,8 @@ protected:
    */
   AliForwarddNdetaTask& operator=(const AliForwarddNdetaTask&);
 
+  Bool_t LoadEmpirical(const char* path);
+  Bool_t Finalize();
   /** 
    * Retrieve the histogram 
    * 
@@ -164,7 +166,15 @@ protected:
 		     Int_t       color,
 		     TList*      mclist,
 		     TList*      truthlist);
-  protected: 
+  protected:
+    /** 
+     * Possibly apply empirical correction to result 
+     * 
+     * @param results List to find information in 
+     * 
+     * @return Corrected histogram or null
+     */
+    TH1* EmpiricalCorrection(TList* results);
     // ClassDef(CentralityBin,4); // A centrality bin     
   };
 

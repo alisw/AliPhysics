@@ -439,12 +439,15 @@ protected:
     if (scheme.IsNull()) scheme = "1/N_{accepted}";
     DrawParameter(y, "Normalization scheme", scheme, size);
     
-    Double_t epsT, epsT0;
+    Double_t epsT = 0, epsT0 = 0;
     GetParameter(c, "triggerEff",  epsT);
     GetParameter(c, "triggerEff0", epsT0);
     DrawParameter(y, "#epsilon_{T}", Form("%5.3f", epsT), size);
     DrawParameter(y, "#epsilon_{T,zero bin}", Form("%5.3f", epsT0), size);
-
+    Double_t deltaIP =0;
+    GetParameter(c, "deltaIP", deltaIP);
+    DrawParameter(y, "IP #delta_{xy}", Form("%5.3fmm", deltaIP), size);
+    
     TObject*    options = GetObject(c, "options");
     TString     opts(options->GetTitle());
     TObjArray*  tokens = opts.Tokenize(",");
@@ -456,6 +459,7 @@ protected:
 		    opt->String().Strip(TString::kBoth), size);
       first = false;
     }
+
     fParVal->SetX(xSave);      
   }
 
@@ -471,6 +475,16 @@ protected:
     DrawResTitle(c, y, onlyMB);
     PrintCanvas(Form("%s results", base.Data()));
 
+    TH1* emp = GetH1(c, "empirical");
+    TF1* dc  = static_cast<TF1*>(GetObject(c,"deltaCorr"));
+    if (emp || dc) {
+      fBody->Divide(2,1);
+      DrawInPad(fBody, 1, emp, "", 0, "Empirical");
+      DrawInPad(fBody, 2, dc, "", 0, "\\hbox{IP} \\delta_{xy}");
+      PrintCanvas(Form("%s corrections", base.Data()));
+    }
+      
+    
     TAxis*   centAxis = (onlyMB ? 0 : GetCentAxis(c));
     if (centAxis && centAxis->GetNbins() < 1) centAxis = 0;
 
@@ -485,7 +499,14 @@ protected:
     l->SetBorderSize(0);
     THStack* dndeta   = CleanStack(dndeta_, l, centAxis);
 
-    
+    THStack* dndetaEmp  = GetStack(c, "dndetaEmp");
+    if (!dndetaEmp || !dndetaEmp->GetHists() ||
+	dndetaEmp->GetHists()->GetEntries() < 0) dndetaEmp = 0;
+
+    THStack* leftRight  = GetStack(c, "leftRight");
+    if (!leftRight || !leftRight->GetHists() ||
+	leftRight->GetHists()->GetEntries() < 0) leftRight = 0;
+
     if (!onlyMB) {
       Double_t y1 = fLandscape ? 0  : .3;
       Double_t x2 = fLandscape ? .7 : 1;
@@ -499,15 +520,19 @@ protected:
       fBody->cd();
       p2->Draw();
       p2->cd();
-      p1->Divide(1,2,0,0);
+      p1->Divide(1,3,0,0);
 
       // fBody->Divide(1, 3, 0, 0);
       
       DrawInPad(p2, 0, l, "");
-      DrawInPad(p1, 1, dndeta,  "nostack");
-      // DrawInPad(p1, 2, dndeta5, "nostack");
+      DrawInPad(p1, 1, dndeta,  "nostack", 0,
+		"\\hbox{d}N_{\\hbox{ch}}/\\hbox{d}\\eta|_{\\hbox{incl}}");
+      DrawInPad(p1, 2, dndetaEmp, "nostack", kLogy,
+		"\\hbox{d}N_{\\hbox{ch}}/\\hbox{d}\\eta|_{\\hbox{prim}}");
+      DrawInPad(p1, 3, leftRight, "nostack", 0, "Left/Right");
       p1->GetPad(1)->SetGridx();
       p1->GetPad(2)->SetGridx();
+      p1->GetPad(3)->SetGridx();
       
       PrintCanvas(Form("%s results - stacks", base.Data()));
     }
@@ -561,6 +586,7 @@ protected:
     TH1* trig        = GetH1(c, "triggers");
     TH1* norm        = GetH1(c, Form("norm%s",base.Data()));
     TH1* dndeta      = GetH1(c, Form("dndeta%s",base.Data()));
+    TH1* dndetaEmp   = GetH1(c, Form("dndeta%sEmp",base.Data()));
     TH2* d2ndetadphi = GetH2(c, Form("d2Ndetadphi%s", base.Data()));
     if (!trig || !norm || !dndeta || !d2ndetadphi) return;
     if (norm->GetEntries() <= 0) return;
@@ -569,7 +595,7 @@ protected:
     norm->SetFillStyle(3001);
 
 
-    fBody->Divide(2, 3, 0.05, 0);
+    fBody->Divide(2, (dndetaEmp ? 4 : 3), 0.05, 0);
 
     Int_t        trP = 1;
     TVirtualPad* p   = fBody->GetPad(trP);
@@ -578,13 +604,27 @@ protected:
     if (trP > 2) p->SetTopMargin(0.05);
     
     DrawInPad(fBody, trP, trig,   "HIST TEXT");
-    DrawInPad(fBody, 2,   d2ndetadphi, "colz");
+    DrawInPad(fBody, 2,   d2ndetadphi, "colz", 0,
+	      "d^{2}#it{N}/d#it{#eta}d#it{phi}|_{incl}");
     DrawInPad(fBody, 4,   norm,   "", 0, "Normalization");
-    DrawInPad(fBody, 6,   dndeta, "", 0, "d#it{N}_{ch}/d#it{#eta}");
+    DrawInPad(fBody, 6,   dndeta, "", 0,
+	      "d#it{N}_{ch}/d#it{#eta}|_{incl}");
   
-    fBody->GetPad(2)->SetGridx(); fBody->GetPad(2)->SetLeftMargin(0.15);
-    fBody->GetPad(4)->SetGridx(); fBody->GetPad(4)->SetLeftMargin(0.15);
-    fBody->GetPad(6)->SetGridx(); fBody->GetPad(6)->SetLeftMargin(0.15);
+    fBody->GetPad(2)->SetGridx(); 
+    fBody->GetPad(4)->SetGridx(); 
+    fBody->GetPad(6)->SetGridx(); 
+    fBody->GetPad(2)->SetLeftMargin(0.15); 
+    fBody->GetPad(4)->SetLeftMargin(0.15); 
+    fBody->GetPad(6)->SetLeftMargin(0.15);
+    fBody->GetPad(4)->SetRightMargin(0.15);
+    fBody->GetPad(6)->SetRightMargin(0.15);
+    if (dndetaEmp) {
+      DrawInPad(fBody, 8,   dndetaEmp, "", 0,
+		"d#it{N}_{ch}/d#it{#eta}|_{prim}");
+      fBody->GetPad(8)->SetGridx();
+      fBody->GetPad(8)->SetLeftMargin(0.15);
+      fBody->GetPad(8)->SetRightMargin(0.15);
+    }
 
     TObject*   normCalc = GetObject(c, "normCalc");
     TString    calc     = normCalc ? normCalc->GetTitle() : "?";
@@ -604,6 +644,7 @@ protected:
     p->SetPad(p->GetXlowNDC(), 0, 
 	      p->GetXlowNDC()+p->GetWNDC(), p->GetYlowNDC()+p->GetHNDC());
     fBody->GetPad(5)->Delete();
+    if (dndetaEmp)  fBody->GetPad(7)->Delete();
     TObjArray* lines    = calc.Tokenize("\n");
     // TPaveText* disp     = new TPaveText(.1,.1,.9,.9, "NDC");
     TIter       next(lines);

@@ -395,14 +395,26 @@ AliBaseAODTask::GetMultClass(const AliAODEvent& aod, Bool_t verb)
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetCentrality(AliAODEvent&,
-			      AliAODForwardMult* forward)
+			      AliAODForwardMult* forward,
+			      Int_t&             qual)
 {
+  qual          = 0;
   Double_t cent = forward->GetCentrality();
   Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
-  if (cent < 0)   cent = -.5;
-  if (cent > max) cent = TMath::Max(max+.1,100.5);
+  if (cent < 0)   { cent = -.5; qual = 0xFFFF; }
+  if (cent > max) { cent = TMath::Max(max+.1,100.5); qual = 198; }
   return cent;
 }
+//____________________________________________________________________
+Double_t
+AliBaseAODTask::GetCentrality(AliAODEvent& event,
+			      AliAODForwardMult* forward)
+{
+  Int_t    qual = 0;
+  Double_t cent = GetCentrality(event, forward, qual);
+  if (qual > 0)   forward->SetTriggerBits(AliAODForwardMult::kCentNoCalib);
+}
+
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetIpZ(AliAODEvent&,
@@ -517,15 +529,16 @@ AliBaseAODTask::UserExec(Option_t *)
 Bool_t
 AliBaseAODTask::CheckEvent(const AliAODForwardMult& forward)
 {
-  if (HasCentrality())
+  if (HasCentrality()) {
     return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
-            fCentAxis.GetXmin(),
-            fCentAxis.GetXmax(),
-            fTriggers, fEventStatus,
-            fFilterMask);
- return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
-         0, 0, fTriggers, fEventStatus,
-         fFilterMask);
+			      fCentAxis.GetXmin(),
+			      fCentAxis.GetXmax(),
+			      fTriggers, fEventStatus,
+			      fFilterMask);
+}
+  return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
+			    0, 0, fTriggers, fEventStatus,
+			    fFilterMask);
 }
 
 //____________________________________________________________________
