@@ -39,7 +39,7 @@ void AliFlatTPCseed::SetFromTPCseed( const AliTPCseed *p )
   if( !p ) return;
   fParam.SetExternalTrackParam(  p );
   fLabel = p->GetLabel();  
-  for( Int_t irow=159; irow>=0; irow-- ){
+  for( Int_t irow=kMaxRow-1; irow>=0; irow-- ){
     if( p->GetClusterPointer(irow) ) AddCluster( p->GetClusterPointer(irow), p->GetTrackPoint(irow) );
   }
 }
