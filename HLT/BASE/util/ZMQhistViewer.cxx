@@ -59,6 +59,7 @@ TObjArray fDrawables;
 
 TPRegexp* fSelectionRegexp = NULL;
 TString fDrawOptions;
+Bool_t fResetOnRequest = kFALSE;
 
 ULong64_t iterations=0;
 
@@ -107,13 +108,18 @@ void* run(void* arg)
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
       TString request;
-      if (fSelectionRegexp) request = "select="+fSelectionRegexp->GetPattern();
       TString requestTopic;
-      if (fSelectionRegexp) requestTopic = "CONFIG";
+      
+      if (fSelectionRegexp) 
+      {
+        requestTopic = "CONFIG";
+        request = "select="+fSelectionRegexp->GetPattern();
+        if (fResetOnRequest) request += " ResetOnRequest";
+        zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
+        zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
+      }
 
       if (fVerbose) Printf("sending request %s %s",requestTopic.Data(), request.Data());
-      zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
-      zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
       zmq_send(fZMQin, "", 0, ZMQ_SNDMORE);
       zmq_send(fZMQin, "", 0, 0);
     }
@@ -314,6 +320,10 @@ int ProcessOptionString(TString arguments)
     {
       delete fSelectionRegexp;
       fSelectionRegexp=new TPRegexp(value);
+    }
+    else if (option.EqualTo("ResetOnRequest"))
+    {
+      fResetOnRequest = kTRUE;
     }
     else if (option.EqualTo("drawoptions"))
     {
