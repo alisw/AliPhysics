@@ -100,7 +100,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fCutPostrackEta(0)
    ,fCutNegtrackEta(0)
    ,fCutEta(0)
-   ,fCutV0cosPointAngle(0)
+   ,fCutK0cosPointAngle(0)
+   ,fCutLacosPointAngle(0)
    ,fKinkDaughters(0)
    ,fRequireTPCRefit(0)
    ,fCutArmenteros(0)
@@ -242,8 +243,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1trackPosEta(0)            
    ,fh1trackNegEta(0)          
    ,fh1V0Eta(0)
-  //,fh1V0totMom(0)           
-   ,fh1CosPointAngle(0)           
+  //,fh1V0totMom(0)
+  ,fh1CosPointAngle(0)                       
    ,fh1DecayLengthV0(0)    
    ,fh2ProperLifetimeK0sVsPtBeforeCut(0)    
    ,fh2ProperLifetimeK0sVsPtAfterCut(0)
@@ -398,7 +399,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fCutPostrackEta(0)
   ,fCutNegtrackEta(0)
   ,fCutEta(0)
-  ,fCutV0cosPointAngle(0)
+  ,fCutK0cosPointAngle(0)
+  ,fCutLacosPointAngle(0)
   ,fKinkDaughters(0)
   ,fRequireTPCRefit(0)
   ,fCutArmenteros(0)
@@ -699,7 +701,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fCutPostrackEta(copy.fCutPostrackEta)
   ,fCutNegtrackEta(copy.fCutNegtrackEta)
   ,fCutEta(copy.fCutEta)
-  ,fCutV0cosPointAngle(copy.fCutV0cosPointAngle)
+  ,fCutK0cosPointAngle(copy.fCutK0cosPointAngle)
+  ,fCutLacosPointAngle(copy.fCutLacosPointAngle)
   ,fKinkDaughters(copy.fKinkDaughters)
   ,fRequireTPCRefit(copy.fRequireTPCRefit)
   ,fCutArmenteros(copy.fCutArmenteros)
@@ -1002,7 +1005,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fCutPostrackEta                 = o.fCutPostrackEta;
     fCutNegtrackEta                 = o.fCutNegtrackEta;  
     fCutEta                         = o.fCutEta;
-    fCutV0cosPointAngle             = o.fCutV0cosPointAngle;
+    fCutK0cosPointAngle             = o.fCutK0cosPointAngle;
+    fCutLacosPointAngle             = o.fCutLacosPointAngle;
     fKinkDaughters                  = o.fKinkDaughters;
     fRequireTPCRefit                = o.fRequireTPCRefit;
     fCutArmenteros                  = o.fCutArmenteros;
@@ -6503,17 +6507,23 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        }      
        
        if(particletype == kK0){//only cut on K0s histos
+	 
 	 if(IsArmenterosSelected == 1){// Armenteros Cut to reject Lambdas contamination in K0s inv. massspectrum
 	   fh2ArmenterosBeforeCuts->Fill(ArmenterosAlpha,ArmenterosPt);
 	 }
+	 if (fV0cosPointAngle < fCutK0cosPointAngle)	continue;                                       //cospointangle cut
+	 
        }
        
        //some more cuts on v0s and daughter tracks:
        
        
        if((TMath::Abs(PosEta)>fCutPostrackEta) || (TMath::Abs(NegEta)>fCutNegtrackEta))continue;   //Daughters pseudorapidity cut
-       if (fV0cosPointAngle < fCutV0cosPointAngle)	continue;                                       //cospointangle cut
        
+       if(particletype != kK0){//only cut on La and ALa histos
+	 if (fV0cosPointAngle < fCutLacosPointAngle)continue;                                       //cospointangle cut
+       }
+
        fV0Rap   = MyRapidity(v0->E(),v0->Pz());
 
        if ((fCutRap > 0) && (TMath::Abs(fV0Rap) > fCutRap))continue;      //V0 Rapidity Cut
