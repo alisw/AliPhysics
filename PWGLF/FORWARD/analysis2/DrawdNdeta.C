@@ -670,15 +670,25 @@ struct dNdetaDrawer
       Error("Run", "Couldn't find list ForwarddNdetaSums");
       return;
     }
-    TParameter<bool>* p = 
-      static_cast<TParameter<bool>*>(sums->FindObject("empirical"));
-    if (p && p->GetVal() && !fEmpirical.IsNull()) {
-      Warning("Run", "Empirical correction already applied");
-      fEmpirical = "__task__";
+    
+    if (!fEmpirical.IsNull()) {
+      TParameter<bool>* p = 
+	static_cast<TParameter<bool>*>(sums->FindObject("empirical"));
+      if (p && p->GetVal() && !fEmpirical.IsNull()) {
+	Warning("Run", "Empirical correction already applied");
+	fEmpirical = "__task__";
+      }
+      else if (forward->FindObject("dndetaEmp")) {
+	Warning("Run", "Empirical correction already applied");
+	fEmpirical = "__task__";
+      }
+    } 
+
+    if (!forward->FindObject("deltaIP")) {
+      TH2* vertexXY = static_cast<TH2*>(sums->FindObject("vertexAccXY"));
+      if (vertexXY && fDelta <= 0)
+	SetDelta(vertexXY->GetMean(1), vertexXY->GetMean(2));
     }
-    TH2* vertexXY = static_cast<TH2*>(sums->FindObject("vertexAccXY"));
-    if (vertexXY && fDelta <= 0)
-      SetDelta(vertexXY->GetMean(1), vertexXY->GetMean(2));
     
     // --- Get information on the run --------------------------------
     FetchInformation(forward);
@@ -1202,7 +1212,7 @@ struct dNdetaDrawer
       if (tt != ot) { 
 	truths.AddAt(tt, i);
       }
-      // Info("FetchTopResults", "Adding %p to result stack", h);
+      // Info("FetchTopResults", "Adding %pto result stack", h);
       a->AddAt(h, i);
     }
     if (a->GetEntries() <= 0) {
@@ -1319,8 +1329,10 @@ struct dNdetaDrawer
     TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchHistogram(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchHistogram(list, "dndetaTruth");
+    TH1* dndetaEmp   = FetchHistogram(list, Form("dndeta%sEmp", name));
     // Info("", "dN/deta truth from %s: %p", list->GetName(), dndetaTruth);
     // Info("", "dN/deta truth from external: %p", truth);
+    if (dndetaEmp) dndeta = dndetaEmp;
 
     if (mcList && FetchHistogram(mcList, "finalMCCorr")) 
       Warning("FetchCentResults", "dNdeta already corrected for final MC");

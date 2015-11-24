@@ -467,6 +467,52 @@ public:
    * @name Centrality functions 
    */
   /** 
+   * Get the centrality of the event.  One can pass a both an ESD and
+   * AOD event.  Also, there's fall-back to the old centrality objects
+   * in case the newer AliMultSelection object isn't found.
+   * 
+   * Possible values of qual 
+   *
+   * - 0   All is good and event within calibrated sample 
+   * - 198 Centrality beyond anchor point 
+   * - 199 No calibration for estimator (return <0)
+   * - 200 Not the same trigger as in calibration 
+   * - 201 Not an INEL>0 (if used in calibration)
+   * - 202 Event outside IPz cut used in calibration 
+   * - 203 Event is a pile-up kind not used in calibration 
+   * - 204 Not consistent SPD/TPC IP (if used in calibration)
+   * - 205 SPD outlier event (if used in calibration)
+   * - 206 IP has less than 1 contributor (if used in calibration)
+   * - 0xFFFF No estimate of centrality could be done (return <0)
+   *
+   * @param event    Event 
+   * @param method   Centrality method to use 
+   * @param qual     On return, the quality - 0 is good 
+   * @param verbose  If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems. 
+   */
+  static Float_t GetCentrality(const AliVEvent& event, 
+			       const TString&   method, 
+			       Int_t&           qual, 
+			       Bool_t           verbose=false);
+  //____________________________________________________________________
+  /** 
+   * Get the centrality of the event.  One can pass a both an ESD and
+   * AOD event.  
+   * 
+   * @param event    Event 
+   * @param method   Centrality method to use 
+   * @param qual     On return, the quality - 0 is good 
+   * @param verbose  If true, be verbose 
+   * 
+   * @return The centrality or -1 in case of problems. 
+   */
+  static Float_t GetCentralityMult(const AliVEvent& event, 
+				   const TString&   method, 
+				   Int_t&           qual, 
+				   Bool_t           verbose=false);
+  /** 
    * Compatbility function to retrieve the centrality from the event.
    * 
    * @param event   Event 
@@ -510,23 +556,6 @@ public:
 				     const TString&     method,
 				     Int_t&             qual,
 				     Bool_t             verbose);
-  //____________________________________________________________________
-  /** 
-   * Get the centrality of the event.  One can pass a both an ESD and
-   * AOD event.  Also, there's fall-back to the old centrality objects
-   * in case the newer AliMultSelection object isn't found.
-   * 
-   * @param event    Event 
-   * @param method   Centrality method to use 
-   * @param qual     On return, the quality - 0 is good 
-   * @param verbose  If true, be verbose 
-   * 
-   * @return The centrality or -1 in case of problems. 
-   */
-  static Float_t GetCentrality(const AliVEvent& event, 
-			       const TString&   method, 
-			       Int_t&           qual, 
-			       Bool_t           verbose=false);
   
   //==================================================================
   /** 

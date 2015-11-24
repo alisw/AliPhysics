@@ -6,6 +6,9 @@
 #include <THStack.h>
 #include <TList.h>
 #include <TFile.h>
+#include <TF1.h>
+#include <TSystem.h>
+#include <TGraphAsymmErrors.h>
 #include <AliAnalysisManager.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -176,7 +179,169 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
     }
   }
 }
+//____________________________________________________________________
+Bool_t
+AliForwarddNdetaTask::LoadEmpirical(const char* prx)
+{
+  TString path(prx);
+  if (!path.Contains("empirical.root")){
+    path = gSystem->ConcatFileName(gSystem->ExpandPathName(prx),
+				   "empirical.root");
+    path.Append("#default");
+  }
+  TUrl   empUrl(path);
+  TFile* empFile = TFile::Open(empUrl.GetUrl());
+  if (!empFile) return false;
+
+  const char* empAnch = empUrl.GetAnchor();
+  TObject*    empObj  = empFile->Get(Form("Forward/%s", empAnch));
+  if (!(empObj &&
+	(empObj->IsA()->InheritsFrom(TH1::Class()) ||
+	 empObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) {
+    Warning("LoadEmpirical", "Didn't get Forward/%s from %s",
+	    empAnch, empUrl.GetUrl());
+    return false;
+  }
+  // Store correction in output list 
+  static_cast<TNamed*>(empObj)->SetName("empirical");
+  fResults->Add(empObj);
+
+  if (!empObj->IsA()->InheritsFrom(TH1::Class()))
+    return true;
+
+  // Release from directory 
+  TH1* h  = static_cast<TH1*>(empObj);
+  h->SetDirectory(0);
+
+  // Check for IP delta 
+  TH1* xy = static_cast<TH2*>(fSums->FindObject("vertexAccXY"));
+  Double_t delta = 0;
+  if (xy) {
+    Double_t       meanIpx = xy->GetMean(1);
+    Double_t       meanIpy = xy->GetMean(2);
+    const Double_t refX    = -0.004;
+    const Double_t refY    = 0.184;
+    Double_t       dx   = (meanIpx - refX);
+    Double_t       dy   = (meanIpy - refY);
+    Info("LoadEmpirical","Shifts (%f-%f)=%f, (%f-%f)=%f",
+	 meanIpx, refX, dx,
+	 meanIpy, refY, dy);
+    if (TMath::Abs(dx) > 1e-3 || TMath::Abs(dy) > 1e-3)
+      delta = TMath::Sqrt(dx*dx+dy*dy);
+    // Store delta in output list
+    fResults->Add(AliForwardUtil::MakeParameter("deltaIP", delta));
+  }
+  if (delta > 0.2) {
+    // Only correct if delta is larger than 2mm (2% correction)
+    TF1* f = new TF1("deltaCorr", "1+[2]*([0]+(x<[1])*pow([0]*(x-[1]),2))");
+    f->SetParNames("\\delta","\\eta_{0}","a");
+    f->SetParameter(0,delta);
+    f->SetParameter(1,-2.0);
+    f->SetParameter(2,.10); //TMath::Sqrt(2)); // 0.5);
+    Info("LoadEmpirical","Appying correction for IP delta=%f", delta);
+    for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+      Double_t c   = h->GetBinContent(i);
+      if (c < 1e-6) continue;
+      
+      Double_t e   = h->GetBinError(i);
+      Double_t eta = h->GetXaxis()->GetBinCenter(i);
+      Double_t cor = f->Eval(eta);
+      // Info("", "%5.2f -> %7.4f", eta, cor);
+      h->SetBinContent(i, c*cor);
+      h->SetBinError(i, e*cor);
+    }
+    // Adding correction to result list
+    fResults->Add(f);
+  }
+}
+
+//____________________________________________________________________
+Bool_t
+AliForwarddNdetaTask::Finalize()
+{
+  // See if we can find the empirical correction so that the bins may
+  // apply it
+  const char* dirs[] = {
+    "file://${PWD}",
+    "file://${FWD}",
+    AliAnalysisManager::GetOADBPath(),
+    "file://${OADB_PATH}/PWGLF/FORWARD/EMPIRICAL",
+    "file://${ALICE_PHYSICS}/OADB/PWGLF/FORWARD/EMPIRICAL",
+    0
+  };
+  const char** pdir = dirs;
+  Bool_t       ok   = false;
+  while (*pdir) {
+    const char*  fns[] = { "", "empirical_000138190.root", 0 };
+    const char** pfn   = fns;
+    while (*pfn) {
+      TString path(gSystem->ConcatFileName(*pdir, *pfn));
+      if ((ok = LoadEmpirical(path))) break;
+      pfn++;
+    }
+    if (ok) break;
+    pdir++;
+  }
+  return AliBasedNdetaTask::Finalize();
+}
+
 //========================================================================
+TH1*
+AliForwarddNdetaTask::CentralityBin::EmpiricalCorrection(TList* results)
+{
+  TList* out = fOutput;
+
+  TString base(GetName()); base.ReplaceAll("dNdeta", "");
+  TString hName(Form("dndeta%s",base.Data()));
+  TH1* h = static_cast<TH1*>(out->FindObject(hName));
+  if (!h) {
+    Warning("End", "%s not found in %s",
+	    hName.Data(), out->GetName());
+    out->ls();
+    return 0;
+  }
+
+  TObject* o = static_cast<TH1*>(results->FindObject("empirical"));
+  if (!o) {
+    Info("EmpiricalCorrection", "Empirical not found in %s",
+	 results->GetName());
+    return 0;
+  }
+
+  Info("EmpiricalCorrection", "Correcting %s/%s with %s",
+       out->GetName(), h->GetName(), o->GetName());
+
+  // Make a clone 
+  h = static_cast<TH1*>(h->Clone(Form("%sEmp", h->GetName())));
+  h->SetDirectory(0);
+  
+  if (o->IsA()->InheritsFrom(TGraphAsymmErrors::Class())) {
+    TGraphAsymmErrors* empCorr = static_cast<TGraphAsymmErrors*>(o);
+    TAxis* xAxis = h->GetXaxis();
+    for (Int_t i = 1; i <= xAxis->GetNbins(); i++) {
+      Double_t x = xAxis->GetBinCenter(i);
+      Double_t y = h->GetBinContent(i);
+      Double_t c = empCorr->Eval(x);
+      h->SetBinContent(i, y / c);
+    }
+  }
+  else if (o->IsA()->InheritsFrom(TH1::Class())) {
+    TH1* empCorr = static_cast<TH1*>(o);
+    h->Divide(empCorr);
+  }
+  else { 
+    Warning("CorrectEmpirical", 
+	    "Don't know how to apply a %s as an empirical correction",
+	    o->IsA()->GetName());
+    delete h;
+    return 0;
+  }
+  // Adding the corrected histogram to output 
+  out->Add(h);
+  
+  return h;
+}
+//____________________________________________________________________
 void
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
@@ -197,6 +362,8 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					trigEff0, rootProj, corrEmpty,
 					triggerMask, marker, color, mclist, 
 					truthlist);
+
+  TH1* h = EmpiricalCorrection(results);
 
   if (!IsAllBin()) return;
   TFile* file = TFile::Open("forward.root", "READ");

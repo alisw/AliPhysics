@@ -228,10 +228,10 @@ struct SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l)
+  virtual GraphSysErr* Make(TH1* h, TLegend* l, Bool_t verb=false)
   {
     // --- Reaction key ------------------------------------------------
-    Info("", "Making graph from %s %p", h->GetName(), l);
+    if (verb) Info("", "Making graph from %s %p", h->GetName(), l);
     TString reac = fSys;
     reac.ToUpper();
     reac.Insert(reac.Index("P", 1, 1, TString::kIgnoreCase), " ");
@@ -272,7 +272,8 @@ struct SysErrorAdder
     Int_t idHad   = MakeHadron(gse, l);
 
     Int_t cnt = 0;
-    Info("", "Looping over histogram w/%d bins", h->GetNbinsX());
+    if (verb) 
+      Info("", "Looping over histogram w/%d bins", h->GetNbinsX());
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
       Double_t y  = h->GetBinContent(i);
       if (y < 1e-6) continue;
@@ -565,11 +566,17 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @return Centrality 
    */
-  Double_t GetCentrality(TH1* h) 
+  Double_t GetCentrality(TH1* h, Bool_t verb=false) 
   {
     TString name(h->GetName());
-    Info("", "Extracting centrality from %s", name.Data());
+    if (verb) 
+      Info("", "Extracting centrality from %s", name.Data());
     Int_t idx = name.Index("_cent");
+    if (idx == kNPOS) {
+      Warning("GetCentrality", "Don't know how to parse %s",
+	      name.Data());
+      return -1;
+    }
     name.Remove(0,idx+5);
     name.ReplaceAll("d", ".");
     name.ReplaceAll("_", " ");
@@ -605,10 +612,11 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l)
+  virtual GraphSysErr* Make(TH1* h, TLegend* l, Bool_t verb=false)
   {
-    fCent = GetCentrality(h);
-    return SysErrorAdder::Make(h, l);
+    fCent = GetCentrality(h, verb);
+    if (fCent < 0) return 0;
+    return SysErrorAdder::Make(h, l, verb);
   }
 };
 

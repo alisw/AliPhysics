@@ -387,6 +387,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what, const char* sep)
     else if (s.CompareTo("PILEUP")     == 0) trgMask |= kPileUp;
     else if (s.CompareTo("ADOR")       == 0) trgMask |= kADOR;
     else if (s.CompareTo("ADAND")      == 0) trgMask |= kADAND;
+    else if (s.CompareTo("CENTCALIB")  == 0) trgMask |= kCentNoCalib;
     else if (s.BeginsWith("INCL"))           trgMask |= kInclusive;
     // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 
@@ -429,7 +430,8 @@ AliAODForwardMult::FillTriggerHistogram(UInt_t triggerMask,
   if (IsTriggerBits(kNClusterGt0,trg)) hist->Fill(kBinNClusterGt0);
   if (IsTriggerBits(triggerMask,trg) &&
       !IsTriggerBits(kB|tmp,trg))
-    ::Warning("CheckEvent", "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
+    ::Warning("FillTriggerHistogram",
+	      "event: 0x%x, mask: 0x%x, tmp: 0x%x, tmp|b: 0x%x",
 	      trg, triggerMask, tmp, tmp|kB);
 }
 

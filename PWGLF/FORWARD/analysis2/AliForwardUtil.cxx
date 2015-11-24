@@ -20,6 +20,7 @@
 #include "AliMultVariable.h"  // <-- Sigh, needed by AliMultSelection
 #include "AliMultInput.h"     // <-- Sigh, needed by AliMultSelection
 #include "AliMultSelection.h"
+#include "AliMultSelectionCuts.h"
 #include <TParameter.h>
 #include <TH2D.h>
 #include <TH1I.h>
@@ -770,6 +771,71 @@ AliForwardUtil::PrintField(const char* name, const char* value, ...)
 
 
 //====================================================================
+Float_t AliForwardUtil::GetCentrality(const AliVEvent& event, 
+				      const TString&   method, 
+				      Int_t&           qual, 
+				      Bool_t           verbose)
+{
+  qual = 0xFFFF;
+  Float_t cent = GetCentralityMult(event,method,qual,verbose);
+  if (qual < 0xFFF) return cent;
+  
+  // No selection object found, try compat
+  return GetCentralityCompat(event,method,qual,verbose);  
+}
+//____________________________________________________________________
+Float_t AliForwardUtil::GetCentralityMult(const AliVEvent& event, 
+					  const TString&   method, 
+					  Int_t&           qual, 
+					  Bool_t           verbose)
+{
+  TObject* o = event.FindListObject("MultSelection");
+  if (!o) {
+    if (verbose) 
+      ::Warning("AliForwardUtil::GetCentralityMult",
+		"No MultSelection object found in event");
+    return -1;
+  }
+  AliMultSelection* sel = static_cast<AliMultSelection*>(o);  
+  if (!sel->GetEstimatorList() ||
+      sel->GetEstimatorList()->GetEntries() <= 0){
+    if (verbose) {
+      ::Warning("AliForwardUtil::GetCentralityMult",
+		"No list of estimators, falling back to compat");
+      sel->PrintInfo();
+    }
+    return -1;
+  }
+  AliMultEstimator* est = sel->GetEstimator(method);
+  // if (verbose) sel->GetEstimatorList()->ls();
+  if (!est) {
+    if (verbose) {
+      ::Warning("AliForwardUtil::GetCentralityMult",
+		"Unknown estimator: %s", method.Data());
+      sel->GetEstimatorList()->Print();
+    }
+    return -1;
+  }
+  // 198 -> 1: beyond anchor 
+  // 199 -> 2: no calib 
+  // 200 -> 3: not desired trigger
+  // 201 -> 4: not INEL>0 with tracklets
+  // 202 -> 5: vertex Z not within 10cm
+  // 203 -> 6: tagged as pileup (SPD)
+  // 204 -> 7: inconsistent SPD/tracking vertex
+  // 205 -> 8: rejected by tracklets-vs-clusters
+  Float_t cent = est->GetPercentile();
+  qual         = sel->GetEvSelCode();
+  if (qual == AliMultSelectionCuts::kNoCalib) cent = -1;
+  if (verbose)
+    ::Info("AliForwardUtil::GetCentralityMult",
+	   "Got centrality %5.1f%% (%d)", /*" - old %5.1f%% (%d)",*/
+	   cent, qual/*, old, oldQual*/);
+  return cent;
+
+}
+
+//____________________________________________________________________
 Float_t AliForwardUtil::GetCentralityCompat(const AliVEvent& event,
 					    const TString&   method,
 					    Int_t&           qual,
@@ -801,6 +867,10 @@ Float_t AliForwardUtil::GetCentralityCompat(const AliESDEvent& event,
   if (verbose)
     ::Info("AliForwardUtil::GetCentralityCompat<ESD>",
 	   "Got centrality %5.1f%% (%d)", cent, qual);  
+  if (qual & 0x1) qual = AliMultSelectionCuts::kRejVzCut;
+  if (qual & 0x2) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
+  if (qual & 0x4) qual = AliMultSelectionCuts::kRejConsistencySPDandTrackVertices;
+  if (qual & 0x8) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
   return cent;
 }
 //____________________________________________________________________
@@ -824,67 +894,14 @@ Float_t AliForwardUtil::GetCentralityCompat(const AliAODEvent& event,
   }
   Float_t cent = cP->GetCentralityPercentile(method);
   qual         = cP->GetQuality();
+  if (qual & 0x1) qual = AliMultSelectionCuts::kRejVzCut;
+  if (qual & 0x2) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
+  if (qual & 0x4) qual = AliMultSelectionCuts::kRejConsistencySPDandTrackVertices;
+  if (qual & 0x8) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
+		    
   if (verbose)
     ::Info("AliForwardUtil::GetCentralityCompat<AOD>",
 	   "Got centrality %5.1f%% (%d)", cent, qual);
-  return cent;
-}
-//____________________________________________________________________
-Float_t AliForwardUtil::GetCentrality(const AliVEvent& event, 
-				      const TString&   method, 
-				      Int_t&           qual, 
-				      Bool_t           verbose)
-{
-  // 200: not desired trigger
-  // 201: not INEL>0 with tracklets
-  // 202: vertex Z not within 10cm
-  // 203: tagged as pileup (SPD)
-  // 204: inconsistent SPD/tracking vertex
-  // 205: rejected by tracklets-vs-clusters
-  qual = 6;
-  TObject* o = event.FindListObject("MultSelection");
-  if (!o) {
-    if (verbose) 
-      ::Warning("AliForwardUtil::GetCentrality",
-		"No MultSelection object found in event");
-    return GetCentralityCompat(event, method, qual, verbose);
-  }
-  AliMultSelection* sel = static_cast<AliMultSelection*>(o);  
-  if (!sel->GetEstimatorList() ||
-      sel->GetEstimatorList()->GetEntries() <= 0){
-    if (verbose) {
-      ::Warning("AliForwardUtil::GetCentrality",
-		"No list of estimators, falling back to compat");
-      sel->PrintInfo();
-    }
-    return GetCentralityCompat(event, method, qual, verbose);
-  }
-  AliMultEstimator* est = sel->GetEstimator(method);
-  // if (verbose) sel->GetEstimatorList()->ls();
-  if (!est) {
-    if (verbose) {
-      ::Warning("AliForwardUtil::GetCentrality",
-		"Unknown estimator: %s", method.Data());
-      sel->GetEstimatorList()->Print();
-    }
-    return -1;
-  }
-  Float_t cent = est->GetPercentile();
-  qual         = TMath::Max(0, sel->GetEvSelCode()-199);
-  if (TMath::Abs(cent-199) < 1e-6) {
-    if (verbose)
-      ::Warning("AliForwardUtil::GetCentrality",
-		"No calibration for \"%s\", falling back to compat mode",
-		method.Data());
-    qual = 6;
-    return GetCentralityCompat(event, method, qual, verbose);
-  }
-  // Int_t oldQual = 0;
-  // Float_t old = GetCentralityCompat(event, method, oldQual, verbose);
-  if (verbose)
-    ::Info("AliForwardUtil::GetCentrality",
-	   "Got centrality %5.1f%% (%d)", /*" - old %5.1f%% (%d)",*/
-	   cent, qual/*, old, oldQual*/);
   return cent;
 }
 //====================================================================
