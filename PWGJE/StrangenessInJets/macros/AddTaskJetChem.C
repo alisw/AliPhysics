@@ -33,6 +33,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   TString branchRecJets(recJetsBranch);
   if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
 
+  task->SetBranchEmbeddedJets("");//insert something for embedding
+
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
   task->SetCutJetEta(jetEtaCut);
@@ -46,6 +48,10 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetALaType(ALatype); 
   task->SetSelectArmenteros(IsArmenterosSelected);
   task->SetAnalysisMC(IsMC); // 0: real data, 1: MC data
+  task->SetCutV0Rap(100.);//not applied as default
+  task->SetCutDeltaREmbedded(0.); //for standard tracks
+  task->SetCutFractionPtEmbedded(1.); //for standard tracks
+
 
   if(K0type == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskK0(768);
   if(Latype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskLa(768);
@@ -62,7 +68,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCuttrackPosEta(0.8);
   task->SetCuttrackNegEta(0.8);
   task->SetCutV0Eta(V0EtaCut); //pseudorapidity cut, don't use 0.8, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
-  task->SetCosOfPointingAngle(0.998);
+  task->SetCosOfPointingAngleK0(0.998);//as default the same value for all V0 types
+  task->SetCosOfPointingAngleLa(0.998);
   task->SetAcceptKinkDaughters(kFALSE);//accept kink daughters -> dont use this cut anymore
   task->SetRequireTPCRefit(kTRUE);
   task->SetCutV0DecayMin(0.);//multiples of ctau, cut on 2D decay distance over transverse mom. (for K0s, Lambda, Antilambda)
