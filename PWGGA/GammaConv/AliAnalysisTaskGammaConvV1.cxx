@@ -112,9 +112,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   hESDMotherPi0PtOpenAngle(NULL),
   hESDMotherEtaPtOpenAngle(NULL),
   sPtRDeltaROpenAngle(NULL),
-  hESDMotherEtaSlice0(NULL),
-  hESDMotherEtaSlice1(NULL),
-  hESDMotherEtaSlice2(NULL),
   hMCHeaders(NULL),
   hMCAllGammaPt(NULL),
   hMCDecayGammaPi0Pt(NULL),
@@ -183,6 +180,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   hESDTrueConvGammaPtMC(NULL),
   hESDTrueConvGammaRMC(NULL),
   hESDTrueConvGammaEta(NULL),
+  hESDTrueConvGammaPsiPair(NULL),
+  hESDTrueConvGammaPsiPairPt(NULL),
   hESDCombinatorialPt(NULL),
   hESDCombinatorialPtDeltaPhi_ek(NULL),
   hESDCombinatorialPtDeltaPhi_ep(NULL),
@@ -319,9 +318,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   hESDMotherPi0PtOpenAngle(NULL),
   hESDMotherEtaPtOpenAngle(NULL),	
   sPtRDeltaROpenAngle(NULL),
-  hESDMotherEtaSlice0(NULL),
-  hESDMotherEtaSlice1(NULL),
-  hESDMotherEtaSlice2(NULL),
   hMCHeaders(NULL),
   hMCAllGammaPt(NULL),
   hMCDecayGammaPi0Pt(NULL),
@@ -390,6 +386,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   hESDTrueConvGammaPtMC(NULL),
   hESDTrueConvGammaRMC(NULL),
   hESDTrueConvGammaEta(NULL),
+  hESDTrueConvGammaPsiPair(NULL),
+  hESDTrueConvGammaPsiPairPt(NULL),
   hESDCombinatorialPt(NULL),
   hESDCombinatorialPtDeltaPhi_ek(NULL),
   hESDCombinatorialPtDeltaPhi_ep(NULL),
@@ -668,12 +666,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       sPtRDeltaROpenAngle = new THnSparseF*[fnCuts];
     }
 
-    if(fDoMesonAnalysis && fDoMesonQA == 1){
-      hESDMotherEtaSlice0 = new TH1F*[fnCuts];
-      hESDMotherEtaSlice1 = new TH1F*[fnCuts];
-      hESDMotherEtaSlice2 = new TH1F*[fnCuts];  
-    }
-    
   }
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -946,17 +938,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         sPtRDeltaROpenAngle[iCut] = new THnSparseF("PhotonPair_Pt_R_DeltaR_OpenAngle","PhotonPair_Pt_R_DeltaR_OpenAngle",nDim2,nBins2,xMin2,xMax2);
         fESDList[iCut]->Add(sPtRDeltaROpenAngle[iCut]);
       }
-      if(fDoMesonAnalysis && fDoMesonQA == 1){
-        hESDMotherEtaSlice0[iCut] = new TH1F("ESD_MotherPhoton_Eta_slice0","ESD_MotherPhoton_Eta_slice0",2000,-2,2);
-        hESDMotherEtaSlice0[iCut]->Sumw2();
-        fESDList[iCut]->Add(hESDMotherEtaSlice0[iCut]);        
-        hESDMotherEtaSlice1[iCut] = new TH1F("ESD_MotherPhoton_Eta_slice1","ESD_MotherPhoton_Eta_slice1",2000,-2,2);
-        hESDMotherEtaSlice1[iCut]->Sumw2();
-        fESDList[iCut]->Add(hESDMotherEtaSlice1[iCut]);
-        hESDMotherEtaSlice2[iCut] = new TH1F("ESD_MotherPhoton_Eta_slice2","ESD_MotherPhoton_Eta_slice2",2000,-2,2);
-        hESDMotherEtaSlice2[iCut]->Sumw2();
-        fESDList[iCut]->Add(hESDMotherEtaSlice2[iCut]);
-      }       
     }
 
 
@@ -1006,6 +987,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     if (fDoPhotonQA > 0 && fIsMC < 2){
       hMCConvGammaR = new TH1F*[fnCuts];
       hMCConvGammaEta = new TH1F*[fnCuts];
+      hESDTrueConvGammaPsiPair = new TH1F*[fnCuts];
+      hESDTrueConvGammaPsiPairPt = new TH2F*[fnCuts];
       hESDTrueConvGammaEta = new TH1F*[fnCuts];
       hESDTrueConvGammaR = new TH1F*[fnCuts];
       hESDTrueConvGammaRMC = new TH1F*[fnCuts];
@@ -1336,6 +1319,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
     
       if (fDoPhotonQA > 0 && fIsMC < 2){
+        
+        hESDTrueConvGammaPsiPair[iCut] = new TH1F("ESD_TrueConvGamma_PsiPair","ESD_TrueConvGamma_PsiPair",500,0,5);
+        fTrueList[iCut]->Add(hESDTrueConvGammaPsiPair[iCut]);
+        hESDTrueConvGammaPsiPairPt[iCut] = new TH2F("ESD_TrueonvGamma_PsiPair_Pt","ESD_TrueConvGamma_PsiPair_Pt",500,0,5,250,0,25);
+        fTrueList[iCut]->Add(hESDTrueConvGammaPsiPairPt[iCut]);
+
         hESDTrueConvGammaEta[iCut] = new TH1F("ESD_TrueConvGamma_Eta","ESD_TrueConvGamma_Eta",2000,-2,2);
         fTrueList[iCut]->Add(hESDTrueConvGammaEta[iCut]);
         hESDTrueConvGammaR[iCut] = new TH1F("ESD_TrueConvGamma_R","ESD_TrueConvGamma_R",800,0,200);
@@ -2041,6 +2030,9 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
         FillMultipleCountMap(mapMultipleCountTrueConvGammas,posDaughter->GetMother());
       }
       if (fDoPhotonQA > 0 && fIsMC < 2){
+        hESDTrueConvGammaPsiPair[fiCut]->Fill(TruePhotonCandidate->GetPsiPair());
+        hESDTrueConvGammaPsiPairPt[fiCut]->Fill(TruePhotonCandidate->GetPsiPair(),TruePhotonCandidate->Pt());
+
         hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
         hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
         hESDTrueConvGammaRMC[fiCut]->Fill(rConv);
@@ -2143,6 +2135,9 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
       FillMultipleCountMap(mapMultipleCountTrueConvGammas,posDaughter->GetMother(0));
     }
     if (fDoPhotonQA > 0){
+      hESDTrueConvGammaPsiPair[fiCut]->Fill(TruePhotonCandidate->GetPsiPair());
+      hESDTrueConvGammaPsiPairPt[fiCut]->Fill(TruePhotonCandidate->GetPsiPair(),TruePhotonCandidate->Pt());
+
       hESDTrueConvGammaEta[fiCut]->Fill(TruePhotonCandidate->Eta());
       hESDTrueConvGammaR[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius());
       hESDTrueConvGammaRMC[fiCut]->Fill(posDaughter->R());
@@ -2727,14 +2722,6 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
             }   
           }
-          if(fDoMesonAnalysis && fDoMesonQA == 1){
-            if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
-              if(pi0cand->Pt() > 2. && pi0cand->Pt() < 3. ) hESDMotherEtaSlice0[fiCut]->Fill(gamma0->GetPhotonEta());
-              if(pi0cand->Pt() > 3. && pi0cand->Pt() < 6. ) hESDMotherEtaSlice1[fiCut]->Fill(gamma0->GetPhotonEta());
-              if(pi0cand->Pt() > 6. && pi0cand->Pt() < 10. ) hESDMotherEtaSlice2[fiCut]->Fill(gamma0->GetPhotonEta());
-            } 
-          }
-          
         }
         delete pi0cand;
         pi0cand=0x0;

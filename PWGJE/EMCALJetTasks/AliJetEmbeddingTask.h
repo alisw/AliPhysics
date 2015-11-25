@@ -34,15 +34,17 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetPathAndNameInputpTDistribution(TString path, TString name) { fPathpTinputFile = path; fpTinputName = name;}
   void           SetPathAndNameInputMDistribution(TString path, TString name) { fPathMinputFile = path; fMinputName = name;}
   
- protected:
-  void           Run();
-  
-  void           SetMassDistribution(TH1F *hM);
+  void           SetTreeBranchName(TString brDet = "fJetDet.") {fBranchJDetName = brDet; }
   void           SetMassDistributionFromFile(TString filename, TString histoname);
   void           SetpTDistributionFromFile(TString filename, TString histoname);
   void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
-  void           SetTree(TTree *tree);
+  //void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
+
+ protected:
+  void           Run();
+  void           SetTree(TTree *tree);
+  void           SetMassDistribution(TH1F *hM);
  
  private:
   Bool_t         fMassless;               ///< make particles massless

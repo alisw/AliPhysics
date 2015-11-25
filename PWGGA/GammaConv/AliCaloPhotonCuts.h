@@ -90,6 +90,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15a3a_plus,
       k15a3b,
       k13b2_efix,
+      k13e7,
       k15h1,
       k15h2,
       k14j4
