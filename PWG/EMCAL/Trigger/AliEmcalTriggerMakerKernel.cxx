@@ -135,7 +135,7 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     Float_t amplitude(0);
     trigger->GetAmplitude(amplitude);
     if(amplitude < 0) amplitude = 0;
-    (*fPatchAmplitudes)(globCol,globRow) = amplitude;
+    (*fPatchAmplitudes)(globCol,globRow) = amplitude*4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
     Int_t nl0times(0);
     trigger->GetNL0Times(nl0times);
     if(nl0times){
