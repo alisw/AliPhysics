@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <iostream>
+#include <vector>
+#include <cstring>
 
 #include <TArrayI.h>
 #include <TObjArray.h>
@@ -48,6 +50,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitMap(NULL),
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
+  fBkgThreshold(-1),
   fIsMC(kFALSE),
   fDebugLevel(0)
 {
@@ -86,10 +89,12 @@ void AliEmcalTriggerMakerKernel::Init(){
   fPatchFinder = new AliEmcalTriggerPatchFinderAP<double>;
   fPatchFinder->AddTriggerAlgorithm(new AliEmcalJetTriggerAlgorithmAP<double>(0, 63, 0));
   fPatchFinder->AddTriggerAlgorithm(new AliEmcalGammaTriggerAlgorithmAP<double>(0, 63, 0));
+  fPatchFinder->AddTriggerAlgorithm(new AliEmcalBkgTriggerAlgorithmAP<double>(0, 63, 0));
   if(nrows > 64){
     // Add trigger algorithms for DCAL
     fPatchFinder->AddTriggerAlgorithm(new AliEmcalJetTriggerAlgorithmAP<double>(64, nrows, 0));
     fPatchFinder->AddTriggerAlgorithm(new AliEmcalGammaTriggerAlgorithmAP<double>(64, nrows, 0));
+    fPatchFinder->AddTriggerAlgorithm(new AliEmcalBkgTriggerAlgorithmAP<double>(64, nrows, 0));
   }
 
   fLevel0PatchFinder = new AliEmcalGammaTriggerAlgorithmAP<double>(0, nrows, 0);
@@ -159,7 +164,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/kEMCL1ADCtoGeV;
+    (*fPatchADCSimple)(globCol,globRow) += amp/EmcalTriggerAP::kEMCL1ADCtoGeV;
   }
 }
 
@@ -177,8 +182,8 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
 
 TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent){
 
-  AliEmcalTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
-  AliEmcalTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+  AliEmcalTriggerPatchInfoAPV1 *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
+  AliEmcalTriggerPatchInfoAPV1 *triggerMainJetSimple, *triggerMainGammaSimple;
 
   Double_t vertexpos[3];
   inputevent->GetPrimaryVertex()->GetXYZ(vertexpos);
@@ -193,10 +198,11 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       | 1 << fTriggerBitConfig->GetJetLowBit()
       | 1 << (fTriggerBitConfig->GetJetHighBit() + fTriggerBitConfig->GetTriggerTypesEnd())
       | 1 << (fTriggerBitConfig->GetJetLowBit() + fTriggerBitConfig->GetTriggerTypesEnd()),
-      gammaPatchMask = fTriggerBitConfig->GetGammaHighBit()
+      gammaPatchMask = 1 << fTriggerBitConfig->GetGammaHighBit()
       | 1 << fTriggerBitConfig->GetGammaLowBit()
       | 1 << (fTriggerBitConfig->GetGammaHighBit() + fTriggerBitConfig->GetTriggerTypesEnd())
-      | 1 << (fTriggerBitConfig->GetGammaLowBit() + fTriggerBitConfig->GetTriggerTypesEnd());
+      | 1 << (fTriggerBitConfig->GetGammaLowBit() + fTriggerBitConfig->GetTriggerTypesEnd()),
+      bkgPatchMask = 1 << fTriggerBitConfig->GetBkgBit();
 
   std::vector<AliEmcalTriggerRawPatchAP> patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
   TObjArray *result = new TObjArray(1000);
@@ -213,16 +219,20 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchit->GetADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
+    } else if (patchit->GetPatchSize() == 8){
+      if(patchit->GetADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
+      if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
     }
     // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
     Int_t onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
     if(patchit->GetPatchSize() == 2) onlinebits &= gammaPatchMask;
     else if(patchit->GetPatchSize() == 16) onlinebits &= jetPatchMask;
+    else if(patchit->GetPatchSize() == 8) onlinebits &= bkgPatchMask;
     else onlinebits = 0;
     if(!(onlinebits || offlinebits)) continue;
     // convert
     AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
-        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * kEMCL1ADCtoGeV,
+        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EmcalTriggerAP::kEMCL1ADCtoGeV,
         patchit->GetBitmask() | onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     fullpatch->SetOffSet(offset);
@@ -234,7 +244,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     if(!CheckForL0(patchit->GetColStart(), patchit->GetRowStart())) continue;
     AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
-        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * kEMCL1ADCtoGeV,
+        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EmcalTriggerAP::kEMCL1ADCtoGeV,
         1, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     result->Add(fullpatch);
