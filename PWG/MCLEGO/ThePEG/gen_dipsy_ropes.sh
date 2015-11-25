@@ -13,7 +13,7 @@ source /cvmfs/alice.cern.ch/etc/login.sh
 eval $(alienv printenv ThePEG::v2015-08-11-4)
 
 # force path to requested output
-sed -e "s/^\([[:space:]]*set HepMCFile:Filename\) .*$/\1 $1/" ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Ropes.in > thepeg.in
+sed -e "s/^\([[:space:]]*set HepMCFile:Filename\) .*$/\1 $1/" ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Rope.in > thepeg.in
 
 # setup DIPSY
 setupThePEG -r ${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I ${THEPEG_ROOT}/share/Ariadne thepeg.in > setup.log 2>&1
