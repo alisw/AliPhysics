@@ -72,6 +72,7 @@ const char* fUSAGE =
     " -timeout : how long to wait for the server to reply (s)\n"
     " -Verbose : be verbose\n"
     " -select : only show selected histograms (by regexp)\n"
+    " -unselect : as select, only inverted\n"
     " -drawoptions : what draw option to use\n"
     " -file : dump input to file and exit\n"
     ;

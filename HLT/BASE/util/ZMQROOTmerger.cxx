@@ -92,6 +92,7 @@ const char* fUSAGE =
     " -reset : reset NOW\n"
     " -select : set the selection regex for sending out objects,\n" 
     "           valid for one reply if used in a request,\n"
+    " -unselect : as above, only inverted\n"
     ;
 
 void* work(void* /*param*/)
