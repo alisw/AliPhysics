@@ -1708,6 +1708,10 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
 
 //________________________________________________________________________________
 /// Recalculate track matching and set the new residuals in the cluster.
+///
+/// \param event: pointer to input event
+/// \param clusterArray: list of clusters
+///
 //________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
                                                           TObjArray* clusterArray) 
@@ -1731,6 +1735,9 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
     
     if (!clus->IsEMCAL()) continue ;
     
+    //
+    // Put track residuals in cluster
+    //
     fEMCALRecoUtils->GetMatchedResiduals(clus->GetID(),dZ,dR);
     
     if ( TMath::Abs(clus->GetTrackDx()) < 500 )
@@ -1739,13 +1746,44 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
     
     clus->SetTrackDistance(dR,dZ);
     
+    //
+    // Remove old matches in cluster
+    //
+    if(clus->GetNTracksMatched() > 0)
+    {
+      if(!strcmp("AliESDCaloCluster",Form("%s",clus->ClassName())))
+      {
+        TArrayI arrayTrackMatched(0);
+        ((AliESDCaloCluster*)clus)->AddTracksMatched(arrayTrackMatched);
+      }
+      else
+      {
+        for(Int_t iTrack = 0; iTrack < clus->GetNTracksMatched(); iTrack++)
+        {
+          ((AliAODCaloCluster*)clus)->RemoveTrackMatched((TObject*)((AliAODCaloCluster*)clus)->GetTrackMatched(iTrack));
+        }
+      }
+    }
+    
+    //
+    // Now put first track index in cluster. 
+    //
+    Int_t trackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(iclus);
+    if ( trackIndex >= 0 )
+    {
+      if(!strcmp("AliESDCaloCluster",Form("%s",clus->ClassName())))
+      {
+        TArrayI arrayTrackMatched(1);
+        arrayTrackMatched[0] = trackIndex;
+        ((AliESDCaloCluster*)clus)->AddTracksMatched(arrayTrackMatched);
+      }
+      else
+      {
+        ((AliAODCaloCluster*)clus)->AddTrackMatched((TObject*)event->GetTrack(trackIndex));
+      }
+    } 
+    
   } // cluster loop
-
-    //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
-    //if(esdevent){
-    //  fEMCALRecoUtils->SetClusterMatchedToTrack(esdevent)  ;
-    //  fEMCALRecoUtils->SetTracksMatchedToCluster(esdevent) ; 
-    //}
 }
 
 //___________________________________________________________________________
