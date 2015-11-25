@@ -59,6 +59,7 @@ Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled push
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 
 TPRegexp* fSendSelection = NULL;
+TPRegexp* fUnSendSelection = NULL;
 
 Int_t fRunNumber = 0;
 
@@ -258,9 +259,12 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 
   //reset the "one shot" options to default values
   fResetOnRequest = kFALSE;
-  if (fVerbose && fSendSelection) 
-    Printf("unsetting fSendSelection=%s",fSendSelection->GetPattern().Data());
+  if (fVerbose && (fSendSelection || fUnSendSelection)) 
+    Printf("unsetting include=%s, exclude=%s",
+        (fSendSelection)?fSendSelection->GetPattern().Data():"", 
+        (fUnSendSelection)?fUnSendSelection->GetPattern().Data():"");
   delete fSendSelection; fSendSelection=NULL;
+  delete fUnSendSelection; fUnSendSelection=NULL;
   return rc;
 }
 
@@ -348,10 +352,15 @@ Int_t DoSend(void* socket)
     object = fMergeObjectMap.GetValue(key);
 
     const char* objectName = object->GetName();
-    if (fSendSelection && !fSendSelection->Match(objectName)) 
+    Bool_t selected = kTRUE;
+    Bool_t unselected = kFALSE;
+    if (fSendSelection) selected = fSendSelection->Match(objectName);
+    if (fUnSendSelection) unselected = fUnSendSelection->Match(objectName);
+    if (!selected || unselected)
     {
-      if (fVerbose) Printf("     object %s did NOT make the selection %s", 
-                           objectName, fSendSelection->GetPattern().Data());
+      if (fVerbose) Printf("     object %s did NOT make the selection [%s] && ![%s]", 
+                           objectName, (fSendSelection)?fSendSelection->GetPattern().Data():"",
+                           (fUnSendSelection)?fUnSendSelection->GetPattern().Data():"");
       continue;
     }
 
@@ -492,6 +501,12 @@ Int_t ProcessOptionString(TString arguments)
       delete fSendSelection;
       fSendSelection = new TPRegexp(value);
       if (fVerbose) Printf("setting new regex %s",fSendSelection->GetPattern().Data());
+    }
+    else if (option.EqualTo("unselect"))
+    {
+      delete fUnSendSelection;
+      fUnSendSelection = new TPRegexp(value);
+      if (fVerbose) Printf("setting new regex %s",fUnSendSelection->GetPattern().Data());
     }
     else
     {

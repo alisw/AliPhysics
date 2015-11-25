@@ -58,6 +58,7 @@ TCanvas* fCanvas;
 TObjArray fDrawables;
 
 TPRegexp* fSelectionRegexp = NULL;
+TPRegexp* fUnSelectionRegexp = NULL;
 TString fDrawOptions;
 Bool_t fResetOnRequest = kFALSE;
 
@@ -110,10 +111,11 @@ void* run(void* arg)
       TString request;
       TString requestTopic;
       
-      if (fSelectionRegexp) 
+      if (fSelectionRegexp || fUnSelectionRegexp) 
       {
         requestTopic = "CONFIG";
-        request = "select="+fSelectionRegexp->GetPattern();
+        if (fSelectionRegexp) request += " select="+fSelectionRegexp->GetPattern();
+        if (fUnSelectionRegexp) request += " unselect="+fUnSelectionRegexp->GetPattern();
         if (fResetOnRequest) request += " ResetOnRequest";
         zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
         zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
@@ -248,8 +250,10 @@ int UpdatePad(TObject* object)
 
   if (fVerbose) Printf("in: %s", name);
   Bool_t selected = kTRUE;
+  Bool_t unselected = kFALSE;
   if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
-  if (!selected) return 0;
+  if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(name);
+  if (!selected || unselected) return 0;
  
   if (drawable)
   {
@@ -320,6 +324,11 @@ int ProcessOptionString(TString arguments)
     {
       delete fSelectionRegexp;
       fSelectionRegexp=new TPRegexp(value);
+    }
+    else if (option.EqualTo("unselect"))
+    {
+      delete fUnSelectionRegexp;
+      fUnSelectionRegexp=new TPRegexp(value);
     }
     else if (option.EqualTo("ResetOnRequest"))
     {
