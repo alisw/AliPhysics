@@ -46,7 +46,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
 }
 
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA):
-  AliAnalysisTaskEmcal(),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", doQA),
   fTriggerMaker(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
@@ -109,21 +109,21 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   if (!fInitialized)
     return;
 
-  AliEmcalTriggerBitConfig *triggerBitConfig(NULL);
+  AliEmcalTriggerBitConfigAP *triggerBitConfig(NULL);
   if(!triggerBitConfig){
     switch(fUseTriggerBitConfig){
     case kNewConfig:
-      triggerBitConfig = new AliEmcalTriggerBitConfigNew();
+      triggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
       break;
     case kOldConfig:
-      triggerBitConfig = new AliEmcalTriggerBitConfigOld();
+      triggerBitConfig = new AliEmcalTriggerBitConfigOldAP();
       break;
     }
   }
   fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfo");
+    fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfoAPV1");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
@@ -162,7 +162,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   AliEmcalTriggerPatchInfoAPV1 *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
-  AliInfo(Form("Trigger maker - Found %d patches\n", patches->GetEntries()));
+  AliDebug(2,Form("Trigger maker - Found %d patches\n", patches->GetEntries()));
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     recpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(*patchIter);
     if(fDoQA){

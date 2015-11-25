@@ -8,7 +8,7 @@
 #include "AliEmcalTriggerChannelContainerAP.h"
 
 class TObjArray;
-class AliEmcalTriggerPatchInfo;
+class AliEmcalTriggerPatchInfoAPV1;
 class AliEMCALGeometry;
 class AliVCaloCells;
 class AliVCaloTrigger;
@@ -74,7 +74,7 @@ public:
   void SetTriggerThresholdJetHigh  ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[0][0] = a; fThresholdConstants[0][1] = b; fThresholdConstants[0][2] = c; }
   void SetTriggerThresholdGammaLow ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[3][1] = b; fThresholdConstants[3][2] = c; }
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
-
+  void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   /**
    * Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
@@ -91,7 +91,7 @@ public:
    * Set the trigger bit configuration applied for the given data set
    * @param config Trigger bit config applied
    */
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig *const config) { fTriggerBitConfig = config; }
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP *const config) { fTriggerBitConfig = config; }
 
   /**
    * Reset data grids
@@ -130,7 +130,7 @@ protected:
   Bool_t                                    CheckForL0(Int_t col, Int_t row) const;
 
   AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
-  const AliEmcalTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
 
   AliEmcalTriggerDataGridAP<double>         *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
@@ -144,6 +144,7 @@ protected:
 
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
   ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
+  Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
 

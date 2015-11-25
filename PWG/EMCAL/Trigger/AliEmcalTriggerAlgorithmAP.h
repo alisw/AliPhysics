@@ -90,4 +90,17 @@ public:
   /// \endcond
 };
 
+template<typename T>
+class AliEmcalBkgTriggerAlgorithmAP : public AliEmcalTriggerAlgorithmAP<T> {
+public:
+  AliEmcalBkgTriggerAlgorithmAP();
+  AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
+  virtual ~AliEmcalBkgTriggerAlgorithmAP();
+
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalBkgTriggerAlgorithmAP, 1);
+  /// \endcond
+};
+
+
 #endif

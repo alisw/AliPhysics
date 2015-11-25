@@ -26,6 +26,7 @@
 templateClassImp(AliEmcalTriggerAlgorithmAP)
 templateClassImp(AliEmcalJetTriggerAlgorithmAP)
 templateClassImp(AliEmcalGammaTriggerAlgorithmAP)
+templateClassImp(AliEmcalBkgTriggerAlgorithmAP)
 /// \endcond
 
 template<typename T>
@@ -122,6 +123,24 @@ template<typename T>
 AliEmcalGammaTriggerAlgorithmAP<T>::~AliEmcalGammaTriggerAlgorithmAP(){
 }
 
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP():
+AliEmcalTriggerAlgorithmAP<T>()
+{
+  this->SetPatchSize(8);
+}
+
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
+{
+  this->SetPatchSize(8);
+}
+
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::~AliEmcalBkgTriggerAlgorithmAP(){
+}
+
 template class AliEmcalTriggerAlgorithmAP<int>;
 template class AliEmcalTriggerAlgorithmAP<double>;
 template class AliEmcalTriggerAlgorithmAP<float>;
@@ -131,3 +150,6 @@ template class AliEmcalJetTriggerAlgorithmAP<float>;
 template class AliEmcalGammaTriggerAlgorithmAP<int>;
 template class AliEmcalGammaTriggerAlgorithmAP<double>;
 template class AliEmcalGammaTriggerAlgorithmAP<float>;
+template class AliEmcalBkgTriggerAlgorithmAP<int>;
+template class AliEmcalBkgTriggerAlgorithmAP<double>;
+template class AliEmcalBkgTriggerAlgorithmAP<float>;
