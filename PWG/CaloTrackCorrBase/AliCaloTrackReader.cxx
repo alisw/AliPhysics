@@ -2071,6 +2071,10 @@ void AliCaloTrackReader::FillInputBackgroundJets()
 
 //____________________________________________________________________
 /// Recover the patches that triggered, either L0 or L1.
+///
+/// \param tmin: minimum L0 time bin cut
+/// \param tmax: maximum L0 time bin cut
+/// \return TArrayI, array with patches index
 //____________________________________________________________________
 TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
 {
@@ -2078,12 +2082,18 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
   Int_t  trigtimes[30], globCol, globRow,ntimes, i;
   Int_t  absId  = -1; //[100];
   Int_t  nPatch = 0;
-	
+  
   TArrayI patches(0);
   
   // get object pointer
   AliVCaloTrigger *caloTrigger = GetInputEvent()->GetCaloTrigger( "EMCAL" );
-
+  
+  if(!caloTrigger) 
+  {
+    AliError("Trigger patches input (AliVCaloTrigger) not available in data!");
+    return patches;
+  }
+  
   //printf("CaloTrigger Entries %d\n",caloTrigger->GetEntries() );
   
   // class is not empty
