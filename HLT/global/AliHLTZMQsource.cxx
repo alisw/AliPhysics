@@ -177,12 +177,14 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     rc = zmq_poll( sockets, 1, fZMQrequestTimeout );
     if (rc==-1) 
     {
+      HLTImportant("request interrupted");
       //interrupted, stop processing
       return 0;
     }
     if (! (sockets[0].revents & ZMQ_POLLIN))
     {
       //if we got no reply reset the connection, probably source died
+      HLTImportant("request timed out after %i us",fZMQrequestTimeout);
       rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQinConfig.Data(), 0, 10 ); 
       if (rc<0) 
       {
