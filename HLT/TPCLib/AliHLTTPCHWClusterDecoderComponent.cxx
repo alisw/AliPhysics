@@ -133,7 +133,11 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
   mgr.ReadGRPEntry();
   fTPCPresent = ((mgr.GetGRPData()->GetDetectorMask() & AliDAQ::kTPC) != 0);
 
-  if (!fTPCPresent) return(iResult);
+  if (!fTPCPresent)
+  {
+    HLTWarning("TPC missing in detector mask, disabling TPC Processing");
+    return(iResult);
+  }
 
   fpDecoder=new AliHLTTPCHWCFData;
   if (!fpDecoder) iResult=-ENOMEM;
