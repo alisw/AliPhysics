@@ -592,7 +592,7 @@ Bool_t AliForwardUtil::GetEtaPhi(UShort_t det, Char_t ring,
   Double_t   theta   = TMath::ATan2(r, pos.Z());
   Double_t   tant    = TMath::Tan(theta/2);
   if (TMath::Abs(theta) < 1e-9) {
-    ::Warning("GetEtaPhi","tan(theta/2)=%f very small");
+    ::Warning("GetEtaPhi","tan(theta/2)=%f very small", tant);
     eta = kInvalidValue;
     phi = kInvalidValue;
     return false;
