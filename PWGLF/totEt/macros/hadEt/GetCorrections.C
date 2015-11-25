@@ -278,7 +278,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    //hadCorrectionEMCAL->GetEfficiencyHadronTPC()->Draw();
    TH1D *backgroundTPC;
    TH1D *backgroundITS;
-   if((dataset==20111 || dataset==20100|| dataset==2011) && !forSim){//2.76 TeV p+p or Pb+Pb
+   if((dataset==20111 || dataset==20100|| dataset==2011|| dataset==2015) && !forSim){//2.76 TeV p+p or Pb+Pb
      if(dataset==20111){
        cout<<"Fixing 2.76 TeV p+p background to be average of 900 GeV and 7 TeV scaling"<<endl;
        backgroundTPC = pp276TPCBkgd();
@@ -322,8 +322,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetBackgroundErrorHighBound(1.0+bkgdpcterror/100.0);
    hadCorrectionEMCAL->SetConstBackgroundCorrectionTPC(1.0-0.018);
    hadCorrectionEMCAL->SetConstBackgroundCorrectionITS(1.0-0.018);
-   hadCorrectionEMCAL->SetBackgroundErrorLowBound(0.008);
-   hadCorrectionEMCAL->SetBackgroundErrorHighBound(0.008);
+   hadCorrectionEMCAL->SetConstBackgroundErrorLowBound(1-0.008);
+   hadCorrectionEMCAL->SetConstBackgroundErrorHighBound(1+0.008);
    hadCorrectionEMCAL->SetConstBackgroundTrue();
    //CorrBkgdPlots(prodname,shortprodname,true,ispp,forSim);
    //CorrBkgdPlots(prodname,shortprodname,false,ispp,forSim);
@@ -517,7 +517,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 
    TH1D *backgroundTPC;
    TH1D *backgroundITS;
-   if((dataset==20111 || dataset==20100|| dataset==2011) && !forSim){//2.76 TeV p+p or Pb+Pb
+   if((dataset==20111 || dataset==20100|| dataset==2011|| dataset==2015) && !forSim){//2.76 TeV p+p or Pb+Pb
      if(dataset==20111){
        cout<<"Fixing 2.76 TeV p+p background to be average of 900 GeV and 7 TeV scaling"<<endl;
        backgroundTPC = pp276TPCBkgd();
@@ -543,8 +543,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetBackgroundErrorHighBound(1.0+0.001);
    hadCorrectionPHOS->SetConstBackgroundCorrectionTPC(1.0-0.018);
    hadCorrectionPHOS->SetConstBackgroundCorrectionITS(1.0-0.018);
-   hadCorrectionPHOS->SetBackgroundErrorLowBound(0.008);
-   hadCorrectionPHOS->SetBackgroundErrorHighBound(0.008);
+   hadCorrectionPHOS->SetConstBackgroundErrorLowBound(1-0.008);
+   hadCorrectionPHOS->SetConstBackgroundErrorHighBound(1+0.008);
    hadCorrectionPHOS->SetConstBackgroundTrue();
    //CorrBkgdPlots(prodname,shortprodname,true,ispp,forSim);
    //CorrBkgdPlots(prodname,shortprodname,false,ispp,forSim);
