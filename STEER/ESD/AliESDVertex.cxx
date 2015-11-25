@@ -80,7 +80,8 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
 }
 
 //------------------------------------------------------------------------- 
-AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
+AliESDVertex::AliESDVertex(const Double_t position[3],
+			   const Double_t covmatrix[6],
 			   Double_t chi2,Int_t nContributors,
 			   const Char_t *vtxName) :
   AliVertex(position,0.,nContributors),

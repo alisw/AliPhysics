@@ -41,7 +41,7 @@ AliVertex::AliVertex() :
 }
 
 //--------------------------------------------------------------------------
-AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
+AliVertex::AliVertex(const Double_t position[3],Double_t dispersion,
 		     Int_t nContributors):
   AliVVertex(),
   fSigma(dispersion),

@@ -90,7 +90,7 @@ public:
   Bool_t   GetOnFlyStatus() const {return fOnFlyStatus;}
   const AliExternalTrackParam *GetParamP() const {return &fParamP;}
   const AliExternalTrackParam *GetParamN() const {return &fParamN;}
-
+  AliESDVertex GetVertex() const;
 
 
   // **** The following member functions need to be revised ***

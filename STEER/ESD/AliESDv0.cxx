@@ -35,6 +35,7 @@
 #include "AliESDV0Params.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliESDv0)
 
@@ -830,3 +831,11 @@ Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1p
   if (type==2) return v0KF->GetChi2();
   return 0;
 }
+
+
+AliESDVertex AliESDv0::GetVertex() const{
+  // Build an AliESDVertex from this AliESDv0
+  AliESDVertex vtx(fPos,fPosCov,fChi2V0,2);
+  return vtx;
+}
+
