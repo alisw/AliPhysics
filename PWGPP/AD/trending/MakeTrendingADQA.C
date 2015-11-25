@@ -361,7 +361,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH1D *hSlewingSlice;
   slewingChi2ADA = 0;
   for(Int_t i = 0; i<550; i++){
-  	hSlewingSlice = fHistTimeVsChargeADA_Corr->ProjectionX("hSlewingSlice",i+1,i+1);
+  	hSlewingSlice = fHistTimeVsChargeADA_Cut->ProjectionX("hSlewingSlice",i+1,i+1);
 	if(hSlewingSlice->Integral() < 100) continue;
 	slewingChi2ADA += TMath::Power(hSlewingSlice->GetMean() - fTOFADA, 2);
   	}
@@ -371,7 +371,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH1D *hSlewingSlice;
   slewingChi2ADC = 0;
   for(Int_t i = 0; i<550; i++){
-  	hSlewingSlice = fHistTimeVsChargeADC_Corr->ProjectionX("hSlewingSlice",i+1,i+1);
+  	hSlewingSlice = fHistTimeVsChargeADC_Cut->ProjectionX("hSlewingSlice",i+1,i+1);
 	if(hSlewingSlice->Integral() < 100) continue;
 	slewingChi2ADC += TMath::Power(hSlewingSlice->GetMean() - fTOFADC, 2);
   	}
@@ -650,6 +650,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
  
     c24->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
+    /*/
     TCanvas *c25 = new TCanvas("ThresholdShape"," ",1500,800);
     c25->Draw();
     c25->cd();
@@ -680,6 +681,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	}
  
     c25->Print(Form("ADQA_Run_%d.pdf",runNumber));
+    /*/
     
     myHistSetUp(fHistTimePerPM_Corr);
     myHistSetUp(fHistTimePerPM_UnCorr);
@@ -755,6 +757,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	    myPadSetUp(myPad41->cd(i-7),0.15,0.1,0.1,0.15);
     	    myPad41->cd(i-7);
     	    gPad->SetLogz();
+	    hChannelSlice[i]->GetYaxis()->SetRangeUser(1600,2400);
     	    hChannelSlice[i]->DrawCopy("COLZ");
     	    fTimeSlewingSpline[i]->Draw("Psame");
     	    }
@@ -771,6 +774,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	    myPadSetUp(myPad42->cd(i+1),0.15,0.1,0.1,0.15);
     	    myPad42->cd(i+1);
     	    gPad->SetLogz();
+	    hChannelSlice[i]->GetYaxis()->SetRangeUser(1600,2400);
     	    hChannelSlice[i]->DrawCopy("COLZ");
     	    fTimeSlewingSpline[i]->Draw("Psame");
     	    }
@@ -806,7 +810,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     fHistTimeVsChargeADA_Corr->Draw("COLZ");
     myPad5->cd(3);
     gPad->SetLogz();
-    //fHistTimeVsChargeADA_UnCorr->GetXaxis()->SetRangeUser(170,220);
+    fHistTimeVsChargeADA_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADA_UnCorr->Draw("COLZ");
     myPad5->cd(4);
     gPad->SetLogz();
@@ -818,7 +822,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     fHistTimeVsChargeADC_Corr->Draw("COLZ");
     myPad5->cd(6);
     gPad->SetLogz();
-    //fHistTimeVsChargeADC_UnCorr->GetXaxis()->SetRangeUser(170,220);
+    fHistTimeVsChargeADC_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADC_UnCorr->Draw("COLZ");
 
     c5->Print(Form("ADQA_Run_%d.pdf",runNumber));
@@ -865,16 +869,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPadSetUp(myPad8->cd(1),0.15,0.1,0.1,0.15);
     myPadSetUp(myPad8->cd(2),0.15,0.1,0.1,0.15);
     myPad8->cd(1);
-
+    gPad->SetLogz();
     fHistChargeNoTime->Draw("COLZ");
-    /*/
-    TLegend *myLegend2 = new TLegend(0.36,0.68,0.63,0.84);
-    myLegendSetUp(myLegend2,0.04,1);
-    myLegend2->AddEntry(fHistChargeNoFlag,"Out of trigger window","l");
-    myLegend2->AddEntry(fHistChargeNoTime,"No time measurement","f");
-    myLegend2->Draw();
-    /*/
-
     myPad8->cd(2);
     gPad->SetLogz();
     fHistTimeNoFlag->Draw("COLZ");
