@@ -124,7 +124,7 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     trigger->GetL1TimeSum(adcAmp);
     if (adcAmp>-1) (*fPatchADC)(globCol,globRow) = adcAmp;
     trigger->GetTriggerBits(bitmap);
-    (*fTriggerBitMap)(globCol, globRow) = adcAmp;
+    (*fTriggerBitMap)(globCol, globRow) = bitmap;
 
     // Handling for L0 triggers
     // For the ADC value we use fCaloTriggers->GetAmplitude()
