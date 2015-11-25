@@ -17,7 +17,7 @@
 #include <THistManager.h>
 #include <TObjArray.h>
 
-#include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerBitConfigAP.h"
 #include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEmcalTriggerMakerKernel.h"
