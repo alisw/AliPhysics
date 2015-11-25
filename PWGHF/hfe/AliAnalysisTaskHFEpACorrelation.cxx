@@ -929,7 +929,8 @@ AliAnalysisTaskHFEpACorrelation::~AliAnalysisTaskHFEpACorrelation()
     delete fPID;
     delete fCFM;
     delete fPIDqa;
-    
+    delete fNonHFE;
+    delete fPartnerCuts;
     if(fAnalysisUtils) delete fAnalysisUtils;
 }
 
@@ -5346,7 +5347,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     
     ///#################################################################
     //Non-HFE reconstruction
-    fNonHFE = new AliSelectNonHFE();
+    //fNonHFE = new AliSelectNonHFE(); I do not need to create if again (almost sure)
     fNonHFE->SetAODanalysis(fIsAOD);
     if(fMassCutFlag) fNonHFE->SetInvariantMassCut(fMassCut);
     if(fAngleCutFlag) fNonHFE->SetOpeningAngleCut(fAngleCut);
@@ -5594,6 +5595,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 }
             }
         }
+        
     }
     //__________________________________________________________________
     
@@ -5688,6 +5690,8 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
             }
         }
     }
+    
+    
 }
 
 //____________________________________________________________________________________________________________

@@ -74,6 +74,7 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi()
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
+    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),
     fListHist(0)
 
 {
@@ -94,6 +95,7 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name)
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
+    fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),
     fListHist(0)
 
 {
@@ -307,6 +309,12 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fHistSemiCentralTriggersPerRun = new TH1D("fHistSemiCentralTriggersPerRun", "fHistSemiCentralTriggersPerRun", 33000, 167000.5, 200000.5);
   fListTrig->Add(fHistSemiCentralTriggersPerRun);
   
+  fHistCTest58TriggersPerRun = new TH1D("fHistCTest58TriggersPerRun", "fHistCTest58TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCTest58TriggersPerRun);
+  
+  fHistCTest59TriggersPerRun = new TH1D("fHistCTest59TriggersPerRun", "fHistCTest59TriggersPerRun", 33000, 167000.5, 200000.5);
+  fListTrig->Add(fHistCTest59TriggersPerRun);
+  
   fListHist = new TList();
   fListHist ->SetOwner();
   
@@ -353,6 +361,9 @@ void AliAnalysisTaskUpcPhi::RunAODtrig()
   if(trigger.Contains("CCUP2-B")) fHistCcup2TriggersPerRun->Fill(fRunNum); //CCUP2 triggers
   
   if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
+  
+  if(trigger.Contains("CTEST58-B")) fHistCTest58TriggersPerRun->Fill(fRunNum); //CTEST triggers
+  if(trigger.Contains("CTEST59-B")) fHistCTest59TriggersPerRun->Fill(fRunNum); //CTEST triggers
   
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
   if(trigger.Contains("CINT1-B") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
@@ -408,7 +419,9 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
   fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
   fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
   fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  fTrigger[3]  = trigger.Contains("CINT1");
+  fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
+  fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1 trigger
+  fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP trigger
   
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
@@ -595,6 +608,9 @@ void AliAnalysisTaskUpcPhi::RunESDtrig()
   
   if(trigger.Contains("CINT1-B")) fHistCint1TriggersPerRun->Fill(fRunNum); //CINT1 triggers
   
+  if(trigger.Contains("CTEST58-B")) fHistCTest58TriggersPerRun->Fill(fRunNum); //CTEST triggers
+  if(trigger.Contains("CTEST59-B")) fHistCTest59TriggersPerRun->Fill(fRunNum); //CTEST triggers
+  
   fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
   if(trigger.Contains("CINT1-B") && (fL0inputs & (1 << 3))) fHistC0tvxAndCint1TriggersPerRun->Fill(fRunNum); //0TVX triggers in CINT1 events
   
@@ -649,7 +665,8 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
   fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
   fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
-  fTrigger[4]  = trigger.Contains("CINT6-B"); // MB trigger
+  fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1 trigger
+  fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP trigger
   
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
