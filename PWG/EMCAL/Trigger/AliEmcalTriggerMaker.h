@@ -36,7 +36,7 @@ class THistManager;
 template<class T> class AliEmcalTriggerDataGridAP;
 
 #include "AliLog.h"
-#include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerBitConfigAP.h"
 #include "AliEmcalTriggerChannelContainerAP.h"
 #include "AliAnalysisTaskEmcal.h"
 
@@ -107,7 +107,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
 
   void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig *conf) { fTriggerBitConfig = conf; }
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP *conf) { fTriggerBitConfig = conf; }
 
   /**
    * Switch on rejection of patches which leave the EMCAL acceptance in \f$ \eta \f$ and \f$ \phi \f$
@@ -137,7 +137,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   TString                                   fV0InName;                    ///< name of output track array
   TriggerMakerBitConfig_t                   fUseTriggerBitConfig;         ///< type of trigger config
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
-  const AliEmcalTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   TClonesArray                              *fCaloTriggersOut;            //!<! trigger array out
   AliEmcalTriggerSetupInfo                  *fCaloTriggerSetupOut;        //!<! trigger setup
   AliAODCaloTrigger                         *fSimpleOfflineTriggers;      //!<! simple offline trigger

@@ -131,10 +131,10 @@ void AliEmcalTriggerMaker::ExecOnce()
   if(!fTriggerBitConfig){
     switch(fUseTriggerBitConfig){
     case kNewConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigNew();
+      fTriggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
       break;
     case kOldConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigOld();
+      fTriggerBitConfig = new AliEmcalTriggerBitConfigOldAP();
       break;
     }
   }
@@ -319,7 +319,7 @@ Bool_t AliEmcalTriggerMaker::Run()
     Int_t globCol=-1, globRow=-1;
     fGeom->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/kEMCL1ADCtoGeV;
+    (*fPatchADCSimple)(globCol,globRow) += amp/EmcalTriggerAP::kEMCL1ADCtoGeV;
   }
 
   // dig out common data (thresholds)
