@@ -76,5 +76,7 @@
 #pragma link C++ class AliEmcalTriggerChannelContainerAP+;
 #pragma link C++ class AliEmcalTriggerChannelContainerAP::AliEmcalTriggerChannelPositionAP+;
 #pragma link C++ class AliEmcalTriggerFastORAP+;
+#pragma link C++ class AliEmcalTriggerQAAP+;
+#pragma link C++ class AliEmcalTriggerQATask+;
 #endif
 
