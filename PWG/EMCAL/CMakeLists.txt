@@ -82,6 +82,8 @@ set(SRCS
   Trigger/AliEmcalTriggerPatchFinderAP.cxx
   Trigger/AliEmcalTriggerAlgorithmAP.cxx
   Trigger/AliEmcalTriggerFastORAP.cxx
+  Trigger/AliEmcalTriggerQAAP.cxx
+  Trigger/AliEmcalTriggerQATask.cxx
   )
 
 # Headers from sources
