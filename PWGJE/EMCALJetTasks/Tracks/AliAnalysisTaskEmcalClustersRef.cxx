@@ -122,7 +122,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
       fHistos->CreateTH2(Form("hEtaEnergyFiredSM%d%s", ism, trg->Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaETFiredSM%d%s", ism, trg->Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg->Data()), etabinning, energybinning);
     }
-    for(int isec = 0; isec < 01; isec++){
+    for(int isec = 0; isec < 10; isec++){
       fHistos->CreateTH2(Form("hEtaEnergySec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaETSec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", sectorsWithEMCAL[isec], trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg->Data()), etabinning, energybinning);
@@ -249,9 +249,16 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     fHistos->FillTH1("hEventCountDG1", 1);
   }
 
+  /*
+  TList *objects = fInputEvent->GetList();
+  for(TIter objiter = TIter(objects).Begin(); objiter != TIter::End(); ++ objiter){
+    printf("Object %s\n", (*objiter)->GetName());
+  }
+  */
+
   TClonesArray *clusterArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fClusterContainer.Data()));
   if(!clusterArray){
-    AliError("Cluster array not found");
+    AliError(Form("Cluster array with name %s not found in the event", fClusterContainer.Data()));
     return;
   }
 
@@ -273,7 +280,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     if(isMinBias){
       FillClusterHistograms("MB", energy, posvec.Et(), eta, phi, NULL);
       if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
-        FillClusterHistograms("hMBexcl", energy, posvec.Et(), eta, phi, NULL);
+        FillClusterHistograms("MBexcl", energy, posvec.Et(), eta, phi, NULL);
       }
     }
     if(isEMC7){
