@@ -68,7 +68,7 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fBackgroundErrorHigh(0)
 							   ,fConstBackgroundErrorLow(0)
 							   ,fConstBackgroundErrorHigh(0)
-								     ,fConstBackground(0)
+								     ,fConstBackground(kFALSE)
 							   ,fBackgroundTPC(0)
 							   ,fBackgroundITS(0)
 							   ,fConstBackgroundTPC(0)
