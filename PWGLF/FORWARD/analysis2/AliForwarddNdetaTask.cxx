@@ -203,7 +203,7 @@ AliForwarddNdetaTask::LoadEmpirical(const char* prx)
 	(empObj->IsA()->InheritsFrom(TH1::Class()) ||
 	 empObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) {
     Warning("LoadEmpirical", "Didn't get Forward/%s from %s",
-	    empAnch, empUrl.GetUrl());
+	    empAnch.Data(), empUrl.GetUrl());
     return false;
   }
   // Store correction in output list 
