@@ -152,7 +152,7 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fEvSelCode(0),
-fNDebug(13),
+fNDebug(1),
 fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
@@ -172,7 +172,7 @@ fInput(0)
 
 }
 
-AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib)
+AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
@@ -231,7 +231,7 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fEvSelCode(0),
-fNDebug(13),
+fNDebug(1),
 fAliCentralityV0M(0),
 fPPVsMultUtilsV0M(0),
 fMC_NColl(-1),
@@ -251,6 +251,10 @@ fInput(0)
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
     if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
+    
+    //Create output slots for debugging estimators
+    //Default: Save only first (should typically be V0M, depends on OADB!)
+    fNDebug = lNDebugEstimators;
     
     //Special Debug Options (more to be added as needed)
     // A - Debug AliCentrality

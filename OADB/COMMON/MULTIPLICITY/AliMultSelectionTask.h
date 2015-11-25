@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE);
+    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE, Int_t lNDebugEstimators = 1);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
