@@ -111,7 +111,7 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
         AliAnalysisTaskHFEemcQA *hfecalqaTrig01 = new AliAnalysisTaskHFEemcQA("emcqa");
         mgr->AddTask(hfecalqaTrig01);
         hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-        hfecalqaTrig01->SetThresholdEG1(kTRUE);
+        hfecalqaTrig01->SetEMCalTriggerEG1(kTRUE);
         hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
         hfecalqaTrig01->SetTenderSwitch(UseTender);
         hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
@@ -130,7 +130,7 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
         AliAnalysisTaskHFEemcQA *hfecalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
         mgr->AddTask(hfecalqaTrig02);
         hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-        hfecalqaTrig02->SetThresholdEG2(kTRUE);
+        hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
         hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
         hfecalqaTrig02->SetTenderSwitch(UseTender);
         hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
