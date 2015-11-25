@@ -78,6 +78,7 @@ const char* fUSAGE =
     " -unselect : as select, only inverted\n"
     " -drawoptions : what draw option to use\n"
     " -file : dump input to file and exit\n"
+    " log[xyz] : use log scale on [xyz] dimension\n"
     ;
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
