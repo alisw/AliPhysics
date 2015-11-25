@@ -184,17 +184,21 @@ Bool_t
 AliForwarddNdetaTask::LoadEmpirical(const char* prx)
 {
   TString path(prx);
-  if (!path.Contains("empirical.root")){
-    path = gSystem->ConcatFileName(gSystem->ExpandPathName(prx),
-				   "empirical.root");
-    path.Append("#default");
+  if (gSystem->ExpandPathName(path)) {
+    // Expand with TString argument return 0 on success, 1 on failure
+    return false;
   }
+  if (!path.Contains("empirical"))
+    path = gSystem->ConcatFileName(path.Data(), "empirical.root");
   TUrl   empUrl(path);
+  if (!empUrl.GetAnchor() || empUrl.GetAnchor()[0] == '\0')
+    empUrl.SetAnchor("default");
   TFile* empFile = TFile::Open(empUrl.GetUrl());
   if (!empFile) return false;
 
-  const char* empAnch = empUrl.GetAnchor();
-  TObject*    empObj  = empFile->Get(Form("Forward/%s", empAnch));
+  TString     base(GetName()); base.ReplaceAll("dNdeta", "");
+  TString     empAnch = empUrl.GetAnchor();
+  TObject*    empObj  = empFile->Get(Form("%s/%s",base.Data(),empAnch.Data()));
   if (!(empObj &&
 	(empObj->IsA()->InheritsFrom(TH1::Class()) ||
 	 empObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) {
@@ -261,12 +265,14 @@ AliForwarddNdetaTask::Finalize()
 {
   // See if we can find the empirical correction so that the bins may
   // apply it
+  TString oadb(gSystem->ConcatFileName(AliAnalysisManager::GetOADBPath(),
+				       "PWGLF/FORWARD/CORRECTIONS/data"));
   const char* dirs[] = {
-    "file://${PWD}",
-    "file://${FWD}",
-    AliAnalysisManager::GetOADBPath(),
-    "file://${OADB_PATH}/PWGLF/FORWARD/EMPIRICAL",
-    "file://${ALICE_PHYSICS}/OADB/PWGLF/FORWARD/EMPIRICAL",
+    "${PWD}",
+    "${FWD}",
+    oadb.Data(),
+    "${OADB_PATH}/PWGLF/FORWARD/EMPIRICAL",
+    "${ALICE_PHYSICS}/OADB/PWGLF/FORWARD/EMPIRICAL",
     0
   };
   const char** pdir = dirs;
