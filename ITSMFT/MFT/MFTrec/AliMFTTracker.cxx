@@ -150,8 +150,8 @@ Int_t AliMFTTracker::LoadClusters(TTree *cTree) {
     AliInfo(Form("plane %02d: nClusters = %d", iPlane, fMFTClusterArray[iPlane]->GetEntries()));
   }
 
-  AddClustersFromUnderlyingEvent();
-  AddClustersFromPileUpEvents();
+  //AddClustersFromUnderlyingEvent();
+  //AddClustersFromPileUpEvents();
 
   SeparateFrontBackClusters();
   
