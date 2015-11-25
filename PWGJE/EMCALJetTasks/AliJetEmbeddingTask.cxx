@@ -81,7 +81,6 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    if(!fPathTreeinputFile.IsNull()){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
-      fOutput->Add(fTreeJet4Vect);
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -103,7 +102,6 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       fOutput->Add(fHMassDistrib);
       fOutput->Add(fPtSpectrum);
    }
-   
    PostData(1, fOutput);
    
    
