@@ -642,10 +642,14 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   nHLTOutSize = nESDSize + nESDFriendSize + nFlatESDSize + nFlatESDFriendSize + compressedSizeTPC;
   hltRatio = nHLTInSize > 0 ? ((float) nHLTOutSize / (float) nHLTInSize) : 0.f;
 
+  int pushed_something = 0;
   //fill histograms
   if (nClustersSPD) fHistSPDclusters_SPDrawSize->Fill(rawSizeSPD, nClustersSPD);
   if (fHistSPDclusters_SPDrawSize->GetEntries() && PushBack(fHistSPDclusters_SPDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  {
+    pushed_something = 1;
     fHistSPDclusters_SPDrawSize->Reset();
+  }
 
   if (nClustersSDD) fHistSDDclusters_SDDrawSize->Fill(rawSizeSDD, nClustersSDD);
   if (fHistSDDclusters_SDDrawSize->GetEntries() && PushBack(fHistSDDclusters_SDDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
@@ -682,7 +686,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   if (nClustersTPC) fHistTPCHLTclusters_TPCFullCompressionRatio->Fill((float) nClustersTPC, (float) compressionRatioFull);
   if (fHistTPCHLTclusters_TPCFullCompressionRatio->GetEntries() && PushBack(fHistTPCHLTclusters_TPCFullCompressionRatio, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
+  {
+    pushed_something = 1;
     fHistTPCHLTclusters_TPCFullCompressionRatio->Reset();
+  }
 
   //HLT In Out Plots
   if (nHLTInSize) fHistHLTInSize_HLTOutSize->Fill(nHLTInSize, nHLTOutSize);
@@ -711,14 +718,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fHistVZERO_ITSSAPTracks->GetEntries() && PushBack(fHistVZERO_ITSSAPTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
     fHistVZERO_ITSSAPTracks->Reset();
 
-
-  int pushed_something = 0;
   if (nITSTracks) fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
   if (fHistITStracks_ITSOutTracks->GetEntries() && PushBack(fHistITStracks_ITSOutTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-  {
     fHistITStracks_ITSOutTracks->Reset();
-    pushed_something = 1;
-  }
 
   if (fPrintStats && (fPrintStats == 2 || pushed_something)) //Don't print this for every event if we use a pushback period
   {
