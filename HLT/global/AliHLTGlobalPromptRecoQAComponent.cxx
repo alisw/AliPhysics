@@ -93,6 +93,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistSPDclusters_SSDclusters(NULL)
   , fHistTPCHLTclusters_TPCCompressionRatio(NULL)
   , fHistTPCHLTclusters_TPCFullCompressionRatio(NULL)
+  , fHistHLTSize_HLTInOutRatio(NULL)
   , fHistTPCtracks_TPCtracklets(NULL)
   , fHistITStracks_ITSOutTracks(NULL)
   , fHistTPCClusterSize_TPCCompressedSize(NULL)
@@ -120,6 +121,7 @@ AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
   delete fHistSPDclusters_SSDclusters;
   delete fHistTPCHLTclusters_TPCCompressionRatio;
   delete fHistTPCHLTclusters_TPCFullCompressionRatio;
+  delete fHistHLTSize_HLTInOutRatio;
   delete fHistTPCtracks_TPCtracklets;
   delete fHistITStracks_ITSOutTracks;
   delete fHistTPCClusterSize_TPCCompressedSize;
@@ -335,6 +337,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fHistSPDclusters_SSDclusters = new TH2I("SSDncls_SPDncls", "SSD clusters vs SPD clusters", 50, 0., scaleSPDClusters, 50, 0., scaleSSDClusters);
   fHistTPCHLTclusters_TPCCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatio", "Huffman compression ratio vs TPC HLT clusters", 50, 0., scaleTPCClusters, 50, 0., scaleTPCCompressionRatio);
   fHistTPCHLTclusters_TPCFullCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatioFull", "Full compression ratio vs TPC HLT clusters", 50, 0., scaleTPCClusters, 50, 0., scaleFullTPCCompressionRatio);
+  fHistHLTSize_HLTInOutRatio = new TH2F("TPCHLTSize_HLTInOutRatio", "HLT Out/In Size Ratio vs HLT Input Size", 50, 0., scaleHLTIn, 50, 0., 1.);
   fHistTPCClusterSize_TPCCompressedSize = new TH2I("TPCHWCFSize_TPCCompSize", "TPC compressed size vs TPC HWCF Size", 50, 0., scaleTPCSize, 50, 0., scaleTPCCompressedSize);
   fHistTPCRawSize_TPCCompressedSize = new TH2I("TPCRawSize_TPCCompSize", "TPC compressed size vs TPC Raw Size", 50, 0., scaleTPCSize, 50, 0., scaleTPCCompressedSize);
   fHistHLTInSize_HLTOutSize = new TH2I("HLTInSize_HLTOutSize", "HLT Out Size vs HLT In Size", 50, 0., scaleHLTIn, 50, 0., scaleHLTOut);
@@ -357,6 +360,19 @@ int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
   
   delete fpHWCFData;
   return 0;
+}
+
+//Root cannot do templates...
+//template <class T, class S, class U> void AliHLTGlobalPromptRecoQAComponent::FillHist(int check, T* hist, S val1, U val2, int& flag)
+
+#define FillHist(check, hist, val1, val2, flag) \
+{ \
+  if (check) hist->Fill(val1, val2); \
+  if (hist->GetEntries() && PushBack(hist, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0) \
+  { \
+    flag = 1; \
+    hist->Reset(); \
+  } \
 }
 
 int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& evtData,
@@ -644,83 +660,31 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   int pushed_something = 0;
   //fill histograms
-  if (nClustersSPD) fHistSPDclusters_SPDrawSize->Fill(rawSizeSPD, nClustersSPD);
-  if (fHistSPDclusters_SPDrawSize->GetEntries() && PushBack(fHistSPDclusters_SPDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-  {
-    pushed_something = 1;
-    fHistSPDclusters_SPDrawSize->Reset();
-  }
-
-  if (nClustersSDD) fHistSDDclusters_SDDrawSize->Fill(rawSizeSDD, nClustersSDD);
-  if (fHistSDDclusters_SDDrawSize->GetEntries() && PushBack(fHistSDDclusters_SDDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistSDDclusters_SDDrawSize->Reset();
-
-  if (nClustersSSD) fHistSSDclusters_SSDrawSize->Fill(rawSizeSSD, nClustersSSD);
-  if (fHistSSDclusters_SSDrawSize->GetEntries() && PushBack(fHistSSDclusters_SSDrawSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistSSDclusters_SSDrawSize->Reset();
-
-  if (nITSSAPtracks) fHistITSSAtracks_SPDclusters->Fill(nClustersSPD, nITSSAPtracks);
-  if (fHistITSSAtracks_SPDclusters->GetEntries() && PushBack(fHistITSSAtracks_SPDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistITSSAtracks_SPDclusters->Reset();
-
-  if (nClustersSPD) fHistSPDclusters_SSDclusters->Fill(nClustersSPD, nClustersSSD);
-  if (fHistSPDclusters_SSDclusters->GetEntries() && PushBack(fHistSPDclusters_SSDclusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistSPDclusters_SSDclusters->Reset();
-
-  if (nTPCtracks) fHistTPCtracks_TPCtracklets->Fill(nTPCtracklets, nTPCtracks);
-  if (fHistTPCtracks_TPCtracklets->GetEntries() && PushBack(fHistTPCtracks_TPCtracklets, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistTPCtracks_TPCtracklets->Reset();
+  FillHist(nClustersSPD, fHistSPDclusters_SPDrawSize, rawSizeSPD, nClustersSPD, pushed_something);
+  FillHist(nClustersSDD, fHistSDDclusters_SDDrawSize, rawSizeSDD, nClustersSDD, pushed_something);
+  FillHist(nClustersSSD, fHistSSDclusters_SSDrawSize, rawSizeSSD, nClustersSSD, pushed_something);
+  FillHist(nITSSAPtracks, fHistITSSAtracks_SPDclusters, nClustersSPD, nITSSAPtracks, pushed_something);
+  FillHist(nClustersSPD, fHistSPDclusters_SSDclusters, nClustersSPD, nClustersSSD, pushed_something);
+  FillHist(nTPCtracks, fHistTPCtracks_TPCtracklets, nTPCtracklets, nTPCtracks, pushed_something);
 
   //TPC Compression Plots
-  if (compressedSizeTPC) fHistTPCClusterSize_TPCCompressedSize->Fill(hwcfSizeTPC, compressedSizeTPC);
-  if (fHistTPCClusterSize_TPCCompressedSize->GetEntries() && PushBack(fHistTPCClusterSize_TPCCompressedSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistTPCClusterSize_TPCCompressedSize->Reset();
-  
-  if (compressedSizeTPC) fHistTPCRawSize_TPCCompressedSize->Fill(rawSizeTPC, compressedSizeTPC);
-  if (fHistTPCRawSize_TPCCompressedSize->GetEntries() && PushBack(fHistTPCRawSize_TPCCompressedSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistTPCRawSize_TPCCompressedSize->Reset();
-
-  if (nClustersTPC) fHistTPCHLTclusters_TPCCompressionRatio->Fill((float) nClustersTPC, (float) compressionRatio);
-  if (fHistTPCHLTclusters_TPCCompressionRatio->GetEntries() && PushBack(fHistTPCHLTclusters_TPCCompressionRatio, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistTPCHLTclusters_TPCCompressionRatio->Reset();
-
-  if (nClustersTPC) fHistTPCHLTclusters_TPCFullCompressionRatio->Fill((float) nClustersTPC, (float) compressionRatioFull);
-  if (fHistTPCHLTclusters_TPCFullCompressionRatio->GetEntries() && PushBack(fHistTPCHLTclusters_TPCFullCompressionRatio, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-  {
-    pushed_something = 1;
-    fHistTPCHLTclusters_TPCFullCompressionRatio->Reset();
-  }
+  FillHist(compressedSizeTPC, fHistTPCClusterSize_TPCCompressedSize, hwcfSizeTPC, compressedSizeTPC, pushed_something);
+  FillHist(compressedSizeTPC, fHistTPCRawSize_TPCCompressedSize, rawSizeTPC, compressedSizeTPC, pushed_something);
+  FillHist(nClustersTPC, fHistTPCHLTclusters_TPCCompressionRatio, nClustersTPC, compressionRatio, pushed_something);
+  FillHist(nClustersTPC, fHistTPCHLTclusters_TPCFullCompressionRatio, nClustersTPC, compressionRatioFull, pushed_something);
 
   //HLT In Out Plots
-  if (nHLTInSize) fHistHLTInSize_HLTOutSize->Fill(nHLTInSize, nHLTOutSize);
-  if (fHistHLTInSize_HLTOutSize->GetEntries() && PushBack(fHistHLTInSize_HLTOutSize, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistHLTInSize_HLTOutSize->Reset();
+  FillHist(nHLTInSize, fHistHLTInSize_HLTOutSize, nHLTInSize, nHLTOutSize, pushed_something);
+  FillHist(nHLTInSize, fHistHLTSize_HLTInOutRatio, nHLTInSize, hltRatio, pushed_something);
 
   //VZERO vs ZDC
-  fHistZNA_VZEROTrigChargeA->Fill(vZEROTriggerChargeA, zdcZNA);
-  if (fHistZNA_VZEROTrigChargeA->GetEntries() && PushBack(fHistZNA_VZEROTrigChargeA, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistZNA_VZEROTrigChargeA->Reset();
-
-  fHistZNC_VZEROTrigChargeC->Fill(vZEROTriggerChargeC, zdcZNC);
-  if (fHistZNC_VZEROTrigChargeC->GetEntries() && PushBack(fHistZNC_VZEROTrigChargeC, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistZNC_VZEROTrigChargeC->Reset();
-
-  fHistZNT_VZEROTrigChargeT->Fill(vZEROTriggerChargeA+vZEROTriggerChargeC, zdcZNA+zdcZNC);
-  if (fHistZNT_VZEROTrigChargeT->GetEntries() && PushBack(fHistZNT_VZEROTrigChargeT, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistZNT_VZEROTrigChargeT->Reset();
+  FillHist(1, fHistZNA_VZEROTrigChargeA, vZEROTriggerChargeA, zdcZNA, pushed_something);
+  FillHist(1, fHistZNC_VZEROTrigChargeC, vZEROTriggerChargeC, zdcZNC, pushed_something);
+  FillHist(1, fHistZNT_VZEROTrigChargeT, vZEROTriggerChargeA+vZEROTriggerChargeC, zdcZNA+zdcZNC, pushed_something);
 
   //VZERO vs SPD
-  if (nClustersSPD) fHistVZERO_SPDClusters->Fill(vZEROTriggerChargeA+vZEROTriggerChargeC, nClustersSPD);
-  if (fHistVZERO_SPDClusters->GetEntries() && PushBack(fHistVZERO_SPDClusters, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistVZERO_SPDClusters->Reset();
-
-  if (nITSSAPtracks) fHistVZERO_ITSSAPTracks->Fill(vZEROTriggerChargeA+vZEROTriggerChargeC, nITSSAPtracks);
-  if (fHistVZERO_ITSSAPTracks->GetEntries() && PushBack(fHistVZERO_ITSSAPTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut)>0)
-    fHistVZERO_ITSSAPTracks->Reset();
-
-  if (nITSTracks) fHistITStracks_ITSOutTracks->Fill(nITSTracks, nITSOutTracks);
-  if (fHistITStracks_ITSOutTracks->GetEntries() && PushBack(fHistITStracks_ITSOutTracks, kAliHLTDataTypeHistogram|kAliHLTDataOriginOut) > 0)
-    fHistITStracks_ITSOutTracks->Reset();
+  FillHist(nClustersSPD, fHistVZERO_SPDClusters, vZEROTriggerChargeA+vZEROTriggerChargeC, nClustersSPD, pushed_something);
+  FillHist(nITSSAPtracks, fHistVZERO_ITSSAPTracks, vZEROTriggerChargeA+vZEROTriggerChargeC, nITSSAPtracks, pushed_something);
 
   if (fPrintStats && (fPrintStats == 2 || pushed_something)) //Don't print this for every event if we use a pushback period
   {

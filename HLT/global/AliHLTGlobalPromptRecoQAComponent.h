@@ -72,7 +72,9 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
    * properties.
    */
   int Configure(const char* arguments);
-
+  
+  //Root cannot do templates...
+  //template <class T> void FillHist(int check, T* hist, S val1, U val2, int& flag);
 
 protected:
 
@@ -92,6 +94,7 @@ protected:
   TH2I* fHistSPDclusters_SSDclusters;
   TH2F* fHistTPCHLTclusters_TPCCompressionRatio;
   TH2F* fHistTPCHLTclusters_TPCFullCompressionRatio;
+  TH2F* fHistHLTSize_HLTInOutRatio;
   TH2I* fHistTPCtracks_TPCtracklets;
   TH2I* fHistITStracks_ITSOutTracks;
   TH2I* fHistTPCClusterSize_TPCCompressedSize;
