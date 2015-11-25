@@ -16,6 +16,7 @@ struct AliHLTTracksData;
 class AliTPCclusterMI;
 class TH2I;
 class TH2F;
+class AliHLTTPCHWCFData;
 
 /**
  * @class AliHLTGlobalPromptRecoQAComponent
@@ -78,6 +79,8 @@ protected:
   int fVerbosity; //!transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
   
+  AliHLTTPCHWCFData* fpHWCFData;
+  
   Int_t fSkipEvents;
   Int_t fPrintStats; //print status messages: 0: never, 1: when pushing histograms (respect pushback-period), 2: always
   Int_t fEventsSinceSkip;
@@ -88,12 +91,17 @@ protected:
   TH2I* fHistITSSAtracks_SPDclusters;
   TH2I* fHistSPDclusters_SSDclusters;
   TH2F* fHistTPCHLTclusters_TPCCompressionRatio;
+  TH2F* fHistTPCHLTclusters_TPCFullCompressionRatio;
   TH2I* fHistTPCtracks_TPCtracklets;
   TH2I* fHistITStracks_ITSOutTracks;
   TH2I* fHistTPCClusterSize_TPCCompressedSize;
+  TH2I* fHistTPCRawSize_TPCCompressedSize;
+  TH2I* fHistHLTInSize_HLTOutSize;
   TH2F* fHistZNA_VZEROTrigChargeA;
   TH2F* fHistZNC_VZEROTrigChargeC;
   TH2F* fHistZNT_VZEROTrigChargeT;
+  TH2F* fHistVZERO_SPDClusters;
+  TH2F* fHistVZERO_ITSSAPTracks;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };
