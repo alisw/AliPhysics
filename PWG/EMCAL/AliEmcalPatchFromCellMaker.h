@@ -3,7 +3,7 @@
 
 class TClonesArray;
 class TH3F;
-class AliEmcalTriggerBitConfig;
+class AliEmcalTriggerBitConfigAP;
 
 #include "AliAnalysisTaskEmcal.h"
 
@@ -50,7 +50,7 @@ class AliEmcalPatchFromCellMaker : public AliAnalysisTaskEmcal {
   Double_t           fCellTimeMin;          // minimum time cell
   Double_t           fCellTimeMax;          // maximum time cell
   Bool_t             fL1Slide;              // sliding window on
-  AliEmcalTriggerBitConfig *fTriggerBitConfig; // dummy trigger bit config
+  AliEmcalTriggerBitConfigAP *fTriggerBitConfig; // dummy trigger bit config
 
  private:
   TH3F     *fh3EEtaPhiCell;                    //! cell E, eta, phi

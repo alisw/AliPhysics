@@ -20,8 +20,9 @@
 
 #include <TLorentzVector.h>
 #include <TMath.h>
-#include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerBitConfigAP.h"
 #include "AliEmcalTriggerSetupInfo.h"
+#include "AliEmcalTriggerConstantsAP.h"
 
 
 class AliEMCALGeometry;
@@ -152,7 +153,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * Get patch energy estimated from offline ADC amplitude converted into energya
    * @return Patch energy estimate
    */
-  Double_t GetADCAmpGeVRough() const { return (Double_t)fADCAmp * kEMCL1ADCtoGeV; }
+  Double_t GetADCAmpGeVRough() const { return (Double_t)fADCAmp * EmcalTriggerAP::kEMCL1ADCtoGeV; }
   /**
    * Get the trigger bits of the classes which fired the patch
    * @return Selected trigger bits
@@ -181,12 +182,6 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * @return Starting column of the patch
    */
   Int_t GetColStart() const { return fCol0; }
-
-  /**
-   * Get the size of the patch
-   * @return Size of the patch
-   */
-  Int_t GetPatchSize() const { return fPatchSize; }
 
   /**
    * Check whether patch is an EMCAL Level0 patch
@@ -303,6 +298,36 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   Bool_t   IsRecalcGamma() const { return IsGammaLowRecalc() || IsGammaHighRecalc(); }
 
   /**
+   * Check whether patch is in the EMCal
+   * @return True if the patch is in the EMCal
+   */
+  Bool_t         IsEMCal()         const { return (fDetectorType == kEMCALdet)   ; }
+
+  /**
+   * Check whether patch is in the EMCal
+   * @return True if the patch is in the EMCal
+   */
+  Bool_t         IsDCalPHOS()      const { return (fDetectorType == kDCALPHOSdet); }
+
+  /**
+   * @return Detector in which the patch is located (EMCal or DCal/PHOS)
+   */
+  DetectorType_t GetDetectorType() const { return fDetectorType                  ; }
+
+  /**
+   * Check whether a trigger bit is set
+   * @param bitnumber Bit number to be tested
+   * @return True if the bit is set
+   */
+  Bool_t   TestTriggerBit(UInt_t bitnumber) const { return TESTBIT(fTriggerBits, bitnumber); }
+
+  /**
+   * Returns the patch size
+   * @return patch size
+   */
+  UChar_t  GetPatchSize() const { return fPatchSize; }
+
+  /**
    * Set the starting row
    * @param row0 Starting row of the patch
    */
@@ -399,13 +424,13 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * Set the trigger bit configuration
    * @param ref Trigger bit configuration used to create the patch
    */
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig * ref) { fTriggerBitConfig.Initialise(*ref); }
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP * ref) { fTriggerBitConfig.Initialise(*ref); }
 
   /**
    * Get the trigger bit configuration used to create the trigger patch
    * @return Trigger bit configuration of the patch
    */
-  const AliEmcalTriggerBitConfig *GetTriggerBitConfig() const { return &fTriggerBitConfig; }
+  const AliEmcalTriggerBitConfigAP *GetTriggerBitConfig() const { return &fTriggerBitConfig; }
 
 
  protected:
@@ -424,7 +449,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   Int_t             fRow0;                          ///< Start row
   UChar_t           fPatchSize;                     ///< Trigger patch size
   DetectorType_t    fDetectorType;                  ///< Detector type (EMCal or DCal/PHOS)
-  AliEmcalTriggerBitConfig   fTriggerBitConfig;     ///< Trigger bit configuration
+  AliEmcalTriggerBitConfigAP fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerPatchInfoAPV1, 6) // Emcal particle class

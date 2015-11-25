@@ -44,19 +44,19 @@
 #pragma link C++ class AliEMCALConfiguration+;
 #pragma link C++ class AliEMCALConfigHandler+;
 #pragma link C++ class AliEMCALConfigurationMatcher+;
-#pragma link C++ class AliEmcalTriggerBitConfig+;
-#pragma link C++ class AliEmcalTriggerBitConfigOld+;
-#pragma link C++ class AliEmcalTriggerBitConfigNew+;
 #pragma link C++ class AliEmcalTriggerDecision+;
 #pragma link C++ class AliEmcalTriggerDecisionContainer+;
 #pragma link C++ class AliEmcalTriggerSelectionCuts++;
 #pragma link C++ class AliEmcalTriggerSelection+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerSelection+;
+
+#pragma link C++ class AliEmcalTriggerBitConfigAP+;
+#pragma link C++ class AliEmcalTriggerBitConfigOldAP+;
+#pragma link C++ class AliEmcalTriggerBitConfigNewAP+;
 #pragma link C++ class AliEmcalTriggerDataGridAP<float>+;
 #pragma link C++ class AliEmcalTriggerDataGridAP<double>+;
 #pragma link C++ class AliEmcalTriggerDataGridAP<int>+;
 #pragma link C++ class AliEmcalTriggerDataGridAP<char>+;
-
 #pragma link C++ class AliEmcalTriggerRawPatchAP+;
 #pragma link C++ class AliEmcalTriggerPatchFinderAP<float>+;
 #pragma link C++ class AliEmcalTriggerPatchFinderAP<double>+;
@@ -70,7 +70,11 @@
 #pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<float>+;
 #pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<double>+;
 #pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<int>+;
+#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<float>+;
+#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<double>+;
+#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<int>+;
 #pragma link C++ class AliEmcalTriggerChannelContainerAP+;
 #pragma link C++ class AliEmcalTriggerChannelContainerAP::AliEmcalTriggerChannelPositionAP+;
+#pragma link C++ class AliEmcalTriggerFastORAP+;
 #endif
 

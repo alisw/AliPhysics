@@ -65,10 +65,10 @@ set(SRCS
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
-  Trigger/AliEmcalTriggerBitConfig.cxx
   Trigger/AliEmcalTriggerMaker.cxx
   Trigger/AliEmcalTriggerMakerKernel.cxx
   Trigger/AliEmcalTriggerMakerTask.cxx
+  Trigger/AliEmcalTriggerBitConfigAP.cxx
   Trigger/AliEmcalTriggerPatchInfoAP.cxx
   Trigger/AliEmcalTriggerPatchInfoAPV1.cxx
   Trigger/AliEmcalTriggerSetupInfo.cxx
@@ -81,10 +81,16 @@ set(SRCS
   Trigger/AliEmcalTriggerRawPatchAP.cxx
   Trigger/AliEmcalTriggerPatchFinderAP.cxx
   Trigger/AliEmcalTriggerAlgorithmAP.cxx
+  Trigger/AliEmcalTriggerFastORAP.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set(HDRS
+  "${HDRS}"
+  Trigger/AliEmcalTriggerConstantsAP.h
+  )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -96,7 +102,7 @@ add_library(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MODULE}.cx
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGTools STEER STEERBase Tender)
+set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils EMCALTriggerBase ESD PWGTools STEER STEERBase Tender)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

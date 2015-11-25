@@ -11,8 +11,8 @@
  * See cxx source for full Copyright notice                               */
 
 #include "TNamed.h"
+#include "AliEmcalTriggerConstantsAP.h"
 
-static const Double_t kEMCL1ADCtoGeV = 0.07874;             ///< Conversion from EMCAL Level1 ADC to energy
 static const Double_t kEMCL1ADCtoADCSum = 3.40;             ///<
 
 /**
@@ -75,22 +75,22 @@ class AliEmcalTriggerSetupInfo: public TNamed {
    * Get lower online trigger threshold of the jet trigger, converted to energy
    * @return Trigger threshold, converted to energy
    */
-  Double_t GetThresholdGeVRoughJetLow() const { return ((Double_t)fThresholds[2])*kEMCL1ADCtoGeV; }
+  Double_t GetThresholdGeVRoughJetLow() const { return ((Double_t)fThresholds[2])*EmcalTriggerAP::kEMCL1ADCtoGeV; }
   /**
    * Get higher online trigger threshold of the jet trigger, converted to energy
    * @return Trigger threshold, converted to energy
    */
-  Double_t GetThresholdGeVRoughJetHigh() const { return ((Double_t)fThresholds[0])*kEMCL1ADCtoGeV; }
+  Double_t GetThresholdGeVRoughJetHigh() const { return ((Double_t)fThresholds[0])*EmcalTriggerAP::kEMCL1ADCtoGeV; }
   /**
    * Get lower offline trigger threshold of the jet trigger, converted to energy
    * @return Trigger threshold, converted to energy
    */
-  Double_t GetThresholdGeVRoughJetLowSimple() const { return ((Double_t)fThresholdsSimple[2])*kEMCL1ADCtoGeV; }
+  Double_t GetThresholdGeVRoughJetLowSimple() const { return ((Double_t)fThresholdsSimple[2])*EmcalTriggerAP::kEMCL1ADCtoGeV; }
   /**
    * Get higher offline trigger threshold of the jet trigger, converted to energy
    * @return Trigger threshold, converted to energy
    */
-  Double_t GetThresholdGeVRoughJetHighSimple() const { return ((Double_t)fThresholdsSimple[0])*kEMCL1ADCtoGeV; }
+  Double_t GetThresholdGeVRoughJetHighSimple() const { return ((Double_t)fThresholdsSimple[0])*EmcalTriggerAP::kEMCL1ADCtoGeV; }
   
   /**
    * Set trigger thresholds for the online trigger for the different trigger classes
