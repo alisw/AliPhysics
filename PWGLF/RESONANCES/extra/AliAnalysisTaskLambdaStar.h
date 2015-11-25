@@ -34,7 +34,6 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   AliAnalysisTaskLambdaStar();                 // Dummy constructor
   AliAnalysisTaskLambdaStar(const char *name); // Constructor
   virtual ~AliAnalysisTaskLambdaStar();                // Destructor
-  //AliAnalysisTaskLambdaStar(const AliAnalysisTaskLambdaStar& atpl); // Not implemented
   AliAnalysisTaskLambdaStar& operator=(const AliAnalysisTaskLambdaStar& atpl); //Not implemented
   
   void   UserCreateOutputObjects();  // Called once at the beginning
@@ -45,19 +44,19 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   {fCentMin = centmin;
   fCentMax = centmax;}
   void  SetNSigma(Double_t nsigma){fNSigma = nsigma;}
+    void  SetRejNSigma(Double_t rejnsigma){fRejNSigma = rejnsigma;}
   void  SetNMix(Int_t nmix){fNMix = nmix;}
-  void  SetStrongCut(Bool_t nstrong){fStrong = nstrong;}
   void  SetCentPatch(Int_t centp) {fCentPerPatch = centp ;}
-  void SetClusterTPC(Int_t clusterTPC){fClusterTPC = clusterTPC;}
-  void SetDCAxy(Float_t dcaxy){fDCAxy = dcaxy;}
-  void SetFilterBit(Int_t filterbitbit){fFilterBit = filterbitbit;}
+  void  SetClusterTPC(Int_t clusterTPC){fClusterTPC = clusterTPC;}
+  void  SetDCAxy(Float_t dcaxy){fDCAxy = dcaxy;}
+  void  SetFilterBit(Int_t filterbitbit){fFilterBit = filterbitbit;}
   
  private:
 
 
-  void   ProcessTPC(AliAODTrack *track,Double_t nsig, Bool_t strong );         
-  void   ProcessHybrid(AliAODTrack *track, Bool_t circ,Double_t nsig, Bool_t strong );         // Use TPC for p < 0.75 GeV/c);     
-  void   ProcessHybridPro(AliAODTrack *track, Bool_t circ,Double_t nsig, Bool_t strong );         // Use TPC for p < 0.75 GeV/c);    
+  void   ProcessTPC(AliAODTrack *track,Double_t nsig);         
+  void   ProcessHybrid(AliAODTrack *track, Bool_t circ,Double_t nsig );         // Use TPC for p < 0.75 GeV/c);
+  void   ProcessHybridPro(AliAODTrack *track, Bool_t circ,Double_t nsig );         // Use TPC for p < 0.75 GeV/c);
   void   ProcessReal();               //  minv calc for real events
   void   ProcessMixed();              // minv calc for mixed events
   void   ProcessLikeSignBkg();     // Check procedure with like sign
@@ -96,10 +95,10 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   Int_t fCentMin;
   Int_t fCentMax;
   Double_t fNSigma;
+  Double_t fRejNSigma;
   Int_t fNMix;
   Bool_t  fPatch;           //
   Int_t  fCentPerPatch;
-  Bool_t  fStrong;
   ULong64_t fTriggerMask; // trigger mask
   Int_t fClusterTPC;
   Float_t fDCAxy;
@@ -134,8 +133,9 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   // Primary particles
  
     
-  TH2F        *fPriHistTPCsignalPos;            //! Pri: TPC dE/dx signal vs p
-  TH2F        *fPriHistTPCsignalNeg;            //! Pri: TPC dE/dx signal vs p
+  TH2F        *fPriHistTPCsignal;            //! Pri: TPC dE/dx signal vs p
+  TH2F        *fPriHistTPCsignalproton;
+  TH2F        *fPriHistTPCsignalkaon;
   TH3F        *fPriHistDCAxyYPtPro;             //! Pri: DCAxy vs (y,pt) for protons
   TH3F        *fPriHistDCAxyYPtAPro;            //! Pri: DCAxy vs (y,pt) for anti-protons
   TH3F        *fPriHistDCAxyYPtKPlus;             //! Pri: DCAxy vs (y,pt) for protons

@@ -73,6 +73,14 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   Bool_t      selectDPMJETevtNSDpA = kFALSE; //cut to select in DPMJET true NSD events
 
+  if (evtCutSetID==eventCutSet::kEvtDefault) {
+    useVtxCut2013pA = kTRUE;
+    useVtxCut2013pAspectra = kFALSE;
+    rmFirstEvtChunk = kTRUE;
+    rejectPileUp = kTRUE;
+    vtxZcut = 10.0; //cm
+  }
+
   if (evtCutSetID==eventCutSet::kNSD) {
     useVtxCut2013pA = kFALSE;
     useVtxCut2013pAspectra = kFALSE;
