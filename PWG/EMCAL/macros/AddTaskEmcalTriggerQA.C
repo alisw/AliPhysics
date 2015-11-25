@@ -1,5 +1,5 @@
 AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
-  const char *triggersInName     = "EmcalTriggers",
+  const char *triggerPatchesName  = "EmcalTriggers",
   const char *cellsName           = 0,
   const char *triggersName        = 0,
   const char *taskName            = "AliEmcalTriggerQATask")
@@ -25,7 +25,35 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   // Init the task and do settings
   //-------------------------------------------------------
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
-  eTask->SetCaloTriggersInName(triggersInName);
+  eTask->SetTriggerPatchesName(triggerPatchesName);
+
+  TString strTriggersName(triggersName);
+  TString strCellsName(cellsName);
+
+  if(strTriggersName.IsNull()) {
+    if (evhand->InheritsFrom("AliESDInputHandler")) {
+      strTriggersName = "EMCALTrigger";
+      ::Info("AddTaskEmcalTriggerMaker", "ESD analysis, triggersName = \"%s\"", strTriggersName.Data());
+    }
+    else {
+      strTriggersName = "emcalTrigger";
+      ::Info("AddTaskEmcalTriggerMaker", "AOD analysis, triggersName = \"%s\"", strTriggersName.Data());
+    }
+  }
+
+  if(strCellsName.IsNull()) {
+    if (evhand->InheritsFrom("AliESDInputHandler")) {
+      strCellsName = "EMCALCells";
+      ::Info("AddTaskEmcalTriggerMaker", "ESD analysis, cellsName = \"%s\"", strCellsName.Data());
+    }
+    else {
+      strCellsName = "emcalCells";
+      ::Info("AddTaskEmcalTriggerMaker", "AOD analysis, cellsName = \"%s\"", strCellsName.Data());
+    }
+  }
+
+  eTask->SetCaloTriggersName(strTriggersName);
+  eTask->SetCaloCellsName(strCellsName);
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

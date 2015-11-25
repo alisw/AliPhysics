@@ -22,6 +22,7 @@ class AliEmcalTriggerQAAP;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcal.h"
+#include "AliEmcalTriggerChannelContainerAP.h"
 
 /**
  * \class AliEmcalTriggerQATask
@@ -36,7 +37,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   AliEmcalTriggerQATask(const char *name);
   virtual ~AliEmcalTriggerQATask();
 
-  void SetCaloTriggersInName(const char *name)      { fCaloTriggersInName      = name; }
+  void SetTriggerPatchesName(const char *name)      { fTriggerPatchesName      = name; }
 
   AliEmcalTriggerQAAP* GetTriggerQA()               { return fEMCALTriggerQA         ; }
 
@@ -46,10 +47,11 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   Bool_t                                    Run();
   Bool_t                                    FillHistograms();
   
-  TString                                   fCaloTriggersInName;         ///< name of input trigger array
+  TString                                   fTriggerPatchesName;         ///< name of input trigger array
   AliEmcalTriggerQAAP                      *fEMCALTriggerQA;             ///< produces the QA histograms
+  AliEmcalTriggerChannelContainerAP         fBadChannels;                ///< Container of bad channels
 
-  TClonesArray                             *fCaloTriggersIn;             //!<! trigger array out
+  TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
  private:
   AliEmcalTriggerQATask(const AliEmcalTriggerQATask&);            // not implemented

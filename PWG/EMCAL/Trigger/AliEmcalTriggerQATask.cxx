@@ -17,6 +17,7 @@
 
 #include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEmcalTriggerQAAP.h"
+#include "AliEmcalTriggerFastORAP.h"
 
 #include "AliEmcalTriggerQATask.h"
 
@@ -29,9 +30,10 @@ ClassImp(AliEmcalTriggerQATask)
  */
 AliEmcalTriggerQATask::AliEmcalTriggerQATask() : 
   AliAnalysisTaskEmcal("AliEmcalTriggerQATask",kTRUE),
-  fCaloTriggersInName("EmcalTriggers"),
+  fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
-  fCaloTriggersIn(0)
+  fBadChannels(),
+  fTriggerPatches(0)
 {
 }
 
@@ -41,9 +43,10 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
  */
 AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name) :
   AliAnalysisTaskEmcal(name,kTRUE),
-  fCaloTriggersInName("EmcalTriggers"),
+  fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
-  fCaloTriggersIn(0)
+  fBadChannels(),
+  fTriggerPatches(0)
 {
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -69,19 +72,19 @@ void AliEmcalTriggerQATask::ExecOnce()
 
   if (!fInitialized) return;
 
-  fCaloTriggersIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloTriggersInName));
+  fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTriggerPatchesName));
 
-  TString objname(fCaloTriggersIn->GetClass()->GetName());
+  TString objname(fTriggerPatches->GetClass()->GetName());
   TClass cls(objname);
   if (!cls.InheritsFrom("AliEmcalTriggerPatchInfoAPV1")) {
     AliError(Form("%s: Objects of type %s in %s are not inherited from AliEmcalTriggerPatchInfoAPV1!",
-		  GetName(), cls.GetName(), fCaloTriggersInName.Data())); 
-    fCaloTriggersIn = 0;
+		  GetName(), cls.GetName(), fTriggerPatchesName.Data()));
+    fTriggerPatches = 0;
   }
 
-  if (!fCaloTriggersIn) {
+  if (!fTriggerPatches) {
     fInitialized = kFALSE;
-    AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), fCaloTriggersInName.Data()));
+    AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), fTriggerPatchesName.Data()));
     return;
   }
 }
@@ -118,21 +121,47 @@ Bool_t AliEmcalTriggerQATask::Run()
  */
 Bool_t AliEmcalTriggerQATask::FillHistograms() 
 {
-  Int_t nPatches = fCaloTriggersIn->GetEntriesFast();
+  if (fTriggerPatches) {
+    Int_t nPatches = fTriggerPatches->GetEntriesFast();
 
-  AliDebug(2, Form("nPatches = %d", nPatches));
+    AliDebug(2, Form("nPatches = %d", nPatches));
 
-  Int_t type = 0;
-  
-  for (Int_t i = 0; i < nPatches; i++) {
-    AliDebug(2, Form("Processing patch %d", i));
+    Int_t type = 0;
 
-    AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fCaloTriggersIn->At(i));
-    if (!patch) continue;
+    for (Int_t i = 0; i < nPatches; i++) {
+      AliDebug(2, Form("Processing patch %d", i));
 
-    fEMCALTriggerQA->ProcessPatch(patch);
+      AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
+      if (!patch) continue;
+
+      fEMCALTriggerQA->ProcessPatch(patch);
+    }
   }
 
+  if (fCaloTriggers) {
+    AliEmcalTriggerFastORAP fastor;
+    fCaloTriggers->Reset();
+    Int_t globCol = -1, globRow = -1;
+    Float_t L0amp = -1;
+    Int_t L1amp = -1;
+    while (fCaloTriggers->Next()) {
+      // get position in global 2x2 tower coordinates
+      // A0 left bottom (0,0)
+      fCaloTriggers->GetPosition(globCol, globRow);
+      // exclude channel completely if it is masked as hot channel
+      if (fBadChannels.HasChannel(globCol, globRow)) continue;
+      // for some strange reason some ADC amps are initialized in reconstruction
+      // as -1, neglect those
+      fCaloTriggers->GetL1TimeSum(L1amp);
+      if (L1amp < 0) L1amp = 0;
+      fCaloTriggers->GetAmplitude(L0amp);
+      if (L0amp < 0) L0amp = 0;
+
+      fastor.Initialize(L0amp, L1amp, globRow, globCol, fGeom);
+
+      fEMCALTriggerQA->ProcessFastor(&fastor);
+    }
+  }
   fEMCALTriggerQA->EventCompleted();
 
   return kTRUE;
