@@ -439,7 +439,8 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   TH2F*  hTimeAbsId =(TH2F *)outputList->FindObject("EMCAL_hTimeId");
   if(!hTimeAbsId) { Error(__FUNCTION__,Form("EMCAL_hTimeId: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
   FormatRunHisto(hTimeAbsId,Form("cell Id Vs Time%s",legend),"cell absId");
-  hTimeAbsId->SetMinimum(3);
+  hTimeAbsId->RebinY(16);
+  hTimeAbsId->SetMinimum(32);
   AutoZoom(hTimeAbsId,"maxx")->DrawCopy("colz");
   outfilename =  QAPATH + "TimeAbsIdRun" + fTrigger(r) + ".pdf" ;
   outfilename2 = QAPATH + "TimeAbsRun" + fTrigger(r) + ".png" ;
@@ -478,7 +479,8 @@ TCanvas* c1b = new TCanvas("EVsAbsId", "Cell Id Vs E ", 600, 600);
   TH2F*  hEAbsId =(TH2F *)outputList->FindObject("EMCAL_hAmpId");
   if(!hEAbsId) { Error(__FUNCTION__,Form("EMCAL_hAmpId: Histogram for trigger %s not found!",fTrigger.Data())); return -5;}
   FormatRunHisto(hEAbsId,Form("cell Id Vs E%s",legend),"cell absId");
-  hEAbsId->SetMinimum(3);
+  hEAbsId->RebinY(16);
+  hEAbsId->SetMinimum(32);
 
   AutoZoom(hEAbsId,"maxx")->DrawCopy("colz");
   outfilename =  QAPATH + "EAbsIdRun" + fTrigger(r) + ".pdf" ;
