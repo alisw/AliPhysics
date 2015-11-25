@@ -34,7 +34,7 @@ void runAnalysisTrain(const Char_t* infile)
    gSystem->Load("libTRDbase.so");
    gSystem->Load("libVZERObase.so");
    gSystem->Load("libPWGDQdielectron.so"); 
-   //gSystem->Load("libPWGDQreducedTree.so"); 
+   gSystem->Load("libPWGDQreducedTree.so"); 
    //gSystem->Load("/hera/alice/iarsene/trainTrunk/util/dielectron/libPWGDQdielectron.so");
 
   // Load common libraries
@@ -42,13 +42,7 @@ void runAnalysisTrain(const Char_t* infile)
    // Use AliRoot includes to compile our task
    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
-   gROOT->ProcessLine(".include $ALICE_PHYSICS/PWGDQ/");
    gROOT->ProcessLine(".include $ROOTSYS/include");
-
-   gROOT->ProcessLine(".include $ALICE_PHYSICS/PWGDQ/dielectron");
-   gROOT->ProcessLine(".include $ALICE_PHYSICS/PWGDQ/ReducedTreeMaker");
-   gROOT->ProcessLine(".include $ALICE_PHYSICS/PWGCF/FLOW");
-   //gROOT->ProcessLine(".include /hera/alice/iarsene/trainTrunk/util/dielectron/dielectron");
 
    // Create and configure the alien handler plugin
    /*gROOT->LoadMacro("CreateAlienHandlerPbPb.C");
@@ -83,7 +77,7 @@ void runAnalysisTrain(const Char_t* infile)
    
    //===== ADD TASK::
    //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/AddTask_ReducedTree.C");
-   gROOT->LoadMacro("AddTask_iarsene_dst.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_dst.C");
    //gROOT->LoadMacro("AddTask_iarsene_testTask.C");
    //AddTask_ReducedTree();   
    AddTask_iarsene_dst();
