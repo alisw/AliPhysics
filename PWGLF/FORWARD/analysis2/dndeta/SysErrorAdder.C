@@ -228,7 +228,8 @@ struct SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l, Bool_t verb=false)
+  virtual GraphSysErr* Make(TH1* h, TLegend* l, Double_t eff=1,
+			    Bool_t verb=false)
   {
     // --- Reaction key ------------------------------------------------
     if (verb) Info("", "Making graph from %s %p", h->GetName(), l);
@@ -281,9 +282,9 @@ struct SysErrorAdder
       Double_t ex = h->GetXaxis()->GetBinWidth(i)/2;
       Double_t x  = h->GetXaxis()->GetBinCenter(i);
 
-      gse->SetPoint(cnt, x, y);
+      gse->SetPoint(cnt, x, eff*y);
       gse->SetPointError(cnt, ex);
-      gse->SetStatError(cnt, ey);
+      gse->SetStatError(cnt, eff*ey);
 
       if (idMerge>=0)
 	gse->SetSysError(idMerge, cnt, ex, ex, GetMerging(-1), GetMerging(1));
@@ -357,9 +358,10 @@ struct INELAdder : public SysErrorAdder
       switch (fSNN) {
       case  900:   fLow = 0.001;  fHigh = 0.003; break;
       case 2760:   fLow = 0.0035; fHigh = 0.006; break;
+      case 5023:   fLow = fHigh = 0.028;         break; 
       case 7000: 
       case 8000:   fLow = 0.003;  fHigh = 0.006; break;
-      case 13000:  fLow = fHigh = 0.028; break;
+      case 13000:  fLow = fHigh = 0.028;         break;
       default: break;
       }
     }
@@ -612,11 +614,14 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l, Bool_t verb=false)
+  virtual GraphSysErr* Make(TH1*     h,
+			    TLegend* l,
+			    Double_t eff=1,
+			    Bool_t   verb=false)
   {
     fCent = GetCentrality(h, verb);
     if (fCent < 0) return 0;
-    return SysErrorAdder::Make(h, l, verb);
+    return SysErrorAdder::Make(h, l, eff, verb);
   }
 };
 

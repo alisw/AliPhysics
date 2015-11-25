@@ -190,8 +190,10 @@ DoOne(TCollection*   c,
       const TString& dir,
       const TString& name,
       Int_t          rebin,
+      Double_t       eff, 
       void*          oa,
-      Bool_t         cutEdges=false)
+      Bool_t         cutEdges=false,
+      TLegend*       l=0)
 {
   SysErrorAdder* adder = reinterpret_cast<SysErrorAdder*>(oa);
 
@@ -209,7 +211,7 @@ DoOne(TCollection*   c,
   if (dir.BeginsWith("cent"))
     hist->SetName(Form("%s_%s",hist->GetName(),dir.Data()));
   
-  GraphSysErr* gse = adder->Make(hist, 0);
+  GraphSysErr* gse = adder->Make(hist, l, eff);
   if (!gse) return 0;
 
   gse->SetSumOption(GraphSysErr::kBox);
@@ -223,7 +225,7 @@ DoOne(TCollection*   c,
 }
   
 //____________________________________________________________________
-TMultiGraph*
+TH1*
 DrawOne(TObject* o, Option_t* opt, Double_t& min, Double_t& max)
 {
   GraphSysErr* g = static_cast<GraphSysErr*>(o);
@@ -232,14 +234,18 @@ DrawOne(TObject* o, Option_t* opt, Double_t& min, Double_t& max)
   g->GetMinMax(opt, mn, mx);
   min = TMath::Min(min, mn);
   max = TMath::Max(max, mx);
-  return g->GetMulti();
+  TMultiGraph* mg = g->GetMulti();
+  Info("DrawOne", "Got  Multigraph %p", mg);
+  TH1* hist = (mg ? mg->GetHistogram() : 0);
+  Info("DrawOne", "Got frame histogram %p", hist);
+  return hist;
 }
   
 
 //____________________________________________________________________
 TList*
 ExtractGSEs(const char* filename="forward_dndeta.root",
-	    Int_t rebin=5, Bool_t cutEdges=false,
+	    Int_t rebin=5, Double_t eff=1, Bool_t cutEdges=false,
 	    const char* name="Forward")
 {
   if (!gROOT->GetClass("GraphSysErr")) {
@@ -271,25 +277,54 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   TAxis*   centA  = GetAxis  (results, "centAxis");
   TString  sys    = osys->GetTitle();
   UShort_t sNN    = osNN->GetUniqueID();
-  TString  trg    = (ocentM && centA ? "CENT" : otrg->GetName());
   TString  mth    = (ocentM && centA ? ocentM->GetTitle() : "");
+  if (mth.EqualTo("none",TString::kIgnoreCase) ||
+      (centA && centA->GetNbins() < 1)) mth = "";
+  TString  trg    = (!mth.IsNull() && centA ? "CENT" : otrg->GetTitle());
   TString  hname  = Form("dndeta%s%s",name,emp?"Emp":"");
-  
+
+  Printf("Read settings\n"
+	 "  Empirical:   %p\n"
+	 "  System:      %s (%p)\n"
+	 "  Energy:      %d (%s - %p)\n"
+	 "  Trigger:     %s (%s - %p)\n"
+	 "  Centrality:  %s (%p)\n"
+	 "    Axis:      %p",
+	 emp, sys.Data(), osys, sNN, (osNN ? osNN->GetTitle() : ""), osNN,
+	 trg.Data(), otrg->GetTitle(), otrg, mth.Data(), ocentM, centA);
+  if (centA) Printf("    %d bins between %f and %f",
+		    centA->GetNbins(), centA->GetXmin(), centA->GetXmax());
   SysErrorAdder* adder = SysErrorAdder::Create(trg,sys,sNN,mth);
   if (!adder) {
     Warning("ExtractGSEs", "Failed to make adder");
     return 0;
   }
 
+
+  TCanvas* c = new TCanvas("c", "C");
+  c->SetTopMargin(0.01);
+  c->SetRightMargin(0.20);
+  TLegend* l = new TLegend(0.8,0.1,0.99,0.99,
+			   Form("%s @ %s (%s)",
+				sys.Data(), osNN->GetTitle(), trg.Data()));
+  l->SetFillColor(0);
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
+  
+  
   TList* ret   = new TList;
   Bool_t first = true;
   TH1*   frame = 0;
   Double_t min = 100000, max = -1000000;
-  if (!centA || !ocentM) {
-    TObject* all = DoOne(results, "all", hname, rebin, adder, cutEdges);
-    if (!all) return 0;
+  if (!centA || centA->GetNbins() < 1 || !mth.IsNull()) {
+    Info("ExtractGSEs", "Doing pp-like extraction");
+    TObject* all = DoOne(results, "all", hname, rebin, eff, adder, cutEdges, l);
+    if (!all) {
+      Warning("ExtractGSEs", "Nothing returned from DoOne(\"all\"...)");
+      return 0;
+    }
     ret->Add(all);
-    frame = DrawOne(all, "SUM QUAD AXIS", min, max)->GetHistogram();
+    frame = DrawOne(all, "SUM QUAD AXIS", min, max);
   }
   else {
     for (Int_t i = 1; i <= centA->GetNbins(); i++) {
@@ -299,19 +334,23 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
       dir.Form("cent%03dd%02d_%03dd%02d",
 	       Int_t(low),  Int_t(low *100)%100,
 	       Int_t(high), Int_t(high*100)%100);
-      TObject* g = DoOne(results, dir, hname, rebin, adder, cutEdges);
+      TObject* g = DoOne(results, dir, hname, rebin, eff, adder, cutEdges, l);
       if (!g) continue;
       ret->Add(g);
-      if (first)
-	frame = DrawOne(g, "SUM QUAD AXIS", min, max)->GetHistogram();
-      else
-	DrawOne(g, "SUM QUAD", min, max);
+      if (first) frame = DrawOne(g, "SUM QUAD AXIS", min, max);
+      else  	         DrawOne(g, "SUM QUAD", min, max);
       first = false;
     }
   }
-  frame->SetMinimum(0.9*min);
-  frame->SetMaximum(1.1*max);
-
+  if (!frame) {
+    Warning("ExtractGSEs", "No frame given");
+  }
+  else {
+    frame->SetMinimum(0.9*min);
+    frame->SetMaximum(1.1*max);
+  }
+  l->Draw();
+  
   TString outName;
   outName.Form("%s_%05d_%s%s.root",sys.Data(),sNN,trg.Data(),mth.Data());
   TFile* out = TFile::Open(outName,"RECREATE");
