@@ -60,6 +60,9 @@ TObjArray fDrawables;
 TPRegexp* fSelectionRegexp = NULL;
 TPRegexp* fUnSelectionRegexp = NULL;
 TString fDrawOptions;
+Bool_t fScaleLogX = kFALSE;
+Bool_t fScaleLogY = kFALSE;
+Bool_t fScaleLogZ = kFALSE;
 Bool_t fResetOnRequest = kFALSE;
 
 ULong64_t iterations=0;
@@ -285,6 +288,9 @@ int UpdatePad(TObject* object)
     {
       TObject* obj = fDrawables[i];
       fCanvas->cd(i+1);
+      if (fScaleLogX) gPad->SetLogx();
+      if (fScaleLogY) gPad->SetLogy();
+      if (fScaleLogZ) gPad->SetLogz();
       if (fVerbose) Printf("  drawing %s in pad %i", obj->GetName(), i);
       if (obj) obj->Draw();
     }
@@ -338,6 +344,18 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("drawoptions"))
     {
       fDrawOptions = value;
+    }
+    else if (option.EqualTo("logx"))
+    {
+      fScaleLogX=kTRUE;
+    }
+    else if (option.EqualTo("logy"))
+    {
+      fScaleLogY=kTRUE;
+    }
+    else if (option.EqualTo("logy"))
+    {
+      fScaleLogY=kTRUE;
     }
     else if (option.EqualTo("file"))
     {
