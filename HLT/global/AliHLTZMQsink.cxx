@@ -226,7 +226,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     {
       string runNumberString = "run=";
       char tmp[34];
-      sprintf(tmp,"%i",GetRunNo()); 
+      snprintf(tmp,34,"%i",GetRunNo()); 
       runNumberString+=tmp;
       zmq_send(fZMQout, "INFO", 4, ZMQ_SNDMORE);
       zmq_send(fZMQout, runNumberString.data(), runNumberString.size(), ZMQ_SNDMORE);
