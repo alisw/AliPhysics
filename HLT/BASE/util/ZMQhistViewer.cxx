@@ -57,6 +57,8 @@ TApplication* gApp;
 TCanvas* fCanvas;
 TObjArray fDrawables;
 
+TString fStatus = "";
+Int_t fRunNumber = 0;
 TPRegexp* fSelectionRegexp = NULL;
 TPRegexp* fUnSelectionRegexp = NULL;
 TString fDrawOptions;
@@ -158,6 +160,34 @@ void* run(void* arg)
       alizmq_msg_recv(&message, fZMQin, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
+        zmq_msg_t* topicMsg = i->first;
+        zmq_msg_t* dataMsg = i->second;
+        if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
+        {
+            //check if we have a runnumber in the string
+            string info;
+            info.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
+            fCanvas->SetTitle(info.c_str());
+            size_t runTagPos = info.find("run");
+            if (runTagPos != std::string::npos)
+            {
+              size_t runStartPos = info.find("=",runTagPos);
+              size_t runEndPos = info.find(" ");
+              string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
+              if (fVerbose) printf("received run=%s\n",runString.c_str());
+  
+              int runnumber = atoi(runString.c_str());
+  
+              if (runnumber!=fRunNumber) 
+              {
+                  if (fVerbose) printf("Run changed, resetting!\n");
+                  fDrawables.Delete();
+                  fCanvas->Clear();
+              }
+              fRunNumber = runnumber; 
+            }
+        }
+
         TObject* object;
         alizmq_msg_iter_data(i, object);
         if (object) UpdatePad(object);
