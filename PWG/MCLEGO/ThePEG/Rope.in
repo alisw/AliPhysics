@@ -1,4 +1,4 @@
-read ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/LHCpp.in
+read LHCpp.in
 
 set LHCGenerator:EventHandler:LuminosityFunction:Energy 7000
 
