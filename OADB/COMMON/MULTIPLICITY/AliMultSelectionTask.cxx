@@ -1509,6 +1509,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
 
     //Pb-Pb Run 2 (experimental) 
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
+    if ( fCurrentRun >= 244917 && fCurrentRun <= 244918 ) lProductionName = "LHC15o";
     
     return lProductionName;
 }
