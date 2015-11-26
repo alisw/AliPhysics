@@ -1,3 +1,42 @@
+static Int_t PbPbBin(Double_t c1, Double_t c2)
+{
+  Double_t c = (c1+c2) / 2;
+  if      (c <  5) return 0;
+  else if (c < 10) return 1;
+  else if (c < 20) return 2;
+  else if (c < 30) return 3;
+  else if (c < 40) return 4;
+  else if (c < 50) return 5;
+  else if (c < 60) return 6;
+  else if (c < 70) return 7;
+  else if (c < 80) return 8;
+  else if (c < 90) return 9;
+  return                  10;
+}
+/** 
+ * Get the centrality color for PbPb 
+ * 
+ * @param c1 Lower edge
+ * @param c2 Upper edge
+ * 
+ * @return Color 
+ */
+static Color_t PbPbColor(Double_t c1, Double_t c2)
+{
+  const Color_t cc[] = { kMagenta+2,
+			 kBlue+2,
+			 kAzure-1, // 10,
+			 kCyan+2,
+			 kGreen+1,
+			 kSpring+5,//+10,
+			 kYellow+1,
+			 kOrange+5,//+10,
+			 kRed+1,
+			 kPink+5,//+10,
+			 kBlack };
+  Int_t bin = PbPbBin(c1,c2);
+  return cc[bin];
+}
 //____________________________________________________________________
 TObject*
 GetObject(TDirectory* d, const char* name, TClass* cls=0, Bool_t verb=true)
@@ -235,9 +274,9 @@ DrawOne(TObject* o, Option_t* opt, Double_t& min, Double_t& max)
   min = TMath::Min(min, mn);
   max = TMath::Max(max, mx);
   TMultiGraph* mg = g->GetMulti();
-  Info("DrawOne", "Got  Multigraph %p", mg);
+  // Info("DrawOne", "Got  Multigraph %p", mg);
   TH1* hist = (mg ? mg->GetHistogram() : 0);
-  Info("DrawOne", "Got frame histogram %p", hist);
+  // Info("DrawOne", "Got frame histogram %p", hist);
   return hist;
 }
   
@@ -245,7 +284,10 @@ DrawOne(TObject* o, Option_t* opt, Double_t& min, Double_t& max)
 //____________________________________________________________________
 TList*
 ExtractGSEs(const char* filename="forward_dndeta.root",
-	    Int_t rebin=5, Double_t eff=1, Bool_t cutEdges=false,
+	    Int_t       rebin=5,
+	    Double_t    eff=1,
+	    Bool_t      raw=false,
+	    Bool_t      cutEdges=false,
 	    const char* name="Forward")
 {
   if (!gROOT->GetClass("GraphSysErr")) {
@@ -269,7 +311,8 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   if (!results) return 0;
 
 
-  TH1*     emp    = GetH1    (results, "empirical");
+  TH1*     empH   = GetH1    (results, "empirical");
+  Bool_t   emp    = (empH != 0 && !raw);
   TObject* osNN   = GetObject(results, "sNN");
   TObject* osys   = GetObject(results, "sys");
   TObject* otrg   = GetObject(results, "trigger");
@@ -284,14 +327,17 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   TString  hname  = Form("dndeta%s%s",name,emp?"Emp":"");
 
   Printf("Read settings\n"
-	 "  Empirical:   %p\n"
+	 "  Empirical:   %s (%p)\n"
 	 "  System:      %s (%p)\n"
 	 "  Energy:      %d (%s - %p)\n"
 	 "  Trigger:     %s (%s - %p)\n"
 	 "  Centrality:  %s (%p)\n"
 	 "    Axis:      %p",
-	 emp, sys.Data(), osys, sNN, (osNN ? osNN->GetTitle() : ""), osNN,
-	 trg.Data(), otrg->GetTitle(), otrg, mth.Data(), ocentM, centA);
+	 (emp  ? "yes" : "no"), empH,
+	 sys.Data(), osys,
+	 sNN, (osNN ? osNN->GetTitle() : ""), osNN,
+	 trg.Data(), otrg->GetTitle(), otrg, mth.Data(),
+	 ocentM, centA);
   if (centA) Printf("    %d bins between %f and %f",
 		    centA->GetNbins(), centA->GetXmin(), centA->GetXmax());
   SysErrorAdder* adder = SysErrorAdder::Create(trg,sys,sNN,mth);
@@ -316,9 +362,9 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   Bool_t first = true;
   TH1*   frame = 0;
   Double_t min = 100000, max = -1000000;
-  if (!centA || centA->GetNbins() < 1 || !mth.IsNull()) {
+  if (!centA || centA->GetNbins() < 1 || mth.IsNull()) {
     Info("ExtractGSEs", "Doing pp-like extraction");
-    TObject* all = DoOne(results, "all", hname, rebin, eff, adder, cutEdges, l);
+    TObject* all = DoOne(results,"all",hname,rebin,eff,adder,cutEdges,l);
     if (!all) {
       Warning("ExtractGSEs", "Nothing returned from DoOne(\"all\"...)");
       return 0;
@@ -334,11 +380,29 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
       dir.Form("cent%03dd%02d_%03dd%02d",
 	       Int_t(low),  Int_t(low *100)%100,
 	       Int_t(high), Int_t(high*100)%100);
-      TObject* g = DoOne(results, dir, hname, rebin, eff, adder, cutEdges, l);
+      TObject* g = DoOne(results, dir, hname, rebin, eff, adder, cutEdges,
+			 (first ? l : 0));
       if (!g) continue;
       ret->Add(g);
+
+      GraphSysErr* gse = static_cast<GraphSysErr*>(g);
+      Color_t col = PbPbColor(low, high);
+      gse->SetMarkerColor(col);
+      gse->SetSumFillColor(kWhite);
+      gse->SetSumFillStyle(0);
+      gse->SetSumLineColor(col);
+      gse->SetCommonSumFillColor(col);
+      gse->SetCommonSumFillStyle(1001);
+      gse->SetCommonSumLineColor(col);
+
       if (first) frame = DrawOne(g, "SUM QUAD AXIS", min, max);
       else  	         DrawOne(g, "SUM QUAD", min, max);
+      TLegendEntry* e = l->AddEntry("", Form("%3d-%3d%%",
+					     int(low), int(high)),"F");
+      e->SetFillColor(col);
+      e->SetFillStyle(1001);
+      e->SetLineColor(col);
+      e->SetMarkerColor(col);
       first = false;
     }
   }
@@ -352,6 +416,10 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   l->Draw();
   
   TString outName;
+  if (mth.EqualTo("V0M", TString::kIgnoreCase) &&
+      sys.EqualTo("PbPb",TString::kIgnoreCase))
+    mth = "";
+  if (raw) mth = "RAW";
   outName.Form("%s_%05d_%s%s.root",sys.Data(),sNN,trg.Data(),mth.Data());
   TFile* out = TFile::Open(outName,"RECREATE");
   ret->Write("container",TObject::kSingleKey);
