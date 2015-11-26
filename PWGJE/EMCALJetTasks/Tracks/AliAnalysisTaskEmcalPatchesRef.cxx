@@ -85,14 +85,14 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[18] = {"MB", "EMC7", "DMC7",
-      "EJ1", "EJ2", "EG1", "EG2", "EJ1", "EJ2", "EG1", "EG2",
+      "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
       "MBexcl", "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl"
   };
   TString patchtype[10] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
-  for(TString *trg = triggers; trg < triggers+15; trg++){
+  for(TString *trg = triggers; trg < triggers+18; trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
-    for(int ipatch = 0; ipatch < 5; ipatch++){
+    for(int ipatch = 0; ipatch < 10; ipatch++){
       fHistos->CreateTH1(Form("h%sPatchEnergy%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
       fHistos->CreateTH1(Form("h%sPatchET%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch transverse energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
       fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning, etabinning);
