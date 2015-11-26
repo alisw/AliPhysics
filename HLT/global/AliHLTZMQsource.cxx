@@ -153,7 +153,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
   int retCode=0;
 
   // process data events only
-  if (!IsDataEvent()) return 0;
+  //if (!IsDataEvent()) return 0;
 
   //init internal
   AliHLTUInt32_t outputBufferCapacity = outputBufferSize;
@@ -164,12 +164,13 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
   int blockTopicSize=-1;
   AliHLTDataTopic blockTopic;
   int rc = -1;
- 
+
   //in case we do requests: request first and poll for replies
   //if no reply arrives after a timeout period, reset the connection
   if (fZMQsocketType==ZMQ_REQ)
   {
     //send request (header + an empty body for good measure)
+    HLTMessage("sending request");
     zmq_send(fZMQin, fMessageFilter.Data(), fMessageFilter.Length(), ZMQ_SNDMORE);
     zmq_send(fZMQin, 0, 0, 0);
     //wait for reply
