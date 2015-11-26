@@ -81,7 +81,12 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0),
-  fPythiaInfo(0x0)
+  fPythiaInfo(0x0),
+  fhpTEmb(0),
+  fhMEmb(0),
+  fhEtaEmb(0),
+  fhPhiEmb(0),
+  fhLabel(0)
 {
   // Default constructor.
 
@@ -141,7 +146,12 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fMCLabelShift(0),
   fEsdMode(kFALSE),
   fOutput(0),
-  fPythiaInfo(0x0)
+  fPythiaInfo(0x0),
+  fhpTEmb(0),
+  fhMEmb(0),
+  fhEtaEmb(0),
+  fhPhiEmb(0),
+  fhLabel(0)
 {
   // Standard constructor.
 
@@ -180,6 +190,25 @@ void AliJetModelBaseTask::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
+  fhpTEmb  = new TH1F("fhpTEmb","#it{p}_{T} distribution; #it{p}_{T}(GeV/c)", 120, 0., 120);
+  fhpTEmb->Sumw2();
+  fOutput->Add(fhpTEmb);
+  
+  fhMEmb   = new TH1F("fhMEmb","Mass distribution; #it{M} (GeV)", 100, 0, 20.);
+  fhMEmb->Sumw2();
+  fOutput->Add(fhMEmb);
+  
+  fhEtaEmb = new TH1F("fhEtaEmb","#eta distribution; #eta", 100, -1, 1);
+  fhEtaEmb->Sumw2();
+  fOutput->Add(fhEtaEmb);
+  
+  fhPhiEmb = new TH1F("fhPhiEmb","#varphi distribution; #varphi", 100, 0, 2*TMath::Pi());
+  fhPhiEmb->Sumw2();
+  fOutput->Add(fhPhiEmb);
+  
+  fhLabel = new TH1I("fhLabel", "Label of embedded track(s)", fNTracks+1, fMarkMC+fMCLabelShift, fMarkMC+fMCLabelShift+fNTracks+1);
+  fOutput->Add(fhLabel);
+  
   PostData(1, fOutput);
 }
 
@@ -1013,4 +1042,25 @@ void AliJetModelBaseTask::GetRandomParticle(Double_t &pt, Double_t &eta, Double_
 void AliJetModelBaseTask::Run() 
 {
   // Run.
+}
+//________________________________________________________________________
+void AliJetModelBaseTask::FillHistograms(){
+   
+   if(!fhpTEmb || !fhMEmb || !fhEtaEmb || !fhPhiEmb || !fhLabel) {
+      AliError("Histograms not found, are the QA histograms active?");
+   }
+   // fill histograms
+   for(Int_t it = 0; it<fNTracks; it++){
+      AliVTrack *trackEmb = (AliVTrack*)fOutTracks->At(fNTracks-1);
+      if(trackEmb->GetLabel() >= fMarkMC){
+      	 fhpTEmb ->Fill(trackEmb->Pt());
+      	 fhMEmb  ->Fill(trackEmb->M());
+      	 fhEtaEmb->Fill(trackEmb->Eta());
+      	 fhPhiEmb->Fill(trackEmb->Phi());
+      	 fhLabel ->Fill(trackEmb->GetLabel());
+      }
+   }
+   
+   PostData(1, fOutput);
+
 }
