@@ -309,7 +309,7 @@ void AliEveSaveViews::SaveWithDialog()
     TASImage *compositeImg = new TASImage(width, height);
     
     // 3D View size
-    int width3DView = projections ? TMath::FloorNint(2.*width/3.) : 3556;            // the width of the 3D view
+    int width3DView = projections ? TMath::FloorNint(2.*width/3.) : width;            // the width of the 3D view
     int height3DView= height;                                   // the height of the 3D view
     float aspectRatio = (float)width3DView/(float)height3DView; // 3D View aspect ratio
     
