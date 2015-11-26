@@ -30,6 +30,7 @@
 #include <AliCDBEntry.h>
 #include <AliDCSSensor.h>
 #include <AliMagF.h>
+#include <AliDAQ.h>
 using namespace std;
 
 ClassImp(AliHLTCreateGRP)
@@ -218,49 +219,55 @@ UInt_t AliHLTCreateGRP::createDetectorMask(TObjArray* listOfDetectors)
 		TObjString* detectorName = (TObjString*) listOfDetectors->At(i);
 		TString name(detectorName->String());
 		if (name.CompareTo("SPD") == 0) { // detector name
-			mask |= 0x00000001;
+			mask |= AliDAQ::kSPD;
 		} else if (name.CompareTo("SDD") == 0) {
-			mask |= 0x00000002;
+			mask |= AliDAQ::kSDD;
 		} else if (name.CompareTo("SSD") == 0) {
-			mask |= 0x00000004;
+			mask |= AliDAQ::kSSD;
 		} else if (name.CompareTo("TPC") == 0) {
-			mask |= 0x00000008;
+			mask |= AliDAQ::kTPC;
 		} else if (name.CompareTo("TRD") == 0) {
-			mask |= 0x00000010;
+			mask |= AliDAQ::kTRD;
 		} else if (name.CompareTo("TOF") == 0) {
-			mask |= 0x00000020;
+			mask |= AliDAQ::kTOF;
 		} else if (name.CompareTo("HMPID") == 0) {
-			mask |= 0x00000040;
+			mask |= AliDAQ::kHMPID;
 		} else if (name.CompareTo("PHOS") == 0) {
-			mask |= 0x00000080;
+			mask |= AliDAQ::kPHOS;
 		} else if (name.CompareTo("CPV") == 0) {
-			mask |= 0x00000100;
+			mask |= AliDAQ::kCPV;
 		} else if (name.CompareTo("PMD") == 0) {
-			mask |= 0x00000200;
+			mask |= AliDAQ::kPMD;
 		} else if (name.CompareTo("MUON_TRK") == 0) {
-			mask |= 0x00000400;
+			mask |= AliDAQ::kMUONTRK;
 		} else if (name.CompareTo("MUON_TRG") == 0) {
-			mask |= 0x00000800;
+			mask |= AliDAQ::kMUONTRG;
 		} else if (name.CompareTo("FMD") == 0) {
-			mask |= 0x00001000;
+			mask |= AliDAQ::kFMD;
 		} else if (name.CompareTo("T0") == 0) {
-			mask |= 0x00002000;
+			mask |= AliDAQ::kT0;
 		} else if (name.CompareTo("V0") == 0) {
-			mask |= 0x00004000;
+			mask |= AliDAQ::kVZERO;
 		} else if (name.CompareTo("ZDC") == 0) {
-			mask |= 0x00008000;
+			mask |= AliDAQ::kZDC;
 		} else if (name.CompareTo("ACORDE") == 0) {
-			mask |= 0x00010000;
+			mask |= AliDAQ::kACORDE;
 		} else if (name.CompareTo("TRG") == 0) {
-			mask |= 0x00020000;
+			mask |= AliDAQ::kTRG;
 		} else if (name.CompareTo("EMCAL") == 0) {
-			mask |= 0x00040000;
+			mask |= AliDAQ::kEMCAL;
 		} else if (name.CompareTo("DAQ_TEST") == 0) {
-			mask |= 0x00080000;
+			mask |= AliDAQ::kDAQTEST;
 		} else if (name.CompareTo("SHUTTLE") == 0) {
 			mask |= 0x20000000;
+		} else if (name.CompareTo("AD") == 0) {
+			mask |= AliDAQ::kAD;
+		} else if (name.CompareTo("MFT") == 0) {
+			mask |= AliDAQ::kMFT;
+		} else if (name.CompareTo("FIT") == 0) {
+			mask |= AliDAQ::kFIT;
 		} else if (name.CompareTo("HLT") == 0) {
-			mask |= 0x40000000;
+			mask |= AliDAQ::kHLT;
 		} else {
 			// Unknown detector names
 			cout << "   *** Detector list contains unknown detector name, skipping ..." << endl;
