@@ -313,12 +313,23 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
       }
       else
       {
-        mergingList->Add(object);
+        mergingList->AddLast(object);
         if (mergingList->GetEntries() >= fMaxObjects)
         {
           if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
           TObject* mergingObject = entry->Value();
-          Merge(mergingObject, mergingList);
+          int rc = Merge(mergingObject, mergingList);
+          if (rc<0)
+          {
+            if (fVerbose) Printf("Merging failed, replacing with new object  %s's",name);
+            TObject* key = entry->Key();
+            fMergeObjectMap.RemoveEntry(key);
+            delete entry->Key();
+            delete entry->Value();
+            delete entry;
+            mergingList->Remove(object);
+            fMergeObjectMap.Add(new TObjString(name), object);
+          }
         }
       }
     }
@@ -438,22 +449,22 @@ TObject* UnpackMessage(zmq_msg_t* message)
 //_______________________________________________________________________________________
 Int_t Merge(TObject* object, TCollection* mergeList)
 {
-		if (!object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
-		{
-			Printf("Object does not implement a merge function!");
-			return(-1);
-		}
-		Int_t error = 0;
-		TString listHargs;
-		listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
-    //Printf("listHargs: %s", listHargs.Data());
-		object->Execute("Merge", listHargs.Data(), &error);
-		if (error)
-		{
-			Printf("Error %i running merge!", error);
-			return(-1);
-		}
-    mergeList->Delete();
+  if (!object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
+  {
+    Printf("Object does not implement a merge function!");
+    return(-1);
+  }
+  Int_t error = 0;
+  TString listHargs;
+  listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
+  //Printf("listHargs: %s", listHargs.Data());
+  object->Execute("Merge", listHargs.Data(), &error);
+  if (error)
+  {
+    //Printf("Error %i running merge!", error);
+    return(-1);
+  }
+  mergeList->Delete();
   return 0;
 }
 
