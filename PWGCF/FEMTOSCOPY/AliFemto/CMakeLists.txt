@@ -162,7 +162,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
 # Generate the ROOT map
 # Dependecies
