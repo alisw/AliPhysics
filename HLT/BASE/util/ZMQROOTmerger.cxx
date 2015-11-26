@@ -349,7 +349,7 @@ Int_t DoSend(void* socket)
   while ((key = mapIter.Next()))
   {
     //the topic
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject;
+    AliHLTDataTopic topic = kAliHLTDataTypeTObject|kAliHLTDataOriginOut;
     //the data
     object = fMergeObjectMap.GetValue(key);
 
