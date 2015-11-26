@@ -172,7 +172,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121050022110002"; mesonCutArray[2] = "0163102200000000"; // INT7
     eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121050022110002"; mesonCutArray[3] = "0163102200000000"; // INT7
   } else if (trainConfig == 17){  // EMCAL clusters, EMCEGA trigger, 2 NLM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
   } else if (trainConfig == 18){  // EMCAL clusters, EMCEGA trigger, 1 NLM
     eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
 
