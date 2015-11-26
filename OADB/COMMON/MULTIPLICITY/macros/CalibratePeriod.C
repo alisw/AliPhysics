@@ -61,7 +61,7 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
     
-    if ( lPeriodName.Contains("LHC15m") ){
+    if ( lPeriodName.Contains("LHC15m") || lPeriodName.Contains("LHC15o") ){
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
         lCalib->GetEventCuts()->SetVzCut(10.0);
         lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
@@ -113,6 +113,81 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
         fEstCL1 -> SetAnchorPercentile ( 88.1    ) ;
     }
     
+    if( lPeriodName.Contains("LHC15m") ) {
+        //Config central V0M
+        fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0M -> SetAnchorPoint      ( 133.5   ) ;
+        fEstV0M -> SetAnchorPercentile ( 90.007  ) ;
+        
+        //Plus and Minus
+        AliMultEstimator *fEstV0Mplus10 = new AliMultEstimator("V0Mplus10", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+        fEstV0Mplus10 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0Mplus10 -> SetAnchorPoint      ( 133.5   ) ;
+        fEstV0Mplus10 -> SetAnchorPercentile ( 91.0    ) ;
+        AliMultEstimator *fEstV0Mplus05 = new AliMultEstimator("V0Mplus05", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+        fEstV0Mplus05 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0Mplus05 -> SetAnchorPoint      ( 133.5   ) ;
+        fEstV0Mplus05 -> SetAnchorPercentile ( 90.5    ) ;
+        AliMultEstimator *fEstV0Mminus05 = new AliMultEstimator("V0Mminus05", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+        fEstV0Mminus05 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0Mminus05 -> SetAnchorPoint      ( 133.5   ) ;
+        fEstV0Mminus05 -> SetAnchorPercentile ( 89.5    ) ;
+        AliMultEstimator *fEstV0Mminus10 = new AliMultEstimator("V0Mminus10", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
+        fEstV0Mminus10 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstV0Mminus10 -> SetAnchorPoint      ( 133.5   ) ;
+        fEstV0Mminus10 -> SetAnchorPercentile ( 89.0    ) ;
+        
+        //Config central CL0
+        AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.13374)*(0.00258567-((fEvSel_VtxZ)-1.13374)*(-0.00131249)))");
+        fEstCL0 -> SetUseAnchor        ( kTRUE  ) ;
+        fEstCL0 -> SetAnchorPoint      ( 33.5   ) ;
+        fEstCL0 -> SetAnchorPercentile ( 90.64  ) ;
+        
+        //Plus and Minus
+        AliMultEstimator *fEstCL0plus10 = new AliMultEstimator("CL0plus10", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.13374)*(0.00258567-((fEvSel_VtxZ)-1.13374)*(-0.00131249)))");
+        fEstCL0plus10 -> SetUseAnchor        ( kTRUE  ) ;
+        fEstCL0plus10 -> SetAnchorPoint      ( 33.5   ) ;
+        fEstCL0plus10 -> SetAnchorPercentile ( 90.64 + 1.0 ) ;
+        AliMultEstimator *fEstCL0plus05 = new AliMultEstimator("CL0plus05", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.13374)*(0.00258567-((fEvSel_VtxZ)-1.13374)*(-0.00131249)))");
+        fEstCL0plus05 -> SetUseAnchor        ( kTRUE  ) ;
+        fEstCL0plus05 -> SetAnchorPoint      ( 33.5   ) ;
+        fEstCL0plus05 -> SetAnchorPercentile ( 90.64 + 0.5 ) ;
+        AliMultEstimator *fEstCL0minus05 = new AliMultEstimator("CL0minus05", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.13374)*(0.00258567-((fEvSel_VtxZ)-1.13374)*(-0.00131249)))");
+        fEstCL0minus05 -> SetUseAnchor        ( kTRUE  ) ;
+        fEstCL0minus05 -> SetAnchorPoint      ( 33.5   ) ;
+        fEstCL0minus05 -> SetAnchorPercentile ( 90.64 - 0.5 ) ;
+        AliMultEstimator *fEstCL0minus10 = new AliMultEstimator("CL0minus10", "", "(fnSPDClusters0)/(1+((fEvSel_VtxZ)-1.13374)*(0.00258567-((fEvSel_VtxZ)-1.13374)*(-0.00131249)))");
+        fEstCL0minus10 -> SetUseAnchor        ( kTRUE  ) ;
+        fEstCL0minus10 -> SetAnchorPoint      ( 33.5   ) ;
+        fEstCL0minus10 -> SetAnchorPercentile ( 90.64 - 1.0 ) ;
+        
+        //Config central CL1
+        AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.12)*(-0.000346139-((fEvSel_VtxZ)-1.12)*(-0.000849613)))");
+        fEstCL1 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1 -> SetAnchorPoint      ( 30.5    ) ;
+        fEstCL1 -> SetAnchorPercentile ( 90.485  ) ;
+        
+        //Plus and Minus
+        AliMultEstimator *fEstCL1plus10 = new AliMultEstimator("CL1plus10", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.12)*(-0.000346139-((fEvSel_VtxZ)-1.12)*(-0.000849613)))");
+        fEstCL1plus10 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1plus10 -> SetAnchorPoint      ( 30.5    ) ;
+        fEstCL1plus10 -> SetAnchorPercentile ( 90.485 + 1.0 ) ;
+        AliMultEstimator *fEstCL1plus05 = new AliMultEstimator("CL1plus05", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.12)*(-0.000346139-((fEvSel_VtxZ)-1.12)*(-0.000849613)))");
+        fEstCL1plus05 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1plus05 -> SetAnchorPoint      ( 30.5    ) ;
+        fEstCL1plus05 -> SetAnchorPercentile ( 90.485 + 0.5 ) ;
+        AliMultEstimator *fEstCL1minus05 = new AliMultEstimator("CL1minus05", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.12)*(-0.000346139-((fEvSel_VtxZ)-1.12)*(-0.000849613)))");
+        fEstCL1minus05 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1minus05 -> SetAnchorPoint      ( 30.5    ) ;
+        fEstCL1minus05 -> SetAnchorPercentile ( 90.485 - 0.5 ) ;
+        AliMultEstimator *fEstCL1minus10 = new AliMultEstimator("CL1minus10", "", "(fnSPDClusters1)/(1+((fEvSel_VtxZ)-1.12)*(-0.000346139-((fEvSel_VtxZ)-1.12)*(-0.000849613)))");
+        fEstCL1minus10 -> SetUseAnchor        ( kTRUE   ) ;
+        fEstCL1minus10 -> SetAnchorPoint      ( 30.5    ) ;
+        fEstCL1minus10 -> SetAnchorPercentile ( 90.485 - 1.0 ) ;
+    }
+    
+    
+    
     AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "(fAmplitude_V0A)");
     AliMultEstimator *fEstV0C = new AliMultEstimator("V0C", "", "(fAmplitude_V0C)");
     
@@ -139,13 +214,13 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     
     //Univeral: V0
     lCalib->GetMultSelection() -> AddEstimator( fEstV0M );
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
     
     //Testing!
     if( lPeriodName.Contains("LHC10h") ){
         AliMultEstimator *fEstV0MNonAnchored = new AliMultEstimator("V0MNonAnchored", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
-        lCalib->GetMultSelection() -> AddEstimator( fEstV0MNonAnchored );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstV0MNonAnchored );
     }
     
     //Anchoring test
@@ -153,25 +228,28 @@ CalibratePeriod(TString lPeriodName = "LHC10h"){
     //Only do this in run 2, AD didn't exist in Run 1
     //Will also save space in the OADB for old datasets!
     if( lPeriodName.Contains("LHC15") ){
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0M );
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0A );
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0C );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADM );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADA );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADC );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0M );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0A );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0C );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstADM );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstADA );
+        //lCalib->GetMultSelection() -> AddEstimator( fEstADC );
     }
     
     //Universal: Tracking, etc
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClusters  );
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
-    lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClusters  );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
+    //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
     
-    if( lPeriodName.Contains("LHC15m") ) {
-        lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClustersCorr );
+    if( lPeriodName.Contains("LHC15m") || lPeriodName.Contains("LHC15o") ) {
+        //lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClustersCorr );
         lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
         lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
     }
+    
+    //Add Plus and Minus estimators
+    
     //============================================================
     // --- Definition of Input/Output ---
     //============================================================
