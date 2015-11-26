@@ -51,7 +51,7 @@ set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Creating the actual library
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Custom compilation and linking flags if needed
