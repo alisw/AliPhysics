@@ -599,7 +599,15 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitmc[iRun][iEst]->SetParameter(0,1.0);
             
             //remember to not be silly...
+            /*
             if( iEst != iEstSPDclusters && iEst != iEstSPDtracklets && iEst != iEstCL0 && iEst != iEstCL1 && iEst != iEstSPDtrackletscorr ){
+                profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
+                profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
+            }*/
+            
+            if( !fSelection->GetEstimator(iEst)->GetName().Contains("SPD") &&
+               !fSelection->GetEstimator(iEst)->GetName().Contains("CL0") &&
+               !fSelection->GetEstimator(iEst)->GetName().Contains("CL1") ){
                 profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
                 profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
             }
