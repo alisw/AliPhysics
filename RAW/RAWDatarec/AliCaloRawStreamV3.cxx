@@ -189,7 +189,9 @@ void AliCaloRawStreamV3::ApplyAltroMapping()
   }
 
   Short_t hwAddress = GetHWAddress();
-  fRow      = fMapping[rcuIndex]->GetPadRow(hwAddress);
-  fColumn   = fMapping[rcuIndex]->GetPad(hwAddress);
-  fCaloFlag = fMapping[rcuIndex]->GetSector(hwAddress);
+  if(rcuIndex > -1 && rcuIndex < 20 && hwAddress > -1) {
+    fRow      = fMapping[rcuIndex]->GetPadRow(hwAddress);
+    fColumn   = fMapping[rcuIndex]->GetPad(hwAddress);
+    fCaloFlag = fMapping[rcuIndex]->GetSector(hwAddress);
+  }
 }

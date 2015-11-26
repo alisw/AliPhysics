@@ -68,7 +68,8 @@ AliZDC::AliZDC() :
   fIspASystem(kFALSE),
   fIsRELDISgen(kFALSE),
   fOnlyZEM(kFALSE),
-  fFindMother(kFALSE)
+  fFindMother(kFALSE),
+  fSpectatorParam(1)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -95,7 +96,9 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fIspASystem(kFALSE),
   fIsRELDISgen(kFALSE),
   fOnlyZEM(kFALSE),
-  fFindMother(kFALSE)
+  fFindMother(kFALSE),
+  fSpectatorParam(1)
+
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -140,7 +143,9 @@ fBeamEnergy(ZDC.fBeamEnergy),
 fIspASystem(ZDC.fIspASystem),
 fIsRELDISgen(ZDC.fIsRELDISgen),
 fOnlyZEM(ZDC.fOnlyZEM),
-fFindMother(ZDC.fFindMother)
+fFindMother(ZDC.fFindMother),
+fSpectatorParam(ZDC.fSpectatorParam)
+
 {
   // copy constructor
 }
@@ -446,6 +451,7 @@ void AliZDC::Hits2SDigits()
 AliDigitizer* AliZDC::CreateDigitizer(AliDigitizationInput* digInput) const{
   // Create the digitizer for ZDC
   AliZDCDigitizer *zdcDigitizer = new AliZDCDigitizer(digInput);
+  if(fSpectatorParam!=1) zdcDigitizer->SetSpectatorParam(fSpectatorParam);
   if(fSpectatorTracked==0) zdcDigitizer->SetSpectators2Track();
   if(fBeamEnergy>0.01) zdcDigitizer->SetBeamEnergy(fBeamEnergy);
   if(fIspASystem==kTRUE) zdcDigitizer->SetpAsystem();

@@ -61,12 +61,12 @@ AliGRPDCS::AliGRPDCS(const AliGRPDCS& grpDcs):
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessDCS(Int_t iType)
+TString AliGRPDCS::ProcessDCS(Int_t iType)
 {
   // process the dcs dps
   if(!fDCSArray->GetEntries()) {
     Error("AliGRPDCS::ProcessDCS","No entries in array!!!");
-    return 0;
+    return TString();
   }
 
   // 1:Bool - 2:Char - 3:Int - 4:UInt - 5:Float
@@ -103,11 +103,11 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType)
   }//switch
 
   //cout<<fDCSDataPointValue.Data()<<endl;
-  return fDCSDataPointValue.Data();
+  return fDCSDataPointValue;
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessBoolean()
+TString AliGRPDCS::ProcessBoolean()
 {
   Bool_t fDCSBool = kTRUE;
   Bool_t previousBool = kTRUE;
@@ -132,7 +132,7 @@ const char* AliGRPDCS::ProcessBoolean()
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessInt()
+TString AliGRPDCS::ProcessInt()
 {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
@@ -153,7 +153,7 @@ const char* AliGRPDCS::ProcessInt()
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessUInt()
+TString AliGRPDCS::ProcessUInt()
 {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
@@ -176,7 +176,7 @@ const char* AliGRPDCS::ProcessUInt()
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessFloat()
+TString AliGRPDCS::ProcessFloat()
 {
   Float_t fFDCSArraySum = 0.0, fFDCSArrayMean = 0.0;
   Int_t iCounts = 0;
@@ -200,7 +200,7 @@ const char* AliGRPDCS::ProcessFloat()
 }
 
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessChar()
+TString AliGRPDCS::ProcessChar()
 {
   TString fDCSString;
 
@@ -219,12 +219,12 @@ const char* AliGRPDCS::ProcessChar()
   
   TString fDCSDataPointValue = fDCSString;
   
-  return fDCSDataPointValue.Data();
+  return fDCSDataPointValue;
 }
 
 /*
 //_______________________________________________________________
-const char* AliGRPDCS::ProcessString()
+TString AliGRPDCS::ProcessString()
 {
   TString fDCSString;
 

@@ -68,19 +68,20 @@ int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, const cha
 
 				memcpy(p, aliEquipment->GetRawData()->GetBuffer(), chunkSize=aliEquipment->GetRawData()->GetSize()); // Write Equipment payload (including CDH)
 
+        // Write ddl files if requested by the user
+        if (ddlDir) {
+          Int_t ddlIndex;
+          Int_t detId = AliDAQ::DetectorIDFromDdlID(aliEquipmentHeader->GetId(),ddlIndex);
+          char ddlFileName[256];
+          snprintf(ddlFileName,sizeof(ddlFileName),"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
+          FILE *ddlFile;
+          if((ddlFile=fopen(ddlFileName, "wb"))) {
+            fwrite(p, chunkSize, 1, ddlFile);
+            fclose(ddlFile);
+          }
+        }
+
 				p+=chunkSize;
-			}
-			// Write ddl files if requested by the user
-			if (ddlDir && aliEquipmentHeader->GetEquipmentSize() && aliEquipment->GetRawData()) {
-				Int_t ddlIndex;
-				Int_t detId = AliDAQ::DetectorIDFromDdlID(aliEquipmentHeader->GetId(),ddlIndex);
-				char ddlFileName[256];
-				snprintf(ddlFileName,sizeof(ddlFileName),"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
-				FILE *ddlFile;
-				if((ddlFile=fopen(ddlFileName, "wb"))) {
-					fwrite(p, chunkSize, 1, ddlFile);
-					fclose(ddlFile);
-				}
 			}
 		}
 

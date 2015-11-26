@@ -18,7 +18,7 @@ typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
 //  PUB@tcp://*:123123
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
-int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1);
+int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
 
 // extract the socket mode from a config string
 int alizmq_socket_type(std::string config);

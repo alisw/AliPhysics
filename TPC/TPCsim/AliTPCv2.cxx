@@ -53,6 +53,8 @@
 #include "TGeoHalfSpace.h"
 #include "TTreeStream.h"
 #include "TGeoArb8.h"
+#include <iostream>
+#include <fstream>
 
 using std::ifstream;
 using std::ios_base;

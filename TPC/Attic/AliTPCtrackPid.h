@@ -7,9 +7,7 @@
 /// \class AliTPCtrackPid
 /// \brief Class to determine the particle ID for TPC tracks
 
-#include <TMath.h>
 #include <TObject.h>
-#include "Riostream.h"
 
 //_____________________________________________________________________________
 class AliTPCtrackPid : public TObject {

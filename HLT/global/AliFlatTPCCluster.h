@@ -55,8 +55,8 @@ class AliFlatTPCCluster
   Float_t GetTrackAngleY() const {return fTrackAngleY;}
   Float_t GetTrackAngleZ() const {return fTrackAngleZ;}
 
-  void SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoint *p );
-  void GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p  ) const;
+  void SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoints::Point *p );
+  void GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoints::Point *p  ) const;
 
   private:
   
@@ -79,7 +79,7 @@ class AliFlatTPCCluster
 inline AliFlatTPCCluster::AliFlatTPCCluster(AliVConstructorReinitialisationFlag ){}
 #pragma GCC diagnostic warning "-Weffc++" 
 
-inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoint *p  )
+inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoints::Point *p  )
 {
   if( !c ) return;
   SetPad( c->GetPad() );
@@ -102,7 +102,7 @@ inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const Al
   }
 }
 
-inline void AliFlatTPCCluster::GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p ) const
+inline void AliFlatTPCCluster::GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoints::Point *p ) const
 {
   if( c ){
     c->SetPad( GetPad() );

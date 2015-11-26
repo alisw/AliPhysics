@@ -40,6 +40,7 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TCut.h"
+#include "THashList.h"
 //
 // includes neccessary for test functions
 //
@@ -48,7 +49,7 @@
 #include "TStopwatch.h"
 #include "TTreeStream.h"
 #include "AliSysInfo.h"
-
+#include "TStopwatch.h"
 #include "TStatToolkit.h"
 
 
@@ -1539,6 +1540,30 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   TObjArray *charray = chstring.Tokenize(":");
   graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
   graphNew->GetYaxis()->SetTitle(charray->At(0)->GetName());
+
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (!metaData == 0){    
+    TNamed *nmdTitle0 = 0x0;
+    TNamed *nmdTitle1 = 0x0;
+    TNamed *nmdYAxis = 0x0;
+    TNamed *nmdXAxis = 0x0;
+    nmdTitle0 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(0)->GetName()));  
+    nmdTitle1 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(1)->GetName())); 
+    nmdYAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(0)->GetName()));
+    nmdXAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(1)->GetName()));  
+    //
+    TString grTitle=charray->At(0)->GetName();
+    if (nmdTitle0)  grTitle=nmdTitle0->GetTitle();
+    if (nmdTitle1)  {
+      grTitle+=":";
+      grTitle+=nmdTitle1->GetTitle();
+    }else{
+      grTitle+=":";
+      grTitle+=charray->At(1)->GetName();
+    }
+    if (nmdYAxis) {graphNew->GetYaxis()->SetTitle(nmdYAxis->GetTitle());}
+    if (nmdXAxis) {graphNew->GetXaxis()->SetTitle(nmdXAxis->GetTitle());}            
+  }
   delete charray;
   return graphNew;
 }
@@ -2432,3 +2457,231 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
   //
 }
 
+void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose)
+{
+  //
+  // Function to calculate Distortion maps from the residual histograms
+  // Input:
+  //   histo    - THn histogram
+  //   pcstream -
+  //   projectionInfo  - TMatrix speicifiing distortion map cration setup
+  //     user specify columns:
+  //       0.) sequence of dimensions 
+  //       1.) grouping in dimensions (how many bins will be groupd in specific dimension - 0 means onl specified bin 1, curren +-1 bin ...)
+  //       2.) step in dimension ( in case >1 some n(projectionInfo(<dim>,2) bins will be not exported
+  //
+  //  Output:
+  //   pcstream - file with output distortion tree
+  //    1.) distortion characteristic: mean, rms, gaussian fit parameters, meang, rmsG chi2 ... at speciefied bin 
+  //    2.) specidfied bins (tree branches) are defined by the name of the histogram axis in input histograms
+  //  
+  //    
+  //   Example projection info
+  /*
+    TFile *f  = TFile::Open("/hera/alice/hellbaer/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/fullMerge/SCcalibMergeLHC12d.root");
+    THnF* histof= (THnF*) f->Get("deltaY_ClTPC_ITSTOF");
+    histof->SetName("deltaRPhiTPCTISTOF");
+    histof->GetAxis(4)->SetName("qpt");
+    TH1::SetDirectory(0);
+    TTreeSRedirector * pcstream = new TTreeSRedirector("distortion.root","recreate");
+    TMatrixD projectionInfo(5,3);
+    projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;
+    projectionInfo(1,0)=4;  projectionInfo(1,1)=0;  projectionInfo(1,2)=1; 
+    projectionInfo(2,0)=3;  projectionInfo(2,1)=3;  projectionInfo(2,2)=2;
+    projectionInfo(3,0)=2;  projectionInfo(3,1)=0;  projectionInfo(3,2)=5;
+    projectionInfo(4,0)=1;  projectionInfo(4,1)=5;  projectionInfo(4,2)=20;
+    MakeDistortionMap(histof, pcstream, projectionInfo); 
+    delete pcstream;
+  */
+  //
+  const Double_t kMinEntries=50, kUseLLFrom=20;
+  char tname[100];
+  char aname[100];
+  char bname[100];
+  char cname[100];
+  //
+  int ndim = histo->GetNdimensions();
+  int nbins[ndim],idx[ndim],idxmin[ndim],idxmax[ndim],idxSav[ndim];
+  for (int id=0;id<ndim;id++) nbins[id] = histo->GetAxis(id)->GetNbins();
+  //
+  int axOrd[ndim],binSt[ndim],binGr[ndim];
+  for (int i=0;i<ndim;i++) {
+    axOrd[i] = TMath::Nint(projectionInfo(i,0));
+    binGr[i] = TMath::Nint(projectionInfo(i,1));
+    binSt[i] = TMath::Max(1,TMath::Nint(projectionInfo(i,2)));
+  }
+  int tgtDim = axOrd[0],tgtStep=binSt[0],tgtNb=nbins[tgtDim],tgtNb1=tgtNb+1;
+  double binY[tgtNb],binX[tgtNb],meanVector[ndim],centerVector[ndim];
+  Int_t binVector[ndim];
+  // prepare X axis
+  TAxis* xax = histo->GetAxis(tgtDim);
+  for (int i=tgtNb;i--;) binX[i] = xax->GetBinCenter(i+1);
+  for (int i=ndim;i--;) idx[i]=1;
+  Bool_t grpOn = kFALSE;
+  for (int i=1;i<ndim;i++) if (binGr[i]) grpOn = kTRUE;
+  //
+  // estimate number of output fits
+  histo->GetListOfAxes()->Print();
+  ULong64_t nfits = 1, fitCount=0;
+  printf("index\tdim\t|\tnbins\tgrouping\tstep\tnfits\n");
+  for (int i=1;i<ndim;i++) {
+    int idim = axOrd[i];
+    nfits *= TMath::Max(1,nbins[idim]/binSt[idim]);
+    printf("%d %d | %d %d %d %lld\n",i,idim,nbins[idim],binGr[idim], binSt[idim],nfits);
+  }
+  printf("Expect %lld nfits\n",nfits);
+  ULong64_t fitProgress = nfits/100;
+  //
+  // setup fit function, at the moment full root fit
+  static TF1 fgaus("fgaus","gaus",-10,10);
+  fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
+  //  TGraph grafFit(tgtNb);
+  TH1F* hfit = new TH1F("hfit","hfit",tgtNb,xax->GetXmin(),xax->GetXmax());
+  //
+  snprintf(tname, 100, "%sDist",histo->GetName());
+  TStopwatch sw;
+  sw.Start();
+  int dimVar=1, dimVarID = axOrd[dimVar];
+  //
+  while(1) {
+    //
+    double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
+    //
+    if (grpOn) { //>> grouping requested?
+      memset(binY,0,tgtNb*sizeof(double)); // need to accumulate
+      //
+      for (int idim=1;idim<ndim;idim++) {
+	int grp = binGr[idim];
+	int idimR = axOrd[idim]; // real axis id
+	idxSav[idimR]=idx[idimR]; // save central bins
+	idxmax[idimR] = TMath::Min(idx[idimR]+grp,nbins[idimR]);
+	idx[idimR] = idxmin[idimR] = TMath::Max(1,idx[idimR]-grp);
+	// 
+	// effective bin center
+	meanVector[idimR] = 0;
+	TAxis* ax = histo->GetAxis(idimR);
+	if (grp>0) {
+	  for (int k=idxmin[idimR];k<=idxmax[idimR];k++) meanVector[idimR] += ax->GetBinCenter(k);
+	  meanVector[idimR] /= (1+(grp<<1));
+	}
+	else meanVector[idimR] = ax->GetBinCenter(idxSav[idimR]);
+      } // set limits for grouping
+      if (verbose>0) {
+	printf("output bin: "); 
+	for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d ",i,idxSav[i]); printf("\n");
+	printf("integrates: ");
+	for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d-%d ",i,idxmin[i],idxmax[i]); printf("\n");
+      }
+      //
+      while(1) {
+	// loop over target dimension: accumulation
+	int &it = idx[tgtDim];
+	for (it=1;it<tgtNb1;it+=tgtStep) {
+	  binY[it-1] += histo->GetBinContent(idx);
+	  if (verbose>1) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | accumulation\n");}
+	}
+	//
+	int idim;
+	for (idim=1;idim<ndim;idim++) { // dimension being groupped
+	  int idimR = axOrd[idim]; // real axis id in the histo
+	  if ( (++idx[idimR]) > idxmax[idimR] ) idx[idimR]=idxmin[idimR];
+	  else break;
+	}
+	if (idim==ndim) break;
+      }
+    } // <<grouping requested
+    else {
+      int &it = idx[tgtDim];
+      for (it=1;it<tgtNb1;it+=tgtStep) {
+	binY[it-1] = histo->GetBinContent(idx);
+	//
+	//for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | \n");
+      }
+      for (int idim=1;idim<ndim;idim++) {
+	int idimR = axOrd[idim]; // real axis id
+	meanVector[idimR] = histo->GetAxis(idimR)->GetBinCenter(idx[idimR]);
+      }
+    }
+    if (grpOn) for (int i=ndim;i--;) idx[i]=idxSav[i]; // restore central bins
+    idx[tgtDim] = 0;
+    if (verbose>0) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | central bin fit\n");}
+    // 
+    // >> ------------- do fit
+    double mean=0,mom2=0,rms=0,nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0;
+    hfit->Reset();
+    for (int ip=tgtNb;ip--;) {
+      //grafFit.SetPoint(ip,binX[ip],binY[ip]);
+      hfit->SetBinContent(ip+1,binY[ip]);
+      nrm  += binY[ip];
+      mean += binX[ip]*binY[ip];
+      mom2 += binX[ip]*binX[ip]*binY[ip];
+      if (maxVal<binY[ip]) maxVal = binY[ip];
+    }
+    if (nrm>0) {
+      mean /= nrm;
+      mom2 /= nrm;
+      rms = mom2 - mean*mean;
+      rms = rms>0 ? TMath::Sqrt(rms):0;
+    }
+    if (nrm>=kMinEntries && rms>0) {
+      fgaus.SetParameters(nrm/(rms*2.5),mean,rms);
+      //grafFit.Fit(&fgaus,/*maxVal<kUseLLFrom ? "qnrl":*/"qnr");
+      hfit->Fit(&fgaus,maxVal<kUseLLFrom ? "qnrl":"qnr");
+      meanG = fgaus.GetParameter(1);
+      rmsG  = fgaus.GetParameter(2);
+      chi2G = fgaus.GetChisquare()/fgaus.GetNumberFreeParameters();
+      //
+    }
+    (*pcstream)<<tname<<
+      "entries="<<nrm<<     // number of entries
+      "mean="<<mean<<       // mean value of the last dimension
+      "rms="<<rms<<         // rms value of the last dimension
+      "meanG="<<meanG<<     // mean of the gaus fit
+      "rmsG="<<rmsG<<       // rms of the gaus fit
+      "chi2G="<<chi2G;      // chi2 of the gaus fit
+    //
+    meanVector[tgtDim] = mean; // what's a point of this?
+    for (Int_t idim=0; idim<ndim; idim++){
+      snprintf(aname, 100, "%sMean=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+      aname<<meanVector[idim];      // current bin means
+    }
+    //
+    for (Int_t iIter=0; iIter<ndim; iIter++){
+      Int_t idim = axOrd[iIter];
+      binVector[idim] = idx[idim];
+      centerVector[idim] = histo->GetAxis(idim)->GetBinCenter(idx[idim]);
+      snprintf(bname, 100, "%sBin=",histo->GetAxis(idim)->GetName());
+      snprintf(cname, 100, "%sCenter=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+      bname<<binVector[idim]<<      // current bin values
+      cname<<centerVector[idim];    // current bin centers
+    }
+    (*pcstream)<<tname<<"\n";
+    // << ------------- do fit
+    //
+    if (((++fitCount)%fitProgress)==0) {
+      printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits); 
+      AliSysInfo::AddStamp("fitCout", 1,fitCount,100*double(fitCount)/nfits);
+    }
+    //
+    //next global bin in which target dimention will be looped
+    for (dimVar=1;dimVar<ndim;dimVar++) { // varying dimension
+      dimVarID = axOrd[dimVar]; // real axis id in the histo
+      if ( (idx[dimVarID]+=binSt[dimVar]) > nbins[dimVarID] ) idx[dimVarID]=1;
+      else break;
+    }
+    if (dimVar==ndim) break;
+  }
+  delete hfit;
+  sw.Stop();
+  sw.Print();
+  /*
+  int nb = histo->GetNbins();
+  int prc = nb/100;
+  for (int i=0;i<nb;i++) {
+    histo->GetBinContent(i);
+    if (i && (i%prc)==0) printf("Done %d%%\n",int(float(100*i)/prc));
+  }
+  */
+}

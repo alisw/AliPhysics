@@ -15,7 +15,7 @@
 class AliKalmanTrack;
 class TObjArrray;
 class AliTPCseed;
-
+class AliVTPCseed;
 
 //_____________________________________________________________________________
 class AliESDfriendTrack : public AliVfriendTrack {
@@ -26,13 +26,14 @@ public:
     kMaxTRDcluster=180
   };
   AliESDfriendTrack();
-  AliESDfriendTrack(const AliESDfriendTrack &t);
+  AliESDfriendTrack(const AliESDfriendTrack &t, Bool_t shallow=kFALSE);
   virtual ~AliESDfriendTrack();
-
+  virtual void Clear(Option_t* opt="");
   // This function will set the ownership
   // needed to read old ESDfriends
   void SetOwner(){if(fCalibContainer)fCalibContainer->SetOwner();}
-
+  void  SetESDtrackID(int i)   {SetUniqueID(i);}
+  Int_t GetESDtrackID()  const {return GetUniqueID();}
   void Set1P(Float_t p) {f1P=p;}
   void SetTrackPointArray(AliTrackPointArray *points) {
     fPoints=points;
@@ -48,6 +49,7 @@ public:
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
+  void RemoveCalibObject(TObject * calibObject);
   TObject * GetCalibObject(Int_t index) const;
 
   //
@@ -92,6 +94,7 @@ public:
   // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
+  const TObject* GetTPCseed() const;
   void ResetTPCseed( const AliTPCseed* s );
 
 protected:

@@ -10,15 +10,10 @@
 ///  TPC calibration class for parameters which are saved per pad
 
 #include "TNamed.h"
-//#include <TMath.h>
-//#include <AliTPCROC.h>
-#include "TLinearFitter.h"
-#include "TVectorD.h"
-//#include <iostream>
+#include "TVectorDfwd.h"
+#include "TMatrixDfwd.h"
+#include "AliTPCCalROC.h"
 
-
-
-class AliTPCCalROC;
 class AliTPCCalDet;
 class TObjArray;
 class TGraph;
@@ -30,8 +25,8 @@ class TH2;
 class TF1;
 
 class AliTPCCalPad : public TNamed {
- public:
-  enum { kNsec = 72 };
+  public:
+  enum { kNsec = 72, kNsecSplit = 108 };
   AliTPCCalPad();
   AliTPCCalPad(const Text_t* name, const Text_t* title);
   AliTPCCalPad(const AliTPCCalPad &c);   
@@ -62,16 +57,19 @@ class AliTPCCalPad : public TNamed {
   void Reset();
   //
   Double_t GetMeanRMS(Double_t &rms) const;   // Calculates mean and RMS of all ROCs
-  Double_t GetMean(AliTPCCalPad* outlierPad = 0)const ;   // return mean of the mean of all ROCs
-  Double_t GetRMS(AliTPCCalPad* outlierPad = 0) const ;   // return mean of the RMS of all ROCs
-  Double_t GetMedian(AliTPCCalPad* outlierPad = 0) const;   // return mean of the median of all ROCs
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTPCCalPad* outlierPad = 0);   // return mean of the LTM and sigma of all ROCs
-  TGraph  *MakeGraph(Int_t type=0, Float_t ratio=0.7);
+  Double_t GetStats     (AliTPCCalROC::EStatType statType, AliTPCCalPad *const outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;//return mean of statType for padType
+  Double_t GetMean      (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetRMS       (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetMedian    (AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetMinElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetMaxElement(AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll) const;
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTPCCalPad* outlierPad = 0, AliTPCCalROC::EPadType epadType=AliTPCCalROC::kAll) const;   // return mean of the LTM and sigma of all ROCs
+  TGraph  *MakeGraph(Int_t type=0, Float_t ratio=0.7, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll);
   TH2F    *MakeHisto2D(Int_t side=0);
   TH1F    *MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0, Int_t side=0);  
 
   AliTPCCalPad* LocalFit(const char* padName, Int_t rowRadius, Int_t padRadius, AliTPCCalPad* Padoutliers = 0, Bool_t robust = kFALSE, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7, Bool_t printCurrentSector = kFALSE) const;
-  AliTPCCalPad* GlobalFit(const char* padName, AliTPCCalPad* Padoutliers = 0, Bool_t robust = kFALSE, Int_t fitType = 1, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7, Double_t err=1, TObjArray *fitParArr=0x0, TObjArray *fitCovArr=0x0);
+  AliTPCCalPad* GlobalFit(const char* padName, AliTPCCalPad* Padoutliers = 0, Bool_t robust = kFALSE, Int_t fitType = 1, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7, Double_t err=1, TObjArray *fitParArr=0x0, TObjArray *fitCovArr=0x0, AliTPCCalROC::EPadType padType=AliTPCCalROC::kAll);
   
   void GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC, TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t &chi2SideA, Float_t &chi2SideC, AliTPCCalPad *pointError=0, Bool_t robust = kFALSE, Double_t robustFraction = 0.7);
   
@@ -86,6 +84,12 @@ class AliTPCCalPad : public TNamed {
   static TCanvas * MakeReportPadSector(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char * cutUser="");
   static TCanvas * MakeReportPadSector2D(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser="");
   static AliTPCCalPad *MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC);
+
+  //
+  // unit test
+  //
+  void DumpUnitTestTrees(const TString fileName="");
+
  protected:
   AliTPCCalROC *fROC[kNsec];                    ///< Array of ROC objects which contain the values per pad
   /// \cond CLASSIMP

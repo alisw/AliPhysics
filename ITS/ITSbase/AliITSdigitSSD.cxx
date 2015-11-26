@@ -15,6 +15,7 @@
 
 #include <AliITSdigitSSD.h>
 #include <TArrayI.h>
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //

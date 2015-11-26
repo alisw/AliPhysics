@@ -38,6 +38,7 @@
 #include "AliModule.h"
 
 #include "AliTRDsimTR.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDsimTR)
 

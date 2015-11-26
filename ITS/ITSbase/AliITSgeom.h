@@ -17,7 +17,6 @@
 // the information needed to do the coordinate transformation are kept in
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
-#include <Riostream.h>
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TVector.h>
@@ -26,7 +25,6 @@
 #include <TMath.h>
 //
 #include "AliITSgeomMatrix.h"
-#include "AliLog.h"
 
 typedef enum {kND=-1,kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4, kUPG=5} AliITSDetector;
 

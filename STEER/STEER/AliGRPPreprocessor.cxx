@@ -1484,7 +1484,7 @@ UInt_t AliGRPPreprocessor::ProcessDqmFxs()
 		AliCDBMetaData md;
 		md.SetResponsible("Barthélémy von Haller");
 		md.SetComment("QA Threshold TObjArray");					
-		storeResultQAThr = Store("Calib", "QAThresholds", qaThrArray, &md, 0, kTRUE); 
+		storeResultQAThr = Store("Calib", "QAThresholds", qaThrArray, &md, 0, 0); 
 	}
 	else{
 		Printf("No valid QAThresholds entries found, storing nothing in the OCDB");

@@ -31,7 +31,6 @@ public:
   void WriteA0HistosToFile(const char * filename=0x0) const;                  // create and write a new CpvCalibrSupply.root file with hists
   Bool_t IsBad(Int_t ddl, Int_t x, Int_t y) {  // returns true, if the cell is bad
     if(ddl<0||ddl>2*AliPHOSCpvParam::kNDDL) return kTRUE;
-    if(!fDeadMap) return kFALSE;
     if(!fDeadMap[ddl]) return kFALSE;
     if(fDeadMap[ddl] -> GetBinContent(x+1,y+1)) return kTRUE;
     return kFALSE;

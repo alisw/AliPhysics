@@ -55,6 +55,8 @@
 #include <string>
 
 #include "AliMUONVHitStore.h"
+#include <iostream>
+#include <iomanip>
 
 using std::endl;
 using std::cout;

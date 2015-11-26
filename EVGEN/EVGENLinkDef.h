@@ -42,6 +42,7 @@
 #pragma link C++ class  AliGenSTRANGElib+;
 #pragma link C++ class  AliGenMC+;
 #pragma link C++ class  AliGenReader+;
+#pragma link C++ class  AliGenEposReader+;
 #pragma link C++ class  AliGenReaderCwn++;
 #pragma link C++ class  AliGenReaderTreeK++;
 #pragma link C++ class  AliGenReaderEcalHijing++;

@@ -66,6 +66,7 @@
 #include <string>
 #include <cstdio>
 #include <cstddef>
+#include <algorithm>
 #include <stdint.h>
 #include "RConfig.h"
 #include "TFile.h"
@@ -97,6 +98,8 @@ static const char *USAGE =
       "      Optimize basket size when merging TTree"
       "   -n <max number of file>\n"
       "      Specify how many files can be used at once. Defaults to system maximum if not specified.\n"
+      "   -r\n"
+      "      Randomize input files order\n"
       "   -s <max size of file>\n"
       "      Specify the approximate size of an output file.\n"
       "   -v [<level>]\n"
@@ -113,7 +116,7 @@ static const char *USAGE =
       "      If Target and source files have different compression settings\n"
       "      a slower method is used\n";
 
-const char * OPT_STRING = ":hakTOi:n:s:v:f:";
+const char * OPT_STRING = ":hakTOri:n:s:v:f:";
 
 static int gVerbosity = 0;
 
@@ -140,11 +143,19 @@ void die(int exitCode, const char *fmt, ...)
 }
 
 struct MergeInput {
-  MergeInput(const std::string &f)
-  : filename(f)
+  MergeInput(const std::string &f, int order)
+  : filename(f),
+    order(order)
   {}
   std::string filename;
   size_t cost;
+  int order;
+};
+
+struct MergeInputComparator {
+  bool operator()(const MergeInput &a, const MergeInput &b) {
+    return a.order < b.order;
+  }
 };
 
 inline bool ends_with(std::string const & value, std::string const & ending)
@@ -188,6 +199,7 @@ int main( int argc, char **argv )
   std::vector<TRegexp *> gIncludeRE;
   size_t gMaxFilesPerJob = 18446744073709551615UL;
   size_t gCostLimit = 18446744073709551615UL;
+  bool gRandomizeInput = false;
   std::vector<std::string> mergeableKeys;
 
   Int_t newcomp = -1;
@@ -214,6 +226,9 @@ int main( int argc, char **argv )
         if (intCand <= 0) 
           die(1, "Invalid -n argument \"%s\".", optarg);
         gMaxFilesPerJob = intCand;
+        break;
+      case 'r':
+        gRandomizeInput = true;
         break;
       case 's':
         intCand = atoi(optarg);
@@ -293,7 +308,7 @@ int main( int argc, char **argv )
     if (*cf != '@')
     {
       log(1, "Adding file %s.\n", cf);
-      mergeInputs.push_back(MergeInput(cf));
+      mergeInputs.push_back(MergeInput(cf, rand()));
       continue;
     }
     std::ifstream infile(cf+1);
@@ -301,7 +316,7 @@ int main( int argc, char **argv )
     while (std::getline(infile, line))
     {
       log(1, "Adding file %s.\n", line.c_str());
-      mergeInputs.push_back(MergeInput(line));
+      mergeInputs.push_back(MergeInput(line, rand()));
     }
   }
 
@@ -378,6 +393,10 @@ int main( int argc, char **argv )
       newcomp = 1;
     }
     f->Close();
+  }
+  
+  if (gRandomizeInput) {
+    std::sort(mergeInputs.begin(), mergeInputs.end(), MergeInputComparator());
   }
 
   // First calculate how many files we need per job.

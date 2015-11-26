@@ -29,6 +29,7 @@
 #include "AliESDfriendTrack.h" 
 #include "AliMathBase.h" 
 #include "AliTPCseed.h"
+#include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
 
 #include "AliKFParticle.h"
@@ -144,7 +145,7 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
       if (isOK){
 	TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
 	Int_t eventNumber = esd->GetEventNumberInFile();
-	Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(i)!=0):0; 
+	Bool_t hasFriend=(esdFriend) ? track->GetFriendTrack():0; 
 	Bool_t hasITS=(track->GetNcls(0)>2);
 	printf("DUMPIONTrack:%s|%f|%d|%d|%d\n",filename.Data(),track->GetInnerParam()->Pt()*track->GetTPCsignal()/50., eventNumber,hasFriend,hasITS);
       }
@@ -152,12 +153,12 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
     if (!isOK) continue;
     TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
     Int_t eventNumber = esd->GetEventNumberInFile();	
-    Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(i)!=0):0;
+    Bool_t hasFriend=(esdFriend) ? track->GetFriendTrack():0;
     Bool_t hasITS=(track->GetNcls(0)>2);    
     printf("DUMPHPTTrack:%s|%f|%d|%d|%d\n",filename.Data(),track->Pt(), eventNumber,hasFriend,hasITS);
     //
     if (!esdFriend) continue;
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
 
     if (!isOK) continue;
@@ -230,9 +231,9 @@ void  AliTPCcalibV0::DumpToTree(AliESDEvent *esd){
     //
     
     //
-    AliESDfriendTrack *ftrack0 = esdFriend->GetTrack(v0->GetIndex(0));
+    AliESDfriendTrack *ftrack0 = (AliESDfriendTrack*)track0->GetFriendTrack();
     if (!ftrack0) continue;
-    AliESDfriendTrack *ftrack1 = esdFriend->GetTrack(v0->GetIndex(1));
+    AliESDfriendTrack *ftrack1 = (AliESDfriendTrack*)track1->GetFriendTrack();
     if (!ftrack1) continue;
     //
     TObject *calibObject;
@@ -471,7 +472,7 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
     //
     // Reapply transformation
     //
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
       if (cluster &&cluster->GetX()>10){
         Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
@@ -625,7 +626,7 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
     //
     for  (Int_t itype=0; itype<2; itype++){
       AliTPCseed * seed = (itype==0) ? seed0: seed1;      
-      for (Int_t irow=0; irow<159; irow++){
+      for (Int_t irow=0; irow<kMaxRow; irow++){
 	AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
 	if (cluster &&cluster->GetX()>10){
 	  Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
@@ -799,8 +800,8 @@ AliExternalTrackParam * AliTPCcalibV0::RefitTrack(AliTPCseed *seed, AliTPCCorrec
   Int_t ncl=0;
   //
   Bool_t isOK=kTRUE;
-  for (Int_t index0=0; index0<159; index0++){
-    Int_t irow= (xstart<xstop)? index0:159-index0;
+  for (Int_t index0=0; index0<kMaxRow; index0++){
+    Int_t irow= (xstart<xstop)? index0:kMaxRow-1-index0;
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);  //cluster in local system
     if (!cluster) continue;
     if (cluster->GetX()<xmin) continue;

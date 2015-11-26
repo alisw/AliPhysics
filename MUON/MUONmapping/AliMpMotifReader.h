@@ -23,8 +23,6 @@
 #include <TString.h>
 #include <Riostream.h>
 
-#include <fstream>
-
 class AliMpMotifMap;
 class AliMpVMotif;
 class AliMpMotifSpecial;

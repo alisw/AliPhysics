@@ -2,14 +2,14 @@
 
 # RPM Naming Tags
 Name: alimdc
-Version:  @ALIROOT_VERSION_RPM@
-Release: @GIT_SHORT_SHA1@
+Version: @ALIROOT_VERSION_RPM@
+Release: 1
 Summary: AliRoot MDC static libraries
 License: CERN Alice Offline
 Vendor: ALICE Core Offline Group
 URL: http://aliceinfo.cern.ch
 Group: Applications/Alice
-Packager: Alina Grigoras <alina.gabriela.grigoras@cern.ch>
+Packager: ALICE Builder <alibot@cern.ch>
 
 # RPM Dependencies tags
 AutoReqProv: yes

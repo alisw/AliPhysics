@@ -3306,7 +3306,7 @@ const char *AliAnalysisAlien::GetProofParameter(const char *pname) const
 }      
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
+Bool_t AliAnalysisAlien::StartAnalysis(Long64_t nentries, Long64_t firstEntry)
 {
 // Start remote grid analysis.
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -3635,7 +3635,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       return kFALSE;
    }   
    WriteAnalysisFile();
-   WriteAnalysisMacro();
+   WriteAnalysisMacro(nentries, firstEntry);
    WriteExecutable();
    WriteValidationScript();
    if (fMergeViaJDL) {
@@ -4050,7 +4050,7 @@ void AliAnalysisAlien::WriteAnalysisFile()
 }
 
 //______________________________________________________________________________
-void AliAnalysisAlien::WriteAnalysisMacro()
+void AliAnalysisAlien::WriteAnalysisMacro(Long64_t nentries, Long64_t firstentry)
 {
 // Write the analysis macro that will steer the analysis in grid mode.
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
@@ -4324,14 +4324,16 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   mgr->EventLoop(" << fNMCevents << ");" << endl;
          } else {   
             out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
-            out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
+            out << "   mgr->StartAnalysis(\"localfile\", chain, " 
+                << nentries << ", " << firstentry << ");" << endl;
          }   
       } else {
          if (fMCLoop) {
             out << "   mgr->SetCacheSize(0);" << endl;
             out << "   mgr->EventLoop(" << fNMCevents << ");" << endl;         
          } else {
-            out << "   mgr->StartAnalysis(\"localfile\");" << endl;
+            out << "   mgr->StartAnalysis(\"localfile\", " 
+                << nentries << ", " << firstentry << ");" << endl;
          }   
       }   
       out << "   timer.Stop();" << endl;
@@ -4891,7 +4893,7 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo \"############## system limits : ##############\"" << endl;
       out << "ulimit -a" << endl;
       out << "echo \"############## memory : ##############\"" << endl;
-      out << "free -m" << endl;
+      out << "free 2> /dev/null || { [[ `uname` == Darwin ]] && top -l 1 -s 0 | head -8 | tail -3; }" << endl;
       out << "echo \"=========================================\"" << endl << endl;
       out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl;

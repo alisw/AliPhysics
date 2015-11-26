@@ -50,6 +50,7 @@
 #include "AliHLTAnalysisManagerComponent.h"
 #include "AliHLTAsyncTestComponent.h"
 #include "AliHLTLumiRegComponent.h"
+#include "AliHLTGlobalPromptRecoQAComponent.h"
 #include "AliHLTAsyncCalibrationComponent.h"
 #include "AliHLTZeroComponent.h"
 #ifdef ZMQ
@@ -112,6 +113,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTAsyncCalibrationComponent);
   pHandler->AddComponent(new AliHLTZeroComponent);
   pHandler->AddComponent(new AliHLTLumiRegComponent);
+  pHandler->AddComponent(new AliHLTGlobalPromptRecoQAComponent);
 #ifdef ZMQ
   pHandler->AddComponent(new AliHLTZMQsink);
   pHandler->AddComponent(new AliHLTZMQsource);
@@ -197,7 +199,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   pHandler->CreateConfiguration("GLOBAL-esd-converter-friends", "GlobalEsdConverter", esdInputs.Data(), "-make-friends");
 #endif
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
-  pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
+  pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter-friends", "");
   pHandler->CreateConfiguration("compare-flat", "GlobalCompareFlat", "GLOBAL-flat-esd-converter esd-to-flat-conversion", "");
 
 	

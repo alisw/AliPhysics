@@ -28,6 +28,7 @@ class AliGenExtFile : public AliGenMC
     virtual void Generate();
     void SetReader(AliGenReader* reader) {fReader = reader;}
     void SetStartEvent(Int_t startEvent) {fStartEvent = startEvent;}
+    AliGenReader* Reader() const {return fReader;}
  protected:
     void CdEventFile();
     const Text_t     *fFileName;      //! File to read from
@@ -38,7 +39,7 @@ class AliGenExtFile : public AliGenMC
     AliGenExtFile(const AliGenExtFile &ext);
     AliGenExtFile & operator=(const AliGenExtFile & rhs);
     
-  ClassDef(AliGenExtFile,1) //Generate particles from external file
+  ClassDef(AliGenExtFile,2) //Generate particles from external file
 };
 #endif
 

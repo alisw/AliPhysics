@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////
  
 #include "AliHit.h"
-#include "Riostream.h"
+#include <cstdio>
 
 class TClonesArray;
 
@@ -27,12 +27,7 @@ class AliPMDhit : public AliHit {
     fEnergy+=cell.GetEnergy();
     return *this;
   }
-  void Print(Option_t *) const {
-    printf("PMD Cell %d %d %d %d %d %d\n   Primary %d -   Energy %f\n",
-	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],
-	   fVolume[4],fVolume[5],fTrack,fEnergy);
-  }
-  
+  void Print(Option_t *) const;
  protected:
   Int_t   fVolume[6];    //array of volumes
   Float_t fEnergy;       //Total energy deposited in eV

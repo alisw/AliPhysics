@@ -79,7 +79,7 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
 {
 
   Float_t zero_timecdb[24]={0};
-  Float_t zero_cfdvalue[100]={0};
+  Float_t zero_cfdvalue[120]={0};
   Float_t *timecdb = zero_timecdb;
   Float_t *cfdvalue = zero_cfdvalue;
   Float_t cfd[24][5];
@@ -123,11 +123,11 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
     cfdvalue[i]=cfd[i-52][3];
     TString LHCperiod = grpData->GetLHCPeriod();
     if(cfdvalue[i]<1 && LHCperiod.Contains("15") )  cfdvalue[i] = pedestalLHC15fghij[i-52];
-    printf("@@@ %i pedestal %f\n",i,cfdvalue[i]);
+    AliInfo(Form("@@@ %i pedestal %f\n",i,cfdvalue[i]) );
   } 
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Int_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
-  printf(" AliT0PreprocessorOffline::CalibOffsetChannels :: writeok %i \n", writeok);
+  AliInfo(Form("AliT0PreprocessorOffline::CalibOffsetChannels :: writeok %i \n", writeok) );
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");

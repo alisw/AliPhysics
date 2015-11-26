@@ -70,6 +70,7 @@
 #include "AliTPCseed.h"
 #include "AliGRPObject.h"
 #include "AliTPCCorrection.h"
+#include "AliTPCreco.h"
 ClassImp(AliTPCcalibCosmic)
 
 
@@ -489,7 +490,7 @@ void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
    if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
 
-   AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+   AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
    if (!friendTrack) continue;
    TObject *calibObject;
    AliTPCseed *seed = 0;   
@@ -500,11 +501,11 @@ void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
 
    Double_t meanP = 0.5*(trackIn->GetP() + trackOut->GetP());
    if (seed && track->GetTPCNcls() > 80 + 60/(1+TMath::Exp(-meanP+5))) {
-     fDeDx->Fill(meanP, seed->CookdEdxNorm(0.0,0.45,0,0,159));
+     fDeDx->Fill(meanP, seed->CookdEdxNorm(0.0,0.45,0,0,kMaxRow));
      //
-     if (meanP > 0.4 && meanP < 0.45) fDeDxMIP->Fill(seed->CookdEdxNorm(0.0,0.45,0,0,159));
+     if (meanP > 0.4 && meanP < 0.45) fDeDxMIP->Fill(seed->CookdEdxNorm(0.0,0.45,0,0,kMaxRow));
      //
-     // if (GetDebugLevel()>0&&meanP>0.2&&seed->CookdEdxNorm(0.0,0.45,0,0,159)>300) {
+     // if (GetDebugLevel()>0&&meanP>0.2&&seed->CookdEdxNorm(0.0,0.45,0,0,kMaxRow)>300) {
 //        //TFile *curfile = AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile();
 //        //if (curfile) printf(">>> p+ in file: %s \t event: %i \t Number of ESD tracks: %i \n", curfile->GetName(), (int)event->GetEventNumberInFile(), (int)ntracks);
 //        // if (track->GetOuterParam()->GetAlpha()<0) cout << " Polartiy: " << track->GetSign() << endl;
@@ -541,14 +542,14 @@ void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
       AliTPCseed * seed1 = (AliTPCseed*) tpcSeeds.At(j);
       if (! seed0) continue;
       if (! seed1) continue;
-      Float_t dedx0 = seed0->CookdEdxNorm(0.05,0.55,0,0,159);
-      Float_t dedx1 = seed1->CookdEdxNorm(0.05,0.55,0,0,159);
+      Float_t dedx0 = seed0->CookdEdxNorm(0.05,0.55,0,0,kMaxRow);
+      Float_t dedx1 = seed1->CookdEdxNorm(0.05,0.55,0,0,kMaxRow);
       //
       Float_t dedx0I = seed0->CookdEdxNorm(0.05,0.55,0,0,63);
       Float_t dedx1I = seed1->CookdEdxNorm(0.05,0.55,0,0,63);
       //
-      Float_t dedx0O = seed0->CookdEdxNorm(0.05,0.55,0,64,159);
-      Float_t dedx1O = seed1->CookdEdxNorm(0.05,0.55,0,64,159);
+      Float_t dedx0O = seed0->CookdEdxNorm(0.05,0.55,0,64,kMaxRow);
+      Float_t dedx1O = seed1->CookdEdxNorm(0.05,0.55,0,64,kMaxRow);
       //
       Float_t dir = (dir0[0]*dir1[0] + dir0[1]*dir1[1] + dir0[2]*dir1[2]);
       Float_t d0  = track0->GetLinearD(0,0);
@@ -1055,7 +1056,7 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
       if (!isPair) continue;
       TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
       Int_t eventNumber = event->GetEventNumberInFile(); 
-      Bool_t hasFriend=(esdFriend) ? (esdFriend->GetTrack(itrack0)!=0):0; 
+      Bool_t hasFriend=(esdFriend) ? track0->GetFriendTrack() : 0;//( esdFriend->GetTrack(itrack0)!=0):0; 
       Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
       printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
 
@@ -1067,9 +1068,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
       Int_t ntracksSPD = vertexSPD->GetNContributors();
       Int_t ntracksTPC = vertexTPC->GetNContributors();
       //
-      AliESDfriendTrack *friendTrack0 = esdFriend->GetTrack(itrack0);
+      AliESDfriendTrack *friendTrack0 = (AliESDfriendTrack*)track0->GetFriendTrack();//esdFriend->GetTrack(itrack0);
       if (!friendTrack0) continue;
-      AliESDfriendTrack *friendTrack1 = esdFriend->GetTrack(itrack1);
+      AliESDfriendTrack *friendTrack1 = (AliESDfriendTrack*)track1->GetFriendTrack();//esdFriend->GetTrack(itrack1);
       if (!friendTrack1) continue;
       TObject *calibObject;
       AliTPCseed *seed0 = 0;   
@@ -1268,7 +1269,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
     //
     //
     // calculate trigger offset usig "missing clusters"
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
       if (cluster0 &&cluster0->GetX()>10){
 	if (cluster0->GetX()<rmin0) { rmin0=cluster0->GetX(); tmin0=cluster0->GetTimeBin();}
@@ -1324,7 +1325,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
     // Apply current transformation
     //
     //
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
       if (cluster0 &&cluster0->GetX()>10){
 	Double_t x0[3]={ static_cast<Double_t>(cluster0->GetRow()),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
@@ -1381,7 +1382,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
       AliTPCCorrection *corr = 0;
       if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
       //
-      for (Int_t irow=159; irow>0; irow--){ 
+      for (Int_t irow=kMaxRow; irow--;){ 
 	AliTPCclusterMI *cluster=seed0->GetClusterPointer(irow);
 	if (!cluster) continue;
 	if (!isOKT) break;
@@ -1401,7 +1402,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
 	if (icorr<0) ncl0++;
       }
       //
-      for (Int_t irow=159; irow>0; irow--){ 
+      for (Int_t irow=kMaxRow; irow--;){ 
 	AliTPCclusterMI *cluster=seed1->GetClusterPointer(irow);
 	if (!cluster) continue;
 	if (!isOKT) break;

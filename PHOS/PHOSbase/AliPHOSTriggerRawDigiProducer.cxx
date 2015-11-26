@@ -23,6 +23,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliRawReader.h"
 #include "AliCaloRawStreamV3.h"
+#include "AliDAQ.h"
 
 #include "TH1I.h"
 #include "TH2I.h"
@@ -54,6 +55,8 @@ AliPHOSTriggerRawDigiProducer::AliPHOSTriggerRawDigiProducer(AliRawReader *rawRe
   SetAnalyseModule(4);
 
   fRawStream = new AliCaloRawStreamV3(rawReader,"PHOS");
+  // Select only data in ALTRO format and skip STU, the last PHOS DDL
+  rawReader->Select("PHOS",0,AliDAQ::NumberOfDdls("PHOS")-2);
 }
 
 AliPHOSTriggerRawDigiProducer::~AliPHOSTriggerRawDigiProducer()
@@ -71,8 +74,9 @@ void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
   Int_t iDigit=0 ;
 
   while (fRawStream->NextDDL()) {
+    // Skip STU DDL
+    if (fRawStream->GetDDLNumber() == fgkSTUDDL) continue; 
     while (fRawStream->NextChannel()) {
-
       if (fRawStream->IsTRUData()) {
 	fTriggerReader->ReadFromStream(fRawStream);
       }// IsTRUData

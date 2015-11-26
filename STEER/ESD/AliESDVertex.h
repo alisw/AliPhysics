@@ -38,7 +38,7 @@ class AliESDVertex : public AliVertex {
   AliESDVertex();
   AliESDVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
 	       const Char_t *vtxName="Vertex");
-  AliESDVertex(Double_t position[3],Double_t covmatrix[6],
+  AliESDVertex(const Double_t position[3],const Double_t covmatrix[6],
 	       Double_t chi2,Int_t nContributors,
 	       const Char_t *vtxName="Vertex");
   AliESDVertex(Double_t position[3],Double_t sigma[3],

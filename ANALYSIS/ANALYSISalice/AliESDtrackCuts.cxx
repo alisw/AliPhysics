@@ -77,14 +77,16 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "#Chi^{2} TPC constrained vs. global",
  "require TOF out",
  "TOF Distance cut",
- "min length in active volume TPC"
+ "min length in active volume TPC",
+ "n-geometrical+n-crossed-row and n-clusters cut"
 };
 
 AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
 Char_t AliESDtrackCuts::fgBeamTypeFlag = -1;
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliAnalysisCuts(name,title),
+AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) :
+  AliAnalysisCuts(name,title),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMinNCrossedRowsTPC(0),
@@ -92,6 +94,11 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   f1CutMinNClustersTPCPtDep(0x0),
   fCutMaxPtDepNClustersTPC(0),
   fCutMinLengthActiveVolumeTPC(0),
+  fDeadZoneWidth(0),             // width of the TPC dead zone (missing pads + PRF +ExB)
+  fCutGeoNcrNclLength(0),        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  fCutGeoNcrNclGeom1Pt(0),       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  fCutGeoNcrNclFractionNcr(0),   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  fCutGeoNcrNclFractionNcl(0),   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -108,7 +115,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxFractionSharedTPCClusters(0),
   fCutRequireTPCRefit(0),
   fCutRequireTPCStandAlone(0),
-  fCutRequireITSRefit(0), 
+  fCutRequireITSRefit(0),
   fCutRequireITSPid(0),
   fCutRequireITSStandAlone(0),
   fCutRequireITSpureSA(0),
@@ -146,7 +153,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutTOFdistance(3.),
   fHistogramsOn(0),
   ffDTheoretical(0),
-  fhCutStatistics(0),         
+  fhCutStatistics(0),
   fhCutCorrelation(0)
 {
   //
@@ -198,7 +205,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
 }
 
 //_____________________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
+AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) :
+  AliAnalysisCuts(c),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMinNCrossedRowsTPC(0),
@@ -206,6 +214,12 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   f1CutMinNClustersTPCPtDep(0x0),
   fCutMaxPtDepNClustersTPC(0),
   fCutMinLengthActiveVolumeTPC(0),
+  fDeadZoneWidth(0),             // width of the TPC dead zone (missing pads + PRF +ExB)
+  fCutGeoNcrNclLength(0),        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  fCutGeoNcrNclGeom1Pt(0),       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  fCutGeoNcrNclFractionNcr(0),   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  fCutGeoNcrNclFractionNcl(0),   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  //
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -277,21 +291,21 @@ AliESDtrackCuts::~AliESDtrackCuts()
   //
 
   for (Int_t i=0; i<2; i++) {
-    
+
     if (fhNClustersITS[i])
-      delete fhNClustersITS[i];            
+      delete fhNClustersITS[i];
     if (fhNClustersTPC[i])
-      delete fhNClustersTPC[i];                
+      delete fhNClustersTPC[i];
     if (fhNSharedClustersTPC[i])
-      delete fhNSharedClustersTPC[i];                
+      delete fhNSharedClustersTPC[i];
     if (fhNCrossedRowsTPC[i])
-      delete fhNCrossedRowsTPC[i];                
+      delete fhNCrossedRowsTPC[i];
     if (fhRatioCrossedRowsOverFindableClustersTPC[i])
-      delete fhRatioCrossedRowsOverFindableClustersTPC[i];                
+      delete fhRatioCrossedRowsOverFindableClustersTPC[i];
     if (fhChi2PerClusterITS[i])
-      delete fhChi2PerClusterITS[i];       
+      delete fhChi2PerClusterITS[i];
     if (fhChi2PerClusterTPC[i])
-      delete fhChi2PerClusterTPC[i];    
+      delete fhChi2PerClusterTPC[i];
     if (fhChi2TPCConstrainedVsGlobal[i])
       delete fhChi2TPCConstrainedVsGlobal[i];
     if(fhNClustersForITSPID[i])
@@ -299,21 +313,21 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if(fhNMissingITSPoints[i])
       delete fhNMissingITSPoints[i];
     if (fhC11[i])
-      delete fhC11[i];                     
+      delete fhC11[i];
     if (fhC22[i])
-      delete fhC22[i];                     
+      delete fhC22[i];
     if (fhC33[i])
-      delete fhC33[i];                     
+      delete fhC33[i];
     if (fhC44[i])
-      delete fhC44[i];                     
+      delete fhC44[i];
     if (fhC55[i])
       delete fhC55[i];
 
     if (fhRel1PtUncertainty[i])
       delete fhRel1PtUncertainty[i];
-    
+
     if (fhDXY[i])
-      delete fhDXY[i];                     
+      delete fhDXY[i];
     if (fhDZ[i])
       delete fhDZ[i];
     if (fhDXYDZ[i])
@@ -322,7 +336,7 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhDXYvsDZ[i];
 
     if (fhDXYNormalized[i])
-      delete fhDXYNormalized[i];           
+      delete fhDXYNormalized[i];
     if (fhDZNormalized[i])
       delete fhDZNormalized[i];
     if (fhDXYvsDZNormalized[i])
@@ -343,7 +357,7 @@ AliESDtrackCuts::~AliESDtrackCuts()
   f1CutMaxDCAToVertexZPtDep = 0;
   if( f1CutMinDCAToVertexXYPtDep)delete  f1CutMinDCAToVertexXYPtDep;
   f1CutMinDCAToVertexXYPtDep = 0;
-  if(f1CutMinDCAToVertexZPtDep)delete  f1CutMinDCAToVertexZPtDep; 
+  if(f1CutMinDCAToVertexZPtDep)delete  f1CutMinDCAToVertexZPtDep;
   f1CutMinDCAToVertexZPtDep = 0;
 
 
@@ -351,13 +365,13 @@ AliESDtrackCuts::~AliESDtrackCuts()
     delete ffDTheoretical;
 
   if (fhCutStatistics)
-    delete fhCutStatistics;             
+    delete fhCutStatistics;
   if (fhCutCorrelation)
-    delete fhCutCorrelation;    
+    delete fhCutCorrelation;
 
   if(f1CutMinNClustersTPCPtDep)
     delete f1CutMinNClustersTPCPtDep;
-        
+
 }
 
 void AliESDtrackCuts::Init()
@@ -374,7 +388,7 @@ void AliESDtrackCuts::Init()
   fCutMaxChi2TPCConstrainedVsGlobal = 0;
   fCutMaxChi2TPCConstrainedVsGlobalVertexType = kVertexTracks | kVertexSPD;
   fCutMaxMissingITSPoints  = 0;
-  
+
   for (Int_t i = 0; i < 3; i++)
   	fCutClusterRequirementITS[i] = kOff;
 
@@ -383,7 +397,7 @@ void AliESDtrackCuts::Init()
   fCutMaxC33 = 0;
   fCutMaxC44 = 0;
   fCutMaxC55 = 0;
-  
+
   fCutMaxRel1PtUncertainty = 0;
 
   fCutAcceptKinkDaughters = 0;
@@ -419,7 +433,7 @@ void AliESDtrackCuts::Init()
   if(f1CutMinDCAToVertexZPtDep)delete f1CutMinDCAToVertexZPtDep;
   f1CutMinDCAToVertexZPtDep = 0;
 
-  
+
   fPMin = 0;
   fPMax = 0;
   fPtMin = 0;
@@ -468,7 +482,7 @@ void AliESDtrackCuts::Init()
     fhDZNormalized[i] = 0;
     fhDXYvsDZNormalized[i] = 0;
     fhNSigmaToVertex[i] = 0;
-    
+
     fhPt[i] = 0;
     fhEta[i] = 0;
     fhTOFdistance[i] = 0;
@@ -510,7 +524,14 @@ void AliESDtrackCuts::Copy(TObject &c) const
   }
   target.fCutMaxPtDepNClustersTPC =   fCutMaxPtDepNClustersTPC;
   target.fCutMinLengthActiveVolumeTPC = fCutMinLengthActiveVolumeTPC;
-  
+  target.fDeadZoneWidth=fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
+  target.fCutGeoNcrNclLength=fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  target.fCutGeoNcrNclGeom1Pt=fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  target.fCutGeoNcrNclFractionNcr=fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  target.fCutGeoNcrNclFractionNcl=fCutGeoNcrNclFractionNcl;   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+
+
+
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
   target.fCutMaxChi2TPCConstrainedVsGlobal = fCutMaxChi2TPCConstrainedVsGlobal;
@@ -610,7 +631,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
     if (fhDZNormalized[i]) target.fhDZNormalized[i] = (TH1F*) fhDZNormalized[i]->Clone();
     if (fhDXYvsDZNormalized[i]) target.fhDXYvsDZNormalized[i] = (TH2F*) fhDXYvsDZNormalized[i]->Clone();
     if (fhNSigmaToVertex[i]) target.fhNSigmaToVertex[i] = (TH1F*) fhNSigmaToVertex[i]->Clone();
-    
+
     if (fhPt[i]) target.fhPt[i] = (TH1F*) fhPt[i]->Clone();
     if (fhEta[i]) target.fhEta[i] = (TH1F*) fhEta[i]->Clone();
     if (fhTOFdistance[i]) target.fhTOFdistance[i] = (TH2F*) fhTOFdistance[i]->Clone();
@@ -648,18 +669,18 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       continue;
 
     for (Int_t i=0; i<2; i++) {
-      
-      fhNClustersITS[i]      ->Add(entry->fhNClustersITS[i]     );      
-      fhNClustersTPC[i]      ->Add(entry->fhNClustersTPC[i]     ); 
+
+      fhNClustersITS[i]      ->Add(entry->fhNClustersITS[i]     );
+      fhNClustersTPC[i]      ->Add(entry->fhNClustersTPC[i]     );
       if (fhNSharedClustersTPC[i])
-        fhNSharedClustersTPC[i]      ->Add(entry->fhNSharedClustersTPC[i]     ); 
+        fhNSharedClustersTPC[i]      ->Add(entry->fhNSharedClustersTPC[i]     );
       if (fhNCrossedRowsTPC[i])
-        fhNCrossedRowsTPC[i]   ->Add(entry->fhNCrossedRowsTPC[i]     ); 
+        fhNCrossedRowsTPC[i]   ->Add(entry->fhNCrossedRowsTPC[i]     );
       if (fhRatioCrossedRowsOverFindableClustersTPC[i])
-        fhRatioCrossedRowsOverFindableClustersTPC[i]      ->Add(entry->fhRatioCrossedRowsOverFindableClustersTPC[i]     ); 
-      					  			    
-      fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
-      fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
+        fhRatioCrossedRowsOverFindableClustersTPC[i]      ->Add(entry->fhRatioCrossedRowsOverFindableClustersTPC[i]     );
+
+      fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]);
+      fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]);
       if (fhChi2TPCConstrainedVsGlobal[i])
 	fhChi2TPCConstrainedVsGlobal[i]->Add(entry->fhChi2TPCConstrainedVsGlobal[i]);
       if (fhNClustersForITSPID[i])
@@ -667,67 +688,87 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       if (fhNMissingITSPoints[i])
 	fhNMissingITSPoints[i] ->Add(entry->fhNMissingITSPoints[i]);
 
-      fhC11[i]               ->Add(entry->fhC11[i]              ); 
-      fhC22[i]               ->Add(entry->fhC22[i]              ); 
-      fhC33[i]               ->Add(entry->fhC33[i]              ); 
-      fhC44[i]               ->Add(entry->fhC44[i]              ); 
+      fhC11[i]               ->Add(entry->fhC11[i]              );
+      fhC22[i]               ->Add(entry->fhC22[i]              );
+      fhC33[i]               ->Add(entry->fhC33[i]              );
+      fhC44[i]               ->Add(entry->fhC44[i]              );
       fhC55[i]               ->Add(entry->fhC55[i]              );
 
       fhRel1PtUncertainty[i] ->Add(entry->fhRel1PtUncertainty[i]);
-      					  			    
-      fhDXY[i]               ->Add(entry->fhDXY[i]              ); 
-      fhDZ[i]                ->Add(entry->fhDZ[i]               ); 
+
+      fhDXY[i]               ->Add(entry->fhDXY[i]              );
+      fhDZ[i]                ->Add(entry->fhDZ[i]               );
       fhDXYDZ[i]             ->Add(entry->fhDXYDZ[i]          );
       fhDXYvsDZ[i]           ->Add(entry->fhDXYvsDZ[i]          );
 
       fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    );
       fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     );
       fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]);
-      fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]); 
+      fhNSigmaToVertex[i]    ->Add(entry->fhNSigmaToVertex[i]);
 
-      fhPt[i]                ->Add(entry->fhPt[i]); 
-      fhEta[i]               ->Add(entry->fhEta[i]); 
-      fhTOFdistance[i]       ->Add(entry->fhTOFdistance[i]); 
-    }      
+      fhPt[i]                ->Add(entry->fhPt[i]);
+      fhEta[i]               ->Add(entry->fhEta[i]);
+      fhTOFdistance[i]       ->Add(entry->fhTOFdistance[i]);
+    }
 
-    fhCutStatistics  ->Add(entry->fhCutStatistics);        
-    fhCutCorrelation ->Add(entry->fhCutCorrelation);      
+    fhCutStatistics  ->Add(entry->fhCutStatistics);
+    fhCutCorrelation ->Add(entry->fhCutCorrelation);
 
     count++;
   }
   return count+1;
 }
 
-void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax) 
+void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax)
 {
   //
   // Sets the pT dependent NClustersTPC cut
   //
 
-  if(f1){ 
+  if(f1){
     delete f1CutMinNClustersTPCPtDep;
-    f1CutMinNClustersTPCPtDep = (TFormula*)f1->Clone("f1CutMinNClustersTPCPtDep"); 
+    f1CutMinNClustersTPCPtDep = (TFormula*)f1->Clone("f1CutMinNClustersTPCPtDep");
   }
-  fCutMaxPtDepNClustersTPC=ptmax; 
+  fCutMaxPtDepNClustersTPC=ptmax;
 }
+
+void AliESDtrackCuts::SetCutGeoNcrNcl(Float_t deadZoneWidth,Float_t cutGeoNcrNclLength, Float_t cutGeoNcrNclGeom1Pt, Float_t cutGeoNcrNclFractionNcr,  Float_t cutGeoNcrNclFractionNcl){
+  //
+  // Set combination of the TPC geometrical cut, cut on number of crossed rows and cut on the clusters
+  // The goal of cut is to avoid of the dead zone regions
+  //   - pointer to WIKI to put here
+  //   - JIRA discussion and links to presenttions -  https://alice.its.cern.ch/jira/browse/ATO-233
+  // Cut to be used for measurement where the homogenous coverage are not required
+  // In case good momentum resolution and description of the matching efficiency needed, also for analysis reuiring homogenous phi coverage - this cut to be condered
+  // Note this is repalcemnt of single cut
+  //
+  fDeadZoneWidth=deadZoneWidth;
+  fCutGeoNcrNclLength=cutGeoNcrNclLength;
+  fCutGeoNcrNclGeom1Pt=cutGeoNcrNclGeom1Pt;
+  fCutGeoNcrNclFractionNcr=cutGeoNcrNclFractionNcr;
+  fCutGeoNcrNclFractionNcl=cutGeoNcrNclFractionNcl;
+}
+
+
+
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 {
   // creates an AliESDtrackCuts object and fills it with standard (pre data-taking) values for TPC-only cuts
-  
+
   AliInfoClass("Creating track cuts for TPC-only.");
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
-  
+
   esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  
+
   esdTrackCuts->SetMaxDCAToVertexZ(3.2);
   esdTrackCuts->SetMaxDCAToVertexXY(2.4);
   esdTrackCuts->SetDCAToVertex2D(kTRUE);
-  
+
   return esdTrackCuts;
 }
 
@@ -735,12 +776,12 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2009 data
-  
+
   AliInfoClass("Creating track cuts for ITS+TPC (2009 definition).");
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
-  // TPC  
+  // TPC
   esdTrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -759,25 +800,25 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
-  
+
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  
+
   return esdTrackCuts;
 }
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrimaries, Int_t clusterCut)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2011 data  
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2011 data
   // if clusterCut = 1, the cut on the number of clusters is replaced by
   // a cut on the number of crossed rows and on the ration crossed
   // rows/findable clusters
 
   AliInfoClass("Creating track cuts for ITS+TPC (2011 definition).");
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
-  // TPC  
+  // TPC
   if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(50);
   else if (clusterCut == 1) {
     esdTrackCuts->SetMinNCrossedRowsTPC(70);
@@ -802,7 +843,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
   esdTrackCuts->SetMaxDCAToVertexZ(2);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  
+
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
 
   return esdTrackCuts;
@@ -811,16 +852,16 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data  
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
   // if clusterCut = 1, the cut on the number of clusters is replaced by
   // a cut on the number of crossed rows and on the ration crossed
   // rows/findable clusters
 
   AliInfoClass("Creating track cuts for ITS+TPC (2010 definition).");
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
-  // TPC  
+  // TPC
   if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(70);
   else if (clusterCut == 1) {
     esdTrackCuts->SetMinNCrossedRowsTPC(70);
@@ -845,7 +886,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   esdTrackCuts->SetMaxDCAToVertexZ(2);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  
+
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
 
   return esdTrackCuts;
@@ -855,10 +896,10 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
@@ -878,10 +919,10 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPr
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks - pp 2010
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
@@ -901,11 +942,11 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(Bool_t selPr
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSStandAlone(kTRUE);
   esdTrackCuts->SetRequireITSPureStandAlone(kFALSE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
@@ -925,11 +966,11 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimar
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks --pp 2010
-  
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSStandAlone(kTRUE);
   esdTrackCuts->SetRequireITSPureStandAlone(kFALSE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
@@ -949,7 +990,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2010(Bool_t selPrimar
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks -- PbPb 2010
-  
+
   AliESDtrackCuts* esdTrackCuts = GetStandardITSSATrackCuts2010(selPrimaries, useForPid);
   esdTrackCuts->SetMaxNOfMissingITSPoints(1);
 
@@ -975,13 +1016,13 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
   //         = kFALSE -> consider global tracks
   //
   // DEPRECATED Use GetReferenceMultiplicity with the enum as second argument instead
-  
+
   if (!tpcOnly)
   {
     AliErrorClass("Not implemented for global tracks!");
     return -1;
   }
-  
+
   static AliESDtrackCuts* esdTrackCuts = 0;
   if (!esdTrackCuts)
   {
@@ -989,9 +1030,9 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
     esdTrackCuts->SetEtaRange(-0.8, 0.8);
     esdTrackCuts->SetPtRange(0.15);
   }
-  
+
   Int_t nTracks = esdTrackCuts->CountAcceptedTracks(esd);
-  
+
   return nTracks;
 }
 
@@ -1004,7 +1045,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(const AliESDtrack* const esdTrack)
   Float_t bRes[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
-  
+
   if (bCov[0]<=0 || bCov[2]<=0) {
     AliDebugClass(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
@@ -1050,7 +1091,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertexVTrack(const AliVTrack* const vTrack)
   Float_t bRes[2] = {0.,0.};
   Float_t bCov[3] = {0.,0.,0.};
   vTrack->GetImpactParameters(b,bCov);
-  
+
   if (bCov[0]<=0 || bCov[2]<=0) {
     AliDebugClass(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
@@ -1106,9 +1147,9 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 }
 
 //____________________________________________________________________
-Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack) 
+Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 {
-  // 
+  //
   // figure out if the tracks survives all the track cuts defined
   //
   // the different quality parameter and kinematic values are first
@@ -1145,7 +1186,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   else {
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
-  
+
   //Pt dependent NClusters Cut
   if(f1CutMinNClustersTPCPtDep) {
     if(esdTrack->Pt()<fCutMaxPtDepNClustersTPC)
@@ -1159,7 +1200,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   if (esdTrack->GetTPCNclsF()>0) {
     ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / esdTrack->GetTPCNclsF();
   }
-  
+
   Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
   Float_t fracClustersTPCShared = -1.;
 
@@ -1196,20 +1237,20 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   Float_t dcaToVertexZ = b[1];
 
   Float_t dcaToVertex = -1;
-  
+
   if (fCutDCAToVertex2D)
   {
     dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/fCutMaxDCAToVertexXY/fCutMaxDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMaxDCAToVertexZ/fCutMaxDCAToVertexZ);
   }
   else
     dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
-    
+
   // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
   esdTrack->GetPxPyPz(p);
 
-  // Changed from float to double to prevent rounding errors leading to negative 
+  // Changed from float to double to prevent rounding errors leading to negative
   // log arguments (M.G.)
   Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
   Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
@@ -1223,20 +1264,20 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
   if((energy != TMath::Abs(p[2]))&&(energy != 0))
     y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
-    
-  if (extCov[14] < 0) 
+
+  if (extCov[14] < 0)
   {
     AliWarning(Form("GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]));
     return kFALSE;
   }
   Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
-  
+
   //########################################################################
   // cut the track?
-  
+
   Bool_t cuts[kNCuts];
   for (Int_t i=0; i<kNCuts; i++) cuts[i]=kFALSE;
-  
+
   // track quality cuts
   if (fCutRequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
     cuts[0]=kTRUE;
@@ -1246,41 +1287,41 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     cuts[2]=kTRUE;
   if (nClustersTPC<fCutMinNClusterTPC)
     cuts[3]=kTRUE;
-  if (nClustersITS<fCutMinNClusterITS) 
+  if (nClustersITS<fCutMinNClusterITS)
     cuts[4]=kTRUE;
-  if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC) 
-    cuts[5]=kTRUE; 
-  if (chi2PerClusterITS>fCutMaxChi2PerClusterITS) 
+  if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC)
+    cuts[5]=kTRUE;
+  if (chi2PerClusterITS>fCutMaxChi2PerClusterITS)
     cuts[6]=kTRUE;
-  if (extCov[0]  > fCutMaxC11) 
-    cuts[7]=kTRUE;  
-  if (extCov[2]  > fCutMaxC22) 
-    cuts[8]=kTRUE;  
-  if (extCov[5]  > fCutMaxC33) 
-    cuts[9]=kTRUE;  
-  if (extCov[9]  > fCutMaxC44) 
-    cuts[10]=kTRUE;  
-  if (extCov[14]  > fCutMaxC55) 
-    cuts[11]=kTRUE;  
-  
+  if (extCov[0]  > fCutMaxC11)
+    cuts[7]=kTRUE;
+  if (extCov[2]  > fCutMaxC22)
+    cuts[8]=kTRUE;
+  if (extCov[5]  > fCutMaxC33)
+    cuts[9]=kTRUE;
+  if (extCov[9]  > fCutMaxC44)
+    cuts[10]=kTRUE;
+  if (extCov[14]  > fCutMaxC55)
+    cuts[11]=kTRUE;
+
   // cut 12 and 13 see below
-  
+
   if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
     cuts[14]=kTRUE;
   // track kinematics cut
-  if((momentum < fPMin) || (momentum > fPMax)) 
+  if((momentum < fPMin) || (momentum > fPMax))
     cuts[15]=kTRUE;
-  if((pt < fPtMin) || (pt > fPtMax)) 
+  if((pt < fPtMin) || (pt > fPtMax))
     cuts[16] = kTRUE;
-  if((p[0] < fPxMin) || (p[0] > fPxMax)) 
+  if((p[0] < fPxMin) || (p[0] > fPxMax))
     cuts[17] = kTRUE;
-  if((p[1] < fPyMin) || (p[1] > fPyMax)) 
+  if((p[1] < fPyMin) || (p[1] > fPyMax))
     cuts[18] = kTRUE;
   if((p[2] < fPzMin) || (p[2] > fPzMax))
     cuts[19] = kTRUE;
   if((eta < fEtaMin) || (eta > fEtaMax))
     cuts[20] = kTRUE;
-  if((y < fRapMin) || (y > fRapMax)) 
+  if((y < fRapMin) || (y > fRapMax))
     cuts[21] = kTRUE;
   if (fCutDCAToVertex2D && dcaToVertex > 1)
     cuts[22] = kTRUE;
@@ -1294,7 +1335,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     cuts[26] = kTRUE;
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
     cuts[27] = kTRUE;
-  
+
   for (Int_t i = 0; i < 3; i++) {
     if(!(esdTrack->GetStatus()&AliESDtrack::kITSupg)) { // current ITS
       cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
@@ -1307,11 +1348,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
       }
     }
   }
-  
+
   if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){
       // TPC tracks
-      cuts[31] = kTRUE; 
+      cuts[31] = kTRUE;
     }else{
       // ITS standalone tracks
       if(fCutRequireITSStandAlone && !fCutRequireITSpureSA){
@@ -1329,7 +1370,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     cuts[33] = kTRUE;
 
   if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
-    cuts[34] = kTRUE;  
+    cuts[34] = kTRUE;
 
   Int_t nITSPointsForPid=0;
   UChar_t clumap=esdTrack->GetITSClusterMap();
@@ -1337,11 +1378,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     if(clumap&(1<<i)) ++nITSPointsForPid;
   }
   if(fCutRequireITSPid && nITSPointsForPid<3) cuts[35] = kTRUE;
-  
+
 
   if (nCrossedRowsTPC<fCutMinNCrossedRowsTPC)
     cuts[36]=kTRUE;
-  if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC) 
+  if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC)
     cuts[37]=kTRUE;
 
   Int_t nMissITSpts=0;
@@ -1352,7 +1393,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     if(retc && statusLay==5) ++nMissITSpts;
   }
   if(nMissITSpts>fCutMaxMissingITSPoints) cuts[38] = kTRUE;
-  
+
   //kTOFout
   if (fCutRequireTOFout && (status&AliESDtrack::kTOFout)==0)
     cuts[40]=kTRUE;
@@ -1360,7 +1401,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   // TOF signal Dz cut
   Float_t dxTOF = esdTrack->GetTOFsignalDx();
   Float_t dzTOF = esdTrack->GetTOFsignalDz();
-  if (fFlagCutTOFdistance && (esdTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit 
+  if (fFlagCutTOFdistance && (esdTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit
 	  if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
 		  const AliESDEvent* event = esdTrack->GetESDEvent();
 		  if (event){
@@ -1371,7 +1412,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 			  }
 			  else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
 				  fgBeamTypeFlag = 0;
-			  }				  
+			  }
 		  }
 		  else{
 			  AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
@@ -1387,9 +1428,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 		  }
 	  }
   }
-  
+
   Bool_t cut=kFALSE;
-  for (Int_t i=0; i<kNCuts; i++) 
+  for (Int_t i=0; i<kNCuts; i++)
     if (cuts[i]) {cut = kTRUE;}
 
   // for performance evaluate the CPU intensive cuts only when the others have passed, and when they are requested
@@ -1413,29 +1454,29 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 	cut = kTRUE;
       }
     }
-      
+
     // max chi2 TPC constrained vs global track only if track passed the other cut
     if (fCutMaxChi2TPCConstrainedVsGlobal < 1e9)
     {
       const AliESDEvent* esdEvent = esdTrack->GetESDEvent();
-      
+
       if (!esdEvent)
 	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not set in AliESDTrack. Use AliESDTrack::SetESDEvent before calling AliESDtrackCuts.");
-      
+
       // get vertex
       const AliESDVertex* vertex = 0;
       if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTracks)
 	vertex = esdEvent->GetPrimaryVertexTracks();
-      
+
       if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexSPD)
 	vertex = esdEvent->GetPrimaryVertexSPD();
-	
+
       if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC)
 	vertex = esdEvent->GetPrimaryVertexTPC();
 
       if (vertex->GetStatus())
 	chi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(vertex);
-      
+
       if (chi2TPCConstrainedVsGlobal < 0 || chi2TPCConstrainedVsGlobal > fCutMaxChi2TPCConstrainedVsGlobal)
       {
 	cuts[39] = kTRUE;
@@ -1445,18 +1486,30 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 
     // max length in active volume
     Float_t lengthInActiveZoneTPC = -1;
-    if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
+    if (fCutMinLengthActiveVolumeTPC > 1. || fCutGeoNcrNclLength>0) { // do the calculation only if needed to save cpu-time
       if (esdTrack->GetESDEvent()) {
-	if (esdTrack->GetInnerParam()) lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, 1.8, 220, esdTrack->GetESDEvent()->GetMagneticField()); 
+	//
+	const Double_t kMaxZ=220;
+	if (esdTrack->GetInnerParam()) lengthInActiveZoneTPC = esdTrack->GetLengthInActiveZone(1, fDeadZoneWidth, kMaxZ, esdTrack->GetESDEvent()->GetMagneticField());
 	//
 	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
 	  cuts[42] = kTRUE;
 	  cut = kTRUE;
 	}
+	if (fCutGeoNcrNclLength>0){
+	  Double_t  cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack->GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
+	  Bool_t isOK=kTRUE;
+	  if (lengthInActiveZoneTPC<cutGeoNcrNclLength) isOK=kFALSE;
+	  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) isOK=kFALSE;
+	  if (esdTrack->GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) isOK=kFALSE;
+
+	  if(!isOK) {
+	    cuts[43] = kTRUE;
+	    cut = kTRUE;
+      }
+	}
       }
     }
-
-    
   }
 
   //########################################################################
@@ -1465,11 +1518,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n tracks")));
     if (cut)
       fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
-    
+
     for (Int_t i=0; i<kNCuts; i++) {
       if (fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i]) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutNames[i]));
-    
+
       if (cuts[i])
         fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
 
@@ -1482,7 +1535,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
       }
     }
   }
-  
+
   // now we loop over the filling of the histograms twice: once "before" the cut, once "after"
   // the code is not in a function due to too many local variables that would need to be passed
 
@@ -1534,23 +1587,23 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     }
 
     // cut the track
-    if (cut)
-      return kFALSE;
+     if (cut)
+       return kFALSE;
   }
 
   return kTRUE;
 }
 
 //____________________________________________________________________
-Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack) 
+Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
 {
-  // 
+  //
   // figure out if the tracks survives all the track cuts defined
   // Wrapper function designed to handle either AliESDtrack or
   // AliFlatESDTrack objects using the AliVTrack interface as an
   // intermediary. AliESDtracks will be shunted to AcceptTrack,
   // while AliFlatESDtracks will continue in AcceptVTrack using
-  // a smaller subset of cuts (because many of the cuts can't be 
+  // a smaller subset of cuts (because many of the cuts can't be
   // tested using the limited members contained within
   // AliFlatESDtrack)
   //
@@ -1582,7 +1635,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   if(const AliESDtrack *esdTrack = dynamic_cast<const AliESDtrack*>(vTrack)){
     return AcceptTrack(esdTrack);
   }
-  
+
   //The track is not an AliESDtrack.  Perform a more limited
   //set of cuts
 
@@ -1599,7 +1652,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //   nClustersTPC = vTrack->GetTPCclusters(0);
   // }
   Int_t nClustersTPC = vTrack->GetTPCNcls();
-  
+
   //Pt dependent NClusters Cut
   if(f1CutMinNClustersTPCPtDep) {
     if(vTrack->Pt()<fCutMaxPtDepNClustersTPC)
@@ -1613,7 +1666,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   // if (vTrack->GetTPCNclsF()>0) {
   //   ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / vTrack->GetTPCNclsF();
   // }
-  
+
   // Int_t nClustersTPCShared = vTrack->GetTPCnclsS();
   Int_t nClustersTPCShared = -1;
 
@@ -1653,21 +1706,21 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   Float_t dcaToVertexZ = b[1];
 
   Float_t dcaToVertex = -1;
-  
+
   if (fCutDCAToVertex2D)
   {
     dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/fCutMaxDCAToVertexXY/fCutMaxDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMaxDCAToVertexZ/fCutMaxDCAToVertexZ);
   }
   else
     dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
-    
+
   // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
   // vTrack->GetPxPyPz(p);
   vTrack->PxPyPz(p);
 
-  // Changed from float to double to prevent rounding errors leading to negative 
+  // Changed from float to double to prevent rounding errors leading to negative
   // log arguments (M.G.)
   Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
   Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
@@ -1683,20 +1736,20 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //   y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
   Float_t eta = vTrack->Eta();
   Float_t y   = vTrack->Y();
-    
-  // if (extCov[14] < 0) 
+
+  // if (extCov[14] < 0)
   // {
   //   AliWarning(Form("GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]));
   //   return kFALSE;
   // }
   Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
-  
+
   //########################################################################
   // cut the track?
-  
+
   Bool_t cuts[kNCuts];
   for (Int_t i=0; i<kNCuts; i++) cuts[i]=kFALSE;
-  
+
   // track quality cuts
   if (fCutRequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
     cuts[0]=kTRUE;
@@ -1706,41 +1759,41 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     cuts[2]=kTRUE;
   if (nClustersTPC<fCutMinNClusterTPC)
     cuts[3]=kTRUE;
-  if (nClustersITS<fCutMinNClusterITS) 
+  if (nClustersITS<fCutMinNClusterITS)
     cuts[4]=kTRUE;
-  // if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC) 
-  //   cuts[5]=kTRUE; 
-  // if (chi2PerClusterITS>fCutMaxChi2PerClusterITS) 
+  // if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC)
+  //   cuts[5]=kTRUE;
+  // if (chi2PerClusterITS>fCutMaxChi2PerClusterITS)
   //   cuts[6]=kTRUE;
-  // if (extCov[0]  > fCutMaxC11) 
-  //   cuts[7]=kTRUE;  
-  // if (extCov[2]  > fCutMaxC22) 
-  //   cuts[8]=kTRUE;  
-  // if (extCov[5]  > fCutMaxC33) 
-  //   cuts[9]=kTRUE;  
-  // if (extCov[9]  > fCutMaxC44) 
-  //   cuts[10]=kTRUE;  
-  // if (extCov[14]  > fCutMaxC55) 
-  //   cuts[11]=kTRUE;  
-  
+  // if (extCov[0]  > fCutMaxC11)
+  //   cuts[7]=kTRUE;
+  // if (extCov[2]  > fCutMaxC22)
+  //   cuts[8]=kTRUE;
+  // if (extCov[5]  > fCutMaxC33)
+  //   cuts[9]=kTRUE;
+  // if (extCov[9]  > fCutMaxC44)
+  //   cuts[10]=kTRUE;
+  // if (extCov[14]  > fCutMaxC55)
+  //   cuts[11]=kTRUE;
+
   // cut 12 and 13 see below
-  
+
   // if (!fCutAcceptKinkDaughters && vTrack->GetKinkIndex(0)>0)
   //   cuts[14]=kTRUE;
   // track kinematics cut
-  if((momentum < fPMin) || (momentum > fPMax)) 
+  if((momentum < fPMin) || (momentum > fPMax))
     cuts[15]=kTRUE;
-  if((pt < fPtMin) || (pt > fPtMax)) 
+  if((pt < fPtMin) || (pt > fPtMax))
     cuts[16] = kTRUE;
-  if((p[0] < fPxMin) || (p[0] > fPxMax)) 
+  if((p[0] < fPxMin) || (p[0] > fPxMax))
     cuts[17] = kTRUE;
-  if((p[1] < fPyMin) || (p[1] > fPyMax)) 
+  if((p[1] < fPyMin) || (p[1] > fPyMax))
     cuts[18] = kTRUE;
   if((p[2] < fPzMin) || (p[2] > fPzMax))
     cuts[19] = kTRUE;
   if((eta < fEtaMin) || (eta > fEtaMax))
     cuts[20] = kTRUE;
-  if((y < fRapMin) || (y > fRapMax)) 
+  if((y < fRapMin) || (y > fRapMax))
     cuts[21] = kTRUE;
   if (fCutDCAToVertex2D && dcaToVertex > 1)
     cuts[22] = kTRUE;
@@ -1754,7 +1807,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     cuts[26] = kTRUE;
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
     cuts[27] = kTRUE;
-  
+
   // for (Int_t i = 0; i < 3; i++) {
   //   if(!(vTrack->GetStatus()&AliESDtrack::kITSupg)) { // current ITS
   //     cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], vTrack->HasPointOnITSLayer(i*2), vTrack->HasPointOnITSLayer(i*2+1));
@@ -1767,11 +1820,11 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //     }
   //   }
   // }
-  
+
   if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){
       // TPC tracks
-      cuts[31] = kTRUE; 
+      cuts[31] = kTRUE;
     }else{
       // ITS standalone tracks
       if(fCutRequireITSStandAlone && !fCutRequireITSpureSA){
@@ -1789,7 +1842,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //   cuts[33] = kTRUE;
 
   // if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
-  //   cuts[34] = kTRUE;  
+  //   cuts[34] = kTRUE;
 
   Int_t nITSPointsForPid=0;
   UChar_t clumap=vTrack->GetITSClusterMap();
@@ -1797,11 +1850,11 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     if(clumap&(1<<i)) ++nITSPointsForPid;
   }
   if(fCutRequireITSPid && nITSPointsForPid<3) cuts[35] = kTRUE;
-  
+
 
   if (nCrossedRowsTPC<fCutMinNCrossedRowsTPC)
     cuts[36]=kTRUE;
-  // if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC) 
+  // if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC)
   //   cuts[37]=kTRUE;
 
   Int_t nMissITSpts=0;
@@ -1812,7 +1865,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //   if(retc && statusLay==5) ++nMissITSpts;
   // }
   // if(nMissITSpts>fCutMaxMissingITSPoints) cuts[38] = kTRUE;
-  
+
   //kTOFout
   // if (fCutRequireTOFout && (status&AliESDtrack::kTOFout)==0)
   //   cuts[40]=kTRUE;
@@ -1822,7 +1875,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   // Float_t dzTOF = vTrack->GetTOFsignalDz();
   Float_t dxTOF = 0.;
   Float_t dzTOF = 0.;
-  // if (fFlagCutTOFdistance && (vTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit 
+  // if (fFlagCutTOFdistance && (vTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit
   //   if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
   //     const AliESDEvent* event = vTrack->GetESDEvent();
   //     if (event){
@@ -1833,7 +1886,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   // 	}
   // 	else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
   // 	  fgBeamTypeFlag = 0;
-  // 	}				  
+  // 	}
   //     }
   //     else{
   // 	AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
@@ -1849,9 +1902,9 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //     }
   //   }
   // }
-  
+
   Bool_t cut=kFALSE;
-  for (Int_t i=0; i<kNCuts; i++) 
+  for (Int_t i=0; i<kNCuts; i++)
     if (cuts[i]) {cut = kTRUE;}
 
   // for performance evaluate the CPU intensive cuts only when the others have passed, and when they are requested
@@ -1875,29 +1928,29 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
 	cut = kTRUE;
       }
     }
-      
+
     // // max chi2 TPC constrained vs global track only if track passed the other cut
     // if (fCutMaxChi2TPCConstrainedVsGlobal < 1e9)
     // {
     //   const AliESDEvent* esdEvent = vTrack->GetESDEvent();
-      
+
     //   if (!esdEvent)
     // 	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not set in AliESDTrack. Use AliESDTrack::SetESDEvent before calling AliESDtrackCuts.");
-      
+
     //   // get vertex
     //   const AliESDVertex* vertex = 0;
     //   if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTracks)
     // 	vertex = esdEvent->GetPrimaryVertexTracks();
-      
+
     //   if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexSPD)
     // 	vertex = esdEvent->GetPrimaryVertexSPD();
-	
+
     //   if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC)
     // 	vertex = esdEvent->GetPrimaryVertexTPC();
 
     //   if (vertex->GetStatus())
     // 	chi2TPCConstrainedVsGlobal = vTrack->GetChi2TPCConstrainedVsGlobal(vertex);
-      
+
     //   if (chi2TPCConstrainedVsGlobal < 0 || chi2TPCConstrainedVsGlobal > fCutMaxChi2TPCConstrainedVsGlobal)
     //   {
     // 	cuts[39] = kTRUE;
@@ -1909,7 +1962,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     // Float_t lengthInActiveZoneTPC = -1;
     // if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
     //   if (vTrack->GetESDEvent()) {
-    // 	if (vTrack->GetInnerParam()) lengthInActiveZoneTPC = vTrack->GetLengthInActiveZone(1, 1.8, 220, vTrack->GetESDEvent()->GetMagneticField()); 
+    // 	if (vTrack->GetInnerParam()) lengthInActiveZoneTPC = vTrack->GetLengthInActiveZone(1, 1.8, 220, vTrack->GetESDEvent()->GetMagneticField());
     // 	//
     // 	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
     // 	  cuts[42] = kTRUE;
@@ -1918,7 +1971,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     //   }
     // }
 
-    
+
   }
 
   //########################################################################
@@ -1927,11 +1980,11 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
     fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n tracks")));
     if (cut)
       fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
-    
+
     for (Int_t i=0; i<kNCuts; i++) {
       if (fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i]) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutNames[i]));
-    
+
       if (cuts[i])
         fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
 
@@ -1944,7 +1997,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
       }
     }
   }
-  
+
   // now we loop over the filling of the histograms twice: once "before" the cut, once "after"
   // the code is not in a function due to too many local variables that would need to be passed
 
@@ -2013,7 +2066,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
 Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
 {
   // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
-  
+
   switch (req)
   {
   	case kOff:        return kTRUE;
@@ -2025,7 +2078,7 @@ Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bo
   	case kOnlySecond: return clusterL2 && !clusterL1;
   	case kBoth:       return clusterL1 && clusterL2;
   }
-  
+
   return kFALSE;
 }
 
@@ -2033,7 +2086,7 @@ Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bo
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack)
 {
   // Utility function to create a TPC only track from the given esd track
-  // 
+  //
   // IMPORTANT: The track has to be deleted by the user
   //
   // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
@@ -2068,7 +2121,7 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTra
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent, Int_t iTrack)
 {
   // Utility function to create a TPC only track from the given track in a VEvent.  This will return 0 if the VEvent isnt an ESDEvent
-  // 
+  //
   // IMPORTANT: The track has to be deleted by the user
   //
   // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
@@ -2085,7 +2138,7 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent,
 
   AliVParticle* vParticle = vEvent->GetTrack(iTrack);
   if (!vParticle) return 0;
-  
+
   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(vParticle);
   if(!esdTrack) return 0;
 
@@ -2135,7 +2188,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTP
       if(AcceptTrack(track))
         acceptedTracks->Add(track);
     }
-  } 
+  }
   if(bTPC)acceptedTracks->SetOwner(kTRUE);
   return acceptedTracks;
 }
@@ -2161,15 +2214,15 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 
 //____________________________________________________________________
  void AliESDtrackCuts::DefineHistograms(Int_t color) {
-   // 
+   //
    // diagnostics histograms are defined
-   // 
+   //
 
    fHistogramsOn=kTRUE;
-   
+
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
-   
+
    //###################################################################################
    // defining histograms
 
@@ -2179,7 +2232,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
    fhCutStatistics->GetXaxis()->SetBinLabel(2,"n cut tracks");
 
    fhCutCorrelation = new TH2F("cut_correlation","cut correlation",kNCuts,-0.5,kNCuts-0.5,kNCuts,-0.5,kNCuts-0.5);;
-  
+
    for (Int_t i=0; i<kNCuts; i++) {
      fhCutStatistics->GetXaxis()->SetBinLabel(i+4,fgkCutNames[i]);
      fhCutCorrelation->GetXaxis()->SetBinLabel(i+1,fgkCutNames[i]);
@@ -2225,7 +2278,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
     fhPt[i]                  = new TH1F("pt"     ,"p_{T} distribution;p_{T} (GeV/c)", 800, 0.0, 10.0);
     fhEta[i]                 = new TH1F("eta"     ,"#eta distribution;#eta",40,-2.0,2.0);
     fhTOFdistance[i]         = new TH2F("TOFdistance"     ,"TOF distance;dx (cm};dz (cm)", 150, -15, 15, 150, -15, 15);
-    
+
     fhNClustersITS[i]->SetTitle("n ITS clusters");
     fhNClustersTPC[i]->SetTitle("n TPC clusters");
     fhNSharedClustersTPC[i]->SetTitle("n TPC shared clusters");
@@ -2278,7 +2331,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 
     fhDXYNormalized[i]->SetLineColor(color);   fhDXYNormalized[i]->SetLineWidth(2);
     fhDZNormalized[i]->SetLineColor(color);    fhDZNormalized[i]->SetLineWidth(2);
-    fhNSigmaToVertex[i]->SetLineColor(color);  fhNSigmaToVertex[i]->SetLineWidth(2); 
+    fhNSigmaToVertex[i]->SetLineColor(color);  fhNSigmaToVertex[i]->SetLineWidth(2);
   }
 
   // The number of sigmas to the vertex is per definition gaussian
@@ -2375,7 +2428,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
 
   gDirectory->mkdir("before_cuts");
   gDirectory->mkdir("after_cuts");
- 
+
   // a factor of 2 is needed since n sigma is positive
   ffDTheoretical->SetParameter(0,2*fhNSigmaToVertex[0]->Integral("width"));
   ffDTheoretical->Write("nSigmaToVertexTheory");
@@ -2421,7 +2474,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
     fhPt[i]                  ->Write();
     fhEta[i]                 ->Write();
     fhTOFdistance[i]         ->Write();
-    
+
     gDirectory->cd("../");
   }
 
@@ -2599,7 +2652,7 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
   if(!dist.Contains("pt")) {
     if(print) AliError("string must contain \"pt\"");
     retval= kFALSE;
-  } 
+  }
   return retval;
 }
 
@@ -2613,12 +2666,12 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
    }
    if(!CheckPtDepDCA(dist,kTRUE)){
      return;
-   }  
+   }
    fCutMaxDCAToVertexXYPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
    f1CutMaxDCAToVertexXYPtDep = new TFormula("f1CutMaxDCAToVertexXYPtDep",tmp.Data());
- 
+
 }
 
  void AliESDtrackCuts::SetMaxDCAToVertexZPtDep(const char *dist){
@@ -2631,13 +2684,13 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
      fCutMaxDCAToVertexZPtDep = "";
    }
    if(!CheckPtDepDCA(dist,kTRUE))return;
-     
+
    fCutMaxDCAToVertexZPtDep = dist;
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
    f1CutMaxDCAToVertexZPtDep = new TFormula("f1CutMaxDCAToVertexZPtDep",tmp.Data());
 
-   
+
 }
 
 
@@ -2662,7 +2715,7 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 
  void AliESDtrackCuts::SetMinDCAToVertexZPtDep(const char *dist){
 
-   
+
 
    if(f1CutMinDCAToVertexZPtDep){
      delete f1CutMinDCAToVertexZPtDep;
@@ -2683,7 +2736,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
   // upon first call the objects are created
   //
   // the cut defined here correspond to GetStandardITSTPCTrackCuts2010 (apart from the one for without SPD)
-  
+
   if (!fgMultEstTrackCuts[kMultEstTrackCutGlobal])
   {
     // quality cut on ITS+TPC tracks
@@ -2695,28 +2748,28 @@ AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
     fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetRequireITSRefit(kTRUE);
     //multiplicity underestimate if we use global tracks with |eta| > 0.9
     fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetEtaRange(-0.9, 0.9);
-    
+
     // quality cut on ITS_SA tracks (complementary to ITS+TPC)
     fgMultEstTrackCuts[kMultEstTrackCutITSSA] = new AliESDtrackCuts();
     fgMultEstTrackCuts[kMultEstTrackCutITSSA]->SetRequireITSRefit(kTRUE);
-    
+
     // primary selection for tracks with SPD hits
     fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD] = new AliESDtrackCuts();
     fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
     fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetMaxDCAToVertexZ(2);
-    
+
     // primary selection for tracks w/o SPD hits
     fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD] = new AliESDtrackCuts();
     fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
     fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetMaxDCAToVertexXYPtDep("1.5*(0.0182+0.0350/pt^1.01)");
     fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetMaxDCAToVertexZ(2);
   }
-  
+
   return fgMultEstTrackCuts[cut];
 }
 
-Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange, Float_t etaCent) 
+Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange, Float_t etaCent)
 {
   // Get multiplicity estimate based on TPC/ITS tracks and tracklets
   // Adapted for AliESDtrackCuts from a version developed by: Ruben Shahoyan, Anton Alkin, Arvinder Palaha
@@ -2735,32 +2788,32 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   //   3. Count the complementary SPD tracklets
   //
   // Estimator is calculated for etaCent-etaRange : etaCent+etaRange
-  //  
+  //
   const AliESDVertex* vertices[2];
   vertices[0] = esd->GetPrimaryVertexSPD();
   vertices[1] = esd->GetPrimaryVertexTracks();
-  
+
   if (!vertices[0]->GetStatus())
   {
     AliDebugClass(AliLog::kDebug, "No SPD vertex. Not able to make a reliable multiplicity estimate.");
     return -1;
   }
-  
+
   if (vertices[0]->IsFromVertexerZ() && vertices[0]->GetDispersion() > 0.02)
   {
     AliDebugClass(AliLog::kDebug, "Vertexer z dispersion > 0.02. Not able to make a reliable multiplicity estimate.");
     return -2;
   }
-  
+
   Int_t multiplicityEstimate = 0;
-  
+
   // SPD tracklet-only estimate
   if (trackType == kTracklets)
   {
     const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
-    for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) 
+    for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
     {
-      if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange) 
+      if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange)
 	continue; // eta selection for tracklets
       multiplicityEstimate++;
     }
@@ -2777,18 +2830,18 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   const Float_t maxDisplacement = 0.5;
   //check for displaced vertices
   Double_t displacement = TMath::Abs(vertices[0]->GetZ() - vertices[1]->GetZ());
-  if (displacement > maxDisplacement) 
+  if (displacement > maxDisplacement)
   {
     AliDebugClass(AliLog::kDebug, Form("Displaced vertices %f > %f",displacement,maxDisplacement));
     return -4;
   }
-  
+
   // update eta range in track cuts
   float etaMin = etaCent - etaRange, etaMax = etaCent + etaRange;
   GetMultEstTrackCuts(kMultEstTrackCutITSSA)->SetEtaRange(etaMin, etaMax);
   GetMultEstTrackCuts(kMultEstTrackCutDCAwSPD)->SetEtaRange(etaMin, etaMax);
   GetMultEstTrackCuts(kMultEstTrackCutDCAwoSPD)->SetEtaRange(etaMin, etaMax);
-  
+
   //*******************************************************************************************************
   //set counters to initial zeros
   Int_t tracksITSTPC = 0;     //number of global tracks for a given event
@@ -2802,12 +2855,12 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   // flags for secondary and rejected tracks
   const Int_t kRejBit = BIT(15); // set this bit in global tracks if it is rejected by a cut
   const Int_t kSecBit = BIT(16); // set this bit in global tracks if it is secondary according to a cut
-  
+
   for(Int_t itracks=0; itracks < nESDTracks; itracks++) {
     esd->GetTrack(itracks)->ResetBit(kSecBit|kRejBit); //reset bits used for flagging secondaries and rejected tracks in case they were changed before this analysis
   }
   const Int_t maxid = nESDTracks; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
-  
+
   // bit mask for esd tracks, to check if multiple tracklets are associated to it
   TBits globalBits(maxid), pureITSBits(maxid);
   // why labels are used with the data? RS
@@ -2879,15 +2932,15 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
   const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
   for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) {
     if (TMath::Abs(spdmult->GetEta(i)-etaCent) > etaRange) continue; // eta selection for tracklets
-    
+
     // if counting tracks+tracklets, check if clusters were already used in tracks
     Int_t id1, id2, id3, id4;
     spdmult->GetTrackletTrackIDs ( i, 0, id1, id2 ); // references for eventual Global/ITS_SA tracks
     spdmult->GetTrackletTrackIDs ( i, 1, id3, id4 ); // references for eventual ITS_SA_pure tracks
-    
+
     // are both clusters from the same tracks? If not, skip the tracklet (shouldn't change things much)
     if ( ( id1 != id2 && id1 >= 0 && id2 >= 0 ) || ( id3 != id4 && id3 >= 0 && id4 >= 0 ) ) continue;
-    
+
     //referenced track
     //at this point we either have id1 = id2 (id3 = id4) or only one of the ids pair is -1
     // id1>=0, id2>=0, id1=id2	: tracklet has associated track
@@ -2913,8 +2966,8 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 	    if ( ( tr_global && !tr_global->TestBit ( kSecBit ) ) && ( tr_global &&  tr_global->TestBit ( kRejBit ) ) ) {  // count tracklet as bad quality track
 		    globalBits.SetBitNumber( bUsedInGlobal ); // mark global track linked to this tracklet as used
 		    ++trackletsITSTPC_complementary;
-	    } 
-	    
+	    }
+
 	    if ( bUsedInGlobal < 0 ) ++trackletsITSTPC_complementary; //no associated track, just count the tracklet
     } else {
 	    //*******************************************************************************************************
@@ -2922,12 +2975,12 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 	    if ( ( tr_itssa && !tr_itssa->TestBit ( kSecBit ) ) && ( tr_itssa &&  tr_itssa->TestBit ( kRejBit ) ) ) {  // count tracklet as bad quality track
 		    pureITSBits.SetBitNumber( bUsedInPureITS ); // mark ITS pure SA track linked to this tracklet as used
 		    ++trackletsITSSA_complementary;
-	    } 
-	    
+	    }
+
 	    if ( bUsedInPureITS < 0 ) ++trackletsITSSA_complementary; //no associated track, just count the tracklet
     }
   }
-  
+
   //*******************************************************************************************************
   if (trackType == kTrackletsITSTPC)
     multiplicityEstimate = tracksITSTPC + tracksITSTPCSA_complementary + trackletsITSTPC_complementary;
@@ -2940,7 +2993,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 //____________________________________________________________________
 void AliESDtrackCuts::SetRequireStandardTOFmatchCuts(){
 
-	// setting the TOF cuts flags (kTOFout = TOF matching distance) to true, to include the selection on the standard TOF matching 
+	// setting the TOF cuts flags (kTOFout = TOF matching distance) to true, to include the selection on the standard TOF matching
 
 	SetRequireTOFout(kTRUE);
 	SetFlagCutTOFdistance(kTRUE);

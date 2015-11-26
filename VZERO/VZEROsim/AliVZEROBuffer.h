@@ -7,13 +7,7 @@
 // Class used for storing VZERO digits according to the DDLs format//
 /////////////////////////////////////////////////////////////////////
 
-#ifdef __CINT__
-class fstream;
-#else
-#include "Riostream.h"
-#endif
-
-#include "AliFstream.h"
+class AliFstream;
 
 class AliVZEROBuffer:public TObject{
 

@@ -28,6 +28,8 @@
 #include <TLorentzVector.h>
 #include <TPDGCode.h>
 #include <TParticle.h>
+#include <TF1.h>
+#include <TFile.h>
 
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
@@ -76,7 +78,14 @@ AliGenHijing::AliGenHijing()
      fNoHeavyQuarks(kFALSE),
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
-     fNoElas(0)
+     fNoElas(0),
+     fDataFragmentation(kFALSE),
+     fFreeProjSpecn(0),
+     fFreeProjSpecp(0),
+     fFreeTargSpecn(0),
+     fFreeTargSpecp(0),
+     fFragmNeutrons(0x0),
+     fFragmProtons(0x0)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -122,7 +131,15 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fNoHeavyQuarks(kFALSE),
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
-     fNoElas(0)
+     fNoElas(0),
+     fDataFragmentation(kFALSE),
+     fFreeProjSpecn(0),
+     fFreeProjSpecp(0),
+     fFreeTargSpecn(0),
+     fFreeTargSpecp(0),
+     fFragmNeutrons(0x0),
+     fFragmProtons(0x0)
+
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -211,6 +228,14 @@ void AliGenHijing::Init()
 	fHijing->SetIHPR2(49, 0);
     }
     
+    if(fDataFragmentation){
+      TFile *file = TFile::Open("$ALICE_ROOT/ZDC/fragmSpecDataDriven.root","READ");
+      if(!file->IsOpen()){
+        AliError("Could not open file $ALICE_ROOT/ZDC/fragmSpecDataDriven.root");
+      }
+      fFragmNeutrons = dynamic_cast<TF1*> (file->Get("funcorrn"));
+      fFragmProtons = dynamic_cast<TF1*> (file->Get("funcorrp"));
+    }
     
     AliGenMC::Init();
     
@@ -244,7 +269,7 @@ void AliGenHijing::Generate()
 //
   Int_t nt  = 0;
   Int_t jev = 0;
-  Int_t j, kf, ks, ksp, imo;
+  Int_t j=0, kf=0, ks=0, ksp=0, imo=0;
   kf = 0;
     
 
@@ -318,8 +343,8 @@ void AliGenHijing::Generate()
 	  ks        = iparticle->GetStatusCode();
 	  if (kf == 92) continue;
 	    
-	  if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
-			       SelectFlavor(kf);
+          if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
+	  		       SelectFlavor(kf);
 	  hasSelectedDaughters = DaughtersSelection(iparticle);
 //
 // Put particle on the stack if it is either selected or 
@@ -369,10 +394,20 @@ void AliGenHijing::Generate()
 	      pSelected[i] = 1;
 	  } // selected
       } // particle loop final state
-
+      
+      if(fDataFragmentation){
+         Float_t impPar = fHijing->GetBB();
+         fFreeProjSpecn = FreeSpectatorsn(impPar, fProjectileSpecn);
+         fFreeProjSpecp = FreeSpectatorsp(impPar, fProjectileSpecp);
+         fFreeTargSpecn = FreeSpectatorsn(impPar, fTargetSpecn);
+         fFreeTargSpecp = FreeSpectatorsp(impPar, fTargetSpecp);
+	 //
+	 printf("\n b %f fm - SPECTATORS* HIJING:  %d  %d  %d  %d  ->  DATA:   %d  %d  %d  %d \n", impPar, fProjectileSpecn, fProjectileSpecp, fTargetSpecn, fTargetSpecp, fFreeProjSpecn, fFreeProjSpecp, fFreeTargSpecn, fFreeTargSpecp);
+      }
 //
 // Write particles to stack
-
+      Int_t countSpecPn=0, countSpecPp=0;
+      Int_t countSpecTn=0, countSpecTp=0;
       for (i = 0; i<np; i++) {
 	  iparticle = (TParticle *) fParticles.At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
@@ -396,6 +431,26 @@ void AliGenHijing::Generate()
 		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
+	      if(fDataFragmentation && (ksp==0 || ksp==1) && kf == kNeutron){ // Projectile neutrons
+	         countSpecPn++;
+		 if(countSpecPn>fFreeProjSpecn) continue;
+		 //printf(" Putting spec.n from proj. %d into the stack\n", countSpecPn);
+	      }
+	      if(fDataFragmentation && (ksp==0 || ksp==1) && kf == kProton){ // Projectile protons
+	         countSpecPp++;
+		 if(countSpecPp>fFreeProjSpecp) continue;
+		 //printf(" Putting spec.p from proj. %d into the stack\n", countSpecPp);
+	      }
+	      if(fDataFragmentation && (ksp==10 || ksp==11) && kf == kNeutron){ // Target neutrons
+	         countSpecTn++;
+		 if(countSpecTn>fFreeTargSpecn) continue;
+		 //printf(" Putting spec.n from targ. %d into the stack\n", countSpecTn);
+	      }
+	      if(fDataFragmentation && (ksp==10 || ksp==11) && kf == kProton){ // Target protons
+	         countSpecTp++;
+		 if(countSpecTp>fFreeTargSpecp) continue;
+		 //printf(" Putting spec.p from targ. %d into the stack\n", countSpecTp);
+	      }
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 	      fNprimaries++;
 	      KeepTrack(nt);
@@ -626,6 +681,10 @@ void AliGenHijing::MakeHeader()
       }
     }
     fHeader.SetNDiffractive(nsd1, nsd2, ndd);
+    fHeader.SetFreeSpectators(fFreeProjSpecn, fFreeProjSpecp, fFreeTargSpecn, fFreeTargSpecp);
+    fHeader.SetSpectatorsInTheStack(fSpectators);
+    fHeader.SetDataFromFragmentation(fDataFragmentation);
+	    
     AddHeader(&fHeader);
     fCollisionGeometry = &fHeader;
 }
@@ -686,4 +745,26 @@ Bool_t AliGenHijing::CheckTrigger()
 	} // particle loop
     } // fTrigger == 2
     return triggered;
+}
+
+Int_t AliGenHijing::FreeSpectatorsn(Float_t b, Int_t nSpecn)
+{
+// Select no. of spectator neutrons to put on the stack
+  Float_t corr = fFragmNeutrons->Eval(b);
+  
+  Float_t nSpecInStack = corr*nSpecn;
+  //printf("  FreeSpectatorsn: b %f corr. %f  nspecn_corr %f \n",b, corr, nSpecInStack);
+ 
+  return (int) nSpecInStack;
+}
+
+Int_t AliGenHijing::FreeSpectatorsp(Float_t b, Int_t nSpecp)
+{
+// Select no. of spectator protons to put on the stack
+  Double_t corr = fFragmProtons->Eval(b);
+  
+  Float_t nSpecInStack = corr*nSpecp;
+  //printf("  FreeSpectatorsp: corr. %f  nspecn_corr %f \n",corr, nSpecInStack);
+ 
+  return (int) nSpecInStack;
 }

@@ -39,8 +39,8 @@ void AliFlatTPCseed::SetFromTPCseed( const AliTPCseed *p )
   if( !p ) return;
   fParam.SetExternalTrackParam(  p );
   fLabel = p->GetLabel();  
-  for( Int_t irow=159; irow>=0; irow-- ){
-    if( p->GetClusterPointer(irow) ) AddCluster( p->GetClusterPointer(irow), p->GetTrackPointConst(irow) );
+  for( Int_t irow=kMaxRow-1; irow>=0; irow-- ){
+    if( p->GetClusterPointer(irow) ) AddCluster( p->GetClusterPointer(irow), p->GetTrackPoint(irow) );
   }
 }
 
@@ -66,7 +66,7 @@ void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
     int row = flatCluster.GetPadRow();
     if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
     if( row<160 ){
-      flatCluster.GetTPCCluster( &(clusters[ic]), seed.GetTrackPoint(row) );
+      flatCluster.GetTPCCluster( &(clusters[ic]), (AliTPCTrackerPoints::Point*)seed.GetTrackPoint(row) );
       seed.SetClusterPointer( row , &(clusters[ic]) );
     }
   }

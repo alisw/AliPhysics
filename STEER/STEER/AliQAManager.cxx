@@ -66,6 +66,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliRunTag.h"
+#include <fstream>
 
 using std::ifstream;
 ClassImp(AliQAManager) 

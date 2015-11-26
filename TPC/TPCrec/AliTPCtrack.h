@@ -43,8 +43,8 @@ public:
   Double_t GetdEdx()  const {return fdEdx;}
   Double_t GetPIDsignal()  const {return GetdEdx();}
 
-  Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
-  void  SetClusterIndex(Int_t i, Int_t idx) {fIndex[i]=idx;}
+  Int_t GetClusterIndex(Int_t i) const {return i<kMaxRow ? fIndex[i]:-2;}
+  void  SetClusterIndex(Int_t i, Int_t idx) {if (i<kMaxRow) fIndex[i]=idx;}
 
   Double_t GetC()           const {return AliExternalTrackParam::GetC(GetBz());}
   Double_t GetC(Double_t b) const {return AliExternalTrackParam::GetC(b);}
@@ -112,7 +112,7 @@ protected:
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
 
-  ClassDef(AliTPCtrack,4)   // Time Projection Chamber reconstructed tracks
+  ClassDef(AliTPCtrack,5)   // Time Projection Chamber reconstructed tracks
 };
 
 #endif

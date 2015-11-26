@@ -55,6 +55,8 @@
 #include "AliDigitizationInput.h"
 
 #include "AliDAQ.h"
+#include <iostream>
+#include <fstream>
 
 using std::endl;
 using std::cout;
@@ -159,22 +161,31 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   // buf         adress of an array user words
   // nwbuf       number of user words
   //
-  Int_t kmat;
+  Int_t kmat = -1;
   //Build the string uniquename as "DET_materialname"
   TString uniquename = GetName();
   uniquename.Append("_");
   uniquename.Append(name);
-  //if geometry loaded from file only fill fIdmate, else create material too
+  //if geometry loaded from file only fill fIdmate, else create material too  
   if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
-    kmat = mat->GetUniqueID();
-    (*fIdmate)[imat]=kmat;
-  }else{
+    if (mat) {
+      kmat = mat->GetUniqueID();
+      (*fIdmate)[imat]=kmat;
+    }
+    else
+      AliWarningF("Material %s not found in read geometry",uniquename.Data());
+  }
+  // if (kmat < 0) {
+  else {
     if (fgDensityFactor != 1.0)
       AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
-    TVirtualMC::GetMC()->Material(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, radl, absl, buf, nwbuf);
+    TVirtualMC::GetMC()->Material(kmat, uniquename.Data(),
+				  a, z, dens * fgDensityFactor,
+				  radl, absl, buf, nwbuf);
     (*fIdmate)[imat]=kmat;
   }
+  // (*fIdmate)[imat]=kmat;
 }
 
 //_______________________________________________________________________
@@ -235,7 +246,7 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   // nlmat       number of components
   // wmat        array of concentrations
   //
-  Int_t kmat;
+  Int_t kmat = -1;
   //Build the string uniquename as "DET_mixturename"
   TString uniquename = GetName();
   uniquename.Append("_");
@@ -243,14 +254,22 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   //if geometry loaded from file only fill fIdmate, else create mixture too
   if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMaterial *mat = gGeoManager->GetMaterial(uniquename.Data());
-    kmat = mat->GetUniqueID();
-    (*fIdmate)[imat]=kmat;
-  }else{
+    if (mat) {
+      kmat = mat->GetUniqueID();
+      (*fIdmate)[imat]=kmat;
+    }
+    else
+      AliWarningF("Mixture %s not found in read geometry",uniquename.Data());
+  }
+  // if (kmat < 0) {
+  else {
     if (fgDensityFactor != 1.0)
       AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
-    TVirtualMC::GetMC()->Mixture(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, nlmat, wmat);
+    TVirtualMC::GetMC()->Mixture(kmat, uniquename.Data(), a, z,
+				 dens * fgDensityFactor, nlmat, wmat);
     (*fIdmate)[imat]=kmat;
   }
+  // (*fIdmate)[imat]=kmat;
 } 
  
 //_______________________________________________________________________
@@ -281,7 +300,7 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //        =  2       tracking performed with helix
   //        =  3       constant magnetic field along z
   //  
-  Int_t kmed;
+  Int_t kmed = -1;
   //Build the string uniquename as "DET_mediumname"
   TString uniquename = GetName();
   uniquename.Append("_");
@@ -289,13 +308,21 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //if geometry loaded from file only fill fIdtmed, else create medium too
   if(AliSimulation::Instance()->IsGeometryFromFile()){
     TGeoMedium *med = gGeoManager->GetMedium(uniquename.Data());
-    kmed = med->GetId();
-    (*fIdtmed)[numed]=kmed;
-  }else{
-    TVirtualMC::GetMC()->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat], isvol, ifield,
-                fieldm, tmaxfd, stemax, deemax, epsil, stmin, ubuf, nbuf);
+    if (med) {
+      kmed = med->GetId();
+        (*fIdtmed)[numed]=kmed;
+    }
+    else
+      AliWarningF("Medium %s not found in read geometry",uniquename.Data());
+  }
+  // if (kmed < 0) {
+  else {
+    TVirtualMC::GetMC()->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat],
+				isvol, ifield, fieldm, tmaxfd, stemax,
+				deemax, epsil, stmin, ubuf, nbuf);
     (*fIdtmed)[numed]=kmed;
   }
+  // (*fIdtmed)[numed]=kmed;
 } 
  
 //_______________________________________________________________________

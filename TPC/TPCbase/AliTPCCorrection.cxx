@@ -124,7 +124,7 @@ const Double_t AliTPCCorrection::fgke0 = 8.854187817e-12;                 ///< v
 
 
 AliTPCCorrection::AliTPCCorrection()
-  : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE)
+  : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE), fIntegrationType(kIntegral)
 {
   /// default constructor
 
@@ -135,7 +135,7 @@ AliTPCCorrection::AliTPCCorrection()
 }
 
 AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
-  : TNamed(name,title),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE)
+  : TNamed(name,title),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1), fIsLocal(kFALSE), fIntegrationType(kIntegral)
 {
   /// default constructor, that set the name and title
 
@@ -275,62 +275,69 @@ void AliTPCCorrection::GetCorrectionDz(const Float_t x[], Short_t roc,Float_t dx
   //
   //     GetCorrection(xyz,roc,dxyz);
   //   }
-  static TLinearFitter fitx(2,"pol1");
-  static TLinearFitter fity(2,"pol1");
-  static TLinearFitter fitz(2,"pol1");
-  fitx.ClearPoints();
-  fity.ClearPoints();
-  fitz.ClearPoints();
-  Int_t zmin=-2;
-  Int_t zmax=0;
-  //adjust limits around CE to stay on one side
-  if ((roc%36)<18) {
-    //A-Side
-    if ((x[2]+zmin*delta)<0){
+
+  //check if we are already in the differential mode
+  if (fIntegrationType == kDifferential) {
+    GetCorrection(x, roc, dx);
+  } else if (fIntegrationType == kIntegral) {
+
+    static TLinearFitter fitx(2,"pol1");
+    static TLinearFitter fity(2,"pol1");
+    static TLinearFitter fitz(2,"pol1");
+    fitx.ClearPoints();
+    fity.ClearPoints();
+    fitz.ClearPoints();
+    Int_t zmin=-2;
+    Int_t zmax=0;
+    //adjust limits around CE to stay on one side
+    if ((roc%36)<18) {
+      //A-Side
+      if ((x[2]+zmin*delta)<0){
+        zmin=0;
+        zmax=2;
+        if ((x[2]-delta)>0){
+          zmin=-1;
+          zmax=1;
+        }
+      }
+    } else {
+      //C-Side
       zmin=0;
       zmax=2;
-      if ((x[2]-delta)>0){
-        zmin=-1;
-        zmax=1;
+      if ((x[2]+zmax*delta)>0){
+        zmin=-2;
+        zmax=0;
+        if ((x[2]+delta)<0){
+          zmin=-1;
+          zmax=1;
+        }
       }
     }
-  } else {
-    //C-Side
-    zmin=0;
-    zmax=2;
-    if ((x[2]+zmax*delta)>0){
-      zmin=-2;
-      zmax=0;
-      if ((x[2]+delta)<0){
-        zmin=-1;
-        zmax=1;
-      }
-    }
-  }
 
-  for (Int_t xdelta=-1; xdelta<=1; xdelta++)
-    for (Int_t ydelta=-1; ydelta<=1; ydelta++){
-//       for (Int_t zdelta=-1; zdelta<=1; zdelta++){
-//   for (Int_t xdelta=-2; xdelta<=0; xdelta++)
-//     for (Int_t ydelta=-2; ydelta<=0; ydelta++){
-      for (Int_t zdelta=zmin; zdelta<=zmax; zdelta++){
-        //TODO: what happens if x[2] is on the A-Side, but x[2]+zdelta*delta
-        //      will be on the C-Side?
-	Float_t xyz[3]={x[0]+xdelta*delta, x[1]+ydelta*delta, x[2]+zdelta*delta};
-	Float_t dxyz[3];
-	GetCorrection(xyz,roc,dxyz);
-	Double_t adelta=zdelta*delta;
-	fitx.AddPoint(&adelta, dxyz[0]);
-	fity.AddPoint(&adelta, dxyz[1]);
- 	fitz.AddPoint(&adelta, dxyz[2]);
+    for (Int_t xdelta=-1; xdelta<=1; xdelta++)
+      for (Int_t ydelta=-1; ydelta<=1; ydelta++){
+        //       for (Int_t zdelta=-1; zdelta<=1; zdelta++){
+        //   for (Int_t xdelta=-2; xdelta<=0; xdelta++)
+        //     for (Int_t ydelta=-2; ydelta<=0; ydelta++){
+        for (Int_t zdelta=zmin; zdelta<=zmax; zdelta++){
+          //TODO: what happens if x[2] is on the A-Side, but x[2]+zdelta*delta
+          //      will be on the C-Side?
+          Float_t xyz[3]={x[0]+xdelta*delta, x[1]+ydelta*delta, x[2]+zdelta*delta};
+          Float_t dxyz[3];
+          GetCorrection(xyz,roc,dxyz);
+          Double_t adelta=zdelta*delta;
+          fitx.AddPoint(&adelta, dxyz[0]);
+          fity.AddPoint(&adelta, dxyz[1]);
+          fitz.AddPoint(&adelta, dxyz[2]);
+        }
       }
-    }
-  fitx.Eval();
-  fity.Eval();
-  fitz.Eval();
-  dx[0] = fitx.GetParameter(1);
-  dx[1] = fity.GetParameter(1);
-  dx[2] = fitz.GetParameter(1);
+      fitx.Eval();
+      fity.Eval();
+      fitz.Eval();
+      dx[0] = fitx.GetParameter(1);
+      dx[1] = fity.GetParameter(1);
+      dx[2] = fitz.GetParameter(1);
+  }
 }
 
 void AliTPCCorrection::GetDistortionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta) {
@@ -349,53 +356,60 @@ void AliTPCCorrection::GetDistortionDz(const Float_t x[], Short_t roc,Float_t dx
   /// Output parameter:
   ///   dx[] - array {dx'/dz,  dy'/dz ,  dz'/dz }
 
-  static TLinearFitter fitx(2,"pol1");
-  static TLinearFitter fity(2,"pol1");
-  static TLinearFitter fitz(2,"pol1");
-  fitx.ClearPoints();
-  fity.ClearPoints();
-  fitz.ClearPoints();
+  //check if we are already in the differential mode
+  if (fIntegrationType == kDifferential) {
+    GetDistortion(x, roc, dx);
+  } else if (fIntegrationType == kIntegral) {
+    //in this case do the differentiation first
 
-  Int_t zmin=-1;
-  Int_t zmax=1;
-  //adjust limits around CE to stay on one side
-  if ((roc%36)<18) {
-    //A-Side
-    if ((x[2]+zmin*delta)<0){
-      zmin=0;
-      zmax=2;
-    }
-  } else {
-    //C-Side
-    if ((x[2]+zmax*delta)>0){
-      zmin=-2;
-      zmax=0;
-    }
-  }
+    static TLinearFitter fitx(2,"pol1");
+    static TLinearFitter fity(2,"pol1");
+    static TLinearFitter fitz(2,"pol1");
+    fitx.ClearPoints();
+    fity.ClearPoints();
+    fitz.ClearPoints();
 
-  //TODO: in principle one shuld check that x[2]+zdelta*delta does not get 'out of' bounds,
-  //      so close to the CE it doesn't change the sign, since then the corrections will be wrong ...
-  for (Int_t xdelta=-1; xdelta<=1; xdelta++)
-    for (Int_t ydelta=-1; ydelta<=1; ydelta++){
-      for (Int_t zdelta=zmin; zdelta<=zmax; zdelta++){
-        //TODO: what happens if x[2] is on the A-Side, but x[2]+zdelta*delta
-        //      will be on the C-Side?
-        //TODO: For the C-Side, does this have the correct sign?
-        Float_t xyz[3]={x[0]+xdelta*delta, x[1]+ydelta*delta, x[2]+zdelta*delta};
-        Float_t dxyz[3];
-        GetDistortion(xyz,roc,dxyz);
-        Double_t adelta=zdelta*delta;
-        fitx.AddPoint(&adelta, dxyz[0]);
-        fity.AddPoint(&adelta, dxyz[1]);
-        fitz.AddPoint(&adelta, dxyz[2]);
+    Int_t zmin=-1;
+    Int_t zmax=1;
+    //adjust limits around CE to stay on one side
+    if ((roc%36)<18) {
+      //A-Side
+      if ((x[2]+zmin*delta)<0){
+        zmin=0;
+        zmax=2;
+      }
+    } else {
+      //C-Side
+      if ((x[2]+zmax*delta)>0){
+        zmin=-2;
+        zmax=0;
       }
     }
-    fitx.Eval();
-    fity.Eval();
-    fitz.Eval();
-    dx[0] = fitx.GetParameter(1);
-    dx[1] = fity.GetParameter(1);
-    dx[2] = fitz.GetParameter(1);
+
+    //TODO: in principle one shuld check that x[2]+zdelta*delta does not get 'out of' bounds,
+    //      so close to the CE it doesn't change the sign, since then the corrections will be wrong ...
+    for (Int_t xdelta=-1; xdelta<=1; xdelta++)
+      for (Int_t ydelta=-1; ydelta<=1; ydelta++){
+        for (Int_t zdelta=zmin; zdelta<=zmax; zdelta++){
+          //TODO: what happens if x[2] is on the A-Side, but x[2]+zdelta*delta
+          //      will be on the C-Side?
+          //TODO: For the C-Side, does this have the correct sign?
+          Float_t xyz[3]={x[0]+xdelta*delta, x[1]+ydelta*delta, x[2]+zdelta*delta};
+          Float_t dxyz[3];
+          GetDistortion(xyz,roc,dxyz);
+          Double_t adelta=zdelta*delta;
+          fitx.AddPoint(&adelta, dxyz[0]);
+          fity.AddPoint(&adelta, dxyz[1]);
+          fitz.AddPoint(&adelta, dxyz[2]);
+        }
+      }
+      fitx.Eval();
+      fity.Eval();
+      fitz.Eval();
+      dx[0] = fitx.GetParameter(1);
+      dx[1] = fity.GetParameter(1);
+      dx[2] = fitz.GetParameter(1);
+  }
 }
 
 void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta){
@@ -1281,7 +1295,7 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
 		    TMatrixD**arrayofEroverEz, TMatrixD**arrayofEPhioverEz, TMatrixD**arrayofDeltaEz,
 		    Int_t rows, Int_t columns,  Int_t phislices,
 		    Float_t deltaphi, Int_t iterations, Int_t symmetry,
-		    Bool_t rocDisplacement  ) {
+                    Bool_t rocDisplacement, IntegrationType integrationType/*=kIntegral*/  ) {
   /// 3D - Solve Poisson's Equation in 3D by Relaxation Technique
   ///
   ///    NOTE: In order for this algorith to work, the number of rows and columns must be a power of 2 plus one.
@@ -1307,6 +1321,9 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
   const Float_t  ratioZ      =  gridSizeR*gridSizeR / (gridSizeZ*gridSizeZ) ;
 
   TMatrixD arrayE(rows,columns) ;
+
+  // set internal representation
+  fIntegrationType = integrationType;
 
   // Check that the number of rows and columns is suitable for a binary expansion
   if ( !IsPowerOfTwo((rows-1))    ) {
@@ -1515,19 +1532,32 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
       arrayE(rows-1,j) =  -1 * ( 1.5*arrayV(rows-1,j) - 2.0*arrayV(rows-2,j) + 0.5*arrayV(rows-3,j) ) / gridSizeR ;
       // Integrate over Z
       for ( Int_t i = 0 ; i < rows ; i++ ) {
-	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
-	eroverEz(i,j) = 0.0 ;
-	for ( Int_t k = j ; k < columns ; k++ ) {
+        Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
+        eroverEz(i,j) = 0.0 ;
+        if(integrationType==kIntegral) {
+          for ( Int_t k = j ; k < columns ; k++ ) {
 
-	  eroverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
-	  if ( index != 4 )  index = 4; else index = 2 ;
-	}
-	if ( index == 4 ) eroverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
-	if ( index == 2 ) eroverEz(i,j)  +=
-	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
-	if ( j == columns-2 ) eroverEz(i,j) =
-	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
-	if ( j == columns-1 ) eroverEz(i,j) =  0.0 ;
+            eroverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
+            if ( index != 4 )  index = 4; else index = 2 ;
+          }
+          if ( index == 4 ) eroverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
+          if ( index == 2 ) eroverEz(i,j)  +=
+            (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-2 ) eroverEz(i,j) =
+            (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-1 ) eroverEz(i,j) =  0.0 ;
+        } else if(integrationType==kDifferential) {
+          eroverEz(i,j) = arrayE(i,j)/(-1*ezField);
+
+
+          if ( j == columns-2 ) eroverEz(i,j) =
+            (0.5*arrayE(i,columns-2)+0.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-1 ) eroverEz(i,j) =  0.0 ;
+
+          if ( j == 2 ) eroverEz(i,j) =
+            (0.5*arrayE(i,2)+0.5*arrayE(i,1))/(-1*ezField) ;
+          if ( j == 1 ) eroverEz(i,j) =  0.0 ;
+        }
       }
     }
     // if ( m == 0 ) { TCanvas*  c1 =  new TCanvas("erOverEz","erOverEz",50,50,840,600) ;  c1 -> cd() ;
@@ -1560,24 +1590,35 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
     for ( Int_t j = columns-1 ; j >= 0 ; j-- ) { // Count backwards to facilitate integration over Z
       // Differentiate in Phi
       for ( Int_t i = 0 ; i < rows ; i++ ) {
-	Float_t radius = fgkIFCRadius + i*gridSizeR ;
-	arrayE(i,j) = -1 * (signplus * arrayVP(i,j) - signminus * arrayVM(i,j) ) / (2*radius*gridSizePhi) ;
+        Float_t radius = fgkIFCRadius + i*gridSizeR ;
+        arrayE(i,j) = -1 * (signplus * arrayVP(i,j) - signminus * arrayVM(i,j) ) / (2*radius*gridSizePhi) ;
       }
       // Integrate over Z
       for ( Int_t i = 0 ; i < rows ; i++ ) {
-	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
-	ePhioverEz(i,j) = 0.0 ;
-	for ( Int_t k = j ; k < columns ; k++ ) {
+        Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
+        ePhioverEz(i,j) = 0.0 ;
+        if(integrationType==kIntegral) {
+          for ( Int_t k = j ; k < columns ; k++ ) {
 
-	  ePhioverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
-	  if ( index != 4 )  index = 4; else index = 2 ;
-	}
-	if ( index == 4 ) ePhioverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
-	if ( index == 2 ) ePhioverEz(i,j)  +=
-	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
-	if ( j == columns-2 ) ePhioverEz(i,j) =
-	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
-	if ( j == columns-1 ) ePhioverEz(i,j) =  0.0 ;
+            ePhioverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
+            if ( index != 4 )  index = 4; else index = 2 ;
+          }
+          if ( index == 4 ) ePhioverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
+          if ( index == 2 ) ePhioverEz(i,j)  +=
+            (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-2 ) ePhioverEz(i,j) =
+            (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-1 ) ePhioverEz(i,j) =  0.0 ;
+        } else if(integrationType==kDifferential) {
+          ePhioverEz(i,j) = arrayE(i,j)/(-1*ezField);
+          if ( j == columns-2 ) ePhioverEz(i,j) =
+            (0.5*arrayE(i,columns-2)+0.5*arrayE(i,columns-1))/(-1*ezField) ;
+          if ( j == columns-1 ) ePhioverEz(i,j) =  0.0 ;
+
+          if ( j == 2 ) ePhioverEz(i,j) =
+            (0.5*arrayE(i,2)+0.5*arrayE(i,1))/(-1*ezField) ;
+          if ( j == 1 ) ePhioverEz(i,j) =  0.0 ;
+        }
       }
     }
     // if ( m == 5 ) { TCanvas* c2 =  new TCanvas("arrayE","arrayE",50,50,840,600) ;  c2 -> cd() ;
@@ -1603,18 +1644,28 @@ void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**a
     for ( Int_t j = columns-1 ; j >= 0 ; j-- ) {  // Count backwards to facilitate integration over Z
       // Integrate over Z
       for ( Int_t i = 0 ; i < rows ; i++ ) {
-	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
-	deltaEz(i,j) = 0.0 ;
-	for ( Int_t k = j ; k < columns ; k++ ) {
-	  deltaEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k) ;
-	  if ( index != 4 )  index = 4; else index = 2 ;
-	}
-	if ( index == 4 ) deltaEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1) ;
-	if ( index == 2 ) deltaEz(i,j)  +=
-	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1)) ;
-	if ( j == columns-2 ) deltaEz(i,j) =
-	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1)) ;
-	if ( j == columns-1 ) deltaEz(i,j) =  0.0 ;
+        Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.
+        deltaEz(i,j) = 0.0 ;
+        if(integrationType==kIntegral) {
+          for ( Int_t k = j ; k < columns ; k++ ) {
+            deltaEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k) ;
+            if ( index != 4 )  index = 4; else index = 2 ;
+          }
+          if ( index == 4 ) deltaEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1) ;
+          if ( index == 2 ) deltaEz(i,j)  +=
+            (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1)) ;
+          if ( j == columns-2 ) deltaEz(i,j) =
+            (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1)) ;
+          if ( j == columns-1 ) deltaEz(i,j) =  0.0 ;
+        } else if(integrationType==kDifferential) {
+          deltaEz(i,j) = arrayE(i,j) ;
+          if ( j == columns-2 ) deltaEz(i,j) =
+            (0.5*arrayE(i,columns-2)+0.5*arrayE(i,columns-1)) ;
+          if ( j == columns-1 ) deltaEz(i,j) =  0.0 ;
+          if ( j == 2 ) deltaEz(i,j) =
+            (0.5*arrayE(i,2)+0.5*arrayE(i,1)) ;
+          if ( j == 1 ) deltaEz(i,j) =  0.0 ;
+        };
       }
     }
 
@@ -1835,72 +1886,126 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
 
 
 
-TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
+TTree* AliTPCCorrection::CreateDistortionTree(Double_t step, Int_t type/*=0*/)
+{
   /// create the distortion tree on a mesh with granularity given by step
   /// return the tree with distortions at given position
   /// Map is created on the mesh with given step size
+  /// type - 0: Call GetDistortion()
+  ///        1: Call GetDistortionIntegralDz()
+
+  if (type<0 || type>1) {
+    AliError("Unknown type");
+    return 0x0;
+  }
 
   TTreeSRedirector *pcstream = new TTreeSRedirector(Form("correction%s.root",GetName()));
-  Float_t xyz[3];
+  Float_t xyz[3];     // current point
+  Float_t dist[3];    // distorion
+  Float_t corr[3];    // correction
+  Float_t xyzdist[3]; // distorted point
+  Float_t xyzcorr[3]; // corrected point
+
+  AliMagF* mag= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!mag) AliError("Magnetic field - not initialized");
+
   for (Double_t x= -250; x<250; x+=step){
     for (Double_t y= -250; y<250; y+=step){
       Double_t r    = TMath::Sqrt(x*x+y*y);
       if (r<80) continue;
       if (r>250) continue;
-      for (Double_t z= -250; z<250; z+=step){
-	Int_t roc=(z>0)?0:18;
-	xyz[0]=x;
-	xyz[1]=y;
-	xyz[2]=z;
-	Double_t phi  = TMath::ATan2(y,x);
-	DistortPoint(xyz,roc);
-	Double_t r1    = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-	Double_t phi1  = TMath::ATan2(xyz[1],xyz[0]);
-	if ((phi1-phi)>TMath::Pi()) phi1-=TMath::Pi();
-	if ((phi1-phi)<-TMath::Pi()) phi1+=TMath::Pi();
-	Double_t dx = xyz[0]-x;
-	Double_t dy = xyz[1]-y;
-	Double_t dz = xyz[2]-z;
-	Double_t dr=r1-r;
-	Double_t drphi=(phi1-phi)*r;
 
-	AliMagF* mag= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-	if (!mag) AliError("Magnetic field - not initialized");
-	
-	Double_t bxyz[3];
-	Double_t xyz[3] = {r1*TMath::Cos(phi1),r1*TMath::Sin(phi1),z};
-	mag->Field(xyz,bxyz);
-	Double_t br	= 0.;
-	Double_t brfi = 0.;
-	if(r!=0){
-	  br	= (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/r;
-	  brfi	= (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/r;
-	}
-	
-	(*pcstream)<<"distortion"<<
-	  "x="<<x<<           // original position
-	  "y="<<y<<
-	  "z="<<z<<
-	  "r="<<r<<
-	  "phi="<<phi<<
-	  "x1="<<xyz[0]<<      // distorted position
-	  "y1="<<xyz[1]<<
-	  "z1="<<xyz[2]<<
-	  "r1="<<r1<<
-	  "phi1="<<phi1<<
-	  //
-	  "dx="<<dx<<          // delta position
-	  "dy="<<dy<<
-	  "dz="<<dz<<
-	  "dr="<<dr<<
-	  "drphi="<<drphi<<
-	  // B-field integ
-	  "bx="<<bxyz[0]<<
-	  "by="<<bxyz[1]<<
-	  "bz="<<bxyz[2]<<
-	  "br="<< br<<
-	  "brfi="<<brfi<<
-	  "\n";
+      Double_t phi  = TMath::ATan2(y,x);
+
+      for (Double_t z= -250; z<250; z+=step){
+        Int_t roc=(z>0)?0:18;
+        xyz[0]=x;
+        xyz[1]=y;
+        xyz[2]=z;
+
+        // === Get distortions and corrections =========================
+        if (type==0) {
+          GetDistortion(xyz, roc, dist);
+          GetCorrection(xyz, roc, corr);
+        } else if (type==1) {
+          GetDistortionIntegralDz(xyz, roc, dist, .5);
+          GetCorrectionIntegralDz(xyz, roc, corr, .5);
+        }
+
+        for (Int_t i=0; i<3; ++i) {
+          xyzdist[i]=xyz[i]+dist[i];
+          xyzcorr[i]=xyz[i]+corr[i];
+        }
+
+        // === r, rphi + residuals for the distorted point =========================
+        Double_t rdist    = TMath::Sqrt(xyzdist[0]*xyzdist[0]+xyzdist[1]*xyzdist[1]);
+        Double_t phidist  = TMath::ATan2(xyzdist[1],xyzdist[0]);
+        if ((phidist-phi)>TMath::Pi()) phidist-=TMath::Pi();
+        if ((phidist-phi)<-TMath::Pi()) phidist+=TMath::Pi();
+
+        Double_t drdist=rdist-r;
+        Double_t drphidist=(phidist-phi)*r;
+
+        // === r, rphi + residuals for the corrected point =========================
+        Double_t rcorr    = TMath::Sqrt(xyzcorr[0]*xyzcorr[0]+xyzcorr[1]*xyzcorr[1]);
+        Double_t phicorr  = TMath::ATan2(xyzcorr[1],xyzcorr[0]);
+        if ((phicorr-phi)>TMath::Pi()) phicorr-=TMath::Pi();
+        if ((phicorr-phi)<-TMath::Pi()) phicorr+=TMath::Pi();
+
+        Double_t drcorr=rcorr-r;
+        Double_t drphicorr=(phicorr-phi)*r;
+
+        // === get b field ===============
+        Double_t bxyz[3]={0.,0.,0.};
+        Double_t dblxyz[3] = {Double_t(xyzdist[0]),Double_t(xyzdist[1]),Double_t(xyzdist[2])};
+        Double_t br	= 0.;
+        Double_t brfi = 0.;
+        if (mag) {
+          mag->Field(dblxyz,bxyz);
+          if(rdist>0){
+            br = (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/rdist;
+            brfi = (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/rdist;
+          }
+        }
+
+        (*pcstream)<<"distortion"<<
+        "x="  << x   <<           // original position
+        "y="  << y   <<
+        "z="  << z   <<
+        "r="  << r   <<
+        "phi="<< phi <<
+        //
+        "x_dist="    << xyzdist[0] <<      // distorted position
+        "y_dist="    << xyzdist[1] <<
+        "z_dist="    << xyzdist[2] <<
+        "r_dist="    << rdist      <<
+        "phi_dist="  << phidist    <<
+        //
+        "dx_dist="   << dist[0]    <<     // distortion
+        "dy_dist="   << dist[1]    <<
+        "dz_dist="   << dist[2]    <<
+        "dr_dist="   << drdist     <<
+        "drphi_dist="<< drphidist  <<
+        //
+        //
+        "x_corr="    << xyzcorr[0] <<      // corrected position
+        "y_corr="    << xyzcorr[1] <<
+        "z_corr="    << xyzcorr[2] <<
+        "r_corr="    << rcorr      <<
+        "phi_corr="  << phicorr    <<
+        //
+        "dx_corr="   << corr[0]    <<     // correction
+        "dy_corr="   << corr[1]    <<
+        "dz_corr="   << corr[2]    <<
+        "dr_corr="   << drcorr     <<
+        "drphi_corr="<< drphicorr  <<
+        // B-field integ
+        "bx="<<bxyz[0]<<
+        "by="<<bxyz[1]<<
+        "bz="<<bxyz[2]<<
+        "br="<< br<<
+        "brfi="<<brfi<<
+        "\n";
       }
     }
   }
@@ -2346,7 +2451,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	Int_t dtype=5;
 	Double_t array[10];
 	Int_t first3=TMath::Max(irow-3,0);
-	Int_t last3 =TMath::Min(irow+3,159);
+	Int_t last3 =TMath::Min(irow+3,159-1);
 	Int_t counter=0;
 	if ((*ltr->GetVecSec())[irow]>=0 && err) {
 	  for (Int_t jrow=first3; jrow<=last3; jrow++){

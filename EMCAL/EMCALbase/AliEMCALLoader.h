@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  The AliEMCALLoader gets the TClonesArray and TObjArray for reading
 //  Hits, Dgits, SDigits and RecPoints. Filling is managed in the GetEvent()
@@ -27,6 +25,7 @@ class TParticle ;
 // --- AliRoot header files ---
 #include "AliLoader.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALRecParam.h"
@@ -85,7 +84,10 @@ class AliEMCALLoader : public AliLoader {
   //OCDB access methods
   
   void  SetCalibData(AliEMCALCalibData* calibda)  { fgCalibData = calibda; }
-  AliEMCALCalibData * CalibData();              // to get the calibration CDB object
+  AliEMCALCalibData * CalibData();              // to get the energy calibration CDB object
+
+  void  SetCalibTime(AliEMCALCalibTime* calibti)  { fgCalibTime = calibti; }
+  AliEMCALCalibTime * CalibTime();              // to get the time calibration CDB object
   
   void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
   AliCaloCalibPedestal* PedestalData();         // to get the pedestal CDB object
@@ -108,12 +110,13 @@ class AliEMCALLoader : public AliLoader {
   
   Int_t  fDebug ;             // Debug level
 	
-  static AliEMCALCalibData    * fgCalibData;  //  calibration data 
+  static AliEMCALCalibData    * fgCalibData;  //  energy calibration data 
+  static AliEMCALCalibTime    * fgCalibTime;  //  time calibration data 
   static AliCaloCalibPedestal * fgCaloPed;    //  dead map
   static AliEMCALSimParam     * fgSimParam;   //  sim param 
   static AliEMCALRecParam     * fgRecParam;   //  rec param 
 
-  ClassDef(AliEMCALLoader,7)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,8)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
     
 };
 

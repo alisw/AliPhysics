@@ -52,7 +52,13 @@
 #include <fstream>
 #include <TRandom.h>
 #include <TTimeStamp.h>
-#include <AliXRDPROOFtoolkit.h>
+#include "TSystem.h"
+#include "AliXRDPROOFtoolkit.h"
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
 
 
 /// \cond CLASSIMP

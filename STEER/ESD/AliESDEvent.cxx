@@ -173,11 +173,13 @@ AliESDEvent::AliESDEvent():
   fTOFHeader(0),
   fCentrality(0),
   fEventplane(0),
+  fNTPCFriend2Store(0),
   fDetectorStatus(0xFFFFFFFF),
   fDAQDetectorPattern(0xFFFF),
   fDAQAttributes(0xFFFF)
 {
 }
+
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AliVEvent(esd),
@@ -228,6 +230,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
   fCentrality(new AliCentrality(*esd.fCentrality)),
   fEventplane(new AliEventplane(*esd.fEventplane)),
+  fNTPCFriend2Store(esd.fNTPCFriend2Store),
   fDetectorStatus(esd.fDetectorStatus),
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
   fDAQAttributes(esd.fDAQAttributes)
@@ -369,7 +372,6 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   
   fCentrality = source.fCentrality;
   fEventplane = source.fEventplane;
-
   fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
 
@@ -377,6 +379,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
 
+  fNTPCFriend2Store = source.fNTPCFriend2Store;
   fTracksConnected = kFALSE;
   ConnectTracks();
   return *this;
@@ -679,12 +682,23 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) const
   // in case of old esds 
   // if(fESDOld)CopyFromOldESD();
 
-  Int_t ntrk=ev->GetNumberOfTracks();
- 
-  for (Int_t i=0; i<ntrk; i++) {
-    const AliESDfriendTrack *f=ev->GetTrack(i);
-    if (!f) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    GetTrack(i)->SetFriendTrack(f);
+  Int_t ntrkF=ev->GetNumberOfTracks();
+  if (ev->GetESDIndicesStored()) { // new format: sparse friends
+    for (Int_t i=0; i<ntrkF; i++) {
+      AliESDfriendTrack *f=ev->GetTrack(i);
+      int esdid = f->GetESDtrackID();
+      AliESDtrack* esdt = GetTrack(esdid);
+      if (!esdt) {AliFatalF("ESDfriendTrack %d points on non-existing ESDtrack %d",i,esdid);}
+      if (esdt->GetFriendNotStored()) {AliFatalF("ESDtrack %d did not store the friend, but ESDfriendTrack %d points on it",esdid,i);}
+      esdt->SetFriendTrack(f);
+    }
+  }
+  else {
+    for (Int_t i=0; i<ntrkF; i++) { // old format: 1 to 1 correspondence
+      const AliESDfriendTrack *f=ev->GetTrack(i);
+      if (!f) {AliFatal(Form("NULL pointer for ESD track %d",i));}
+      GetTrack(i)->SetFriendTrack(f);
+    }
   }
 }
 
@@ -1473,27 +1487,29 @@ void AliESDEvent::SetADData(AliESDAD * obj)
 }
 
 //______________________________________________________________________________
-void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
+void AliESDEvent::GetESDfriend(AliESDfriend *ev)
 {
   //
   // Extracts the complementary info from the ESD
+  // RS: instead of cloning full objects, create shallow copies of friend tracks
   //
   if (!ev) return;
 
   Int_t ntrk=GetNumberOfTracks();
-
+  int nfadd = 0;
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
     if (!t) {AliFatal(Form("NULL pointer for ESD track %d",i));}
-    const AliESDfriendTrack *f=t->GetFriendTrack();
-    ev->AddTrack(f);
-
-    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
-
+    if (t->GetFriendNotStored()) continue; // skip this one
+    AliESDfriendTrack *f = (AliESDfriendTrack*)t->GetFriendTrack();
+    AliESDfriendTrack *fcopy = ev->AddTrack(f,kTRUE); // create shallow copy
+    fcopy->SetESDtrackID(i);
+    t->SetFriendTrackID(nfadd);
+    f->SetESDtrackID(nfadd++);
   }
-
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindFriend());
   if (fr) ev->SetVZEROfriend(fr->GetVZEROfriend());
+  ev->SetESDIndicesStored(kTRUE);
 }
 
 //______________________________________________________________________________

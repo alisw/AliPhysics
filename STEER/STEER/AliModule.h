@@ -12,11 +12,9 @@
 // on this.
 //
 
-#include <Riostream.h>
 #include <TNamed.h>
 #include <TClonesArray.h>
 
-#include "AliLog.h"
 #include "AliTriggerDetector.h"
 
 class TBrowser;

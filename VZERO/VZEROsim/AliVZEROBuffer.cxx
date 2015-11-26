@@ -28,6 +28,7 @@
 #include "AliRawDataHeaderSim.h"
 #include "AliVZEROBuffer.h"
 #include "AliVZEROdigit.h"
+#include "AliFstream.h"
 
 ClassImp(AliVZEROBuffer)
 

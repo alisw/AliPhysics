@@ -12,6 +12,7 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TFile.h>
+#include "AliLog.h"
 
 
 ClassImp(AliITSSAPTracker)

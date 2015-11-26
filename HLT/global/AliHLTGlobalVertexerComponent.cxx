@@ -269,8 +269,8 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
       info.fOK = 1;
       info.fPrimUsedFlag = 0;
       info.fParticle = AliKFParticle( tracks[iTr], 211 );
-      for( int i=0; i<8; i++ ) if( !finite(info.fParticle.GetParameter(i)) ) info.fOK = 0;
-      for( int i=0; i<36; i++ ) if( !finite(info.fParticle.GetCovariance(i)) ) info.fOK = 0;
+      for( int i=0; i<8; i++ ) if( !isfinite(info.fParticle.GetParameter(i)) ) info.fOK = 0;
+      for( int i=0; i<36; i++ ) if( !isfinite(info.fParticle.GetCovariance(i)) ) info.fOK = 0;
     }
   }
 

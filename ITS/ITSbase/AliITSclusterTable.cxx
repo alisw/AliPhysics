@@ -36,7 +36,6 @@ ClassImp(AliITSclusterTable)
 
 //_______________________________________________________________
 AliITSclusterTable::AliITSclusterTable():TObject(),
-fOrInd(0),
 fX(0),
 fY(0),
 fZ(0),
@@ -50,7 +49,6 @@ fLam(0){
 }
 //_______________________________________________________________
 AliITSclusterTable::AliITSclusterTable(Double_t x, Double_t y, Double_t z, Double_t sx, Double_t sy, Double_t sz, Double_t phi, Double_t lambda, Int_t index):
-fOrInd(index),
 fX(x),
 fY(y),
 fZ(z),
@@ -60,7 +58,7 @@ fSz(sz),
 fPhi(phi),
 fLam(lambda){
   //Default constructor
-
+  SetUniqueID(index);
 }
 
 

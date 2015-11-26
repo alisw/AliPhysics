@@ -30,7 +30,7 @@
     @author Oystein Djuvsland
     @date   
     @brief  A clusterizer component for EMCAL HLT
-*/
+ */
 
 // see header file for class documentation
 // or
@@ -43,15 +43,15 @@
 #include "AliHLTCaloClusterizer.h"
 
 AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent(): 
-  AliHLTCaloClusterizerComponent("EMCAL")
+AliHLTCaloClusterizerComponent("EMCAL")
 {
   //See headerfile for documentation
 
   fDataOrigin = const_cast<char*>(kAliHLTDataOriginEMCAL);
 
   //AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
-  
-  
+
+
 }
 
 AliHLTEMCALClusterizerComponent::~AliHLTEMCALClusterizerComponent()
@@ -101,27 +101,27 @@ AliHLTEMCALClusterizerComponent::Spawn()
 }
 int AliHLTEMCALClusterizerComponent::DoInit(int argc, const char** argv)
 {
-   fClusterizerPtr = new AliHLTCaloClusterizer("EMCAL");
-   
-   fRecoParamsPtr = new AliHLTEMCALRecoParamHandler();
+  fClusterizerPtr = new AliHLTCaloClusterizer("EMCAL");
 
-    return AliHLTCaloClusterizerComponent::DoInit(argc, argv);
+  fRecoParamsPtr = new AliHLTEMCALRecoParamHandler();
+
+  return AliHLTCaloClusterizerComponent::DoInit(argc, argv);
 }
 
 int AliHLTEMCALClusterizerComponent::DoDeinit()
 {
-   if(fRecoParamsPtr)
-   {
-      delete fRecoParamsPtr;
-      fRecoParamsPtr = 0;
-   }
-    return AliHLTCaloClusterizerComponent::DoDeinit();
+  if(fRecoParamsPtr)
+  {
+    delete fRecoParamsPtr;
+    fRecoParamsPtr = 0;
+  }
+  return AliHLTCaloClusterizerComponent::DoDeinit();
 }
 
 
 int AliHLTEMCALClusterizerComponent::InitialiseGeometry()
 {
-        fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry());
+  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry(GetRunNo()));
 
-	return 0;
+  return 0;
 }

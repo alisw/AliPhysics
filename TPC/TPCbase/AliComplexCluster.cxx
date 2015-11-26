@@ -83,7 +83,7 @@ Bool_t AliComplexCluster::IsSortable() const
 
 ClassImp(AliTPCExactPoint)
 ClassImp(AliTPCClusterPoint)
-ClassImp(AliTPCTrackerPoint)
+ClassImp(AliTPCTrackerPoints)
 
 AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
   if(this!=&o){
@@ -99,6 +99,39 @@ AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
     fIsShared = o.fIsShared;
   }
   return *this;
+}
+
+//RS: array of more compact points
+AliTPCTrackerPoints::AliTPCTrackerPoints()
+{
+  memset(fShared,0,20*sizeof(UChar_t));
+}
+
+AliTPCTrackerPoints::AliTPCTrackerPoints(const AliTPCTrackerPoints& o)
+{
+  memcpy(fPoints,o.fPoints,159*sizeof(AliTPCTrackerPoints::Point));
+  memcpy(fShared,o.fShared,20*sizeof(UChar_t));
+}
+
+void AliTPCTrackerPoints::SetPoint(int i, const AliTPCTrackerPoint* o)
+{
+  if (o) {
+    fPoints[i] = *o;
+    SetShared(o->IsShared());
+  }
+}
+
+void AliTPCTrackerPoints::Clear()
+{
+  memset(fShared,0,20*sizeof(UChar_t));
+}
+
+AliTPCTrackerPoints& AliTPCTrackerPoints::operator=(const AliTPCTrackerPoints& o)
+{
+  if(this!=&o){
+    memcpy(fPoints,o.fPoints,159*sizeof(AliTPCTrackerPoints::Point));
+    memcpy(fShared,o.fShared,20*sizeof(UChar_t));
+  }
 }
 
 /// \cond CLASSIMP

@@ -3,23 +3,20 @@
 
 #include <TNamed.h>
 #include <TList.h>
-#include <TGraph.h>
-#include <Riostream.h>
-#include <TMatrixD.h>
 #include <TClonesArray.h>
 #include <TArrayD.h>
-#include <TH2.h>
-#include <TH1.h>
 #include "AliExternalTrackParam.h"
-#include "AliLog.h"
 
 //-------------------------------------------------------------------------
 // Current support and development: Ruben Shahoyan (Ruben.Shahoyan@cern.ch) 
 //-------------------------------------------------------------------------
 
-
 class KMCLayer;
 class KMCCluster;
+class TH2F;
+class TH1F;
+class TGraph;
+class TArrayI;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //--------------------------------------------------------------------------------------------

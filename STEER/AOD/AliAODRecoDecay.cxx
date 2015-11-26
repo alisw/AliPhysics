@@ -42,8 +42,7 @@ AliAODRecoDecay::AliAODRecoDecay() :
   fPx(0x0), fPy(0x0), fPz(0x0),
   fd0(0x0),
   fDCA(0x0),
-  fPID(0x0), 
-  fEventNumber(-1),fRunNumber(-1)
+  fPID(0x0)
 {
   //
   // Default Constructor
@@ -62,8 +61,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   fPx(0x0), fPy(0x0), fPz(0x0),
   fd0(0x0),
   fDCA(0x0),
-  fPID(0x0), 
-  fEventNumber(-1),fRunNumber(-1)
+  fPID(0x0) 
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -92,8 +90,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   fPx(0x0), fPy(0x0), fPz(0x0),
   fd0(0x0),
   fDCA(0x0),
-  fPID(0x0), 
-  fEventNumber(-1),fRunNumber(-1)
+  fPID(0x0) 
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -112,8 +109,7 @@ AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
   fPx(0x0), fPy(0x0), fPz(0x0),
   fd0(0x0), 
   fDCA(0x0),
-  fPID(0x0), 
-  fEventNumber(source.fEventNumber),fRunNumber(source.fRunNumber)
+  fPID(0x0) 
 {
   //
   // Copy constructor
@@ -152,8 +148,6 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
   fNProngs = source.fNProngs;
   fNDCA = source.fNDCA;
   fNPID = source.fNPID;
-  fEventNumber = source.fEventNumber;
-  fRunNumber = source.fRunNumber;
   if(source.GetNProngs()>0) {
     if(fd0)delete [] fd0; 
     fd0 = new Double32_t[GetNProngs()];
@@ -748,5 +742,24 @@ Double_t AliAODRecoDecay::QtProngFlightLine(Int_t ip,Double_t point[3]) const
 		 GetSecVtxZ()-point[2]);
 
   return mom.Perp(fline);
+}
+//--------------------------------------------------------------------------
+void AliAODRecoDecay::DeleteRecoD(){
+ //Delete data members to reduce the dAOD size. 
+ //The missing info will be reconstructed on-the-fly
+ //at the analysis level
+ if(fPx) {delete [] fPx; fPx=NULL;}
+ if(fPy) {delete [] fPy; fPy=NULL;}
+ if(fPz) {delete [] fPz; fPz=NULL;}
+ if(fd0) { delete [] fd0; fd0=NULL; }
+ if(fDCA) { delete [] fDCA; fDCA=NULL; }
+ delete [] fPID;fPID=NULL;
+
+ fNDCA=0;
+ fNPID=0;
+
+ if(fCharge) fCharge = 0;
+ delete fOwnSecondaryVtx; fOwnSecondaryVtx=NULL;
+ return;
 }
 //--------------------------------------------------------------------------

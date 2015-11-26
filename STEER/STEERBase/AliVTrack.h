@@ -52,6 +52,8 @@ public:
     ,kPHOSmatch   = 0x200000
     ,kITSupg      = 0x400000     // flag that in the ITSupgrade reco
     //
+    ,kSkipFriend  = 0x800000     // flag to skip friend storage
+    //
     ,kGlobalMerge = 0x1000000
     ,kMultInV0    = 0x2000000     //BIT(25): assumed to be belong to V0 in multiplicity estimates
     ,kMultSec     = 0x4000000     //BIT(26): assumed to be secondary (due to the DCA) in multiplicity estimates

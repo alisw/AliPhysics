@@ -26,6 +26,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCFitPad.h"
+#include "TLinearFitter.h"
+#include <iostream>
+
+using namespace std;
 
 ClassImp(AliTPCFitPad)
 

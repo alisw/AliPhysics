@@ -1177,6 +1177,16 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
 
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
 
+  //RS define max cl. per layer to search
+  const int kMaxClFindPerLayer = 6;
+  int maxClFind = kMaxClFindPerLayer + AliTRDReconstructor::GetExtraMaxClPerLayer();
+
+  //RS define roads with optional extension
+  const Double_t kroady = 3.; //recoParam->GetRoad1y();
+  const Double_t kroadz = GetPadLength() * recoParam->GetRoadzMultiplicator() + 1.;
+  double extraRoadY = AliTRDReconstructor::GetExtraRoadY();
+  double extraRoadZ = AliTRDReconstructor::GetExtraRoadZ();
+
   if(!recoParam){
     AliError("Tracklets can not be used without a valid RecoParam.");
     return kFALSE;
@@ -1205,9 +1215,6 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
            s2zCl = GetPadLength()*GetPadLength()/12., 
            syRef = TMath::Sqrt(s2yTrk),
            t2    = GetTilt()*GetTilt();
-  //define roads
-  const Double_t kroady = 3.; //recoParam->GetRoad1y();
-  const Double_t kroadz = GetPadLength() * recoParam->GetRoadzMultiplicator() + 1.;
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
@@ -1263,8 +1270,8 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
     s2yCl = cp.GetSigmaY2() + sysCov[0]; if(!tilt) s2yCl = (s2yCl + t2*s2zCl)/(1.+t2);
     if(TMath::Abs(it-12)<7){ s2Mean += cp.GetSigmaY2(); ns2Mean++;}
     // get estimated road in r-phi direction
-    roady = TMath::Min(3.*TMath::Sqrt(12.*(s2yTrk + s2yCl)), kroady);
-
+    if (extraRoadY>0) roady = kroady + extraRoadY;
+    else roady = TMath::Min(3.*TMath::Sqrt(12.*(s2yTrk + s2yCl)), kroady);
     AliDebug(5, Form("\n"
       "  %2d xd[cm]=%6.3f yt[cm]=%7.2f zt[cm]=%8.2f\n"
       "      syTrk[um]=%6.2f syCl[um]=%6.2f syClTlt[um]=%6.2f\n"
@@ -1275,8 +1282,8 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
 
     // get clusters from layer
     cond[0] = yt/*+0.5*kroadyShift*kroady*/; cond[2] = roady;
-    cond[1] = zt; cond[3] = kroadz;
-    Int_t n=0, idx[6]; layer->GetClusters(cond, idx, n, 6);
+    cond[1] = zt; cond[3] = kroadz + extraRoadZ;
+    Int_t n=0, idx[maxClFind]; layer->GetClusters(cond, idx, n, maxClFind);
     for(Int_t ic = n; ic--;){
       c  = (*layer)[idx[ic]];
       dx = fX0 - c->GetX();

@@ -1,7 +1,11 @@
-// Script to create reconstruction parameters and store them into CDB
-// Author: Yuri Kharlov
-
-/* $Id$ */
+/// \file AliEMCALSetRecParamCDB.C
+/// \brief Set EMCal reconstruction OCDB parameters
+///
+/// Script to create reconstruction parameters and store them into CDB
+///
+/// \author :Yuri Kharlov <Yuri.Kharlov@cern.ch>, (IHEP)
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
 
 #if !defined(__CINT__)
 #include "TControlBar.h"
@@ -15,12 +19,13 @@
 #include "AliCDBStorage.h"
 #endif
 
-
+/// Main method
+/// Create an object AliEMCALRecParam and store it to OCDB
+///
+/// \param default: event type
+///
 void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::kLowMult)
-{
-  
-  // Create an object AliEMCALRecParam and store it to OCDB
-  
+{  
   //Activate CDB storage
   AliCDBManager* cdb = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -106,7 +111,7 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
   
   // Store calibration data into database  
   AliCDBMetaData *md = new AliCDBMetaData();
-  md->SetResponsible("J. Klay");
+  md->SetResponsible("G. Conesa");
   md->SetComment("Reconstruction Parameters: EMCAL");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
@@ -117,15 +122,15 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
   return;
 }
 
-//-----------------------------------------------------------------------------
+
+/// Set here the high flux/multiplicity ("Pb+Pb") parameters for the reconstruction
+/// Right now it should be the same settings as with
+/// AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetHighFluxParam();
+/// or
+/// AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
+//_______________________________________________
 AliEMCALRecParam* GetHighMultiplicityParameters()
 {
-  //Set here the high flux/multiplicity ("Pb+Pb") parameters for the reconstruction
-  //Right now it should be the same settings as with
-  //AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetHighFluxParam();
-  //or
-  //AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
-  
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
   //Clusterization
 
@@ -295,17 +300,19 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
+  params->SetL1PhaseUse(kFALSE);
   params->SetLEDFit(kFALSE);   
 
   return params ;
 }	
 
-//-----------------------------------------------------------------------------
+///
+/// Set here the low flux/multiplicity ("p+p") parameters for the reconstruction
+/// Right now it should be the same settings as with
+/// AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetLowFluxParam();
+//______________________________________________
 AliEMCALRecParam* GetLowMultiplicityParameters()
 {
-  // Set here the low flux/multiplicity ("p+p") parameters for the reconstruction
-  //Right now it should be the same settings as with
-  //AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetLowFluxParam();
   
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
   //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
@@ -473,10 +480,10 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
+  params->SetL1PhaseUse(kFALSE);
   params->SetLEDFit(kFALSE);   
 
   return params;
-  
 }
 
 

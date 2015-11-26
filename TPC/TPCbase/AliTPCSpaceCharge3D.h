@@ -38,9 +38,9 @@ public:
   void InitSpaceCharge3DDistortionCourse(); // real 3D but not accurate enough
   void ForceInitSpaceCharge3DDistortion() { fInitLookUp=kFALSE; InitSpaceCharge3DDistortion(); }
 
-  void InitSpaceCharge3DPoisson     (Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations);
-  void ForceInitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations)
-                                    { fInitLookUp=kFALSE; InitSpaceCharge3DPoisson(kRows,kColumns,kPhiSlices,kIterations); }
+  void InitSpaceCharge3DPoisson     (Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations, IntegrationType integrationType=kIntegral);
+  void ForceInitSpaceCharge3DPoisson(Int_t kRows, Int_t kColumns, Int_t kPhiSlices, Int_t kIterations, IntegrationType integrationType=kIntegral)
+                                    { fInitLookUp=kFALSE; InitSpaceCharge3DPoisson(kRows,kColumns,kPhiSlices,kIterations, integrationType); }
   Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z);
   TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100);
   TH2F* CreateHistoSCinZR(Float_t phi, Int_t nz=100, Int_t nr=100);

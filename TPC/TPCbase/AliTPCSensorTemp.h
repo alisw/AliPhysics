@@ -8,8 +8,6 @@
 /// \brief Container class for temperature sensor positions
 
 
-#include "TMath.h"
-#include "AliSplineFit.h"
 #include "AliDCSSensor.h"
 #include "TTree.h"
 
@@ -27,7 +25,7 @@ class TTimeStamp;
 //              Class AliTPCSensorTempSensors
 ////////////////////////////////////////////////////////////////////////
 
-const TString kAmandaStringTPC = "tpc_temp:PT_%d.Temperature";
+const TString kAmandaStringTPC("tpc_temp:PT_%d.Temperature");
 
 class AliTPCSensorTemp : public AliDCSSensor {
 

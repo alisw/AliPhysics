@@ -2,7 +2,6 @@
 #define ALIITSUCACELL_H
 
 #include <vector>
-#include <iostream>
 
 class AliITSUCACell {
 public:

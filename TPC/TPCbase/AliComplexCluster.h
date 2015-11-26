@@ -47,8 +47,7 @@ private:
     // Cluster manager
 };
 
-
-
+//RS: this is old, non-economical and virtualized class, for bwd compatibility only
 class AliTPCTrackerPoint  {  
  public:
 
@@ -88,7 +87,6 @@ class AliTPCTrackerPoint  {
 
   Char_t   IsShared() const {return fIsShared;}
   void     SetShared(Char_t s) {fIsShared=s;}
-
   //
  private:
   Short_t   fTX;        ///< x position of the cluster  in cm - 10 mum prec
@@ -105,6 +103,93 @@ class AliTPCTrackerPoint  {
   /// \cond CLASSIMP
   ClassDef(AliTPCTrackerPoint, 2);
   /// \endcond  
+};
+
+//RS: this is new, more economic class for TrackerPoints, avoiding vtable pointer per point
+class AliTPCTrackerPoints  {  
+  //
+ public:
+  class Point {
+  public:
+  Point():fTX(0),fTZ(0),fTY(0),fTAngleZ(0),fTAngleY(0),fSigmaZ(0),fSigmaY(0),fErrZ(0),fErrY(0) {}
+    ~Point(){}
+    Point &operator=(const Point& o) {
+      if(this!=&o) {
+	fTX = o.fTX;
+	fTY = o.fTY;
+	fTZ = o.fTZ;
+	fTAngleZ = o.fTAngleZ;
+	fTAngleY = o.fTAngleY;
+	fSigmaZ = o.fSigmaZ;
+	fSigmaY = o.fSigmaY;
+	fErrZ   = o.fErrZ;
+	fErrY   = o.fErrY;
+      }
+      return *this;
+    }
+    //
+    Point &operator=(const AliTPCTrackerPoint& o) {
+      fTX = o.GetX();
+      fTY = o.GetY();
+      fTZ = o.GetZ();
+      fTAngleZ = o.GetAngleZ();
+      fTAngleY = o.GetAngleY();
+      fSigmaZ = o.GetSigmaZ();
+      fSigmaY = o.GetSigmaY();
+      fErrZ   = o.GetErrZ();
+      fErrY   = o.GetErrY();
+      return *this;
+    }
+    Float_t  GetX() const  {return (fTX*0.01);}
+    Float_t  GetZ() const {return (fTZ*0.01);}
+    Float_t  GetY() const {return (fTY*0.01);}
+    Float_t  GetAngleZ() const  {return (Float_t(fTAngleZ)*0.02);}
+    Float_t  GetAngleY() const {return (Float_t(fTAngleY)*0.02);}
+    //
+    void     SetX(Float_t x)  { fTX = Short_t(TMath::Nint(x*100.));} 
+    void     SetY(Float_t y)  { fTY = Short_t(TMath::Nint(y*100.));} 
+    void     SetZ(Float_t z)  { fTZ = Short_t(TMath::Nint(z*100.));} 
+    void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(TMath::Nint(anglez*50.));}
+    void     SetAngleY(Float_t angley) {fTAngleY = Char_t(TMath::Nint(angley*50.));}
+    Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
+    Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
+    Float_t  GetErrZ()   const {return (fErrZ*0.005);}
+    Float_t  GetErrY()   const {return (fErrY*0.005);}
+    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(TMath::Nint(errz*200.));}
+    void     SetErrY(Float_t erry) {fErrY = UChar_t(TMath::Nint(erry*200.));}
+    void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
+    void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
+    //
+  private:
+    Short_t   fTX;        ///< x position of the cluster  in cm - 10 mum prec
+    Short_t   fTZ;        ///< current prolongation in Z  in cm - 10 mum prec.
+    Short_t   fTY;        ///< current prolongation in Y  in cm - 10 mum prec.
+    Char_t    fTAngleZ;    ///< angle
+    Char_t    fTAngleY;    ///< angle
+    UChar_t   fSigmaZ;     ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
+    UChar_t   fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
+    UChar_t   fErrZ;       ///< z error estimate - in  mm - 50 mum precision
+    UChar_t   fErrY;       ///< y error estimate - in  mm - 50 mum precision
+  };
+  
+ public:
+  AliTPCTrackerPoints();
+  ~AliTPCTrackerPoints() {}
+  AliTPCTrackerPoints &operator=(const AliTPCTrackerPoints& o);
+  AliTPCTrackerPoints(const AliTPCTrackerPoints& o);
+  void Clear();
+  //
+  void     SetShared(int i)      {fShared[i/8] |= 0x1<<(i%8);}
+  Bool_t   IsShared(int i) const {return fShared[i/8] & 0x1<<(i%8);}
+  const Point*   GetPoint(int i) const {return &fPoints[i];}
+  void     SetPoint(int i, const AliTPCTrackerPoint* o);
+  //
+ protected:
+  //
+  UChar_t  fShared[20];         // shared map
+  Point    fPoints[159];        // array of compact non-virtualized points
+  //
+  ClassDef(AliTPCTrackerPoints, 1);
 };
 
 class AliTPCClusterPoint  {

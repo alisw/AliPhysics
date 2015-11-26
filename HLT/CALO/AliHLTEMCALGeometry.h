@@ -32,7 +32,7 @@ class AliEMCALGeometry;
 class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 {
  public:
-	AliHLTEMCALGeometry();
+	AliHLTEMCALGeometry(Int_t runnumber = -1);
 	virtual ~AliHLTEMCALGeometry();
 	void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord, Int_t iParticle );
 	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
@@ -40,9 +40,12 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 	
 	virtual void GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z);
 	
+	const AliEMCALGeometry *GetGeometryPtr() const { return fGeo; }
+	const AliEMCALRecoUtils *GetRecoUtilsPtr() const { return fReco; }
+
 	
 protected:
-	int GetGeometryFromCDB();
+	int GetGeometryFromCDB(Int_t runnumber = -1);
 
 private:
 	AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );

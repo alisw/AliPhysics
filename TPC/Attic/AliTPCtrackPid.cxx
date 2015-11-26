@@ -19,6 +19,7 @@
 /// More comments and a description of the class will be added here.
 
 #include "AliTPCtrackPid.h"
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliTPCtrackPid)

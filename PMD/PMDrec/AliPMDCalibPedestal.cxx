@@ -209,7 +209,7 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     UInt_t  detsmnrowcol = 0;
     Int_t   det = 0, sm = 0, row = 0, col = 0;
     Int_t   idet = 0, ism = 0, irow = 0, icol = 0;
-    Float_t mean = 0., rms = 0.;
+    Float_t mean = 0., rms = 0., meanoff = 0.;
     Double_t meansq = 0., diff = 0.;
 
     FILE *fpw0 = fopen("pedestal2304.ped","w");
@@ -296,8 +296,10 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
 			if (fPedCount[idet][ism][irow][icol] > 0)
 			  {
 			    mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
-			    
-			    meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+			    // Fix for 2015 data sjena
+                            // should be used for pedestal
+			    meanoff = mean; // Variable kept to add an offset - it is off now   
+			    meansq  = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
 			    
 			    diff = meansq - mean*mean;
 			    if (diff > 0.)
@@ -309,36 +311,35 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
 				rms = 0.;
 			      }
 
-
 			    if (iddl == 0)
 			      {
 				fprintf(fpw0,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			    else if (iddl == 1)
 			      {
 				fprintf(fpw1,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			    else if (iddl == 2)
 			      {
 				fprintf(fpw2,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			    else if (iddl == 3)
 			      {
 				fprintf(fpw3,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			    else if (iddl == 4)
 			      {
 				fprintf(fpw4,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			    else if (iddl == 5)
 			      {
 				fprintf(fpw5,"%d %d %d %f %f\n",
-					ibus, imcm, ich, mean, rms);
+					ibus, imcm, ich, meanoff, rms);
 			      }
 			  }
 		      }

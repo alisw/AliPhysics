@@ -13,34 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//_________________________________________________________________________
-// 
-//////////////////////////////////////////////////////////////////////////////
-// Class performs digitization of Summable digits from simulated data
-//  
-// In addition it performs mixing/embedding of summable digits from different events.
-//
-// For each event 3 branches are created in TreeD:
-//   "EMCAL" - list of digits
-//   "EMCALTRG" - list of trigger digits
-//   "AliEMCALDigitizer" - AliEMCALDigitizer with all parameters used in digitization
-//
-//
-////////////////////////////////////////////////////////////////////////////////////
-//
-//*-- Author: Sahal Yacoob (LBL)
-// based on : AliEMCALDigitizer
-// Modif: 
-//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
-//                           of new IO (a la PHOS)
-//  November 2003 Aleksei Pavlinov : adopted for Shish-Kebab geometry 
-//  July 2011 GCB: Digitizer modified to accomodate embedding. 
-//                 Time calibration added. Decalibration possibility of energy and time added
-//_________________________________________________________________________________
-
-// --- ROOT system ---
 #include <TROOT.h>
 #include <TTree.h>
 #include <TSystem.h>
@@ -65,6 +37,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALCalibTime.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALTriggerRawDigit.h"
 #include "AliCaloCalibPedestal.h"
@@ -124,6 +97,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
+    fTimeDelayFromOCDB(0),
     fTimeResolutionPar0(0),
     fTimeResolutionPar1(0),
     fADCchannelEC(0),
@@ -136,6 +110,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor
@@ -158,6 +133,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
+    fTimeDelayFromOCDB(0),
     fTimeResolutionPar0(0),
     fTimeResolutionPar1(0),
     fADCchannelEC(0),
@@ -170,6 +146,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor
@@ -193,6 +170,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fPinNoise(d.fPinNoise),
     fTimeNoise(d.fTimeNoise),
     fTimeDelay(d.fTimeDelay),
+    fTimeDelayFromOCDB(d.fTimeDelayFromOCDB),
     fTimeResolutionPar0(d.fTimeResolutionPar0),
     fTimeResolutionPar1(d.fTimeResolutionPar1),
     fADCchannelEC(d.fADCchannelEC),
@@ -204,6 +182,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fFirstEvent(d.fFirstEvent),
     fLastEvent(d.fLastEvent),
     fCalibData(d.fCalibData),
+    fCalibTime(d.fCalibTime),
     fSDigitizer(d.fSDigitizer ? new AliEMCALSDigitizer(*d.fSDigitizer) : 0)
 {
   // copyy ctor 
@@ -224,6 +203,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliDigitizationInput * rd)
     fPinNoise(0.),
     fTimeNoise(0.),
     fTimeDelay(0.),
+    fTimeDelayFromOCDB(0.),
     fTimeResolutionPar0(0.),
     fTimeResolutionPar1(0.),
     fADCchannelEC(0),
@@ -236,6 +216,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliDigitizationInput * rd)
     fFirstEvent(0),
     fLastEvent(0),
     fCalibData(0x0),
+    fCalibTime(0x0),
     fSDigitizer(0x0)
 {
   // ctor Init() is called by RunDigitizer
@@ -333,7 +314,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     if (fDigInput)
       readEvent = dynamic_cast<AliStream*>(fDigInput->GetInputStream(i))->GetCurrentEventNumber() ;
     
-    Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ;
+    AliInfo(Form("Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data())) ;
     
     rl2->LoadSDigits();
     //     rl2->LoadDigits();
@@ -525,7 +506,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
                      absID, energy, nextSig));
     //Add delay to time
-    digit->SetTime(digit->GetTime()+fTimeDelay) ;
+    digit->SetTime(digit->GetTime()) ;
     
   } // for(absID = 0; absID < nEMC; absID++)
   
@@ -584,70 +565,72 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   delete sdigArray ; //We should not delete its contents
   
   //------------------------------
-  //remove digits below thresholds
-  // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
-  // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3,
-  // before merge in the same loop real data digits if available
-  Float_t energy = 0;
+  // Remove digits below ADC thresholds or 
+  // dead in OCDB, decalibrate them
+  //
+   
+  Float_t ampADC = 0;
   Float_t time   = 0;
+  Int_t   idigit = 0;
   for(i = 0 ; i < nEMC ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    if ( !digit ) continue;
+    if ( !digit ) 
+    {
+      digits->RemoveAt(i) ; // It should not happen, but just in case
+      continue;
+    }
     
-    //Then get the energy in GeV units.
-    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+    // Get the time and energy before calibration
+    ampADC = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+
+    time   = digit->GetTime();
     
-    //Then digitize using the calibration constants of the ocdb
-    Float_t ampADC = energy;
+    // Then digitize energy (GeV to ADC) and shift time
+    // using the calibration constants of the OCDB
     DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
     
+    // Skip digits with below 3 ADC or found dead in OCDB
     if(ampADC < fDigitThreshold || IsDead(digit->GetId()))
-      digits->RemoveAt(i) ;
-    
+    {
+      digits->RemoveAt(i) ; 
+      continue;
+    }
+
+    // Set digit final values
+    digit->SetIndexInList(idigit++) ;
+    digit->SetAmplitude(ampADC) ;
+    digit->SetTime(time);
+
   } // digit loop
   
   digits->Compress() ;
+    
+  Int_t ndigits = digits->GetEntriesFast();
   
-  Int_t ndigits = digits->GetEntriesFast() ;
+  if(idigit != ndigits)
+    AliFatal(Form("Total number of digits in array %d different to expected %d",ndigits,idigit));
   
-  //---------------------------------------------------------------
-  //JLK 26-June-2008
-  //After we have done the summing and digitizing to create the
-  //digits, now we want to calibrate the resulting amplitude to match
-  //the dynamic range of our real data.
-  for (i = 0 ; i < ndigits ; i++)
-  {
-    digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ;
-    if( !digit ) continue ;
-    
-    digit->SetIndexInList(i) ;
-    
-    time   = digit->GetTime();
-    digit->SetTime(time);
-
-    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-
-    Float_t ampADC = energy;
-    DigitizeEnergyTime(ampADC, time, digit->GetId());
-    
-    digit->SetAmplitude(ampADC) ;
-    // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
-  }//Digit loop
+  AliDebug(1,Form("Number of recorded digits is %d",ndigits));
   
 }
 
+/// JLK 26-June-2008
+/// Returns digitized value of the energy and shifted time in a cell absId
+/// in the way those parameters are stored in the data digits.
+/// This is done using the calibration constants stored in the OCDB
+/// or default values if no fCalibData object is found.
+/// This effectively converts everything to match the dynamic range
+/// of the real data we will collect
+///
+/// \param energy: digit energy in GeV
+/// \param time: time at generation
+/// \param absId: tower ID
+///
 //_____________________________________________________________________
-void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, const Int_t absId)
+void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, Int_t absId)
 {
-  // JLK 26-June-2008
-  // Returns digitized value of the energy in a cell absId
-  // using the calibration constants stored in the OCDB
-  // or default values if no CalibData object is found.
-  // This effectively converts everything to match the dynamic range
-  // of the real data we will collect
-  //
-  // Load Geometry
+  // Load Geometry and cell indeces
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
   if (geom==0)
@@ -667,20 +650,36 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
+  // Recover parameters from OCDB for this channel
   if(fCalibData)
   {
+    // Energy
     fADCpedestalEC     = fCalibData->GetADCpedestal     (iSupMod,ieta,iphi);
     fADCchannelEC      = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
     fADCchannelECDecal = fCalibData->GetADCchannelDecal (iSupMod,ieta,iphi);
-    fTimeChannel       = fCalibData->GetTimeChannel     (iSupMod,ieta,iphi,0); // Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
-    fTimeChannelDecal  = fCalibData->GetTimeChannelDecal(iSupMod,ieta,iphi);
   }
   
-  //Apply calibration to get ADC counts and partial decalibration as especified in OCDB
+  if(fCalibTime)
+  {
+    // Time
+    // Recover parameters for  bunch crossing number equal to 0 
+    // (has simulation different bunch crossings stored? not for the moment)
+    // Time stored in ns, pass to ns
+    fTimeChannel       = fCalibTime->GetTimeChannel     (iSupMod,ieta,iphi,0) * 1e-9; 
+    fTimeChannelDecal  = fCalibTime->GetTimeChannelDecal(iSupMod,ieta,iphi)   * 1e-9;
+  }
+  
+  // Apply calibration to get ADC counts and partial decalibration as especified in OCDB
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
-  time  += fTimeChannel-fTimeChannelDecal;
   
   if ( energy > fNADCEC ) energy =  fNADCEC ;
+  
+  // Apply shift to time, if requested and calibration parameter is available,
+  // if not, apply fix shift 
+  if ( fTimeDelayFromOCDB ) 
+    time  += fTimeChannel - fTimeChannelDecal;
+  else                   
+    time  += fTimeDelay;
 }
 
 //_____________________________________________________________________
@@ -753,16 +752,21 @@ void AliEMCALDigitizer::CalibrateADCTime(Float_t & adc, Float_t & time, const In
   if(!bCell) Error("CalibrateADCTime","Wrong cell id number : absId %i ", absId) ;
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
+  // Energy calibration
   if(fCalibData)
   {
     fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
     fADCchannelEC  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
-    fTimeChannel   = fCalibData->GetTimeChannel(iSupMod,ieta,iphi,0);// Assign bunch crossing number equal to 0 (has simulation different bunch crossings?)
   }
   
   adc   = adc * fADCchannelEC - fADCpedestalEC;
-  time -= fTimeChannel;
   
+  // Time calibration  
+  // Assign bunch crossing number equal to 0 (has simulation different bunch crossings? Not for the moment)
+  if(fCalibTime && fTimeDelayFromOCDB)
+    fTimeChannel   = fCalibTime->GetTimeChannel(iSupMod,ieta,iphi,0) * 1e-9; // pass from ns to s  
+  
+  time -= fTimeChannel;
 }
 
 
@@ -843,7 +847,7 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
     
     (emcalLoader->TreeD())->Fill();
     
-    emcalLoader->WriteDigits(   "OVERWRITE");
+    emcalLoader->WriteDigits("OVERWRITE");
     
     Unload();
     
@@ -1029,7 +1033,7 @@ Bool_t AliEMCALDigitizer::Init()
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   
   if ( emcalLoader == 0 ) {
-    Fatal("Init", "Could not obtain the AliEMCALLoader");  
+    AliFatal("Could not obtain the AliEMCALLoader");  
     return kFALSE;
   } 
   
@@ -1052,8 +1056,10 @@ Bool_t AliEMCALDigitizer::Init()
     fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added bt fDigInput 
   }
     
-  //Calibration instance
+  // Calibration instances
   fCalibData = emcalLoader->CalibData();
+  fCalibTime = emcalLoader->CalibTime();
+  
   return fInit ;    
 }
 
@@ -1084,6 +1090,7 @@ void AliEMCALDigitizer::InitParameters()
   fTimeResolutionPar0 = simParam->GetTimeResolutionPar0(); 
   fTimeResolutionPar1 = simParam->GetTimeResolutionPar1(); 
   fTimeDelay          = simParam->GetTimeDelay(); //600e-9 ; // 600 ns
+  fTimeDelayFromOCDB  = simParam->IsTimeDelayFromOCDB(); 
   
   // These defaults are normally not used. 
   // Values are read from calibration database instead

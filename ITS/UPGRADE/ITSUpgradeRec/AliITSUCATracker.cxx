@@ -400,7 +400,8 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
         
         outTrack.UpdateTrackParams(tr,AliESDtrack::kITSin);
         outTrack.SetLabel(tr->GetLabel());
-        event->AddTrack(&outTrack);
+        if (fSAonly) outTrack.SetStatus(AliESDtrack::kITSpureSA);
+	event->AddTrack(&outTrack);
       }
     }
   }

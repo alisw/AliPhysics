@@ -70,6 +70,7 @@
 #include "AliLog.h"
 #include "AliRawReader.h"
 #include <TArrayS.h>
+#include <iostream>
 
 using std::endl;
 using std::cout;

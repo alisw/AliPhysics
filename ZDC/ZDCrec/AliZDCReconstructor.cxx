@@ -128,10 +128,10 @@ void AliZDCReconstructor::Init()
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    /*if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
     if(fgRecoParam){
       fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
-    } 
+    }*/ 
   }
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
@@ -176,8 +176,8 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
-    if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
+    //if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+    //if( fgRecoParam ) fgRecoParam->SetGlauberMCDist(fBeamEnergy);	
   }    
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
@@ -262,23 +262,22 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   } // Loop over digits
   
   // PEDESTAL subtraction
-  for(int ich=0; ich<kNch; ich++){
-     if(chPedSubMode[ich]==kTRUE){
+  // Nov 2015: if PedSubMode==kTRUE but coefficients are null, mean value must be subtracted!!!!!
+  for(int ich=0; ich<24; ich++){
+     if(chPedSubMode[ich]==kTRUE && (TMath::Abs(corrCoeff1[ich])>0. && TMath::Abs(corrCoeff0[ich])>0.)){
        // Pedestal subtraction from correlation ------------------------------------------------
-       for(int igain=0; igain<=1; igain++){ 
+       for(int igain=0; igain<=1; igain++) 
        	   adcCorr[ich][igain] = (float) (adcInTime[ich][igain] - (corrCoeff1[ich+igain*kNch]*adcOutOfTime[ich][igain]+corrCoeff0[ich+igain*kNch]));
-       }
      }
-     else{
+     else if((chPedSubMode[ich]==kFALSE) || (chPedSubMode[ich]==kTRUE && ((TMath::Abs(corrCoeff1[ich]))<1e5 && TMath::Abs(corrCoeff0[ich])<1e5))){
         // Pedestal subtraction from mean value ------------------------------------------------
         for(int igain=0; igain<=1; igain++){
-	   adcCorr[ich][igain] = (float) (adcInTime[ich][igain]-meanPed[ich+igain*kNch]);
+	   adcCorr[ich][igain] = (float) (adcInTime[ich][igain] - meanPed[ich+igain*kNch]);
 	}
       }
-  }
   // Ch. debug
-  //printf("\n  TDC channels   ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n",
-  //tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  //printf("ZDC rec.ADC: ch.%d (code %d) rawADC %d subMode %d meanPed %f pedfromcorr = %f  -> corrADC HR %f \n", ich, adcSignal[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], corrCoeff1[ich]*adcOutOfTime[ich][0]+corrCoeff0[ich], adcCorr[ich][0]);
+  }
   
    // Ch. debug
    //printf("\n ---- AliZDCReconstructor: rec from digits\n");

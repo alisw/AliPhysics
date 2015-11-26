@@ -42,12 +42,13 @@ public:
      return (AliESDfriendTrack *)fTracks.At(i);
   }
   Int_t GetEntriesInTracks() const {return fTracks.GetEntries();}
-  void AddTrack(const AliESDfriendTrack *t) {
-     new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
+
+  AliESDfriendTrack* AddTrack(const AliESDfriendTrack *t, Bool_t shallow=kFALSE) {
+    return new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t,shallow);
   }
 
-  void AddTrackAt(const AliESDfriendTrack *t, Int_t i) {
-     new(fTracks[i]) AliESDfriendTrack(*t);
+  AliESDfriendTrack* AddTrackAt(const AliESDfriendTrack *t, Int_t i, Bool_t shallow=kFALSE) {
+    return new(fTracks[i]) AliESDfriendTrack(*t,shallow);
   }
 
   void SetVZEROfriend(const AliESDVZEROfriend * obj);
@@ -67,8 +68,8 @@ public:
   void Ls() const {
 	  return fTracks.ls();
   }
-
   void Reset();
+  void ResetSoft();
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() const { return TestBit(23); }
@@ -78,9 +79,12 @@ public:
   Int_t GetNclustersTPCused(UInt_t sector) const {return (sector<72)?fNclustersTPCused[sector]:0;}
   void SetNclustersTPC(UInt_t sector, Int_t occupancy) {if (sector<72) fNclustersTPC[sector]=occupancy;}
   void SetNclustersTPCused(UInt_t sector, Int_t occupancy) {if (sector<72) fNclustersTPCused[sector]=occupancy;}
-
+  //
+  Bool_t GetESDIndicesStored() const {return fESDIndicesStored;}
+  void   SetESDIndicesStored(Bool_t v) {fESDIndicesStored = v;}
 protected:
-  TClonesArray fTracks;    // ESD friend tracks
+  Bool_t            fESDIndicesStored; // Flag new format of sparse friends
+  TClonesArray      fTracks;    // ESD friend tracks
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data
   AliESDTZEROfriend *fESDTZEROfriend; // TZERO calibration object
   AliESDADfriend *fESDADfriend; // AD object containing complete raw data
@@ -88,7 +92,7 @@ protected:
   Int_t fNclustersTPC[72]; //cluster occupancy per sector per sector
   Int_t fNclustersTPCused[72]; //number of clusters used in tracking per sector
 
-  ClassDef(AliESDfriend,5) // ESD friend
+  ClassDef(AliESDfriend,6) // ESD friend
 };
 
 #endif

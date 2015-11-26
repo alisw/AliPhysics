@@ -23,9 +23,13 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "AliEMCALTriggerSTUDCSConfig.h"
+#include "TClonesArray.h"
 #include "TVector2.h"
 
+#include <iostream>
+
 ClassImp(AliEMCALTriggerSTUDCSConfig)
+ClassImp(AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount)
   
 //_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject(),
@@ -40,8 +44,20 @@ fFw(0x2A012)
 		for (int j = 0; j < 2; j++) {
 			fG[i][j] = 0;
 			fJ[i][j] = 0;
-		}	
+		}
 	}
+	memset(fPHOSScale, 0, sizeof(Int_t) * 4);
+	memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 32);
+}
+
+//_____________________________________________________________________________
+AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig(){
+  //
+  // Destructor
+  //
+  for(int itru = 0; itru < 32; itru++){
+    if(fTRUErrorCounts[itru]) delete fTRUErrorCounts[itru];
+  }
 }
 
 //_____________________________________________________________________________
@@ -55,5 +71,53 @@ void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TV
 	
 	Double_t js = 2 + (fFw >> 16);
 	v4.Set(js, js);
+}
+
+//_____________________________________________________________________________
+void  AliEMCALTriggerSTUDCSConfig::SetTRUErrorCounts(Int_t itru, Int_t itime, ULong64_t errorcounts){
+  //
+  // Set TRU error counts
+  //
+  if(itru >= 32) return;
+  if(!fTRUErrorCounts[itru])
+    fTRUErrorCounts[itru] = new TClonesArray("AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount");
+  AliEMCALTriggerSTUTRUErrorCount test(itime, errorcounts), *found(NULL);
+  if((found = dynamic_cast<AliEMCALTriggerSTUTRUErrorCount *>(fTRUErrorCounts[itru]->FindObject(&test)))){
+    found->SetValue(itime, errorcounts);
+  } else {
+    Int_t nErrorCountsTRU = fTRUErrorCounts[itru]->GetEntries();
+    new((*(fTRUErrorCounts[itru]))[nErrorCountsTRU]) AliEMCALTriggerSTUTRUErrorCount(itime, errorcounts);
+  }
+}
+
+//_____________________________________________________________________________
+TClonesArray *AliEMCALTriggerSTUDCSConfig::GetErrorCountsForTRU(Int_t itru) const{
+  //
+  // Return time-dependent error counts for a given TRU
+  //
+  if(itru >= 32) return NULL;
+  return fTRUErrorCounts[itru];
+}
+
+//_____________________________________________________________________________
+Bool_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::IsEqual(const TObject *o) const{
+  //
+  // Checks for equalness according to the time stamp
+  //
+  const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);
+  if(!test) return false;
+  return test->fTime == fTime;
+}
+
+//_____________________________________________________________________________
+Int_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::Compare(const TObject *o) const{
+  //
+  // Compares time-dependent error counts based on the time information
+  //
+  const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);
+  if(!test) return 1;
+  if(fTime > test->fTime) return 1;
+  if(fTime < test->fTime) return -1;
+  return 0;
 }
 

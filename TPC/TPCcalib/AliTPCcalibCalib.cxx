@@ -60,6 +60,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCRecoParam.h"
+#include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include <TGeoManager.h>
@@ -150,7 +151,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
 
   for (Int_t i=0;i<ntracks;++i) {
     AliESDtrack *track = event->GetTrack(i);     
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) ESDfriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
     //track->SetFriendTrack(friendTrack);
     fCurrentFriendTrack=friendTrack;
@@ -209,13 +210,13 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   //  AliTPCPointCorrection * corr =  AliTPCPointCorrection::Instance();
   TVectorD vec(5, seed->GetParameter());
-  for (Int_t irow=0;irow<159;irow++) {
+  for (Int_t irow=0;irow<kMaxRow;irow++) {
     AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
     if (!cluster) continue; 
     AliTPCclusterMI cl0(*cluster);
     Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
     Int_t i[1]={cluster->GetDetector()};
-    AliTPCTrackerPoint * point = seed->GetTrackPoint(irow);
+    const AliTPCTrackerPoints::Point* point = seed->GetTrackPoint(irow);
     Double_t ty=0,tz=0;
      
     if (point){
@@ -316,7 +317,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // Refit in
   //
-  for (Int_t irow=159; irow>0; irow--){
+  for (Int_t irow=kMaxRow; irow--;){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -355,7 +356,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   // Refit out
   //
   //Bool_t lastEdge=kFALSE;
-  for (Int_t irow=0; irow<160; irow++){
+  for (Int_t irow=0; irow<kMaxRow; irow++){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -397,7 +398,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // Refit in one more time
   //
-  for (Int_t irow=159; irow>0; irow--){
+  for (Int_t irow=kMaxRow;irow--;){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;

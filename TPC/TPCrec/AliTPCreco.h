@@ -13,7 +13,7 @@
 //namespace AliTPCreco {    
    const Int_t kMaxClusterPerRow=2500;
    const Int_t kRowsToSkip=10;
-   const Int_t kMaxRow=200;
+   const Int_t kMaxRow=159;
 
    const Double_t kMaxCHI2=12.;
    const Double_t kMaxROAD=30.;

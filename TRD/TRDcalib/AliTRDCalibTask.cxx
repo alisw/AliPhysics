@@ -106,6 +106,7 @@ AliTRDCalibTask::AliTRDCalibTask(const char *name)
   fNbTRDTrackStandalone(0),
   fNbTPCTRDtrack(0),
   fNbGoodTracks(0),
+  fNbGoodTracks1D(0),
   fNbTimeBin(0),
   fNbTimeBinOffline(0),
   fNbTimeBinStandalone(0),
@@ -219,6 +220,7 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fNbTRDTrackStandalone) delete fNbTRDTrackStandalone;
   if(fNbTPCTRDtrack) delete fNbTPCTRDtrack;
   if(fNbGoodTracks) delete fNbGoodTracks;
+  if(fNbGoodTracks1D) delete fNbGoodTracks1D;
   if(fNbTimeBin) delete fNbTimeBin;
   if(fNbTimeBinOffline) delete fNbTimeBinOffline;
   if(fNbTimeBinStandalone) delete fNbTimeBinStandalone;
@@ -380,6 +382,13 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fTOFbc->SetStats(0);
   //  fTOFbc->Sumw2();
   fListHist->Add(fTOFbc);
+
+  fNbGoodTracks1D = new TH1F(Form("NbGoodTracks1D_%s",(const char*)fName),"NbGoodTracks",500,0.0,8000.0);
+  fNbGoodTracks1D->SetXTitle("Nb of good tracks");
+  fNbGoodTracks1D->SetYTitle("Nb of events");
+  fNbGoodTracks1D->SetStats(0);
+  fListHist->Add(fNbGoodTracks1D);
+
   
   if(IsPHQon()){
     printf("\n        AliTRDCalibTask PHQ is on!!     \n\n");
@@ -705,6 +714,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   for(Int_t itrack = 0; itrack < nbTracks; itrack++) {
     if(ParticleGood(itrack)) nGoodParticles++;  
   }
+  fNbGoodTracks1D->Fill(nGoodParticles);
   if(fDebug > 1)  {
     // Centrality
     AliCentrality *esdCentrality = fESD->GetCentrality();
@@ -777,7 +787,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     if(status&(AliESDtrack::kTPCout)) ++nbtrackTPC;
     
     // Fix suggested by Alex
-    fFriendTrack = fESDfriend->GetTrack(itrk);
+    fFriendTrack = (AliESDfriendTrack*)fkEsdTrack->GetFriendTrack();
     //printf("itrk %d\n",itrk);
     //fFriendTrack = (fESDfriend->GetNumberOfTracks()>itrk)?fESDfriend->GetTrack(itrk):NULL;
     if(!fFriendTrack)  {

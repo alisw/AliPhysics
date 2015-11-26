@@ -18,7 +18,7 @@ class AliVertex : public AliVVertex {
  public:
  
   AliVertex();
-  AliVertex(Double_t position[3],Double_t dispersion,
+  AliVertex(const Double_t position[3],Double_t dispersion,
 		Int_t nContributors);
   AliVertex(const AliVertex &source);
   AliVertex &operator=(const AliVertex &source);

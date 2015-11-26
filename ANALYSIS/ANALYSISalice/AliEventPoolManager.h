@@ -4,12 +4,7 @@
 #include <vector>
 #include <deque>
 #include <Rtypes.h>
-#include <Riostream.h>
 #include <TObjArray.h>
-#include <TFile.h>
-#include <TMath.h>
-#include <TRandom.h>
-#include <TSystem.h>
 
 // Generic event mixing classes
 //

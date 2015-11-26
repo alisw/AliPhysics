@@ -510,7 +510,7 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
     if ( pt > 1 ) fHtpccl2->Fill((Float_t)nTPCclus);
     
     // track points for x-y histograms
-    fFriendTrack = fESDfriend->GetTrack(itrk); //this works
+    fFriendTrack = (AliESDfriendTrack*)fTrack->GetFriendTrack(); //this works
     Bool_t hasFriends = (fFriendTrack ? kTRUE : kFALSE);
     if(hasFriends) nFriendTracks++;
     const AliTrackPointArray *array = (hasFriends ? fFriendTrack->GetTrackPointArray() : 0);

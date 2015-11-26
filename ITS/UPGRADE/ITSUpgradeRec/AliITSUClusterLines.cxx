@@ -1,5 +1,7 @@
 #include "AliITSUClusterLines.h"
 #include <TMath.h>
+#include <iostream>
+#include "AliStrLine.h"
 
 using std::cout;
 using std::endl;

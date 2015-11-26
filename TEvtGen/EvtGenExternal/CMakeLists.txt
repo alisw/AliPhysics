@@ -21,14 +21,12 @@ include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8/include
                     ${AliRoot_SOURCE_DIR}/TEvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/EvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/photosCInterfaces
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/eventRecordInterfaces
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/photosFortranInterfaces
-                    ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/utilities
-)
+                    ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/utilities)
 
 # Sources - alphabetical order
 set(SRCS
@@ -50,14 +48,18 @@ add_library(${MODULE} SHARED ${SRCS})
 
 # Do not generate the ROOT map
 # Dependecies
-set(LIBDEPS Photos Tauola pythia8 EvtGen)
+set(LIBDEPS Photos Tauola EvtGen)
+if(TARGET pythia8)
+  include_directories(${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8/include)
+  set(LIBDEPS ${LIBDEPS} pythia8)
+  set(EVTGEN_PYTHIA "ON")
+  add_definitions("-DEVTGEN_PYTHIA")
+endif()
 
 # Additional compilation flags
-set (EVTGEN_PYTHIA "ON")
-set (EVTGEN_PHOTOS "ON")
-set (EVTGEN_TAUOLA "ON")
-
-add_definitions ("-DEVTGEN_PYTHIA -DEVTGEN_PHOTOS -DEVTGEN_TAUOLA")
+set(EVTGEN_PHOTOS "ON")
+set(EVTGEN_TAUOLA "ON")
+add_definitions("-DEVTGEN_PHOTOS -DEVTGEN_TAUOLA")
 
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 

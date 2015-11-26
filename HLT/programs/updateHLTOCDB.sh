@@ -15,7 +15,7 @@ main ()
     echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(999999,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
     echo
     echo "example:"
-    echo "  ${0##*/} ocdbSource=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=OCDB/2015/ cdbEntries=*/*/*"
+    echo "  ${0##*/} ocdbSource=local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=local://OCDB/2015/ cdbEntries=*/*/*"
     return 1
   fi
 
@@ -69,16 +69,23 @@ copyOCDBentry()
 {
   #copy the CDB entry to a new storage
   #also modify the run range
+  if [ $# -eq 0 ]; then
+    echo "copyOCDBentry cdbEntry ocdbSource ocdbTarget firstRun lastRun sourceRun"
+    echo "copyOCDBentry /GRP/GRP/Data local:///cvmfs/.../ local://./OCDB 0 999999999 241412"
+    return
+  fi
+
   local cdbEntry="${1}"
-  local ocdbSource="local://${2}"
-  local ocdbTarget="local://${3}"
+  local ocdbSource="${2}"
+  local ocdbTarget="${3}"
   local firstRun="${4}"
   local lastRun="${5-999999999}"
+  local sourceRun="${6-0}"
   aliroot -b << EOF
 man=AliCDBManager::Instance();
 man->SetDefaultStorage("${ocdbSource}");
 
-AliCDBEntry* entry = man->Get("${cdbEntry}",${firstRun});
+AliCDBEntry* entry = man->Get("${cdbEntry}",${sourceRun});
 
 AliCDBId entryID = entry->GetId();
 entryID.SetRunRange(${firstRun},${lastRun});

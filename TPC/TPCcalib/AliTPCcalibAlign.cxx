@@ -128,6 +128,7 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliTracker.h"
+#include "AliTPCreco.h"
 #include "TClonesArray.h"
 #include "AliLog.h"
 #include "TFile.h"
@@ -478,7 +479,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
-    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
+    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -518,12 +519,12 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       TObject *calibObject=0;
       AliTPCseed *seed0 = 0,*seed1=0;
       //
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
+      friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
+      friendTrack = (AliESDfriendTrack*) track1->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -537,7 +538,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
 	nclsectors0[isec]=0;
 	nclsectors1[isec]=0;
       }
-      for (Int_t i=0;i<160;i++){
+      for (Int_t i=0;i<kMaxRow;i++){
 	AliTPCclusterMI *c0=seed0->GetClusterPointer(i);
 	AliTPCclusterMI *c1=seed1->GetClusterPointer(i);
 	if (c0)  nclsectors0[c0->GetDetector()]+=1;
@@ -679,13 +680,13 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0,*seed1=0;
     //
-    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
+    friendTrack = (AliESDfriendTrack*) track0->GetFriendTrack(); //(AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
     if (!friendTrack) continue;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (index1>0){
-      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
+      friendTrack = (AliESDfriendTrack*) event->GetTrack(index1)->GetFriendTrack();  //(AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
       if (!friendTrack) continue;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -712,7 +713,7 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       if (TMath::Abs(dtpc[1])>kMaxD1) continue;
     }
 
-    if (seed0) for (Int_t icl = 0; icl<160; icl++){
+    if (seed0) for (Int_t icl = 0; icl<kMaxRow; icl++){
       AliTPCclusterMI *cluster=seed0->GetClusterPointer(icl);
       if (!cluster) continue;
       Float_t xyz[3];
@@ -725,7 +726,7 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       array.AddPoint(cpoint, &point);
       cpoint++;
     }
-    if (seed1) for (Int_t icl = 0; icl<160; icl++){
+    if (seed1) for (Int_t icl = 0; icl<kMaxRow; icl++){
       AliTPCclusterMI *cluster=seed1->GetClusterPointer(icl);
       if (!cluster) continue;
       Float_t xyz[3];
@@ -1098,16 +1099,16 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
   //
   // Process local residuals function
   // 
-  TVectorD vecX(160);
-  TVectorD vecY(160);
-  TVectorD vecZ(160);
-  TVectorD vecClY(160);
-  TVectorD vecClZ(160);
-  TClonesArray arrCl("AliTPCclusterMI",160);
-  arrCl.ExpandCreateFast(160);
+  TVectorD vecX(kMaxRow);
+  TVectorD vecY(kMaxRow);
+  TVectorD vecZ(kMaxRow);
+  TVectorD vecClY(kMaxRow);
+  TVectorD vecClZ(kMaxRow);
+  TClonesArray arrCl("AliTPCclusterMI",kMaxRow);
+  arrCl.ExpandCreateFast(kMaxRow);
   Int_t count1=0, count2=0;
   
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<kMaxRow;++i) {
     AliTPCclusterMI *c=seed->GetClusterPointer(i);
     vecX[i]=0;
     vecY[i]=0;
@@ -2508,7 +2509,7 @@ void AliTPCcalibAlign::GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t nit
   for (Int_t iter=0; iter<2; iter++){
     fyf.ClearPoints();
     fzf.ClearPoints();
-    for (Int_t irow=kdrow0;irow<159-kdrow1;irow++) {
+    for (Int_t irow=kdrow0;irow<kMaxRow-kdrow1;irow++) {
       AliTPCclusterMI *c=track->GetClusterPointer(irow);
       if (!c) continue;      
       //
@@ -2636,8 +2637,8 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   if (TMath::Abs(seed->GetSnp())>kSnpCut) return; 
   if (!fClusterDelta[0])  MakeResidualHistos();
   //
-  AliExternalTrackParam fitIn[160];
-  AliExternalTrackParam fitOut[160];
+  AliExternalTrackParam fitIn[kMaxRow];
+  AliExternalTrackParam fitOut[kMaxRow];
   AliTPCROC * roc = AliTPCROC::Instance();
   Double_t xmiddle   = ( roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
   Double_t xDiff     = ( -roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
@@ -2663,7 +2664,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   static Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  
   Int_t ncl=0;
-  for (Int_t irow=0; irow<160; irow++){
+  for (Int_t irow=0; irow<kMaxRow; irow++){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -2678,7 +2679,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   //
   // Refit out - store residual maps
   //
-  for (Int_t irow=0; irow<160; irow++){
+  for (Int_t irow=0; irow<kMaxRow; irow++){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -2721,7 +2722,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   //
   // Refit In - store residual maps
   //
-  for (Int_t irow=159; irow>=0; irow--){
+  for (Int_t irow=kMaxRow;irow--;){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -2760,7 +2761,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   }
   //
   //
-  for (Int_t irow=159; irow>=0; irow--){
+  for (Int_t irow=kMaxRow;irow--;){
     //
     // Update kalman - +- direction
     // Store cluster residuals
@@ -2825,7 +2826,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   for (Int_t iter=0; iter<2; iter++){
     fyf.ClearPoints();
     fzf.ClearPoints();
-    for (Int_t irow=kdrow0Fit;irow<159-kdrow1Fit;irow++) {
+    for (Int_t irow=kdrow0Fit;irow<kMaxRow-kdrow1Fit;irow++) {
       AliTPCclusterMI *c=track->GetClusterPointer(irow);
       if (!c) continue;
       if ((c->GetDetector()%36)!=isec) continue;
@@ -2863,9 +2864,9 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   //
   //
-  TVectorD vecX(160);          // x         vector
-  TVectorD vecY(160);          // residuals vector
-  TVectorD vecZ(160);                              // residuals vector
+  TVectorD vecX(kMaxRow);          // x         vector
+  TVectorD vecY(kMaxRow);          // residuals vector
+  TVectorD vecZ(kMaxRow);                              // residuals vector
   TVectorD vPosG(3);                  //vertex position
   TVectorD vPosL(3);                 // vertex position in the TPC local system
   TVectorF vImpact(2);               //track impact parameter
@@ -2939,7 +2940,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   // Update fitters
   //
   Int_t countRes=0;
-  for (Int_t irow=0;irow<159;irow++) {
+  for (Int_t irow=0;irow<kMaxRow;irow++) {
     AliTPCclusterMI *c=track->GetClusterPointer(irow);
     if (!c) continue;
     if ((c->GetDetector()%36)!=isec) continue;
@@ -2978,7 +2979,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
       fClusterDelta[1]->Fill(resVector);
     }
     if (c->GetRow()<kdrow0Fit) continue;      
-    if (c->GetRow()>159-kdrow1Fit) continue;      
+    if (c->GetRow()>kMaxRow-kdrow1Fit) continue;      
     //
 
     if (c->GetDetector()>35){      

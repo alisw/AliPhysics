@@ -8,9 +8,7 @@
 //  Implements the storage for special AOD classes 
 //
 //-------------------------------------------------------------------------
-#include <iostream>
 #include "TObject.h"
-#include "AliLog.h"
 
 
 class AliNanoAODStorage  {
@@ -23,12 +21,12 @@ public:
 
   void AllocateInternalStorage(Int_t size);
   void SetVar(Int_t index, Double_t var) { 
-    if(index>=0 && index < fNVars)  fVars[index] = var;  
-    else AliFatal(Form("Variable %d not included in this special aod", index));
+    if(index>=0 && index < fNVars)  fVars[index] = var;
+    else Complain(index);
   }
   Double_t GetVar(Int_t index)  const {
     if(index>=0 && index < fNVars) return fVars[index]; 
-    AliFatal(Form("Variable %d not included in this special aod", index));
+    Complain(index);
     return 0;}
   virtual const char *ClassName() const {return "AliNanoAODStorage";} // Needed for alifatal. The class cannot inherit from TObject, otherwise we mix (and mess up) inheritance in the track, as it also inherits from AliVTrack which inherits from TObject.
 
@@ -38,6 +36,8 @@ protected:
   std::vector<Double32_t> fVars; // Array of kinematic vars. Here we use an STL vector because it produces ~5% smaller files. It may be aslo splittable
 
   ClassDef(AliNanoAODStorage, 1)
+private:
+  void Complain(Int_t index) const;
 };
 
 

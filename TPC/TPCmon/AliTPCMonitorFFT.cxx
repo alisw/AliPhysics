@@ -38,6 +38,8 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 
 
 #include "AliTPCMonitorFFT.h"
+#include <iostream>
+#include <cmath>
 
 
 ClassImp(AliTPCMonitorFFT)

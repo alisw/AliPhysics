@@ -8,6 +8,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <TBits.h>
 
 class AliAODTZERO : public TObject 
 {
@@ -46,7 +47,10 @@ public:
   void SetT0VertexRaw(Float_t vtx) { fT0VertexRaw = vtx;}
   void SetT0zVertex(Double32_t z) {fT0zVertex = z;}
   void SetAmp(Int_t pmt, Float_t amp) {fT0Amp[pmt]=amp;}
-       
+  //pile up bits
+  void SetPileupBits(TBits pileup) {fPileupBits=pileup;}
+  TBits GetT0PileupBits() const {return fPileupBits;}
+     
   
 protected:
   Double32_t   fT0TOF[3];    // interaction time in ps with 1st time( A&C, A, C)
@@ -57,8 +61,9 @@ protected:
   Float_t      fT0VertexRaw; // raw T0 vertex without any cuts 
   Double32_t   fT0zVertex;    // reconstructed T0 vertex
   Float_t fT0Amp[26];          //amplitude on PMTs and MPD
+  TBits fPileupBits;     //BC number
 
-  ClassDef(AliAODTZERO,4)
+  ClassDef(AliAODTZERO,5)
 };
 
 #endif

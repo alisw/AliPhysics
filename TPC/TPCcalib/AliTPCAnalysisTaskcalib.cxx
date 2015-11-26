@@ -99,8 +99,8 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   //
   Int_t run = fESD->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
-    AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
     AliESDtrack *track=fESD->GetTrack(i);
+    AliESDfriendTrack *friendTrack= (AliESDfriendTrack*)track->GetFriendTrack();
     TObject *calibObject=0;
     AliTPCseed *seed=0;
     if (!friendTrack) continue;

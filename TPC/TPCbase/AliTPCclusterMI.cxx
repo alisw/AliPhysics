@@ -25,7 +25,7 @@
 /* $Id$ */
 
 #include "AliTPCclusterMI.h"
-#include "AliTPCclusterInfo.h"
+//#include "AliTPCclusterInfo.h"
 #include "AliTrackPointArray.h"
 #include "AliGeomManager.h"
 #include "AliLog.h"
@@ -37,7 +37,7 @@ ClassImp(AliTPCclusterMI)
 
 AliTPCclusterMI::AliTPCclusterMI():
   AliCluster(),
-  fInfo(0),
+//  fInfo(0),
   fTimeBin(0),  //time bin coordinate
   fPad(0),  //pad coordinate
   fQ(0),       //Q of cluster (in ADC counts)
@@ -54,7 +54,7 @@ AliTPCclusterMI::AliTPCclusterMI():
 
 AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   AliCluster(cluster),
-  fInfo(0),
+  //  fInfo(0),
   fTimeBin(cluster.fTimeBin),
   fPad(cluster.fPad),
   fQ(cluster.fQ),
@@ -68,7 +68,7 @@ AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
 
   // AliInfo("Copy constructor\n");
 
-  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
+  //  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
 }
 
 AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
@@ -88,9 +88,9 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   fRow  = cluster.fRow;
   fTimeBin = cluster.fTimeBin;
   fPad     = cluster.fPad;
-  delete fInfo;
-  fInfo = 0;
-  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
+  //  delete fInfo;
+  //  fInfo = 0;
+  //  if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
   return *this;
 }
 
@@ -99,7 +99,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
 
 AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) :
   AliCluster(0,hit,0.,0.,lab),
-  fInfo(0),
+  //  fInfo(0),
   fTimeBin(0),  //time bin coordinate
   fPad(0),  //pad coordinate
   fQ(0),       //Q of cluster (in ADC counts)
@@ -112,14 +112,14 @@ AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) :
   /// constructor
 
   fQ = (UShort_t)hit[4];
-  fInfo = 0;
+  //  fInfo = 0;
 }
 
 AliTPCclusterMI::~AliTPCclusterMI() {
   /// destructor
 
-  if (fInfo) delete fInfo;
-  fInfo = 0;
+  //  if (fInfo) delete fInfo;
+  //  fInfo = 0;
 }
 
 
@@ -151,14 +151,14 @@ void AliTPCclusterMI::SetDetector(Int_t detector){
   SetVolumeId(AliGeomManager::LayerToVolUID(id,modId));
 }
 
-
+/*
 void AliTPCclusterMI::SetInfo(AliTPCclusterInfo * info) {
   ///
 
   if (fInfo) delete fInfo;
   fInfo = info;
 }
-
+*/
 
 AliTPCclusterMI* AliTPCclusterMI::MakeCluster(AliTrackPoint* /*point*/) {
   /// make AliTPCclusterMI out of AliTrackPoint

@@ -3,8 +3,8 @@
 
 #include <TNamed.h>
 #include <TList.h>
-#include <TGraph.h>
-#include <Riostream.h>
+
+class TGraph;
 
 /***********************************************************
 

@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  The AliEMCALLoader gets the TClonesArray and TObjArray for reading
 //  Hits, Dgits, SDigits and RecPoints. Filling is managed in the GetEvent()
@@ -53,7 +51,8 @@ const TString         AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//
 const TString         AliEMCALLoader::fgkECADigitsBranchName("DIGITS");//Name for branch with ECA Digits
 const TString         AliEMCALLoader::fgkECASDigitsBranchName("SDIGITS");//Name for branch with ECA SDigits
 
-AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //calibration data
+AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //energy calibration data
+AliEMCALCalibTime*    AliEMCALLoader::fgCalibTime = 0; //time calibration data
 AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
 AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; //simulation parameters
 AliEMCALRecParam*     AliEMCALLoader::fgRecParam  = 0; //reconstruction parameters
@@ -122,6 +121,27 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
   return fgCalibData;
   
 }
+
+//____________________________________________________________________________ 
+AliEMCALCalibTime* AliEMCALLoader::CalibTime()
+{ 
+  // Check if the instance of AliEMCALCalibTime exists, if not, create it if 
+  // the OCDB is available, and finally return it.
+  
+  if(!fgCalibTime && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+    AliCDBManager::Instance()->Get("EMCAL/Calib/Time");
+    if (entry) fgCalibTime =  (AliEMCALCalibTime*) entry->GetObject();
+  }
+  
+  if(!fgCalibTime)
+    AliFatal("Calibration parameters not found in CDB!");
+  
+  return fgCalibTime;
+  
+}
+
 
 //____________________________________________________________________________ 
 AliCaloCalibPedestal* AliEMCALLoader::PedestalData()

@@ -74,7 +74,30 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
   "FIT",
   "HLT"
 };
-
+//_____________________________________________________________________________
+  AliTriggerInput::AliTriggerInput():
+    TNamed(),
+    fMask( 0 ),
+    fValue( 0 ),
+    fSignature( -1),
+    fLevel(0),
+    fDetectorId(-1),
+    fIsActive(kFALSE),
+    fIndexCTP(0),
+    fIndexSwitch(0)
+{}
+//____________________________________________________________________________
+ AliTriggerInput::AliTriggerInput( AliTriggerInput & inp ): 
+   TNamed( inp ),
+   fMask( inp.fMask ),
+   fValue( inp.fValue ),
+   fSignature( inp.fSignature ),
+   fLevel( inp.fLevel),
+   fDetectorId( inp.fDetectorId),
+   fIsActive(kFALSE),
+   fIndexCTP(inp.fIndexCTP),
+   fIndexSwitch(inp.fIndexSwitch)
+   {}
 //_____________________________________________________________________________
   AliTriggerInput::AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, Char_t number ):
     TNamed( name.Data(), det.Data() ),
@@ -83,7 +106,9 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
     fSignature(signature),
     fLevel(level),
     fDetectorId(-1),
-    fIsActive(kFALSE)
+    fIsActive(kFALSE),
+    fIndexCTP(number),
+    fIndexSwitch(0)
 {
    //  Standard constructor
    //
@@ -108,7 +133,41 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
       AliError( Form( "%s is not a valid trigger input, it must contain a valid trigger detector name instead of (%s)", name.Data(), det.Data() ) );
    }
 }
+//_____________________________________________________________________________
+  AliTriggerInput::AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, UInt_t indexCTP, UInt_t indexSwitch ):
+    TNamed( name.Data(), det.Data() ),
+    fMask((indexCTP > 0) ? 1 << (indexCTP-1) : 0 ),
+    fValue(0),
+    fSignature(signature),
+    fLevel(level),
+    fDetectorId(-1),
+    fIsActive(kFALSE),
+    fIndexCTP(indexCTP),
+    fIndexSwitch(indexSwitch)
+{
+   //  Standard constructor
+   //
+   //    The name must be globaly unique. Spaces are not allowed.
+   //    For valid detector names see AliDAQ::fgkDetectorName
 
+   // Check for valid detector name
+   Int_t iDet = 0;
+   for( iDet = 0; iDet < AliDAQ::kNDetectors; iDet++ ) {
+     if( !fgkIsTriggerDetector[iDet] ) continue;
+      if( det.CompareTo( fgkCTPDetectorName[iDet] ) == 0 ) {
+	fTitle = AliDAQ::DetectorName(iDet);
+	fDetectorId = iDet;
+	break;
+      }
+      if( det.CompareTo( AliDAQ::DetectorName(iDet) ) == 0 ) {
+	fDetectorId = iDet;
+	break;
+      }
+   }
+   if( iDet == AliDAQ::kNDetectors ) {
+      AliError( Form( "%s is not a valid trigger input, it must contain a valid trigger detector name instead of (%s)", name.Data(), det.Data() ) );
+   }
+}
 //_____________________________________________________________________________
 void AliTriggerInput::Print( const Option_t* ) const
 {
@@ -118,9 +177,8 @@ void AliTriggerInput::Print( const Option_t* ) const
    cout << "  Detector:    " << GetTitle() << "(Id=" << (Int_t)fDetectorId << ")" << endl;
    cout << "  Level:       " << (Int_t)fLevel << endl;
    cout << "  Signature:   " << fSignature << endl;
-   if(fMask)
-   cout << "  Number:      " << (Int_t)TMath::Log2(fMask) << endl;
-   else cout << " fMask:  " << fMask << endl;
+   cout << "  CTP index:      " << fIndexCTP << endl;
+   cout << "  Switch index:      " << fIndexSwitch << endl;
    if (IsActive())
      cout << "   Input is active      " << endl;
    else
@@ -142,4 +200,14 @@ TString AliTriggerInput::GetModule() const
     AliError(Form("Invalid detector Id (%d)",(Int_t)fDetectorId));
 
   return name;
+}
+UInt_t AliTriggerInput::GetIndexCTP() const
+{
+ if(fIndexCTP==0){
+   for(UInt_t i=0;i<24;i++){
+     if((1<<i) & fMask) return (i+1);
+   }
+  return 0;
+ }
+ return fIndexCTP;
 }

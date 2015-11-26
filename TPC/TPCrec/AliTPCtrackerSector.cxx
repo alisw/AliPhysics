@@ -104,8 +104,10 @@ void AliTPCtrackerRow::ResetClusters() {
    //
    // reset clusters
    // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
-  if (fClusters1) fClusters1->Clear("C");
-  if (fClusters2) fClusters2->Clear("C");
+  //  if (fClusters1) fClusters1->Clear("C");
+  //  if (fClusters2) fClusters2->Clear("C");
+  if (fClusters1) fClusters1->Clear(); // RS AliTPCclusterMI does not allocate memory
+  if (fClusters2) fClusters2->Clear();
 
    fN  = 0; 
    fN1 = 0;
@@ -230,15 +232,19 @@ Int_t  AliTPCtrackerSector::GetRowNumber(Double_t x) const
   Double_t r;
   if (fN < 64){
     r=fRow[fN-1].GetX();
-    if (x > r) return fN;
+    //    if (x > r) return fN;
+    if (x > r) return fN-1; // RS
     r=fRow[0].GetX();
-    if (x < r) return -1;
+    //    if (x < r) return -1;
+    if (x < r) return 0; // RS
     return Int_t((x-r)/fPadPitchLength + 0.5);}
   else{    
     r=fRow[fN-1].GetX();
-    if (x > r) return fN;
+    //    if (x > r) return fN;
+    if (x > r) return fN-1;
     r=fRow[0].GetX();
-    if (x < r) return -1;
+    //    if (x < r) return -1;
+    if (x < r) return 0;
     Double_t r1=fRow[64].GetX();
     if(x<r1){       
       return Int_t((x-r)/f1PadPitchLength + 0.5);}

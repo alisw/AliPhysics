@@ -30,6 +30,7 @@
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "TH1.h"
+#include "AliTPCreco.h"
 #include "TClonesArray.h"
 #include "TTreeStream.h"
 #include "TGrid.h"
@@ -150,7 +151,7 @@ void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
 void AliTPCtrackFast::MakeTrack(){
   ///
 
-  if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",160);
+  if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",159);
   //
   // 0.) Init data structure
   //
@@ -167,7 +168,7 @@ void AliTPCtrackFast::MakeTrack(){
     Double_t tZ = i*fAngleZ;
     AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
     AliTPCclusterFast * clusterm = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Max(i-1,0));
-    AliTPCclusterFast * clusterp = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Min(i+1,159));
+    AliTPCclusterFast * clusterp = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Min(i+1,kMaxRow-1));
     if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
     //
     Double_t posY = tY-TMath::Nint(tY);
@@ -189,7 +190,7 @@ void AliTPCtrackFast::MakeTrack(){
 Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
   ///    Double_t  CookdEdxNtot(Double_t f0,Float_t f1);   //  dEdx_{hit}  reconstructed meen number of  electrons
 
-  Double_t amp[160];
+  Double_t amp[159];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fNtot;
@@ -200,7 +201,7 @@ Double_t  AliTPCtrackFast::CookdEdxNtot(Double_t f0,Float_t f1){
 Double_t  AliTPCtrackFast::CookdEdxQtot(Double_t f0,Float_t f1){
   ///     dEdx_{Q} reconstructed mean number of electronsxGain
 
-  Double_t amp[160];
+  Double_t amp[159];
   for (Int_t i=0;i<fN;i++){ 
     AliTPCclusterFast * cluster = ( AliTPCclusterFast *)((*fCl)[i]);
     amp[i]=cluster->fQtot;
@@ -214,7 +215,7 @@ Double_t  AliTPCtrackFast::CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr,
   ///     thr  = threshold in terms of the number of electrons
   ///     dEdxMode = algorithm to deal with trhesold values replacing
 
-  Double_t amp[160];
+  Double_t amp[159];
   Int_t nBellow=0;
   //
   Double_t minAbove=-1;
@@ -260,7 +261,7 @@ Double_t  AliTPCtrackFast::CookdEdxQtotThr(Double_t f0,Float_t f1, Double_t thr,
   ///     dEdxMode = algorithm to deal with trhesold values replacing
 
   //
-  Double_t amp[160];
+  Double_t amp[159];
   Int_t nBellow=0;
   //
   Double_t minAbove=-1;
@@ -306,7 +307,7 @@ Double_t   AliTPCtrackFast::CookdEdxDtot(Double_t f0,Float_t f1, Float_t gain,Fl
   /// total charge in the cluster (sum of the pad x time matrix ), hits were digitized before, but additional
   /// actions can be specified by switches  // dEdx_{Qtot}
 
-  Double_t amp[160];
+  Double_t amp[159];
   Double_t minAmp=-1;
   //
   for (Int_t i=0;i<fN;i++){ 
@@ -335,7 +336,7 @@ Double_t   AliTPCtrackFast::CookdEdxDmax(Double_t f0,Float_t f1, Float_t gain,Fl
   /// maximal charge in the cluster (maximal amplitude in the digit matrix), hits were digitized before,
   /// but additional actions can be specified by switches
 
-  Double_t amp[160];
+  Double_t amp[159];
   Double_t minAmp=-1;
   //
   for (Int_t i=0;i<fN;i++){ 
@@ -374,7 +375,7 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
   //
   // 0. sorted the array of amplitudes
   //
-  Int_t index[160];
+  Int_t index[159];
   TMath::Sort(npoints,amp,index,kFALSE);
   //
   // 1.) Calculate truncated mean from the selected range of the array (ranking statistic )
@@ -417,7 +418,7 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
-    fast.fN  = 160;
+    fast.fN  = 159;
     fast.MakeTrack();
     if (itr%100==0) printf("%d\n",itr);
     (*pcstream)<<"simulTrack"<<

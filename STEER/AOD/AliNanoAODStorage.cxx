@@ -1,5 +1,6 @@
 #include "AliNanoAODStorage.h"
 #include "AliNanoAODTrackMapping.h"
+#include "AliLog.h"
 
 ClassImp(AliNanoAODStorage)
 
@@ -33,4 +34,9 @@ AliNanoAODStorage& AliNanoAODStorage::operator=(const AliNanoAODStorage& sto)
   }
 
   return *this;
+}
+
+void
+AliNanoAODStorage::Complain(Int_t index) const {
+  AliFatal(Form("Variable %d not included in this special aod", index));
 }

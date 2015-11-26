@@ -18,19 +18,10 @@
 ///
 /// \author Diego Stocco
 
-#ifndef ROOT_TNamed
-#  include "TNamed.h"
-#endif
-#ifndef ROOT_TString
-#  include "TString.h"
-#endif
-#ifndef ROOT_TCollection
-#  include "TCollection.h"
-#endif
-#ifndef ROOT_TFolder
-#  include "TFolder.h"
-#endif
-#include "Riostream.h"
+#include "TString.h"
+#include "TFolder.h"
+#include "TIterator.h"
+#include "TCollection.h"
 #include <map>
 #include <string>
 
@@ -41,6 +32,7 @@ class TH1;
 class TH2;
 class TProfile;
 class THashList;
+class TCollection;
 
 class AliMergeableCollection : public TFolder
 {
@@ -88,7 +80,7 @@ public:
   TProfile* Prof(const char* fullIdentifier) const;
   TProfile* Prof(const char* identifier, const char* objectName) const;
 
-  virtual AliMergeableCollectionProxy* CreateProxy(const char* identifier);
+  virtual AliMergeableCollectionProxy* CreateProxy(const char* identifier, Bool_t createIfNeeded=kFALSE);
   
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
@@ -131,6 +123,8 @@ public:
   TObject* GetSum(const char* idPattern) const;
   
   Bool_t IsEmptyObject(TObject* obj) const;
+  
+  static void CorrectIdentifier(TString& sidentifier);
   
 private:
   
@@ -200,6 +194,7 @@ protected:
   AliMergeableCollectionProxy(AliMergeableCollection& oc, THashList& list);
   
 public:
+  
   TObject* GetObject(const char* objectName) const;
   
   TH1* Histo(const char* objectName) const;
@@ -213,7 +208,9 @@ public:
   void Print(Option_t* opt="") const;
   
   Bool_t Adopt(TObject* obj);
-  
+
+  Bool_t Adopt(const char* identifier, TObject* obj);
+
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
 
 private:

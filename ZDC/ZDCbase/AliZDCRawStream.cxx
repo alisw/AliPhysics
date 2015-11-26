@@ -115,7 +115,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fZDCTDCsignal(-1),
   fIsADDTDCHeader(kFALSE),
   fIsADDTDCdatum(kFALSE),
-  fADDTDCdatum(0)
+  fADDTDCdatum(0),
+  fIsPARSet(kFALSE)
 {
   // Create an object to read ZDC raw digits
   fRawReader->Reset();
@@ -216,7 +217,9 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fZDCTDCsignal(stream.fZDCTDCsignal),
   fIsADDTDCHeader(stream.fIsADDTDCHeader),
   fIsADDTDCdatum(stream.fIsADDTDCdatum),
-  fADDTDCdatum(stream.fADDTDCdatum)
+  fADDTDCdatum(stream.fADDTDCdatum),
+  fIsPARSet(stream.fIsPARSet)
+
 {
   // Copy constructor
   const int kNch = 48;
@@ -288,7 +291,11 @@ void AliZDCRawStream::ReadCDHHeader()
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Data Size = %x\n",fRawReader->GetDataSize());
 
   UChar_t message = header ? header->GetAttributes() : headerV3->GetAttributes();
-    //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
+//printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
+  UInt_t  checkPAR = header ? header->GetEventID2() : headerV3->GetEventID2();
+  fIsPARSet=kFALSE;
+  if((checkPAR&0xff000000)!=0) fIsPARSet = kTRUE;
+if((checkPAR&0xff000000)!=0) printf("\t AliZDCRawStream::ReadCDHHeader -> ZDC PAR set -> EVENT will be SKIPED!\n");
     
     /*if((message & 0xf0) == 0x0){ // PHYSICS RUN
        //printf("\t PHYSICS RUN raw data found\n");
@@ -387,6 +394,9 @@ Bool_t AliZDCRawStream::Next()
   // Returns kFALSE if there is no digit left
 
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
+
+  // Nov 2015 -> skipping event if PAR is set in CDH
+  if(fIsPARSet) return kFALSE;
   const int kNch = 48;
   //
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
@@ -395,7 +405,7 @@ Bool_t AliZDCRawStream::Next()
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; fIsScalerWord = kFALSE;
   fSector[0] = fSector[1] = -1;
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
-
+    
   fEvType = fRawReader->GetType();
   if(fPosition==0){
     ReadCDHHeader();
@@ -705,6 +715,10 @@ Bool_t AliZDCRawStream::Next()
     if(fIsTDCHeaderRead && fIsZDCTDCHeader) fADCModule = kZDCTDCGeo;
     else if(fIsTDCHeaderRead && fIsADDTDCHeader) fADCModule = kADDTDCGeo;
     else fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
+    // November 2015 -> After introducing MEB corrupted
+    // data with GEO =24 appeared and must be discarded
+    // -> Skipping word with GEO ADDRESS = 24 ---------
+    if(fADCModule==24) return kTRUE;
     
     // ************************************ ADC MODULES ************************************
     if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo && 
@@ -727,7 +741,7 @@ Bool_t AliZDCRawStream::Next()
 	
 	// Checking if the channel map for the ADCs has been provided/read
 	if(fMapADC[0][0]==-1){
-	  printf("\t ATTENTION!!! No ADC mapping has been found/provided!!!\n");
+	  printf("\t ATTENTION!!! No ADC mapping has been found/provided -> Skipping event!!!\n");
 	  return kFALSE;
 	}
 	//
@@ -777,7 +791,7 @@ Bool_t AliZDCRawStream::Next()
       // *** ADC EOB
       else if((fBuffer & 0x07000000) == 0x04000000){
         fIsADCEOB = kTRUE;
-    	//printf("  AliZDCRawStream -> ADC EOB --------------------------\n");
+	//printf("  AliZDCRawStream -> ADC EOB --------------------------\n");
       }
     }//ADC module
     // ********************************* ADD ADC *********************************

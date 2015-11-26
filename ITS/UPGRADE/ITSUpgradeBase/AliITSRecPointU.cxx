@@ -19,7 +19,9 @@
 // the AliGeomManager class can not be used for the upgrade code at this stage //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include <AliITSRecPointU.h>
+#include "AliITSRecPointU.h"
+#include "AliLog.h"
+
 ClassImp(AliITSRecPointU)
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU():

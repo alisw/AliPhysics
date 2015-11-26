@@ -170,6 +170,21 @@ AliTriggerInput* AliTriggerConfiguration::AddInput( TString &name, TString &det,
   else
     return input;
 }
+//_____________________________________________________________________________
+AliTriggerInput* AliTriggerConfiguration::AddInput( TString &name, TString &det,
+						    UChar_t level, UInt_t signature,
+						    UInt_t indexCTP, UInt_t indexSwitch )
+{
+  // Add a trigger input to
+  // the list of the trigger inputs
+  AliTriggerInput *input = new AliTriggerInput(name,det,level,signature,indexCTP,indexSwitch);
+  if (!AddInput(input)) {
+    delete input;
+    return NULL;
+  }
+  else
+    return input;
+}
 
 //_____________________________________________________________________________
 AliTriggerInteraction* AliTriggerConfiguration::AddInteraction(TString &name, TString &logic)
@@ -567,11 +582,20 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	 delete tokens;
 	 return kFALSE;
        }
-       AddInput(((TObjString*)tokens->At(0))->String(),
+       if(ntokens==5){
+         AddInput(((TObjString*)tokens->At(0))->String(),
 		     ((TObjString*)tokens->At(1))->String(),
 		     ((TObjString*)tokens->At(2))->String().Atoi(),
 		     ((TObjString*)tokens->At(3))->String().Atoi(),
 		     ((TObjString*)tokens->At(4))->String().Atoi());
+       }else{		     
+         AddInput(((TObjString*)tokens->At(0))->String(),
+		     ((TObjString*)tokens->At(1))->String(),
+		     ((TObjString*)tokens->At(2))->String().Atoi(),
+		     ((TObjString*)tokens->At(3))->String().Atoi(),
+		     ((TObjString*)tokens->At(4))->String().Atoi(),
+		     ((TObjString*)tokens->At(5))->String().Atoi());
+       }		     
        break;
      case 2:
        // Read interaction

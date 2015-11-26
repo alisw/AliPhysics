@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  Wrapping class for reconstruction
 //*--
@@ -32,6 +30,7 @@ class AliRawReader ;
 class AliEMCALRawUtils;
 class AliEMCALGeometry;
 class AliEMCALCalibData ;
+class AliEMCALCalibTime ;
 class AliCaloCalibPedestal ;
 class AliEMCALTriggerElectronics;
 class AliEMCALTriggerData;
@@ -92,11 +91,12 @@ class AliEMCALReconstructor : public AliReconstructor {
     Double_t   fdEta;        // track - cluster residual in eta
     Double_t   fdPhi;        // track - cluster residual in phi
   };
+  
   Bool_t CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Float_t &dEta, Float_t &dPhi) const;
   
  private:
   
-  AliEMCALReconstructor(const AliEMCALReconstructor &); //Not implemented
+  AliEMCALReconstructor              (const AliEMCALReconstructor &); //Not implemented
   AliEMCALReconstructor & operator = (const AliEMCALReconstructor &); //Not implemented
   
   AliEMCALGeometry           * fGeom;             // pointer to the EMCAL geometry
@@ -111,6 +111,7 @@ class AliEMCALReconstructor : public AliReconstructor {
   //OCDB
   static const AliEMCALRecParam* fgkRecParam;     // reconstruction parameters for EMCAL
   AliEMCALCalibData          * fCalibData   ;     //! Calibration database if aval
+  AliEMCALCalibTime          * fCalibTime   ;     //! Calibration database if aval
   AliCaloCalibPedestal       * fPedestalData ;    //! Tower status database if aval
   
   //Trigger specific
@@ -120,7 +121,7 @@ class AliEMCALReconstructor : public AliReconstructor {
   //Track matching
   TList                      * fMatches;          //! collection of matches between tracks and clusters
   
-  ClassDef(AliEMCALReconstructor,12)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,13)  // Reconstruction algorithm class (Base Class)
 }; 
 
 #endif // ALIEMCALRECONSTRUCTOR_H

@@ -30,7 +30,7 @@
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include <TClonesArray.h>
-
+#include <stdlib.h>
 
 
 //_____________________________________________________________________________

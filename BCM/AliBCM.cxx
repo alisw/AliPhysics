@@ -40,6 +40,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
  
 ClassImp(AliBCM)
 

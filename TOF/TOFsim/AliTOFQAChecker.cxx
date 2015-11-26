@@ -151,7 +151,6 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
             text->AddText("Check the TOF TWiki");
             text->SetFillColor(kYellow);
         }
-       // histo->GetListOfFunctions()->Add((TPaveText*)text->Clone());
       flag = AliQAv1::kWARNING;
     } else {
       Float_t multiMean = histo->GetMean();
@@ -181,7 +180,6 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
           flag = AliQAv1::kINFO;
 	  } else {
           if (text){
-
 	    text->Clear();
 	    text->AddText(Form("Multiplicity too high"));
 	    text->AddText("for COSMICS: email TOF on-call");
@@ -192,22 +190,33 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 	} else {
 	  if ( (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult)
 	       &&((lowMIntegral>0.9*totIntegral) || (multiMean>100))){
-          if (text){
+	    if (text){
               text->Clear();
-	    text->AddText(Form("Unexpected mean value = %5.2f",multiMean));
-	    text->AddText("OK for COSMICS and technical.");
-	    text->AddText("Check TOF TWiki for pp.");
-	    text->SetFillColor(kYellow);
-          }
-          flag = AliQAv1::kWARNING;
+	      text->AddText(Form("Unexpected mean value for pp = %5.2f",multiMean));
+	      text->AddText("OK for COSMICS and technical.");
+	      text->AddText("Check TOF TWiki for pp.");
+	      text->SetFillColor(kYellow);
+	    }
+	    flag = AliQAv1::kWARNING;
+	  } else if ( (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult)
+	       &&((lowMIntegral>0.9*totIntegral) || (multiMean>500))){
+	    //assume that good range of multi in PbPb goes from 20 to 500 tracks
+	    if (text){
+              text->Clear();
+	      text->AddText(Form("Unexpected mean value for PbPb = %5.2f",multiMean));
+	      text->AddText("OK for technical.");
+	      text->AddText("Check TOF TWiki for PbPb.");
+	      text->SetFillColor(kYellow);
+	    }
+	    flag = AliQAv1::kWARNING;
 	  } else {
-          if (text){
+	    if (text){
               text->Clear();
-	    text->AddText(Form("Multiplicity within limits"));
-	    text->AddText("    OK!!!    ");
-	    text->SetFillColor(kGreen);
-          }
-        flag = AliQAv1::kINFO;
+	      text->AddText(Form("Multiplicity within limits"));
+	      text->AddText("    OK!!!    ");
+	      text->SetFillColor(kGreen);
+	    }
+	    flag = AliQAv1::kINFO;
 	  }
 	}
       }

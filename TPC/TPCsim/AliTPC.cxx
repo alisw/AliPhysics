@@ -2130,14 +2130,14 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   gasgain = gasgain/fGainFactor;
   //  const Int_t timeStamp = 1; //where to get it? runloader->GetHeader()->GetTimeStamp(). https://savannah.cern.ch/bugs/?53025
   const Int_t timeStamp = fLoader->GetRunLoader()->GetHeader()->GetTimeStamp(); //?
-  Double_t correctionHVandPT = calib->GetGainCorrectionHVandPT(timeStamp, calib->GetRun(), isec, 5 ,tpcrecoparam->GetGainCorrectionHVandPTMode());
+  const Double_t correctionHVandPT = calib->GetGainCorrectionHVandPT(timeStamp, calib->GetRun(), isec, 5 ,tpcrecoparam->GetGainCorrectionHVandPTMode());
   gasgain*=correctionHVandPT;
 
   // get gain in pad regions
   Float_t gasGainRegions[3]={0.,0.,0.};
 
   for (UInt_t iregion=0; iregion<3; ++iregion) {
-    gasGainRegions[iregion] = fTPCParam->GetRegionGainAbsolute(iregion);
+    gasGainRegions[iregion] = fTPCParam->GetRegionGainAbsolute(iregion)*correctionHVandPT/fGainFactor;
   }
 
   Int_t i;

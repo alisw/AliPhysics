@@ -26,6 +26,7 @@ class AliESDVertex;
 class AliTPCCorrection : public TNamed {
 public:
   enum CompositionType {kParallel,kQueue};
+  enum IntegrationType {kIntegral, kDifferential};
 
   AliTPCCorrection();
   AliTPCCorrection(const char *name,const char *title);
@@ -70,7 +71,7 @@ public:
   TH2F* CreateHistoDZinZR   (Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
 
 
-  TTree* CreateDistortionTree(Double_t step=5);
+  TTree* CreateDistortionTree(Double_t step=5, Int_t type=0);
   static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type, Int_t integ=1);
   static void  MakeDistortionMapCosmic(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type);
   static void  MakeDistortionMapSector(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run, Int_t type);
@@ -177,7 +178,7 @@ protected:
 			    TMatrixD **arrayofEroverEz, TMatrixD **arrayofEPhioverEz, TMatrixD **arrayofEz,
 			    Int_t rows, Int_t columns,  Int_t phislices,
 			    Float_t deltaphi, Int_t iterations, Int_t summetry,
-			    Bool_t rocDisplacement = kTRUE);
+                            Bool_t rocDisplacement = kTRUE, IntegrationType integrationType=kIntegral);
   void   SetIsLocal(Bool_t isLocal){fIsLocal=isLocal;}
   Bool_t IsLocal() const  { return fIsLocal;}
 protected:
@@ -185,6 +186,7 @@ protected:
   Double_t fT2;         ///< tensor term of wt - T2
   Bool_t fIsLocal;      ///< switch to indicate that the distortion is a local vector drphi/dz, dr/dz
   static TObjArray *fgVisualCorrection;  ///< array of orrection for visualization
+  IntegrationType fIntegrationType; ///< Presentation of the underlying corrections, integrated, or differential
 private:
   AliTPCCorrection(const AliTPCCorrection &);               // not implemented
   AliTPCCorrection &operator=(const AliTPCCorrection &);    // not implemented
@@ -192,7 +194,7 @@ private:
   void InitLookUpfulcrums();   // to initialize the grid of the look up table
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCCorrection,5);
+  ClassDef(AliTPCCorrection,6);
   /// \endcond
 };
 

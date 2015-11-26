@@ -39,6 +39,7 @@ set(SRCS
     AliEMCALBiasAPD.cxx
     AliEMCALCalibAbs.cxx
     AliEMCALCalibData.cxx
+    AliEMCALCalibTime.cxx
     AliEMCALCalibMapAPD.cxx
     AliEMCALCalibReference.cxx
     AliEMCALCalibTempCoeff.cxx

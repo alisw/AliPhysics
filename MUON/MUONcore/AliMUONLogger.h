@@ -12,15 +12,10 @@
 /// 
 //  Author Laurent Aphecetche
 
-#include <Riostream.h>
 
-#ifndef ROOT_TObject
-#  include "TObject.h"
-#endif
-
-#ifndef ROOT_TString
-#  include "TString.h"
-#endif
+#include "TObject.h"
+#include "TString.h"
+#include <iosfwd>
 
 class AliMUONStringIntMap;
 

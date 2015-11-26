@@ -44,6 +44,8 @@ public:
 
   TMultiGraph* CombineMulti(TObjArray& graphs);
 
+  Int_t Compare(const TMap& hv1, const TMap& hv2, Bool_t verbose=kFALSE) const;
+  
 private:
 
   void ReadIntegers(const char* filename, std::vector<int>& integers);

@@ -2,7 +2,7 @@
 Bool_t AddTrackCutsLHC10bcde(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
-Bool_t AddTrackCutsLHC15(AliAnalysisTaskESDfilter* esdFilter);
+Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t enableTPCOnlyAODTracksLocalFlag=kFALSE;
 
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
@@ -91,7 +91,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      AddTrackCutsLHC11h(esdfilter);
    }
    else if ((runFlag/100)==15){
-     AddTrackCutsLHC15(esdfilter);
+     AddTrackCutsLHC15f(esdfilter);
    }
    else {
      std::cout << "ERROR: illegal runFlag value: " << runFlag  << std::endl;
@@ -287,7 +287,7 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
   Printf("%s%d: Creating Track Cuts LHC11h",(char*)__FILE__,__LINE__);
 
   // Cuts on primary tracks
-   AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
    // ITS stand-alone tracks
    AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
@@ -503,12 +503,13 @@ Bool_t AddTrackCutsLHC10bcde(AliAnalysisTaskESDfilter* esdfilter){
 
 }
 
-Bool_t AddTrackCutsLHC15(AliAnalysisTaskESDfilter* esdfilter){
-
-  
-
-  Printf("%s%d: Creating Track Cuts for LHC15",(char*)__FILE__,__LINE__);
-
+Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdfilter){
+  //
+  // filter cuts for RunII pp in 2015
+  // basically a duplication of 11h, but with stricter cluster requirement
+  //
+  Printf("%s%d: Creating Track Cuts for LHC15f",(char*)__FILE__,__LINE__);
+  //
   // Cuts on primary tracks
   AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   
@@ -520,130 +521,102 @@ Bool_t AddTrackCutsLHC15(AliAnalysisTaskESDfilter* esdfilter){
   AliESDtrackCuts *itsStrong = new AliESDtrackCuts("ITSorSPD", "pixel requirement for ITS");
   itsStrong->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
   
-  
   // PID for the electrons
   AliESDpidCuts *electronID = new AliESDpidCuts("Electrons", "Electron PID cuts");
   electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.5);
-
-
-   // standard cuts with very loose DCA
-   AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); 
-   esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-
-   // standard cuts with tight DCA cut
-   AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-
-   // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster
-   // tracks selected by this cut are exclusive to those selected by the previous cut
-   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(); 
-   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
-   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
-
   
-  // tighter cuts on primary particles for high pT tracks
-  // take the standard cuts, which include already 
-  // ITSrefit and use only primaries...
+  // standard cuts with very loose DCA
+  AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
+  esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
+  esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+
+  // standard cuts with tight DCA cut
+  AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   
-  // ITS cuts for new jet analysis 
-  //  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  //  AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001006);
-
-  AliESDtrackCuts *jetCuts1006 = new AliESDtrackCuts("AliESDtrackCuts"); 
-
-  TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
-  jetCuts1006->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
-  jetCuts1006->SetMinNClustersTPC(70);
-  jetCuts1006->SetMaxChi2PerClusterTPC(4);
-  jetCuts1006->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
-  jetCuts1006->SetAcceptKinkDaughters(kFALSE);
-  jetCuts1006->SetRequireTPCRefit(kTRUE);
-  jetCuts1006->SetMaxFractionSharedTPCClusters(0.4);
-  // ITS
-  jetCuts1006->SetRequireITSRefit(kTRUE);
-  //accept secondaries
-  jetCuts1006->SetMaxDCAToVertexXY(2.4);
-  jetCuts1006->SetMaxDCAToVertexZ(3.2);
-  jetCuts1006->SetDCAToVertex2D(kTRUE);
-  //reject fakes
-  jetCuts1006->SetMaxChi2PerClusterITS(36);
-  jetCuts1006->SetMaxChi2TPCConstrainedGlobal(36);
-
-  jetCuts1006->SetRequireSigmaToVertex(kFALSE);
-
-  jetCuts1006->SetPtRange(0.15, 1E+15.);
-
-  AliESDtrackCuts* esdTrackCutsHG0 = jetCuts1006->Clone("JetCuts10001006");
-  esdTrackCutsHG0->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-
-  // the complement to the one with SPD requirement: tracks with ITS refit but no SPD hit
-  //  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011006);
-  AliESDtrackCuts* esdTrackCutsHG1 = jetCuts1006->Clone("JetCuts10011006");
-  esdTrackCutsHG1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
-
-  AliESDtrackCuts* esdTrackCutsHG2 = jetCuts1006->Clone("JetCuts10021006");
-  esdTrackCutsHG2->SetMaxChi2PerClusterITS(1E10);
-
-  // all complementary hybrid tracks: no SPD requirement, no ITS refit requirement
-  //  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
-  AliESDtrackCuts* esdTrackCutsGCOnly = jetCuts1006->Clone("JetCuts10041006");
-  esdTrackCutsGCOnly->SetRequireITSRefit(kFALSE);
-
-  // standard cuts also used in R_AA analysis
-  //   "Global track RAA analysis QM2011 + Chi2ITS<36";
-  //  AliESDtrackCuts* esdTrackCutsH2 = CreateTrackCutsPWGJE(1000);
-  AliESDtrackCuts* esdTrackCutsRAA = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
-  esdTrackCutsRAA->SetMinNCrossedRowsTPC(120);
-  esdTrackCutsRAA->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  esdTrackCutsRAA->SetMaxChi2PerClusterITS(36);
-  esdTrackCutsRAA->SetMaxFractionSharedTPCClusters(0.4);
-  esdTrackCutsRAA->SetMaxChi2TPCConstrainedGlobal(36);
-
-  esdTrackCutsRAA->SetPtRange(0.15, 1e10);
-
-  // TPC only tracks
-  AliESDtrackCuts* esdTrackCutsTPCCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  esdTrackCutsTPCCOnly->SetMinNClustersTPC(70);
+  // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster
+  // tracks selected by this cut are exclusive to those selected by the previous cut
+  AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(); 
+  esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
+ 
+  // TPC only tracks: Optionally enable the writing of TPConly information
+  // constrained to SPD vertex in the filter below
+  AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  // The following line is needed for 2010 PbPb reprocessing and pp, but not for 2011 PbPb
+  //esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
   
+  // Extra cuts for hybrids
+  // first the global tracks we want to take
+  AliESDtrackCuts* esdTrackCutsHTG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  esdTrackCutsHTG->SetName("Global Hybrid tracks, loose DCA");
+  esdTrackCutsHTG->SetMaxDCAToVertexXY(2.4);
+  esdTrackCutsHTG->SetMaxDCAToVertexZ(3.2);
+  esdTrackCutsHTG->SetDCAToVertex2D(kTRUE);
+  esdTrackCutsHTG->SetMaxChi2TPCConstrainedGlobal(36);
+  esdTrackCutsHTG->SetMaxFractionSharedTPCClusters(0.4);
+  
+  // Than the complementary tracks which will be stored as global
+  // constraint, complement is done in the ESDFilter task
+  AliESDtrackCuts* esdTrackCutsHTGC = new AliESDtrackCuts(*esdTrackCutsHTG);
+  esdTrackCutsHTGC->SetName("Global Constraint Hybrid tracks, loose DCA no it requirement");
+  esdTrackCutsHTGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+  esdTrackCutsHTGC->SetRequireITSRefit(kTRUE);
+
+  // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
+  AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
+  esdTrackCutsH2Cluster->SetMinNClustersTPC(70); // gain in 2015 is higher than in 2011
+
+  // duplication of 1<<5 = 32 and 1<<6 = 64 with looser requirement 
+  // on CrossedRows and CrossedRowsOverFindable in order to go to forward eta (To be used with care!)
+  AliESDtrackCuts* esdTrackCutsH2Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  esdTrackCutsH2Forward->SetMinNCrossedRowsTPC(50);
+  esdTrackCutsH2Forward->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+
+  AliESDtrackCuts* esdTrackCutsH3Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  esdTrackCutsH3Forward->SetMinNCrossedRowsTPC(50);
+  esdTrackCutsH3Forward->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+  esdTrackCutsH3Forward->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  esdTrackCutsH3Forward->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
+
+
   // Compose the filter
   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
   // 1, 1<<0
   trackFilter->AddCuts(esdTrackCutsL);
-  // 2 1<<1
+  // 2, 1<<1
   trackFilter->AddCuts(esdTrackCutsITSsa);
-  // 4 1<<2
+  // 4, 1<<2
   trackFilter->AddCuts(itsStrong);
   itsStrong->SetFilterMask(1);        // AND with Standard track cuts 
-  // 8 1<<3
+  // 8, 1<<3
   trackFilter->AddCuts(electronID);
   electronID->SetFilterMask(4);       // AND with Pixel Cuts
-  // 16 1<<4
+   // 16, 1<<4
   trackFilter->AddCuts(esdTrackCutsH);
-  // 32 1<<5
+  // 32, 1<<5
   trackFilter->AddCuts(esdTrackCutsH2);
-  // 64 1<<6
+  // 64, 1<<6
   trackFilter->AddCuts(esdTrackCutsH3);
-  // 128 1<<7
-  trackFilter->AddCuts(esdTrackCutsTPCCOnly); // add TPC only track cuts for TPC constrained tracks
+  // 128 , 1 << 7
+  trackFilter->AddCuts(esdTrackCutsTPCOnly);
   if(enableTPCOnlyAODTracksLocalFlag)esdfilter->SetTPCOnlyFilterMask(128);
-  // 256 1<<8
-  trackFilter->AddCuts(esdTrackCutsHG0);
-  esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<8)); // these normal global tracks will be marked as hybrid
-  // 512 1<<9                         
-  trackFilter->AddCuts(esdTrackCutsGCOnly);                      // all complementary hybrids (no SPD req && no ITS refit req && !(1<<8))
-  // 1024 1<<10                        
-  trackFilter->AddCuts(esdTrackCutsHG1);                         // complementary tracks with ITSrefit & SPD none
-  esdfilter->SetGlobalConstrainedFilterMask(1<<9|1<<10);         // these tracks are written out as global constrained tracks
-  esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE);         // write only the complementary tracks
-  // 2048 1<<11
-  trackFilter->AddCuts(esdTrackCutsRAA);
-  // 4096 1<<12 
-  AliESDtrackCuts* esdTrackCutsHG1_tmp = new AliESDtrackCuts(*esdTrackCutsHG1); // avoid double delete
-  trackFilter->AddCuts(esdTrackCutsHG1_tmp);
-  // 8192 1<<13
-  trackFilter->AddCuts(esdTrackCutsHG2);
+  // 256, 1 << 8 Global Hybrids
+  trackFilter->AddCuts(esdTrackCutsHTG);
+  esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<8)); // these normal global tracks will be marked as hybrid    
+  // 512, 1<< 9 GlobalConstraint Hybrids
+  trackFilter->AddCuts(esdTrackCutsHTGC);
+  esdfilter->SetGlobalConstrainedFilterMask(1<<9); // these tracks are written out as global constrained tracks 
+  esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE); // write only the complement
+  // 1024, 1<< 10 // tight DCA cuts
+  trackFilter->AddCuts(esdTrackCutsH2Cluster);
+  // 2048, 1<<11 // duplication of 1<<5 with looser CrossedRows requirements for forward eta
+  trackFilter->AddCuts(esdTrackCutsH2Forward);
+  // 4096, 1<<12 // duplication of 1<<6 with looser CrossedRows requirements for forward eta
+  trackFilter->AddCuts(esdTrackCutsH3Forward);
 
   esdfilter->SetTrackFilter(trackFilter);
+
   return kTRUE;
+
 }

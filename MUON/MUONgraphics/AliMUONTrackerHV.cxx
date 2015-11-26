@@ -70,6 +70,23 @@
 
 ClassImp(AliMUONTrackerHV)
 
+namespace  {
+  bool IsAlmostEqualRelative(float A, float B,
+                             float maxRelDiff = FLT_EPSILON)
+  {
+    // Calculate the difference.
+    float diff = fabs(A - B);
+    A = fabs(A);
+    B = fabs(B);
+    // Find the largest
+    float largest = (B > A) ? B : A;
+    
+    if (diff <= largest * maxRelDiff)
+      return true;
+    return false;
+  }
+}
+
 //______________________________________________________________________________
 AliMUONTrackerHV::AliMUONTrackerHV(const char* runlist, const char* ocdbPath)
 : TObject(), fRunList(), fOCDBPath(ocdbPath), fDCSNamer(0x0)
@@ -525,7 +542,8 @@ AliMUONTrackerHV::Print(Option_t* dcsname) const
     Bool_t patchValues(kFALSE);
     Bool_t dryRun(kTRUE);
     
-    TMap* m = AliMUONCalibrationData::CreateHV(runNumber,0x0,patchValues,&messages,dryRun);
+//    TMap* m = AliMUONCalibrationData::CreateHV(runNumber,0x0,patchValues,&messages,dryRun);
+    TMap* m = dynamic_cast<TMap*>(AliMUONCalibrationData::CreateObject(runNumber,"MUON/Calib/HV"));
     
     TIter next(m);
     TObjString* s;
@@ -825,4 +843,82 @@ AliMUONTrackerHV::ReportTrips(Bool_t includeLowOnes)
   AliMUONPainterDataRegistry::Instance()->Register(dw);
 
 }
+
+//______________________________________________________________________________
+Int_t AliMUONTrackerHV::Compare(const TMap& hv1, const TMap& hv2, Bool_t verbose) const
+{
+  /// Compare two HV maps (only HV voltages for the moment)
+  /// Return the number of HV channels for which there is a difference
+  
+  Int_t ndiff(0);
+  TIter next(&hv1);
+  TObjString* hvChannelName;
+  
+  while ( ( hvChannelName = static_cast<TObjString*>(next()) ) )
+  {
+    TString name(hvChannelName->String());
+    
+    if ( name.Contains("sw") ) continue; // skip switches for the moment
+    if ( name.Contains("iMon") ) continue; // skip HV currents for the moment
+    
+    Bool_t st1Check(kFALSE);
+    
+    if ( name.Contains("Chamber00Left") )
+    {
+      if (name.Contains("Quad1Sect0")) st1Check=kTRUE;
+      if (name.Contains("Quad1Sect1")) st1Check=kTRUE;
+      if (name.Contains("Quad1Sect2")) st1Check=kTRUE;
+      if (name.Contains("Quad2Sect2")) st1Check=kTRUE;
+      if (name.Contains("Quad2Sect1")) st1Check=kTRUE;
+      if (name.Contains("Quad2Sect0")) st1Check=kTRUE;
+    }
+    else if ( name.Contains("Chamber01Left"))
+    {
+      if (name.Contains("Quad2Sect2")) st1Check=kTRUE;
+      if (name.Contains("Quad2Sect0")) st1Check=kTRUE;
+    }
+    
+    TPair* hvPair1 = static_cast<TPair*>(hv1.FindObject(name.Data()));
+    TObjArray* values1 = static_cast<TObjArray*>(hvPair1->Value());
+    
+    TPair* hvPair2 = static_cast<TPair*>(hv2.FindObject(name.Data()));
+    TObjArray* values2 = static_cast<TObjArray*>(hvPair2->Value());
+    
+    Bool_t same(kTRUE);
+    
+    if ( values1->GetEntries() != values2->GetEntries() )
+    {
+      same = kFALSE;
+    }
+    else
+    {
+      Int_t n = values1->GetEntries();
+      for ( Int_t i = 0; i < n && same == kTRUE; ++i )
+      {
+        AliDCSValue* v1 = dynamic_cast<AliDCSValue*>(values1->At(i));
+        AliDCSValue* v2 = dynamic_cast<AliDCSValue*>(values2->At(i));
+        
+        if ( v1->Compare(v2) != 0 || v1->GetType() != v2->GetType() || !::IsAlmostEqualRelative(v1->GetFloat(),v2->GetFloat() ))
+        {
+          same = kFALSE;
+        }
+      }
+    }
+    
+    if (!same)
+    {
+      ++ndiff;
+    }
+    
+    if ( verbose && !same && st1Check )
+    {
+      std::cout << name << std::endl;
+      values1->Print();
+      values2->Print();
+    }
+  }
+
+  return ndiff;
+}
+
 

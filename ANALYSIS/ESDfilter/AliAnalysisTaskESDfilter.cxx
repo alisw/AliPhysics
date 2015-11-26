@@ -1945,12 +1945,14 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
 
   aodTzero->SetT0zVertex(esdTzero->GetT0zVertex());
   //amplitude
-
   const Double32_t *amp=esdTzero->GetT0amplitude();
   for(int ipmt=0;  ipmt<24; ipmt++)
     aodTzero->SetAmp(ipmt, amp[ipmt]);
   aodTzero->SetAmp(24,esdTzero->GetMultC() );
   aodTzero->SetAmp(25,esdTzero->GetMultA() );
+  //pile-up bits
+  aodTzero->SetPileupBits(esdTzero->GetT0PileupBits() );
+
 }
 
 //______________________________________________________________________________

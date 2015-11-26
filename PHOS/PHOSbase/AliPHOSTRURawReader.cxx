@@ -22,8 +22,8 @@
  */
 
 #include "AliPHOSTRURawReader.h"
-
 #include "AliCaloRawStreamV3.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSTRURawReader)
 
@@ -82,7 +82,17 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
   
   const UShort_t * const signal = rawStream->GetSignals(); // stream of 10-bit words, buffered as 16-bit words
   const Int_t signalLength = rawStream->GetBunchLength();  // The length of the signal in time steps
-  const Int_t channelIndex = rawStream->GetColumn();  // For some reason the index of the readout channel is given by GetColumn function
+  const Int_t index = rawStream->GetColumn();  // For some reason the index of the readout channel is given by GetColumn function
+  Int_t timeBin = rawStream->GetStartTimeBin(); // Find the time bin of the first time step
+  if (timeBin <0 || timeBin >= fgkNTimeBins) {
+    AliError(Form("Wrong number of time bins: %d (<0 or >%d!)\n",timeBin,fgkNTimeBins));
+    return;
+  }
+  
+  Int_t channelIndex = index;
+
+  if (channelIndex >= 2048)
+    channelIndex-=2048; // branch 1: 0 <= z < 28
   
   fActive = kTRUE; // Set the TRU active
   
@@ -95,8 +105,7 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
    *  Channels 112-123: production flags
    */
   
-  Int_t timeBin = rawStream->GetStartTimeBin(); // Find the time bin of the first time step
-  
+      
   if(channelIndex < fgkNReadoutChannels){  // Channel data
     
     /* Channel data:
@@ -111,9 +120,11 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
     
     // Loop over all the time steps in the signal
     for(Int_t i = 0; i < signalLength; i++){
-      fSignals[xBin][zBin][timeBin] = signal[i];
-      fActiveTime[timeBin] = kTRUE;
-      fHasSignalTime[timeBin] = kTRUE;
+      if (timeBin > -1 && timeBin < fgkNTimeBins) {
+	fSignals[xBin][zBin][timeBin] = signal[i];
+	fActiveTime[timeBin] = kTRUE;
+	fHasSignalTime[timeBin] = kTRUE;
+      }
       timeBin--; // The time bins come in reverse order from raw data
     }
   } else { // Production flags
@@ -171,7 +182,7 @@ void AliPHOSTRURawReader::ReadFromStream(AliCaloRawStreamV3* rawStream)
         }
         
         if(channel < fgkN4x4TriggerFlags){ // Fill histogram for 4x4 trigger flags
-          xBin = 6 - channel % 7;  // x index in TRU internal 4x4 coordinate system
+          xBin = channel % 7;  // x index in TRU internal 4x4 coordinate system
           zBin = 12 - channel / 7; // z index in TRU internal 4x4 coordinate system
           
           // check if the bit bitIndex is 1

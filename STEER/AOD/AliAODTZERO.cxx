@@ -31,7 +31,8 @@ AliAODTZERO::AliAODTZERO()
    fSattelite(0),
    fBackground(0),
    fT0VertexRaw(-9999),
-   fT0zVertex(-9999)
+   fT0zVertex(-9999),
+   fPileupBits(0)
 {   
   // Default constructor 
   for(Int_t j=0; j<3; j++){ 
@@ -48,7 +49,8 @@ AliAODTZERO::AliAODTZERO(const AliAODTZERO &source)
    fSattelite(source.fSattelite),
    fBackground(source.fBackground),
    fT0VertexRaw(source.fT0VertexRaw),
-   fT0zVertex(source.fT0zVertex)
+   fT0zVertex(source.fT0zVertex),
+  fPileupBits(source.fPileupBits)
 {   
   // Default constructor 
   for(Int_t j=0; j<3; j++) {
@@ -70,6 +72,7 @@ AliAODTZERO& AliAODTZERO::operator=(const AliAODTZERO& source)
   fBackground  = source.fBackground;
   fT0VertexRaw = source.fT0VertexRaw;
   fT0zVertex = source.fT0zVertex;
+   fPileupBits = source.fPileupBits;
 
   for(Int_t j=0; j<3; j++){
     fT0TOF[j]     = source.fT0TOF[j];

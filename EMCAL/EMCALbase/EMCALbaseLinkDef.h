@@ -11,6 +11,7 @@
 #pragma link C++ class AliEMCALDigitizer+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALCalibData+;
+#pragma link C++ class AliEMCALCalibTime+;
 #pragma link C++ class AliEMCALCalibTimeDep+;
 #pragma link C++ class AliEMCALPreprocessor+;
 #pragma link C++ class AliEMCALSensorTemp+;
@@ -41,6 +42,7 @@
 #pragma link C++ class AliEMCALTriggerDCSConfig+;
 #pragma link C++ class AliEMCALTriggerTRUDCSConfig+;
 #pragma link C++ class AliEMCALTriggerSTUDCSConfig+;
+#pragma link C++ class AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount+;
 #pragma link C++ class AliEMCALTriggerDCSConfigDB+;
 #pragma link C++ class AliEMCALTriggerRawDigitMaker+;
 #pragma link C++ class AliEMCALTriggerRawDigit+;

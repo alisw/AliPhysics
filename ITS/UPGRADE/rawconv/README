@@ -1,0 +1,21 @@
+How to run conversion
+
+1) Produces standard MC preserving ITS digits
+2) Convert them to Alpide3 binary data as
+aliroot
+root[0] .x loadITSlibs.C 
+root[1] .L digits2raw.C+
+roor[2] digits2raw("itsu")
+will write file pix.bin
+
+3) demo for reading binary data (does not need aliroot):
+root[0] gROOT->ProcessLine(".L PixConv.cxx+g");
+root[1] .L read.C+
+root[2] read("pix.bin",0); // print output in region,dcolumn,address 
+or 
+root[2] read("pix.bin",1); // print output in usual column/row
+
+
+ATTENTION: the Alpide manual does not specify how the link information is
+stored, currently an improvisation is used
+

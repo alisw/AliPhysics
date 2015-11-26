@@ -143,6 +143,8 @@ public:
   void SetCalDetVdriftExB(AliTRDCalDet *calDetVdriftUsed,AliTRDCalDet *calDetExBUsed) {fCalDetVdriftUsed = calDetVdriftUsed; fCalDetExBUsed = calDetExBUsed;};
   Bool_t SetCalDetGain(Int_t runNumber, Int_t version, Int_t subversion);
   Bool_t SetCalDetVdriftExB(Int_t runNumber, Int_t versionv, Int_t subversionv, Int_t versionexb, Int_t subversionexb);
+  void SetCalDetGainInt(Int_t version, Int_t subversion) {fVersionGainUsed = version; fSubVersionGainUsed = subversion;};
+  void SetCalDetVdriftExBInt(Int_t versionv, Int_t subversionv, Int_t versionexb, Int_t subversionexb) {fVersionVdriftUsed = versionv; fSubVersionVdriftUsed = subversionv; fVersionExBUsed = versionexb; fSubVersionExBUsed = subversionexb;};
   
   AliTRDCalDet *GetCalDetGain() const { return fCalDetGainUsed;};
   AliTRDCalDet *GetCalDetVdrift() const { return fCalDetVdriftUsed;};

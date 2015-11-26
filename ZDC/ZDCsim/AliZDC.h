@@ -70,7 +70,7 @@ public:
   virtual void SetYZPA(Float_t /*yZPA*/) {}
   
   virtual void SetSwitchOnTrackreferences() {}
-
+  
   //Calibration methods 
   void    SetZDCCalibFName(const char *name);
   char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
@@ -84,9 +84,9 @@ public:
   virtual AliTriggerDetector* CreateTriggerDetector() const
   	{return new AliZDCTrigger();}
 
-  
+  void  SetSpectatorParam(int imod=1) {fSpectatorParam=imod;}
   void  SetSpectatorsTrack() {fSpectatorTracked=0;}
-  Int_t SpectatorsTracked() const {return fSpectatorTracked;}
+  Int_t AreSpectatorsTracked() const {return fSpectatorTracked;}
   void  SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
   void  SetpAsystem() {fIspASystem = kTRUE;}
   void  SetRELDISGenerator() {fIsRELDISgen = kTRUE;}
@@ -114,10 +114,11 @@ protected:
   Bool_t  fIspASystem;       // Configuring pA collisions (MC only)
   Bool_t  fIsRELDISgen;	     // Is RELDIS used as generator
   
-  Bool_t fOnlyZEM;	     // build only ZEM (no had. calorimeters!)
-  Bool_t fFindMother;	     // look for particle mothers in the stack in StepManager
+  Bool_t  fOnlyZEM;	     // build only ZEM (no had. calorimeters!)
+  Bool_t  fFindMother;	     // look for particle mothers in the stack in StepManager
+  Int_t   fSpectatorParam;   // kinematic model fro spectators (1=from AliGenZDC(DEFAULT), 2=from HIJING)
   
-  ClassDef(AliZDC,14)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,15)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

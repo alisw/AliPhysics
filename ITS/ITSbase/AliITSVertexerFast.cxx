@@ -22,6 +22,7 @@
 #include "AliRun.h"
 #include "AliITSLoader.h"
 #include "AliRunLoader.h"
+#include <AliLog.h>
 
 /////////////////////////////////////////////////////////////////////////
 //                                                                     //

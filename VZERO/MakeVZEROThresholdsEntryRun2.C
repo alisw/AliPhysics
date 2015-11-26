@@ -76,7 +76,12 @@ void MakeVZEROThresholdsEntryRun2()
   TObjArray *arr = new TObjArray(64);
   arr->SetOwner(1);
   for(Int_t i = 0; i < 64; ++i) {
-    TF1 *func = new TF1(Form("thrFunc_%d",i),"[0]+[1]*x",0,10);
+    TF1 *func = NULL;
+    if (i != 19)
+      func = new TF1(Form("thrFunc_%d",i),"[0]+[1]*x",0,10);
+    else
+      func = new TF1(Form("thrFunc_%d",i),"(x>=1./[1])?[0]+[1]*x:1.",0,10);
+
     func->SetParameter(0,alpha[i][0]);
     func->SetParameter(1,alpha[i][1]);
     arr->AddAt(func,i);
@@ -91,7 +96,7 @@ void MakeVZEROThresholdsEntryRun2()
   md->PrintMetaData();
 
   AliCDBStorage *storLoc = man->GetDefaultStorage();
-  AliCDBId id("VZERO/Calib/Thresholds",0,AliCDBRunRange::Infinity());
+  AliCDBId id("VZERO/Calib/Thresholds",243800,AliCDBRunRange::Infinity());
 
   storLoc->Put(arr, id, md);
 

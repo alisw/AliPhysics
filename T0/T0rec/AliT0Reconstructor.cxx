@@ -45,6 +45,7 @@
 #include <TGraph.h>
 #include <TMath.h>
 #include <Riostream.h>
+#include <TBits.h>
 
 ClassImp(AliT0Reconstructor)
 
@@ -560,16 +561,15 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        triggername[0] = (TMath::Abs(meanTVDC)<2147483647)?(Int_t)meanTVDC:0;
        triggername[1] = (TMath::Abs(meanOrA) <2147483647)?(Int_t)meanOrA:0;
        triggername[2] = (TMath::Abs(meanOrC) <2147483647)?(Int_t)meanOrC:0;
-
+       
        for (Int_t itr=0; itr<5; itr++) {
          for (Int_t iHit=0; iHit<5; iHit++) 
            {
              Int_t trr=trchan[itr];
              if(itr<3 ) { 
-               if( (alldata[trr][iHit] - triggername[itr]) > -800 &&
+              if( (alldata[trr][iHit] - triggername[itr]) > -800 &&
                    (alldata[trr][iHit] - triggername[itr]) < 800)  tr[itr]=true;
-               break;
-             }
+            }
              else 
             if( alldata[trr][iHit] > 0)  tr[itr]=true;
              AliDebug(5,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
@@ -600,11 +600,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      timecent = fTime0vertex[i0];
 	    timefull = -9999; 
 	    if (i0<12) 
-	      if(alldata[i0+1][iHit]>1) 
+            {
+	      if(alldata[i0+1][iHit]>1)
 		timefull = (Float_t(alldata[i0+1][iHit]) - timecent)* channelWidth* 0.001;
 	      else 
 		if(alldata[i0+45][iHit]>1) 
 		  timefull = (Float_t(alldata[i0+45][iHit]) - timecent)* channelWidth* 0.001;
+            }
 	    frecpoints.SetTimeFull(i0, iHit,timefull) ;
 	  }
 	}
@@ -739,6 +741,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   fESDTZERO->SetBackgroundFlag(background);
   Bool_t pileup =  PileupFlag();
   fESDTZERO->SetPileupFlag(pileup);
+  TBits pileupbits = SetPileupBits();
+  fESDTZERO->SetPileupBits(pileupbits);
+  TBits pileout =fESDTZERO-> GetT0PileupBits();
+  pileout.Print();
+
   for (Int_t i=0; i<5; i++) {
     fESDTZERO->SetPileupTime(i, frecpoints.GetTVDC(i) ) ;
     //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints.GetTVDC(i));
@@ -746,11 +753,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Bool_t sat  = SatelliteFlag();
   fESDTZERO->SetSatelliteFlag(sat);
   
+  
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if (pESD) {
+  if (pESD) 
    pESD->SetTZEROData(fESDTZERO);
-   //   fESDTZERO->Print();
-  }
+ 
+  
 
 } // vertex in 3 sigma
 
@@ -777,6 +785,37 @@ Bool_t AliT0Reconstructor::PileupFlag() const
 
 }
 
+ //____________________________________________________________
+  
+TBits AliT0Reconstructor::SetPileupBits() const
+{
+  TBits pileup ;
+  Float_t tvdc[5];
+  Int_t pos, bc[21];
+  UInt_t ibc;
+  pileup.ResetAllBits();
+  for ( Int_t nbc=0; nbc<21; nbc++) bc[nbc]=0;
+  for (Int_t ih=0; ih<5; ih++) 
+    {
+      tvdc[ih] =  fESDTZERO->GetTVDC(ih);
+      if(tvdc[ih]!=0 && tvdc[ih]>-290 &&tvdc[ih]<290 ) {
+	if( tvdc[ih]>0) pos = Int_t (tvdc[ih]+6)/25;
+	if(tvdc[ih]<0&&tvdc[ih]>-290)  pos = Int_t (tvdc[ih]-6)/25;	
+	//	printf("AliT0Reconstructor::PileupFlag():: hit %i tvdc %f pos %i bc %i\n",ih,tvdc[ih],pos, bc[pos+10]);
+
+	bc[pos+10] = 1;
+      }
+    }
+  for ( Int_t nbc=0; nbc<21; nbc++) {
+    if(bc[10]>0) {
+      ibc=UInt_t(nbc);
+      if (bc[nbc]>0)  pileup.SetBitNumber(ibc,kTRUE);
+    }
+  }
+  
+  //  pileup.Print();
+  return pileup;
+  }
  //____________________________________________________________
   
 Bool_t AliT0Reconstructor::BackgroundFlag() const
@@ -824,9 +863,12 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
   for(int i=0; i<26; i++) {
      a[i] = GetRecoParam() -> GetLow(i+130);
      b[i] = GetRecoParam() -> GetLow(i+156);
-    
-     qt11mean[i] =qt01mean[i] = 18500;
-     if(i<26) amplitude[i]=0;
+     if(i<24) 
+       qt11mean[i] =qt01mean[i] =fTime0vertex[i] + 15500;
+     else
+      qt11mean[i] =qt01mean[i] =fTime0vertex[0] + 15500;
+ 
+     amplitude[i]=0;
      //    printf(":ReadNewQT pmt %i Qt01mean %i QT11mean %i \n",i, qt01mean[i],   qt11mean[i]); 
   }
   Int_t diff[4];
@@ -868,11 +910,12 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
   printf(" AliT0Reconstructor::ReadOldQTC \n");
   Int_t  chargeQT0[26], chargeQT1[26], pedestal[26];
   Float_t meanQT1[26];
-  for (int i=0; i<26; i++) {
+  for (int i=0; i<24; i++) {
     if (fQT1mean[i]==0)  meanQT1[i]= fTime0vertex[0] + 2564;
     else 
       meanQT1[i]=fQT1mean[i];
   } 
+  for (int i=24; i<26; i++) meanQT1[i]= fQT1mean[23];
 
   for (Int_t i0=0; i0<26; i0++) {
     amplitude[i0]=0;
@@ -884,7 +927,7 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
   for (int iii=12; iii<24; iii++) ind[iii]=57;
   ind[24]=5;
   ind[25]=55;
-  for (Int_t in=0; in<26;  in++)
+  for (Int_t in=0; in<24;  in++)
     {
       /*      if(in==24|| in==25)
 	printf(" MPD %i %i %i data %i %i \n",

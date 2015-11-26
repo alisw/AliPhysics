@@ -63,7 +63,8 @@ ClassImp(AliMUONCalibrationData)
 AliMUONVStore* AliMUONCalibrationData::fgBypassPedestals(0x0);
 AliMUONVStore* AliMUONCalibrationData::fgBypassGains(0x0);
 
-UInt_t AliMUONCalibrationData::fgkDCSSt1Flag(42);
+UInt_t AliMUONCalibrationData::fgkPatchHVDCSAliasesSt1WasAppliedMask = static_cast<UInt_t>( 1 << 4 );
+UInt_t AliMUONCalibrationData::fgkPatchHVAllWasAppliedMask = static_cast<UInt_t>( 1 << 8 );
 
 namespace
 {
@@ -105,6 +106,8 @@ fConfig(0x0)
   // only pedestals), you should put deferredInitialization to kTRUE, which
   // will instruct this object to fetch the data only when neeeded.
 
+  AliCodeTimerAuto("",0);
+  
   if ( deferredInitialization == kFALSE )
   {
     Gains();
@@ -253,7 +256,7 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   ///
   /// Use dryRun = kTRUE to fill the messages *without* altering the values
   ///
-  /// Return kFALSE is the kind of HV (trouble) case we have here
+  /// Return kFALSE if the kind of HV (trouble) case we have here
   /// has not been identified...
   ///
   
@@ -647,12 +650,15 @@ void AliMUONCalibrationData::PatchSt1DCSAliases(TMap& hvMap)
   ///
   /// This method fixes that.
   
-  if ( hvMap.GetUniqueID() == fgkDCSSt1Flag )
+  if ( ( hvMap.GetUniqueID() & PatchHVDCSAliasesSt1WasAppliedMask() ) == PatchHVDCSAliasesSt1WasAppliedMask() || ( hvMap.GetUniqueID() == 42 ) )
   {
     // already clean object. Do nothing
+    AliWarningClass("Patching already done for St1 DCS aliases on this map. Not doing it again.");
     return;
   }
 
+  AliCodeTimerAutoClass(Form("hvMap=%p",&hvMap),0);
+  
   TIter next(&hvMap);
   TObjString* hvChannelName;
   
@@ -701,6 +707,11 @@ void AliMUONCalibrationData::PatchSt1DCSAliases(TMap& hvMap)
       
     oldPair->SetValue(newValues);
   }
+  
+  // Flag the object as being clean as of now, so
+  // it won't be patched a second time in that method
+  // is called again...
+  hvMap.SetUniqueID( hvMap.GetUniqueID() | PatchHVDCSAliasesSt1WasAppliedMask() );
 }
 
 //_____________________________________________________________________________
@@ -722,10 +733,19 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
 
   if (!hvMap) return 0x0;
 
+  AliCodeTimerAutoClass(Form("hvMap=%p",hvMap),0);
+
   PatchSt1DCSAliases(*hvMap);
   
   if (patched)
   {
+    if ( ( hvMap->GetUniqueID() & PatchHVAllWasAppliedMask() ) == PatchHVAllWasAppliedMask() )
+    {
+      // patch already applied on this object, don't do it again
+      AliWarningClass("Patching already done for HV channels on this map. Not doing it again.");
+      return hvMap;
+    }
+    
     TIter next(hvMap);
     TObjString* hvChannelName;
     
@@ -764,6 +784,7 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
       }
     }
     
+    hvMap->SetUniqueID(hvMap->GetUniqueID() | PatchHVAllWasAppliedMask());
   }
   
   if ( messages ) 

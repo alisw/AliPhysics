@@ -20,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "TString.h"
 
 class AliGRPDCS: public TObject {
  public:
@@ -29,18 +30,18 @@ class AliGRPDCS: public TObject {
 
   void SetTime(UInt_t fStart, UInt_t fStop) {fStartTime = fStart; fStopTime = fStop;}
   void SetObjArray(TObjArray *dcsSArray) {fDCSArray = dcsSArray;}
-  const char *ProcessDCS(Int_t iType);  
+  TString ProcessDCS(Int_t iType);  
   
  private:
   UInt_t fStartTime, fStopTime; //start and stop time of the run (DAQ lb)
   TObjArray *fDCSArray; //TObjArray for a dcs data point
   
-  const char *ProcessInt();
-  const char *ProcessUInt();
-  const char *ProcessFloat();
-  const char *ProcessChar();
-//  const char *ProcessString();
-  const char *ProcessBoolean();
+  TString ProcessInt();
+  TString ProcessUInt();
+  TString ProcessFloat();
+  TString ProcessChar();
+//  TString ProcessString();
+  TString ProcessBoolean();
   
   AliGRPDCS & operator=(const AliGRPDCS & ) {return *this;}
 

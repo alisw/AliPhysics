@@ -304,8 +304,10 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsADDTDCHeader;  // true if datum is an ADD TDC channel
     Bool_t fIsADDTDCdatum;   // true when streaming ADD TDC data
     Int_t  fADDTDCdatum;     // datum for ADD TDC
+    //
+    Bool_t fIsPARSet;        // Adding the check for PAR
    
-    ClassDef(AliZDCRawStream, 21)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 22)    // class for reading ZDC raw data
 };
 
 #endif

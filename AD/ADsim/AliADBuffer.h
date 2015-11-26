@@ -7,13 +7,7 @@
 // Class used for storing AD digits according to the DDLs format//
 /////////////////////////////////////////////////////////////////////
 
-#ifdef __CINT__
-class fstream;
-#else
-#include "Riostream.h"
-#endif
-
-#include "AliFstream.h"
+class AliFstream;
 
 class AliADBuffer:public TObject{
 

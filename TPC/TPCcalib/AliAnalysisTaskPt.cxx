@@ -222,7 +222,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
       Printf("err = %d", err);
       if( err==0 ){
 	Printf("Found TPC seed" );
-	for (Int_t irow = 0; irow < 160; irow++){
+	for (Int_t irow = 0; irow < kMaxRow; irow++){
 	  AliTPCclusterMI* cluMI = seed.GetClusterPointer(irow);
 	  if (cluMI){
 	    Printf("Found cluster at row %d", irow);

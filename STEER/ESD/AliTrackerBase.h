@@ -49,9 +49,12 @@ public:
                           Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8, Int_t sign=0, Bool_t addTimeStep=kFALSE, Bool_t correctMaterialBudget=kTRUE);
   static Int_t PropagateTrackTo2(AliExternalTrackParam *track, Double_t x, Double_t m,
                           Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8, Int_t sign=0, Bool_t addTimeStep=kFALSE, Bool_t correctMaterialBudget=kTRUE);
-  static Bool_t PropagateTrackToBxByBz(AliExternalTrackParam *track, Double_t x, 
-				       Double_t m,Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8,Int_t sign=0, Bool_t addTimeStep=kFALSE);  
+  static Bool_t PropagateTrackToBxByBz(AliExternalTrackParam *track, Double_t x, Double_t m,Double_t maxStep, Bool_t rotateTo=kTRUE, 
+				       Double_t maxSnp=0.8,Int_t sign=0, Bool_t addTimeStep=kFALSE,Bool_t correctMaterialBudget=kTRUE);  
   //
+  static Bool_t PropagateTrackParamOnlyToBxByBz(AliExternalTrackParam *track,Double_t xToGo,Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);
+  static Bool_t PropagateTrackParamOnlyTo(AliExternalTrackParam *track,Double_t xToGo,Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);
+
   static Double_t GetBz(const Double_t *r);
   static void GetBxByBz(const Double_t r[3], Double_t b[3]);
   static Double_t GetBz();

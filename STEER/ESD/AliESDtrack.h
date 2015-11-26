@@ -47,6 +47,7 @@ class AliESDEvent;
 class AliESDtrack : public AliExternalTrackParam {
 public:
   //
+  enum {kSkipFriend=BIT(14)}; 
   enum {kNITSchi2Std=3};
   //
   AliESDtrack();
@@ -59,7 +60,7 @@ public:
   void SetFriendTrack(const AliESDfriendTrack *t) {
     delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
   }
-  void ReleaseESDfriendTrack() { delete fFriendTrack;  fFriendTrack=0; }
+  void ReleaseESDfriendTrack() { /*delete fFriendTrack;*/  fFriendTrack=0; }
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();
@@ -91,6 +92,7 @@ public:
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetTOFExpTDiff(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
+  Double_t GetTOFExpTDiffSpec(AliPID::EParticleType specie=AliPID::kPion,Double_t b=0) const;
   //
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
   Double_t GetMassForTracking() const;
@@ -526,6 +528,11 @@ public:
   Int_t GetNumberOfITSClusters() const { return fITSncls;}
   Int_t GetNumberOfTPCClusters() const { return fTPCncls;}
   Int_t GetNumberOfTRDClusters() const { return fTRDncls;}
+  //
+  void   SetFriendNotStored(Bool_t v) {v ? (fFlags|=AliVTrack::kSkipFriend) : (fFlags&=(~AliVTrack::kSkipFriend));}
+  Bool_t GetFriendNotStored()    const {return IsOn(AliVTrack::kSkipFriend);}
+  void   SetFriendTrackID(int id)      {fFrTrackID = UShort_t(id+1);}
+  Int_t  GetFriendTrackID()      const {return Int_t(fFrTrackID)-1;}
 
 protected:
   
@@ -540,6 +547,7 @@ protected:
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   TBits    fTPCSharedMap;  // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
 
+  UShort_t fFrTrackID;             // id of friend in the ESDfriend
 
 
   ULong_t   fFlags;          // Reconstruction status flags 
@@ -668,11 +676,12 @@ protected:
   Int_t *fTOFcluster;               //[fNtofClusters]
                                     // TOF clusters matchable with the track
 
+  //
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,71)  //ESDtrack 
+  ClassDef(AliESDtrack,72)  //ESDtrack 
 };
 
 

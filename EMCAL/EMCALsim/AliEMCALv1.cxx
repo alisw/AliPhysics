@@ -43,6 +43,7 @@
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliStack.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

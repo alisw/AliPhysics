@@ -45,6 +45,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t GetTimeCut            () const     {return fTimeCut             ;}
   Float_t GetTimeMin            () const     {return fTimeMin             ;}
   Float_t GetTimeMax            () const     {return fTimeMax             ;}
+  Bool_t  IsTimeCalibrationOn   () const     {return fTimeCalibration     ;}
   Bool_t  GetUnfold             () const     {return fUnfold              ;}
   Int_t   GetNRowDiff           () const     {return fNRowDiff            ;}
   Int_t   GetNColDiff           () const     {return fNColDiff            ;}
@@ -56,6 +57,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetTimeCut            (Float_t t)         {fTimeCut   = t          ;}
   void SetTimeMin            (Float_t t)         {fTimeMin   = t          ;}
   void SetTimeMax            (Float_t t)         {fTimeMax   = t          ;}
+  void SetTimeCalibration    (Bool_t  yn)        {fTimeCalibration = yn   ;}
   void SetUnfold             (Bool_t unfold)     {fUnfold    = unfold     ;}
   void SetNxM(Int_t rdiff, Int_t cdiff)          {fNRowDiff=rdiff; fNColDiff = cdiff; }
 
@@ -105,6 +107,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetFittingAlgorithm(Int_t val)       {fFittingAlgorithm=val; }
   void SetFALTROUsage(Bool_t val)           {fUseFALTRO=val; }
   void SetLEDFit(Bool_t val)                {fFitLEDEvents=val; }
+  void SetL1PhaseUse(Bool_t val)            {fUseL1Phase=val; }
 
 	
   /* raw signal getters */
@@ -117,7 +120,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
   Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
-
+  Bool_t   UseL1Phase()           const {return fUseL1Phase;}     
+  
   //Unfolding (Adam)
   Double_t GetSSPars(Int_t i) const   {return fSSPars[i];}
   Double_t GetPar5(Int_t i) const     {return fPar5[i];}
@@ -152,6 +156,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t fTimeCut ;             // Maximum time of digits with respect to EMC cluster max.
   Float_t fTimeMin ;             // Minimum time of digits
   Float_t fTimeMax ;             // Maximum time of digits
+  Bool_t  fTimeCalibration;      // Activate time calibration
   Short_t fClusterizerFlag ;     // Choice of the clusterizer; Default selection (v1) is zero
   Int_t   fNRowDiff;             // NxN: How many neighbors to consider along row (phi)
   Int_t   fNColDiff;             // NxN: How many neighbors to consider along col (eta)
@@ -185,7 +190,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Int_t    fFittingAlgorithm;      // select the fitting algorithm
   Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
   Bool_t   fFitLEDEvents;          // fit LED events or not
-	
+  Bool_t   fUseL1Phase;            // shift time bin depending on L1 phase
+  
   //Shower shape parameters (Adam)
   Bool_t   fRejectBelowThreshold;  // split (false-default) or reject (true) cell energy below threshold after UF 
   Double_t fSSPars[8]; // Unfolding shower shape parameters
@@ -194,7 +200,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,17)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,19)     // Reconstruction parameters
 };
 
 #endif //  ALIEMCALRECPARAM_H

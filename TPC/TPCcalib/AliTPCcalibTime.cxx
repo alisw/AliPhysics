@@ -47,6 +47,7 @@ Comments to be written here:
 #include "AliRelAlignerKalman.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCParam.h"
+#include "AliTPCreco.h"
 #include "AliTPCTracklet.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibLaser.h"
@@ -563,7 +564,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
     if (!trackIn) continue;
     if (!trackOut) continue;
     
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) track->GetFriendTrack();
     if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
     if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
@@ -575,7 +576,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
     if (seed) {
       tpcSeeds.AddAt(seed,i);
       Int_t nA=0, nC=0;
-      for (Int_t irow=159;irow>0;irow--) {
+      for (Int_t irow=kMaxRow;irow--;) {
 	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
 	if (!cl) continue;
 	if ((cl->GetDetector()%36)<18) nA++;
@@ -808,7 +809,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
     AliESDtrack *track = event->GetTrack(itrack);
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(itrack);
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
     if (!friendTrack) continue;
     if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
     if (TMath::Abs(track->Pt())<kMinPt) continue;
@@ -818,7 +819,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
     Int_t nA=0, nC=0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     if (seed) {
-      for (Int_t irow=159;irow>0;irow--) {
+      for (Int_t irow=kMaxRow;irow--;) {
 	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
 	if (!cl) continue;
 	if ((cl->GetDetector()%36)<18) nA++;
@@ -1129,7 +1130,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
           if (fResHistoTPCITS[imeas]->GetEntries()+(cal->fResHistoTPCITS[imeas])->GetEntries() < fgResHistoMergeCut)
             fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
           else
-            AliInfo(Form("fResHistoTPCITS[%i] full (has %.0f merged tracks, max allowed: %.0f)",imeas,fResHistoTPCCE[imeas]->GetEntries(),fgResHistoMergeCut));
+            AliInfo(Form("fResHistoTPCITS[%i] full (has %.0f merged tracks, trying to add %.0f, max allowed: %.0f)",imeas, fResHistoTPCITS[imeas]->GetEntries(), cal->fResHistoTPCITS[imeas]->GetEntries(), fgResHistoMergeCut));
         }
         if (fMemoryMode>1) 
         {
@@ -1366,7 +1367,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
   //2.a Refit inner
   // 
   Int_t sideIn=0;
-  for (Int_t irow=0;irow<159;irow++) {
+  for (Int_t irow=0;irow<kMaxRow;irow++) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -1393,7 +1394,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
   //2.b Refit outer
   //
   Int_t sideOut=0;
-  for (Int_t irow=159;irow>0;irow--) {
+  for (Int_t irow=kMaxRow;irow--;) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
@@ -1541,7 +1542,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
     AliESDtrack * trackITS = event->GetTrack(i); 
     if (!trackITS) continue;
     if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
-    itsfriendTrack = esdFriend->GetTrack(i);
+    itsfriendTrack = (AliESDfriendTrack*)trackITS->GetFriendTrack();
     if (!itsfriendTrack) continue;
     if (!itsfriendTrack->GetITSOut()) continue;
      

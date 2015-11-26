@@ -343,7 +343,12 @@ AliMUONReconstructor::CreateTracker() const
   
   Int_t es = rp->GetEventSpecie();
   
-  AliTracker* tracker = static_cast<AliTracker*>(fTrackers.At(es));
+  AliTracker* tracker = 0X0;
+  
+  if ( es <= fTrackers.GetLast() )
+  {
+    tracker = static_cast<AliTracker*>(fTrackers.At(es));
+  }
   
   if (!tracker ) 
   {
@@ -460,7 +465,12 @@ AliMUONReconstructor::CreateClusterServer(const AliMUONRecoParam& rp) const
   
   AliCodeTimerAuto("",0);
   
-  AliMUONVClusterServer* clusterServer = static_cast<AliMUONVClusterServer*>(fClusterServers.At(rp.GetEventSpecie()));
+  AliMUONVClusterServer* clusterServer = 0x0;
+  
+  if  (rp.GetEventSpecie() <= fClusterServers.GetLast() )
+  {
+      clusterServer = static_cast<AliMUONVClusterServer*>(fClusterServers.At(rp.GetEventSpecie()));
+  }
   
   if (!clusterServer )
   {

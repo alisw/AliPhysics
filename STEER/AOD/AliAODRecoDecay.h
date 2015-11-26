@@ -67,11 +67,6 @@ class AliAODRecoDecay : public AliVTrack {
   void    SetDCA(Double_t dca); // 2 prong
   Double_t GetDCA(Int_t i=0) const {return fDCA[i];}
 
-  //event and run number
-  void SetEventRunNumbers(Int_t en,Int_t rn) 
-    { fEventNumber=en; fRunNumber=rn; return; }
-  Int_t GetEventNumber() const { return fEventNumber; }
-  Int_t GetRunNumber() const { return fRunNumber; }
 
   // methods of AliVTrack
   virtual Int_t    GetID() const { return -1; }
@@ -86,6 +81,8 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t Px() const; 
   Double_t Py() const;
   Double_t Pz() const;
+
+  virtual void DeleteRecoD();
   Double_t P2() const {return Px()*Px()+Py()*Py()+Pz()*Pz();}
   Double_t Pt2() const {return Px()*Px()+Py()*Py();}
   Double_t P() const {return TMath::Sqrt(P2());}
@@ -220,18 +217,7 @@ class AliAODRecoDecay : public AliVTrack {
   Double32_t *fPID;  //[fNPID] combined pid
                      //  (combined detector response probabilities)
                             
-  // TEMPORARY, to be removed when we do analysis on AliAODEvent
-  Int_t fEventNumber;
-  Int_t fRunNumber;
-  // TO BE PUT IN SPECIAL MC CLASS
-  //Bool_t   fSignal; // TRUE if signal, FALSE if background (for simulation)
-  //Int_t  fTrkNum[2]; // numbers of the two decay tracks  
-  //Int_t fPdg[2];  // PDG codes of the two tracks (for sim.)
-  //Int_t fMum[2];  // PDG codes of the mothers    (for sim.)
-
-  //
-
-  ClassDef(AliAODRecoDecay,4)  // base class for AOD reconstructed decays
+  ClassDef(AliAODRecoDecay,5)  // base class for AOD reconstructed decays
 };
 
 

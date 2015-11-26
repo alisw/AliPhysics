@@ -23,6 +23,7 @@
 
 #include "AliESDTZERO.h"
 #include "AliLog.h"
+#include <TBits.h>
 
 
 ClassImp(AliESDTZERO)
@@ -38,8 +39,8 @@ AliESDTZERO::AliESDTZERO() :
   fSattelite(kFALSE),
   fMultC(0),
   fMultA(0),
-  fBackground(0)
-
+  fBackground(0),
+  fPileupBits(0)
 {
   for(int i = 0;i<24;i++) {
     fT0time[i] = fT0amplitude[i] = fT0NewAmplitude[i] = 0;
@@ -67,7 +68,8 @@ AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   fSattelite(tzero.fSattelite),
   fMultC(tzero.fMultC),
   fMultA(tzero.fMultA),
-  fBackground(tzero.fBackground)
+  fBackground(tzero.fBackground),
+  fPileupBits(tzero.fPileupBits)
 {
   // copy constuctor
   for(int i = 0;i<3;i++) {
@@ -101,6 +103,8 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
     fMultC = tzero.fMultC;
     fMultA = tzero.fMultA;
     fT0trig = tzero.fT0trig;
+    fPileupBits = tzero.fPileupBits;
+
     for(int i = 0;i<3;i++) {
       fT0TOF[i] = tzero.fT0TOF[i];
       fT0TOFbest[i] = tzero.fT0TOFbest[i];
@@ -159,13 +163,18 @@ void AliESDTZERO::Reset()
 void AliESDTZERO::Print(const Option_t *) const
 {
   // does noting fornow
-  AliInfo(Form(" Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f \n",fT0zVertex,  fT0timeStart, fT0TOF[0],fT0TOF[1],fT0TOF[2]));
+  printf(" Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f \n",fT0zVertex,  fT0timeStart, fT0TOF[0],fT0TOF[1],fT0TOF[2]);
+
+  printf(" AliESDTZERO:::fPileupBits CountBits() \n");
+  // fPileupBits.CountBits());
+   fPileupBits.Print();
 
   Bool_t tr[5];
   for (Int_t i=0; i<5; i++) tr[i] = fT0trig & (1<<i);
-  AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4])); 
+  printf("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]); 
 
   for (Int_t i=0; i<24; i++) 
     printf(" AliESDTZERO::: new amp %f old amp %f \n", fT0NewAmplitude[i], fT0amplitude[i]);
+
 
 }

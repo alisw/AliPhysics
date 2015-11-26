@@ -58,7 +58,7 @@ struct AliHLTCaloDigitContainerDataStruct
   UInt_t fCaloModule;                                  //COMMENT
 
   /** Array of digits in container */
-  AliHLTCaloDigitDataStruct fDigitDataStruct[10000];
+  AliHLTCaloDigitDataStruct fDigitDataStruct[20000];
 
 };
 

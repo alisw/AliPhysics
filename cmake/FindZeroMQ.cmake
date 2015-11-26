@@ -13,60 +13,88 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Checks for a ZeroMQ installation
-# ZeroMQ custom installation can be pointed using -DZEROMQ
-#       - ZEROMQ_INCLUDE_DIR - Where to find zeromq include sub-directory.
-#       - ZEROMQ_LIBRARIES   - List of libraries when using zeromq.
-#       - ZEROMQ_FOUND       - True if zeromq found.
+# Checks for a ZeroMQ installation. Enables ZeroMQ by default if found on the
+# system and with the right version.
+#
+# Point to a custom ZeroMQ installation with -DZEROMQ=<path>: in that case, if
+# ZeroMQ is not found or has not the right version, a fatal error is raised.
+#
+# Variables set:
+#
+#  - ZEROMQ_FOUND          True if ZeroMQ is found
+#  - ZEROMQ_INCLUDE_DIR    Where to find ZeroMQ include directory
+#  - ZEROMQ_LIBRARIES      List of libraries when using ZeroMQ
+#  - ZEROMQ_VERSION        ZeroMQ version, major.minor.patches
+#  - ZEROMQ_VERSION_MAJOR  Major component of version
+#  - ZEROMQ_VERSION_MINOR  Minor component of version
+#  - ZEROMQ_VERSION_MAJOR  Patches component of version
+
+set(ZEROMQ_VERSION_MIN "4.0.0")
 
 message(STATUS "Checking for ZeroMQ ${ZEROMQ}")
 
 set(ZEROMQ_FOUND FALSE)
 
 if(ZEROMQ)
-    # ZeroMQ is installed in a custom place
-    find_library(ZEROMQ_LIBRARIES NAMES zmq
-                PATHS ${ZEROMQ}/lib
-                NO_DEFAULT_PATH
-                DOC "Path to libzmq)"
-            )
-    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h zmq.hpp
-                PATHS ${ZEROMQ}/include
-                NO_DEFAULT_PATH
-                DOC "Path to ZeroMQ include header files."
-            )       
-else(ZEROMQ)
-    # Check is the library is installed on the system
-    find_library(ZEROMQ_LIBRARIES NAMES zmq
-                DOC "Path to libzmq)"
-            )
-
-    find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.hpp zmq_utils.h
-                DOC "Path to ZeroMQ include header files."
-            )
-endif(ZEROMQ)
+  # Custom ZeroMQ installation specified.
+  find_library(ZEROMQ_LIBRARIES NAMES zmq
+                                PATHS ${ZEROMQ}/lib ${ZEROMQ}/lib/x86_64-linux-gnu
+                                NO_DEFAULT_PATH
+                                DOC "Path to libzmq.")
+  find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h zmq.hpp
+                               PATHS ${ZEROMQ}/include
+                               NO_DEFAULT_PATH
+                               DOC "Path to ZeroMQ include header files.")
+else()
+  # No custom ZeroMQ specified. Searching for ZeroMQ system-wide.
+  find_library(ZEROMQ_LIBRARIES NAMES zmq
+                                DOC "Path to libzmq.")
+  find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq.hpp zmq_utils.h
+                               DOC "Path to ZeroMQ include header files.")
+endif()
 
 mark_as_advanced(ZEROMQ_LIBRARIES ZEROMQ_INCLUDE_DIR)
 
-set(ZEROMQ_DISABLED FALSE)
-
-if(NOT ZEROMQ_LIBRARIES)
-    message(STATUS "ZeroMQ library not found. Disabling ZeroMQ support")
-    set(ZEROMQ_DISABLED TRUE)
+# Did we find ZeroMQ? We need to parse its version.
+if(ZEROMQ_INCLUDE_DIR)
+  message(STATUS "ZeroMQ include path: ${ZEROMQ_INCLUDE_DIR}")
 endif()
-
-if(NOT ZEROMQ_INCLUDE_DIR AND NOT ZEROMQ_DISABLED)
-    message(STATUS "ZeroMQ headers not found. Please install development package + cppzmq interface. Disabling ZeroMQ support")
-    set(ZEROMQ_DISABLED TRUE)
+if(ZEROMQ_LIBRARIES)
+  message(STATUS "ZeroMQ libraries: ${ZEROMQ_LIBRARIES}")
 endif()
+if(ZEROMQ_INCLUDE_DIR AND ZEROMQ_LIBRARIES)
+  file(READ "${ZEROMQ_INCLUDE_DIR}/zmq.h" zmqh)
 
-if(ZEROMQ_LIBRARIES AND ZEROMQ_INCLUDE_DIR)
-    message(STATUS "Found ZeroMQ ${ZEROMQ_LIBRARIES}")
+  string(REGEX MATCH "#define +ZMQ_VERSION_MAJOR +([0-9]+)" zmqv "${zmqh}")
+  set(ZEROMQ_VERSION_MAJOR "${CMAKE_MATCH_1}")
+  string(REGEX MATCH "#define +ZMQ_VERSION_MINOR +([0-9]+)" zmqv "${zmqh}")
+  set(ZEROMQ_VERSION_MINOR "${CMAKE_MATCH_1}")
+  string(REGEX MATCH "#define +ZMQ_VERSION_PATCH +([0-9]+)" zmqv "${zmqh}")
+  set(ZEROMQ_VERSION_PATCH "${CMAKE_MATCH_1}")
+
+  unset(zmqh)
+  unset(zmqv)
+
+  set(ZEROMQ_VERSION "${ZEROMQ_VERSION_MAJOR}.${ZEROMQ_VERSION_MINOR}.${ZEROMQ_VERSION_PATCH}")
+  message(STATUS "ZeroMQ version: ${ZEROMQ_VERSION}")
+
+  if(ZEROMQ_VERSION VERSION_GREATER "${ZEROMQ_VERSION_MIN}")
+    # Version OK.
     set(ZEROMQ_FOUND TRUE)
-endif()
-
-if(ZEROMQ_FOUND)
     add_definitions(-DZMQ)
-ENDIF(ZEROMQ_FOUND)
-
-
+    message(STATUS "ZeroMQ version ${ZEROMQ_VERSION} (> ${ZEROMQ_VERSION_MIN}) found")
+  elseif(ZEROMQ)
+    # Version not OK and explicitly requested: fatal.
+    message(FATAL_ERROR "ZeroMQ in ${ZEROMQ} has version ${ZEROMQ_VERSION} <= ${ZEROMQ_VERSION_MIN}")
+  else()
+    message(STATUS "ZeroMQ found but version ${ZEROMQ_VERSION} <= ${ZEROMQ_VERSION_MIN}. Disabling ZeroMQ support.")
+  endif()
+elseif(ZEROMQ)
+  # ZeroMQ not found and explicitly requested: fatal.
+  message(FATAL_ERROR "ZeroMQ not found in ${ZEROMQ}.")
+elseif(ZEROMQ_LIBRARIES)
+  # ZeroMQ libraries found in system, but headers were not.
+  message(STATUS "ZeroMQ headers not found. Please install the development package and the cppzmq interface. Disabling ZeroMQ support.")
+else()
+  message(STATUS "ZeroMQ not found. Disabling ZeroMQ support.")
+endif()

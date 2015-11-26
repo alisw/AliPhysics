@@ -28,7 +28,7 @@
 //                           Stefan Rossegger, 8th february 2008                                   //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <AliTPCAltroEmulator.h>
+#include "AliTPCAltroEmulator.h"
 #include <TH1F.h>
 #include <TMath.h>
 #include <TSystem.h>
@@ -38,10 +38,14 @@
 #include <AliRawData.h>
 #include <AliRawVEquipment.h>
 #include <AliRawEquipmentHeader.h>
-#include <AliTPCRawStreamV3.h>
+#include "AliTPCRawStreamV3.h"
 #include <TCanvas.h>
 #include <AliRawDataHeader.h>
 #include <AliRawDataHeaderV3.h>
+#include "TString.h"
+#include <iostream>
+
+using namespace std;
 
 /**	@brief Consturctor of Altro Class
  *

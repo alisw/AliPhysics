@@ -67,6 +67,8 @@
 #include "AliITSDDLModuleMapSDD.h"
 #include "AliITSTriggerConditions.h"
 #include "AliBaseLoader.h"
+#include "AliLog.h"
+#include <iostream>
 
 const Int_t AliITSDetTypeSim::fgkNdettypes = 3;
 const Int_t AliITSDetTypeSim::fgkDefaultNModulesSPD =  240;

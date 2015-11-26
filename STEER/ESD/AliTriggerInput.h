@@ -35,24 +35,10 @@
 class AliTriggerInput : public TNamed {
 
 public:
-                          AliTriggerInput(): TNamed(),
-			    fMask( 0 ),
-			    fValue( 0 ),
-			    fSignature( -1),
-			    fLevel(0),
-			    fDetectorId(-1),
-			    fIsActive(kFALSE)
-			    {}
+                          AliTriggerInput();
                           AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature = -1, Char_t number = -1);
-                          AliTriggerInput( AliTriggerInput & inp )
-			    : TNamed( inp ),
-			    fMask( inp.fMask ),
-			    fValue( inp.fValue ),
-			    fSignature( inp.fSignature ),
-			    fLevel( inp.fLevel),
-			    fDetectorId( inp.fDetectorId),
-			    fIsActive(kFALSE)
-			    {}
+                          AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, UInt_t indexCTP, UInt_t indexSwitch);
+                          AliTriggerInput( AliTriggerInput & inp );
                virtual   ~AliTriggerInput() {}
 
   //  Setters
@@ -71,6 +57,8 @@ public:
 	        Char_t    GetDetectorId() const { return fDetectorId; }
 	       UChar_t    GetLevel() const { return fLevel; }
 	        Bool_t    IsActive() const { return fIsActive; }
+		UInt_t    GetIndexCTP() const;
+		UInt_t    GetIndexSwitch() const { return fIndexSwitch; }
 
            virtual void   Print( const Option_t* opt ="" ) const;
 
@@ -83,9 +71,11 @@ protected:
 		UChar_t   fLevel;               //  L0, L1 or L2
 		Char_t    fDetectorId;          //  Alice-wide detector id, see AliDAQ class for details
 	        Bool_t    fIsActive;            //  Is trigger input active (during simulation)
+                UInt_t    fIndexCTP;            // input position as seen at CTP (fMask=(1<<(fIndexCTP-1)) [1..24]      
+                UInt_t    fIndexSwitch;         // input position in connector to CTP board (as seen in IR2) [1..48]    
 //                  void    fDectParameterTable;  //-> link to detector parameter table????
 
-   ClassDef( AliTriggerInput, 4 )  // Define a Trigger Input
+   ClassDef( AliTriggerInput, 5 )  // Define a Trigger Input
 };
 
 

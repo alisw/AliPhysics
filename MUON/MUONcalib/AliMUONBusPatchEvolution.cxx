@@ -41,6 +41,7 @@ ClassImp(AliMUONBusPatchEvolution)
 #include "TString.h"
 #include <cassert>
 #include <set>
+#include <iostream>
 
 //_________________________________________________________________________________________________
 AliMUONBusPatchEvolution::AliMUONBusPatchEvolution(AliMergeableCollection& hc)
@@ -73,7 +74,7 @@ void AliMUONBusPatchEvolution::Augment()
 
 		GetTimeResolutions(timeResolutions);
 
-		AliInfo(Form("Number of time resolutions found : %d",timeResolutions.size()));
+		AliInfo(Form("Number of time resolutions found : %lu",timeResolutions.size()));
 
 		ShrinkTimeAxis();
 

@@ -59,6 +59,7 @@
 #include "AliPHOSTriggerRawDigit.h"
 #include "AliPHOSTriggerRawDigiProducer.h"
 #include "AliPHOSTriggerParameters.h"
+#include <fstream>
 
 ClassImp(AliPHOSReconstructor)
 
@@ -499,6 +500,7 @@ void  AliPHOSReconstructor::ConvertDigitsEMC(AliRawReader* rawReader, TClonesArr
   rdp.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
   rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
   rdp.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
+  rdp.SetSubtractL1phase(GetRecoParam()->GetSubtractL1phase());
   rdp.MakeDigits(digits,fTmpDigLG,fitter);
 
   delete fitter ;

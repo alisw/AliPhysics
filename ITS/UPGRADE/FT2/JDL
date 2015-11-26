@@ -1,0 +1,54 @@
+Executable = "/alice/cern.ch/user/j/jstiller/bin/aliroot_fastMC";
+
+Jobtag={"comment:FT2 Fast Simulation anchored to LHC13d19 run $1 with $2 events"};
+
+Packages = {
+ 	"VO_ALICE@AliPhysics::v5-06-36-01",
+        "VO_ALICE@ROOT::v5-34-30-1",
+        "VO_ALICE@GEANT3::v2-0-1",
+        "VO_ALICE@AliRoot::v5-06-36",
+        "VO_ALICE@APISCONFIG::V1.1x",
+        "VO_ALICE@boost::v1_43_0",
+        "VO_ALICE@cgal::v3.6",
+        "VO_ALICE@fastjet::v2.4.2",
+        "VO_ALICE@jemalloc::v3.0.0"
+};
+
+TTL = 52000;
+Price="1000";
+
+Requirements = member(other.GridPartitions,"PDC08_2");
+
+Validationcommand ="/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/validation.sh";
+
+InputFile= {"LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/CheckSmearedESD.C",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/simrun.sh",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/AliAnalysisTaskSEFT2Simulation.h",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/AliAnalysisTaskSEFT2Simulation.cxx",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/AddTaskFT2Simulation.C",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/MakeAODInputChain.C",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/FT2.h",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/FT2.cxx",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/ft2_parameterization_LHC13d19.root",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/geometry.root",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/h-p_CrossSections.root",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/itsSegmentations.root",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/ConfigVertexingHF.C",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/fastGen.C",
+            "LF:/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/run_mcgenFT2.C"
+};
+
+Output = {
+        "log_archive:*.log@disk=1",
+        "root_archive.zip:AliAOD*.root,galice.root,Kinematics.root,jstiller*.root@disk=2"
+};
+
+OutputDir="/alice/cern.ch/user/j/jstiller/smearedMCtest/LHC13d19_fastMc/privateMC/output/$1/#alien_counter_03i#";
+
+JDLVariables={"Packages", "OutputDir"};
+
+splitarguments="$1 $2 $3 $4";
+
+split="production:$4-$5";
+
+Workdirectorysize={"6000MB"};

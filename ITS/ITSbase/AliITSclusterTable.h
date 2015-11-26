@@ -28,7 +28,7 @@ class AliITSclusterTable : public TObject {
   AliITSclusterTable(Double_t x, Double_t y, Double_t z, Double_t sx, Double_t sy, Double_t sz, Double_t phi, Double_t lambda, Int_t index);
   virtual ~AliITSclusterTable(){;}
 
-  Int_t   GetOrInd() const {return fOrInd;}
+  Int_t   GetOrInd() const {return int(GetUniqueID());}
   Double_t GetX() const {return fX;}
   Double_t GetY() const {return fY;}
   Double_t GetZ() const {return fZ;}
@@ -48,17 +48,16 @@ class AliITSclusterTable : public TObject {
 
  protected: 
 
-  Int_t   fOrInd; //! original index in tracker
-  Double_t fX;  //!x of cluster 
-  Double_t fY;  //!y of cluster
-  Double_t fZ;  //!z of cluster
-  Double_t fSx; //! error on x
-  Double_t fSy; //! error on y
-  Double_t fSz; //! error on z
-  Double_t fPhi; //! azimuthal angle
-  Double_t fLam; //! lambda angle
-
-  ClassDef(AliITSclusterTable,3)
+  Float_t fX;  //!x of cluster 
+  Float_t fY;  //!y of cluster
+  Float_t fZ;  //!z of cluster
+  Float_t fSx; //! error on x
+  Float_t fSy; //! error on y
+  Float_t fSz; //! error on z
+  Float_t fPhi; //! azimuthal angle
+  Float_t fLam; //! lambda angle
+  
+  ClassDef(AliITSclusterTable,4)
 };
 
 #endif

@@ -269,7 +269,13 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 // 4. Writting to friends, PID, MC label, quality etc. Setting status bit AliESDtrack::kTRDout.
 // 5. Propagation to TOF. If track propagation fails the AliESDtrack::kTRDStop is set.
 //  
-
+  AliInfoF("Extra Tolerances: boundary check: %.2f, roadY: %.2f, roadZ: %.2f, extra cl/layer: %d, ExtraChi2out: %.2f",
+	   AliTRDReconstructor::GetExtraBoundaryTolerance(),
+	   AliTRDReconstructor::GetExtraRoadY(),
+	   AliTRDReconstructor::GetExtraRoadZ(),
+	   AliTRDReconstructor::GetExtraMaxClPerLayer(),
+	   AliTRDReconstructor::GetExtraChi2Out());
+  //
   if(!fClusters || !fClusters->GetEntriesFast()){ 
     AliInfo("No TRD clusters");
     return 0;
@@ -285,16 +291,17 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
         nTRDseeds= 0, // number of seeds in the TRD acceptance
         nTPCseeds= 0; // number of TPC seeds
   Float_t foundMin = 20.0;
-  
-  Float_t *quality = NULL;
-  Int_t   *index   = NULL;
+
   fEventInFile  = event->GetEventNumberInFile();
   nSeeds   = event->GetNumberOfTracks();
+  
+  Float_t quality[nSeeds];
+  Int_t   index[nSeeds];
   // Sort tracks according to quality 
   // (covariance in the yz plane)
   if(nSeeds){  
-    quality = new Float_t[nSeeds];
-    index   = new Int_t[4*nSeeds];
+    //    quality = new Float_t[nSeeds]; // RS move on stack
+    //    index   = new Int_t[4*nSeeds];
     for (Int_t iSeed = nSeeds; iSeed--;) {
       AliESDtrack *seed = event->GetTrack(iSeed);
       Double_t covariance[15];
@@ -460,8 +467,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     }
     seed->SetTRDBudget(track.GetBudget(0));
   }
-  if(index) delete [] index;
-  if(quality) delete [] quality;
+  //  if(index) delete [] index; // RS moved to stack
+  //  if(quality) delete [] quality;
 
   AliInfo(Form("Number of seeds: TPCout[%d] TRDin[%d]", nTPCseeds, nTRDseeds));
   AliInfo(Form("Number of tracks: TRDout[%d] TRDbackup[%d]", nFound, nBacked));
@@ -724,7 +731,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 // Author
 //   Alexandru Bercuci <A.Bercuci@gsi.de>
 //
-
+  
   Int_t n = 0;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   AliTRDtrackingChamber *chamber = NULL;
@@ -732,7 +739,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
   if ( AliTRDReconstructor::GetStreamLevel()>0) debugLevel= AliTRDReconstructor::GetStreamLevel();
   TTreeSRedirector *cstreamer = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker) : 0x0;
-
+  const double kBoundaryEps = 0.5;
+  double boundaryEps = kBoundaryEps + AliTRDReconstructor::GetExtraBoundaryTolerance();
   Bool_t kStoreIn(kTRUE),     // toggel store track params. at TRD entry
          kStandAlone(kFALSE), // toggle tracker awarness of stand alone seeding 
          kUseTRD(fkRecoParam->IsOverPtThreshold(t.Pt()));// use TRD measurment to update Kalman
@@ -744,6 +752,9 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   // - start propagation from first tracklet found
   AliTRDseedV1 *tracklets[kNPlanes];
   memset(tracklets, 0, sizeof(AliTRDseedV1 *) * kNPlanes);
+  //
+  double chi2Cut = fkRecoParam->GetChi2Cut() + AliTRDReconstructor::GetExtraChi2Out();
+  //
   for(Int_t ip(kNPlanes); ip--;){
     if(!(tracklets[ip] = t.GetTracklet(ip))) continue;
     t.UnsetTracklet(ip);
@@ -869,7 +880,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Prolongation to x[%7.2f] y[%7.2f] z[%7.2f]", x+AliTRDReconstructor::GetMaxStep(), y, z));
       break;
     }
-    if(fGeom->IsOnBoundary(det, y, z, .5)){ 
+    if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){ 
       t.SetErrStat(AliTRDtrackV1::kBoundary, ily);
       AliDebug(4, "Failed Track on Boundary");
       continue;
@@ -1015,7 +1026,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
      }
      
      // update Kalman with the TRD measurement
-     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
+     if (chi2> chi2Cut){ // MI parameterizad chi2 cut 03.05.2014
       t.SetErrStat(AliTRDtrackV1::kChi2, ily);
       if(debugLevel > 2){
         UChar_t status(t.GetStatusTRD());
@@ -1983,7 +1994,7 @@ Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)
   //
 
   Int_t nsize = Int_t(clusterTree->GetTotBytes() / (sizeof(AliTRDcluster))); 
-  TObjArray *clusterArray = new TObjArray(nsize+1000); 
+  static TObjArray* clusterArray=0;// = new TObjArray(nsize+1000); 
   
   TBranch *branch = clusterTree->GetBranch("TRDcluster");
   if (!branch) {
@@ -2018,7 +2029,8 @@ Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)
       delete (clusterArray->RemoveAt(iCluster)); 
     }
   }
-  delete clusterArray;
+  //  delete clusterArray;
+  clusterArray->Delete(); //RS normally should not contain clusters anymore
 
   return kTRUE;
 }

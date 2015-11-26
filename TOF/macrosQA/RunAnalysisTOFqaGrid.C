@@ -1,8 +1,8 @@
- /********************************************
-   Macro to launch TOF QA task on ESDs data
+/********************************************
+ Macro to launch TOF QA task on ESDs data
 
 Author: fbellini@cern.ch
-Last update: 18 october 2012
+Last update: 21 october 2015
 *********************************************/
 class AliAnalysisGrid;
 TString analysisMode = "grid"; // "local" or "grid" - needs to be "grid" for plugin test mode
@@ -17,9 +17,7 @@ TString prod = "LHC12d";
 TString myRecPass="cpass1";
 TString myQAfileSuffix="_Barrel";
 Bool_t isMC = kFALSE;
-TString gridUser="fbellini";
 Int_t gridNtestFiles = 1;
-
 TString prefix="_";
 
 //do not change! to be set by SetupIO()
@@ -75,12 +73,7 @@ void SetupIO(TString filesPrefix = "")
   Printf("myMacroName = %s", myMacroName.Data());
   Printf("=======================================================\n");
 }
-//----------------------------------------------------------------------
-void SetGridUser(TString username){
-  if (username)
-    gridUser = username.Data();
-  return;
-}
+
 //----------------------------------------------------------------------
 void SetGridNtestFiles(Int_t nfiles = 1){
   if (nfiles<1) gridNtestFiles=1;
@@ -98,10 +91,13 @@ void LoadLibraries()
   gSystem->Load("libPWGPP");
 }
 //----------------------------------------------------------------------
-void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TString filesPrefix = "", TString gridUser="fbellini") 
+void RunAnalysisTOFqaGrid(TString pluginmode="test", 
+			  Int_t ntestfiles = 10, 
+			  TString filesPrefix = "", 
+			  TString gridUser="fbellini",
+			  TString aliphysicsVer = "vAN-20151021") 
 {
   LoadLibraries();  
-  SetGridUser(gridUser.Data());
   SetGridNtestFiles(ntestfiles);
   SetupIO(filesPrefix.Data());
   if(analysisMode=="grid") {
@@ -112,7 +108,7 @@ void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TStr
   Bool_t readMC = kFALSE;
  
   if(useAlienPlugin) {  
-    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode);
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode.Data(), gridUser.Data(), aliphysicsVer.Data());
     if(!alienHandler) return;
   }
   
@@ -136,15 +132,27 @@ void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TStr
   TString taskName;
   
   //Wagon for physics event selection
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
-  if (isMC)physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
+  if (isMC) physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
   //physSel->AddBackgroundIdentification(new AliBackgroundSelection());
    
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
-  AliAnalysisTaskTOFqa *TOFqa = (AliAnalysisTaskTOFqa*) AddTaskTOFQA(kTRUE);
-  
+  //Wagon for PID reponse
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AddTaskPIDResponse(isMC);
+
+  //Wagon for PID qa
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  AddTaskPIDqa();
+
+  //Wagon for TOF qa
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TOF/AddTaskTOFqaID.C");
+  AliAnalysisTaskTOFqaID *TOFqa = (AliAnalysisTaskTOFqaID*)  AddTaskTOFqaID(0, AliVEvent::kAnyINT, 0, kFALSE, "default", isMC, 0);  
+  //configure cuts (optional)
+  // TOFqa2010->SetMinPtCut(1.0);
+  // TOFqa2010->SetMaxEtaCut(0.9);
+
   if(readMC) {
     AliMCEventHandler  *mcH = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mcH); 
@@ -163,7 +171,7 @@ void RunAnalysisTOFqaGrid(TString pluginmode="test", Int_t ntestfiles = 10, TStr
 }
 
 //_____________________________________________________________________________
-AliAnalysisGrid* CreateAlienHandler(TString pluginmode="full")
+AliAnalysisGrid* CreateAlienHandler(TString pluginmode="full", TString gridUser="fbellini", TString aliphysicsVer = "vAN-20151021")
 {
 
   AliAnalysisAlien *plugin = new AliAnalysisAlien();  
@@ -173,8 +181,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="full")
   plugin->SetNtestFiles(gridNtestFiles);
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-02"); //MODIFICA
-  plugin->SetAliROOTVersion("v5-03-70-AN"); //MODIFICA
+  plugin->SetAliPhysicsVersion(aliphysicsVer.Data()); //MODIFICA
   //Set user grid output dir
   plugin->SetGridWorkingDir(myWorkDir.Data()); 
   plugin->SetGridOutputDir(myOutDir.Data()); 
@@ -194,13 +201,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="full")
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");   
   plugin->SetAdditionalLibs("libANALYSIS.so libANALYSISalice.so libCORRFW.so libTender.so libPWGPP.so ");//libTRDbase.so libTRDrec.so
   plugin->SetDefaultOutputs(kTRUE);
-  plugin->SetAnalysisMacro("AnalysisTOFqaSigned.C"); //MODIFICA se vuoi
-  plugin->SetExecutable("analysisTOFqaSigned.sh"); //MODIFICA se vuoi
+  plugin->SetAnalysisMacro("analysisTOFqa.C"); //MODIFICA se vuoi
+  plugin->SetExecutable("analysisTOFqa.sh"); //MODIFICA se vuoi
   plugin->SetSplitMaxInputFileNumber(50);
   plugin->SetMaxInitFailed(15);
   plugin->SetTTL(80000);
   plugin->SetInputFormat("xml-single");
-  plugin->SetJDLName("TaskAnalysisTOFqaSigned.jdl"); //MODIFICA se vuoi
+  plugin->SetJDLName("jobAnalysisTOFqa.jdl"); //MODIFICA se vuoi
   plugin->SetSplitMode("se");
   return plugin;
 }

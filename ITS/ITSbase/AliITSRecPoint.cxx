@@ -33,6 +33,8 @@
 #include <TGeoMatrix.h>
 #include "AliITSRecPoint.h"
 #include "AliAlignObj.h"
+#include <AliLog.h>
+#include <iostream>
 
 using std::ios;
 ClassImp(AliITSRecPoint)

@@ -169,7 +169,7 @@ Int_t AliITStrackMI::GetProlongationFast(Double_t alp, Double_t xk,Double_t &y, 
   // **** translation ******************  
   Double_t dx = xk- GetX()*ca - GetY()*sa;
   Double_t f1=GetSnp()*ca - cf*sa, f2=f1 + GetC()*dx;
-  if (TMath::Abs(f2) >= 0.9999) {
+  if (TMath::Abs(f2) >= 0.9999 || TMath::Abs(f1) >= 0.9999) {
     return 0;
   }
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));  

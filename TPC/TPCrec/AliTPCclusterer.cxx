@@ -145,7 +145,14 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam* par, const AliTPCRecoParam *
 
   //  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
   fRowCl= new AliTPCClustersRow("AliTPCclusterMI");
+}
 
+void AliTPCclusterer::InitClustererArrays()
+{
+  // init the arrays for the clusterer
+  // this has been moved out from the constructor as it is not needed
+  // when using the HLT clusters, but it allocates ~100MB
+  //
   // Non-persistent arrays
   //
   //alocate memory for sector - maximal case
@@ -190,8 +197,8 @@ AliTPCclusterer::~AliTPCclusterer(){
   AliTPCROC * roc = AliTPCROC::Instance();
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
-    delete [] fAllBins[iRow];
-    delete [] fAllSigBins[iRow];
+    if (fAllBins) delete [] fAllBins[iRow];
+    if (fAllSigBins) delete [] fAllSigBins[iRow];
   }
   delete [] fAllBins;
   delete [] fAllSigBins;
@@ -222,7 +229,7 @@ void AliTPCclusterer::SetOutput(TTree * tree)
   fOutput= tree;
   AliTPCClustersRow clrow("AliTPCclusterMI");
   AliTPCClustersRow *pclrow=&clrow;  
-  fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
+  fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,99);    
 }
 
 
@@ -571,7 +578,7 @@ Float_t AliTPCclusterer::FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, Flo
   return max;
 }
 
-void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t /*pos*/){
+void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * /*matrix*/, Int_t /*pos*/){
   //
   //
   // Transform cluster to the rotated global coordinata
@@ -604,20 +611,20 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
   //
   //
   //
-  
-  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  if (!transform) {
-    AliFatal("Tranformations not in calibDB");    
-    return;
+  if ( !AliTPCReconstructor::GetCompactClusters() ) {
+    AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+    if (!transform) {
+      AliFatal("Tranformations not in calibDB");    
+      return;
+    }
+    transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+    Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
+    Int_t i[1]={fSector};
+    transform->Transform(x,i,0,1);
+    c.SetX(x[0]);
+    c.SetY(x[1]);
+    c.SetZ(x[2]);
   }
-  transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
-  Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
-  Int_t i[1]={fSector};
-  transform->Transform(x,i,0,1);
-  c.SetX(x[0]);
-  c.SetY(x[1]);
-  c.SetZ(x[2]);
-  //
   //
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
     c.SetType(-(c.GetType()+3));  //edge clusters
@@ -628,6 +635,12 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
   TClonesArray * arr = 0;
   AliTPCclusterMI * cl = 0;
 
+  if (!addtoarray) {
+    // 2015-11-06 this is a new option to avoid copying all clusters
+    // the current cluster is simply adjusted according to the algorithm in
+    // this method, the array is handled by the caller
+    cl = &c;
+  } else
   if(fBClonesArray==kFALSE) {
      arr = fRowCl->GetArray();
      cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
@@ -645,9 +658,9 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
 //     AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
 //     cl->SetInfo(info);
 //   }
-  if (!fRecoParam->DumpSignal()) {
-    cl->SetInfo(0);
-  }
+//  if (!fRecoParam->DumpSignal()) {
+//    cl->SetInfo(0);
+//  }
   const Int_t kClusterStream=128; // stream level should be per action - to be added to the AliTPCReconstructor
   if ( (AliTPCReconstructor::StreamLevel()&kClusterStream)==kClusterStream) {
     Float_t xyz[3];
@@ -761,8 +774,10 @@ void AliTPCclusterer::Digits2Clusters()
     
     
     fMaxBin=fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-    fBins    =new Float_t[fMaxBin];
-    fSigBins =new Int_t[fMaxBin];
+    Float_t binsStack[fMaxBin];
+    Int_t   sigBinsStack[fMaxBin];
+    fBins    = binsStack; //new Float_t[fMaxBin];
+    fSigBins = sigBinsStack; //new Int_t[fMaxBin];
     fNSigBins = 0;
     memset(fBins,0,sizeof(Float_t)*fMaxBin);
     
@@ -784,11 +799,14 @@ void AliTPCclusterer::Digits2Clusters()
 
     FindClusters(noiseROC);
     FillRow();
-    fRowCl->GetArray()->Clear("C");    
+    // fRowCl->GetArray()->Clear("C");     //RS AliTPCclusterMI does not allocate memory
+    fRowCl->GetArray()->Clear();    
     nclusters+=fNcluster;    
 
-    delete[] fBins;
-    delete[] fSigBins;
+    fBins = 0;
+    fSigBins = 0;
+    //    delete[] fBins; // RS moved to stack
+    //    delete[] fSigBins;
   }  
  
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
@@ -928,7 +946,8 @@ void AliTPCclusterer::ProcessSectorData(){
     FindClusters(noiseROC);
     
     FillRow();
-    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear("C");
+    //    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear("C");
+    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear(); // RS AliTPCclusterMI does not allocate memory
     fNclusters += fNcluster;
     
   } // End of loop to find clusters
@@ -1020,8 +1039,8 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
-    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
-    fAllNSigBins[iRow]=0;
+    if (fAllBins) memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    if (fAllNSigBins) fAllNSigBins[iRow]=0;
   }
 
   rawReader->Reset();
@@ -1057,6 +1076,10 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   while (input.NextDDL()){
     if (input.GetSector() != fSector)
       AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
+
+    if (!fAllBins) {
+      InitClustererArrays();
+    }
     
     //Int_t nRows = fParam->GetNRow(fSector);
     
@@ -1355,8 +1378,8 @@ Double_t AliTPCclusterer::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t i
   //
   //
   Float_t kMin =fRecoParam->GetDumpAmplitudeMin();   // minimal signal to be dumped
-  Float_t *dsignal = new Float_t[nchannels];
-  Float_t *dtime   = new Float_t[nchannels];
+  Float_t dsignal[nchannels];
+  Float_t dtime[nchannels];
   for (Int_t i=0; i<nchannels; i++){
     dtime[i] = i;
     dsignal[i] = signal[i];
@@ -1387,8 +1410,8 @@ Double_t AliTPCclusterer::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t i
       "\n";
   }
 
-  delete [] dsignal;
-  delete [] dtime;
+  //  delete [] dsignal; // RS Moved to stack but where it is used? 
+  //  delete [] dtime;
   if (rms06>fRecoParam->GetMaxNoise()) {
     pedestalEvent+=1024.;
     return 1024+median; // sign noisy channel in debug mode
@@ -1451,23 +1474,9 @@ Int_t AliTPCclusterer::ReadHLTClusters()
     pClusterAccess->Clear("sector");
     pClusterAccess->Execute("read", param, &iResult);
     if (iResult < 0) {
-      return iResult;
       AliError("HLT Clusters can not be found");
+      return iResult;
     }
-
-    TObject* pObj=pClusterAccess->FindObject("clusterarray");
-    if (pObj==NULL) {
-      AliError("HLT clusters requested, but not cluster array not present");
-      return -4;
-    }
-
-    TObjArray* clusterArray=dynamic_cast<TClonesArray*>(pObj);
-    if (!clusterArray) {
-      AliError("HLT cluster array is not of class type TClonesArray");
-      return -5;
-    }
-
-    AliDebug(4,Form("Reading %d clusters from HLT for sector %d", clusterArray->GetEntriesFast(), fSector));
 
     Int_t nClusterSector=0;
     Int_t nClusterSectorGood=0;
@@ -1482,23 +1491,39 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
       fNcluster=0; // reset clusters per row
 
+      param="sector="; param+=fSector;
+      param+=" row="; param+=fRow;
+      // prepare copying
+      pClusterAccess->Execute("prepare_copy", param, &iResult);
+
+      // the TClonesArray will be filled directly from the existing objects
+      pClusterAccess->Copy(*fRowCl);
+
       fRx = fParam->GetPadRowRadii(fSector, fRow);
       fPadLength = fParam->GetPadPitchLength(fSector, fRow);
       fPadWidth  = fParam->GetPadPitchWidth();
       fMaxPad = fParam->GetNPads(fSector,fRow);
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
 
-      fBins = fAllBins[fRow];
-      fSigBins = fAllSigBins[fRow];
-      fNSigBins = fAllNSigBins[fRow];
+      fBins = fAllBins?fAllBins[fRow]:NULL;
+      fSigBins = fAllNSigBins?fAllSigBins[fRow]:NULL;
+      fNSigBins = fAllNSigBins?fAllNSigBins[fRow]:0;
+
+      TObjArray* clusterArray=fRowCl->GetArray();
+      if (!clusterArray) continue;
+      AliDebug(4,Form("Reading %d clusters from HLT for sector %d row %d", clusterArray->GetEntriesFast(), fSector, fRow));
 
       for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
 	if (!clusterArray->At(i)) 
 	  continue;
 	
+	bool keepCluster=false;
 	AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
-	if (!cluster) continue;
-	if (cluster->GetRow()!=fRow) continue;
+	if (keepCluster=(cluster!=NULL)) {
+	if (cluster->GetRow()!=fRow) {
+	  AliError(Form("mismatch in row of cluster: %d, expected %d", cluster->GetRow(), fRow));
+	  keepCluster = false;
+	}
         nClusterSector++;
 
         const Int_t   currentPad = TMath::Nint(cluster->GetPad());
@@ -1511,28 +1536,32 @@ Int_t AliTPCclusterer::ReadHLTClusters()
         // TODO: PadGainFactor should only contain 1 or 0. However in Digits2Clusters
         //       this is treated as a real gain factor per pad. Is the implementation
         //       below fine?
-        if (!(gain>0)) continue;
+        if (!(gain>0)) keepCluster = false;
 
         // check if the cluster is on a too noisy pad
-        if (noise>fRecoParam->GetMaxNoise()) continue;
+        if (noise>fRecoParam->GetMaxNoise()) keepCluster = false;
 
         // check if the charge is above the required minimum
-        if (maxCharge<minMaxCutAbs)         continue;
-        if (maxCharge<minMaxCutSigma*noise) continue;
+        if (maxCharge<minMaxCutAbs)         keepCluster = false;
+        if (maxCharge<minMaxCutSigma*noise) keepCluster = false;
+	}
+	if (!keepCluster) {
+	  clusterArray->RemoveAt(i);
+	  continue;
+	}
         
 	nClusterSectorGood++;
-	AddCluster(*cluster, NULL, 0);
+	// Note: cluster is simply adjusted, not cloned nor added to any additional array
+	AddCluster(*cluster, false, NULL, 0);
       }
-      
+      // remove the empty slots from the array
+      clusterArray->Compress();
+
       FillRow();
-      fRowCl->GetArray()->Clear("c");
+      //fRowCl->GetArray()->Clear("c");
+      fRowCl->GetArray()->Clear(); // RS: AliTPCclusterMI does not allocate memory
       
     } // for (fRow = 0; fRow < nRows; fRow++) {
-    if (nClusterSector!=clusterArray->GetEntriesFast()) {
-      AliError(Form("Failed to read %d out of %d HLT clusters", 
-		    clusterArray->GetEntriesFast()-nClusterSector, 
-		    clusterArray->GetEntriesFast()));
-    }
     fNclusters+=nClusterSectorGood;
   } // for(fSector = 0; fSector < kNS; fSector++) {
 

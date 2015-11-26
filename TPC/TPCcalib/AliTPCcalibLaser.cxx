@@ -129,6 +129,7 @@
 #include "AliDCSSensor.h"
 #include "AliGRPObject.h"
 #include "AliTPCROC.h"
+#include "AliTPCreco.h"
 
 using namespace std;
 
@@ -622,10 +623,10 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   Int_t n=fESD->GetNumberOfTracks();
   Int_t counter=0;
   for (Int_t i=0;i<n;++i) {
-    AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
-    if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
     if (!track) continue;
+    AliESDfriendTrack *friendTrack=(AliESDfriendTrack*)track->GetFriendTrack();
+    if (!friendTrack) continue;
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(track->GetZ()));
     if (binC>336) continue; //remove CE background
     TObject *calibObject=0;
@@ -1373,7 +1374,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
     AliTPCclusterMI *c=seed->GetClusterPointer(irow);
     if (!c) continue;
     Double_t pedgeY = c->GetX()*TMath::DegToRad()*(10)-TMath::Abs(c->GetY());
-    Double_t pedgeX = TMath::Min((irow)*0.75, (159.-irow)*1.5);
+    Double_t pedgeX = TMath::Min((irow)*0.75, (kMaxRow-irow)*1.5);
     if (pedgeY<3) continue;
     if (pedgeX<3) continue;
     countercl++;
@@ -1609,25 +1610,25 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       TVectorD vecy4res(5),vecz4res(5);
       TVectorD vecy1resIO(3),vecz1resIO(3);
       // cluster and track positions for each row - used for residuals
-      TVectorD vecgX(159);        // global X
-      TVectorD vecgY(159);        // global Y
-      TVectorD vecgZ(159);        // global Z
+      TVectorD vecgX(kMaxRow);        // global X
+      TVectorD vecgY(kMaxRow);        // global Y
+      TVectorD vecgZ(kMaxRow);        // global Z
 
-      TVectorD vecX(159);        // x is the same for all (row center)
-      TVectorD vecYkalman(159);  // y from kalman fit
-      TVectorD vecZkalman(159);  // z from kalman fit
-      TVectorD vecY1(159);       // y from pol1 fit per ROC
-      TVectorD vecZ1(159);       // z from pol1 fit per ROC
-      TVectorD vecY1IO(159);     // y from pol1 fit per ROC
-      TVectorD vecZ1IO(159);     // z from pol1 fit per ROC
-      TVectorD vecY2(159);       // y from pol2 fit per ROC
-      TVectorD vecZ2(159);       // z from pol2 fit per ROC
-      TVectorD vecY4(159);       // y from sector fit
-      TVectorD vecZ4(159);       // z from sector fit
-      TVectorD vecClY(159);      // y cluster position
-      TVectorD vecClZ(159);      // z cluster position
-      TVectorD vecSec(159);      // sector for each row
-      TVectorD  isReject(159);    // flag - cluster to be rejected 
+      TVectorD vecX(kMaxRow);        // x is the same for all (row center)
+      TVectorD vecYkalman(kMaxRow);  // y from kalman fit
+      TVectorD vecZkalman(kMaxRow);  // z from kalman fit
+      TVectorD vecY1(kMaxRow);       // y from pol1 fit per ROC
+      TVectorD vecZ1(kMaxRow);       // z from pol1 fit per ROC
+      TVectorD vecY1IO(kMaxRow);     // y from pol1 fit per ROC
+      TVectorD vecZ1IO(kMaxRow);     // z from pol1 fit per ROC
+      TVectorD vecY2(kMaxRow);       // y from pol2 fit per ROC
+      TVectorD vecZ2(kMaxRow);       // z from pol2 fit per ROC
+      TVectorD vecY4(kMaxRow);       // y from sector fit
+      TVectorD vecZ4(kMaxRow);       // z from sector fit
+      TVectorD vecClY(kMaxRow);      // y cluster position
+      TVectorD vecClZ(kMaxRow);      // z cluster position
+      TVectorD vecSec(kMaxRow);      // sector for each row
+      TVectorD  isReject(kMaxRow);    // flag - cluster to be rejected 
       //chi2 of fits
       Double_t chi2I1z=0;       // chi2 of pol1 fit in z (inner)
       Double_t chi2I1y=0;       // chi2 of pol1 fit in y (inner)
@@ -1694,8 +1695,8 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       if ( outerSector>=0 ) AliDebug(5,Form("Found outer Sector %02d at X %.2f", outerSector, trOuter->GetInner()->GetX()));
 
       // array of clusters
-      TClonesArray arrCl("AliTPCclusterMI",159);
-      arrCl.ExpandCreateFast(159);
+      TClonesArray arrCl("AliTPCclusterMI",kMaxRow);
+      arrCl.ExpandCreateFast(kMaxRow);
       //=======================================//
       // fill fitters with cluster information //
       //=======================================//
@@ -1730,7 +1731,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
           vecSec[irow]=-1;
 	  if (!c) continue;
 	  Double_t pedgeY = c->GetX()*TMath::Tan(TMath::DegToRad()*(10))-TMath::Abs(meanY);
-	  Double_t pedgeX = TMath::Min((irow)*0.75, (159.-irow)*1.5);
+	  Double_t pedgeX = TMath::Min((irow)*0.75, (kMaxRow-irow)*1.5);
 	  
           //
 	  Int_t roc = static_cast<Int_t>(c->GetDetector());
@@ -2270,7 +2271,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
   //
   // Fill raw THnSparses
   //
-  for (Int_t irow=0;irow<159;irow++) {
+  for (Int_t irow=0;irow<kMaxRow;irow++) {
     AliTPCclusterMI *c=track->GetClusterPointer(irow);
     if (!c) continue;
     if (c->GetMax()>800) continue; // saturation cut
@@ -2608,26 +2609,26 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
     Int_t secInner = TMath::Nint(fBeamSectorInner[id]); 
     Int_t secOuter = TMath::Nint(fBeamSectorOuter[id]); 
 
-    TVectorD vecX(159);        // X
-    TVectorD vecY(159);        // Y
-    TVectorD vecR(159);        // R
-    TVectorD vecDY(159);       // absolute residuals in Y
-    TVectorD vecDZ(159);       // absolute residuals in Z
-    TVectorD vecN(159);        // number of clusters
-    TVectorD vecEy(159);       //error y
-    TVectorD vecEz(159);       //error z
-    TVectorD vecPhi(159);      // local tangent
-    TVectorD vecPhiR(159);     // local tangent
+    TVectorD vecX(kMaxRow);        // X
+    TVectorD vecY(kMaxRow);        // Y
+    TVectorD vecR(kMaxRow);        // R
+    TVectorD vecDY(kMaxRow);       // absolute residuals in Y
+    TVectorD vecDZ(kMaxRow);       // absolute residuals in Z
+    TVectorD vecN(kMaxRow);        // number of clusters
+    TVectorD vecEy(kMaxRow);       //error y
+    TVectorD vecEz(kMaxRow);       //error z
+    TVectorD vecPhi(kMaxRow);      // local tangent
+    TVectorD vecPhiR(kMaxRow);     // local tangent
     // magnetic field integrals
-    TVectorD vecIBR(159);        // radial
-    TVectorD vecIBRPhi(159);     // r-phi
-    TVectorD vecIBLX(159);       // local x
-    TVectorD vecIBLY(159);       // local y
-    TVectorD vecIBGX(159);       // local x
-    TVectorD vecIBGY(159);       // local y
-    TVectorD vecIBZ(159);        // z
+    TVectorD vecIBR(kMaxRow);        // radial
+    TVectorD vecIBRPhi(kMaxRow);     // r-phi
+    TVectorD vecIBLX(kMaxRow);       // local x
+    TVectorD vecIBLY(kMaxRow);       // local y
+    TVectorD vecIBGX(kMaxRow);       // local x
+    TVectorD vecIBGY(kMaxRow);       // local y
+    TVectorD vecIBZ(kMaxRow);        // z
     //
-    for (Int_t irow=0;irow<159;irow++){
+    for (Int_t irow=0;irow<kMaxRow;irow++){
       vecIBR[irow]=0;
       vecIBRPhi[irow]=0;
       vecIBLX[irow]=0;
@@ -2717,7 +2718,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       TProfile* yprof  = histAbsY->ProfileX("yprof");
       TProfile* zprof  = histAbsZ->ProfileX("zprof");
       
-      for(Int_t bin = 1; bin<=159; bin++) {
+      for(Int_t bin = 1; bin<=kMaxRow; bin++) {
 	
 	if(yprof->GetBinEntries(bin)<5&&
 	   zprof->GetBinEntries(bin)<5) {
@@ -2752,7 +2753,7 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
 	vecX[bin-1] = x;
 	vecDY[bin-1] = yprof->GetBinContent(bin);
 	vecDZ[bin-1] = zprof->GetBinContent(bin);
-	if (bin>0&&bin<159){
+	if (bin>0&&bin<kMaxRow){
 	  //
 	  //truncated mean - skip first and the last  pad row
 	  //
@@ -3385,11 +3386,11 @@ void AliTPCcalibLaser::MakeFitHistos(){
   // TH2F           *fHisdEdx;       //->dEdx histo
   fHisNclIn = new TH2F("HisNclIn","HisNclIn",336,0,336,64,10,64);
   fHisNclOut = new TH2F("HisNclOut","HisNclOut",336,0,336,100,10,100);
-  fHisNclIO = new TH2F("HisNclIO","HisNclIO",336,0,336,160,10,160);
+  fHisNclIO = new TH2F("HisNclIO","HisNclIO",336,0,336,kMaxRow,10,kMaxRow);
   //
   fHisLclIn  = new TH2F("HisLclIn","HisLclIn",336,0,336,64,10,64);
   fHisLclOut = new TH2F("HisLclOut","HisLclOut",336,0,336,100,10,150);
-  fHisLclIO  = new TH2F("HisLclIO","HisLclIO",336,0,336,160,10,160);
+  fHisLclIO  = new TH2F("HisLclIO","HisLclIO",336,0,336,kMaxRow,10,kMaxRow);
   //
   fHisdEdx = new TH2F("HisdEdx","HisdEdx",336,0,336,160,1,50);
   fHisdZfit = new TH2F("HisdZfit","HisdZfit",336,0,336,300,-0.3,0.3);
@@ -3671,9 +3672,9 @@ void AliTPCcalibLaser::MakeFitHistos(){
   //
   //                  Delta       Time bin
   //                              Pad        SigmaShape      Q charge  pad row  trackID
-  Int_t   binsRow[6]={200,        10000,           20,            30,     159,  336};
+  Int_t   binsRow[6]={200,        10000,           20,            30,     kMaxRow,  336};
   Double_t axisMin[6]={-1,             0,           0,            1,     0  ,    0};
-  Double_t axisMax[6]={ 1,          1000,           1,           30,     159,  336};
+  Double_t axisMax[6]={ 1,          1000,           1,           30,     kMaxRow,  336};
   TString axisName[6]={"Delta","bin", "rms shape", "sqrt(Q)", "row","trackID"};
 
   binsRow[1]=2000;
@@ -4144,16 +4145,16 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
   THnSparse * hisPadInput   = laserTPC->fHisLaserPad;
   THnSparse * hisTimeInput = laserTPC->fHisLaserTime;
   TTreeSRedirector *pcstream= new TTreeSRedirector("hisLasers.root");
-  TVectorD meanY(159), sigmaY(159);
-  TVectorD meanZ(159), sigmaZ(159);
-  TVectorD meanPad(159), sigmaPad(159);
-  TVectorD meanTime(159), sigmaTime(159);
-  TVectorD meanDPad(159), sigmaDPad(159);
-  TVectorD meanDTime(159), sigmaDTime(159);
-  TVectorD meandEdx(159), sigmadEdx(159);
-  TVectorD meanSTime(159), sigmaSTime(159);
-  TVectorD meanSPad(159), sigmaSPad(159);
-  TVectorD entries(159);
+  TVectorD meanY(kMaxRow), sigmaY(kMaxRow);
+  TVectorD meanZ(kMaxRow), sigmaZ(kMaxRow);
+  TVectorD meanPad(kMaxRow), sigmaPad(kMaxRow);
+  TVectorD meanTime(kMaxRow), sigmaTime(kMaxRow);
+  TVectorD meanDPad(kMaxRow), sigmaDPad(kMaxRow);
+  TVectorD meanDTime(kMaxRow), sigmaDTime(kMaxRow);
+  TVectorD meandEdx(kMaxRow), sigmadEdx(kMaxRow);
+  TVectorD meanSTime(kMaxRow), sigmaSTime(kMaxRow);
+  TVectorD meanSPad(kMaxRow), sigmaSPad(kMaxRow);
+  TVectorD entries(kMaxRow);
   //
   Int_t indexes[10]={0,1,2,3,4,5,6};
   TH1 *his=0;
@@ -4199,7 +4200,7 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
     THnSparse *hisTime0 = hisTimeInput->Projection(5,indexes);
     //
     //    
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       entries[irow]=0;
       if ((*(ltrp->GetVecSec()))[irow] <0) continue;
       if ((*(ltrp->GetVecLX()))[irow] <80) continue;
@@ -4352,15 +4353,15 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
   TVectorD *vecSY=0;
   TVectorD *vecSZ=0;
   TVectorD *meandEdx=0;
-  TVectorD  isOK(159);
-  TVectorD  fitPad(159);
-  TVectorD  fitTime(159);
-  TVectorD  fitPadLocal(159);
-  TVectorD  fitTimeLocal(159);
-  TVectorD  fitDPad(159);
-  TVectorD  fitDTime(159);
-  TVectorD  fitIPad(159);
-  TVectorD  fitITime(159);
+  TVectorD  isOK(kMaxRow);
+  TVectorD  fitPad(kMaxRow);
+  TVectorD  fitTime(kMaxRow);
+  TVectorD  fitPadLocal(kMaxRow);
+  TVectorD  fitTimeLocal(kMaxRow);
+  TVectorD  fitDPad(kMaxRow);
+  TVectorD  fitDTime(kMaxRow);
+  TVectorD  fitIPad(kMaxRow);
+  TVectorD  fitITime(kMaxRow);
   Double_t  chi2PadIROC=0;
   Double_t  chi2PadOROC=0;
   //
@@ -4389,12 +4390,12 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
     //
     treeInput->GetEntry(id);
     AliTPCLaserTrack *ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
-    Int_t medianEntries = TMath::Nint(TMath::Median(159,vecN->GetMatrixArray()));
-    Double_t medianRMSY = TMath::Median(159,vecSY->GetMatrixArray());
-    Double_t rmsRMSY    = TMath::RMS(159,vecSY->GetMatrixArray());
-    Double_t medianRMSZ = TMath::Median(159,vecSZ->GetMatrixArray());
-    Double_t rmsRMSZ    = TMath::RMS(159,vecSZ->GetMatrixArray());
-    Double_t mdEdx      = TMath::Median(159,meandEdx->GetMatrixArray());
+    Int_t medianEntries = TMath::Nint(TMath::Median(kMaxRow,vecN->GetMatrixArray()));
+    Double_t medianRMSY = TMath::Median(kMaxRow,vecSY->GetMatrixArray());
+    Double_t rmsRMSY    = TMath::RMS(kMaxRow,vecSY->GetMatrixArray());
+    Double_t medianRMSZ = TMath::Median(kMaxRow,vecSZ->GetMatrixArray());
+    Double_t rmsRMSZ    = TMath::RMS(kMaxRow,vecSZ->GetMatrixArray());
+    Double_t mdEdx      = TMath::Median(kMaxRow,meandEdx->GetMatrixArray());
     Int_t sectorInner= TMath::Nint(ltrp->GetVecSec()->GetMatrixArray()[63/2]);
     Int_t sectorOuter= TMath::Nint(ltrp->GetVecSec()->GetMatrixArray()[64+96/2]);
     TLinearFitter fitterY(2,"pol1");
@@ -4405,7 +4406,7 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
     TLinearFitter fitterTimeSin(3,"hyp2");    
     //
     //
-    for (UInt_t irow=0; irow<159; irow++){
+    for (UInt_t irow=0; irow<kMaxRow; irow++){
       fitPad[irow]=0; fitIPad[irow]=0; fitDPad[irow]=0;
       fitTime[irow]=0; fitITime[irow]=0; fitDTime[irow]=0;
       Double_t sign=(ltrp->GetZ()>0) ? 1.:-1.;
@@ -4556,13 +4557,13 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
       fitterPadSin.GetParameters(fitPadIROCSin);
       fitterTimeSin.GetParameters(fitTimeIROCSin);
     }
-    for (Int_t irow=0; irow<159; irow++){
+    for (Int_t irow=0; irow<kMaxRow; irow++){
       if (TMath::Abs(fitDPad[irow])<kEpsilon)  isOK[irow]=kFALSE;
       if (TMath::Abs(fitDTime[irow])<kEpsilon) isOK[irow]=kFALSE;
       if (TMath::Abs(fitDPad[irow])>kDistCutFitPad)  isOK[irow]=kFALSE;
       if (TMath::Abs(fitDTime[irow])>kDistCutFitTime) isOK[irow]=kFALSE;
     }
-    for (Int_t irow=kSmoothRow/2; irow<159-kSmoothRow/2; irow++){
+    for (Int_t irow=kSmoothRow/2; irow<kMaxRow-kSmoothRow/2; irow++){
       fitPadLocal[irow]=0;
       fitTimeLocal[irow]=0;
       if (isOK[irow]<0.5) continue;     
@@ -4575,7 +4576,7 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
       for (Int_t delta=-kSmoothRow; delta<=kSmoothRow; delta++){
 	Int_t jrow=irow+delta;
 	if (jrow<0) jrow=0;
-	if (jrow>159) jrow=159;	
+	if (jrow>=kMaxRow) jrow=kMaxRow-1;	
 	if (isOK[jrow]<0.5) continue;	
 	if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[jrow]-sector)>0.1) continue;
       	Double_t y=(*vecPad)[jrow];

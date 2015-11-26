@@ -51,7 +51,7 @@ AliTPCtrack::AliTPCtrack():
   //-------------------------------------------------
   // default constructor
   //-------------------------------------------------
-  for (Int_t i=0; i<kMaxRow;i++) fIndex[i]=-2;
+  for (Int_t i=kMaxRow;i--;) fIndex[i]=-2;
   for (Int_t i=0; i<4;i++) fPoints[i]=0.;
   for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
@@ -249,7 +249,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) :
   //-----------------------------------------------------------------
   Set(t.GetX(),t.GetAlpha(),t.GetParameter(),t.GetCovariance());
 
-  for (Int_t i=0; i<kMaxRow; i++) fIndex[i]=t.fIndex[i];
+  for (Int_t i=kMaxRow; i--;) fIndex[i]=t.fIndex[i];
   for (Int_t i=0; i<4;i++) fPoints[i]=t.fPoints[i];
   for (Int_t i=0; i<12;i++) fKinkPoint[i]=t.fKinkPoint[i];
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
@@ -260,7 +260,7 @@ AliTPCtrack& AliTPCtrack::operator=(const AliTPCtrack& o){
   if(this!=&o){
     AliKalmanTrack::operator=(o);
     fdEdx = o.fdEdx;
-    for(Int_t i = 0;i<kMaxRow;++i)fIndex[i] = o.fIndex[i];
+    memcpy(fIndex,o.fIndex,kMaxRow*sizeof(Int_t));
     for(Int_t i = 0;i<4;++i)fPoints[i] = o.fPoints[i];
     fSdEdx = o.fSdEdx;
     fNFoundable = o.fNFoundable;
@@ -436,16 +436,16 @@ void  AliTPCtrack::UpdatePoints()
   //--------------------------------------------------
   //calculates first ,amx dens and last points
   //--------------------------------------------------
-  Float_t density[160];
-  for (Int_t i=0;i<160;i++) density[i]=-1.;
-  fPoints[0]= 160;
+  Float_t density[kMaxRow];
+  for (Int_t i=kMaxRow;i--;) density[i]=-1.;
+  fPoints[0]= kMaxRow;
   fPoints[1] = -1;
   //
   Int_t ngood=0;
   Int_t undeff=0;
   Int_t nall =0;
   Int_t range=20;
-  for (Int_t i=0;i<160;i++){
+  for (Int_t i=0;i<kMaxRow;i++){
     Int_t last = i-range;
     if (nall<range) nall++;
     if (last>=0){
@@ -458,7 +458,7 @@ void  AliTPCtrack::UpdatePoints()
   }
   Float_t maxdens=0;
   Int_t indexmax =0;
-  for (Int_t i=0;i<160;i++){
+  for (Int_t i=0;i<kMaxRow;i++){
     if (density[i]<0) continue;
     if (density[i]>maxdens){
       maxdens=density[i];
@@ -471,7 +471,7 @@ void  AliTPCtrack::UpdatePoints()
   fPoints[1] = indexmax;
   //
   // last point
-  for (Int_t i=indexmax;i<160;i++){
+  for (Int_t i=indexmax;i<kMaxRow;i++){
     if (density[i]<0) continue;
     if (density[i]<maxdens/2.) {
       break;

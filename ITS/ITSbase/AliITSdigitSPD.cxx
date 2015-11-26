@@ -15,6 +15,7 @@
 
 #include <AliITSdigitSPD.h>
 #include <TArrayI.h>
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //

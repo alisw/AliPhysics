@@ -8,9 +8,8 @@
 ////////////////////////////////////////////////
 //  Digits classes for all ITS detectors      //
 ////////////////////////////////////////////////
-#include <Riostream.h>
-#include <Riostream.h>
 #include <TObject.h>
+#include <iosfwd>
 
 class TObjArray;
 class TArrayI;

@@ -9,8 +9,7 @@
 // (x,z) position of this pad within a 3Gassiplex card
 // Author: Sergey Evdokimov, IHEP Protvino. Oct-2014
 
-#include <TROOT.h>
-#include <iostream>
+#include "Rtypes.h"
 
 class AliPHOSCpv3GConnection
 {

@@ -12,10 +12,10 @@
 // -- Author: Hisayuki Torii (Hiroshima Univ.)
 // --
 
-#include <iostream>
-#include <Rtypes.h>
-#include <ctime>
+#include "Rtypes.h"
 #include "AliPHOSDATreeCluster.h"
+
+class AliPHOSDATreeCluster;
 
 class AliPHOSDATreeEvent{
 
@@ -26,10 +26,7 @@ class AliPHOSDATreeEvent{
   AliPHOSDATreeEvent(): fTime(0), fNDigits(0), fDigits(0), fNClusters(0), fClusters(0){/* */};
   AliPHOSDATreeEvent(const AliPHOSDATreeEvent& evt);
   AliPHOSDATreeEvent& operator=(const AliPHOSDATreeEvent& evt);
-  virtual ~AliPHOSDATreeEvent(){
-    if( fNDigits > 0 ) delete[] fDigits;
-    if( fNClusters > 0 ) delete[] fClusters;
-  };
+  virtual ~AliPHOSDATreeEvent();
   time_t GetTime() const{return fTime;};
   void SetTime(time_t time){fTime=time;};
   int GetNDigits() const{ return fNDigits; };
@@ -44,8 +41,8 @@ class AliPHOSDATreeEvent{
   bool Fill(AliPHOSDATreeDigit& digit);
   bool ExecuteClustering();
   void Reset(){
-    if( fNDigits > 0 ) delete[] fDigits;
-    if( fNClusters > 0 ) delete[] fClusters;
+    delete[] fDigits;
+    delete[] fClusters;
     fTime = 0;
     fNDigits = 0;
     fNClusters = 0;

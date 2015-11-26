@@ -60,7 +60,11 @@ public:
 
   void                SetEventInfo(AliEventInfo *evInfo) {fEventInfo = evInfo;}
   const AliEventInfo* GetEventInfo() const {return fEventInfo;}
-
+  //
+  virtual Bool_t OwnsESDObjects() const {return kFALSE;} //RS query if tracker owns some objects in the ESD/Friends
+  virtual void   CleanESDFriendsObjects(AliESDEvent*) {} //RS allow to tracker to clean the objects it ows in the friends
+  virtual void   CleanESDObjects(AliESDEvent*) {} //RS allow to tracker to clean the objects it ows in the ESD
+  //
 protected:
   AliTracker(const AliTracker &atr);
 private:

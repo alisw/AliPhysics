@@ -550,13 +550,13 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTTrigg
 	HLTWarning("ignoring negative input multiplier");
 	fInputMultiplier=0;
       }
-      iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
+      iOutputDataSize=(long unsigned int)(fInputMultiplier*iInputDataVolume) + iConstBase;
       //HLTDebug("task %s: reqired output size %d", GetName(), iOutputDataSize);
       }
       if (iNofTrial == 0 && fpDataBuffer->GetMaxBufferSize() < iOutputDataSize) {
         //If the estimated buffer size exceeds the maximum buffer size of AliHLTRawBuffer, decrease the buffer size.
         //The estimation is often quite high, and GetMaxBufferSize should usually return a size that is sufficient.
-        HLTImportant("Reducing estimated output buffer size of %d to maximum output buffer size\n", iOutputDataSize);
+        HLTImportant("Reducing estimated output buffer size of %lu to maximum output buffer size\n", iOutputDataSize);
         iOutputDataSize = fpDataBuffer->GetMaxBufferSize();
       }
       if (iNofTrial>0) {

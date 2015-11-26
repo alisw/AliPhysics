@@ -61,3 +61,10 @@ int AliPMDhit::operator == (AliPMDhit &cell) const
   for (i=0; i<6; i++) if(fVolume[i]!=cell.GetVolume(i)) return 0;
   return 1;
 }
+
+void
+AliPMDhit::Print(Option_t *) const {
+   printf("PMD Cell %d %d %d %d %d %d\n   Primary %d -   Energy %f\n",
+          fVolume[0],fVolume[1],fVolume[2],fVolume[3],
+          fVolume[4],fVolume[5],fTrack,fEnergy);
+}

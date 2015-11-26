@@ -54,8 +54,11 @@ public:
 
   // Added for RELDIS
   void    SetRELDISGenerator() {fIsRELDISgen=kTRUE;}
+  
+  void    SetSpectatorParam(int imod=1) {fSpectatorParam=imod;}
 
-  void    SpectatorSignal(Int_t SpecType, Int_t numEvents, Float_t pm[3][5]);
+  void    SpectatorSignal(Int_t specType, Int_t numEvents, Float_t pm[5][5]);
+  void    SpectatorsFromHijing(Int_t specType, Int_t numEvents, Float_t pm[5][5]);
 
 
 private:
@@ -91,8 +94,10 @@ private:
   // Added for RELDIS
   Bool_t  fIsRELDISgen;  	// true if generator is RELDIS
   
+  // Fragmentation is derived from RUN1 data
   TFile  *fSpectatorData;	// pointer to stored spectator data files
-       
+  Int_t   fSpectatorParam;      // kinematic model fro spectators (1=from AliGenZDC =DEFAULT, 2=from HIJING)
+  
   ClassDef(AliZDCDigitizer, 15)     // digitizer for ZDC
 };    
 #endif

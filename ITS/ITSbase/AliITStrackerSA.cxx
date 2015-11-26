@@ -264,8 +264,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
     if(!fCluCoord[i]){
       fCluCoord[i] = new TClonesArray("AliITSclusterTable",nclusters[i]);
     }else{
-      fCluCoord[i]->Delete();
-      fCluCoord[i]->Expand(nclusters[i]);
+      fCluCoord[i]->Clear(); //Delete();
+      //fCluCoord[i]->Expand(nclusters[i]); //RS will autoexpand
     }
   }
 
