@@ -65,6 +65,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   virtual void  Terminate(const Option_t*);
   
   void          SetDoPairing(Bool_t b=kTRUE)                  {fDoPairing=b;}
+  void          SetCalcResolution(Bool_t b=kTRUE)             {fCalcResolution=b;}
+  void          SetResolutionCuts(AliAnalysisFilter *cuts)    {fResolutionCuts=cuts;}
   void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
   void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
@@ -171,8 +173,16 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*                       fMeeBins;
   Double_t*                       fPteeBins;
   TH2F*                           fNgenPairs;
+  TH2F*                           fNgenPairs2;
   std::vector<TH2F*>              fvRecoPairs;
   std::vector<TH2F*>              fvRecoPairs_poslabel;
+  
+  Bool_t                          fCalcResolution;
+  TH2F*                           fPtResolutionAndBrems;
+  TH2F*                           fPtResolution;
+  TH2F*                           fPtResolutionAndBrems_poslabel;
+  TH2F*                           fPtResolution_poslabel;
+  AliAnalysisFilter*              fResolutionCuts;
   
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   
