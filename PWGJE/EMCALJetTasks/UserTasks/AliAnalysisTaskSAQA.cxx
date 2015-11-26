@@ -211,17 +211,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   if (fParticleCollArray.GetEntriesFast()>0) {
     if (!fParticleLevel && fIsMC) {
       for (Int_t i = 0; i < fNcentBins; i++) {
-	histname = Form("fHistTrNegativeLabels_%d",i);
-	fHistTrNegativeLabels[i] = new TH1F(histname,histname, 500, 0, 1);
-	fHistTrNegativeLabels[i]->GetXaxis()->SetTitle("% of negative labels");
-	fHistTrNegativeLabels[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistTrNegativeLabels[i]);
+        histname = Form("fHistTrNegativeLabels_%d",i);
+        fHistTrNegativeLabels[i] = new TH1F(histname,histname, 500, 0, 1);
+        fHistTrNegativeLabels[i]->GetXaxis()->SetTitle("% of negative labels");
+        fHistTrNegativeLabels[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistTrNegativeLabels[i]);
 
-	histname = Form("fHistTrZeroLabels_%d",i);	
-	fHistTrZeroLabels[i] = new TH1F(histname,histname, 500, 0, 1);
-	fHistTrZeroLabels[i]->GetXaxis()->SetTitle("% of negative labels");
-	fHistTrZeroLabels[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistTrZeroLabels[i]);
+        histname = Form("fHistTrZeroLabels_%d",i);
+        fHistTrZeroLabels[i] = new TH1F(histname,histname, 500, 0, 1);
+        fHistTrZeroLabels[i]->GetXaxis()->SetTitle("% of negative labels");
+        fHistTrZeroLabels[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistTrZeroLabels[i]);
       }
     }
 
@@ -231,72 +231,72 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
     for (Int_t i = 0; i < fNcentBins; i++) {
       for (Int_t j = 0; j < nlabels; j++) {
-	histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
-	fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
-	fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
-	fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
-	fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-	fOutput->Add(fHistTrPhiEtaPt[i][j]);
+        histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
+        fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+        fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
+        fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
+        fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+        fOutput->Add(fHistTrPhiEtaPt[i][j]);
       }
 
       if (!fParticleLevel) {
-	if (fIsMC) {
-	  histname = Form("fHistTrPhiEtaZeroLab_%d",i);
-	  fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-	  fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
-	  fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
-	  fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
-	  fOutput->Add(fHistTrPhiEtaZeroLab[i]);
+        if (fIsMC) {
+          histname = Form("fHistTrPhiEtaZeroLab_%d",i);
+          fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+          fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
+          fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
+          fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
+          fOutput->Add(fHistTrPhiEtaZeroLab[i]);
 
-	  histname = Form("fHistTrPtZeroLab_%d",i);
-	  fHistTrPtZeroLab[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-	  fHistTrPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
-	  fHistTrPtZeroLab[i]->GetYaxis()->SetTitle("counts");
-	  fOutput->Add(fHistTrPtZeroLab[i]);
-	}
-	
-	histname = Form("fHistTrEmcPhiEta_%d",i);
-	fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-	fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
-	fHistTrEmcPhiEta[i]->GetYaxis()->SetTitle("#phi");
-	fOutput->Add(fHistTrEmcPhiEta[i]);
-	
-	histname = Form("fHistTrEmcPt_%d",i);
-	fHistTrEmcPt[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-	fHistTrEmcPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistTrEmcPt[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistTrEmcPt[i]);
-	
-	histname = Form("fHistTrPhiEtaNonProp_%d",i);
-	fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
-	fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
-	fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
-	fOutput->Add(fHistTrPhiEtaNonProp[i]);
+          histname = Form("fHistTrPtZeroLab_%d",i);
+          fHistTrPtZeroLab[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+          fHistTrPtZeroLab[i]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistTrPtZeroLab[i]->GetYaxis()->SetTitle("counts");
+          fOutput->Add(fHistTrPtZeroLab[i]);
+        }
 
-	histname = Form("fHistTrPtNonProp_%d",i);
-	fHistTrPtNonProp[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
-	fHistTrPtNonProp[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistTrPtNonProp[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistTrPtNonProp[i]);
-	
-	histname = Form("fHistDeltaEtaPt_%d",i);
-	fHistDeltaEtaPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
-	fHistDeltaEtaPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistDeltaEtaPt[i]->GetYaxis()->SetTitle("#delta#eta");
-	fOutput->Add(fHistDeltaEtaPt[i]);
-	
-	histname = Form("fHistDeltaPhiPt_%d",i);
-	fHistDeltaPhiPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -2, 2);
-	fHistDeltaPhiPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistDeltaPhiPt[i]->GetYaxis()->SetTitle("#delta#phi");
-	fOutput->Add(fHistDeltaPhiPt[i]);
-	
-	histname = Form("fHistDeltaPtvsPt_%d",i);
-	fHistDeltaPtvsPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
-	fHistDeltaPtvsPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-	fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
-	fHistDeltaPtvsPt[i]->GetZaxis()->SetTitle("counts");
-	fOutput->Add(fHistDeltaPtvsPt[i]);
+        histname = Form("fHistTrEmcPhiEta_%d",i);
+        fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+        fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
+        fHistTrEmcPhiEta[i]->GetYaxis()->SetTitle("#phi");
+        fOutput->Add(fHistTrEmcPhiEta[i]);
+
+        histname = Form("fHistTrEmcPt_%d",i);
+        fHistTrEmcPt[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+        fHistTrEmcPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistTrEmcPt[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistTrEmcPt[i]);
+
+        histname = Form("fHistTrPhiEtaNonProp_%d",i);
+        fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+        fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
+        fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
+        fOutput->Add(fHistTrPhiEtaNonProp[i]);
+
+        histname = Form("fHistTrPtNonProp_%d",i);
+        fHistTrPtNonProp[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+        fHistTrPtNonProp[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistTrPtNonProp[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistTrPtNonProp[i]);
+
+        histname = Form("fHistDeltaEtaPt_%d",i);
+        fHistDeltaEtaPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
+        fHistDeltaEtaPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistDeltaEtaPt[i]->GetYaxis()->SetTitle("#delta#eta");
+        fOutput->Add(fHistDeltaEtaPt[i]);
+
+        histname = Form("fHistDeltaPhiPt_%d",i);
+        fHistDeltaPhiPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -2, 2);
+        fHistDeltaPhiPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistDeltaPhiPt[i]->GetYaxis()->SetTitle("#delta#phi");
+        fOutput->Add(fHistDeltaPhiPt[i]);
+
+        histname = Form("fHistDeltaPtvsPt_%d",i);
+        fHistDeltaPtvsPt[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
+        fHistDeltaPtvsPt[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistDeltaPtvsPt[i]->GetYaxis()->SetTitle("#deltap_{T} (GeV/c)");
+        fHistDeltaPtvsPt[i]->GetZaxis()->SetTitle("counts");
+        fOutput->Add(fHistDeltaPtvsPt[i]);
       }
     }
   }
@@ -319,12 +319,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fOutput->Add(fHistClusDeltaPhiEPEnergy[i]);
 
       if (fIsEmbedded) {
-	histname = "fHistClusMCEnergyFraction_";
-	histname += i;
-	fHistClusMCEnergyFraction[i] = new TH1F(histname, histname, fNbins, 0, 1.2);
-	fHistClusMCEnergyFraction[i]->GetXaxis()->SetTitle("MC fraction");
-	fHistClusMCEnergyFraction[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistClusMCEnergyFraction[i]);
+        histname = "fHistClusMCEnergyFraction_";
+        histname += i;
+        fHistClusMCEnergyFraction[i] = new TH1F(histname, histname, fNbins, 0, 1.2);
+        fHistClusMCEnergyFraction[i]->GetXaxis()->SetTitle("MC fraction");
+        fHistClusMCEnergyFraction[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistClusMCEnergyFraction[i]);
       }
 
       histname = "fHistClusTimeEnergy_";
@@ -352,14 +352,14 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       histname = "fHistCellsAbsIdEnergy_";
       histname += i;
-      fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
+      fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 20000,0,19999,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
       fHistCellsAbsIdEnergy[i]->GetXaxis()->SetTitle("cell abs. Id");
-      fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cell} (GeV)");
       fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");    
       fOutput->Add(fHistCellsAbsIdEnergy[i]);
     }
   }
-       
+
   if (fJetCollArray.GetEntriesFast()>0) {
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistJetsPhiEta_";
@@ -378,13 +378,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fOutput->Add(fHistJetsPtArea[i]);
     }
   }
-  
+
   Int_t dim = 0;
   TString title[20];
   Int_t nbins[20] = {0};
   Double_t min[20] = {0};
   Double_t max[20] = {0};
-  
+
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = 101;
@@ -407,7 +407,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       max[dim] = 101;
       dim++;
     }
-    
+
     if (fDoV0QA==1) {
       title[dim] = "V0A total multiplicity";
       nbins[dim] = 200;
@@ -557,7 +557,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 void AliAnalysisTaskSAQA::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
-  
+
   if (fDoV0QA) {
     fVZERO = InputEvent()->GetVZEROData();
     if (!fVZERO) {
@@ -578,10 +578,10 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
     if (fBeamType == kAA || fBeamType == kpA ) {
       AliCentrality *aliCent = InputEvent()->GetCentrality();
       if (aliCent) {
-	if (!fCentMethod2.IsNull()) 
-	  fCent2 = aliCent->GetCentralityPercentile(fCentMethod2); 
-	if (!fCentMethod3.IsNull()) 
-	  fCent3 = aliCent->GetCentralityPercentile(fCentMethod3);
+        if (!fCentMethod2.IsNull())
+          fCent2 = aliCent->GetCentralityPercentile(fCentMethod2);
+        if (!fCentMethod3.IsNull())
+          fCent3 = aliCent->GetCentralityPercentile(fCentMethod3);
       }
     }
   }
@@ -620,7 +620,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   Float_t leadingJetPt = 0;
   Float_t leadingJetEta = 0;
   Float_t leadingJetPhi = 0;
-    
+
   if (fTracks) {
     AliVParticle *leadingTrack = 0;
 
@@ -648,7 +648,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
       leadingClusPhi = leadingClusVect.Phi();
     }
   }
-  
+
   if (fCaloCells) {
     ncells = DoCellLoop(cellSum);
     AliDebug(2,Form("%d cells found in the event", ncells));
@@ -668,20 +668,20 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   }
 
   FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal, 
-		   ntracks, nclusters, ncells, njets, 
-		   leadingTrackPt, leadingTrackEta, leadingTrackPhi, 
-		   leadingClusE, leadingClusEta, leadingClusPhi, 
-		   leadingJetPt, leadingJetEta, leadingJetPhi);
+      ntracks, nclusters, ncells, njets,
+      leadingTrackPt, leadingTrackEta, leadingTrackPhi,
+      leadingClusE, leadingClusEta, leadingClusPhi,
+      leadingJetPt, leadingJetEta, leadingJetPhi);
 
   return kTRUE;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, 
-					   Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets, 
-					   Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
-					   Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi,
-					   Float_t maxJetPt, Float_t maxJetEta, Float_t maxJetPhi)
+    Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets,
+    Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
+    Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi,
+    Float_t maxJetPt, Float_t maxJetEta, Float_t maxJetPhi)
 {
   Double_t contents[20]={0};
 
@@ -704,7 +704,7 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
     else if (title=="#rho (GeV/c)")
       contents[i] = rho;
     else if (title=="No. of tracks")
-	contents[i] = ntracks;
+      contents[i] = ntracks;
     else if (title=="No. of clusters")
       contents[i] = nclusters;
     else if (title=="No. of cells")
@@ -782,20 +782,20 @@ Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cel
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
   fGeom->GetCellIndex(AbsIdseed,imod,iTower,iIphi,iIeta); 
   fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,iphi,ieta);  
-  
+
   //Get close cells index and energy, not in corners
-  
+
   Int_t absID1 = -1;
   Int_t absID2 = -1;
-  
+
   if (iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
   if (iphi > 0)                                 absID2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
-  
+
   // In case of cell in eta = 0 border, depending on SM shift the cross cell index
-  
+
   Int_t absID3 = -1;
   Int_t absID4 = -1;
-  
+
   if (ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2)) {
     absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
     absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1); 
@@ -810,14 +810,14 @@ Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cel
     if (ieta > 0)                                 
       absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
   }
-  
+
   Double_t  ecell1 = cells->GetCellAmplitude(absID1);
   Double_t  ecell2 = cells->GetCellAmplitude(absID2);
   Double_t  ecell3 = cells->GetCellAmplitude(absID3);
   Double_t  ecell4 = cells->GetCellAmplitude(absID4);
 
   Double_t Ecross = ecell1 + ecell2 + ecell3 + ecell4;
-  
+
   Double_t Fcross = 1 - Ecross/Eseed;
 
   return Fcross;
@@ -903,15 +903,15 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
     }
     else {
       if (track->GetLabel() == 0) {
-	zero++;
-	if (fHistTrPhiEtaZeroLab[fCentBin]) {
-	  fHistTrPhiEtaZeroLab[fCentBin]->Fill(track->Eta(), track->Phi());
-	  fHistTrPtZeroLab[fCentBin]->Fill(track->Pt());
-	}
+        zero++;
+        if (fHistTrPhiEtaZeroLab[fCentBin]) {
+          fHistTrPhiEtaZeroLab[fCentBin]->Fill(track->Eta(), track->Phi());
+          fHistTrPtZeroLab[fCentBin]->Fill(track->Pt());
+        }
       }
 
       if (track->GetLabel() < 0) {
-	neg++;
+        neg++;
       }
 
       Int_t type = 0;
@@ -929,10 +929,10 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
       }
 
       if (type >= 0 && type <= 3) {
-	fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
+        fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       }
       else {
-	AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
+        AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
       }
 
       AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
