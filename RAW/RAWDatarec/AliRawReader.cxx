@@ -530,7 +530,8 @@ Bool_t AliRawReader::IsEventSelected() const
   // Then check the trigger pattern and compared it
   // to the required trigger mask
   if (fSelectTriggerMask != 0) {
-    if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
+    if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask && 
+	(GetClassMaskNext50() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
   }
 
   if (  fIsTriggerClassLoaded && !fSelectTriggerExpr.IsNull()) {
