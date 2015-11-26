@@ -123,12 +123,16 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaPt;                                      //! array of histos with weighted eta, pT
     TH1F**                  fHistoMCEtaWOWeightPt;                              //! array of histos with unweighted eta, pT
     TH1F**                  fHistoMCEtaWOEvtWeightPt;                           //! array of histos without event weights eta, pT
+    TH1F**                  fHistoMCPi0DalitzPt;                                //! array of histos with weighted pi0 Dalitz, pT
+    TH1F**                  fHistoMCPi0DalitzWOWeightPt;                        //! array of histos with unweighted pi0 Dalitz, pT
+    TH1F**                  fHistoMCPi0DalitzWOEvtWeightPt;                     //! array of histos without event weights pi0 Dalitz, pT
+    TH1F**                  fHistoMCEtaDalitzPt;                                //! array of histos with weighted eta Dalitz, pT
+    TH1F**                  fHistoMCEtaDalitzWOWeightPt;                        //! array of histos with unweighted eta Dalitz, pT
+    TH1F**                  fHistoMCEtaDalitzWOEvtWeightPt;                     //! array of histos without event weights eta Dalitz, pT
     TH1F**                  fHistoMCPi0InAccPt;                                 //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaInAccPt;                                 //! array of histos with weighted eta in acceptance, pT
-    TH2F**                  fHistoMCPi0PtY;                                     //! array of histos with weighted pi0, pT, Y
-    TH2F**                  fHistoMCEtaPtY;                                     //! array of histos with weighted eta, pT, Y
-    TH2F**                  fHistoMCPi0PtAlpha;                                 //! array of histos with weighted pi0, pT, alpha
-    TH2F**                  fHistoMCEtaPtAlpha;                                 //! array of histos with weighted eta, pT, alpha
+    TH1F**                  fHistoMCPi0DalitzInAccPt;                           //! array of histos with weighted pi0 dalitz in acceptance, pT
+    TH1F**                  fHistoMCEtaDalitzInAccPt;                           //! array of histos with weighted eta dalitz in acceptance, pT
     TH2F**                  fHistoMCPi0PtJetPt;                                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                                 //! array of histos with weighted eta, pT, hardest jet pt
 
@@ -170,7 +174,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusGammaInvMassvsPt;                     //!
     TH2F**                  fHistoTrueClusElectronInvMassvsPt;                  //!
     TH2F**                  fHistoTrueClusBGPtvsSource;                         //!
-    
+    TH2F**                  fHistoTrueClusGammaPtvsSource;                      //!
+    TH2F**                  fHistoTrueClusElectronPtvsSource;                   //!
     
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
@@ -218,7 +223,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 4);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 5);
 };
 
 #endif
