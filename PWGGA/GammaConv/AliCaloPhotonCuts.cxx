@@ -828,6 +828,30 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
 }
 
 //________________________________________________________________________
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack){
+   // MonteCarlo Photon Selection
+
+  if(!fMCStack)return kFALSE;
+
+  if (abs(particle->GetPdgCode()) == 11){
+
+    if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+    if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    
+    if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 11){
+      return kFALSE;// no photon as mothers!
+    }
+    // decision on prim/sec moved to main task
+//     if(particle->GetMother(0) >= fMCStack->GetNprimary()){
+//       return kFALSE;// the gamma has a mother, and it is not a primary particle
+//     }
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+
+//________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray){
   // MonteCarlo Photon Selection
 
