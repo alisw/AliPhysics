@@ -96,7 +96,7 @@ public:
    * Set the pointer to the writeout buffer
    * @param outputcont Pointer to the writeout buffer
    */
-  void SetTriggerPatchDataPtr(AliHLTCaloTriggerPatchDataStruct *outputcont) { fTriggerPatchDataPtr = outputcont; }
+  void SetTriggerPatchDataPtr(AliHLTCaloTriggerPatchDataStruct *outputcont, AliHLTUInt32_t buffersize) { fTriggerPatchDataPtr = outputcont; fBufferSize = buffersize; }
 
   /**
    * Find EMCAL trigger patches.
@@ -159,6 +159,8 @@ private:
   /** Grid with trigger bit mask from STU */
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
 
+  /** Available space in buffer */
+  AliHLTUInt32_t								fBufferSize;
   /** online threshold for gamma patches */
   Float_t                                       fGammaThresholdOnline;
   /** offline threshold for gamma patches */

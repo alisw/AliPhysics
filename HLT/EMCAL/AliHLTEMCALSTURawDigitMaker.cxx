@@ -201,12 +201,21 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
   */
 }
 
-Int_t AliHLTEMCALSTURawDigitMaker::WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr) const {
+Int_t AliHLTEMCALSTURawDigitMaker::WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr, AliHLTUInt32_t &availableSize) const {
   Int_t outputsize = 0;
+  if(availableSize < sizeof(AliHLTCaloTriggerRawDigitDataStruct)){
+	  HLTWarning("Not enough space in buffer available");
+	  return 0;
+  }
   for(Int_t idig = 0; idig < fNRawDigits; idig++){
+	if(availableSize < sizeof(AliHLTCaloTriggerRawDigitDataStruct)){
+		HLTWarning("Buffer exceeded after %d digits", idig);
+		break;
+	}
     *bufferptr = fRawDigitBuffer[idig];
     bufferptr++;
     outputsize += sizeof(AliHLTCaloTriggerRawDigitDataStruct);
+    availableSize -= sizeof(AliHLTCaloTriggerRawDigitDataStruct);
   }
   return outputsize;
 }

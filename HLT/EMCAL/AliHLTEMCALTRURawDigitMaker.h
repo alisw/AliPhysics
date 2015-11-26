@@ -16,7 +16,7 @@ public:
 
   void Initialize(Int_t runno);
   void Add(const std::vector<AliCaloBunchInfo> &bunchlist);
-  Int_t WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr) const;
+  Int_t WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr, AliHLTUInt32_t &availableSize) const;
 
   Int_t GetNumberOfRawDigits() const { return fNRawDigits; }
 

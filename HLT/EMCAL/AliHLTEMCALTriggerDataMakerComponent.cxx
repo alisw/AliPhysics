@@ -136,8 +136,10 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
   memcpy(headerPtr->fL1V0, fSTUHeader.fL1V0, sizeof(Int_t) * 2);
   headerPtr->fL1FrameMask = fSTUHeader.fL1FrameMask;
 
+  AliHLTUInt32_t availableSize = size - sizeof(AliHLTCaloTriggerHeaderStruct);
+
   // Write data
-  Int_t dataSize = MakeTriggerData(dataIter);
+  Int_t dataSize = MakeTriggerData(dataIter, availableSize);
   totSize += dataSize;
   headerPtr->fNfastor = dataSize / sizeof(AliHLTCaloTriggerDataStruct);
 
@@ -156,6 +158,10 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
 void AliHLTEMCALTriggerDataMakerComponent::ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr){
   fSTUHeader = *headerptr;
   for(UShort_t idig = 0; idig < headerptr->fNRawDigits; idig++){
+	if(dataptr->fID > kMaxChannels){
+		HLTWarning("Invalid TRU index: %d", dataptr->fID);
+		continue;
+	}
     fRawIndexesSTU[dataptr->fID] = fNRawDigitsSTU;
     if(dataptr->fID > fMaxChannel) fMaxChannel = dataptr->fID;
     fSTURawDigitBuffer[fNRawDigitsSTU] = *dataptr;
@@ -176,24 +182,38 @@ void AliHLTEMCALTriggerDataMakerComponent::ReadTRUData(UShort_t ndigits, AliHLTC
   HLTDebug("Successfully read in %d TRU digits", fNRawDigitsTRU);
 }
 
-Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDataStruct *outputdata) {
-  Int_t outputsize = 0, col = 0, row = 0;
+Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDataStruct *outputdata, AliHLTUInt32_t &availableSize) {
+  if(availableSize < sizeof(AliHLTCaloTriggerDataStruct)){
+	  HLTWarning("Not enough space in buffer to write triggers");
+	  return 0;
+  }
+  Int_t outputsize = 0, col = 0, row = 0, ntriggers = 0 ;
   AliHLTCaloTriggerRawDigitDataStruct tmpdigit;
   for(UShort_t indcounter = 0; indcounter <= fMaxChannel; indcounter++){
+	if(availableSize < sizeof(AliHLTCaloTriggerDataStruct)){
+		HLTWarning("Buffer exceeded after %d triggers", ntriggers);
+		break;
+	}
     fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(indcounter, col, row);
     if(fRawIndexesTRU[indcounter] >= 0 && fRawIndexesSTU[indcounter] >=0){
       CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
       ConvertRawDigit(outputdata, &tmpdigit, col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
+      ntriggers++;
     } else if(fRawIndexesTRU[indcounter] >= 0){
       ConvertRawDigit(outputdata, &(fTRURawDigitBuffer[fRawIndexesTRU[indcounter]]), col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
+      ntriggers++;
     } else if(fRawIndexesSTU[indcounter] >= 0){
       ConvertRawDigit(outputdata, &(fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]), col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
+      ntriggers++;
     }
   }
   return outputsize;

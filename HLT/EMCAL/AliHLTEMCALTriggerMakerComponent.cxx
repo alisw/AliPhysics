@@ -88,7 +88,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
       HLTDebug("Block %d received %d fastor triggers", ndx, triggerhead->fNfastor);
       for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
         fTriggerMakerPtr->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
-	fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
+        fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
         dataptr++;
       }
       nfastor += triggerhead->fNfastor;
@@ -97,7 +97,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
   
   Int_t npatches = 0;
   if(nfastor || nDigitsGlob){
-    fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
+    fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr), size - sizeof(AliHLTCaloTriggerHeaderStruct));
     npatches = fTriggerMakerPtr->FindPatches();
     HLTDebug("Found %d patches from fastors\n", npatches);
     outputPtr += npatches;
@@ -148,7 +148,7 @@ AliHLTComponentDataType AliHLTEMCALTriggerMakerComponent::GetOutputDataType(){
 }
 
 void AliHLTEMCALTriggerMakerComponent::GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier ){
-  constBase = 3000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
+  constBase = 5000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
   inputMultiplier = 0; // (float)sizeof(AliHLTCaloTriggerPatchDataStruct)/sizeof(AliHLTCaloDigitDataStruct)+1;
 }
 

@@ -40,6 +40,7 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fADCValues(NULL),
   fADCOfflineValues(NULL),
   fTriggerBitMasks(NULL),
+  fBufferSize(0),
   fGammaThresholdOnline(0),
   fGammaThresholdOffline(0),
   fJetThresholdOnline(0),
@@ -92,6 +93,10 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
   std::vector<AliEMCALTriggerRawPatch> foundpatches = fPatchFinder->FindPatches(*fADCValues, *fADCOfflineValues);
   Int_t patchcount = 0;
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchiter = foundpatches.begin(); patchiter != foundpatches.end(); ++patchiter){
+	if(fBufferSize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
+		HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
+		break;
+	}
     /*
     if(mysize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
       HLTError("Not enough space - some patches will be lost");
@@ -102,6 +107,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr);
     fTriggerPatchDataPtr = next;
     patchcount++;
+    fBufferSize -= sizeof(AliHLTCaloTriggerPatchDataStruct);
   }
   return patchcount;
 }

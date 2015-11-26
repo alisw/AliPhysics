@@ -57,7 +57,7 @@ public:
    */
   void Reset();
 
-  Int_t WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr) const;
+  Int_t WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigitDataStruct *bufferptr, AliHLTUInt32_t &availableSize) const;
 
   Int_t GetNumberOfRawDigits() const { return fNRawDigits; }
 

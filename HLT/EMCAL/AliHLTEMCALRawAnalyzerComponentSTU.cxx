@@ -69,7 +69,7 @@ AliHLTComponentDataType AliHLTEMCALRawAnalyzerComponentSTU::GetOutputDataType(){
 
 void AliHLTEMCALRawAnalyzerComponentSTU::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier){
   //
-  constBase = sizeof(AliHLTEMCALSTUHeaderStruct) + 5000 * sizeof(AliHLTCaloTriggerRawDigitDataStruct);
+  constBase = sizeof(AliHLTEMCALSTUHeaderStruct) + 10000 * sizeof(AliHLTCaloTriggerRawDigitDataStruct);
   //inputMultiplier = 5.;
 }
 
@@ -105,11 +105,19 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
 
+
   // Get pointers to output buffer
   AliHLTEMCALSTUHeaderStruct *headerPtr = reinterpret_cast<AliHLTEMCALSTUHeaderStruct *>(outputPtr);
   AliHLTCaloTriggerRawDigitDataStruct *dataIter = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct *>(outputPtr + sizeof(AliHLTEMCALSTUHeaderStruct)),
       *nextFastor(NULL);
   totSize += sizeof(AliHLTEMCALSTUHeaderStruct);
+
+  AliHLTUInt32_t availableSize = size;
+  if(availableSize < sizeof(AliHLTEMCALSTUHeaderStruct)){
+	  HLTWarning("Not enough size in writeout buffer");
+	  return 1;
+  }
+  availableSize -= sizeof(AliHLTEMCALSTUHeaderStruct);
 
   bool headerInitialized = false;
 
@@ -143,7 +151,7 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
       headerPtr->fL1FrameMask = triggerData->GetL1FrameMask();
       headerInitialized = true;
     }
-    totSize += fSTURawDigitMaker->WriteRawDigitsBuffer(dataIter);
+    totSize += fSTURawDigitMaker->WriteRawDigitsBuffer(dataIter, availableSize);
     dataIter += fSTURawDigitMaker->GetNumberOfRawDigits();
   }
 

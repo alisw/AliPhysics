@@ -187,6 +187,7 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoEvent( const AliHLTComponentEventData& evt
   UInt_t totSize           = 0;
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
+  AliHLTUInt32_t availableSize = size;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
   {
@@ -198,8 +199,9 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoEvent( const AliHLTComponentEventData& evt
 
     if(iter->fSpecification >= AliDAQ::GetFirstSTUDDL()) continue;
 
-    blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
+    blockSize = DoIt(iter, outputPtr, availableSize, totSize); // Processing the block
     totSize += blockSize; //Keeping track of the used size
+    availableSize -= blockSize;
     AliHLTComponentBlockData bdChannelData;
     FillBlockData( bdChannelData );
     bdChannelData.fOffset = totSize-blockSize; //FIXME
@@ -255,8 +257,9 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
     }
   }
 
+  AliHLTUInt32_t availableSize = size;
   HLTDebug("Number of TRU digits: %d",fTRUhandler->GetNumberOfRawDigits());
-  tmpsize = fTRUhandler->WriteRawDigitsBuffer(digitDataPtr);
+  tmpsize = fTRUhandler->WriteRawDigitsBuffer(digitDataPtr, availableSize);
 
   return  tmpsize;
 }

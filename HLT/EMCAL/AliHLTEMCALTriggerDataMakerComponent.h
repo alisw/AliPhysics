@@ -113,7 +113,7 @@ protected:
 
   void ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr);
   void ReadTRUData(UShort_t ndigits, AliHLTCaloTriggerRawDigitDataStruct * triggerdata);
-  Int_t MakeTriggerData(AliHLTCaloTriggerDataStruct *outputptr);
+  Int_t MakeTriggerData(AliHLTCaloTriggerDataStruct *outputptr, AliHLTUInt32_t &availableSize);
   void Reset();
 
   void CombineTRUSTUDigit(AliHLTCaloTriggerRawDigitDataStruct &target, const AliHLTCaloTriggerRawDigitDataStruct &trudigit, const AliHLTCaloTriggerRawDigitDataStruct &studigit);
