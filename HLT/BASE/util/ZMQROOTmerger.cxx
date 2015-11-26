@@ -70,6 +70,7 @@ Int_t fMaxObjects = 1;        //trigger merge after this many messages
 
 long fPushbackPeriod = -1;        //! in milliseconds
 TTimeStamp fLastPushBackTime;
+Bool_t fCacheOnly = kFALSE;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -93,6 +94,7 @@ const char* fUSAGE =
     " -select : set the selection regex for sending out objects,\n" 
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
+    " -cache : don't merge, only cache (i.e. replace)\n"
     ;
 
 void* work(void* /*param*/)
@@ -299,13 +301,19 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
     else
     {
       //add object and maybe merge
-      mergingList->Add(object);
-
-      if (mergingList->GetEntries() >= fMaxObjects)
+      if (fCacheOnly)
       {
-        if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
-        Merge(mergingObject, mergingList);
-
+        delete mergingObject;
+        mergingObject = object;
+      }
+      else
+      {
+        mergingList->Add(object);
+        if (mergingList->GetEntries() >= fMaxObjects)
+        {
+          if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
+          Merge(mergingObject, mergingList);
+        }
       }
     }
   }
@@ -509,6 +517,10 @@ Int_t ProcessOptionString(TString arguments)
       delete fUnSendSelection;
       fUnSendSelection = new TPRegexp(value);
       if (fVerbose) Printf("setting new regex %s",fUnSendSelection->GetPattern().Data());
+    }
+    else if (option.EqualTo("cache"))
+    {
+      fCacheOnly = kTRUE;
     }
     else
     {
