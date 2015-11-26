@@ -14,6 +14,8 @@ eval $(alienv printenv ThePEG::v2015-08-11-4)
 
 # force path to requested output
 sed -e "s/^\([[:space:]]*set HepMCFile:Filename\) .*$/\1 $1/" ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Rope.in > thepeg.in
+cp ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/LHCpp.in .
+cp ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Tune31.in .
 
 # setup DIPSY
 setupThePEG -r ${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I ${THEPEG_ROOT}/share/Ariadne thepeg.in > setup.log 2>&1

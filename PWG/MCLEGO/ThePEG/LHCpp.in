@@ -1,6 +1,6 @@
 cd /DIPSY
 
-read ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Tune31.in
+read Tune31.in
 
 ## Now we set up an event generator.
 cp EventHandler LHCEventHandler
