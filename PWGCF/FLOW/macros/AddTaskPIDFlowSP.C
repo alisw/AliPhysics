@@ -45,15 +45,16 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
     cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,is2011,isPbPb,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA); 
     
     suffixName[iCentralityBin] = particleSpecies.Data();
+    suffixName[iCentralityBin] += "_";
+    suffixName[iCentralityBin] += qVector.Data();
+    
     if(isPbPb) {
-      suffixName[iCentralityBin] += "_";
-      suffixName[iCentralityBin] += qVector.Data();
       suffixName[iCentralityBin] += "_Centrality";
       suffixName[iCentralityBin] += gCentrality[iCentralityBin];
       suffixName[iCentralityBin] += "To";
       suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
     }
-
+    
     //=====================================================================
     for(int nHarmonic = 2; nHarmonic <= uptoWhichHarmonics; nHarmonic++) 
       outputSlotName[iCentralityBin][nHarmonic - 2] = Form("%s_v%d",suffixName[iCentralityBin].Data(),nHarmonic);
