@@ -31,6 +31,7 @@ set(SRCS
   FILTER_RAWMUON.cxx
   FILTER_ESDMUON.cxx
   FILTER_AODMUONONLY_PP2015.cxx
+  FILTER_AODMUONONLY_PbPb2015.cxx
   )
 
 # Headers from sources
