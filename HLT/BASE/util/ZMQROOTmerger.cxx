@@ -32,7 +32,6 @@ Int_t InitZMQ();
 void* InitZMQsocket(void* context, Int_t socketMode, const char* configs);
 void* work(void* param);
 Int_t Run();
-long GetMilliSecSince(TTimeStamp* time);
 
 Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* /*socket*/=NULL);
 Int_t HandleRequest(zmq_msg_t* /*topicMsg*/, zmq_msg_t* /*dataMsg*/, void* /*socket*/=NULL);
@@ -86,7 +85,7 @@ const char* fUSAGE =
     " -out : data out\n"
     " -mon : monitoring socket\n"
     " -Verbose : print some info\n"
-    " -pushback-period : push the merged data once every n ms\n"
+    " -pushback-period : push the merged data once every n seconds\n"
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
@@ -100,15 +99,6 @@ const char* fUSAGE =
 void* work(void* /*param*/)
 {
   return NULL;
-}
-
-//_______________________________________________________________________________________
-long GetMilliSecSince(TTimeStamp* last)
-{
-  TTimeStamp now;
-  long s = now.GetSec() - last->GetSec();
-  long ms = now.GetNanoSec()/1000000 - last->GetNanoSec()/1000000;
-  return s*1000+ms; 
 }
 
 //_______________________________________________________________________________________
@@ -341,7 +331,8 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   
   if (fPushbackPeriod>=0)
   {
-    if (GetMilliSecSince(&fLastPushBackTime)>fPushbackPeriod)
+    TTimeStamp time;
+    if ((time.GetSec()-fLastPushBackTime.GetSec())>fPushbackPeriod)
       DoSend(socket);
   }
 
