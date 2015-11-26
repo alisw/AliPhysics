@@ -38,36 +38,36 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
 
   enum cutIds {
-	kMaxChi2TPCConstrainedGlobal,
-        kededxSigmaITSCut,
-        kededxSigmaTPCCut,
-        kpidedxSigmaTPCCut,
-        kpiMinMomdedxSigmaTPCCut,
-        kpiMaxMomdedxSigmaTPCCut,
-        kLowPRejectionSigmaCut,
-        kTOFelectronPID,
-        kclsITSCut,
-        kclsTPCCut,
-	ketaCut,
-        kPsiPair,
-        kRejectSharedElecGamma,
-        kMaxChi2PerClusterTPC,
-	kMaxChi2PerClusterITS,
-        kptCut,
-        kDCACut,
-        kmassCut,
-        kWeights,
-	kuseVPhotonMCPSmearing,
-	kNCuts
+    kMaxChi2TPCConstrainedGlobal,
+    kededxSigmaITSCut,
+    kededxSigmaTPCCut,
+    kpidedxSigmaTPCCut,
+    kpiMinMomdedxSigmaTPCCut,
+    kpiMaxMomdedxSigmaTPCCut,
+    kLowPRejectionSigmaCut,
+    kTOFelectronPID,
+    kclsITSCut,
+    kclsTPCCut,
+    ketaCut,
+    kPsiPair,
+    kRejectSharedElecGamma,
+    kMaxChi2PerClusterTPC,
+    kMaxChi2PerClusterITS,
+    kptCut,
+    kDCACut,
+    kmassCut,
+    kWeights,
+    kuseVPhotonMCPSmearing,
+    kNCuts
   };
 
 
  enum electronCuts {
-      kElectronIn=0,
-      kNoTracks,
-      kTrackCuts,
-      kdEdxCuts,
-      kElectronOut
+    kElectronIn=0,
+    kNoTracks,
+    kTrackCuts,
+    kdEdxCuts,
+    kElectronOut
  };
 
 
