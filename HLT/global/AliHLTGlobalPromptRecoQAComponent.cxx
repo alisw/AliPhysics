@@ -303,9 +303,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleTPCSize = 40000000;
     scaleTPCTracks = 30000;
     scaleTPCTracklets = 40000;
-    scaleTPCCompressedSize = 6000000;
-    scaleHLTIn = 60000000;
-    scaleHLTOut = 7000000;
+    scaleTPCCompressedSize = 25000000;
+    scaleHLTIn = 120000000;
+    scaleHLTOut = 40000000;
     scaleVZEROChargeA = 25000.;
     scaleVZEROChargeC = 50000.;
     scaleZDCCharge = 1500.;
