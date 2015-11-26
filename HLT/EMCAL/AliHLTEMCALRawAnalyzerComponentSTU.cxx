@@ -120,6 +120,8 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
   availableSize -= sizeof(AliHLTEMCALSTUHeaderStruct);
 
   bool headerInitialized = false;
+  int ndigittotal = 0;
+  fSTURawDigitMaker->Reset();
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {
     iter = blocks+ndx;
@@ -153,9 +155,10 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
     }
     totSize += fSTURawDigitMaker->WriteRawDigitsBuffer(dataIter, availableSize);
     dataIter += fSTURawDigitMaker->GetNumberOfRawDigits();
+    ndigittotal = fSTURawDigitMaker->GetNumberOfRawDigits();
   }
 
-  headerPtr->fNRawDigits = fSTURawDigitMaker->GetNumberOfRawDigits();
+  headerPtr->fNRawDigits = ndigittotal;
   HLTDebug("Successfully decoded %d digits.", headerPtr->fNRawDigits);
 
   AliHLTComponentBlockData bdChannelData;
