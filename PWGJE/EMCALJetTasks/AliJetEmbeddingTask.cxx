@@ -15,7 +15,7 @@ ClassImp(AliJetEmbeddingTask)
 
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
-  AliJetModelBaseTask("AliJetEmbeddingTask", kFALSE),
+  AliJetModelBaseTask("AliJetEmbeddingTask", kTRUE),
   fMassless(kFALSE),
   fMassFromDistr(kFALSE),
   fNeutralFraction(0),
@@ -31,7 +31,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
-  fCurrentEntry(0)
+  fCurrentEntry(0), 
+  fInput(0)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -40,7 +41,7 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
-  AliJetModelBaseTask(name, kFALSE),
+  AliJetModelBaseTask(name, kTRUE),
   fMassless(kFALSE),
   fMassFromDistr(kFALSE),
   fNeutralFraction(0),
@@ -56,11 +57,12 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
-  fCurrentEntry(0)
+  fCurrentEntry(0),
+  fInput(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
-  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -75,8 +77,9 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    
    AliJetModelBaseTask::UserCreateOutputObjects();
    
-   fOutput = new TList();
-   fOutput->SetOwner();
+   OpenFile(1);
+   fInput = new TList();
+   fInput->SetOwner();
    
    if(!fPathTreeinputFile.IsNull()){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
@@ -86,23 +89,23 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
       SetMassDistributionFromFile(fPathMinputFile,fMinputName);
       if(!fHMassDistrib) AliFatal("Something went wrong in setting the M distribution");
-      fOutput->Add(fHMassDistrib);
+      fInput->Add(fHMassDistrib);
    }
    
    if(fPathMinputFile.IsNull() && !fPathpTinputFile.IsNull()){
       SetpTDistributionFromFile(fPathpTinputFile, fpTinputName);
       if(!fPtSpectrum) AliFatal("Something went wrong in setting the pT distribution");
-       fOutput->Add(fPtSpectrum);
+       fInput->Add(fPtSpectrum);
    }
    
    if(!fPathMinputFile.IsNull() && !fPathpTinputFile.IsNull()){
       SetMassAndPtDistributionFromFile(fPathMinputFile, fPathpTinputFile, fMinputName, fpTinputName);
       if(!fHMassDistrib) AliFatal("Something went wrong in setting the M distribution");
       if(!fPtSpectrum) AliFatal("Something went wrong in setting the pT distribution");
-      fOutput->Add(fHMassDistrib);
-      fOutput->Add(fPtSpectrum);
+      fInput->Add(fHMassDistrib);
+      fInput->Add(fPtSpectrum);
    }
-   PostData(1, fOutput);
+   PostData(2, fInput);
    
    
 }
@@ -171,6 +174,8 @@ void AliJetEmbeddingTask::Run()
        }
     }
   }
+  
+  AliJetModelBaseTask::FillHistograms();
 }
 
 //________________________________________________________________________
@@ -286,3 +291,4 @@ void AliJetEmbeddingTask::SetTreeFromFile(TString filename, TString treename){
 
    return;
 }
+

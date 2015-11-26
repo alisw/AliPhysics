@@ -10,6 +10,7 @@
 ///
 /// \author S.Aiola, 
 /// \author C.Loizides
+/// \author C. Bianchin for the mass histogram and TTree
 /// \date
 
 #ifndef ALIJETEMBEDDINGTASK_H
@@ -45,7 +46,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           Run();
   void           SetTree(TTree *tree);
   void           SetMassDistribution(TH1F *hM);
- 
+  void           FillHistograms();
  private:
   Bool_t         fMassless;               ///< make particles massless
   Bool_t         fMassFromDistr;          ///< draw the particle mass from fHMassDistrib
@@ -63,6 +64,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TString        fBranchJDetName;         ///< name of the detector level jet branch in the TTree
   TTree*         fTreeJet4Vect;           //!<! tree containing the jet 4-vectors (input for embed.)
   Int_t          fCurrentEntry;           ///< Current TTree entry
+  TList          *fInput;                 //!<! Input histograms saved in this list
   
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
