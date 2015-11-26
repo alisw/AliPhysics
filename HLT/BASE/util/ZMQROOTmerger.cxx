@@ -285,8 +285,8 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   {
     const char* name = object->GetName();
     TList* mergingList = static_cast<TList*>(fMergeListMap.GetValue(name));
-    TObject* mergingObject = fMergeObjectMap.GetValue(name);
-    if (!mergingObject)
+    TPair* entry = static_cast<TPair*>(fMergeObjectMap.FindObject(name));
+    if (!entry)
     {
       if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
       fMergeObjectMap.Add(new TObjString(name), object);
@@ -303,8 +303,13 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
       //add object and maybe merge
       if (fCacheOnly)
       {
-        delete mergingObject;
-        mergingObject = object;
+        if (fVerbose) Printf("caching  %s's",name);
+        TObject* key = entry->Key();
+        fMergeObjectMap.RemoveEntry(key);
+        delete entry->Key();
+        delete entry->Value();
+        delete entry;
+        fMergeObjectMap.Add(new TObjString(name), object);
       }
       else
       {
@@ -312,6 +317,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
         if (mergingList->GetEntries() >= fMaxObjects)
         {
           if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
+          TObject* mergingObject = entry->Value();
           Merge(mergingObject, mergingList);
         }
       }
