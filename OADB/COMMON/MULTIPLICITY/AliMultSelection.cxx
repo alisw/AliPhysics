@@ -17,6 +17,7 @@
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionCuts.h"
 #include "AliMultEstimator.h"
 #include <iostream>
 #include <TROOT.h>
@@ -156,7 +157,7 @@ void AliMultSelection::PrintInfo()
 //________________________________________________________________
 Float_t AliMultSelection::GetMultiplicityPercentile(TString lName, Bool_t lEmbedEvSel)
 {
-    Float_t lReturnValue = 200;
+    Float_t lReturnValue = AliMultSelectionCuts::kNoCalib;
     AliMultEstimator *lThis = GetEstimator(lName.Data());
     if( lThis ){
         lReturnValue = lThis->GetPercentile();
