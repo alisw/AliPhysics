@@ -525,21 +525,21 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
           Int_t q=(Int_t)(charge+0.5);
           Int_t iz = input->GetCoord1();
           Int_t itb = input->GetCoord2();
-	  Int_t ian=iz;
-	  if(iSide==1)
-	    ian+=256;
+          Int_t ian=iz;
+          if(iSide==1)
+            ian+=256;
           Float_t noise=cal->GetNoiseAfterElectronics(ian)*2.2;  // applies zero suppression using the measured noise of each anode. Threshold values from ALICE-INT-1999-28 V10
           Int_t index=(itb+1)*fNZbins+(iz+1);
           if((itb<fNTimeBins) && (iz<fNAnodes)){
             if(q<noise) continue;
-	    fDDLBins[iHybrid].push_back(index);
-	    fDDLBins[iHybrid].push_back(q);
-	    fDDLBins[iHybrid].push_back(0);
-	    fDDLBins[iHybrid].push_back(countRW);
-	    mapsDDL[iHybrid][index/32]|=(1<<(index%32));
+            fDDLBins[iHybrid].push_back(index);
+            fDDLBins[iHybrid].push_back(q);
+            fDDLBins[iHybrid].push_back(0);
+            fDDLBins[iHybrid].push_back(countRW);
+            mapsDDL[iHybrid][index/32]|=(1<<(index%32));
           }
-	  else{
-            AliWarning(Form("Invalid SDD cell: Anode=%d   TimeBin=%d",iz,itb));
+          else{
+            AliWarning(Form("Invalid SDD cell: Carlos=%d,Module=%d,Anode=%d,TimeBin=%d",iCarlos,iModule,iz,itb));
           }
         }
       }
