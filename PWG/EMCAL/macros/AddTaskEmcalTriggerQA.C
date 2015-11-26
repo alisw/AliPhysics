@@ -26,7 +26,7 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   //-------------------------------------------------------
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
   eTask->SetTriggerPatchesName(triggerPatchesName);
-
+  eTask->Set2015CaloTriggerNames();
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
 
@@ -63,7 +63,8 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   mgr->ConnectInput  (eTask, 0,  cinput1 );
 
   TString commonoutput = mgr->GetCommonFileName();
-  mgr->ConnectOutput(eTask, 1, mgr->CreateContainer("EmcalTriggerQA", TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
+  TString contOutName(Form("%s_histos", taskName));
+  mgr->ConnectOutput(eTask, 1, mgr->CreateContainer(contOutName, TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
 
   return eTask;
 }
