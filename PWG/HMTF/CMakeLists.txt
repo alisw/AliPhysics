@@ -26,7 +26,17 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskHMTFMCMultEst.cxx
-  AliMultiplicityEstimator.cxx
+  AliEventClassifierBase.cxx
+  AliEventClassifierMult.cxx
+  AliEventClassifierMPI.cxx
+  AliEventClassifierSphericity.cxx
+  AliEventClassifierSpherocity.cxx
+  AliEventClassifierQ2.cxx
+  AliIsPi0PhysicalPrimary.cxx
+  AliObservableBase.cxx
+  AliObservableClassifierpTPID.cxx
+  AliObservableCorrelationsOfClassifiers.cxx
+  AliObservableEtaNch.cxx
   MonteCarlo/AliAnalysisTaskHMTFMC.cxx
   )
 
