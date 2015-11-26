@@ -113,27 +113,27 @@ void AliEmcalTriggerQAAP::Init()
 
   hname = Form("EMCTRQA_histFastORL0");
   htitle = Form("EMCTRQA_histFastORL0;FastOR abs. ID;entries above L0 threshold");
-  CreateTH1(hname, htitle, 4000, 0, 4000);
+  CreateTH1(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histFastORL0Mean");
   htitle = Form("EMCTRQA_histFastORL0Mean;FastOR abs. ID;mean ADC counts");
-  CreateTProfile(hname, htitle, 4000, 0, 4000);
+  CreateTProfile(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histLargeAmpFastORL0");
   htitle = Form("EMCTRQA_histLargeAmpFastORL0 (>400);FastOR abs. ID;entries above 400");
-  CreateTH1(hname, htitle, 4000, 0, 4000);
+  CreateTH1(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histFastORL1");
   htitle = Form("EMCTRQA_histFastORL1;FastOR abs. ID;entries above L1 threshold");
-  CreateTH1(hname, htitle, 4000, 0, 4000);
+  CreateTH1(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histFastORL1Mean");
   htitle = Form("EMCTRQA_histFastORL1Mean;FastOR abs. ID;mean L1 time sum");
-  CreateTProfile(hname, htitle, 4000, 0, 4000);
+  CreateTProfile(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histLargeAmpFastORL1");
   htitle = Form("EMCTRQA_histLargeAmpFastORL1 (>400);FastOR abs. ID;entries above 400");
-  CreateTH1(hname, htitle, 4000, 0, 4000);
+  CreateTH1(hname, htitle, 5000, 0, 5000);
 
   hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
   htitle = Form("EMCTRQA_histFastORL1AmpVsL0Amp;L0 amplitude;L1 time sum;entries");
