@@ -91,6 +91,8 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fHistSDDclusters_SDDrawSize(NULL)
   , fHistITSSAtracks_SPDclusters(NULL)
   , fHistSPDclusters_SSDclusters(NULL)
+  , fHistSPDclusters_SDDclusters(NULL)
+  , fHistSSDclusters_SDDclusters(NULL)
   , fHistTPCHLTclusters_TPCCompressionRatio(NULL)
   , fHistTPCHLTclusters_TPCFullCompressionRatio(NULL)
   , fHistHLTSize_HLTInOutRatio(NULL)
@@ -119,6 +121,8 @@ AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
   delete fHistSSDclusters_SSDrawSize;
   delete fHistITSSAtracks_SPDclusters;
   delete fHistSPDclusters_SSDclusters;
+  delete fHistSPDclusters_SDDclusters;
+  delete fHistSSDclusters_SDDclusters;
   delete fHistTPCHLTclusters_TPCCompressionRatio;
   delete fHistTPCHLTclusters_TPCFullCompressionRatio;
   delete fHistHLTSize_HLTInOutRatio;
@@ -287,25 +291,25 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleTPCCompressionRatio, scaleFullTPCCompressionRatio, scaleTPCCompressedSize;
   if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" || mgr.GetGRPData()->GetBeamType() == "PbPb" || mgr.GetGRPData()->GetBeamType() == "A-A" || mgr.GetGRPData()->GetBeamType() == "AA")
   {
-    scaleSPDClusters = 3000.;
-    scaleSSDClusters = 2000.;
-    scaleSDDClusters = 1000.;
-    scaleSPDSize = 10000.;
+    scaleSPDClusters = 5000.;
+    scaleSSDClusters = 3500.;
+    scaleSDDClusters = 2000.;
+    scaleSPDSize = 25000.;
     scaleSSDSize = 80000.;
     scaleSDDSize = 80000.;
     scaleITSSAPTracks = 1000.;
-    scaleTPCCompressionRatio = 6.5;
-    scaleFullTPCCompressionRatio = 9.5;
-    scaleTPCSize = 20000000;
-    scaleTPCTracks = 25000;
-    scaleTPCTracklets = 35000;
-    scaleTPCCompressedSize = 4000000;
-    scaleHLTIn = 20000000;
-    scaleHLTOut = 5000000;
+    scaleTPCCompressionRatio = 8;
+    scaleFullTPCCompressionRatio = 12;
+    scaleTPCSize = 40000000;
+    scaleTPCTracks = 30000;
+    scaleTPCTracklets = 40000;
+    scaleTPCCompressedSize = 6000000;
+    scaleHLTIn = 60000000;
+    scaleHLTOut = 7000000;
     scaleVZEROChargeA = 25000.;
     scaleVZEROChargeC = 50000.;
     scaleZDCCharge = 1500.;
-    scaleTPCClusters = 3000000;
+    scaleTPCClusters = 5000000;
   }
   else
   {
@@ -316,8 +320,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleSSDSize = 80000.;
     scaleSDDSize = 50000.;
     scaleITSSAPTracks = 100.;
-    scaleTPCCompressionRatio = 6.5;
-    scaleFullTPCCompressionRatio = 9.5;
+    scaleTPCCompressionRatio = 7;
+    scaleFullTPCCompressionRatio = 10;
     scaleTPCSize = 5000000;
     scaleTPCTracks = 700;
     scaleTPCTracklets = 1000;
@@ -335,6 +339,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fHistSDDclusters_SDDrawSize = new TH2I("SDDncls_SDDsize", "SDD clusters vs SDD raw size", 50, 0., scaleSDDSize, 50, 0., scaleSDDClusters);
   fHistITSSAtracks_SPDclusters = new TH2I("ITSSAPntrk_SPDncls", "ITSSAP tracks vs SPD clusters", 50, 0., scaleSPDClusters, 50, 0., scaleITSSAPTracks);
   fHistSPDclusters_SSDclusters = new TH2I("SSDncls_SPDncls", "SSD clusters vs SPD clusters", 50, 0., scaleSPDClusters, 50, 0., scaleSSDClusters);
+  fHistSPDclusters_SDDclusters = new TH2I("SDDncls_SPDncls", "SDD clusters vs SPD clusters", 50, 0., scaleSPDClusters, 50, 0., scaleSDDClusters);
+  fHistSSDclusters_SDDclusters = new TH2I("SDDncls_SSDncls", "SDD clusters vs SSD clusters", 50, 0., scaleSSDClusters, 50, 0., scaleSDDClusters);
   fHistTPCHLTclusters_TPCCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatio", "Huffman compression ratio vs TPC HLT clusters", 50, 0., scaleTPCClusters, 50, 0., scaleTPCCompressionRatio);
   fHistTPCHLTclusters_TPCFullCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatioFull", "Full compression ratio vs TPC HLT clusters", 50, 0., scaleTPCClusters, 50, 0., scaleFullTPCCompressionRatio);
   fHistHLTSize_HLTInOutRatio = new TH2F("TPCHLTSize_HLTInOutRatio", "HLT Out/In Size Ratio vs HLT Input Size", 50, 0., scaleHLTIn, 50, 0., 1.);
@@ -665,6 +671,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   FillHist(nClustersSSD, fHistSSDclusters_SSDrawSize, rawSizeSSD, nClustersSSD, pushed_something);
   FillHist(nITSSAPtracks, fHistITSSAtracks_SPDclusters, nClustersSPD, nITSSAPtracks, pushed_something);
   FillHist(nClustersSPD, fHistSPDclusters_SSDclusters, nClustersSPD, nClustersSSD, pushed_something);
+  FillHist(nClustersSPD, fHistSPDclusters_SDDclusters, nClustersSPD, nClustersSDD, pushed_something);
+  FillHist(nClustersSSD, fHistSSDclusters_SDDclusters, nClustersSSD, nClustersSDD, pushed_something);
   FillHist(nTPCtracks, fHistTPCtracks_TPCtracklets, nTPCtracklets, nTPCtracks, pushed_something);
 
   //TPC Compression Plots

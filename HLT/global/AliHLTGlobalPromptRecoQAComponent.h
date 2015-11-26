@@ -92,6 +92,8 @@ protected:
   TH2I* fHistSDDclusters_SDDrawSize;
   TH2I* fHistITSSAtracks_SPDclusters;
   TH2I* fHistSPDclusters_SSDclusters;
+  TH2I* fHistSPDclusters_SDDclusters;
+  TH2I* fHistSSDclusters_SDDclusters;
   TH2F* fHistTPCHLTclusters_TPCCompressionRatio;
   TH2F* fHistTPCHLTclusters_TPCFullCompressionRatio;
   TH2F* fHistHLTSize_HLTInOutRatio;
