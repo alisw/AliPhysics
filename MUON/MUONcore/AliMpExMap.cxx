@@ -29,6 +29,7 @@
 
 #include "AliLog.h"
 
+#include "TBuffer.h"
 #include <TClass.h>
 #include <TString.h>
 #include <Riostream.h>

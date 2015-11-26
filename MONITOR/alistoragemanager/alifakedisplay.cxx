@@ -9,6 +9,7 @@
 
 #include <TThread.h>
 #include <TFile.h>
+#include "TMutex.h"
 
 using namespace std;
 

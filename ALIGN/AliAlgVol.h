@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 class TObjArray;
+class TClonesArray;
 class AliAlgDOFStat;
 class TH1;
 

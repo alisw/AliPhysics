@@ -34,6 +34,7 @@ class AliCaloCalibPedestal;
 class AliCaloRawAnalyzer;
 class AliEMCALTriggerRawDigitMaker;
 class AliEMCALTriggerData;
+class TClonesArray;
 
 #include "AliCaloConstants.h"
 

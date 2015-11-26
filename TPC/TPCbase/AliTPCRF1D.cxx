@@ -30,6 +30,7 @@
 #include <TPad.h>
 #include <TString.h>
 #include <TStyle.h>
+#include "TBuffer.h"
 
 #include "AliTPCRF1D.h"
 

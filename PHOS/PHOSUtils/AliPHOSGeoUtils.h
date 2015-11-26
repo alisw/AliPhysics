@@ -20,6 +20,7 @@
 class TGeoHMatrix ;
 class TVector3;
 class TParticle ;
+class TClonesArray;
 class AliPHOSEMCAGeometry;
 class AliPHOSCPVGeometry;
 class AliPHOSSupportGeometry;

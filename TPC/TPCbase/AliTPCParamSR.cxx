@@ -27,6 +27,7 @@
 
 //#include <Riostream.h>
 #include <TMath.h>
+#include "TBuffer.h"
 
 #include "AliTPCPRF2D.h"
 #include "AliTPCParamSR.h"

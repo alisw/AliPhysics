@@ -17,6 +17,7 @@
 #include <TRandom.h>
 #include <TObjString.h>
 #include <AliGeomManager.h>
+class TClonesArray;
 class AliSurveyObj;
 
 class AliTRDalignment : public TObject {
