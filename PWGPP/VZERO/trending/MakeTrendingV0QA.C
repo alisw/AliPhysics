@@ -29,20 +29,20 @@ bool HigtVoltage(Int_t run);
 
 Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t canvasE = kFALSE)
 {
-  //  TTree*ttree=new TTree("trending","tree of trending variables PbPb");
-
-
   TTree *ttree=new TTree("trending","tree of trending variables");
   Int_t higtVoltage=0,invalidInput=0,qaNotFound=0,v0active=0,v0qaNotfound=0,noEntries=0;
   Int_t NumberVoieOff=0, numberBadOffset=0;
   Float_t TimesA=-9999.,TimesC=-9999., BB_BG=-9999.,BB_EE=-9999.,AdcA=-9999.;
-  Float_t AdcC=-9999.,MultA=-9999.,MultC=-9999.;
-
+  Float_t AdcC=-9999.,MultA=-9999.,MultC=-9999.,ChargeCh46=-9999.,ChargeAllNo46=-9999.;
   Float_t AdcAError=-9999.,AdcCError=-9999.;
   Float_t TriggerEff_CVLN=-9999.,TriggerEff_CVHN=-9999.,TriggerEff_CVHN2=-9999.;
   Float_t TriggerEff_CVLN_Error=-9999.,TriggerEff_CVHN_Error=-9999.,TriggerEff_CVHN2_Error=-9999.;
   Float_t PMTEdges[64]={-9999.};
   Float_t PMTEdgesError[64]={-9999.};
+  Float_t PMmeanAdc[64]={-9999.};
+  Float_t RingmeanAdc[8]={-9999.};
+  Float_t VOXmeanAdc[2]={-9999.};
+  Float_t VOmeanAdc=-9999.;
   Bool_t isPP;
   TString treePostFileName="trending.root";
 
@@ -106,6 +106,21 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       ttree->Branch("AdcC" ,&AdcC ,"Average Charge/F");
       ttree->Branch("MultA",&MultA,"Average number of Fired cell/F");
       ttree->Branch("MultC",&MultC,"Average number of Fired cell/F");
+      ttree->Branch("ChargeCh46",&ChargeCh46,"Integreted charge of chanel 46/F");
+      ttree->Branch("ChargeAllNo46",&ChargeAllNo46,"Integreted charge of all chanel without 46/F");
+      for(int i = 0; i < 64; i++)
+	  ttree->Branch(Form("PMmeanAdc[%d]",i),&PMmeanAdc[i],Form("Mean ADC Cell %d/F",i));
+      for(int i=0;i<8;i++)
+	ttree->Branch(Form("RingmeanAdc[%d]",i),&RingmeanAdc[i],Form("Mean ADC Ring %d/F",i));
+      ttree->Branch("VOXmeanAdc[0]",&VOXmeanAdc[0],"Mean ADC V0C/F");
+      ttree->Branch("VOXmeanAdc[1]",&VOXmeanAdc[1],"Mean ADC V0A/F");
+      ttree->Branch("VOmeanAdc",&VOmeanAdc,"Mean ADC V0/F");
+
+      /*
+  //PMmeanAdc[64] RingmeanAdc[8] VOXmeanAdc[2] VOmeanAdc
+      */
+
+      // ChargeCh46 ChargeAllNo46
     }
   else
     {
@@ -187,9 +202,10 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	}
       
 
-      
-      char v0QAdirName[20]="VZERO_Performance";
+      char v0QAdirName[30]="VZERO_Performance";
       fin->Print();
+      printf("\n\n");
+      fin->ls();
       TDirectoryFile * v0QAdir=(TDirectoryFile*)fin->Get(v0QAdirName);
       if(!v0QAdir)
 	{
@@ -217,7 +233,8 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       TH1F *hAdcWithTimeA = (TH1F*)list->FindObject("hAdcWithTimeA");
       TH1F *hAdcNoTimeC = (TH1F*)list->FindObject("hAdcNoTimeC");
       TH1F *hAdcWithTimeC = (TH1F*)list->FindObject("hAdcWithTimeC");
-      TH2F *hadcpmtwithtime = (TH2F*)list->FindObject("hadcpmtwithtime");	
+      TH2F *hadcpmtwithtime = (TH2F*)list->FindObject("hadcpmtwithtime");
+      TH2F *hadcpmtnotime = (TH2F*)list->FindObject("hadcpmtnotime");
       TH1F *htimepmtA = (TH1F*)list->FindObject("htimepmtA");
       TH1F *htimepmtC = (TH1F*)list->FindObject("htimepmtC");
       TH1F *hwidthA = (TH1F*)list->FindObject("hwidthA");
@@ -320,25 +337,72 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       AdcA=hAdcWithTimeA->GetMean();
       AdcC=hAdcWithTimeC->GetMean();
       
+      char v0QAdirNameTrig[30]="VZERO_Performance_Trig";
+      TDirectoryFile * v0QAdirTrig=(TDirectoryFile*)fin->Get(v0QAdirNameTrig);
+      TList *listTrig = (TList*)v0QAdirTrig->Get("QAVZEROHistsTrig");
+      TH2F *hadcpmtwithtimeTrig = (TH2F*)listTrig->FindObject("hadcpmtwithtime");
+
       double valBin=0;
-      TH1D*hadcXFull=hadcpmtwithtime->ProjectionX("hadcXFull",1,hadcpmtwithtime->GetYaxis()->GetLast());
-      TH1D*hadcX=hadcpmtwithtime->ProjectionX("hadcX",10,20);
+      double Max=hadcpmtwithtime->GetYaxis()->GetLast(), Min=1;
+      double mean=Max-Min,meanRing=0,meanV0X=0,meanV0=0;
+      TH1D*hadcXFull=hadcpmtwithtime->ProjectionX("hadcXFull",1,Max);
+      TH1D*hadcX=hadcpmtwithtime->ProjectionX("hadcX",5,15);
+      ChargeAllNo46=0;
       for(Int_t i=0;i<64;i++)
 	{
-	  valBin=hadcXFull->GetBinContent(i+1);
-	  if(valBin==0)
-	    NumberVoieOff++;
+	  TH1D*MeanValue=(TH1D*)hadcpmtwithtimeTrig->ProjectionY("MeanValue",i+1,i+1);
 	  valBin=hadcX->GetBinContent(i+1);
 	  if(valBin==0)
 	    numberBadOffset++;
+	  valBin=hadcXFull->GetBinContent(i+1);
+	  if(valBin==0)
+	    NumberVoieOff++;
+	  if(i==46)
+	    ChargeCh46=valBin;
+	  else
+	    ChargeAllNo46+=valBin;
+
+	  PMmeanAdc[i]=MeanValue->GetMean();
+	  meanRing+=PMmeanAdc[i];
+	  meanV0X +=PMmeanAdc[i];
+	  meanV0  +=PMmeanAdc[i];
+	  if(!((i+1)%8))
+	    {
+	      RingmeanAdc[i/8]=meanRing;
+	      meanRing=0;
+	    }
+	  if(!((i+1)%32))
+	    {
+	      VOXmeanAdc[i/32]=meanV0X;
+	      meanV0X=0;
+	    }
 	}
-      
+      VOmeanAdc=meanV0;
+      if(NumberVoieOff>=63)
+	ChargeAllNo46=-9999.;
+      else
+	ChargeAllNo46=ChargeAllNo46/(63.-NumberVoieOff);
       TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
       ttree->Fill();
       trendFile->cd();
       ttree->Write();
       trendFile->Close();
-      
+      TFile * chargeFile = new TFile("chargeADC.root","recreate");
+      chargeFile->cd();
+      Double_t val=0;
+      for(Int_t channel=0;channel<=65;channel++)
+	{
+	  for(Int_t adc=0;adc<=201;adc++)
+	    {
+	      val=0;
+	      val=hadcpmtnotime->GetBinContent(channel,adc);
+	      val+=hadcpmtwithtime->GetBinContent(channel,adc);
+	      hadcpmtnotime->SetBinContent(channel,adc,val);
+	    }
+	}
+      hadcpmtnotime->Write();
+      chargeFile->Close();
+
       if(canvasE)
 	{
 	  
@@ -354,12 +418,11 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	  
 	  cOut->cd(3); cOut->GetPad(3)->SetLogz();
 	  hadcpmtwithtime->Draw("colz");
-	  
+
 	  cOut->cd(4); cOut->GetPad(4)->SetLogz();
 	  hEvents->Draw("colz text");
-	  
+
 	  cOut->Print(Form("QA_Run_%d.pdf(",runNumber));
-	  
 	  
 	  cOut->cd(1); cOut->GetPad(1)->SetLogy();
 	  htimepmtA->GetXaxis()->SetRangeUser(-25.,25.); htimepmtA->Draw();
@@ -376,9 +439,10 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	  cOut->Print(Form("QA_Run_%d.pdf",runNumber));
       
       
+
 	  cOut->cd(1); cOut->GetPad(1)->SetLogy(0);cOut->GetPad(1)->SetLogz();
 	  htimepmt->Draw("colz");
-	  
+
 	  cOut->cd(2); cOut->GetPad(2)->SetLogy(0);cOut->GetPad(2)->SetLogz();
 	  hwidthpmt->GetYaxis()->SetRangeUser(0.,50.); hwidthpmt->Draw("colz");
 	  
@@ -390,22 +454,29 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	  
 	  cOut->Print(Form("QA_Run_%d.pdf",runNumber));
 	  
-      
-	  cOut->cd(1); cOut->GetPad(1)->SetLogy(0);cOut->GetPad(1)->SetLogz();
+
+	  cOut->Clear("D");
+	  cOut->cd(1);
+	  cOut->GetPad(1)->SetLogy(0);//cOut->GetPad(1)->SetLogz();
 	  hAdcTimeA->Draw("colz");
+
 	  
-	  cOut->cd(2); cOut->GetPad(2)->SetLogy(0);cOut->GetPad(2)->SetLogz();
+	  cOut->cd(2);
+	  cOut->GetPad(2)->SetLogy(0);//cOut->GetPad(2)->SetLogz();
 	  hAdcTimeC->Draw("colz");
-	  
-	  cOut->cd(3); cOut->GetPad(3)->SetLogy(); cOut->GetPad(3)->SetLogz(0);
+
+	  cOut->cd(3);
+	  cOut->GetPad(3)->SetLogy();// cOut->GetPad(3)->SetLogz(0);
 	  hV0ampl->Draw();
-      
-	  cOut->cd(4); cOut->GetPad(4)->SetLogy(0); cOut->GetPad(4)->SetLogz(0);
+
+	  cOut->cd(4);
+	  cOut->GetPad(4)->SetLogy(0);// cOut->GetPad(4)->SetLogz(0);
 	  htimecorr->Draw("colz");
-      
+
+
+	  printf("%p\n",cOut);
 	  cOut->Print(Form("QA_Run_%d.pdf",runNumber));
-      
-      
+
       
 	  cOut->cd(1);  cOut->GetPad(1)->SetLogy(1);cOut->GetPad(1)->SetLogz(0);
 	  hV0A->GetXaxis()->SetRangeUser(0.,33.);hV0A->Draw();
@@ -507,10 +578,12 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       if (last==0)
 	printf("Arg, hL2Triggers n'ai pas cool");
       Bool_t CPBI2_B1=kFALSE, CSEMI_R1=kFALSE, CCENT_R2=kFALSE, CVLN_R1=kFALSE, CVHN_R2=kFALSE;
-      Bool_t CVLN_B2 =kFALSE, CPBI1   =kFALSE, CVLN    =kFALSE, CVHN   =kFALSE;
+      Bool_t CVLN_B2 =kFALSE, CPBI1   =kFALSE, CVLN    =kFALSE, CVHN   =kFALSE, CINT7=kFALSE;
       for(Int_t i=0;i<last;i++)
 	{
 	  TString trigerName=hL2Triggers->GetXaxis()->GetBinLabel(i);
+	  if(trigerName.Contains("CINT7"))
+	    CINT7=kTRUE;
 	  if(trigerName.Contains("CPBI2_B1"))
 	    CPBI2_B1=kTRUE;
 	  if(trigerName.Contains("CSEMI_R1"))
@@ -531,26 +604,30 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	    CVHN=kTRUE;
 	}
       TString trigMB,trigCVLN,trigCVHN;
-      if(CPBI2_B1)
-	trigMB = "CPBI2_B1";
-      else 
-	trigMB   = "CPBI1";
-      if(CSEMI_R1)
-	trigCVLN = "CSEMI_R1";
-      else if(CVLN_R1)
-	trigCVLN = "CVLN_R1";
-      else if(CVLN_B2)
-	trigCVLN = "CVLN_B2";
+      if("CINT7")
+	trigMB = "CINT7";
       else
-	trigCVLN = "CVLN";
-      if(CCENT_R2)
-	trigCVHN = "CCENT_R2";
-      else if(CVHN_R2)
-	trigCVHN = "CVHN_R2";
-      else
-	trigCVHN = "CVHN";
-
-
+	{
+	  if(CPBI2_B1)
+	    trigMB = "CPBI2_B1";
+	  else
+	    trigMB   = "CPBI1";
+	  if(CSEMI_R1)
+	    trigCVLN = "CSEMI_R1";
+	  else if(CVLN_R1)
+	    trigCVLN = "CVLN_R1";
+	  else if(CVLN_B2)
+	    trigCVLN = "CVLN_B2";
+	  else
+	    trigCVLN = "CVLN";
+	  if(CCENT_R2)
+	    trigCVHN = "CCENT_R2";
+	  else if(CVHN_R2)
+	    trigCVHN = "CVHN_R2";
+	  else
+	    trigCVHN = "CVHN";
+	}
+      printf("Relou: %s\t%s\t%s\t%s\n",trigMB.Data(), trigCVLN.Data(),trigCVHN.Data());
       TH2F* hRecoMult = (TH2F*) list->FindObject(Form("hRecoMult_%s-",trigMB.Data()));
       TH2F* hRecoMultPMT = (TH2F*) list->FindObject(Form("hRecoMultPMT_%s-",trigMB.Data()));
       TH1F* hTotRecoMult = (TH1F*) list->FindObject(Form("hTotRecoMult_%s-",trigMB.Data()));
@@ -576,11 +653,13 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	}
 
 
-
- 
-      Double_t cVLN = hTotRecoMult_CVLN->GetEntries();
-      Double_t cVHN = hTotRecoMult_CVHN->GetEntries();
-      Double_t cVBN = hTotRecoMult->GetEntries();
+      Double_t cVLN =0, cVHN = 0,cVBN=0;
+      if (hTotRecoMult_CVLN)
+	cVLN = hTotRecoMult_CVLN->GetEntries();
+      if (hTotRecoMult_CVHN)
+        cVHN = hTotRecoMult_CVHN->GetEntries();
+      if(hTotRecoMult)
+        cVBN = hTotRecoMult->GetEntries();
 
       man->SetRun(runNumber);
       AliCDBEntry *entryCTP = man->Get("GRP/CTP/Config");
@@ -656,9 +735,13 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	    scaleVHN=1./rnd2;
 	}
   
-      hTotRecoMult->Scale(scaleVBN);
-      hTotRecoMult_CVLN->Scale(scaleVLN);
-      hTotRecoMult_CVHN->Scale(scaleVHN);
+
+      if (hTotRecoMult_CVLN)
+	hTotRecoMult_CVLN->Scale(scaleVLN);
+      if (hTotRecoMult_CVHN)
+	hTotRecoMult_CVHN->Scale(scaleVHN);
+      if(hTotRecoMult)
+	hTotRecoMult->Scale(scaleVBN);
       cVBN *= scaleVBN/100.;
       cVLN *= scaleVLN;
       cVHN *= scaleVHN;
@@ -681,31 +764,38 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       Double_t beta1[64], beta2[64];
       Double_t q = 1. - 1.e-4;
       Double_t q2 = 1. - 2.e-4;
-      if(hRecoMultPMT->GetEntries()!=0)
+      if(hRecoMultPMT)
 	{
-	  for(int i = 0; i < 64; ++i)
+	  if(hRecoMultPMT->GetEntries()!=0)
 	    {
-	      ((TH1D*)hRecoMultPMT->ProjectionY(Form("hRecoMultPMT%d",i),i+1,i+1))->GetQuantiles(1,&beta1[i],&q);
-	      ((TH1D*)hRecoMultPMT->ProjectionY(Form("hRecoMultPMT%d",i),i+1,i+1))->GetQuantiles(1,&beta2[i],&q2);
-	      PMTEdges[i]=(beta1[i]+beta2[i])/2.;
-	      PMTEdgesError[i]=beta1[i] - beta2[i];
+	      for(int i = 0; i < 64; ++i)
+		{
+		  ((TH1D*)hRecoMultPMT->ProjectionY(Form("hRecoMultPMT%d",i),i+1,i+1))->GetQuantiles(1,&beta1[i],&q);
+		  ((TH1D*)hRecoMultPMT->ProjectionY(Form("hRecoMultPMT%d",i),i+1,i+1))->GetQuantiles(1,&beta2[i],&q2);
+		  PMTEdges[i]=(beta1[i]+beta2[i])/2.;
+		  PMTEdgesError[i]=beta1[i] - beta2[i];
+		  printf("%.3f\t%.3f\n", PMTEdges[i],PMTEdgesError[i]);
+		}
 	    }
 	}
       Double_t betaSide1[2];
       Double_t betaSide2[2];
-      if(hRecoMult->GetEntries()!=0)
+      if(hRecoMultPMT)
 	{
-	  for(int i = 0; i < 2; ++i) 
+	  if(hRecoMult->GetEntries()!=0)
 	    {
-	      if(i==0)
+	      for(int i = 0; i < 2; ++i)
 		{
-		  ((TH1D*)hRecoMult->ProjectionY(Form("hRecoMult1%d",i)))->GetQuantiles(1,&betaSide1[i],&q);
-		  ((TH1D*)hRecoMult->ProjectionY(Form("hRecoMult2%d",i)))->GetQuantiles(1,&betaSide2[i],&q2);
-		}
-	      else
-		{
-		  ((TH1D*)hRecoMult->ProjectionX(Form("hRecoMult1%d",i)))->GetQuantiles(1,&betaSide1[i],&q);
-		  ((TH1D*)hRecoMult->ProjectionX(Form("hRecoMult2%d",i)))->GetQuantiles(1,&betaSide2[i],&q2);
+		  if(i==0)
+		    {
+		      ((TH1D*)hRecoMult->ProjectionY(Form("hRecoMult1%d",i)))->GetQuantiles(1,&betaSide1[i],&q);
+		      ((TH1D*)hRecoMult->ProjectionY(Form("hRecoMult2%d",i)))->GetQuantiles(1,&betaSide2[i],&q2);
+		    }
+		  else
+		    {
+		      ((TH1D*)hRecoMult->ProjectionX(Form("hRecoMult1%d",i)))->GetQuantiles(1,&betaSide1[i],&q);
+		      ((TH1D*)hRecoMult->ProjectionX(Form("hRecoMult2%d",i)))->GetQuantiles(1,&betaSide2[i],&q2);
+		    }
 		}
 	    }
 	}
@@ -713,7 +803,7 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       AdcC=(betaSide1[0] + betaSide2[0])/2.;
       AdcAError=betaSide1[1] - betaSide2[1];
       AdcCError=betaSide1[0] - betaSide2[0];
-    
+      printf("AdcA: %.3f\tAdcC: %.3f\n",AdcA,AdcC);
       TSpectrum s;
       int nPeaksFound;
       float * peaks;
@@ -790,10 +880,11 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	  cOut->cd(3); cOut->GetPad(3)->SetLogz();
 	  hadcpmtwithtime->Draw("colz");
       
-      
-	  cOut->cd(4); cOut->GetPad(4)->SetLogy(0);cOut->GetPad(4)->SetLogz(1);
-	  hEqualizedMult->Draw("colz");  
-      
+	  if(hEqualizedMult)
+	    {
+	      cOut->cd(4); cOut->GetPad(4)->SetLogy(0);cOut->GetPad(4)->SetLogz(1);
+	      hEqualizedMult->Draw("colz");
+	    }
 	  cOut->Print(Form("QA_Run_%d.pdf(",runNumber));
 	  //-------------
       
@@ -861,19 +952,23 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	  cOut->cd(2); cOut->GetPad(2)->SetLogy(1);cOut->GetPad(2)->SetLogz(0);
 	  hV0C->GetXaxis()->SetRangeUser(0.,33.);hV0C->Draw();
       
-	  cOut->cd(3); cOut->GetPad(3)->SetLogy(0);cOut->GetPad(3)->SetLogz(0); cOut->GetPad(3)->SetGridy(1);
-	  hTotRecoMult->Sumw2();
-	  hTotRecoMult_CVLN->Sumw2();
-	  hTotRecoMult_CVHN->Sumw2();
-	  hTotRecoMult_CVLN->Divide(hTotRecoMult);
-	  hTotRecoMult_CVHN->Divide(hTotRecoMult);
-	  hTotRecoMult_CVLN->Draw("e"); hTotRecoMult_CVLN->SetLineColor(4);hTotRecoMult_CVLN->SetMarkerStyle(0);hTotRecoMult_CVLN->SetMaximum(1.2);
-	  hTotRecoMult_CVLN->SetTitle("Multiplicity efficiency CVLN (blue) and CHVN (red)");
-	  hTotRecoMult_CVHN->Draw("esame"); hTotRecoMult_CVHN->SetLineColor(2);hTotRecoMult_CVHN->SetMarkerStyle(0);
-      
-	  cOut->cd(4); cOut->GetPad(4)->SetLogy(0);cOut->GetPad(4)->SetLogz(1); cOut->GetPad(4)->SetGridx(1); cOut->GetPad(4)->SetGridy(1);
-	  hRecoMult->Draw("colz");
-      
+	  if(hTotRecoMult)
+	    {
+	      cOut->cd(3); cOut->GetPad(3)->SetLogy(0);cOut->GetPad(3)->SetLogz(0); cOut->GetPad(3)->SetGridy(1);
+	      hTotRecoMult->Sumw2();
+	      if(hTotRecoMult_CVLN)
+		{
+		  hTotRecoMult_CVLN->Sumw2();
+		  hTotRecoMult_CVHN->Sumw2();
+		  hTotRecoMult_CVLN->Divide(hTotRecoMult);
+		  hTotRecoMult_CVHN->Divide(hTotRecoMult);
+		  hTotRecoMult_CVLN->Draw("e"); hTotRecoMult_CVLN->SetLineColor(4);hTotRecoMult_CVLN->SetMarkerStyle(0);hTotRecoMult_CVLN->SetMaximum(1.2);
+		  hTotRecoMult_CVLN->SetTitle("Multiplicity efficiency CVLN (blue) and CHVN (red)");
+		  hTotRecoMult_CVHN->Draw("esame"); hTotRecoMult_CVHN->SetLineColor(2);hTotRecoMult_CVHN->SetMarkerStyle(0);
+		}
+	      cOut->cd(4); cOut->GetPad(4)->SetLogy(0);cOut->GetPad(4)->SetLogz(1); cOut->GetPad(4)->SetGridx(1); cOut->GetPad(4)->SetGridy(1);
+	      hRecoMult->Draw("colz");
+	    }
       
 	  cOut->Print(Form("QA_Run_%d.pdf",runNumber));
 	  //-------------

@@ -28,6 +28,8 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 {
   Int_t badrun=0;
   Int_t goodrun=0;
+  Double_t maxVoieOff=0;
+  Double_t maxBadOffset=0;
   if(!mergedTrendFile)
     {
       printf("Cannot open merged trend file with V0 QA");
@@ -50,11 +52,17 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       return 2;
     }
   Float_t TimesA=0.,TimesC=0., BB_BG=0.,BB_EE=0.,AdcA=0.;
-  Float_t AdcC=0.,MultA=0.,MultC=0.,AdcAError=0.,AdcCError=0.;
+  Float_t AdcC=0.,MultA=0.,MultC=0.,AdcAError=0.,AdcCError=0.,ChargeCh46=0.,ChargeAllNo46=0.;;
   Float_t TriggerEff_CVLN=0.,TriggerEff_CVHN=0.,TriggerEff_CVHN2=0.;
   Float_t TriggerEff_CVLN_Error=0.,TriggerEff_CVHN_Error=0.,TriggerEff_CVHN2_Error=0.;
   Float_t PMTEdges[64]={0.};
   Float_t PMTEdgesError[64]={0.};
+  Float_t PMTEdges[64]={0.};
+  Float_t PMTEdgesError[64]={0.};
+  Float_t PMmeanAdc[64]={0.};
+  Float_t RingmeanAdc[8]={0.};
+  Float_t VOXmeanAdc[2]={0.};
+  Float_t VOmeanAdc=0.;
   Bool_t isPP;
   Int_t higtVoltage=0,invalidInput=0,qaNotFound=0,v0active=0,v0qaNotfound=0,noEntries=0;
   
@@ -86,6 +94,15 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       ttree->SetBranchAddress("MultC",&MultC);
       ttree->SetBranchAddress("NumberVoieOff",&NumberVoieOff);
       ttree->SetBranchAddress("numberBadOffset",&numberBadOffset);
+      ttree->SetBranchAddress("ChargeCh46",&ChargeCh46);
+      ttree->SetBranchAddress("ChargeAllNo46",&ChargeAllNo46);
+      for(int i = 0; i < 64; i++)
+	  ttree->SetBranchAddress(Form("PMmeanAdc[%d]",i),&PMmeanAdc[i]);
+      for(int i=0;i<8;i++)
+	ttree->SetBranchAddress(Form("RingmeanAdc[%d]",i),&RingmeanAdc[i]);
+      ttree->SetBranchAddress("VOXmeanAdc[0]",&VOXmeanAdc[0]);
+      ttree->SetBranchAddress("VOXmeanAdc[1]",&VOXmeanAdc[1]);
+      ttree->SetBranchAddress("VOmeanAdc"    ,&VOmeanAdc);
       
       Int_t nRuns=ttree->GetEntries();
       TList list;
@@ -94,14 +111,28 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       TH1F * hTimeC = new TH1F("hTimeC","BB Leading time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
       TH1F * hBB_BG = new TH1F("hBB_BG","Trigger ratio",nRuns,-0.5,nRuns-0.5);
       TH1F * hBB_EE = new TH1F("hBB_EE","Trigger ratio",nRuns,-0.5,nRuns-0.5);
-      TH1F * hAdcA = new TH1F("hAdcA","Average Charge",nRuns,-0.5,nRuns-0.5);
-      TH1F * hAdcC = new TH1F("hAdcC","Average Charge",nRuns,-0.5,nRuns-0.5);
+      TH1F * hAdcA  = new TH1F("hAdcA","Average Charge",nRuns,-0.5,nRuns-0.5);
+      TH1F * hAdcC  = new TH1F("hAdcC","Average Charge",nRuns,-0.5,nRuns-0.5);
       TH1F * hMultA = new TH1F("hMultA","Average number of Fired cell",nRuns,-0.5,nRuns-0.5);
       TH1F * hMultC = new TH1F("hMultC","Average number of Fired cell",nRuns,-0.5,nRuns-0.5);
-      TH1F * hNumberVoieOff=new TH1F("hNumberVoieOff","Number of chanel off",nRuns,-0.5,nRuns-0.5);
-      hNumberVoieOff->SetMaximum(70);
-      TH1F * hNumberBadOffset=new TH1F("hNumberBadOffset","Number of pdestal",nRuns,-0.5,nRuns-0.5);
+      TH1F * hNumberVoieOff   =new TH1F("hNumberVoieOff","Number of chanel off",nRuns,-0.5,nRuns-0.5);
+      TH1F * hNumberBadOffset =new TH1F("hNumberBadOffset","Number of pdestal",nRuns,-0.5,nRuns-0.5);
+      TH1F *hChargeCh46       = new TH1F("hChargeCh46","Integreted charge of chanel 46",nRuns,-0.5,nRuns-0.5);
+      TH1F *hChargeChAllNo46  = new TH1F("hChargeChAllNo46","Integreted charge of all chanel without 46",nRuns,-0.5,nRuns-0.5);
+      TH1F *hChargeRatio      = new TH1F("hChargeRatio","Ratio of integreted charge of chanel 46 over all chanel",nRuns,-0.5,nRuns-0.5);
+      TH1F **hPMmeanAdc       = new TH1F*[64];
+      TH1F **hRingmeanAdc     = new TH1F*[32];
+      TH1F **hVOXmeanAdc      = new TH1F*[2];
+      for (int i=0;i<64;i++)
+	hPMmeanAdc[i]   = new TH1F(Form("hPMmeanAdc[%d]",i)  ,Form("Mean ADC for chanel %d",i),nRuns,-0.5,nRuns-0.5);
+      for (int i=0;i<32;i++)
+	hRingmeanAdc[i] = new TH1F(Form("hRingmeanAdc[%d]",i),Form("Mean ADC for Ring  %d",i) ,nRuns,-0.5,nRuns-0.5);
+      hVOXmeanAdc[0]    = new TH1F("hVOXmeanAdc[0]","Mean ADC for V0C",nRuns,-0.5,nRuns-0.5);
+      hVOXmeanAdc[1]    = new TH1F("hVOXmeanAdc[1]","Mean ADC for V0A",nRuns,-0.5,nRuns-0.5);
+      TH1F *hVOmeanAdc  = new TH1F("hVOmeanAdc"    ,"mean ADC for V0" ,nRuns,-0.5,nRuns-0.5);
+      //PMmeanAdc[64] RingmeanAdc[8] VOXmeanAdc[2] VOmeanAdc
       hNumberBadOffset->SetMaximum(70);
+      hNumberVoieOff->SetMaximum(70);
       
       list.Add(hTimeA);
       list.Add(hTimeC);
@@ -113,6 +144,9 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       list.Add(hMultC);
       list.Add(hNumberVoieOff);
       list.Add(hNumberBadOffset);
+      list.Add(hChargeCh46);
+      list.Add(hChargeChAllNo46);
+      list.Add(hChargeRatio);
       char runlabel[6];
       
       
@@ -120,8 +154,8 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	{
 	  ttree->GetEntry(irun);
 	  sprintf(runlabel,"%i",runNumber);
-	  if(runNumber==130601)
-	    printf("%d\t%d\t%d\n",qaNotFound,invalidInput,runNumber);
+	  //	  if(runNumber==130601)
+	  //	    printf("%d\t%d\t%d\n",qaNotFound,invalidInput,runNumber);
 	  if(invalidInput==1)
 	    {
 	      InvalidInput->SetBins(badrun+1,0,badrun+1);	
@@ -159,7 +193,6 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	      HigtVoltage->GetXaxis()->SetBinLabel(badrun,runlabel);
 	      
 	      QaNotFound->SetBinContent(badrun+1,qaNotFound);
-	      
 	      badrun++;
 	      if(higtVoltage==1)
 		HigtVoltage->SetBinContent(badrun,higtVoltage);
@@ -272,6 +305,51 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	      hNumberBadOffset->SetBins(goodrun+1,0,goodrun+1);
 	      hNumberBadOffset->SetBinContent(goodrun+1,numberBadOffset);
 	      hNumberBadOffset->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	      maxVoieOff=NumberVoieOff;
+	      maxBadOffset=numberBadOffset;
+
+	      hChargeCh46->SetBins(goodrun+1,0,goodrun+1);
+	      hChargeCh46->SetBinContent(goodrun+1,ChargeCh46);
+	      hChargeCh46->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	      hChargeChAllNo46->SetBins(goodrun+1,0,goodrun+1);
+	      hChargeChAllNo46->SetBinContent(goodrun+1,ChargeAllNo46);
+	      hChargeChAllNo46->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+
+	      Double_t ratio=-5;
+	      if (ChargeAllNo46!=0)
+		ratio=ChargeCh46/ChargeAllNo46;
+
+	      hChargeRatio->SetBins(goodrun+1,0,goodrun+1);
+	      hChargeRatio->SetBinContent(goodrun+1,ratio);
+	      hChargeRatio->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	      /*
+      list.Add(hChargeCh46);
+      list.Add(hChargeChAllNo46);
+      list.Add(hChargeRatio);
+*/
+	      for(int i=0;i<64;i++)
+		{
+		  hPMmeanAdc[i]->SetBins(goodrun+1,0,goodrun+1);
+		  hPMmeanAdc[i]->SetBinContent(goodrun+1,PMmeanAdc[i]);
+		  hPMmeanAdc[i]->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+		}
+	      for(int i=0;i<8;i++)
+		{
+		  hRingmeanAdc[i]->SetBins(goodrun+1,0,goodrun+1);
+		  hRingmeanAdc[i]->SetBinContent(goodrun+1,RingmeanAdc[i]);
+		  hRingmeanAdc[i]->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+		}
+	      for(int i=0;i<2;i++)
+		{
+		  hVOXmeanAdc[i]->SetBins(goodrun+1,0,goodrun+1);
+		  hVOXmeanAdc[i]->SetBinContent(goodrun+1,VOXmeanAdc[i]);
+		  hVOXmeanAdc[i]->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+		}
+	      hVOmeanAdc->SetBins(goodrun+1,0,goodrun+1);
+	      hVOmeanAdc->SetBinContent(goodrun+1,VOmeanAdc);
+	      hVOmeanAdc->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	      goodrun++;
 	    }
 	}
@@ -297,9 +375,11 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       TCanvas * c = new TCanvas("c","Leading time versus run number");
       hTimeA->GetYaxis()->SetRange(0,10);
       hTimeA->Draw("P");
-      hTimeA->SetMinimum(TMath::Min(hTimeA->GetMinimum(),hTimeC->GetMinimum())-1.);
-      hTimeA->SetMaximum(TMath::Max(hTimeA->GetMaximum(),hTimeC->GetMaximum())+1.);
-      
+      if(hTimeA->GetEntries()!=0)
+	{
+	  hTimeA->SetMinimum(TMath::Min(hTimeA->GetMinimum(),hTimeC->GetMinimum())-1.);
+	  hTimeA->SetMaximum(TMath::Max(hTimeA->GetMaximum(),hTimeC->GetMaximum())+1.);
+	}
       hTimeC->GetYaxis()->SetRange(0,10);
       hTimeC->Draw("Psame");
       TLegend * lg = new TLegend(0.8,0.9,1,1);
@@ -324,24 +404,101 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
       
       TCanvas * c2 = new TCanvas("c2","Trigger ratios");
       c2->SetGridy();
-      
+      Double_t max=TMath::Max(hBB_BG->GetMaximum(),hBB_EE->GetMaximum());
+      Double_t min=TMath::Min(hBB_BG->GetMinimum(0.000001),hBB_EE->GetMinimum(0.0001));
+      printf("max: %.5f\tmin: %.5f\n",max,min);
+      if(max==0) max=1.0;
+      Double_t relatMean=(max-min)/max;
       hBB_BG->SetMarkerStyle(20);
       hBB_BG->SetMarkerColor(2);
       hBB_EE->SetMarkerStyle(20);
       hBB_EE->SetMarkerColor(4);
-      
+      hBB_BG->GetYaxis()->SetRangeUser(min*0.8,max*1.5);
       hBB_BG->Draw("P");
       hBB_EE->Draw("Psame");
       TLegend * lg2 = new TLegend(0.8,0.9,1,1);
       lg2->AddEntry(hBB_BG,"BG / BB","p");
       lg2->AddEntry(hBB_EE,"EE / BB","p");
       lg2->Draw("same");
-      
+      printf("diff max - min: %.3f\n",relatMean);
+      if(relatMean>0.1)
+	c2->SetLogy();
       c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
       c2->SaveAs(Form("%s/V0QA__Trigger_ratios.png",plotDir.Data()));
       c2->Write();
       
       
+      //PMmeanAdc[64] RingmeanAdc[8] VOXmeanAdc[2] VOmeanAdc
+      Int_t Color[8]={kRed,kMagenta,kBlue,kCyan,kGreen,kYellow,kOrange,kPink};
+      /*     Int_t color=kRed;
+      TCanvas * cPMmeanAdc = new TCanvas("cPMmeanAdc","mean ADC PM");
+      cPMmeanAdc->SetGridy();
+      for(int i=0;i<64;i++)
+	{
+	  if(!(i%10))
+	    color=Color[i/10]+i;
+	  hPMmeanAdc[i]->SetMarkerStyle(2);
+	  hPMmeanAdc[i]->SetMarkerColor(color-i);
+	  hPMmeanAdc[i]->Draw("Psame");
+	}
+      cPMmeanAdc->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cPMmeanAdc->SaveAs(Form("%s/V0QA__PM_mean_ADC.png",plotDir.Data()));
+      cPMmeanAdc->Write();
+      */
+
+      printf("toto\n\n");
+      TCanvas *cRing  = new TCanvas("cRing","mean ADC Ring");
+      cRing->SetGridy();
+      TCanvas ** cPMmeanAdc = new TCanvas*[8];//("cPMmeanAdc","mean ADC PM");
+      for(int i=0;i<8;i++)
+	{
+	  cPMmeanAdc[i] = new TCanvas(Form("cPMmeanAdc[%d]",i),Form("mean ADC PM for ring %d",i));
+	  cPMmeanAdc[i] ->SetGridy();
+	  for(int j=0;j<8;j++)
+	    {
+	      hPMmeanAdc[j+8*i]->SetMarkerStyle(2);
+	      hPMmeanAdc[j+8*i]->SetMarkerColor(Color[j]);
+	      hPMmeanAdc[j+8*i]->Draw("Psame");
+	    }
+	  cPMmeanAdc[i] ->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+	  cPMmeanAdc[i] ->SaveAs(Form("%s/V0QA__PM_mean_%i_ADC.png",plotDir.Data(),i));
+	  cPMmeanAdc[i] ->Write();
+	  cRing->cd();
+	  hRingmeanAdc[i]->SetMarkerStyle(2);
+	  hRingmeanAdc[i]->SetMarkerColor(Color[i]);
+	  hRingmeanAdc[i]->Draw("Psame");
+	}
+      cRing->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cRing->SaveAs(Form("%s/V0QA__Ring_mean_ADC.png",plotDir.Data()));
+      cRing->Write();
+
+      TFile*eageV0=new TFile("eageV0.root","recreate");
+      for(int i=0;i<64;i++)hPMmeanAdc[i]->Write();
+      eageV0->Close();
+
+      TCanvas *cV0X  = new TCanvas("cV0X","mean ADC V0X");
+      cV0X->SetGridy();
+      hVOXmeanAdc[0]->SetMarkerStyle(2);
+      hVOXmeanAdc[0]->SetMarkerColor(kRed);
+      hVOXmeanAdc[0]->Draw("P");
+      hVOXmeanAdc[1]->SetMarkerStyle(2);
+      hVOXmeanAdc[1]->SetMarkerColor(kBlue);
+      hVOXmeanAdc[1]->Draw("Psame");
+      cV0X->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cV0X->SaveAs(Form("%s/V0QA__V0X_mean_ADC.png",plotDir.Data()));
+      cV0X->Write();
+      //VOmeanAdc
+
+      TCanvas *cV0  = new TCanvas("cV0","mean ADC V0");
+      cV0->SetGridy();
+      hVOmeanAdc[0]->SetMarkerStyle(20);
+      hVOmeanAdc[0]->SetMarkerColor(kRed);
+      hVOmeanAdc[0]->Draw("P");
+      cV0->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+      cV0->SaveAs(Form("%s/V0QA__V0_mean_ADC.png",plotDir.Data()));
+      cV0->Write();
+
+
       TCanvas * c3 = new TCanvas("c3","Average Charge");
       c3->SetGridy();
       
@@ -387,12 +544,36 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	    
       TCanvas * c5 = new TCanvas("c5","");
       c5->cd();
+      hNumberVoieOff->GetYaxis()->SetRangeUser(0,maxVoieOff+1.);
       hNumberVoieOff->Draw();
       c5->SaveAs(Form("%s/V0QA__NumberVoieOff.png",plotDir.Data()));
       TCanvas * c6 = new TCanvas("c6","");
       c6->cd();
+      hNumberBadOffset->GetYaxis()->SetRangeUser(0,maxBadOffset+1.);
       hNumberBadOffset->Draw();
       c6->SaveAs(Form("%s/V0QA__Number_Bad_Offset.png",plotDir.Data()));
+
+
+
+      TCanvas *CchargeInteger = new TCanvas("CchargeInteger","");
+      CchargeInteger->cd();
+      hChargeChAllNo46->Draw("P");
+      hChargeChAllNo46->SetLineColor(2);
+      hChargeChAllNo46->SetMarkerStyle(20);
+      hChargeChAllNo46->SetMarkerColor(2);
+      hChargeCh46->Draw("Psame");
+      hChargeCh46->SetLineColor(1);
+      hChargeCh46->SetMarkerStyle(20);
+      hChargeCh46->SetMarkerColor(1);
+      CchargeInteger->SaveAs(Form("%s/V0QA__Charge_Chanel_46.png",plotDir.Data()));
+
+      TCanvas *CratioCharge  = new TCanvas("CratioCharge","");
+      CratioCharge->cd();
+      hChargeRatio->Draw("P");
+      hChargeRatio->SetLineColor(3);
+      hChargeRatio->SetMarkerStyle(20);
+      hChargeRatio->SetMarkerColor(3);
+      CratioCharge->SaveAs(Form("%s/V0QA__Charge_Chanel_Ratio.png",plotDir.Data()));
 
       if(HigtVoltage->GetEntries())
 	{
@@ -690,10 +871,13 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	      hNumberVoieOff->SetBins(goodrun+1,0,goodrun+1);
 	      hNumberVoieOff->SetBinContent(goodrun+1,NumberVoieOff);
 	      hNumberVoieOff->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
-		    
+
 	      hNumberBadOffset->SetBins(goodrun+1,0,goodrun+1);
 	      hNumberBadOffset->SetBinContent(goodrun+1,numberBadOffset);
 	      hNumberBadOffset->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	      maxVoieOff=NumberVoieOff;
+	      maxBadOffset=numberBadOffset;
+
 	      goodrun++;
 	    }
 	}
@@ -743,19 +927,25 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	    
       TCanvas * c2 = new TCanvas("c2","Trigger ratios");
       c2->SetGridy();
-	    
+
+
+      Double_t max=TMath::Max(hBB_BG->GetMaximum(),hBB_EE->GetMaximum());
+      Double_t min=TMath::Min(hBB_BG->GetMinimum(0.000001),hBB_EE->GetMinimum(0.0001));
+      printf("max: %.5f\tmin: %.5f\n",max,min);
+      if(max==0) max=1.0;
+      Double_t relatMean=(max-min)/max;
       hBB_BG->SetMarkerStyle(20);
       hBB_BG->SetMarkerColor(2);
       hBB_EE->SetMarkerStyle(20);
       hBB_EE->SetMarkerColor(4);
-	    
+      hBB_BG->GetYaxis()->SetRangeUser(min*0.8,max*1.5);
       hBB_BG->Draw("P");
       hBB_EE->Draw("Psame");
       TLegend * lg2 = new TLegend(0.8,0.9,1,1);
       lg2->AddEntry(hBB_BG,"BG / BB","p");
       lg2->AddEntry(hBB_EE,"EE / BB","p");
       lg2->Draw("same");
-	    
+
       c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
       c2->SaveAs(Form("%s/V0QA__Trigger_ratios.png",plotDir.Data()));
       c2->Write();
@@ -766,11 +956,14 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	    
       hAdcA->SetMarkerStyle(20);
       hAdcA->SetMarkerColor(2);
+      hAdcA->SetLineColor(2);
       hAdcC->SetMarkerStyle(20);
       hAdcC->SetMarkerColor(4);
+      hAdcC->SetLineColor(4);
       hAdcA->SetMinimum(0);
-      hAdcA->SetMaximum(100);
-	    
+      max=TMath::Max(hAdcA->GetMaximum(),hAdcC->GetMaximum());
+      hAdcA->SetMaximum(max*1.1);
+
       hAdcA->Draw("P");
       hAdcC->Draw("Psame");
       TLegend * lg3 = new TLegend(0.8,0.9,1,1);
@@ -850,10 +1043,12 @@ Int_t DrawTrendingV0QA(TString mergedTrendFile ="trending.root")
 	    
       TCanvas * cT = new TCanvas("cT","");
       cT->cd();
+      hNumberVoieOff->GetYaxis()->SetRangeUser(0,maxVoieOff+1);
       hNumberVoieOff->Draw();
       cT->SaveAs(Form("%s/V0QA__Number_of_Voie_Off.png",plotDir.Data()));
       TCanvas * cT2 = new TCanvas("cT2","");
       cT2->cd();
+      hNumberBadOffset->GetYaxis()->SetRangeUser(0,maxBadOffset+1.);
       hNumberBadOffset->Draw();
       cT2->SaveAs(Form("%s/V0QA__Number_Bad_Offset.png",plotDir.Data()));
       if(HigtVoltage->GetEntries())
