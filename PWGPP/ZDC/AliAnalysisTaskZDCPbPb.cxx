@@ -297,8 +297,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     fhZNASpectrum->Fill(esdZDC->GetZDCN2Energy());
     fhZPCSpectrum->Fill(esdZDC->GetZDCP1Energy());		  
     fhZPASpectrum->Fill(esdZDC->GetZDCP2Energy());	  
-    fhZEM1Spectrum->Fill(esdZDC->GetZDCEMEnergy(0)/8.);
-    fhZEM2Spectrum->Fill(esdZDC->GetZDCEMEnergy(1)/8.);
+    fhZEM1Spectrum->Fill(esdZDC->GetZDCEMEnergy(0));
+    fhZEM2Spectrum->Fill(esdZDC->GetZDCEMEnergy(1));
   
     const Double_t * towZNC = esdZDC->GetZN1TowerEnergy();
     const Double_t * towZPC = esdZDC->GetZP1TowerEnergy();
@@ -335,7 +335,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i));
       if(esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i) != 0.){
         tdcA = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
-        fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
+        fhTDCZNA->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }
