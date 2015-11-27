@@ -41,7 +41,8 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
   //void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
-
+  void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
+  
  protected:
   void           Run();
   void           SetTree(TTree *tree);
@@ -65,7 +66,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TTree*         fTreeJet4Vect;           //!<! tree containing the jet 4-vectors (input for embed.)
   Int_t          fCurrentEntry;           ///< Current TTree entry
   TList          *fInput;                 //!<! Input histograms saved in this list
-  
+  Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
