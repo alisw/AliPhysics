@@ -1,5 +1,5 @@
 /**
- * \file AliEmcalTriggerPatchInfo.h
+ * \file AliEmcalTriggerPatchInfoAPV1.h
  * \brief Class to make array of trigger patch objects in AOD/ESD events.
  *
  * Emcal trigger patch information class
@@ -47,7 +47,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
     kOfflineOffset = 24
   };
 
-  enum DetectorType_t {
+  enum CaloDetectorType_t {
     kEMCALdet = 0,
     kDCALPHOSdet = 1
   };
@@ -312,7 +312,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   /**
    * @return Detector in which the patch is located (EMCal or DCal/PHOS)
    */
-  DetectorType_t GetDetectorType() const { return fDetectorType                  ; }
+  CaloDetectorType_t GetDetectorType() const { return fDetectorType                  ; }
 
   /**
    * Check whether a trigger bit is set
@@ -415,6 +415,12 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   void SetTriggerBits( Int_t i ) { fTriggerBits = i; }
 
   /**
+   * Set detector in which the patch is located (EMCal or DCal/PHOS)
+   * @param t Detector type
+   */
+  void SetDetectorType(CaloDetectorType_t t)  { fDetectorType = t; }
+
+  /**
    * Set the MC trigger bit offset
    * @param i MC trigger bit offset
    */
@@ -448,7 +454,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   Int_t             fCol0;                          ///< Start column
   Int_t             fRow0;                          ///< Start row
   UChar_t           fPatchSize;                     ///< Trigger patch size
-  DetectorType_t    fDetectorType;                  ///< Detector type (EMCal or DCal/PHOS)
+  CaloDetectorType_t    fDetectorType;                  ///< Detector type (EMCal or DCal/PHOS)
   AliEmcalTriggerBitConfigAP fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP
