@@ -1,5 +1,5 @@
 //_________________________________________________________________________
-//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass
 //University of Tennessee at Knoxville
 //
 // This class is designed for the analysis of the hadronic component of 
@@ -22,6 +22,7 @@ class TDatabasePDG;
 class AliAnalysisEtCuts;
 class AliPIDResponse;
 class AliCentrality;
+class AliMultSelection;
 
 class AliAnalysisHadEt : public AliAnalysisEtCommon
 {
@@ -75,6 +76,7 @@ public:
 
     AliPIDResponse *fPIDResponse;
     Int_t GetCentralityBin(Int_t numberofbins,AliCentrality *centrality);//number of bins is 11 (10%), 21 (5%), or 41 (2.5%).  Number of bins includes a bin for those events with no centrality bin determined
+    Int_t GetCentralityBin(Int_t numberofbins,AliMultSelection *centrality);//number of bins is 11 (10%), 21 (5%), or 41 (2.5%).  Number of bins includes a bin for those events with no centrality bin determined
 
 protected:   
     

@@ -223,7 +223,7 @@ protected:
     Float_t fBackgroundErrorHigh;//Relative error on efficiency, upper bound
     Float_t fConstBackgroundErrorLow;//Relative error on efficiency, lower bound
     Float_t fConstBackgroundErrorHigh;//Relative error on efficiency, upper bound
-    Bool_t fConstBackground;//Boolean to say which version of background to use
+    Bool_t fConstBackground;
     TH1D *fBackgroundTPC;//background correction for the TPC
     TH1D *fBackgroundITS;//background correction for the ITS
     Float_t fConstBackgroundTPC;//background correction for the TPC
