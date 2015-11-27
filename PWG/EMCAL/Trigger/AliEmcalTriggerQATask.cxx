@@ -76,12 +76,14 @@ void AliEmcalTriggerQATask::ExecOnce()
 
   fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTriggerPatchesName));
 
-  TString objname(fTriggerPatches->GetClass()->GetName());
-  TClass cls(objname);
-  if (!cls.InheritsFrom("AliEmcalTriggerPatchInfoAPV1")) {
-    AliError(Form("%s: Objects of type %s in %s are not inherited from AliEmcalTriggerPatchInfoAPV1!",
-		  GetName(), cls.GetName(), fTriggerPatchesName.Data()));
-    fTriggerPatches = 0;
+  if (fTriggerPatches) {
+    TString objname(fTriggerPatches->GetClass()->GetName());
+    TClass cls(objname);
+    if (!cls.InheritsFrom("AliEmcalTriggerPatchInfoAPV1")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEmcalTriggerPatchInfoAPV1!",
+          GetName(), cls.GetName(), fTriggerPatchesName.Data()));
+      fTriggerPatches = 0;
+    }
   }
 
   if (!fTriggerPatches) {
