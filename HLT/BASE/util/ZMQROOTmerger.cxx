@@ -69,6 +69,7 @@ TPRegexp* fUnSendSelection = NULL;
 TString fTitleAnnotation = "";
 
 Int_t fRunNumber = 0;
+std::string fInfo;           //cache for the info string
 
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
@@ -221,12 +222,11 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
   else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
   {
     //check if we have a runnumber in the string
-    string info;
-    info.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
-    size_t runTagPos = info.find("run");
-    size_t runStartPos = info.find("=",runTagPos);
-    size_t runEndPos = info.find(" ");
-    string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
+    fInfo.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
+    size_t runTagPos = fInfo.find("run");
+    size_t runStartPos = fInfo.find("=",runTagPos);
+    size_t runEndPos = fInfo.find(" ");
+    string runString = fInfo.substr(runStartPos+1,runEndPos-runStartPos-1);
     if (fVerbose) printf("received run=%s\n",runString.c_str());
 
     int runnumber = atoi(runString.c_str());
@@ -386,12 +386,9 @@ Int_t DoSend(void* socket)
   //send back merged data, one object per frame
 
   aliZMQmsg message;
-  char tmp[34];
-  int tmpLength = snprintf(tmp,34,"%i",fRunNumber);
-  string runNumberString = "run=";
-  runNumberString += tmp;
+  //forward the (run-)info string
   string infoMessageString = "INFO";
-  alizmq_msg_add(&message, infoMessageString, runNumberString);
+  alizmq_msg_add(&message, infoMessageString, fInfo);
   Int_t rc = 0;
   TObject* object = NULL;
   TObject* key = NULL;
