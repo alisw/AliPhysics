@@ -58,6 +58,8 @@ Int_t   fZMQtimeout = 0;
 
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
+Bool_t  fAllowGlobalReset=kTRUE;
+Bool_t  fAllowControlSequences=kTRUE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -91,6 +93,8 @@ const char* fUSAGE =
     " -pushback-period : push the merged data once every n seconds\n"
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
+    " -AllowGlobalReset :  allow a global \'reset\' on request\n"
+    " -AllowControlSequences : allow control seqs (CONFIG messages)\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
     " -reset : reset NOW\n"
     " -select : set the selection regex for sending out objects,\n" 
@@ -197,7 +201,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
 {
   string tmp;
   tmp.assign((char*)zmq_msg_data(topicMsg),zmq_msg_size(topicMsg));
-  if (strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6)==0)
+  if (fAllowControlSequences && strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6)==0)
   {
     //reconfigure (first send a reply to not cause problems on the other end)
     std::string requestBody;
@@ -433,7 +437,7 @@ Int_t DoSend(void* socket)
 //______________________________________________________________________________
 void ResetOutputData()
 {
-  fMergeObjectMap.DeleteAll();
+  if (fAllowGlobalReset) fMergeObjectMap.DeleteAll();
 }
 
 //_______________________________________________________________________________________
@@ -557,6 +561,14 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("annotateTitle"))
     {
       fTitleAnnotation = value;
+    }
+    else if (option.EqualTo("AllowGlobalReset"))
+    {
+      fAllowGlobalReset=(value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("AllowControlSequences"))
+    {
+      fAllowControlSequences = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
