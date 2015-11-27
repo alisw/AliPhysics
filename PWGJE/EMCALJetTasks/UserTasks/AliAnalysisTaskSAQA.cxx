@@ -65,6 +65,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
   fHistDeltaPtvsPt(0),
+  fHistClusPosition(0),
   fHistClusPhiEtaEnergy(0),
   fHistClusDeltaPhiEPEnergy(0),
   fHistNCellsEnergy(0),
@@ -113,6 +114,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
   fHistDeltaPtvsPt(0),
+  fHistClusPosition(0),
   fHistClusPhiEtaEnergy(0),
   fHistClusDeltaPhiEPEnergy(0),
   fHistNCellsEnergy(0),
@@ -152,6 +154,7 @@ void AliAnalysisTaskSAQA::AllocateHistogramArrays()
   fHistDeltaPhiPt = new TH2*[fNcentBins];
   fHistDeltaPtvsPt = new TH2*[fNcentBins];
 
+  fHistClusPosition = new TH3*[fNcentBins];
   fHistClusPhiEtaEnergy = new TH3*[fNcentBins];
   fHistClusDeltaPhiEPEnergy = new TH2*[fNcentBins];
   fHistNCellsEnergy = new TH2*[fNcentBins];
@@ -232,7 +235,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       for (Int_t j = 0; j < nlabels; j++) {
         histname = Form("fHistTrPhiEtaPt_%d_%d",i,j);
-        fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+        fHistTrPhiEtaPt[i][j] = new TH3F(histname,histname, 100, -1, 1, 100, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
         fHistTrPhiEtaPt[i][j]->GetXaxis()->SetTitle("#eta");
         fHistTrPhiEtaPt[i][j]->GetYaxis()->SetTitle("#phi");
         fHistTrPhiEtaPt[i][j]->GetZaxis()->SetTitle("p_{T} (GeV/c)");
@@ -242,7 +245,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       if (!fParticleLevel) {
         if (fIsMC) {
           histname = Form("fHistTrPhiEtaZeroLab_%d",i);
-          fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+          fHistTrPhiEtaZeroLab[i] = new TH2F(histname,histname, 100, -1, 1, 100, 0, TMath::TwoPi());
           fHistTrPhiEtaZeroLab[i]->GetXaxis()->SetTitle("#eta");
           fHistTrPhiEtaZeroLab[i]->GetYaxis()->SetTitle("#phi");
           fHistTrPhiEtaZeroLab[i]->GetZaxis()->SetTitle("counts");
@@ -256,7 +259,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
         }
 
         histname = Form("fHistTrEmcPhiEta_%d",i);
-        fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+        fHistTrEmcPhiEta[i] = new TH2F(histname,histname, 100, -1, 1, 100, 0, TMath::TwoPi());
         fHistTrEmcPhiEta[i]->GetXaxis()->SetTitle("#eta");
         fHistTrEmcPhiEta[i]->GetYaxis()->SetTitle("#phi");
         fOutput->Add(fHistTrEmcPhiEta[i]);
@@ -268,7 +271,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
         fOutput->Add(fHistTrEmcPt[i]);
 
         histname = Form("fHistTrPhiEtaNonProp_%d",i);
-        fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+        fHistTrPhiEtaNonProp[i] = new TH2F(histname,histname, 100, -1, 1, 100, 0, TMath::TwoPi());
         fHistTrPhiEtaNonProp[i]->GetXaxis()->SetTitle("#eta");
         fHistTrPhiEtaNonProp[i]->GetYaxis()->SetTitle("#phi");
         fOutput->Add(fHistTrPhiEtaNonProp[i]);
@@ -303,20 +306,30 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (fClusterCollArray.GetEntriesFast()>0) {
     for (Int_t i = 0; i < fNcentBins; i++) {
+      histname = "fHistClusPosition_";
+      histname += i;
+      fHistClusPosition[i] = new TH3F(histname, histname, 100, -500, 500, 100, -500, 500, 100, -500, 500);
+      fHistClusPosition[i]->GetXaxis()->SetTitle("x (cm)");
+      fHistClusPosition[i]->GetYaxis()->SetTitle("y (cm)");
+      fHistClusPosition[i]->GetZaxis()->SetTitle("z (cm)");
+      fOutput->Add(fHistClusPosition[i]);
+
       histname = "fHistClusPhiEtaEnergy_";
       histname += i;
-      fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1, 1, 101, 0, TMath::Pi() * 2.02, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1, 1, 100, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
       fHistClusPhiEtaEnergy[i]->GetXaxis()->SetTitle("#eta");
       fHistClusPhiEtaEnergy[i]->GetYaxis()->SetTitle("#phi");
       fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("E_{cluster} (GeV)");
       fOutput->Add(fHistClusPhiEtaEnergy[i]);
 
-      histname = "fHistClusDeltaPhiEPEnergy_";
-      histname += i;
-      fHistClusDeltaPhiEPEnergy[i] = new TH2F(histname, histname, fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
-      fHistClusDeltaPhiEPEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-      fHistClusDeltaPhiEPEnergy[i]->GetYaxis()->SetTitle("#phi_{cluster} - #psi_{RP}");
-      fOutput->Add(fHistClusDeltaPhiEPEnergy[i]);
+      if (fForceBeamType != kpp) {
+        histname = "fHistClusDeltaPhiEPEnergy_";
+        histname += i;
+        fHistClusDeltaPhiEPEnergy[i] = new TH2F(histname, histname, fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
+        fHistClusDeltaPhiEPEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+        fHistClusDeltaPhiEPEnergy[i]->GetYaxis()->SetTitle("#phi_{cluster} - #psi_{RP}");
+        fOutput->Add(fHistClusDeltaPhiEPEnergy[i]);
+      }
 
       if (fIsEmbedded) {
         histname = "fHistClusMCEnergyFraction_";
@@ -352,7 +365,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       histname = "fHistCellsAbsIdEnergy_";
       histname += i;
-      fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 20000,0,19999,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
+      fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 20000,0,20000,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
       fHistCellsAbsIdEnergy[i]->GetXaxis()->SetTitle("cell abs. Id");
       fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cell} (GeV)");
       fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");    
@@ -364,7 +377,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistJetsPhiEta_";
       histname += i;
-      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1, 1, 101, 0, TMath::Pi() * 2.02);
+      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1, 1, 100, 0, TMath::TwoPi());
       fHistJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
       fHistJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fHistJetsPhiEta[i]->GetZaxis()->SetTitle("counts");
@@ -387,24 +400,24 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
-    nbins[dim] = 101;
+    nbins[dim] = 100;
     min[dim] = 0;
-    max[dim] = 101;
+    max[dim] = 100;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
@@ -450,8 +463,8 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     title[dim] = "No. of tracks";
     if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
       nbins[dim] = 6000;
-      min[dim] = 0;
-      max[dim] = 3000;
+      min[dim] = -0.5;
+      max[dim] = 3000-0.5;
     }
     else {
       nbins[dim] = 200;
@@ -474,9 +487,9 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       dim++;
 
       title[dim] = "#phi_{track}^{leading}";
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = TMath::Pi() * 2.02;
+      max[dim] = TMath::TwoPi();
       dim++;
     }
   }
@@ -484,7 +497,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   if (fClusterCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of clusters";
     nbins[dim] = 2000;
-    min[dim] = 0;
+    min[dim] = -0.5;
     max[dim] = 4000-0.5;
     dim++;
 
@@ -502,25 +515,25 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       dim++;
 
       title[dim] = "#phi_{cluster}^{leading}";
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = TMath::Pi() * 2.02;
+      max[dim] = TMath::TwoPi();
       dim++;
     }
   }
 
   if (!fCaloCellsName.IsNull()) {
     title[dim] = "No. of cells";
-    nbins[dim] = 3000;
-    min[dim] = 0;
-    max[dim] = 6000-0.5;
+    nbins[dim] = 5000;
+    min[dim] = -0.5;
+    max[dim] = 10000-0.5;
     dim++;
   }
 
   if (fJetCollArray.GetEntriesFast()>0) {
     title[dim] = "No. of jets";
     nbins[dim] = 200;
-    min[dim] = 0;
+    min[dim] = -0.5;
     max[dim] = 200-0.5;
     dim++;
 
@@ -538,9 +551,9 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       dim++;
 
       title[dim] = "#phi_{jet}^{leading}";
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = TMath::Pi() * 2.02;
+      max[dim] = TMath::TwoPi();
       dim++;
     }
   }
@@ -845,17 +858,23 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
   while ((cluster = clusters->GetNextAcceptCluster())) {
     sum += cluster->E();
 
+    Float_t pos[3]={0};
+    cluster->GetPosition(pos);
+    fHistClusPosition[fCentBin]->Fill(pos[0], pos[1], pos[2]);
+
     if (!leading || leading->E() < cluster->E()) leading = cluster;
 
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, fVertex);
 
-    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), nPart.Phi(), cluster->E());
+    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), TVector2::Phi_0_2pi(nPart.Phi()), cluster->E());
 
-    Double_t ep = nPart.Phi() - fEPV0;
-    while (ep < 0) ep += TMath::Pi();
-    while (ep >= TMath::Pi()) ep -= TMath::Pi();
-    fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
+    if (fHistClusDeltaPhiEPEnergy[fCentBin]) {
+      Double_t ep = nPart.Phi() - fEPV0;
+      while (ep < 0) ep += TMath::Pi();
+      while (ep >= TMath::Pi()) ep -= TMath::Pi();
+      fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
+    }
 
     fHistNCellsEnergy[fCentBin]->Fill(cluster->E(), cluster->GetNCells());
 
