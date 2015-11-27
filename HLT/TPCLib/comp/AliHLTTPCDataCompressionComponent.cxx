@@ -901,7 +901,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     if (iResult>=0 && (iResult=InitDriftTimeTransformation())<0) return iResult;
   }
 
-  HLTImportant("TPC Cluster compression running in mode %d / deflaterMode %d", fMode, fDeflaterMode);
+  HLTInfo("TPC Cluster compression running in mode %d / deflaterMode %d", fMode, fDeflaterMode);
 
   return iResult;
 }
