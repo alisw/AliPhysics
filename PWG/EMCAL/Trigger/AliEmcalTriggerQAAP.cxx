@@ -370,16 +370,16 @@ void AliEmcalTriggerQAAP::EventCompleted()
       AliDebug(2, Form("Trigger type: %s", kEMCalTriggerNames[itype].Data()));
 
       hname = Form("EMCTRQA_histEMCalMedianVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      FillTH2(hname, medianEMCal[itype], fMaxPatchDCal[itrig][itype]);
+      FillTH2(hname, fMaxPatchDCal[itrig][itype], medianEMCal[itype]);
 
       hname = Form("EMCTRQA_histDCalMedianVsEMCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      FillTH2(hname, medianDCal[itype], fMaxPatchEMCal[itrig][itype]);
+      FillTH2(hname, fMaxPatchEMCal[itrig][itype], medianDCal[itype]);
 
       hname = Form("EMCTRQA_histDCalMedianVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      FillTH2(hname, medianDCal[itype], fMaxPatchDCal[itrig][itype]);
+      FillTH2(hname, fMaxPatchDCal[itrig][itype], medianDCal[itype]);
 
       hname = Form("EMCTRQA_histEMCalMedianVsEMCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      FillTH2(hname, medianEMCal[itype], fMaxPatchEMCal[itrig][itype]);
+      FillTH2(hname, fMaxPatchEMCal[itrig][itype], medianEMCal[itype]);
 
       hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itype].Data(), fgkPatchTypes[itype].Data());
       FillTH2(hname, fMaxPatchEMCal[itrig][itype], fMaxPatchDCal[itrig][itype]);
