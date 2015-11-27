@@ -32,6 +32,7 @@ public:
   void SetThresholds(Float_t th, Float_t offTh) { fThreshold = th; fOfflineThreshold = offTh; }
   void SetBitMask(UInt_t bitmask) { fBitMask = bitmask; }
   void SetPatchSize(Int_t patchsize) { fPatchSize = patchsize; }
+  void SetSubregionSize(Int_t subregionsize) { fSubregionSize = subregionsize; }
 
   virtual std::vector<AliEMCALTriggerRawPatch> FindPatches(const AliEMCALTriggerDataGrid<T> &adc, const AliEMCALTriggerDataGrid<T> &offlineAdc) const;
 
@@ -39,7 +40,8 @@ protected:
   Int_t                             fRowMin;
   Int_t                             fRowMax;
   Int_t                             fPatchSize;
-  UInt_t                           fBitMask;
+  Int_t								fSubregionSize;
+  UInt_t                           	fBitMask;
   Float_t                           fThreshold;
   Float_t                           fOfflineThreshold;
 

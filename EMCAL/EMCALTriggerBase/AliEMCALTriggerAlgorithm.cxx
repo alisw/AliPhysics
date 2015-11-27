@@ -35,6 +35,7 @@ TObject(),
 fRowMin(0),
 fRowMax(0),
 fPatchSize(0),
+fSubregionSize(1),
 fBitMask(0),
 fThreshold(0),
 fOfflineThreshold(0)
@@ -47,6 +48,7 @@ TObject(),
 fRowMin(rowmin),
 fRowMax(rowmax),
 fPatchSize(0),
+fSubregionSize(1),
 fBitMask(bitmask),
 fThreshold(0),
 fOfflineThreshold(0)
@@ -62,8 +64,8 @@ std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(co
   std::vector<AliEMCALTriggerRawPatch> result;
   T sumadc(0);
   T sumofflineAdc(0);
-  for(int irow = fRowMin; irow < fRowMax - fPatchSize; irow += fPatchSize){
-    for(int icol = 0; icol < adc.GetNumberOfCols() - fPatchSize; icol += fPatchSize){
+  for(int irow = fRowMin; irow < fRowMax - fPatchSize; irow += fSubregionSize){
+    for(int icol = 0; icol < adc.GetNumberOfCols() - fPatchSize; icol += fSubregionSize){
       sumadc = 0;
       sumofflineAdc = 0;
       for(int jrow = irow; jrow < irow + fPatchSize; jrow++){
@@ -92,6 +94,7 @@ AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm():
 AliEMCALTriggerAlgorithm<T>()
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -99,6 +102,7 @@ AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t 
 AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -110,6 +114,7 @@ AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm():
 AliEMCALTriggerAlgorithm<T>()
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
@@ -117,6 +122,7 @@ AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm(Int_t rowmin, In
 AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
