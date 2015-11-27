@@ -61,6 +61,7 @@ Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
+TString fTitleAnnotation = "";
 
 Int_t fRunNumber = 0;
 
@@ -96,6 +97,7 @@ const char* fUSAGE =
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
+    " -annotateTitle : prepend string to title (if applicable)"
     ;
 
 void* work(void* /*param*/)
@@ -267,6 +269,15 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 int AddNewObject(const char* name, TObject* object, TMap* map)
 {
   map->Add(new TObjString(name), object);
+  if (!fTitleAnnotation.IsNull())
+  {
+    TNamed* named = dynamic_cast<TNamed*>(object);
+    if (!named) return 0;
+    
+    TString title = named->GetTitle();
+    title = fTitleAnnotation + " " + title;
+    named->SetTitle(title);
+  }
   return 0;
 }
 
@@ -302,7 +313,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
       if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
       AddNewObject(name, object, &fMergeObjectMap);
     }
-    else if (!mergingList) 
+    else if (!mergingList && !fCacheOnly) 
     {
       if (fVerbose) Printf("adding a new list %s to fMergeListMap", name);
       mergingList = new TList();
@@ -542,6 +553,10 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("cache"))
     {
       fCacheOnly = kTRUE;
+    }
+    else if (option.EqualTo("annotateTitle"))
+    {
+      fTitleAnnotation = value;
     }
     else
     {
