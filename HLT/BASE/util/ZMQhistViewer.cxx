@@ -48,6 +48,7 @@ TFile* fFile=NULL;
 
 int fPollInterval = 0;
 int fPollTimeout = 1000; //1s
+Bool_t fSort = kTRUE;
 
 //internal state
 void* fZMQcontext = NULL;             //ze zmq context
@@ -309,6 +310,25 @@ int UpdatePad(TObject* object)
     //add the new object to the collection, restructure the canvas 
     //and redraw everything
     fDrawables.AddLast(object);
+
+    if (fSort)
+    {
+      TObjArray sortedTitles(fDrawables.GetEntries());
+      for (int i=0; i<fDrawables.GetEntries(); i++)
+      { sortedTitles.AddAt(new TNamed(fDrawables[i]->GetTitle(),fDrawables[i]->GetName()),i); }
+      sortedTitles.Sort();
+      TObjArray sortedDrawables(fDrawables.GetEntries());
+      for (int i=0; i<fDrawables.GetEntries(); i++)
+      {
+        const char* name = sortedTitles[i]->GetTitle();
+        TObject* tmp = fDrawables.FindObject(name);
+        int index = fDrawables.IndexOf(tmp);
+        sortedDrawables.AddAt(fDrawables[index],i); 
+      }
+      for (int i=0; i<sortedDrawables.GetEntries(); i++)
+      { fDrawables.AddAt(sortedDrawables[i],i); }
+      sortedTitles.Delete();
+    }
     
     //after we clear the canvas, the pads are gone, clear the pad cache as well
     fCanvas->Clear();
@@ -391,6 +411,10 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("file"))
     {
       fFileName = value;
+    }
+    else if (option.EqualTo("sort"))
+    {
+      fSort=value.Contains(0)?kFALSE:kTRUE;
     }
     else
     {
