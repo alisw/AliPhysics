@@ -300,21 +300,21 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleTPCCompressionRatio, scaleFullTPCCompressionRatio, scaleTPCCompressedSize;
   if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" || mgr.GetGRPData()->GetBeamType() == "PbPb" || mgr.GetGRPData()->GetBeamType() == "A-A" || mgr.GetGRPData()->GetBeamType() == "AA")
   {
-    scaleSPDClusters = 25000.;
-    scaleSSDClusters = 26000.;
-    scaleSDDClusters = 22000.;
+    scaleSPDClusters = 30000.;
+    scaleSSDClusters = 31000.;
+    scaleSDDClusters = 26000.;
     scaleSPDSize = 140000.;
     scaleSSDSize = 700000.;
     scaleSDDSize = 700000.;
     scaleITSSAPTracks = 2000.;
     scaleTPCCompressionRatio = 8;
     scaleFullTPCCompressionRatio = 12;
-    scaleTPCSize = 170000000;
+    scaleTPCSize = 185000000;
     scaleTPCTracks = 40000;
     scaleTPCTracklets = 60000;
     scaleTPCCompressedSize = 50000000;
     scaleHLTIn = 200000000;
-    scaleHLTOut = 60000000;
+    scaleHLTOut = 70000000;
     scaleVZEROChargeA = 30000.;
     scaleVZEROChargeC = 30000.;
     scaleZDCCharge = 20000.;
@@ -360,7 +360,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fHistITStracks_ITSOutTracks = new TH2I("ITSntrk_ITSOutntrk", "ITS Tracks vs ITS Out Tracks", 100, 0., scaleTPCTracks, 100, 0., scaleTPCTracks);
   fHistZNA_VZEROTrigChargeA = new TH2F("VZEROTrigChargeA_ZNA", "ZNA vs. VZERO Trigger Charge A", 100, 0., scaleVZEROChargeA, 100, 0., scaleZDCCharge);
   fHistZNC_VZEROTrigChargeC = new TH2F("VZEROTrigChargeC_ZNC", "ZNC vs. VZERO Trigger Charge C", 100, 0., scaleVZEROChargeC, 100, 0., scaleZDCCharge);
-  fHistZNT_VZEROTrigChargeT = new TH2F("VZEROTrigChargeT_ZNT", "ZN (A+C) vs. VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleZDCCharge);
+  fHistZNT_VZEROTrigChargeT = new TH2F("VZEROTrigChargeT_ZNT", "ZN (A+C) vs. VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., 2 * scaleZDCCharge);
   fHistVZERO_SPDClusters = new TH2F("VZERO_SPDClusters", "SPD Clusters vs VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleSPDClusters);
   fHistVZERO_ITSSAPTracks = new TH2F("VZERO_ITSSAPTracks", "ITS SAP Tracks vs VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleITSSAPTracks);
   
