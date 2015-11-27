@@ -27,6 +27,7 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   eTask->Set2015CaloTriggerNames();
+  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kRecalcPatch);
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
 

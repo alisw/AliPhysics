@@ -26,6 +26,12 @@ public:
 
   typedef EmcalTriggerAP::EMCalTriggerType_t EMCalTriggerType_t;
 
+  enum PatchTypes_t {
+    kOnlinePatch,
+    kRecalcPatch,
+    kOfflinePatch
+  };
+
   AliEmcalTriggerQAAP();
   AliEmcalTriggerQAAP(const char* name);
   virtual ~AliEmcalTriggerQAAP();
@@ -36,17 +42,21 @@ public:
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
   Int_t  GetBkgPatchType()      const { return fBkgPatchType  ; }
 
-  void Init();
-  void ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch);
-  void ProcessFastor(AliEmcalTriggerFastORAP* fastor);
-  void EventCompleted();
+  void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
+
+  void   Init();
+  void   ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch);
+  void   ProcessFastor(AliEmcalTriggerFastORAP* fastor);
+  void   EventCompleted();
 
   THashList* GetListOfHistograms()  { return fHistos; }
 
 protected:
 
   static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
+  static const TString    fgkPatchTypes[3];             ///< Patch type names
 
+  Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
   Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
   Int_t                   fBkgPatchType;                ///< Background patch type
