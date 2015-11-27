@@ -240,12 +240,13 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
   
   while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
   {
+    
     TString estimator = r->Quantity();
-    
-    Float_t fcent = 0.0;
+
+    Float_t fcent = -42.0;
     Bool_t isPP(kFALSE);
-    
-    if ( estimator.CompareTo("pp",TString::kIgnoreCase) )
+
+    if ( estimator.CompareTo("pp",TString::kIgnoreCase) == 0 )
     {
       isPP = kTRUE;
     }
