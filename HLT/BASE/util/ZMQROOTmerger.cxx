@@ -107,7 +107,7 @@ const char* fUSAGE =
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
-    " -annotateTitle : prepend string to title (if applicable)"
+    " -annotateTitle : prepend string to title (if applicable)\n"
     ;
 
 void* work(void* /*param*/)
