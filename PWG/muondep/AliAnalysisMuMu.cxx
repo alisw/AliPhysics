@@ -537,7 +537,7 @@ void AliAnalysisMuMu::DrawMinv(const char* type,
   
   while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next())) )
   {
-    TString name(Form("/%s/%s/%s/%s/MinvUS%s",eventType,trigger,centrality,pairCut,r->AsString().Data()));
+    TString name(Form("/%s/%s/%s/%s/MinvUS+%s",eventType,trigger,centrality,pairCut,r->AsString().Data()));
 
     AliDebug(1,name.Data());
     
@@ -905,7 +905,7 @@ AliAnalysisMuMu::FitParticle(const char* particle,
     TString hname;
     if (!sSpectraType.CompareTo("minv"))
     {
-      hname = corrected ? Form("MinvUS%s_AccEffCorr",bin->AsString().Data()) : Form("MinvUS%s",bin->AsString().Data());
+      hname = corrected ? Form("MinvUS%s_AccEffCorr",bin->AsString().Data()) : Form("MinvUS+%s",bin->AsString().Data());
     }
     else if (!sSpectraType.CompareTo("mpt"))
     {
@@ -2398,21 +2398,21 @@ void AliAnalysisMuMu::GetCollectionsFromAnySubdir(TDirectory& dir,
         ( strcmp(object->GetName(),"OC")==0 ) )
     {
       oc = dynamic_cast<AliMergeableCollection*>(object);
-      fDirectory = gDirectory->GetName();
+      fDirectory = dir.GetName();
     }
 
     if ( ( object->InheritsFrom("AliCounterCollection") ) &&
         ( strcmp(object->GetName(),"CC")==0 ) )
     {
       cc = dynamic_cast<AliCounterCollection*>(object);
-      fDirectory = gDirectory->GetName();
+      fDirectory = dir.GetName();
     }
 
     if ( ( object->InheritsFrom("AliAnalysisMuMuBinning") ) &&
         ( strncmp(object->GetName(),"BIN",3)==0 ) )
     {
       bin = dynamic_cast<AliAnalysisMuMuBinning*>(object);
-      fDirectory = gDirectory->GetName();
+      fDirectory = dir.GetName();
     }
 
   }
@@ -3352,6 +3352,8 @@ void AliAnalysisMuMu::Update()
   /// update the current file with memory
  
   if (!CC() || !OC()) return;
+  
+  std::cout << "fDirectory=" << fDirectory.Data() << std::endl;
   
   ReOpen(fFilename,"UPDATE");
 
