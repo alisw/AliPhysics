@@ -42,7 +42,7 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoRequest(void* /*socket*/);
 
 //merger private functions
-void ResetOutputData();
+void ResetOutputData(Bool_t force=kFALSE);
 Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
 int RemoveEntry(TObject* object);
@@ -58,8 +58,11 @@ Int_t   fZMQtimeout = 0;
 
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
+
 Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
+Bool_t  fAllowResetOnRequest=kTRUE;
+Bool_t  fAllowResetAtEOR=kTRUE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -94,6 +97,8 @@ const char* fUSAGE =
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
     " -AllowGlobalReset :  allow a global \'reset\' on request\n"
+    " -AllowResetOnRequest : allow reset on request\n"
+    " -AllowResetAtSOR : allow reset at change of run\n"
     " -AllowControlSequences : allow control seqs (CONFIG messages)\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
     " -reset : reset NOW\n"
@@ -229,7 +234,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
     if (runnumber!=fRunNumber) 
     {
       if (fVerbose) printf("Run changed, resetting!\n");
-      ResetOutputData();
+      ResetOutputData(fAllowResetAtEOR);
     }
    fRunNumber = runnumber; 
 
@@ -261,9 +266,11 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   //reset the "one shot" options to default values
   fResetOnRequest = kFALSE;
   if (fVerbose && (fSendSelection || fUnSendSelection)) 
+  {
     Printf("unsetting include=%s, exclude=%s",
         (fSendSelection)?fSendSelection->GetPattern().Data():"", 
         (fUnSendSelection)?fUnSendSelection->GetPattern().Data():"");
+  }
   delete fSendSelection; fSendSelection=NULL;
   delete fUnSendSelection; fUnSendSelection=NULL;
   return rc;
@@ -411,7 +418,7 @@ Int_t DoSend(void* socket)
     }
 
     rc = alizmq_msg_add(&message, &topic, object);
-    if (fResetOnSend || fResetOnRequest) 
+    if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
     {
       TPair* pair = fMergeObjectMap.RemoveEntry(key);
       delete pair->Key();
@@ -435,9 +442,9 @@ Int_t DoSend(void* socket)
 }
 
 //______________________________________________________________________________
-void ResetOutputData()
+void ResetOutputData(Bool_t force)
 {
-  if (fAllowGlobalReset) fMergeObjectMap.DeleteAll();
+  if (fAllowGlobalReset || force) fMergeObjectMap.DeleteAll();
 }
 
 //_______________________________________________________________________________________
@@ -569,6 +576,14 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("AllowControlSequences"))
     {
       fAllowControlSequences = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("AllowResetOnRequest"))
+    {
+      fAllowResetOnRequest = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("AllowResetAtSOR"))
+    {
+      fAllowResetAtEOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
