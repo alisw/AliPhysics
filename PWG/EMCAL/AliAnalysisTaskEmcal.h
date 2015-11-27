@@ -51,6 +51,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kTriggerRecalcGamma = 4
   };
 
+  enum EMCalTriggerMode_t {
+    kNoSpecialTreatment,       // No special treatment for EMCal triggers
+    kOverlapWithLowThreshold   // The overlap between low and high threshold trigger is assigned to the lower threshold only
+  };
+
   AliAnalysisTaskEmcal();
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
@@ -93,6 +98,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
+  void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -170,6 +176,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   ULong_t                     fTriggers;                   // list of fired triggers
+  EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)

@@ -81,6 +81,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fParticleCollArray(),
   fClusterCollArray(),
   fTriggers(0),
+  fEMCalTriggerMode(kOverlapWithLowThreshold),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -166,6 +167,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fParticleCollArray(),
   fClusterCollArray(),
   fTriggers(0),
+  fEMCalTriggerMode(kOverlapWithLowThreshold),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -852,9 +854,12 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       if (!obj)
         continue;
 
-      //Check if requested trigger was fired, relevant for data sets with 2 emcal trigger thresholds
+      //Check if requested trigger was fired
       TString objStr = obj->GetName();
-      if(objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2")) {
+      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+        // This is relevant for EMCal triggers with 2 thresholds
+        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
         TString trigType1 = "J1";
         TString trigType2 = "J2";
         if(objStr.Contains("G")) {
@@ -869,7 +874,10 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
           match = 1;
           break;
         }
-      } else {
+      }
+      else {
+        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+        // simply check that the trigger was fired
         if (fired.Contains(obj->GetName())) {
           match = 1;
           break;
