@@ -1,8 +1,8 @@
 AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
-  const char *triggerPatchesName  = "EmcalTriggers",
-  const char *cellsName           = 0,
-  const char *triggersName        = 0,
-  const char *taskName            = "AliEmcalTriggerQATask")
+  const char* triggerPatchesName  = "EmcalTriggers",
+  const char* cellsName           = 0,
+  const char* triggersName        = 0,
+  const char* suffix              = "")
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -24,6 +24,7 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
    //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
+  TString taskName(Form("AliEmcalTriggerQATask%s",suffix));
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   eTask->Set2015CaloTriggerNames();
@@ -64,7 +65,7 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   mgr->ConnectInput  (eTask, 0,  cinput1 );
 
   TString commonoutput = mgr->GetCommonFileName();
-  TString contOutName(Form("%s_histos", taskName));
+  TString contOutName(Form("%s_histos", taskName.Data()));
   mgr->ConnectOutput(eTask, 1, mgr->CreateContainer(contOutName, TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
 
   return eTask;
