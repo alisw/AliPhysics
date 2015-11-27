@@ -44,6 +44,8 @@ Int_t DoRequest(void* /*socket*/);
 //merger private functions
 void ResetOutputData();
 Int_t Merge(TObject* object, TCollection* list);
+int AddNewObject(TObject* object);
+int RemoveEntry(TObject* object);
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
@@ -262,6 +264,25 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 }
 
 //_____________________________________________________________________
+int AddNewObject(const char* name, TObject* object, TMap* map)
+{
+  map->Add(new TObjString(name), object);
+  return 0;
+}
+
+//_____________________________________________________________________
+int RemoveEntry(TPair* entry, TMap* map)
+{
+  TObject* key = entry->Key();
+  TPair* removedEntry = map->RemoveEntry(key);
+  if (removedEntry != entry) return -1;
+  delete entry->Key();
+  delete entry->Value();
+  delete entry;
+  return 0;
+}
+
+//_____________________________________________________________________
 Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
   //handle the message
@@ -279,14 +300,14 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
     if (!entry)
     {
       if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
-      fMergeObjectMap.Add(new TObjString(name), object);
+      AddNewObject(name, object, &fMergeObjectMap);
     }
     else if (!mergingList) 
     {
-      if (fVerbose) Printf("adding a new list %s to fMergeObjectMap", name);
+      if (fVerbose) Printf("adding a new list %s to fMergeListMap", name);
       mergingList = new TList();
       mergingList->SetOwner();
-      fMergeListMap.Add(new TObjString(name), mergingList);
+      AddNewObject(name, mergingList, &fMergeListMap);
     }
     else
     {
@@ -294,12 +315,8 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
       if (fCacheOnly)
       {
         if (fVerbose) Printf("caching  %s's",name);
-        TObject* key = entry->Key();
-        fMergeObjectMap.RemoveEntry(key);
-        delete entry->Key();
-        delete entry->Value();
-        delete entry;
-        fMergeObjectMap.Add(new TObjString(name), object);
+        RemoveEntry(entry, &fMergeObjectMap);
+        AddNewObject(name, object, &fMergeObjectMap);
       }
       else
       {
@@ -312,13 +329,9 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
           if (rc<0)
           {
             if (fVerbose) Printf("Merging failed, replacing with new object  %s's",name);
-            TObject* key = entry->Key();
-            fMergeObjectMap.RemoveEntry(key);
-            delete entry->Key();
-            delete entry->Value();
-            delete entry;
+            RemoveEntry(entry, &fMergeObjectMap);
             mergingList->Remove(object);
-            fMergeObjectMap.Add(new TObjString(name), object);
+            AddNewObject(name, object, &fMergeObjectMap);
           }
         }
       }
