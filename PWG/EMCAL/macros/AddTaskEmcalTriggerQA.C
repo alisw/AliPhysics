@@ -24,10 +24,16 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
    //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString taskName(Form("AliEmcalTriggerQATask%s",suffix));
+  TString taskName("AliEmcalTriggerQATask");
+  if (strcmp(suffix,"") != 0) {
+    taskName += "_";
+    taskName += suffix;
+  }
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   eTask->Set2015CaloTriggerNames();
+  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kOnlinePatch);
+  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kOfflinePatch);
   eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kRecalcPatch);
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
