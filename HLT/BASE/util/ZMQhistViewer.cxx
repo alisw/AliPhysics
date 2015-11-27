@@ -21,6 +21,7 @@
 #include <map>
 #include "TFile.h"
 #include "TSystem.h"
+#include "TStyle.h"
 #include "signal.h"
 class MySignalHandler;
 
@@ -67,6 +68,7 @@ Bool_t fScaleLogX = kFALSE;
 Bool_t fScaleLogY = kFALSE;
 Bool_t fScaleLogZ = kFALSE;
 Bool_t fResetOnRequest = kFALSE;
+Int_t fHistStats = 0;
 
 ULong64_t iterations=0;
 
@@ -82,6 +84,7 @@ const char* fUSAGE =
     " -drawoptions : what draw option to use\n"
     " -file : dump input to file and exit\n"
     " -log[xyz] : use log scale on [xyz] dimension\n"
+    " -histstats : histogram stat box options (default 0)\n"
     ;
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
@@ -224,6 +227,7 @@ int main(int argc, char** argv)
   gApp->SetReturnFromRun(true);
   //gApp->Run();
   
+  gStyle->SetOptStat(fHistStats);
   fCanvas = new TCanvas();
   gSystem->ProcessEvents();
   
@@ -289,7 +293,11 @@ int UpdatePad(TObject* object)
   Bool_t unselected = kFALSE;
   if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
   if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(name);
-  if (!selected || unselected) return 0;
+  if (!selected || unselected) 
+  {
+      delete object;
+      return 0;
+  }
  
   if (drawable)
   {
@@ -343,7 +351,7 @@ int UpdatePad(TObject* object)
       if (fScaleLogY) gPad->SetLogy();
       if (fScaleLogZ) gPad->SetLogz();
       if (fVerbose) Printf("  drawing %s in pad %i", obj->GetName(), i);
-      if (obj) obj->Draw();
+      if (obj) obj->Draw(fDrawOptions);
     }
   }
   gSystem->ProcessEvents();
@@ -415,6 +423,10 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("sort"))
     {
       fSort=value.Contains(0)?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("histstats"))
+    {
+      fHistStats = value.Atoi();
     }
     else
     {
