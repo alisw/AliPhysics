@@ -53,7 +53,10 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   name += "_";
   name += cutType;
 
-  name += suffix;
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
+  }
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetCaloCellsName(ncells);
