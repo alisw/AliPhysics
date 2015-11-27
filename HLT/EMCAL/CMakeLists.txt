@@ -60,6 +60,7 @@ set(SRCS
     AliHLTEMCALRawAnalyzerComponentTRU.cxx
     AliHLTEMCALSTURawDigitMaker.cxx
     AliHLTEMCALRawAnalyzerComponentSTU.cxx
+    AliHLTEMCALTriggerQAComponent.cxx
    )
 
 # Headers from sources
