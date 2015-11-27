@@ -54,14 +54,29 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase ESD AOD ANALYSIS ANALYSISalice JETAN EG Net)
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Add a library to the project using the specified source files
-add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ${FASTJET_LIBS})
+# Create an object to be reused in case of static libraries
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+target_link_libraries(${MODULE} ${LIBDEPS})
+
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
