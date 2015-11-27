@@ -1051,7 +1051,8 @@ void AliJetModelBaseTask::FillHistograms(){
    }
    // fill histograms
    for(Int_t it = 0; it<fNTracks; it++){
-      AliVTrack *trackEmb = (AliVTrack*)fOutTracks->At(fNTracks-1);
+      AliVTrack *trackEmb = (AliVTrack*)fOutTracks->At(fNTracks-it);
+      if(!trackEmb) continue;
       if(trackEmb->GetLabel() >= fMarkMC){
       	 fhpTEmb ->Fill(trackEmb->Pt());
       	 fhMEmb  ->Fill(trackEmb->M());
