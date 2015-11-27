@@ -367,8 +367,11 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
   if (fPushbackPeriod>=0)
   {
     TTimeStamp time;
-    if ((time.GetSec()-fLastPushBackTime.GetSec())>fPushbackPeriod)
+    if ((time.GetSec()-fLastPushBackTime.GetSec())>=fPushbackPeriod)
+    {
       DoSend(socket);
+    }
+
   }
 
   return 0;
