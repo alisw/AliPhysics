@@ -52,6 +52,12 @@ public:
     //Getter for MultInput object
     AliMultInput * GetMultInput() const { return fInput;     }
     
+    //Setter for golden run
+    void SetRunToUseAsDefault ( Int_t lRunNumber ) { fRunToUseAsDefault = lRunNumber; }
+    
+    //Getter for golden run
+    Int_t GetRunToUseAsDefault() const { return fRunToUseAsDefault; } 
+    
     //Configure standard input
     void SetupStandardInput();
     
@@ -68,6 +74,8 @@ private:
     //Calibration Boundaries to locate
     Double_t *lDesiredBoundaries;
     Long_t   lNDesiredBoundaries;
+    
+    Int_t fRunToUseAsDefault; //Give preference for this run to be the default 
     
     //Run Ranges map - master storage
     Long_t fNRunRanges;
