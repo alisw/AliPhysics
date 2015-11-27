@@ -85,6 +85,7 @@ protected:
   
   Int_t fSkipEvents;
   Int_t fPrintStats; //print status messages: 0: never, 1: when pushing histograms (respect pushback-period), 2: always
+  Int_t fPrintDownscale;
   Int_t fEventsSinceSkip;
 
   TH2I* fHistSPDclusters_SPDrawSize;

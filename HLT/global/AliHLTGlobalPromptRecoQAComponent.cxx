@@ -85,6 +85,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fpHWCFData(NULL)
   , fSkipEvents(0)
   , fPrintStats(0)
+  , fPrintDownscale(1)
   , fEventsSinceSkip(0)
   , fHistSPDclusters_SPDrawSize(NULL)
   , fHistSSDclusters_SSDrawSize(NULL)
@@ -161,6 +162,14 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
         fPrintStats = 1;
       }	else if (argument.CompareTo("-print-stats-verbose")==0) {
         fPrintStats = 2;
+      }	else if (argument.CompareTo("-print-stats-downscale")==0) {
+        if (++i >= pTokens->GetEntries())
+        {
+          bMissingParam++;
+          break;
+        }
+        argument=((TObjString*)pTokens->At(i))->String();	
+        fPrintDownscale = atoi(argument);
       }	else if (!argument.Contains("pushback-period")) {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -291,25 +300,25 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleTPCCompressionRatio, scaleFullTPCCompressionRatio, scaleTPCCompressedSize;
   if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" || mgr.GetGRPData()->GetBeamType() == "PbPb" || mgr.GetGRPData()->GetBeamType() == "A-A" || mgr.GetGRPData()->GetBeamType() == "AA")
   {
-    scaleSPDClusters = 20000.;
-    scaleSSDClusters = 22000.;
-    scaleSDDClusters = 18000.;
-    scaleSPDSize = 100000.;
-    scaleSSDSize = 500000.;
-    scaleSDDSize = 500000.;
-    scaleITSSAPTracks = 1700.;
+    scaleSPDClusters = 25000.;
+    scaleSSDClusters = 26000.;
+    scaleSDDClusters = 22000.;
+    scaleSPDSize = 140000.;
+    scaleSSDSize = 700000.;
+    scaleSDDSize = 700000.;
+    scaleITSSAPTracks = 2000.;
     scaleTPCCompressionRatio = 8;
     scaleFullTPCCompressionRatio = 12;
-    scaleTPCSize = 130000000;
-    scaleTPCTracks = 30000;
-    scaleTPCTracklets = 40000;
-    scaleTPCCompressedSize = 35000000;
-    scaleHLTIn = 150000000;
-    scaleHLTOut = 40000000;
-    scaleVZEROChargeA = 25000.;
-    scaleVZEROChargeC = 50000.;
-    scaleZDCCharge = 4500.;
-    scaleTPCClusters = 5000000;
+    scaleTPCSize = 170000000;
+    scaleTPCTracks = 40000;
+    scaleTPCTracklets = 60000;
+    scaleTPCCompressedSize = 50000000;
+    scaleHLTIn = 200000000;
+    scaleHLTOut = 60000000;
+    scaleVZEROChargeA = 30000.;
+    scaleVZEROChargeC = 30000.;
+    scaleZDCCharge = 7000.;
+    scaleTPCClusters = 6500000;
   }
   else
   {
@@ -334,28 +343,30 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     scaleTPCClusters = 20000;
   }
 
-  fHistSPDclusters_SPDrawSize = new TH2I("SPDncls_SPDsize", "SPD clusters vs SPD raw size", 75, 4000., scaleSPDSize, 75, 0., scaleSPDClusters);
-  fHistSSDclusters_SSDrawSize = new TH2I("SSDncls_SSDsize", "SSD clusters vs SSD raw size", 75, 20000., scaleSSDSize, 75, 0., scaleSSDClusters);
-  fHistSDDclusters_SDDrawSize = new TH2I("SDDncls_SDDsize", "SDD clusters vs SDD raw size", 75, 0., scaleSDDSize, 75, 0., scaleSDDClusters);
-  fHistITSSAtracks_SPDclusters = new TH2I("ITSSAPntrk_SPDncls", "ITSSAP tracks vs SPD clusters", 75, 0., scaleSPDClusters, 75, 0., scaleITSSAPTracks);
-  fHistSPDclusters_SSDclusters = new TH2I("SSDncls_SPDncls", "SSD clusters vs SPD clusters", 75, 0., scaleSPDClusters, 75, 0., scaleSSDClusters);
-  fHistSPDclusters_SDDclusters = new TH2I("SDDncls_SPDncls", "SDD clusters vs SPD clusters", 75, 0., scaleSPDClusters, 75, 0., scaleSDDClusters);
-  fHistSSDclusters_SDDclusters = new TH2I("SDDncls_SSDncls", "SDD clusters vs SSD clusters", 75, 0., scaleSSDClusters, 75, 0., scaleSDDClusters);
-  fHistTPCHLTclusters_TPCCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatio", "Huffman compression ratio vs TPC HLT clusters", 75, 0., scaleTPCClusters, 75, 0., scaleTPCCompressionRatio);
-  fHistTPCHLTclusters_TPCFullCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatioFull", "Full compression ratio vs TPC HLT clusters", 75, 0., scaleTPCClusters, 75, 0., scaleFullTPCCompressionRatio);
-  fHistHLTSize_HLTInOutRatio = new TH2F("TPCHLTSize_HLTInOutRatio", "HLT Out/In Size Ratio vs HLT Input Size", 75, 0., scaleHLTIn, 75, 0., 1.);
-  fHistTPCClusterSize_TPCCompressedSize = new TH2I("TPCHWCFSize_TPCCompSize", "TPC compressed size vs TPC HWCF Size", 75, 0., scaleTPCSize, 75, 0., scaleTPCCompressedSize);
-  fHistTPCRawSize_TPCCompressedSize = new TH2I("TPCRawSize_TPCCompSize", "TPC compressed size vs TPC Raw Size", 75, 0., scaleTPCSize, 75, 0., scaleTPCCompressedSize);
-  fHistHLTInSize_HLTOutSize = new TH2I("HLTInSize_HLTOutSize", "HLT Out Size vs HLT In Size", 75, 0., scaleHLTIn, 75, 0., scaleHLTOut);
-  fHistTPCtracks_TPCtracklets = new TH2I("TPCntrk_TPCntrl", "TPC Tracks vs TPC Tracklets", 75, 0., scaleTPCTracklets, 75, 0., scaleTPCTracks);
-  fHistITStracks_ITSOutTracks = new TH2I("ITSntrk_ITSOutntrk", "ITS Tracks vs ITS Out Tracks", 75, 0., scaleTPCTracks, 75, 0., scaleTPCTracks);
+  fHistSPDclusters_SPDrawSize = new TH2I("SPDncls_SPDsize", "SPD clusters vs SPD raw size", 100, 4000., scaleSPDSize, 100, 0., scaleSPDClusters);
+  fHistSSDclusters_SSDrawSize = new TH2I("SSDncls_SSDsize", "SSD clusters vs SSD raw size", 100, 20000., scaleSSDSize, 100, 0., scaleSSDClusters);
+  fHistSDDclusters_SDDrawSize = new TH2I("SDDncls_SDDsize", "SDD clusters vs SDD raw size", 100, 0., scaleSDDSize, 100, 0., scaleSDDClusters);
+  fHistITSSAtracks_SPDclusters = new TH2I("ITSSAPntrk_SPDncls", "ITSSAP tracks vs SPD clusters", 100, 0., scaleSPDClusters, 100, 0., scaleITSSAPTracks);
+  fHistSPDclusters_SSDclusters = new TH2I("SSDncls_SPDncls", "SSD clusters vs SPD clusters", 100, 0., scaleSPDClusters, 100, 0., scaleSSDClusters);
+  fHistSPDclusters_SDDclusters = new TH2I("SDDncls_SPDncls", "SDD clusters vs SPD clusters", 100, 0., scaleSPDClusters, 100, 0., scaleSDDClusters);
+  fHistSSDclusters_SDDclusters = new TH2I("SDDncls_SSDncls", "SDD clusters vs SSD clusters", 100, 0., scaleSSDClusters, 100, 0., scaleSDDClusters);
+  fHistTPCHLTclusters_TPCCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatio", "Huffman compression ratio vs TPC HLT clusters", 100, 0., scaleTPCClusters, 100, 0., scaleTPCCompressionRatio);
+  fHistTPCHLTclusters_TPCFullCompressionRatio = new TH2F("TPCHLTncls_TPCCompRatioFull", "Full compression ratio vs TPC HLT clusters", 100, 0., scaleTPCClusters, 100, 0., scaleFullTPCCompressionRatio);
+  fHistHLTSize_HLTInOutRatio = new TH2F("TPCHLTSize_HLTInOutRatio", "HLT Out/In Size Ratio vs HLT Input Size", 100, 0., scaleHLTIn, 100, 0., 1.);
+  fHistTPCClusterSize_TPCCompressedSize = new TH2I("TPCHWCFSize_TPCCompSize", "TPC compressed size vs TPC HWCF Size", 100, 0., scaleTPCSize, 100, 0., scaleTPCCompressedSize);
+  fHistTPCRawSize_TPCCompressedSize = new TH2I("TPCRawSize_TPCCompSize", "TPC compressed size vs TPC Raw Size", 100, 0., scaleTPCSize, 100, 0., scaleTPCCompressedSize);
+  fHistHLTInSize_HLTOutSize = new TH2I("HLTInSize_HLTOutSize", "HLT Out Size vs HLT In Size", 100, 0., scaleHLTIn, 100, 0., scaleHLTOut);
+  fHistTPCtracks_TPCtracklets = new TH2I("TPCntrk_TPCntrl", "TPC Tracks vs TPC Tracklets", 100, 0., scaleTPCTracklets, 100, 0., scaleTPCTracks);
+  fHistITStracks_ITSOutTracks = new TH2I("ITSntrk_ITSOutntrk", "ITS Tracks vs ITS Out Tracks", 100, 0., scaleTPCTracks, 100, 0., scaleTPCTracks);
   fHistZNA_VZEROTrigChargeA = new TH2F("VZEROTrigChargeA_ZNA", "ZNA vs. VZERO Trigger Charge A", 100, 0., scaleVZEROChargeA, 100, 0., scaleZDCCharge);
   fHistZNC_VZEROTrigChargeC = new TH2F("VZEROTrigChargeC_ZNC", "ZNC vs. VZERO Trigger Charge C", 100, 0., scaleVZEROChargeC, 100, 0., scaleZDCCharge);
   fHistZNT_VZEROTrigChargeT = new TH2F("VZEROTrigChargeT_ZNT", "ZN (A+C) vs. VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., 2 * scaleZDCCharge);
-  fHistVZERO_SPDClusters = new TH2F("VZERO_SPDClusters", "SPD Clusters vs VZERO Multiplicity", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleSPDClusters);
-  fHistVZERO_ITSSAPTracks = new TH2F("VZERO_ITSSAPTracks", "ITS SAP Tracks vs VZERO Multiplicity", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleITSSAPTracks);
+  fHistVZERO_SPDClusters = new TH2F("VZERO_SPDClusters", "SPD Clusters vs VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleSPDClusters);
+  fHistVZERO_ITSSAPTracks = new TH2F("VZERO_ITSSAPTracks", "ITS SAP Tracks vs VZERO Trigger Charge (A+C)", 100, 0., scaleVZEROChargeA + scaleVZEROChargeC, 100, 0., scaleITSSAPTracks);
   
   fpHWCFData = new AliHLTTPCHWCFData;
+  
+  setlocale(LC_NUMERIC, ""); //Make printf with 1000 separators work
 
   return iResult;
 }
@@ -694,10 +705,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   FillHist(nClustersSPD, fHistVZERO_SPDClusters, vZEROTriggerChargeA+vZEROTriggerChargeC, nClustersSPD, pushed_something);
   FillHist(nITSSAPtracks, fHistVZERO_ITSSAPTracks, vZEROTriggerChargeA+vZEROTriggerChargeC, nITSSAPtracks, pushed_something);
 
-  if (fPrintStats && (fPrintStats == 2 || pushed_something)) //Don't print this for every event if we use a pushback period
+  static int nPrinted = 0;
+  if (fPrintStats && (fPrintStats == 2 || pushed_something) && nPrinted++ % fPrintDownscale == 0) //Don't print this for every event if we use a pushback period
   {
-    HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %d / %d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %d (%d / %d / %d / %d), TPC-Comp %5.3fx / %5.3fx (%d)"
-      ", ITSSAP-Tr %d, TPC-Tr %d / %d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %d / %d (%d / %d)",
+    HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx (%'d)"
+      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %d / %d (%d / %d)",
       nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, compressedSizeTPC,
       nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize);
   }
