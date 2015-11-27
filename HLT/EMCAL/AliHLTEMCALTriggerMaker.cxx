@@ -141,6 +141,7 @@ void AliHLTEMCALTriggerMaker::InitializeEMCALPatchFinders(){
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
   AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(0, 63, BIT(EMCALTrigger::kEMCalRecalcL1Bkg));
   jetmedian->SetPatchSize(8);
+  jetmedian->SetSubregionSize(4);
   jetmedian->SetThresholds(fBkgThresholdOnline, fBkgThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
@@ -154,6 +155,7 @@ void AliHLTEMCALTriggerMaker::InitializeDCALPatchFinders(){
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
   AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(64, 103, BIT(EMCALTrigger::kEMCalRecalcL1Jet));
   jetmedian->SetPatchSize(8);
+  jetmedian->SetSubregionSize(4);
   jetmedian->SetThresholds(fBkgThresholdOnline, fBkgThresholdOffline);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
