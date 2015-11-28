@@ -32,7 +32,8 @@ protected:
   void CreateEnergyBinning(TArrayD& binning) const;
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
 
-  static const TString fkTriggerClasses[6];
+  static const TString fgkTriggerClasses[11];
+  static const TString fgkBeamDirs[4];
 
   TString                       fClusterContainerName;        //
   AliEMCalHistoContainer        *fHistos;                     //!<!

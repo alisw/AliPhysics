@@ -18,6 +18,7 @@
 //#include <Rtypes.h>
 
 
+class TClonesArray;
 class AliQnCorrectionsQnVector;
 
 

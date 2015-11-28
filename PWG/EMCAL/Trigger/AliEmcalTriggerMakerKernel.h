@@ -75,6 +75,7 @@ public:
   void SetTriggerThresholdGammaLow ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[3][1] = b; fThresholdConstants[3][2] = c; }
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
+  void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
   /**
    * Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
@@ -145,6 +146,7 @@ protected:
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
   ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
   Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
+  Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
 

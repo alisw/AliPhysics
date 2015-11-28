@@ -34,7 +34,8 @@ ClassImp(AliMultSelectionCalibrator);
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
     TNamed(), fInputFileName(""), fBufferFileName("buffer.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
+    fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
 {
     // Constructor
 
@@ -60,7 +61,8 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
     TNamed(name,title), fInputFileName(""), fBufferFileName("buffer.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
+    fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
 {
     // Named Constructor
 
@@ -601,43 +603,87 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         cuts->Print(); 
         cout<<"=================================================================================="<<endl;
         if ( !lAutoDiscover ) {
-                oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
+            oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
         }else{
-                oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
+            oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
         }
         
-        
-                
+        Bool_t lThisIsReference = kFALSE;
+        if(!lAutoDiscover){
+            if ( fFirstRun[iRun] <= fRunToUseAsDefault && fRunToUseAsDefault <= fLastRun[iRun]) lThisIsReference = kTRUE;
+        }else{
+            if ( lRunNumbers[iRun] == fRunToUseAsDefault ) lThisIsReference = kTRUE;
+        }
+        if( lThisIsReference ){
+            //========================================================================
+            //DEFAULT OADB Object saving procedure STARTS here
+            oadbMultSelection = new AliOADBMultSelection("Default");
+            cuts              = new AliMultSelectionCuts();
+            cuts = fMultSelectionCuts;
+            fsels             = new AliMultSelection    ( fSelection         );
+
+            const Int_t lNEstimatorsThis = fSelection->GetNEstimators();
+
+            //Default Stuff
+            TH1F * hDummy[lNEstimatorsThis];
+            for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+                //Get Meaningful means
+                fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+                //Clone last histogram ...
+                hDummy[iEst]= (TH1F*) hCalib[iRun][iEst]->Clone( Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
+                hDummy[iEst]->SetDirectory(0);
+            }
+            
+            cout<<"=================================================================================="<<endl;
+            cout<<" Detected that this particular run / run range is special, will save it as default"<<endl;
+            cout<<" AliMultSelection Object to be saved (DEFAULT)"<<endl;
+            fsels->PrintInfo();
+            cout<<"=================================================================================="<<endl;
+            
+            oadbMultSelection->SetEventCuts        ( cuts  );
+            oadbMultSelection->SetMultSelection    ( fsels );
+            for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) oadbMultSelection->AddCalibHisto( hDummy[iEst] );
+            oadbContMS->AddDefaultObject(oadbMultSelection);
+            //DEFAULT OADB Object saving procedure ENDS here
+            //========================================================================
+        }
         //Cleanup: Delete index variable
         delete[] index;
     }
-
-    oadbMultSelection = new AliOADBMultSelection("Default");
-    cuts              = new AliMultSelectionCuts();
-    cuts = fMultSelectionCuts;
-    fsels             = new AliMultSelection    ( fSelection         );
-   
-    const Int_t lNEstimatorsThis = fSelection->GetNEstimators(); 
     
-    cout<<"=================================================================================="<<endl; 
-    cout<<"AliMultSelection Object to be saved (DEFAULT)"<<endl;
-    fsels->PrintInfo();
-    cout<<"=================================================================================="<<endl; 
-
-    //Default Stuff
-    TH1F * hDummy[lNEstimatorsThis];
-    for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
-        //Clone last histogram ...
-        hDummy[iEst]= (TH1F*) hCalib[fNRunRanges-1][iEst]->Clone( Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
-        hDummy[iEst]->SetDirectory(0);
+    if( fRunToUseAsDefault < 0 ){
+        //========================================================================
+        //DEFAULT OADB Object saving procedure STARTS here
+        oadbMultSelection = new AliOADBMultSelection("Default");
+        cuts              = new AliMultSelectionCuts();
+        cuts = fMultSelectionCuts;
+        fsels             = new AliMultSelection    ( fSelection         );
+        
+        const Int_t lNEstimatorsThis = fSelection->GetNEstimators();
+        
+        cout<<"=================================================================================="<<endl;
+        cout<<" AliMultSelection Object to be saved (DEFAULT)"<<endl;
+        cout<<" Warning: this corresponds to the last calibrated run!"<<endl;
+        fsels->PrintInfo();
+        cout<<"=================================================================================="<<endl;
+        
+        //Default Stuff
+        TH1F * hDummy[lNEstimatorsThis];
+        for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
+            //Clone last histogram ...
+            hDummy[iEst]= (TH1F*) hCalib[fNRunRanges-1][iEst]->Clone( Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
+            hDummy[iEst]->SetDirectory(0);
+        }
+        
+        oadbMultSelection->SetEventCuts        ( cuts  );
+        oadbMultSelection->SetMultSelection    ( fsels );
+        for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) oadbMultSelection->AddCalibHisto( hDummy[iEst] );
+        oadbContMS->AddDefaultObject(oadbMultSelection);
+        //DEFAULT OADB Object saving procedure ENDS here
+        //========================================================================
     }
-
-    oadbMultSelection->SetEventCuts        ( cuts  );
-    oadbMultSelection->SetMultSelection    ( fsels );
-    for ( Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) oadbMultSelection->AddCalibHisto( hDummy[iEst] );
-    oadbContMS->AddDefaultObject(oadbMultSelection);
-
-    cout<<"Write OADB..."<<endl;
+    
+    cout<<"All done, will write OADB..."<<endl;
 
     oadbContMS->Write();
     cout<<" Done!"<<endl;

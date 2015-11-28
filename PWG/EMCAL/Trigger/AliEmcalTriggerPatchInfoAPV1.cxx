@@ -93,6 +93,7 @@ AliEmcalTriggerPatchInfoAPV1 &AliEmcalTriggerPatchInfoAPV1::operator=(const AliE
     fADCAmp = p.fADCAmp;
     fADCOfflineAmp = p.fADCOfflineAmp;
     fTriggerBits = p.fTriggerBits;
+    fDetectorType = p.fDetectorType;
     fEdgeCell[0] = p.fEdgeCell[0];
     fEdgeCell[1] = p.fEdgeCell[1];
   }
@@ -187,6 +188,16 @@ void AliEmcalTriggerPatchInfoAPV1::RecalculateKinematics(Double_t patchE, const 
     AliWarning(Form("edge2: [%f|%f|%f]", edge2tmp[0], edge2tmp[1], edge2tmp[2]));
     AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
     AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
+  }
+
+  Int_t iSM = -1, iEta = -1, iPhi = -1;
+  geom->GetPositionInSMFromAbsFastORIndex(absId, iSM, iEta, iPhi);
+
+  if (geom->IsDCALSM(iSM)) {
+    SetDetectorType(kDCALPHOSdet);
+  }
+  else {
+    SetDetectorType(kEMCALdet);
   }
 
   fCenterMass.SetPxPyPzE(0,0,0,0);

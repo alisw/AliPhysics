@@ -112,6 +112,8 @@ fvRejCutPhiV(),
 fNgen(0x0),
 fvReco_Ele(),
 fvReco_Ele_poslabel(),
+fvReco_Ele_recoObs(),
+fvReco_Ele_recoObs_poslabel(),
 fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
@@ -225,6 +227,8 @@ fvRejCutPhiV(),
 fNgen(0x0),
 fvReco_Ele(),
 fvReco_Ele_poslabel(),
+fvReco_Ele_recoObs(),
+fvReco_Ele_recoObs_poslabel(),
 fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
@@ -302,6 +306,8 @@ selectedByExtraCut(0)
   fvAllPionsForRej.clear();
   fvPionsRejByAllSigns.clear();
   fvPionsRejByUnlike.clear();
+  fvReco_Ele_recoObs.clear(),
+  fvReco_Ele_recoObs_poslabel.clear(),
   
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -373,7 +379,11 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       singleEffList->Add(fvPionsRejByAllSigns.at(iCut));
       singleEffList->Add(fvPionsRejByUnlike.at(iCut));
     }
-  }  
+  }
+  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+    singleEffList->Add(fvReco_Ele_recoObs.at(iCut));
+  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+    singleEffList->Add(fvReco_Ele_recoObs_poslabel.at(iCut)); 
     
     // be really careful if you need to implement this (see comments in UserExec):
     //    fOutputList->Add(fvReco_Pio.at(iCut));
@@ -575,8 +585,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
     
-    Double_t trackPt(-1.);
-    trackPt = track->Pt();
+    Double_t trackPt(-1.),trackEta(-9.),trackPhi(-9.);
+    trackPt = track->Pt(); trackEta = track->Eta(); trackPhi = track->Phi();
     
     Int_t label = track->GetLabel();
     Int_t abslabel = TMath::Abs( track->GetLabel() );
@@ -609,7 +619,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
     Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
     mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
-    
     selectedByCut = 0;
     selectedByExtraCut = 0;
     
@@ -631,8 +640,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       
 //      if (trackpdg==Int_t(11)) { //Electron
         fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+        fvReco_Ele_recoObs.at(iCut)->Fill(trackPt,trackEta,trackPhi);
         if(label > 0) {
           fvReco_Ele_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+          fvReco_Ele_recoObs_poslabel.at(iCut)->Fill(trackPt,trackEta,trackPhi);
         }
 //      }
       // be really careful if you need to implement this (see comments in UserExec):
@@ -1300,6 +1311,10 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   TH3F *hNreco_Ele_poslabel = new TH3F(Form("Nreco_Ele_poslabel_%s",name.Data()),Form("Nreco_Ele_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   fvReco_Ele.push_back(hNreco_Ele);
   fvReco_Ele_poslabel.push_back(hNreco_Ele_poslabel);
+  TH3F *hNreco_recoObs_Ele = new TH3F(Form("Nreco_Ele_recoObs_%s",name.Data()),Form("Nreco_Ele_recoObs_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  TH3F *hNreco_recoObs_Ele_poslabel = new TH3F(Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fvReco_Ele_recoObs.push_back(hNreco_recoObs_Ele);
+  fvReco_Ele_recoObs_poslabel.push_back(hNreco_recoObs_Ele_poslabel);
   
   // one needs the histogram 'hAllPionsForRej' for each cutInstance independently, because empty events may differ between the cutsets which run together.
   TH3F *hAllPionsForRej = new TH3F(Form("AllPionsForRej_%s",name.Data()),Form("AllPionsForRej_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1308,6 +1323,8 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   fvAllPionsForRej.push_back(hAllPionsForRej);
   fvPionsRejByAllSigns.push_back(hNPionsRejByAllSigns);
   fvPionsRejByUnlike.push_back(hNPionsRejByUnlike);
+  
+  
   
   if(fDoPairing){
     TH2F *hNrecoPairs          = new TH2F(Form("NrecoPairs_%s",         name.Data()),Form("NrecoPairs_%s",         name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);

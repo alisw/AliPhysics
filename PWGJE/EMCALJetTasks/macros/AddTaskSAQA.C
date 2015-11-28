@@ -1,18 +1,18 @@
-// $Id$
+// AddTaskSAQA.C
 
 AliAnalysisTaskSAQA* AddTaskSAQA(
-  const char *ntracks            = "Tracks",
-  const char *nclusters          = "CaloClusters",
-  const char *ncells             = "EMCALCells",
-  const char *njets              = "Jets",
-  const char *nrho               = "Rho",
+  const char* ntracks            = "Tracks",
+  const char* nclusters          = "CaloClusters",
+  const char* ncells             = "EMCALCells",
+  const char* njets              = "Jets",
+  const char* nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  const char *cutType            = "TPC",
-  const char *taskname           = "AliAnalysisTaskSAQA"
+  const char* cutType            = "TPC",
+  const char* suffix             = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -36,7 +36,7 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   // Init the task and do settings
   //-------------------------------------------------------
   
-  TString name(taskname);
+  TString name("AliAnalysisTaskSAQA");
   if (strcmp(ntracks,"")) {
     name += "_";
     name += ntracks;
@@ -52,6 +52,11 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   
   name += "_";
   name += cutType;
+
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
+  }
 
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetCaloCellsName(ncells);

@@ -453,7 +453,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //==============================================================================
 
     Double_t *lValues;
-
+    
     //Determine max SPD tracklets: requires finding which estimator is SPD tracklets
     Int_t iEstSPDtracklets     = -1;
     Int_t iEstSPDclusters      = -1;
@@ -599,7 +599,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitmc[iRun][iEst]->SetParameter(0,1.0);
             
             //remember to not be silly...
-            if( iEst != iEstSPDclusters && iEst != iEstSPDtracklets && iEst != iEstCL0 && iEst != iEstCL1 && iEst != iEstSPDtrackletscorr ){
+            TString lEstName = fSelection->GetEstimator(iEst)->GetName();
+            if( !lEstName.Contains("SPD") &&
+               !lEstName.Contains("CL0") &&
+               !lEstName.Contains("CL1") ){
                 profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
                 profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
             }

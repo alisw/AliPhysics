@@ -21,4 +21,4 @@ cp ${ALICE_PHYSICS}/PWG/MCLEGO/ThePEG/Tune31.in .
 setupThePEG -r ${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I ${THEPEG_ROOT}/share/Ariadne thepeg.in > setup.log 2>&1
 
 # run DIPSY
-runThePEG DIPSYpp.run -N 2147483647 --seed ${ALIEN_PROC_ID:=0}
+runThePEG Rope.run -N 2147483647 --seed ${ALIEN_PROC_ID:=0}

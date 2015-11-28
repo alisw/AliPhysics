@@ -1490,8 +1490,8 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     //
     //============================================================
     
-    //default, to be replaced with "Empty" shortly
-    TString lProductionName = "LHC15f";
+    //Will make anything return AliMultSelectionCuts::kNoCalib
+    TString lProductionName = "Empty";
     
     //Registered Productions : Run 1 pp
     if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lProductionName = "LHC10b";
@@ -1509,7 +1509,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
 
     //Pb-Pb Run 2 (experimental) 
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
-    if ( fCurrentRun >= 244917 && fCurrentRun <= 244918 ) lProductionName = "LHC15o";
+    if ( fCurrentRun >= 244917 && fCurrentRun <= 300000 ) lProductionName = "LHC15o";
     
     return lProductionName;
 }

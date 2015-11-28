@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
 		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
@@ -133,7 +134,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependencies

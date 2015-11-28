@@ -218,9 +218,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  dtc2etaphitpc[aniter]->SetCharge(-1.0);
 	  //--- K+- ---<
 	    
-	  dtc1etaphitpc[aniter]->SetPt(0.4,1.5); //0.14,1.5); //--- K+-
+	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5); //0.14,1.5); //--- K+-
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);//--- K+-
-	  dtc2etaphitpc[aniter]->SetPt(0.4,1.5); //0.14,1.5);  //--- K+-
+	  dtc2etaphitpc[aniter]->SetPt(0.14,1.5); //0.14,1.5);  //--- K+-
 	  dtc2etaphitpc[aniter]->SetEta(-0.8,0.8); //--- K+-
 	  
 	  //--- Choose Kaon as Most Probable (switch on all cuts: TPC, TOF)---

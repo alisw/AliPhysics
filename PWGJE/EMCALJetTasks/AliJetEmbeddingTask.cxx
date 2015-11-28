@@ -84,6 +84,9 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    if(!fPathTreeinputFile.IsNull()){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
+      Printf("Emb task");
+      fTreeJet4Vect->GetEntry(0);
+     fTreeJet4Vect->Show();
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -137,19 +140,22 @@ void AliJetEmbeddingTask::Run()
        	  }
        	  TLorentzVector *jetDet = 0;
        	  TBranch *bDet = 0;
-       	  Int_t nbranches = fTreeJet4Vect->GetNbranches();
        	  fTreeJet4Vect->ResetBranchAddresses();
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
+       	  Double_t pTemb = 0;
+       	  while(pTemb < fMinPtEmb){
        	  if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
        	     AliWarning("Starting from first entry again");
        	     bDet->GetEntry(fCurrentEntry);
        	  }
+       	  pTemb = jetDet->Pt();
+       	  //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
        	  fCurrentEntry++;
-       	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
-       	  
+       	  if (pTemb >= fMinPtEmb) AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
+       	  }
        } else {
        	  
        	  Double_t mass = fMass;
