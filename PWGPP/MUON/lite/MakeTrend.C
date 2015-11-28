@@ -107,6 +107,8 @@ void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE,
     delete file;
   }
 
+  if ( mask == 0 ) return;
+
 #ifndef COMPILEMACRO
 
   if ( mask & trigQA ) {
@@ -145,6 +147,8 @@ void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE,
   }
   mgr->PrintStatus();
   mgr->StartAnalysis("grid terminate");
+
+  if ( ! gSystem->AccessPathName("outputs_valid") ) gSystem->Exec("rm outputs_valid");
 }
 
 
