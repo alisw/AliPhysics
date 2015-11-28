@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include "TString.h"
@@ -50,11 +51,14 @@ void AliObservableEtaNch::Fill(AliMCEvent *event, AliStack *stack) {
 
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
-    // load track
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
+    // check if the pdg is safe
+    if (find(fSafePdgCodes.begin(), fSafePdgCodes.end(), TMath::Abs(track->PdgCode())) == fSafePdgCodes.end())
+      continue;
+
     // is it a primary particle or a pi0? Else, skip it.
     if (!stack->IsPhysicalPrimary(iTrack)) continue;
 
