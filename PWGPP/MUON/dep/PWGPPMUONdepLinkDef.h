@@ -9,5 +9,6 @@
 #pragma link C++ class AliAnalysisTaskMuonResolution+;
 #pragma link C++ class AliAnalysisTaskMuonFakes+;
 #pragma link C++ class AliAnalysisTaskMuonPerformance+;
+#pragma link C++ class AliMTRChEffAnalysis+;
 
 #endif
