@@ -236,7 +236,7 @@ TString AliTrigChEffOutput::GetHistoName(Int_t itype, Int_t icount, Int_t ichamb
   TString histoName = "";
   if ( itype < kHcheckBoard && icount >= 0 ) histoName += static_cast<TObjString*>(fCountTypeKeys->At(icount))->GetString();
   if ( itype >= 0 ) histoName += static_cast<TObjString*>(fHistoTypeKeys->At(itype))->String();
-  if ( ichamber >= 0 ) histoName += Form("Ch%i", 11+ichamber);
+  if ( itype != kHchamberEff && ichamber >= 0 ) histoName += Form("Ch%i", 11+ichamber);
   if ( itrackSel >= 0 ) histoName += static_cast<TObjString*>(fTrackSelKeys->At(itrackSel))->String();
   if ( imatch >= 0 ) histoName += static_cast<TObjString*>(fMatchTrigKeys->At(imatch))->String();
   if ( imethod >= 0 ) histoName += static_cast<TObjString*>(fEffMethodKeys->At(imethod))->String();
