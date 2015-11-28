@@ -229,8 +229,14 @@ UInt_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_Chamb
   if ( inFullPath.BeginsWith("alien") && ! gGrid ) TGrid::Connect("alien://");
 
   TObjArray* dirList = dirNames.Tokenize(" ");
-  TFile* outFile = TFile::Open(outFilename,"RECREATE");
   TFile* inFile = TFile::Open(qaFileName);
+  if ( ! inFile ) {
+    // This might happen when checking for QAresults_outer.root
+    // when an input QAresults_barrel.root is provided
+    printf("Warning: file %s cannot be opened\n",qaFileName);
+    return info;
+  }
+  TFile* outFile = TFile::Open(outFilename,"RECREATE");
   TIter next(dirList);
   TObjString* objStr = 0x0;
   while ( (objStr=static_cast<TObjString*>(next())) ) {
@@ -370,22 +376,25 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
 
   UInt_t forceTerminate = 0;
   if ( inFilename.Contains("barrel") ) {
+    TString baseFilename = "QAresults.root";
     TString outerInFilename(qaFile);
     outerInFilename.ReplaceAll("barrel","outer");
-    info = GetQAInfo(outerInFilename);
-    if ( info ) {
+    UInt_t outerInfo = GetQAInfo(outerInFilename);
+    if ( outerInfo ) {
       // Merge outer and barrel
       TString fileList = GetBaseName(outerInFilename);
       fileList += " " + inFilename;
-      Bool_t isMergedOk = GetMergedQAInfo(fileList);
+      Bool_t isMergedOk = GetMergedQAInfo(fileList,baseFilename);
       if ( isMergedOk ) {
-        inFilename = "QAresults.root";
-        printf("Merged files: %s => %s\n",fileList.Data(),inFilename.Data());
+        printf("Merged files: %s => %s\n",fileList.Data(),baseFilename.Data());
         CheckMergedOverlap(fileList);
         gSystem->Exec(Form("rm %s",fileList.Data())); // Remove QAresults_barrel and outer
         forceTerminate = info; // Re-do terminate when merging barrel and outer
       }
     }
+    else gSystem->Exec(Form("mv %s %s",inFilename.Data(),baseFilename.Data()));
+
+    inFilename = baseFilename;
   }
 
   UInt_t checkedMask = mask&info;
