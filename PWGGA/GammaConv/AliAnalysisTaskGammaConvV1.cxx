@@ -1902,11 +1902,11 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
 
       if(fIsFromMBHeader){
-        if(fIsMC != 2){
+        if(fIsMC < 2){
           if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]);
           else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
         }
-        if (fDoPhotonQA > 0 && fIsMC != 2){
+        if (fDoPhotonQA > 0 && fIsMC < 2){
           if(fDoCentralityFlat > 0){
             hESDConvGammaPsiPair[fiCut]->Fill(PhotonCandidate->GetPsiPair(), fWeightCentrality[fiCut]);
             hESDConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]);

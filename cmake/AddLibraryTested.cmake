@@ -5,4 +5,4 @@ function(add_library_tested NAME ...)
   # and remember it for the list of libraries
   list(APPEND ALILIBSTESTED ${NAME})
   set(ALILIBSTESTED ${ALILIBSTESTED} CACHE INTERNAL "ALILIBSTESTED")
-endfunction(add_alice_library)
+endfunction(add_library_tested)

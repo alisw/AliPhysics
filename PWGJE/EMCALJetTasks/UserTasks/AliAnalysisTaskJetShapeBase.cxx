@@ -81,7 +81,8 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
-  fBranchJParName("fJetPar")
+  fBranchJParName("fJetPar"),
+  fThisEntry(0)
 {
   // Default constructor.
 
@@ -160,7 +161,8 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
-  fBranchJParName("fJetPar")
+  fBranchJParName("fJetPar"),
+  fThisEntry(0)
 {
   // Standard constructor.
 
@@ -362,6 +364,8 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
      if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
      //fOutput->Add(fTreeEmb);
+     fTreeEmb->GetEntry(0);
+     fTreeEmb->Show();
   }
 
   if(fUseSumw2) {
@@ -432,7 +436,7 @@ AliVParticle* AliAnalysisTaskJetShapeBase::GetEmbeddedConstituent(AliEmcalJet *j
 
 //__________________________________________________________________________________________________
 
-TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticleLevel(AliVParticle *vpe) const {
+TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticleLevel(AliVParticle *vpe) {
    if(!fTreeEmb) return 0x0;
    
    if(!vpe) return 0x0;
@@ -440,39 +444,73 @@ TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticl
    TLorentzVector *vEmbP = new TLorentzVector();
    vEmbP->SetPtEtaPhiM(vpe->Pt(), vpe->Eta(), vpe->Phi(), vpe->M());
    
-   TLorentzVector *vecsD = 0; // 0 reco
+   
    TLorentzVector *vecsP = 0; // 1 particle
-   TBranch *bJD = 0;
    
-   Int_t addretD = fTreeEmb->SetBranchAddress(fBranchJDetName, &vecsD, &bJD);
-   
-   if(!bJD) AliFatal(Form("Branch %s not found", fBranchJDetName.Data()));
-   for(Int_t ip = 0 ; ip < fTreeEmb->GetEntries(); ip++){
-      bJD->GetEntry(ip);
-      if (SamePart(vecsD, vEmbP)) {
-      	 AliDebug(10, Form("Det Lev %.2f, %.2f, %.2f, %.2f ", vecsD->Pt(), vecsD->Phi(), vecsD->Eta(), vecsD->M()));
+   //Printf("Inizio entry %d", fThisEntry);
+   while(!vecsP){
+      vecsP = GetParticleLevel(fThisEntry, vEmbP);
+      //Printf("Return %p", vecsP);
+      if(vecsP) {
+      	 //Printf("COOL, found with the quick check");
       	 
-      	 TBranch *bJP = 0;
-      	 Int_t addretP = fTreeEmb->SetBranchAddress(fBranchJParName, &vecsP, &bJP);
-      	 if(!bJP) AliFatal(Form("Branch %s not found", fBranchJParName.Data()));
-      	 bJP->GetEntry(ip);
-      	 AliDebug(10, Form("-> Part Level %.2f, %.2f, %.2f, %.2f ", vecsP->Pt(), vecsP->Phi(), vecsP->Eta(), vecsP->M()));
-      
       	 return vecsP;
+      } else {
+      	 fThisEntry++;
+      	 //Printf("Shade, I need to loop %d", fThisEntry);
       	 
       }
-      
+      if(fThisEntry > 50) break;
+   }
+   
+   return 0x0;
+   for(Int_t ip = 0 ; ip < fTreeEmb->GetEntries(); ip++){
+      vecsP = GetParticleLevel(ip, vEmbP);
+      if(vecsP){
+      	 Printf("I had to loop up to %d",ip );
+      	 fThisEntry = ip;
+      	 return vecsP;
+      }
    }
    
    return 0x0;
 }
 
 //__________________________________________________________________________________________________
+
+TLorentzVector* AliAnalysisTaskJetShapeBase::GetParticleLevel(Int_t entry, TLorentzVector *vEmbP){
+   
+   TBranch *bJD = 0;
+   
+   TLorentzVector *vecsD = 0; // 0 reco
+   TLorentzVector *vecsP = 0; // 1 particle
+   
+   Int_t addretD = fTreeEmb->SetBranchAddress(fBranchJDetName, &vecsD, &bJD);
+   if(!bJD) AliFatal(Form("Branch %s not found", fBranchJDetName.Data()));
+   fTreeEmb->GetEntry(entry);
+   //Printf("Entry %d", entry);
+   //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", vecsD->Pt(), vecsD->Phi(), vecsD->Eta(), vecsD->M());
+   if (SamePart(vecsD, vEmbP)) {
+      //AliDebug(10, Form("Det Lev %.2f, %.2f, %.2f, %.2f ", vecsD->Pt(), vecsD->Phi(), vecsD->Eta(), vecsD->M()));
+      
+      TBranch *bJP = 0;
+      Int_t addretP = fTreeEmb->SetBranchAddress(fBranchJParName, &vecsP, &bJP);
+      if(!bJP) AliFatal(Form("Branch %s not found", fBranchJParName.Data()));
+      bJP->GetEntry(entry);
+      AliDebug(10, Form("-> Part Level %.2f, %.2f, %.2f, %.2f ", vecsP->Pt(), vecsP->Phi(), vecsP->Eta(), vecsP->M()));
+      fThisEntry = entry;
+      return vecsP;
+   }
+   return 0x0;
+}
+//__________________________________________________________________________________________________
 Bool_t AliAnalysisTaskJetShapeBase::SamePart(const TLorentzVector* part1, const TLorentzVector* part2, Double_t dist) const
 {
   // Helper function to calculate the distance between two TLorentzVector
   if(!part1) return kFALSE;
   if(!part2) return kFALSE;
+  //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", part1->Pt(), part1->Phi(), part1->Eta(), part1->M());
+  //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", part2->Pt(), part2->Phi(), part2->Eta(), part2->M());
   Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
   Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
   Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
@@ -495,7 +533,7 @@ void AliAnalysisTaskJetShapeBase::SetTree(TTree *tree) {
    fFromTree = kTRUE;
    fTreeEmb = (TTree*)tree->Clone(Form("%sCpShC", tree->GetName()));
    AliInfo(Form("Input tree set %d (%p -> %p)", fTreeEmb->GetNbranches(), tree, fTreeEmb));
-   fTreeEmb->SetDirectory(0x0);
+   //fTreeEmb->SetDirectory(0x0);
    
    return;
 }
@@ -521,8 +559,8 @@ void AliAnalysisTaskJetShapeBase::SetTreeFromFile(TString filename, TString tree
    }
    SetTree(tree);
    
-   f->Close();
-   delete f;
+   //f->Close();
+   //delete f;
 
    return;
 }

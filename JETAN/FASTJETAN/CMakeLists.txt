@@ -43,25 +43,46 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
-endif(FASTJET_FOUND)
 
+    if(ROOT_VERSION_MAJOR EQUAL 6)
+      set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
+      if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
+	set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
+      endif()
+    endif(ROOT_VERSION_MAJOR EQUAL 6)
+endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
 
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS STEERBase ESD AOD ANALYSIS ANALYSISalice JETAN EG Net)
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} ${FASTJET_LIBS})
+# Create an object to be reused in case of static libraries
+# Otherwise the sources will be compiled twice
+add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
+# Add a library to the project using the object
+add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+target_link_libraries(${MODULE} ${LIBDEPS})
+
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")

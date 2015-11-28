@@ -81,6 +81,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fParticleCollArray(),
   fClusterCollArray(),
   fTriggers(0),
+  fEMCalTriggerMode(kOverlapWithLowThreshold),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -113,7 +114,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
-  fHistEventRejection(0)
+  fHistEventRejection(0),
+  fHistTriggerClasses(0)
 {
   // Default constructor.
 
@@ -165,6 +167,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fParticleCollArray(),
   fClusterCollArray(),
   fTriggers(0),
+  fEMCalTriggerMode(kOverlapWithLowThreshold),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -197,7 +200,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistCentrality(0),
   fHistZVertex(0),
   fHistEventPlane(0),
-  fHistEventRejection(0)
+  fHistEventRejection(0),
+  fHistTriggerClasses(0)
 {
   // Standard constructor.
 
@@ -367,6 +371,8 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fHistEventRejection->SetBit(TH1::kCanRebin);
+#else
+  fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
   fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
   fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
@@ -383,6 +389,14 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(13,"Bkg evt");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
+
+  fHistTriggerClasses = new TH1F("fHistTriggerClasses","fHistTriggerClasses",3,0,3);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+  fHistTriggerClasses->SetBit(TH1::kCanRebin);
+#else
+  fHistTriggerClasses->SetCanExtend(TH1::kAllAxes);
+#endif
+  fOutput->Add(fHistTriggerClasses);
 
   fHistEventCount = new TH1F("fHistEventCount","fHistEventCount",2,0,2);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -410,6 +424,15 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventPlane->Fill(fEPV0);
   }
   
+  TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
+  TIter next(triggerClasses);
+  TObjString* triggerClass = 0;
+  while ((triggerClass = static_cast<TObjString*>(next()))) {
+    fHistTriggerClasses->Fill(triggerClass->GetString(), 1);
+  }
+  delete triggerClasses;
+  triggerClasses = 0;
+
   return kTRUE;
 }
 
@@ -831,9 +854,12 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       if (!obj)
         continue;
 
-      //Check if requested trigger was fired, relevant for data sets with 2 emcal trigger thresholds
+      //Check if requested trigger was fired
       TString objStr = obj->GetName();
-      if(objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2")) {
+      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+        // This is relevant for EMCal triggers with 2 thresholds
+        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
         TString trigType1 = "J1";
         TString trigType2 = "J2";
         if(objStr.Contains("G")) {
@@ -848,7 +874,10 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
           match = 1;
           break;
         }
-      } else {
+      }
+      else {
+        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+        // simply check that the trigger was fired
         if (fired.Contains(obj->GetName())) {
           match = 1;
           break;

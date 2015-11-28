@@ -24,6 +24,7 @@
 #include <TLorentzVector.h>
 class TList ;
 class TVector3;
+class TClonesArray;
 
 //--- AliRoot system ---
 class AliCaloTrackReader ;

@@ -31,13 +31,26 @@ set(SRCS
     AliAnalysisTaskV0sInJets.cxx
    )
 
+if(FASTJET_FOUND)
+  include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+  link_directories(${FASTJET_LIBS_DIR})
+  add_definitions(${FASTJET_DEFINITIONS})
+
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
+    if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
+      set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
+    endif()
+  endif(ROOT_VERSION_MAJOR EQUAL 6)
+endif(FASTJET_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJE STEERBase PWGTools)
@@ -51,7 +64,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Setting the correct headers for the object as gathered from the dependencies

@@ -68,11 +68,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS EG Physics Hist MathCore RIO Core)
+set(LIBDEPS EG Physics Hist MathCore RIO Tree Core)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -171,7 +171,7 @@ add_target_parfile(${MODULE}
   "${LIBDEPS}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
