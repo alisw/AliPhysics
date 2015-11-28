@@ -370,6 +370,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
     if ((time.GetSec()-fLastPushBackTime.GetSec())>=fPushbackPeriod)
     {
       DoSend(socket);
+      fLastPushBackTime.Set();
     }
 
   }
@@ -435,8 +436,6 @@ Int_t DoSend(void* socket)
   //always at least send an empty reply if we are replying
   if (sentBytes==0 && alizmq_socket_type(socket)==ZMQ_REP)
     alizmq_msg_send("INFO","NODATA",socket,0);
-
-  fLastPushBackTime.Set();
 
   return 0;
 }
