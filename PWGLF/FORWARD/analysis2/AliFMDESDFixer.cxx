@@ -84,6 +84,7 @@ void
 AliFMDESDFixer::CreateOutputObjects(TList* l)
 {
   TList* d = new TList;
+  d->SetOwner();
   d->SetName(GetName());
   l->Add(d);
 
