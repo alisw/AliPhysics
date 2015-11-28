@@ -99,6 +99,7 @@ void AliEmcalTriggerMakerKernel::Init(){
   }
 
   fLevel0PatchFinder = new AliEmcalGammaTriggerAlgorithmAP<double>(0, nrows, 0);
+  fLevel0PatchFinder->SetSubregionSize(1);
 }
 
 void AliEmcalTriggerMakerKernel::Reset(){
