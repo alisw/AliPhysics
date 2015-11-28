@@ -881,7 +881,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
 
   Bool_t all = strstr(opt,"All")!=0;
   Bool_t det[3] = {all||(strstr(opt,"SPD")!=0),all||(strstr(opt,"SDD")!=0),all||(strstr(opt,"SSD")!=0)};
-  if (all) det[0]=det[1]=det[2]=kTRUE;
   if(optCluFind==0){
     SetDefaultClusterFindersV2();
     AliDebug(1,"V2 cluster finder has been selected \n");
@@ -992,7 +991,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   Int_t nClusters =0 ;
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
     id = GetITSgeom()->GetModuleType(iModule);
-    if (det[id]) continue;
+    if (!det[id]) continue;
     array = rpc->UncheckedGetClusters(iModule);
     if(!array){
       AliDebug(1,Form("data for module %d missing!",iModule));
@@ -1023,9 +1022,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   //      none.
   // Return:
   //      none.
-  const char *all = strstr(opt,"All");
-  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
-                        strstr(opt,"SSD")};
+  Bool_t all = strstr(opt,"All");
+  Bool_t det[3] = {all||(strstr(opt,"SPD")!=0),all||(strstr(opt,"SDD")!=0),all||(strstr(opt,"SSD")!=0)};
   
   // Reset Fast-OR fired map
   ResetFastOrFiredMap();
