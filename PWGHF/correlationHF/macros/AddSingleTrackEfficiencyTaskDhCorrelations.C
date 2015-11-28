@@ -251,7 +251,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     AliESDtrackCuts* QualityCuts = new AliESDtrackCuts();
 
     Bool_t loadCutsFromFile=kTRUE;
-    TFile* fileeff=new TFile(effName.Data());
+    TFile* fileeff=TFile::Open(effName.Data());
     if(!fileeff->IsOpen()){
       cout<<"*** Track efficiency input file not found/not set! Using hardcoded selection... ***"<<endl;
       loadCutsFromFile=kFALSE;
