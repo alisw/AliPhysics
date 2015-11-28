@@ -35,6 +35,7 @@ TObject(),
 fRowMin(0),
 fRowMax(0),
 fPatchSize(0),
+fSubregionSize(1),
 fBitMask(0),
 fThreshold(0),
 fOfflineThreshold(0)
@@ -47,6 +48,7 @@ TObject(),
 fRowMin(rowmin),
 fRowMax(rowmax),
 fPatchSize(bitmask),
+fSubregionSize(1),
 fBitMask(0),
 fThreshold(0),
 fOfflineThreshold(0)
@@ -92,6 +94,7 @@ AliEmcalJetTriggerAlgorithmAP<T>::AliEmcalJetTriggerAlgorithmAP():
 AliEmcalTriggerAlgorithmAP<T>()
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -99,6 +102,7 @@ AliEmcalJetTriggerAlgorithmAP<T>::AliEmcalJetTriggerAlgorithmAP(Int_t rowmin, In
 AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -110,6 +114,7 @@ AliEmcalGammaTriggerAlgorithmAP<T>::AliEmcalGammaTriggerAlgorithmAP():
 AliEmcalTriggerAlgorithmAP<T>()
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
@@ -117,6 +122,7 @@ AliEmcalGammaTriggerAlgorithmAP<T>::AliEmcalGammaTriggerAlgorithmAP(Int_t rowmin
 AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
@@ -128,6 +134,7 @@ AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP():
 AliEmcalTriggerAlgorithmAP<T>()
 {
   this->SetPatchSize(8);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -135,6 +142,7 @@ AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, In
 AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(8);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
