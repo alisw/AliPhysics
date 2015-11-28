@@ -347,18 +347,6 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   fOutput->Add(fhpTTracksJet1);
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
-
-  //fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; #it{p}_{T, jet} - #it{p}_{T, Emb Track};Entries", 500,-10.,110.);
-  //fOutput->Add(fhptjetSMinusSingleTrack);
-  
-  //fhJet1vsJetTag = new TH2F("fhJet1vsJetTag", "Number of jets vs tagged jets; #it{N}_{jet,Tot}; #it{N}_{jet,Tag}", 30, 1., 30., 30, 1., 30.);
-  //fOutput->Add(fhJet1vsJetTag);
-  
-  //fhNconstit = new TH1F("fhNconstit", "Number of constituents (matched jets); #it{N}_{constituents}", 21, 0., 20.);
-  //fOutput->Add(fhNconstit);
-  
-  //fhAreaJet = new TH1F("fhAreaJet", "Area (matched jets); Area", 400., 0., 4);
-  //fOutput->Add(fhAreaJet);
   
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
@@ -446,24 +434,20 @@ TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticl
    
    
    TLorentzVector *vecsP = 0; // 1 particle
-   
-   //Printf("Inizio entry %d", fThisEntry);
+   // WARNING: it works only if the tracks are embedded in order of entry (check on AliJetEmbedding task Run method)
    while(!vecsP){
       vecsP = GetParticleLevel(fThisEntry, vEmbP);
-      //Printf("Return %p", vecsP);
       if(vecsP) {
-      	 //Printf("COOL, found with the quick check");
-      	 
+      	 //Printf("Return %.3f", vecsP->Pt());
+      	 delete vEmbP;
       	 return vecsP;
       } else {
       	 fThisEntry++;
-      	 //Printf("Shade, I need to loop %d", fThisEntry);
-      	 
       }
-      if(fThisEntry > 50) break;
    }
-   
+   delete vEmbP;
    return 0x0;
+   /*
    for(Int_t ip = 0 ; ip < fTreeEmb->GetEntries(); ip++){
       vecsP = GetParticleLevel(ip, vEmbP);
       if(vecsP){
@@ -474,6 +458,7 @@ TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticl
    }
    
    return 0x0;
+   */
 }
 
 //__________________________________________________________________________________________________
