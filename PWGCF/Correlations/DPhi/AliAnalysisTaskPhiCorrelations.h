@@ -159,6 +159,8 @@ public:
   Float_t GetJetPtMin() const { return fJetPtMin; }
   void SetJetConstMin(Int_t constMin) { fJetConstMin = constMin; }
   Int_t GetJetConstMin() const { return fJetConstMin; }
+  void SetExclusionRadius(Float_t r) { fExclusionRadius = r; }
+  Float_t GetExclusionRadius() const { return fExclusionRadius; }
 
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -288,8 +290,9 @@ private:
   Float_t fJetEtaMax;            // maximum eta to accept jet
   Float_t fJetPtMin;             // minimum pt to accept jet
   Int_t   fJetConstMin;          // minimum number of constituents
+  Float_t fExclusionRadius;      // radius around jet in which tracks are rejected
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 58); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 59); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle
