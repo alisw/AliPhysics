@@ -29,6 +29,10 @@ class AliEventClassifierBase : public TNamed {
   TList *fClassifierOutputList;  // The "folder" in which the hists binned in this classifier a saved
   TList *fTaskOutputList;        // The list for the entire task
 
+  // Some generator have funky particles in the stack which break the execution down the line.
+  // Check if the particles are of a safe type (should cover like 99%) of the particles present
+  std::vector< Int_t > fSafePdgCodes;
+
   ClassDef(AliEventClassifierBase, 1);
 };
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 #include <iostream>
 
@@ -24,10 +25,9 @@ AliEventClassifierSpherocity::AliEventClassifierSpherocity(const char* name, con
 }
 
 Bool_t AliEventClassifierSpherocity::TrackPassesSelection(AliMCParticle* track, AliStack *stack, Int_t iTrack) {
-    if (!track) {
-      Printf("ERROR: Could not receive track %d", iTrack);
+    // check if the pdg is safe
+    if (find(fSafePdgCodes.begin(), fSafePdgCodes.end(), TMath::Abs(track->PdgCode())) == fSafePdgCodes.end())
       return false;
-    }
 
     // Only calculate for primaries (Aliroot definition excluding Pi0)
     if (!stack->IsPhysicalPrimary(iTrack)) return false;
@@ -53,6 +53,7 @@ void AliEventClassifierSpherocity::CalculateClassifierValue(AliMCEvent *event, A
   Int_t ntracks = event->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
     AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    if (!track) continue;
     if (!TrackPassesSelection(track, stack, iTrack)) continue;
     sumapt += track->Pt();
   }
