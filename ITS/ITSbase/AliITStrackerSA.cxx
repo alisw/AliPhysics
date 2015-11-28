@@ -817,15 +817,17 @@ Double_t AliITStrackerSA::Curvature(Double_t x1,Double_t y1,Double_t
 x2,Double_t y2,Double_t x3,Double_t y3){
 
   //calculates the curvature of track  
-  Double_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
-  if(den==0) return 0;
+  double dy21 = y2-y1;
+  if(TMath::Abs(dy21)<kAlmost0) return 0;
+  Double_t den = (x3-x1)*dy21-(x2-x1)*(y3-y1);
+  if(TMath::Abs(den)<kAlmost0) return 0;
   Double_t a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
-  Double_t b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/(y2-y1);
+  Double_t b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/dy21;
   Double_t c = -x1*x1-y1*y1-a*x1-b*y1;
   Double_t xc=-a/2.;
-
-  if((a*a+b*b-4*c)<0) return 0;
-  Double_t rad = TMath::Sqrt(a*a+b*b-4*c)/2.;
+  double det = a*a+b*b-4*c;
+  if(det<0) return 0;
+  Double_t rad = det<kAlmost0 ? 0 :TMath::Sqrt(det)/2.;
   if(rad==0) return 0;
   
   if((x1>0 && y1>0 && x1<xc)) rad*=-1;
