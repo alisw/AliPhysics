@@ -185,7 +185,8 @@ fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00"),
 fTrackEtaMax(.9),
 fJetEtaMax(.9),
 fJetPtMin(5.),
-fJetConstMin(0)
+fJetConstMin(0),
+fExclusionRadius(-1.)
 {
   // Default constructor
   // Define input and output slots here
@@ -1824,7 +1825,14 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	    continue;
 
 	  // exclude track if part of a jet
-	  if (jet->ContainsTrack(track->GetID())) {
+	  if (fExclusionRadius > 0.) {
+	    if ((TMath::Power(TVector2::Phi_mpi_pi(jet->Phi() - track->Phi()), 2.) +
+		 TMath::Power(jet->Eta() - track->Eta(), 2.)) <
+		TMath::Power(fExclusionRadius, 2.)) {
+	      trackInJet = kTRUE;
+	      break;
+	    }
+	  } else if (jet->ContainsTrack(track->GetID())) {
 	    trackInJet = kTRUE;
 	    break;
 	  }
