@@ -20,7 +20,7 @@ add_subdirectory(HOMER)
 add_subdirectory(interface)
 add_subdirectory(util)
 
-if(LINUX)
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   set(LINUX_DEPS rt)
 endif()
 
