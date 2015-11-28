@@ -300,7 +300,15 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Create input variables in AliMultInput Class
     //V0 related
     fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
+    fAmplitude_V0A1       = new AliMultVariable("fAmplitude_V0A1");
+    fAmplitude_V0A2       = new AliMultVariable("fAmplitude_V0A2");
+    fAmplitude_V0A3       = new AliMultVariable("fAmplitude_V0A3");
+    fAmplitude_V0A4       = new AliMultVariable("fAmplitude_V0A4");
     fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
+    fAmplitude_V0C1       = new AliMultVariable("fAmplitude_V0C1");
+    fAmplitude_V0C2       = new AliMultVariable("fAmplitude_V0C2");
+    fAmplitude_V0C3       = new AliMultVariable("fAmplitude_V0C3");
+    fAmplitude_V0C4       = new AliMultVariable("fAmplitude_V0C4");
     fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
     fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
     fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
@@ -345,7 +353,15 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
+    fInput->AddVariable( fAmplitude_V0A1 );
+    fInput->AddVariable( fAmplitude_V0A2 );
+    fInput->AddVariable( fAmplitude_V0A3 );
+    fInput->AddVariable( fAmplitude_V0A4 );
     fInput->AddVariable( fAmplitude_V0C );
+    fInput->AddVariable( fAmplitude_V0C1 );
+    fInput->AddVariable( fAmplitude_V0C2 );
+    fInput->AddVariable( fAmplitude_V0C3 );
+    fInput->AddVariable( fAmplitude_V0C4 );
     fInput->AddVariable( fAmplitude_V0Apartial );
     fInput->AddVariable( fAmplitude_V0Cpartial );
     fInput->AddVariable( fAmplitude_V0AEq );
@@ -382,17 +398,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //------------------------------------------------
         
         //-----------BASIC-INFO---------------------------
-        
-        // A.T. (my suggestion for V0: 1..4 replacing partial)
-        fTreeEvent->Branch("fAmplitude_V0A1",&fAmplitude_V0A1,"fAmplitude_V0A1/F");
-        fTreeEvent->Branch("fAmplitude_V0A2",&fAmplitude_V0A2,"fAmplitude_V0A2/F");
-        fTreeEvent->Branch("fAmplitude_V0A3",&fAmplitude_V0A3,"fAmplitude_V0A3/F");
-        fTreeEvent->Branch("fAmplitude_V0A4",&fAmplitude_V0A4,"fAmplitude_V0A4/F");
-        fTreeEvent->Branch("fAmplitude_V0C1",&fAmplitude_V0C1,"fAmplitude_V0C1/F");
-        fTreeEvent->Branch("fAmplitude_V0C2",&fAmplitude_V0C2,"fAmplitude_V0C2/F");
-        fTreeEvent->Branch("fAmplitude_V0C3",&fAmplitude_V0C3,"fAmplitude_V0C3/F");
-        fTreeEvent->Branch("fAmplitude_V0C4",&fAmplitude_V0C4,"fAmplitude_V0C4/F");
-        
         //Run Number
         fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
         
@@ -850,14 +855,14 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0Cpartial->SetValue(multV0Cpartial);
     
     //A.T. (vertex correction for all rings?!?)
-    fAmplitude_V0A1 = multV0A1;
-    fAmplitude_V0A2 = multV0A2;
-    fAmplitude_V0A3 = multV0A3;
-    fAmplitude_V0A4 = multV0A4;
-    fAmplitude_V0C1 = multV0C1;
-    fAmplitude_V0C2 = multV0C2;
-    fAmplitude_V0C3 = multV0C3;
-    fAmplitude_V0C4 = multV0C4;
+    fAmplitude_V0A1 -> SetValue( multV0A1 );
+    fAmplitude_V0A2 -> SetValue( multV0A2 );
+    fAmplitude_V0A3 -> SetValue( multV0A3 );
+    fAmplitude_V0A4 -> SetValue( multV0A4 );
+    fAmplitude_V0C1 -> SetValue( multV0C1 );
+    fAmplitude_V0C2 -> SetValue( multV0C2 );
+    fAmplitude_V0C3 -> SetValue( multV0C3 );
+    fAmplitude_V0C4 -> SetValue( multV0C4 );
 
     //AD scintillator Data added to Event Tree
     if (lVAD) {

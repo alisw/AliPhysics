@@ -134,7 +134,15 @@ private:
     //   Variables for Multiplicity Determination
     //===========================================================================
     AliMultVariable *fAmplitude_V0A;
+    AliMultVariable *fAmplitude_V0A1;
+    AliMultVariable *fAmplitude_V0A2;
+    AliMultVariable *fAmplitude_V0A3;
+    AliMultVariable *fAmplitude_V0A4;
     AliMultVariable *fAmplitude_V0C;
+    AliMultVariable *fAmplitude_V0C1;
+    AliMultVariable *fAmplitude_V0C2;
+    AliMultVariable *fAmplitude_V0C3;
+    AliMultVariable *fAmplitude_V0C4;
     AliMultVariable *fAmplitude_V0Apartial;
     AliMultVariable *fAmplitude_V0Cpartial;
     AliMultVariable *fAmplitude_V0AEq;
@@ -169,16 +177,6 @@ private:
     
     //Event selection snippet for VtxZ as AliMultVariable
     AliMultVariable *fEvSel_VtxZ;
-    
-    // A.T.
-    Float_t fAmplitude_V0A1;   //!
-    Float_t fAmplitude_V0A2;   //!
-    Float_t fAmplitude_V0A3;   //!
-    Float_t fAmplitude_V0A4;   //!
-    Float_t fAmplitude_V0C1;   //!
-    Float_t fAmplitude_V0C2;   //!
-    Float_t fAmplitude_V0C3;   //!
-    Float_t fAmplitude_V0C4;   //!
 
     Int_t fRunNumber;                    
 
