@@ -282,7 +282,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	AliEMCALTriggerRawDigit* dig = 0x0;
 
 	// Loop over both STU DDLs in order to read out both EMCAL and DCAL (if available)
+	Int_t detectorID = 0;       // 0 - EMCAL, 1 - DCAL
 	for(Int_t istu = AliDAQ::GetFirstSTUDDL(); istu <= AliDAQ::GetLastSTUDDL(); istu++){
+	  detectorID = istu - AliDAQ::GetFirstSTUDDL();
 	  fRawReader->Reset();
 	  fRawReader->Select("EMCAL",istu,istu);
 
@@ -374,10 +376,11 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		  {
 		    if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
 			
-		    Int_t nTRU = 32;//fGeometry->GetNTotalTRU();
+		    //Int_t nTRU = 32;//fGeometry->GetNTotalTRU();
+		    Int_t nTRU = (detectorID == 0 ? 32 : 14);
 			  for (Int_t i = 0; i < nTRU; i++)
 			  {
-			    iTRU = fGeometry->GetTRUIndexFromSTUIndex(i, 0);
+			    iTRU = fGeometry->GetTRUIndexFromSTUIndex(i, detectorID);
 				
 			    UInt_t adc[96]; for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 				
@@ -418,7 +421,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		  {
 		    fSTURawStream->GetL0GammaPatch(i, iTRU, x);
 
-		    iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, 0);
+		    iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
 			
 		    const Int_t sizePatchL0 =
 		        ((AliEMCALTriggerTRUDCSConfig*)fDCSConfig->GetTriggerDCSConfig()->GetTRUArr()->At(fGeometry->GetOnlineIndexFromTRUIndex(iTRU)))->GetSegmentation()
@@ -462,7 +465,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		    {
 		      if (fSTURawStream->GetL1GammaPatch(i, ithr, iTRU, x, y)) // col (0..23), row (0..3)
 		      {
-		        iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, 0);
+		        iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
 					
 		        if (AliDebugLevel()) printf("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
 					
