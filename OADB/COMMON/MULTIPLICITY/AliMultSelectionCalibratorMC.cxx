@@ -36,7 +36,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
 {
     // Constructor
 
@@ -58,7 +58,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
 {
     // Named Constructor
 
@@ -672,15 +672,14 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Create Stuff
     TFile * f = new TFile (fOutputFileName.Data(), "recreate");
     AliOADBContainer * oadbContMSout = new AliOADBContainer("MultSel");
-    AliOADBMultSelection * oadbMultSelectionout = new AliOADBMultSelection("Default");
-    AliMultSelectionCuts * cuts              = new AliMultSelectionCuts();
-    cuts = fMultSelectionCuts;
-    AliMultSelection     * fsels             = new AliMultSelection    ( fSelection );
     
-    cout<<"=================================================================================="<<endl;
-    cout<<"AliMultSelection Object to be saved (DEFAULT)"<<endl;
-    fsels->PrintInfo();
-    cout<<"=================================================================================="<<endl;
+    AliOADBMultSelection * oadbMultSelectionout = 0x0;
+    AliMultSelectionCuts * cuts              = 0x0;
+    AliMultSelection     * fsels             = 0x0;
+
+    AliOADBMultSelection * oadbMultSelectionoutdef = 0x0;
+    AliMultSelectionCuts * cutsdef              = 0x0;
+    AliMultSelection     * fselsdef             = 0x0;
     
     //Default Stuff
     TH1F * hDummy[lNEstimators];
@@ -688,12 +687,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         hDummy[iEst]= new TH1F (Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
         hDummy[iEst]->SetDirectory(0);
     }
-    
-    oadbMultSelectionout->SetEventCuts        ( cuts  );
-    oadbMultSelectionout->SetMultSelection    ( fsels );
-    for ( Int_t iEst=0; iEst<lNEstimators; iEst++) oadbMultSelectionout->AddCalibHisto( hDummy[iEst] );
-    oadbContMSout->AddDefaultObject(oadbMultSelectionout);
-    
+
     //Actual Calibration Histograms
     TH1F * hCalibData[lNEstimators];
     
@@ -731,8 +725,51 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fsels->PrintInfo();
             cuts->Print();
             cout<<"=================================================================================="<<endl;
-            
             oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
+            
+            //Check if this corresponds to the reference run !
+            Bool_t lThisIsReference = kFALSE;
+            if( lRunNumbers[iRun] == fRunToUseAsDefault ) lThisIsReference = kTRUE;
+            if( lThisIsReference ){
+                cout<< "Reference Run found! Will save..."<<endl;
+                //========================================================================
+                //DEFAULT OADB Object saving procedure STARTS here
+                oadbMultSelectionoutdef = new AliOADBMultSelection("Default");
+                cutsdef              = new AliMultSelectionCuts();
+                cutsdef = fMultSelectionCuts;
+                fselsdef             = new AliMultSelection( fSelection );
+                
+                //Write in scaling factors!
+                TString lTempDef;
+                for(Int_t iEst=0; iEst<lNEstimators; iEst++){
+                    lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
+                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                    lTempDef.Append(")"); //don't forget parentheses...
+                    fselsdef->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
+                }
+                
+                oadbMultSelectionoutdef->SetEventCuts    (cutsdef );
+                oadbMultSelectionoutdef->SetMultSelection(fselsdef);
+                for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
+                    //Average values
+                    fselsdef->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+                    
+                    //Protect from crashes in the general case
+                    //hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fselsdef->GetEstimator(iEst)->GetName()) );
+                    oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst]);
+                    hDummy[iEst]->SetDirectory(0);
+                }
+                cout<<"=================================================================================="<<endl;
+                cout<<" Detected that this particular run / run range is special, will save it as default"<<endl;
+                cout<<" AliMultSelection Object to be saved (DEFAULT)"<<endl;
+                fselsdef->PrintInfo();
+                cout<<"=================================================================================="<<endl;
+                
+                //for ( Int_t iEst=0; iEst<lNEstimators; iEst++) oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst] );
+                oadbContMSout->AddDefaultObject(oadbMultSelectionoutdef);
+                //DEFAULT OADB Object saving procedure ENDS here
+                //========================================================================
+            }
         }else{
             cout<<"Insufficient statistics in either MC or data in run #"<<lRunNumbers[iRun]<<", skipping!"<<endl;
         }

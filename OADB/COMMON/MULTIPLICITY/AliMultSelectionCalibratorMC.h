@@ -48,6 +48,12 @@ public:
     //Getter for MultInput object
     AliMultInput * GetMultInput() const { return fInput;     }
     
+    //Setter for golden run
+    void SetRunToUseAsDefault ( Int_t lRunNumber ) { fRunToUseAsDefault = lRunNumber; }
+    
+    //Getter for golden run
+    Int_t GetRunToUseAsDefault() const { return fRunToUseAsDefault; }
+    
     //Configure standard input
     void SetupStandardInput();
     
@@ -64,6 +70,9 @@ private:
     //Calibration Boundaries to locate
     Double_t *lDesiredBoundaries;
     Long_t   lNDesiredBoundaries;
+    
+    //Run to use as default for scaling factor in this period
+    Int_t fRunToUseAsDefault;
     
     TString fInputFileNameData;  // Filename for TTree object for calibration purposes
     TString fInputFileNameOADB;  // Filename for TTree object for calibration purposes

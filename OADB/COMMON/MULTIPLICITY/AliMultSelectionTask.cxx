@@ -1171,7 +1171,10 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     lObjAcquired = con->GetObject(fCurrentRun, "Default");
     
     if (!lObjAcquired) {
+        AliWarning("======================================================================");
         AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+        AliWarning(" This is only a 'good guess'! Use with Care! ");
+        AliWarning("======================================================================");
         lObjAcquired  = con->GetDefaultObject("oadbDefault");
     }
     if (!lObjAcquired) {
@@ -1211,7 +1214,10 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         TObject *lObjAcquiredAlter = 0x0;
         lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
         if (!lObjAcquiredAlter) {
-            AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            AliWarning("======================================================================");
+            AliWarning(Form("MC Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            AliWarning(" This is usually only approximately OK! Use with Care! ");
+            AliWarning("======================================================================");
             lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
         }
         if (!lObjAcquiredAlter) {
