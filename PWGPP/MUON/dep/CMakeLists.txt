@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/MUON/dep)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/MUON/lite
   )
 
 # Sources - alphabetical order
@@ -31,6 +32,7 @@ set(SRCS
   AliAnalysisTaskMuonPerformance.cxx
   AliAnalysisTaskMuonResolution.cxx
   AliAnalysisTaskMuonTrackingEff.cxx
+  AliMTRChEffAnalysis.cxx
   )
 
 # Headers from sources
@@ -46,7 +48,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW MUONevaluation PWGmuon)
+set(LIBDEPS ANALYSISalice CORRFW MUONevaluation PWGmuon PWGPPMUONlite)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
