@@ -86,7 +86,7 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
       Printf("Emb task");
       fTreeJet4Vect->GetEntry(0);
-     fTreeJet4Vect->Show();
+      fTreeJet4Vect->Show();
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -143,18 +143,21 @@ void AliJetEmbeddingTask::Run()
        	  fTreeJet4Vect->ResetBranchAddresses();
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
-       	  Double_t pTemb = 0;
+       	  Double_t pTemb = -1;
        	  while(pTemb < fMinPtEmb){
-       	  if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
-       	  else {
-       	     fCurrentEntry = 0;
-       	     AliWarning("Starting from first entry again");
-       	     bDet->GetEntry(fCurrentEntry);
-       	  }
-       	  pTemb = jetDet->Pt();
-       	  //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
-       	  fCurrentEntry++;
-       	  if (pTemb >= fMinPtEmb) AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
+       	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     else {
+       	     	fCurrentEntry = 0;
+       	     	AliWarning("Starting from first entry again");
+       	     	bDet->GetEntry(fCurrentEntry);
+       	     }
+       	     pTemb = jetDet->Pt();
+       	     //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
+       	     fCurrentEntry++;
+       	     if (pTemb >= fMinPtEmb) {
+       	     	AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
+       	     	//Printf("Embedded (pT = %.2f)!!!!", jetDet->Pt());
+       	     }
        	  }
        } else {
        	  
