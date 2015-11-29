@@ -27,6 +27,7 @@
 #include <TBranch.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include <TStopwatch.h>
 
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
@@ -136,7 +137,7 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
   }
   if(!rc){ 
-    rc=FindTracks(event,kFALSE);
+    if (event->GetNumberOfTPCClusters()) rc=FindTracks(event,kFALSE); //RS: do complementary reco if there are TPC clusters
     Int_t nSPDcontr=0;
     const AliESDVertex *spdv = event->GetPrimaryVertexSPD();
     if(spdv) nSPDcontr = spdv->GetNContributors();
