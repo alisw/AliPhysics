@@ -411,7 +411,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         Float_t lLocalVtxZ = fInput->GetVariable(iVtxZ_index)->GetValue();
 
         //Check Selections as they are in the fMultSelectionCuts Object
-        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE; //FIXME 
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
         if( TMath::Abs(lLocalVtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?

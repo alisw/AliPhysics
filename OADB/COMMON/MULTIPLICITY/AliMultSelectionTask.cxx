@@ -97,6 +97,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
+fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -176,6 +177,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
+fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -1141,8 +1143,30 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else
         fCurrentRun = esd->GetRunNumber();
     AliInfoF("Detected run number: %i",fCurrentRun);
-    TString lPeriodName = GetPeriodNameByRunNumber();
     
+    TString lPathInput = CurrentFileName();
+    
+    //Autodetect Period Name
+    TString lPeriodName     = GetPeriodNameByRunNumber();
+    TString lProductionName = GetPeriodNameByPath( lPathInput );
+     
+    AliInfo("==================================================");
+    AliInfoF(" Period Name (by run number)....: %s", lPeriodName.Data());
+    AliInfoF(" Production Name (by path)......: %s", lProductionName.Data());
+    AliInfo("==================================================");
+    if ( lPeriodName.EqualTo(lProductionName.Data()) == kTRUE ){
+        AliInfoF(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data());
+        AliInfo("==================================================");
+    }
+    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ){
+        AliInfo(" Auto-detected that this is MC, but you didn't provide a production name!");
+        AliInfoF(" Will input it automatically for you to %s",lProductionName.Data() );
+        fAlternateOADBForEstimators = lProductionName;
+        AliInfo("==================================================");
+    }
+
+    
+    //Determine location of file to open: default OADB 
     TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
     
@@ -1171,11 +1195,21 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     lObjAcquired = con->GetObject(fCurrentRun, "Default");
     
     if (!lObjAcquired) {
-        AliWarning("======================================================================");
-        AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
-        AliWarning(" This is only a 'good guess'! Use with Care! ");
-        AliWarning("======================================================================");
-        lObjAcquired  = con->GetDefaultObject("oadbDefault");
+        if ( fkUseDefaultCalib ){
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            AliWarning(" This is only a 'good guess'! Use with Care! ");
+            AliWarning(" To Switch off this good guess, use SetUseDefaultCalib(kFALSE)");
+            AliWarning("======================================================================");
+            lObjAcquired  = con->GetDefaultObject("oadbDefault");
+        }else{
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
+            AliWarning("======================================================================");
+            //Create an empty OADB for us, please !
+            CreateEmptyOADB();
+            return -1;
+        }
     }
     if (!lObjAcquired) {
         // This should not happen...
@@ -1214,11 +1248,21 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         TObject *lObjAcquiredAlter = 0x0;
         lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
         if (!lObjAcquiredAlter) {
-            AliWarning("======================================================================");
-            AliWarning(Form("MC Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
-            AliWarning(" This is usually only approximately OK! Use with Care! ");
-            AliWarning("======================================================================");
-            lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+            if ( fkUseDefaultMCCalib ){
+                AliWarning("======================================================================");
+                AliWarning(Form(" MC Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+                AliWarning(" This is usually only approximately OK! Use with Care! ");
+                AliWarning(" To Switch off this good guess, use SetUseDefaultMCCalib(kFALSE)");
+                AliWarning("======================================================================");
+                lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+            }else{
+                AliWarning("======================================================================");
+                AliWarning(Form(" MC Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
+                AliWarning("======================================================================");
+                //Create an empty OADB for us, please !
+                CreateEmptyOADB();
+                return -1;
+            }
         }
         if (!lObjAcquiredAlter) {
             // This should not happen...
@@ -1430,7 +1474,7 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
     return lReturnValue;
 }
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodName() const
+TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
 {
     //============================================================
     //This function is meant to get the period name.
@@ -1442,31 +1486,13 @@ TString AliMultSelectionTask::GetPeriodName() const
     //==================================
     // Setup initial Info
     Bool_t lLocated = kFALSE;
-    TString lTag = "LPMProductionTag";
     TString lProductionName = "";
-
     //==================================
-    // Get alirootVersion object title
-    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!handler) return lProductionName; //failed!
-    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
-    if (!prodInfoData){
-        Printf("Unable to find alirootVersion! Inspect list:");
-        handler->GetUserInfo()->ls(); 
-        lProductionName = "LHC15f";
-        
-        //exception (FIXME! temporary testing!)
-        if( fCurrentRun <= 139517 && fCurrentRun >= 136851){
-            Printf("Oh, this is Run 1 Pb-Pb! okay...");
-            lProductionName = "LHC10h";
-        }
-        return lProductionName;
-    }
-    TString lAlirootVersion(prodInfoData->GetTitle());
-    
+    TString lTag = "LHC";
+    AliInfoF(" Autodetecting production name from filename: %s", lPath.Data() );
     //==================================
     // Get Production name
-    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    TObjArray* lArrStr = lPath.Tokenize("/");
     if(lArrStr->GetEntriesFast()) {
         TIter iString(lArrStr);
         TObjString* os=0;
@@ -1474,11 +1500,6 @@ TString AliMultSelectionTask::GetPeriodName() const
         while ((os=(TObjString*)iString())) {
             if( os->GetString().Contains(lTag.Data()) ){
                 lProductionName = os->GetString().Data();
-                //Remove Label
-                lProductionName.ReplaceAll(lTag.Data(),"");
-                //Remove any remaining whitespace (just in case)
-                lProductionName.ReplaceAll("=","");
-                lProductionName.ReplaceAll(" ","");
                 break; //stop, found
             }
             j++;
@@ -1524,5 +1545,19 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     
     return lProductionName;
 }
-
+//______________________________________________________________________
+void AliMultSelectionTask::CreateEmptyOADB()
+{
+    //This will completely reset the OADB, such that any attempt to use
+    //the framework will return kNoCalib everywhere: fully safe mode of operation!
+    if( fOadbMultSelection ){
+        delete fOadbMultSelection;
+    }
+    fOadbMultSelection = new AliOADBMultSelection();
+    AliMultSelectionCuts *cuts              = new AliMultSelectionCuts(); //irrelevant
+    AliMultSelection *fsels                 = new AliMultSelection    (); //is empty, will return kNoCalib always
+    
+    fOadbMultSelection->SetEventCuts        ( cuts  );
+    fOadbMultSelection->SetMultSelection    ( fsels );
+}
 

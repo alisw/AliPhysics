@@ -71,8 +71,9 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodName()             const; //no input required, will have all info in globals...
+    TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    void CreateEmptyOADB(); //In case we really didn't get anything ...
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
     Bool_t IsNotPileupMV           (AliVEvent *event);
@@ -92,6 +93,13 @@ public:
     //FIXME: should preferably be protected, extra functionality required
     void SetAlternateOADBforEstimators    ( TString lFile ){ fAlternateOADBForEstimators    = lFile.Data(); }
     void SetAlternateOADBFullManualBypass ( TString lFile ){ fAlternateOADBFullManualBypass = lFile.Data(); }
+    
+    //Default Setters
+    void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
+    Bool_t GetUseDefaultCalib () const { return fkUseDefaultCalib; }
+    
+    void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
+    Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -117,6 +125,10 @@ private:
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
+    
+    //Default options
+    Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
+    Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
