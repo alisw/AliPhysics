@@ -760,13 +760,17 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100||fDataSet==2015||fDataSet==2011){
+  if(fDataSet==20100||fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
   if(fDataSet==2013){
     maxEt=100.0;
     maxEtPiKP = 100.0;
+  }
+  if(fDataSet==2015){
+    maxEt=6000.0;
+    maxEtPiKP = 3500;
   }
   Int_t nbinsEt = 200;
   char histoname[200];
