@@ -1183,7 +1183,9 @@ Bool_t AliReconstruction::InitGRP() {
     else {
        AliInfo("Found an AliGRPObject in GRP/GRP/Data, reading it");
        fGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-       entry->SetOwner(0);
+       entry->SetOwner(0); // RS don't manipulate with GRP
+       entry->SetObject(0); // others will reread the object
+       AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
     }
 
     //    FIX ME: The unloading of GRP entry is temporarily disabled
