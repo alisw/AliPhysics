@@ -1,3 +1,5 @@
+// rm -f galice.root ;  aliroot -l -q -b $ALICE_SOURCE/HLT/global/physics/macros/testConfigOnlineCalib.C $ALICE_ROOT/HLT/exa/recraw-local.C'("raw.root","local:///opt/HLT-DEV/HCDB", 23, 23, "HLT", "chains=RootWriter ignore-hltout")'
+
 void testConfigOnlineCalib()
 {
 	AliHLTSystem* pHLT = AliHLTPluginBase::GetInstance();
@@ -6,7 +8,7 @@ void testConfigOnlineCalib()
 	{
 //		AliHLTConfiguration calib1("myCalibration1" , "AsyncCalibration" , "GLOBAL-esd-converter" , "-QueueDepth 0");
 //		AliHLTConfiguration calib2("myCalibration2" , "AsyncCalibration" , "GLOBAL-esd-converter" , "-QueueDepth 0");
-		AliHLTConfiguration calib1("myCalibration1", "TPCCalibManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3");
+		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3  -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C('TPCCalib:CalibTimeDrift')");
 //		AliHLTConfiguration calib2("myCalibration2", "TPCCalibManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3");
 		AliHLTConfiguration calibmerge("myCalibrationMerger" , "TPCClusterTransformationMerger" , "myCalibration1" , "-cumulative");
 
