@@ -23,6 +23,10 @@ if len(sys.argv)>1:
     sepindex=endpoint.find('@')
     if sepindex < 0:
       sepindex=endpoint.find('>')
+    if sepindex < 0:
+      sepindex=endpoint.find('+')
+    if sepindex < 0:
+      sepindex=endpoint.find('-')
     if sepindex < 0 or sepindex > 5:
       print("error in endpoint syntax: "+endpoint)
       quit()
@@ -55,7 +59,7 @@ else:
     print "not a valid mode"
     quit()
 socket.set(zmq.LINGER,10)
-if endpoint[0]=='>':
+if endpoint[0]=='>' or endpoint[0]=='-' or endpoint[0]=='+':
     print "connect to: "+endpoint[1:]
     socket.connect(str(endpoint[1:]))
 elif endpoint[0]=='@':
