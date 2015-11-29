@@ -176,7 +176,8 @@ AliESDEvent::AliESDEvent():
   fNTPCFriend2Store(0),
   fDetectorStatus(0xFFFFFFFF),
   fDAQDetectorPattern(0xFFFF),
-  fDAQAttributes(0xFFFF)
+  fDAQAttributes(0xFFFF),
+  fNTPCClusters(0)
 {
 }
 
@@ -233,7 +234,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fNTPCFriend2Store(esd.fNTPCFriend2Store),
   fDetectorStatus(esd.fDetectorStatus),
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
-  fDAQAttributes(esd.fDAQAttributes)
+  fDAQAttributes(esd.fDAQAttributes),
+  fNTPCClusters(esd.fNTPCClusters)
 {
   printf("copying ESD event...\n");   // AU
   // CKB init in the constructor list and only add here ...
@@ -378,6 +380,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDetectorStatus = source.fDetectorStatus;
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
+  fNTPCClusters = source.fNTPCClusters;
 
   fNTPCFriend2Store = source.fNTPCFriend2Store;
   fTracksConnected = kFALSE;
@@ -432,6 +435,7 @@ void AliESDEvent::Reset()
   fDetectorStatus = 0xFFFFFFFF;
   fDAQDetectorPattern = 0xFFFF;
   fDAQAttributes = 0xFFFF;
+  fNTPCClusters = 0;
   //  reset for the old data without AliESDEvent...
   if(fESDOld)fESDOld->Reset();
   if(fESDFriendOld){
@@ -1754,6 +1758,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
   tree->Branch("fDetectorStatus",(void*)&fDetectorStatus,"fDetectorStatus/l");
   tree->Branch("fDAQDetectorPattern",(void*)&fDAQDetectorPattern,"fDAQDetectorPattern/i");
   tree->Branch("fDAQAttributes",(void*)&fDAQAttributes,"fDAQAttributes/i");
+  tree->Branch("fNTPCClusters",(void*)&fNTPCClusters,"fNTPCClusters/I");
 }
 
 //______________________________________________________________________________

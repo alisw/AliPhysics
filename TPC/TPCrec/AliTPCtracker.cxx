@@ -1394,6 +1394,8 @@ Int_t  AliTPCtracker::LoadClusters()
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
 
+  fNClusters = 0;
+
   TTree * tree = fInput;
   TBranch * br = tree->GetBranch("Segment");
   br->SetAddress(&clrow);
@@ -1450,6 +1452,7 @@ Int_t  AliTPCtracker::LoadClusters()
       }
       tpcrow->SetN2(nClusAdd);
     }
+    fNClusters += nClusAdd;
   }
   //
   //clrow->Clear("C");
@@ -1491,6 +1494,8 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   //
   // Calculate crosstalk estimate
   //
+  TStopwatch sw;
+  sw.Start();
   const Int_t nROCs   = 72;
   const Int_t   nIterations=3;  // 
   // 0.) reset crosstalk matrix 
@@ -1612,7 +1617,9 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     }      
   }
 
-
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 
 
@@ -1903,6 +1910,7 @@ void AliTPCtracker::UnloadClusters()
       tpcrow->ResetClusters();
     }
 
+  fNClusters = 0;
   return ;
 }
 
@@ -1998,6 +2006,8 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
   // Loop over all clusters
   //      add to each cluster signal corresponding to common Xtalk mode for given time bin at given wire segment
   // cluster loop
+  TStopwatch sw;
+  sw.Start();
   for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
     for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
       AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
@@ -2042,15 +2052,13 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
                 "\n";
             }
           }// dump the results to the debug streamer if in debug mode
-
-
-
-
-
 	}
       }
     }
   }
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 
 void  AliTPCtracker::ApplyTailCancellation(){
@@ -2058,7 +2066,8 @@ void  AliTPCtracker::ApplyTailCancellation(){
   // Correct the cluster charge for the ion tail effect 
   // The TimeResponse function accessed via  AliTPCcalibDB (TPC/Calib/IonTail)
   //
-
+  TStopwatch sw;
+  sw.Start();
   // Retrieve
   TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
   if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
@@ -2222,6 +2231,9 @@ void  AliTPCtracker::ApplyTailCancellation(){
       }//end of loop over sectors
     }//end of loop over IROC/OROC
   }// end of side loop
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 //_____________________________________________________________________________
 void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1){

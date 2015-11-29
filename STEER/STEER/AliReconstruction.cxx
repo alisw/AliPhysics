@@ -3183,6 +3183,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
+      esd->SetNumberOfTPCClusters(fTracker[iDet]->GetNumberOfClusters());
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID0%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
