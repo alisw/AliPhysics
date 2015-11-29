@@ -2304,7 +2304,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     UShort_t selectedIdx[ntracks];
 
     for (Int_t itrack=0; itrack<ntracks; itrack++){
-      const Double_t kMaxStep = 1;   //max step over the material
+      const Double_t kMaxStep = 5;   //max step over the material
       Bool_t ok;
 
       AliESDtrack *track = fesd->GetTrack(itrack);
