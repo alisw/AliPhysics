@@ -85,8 +85,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fhpTEmb(0),
   fhMEmb(0),
   fhEtaEmb(0),
-  fhPhiEmb(0),
-  fhLabel(0)
+  fhPhiEmb(0)
 {
   // Default constructor.
 
@@ -150,8 +149,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fhpTEmb(0),
   fhMEmb(0),
   fhEtaEmb(0),
-  fhPhiEmb(0),
-  fhLabel(0)
+  fhPhiEmb(0)
 {
   // Standard constructor.
 
@@ -206,8 +204,8 @@ void AliJetModelBaseTask::UserCreateOutputObjects()
   fhPhiEmb->Sumw2();
   fOutput->Add(fhPhiEmb);
   
-  fhLabel = new TH1I("fhLabel", "Label of embedded track(s)", fNTracks+1, fMarkMC+fMCLabelShift, fMarkMC+fMCLabelShift+fNTracks+1);
-  fOutput->Add(fhLabel);
+  //fhLabel = new TH1I("fhLabel", "Label of embedded track(s)", fNTracks+1, fMarkMC+fMCLabelShift, fMarkMC+fMCLabelShift+fNTracks+1);
+  //fOutput->Add(fhLabel);
   
   PostData(1, fOutput);
 }
@@ -738,7 +736,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
     if (phi < 0) 
       phi = GetRandomPhi(pt);
   }
-
+//Printf("Adding LABEL %d", label);
   if (label >= 0)
     label += fMarkMC+fMCLabelShift;
   else if (label < 0)
@@ -746,7 +744,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if(fAddV2) AddV2(phi, pt);
 
   const Int_t nTracks = fOutTracks->GetEntriesFast();
-
+//Printf("+ %d = %d", fMarkMC, label);
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
@@ -1046,19 +1044,19 @@ void AliJetModelBaseTask::Run()
 //________________________________________________________________________
 void AliJetModelBaseTask::FillHistograms(){
    
-   if(!fhpTEmb || !fhMEmb || !fhEtaEmb || !fhPhiEmb || !fhLabel) {
+   if(!fhpTEmb || !fhMEmb || !fhEtaEmb || !fhPhiEmb) {
       AliError("Histograms not found, are the QA histograms active?");
    }
    // fill histograms
+   Int_t nentries = fOutTracks->GetEntries();
    for(Int_t it = 0; it<fNTracks; it++){
-      AliVTrack *trackEmb = (AliVTrack*)fOutTracks->At(fNTracks-it);
+      AliPicoTrack *trackEmb = dynamic_cast<AliPicoTrack*>(fOutTracks->At(nentries-it-1));
       if(!trackEmb) continue;
-      if(trackEmb->GetLabel() >= fMarkMC){
+      if(trackEmb->GetLabel() >= fMarkMC+fMCLabelShift){
       	 fhpTEmb ->Fill(trackEmb->Pt());
       	 fhMEmb  ->Fill(trackEmb->M());
       	 fhEtaEmb->Fill(trackEmb->Eta());
       	 fhPhiEmb->Fill(trackEmb->Phi());
-      	 fhLabel ->Fill(trackEmb->GetLabel());
       }
    }
    

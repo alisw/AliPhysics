@@ -146,11 +146,10 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Bool_t                 fEsdMode;                //!<! ESD/AOD mode
   TList                 *fOutput;                 //!<! output list for QA histograms
   AliPythiaInfo         *fPythiaInfo;             //!<! Info on original partons:PDG,pt, eta, phi and pythia event weight
-  TH1F                *fhpTEmb  ;                 //!<! embedded tracks pT
-  TH1F                *fhMEmb   ;                 //!<! embedded tracks M
-  TH1F                *fhEtaEmb ;                 //!<! embedded tracks eta
-  TH1F                *fhPhiEmb ;                 //!<! embedded tracks phi
-  TH1I                *fhLabel  ;                 //!<! embedded tracks label
+  TH1F                  *fhpTEmb  ;               //!<! embedded tracks pT
+  TH1F                  *fhMEmb   ;               //!<! embedded tracks M
+  TH1F                  *fhEtaEmb ;               //!<! embedded tracks eta
+  TH1F                  *fhPhiEmb ;               //!<! embedded tracks phi
 
  private:
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
