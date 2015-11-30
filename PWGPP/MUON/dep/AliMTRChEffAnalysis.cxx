@@ -1045,9 +1045,10 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
         AliWarning(Form("Efficiency variation for %s is %g => consider uniform",trendGraph->GetName(),deltaEff));
         continue;
       }
-      Int_t ibin = trendGraph->GetXaxis()->FindBin(func->GetParameter(ipar));
-      runRanges[irun++] = returnIndex ? ibin - 1 : GetRunNumber(ibin-1);
-      runRanges[irun++] = returnIndex ? ibin : GetRunNumber(ibin);
+      Int_t runChangeIdx = TMath::Nint(func->GetParameter(ipar));
+      AliDebug(1,Form("Change run: %s => %g => %i %i",trendGraph->GetName(),func->GetParameter(ipar),runChangeIdx,GetRunNumber(runChangeIdx)));
+      runRanges[irun++] = returnIndex ? runChangeIdx-1 : GetRunNumber(runChangeIdx-1);
+      runRanges[irun++] = returnIndex ? runChangeIdx : GetRunNumber(runChangeIdx);
     }
     Int_t lastPt = trendGraph->GetN()-1;
     runRanges[irun++] = returnIndex ? lastPt : GetRunNumber(trendGraph->GetN()-1);
