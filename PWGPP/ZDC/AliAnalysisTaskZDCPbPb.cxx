@@ -305,10 +305,10 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
     const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
     //    
-    fhZNCpmcUncalib->Fill(towZNC[0]);    
-    fhZNApmcUncalib->Fill(towZNA[0]);    
-    fhZPCpmcUncalib->Fill(towZPC[0]);    
-    fhZPApmcUncalib->Fill(towZPA[0]);    
+    fhZNCpmcUncalib->Fill(towZNC[0]/16.);    
+    fhZNApmcUncalib->Fill(towZNA[0]/16.);    
+    fhZPCpmcUncalib->Fill(towZPC[0]/16.);    
+    fhZPApmcUncalib->Fill(towZPA[0]/16.);    
     //    
     fhZNCpmc->Fill(towZNC[0]);    
     fhZNApmc->Fill(towZNA[0]);    
