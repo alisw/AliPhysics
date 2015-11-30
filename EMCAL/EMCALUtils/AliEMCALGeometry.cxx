@@ -294,15 +294,19 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
     // 2009-2010 runs
     // First year geometry, 4 SM.
     
-    if(!geoName.Contains("FIRSTYEARV1") && geoName!="")
-    { 
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
-      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
-      printf("\t In use <<EMCAL_FIRSTYEARV1>>, check run number and year\n");
-    }
-    else 
+    static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+    if (show_info)
     {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_FIRSTYEARV1>>\n");
+      if(!geoName.Contains("FIRSTYEARV1") && geoName!="")
+      { 
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+        printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+        printf("\t In use <<EMCAL_FIRSTYEARV1>>, check run number and year\n");
+      }
+      else 
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_FIRSTYEARV1>>\n");
+      }
     }
     
     return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL",mcname,mctitle) ;
