@@ -1760,7 +1760,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   FillL1JetPatchHistograms();
 
   // FEE vs STU vs TRU
-  FillCorrelationHistograms();
+  //FillCorrelationHistograms();
 	
   ClusterAnalysis();
   
