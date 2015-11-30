@@ -60,7 +60,7 @@ protected:
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
   Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
   Int_t                   fBkgPatchType;                ///< Background patch type
-
+  Int_t                   fADCperBin;                   ///< ADC counts per bin
   Int_t                   fDebugLevel;                  ///< Debug level
 
   TArrayI                 fBkgADCAmpEMCal[3];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
@@ -69,7 +69,7 @@ protected:
   TArrayI                 fBkgADCAmpDCal[3];            //!<! ADC DCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
   Int_t                   fNBkgPatchesDCal[3];          //!<! Number of processed background patches (will be reset each event)
   Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-
+  Int_t                   fPatchSizes[6];               //!<! Patch sizes retrieved directly during the patch processing
   THashList              *fHistos;                      //!<! Histograms for QA
 
 private:
