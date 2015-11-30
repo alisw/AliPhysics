@@ -89,7 +89,7 @@ private:
   AliEmcalTriggerQAAP &operator=(const AliEmcalTriggerQAAP &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQAAP, 1);
+  ClassDef(AliEmcalTriggerQAAP, 2);
   /// \endcond
 };
 
