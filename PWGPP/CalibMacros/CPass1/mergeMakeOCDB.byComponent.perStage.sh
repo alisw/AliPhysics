@@ -75,6 +75,9 @@ main()
   # take Data Quality Flags from JDL
   detectorBitsQualityFlag=${ALIEN_JDL_RUNQUALITY--1}
 
+  # take the path to the reference storage (used by TPC) from the JDL
+  export targetStorageResidual=${ALIEN_JDL_TARGETSTORAGERESIDUAL}
+
   #################################################################
   echo "" | tee -a merge.log
   echo "$0 ${save_args[*]}" | tee -a merge.log
