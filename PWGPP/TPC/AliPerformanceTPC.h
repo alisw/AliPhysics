@@ -108,7 +108,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,11);
+  ClassDef(AliPerformanceTPC,12);
 };
 
 #endif
