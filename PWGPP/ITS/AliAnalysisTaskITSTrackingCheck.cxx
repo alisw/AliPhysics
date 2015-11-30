@@ -2219,7 +2219,13 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Float_t dca[2],dcaCov[3];
       track->GetImpactParametersTPC(dca,dcaCov);
     Bool_t isTOFbc0 = kFALSE;
-    if((track->IsOn(AliESDtrack::kTPCrefit))&&(TMath::Abs(track->GetTPCInnerParam()->GetX())<3)&&(track->GetNcls(1)>80)&&(track->GetTPCchi2()/track->GetNcls(1)<4)&&(TMath::Abs(track->GetTPCInnerParam()->GetZ()-zIP)<3*sigZLR)&&(dcaCov[0]>1e-9)&&(dca[0]*dca[0]/(dcaCov[0]+1e-2)<50)&&(track->GetTOFBunchCrossing()==0))   isTOFbc0=(track->IsOn(AliESDtrack::kITSrefit) && (track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)));
+    if((track->IsOn(AliESDtrack::kTPCrefit))&&(TMath::Abs(track->GetTPCInnerParam()->GetX())>3)&&(track->GetNcls(1)>80)&&(track->GetTPCchi2()/track->GetNcls(1)<4)&&(TMath::Abs(track->GetTPCInnerParam()->GetZ()-zIP)<3*sigZLR)&&(dcaCov[0]>1e-9)&&(dca[0]*dca[0]/(dcaCov[0]+1e-2)<50)&&(track->GetTOFBunchCrossing()==0))   isTOFbc0=(track->IsOn(AliESDtrack::kITSrefit) && (track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)));
+      
+    Bool_t isTOFbc0_TPC = kFALSE;
+    if((track->IsOn(AliESDtrack::kTPCrefit))&&(TMath::Abs(track->GetTPCInnerParam()->GetX())<3)&&(track->GetNcls(1)>80)&&(track->GetTPCchi2()/track->GetNcls(1)<4)&&(TMath::Abs(track->GetTPCInnerParam()->GetZ()-zIP)<3*sigZLR)&&(dcaCov[0]>1e-9)&&(dca[0]*dca[0]/(dcaCov[0]+1e-2)<50)&&(track->GetTOFBunchCrossing()==0))
+          
+          
+        isTOFbc0_TPC=(track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)||track->HasPointOnITSLayer(2)||track->HasPointOnITSLayer(3)||track->HasPointOnITSLayer(4)||track->HasPointOnITSLayer(5));
       
 
     //
@@ -2374,7 +2380,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  fHistPtTPCInAcc->Fill(track->Pt());
 	  if(fCheckSDDIsIn && sddIsIn) fHistPtTPCInAccwSDD->Fill(track->Pt());
 	  if(fCheckSDDIsIn && !sddIsIn) fHistPtTPCInAccwoSDD->Fill(track->Pt());
-	  if(isTOFbc0) {
+	  if(isTOFbc0_TPC) {
 	    fHistPtTPCInAccTOFbc0->Fill(track->Pt());
 	    if(fCheckSDDIsIn && sddIsIn) fHistPtTPCInAccTOFbc0wSDD->Fill(track->Pt());
 	    if(fCheckSDDIsIn && !sddIsIn) fHistPtTPCInAccTOFbc0woSDD->Fill(track->Pt());
