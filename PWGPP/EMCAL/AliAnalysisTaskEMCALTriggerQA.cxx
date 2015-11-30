@@ -55,9 +55,12 @@ fSTUTotal(0),              fTRUTotal(0),
 fV0Trigger(0),             fV0A(0),              fV0C(0),
 fFillV0SigHisto(1),        fFillClusAcceptHisto(0),
 fMCData(kFALSE),
-fEventMB   (0),            fEventL0   (0),
-fEventL1G  (0),            fEventL1G2 (0),
-fEventL1J  (0),            fEventL1J2 (0),
+fEventMB   (0),            
+fEventL0   (0),            fEventL0D   (0),
+fEventL1G  (0),            fEventL1GD (0),                      
+fEventL1G2 (0),            fEventL1G2D(0),
+fEventL1J  (0),            fEventL1JD (0),            
+fEventL1J2 (0),            fEventL1J2D(0),
 fEventCen  (0),            fEventSem  (0),
 fMomentum(),
 //Histograms
@@ -199,20 +202,20 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       // here it is the amplitude for each cell
       fMapCell[indexY][indexX] += amp;
       
-      if(fEventL1G)
+      if(fEventL1G || fEventL1GD)
       {
         fMapCellL1G[indexY][indexX] += amp;
         //printf("L1G cell[%i,%i] amp=%f\n",indexY,indexX,fMapCellL1G[indexY][indexX]);
       }
       
-      if(fEventL1G2)
+      if(fEventL1G2 || fEventL1G2D)
       {
         fMapCellL1G2[indexY][indexX] += amp;
         //printf("L1G2 cell[%i,%i] amp=%f\n",indexY,indexX,fMapCellL1G2[indexY][indexX]);
       }
 			
-      if(fEventL1J)  fMapCellL1J [indexY][indexX] += amp;
-      if(fEventL1J2) fMapCellL1J2[indexY][indexX] += amp;
+      if(fEventL1J  || fEventL1JD)  fMapCellL1J [indexY][indexX] += amp;
+      if(fEventL1J2 || fEventL1J2D) fMapCellL1J2[indexY][indexX] += amp;
 			
       //printf("cell[%i,%i] amp=%f\n",indexY,indexX,fMapCell[indexY][indexX]);
     }
@@ -254,8 +257,13 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       trg.GetAmplitude(ampL0);
       if (ampL0 > 0) fMapTrigL0[posY][posX] = ampL0;
 			
-      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA") || triggerclasses.Contains("CPBI2EG1")) fMapTrigL0L1G[posY][posX] += ampL0;
-      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE") || triggerclasses.Contains("CPBI2EJ1")) fMapTrigL0L1J[posY][posX] += ampL0;
+      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA") || 
+         triggerclasses.Contains("CPBI2EG1") || triggerclasses.Contains("CINT7EG1-B-NOPF-CENTNOPMD") || 
+         triggerclasses.Contains("CINT7DG1-B-NOPF-CENTNOPMD")) fMapTrigL0L1G[posY][posX] += ampL0;
+      
+      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE") || 
+         triggerclasses.Contains("CPBI2EJ1") || triggerclasses.Contains("CINT7EJ1-B-NOPF-CENTNOPMD") || 
+         triggerclasses.Contains("CINT7DJ1-B-NOPF-CENTNOPMD")) fMapTrigL0L1J[posY][posX] += ampL0;
       fTRUTotal += ampL0;
       
       Int_t l0fired = 0;
@@ -281,10 +289,10 @@ void AliAnalysisTaskEMCALTriggerQA::FillTriggerPatchMaps(TString triggerclasses)
       // cout << "ts =" <<ts<<endl;
 
       //L1
-      Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && fEventL1G  ;
-      Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && fEventL1G2 ;
-      Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && fEventL1J  ;
-      Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && fEventL1J2 ;
+      Bool_t isEGA1 = ((bit >>  fBitEGA   ) & 0x1) && (fEventL1G  || fEventL1GD ) ;
+      Bool_t isEGA2 = ((bit >> (fBitEGA+1)) & 0x1) && (fEventL1G2 || fEventL1G2D) ;
+      Bool_t isEJE1 = ((bit >>  fBitEJE   ) & 0x1) && (fEventL1J  || fEventL1JD ) ;
+      Bool_t isEJE2 = ((bit >> (fBitEJE+1)) & 0x1) && (fEventL1J2 || fEventL1J2D) ;
       
       //if(isEGA1 || isEGA2 || isEJE1 || isEJE2) nL1Patch++;
       //if(isEJE1 || isEJE2) printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
@@ -428,17 +436,44 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
     if( fEventL1J ) FillClusterHistograms(kL1JetTrig      ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
     if( fEventL1J2) FillClusterHistograms(kL1JetTrig2     ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
 
+    if( fEventL0D  ) FillClusterHistograms(kL0TrigD         ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1GD ) FillClusterHistograms(kL1GammaTrigD    ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1G2D) FillClusterHistograms(kL1GammaTrig2D   ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1JD ) FillClusterHistograms(kL1JetTrigD      ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1J2D) FillClusterHistograms(kL1JetTrig2D     ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    
+    if(  fEventL0  && !fEventL0D  ) FillClusterHistograms(kL0TrigPureEMC , kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( !fEventL0  &&  fEventL0D  ) FillClusterHistograms(kL0TrigPureDMC , kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if(  fEventL1G && !fEventL1GD ) FillClusterHistograms(kL1GTrigPureEMC, kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( !fEventL1G &&  fEventL1GD ) FillClusterHistograms(kL1GTrigPureDMC, kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);  
+    if(  fEventL1J && !fEventL1JD ) FillClusterHistograms(kL1JTrigPureEMC, kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( !fEventL1J &&  fEventL1JD ) FillClusterHistograms(kL1JTrigPureDMC, kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+
     if( fEventL1G2 && !fEventL1G) FillClusterHistograms(kL1Gamma2OnlyGammaTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
     if( fEventL1J2 && !fEventL1J) FillClusterHistograms(kL1Jet2OnlyJetTrig    ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
 
-    if( fEventL1G && !fEventL1J )
-    FillClusterHistograms       (kL1GammaOnlyTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
-    if( fEventL1J && !fEventL1G )
-    FillClusterHistograms       (kL1JetOnlyTrig  ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1G2D && !fEventL1GD) FillClusterHistograms(kL1Gamma2OnlyGammaTrigD,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    if( fEventL1J2D && !fEventL1JD) FillClusterHistograms(kL1Jet2OnlyJetTrigD    ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+
     
-    if( fEventMB  && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMBPure[0]  ->Fill(e);
-    if( fEventCen && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMBPure[1]  ->Fill(e);
-    if( fEventSem && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMBPure[2]  ->Fill(e);
+    if( fEventL1G && !fEventL1J )
+      FillClusterHistograms       (kL1GammaOnlyTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    
+    if( fEventL1J && !fEventL1G )
+      FillClusterHistograms       (kL1JetOnlyTrig  ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+
+    if( fEventL1GD && !fEventL1JD )
+      FillClusterHistograms       (kL1GammaOnlyTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+    
+    if( fEventL1JD && !fEventL1GD )
+      FillClusterHistograms       (kL1JetOnlyTrig  ,kFALSE,e,eta,phi,ieta,iphi,centrality,fV0A+fV0C);
+
+    if(!fEventL1G && !fEventL1J && !fEventL0 && !fEventL1GD && !fEventL1JD && !fEventL0D)
+    {
+      if( fEventMB  ) fhClusMBPure[0]  ->Fill(e);
+      if( fEventCen ) fhClusMBPure[1]  ->Fill(e);
+      if( fEventSem ) fhClusMBPure[2]  ->Fill(e);
+    }
     
   }
   
@@ -454,18 +489,36 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   if( fEventL1J ) FillClusterHistograms(kL1JetTrig      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
   if( fEventL1J2) FillClusterHistograms(kL1JetTrig2     ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
 
+  if( fEventL0D  ) FillClusterHistograms(kL0TrigD         ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1GD ) FillClusterHistograms(kL1GammaTrigD    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1G2D) FillClusterHistograms(kL1GammaTrig2D   ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1JD ) FillClusterHistograms(kL1JetTrigD      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1J2D) FillClusterHistograms(kL1JetTrig2D     ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+
+  if(  fEventL0  && !fEventL0D  ) FillClusterHistograms(kL0TrigPureEMC , kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( !fEventL0  &&  fEventL0D  ) FillClusterHistograms(kL0TrigPureDMC , kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if(  fEventL1G && !fEventL1GD ) FillClusterHistograms(kL1GTrigPureEMC, kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( !fEventL1G &&  fEventL1GD ) FillClusterHistograms(kL1GTrigPureDMC, kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);  
+  if(  fEventL1J && !fEventL1JD ) FillClusterHistograms(kL1JTrigPureEMC, kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( !fEventL1J &&  fEventL1JD ) FillClusterHistograms(kL1JTrigPureDMC, kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  
   if( fEventL1G2 && !fEventL1G) FillClusterHistograms(kL1Gamma2OnlyGammaTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
   if( fEventL1J2 && !fEventL1J) FillClusterHistograms(kL1Jet2OnlyJetTrig    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
 
-  if( fEventL1G && !fEventL1J )
-  FillClusterHistograms         (kL1GammaOnlyTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
-  if( fEventL1J && !fEventL1G )
-  FillClusterHistograms         (kL1JetOnlyTrig  ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
-  
-  if( fEventMB  && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMaxMBPure[0]  ->Fill(emax);
-  if( fEventCen && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMaxMBPure[1]  ->Fill(emax);
-  if( fEventSem && !fEventL1G && !fEventL1J && !fEventL0  ) fhClusMaxMBPure[2]  ->Fill(emax);
+  if( fEventL1G2D && !fEventL1GD) FillClusterHistograms(kL1Gamma2OnlyGammaTrigD,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1J2D && !fEventL1JD) FillClusterHistograms(kL1Jet2OnlyJetTrigD    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
 
+  if( fEventL1GD && !fEventL1JD )
+    FillClusterHistograms         (kL1GammaOnlyTrigD,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+  if( fEventL1JD && !fEventL1GD )
+    FillClusterHistograms         (kL1JetOnlyTrigD  ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,fV0A+fV0C);
+ 
+  if(!fEventL1G && !fEventL1J && !fEventL0 && !fEventL1GD && !fEventL1JD && !fEventL0D)
+  {
+    if( fEventMB  ) fhClusMaxMBPure[0]  ->Fill(emax);
+    if( fEventCen ) fhClusMaxMBPure[1]  ->Fill(emax);
+    if( fEventSem ) fhClusMaxMBPure[2]  ->Fill(emax);
+  }
 }
 
 //______________________________________________________________________________________________
@@ -536,7 +589,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(Int_t triggerNumber, B
 //_____________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms()
 {
-  Double_t ampFOR[30] = {0.}, ampL0[30] = {0.}, ampL1[30] = {0.};
+  Double_t ampFOR[60] = {0.}, ampL0[60] = {0.}, ampL1[60] = {0.};
   for (Int_t i = 0; i < fgkFALTRORows; i++)
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++)
@@ -561,7 +614,7 @@ void AliAnalysisTaskEMCALTriggerQA::FillCorrelationHistograms()
   }
 	
   // FEE vs STU and TRU vs STU ratios
-  for (Int_t i = 0; i < 30; i++)
+  for (Int_t i = 0; i < 60; i++)
   {
     if (ampFOR[i] != 0 && ampL1[i] != 0)
     {
@@ -596,6 +649,14 @@ void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
     if( fEventL0  ) fhNEvents->Fill(13.5);
     if( fEventL1G ) fhNEvents->Fill(14.5);
     if( fEventL1J ) fhNEvents->Fill(15.5);
+
+    if( fEventL0D  ) fhNEvents->Fill(20.5);
+    if( fEventL1GD ) fhNEvents->Fill(21.5);
+    if( fEventL1JD ) fhNEvents->Fill(22.5);
+    
+    if( fEventL0  && !fEventL0D  ) fhNEvents->Fill(23.5);
+    if( fEventL1G && !fEventL1GD ) fhNEvents->Fill(24.5);
+    if( fEventL1J && !fEventL1JD ) fhNEvents->Fill(25.5);
   }
 	
   if( fEventCen)   fhNEvents->Fill(2.5);
@@ -786,8 +847,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1GammaPatchHistograms()
   }
   
   if( fFillV0SigHisto ) fhGPMaxVV0TT->Fill(fV0Trigger, patchMax);
-  if( fEventL1G )  fhL1GPatchMax ->Fill(colMax,rowMax);
-  if( fEventL1G2 ) fhL1G2PatchMax->Fill(colMax,rowMax);
+  if( fEventL1G       ) fhL1GPatchMax ->Fill(colMax,rowMax);
+  if( fEventL1G2      ) fhL1G2PatchMax->Fill(colMax,rowMax);
 }
 
 //____________________________________________________________
@@ -826,8 +887,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillL1JetPatchHistograms()
   }
   
   if( fFillV0SigHisto ) fhJPMaxVV0TT->Fill(fV0Trigger, patchMax);
-  if( fEventL1J )  fhL1JPatchMax ->Fill(colMax,rowMax);
-  if( fEventL1J2 ) fhL1J2PatchMax->Fill(colMax,rowMax);
+  if( fEventL1J       ) fhL1JPatchMax ->Fill(colMax,rowMax);
+  if( fEventL1J2      ) fhL1J2PatchMax->Fill(colMax,rowMax);
 }
 
 //______________________________________________________
@@ -887,10 +948,14 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
     // Not interesting in case of data analysis, REVISE in future
     if(fMCData || !fFillV0SigHisto) return ;
     
-    if( fEventL1G )  fhV0[kL1GammaTrig]    ->Fill(fV0A+fV0C);
-    if( fEventL1G2 ) fhV0[kL1GammaTrig2]   ->Fill(fV0A+fV0C);
-    if( fEventL1J )  fhV0[kL1JetTrig]      ->Fill(fV0A+fV0C);
-    if( fEventL1J2 ) fhV0[kL1JetTrig2]     ->Fill(fV0A+fV0C);
+    if( fEventL1G   ) fhV0[kL1GammaTrig]   ->Fill(fV0A+fV0C);
+    if( fEventL1G2  ) fhV0[kL1GammaTrig2]  ->Fill(fV0A+fV0C);
+    if( fEventL1J   ) fhV0[kL1JetTrig]     ->Fill(fV0A+fV0C);
+    if( fEventL1J2  ) fhV0[kL1JetTrig2]    ->Fill(fV0A+fV0C);
+    if( fEventL1GD  ) fhV0[kL1GammaTrigD]  ->Fill(fV0A+fV0C);
+    if( fEventL1G2D ) fhV0[kL1GammaTrig2D] ->Fill(fV0A+fV0C);
+    if( fEventL1JD  ) fhV0[kL1JetTrigD]    ->Fill(fV0A+fV0C);
+    if( fEventL1J2D ) fhV0[kL1JetTrig2D]   ->Fill(fV0A+fV0C);
     if( fEventMB  )  fhV0[kMBTrig]         ->Fill(fV0A+fV0C);
     if( fEventL0  )  fhV0[kL0Trig]         ->Fill(fV0A+fV0C);
     if( fEventCen )  fhV0[kCentralTrig]    ->Fill(fV0A+fV0C);
@@ -1041,7 +1106,7 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   fEventSem  = kFALSE;
   
   // Minimum bias event trigger?
-  if((triggerclasses.Contains("CINT") || triggerclasses.Contains("CPBI2_B1") ) &&
+  if((triggerclasses.Contains("CINT7") || triggerclasses.Contains("CPBI2_B1") ) &&
      (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
 		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
   
@@ -1057,12 +1122,27 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
        !triggerclasses.Contains("EJ1" )	&&
        !triggerclasses.Contains("EG2" ) &&
        !triggerclasses.Contains("EJ2" )    ) fEventL0  = kTRUE;
+
+    if( triggerclasses.Contains("CDMC") &&
+       !triggerclasses.Contains("DGA" ) &&
+       !triggerclasses.Contains("DJE" )	&&
+       !triggerclasses.Contains("DG1" ) &&
+       !triggerclasses.Contains("DJ1" )	&&
+       !triggerclasses.Contains("DG2" ) &&
+       !triggerclasses.Contains("DJ2" )    ) fEventL0D  = kTRUE;
+
     
     if( triggerclasses.Contains("EGA" ) || triggerclasses.Contains("EG1" )   ) fEventL1G  = kTRUE;
     if( triggerclasses.Contains("EG2" ) )                                      fEventL1G2 = kTRUE;
+
+    if( triggerclasses.Contains("DGA" ) || triggerclasses.Contains("DG1" )   ) fEventL1GD  = kTRUE;
+    if( triggerclasses.Contains("DG2" ) )                                      fEventL1G2D = kTRUE;
     
     if( triggerclasses.Contains("EJE" ) || triggerclasses.Contains("EJ1" )   ) fEventL1J  = kTRUE;
     if( triggerclasses.Contains("EJ2" ) )                                      fEventL1J2 = kTRUE;
+   
+    if( triggerclasses.Contains("DJE" ) || triggerclasses.Contains("DJ1" )   ) fEventL1JD  = kTRUE;
+    if( triggerclasses.Contains("DJ2" ) )                                      fEventL1J2D = kTRUE;
   }
   
   // Semi/Central PbPb trigger
@@ -1102,7 +1182,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhNEvents   ->GetXaxis()->SetBinLabel(17,"L1-G1 & (Cen | Semi)");
   fhNEvents   ->GetXaxis()->SetBinLabel(18,"L1-J1 & (Cen | Semi)");
   fhNEvents   ->GetXaxis()->SetBinLabel(19,"L1-G2 & !L1-G1");
-  fhNEvents   ->GetXaxis()->SetBinLabel(20,"L1-J2 & !L1-J1");
+  fhNEvents   ->GetXaxis()->SetBinLabel(20,"L0 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(21,"L1-G1 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(22,"L1-J1 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(23,"L0 !DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(24,"L1-G1 !DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(25,"L1-J1 !DCal");
 
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
@@ -1418,11 +1503,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   }
   
   // Cluster histograms, E
-  TString hName  [] = {"MB","L0","L1G1","L1G2","L1J1","L1J2","L1G1NoL1J1","L1J1NoLG1","L1G2NoL1G1","L1J2NoL1J1","Central","SemiCentral"};
-  TString hTitle [] = {"MB trigger","L0 trigger","L1 Gamma1 trigger","L1 Gamma2 trigger","L1 Jet1 trigger","L1 Jet2 trigger",
-                       "L1 Gamma1 trigger and not L1 Jet1"  ,"L1 Jet1 trigger and not L1 Gamma1",
-                       "L1 Gamma2 trigger and not L1 Gamma1","L1 Jet2 trigger and not L1 Jet1",
-                        "Central trigger","SemiCentral trigger"};
+  TString hName  [] = { "MB","L0","L1G1","L1G2","L1J1","L1J2","L1G1NoL1J1","L1J1NoLG1","L1G2NoL1G1","L1J2NoL1J1",
+                        "L0E","L0D","L1EG1","L1DG1","L1EJ1","L1DJ1","Central","SemiCentral" } ;
+  TString hTitle [] = { "MB trigger","L0 trigger","L1 Gamma1 trigger","L1 Gamma2 trigger","L1 Jet1 trigger","L1 Jet2 trigger",
+                        "L1 Gamma1 trigger and not L1 Jet1"  ,"L1 Jet1 trigger and not L1 Gamma1",
+                        "L1 Gamma2 trigger and not L1 Gamma1","L1 Jet2 trigger and not L1 Jet1", 
+                        "L0 EMC Pure", "L0 DMC Pure", "L1-Gamma1 EMC Pure", "L1-Gamma1 DMC Pure", "L1-Jet EMC Pure", "L1-Jet DMC Pure"
+                        "Central trigger","SemiCentral trigger" } ;
 	
   for(Int_t i=0; i < 3; i++)
   {
