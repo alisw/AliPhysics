@@ -186,9 +186,19 @@ void AliAnalysisTaskEMCALTriggerQA::FillCellMaps()
       fGeometry->GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
       fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       
-      posX = (nSupMod % 2) ? ieta + AliEMCALGeoParams::fgkEMCALCols : ieta;
+      //
+      // Shift collumns in even SM
+      Int_t shiftEta = AliEMCALGeoParams::fgkEMCALCols;
+      
+      // Shift collumn even more due to smaller acceptance of DCal collumns
+      if ( nSupMod >  11 && nSupMod < 18) shiftEta+=AliEMCALGeoParams::fgkEMCALCols/3;
+            
+      posX = (nSupMod % 2) ? ieta + shiftEta : ieta;
       posY = iphi + AliEMCALGeoParams::fgkEMCALRows * int(nSupMod / 2);
       
+      // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
+      if ( nSupMod >  11 && nSupMod < 20) posY -= (2*AliEMCALGeoParams::fgkEMCALRows / 3);
+
       Int_t indexX = Int_t(posX/2);
       Int_t indexY = Int_t(posY/2);
       
@@ -649,14 +659,6 @@ void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
     if( fEventL0  ) fhNEvents->Fill(13.5);
     if( fEventL1G ) fhNEvents->Fill(14.5);
     if( fEventL1J ) fhNEvents->Fill(15.5);
-
-    if( fEventL0D  ) fhNEvents->Fill(20.5);
-    if( fEventL1GD ) fhNEvents->Fill(21.5);
-    if( fEventL1JD ) fhNEvents->Fill(22.5);
-    
-    if( fEventL0  && !fEventL0D  ) fhNEvents->Fill(23.5);
-    if( fEventL1G && !fEventL1GD ) fhNEvents->Fill(24.5);
-    if( fEventL1J && !fEventL1JD ) fhNEvents->Fill(25.5);
   }
 	
   if( fEventCen)   fhNEvents->Fill(2.5);
@@ -695,6 +697,14 @@ void AliAnalysisTaskEMCALTriggerQA::FillEventCounterHistogram()
   }
   
   if(fEventL1J && fEventL1G) fhNEvents->Fill(11.5);
+  
+  if( fEventL0D  ) fhNEvents->Fill(20.5);
+  if( fEventL1GD ) fhNEvents->Fill(21.5);
+  if( fEventL1JD ) fhNEvents->Fill(22.5);
+  
+  if( fEventL0  && !fEventL0D  ) fhNEvents->Fill(23.5);
+  if( fEventL1G && !fEventL1GD ) fhNEvents->Fill(24.5);
+  if( fEventL1J && !fEventL1JD ) fhNEvents->Fill(25.5);
 }
 
 //______________________________________________________________
@@ -1102,6 +1112,11 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   fEventL1G2 = kFALSE;
   fEventL1J  = kFALSE;
   fEventL1J2 = kFALSE;
+  fEventL0D  = kFALSE;
+  fEventL1GD = kFALSE;
+  fEventL1G2D= kFALSE;
+  fEventL1JD = kFALSE;
+  fEventL1J2D= kFALSE;
   fEventCen  = kFALSE;
   fEventSem  = kFALSE;
   
@@ -1152,8 +1167,12 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   if     (triggerclasses.Contains("CCENT_R2-B-NOPF-ALLNOTRD")) fEventCen = kTRUE;
   else if(triggerclasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD")) fEventSem = kTRUE;
 
-  //printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
-	//       fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem,triggerclasses.Data());
+//  printf("MB : %d; L0-E : %d; L0-D : %d; L1-EGam1 : %d; L1-DGam1 : %d; "
+//         "L1-EGam2 : %d; L1-DGam2 : %d;\n L1-EJet1 : %d; L1-DJet1 : %d; L1-EJet2 : %d;L1-DJet2 : %d; "
+//         "Central : %d; SemiCentral : %d; \n Trigger Names : %s \n ",
+//	       fEventMB,fEventL0,fEventL0D,fEventL1G,fEventL1GD,fEventL1G2,fEventL1G2D,
+//         fEventL1J,fEventL1JD,fEventL1J2,fEventL1J2D,
+//         fEventCen,fEventSem,triggerclasses.Data());
 }
 
 //___________________________________________________________
@@ -1164,7 +1183,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",25,0,25);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",26,0,26);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
   fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
@@ -1185,13 +1204,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhNEvents   ->GetXaxis()->SetBinLabel(17,"L1-G1 & (Cen | Semi)");
   fhNEvents   ->GetXaxis()->SetBinLabel(18,"L1-J1 & (Cen | Semi)");
   fhNEvents   ->GetXaxis()->SetBinLabel(19,"L1-G2 & !L1-G1");
-  fhNEvents   ->GetXaxis()->SetBinLabel(20,"L0 DCal");
-  fhNEvents   ->GetXaxis()->SetBinLabel(21,"L1-G1 DCal");
-  fhNEvents   ->GetXaxis()->SetBinLabel(22,"L1-J1 DCal");
-  fhNEvents   ->GetXaxis()->SetBinLabel(23,"L0 !DCal");
-  fhNEvents   ->GetXaxis()->SetBinLabel(24,"L1-G1 !DCal");
-  fhNEvents   ->GetXaxis()->SetBinLabel(25,"L1-J1 !DCal");
-
+  fhNEvents   ->GetXaxis()->SetBinLabel(20,"L1-J2 & !L1-J1");
+  fhNEvents   ->GetXaxis()->SetBinLabel(21,"L0 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(22,"L1-G1 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(23,"L1-J1 DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(24,"L0 !DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(25,"L1-G1 !DCal");
+  fhNEvents   ->GetXaxis()->SetBinLabel(26,"L1-J1 !DCal");
+  
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmp    ->SetXTitle("Index #eta (columnns)");
