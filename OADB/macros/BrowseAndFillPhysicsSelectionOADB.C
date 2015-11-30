@@ -135,6 +135,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   
   oadbContPS->AddDefaultObject(oadbDefaultPbPb);
 
+  // Trigger analysis defaults
+  AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("Default");
+  oadbTrigAnalysis->SetZDCCorrParameters(0., 0., 2., 2.);
+  oadbContTriggerAnalysis->AddDefaultObject(oadbTrigAnalysis);
+
   
   AliOADBPhysicsSelection * oadbLHC15m = new AliOADBPhysicsSelection("oadbLHC15m");
   triggerCount=0;
@@ -435,11 +440,6 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
 
   oadbContPS->AddDefaultObject(oadbDefaultPP);
-
-  // Trigger analysis defaults
-  AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("Default");
-  oadbTrigAnalysis->SetZDCCorrParameters(0.5, 0, 4*0.7, 4*0.7);
-  oadbContTriggerAnalysis->AddDefaultObject(oadbTrigAnalysis);
 
   // proton-proton 2010
   AliOADBPhysicsSelection * oadbLHCpp2010 = new AliOADBPhysicsSelection("oadbLHCpp2010");
@@ -1804,6 +1804,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC9->SetZDCCorrParameters(-2.1, 0, 4*0.58, 4*0.5);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC9, 136851, 139517);
 
+  AliOADBTriggerAnalysis * oadbTrigAnalysisLHC11h = new AliOADBTriggerAnalysis("lhc11h");
+  oadbTrigAnalysisLHC11h->SetZDCCorrParameters(0.5, 0, 4*0.7, 4*0.7);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC11h, 166529, 170593);
+
+  
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
   oadbTrigAnalysisZDC3->Print();
@@ -1813,6 +1818,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC7->Print();
   oadbTrigAnalysisZDC8->Print();
   oadbTrigAnalysisZDC9->Print();
+  oadbTrigAnalysisLHC11h->Print();
 
 
   // ----------------- visualize coverage
