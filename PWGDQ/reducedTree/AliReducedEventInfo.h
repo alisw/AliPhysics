@@ -18,7 +18,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
 
  public:
   AliReducedEventInfo();
-  AliReducedEventInfo(const Char_t* name);
+  AliReducedEventInfo(const Char_t* name, Int_t trackOption = AliReducedBaseEvent::kNoInit);
   virtual ~AliReducedEventInfo();
 
   // getters
@@ -37,7 +37,6 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
   Bool_t    IsSPDPileupMultBins()             const {return fIsSPDPileupMultBins;}
   Int_t     IRIntClosestIntMap(Int_t id)      const {return (id>=0 && id<2 ? fIRIntClosestIntMap[id] : -999);}
-  Int_t     VertexNContributors()             const {return fNVtxContributors;}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
@@ -46,8 +45,6 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     NPMDtracks()                      const {return fNPMDtracks;}
   Int_t     NTRDtracks()                      const {return fNTRDtracks;}
   Int_t     NTRDtracklets()                   const {return fNTRDtracklets;}
-  Int_t     NV0CandidatesTotal()              const {return fNV0candidates[0];}
-  Int_t     NV0Candidates()                   const {return fNV0candidates[1];}
   Int_t     SPDntracklets()                   const {return fSPDntracklets;}
   Int_t     SPDntracklets(Int_t bin)          const {return (bin>=0 && bin<32 ? fSPDntrackletsEta[bin] : -999);}
   Short_t   SPDFiredChips(Int_t layer)        const {return (layer==1 || layer==2 ? fSPDFiredChips[layer-1] : -999);}
@@ -82,10 +79,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   
   Bool_t    TestEventTag(UShort_t iflag)  const {return (iflag<8*sizeof(ULong64_t) ? fEventTag&(ULong64_t(1)<<iflag) : kFALSE);}
   Bool_t    SetEventTag(UShort_t iflag)         {if (iflag>=8*sizeof(ULong64_t)) return kFALSE; fEventTag|=(ULong64_t(1)<<iflag); return kTRUE;}
-  
-  AliReducedPairInfo* GetV0Pair(Int_t i)         const 
-    {return (i>=0 && i<fNV0candidates[1] ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
-  TClonesArray* GetPairs()                       const {return fCandidates;}
+
+  Bool_t    IsTriggerFired(UShort_t iflag)      {if (iflag>=8*sizeof(ULong64_t)) return kFALSE; return (fTriggerMask&(ULong64_t(1)<<iflag) ? kTRUE : kFALSE);}
 
   Double_t GetQvectorFMD(Int_t c, Double_t etamin, Double_t etamax);
 
@@ -103,6 +98,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
                                     Float_t etaMin=-0.8, Float_t etaMax=+0.8,
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
 
+  virtual void ClearEvent();
+  
   static const Float_t fgkZdcNalpha;
   
  protected:
@@ -118,7 +115,6 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
   Int_t     fIRIntClosestIntMap[2]; // out of bunch interactions, [0]-Int1, [1]-Int2 
-  Int_t     fNVtxContributors;      // global event vertex contributors
   Float_t   fVtxTPC[3];             // TPC only event vertex           
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
   Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
@@ -126,7 +122,6 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     fNPMDtracks;            // number of PMD tracks                   
   Int_t     fNTRDtracks;            // number of TRD tracks                   
   Int_t     fNTRDtracklets;         // number of TRD tracklets                
-  Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
   Int_t     fSPDntracklets;         // number of SPD tracklets in |eta|<1.0 
   Int_t     fSPDntrackletsEta[32];  // number of SPD tracklets in equal eta bins between -1.6 --> +1.6    
   Short_t   fSPDFiredChips[2];      // number of fired chips in the two layers
@@ -144,20 +139,16 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    fT0pileup;               // TZERO pileup flag
   Bool_t    fT0sattelite;            // TZERO flag for collisions from sattelite bunches
     
-  TClonesArray* fCandidates;        //->   array containing pair candidates
-  static TClonesArray* fgCandidates;  // pair candidates
-  
   Int_t     fNCaloClusters;         // number of calorimeter clusters  
   TClonesArray* fCaloClusters;        //->   array containing calorimeter clusters
   static TClonesArray* fgCaloClusters;     // calorimeter clusters
   TClonesArray* fFMD;            //->   array containing fmd readout          (NEW)
   static TClonesArray* fgFMD;    //       fmd readout			      (NEW)
-  
-  void ClearEvent();
+
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 1);
+  ClassDef(AliReducedEventInfo, 2);
 };
 
 #endif

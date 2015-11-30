@@ -50,8 +50,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDntracklets(),
   fTRDpid(),
   fTRDpidLQ2D(),
-  fCaloClusterId(-999),
-  fQualityFlags(0)
+  fCaloClusterId(-999)
 {
   //
   // Constructor
