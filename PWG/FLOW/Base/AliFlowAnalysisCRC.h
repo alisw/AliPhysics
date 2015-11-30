@@ -852,6 +852,14 @@ public:
  TH1F* GetZNSpectra(Int_t const eg, Int_t const h) const {return this->fhZNSpectra[eg][h];};
  void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
  TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
+ void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
+ TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
+ void SetZNResvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsMul[eg][h] = n;};
+ TH2F* GetZNResvsMul(Int_t const eg, Int_t const h) const {return this->fhZNResvsMul[eg][h];};
+ void SetZNResvsCen(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsCen[eg][h] = n;};
+ TH2F* GetZNResvsCen(Int_t const eg, Int_t const h) const {return this->fhZNResvsCen[eg][h];};
+ void SetZNQVecCov(TProfile* const n, Int_t const h) {this->fhZNQVecCov[h] = n;};
+ TProfile* GetZNQVecCov(Int_t const h) const {return this->fhZNQVecCov[h];};
  
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  void SetPtDiffRangePt(Double_t min, Double_t max) {this->fPtDiffMinPt=min; this->fPtDiffMaxPt=max;}
@@ -876,15 +884,13 @@ public:
  void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
  void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[c][eg][h] = TP;};
  TProfile* GetFlowSPZDCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[c][eg][h];};
- void SetFlowSPZDCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSPZDCNUAPro[c][eg][k] = TP;};
- TProfile* GetFlowSPZDCNUAPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSPZDCNUAPro[c][eg][k];};
  void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowSPZDCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorHist[c][eg][h];};
  
  void SetFlowSPZDCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCFinalPtDifHist[c][eg][h] = TH;};
  TH1D* GetFlowSPZDCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCFinalPtDifHist[c][eg][h];};
- void SetFlowSPZDCFinalPtIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCFinalPtIntHist[c][eg] = TH;};
- TH1D* GetFlowSPZDCFinalPtIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCFinalPtIntHist[c][eg];};
+ void SetFlowSPZDCIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntHist[c][eg] = TH;};
+ TH1D* GetFlowSPZDCIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntHist[c][eg];};
  void SetFlowSPZDCSpectra(TProfile* const TH, Int_t const c) {this->fFlowSPZDCSpectra[c] = TH;};
  TProfile* GetFlowSPZDCSpectra(Int_t const c) const {return this->fFlowSPZDCSpectra[c];};
  void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[c][eg] = TP;};
@@ -1479,10 +1485,9 @@ private:
  TList *fFlowSPZDCList;    //! SPZDC List
  const static Int_t fFlowNPro = 9;
  TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
- TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][6]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
  TProfile *fFlowSPZDCIntPro[fFlowNHarm][fFlowNPro]; //! reference flow
- TH1D *fFlowSPZDCFinalPtIntHist[fFlowNHarm][fFlowNPro]; //!
+ TH1D *fFlowSPZDCIntHist[fFlowNHarm][fFlowNPro]; //!
  TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
  TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
  
@@ -1513,6 +1518,10 @@ private:
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
  TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra
  TH2F* fhZNCvsZNA[fCRCMaxnCen]; //! ZNA-ZNC correlation
+ TH2F* fhZNCenvsMul[fCRCMaxnCen][2]; //! rad vs mul
+ TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
+ TH2F* fhZNResvsCen[fCRCMaxnCen][2]; //! res vs rad
+ TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  Bool_t fQAZDCCuts;
  Bool_t fQAZDCCutsFlag;
  Int_t fMinMulZN;
