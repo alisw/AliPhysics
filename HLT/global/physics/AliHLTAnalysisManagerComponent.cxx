@@ -177,28 +177,10 @@ AliHLTComponent* AliHLTAnalysisManagerComponent::Spawn() {
 
 void* AliHLTAnalysisManagerComponent::AnalysisManagerInit(void*)
 {
-  fAnalysisManager = new AliHLTAnalysisManager();
-  fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
-  fAnalysisManager->SetInputEventHandler(fInputHandler);
-
-  TString macro;
-  if (fAddTaskMacro.Length()>0) macro=fAddTaskMacro+"("+fAddTaskArgs+")";
-  HLTInfo("Intializing task: %s\n",macro.Data());
-  gROOT->Macro(macro);
-
-  fAnalysisManager->InitAnalysis();
-  return(NULL);
-}
-
-// #################################################################################
-Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
-  // see header file for class documentation
-  HLTInfo("----> AliHLTAnalysisManagerComponent::DoInit");
-
   if (!gGeoManager)
-{
-   AliCDBPath path("GRP","Geometry","Data");
-   if(path.GetPath())
+  {
+    AliCDBPath path("GRP","Geometry","Data");
+    if(path.GetPath())
     {
       //      HLTInfo("configure from entry %s", path.GetPath());
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
@@ -216,7 +198,27 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 	    HLTFatal("can not fetch object \"%s\" from OCDB", path.GetPath().Data());
 	}
     }
+  }
+
+  fAnalysisManager = new AliHLTAnalysisManager();
+  fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
+  fAnalysisManager->SetInputEventHandler(fInputHandler);
+
+  if (fAddTaskMacro.Length()>0) 
+  {
+    HLTInfo("Executing the macro: %s\n",fAddTaskMacro.Data());
+    gROOT->Macro(fAddTaskMacro);
+  }
+
+  fAnalysisManager->InitAnalysis();
+  return(NULL);
 }
+
+// #################################################################################
+Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
+  // see header file for class documentation
+  HLTInfo("----> AliHLTAnalysisManagerComponent::DoInit");
+
   //process arguments
   ProcessOptionString(GetComponentArgs());
 
@@ -231,13 +233,7 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   HLTImportant("AliHLTAnalysisManagerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth)) return(1);
 
-  if (fAddTaskMacro.Length()>0) 
-  {
-    HLTInfo("Executing the macro: %s\n",fAddTaskMacro.Data());
-    gROOT->Macro(fAddTaskMacro);
-  }
-
-  fAnalysisManager->InitAnalysis();
+  fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL);
 
   return 0;
 }
@@ -439,48 +435,54 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
     }
   }
 
-  if (!vEvent){ 
+    if (!vEvent)
     {
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
-      if (pBlock) {
-      AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
-        AliFlatESDEvent* tmpCopy = (AliFlatESDEvent*) new Byte_t[pBlock->fSize];
+	const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+	if (pBlock)
+	{
+	    AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
+	    if (tmpFlatEvent->GetSize()==pBlock->fSize )
+	    {
+		AliFlatESDEvent* tmpCopy = (AliFlatESDEvent*) new Byte_t[pBlock->fSize];
 		memcpy((void*) tmpCopy, (void*) tmpFlatEvent, pBlock->fSize);
 		tmpFlatEvent = tmpCopy;
-        tmpFlatEvent->Reinitialize();
-      if (tmpFlatEvent->GetSize()==pBlock->fSize ){
-      } else {
-        tmpFlatEvent = NULL;
-        iResult=-1;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vEvent = tmpFlatEvent;
-      }
+		tmpFlatEvent->Reinitialize();
+	    }
+	    else
+	    {
+		tmpFlatEvent = NULL;
+		iResult=-1;
+		HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESD information",
+		DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+	    }
+	    vEvent = tmpFlatEvent;
+	}
     }
 
-    if( vEvent ){
-      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
-      if (pBlock) {
-      AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-        AliFlatESDFriend* tmpCopy = (AliFlatESDFriend*) new Byte_t[pBlock->fSize];
+    if( vEvent )
+    {
+	const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+	if (pBlock)
+	{
+	    AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
+	    if (tmpFlatFriend->GetSize()==pBlock->fSize )
+	    {
+		AliFlatESDFriend* tmpCopy = (AliFlatESDFriend*) new Byte_t[pBlock->fSize];
 		memcpy((void*) tmpCopy, (void*) tmpFlatFriend, pBlock->fSize);
 		tmpFlatFriend = tmpCopy;
-        tmpFlatFriend->Reinitialize();
-      if (tmpFlatFriend->GetSize()==pBlock->fSize ){
-      } else {
-        tmpFlatFriend = NULL;
-        iResult=-1;
-        HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
-            DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
-      }
-      vFriend = tmpFlatFriend;
-      }
+		tmpFlatFriend->Reinitialize();
+	    }
+	    else
+	    {
+		tmpFlatFriend = NULL;
+		iResult=-1;
+		HLTWarning("data mismatch in block %s (0x%08x): size %d -> ignoring flatESDfriend information", 
+		DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize);
+	    }
+	    vFriend = tmpFlatFriend;
+	}
     }
-  }
-  return iResult;
+    return iResult;
 }
 
 // #################################################################################
