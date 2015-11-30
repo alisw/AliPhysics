@@ -59,6 +59,8 @@ private:
   Bool_t fIncludePrivateBlocks; //include private blocks?
   Bool_t fZMQneverBlock;        //never block, even with a PUSH sock.
   Bool_t fSendRunNumber; //send the run number in each message
+  unsigned long fNskippedErrorMessages; //keep the number of pushed messages
+  Int_t fZMQerrorMsgSkip; //downscale ZMQ send warnings
   
   ClassDef(AliHLTZMQsink, 1)
 };

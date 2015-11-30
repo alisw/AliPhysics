@@ -38,6 +38,8 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fIncludePrivateBlocks(kFALSE)
   , fZMQneverBlock(kTRUE)
   , fSendRunNumber(kTRUE)
+  , fNskippedErrorMessages(0)
+  , fZMQerrorMsgSkip(100)
 {
   //ctor
 }
@@ -245,12 +247,15 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, sizeof(blockTopic), ZMQ_SNDMORE);
       HLTMessage(Form("send topic rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
-      if (rc<0) HLTWarning("error sending topic frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
       int flags = 0;
       if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
       if (iSelectedBlock < (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
-      if (rc<0) HLTWarning("error sending data frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
+      if (rc<0 && (fNskippedErrorMessages++ >= fZMQerrorMsgSkip))
+      {
+        fNskippedErrorMessages=0;
+        HLTWarning("error sending data frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
+      }
       HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
     
@@ -293,7 +298,7 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
         fZMQpollIn=kFALSE;
         break;
       default:
-        HLTWarning("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
+        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
         return -EINVAL;
     }
   }
@@ -319,6 +324,11 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
       fZMQneverBlock = kFALSE;
     else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
       fZMQneverBlock = kTRUE;
+  }
+  
+  else if (option.EqualTo("ZMQerrorMsgSkip"))
+  {
+    fZMQerrorMsgSkip = value.Atoi();
   }
 
   return 1; 
