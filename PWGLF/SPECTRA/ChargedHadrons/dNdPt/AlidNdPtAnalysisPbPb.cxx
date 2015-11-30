@@ -55,7 +55,10 @@
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
 #include "AlidNdPtAnalysisPbPb.h"
-
+//#include "AliMultEstimator.h"
+#include "AliMultSelection.h"
+//#include "/lustre/nyx/alice/users/eperezl/alicesw/aliphysics/master/src/OADB/COMMON/MULTIPLICITY/AliMultSelection.h"
+//#include "$ALICE_PHYSICS/include/AliMultSelection.h"
 
 using namespace std;
 
@@ -775,8 +778,20 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // centrality determination
   Float_t centralityF = -1.;
-  AliCentrality *esdCentrality = esdEvent->GetCentrality();
-  centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data()); 
+  //AliCentrality *esdCentrality = esdEvent->GetCentrality();
+  //centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data()); 
+
+  // New Centrality implementation
+  //Float_t lPercentile;
+  AliMultSelection *MultSelection = (AliMultSelection*) esdEvent->FindListObject("MultSelection");
+  
+  if ( MultSelection ){
+    centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  }else{
+    AliInfo("Didn't find MultSelection!");
+  }
+  
+  
 
   // use MC information
   AliHeader* header = 0;
