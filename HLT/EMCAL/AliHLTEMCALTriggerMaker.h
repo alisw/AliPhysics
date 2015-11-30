@@ -29,6 +29,7 @@
 struct AliHLTCaloTriggerPatchDataStruct;
 class AliHLTEMCALGeometry;
 
+class AliEMCALTriggerBitConfig;
 class AliEMCALTriggerRawPatch;
 template<typename T> class AliEMCALTriggerDataGrid;
 template<typename T> class AliEMCALTriggerPatchFinder;
@@ -42,6 +43,11 @@ template<typename T> class AliEMCALTriggerPatchFinder;
  */
 class AliHLTEMCALTriggerMaker : public TObject, public AliHLTLogging {
 public:
+  enum ThresholdType_t{
+	  kHighThreshold = 0,
+	  kLowThreshold = 1,
+	  kNthresholds = 2
+  };
   /**
    * Constructor
    */
@@ -111,14 +117,14 @@ public:
    * @param onlineTh Online threshold to be applied
    * @param offlineTh Offline threshold to be applied
    */
-  void SetJetThresholds(Float_t onlineTh, Float_t offlineTh) { fJetThresholdOnline = onlineTh; fJetThresholdOffline = offlineTh; }
+  void SetJetThresholds(ThresholdType_t threshtype, Float_t onlineTh, Float_t offlineTh) { fJetThresholdOnline[threshtype] = onlineTh; fJetThresholdOffline[threshtype] = offlineTh; }
   
   /**
    * Set the thresholds for gamma trigger patches
    * @param onlineTh Online threshold to be applied
    * @param offlineTh Offline threshold to be applied
    */
-  void SetGammaThresholds(Float_t onlineTh, Float_t offlineTh) { fGammaThresholdOnline = onlineTh; fGammaThresholdOffline = offlineTh; }
+  void SetGammaThresholds(ThresholdType_t threshtype, Float_t onlineTh, Float_t offlineTh) { fGammaThresholdOnline[threshtype] = onlineTh; fGammaThresholdOffline[threshtype] = offlineTh; }
 
   /**
    * Set the thresholds for bkg trigger patches
@@ -133,7 +139,7 @@ protected:
    * @param inputpatch EMCAL raw patch to be converted into an EMCAL HLT patch
    * @param output HLT trigger patch obtaied using the information in the EMCAL raw patch
    */
-   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output) const;
+   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits) const;
 
   /**
    * Initialise trigger patch finders in the EMCAL
@@ -158,17 +164,19 @@ private:
   AliEMCALTriggerDataGrid<float>                *fADCOfflineValues;
   /** Grid with trigger bit mask from STU */
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
+  /** Trigger bit configurtion */
+  AliEMCALTriggerBitConfig						*fTriggerBitConfig;
 
   /** Available space in buffer */
   AliHLTUInt32_t								fBufferSize;
   /** online threshold for gamma patches */
-  Float_t                                       fGammaThresholdOnline;
+  Float_t                                       fGammaThresholdOnline[2];
   /** offline threshold for gamma patches */
-  Float_t                                       fGammaThresholdOffline;
+  Float_t                                       fGammaThresholdOffline[2];
   /** online threshold for jet patches */
-  Float_t                                       fJetThresholdOnline;
+  Float_t                                       fJetThresholdOnline[2];
   /** offline threshold for jet patches */
-  Float_t                                       fJetThresholdOffline;
+  Float_t                                       fJetThresholdOffline[2];
   /** online threshold for bkg patches */
   Float_t                                       fBkgThresholdOnline;
   /** offline threshold for bkg patches */

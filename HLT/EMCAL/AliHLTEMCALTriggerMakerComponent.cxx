@@ -159,19 +159,27 @@ AliHLTComponent* AliHLTEMCALTriggerMakerComponent::Spawn(){
 
 int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   InitialiseGeometry();
-  Float_t jetTh[2] = {0};
-  Float_t gammaTh[2] = {0};
+  Float_t jetTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
+  Float_t gammaTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t bkgTh[2] = {0};
   for(Int_t iarg = 0; iarg < argc; iarg++){
     TString argstring(argv[iarg]);
-    if(argstring.Contains("-gammaonthresh")){
-      gammaTh[0] = TString(argv[++iarg]).Atof();
-    } else if(argstring.Contains("-gammaoffthresh")){
-      gammaTh[1] = TString(argv[++iarg]).Atof();
-    } else if(argstring.Contains("-jetonthresh")){
-      jetTh[0] = TString(argv[++iarg]).Atof();
-    } else if(argstring.Contains("-jetoffthresh")){
-      jetTh[1] = TString(argv[++iarg]).Atof();
+    if(argstring.Contains("-gammalowonthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kLowThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammalowoffthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kLowThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammahighonthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kHighThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammahighoffthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kHighThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetlowonthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kLowThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetlowoffthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kLowThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jethighonthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kHighThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jethighoffthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kHighThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
     } else if(argstring.Contains("-bkgonthresh")){
       bkgTh[0] = TString(argv[++iarg]).Atof();
     } else if(argstring.Contains("-bkgoffthresh")){
@@ -179,8 +187,10 @@ int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
     }
   }
   fTriggerMakerPtr = new AliHLTEMCALTriggerMaker;
-  fTriggerMakerPtr->SetGammaThresholds(gammaTh[0], gammaTh[1]);
-  fTriggerMakerPtr->SetJetThresholds(jetTh[0], jetTh[1]);
+  for(UInt_t ithresh = AliHLTEMCALTriggerMaker::kHighThreshold; ithresh < AliHLTEMCALTriggerMaker::kNthresholds; ithresh++){
+    fTriggerMakerPtr->SetGammaThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), gammaTh[ithresh], gammaTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
+    fTriggerMakerPtr->SetJetThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), jetTh[ithresh], jetTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
+  }
   fTriggerMakerPtr->SetBkgThresholds(bkgTh[0], bkgTh[1]);
   fTriggerMakerPtr->Initialise(fGeometry);
   return 0;
