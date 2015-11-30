@@ -1301,7 +1301,13 @@ TArrayI AliMTRChEffAnalysis::MergeRangesForStat ( TArrayI runRanges, Double_t av
 {
   if ( averageStatError <= 0. || averageStatError >= 1. ) return runRanges;
 
-  Double_t averageStatNeeded = 1./(averageStatError*averageStatError);
+  // FIXME: statstical error for binomial depends on the value of epsilon
+  // for the moment let's assume an average efficiency of 0.9 (underestimated)
+  // in the future one could maybe actually calculate it
+  // (still we're working with average values...so the precision is limited)
+  Double_t effForStatCalc = 0.9;
+
+  Double_t averageStatNeeded = effForStatCalc*(1.-effForStatCalc)/(averageStatError*averageStatError);
 
   AliInfo(Form("Average statistics needed to reach precision of %g : %g",averageStatError,averageStatNeeded));
 
