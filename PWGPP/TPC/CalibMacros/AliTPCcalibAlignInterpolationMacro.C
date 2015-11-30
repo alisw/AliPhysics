@@ -7,6 +7,7 @@
    ConfigCalibTrain(run,"local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/");
 
    .x $NOTES/aux/rootlogon.C
+
    .L $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C+
    // cp   $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C 
 
@@ -77,7 +78,7 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
 
   if (action==5) {
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-    MakeEventStatInfo("cat residual.list",300,param0,1);
+     AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
   }
  
 }
@@ -211,9 +212,33 @@ void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const cha
   if (type<6){
     printf("Processing-  TStatToolkit::MakeDistortionMap(4, %s, pcstream, projectionInfo)\n", hisNames[type]);
     THnF *histo= (THnF*) fHistos->Get(hisNames[type]);
+    TTree * treeMeta = (TTree*)fHistos->Get("metaData");
     if (histo) {
       //TStatToolkit::MakeDistortionMap(4, histo, pcstream, projectionInfo); 
       TStatToolkit::MakeDistortionMapFast(histo, pcstream, projectionInfo,kFALSE); 
+      if (treeMeta){
+	pcstream->GetFile()->cd();
+	TTree * treeMeta2 = treeMeta->CopyTree("1");
+	treeMeta2->Write("metaData");
+	TTree * treeMap = ((*pcstream)<<hisNames[type]).GetTree();
+	const char *query[20]={"startTime","stopTime","meanTime", "minTime", "maxTime","ntracksUsed"};
+	const char *aliases[20]={"startTime","stopTime","meanTime", "minTime", "maxTime","ntracksUsed"};
+	for (Int_t i=0; i<6; i++){
+	  Int_t entries=treeMeta2->Draw(query[i],"","goff");
+	  Double_t mean=TMath::Mean(entries,treeMeta2->GetV1());
+	  treeMap->SetAlias(aliases[i], TString::Format("(0+%f)",mean));
+	}
+	for (Int_t icurrent=0; icurrent<8; icurrent++){
+	  Int_t entries=treeMeta2->Draw(TString::Format("meanNcl.fElements[%d]",72+icurrent).Data(),"","goff");
+	  Double_t mean=TMath::Mean(entries,treeMeta2->GetV1());
+	  treeMap->SetAlias(TString::Format("meanNcl%d",icurrent).Data(), TString::Format("(0+%f)",mean).Data());
+	  entries=treeMeta2->Draw(TString::Format("meanNclUsed.fElements[%d]",72+icurrent).Data(),"","goff");
+	  mean=TMath::Mean(entries,treeMeta2->GetV1());
+	  treeMap->SetAlias(TString::Format("meanNclUsed%d",icurrent).Data(), TString::Format("(0+%f)",mean).Data());	  
+	}
+	pcstream->GetFile()->cd();
+	treeMap->Write();    
+      }
     }else{
       fHistos->ls();
       printf("%s does not exist",hisNames[type]);
@@ -261,9 +286,19 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     Float_t sector0=0,Int_t(sector1)=1;
     Float_t theta0=0, theta1=1;
   */
+  TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
+
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
   TFile * fdist = TFile::Open(inputFile);
+  if (!fdist){
+    ::Error("MakeNDFit","Intput file %s not accessible\n",inputFile);
+    return;
+  }
   treeDist = (TTree*)fdist->Get(inputTree);
+  if (!treeDist){
+    ::Error("MakeNDFit","Intput tree %s not accessible\n",inputTree);
+    return;    
+  }
   Int_t     ndim=4;
   Int_t     nbins[4]= {10,  (sector1-sector0)*10,        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
   Double_t  xmin[4] = {84,  sector0,   theta0,                            -2.0};
@@ -276,31 +311,53 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
   TCut cutAcceptFit=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0-0.5,sector1+0.5,theta0,theta1).Data();
   TCut cutAcceptDraw=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0,sector1,theta0,theta1).Data();
   
-  AliNDLocalRegression *fitCorrs[2]={0};
+  AliNDLocalRegression *fitCorrs[6]={0};
   for (Int_t icorr=0; icorr<2; icorr++){
     fitCorrs[icorr]= new  AliNDLocalRegression();
     fitCorrs[icorr]->SetName(TString::Format("%sFit%d_sec%d_%d_theta%d_%d",inputTree,icorr, Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data());  
     Int_t hashIndex=fitCorrs[icorr]->GetVisualCorrectionIndex();
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.00001);
+    fitCorrs[0]->SetStreamer(pcstream);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.000001);
     if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.00001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("meanG_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
   }
-  
+  //
+  // Make smoothing at boundaries
+  //    
+  fitCorrs[2]=(AliNDLocalRegression *)fitCorrs[0]->Clone();
+  fitCorrs[3]=(AliNDLocalRegression *)fitCorrs[1]->Clone();
+  Int_t nDims=4;
+  Int_t indexes[4]={0,1,2,3};
+  Double_t relWeight0[12]={1,1,1,   1,1,1, 1,1,1, 1,1,1};
+  Double_t relWeightC[12]={0.25,1,1,   0.25,1,1, 0.5,1,1, 0.25,1,1};
+  for (Int_t iter=0; iter<3; iter++){
+    fitCorrs[2]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
+    fitCorrs[3]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
+  }
+  fitCorrs[4]=(AliNDLocalRegression *)fitCorrs[2]->Clone();
+  fitCorrs[5]=(AliNDLocalRegression *)fitCorrs[3]->Clone();
+  fitCorrs[4]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
+  fitCorrs[5]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
+  fitCorrs[2]->SetName(TString::Format("%s_Smooth3",fitCorrs[0]->GetName()).Data());
+  fitCorrs[3]->SetName(TString::Format("%s_Smooth3",fitCorrs[1]->GetName()).Data());
+  fitCorrs[4]->SetName(TString::Format("%s_SmoothConst3",fitCorrs[0]->GetName()).Data());
+  fitCorrs[5]->SetName(TString::Format("%s_SmoothConst3",fitCorrs[1]->GetName()).Data());  
   //
   // Make QA and Store fit
   //
   TCanvas *canvasQA = new TCanvas("canvasQA","canvasQA",1200,1000);
   canvasQA->Divide(1,4);
-  TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
   
   TH1* his=0;
   TFile * fout = pcstream->GetFile();
-  fitCorrs[0]->Write();
-  fitCorrs[1]->Write();
+  for (Int_t iter=0; iter<6; iter++){
+    fitCorrs[iter]->Write();
+    fitCorrs[iter]->DumpToTree(4, (*pcstream)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
+  }
   canvasQA->cd(1)->SetLogz();
   treeDist->Draw("meanG_Fit0:meanG>>hisQA2D(200,-1,1,200,-1,1)",cutFit+cutAcceptDraw,"colz");
   treeDist->GetHistogram()->Write("hisQA2D");
