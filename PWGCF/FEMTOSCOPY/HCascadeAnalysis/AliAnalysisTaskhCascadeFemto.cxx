@@ -37,8 +37,11 @@
 // - ESDs (not mantained)
 //
 // To be done
-// - read MC truth
-// . ....
+// - read MC truth  
+//    --> Momentum resolution correction histos
+//    --> Purity p, Xi, pairs
+// November 2015
+// - first attempt of shared daughter cut with selection criterion on inv mass 
 /////////////////////////////////////////////////////////////////////////
 
 class AliESDVertex;
@@ -79,7 +82,6 @@ class AliAODVertex;
 #include "AliMCEvent.h"
 
 #include "AliVVertex.h"
-
 #include "AliAnalysisTaskhCascadeFemto.h"
 
 #define PI 3.1415927
@@ -1279,7 +1281,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     if (isP) {fEvt->fReconstructedProton[pCount].isP = kTRUE; fEvt->fReconstructedProton[pCount].isaP = kFALSE;}
     else if (isaP) {fEvt->fReconstructedProton[pCount].isaP = kTRUE; fEvt->fReconstructedProton[pCount].isP = kFALSE;}
 
-    fEvt->fReconstructedProton[pCount].index = globaltrack->GetID();
+    fEvt->fReconstructedProton[pCount].index = TMath::Abs(globaltrack->GetID());
 //    cout<<" Pos 125 cm before set "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[0]<<" "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[1]<<" "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[2]<<endl;
     if (fkPropagateGlobal) SetSftPosR125(vtrackg, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition); // Hans popagates the TPC tracks, I try both, flag to choose 
     else SetSftPosR125(vtrack, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition);
@@ -1836,9 +1838,9 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       fEvt->fReconstructedXi[xiCount].mcXiOriginType = mcXiOrigin;
       fEvt->fReconstructedXi[xiCount].isXi = isXi; 
       fEvt->fReconstructedXi[xiCount].isaXi = isaXi; 
-      fEvt->fReconstructedXi[xiCount].indexB = indexB;
-      fEvt->fReconstructedXi[xiCount].indexP = indexP;
-      fEvt->fReconstructedXi[xiCount].indexN = indexN;
+      fEvt->fReconstructedXi[xiCount].indexB = TMath::Abs(indexB);
+      fEvt->fReconstructedXi[xiCount].indexP = TMath::Abs(indexP);
+      fEvt->fReconstructedXi[xiCount].indexN = TMath::Abs(indexN);
       fEvt->fReconstructedXi[xiCount].doSkipOver = kFALSE;
       // Store for each track the position at 1.2 radius
       SetSftPosR125( bachTrackXi, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedXi[xiCount].daughterBacShiftedGlobalPosition);
@@ -1865,68 +1867,82 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     } 
 
     fEvt->fNumberCandidateXi = xiCount;
+    //cout<<"Xi mult "<<xiCount<<endl; 
     fHistXiMultvsCent->Fill(xiCount,lcentrality);
 
     // Check if Xi share daughters!!
     Int_t nXiWithSharedDaughtersWithXiMass = 0.;
-    Int_t nXiWithXiMass = 0.; 
+    Int_t nXiWithXiMass = xiCount; //0.; 
     Int_t daughterIndex = -1;
     Int_t ncheckeddaughters = 0;  
     Int_t checkeddaughters[(fEvt->fNumberCandidateXi)*3];
 
-    for (int i=0; i < fEvt->fNumberCandidateXi*3; i++) checkeddaughters[i] = -1;
-    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
-      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) nXiWithXiMass++;
-    }
+    for (int i=0; i < fEvt->fNumberCandidateXi*3; i++) checkeddaughters[i] = -99999;
+//    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
+//      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) nXiWithXiMass++;
+//    }
 
     for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
       nXiWithSharedDaughtersWithXiMass = 0;
+      //cout<<"Checking Xi: "<<i<<endl;
+
       if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) {
+
+        //cout<<"Checking bachelor  "<<endl;
         daughterIndex = fEvt->fReconstructedXi[i].indexB;
-        //cout<<"Checking bac dau ! "<<endl;
         nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
-        if (nXiWithXiMass>0.&& nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass); // check on nXiWithXiMass is redundant we cannot be here if this number is zero
-        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal bac "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
+          fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
+          //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal bac "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+          //if (nXiWithSharedDaughtersWithXiMass>0) cout<<"Xi sharing this daughter "<<nXiWithSharedDaughtersWithXiMass<<" out of tot Xi with mass "<<nXiWithXiMass<<endl;
+
           checkeddaughters[ncheckeddaughters] = daughterIndex; 
+          ncheckeddaughters++;
+        }
+        
+        //cout<<"Checking pos daughter "<<endl;
+        daughterIndex = fEvt->fReconstructedXi[i].indexP;
+        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt,checkeddaughters);
+
+        if (nXiWithSharedDaughtersWithXiMass!=-1) {
+          fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
+          //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal p "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+          //if (nXiWithSharedDaughtersWithXiMass>0) cout<<"Xi sharing this daughter "<<nXiWithSharedDaughtersWithXiMass<<" out of tot Xi with mass "<<nXiWithXiMass<<endl;
+
+          checkeddaughters[ncheckeddaughters] = daughterIndex;
+          ncheckeddaughters++;
+        }
+
+        //cout<<"Checking neg daughter  "<<endl;
+        daughterIndex = fEvt->fReconstructedXi[i].indexN;
+        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
+        if (nXiWithSharedDaughtersWithXiMass!=-1) {
+          fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
+          //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal n "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+          //if (nXiWithSharedDaughtersWithXiMass>0) cout<<"Xi sharing this daughter "<<nXiWithSharedDaughtersWithXiMass<<" out of tot Xi with mass "<<nXiWithXiMass<<endl;
+          checkeddaughters[ncheckeddaughters] = daughterIndex;
           ncheckeddaughters++;
         }
       }   
     }
 
-    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
-      nXiWithSharedDaughtersWithXiMass = 0;
-      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) {
-
-        //cout<<"Checking pos dau ! "<<endl;
-        daughterIndex = fEvt->fReconstructedXi[i].indexP;
-        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt,checkeddaughters);
-
-        if (nXiWithXiMass>0. && nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
-        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal p "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
-        if (nXiWithSharedDaughtersWithXiMass!=-1) {
-          checkeddaughters[ncheckeddaughters] = daughterIndex;
-          ncheckeddaughters++;
-        }
-      }
-    }
-      //cout<<"Checking neg dau ! "<<endl;
-    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
-      nXiWithSharedDaughtersWithXiMass = 0;
-      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) { 
-        daughterIndex = fEvt->fReconstructedXi[i].indexN;
-        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
-        if (nXiWithXiMass>0. && nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
-        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal n "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
-        if (nXiWithSharedDaughtersWithXiMass!=-1) {
-          checkeddaughters[ncheckeddaughters] = daughterIndex;
-          ncheckeddaughters++;
-        }
-
-      }
-    }
     // cout<<"Fraction of xis with shared daughters "<< nXiWithSharedDaughtersWithXiMass/ (Float_t) nXiWithXiMass<<endl;
     // cout<<"Fraction of antixis with shared daughters "<< naXiWithSharedDaughtersWithXiMass/(Float_t)  naXiWithXiMass<<endl;
+    // Remove prtons anx Xi when the proton is one of the daughter of the Xi
+    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
+      for (int j=0; j<fEvt->fNumberCandidateProton; j++) {
+        if (fEvt->fReconstructedXi[i].indexB == fEvt->fReconstructedProton[j].index ||
+            fEvt->fReconstructedXi[i].indexP == fEvt->fReconstructedProton[j].index ||
+            fEvt->fReconstructedXi[i].indexN == fEvt->fReconstructedProton[j].index   ) {
+
+          fEvt->fReconstructedXi[i].doSkipOver = kTRUE;
+          fEvt->fReconstructedProton[j].doSkipOver = kTRUE;
+
+        }
+
+      }
+    }
+
  
     DoPairshCasc(fEvt, lcentrality); 
   } else DoPairshh(fEvt, lcentrality, fieldsign);  
@@ -1959,21 +1975,6 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const AliAnalysishCascadeEvent 
   int evmultmixed = 0;
   bool multmixedcounted = kFALSE;
   double pairKstar = 0.;
-
-  for (int i=0; i < event->fNumberCandidateXi; i++) {
-    for (int j=0; j<event->fNumberCandidateProton; j++) {
-      if (TMath::Abs(event->fReconstructedXi[i].indexB) == TMath::Abs(event->fReconstructedProton[j].index) || 
-          TMath::Abs(event->fReconstructedXi[i].indexP) == TMath::Abs(event->fReconstructedProton[j].index) ||
-          TMath::Abs(event->fReconstructedXi[i].indexN) == TMath::Abs(event->fReconstructedProton[j].index)   ) {
-
-        event->fReconstructedXi[i].doSkipOver = kTRUE;
-        event->fReconstructedProton[j].doSkipOver = kTRUE;    
-
-      }      
- 
-    }
-  }
-
 
   for (int i=0; i < event->fNumberCandidateXi; i++) { //Start looping over reconstructed Xis in this event 
 
@@ -2199,7 +2200,7 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const AliAnalysishCascadeEvent *ev
         }
         if (eventNumber==0) {//Same event pair histogramming
            // simplest pair cut // FIXME not needed maybe
-          if (TMath::Abs((event+eventNumber)->fReconstructedProton[j].index) == TMath::Abs(event->fReconstructedProton[i].index)) { //cout<<"In the same event the two particle  have the same index!"<<endl; 
+          if ((event+eventNumber)->fReconstructedProton[j].index == event->fReconstructedProton[i].index) { //cout<<"In the same event the two particle  have the same index!"<<endl; 
 
             continue;
           }
@@ -2263,14 +2264,19 @@ void AliAnalysisTaskhCascadeFemto::ProtonOrigin() {
 //-----------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t daughterIndex, const AliAnalysishCascadeEvent *event, Int_t* checkeddaughters ) {
 
-
+   //cout<<"In check method "<<endl;
    Int_t nXiWithSharedDaughtersWithXiMass = 0;
-//   for (int j=xiIndex+1; j < event->fNumberCandidateXi; j++) {  
-   for (int j=0; j < event->fNumberCandidateXi; j++) { 
-     if (j!=xiIndex && event->fReconstructedXi[j].isXiMass == kTRUE) {
-       // tag the track and check if already checked return.
-       for(int icd = 0; icd < (event->fNumberCandidateXi)*3; icd++) { if (daughterIndex == checkeddaughters[icd]) return -1; } // if the index was already checked skip it... 
-     
+   Bool_t kShared = kFALSE;
+   for (int j=xiIndex+1; j < event->fNumberCandidateXi; j++) { 
+     if (event->fReconstructedXi[j].isXiMass == kTRUE) {
+       // check if this track was already checked, if so skip this track (return)
+       for (int icd = 0; icd < (event->fNumberCandidateXi)*3; icd++) { 
+         if (daughterIndex == checkeddaughters[icd]) { 
+           //cout<<"This daughter was already checked exiting with -1 and label is "<<daughterIndex<<endl; 
+           return -1;
+         } 
+       }  
+       //cout<<"in loop checking"<<endl; 
        // compare with all daughters of all the other Xi
        Int_t indexB2 = event->fReconstructedXi[j].indexB;
        Int_t indexP2 = event->fReconstructedXi[j].indexP;
@@ -2278,24 +2284,29 @@ Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t dau
        if ( daughterIndex == indexB2) { //cout<<"multiple use of this now is bac ! "<<endl; 
          event->fReconstructedXi[j].doPickOne = kTRUE; 
          event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
+         kShared = kTRUE;
        } else if ( daughterIndex == indexP2) { //cout<<"multiple use of this now is pos ! "<<endl; 
          event->fReconstructedXi[j].doPickOne = kTRUE; 
          event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
+         kShared = kTRUE;
        } else if ( daughterIndex == indexN2) { //cout<<"multiple use of this now is neg! "<<endl; 
          event->fReconstructedXi[j].doPickOne = kTRUE; 
          event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
-       } // cannot be equal to more than one otherwise it means there are two daughters used twice!!
+         kShared = kTRUE;
+       } // cannot be equal to more than one otherwise it means there are ttracks used twice in he same Xi
    
      }
    }
    // here one should decide for each daughter checked! choose only one that has the best parameters
 
-//   SelectBestCandidate (event ); // FIXME should be done iteratively
-   for (int j=0; j < event->fNumberCandidateXi; j++) {
-     if (fEvt->fReconstructedXi[j].isXiMass == kTRUE) {
-       if (fEvt->fReconstructedXi[j].doPickOne == kTRUE) {
-         nXiWithSharedDaughtersWithXiMass++;
-         fEvt->fReconstructedXi[j].doPickOne = kFALSE; // reset
+   if (kShared) {
+     SelectBestCandidate (event ); 
+     for (int j=0; j < event->fNumberCandidateXi; j++) {
+       if (fEvt->fReconstructedXi[j].isXiMass == kTRUE) {
+         if (fEvt->fReconstructedXi[j].doPickOne == kTRUE) {
+           nXiWithSharedDaughtersWithXiMass++;
+           fEvt->fReconstructedXi[j].doPickOne = kFALSE; // reset
+         }
        }
      }
    }
@@ -2308,8 +2319,11 @@ Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t dau
 void AliAnalysisTaskhCascadeFemto::SelectBestCandidate ( const AliAnalysishCascadeEvent *event) {
 
  // select for each track the best candidate and flag the worst cascades (doSkipOver)
- // process to be reiterated until we have a set of cascaded not sharing daughters... 
- // to be further implemented and tested
+ // to be improved (FIXME)
+ //    - recking bad Xi with good Xi to unflag them if they do not share daughters any more with the good ones (Jai AN Notes/node/64)
+ //      (note that the same flag is used to tag Xi that have the primary proton as daughter but this is done after this check in DoPairs so should be safe)     
+ //    - consider other criteria
+ //    - validate criteria using MC
 
  Float_t deltamassi = 0.;
  Float_t deltamassj = 0.;
@@ -2318,13 +2332,15 @@ void AliAnalysisTaskhCascadeFemto::SelectBestCandidate ( const AliAnalysishCasca
    if (event->fReconstructedXi[i].doPickOne) {
    
      deltamassi = TMath::Abs(fEvt->fReconstructedXi[i].xiMass - fPDGsecond);
-   // Take one Xi and is bac
+     //cout<<" Delta mass is for first "<<deltamassi<<endl;
      for (int j=i+1; j < event->fNumberCandidateXi; j++) {
        if (event->fReconstructedXi[j].doPickOne) {
-         deltamassj = TMath::Abs(fEvt->fReconstructedXi[i].xiMass - fPDGXi);
-         if (deltamassj > deltamassi) // FIXME add other criteria
+         deltamassj = TMath::Abs(fEvt->fReconstructedXi[j].xiMass - fPDGsecond);
+         //cout<<" Delta mass is for second "<<deltamassj<<endl;
+         if (deltamassj > deltamassi) { 
          event->fReconstructedXi[j].doSkipOver = kTRUE;
-         else  { event->fReconstructedXi[i].doSkipOver = kTRUE; i = j;} // continue the check form from j 
+         //cout<<"Taking first "<<endl;
+         } else  { event->fReconstructedXi[i].doSkipOver = kTRUE; /*cout<<"Taking second "<<endl;*/ i = j;break;} // continue the check from j 
        }// check which is best and set flag to skip
      } 
    }
