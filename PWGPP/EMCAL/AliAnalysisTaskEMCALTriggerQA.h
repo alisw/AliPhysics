@@ -145,10 +145,16 @@ private:
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      ///<  Bit for MB events
   Bool_t            fEventL0   ;      ///<  Bit for L0 events
+  Bool_t            fEventL0D  ;      ///<  Bit for L0 events, DCal
   Bool_t            fEventL1G  ;      ///<  Bit for L1 Gamma 1 events
+  Bool_t            fEventL1GD  ;     ///<  Bit for L1 Gamma 1 events, DCal
   Bool_t            fEventL1G2 ;      ///<  Bit for L1 Gamma 2 events
+  Bool_t            fEventL1G2D ;     ///<  Bit for L1 Gamma 2 events, DCal
   Bool_t            fEventL1J  ;      ///<  Bit for L1 Jet 1 events
+  Bool_t            fEventL1JD  ;     ///<  Bit for L1 Jet 1 events, DCal
   Bool_t            fEventL1J2 ;      ///<  Bit for L1 JEt 2 events
+  Bool_t            fEventL1J2D ;     ///<  Bit for L1 JEt 2 events, DCal
+
   Bool_t            fEventCen  ;      ///<  Bit for Central events
   Bool_t            fEventSem  ;      ///<  Bit for Semi Central events
   
@@ -207,17 +213,25 @@ private:
   TH2F             *fhL1J2PatchMax;           //!<! FOR of max. amplitude patch with L1 Jet patch associated
   
   ///< Cluster vs trigger histograms enum with trigger types.
-  enum triggerType{ kMBTrig                = 0,  kL0Trig            = 1,
-                    kL1GammaTrig           = 2,  kL1GammaTrig2      = 3,
-                    kL1JetTrig             = 4,  kL1JetTrig2        = 5,
-                    kL1GammaOnlyTrig       = 6,  kL1JetOnlyTrig     = 7,
-                    kL1Gamma2OnlyGammaTrig = 8,  kL1Jet2OnlyJetTrig = 9,
-                    kCentralTrig           = 10, kSemiCentralTrig   = 11 };
+  enum triggerType{ kMBTrig                = 0,  
+                    kL0Trig                = 1,  kL0TrigD                = 2,
+                    kL1GammaTrig           = 3,  kL1GammaTrigD           = 4, 
+                    kL1GammaTrig2          = 5,  kL1GammaTrig2D          = 6,
+                    kL1JetTrig             = 7,  kL1JetTrigD             = 8,
+                    kL1JetTrig2            = 9,  kL1JetTrig2D            = 10,
+                    kL1GammaOnlyTrig       = 11, kL1GammaOnlyTrigD       = 12,  
+                    kL1JetOnlyTrig         = 13, kL1JetOnlyTrigD         = 14,
+                    kL1Gamma2OnlyGammaTrig = 15, kL1Gamma2OnlyGammaTrigD = 16,  
+                    kL1Jet2OnlyJetTrig     = 17, kL1Jet2OnlyJetTrigD     = 18,
+                    kL0TrigPureEMC         = 19, kL0TrigPureDMC          = 20,
+                    kL1GTrigPureEMC        = 21, kL1GTrigPureDMC         = 22,
+                    kL1JTrigPureEMC        = 23, kL1JTrigPureDMC         = 24,
+                    kCentralTrig           = 25, kSemiCentralTrig        = 26 };
   
   TH1F             *fhClusMBPure[3];                                 //!<! Clusters E distribution for pure MB trigger
   TH1F             *fhClusMaxMBPure[3];                              //!<! Maximum E Cluster per event distribution for pure MB trigger
   
-  static const int  fgkTriggerCombi = 12;                            ///<  Total number of trigger combinations defined above
+  static const int  fgkTriggerCombi = 27;                            ///<  Total number of trigger combinations defined above
   
   TH1F             *fhClus   [fgkTriggerCombi];                      //!<! Clusters E distribution for a trigger
   TH1F             *fhClusMax[fgkTriggerCombi];                      //!<! Maximum E Cluster per event distribution for MB trigger
@@ -271,7 +285,7 @@ private:
   //static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2;   // total number
     
   /// Total number of fake altro rows in EMCAL, temporary, not considers DCal yet (ALTRO channels in one SM times 5 SM divided by 2 per FALTRO)
-  static const int  fgkFALTRORows = 60; //AliEMCALGeoParams::fgkEMCALSTURows-4;
+  static const int  fgkFALTRORows = 120; // 60 //AliEMCALGeoParams::fgkEMCALSTURows-4;
   
   /// Total number of fake altro collumns in EMCAL,  (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALSTUCols;
@@ -298,7 +312,7 @@ private:
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 14) ;
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 15) ;
   /// \endcond
 
 };
