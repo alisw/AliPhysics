@@ -29,6 +29,7 @@ ClassImp(AliFlowEventSimpleCuts)
 AliFlowEventSimpleCuts::AliFlowEventSimpleCuts():
   TNamed(),
   fCutCentralityPercentile(kFALSE),
+  fUseNewCentralityFramework(kFALSE),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.)
 {
@@ -39,6 +40,7 @@ AliFlowEventSimpleCuts::AliFlowEventSimpleCuts():
 AliFlowEventSimpleCuts::AliFlowEventSimpleCuts(const char* name, const char* title):
   TNamed(name, title),
   fCutCentralityPercentile(kFALSE),
+  fUseNewCentralityFramework(kFALSE),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.)
 {
@@ -49,6 +51,7 @@ AliFlowEventSimpleCuts::AliFlowEventSimpleCuts(const char* name, const char* tit
 AliFlowEventSimpleCuts::AliFlowEventSimpleCuts(const AliFlowEventSimpleCuts& that):
   TNamed(that),
   fCutCentralityPercentile(that.fCutCentralityPercentile),
+  fUseNewCentralityFramework(that.fUseNewCentralityFramework),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
   fCentralityPercentileMin(that.fCentralityPercentileMin)
 {
@@ -68,6 +71,7 @@ AliFlowEventSimpleCuts& AliFlowEventSimpleCuts::operator=(const AliFlowEventSimp
   if (this==&that) return *this;
 
   fCutCentralityPercentile=that.fCutCentralityPercentile;
+  fUseNewCentralityFramework=that.fUseNewCentralityFramework;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
   return *this;
