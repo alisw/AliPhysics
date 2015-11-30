@@ -26,6 +26,7 @@
 #include "AliAnalysisTaskMultiparticleCorrelations.h"
 #include "AliFlowAnalysisWithMultiparticleCorrelations.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
 
 using std::cout;
 using std::endl;
