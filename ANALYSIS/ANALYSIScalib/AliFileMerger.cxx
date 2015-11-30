@@ -715,9 +715,31 @@ int AliFileMerger::AddFile(TList* namesList, std::string entry)
 void AliFileMerger::CheckTitle(TObject* tgt, TObject* src)
 {
   // if tgt has no title but src has, assign from src
+  //
+  // for TCollections use recursive check
+  if (tgt->InheritsFrom(TCollection::Class())) {
+    TCollection* tgtCol = (TCollection*)tgt;
+    TCollection* srcCol = (TCollection*)src;
+    int szTgt = tgtCol->GetSize();
+    int szSrc = srcCol->GetSize();
+    if (szTgt==szSrc) { // compare only collections with similar size
+      TIter nextInColl(tgtCol);
+      TObject *objTgt,*objSrc;
+      while ( (objTgt=nextInColl()) ) {
+	objSrc = src->FindObject( objTgt->GetName() );
+	if (!objSrc) continue;
+	CheckTitle(objTgt,objSrc);
+      }
+    }
+    else {
+      AliWarningF("Cannot CheckTitle of content %s and %s collections with different sizes %d %d",
+		  tgtCol->GetName(),srcCol->GetName(),szTgt,szSrc);
+    }
+  }
+  //
   if (!tgt->InheritsFrom(TNamed::Class())) return;
   const char* ttl = tgt->GetTitle();
-  if (ttl && ttl[0]==0) {
+  if (!ttl || ttl[0]==0) {
     const char* ttlS = src->GetTitle();
     if (ttlS && ttlS[0]!=0) ((TNamed*)tgt)->SetTitle(ttlS);
   }
