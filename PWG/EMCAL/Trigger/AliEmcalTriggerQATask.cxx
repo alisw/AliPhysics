@@ -287,7 +287,21 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       fCaloTriggers->GetAmplitude(L0amp);
       if (L0amp < 0) L0amp = 0;
 
-      fastor.Initialize(L0amp, L1amp, globRow, globCol, fGeom);
+      Int_t time = 0;
+      Int_t nl0times(0);
+      fCaloTriggers->GetNL0Times(nl0times);
+       if(nl0times) {
+         TArrayI l0times(nl0times);
+         fCaloTriggers->GetL0Times(l0times.GetArray());
+         for(int itime = 0; itime < nl0times; itime++){
+           if(l0times[itime] >7 && l0times[itime] < 10){
+             time = l0times[itime];
+             break;
+           }
+         }
+       }
+
+      fastor.Initialize(L0amp, L1amp, globRow, globCol, time, fGeom);
 
       fEMCALTriggerQA->ProcessFastor(&fastor);
     }
