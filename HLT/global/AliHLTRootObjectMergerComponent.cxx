@@ -60,7 +60,7 @@ void AliHLTRootObjectMergerComponent::GetInputDataTypes( vector<AliHLTComponentD
 
 void AliHLTRootObjectMergerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
-  constBase = 1000;
+  constBase = 1000000;
   inputMultiplier = 1.5;
 }
 
