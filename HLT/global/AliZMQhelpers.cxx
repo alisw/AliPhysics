@@ -160,6 +160,11 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   int zmqSocketMode = 0;
   std::string zmqEndpoints = "";
 
+  size_t configStartPos = config.find_first_not_of(" \t\n");
+  size_t configEndPos = config.find_last_not_of(" \t\n");
+  if (configStartPos!=std::string::npos && configEndPos!=std::string::npos)
+  { config = config.substr(configStartPos,configEndPos-configStartPos+1); }
+
   if (config.empty()) return 0;
 
   std::size_t found = config.find_first_of("@>-+");
