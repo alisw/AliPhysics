@@ -489,8 +489,8 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
 
     if ( period.BeginsWith("LHC15o") ) // PbPb 5.02 TeV
     {
-      lumiTriggerCrossSection = 6700.0; // FIXME: not from a vdM yet
-      lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+      lumiTriggerCrossSection = 4600.0; // FIXME: not from a vdM yet
+      lumiTriggerClassName = "C0V0M-B-NOPF-CENTNOTRD";
     }
 
   }
