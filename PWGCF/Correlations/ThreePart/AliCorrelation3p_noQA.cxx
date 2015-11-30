@@ -1271,7 +1271,7 @@ int AliCorrelation3p_noQA::MakeResultsFile(const char* scalingmethod, bool recre
       if(mixeddir) mixeddir->cd();
       else outfile->cd();
       dirmzbin = gDirectory->mkdir(GetNameHist("Bin",mb,zb));
-      binstats = dirmzbin->mkdir("bin_stats");
+//       binstats = dirmzbin->mkdir("bin_stats");
       dirmzbinsig = dirmzbin->mkdir("same_event");
       dirmzbinmixed = dirmzbin->mkdir("mixed_event");
       dirmzbindiv = dirmzbin->mkdir("divided");

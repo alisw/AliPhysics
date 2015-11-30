@@ -64,6 +64,7 @@ public:
   AliAODJet* GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const; // generate a random cone which does not overlap with selected jets
   AliEmcalJet* GetMedianCluster(AliJetContainer* cont, Double_t dEtaConeMax) const; // get median kt cluster
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const; // area of circular segment
+  Double_t GetD(const AliVParticle* part1, const AliVParticle* part2) const; // returns distance between two particles
 
   // V0 selection
   void SetCutTPCRefit(Bool_t val = kTRUE) {fbTPCRefit = val;}
@@ -234,6 +235,9 @@ private:
   TH2D* fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
   TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
   TH1D* fh1DistanceJets[fgkiNBinsCent]; //! distance in eta-phi between jets within events
+  TH1D* fh1DistanceV0JetsK0s[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
+  TH1D* fh1DistanceV0JetsLambda[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
+  TH1D* fh1DistanceV0JetsALambda[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
 
   static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
 
@@ -271,6 +275,9 @@ private:
   THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 in medium cones, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 outside jet cones, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 in no-jet events, in a centrality bin, m_V0; pt_V0; eta_V0
+
+  THnSparse* fhnPtDaughterK0s[fgkiNBinsCent]; //! pt correlations, in a centrality bin, pt_neg-daughter;pt_pos-daughter;pt_V0;pt_jet;pt_leading-track
+
   // K0S correlations
   THnSparse* fhnV0CorrelSEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
   THnSparse* fhnV0CorrelMEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in mixed events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
@@ -319,6 +326,9 @@ private:
   THnSparse* fhnV0InMedLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetLambda[fgkiNBinsCent]; //!
+
+  THnSparse* fhnPtDaughterLambda[fgkiNBinsCent]; //! pt correlations, in a centrality bin, pt_neg-daughter;pt_pos-daughter;pt_V0;pt_jet;pt_leading-track
+
   // Lambda correlations
   THnSparse* fhnV0CorrelSELambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0CorrelMELambda[fgkiNBinsCent]; //!
@@ -372,6 +382,8 @@ private:
   THnSparse* fhnV0InMedALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetALambda[fgkiNBinsCent]; //!
+
+  THnSparse* fhnPtDaughterALambda[fgkiNBinsCent]; //! pt correlations, in a centrality bin, pt_neg-daughter;pt_pos-daughter;pt_V0;pt_jet;pt_leading-track
 
   TH2D* fh2V0PtJetAngleALambda[fgkiNBinsCent]; //!
   // MC histograms
@@ -450,7 +462,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 16) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 17) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

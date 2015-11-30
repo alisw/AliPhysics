@@ -66,6 +66,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   void SetCutsKF(Float_t cutsKF[2]){for(Int_t i=0;i<2;i++){fCutsKF[i]=cutsKF[i];}return;}
   void SetUseKF(Bool_t useKF=kTRUE){fUseKF=useKF;}
 	void SetIsHijing(Bool_t isHijing=kTRUE){fIsHijing=isHijing;}
+	void SetKeepBkgNt(Bool_t keepBkgNt=kTRUE){fKeepBkgNt=keepBkgNt;}
   void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetUseFilterBitCut(Bool_t setter)   { fLcCut = setter;	 return; }  
   void SetUseFilterBitPID(Bool_t setter)   { fLcPIDCut = setter; return; }
@@ -173,6 +174,16 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   TH2F *fhPtPhiLcL1520b[12];   //!<! hist. for n Lc from b L1520 + pi, pT vs phi
   TH2F *fhPtPhiLcKstarb[12];   //!<! hist. for n Lc from b K* + p, pT vs phi
   TH2F *fhPtPhiLcDeltab[12];   //!<! hist. for n Lc from b Delta++ + K, pT vs phi
+	TH1F *fhPtMisIdpKpi; //!<! hist for pt pKpi signal mis id'd as piKp
+	TH1F *fhPtMisIdpiKp; //!<! hist for pt pKpi signal mis id'd as piKp
+	TH1F *fhPtCorrId; //!<! hist for correctly id'd pKpi
+	TH2F *fhInvMassMisIdpKpi; //!<! hist for inv mass pKpi signal mis id'd as piKp
+	TH2F *fhInvMassMisIdpiKp; //!<! hist for inv mass pKpi signal mis id'd as piKp
+	TH1F *fhPtMisIdpKpiProb; //!<! hist for pt pKpi signal mis id'd as piKp most prob PID
+	TH1F *fhPtMisIdpiKpProb; //!<! hist for pt pKpi signal mis id'd as piKp most prob PID
+	TH1F *fhPtCorrIdProb; //!<! hist for correctly id'd pKpi most prob PID
+	TH2F *fhInvMassMisIdpKpiProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
+	TH2F *fhInvMassMisIdpiKpProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
   TNtuple *fNtupleLambdac; //!<! output ntuple
   Float_t fCutsKF[2]; /// cuts with KF vertexer
   Int_t fIsLc; /// is MC Lc - 0=not Lc, 1=Lc from c, 2=Lc from b
@@ -185,6 +196,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   TList *fListCuts; /// list of cuts
   Int_t fFillNtuple;   ///  filling ntuple type
 	Bool_t fKeepLcNotFromQuark; /// flag to keep Lc not from quark
+	Bool_t fKeepBkgNt; /// flag to keep background in 
 	Int_t fSyst; /// flag for collision system. 0=pp, 1=PbPb, 2=pPb
   Bool_t fReadMC;    /// flag for access to MC
   Bool_t fMCPid;    /// flag for access to MC
@@ -203,7 +215,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	AliVertexingHFUtils *fVertUtil;         /// vertexing HF Util
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELambdacTMVA,6); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,7); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
   /// \endcond
 };
 

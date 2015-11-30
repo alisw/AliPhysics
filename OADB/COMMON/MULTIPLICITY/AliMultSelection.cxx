@@ -17,6 +17,7 @@
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionCuts.h"
 #include "AliMultEstimator.h"
 #include <iostream>
 #include <TROOT.h>
@@ -25,14 +26,14 @@ using namespace std;
 ClassImp(AliMultSelection);
 //________________________________________________________________
 AliMultSelection::AliMultSelection() :
-  TNamed(), fNEsts(0), fEstimatorList(0x0)
+  TNamed(), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0)
 {
   // Constructor
     fEstimatorList = new TList();
 }
 //________________________________________________________________
 AliMultSelection::AliMultSelection(const char * name, const char * title):
-TNamed(name,title), fNEsts(0), fEstimatorList(0x0)
+TNamed(name,title), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0)
 {
   // Constructor
     fEstimatorList = new TList();
@@ -42,6 +43,7 @@ TNamed(name,title), fNEsts(0), fEstimatorList(0x0)
 AliMultSelection::AliMultSelection(const AliMultSelection& lCopyMe)
 : TNamed(lCopyMe),
 fNEsts(0),
+fEvSelCode(lCopyMe.fEvSelCode),
 fEstimatorList(0)
 {
     TIter next(lCopyMe.fEstimatorList);
@@ -55,6 +57,7 @@ AliMultSelection::AliMultSelection(AliMultSelection *lCopyMe)
 fNEsts(0),
 fEstimatorList(0)
 {
+    fEvSelCode = lCopyMe->GetEvSelCode();
     TIter next(lCopyMe->fEstimatorList);
     AliMultEstimator* est = 0;
     while ((est = static_cast<AliMultEstimator*>(next())))
@@ -64,6 +67,7 @@ fEstimatorList(0)
 void AliMultSelection::Set(AliMultSelection* s)
 {
     // Printf("Setting %s from %s", GetName(), s->GetName());
+    fEvSelCode = s->GetEvSelCode();
     TIter next(s->fEstimatorList);
     AliMultEstimator* e = 0;
     while ((e = static_cast<AliMultEstimator*>(next()))) {
@@ -93,6 +97,7 @@ void AliMultSelection::CleanUp()
     if (fEstimatorList) delete fEstimatorList;
     fEstimatorList = 0;
     fNEsts = 0;
+    fEvSelCode = 0;
 }
 //________________________________________________________________
 AliMultSelection& AliMultSelection::operator=(const AliMultSelection& lCopyMe)
@@ -101,6 +106,7 @@ AliMultSelection& AliMultSelection::operator=(const AliMultSelection& lCopyMe)
     SetName(lCopyMe.GetName());
     SetTitle(lCopyMe.GetTitle());
     fNEsts = 0;
+    fEvSelCode = lCopyMe.fEvSelCode; 
     if (fEstimatorList) {
         delete fEstimatorList;
         fEstimatorList = 0;
@@ -142,17 +148,22 @@ void AliMultSelection::PrintInfo()
 {
     cout<<"AliMultSelection Name..: "<<GetName()<<endl;
     cout<<"Estimators defined.....: "<<fNEsts<<endl;
+    cout<<"EvSel Code.............: "<<fEvSelCode<<endl;
     for( Long_t iEst=0; iEst<fNEsts; iEst++){
         cout<<"N: "<<GetEstimator(iEst)->GetName()<<", def: "<<GetEstimator(iEst)->GetDefinition();
         cout<<", at: "<<GetEstimator(iEst)->GetValue()<<", Perc: "<<GetEstimator(iEst)->GetPercentile()<<", <> = "<<GetEstimator(iEst)->GetMean()<<endl;
     }
 }
 //________________________________________________________________
-Float_t AliMultSelection::GetMultiplicityPercentile(TString lName)
+Float_t AliMultSelection::GetMultiplicityPercentile(TString lName, Bool_t lEmbedEvSel)
 {
-    Float_t lReturnValue = 200;
+    Float_t lReturnValue = AliMultSelectionCuts::kNoCalib;
     AliMultEstimator *lThis = GetEstimator(lName.Data());
-    if( lThis ) lReturnValue = lThis->GetPercentile(); 
+    if( lThis ){
+        lReturnValue = lThis->GetPercentile();
+        //Bypass event selection if requested to do so 
+        if ( fEvSelCode > 0 && lEmbedEvSel ) lReturnValue = fEvSelCode;
+    }
     return lReturnValue;
 }
 //________________________________________________________________

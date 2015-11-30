@@ -4,7 +4,7 @@
 //  - reconstruction output
 // implementation file
 //
-//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass
 //University of Tennessee at Knoxville
 //_________________________________________________________________________
 
@@ -27,6 +27,7 @@
 #include "AliAnalysisEtCommon.h"
 #include "AliAnalysisHadEt.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliLog.h"
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h" 
@@ -115,7 +116,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   }
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100||fDataSet==2015||fDataSet==2011){//If this is Pb+Pb or pPb
+  if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb or pPb
 //     AliCentrality *centrality = realEvent->GetCentrality();
 //     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
 //     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
@@ -129,6 +130,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
       }
     }
+  }
+  if( fDataSet==2015){
+    AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+    fCentBin = GetCentralityBin(fNCentBins, MultSelection);
+    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   //for PID
 //   AliESDpid *pID = new AliESDpid();
@@ -161,7 +167,6 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     Int_t nGoodTracks = list->GetEntries();
     for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
       {
-
 
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
 	if (!track)
@@ -755,13 +760,17 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100||fDataSet==2015||fDataSet==2011){
+  if(fDataSet==20100||fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
   if(fDataSet==2013){
     maxEt=100.0;
     maxEtPiKP = 100.0;
+  }
+  if(fDataSet==2015){
+    maxEt=6000.0;
+    maxEtPiKP = 3500;
   }
   Int_t nbinsEt = 200;
   char histoname[200];

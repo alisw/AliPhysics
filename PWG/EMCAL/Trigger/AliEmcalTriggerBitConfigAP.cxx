@@ -12,24 +12,25 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerBitConfigAP.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalTriggerBitConfig)
-ClassImp(AliEmcalTriggerBitConfigOld)
-ClassImp(AliEmcalTriggerBitConfigNew)
+ClassImp(AliEmcalTriggerBitConfigAP)
+ClassImp(AliEmcalTriggerBitConfigOldAP)
+ClassImp(AliEmcalTriggerBitConfigNewAP)
 /// \endcond
 
 /**
  * Dummy constructor for the configuraiton base classes, not to be callled
  */
-AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig():
+AliEmcalTriggerBitConfigAP::AliEmcalTriggerBitConfigAP():
     TNamed(),
     fL0Bit(-1),
     fJHighBit(-1),
     fJLowBit(-1),
     fGHighBit(-1),
     fGLowBit(-1),
+    fBkgBit(-1),
     fTriggerTypesEnd(-1)
 {
 }
@@ -43,12 +44,13 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig():
  * @param glowbit Trigger bit for gamma trigger, low threshold
  * @param mcoffset Offset for MC
  */
-AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
+AliEmcalTriggerBitConfigAP::AliEmcalTriggerBitConfigAP(
     Int_t l0bit,
     Int_t jhighbit,
     Int_t jlowbit,
     Int_t ghighbit,
     Int_t glowbit,
+    Int_t bkgbit,
     Int_t mcoffset):
     TNamed("EmcalTriggerBitConfigUninit", ""),
     fL0Bit(l0bit),
@@ -56,6 +58,7 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
     fJLowBit(jlowbit),
     fGHighBit(ghighbit),
     fGLowBit(glowbit),
+    fBkgBit(bkgbit),
     fTriggerTypesEnd(mcoffset)
 {
 }
@@ -64,21 +67,22 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
  * Initialise from other object
  * @param ref Reference to initialize this trigger bit configuaration from
  */
-void AliEmcalTriggerBitConfig::Initialise(const AliEmcalTriggerBitConfig& ref) {
+void AliEmcalTriggerBitConfigAP::Initialise(const AliEmcalTriggerBitConfigAP& ref) {
   SetName(ref.GetName());
   fL0Bit = ref.GetLevel0Bit();
   fJHighBit = ref.GetJetHighBit();
   fJLowBit = ref.GetJetLowBit();
   fGHighBit = ref.GetGammaHighBit();
   fGLowBit = ref.GetGammaLowBit();
+  fBkgBit = ref.GetBkgBit();
   fTriggerTypesEnd = ref.GetTriggerTypesEnd();
 }
 
 /**
  * Constructor, initializing the configuration
  */
-AliEmcalTriggerBitConfigOld::AliEmcalTriggerBitConfigOld():
-    AliEmcalTriggerBitConfig(0,2,2,1,1,3)       // To be checked
+AliEmcalTriggerBitConfigOldAP::AliEmcalTriggerBitConfigOldAP():
+    AliEmcalTriggerBitConfigAP(0,2,2,1,1,2,3)       // To be checked
 {
   SetName("EmcalTriggerBitConfigOld");
 }
@@ -86,8 +90,8 @@ AliEmcalTriggerBitConfigOld::AliEmcalTriggerBitConfigOld():
 /**
  * Constructor, initializing the configuration
  */
-AliEmcalTriggerBitConfigNew::AliEmcalTriggerBitConfigNew():
-    AliEmcalTriggerBitConfig(0,3,4,1,2,5)       // To be checked
+AliEmcalTriggerBitConfigNewAP::AliEmcalTriggerBitConfigNewAP():
+    AliEmcalTriggerBitConfigAP(0,3,4,1,2,5,5)       // To be checked
 {
   SetName("EmcalTriggerBitConfigNew");
 }

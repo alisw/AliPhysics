@@ -35,6 +35,8 @@
 #  include <TClonesArray.h>
 #  include <TArrayL64.h>
 #  include <TLine.h>
+#  include <TClass.h>
+#  include <TObjString.h>
 #  include <iostream>
 #  include <iomanip>
 #  include <fstream>

@@ -23,6 +23,7 @@
 #include "AliTrackReference.h"
 
 class TFile;
+class TClonesArray;
 class AliRunLoader;
 class AliStack;
 

@@ -40,20 +40,14 @@ TString bitNames[NBITS] = {
 "kTRD"
 };
 
+void writeTree(TFile* fout, TTree* t){
+  fout->cd();
+  t->Fill();
+  t->Write();
+  fout->Close();
+}
 
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2013/LHC13f/000197348/pass2/QA_merge_archive.zip#event_stat.root", Int_t run=197348, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2011/LHC11a/000146805/pass4_with_SDD/QA_merge_archive.zip#event_stat.root", Int_t run=146805, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2013/LHC13g/000197584/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=114783, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12b/000177789/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=177789, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2010/LHC10b/000114751/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=114751, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12d/000184719/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=184719, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12h/000189694/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=189694, TString ocdbStorage = "local:///data/alice/OCDB"){
-//Int_t runLevelEventStatQA(TString qafilename="/data/alice/sim/2014/LHC14j5/138192/QA_merge_archive.zip#event_stat.root", Int_t run=138192, TString ocdbStorage = "local:///data/alice/OCDB"){
-//  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10d/000124360/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=124360, TString ocdbStorage = "local:///alice/data/OCDB"){
-//  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "raw://"){
-//  Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=225106, TString ocdbStorage = "raw://"){
-  Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbStorage = "raw://"){
-  printf("runLevelEventStatQA %s %i\n",qafilename.Data(),run);
+Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbStorage = "raw://"){
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
   gStyle->SetPadBottomMargin(0.08);
@@ -64,6 +58,9 @@ TString bitNames[NBITS] = {
   // tree variables
   TObjArray classes = TObjArray();
   TObjString activeDetectors = TObjString();
+  TObjString objPartition = TObjString();
+  TObjString objLhcState = TObjString();
+  TObjString objLhcPeriod = TObjString();
   Int_t fill               = 0;
   Double_t run_duration    = 0;
   Int_t nBCsPerOrbit       = 0;
@@ -91,6 +88,43 @@ TString bitNames[NBITS] = {
   Double_t alias_lumi_accepted[NBITS]      = {0};
   Int_t timeStart = 0;
   Int_t timeEnd = 0;
+
+  TFile* fout = new TFile("trending.root","recreate");
+  TTree* t = new TTree("trending","tree of trending variables");
+  t->Branch("run",&run);
+  t->Branch("fill",&fill);
+  t->Branch("bcs",&nBCsPerOrbit);
+  t->Branch("run_duration",&run_duration);
+  t->Branch("mu",&mu);
+  t->Branch("interactionRate",&interactionRate);
+  t->Branch("refCounts",&refCounts);
+  t->Branch("lumi_seen",&lumi_seen);
+  t->Branch("classes",&classes);
+  t->Branch("class_lMb",&class_lMb,Form("class_lMb[%i]/l",NMAXCLASSES));
+  t->Branch("class_lMa",&class_lMa,Form("class_lMa[%i]/l",NMAXCLASSES));
+  t->Branch("class_l0b",&class_l0b,Form("class_l0b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l0a",&class_l0a,Form("class_l0a[%i]/l",NMAXCLASSES));
+  t->Branch("class_l1b",&class_l1b,Form("class_l1b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l1a",&class_l1a,Form("class_l1a[%i]/l",NMAXCLASSES));
+  t->Branch("class_l2b",&class_l2b,Form("class_l2b[%i]/l",NMAXCLASSES));
+  t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
+  t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
+  t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
+  t->Branch("alias_recorded",&alias_recorded,Form("alias_recorded[%i]/l",NBITS));
+  t->Branch("alias_reconstructed",&alias_reconstructed,Form("alias_reconstructed[%i]/l",NBITS));
+  t->Branch("alias_accepted",&alias_accepted,Form("alias_accepted[%i]/l",NBITS));
+  t->Branch("alias_l0b_rate",&alias_lifetime,Form("alias_l0b_rate[%i]/D",NBITS));
+  t->Branch("alias_lifetime",&alias_lifetime,Form("alias_lifetime[%i]/D",NBITS));
+  t->Branch("alias_lumi_recorded",&alias_lumi_recorded,Form("alias_lumi_recorded[%i]/D",NBITS));
+  t->Branch("alias_lumi_reconstructed",&alias_lumi_reconstructed,Form("alias_lumi_reconstructed[%i]/D",NBITS));
+  t->Branch("alias_lumi_accepted",&alias_lumi_accepted,Form("alias_lumi_accepted[%i]/D",NBITS));
+  t->Branch("activeDetectors",&activeDetectors);
+  t->Branch("lhcState",&objLhcState);
+  t->Branch("lhcPeriod",&objLhcPeriod);
+  t->Branch("partition",&objPartition);
+  t->Branch("timeStart",&timeStart);
+  t->Branch("timeEnd",&timeEnd);
+
   TString refClass="";
   Double_t refSigma=-1;
   Double_t refEff = 1.;
@@ -138,7 +172,7 @@ TString bitNames[NBITS] = {
   else if (run>=193693 && run<=193766) { refSigma=  25.; refEff = 0.45; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_8.00: (Artem, 2013-10-04,RunCond)
   else if (run>=195344 && run<=197388) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: arxiv:1405.1849
   else if (run>=197470 && run<=197692) { refSigma=  18.; refEff = 0.39; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_2.76: 18mb=47.7mb*0.39=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
-  else if (run>=221835 && run<=223669) { refSigma= 52.5; refEff = 0.32; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino
+  else if (run>=221835 && run<=223669) { refSigma= 16.8; refEff = 0.32; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino
   else if (run>=221670 && run<=223983) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
   else if (run>=223984 && run<=223984) { refSigma= 50.0; refEff = 0.66; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino and MC
   else if (run>=223985 && run<=226110) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
@@ -152,8 +186,14 @@ TString bitNames[NBITS] = {
   else if (run>=229942 && run<=231321) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
   else if (run>=232914 && run<=233858) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
   else if (run>=233910 && run<=234050) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=234051               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
-
+  else if (run>=234051 && run<=238669) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
+  else if (run>=238670 && run<=240150) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=240151 && run<=240151) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
+  else if (run>=240152 && run<=243373) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=243374 && run<=243398) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=243399 && run<=243984) { refSigma=6700.; refEff = 0.90; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=243985               ) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
@@ -161,16 +201,16 @@ TString bitNames[NBITS] = {
   TString activeDetectorsString;
   //Int_t run, TString ocdbStorage, TString &partition, TString &activeDetectorsString, Double_t& run_duration, 
   classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
-  Int_t status = triggerInfo(run,ocdbStorage,lhcPeriod,lhcState,fill,nBCsPerOrbit,timeStart,timeEnd);
   activeDetectors.SetString(activeDetectorsString.Data());
-  if (status>0) return 2;
-  printf("%s %s\n",lhcState.Data(),partition.Data());
-  if (!lhcState.Contains("STABLE") && !lhcState.Contains("ADJUST")) return 1;
-  if (!partition.Contains("PHYSICS_1")) return 1;
+  objPartition.SetString(partition.Data());
+  Int_t status = triggerInfo(run,ocdbStorage,lhcPeriod,lhcState,fill,nBCsPerOrbit,timeStart,timeEnd);
+  if (status>0) { writeTree(fout,t); return 1; }
+  objLhcState.SetString(lhcState.Data());
+  objLhcPeriod.SetString(lhcPeriod.Data());
 
   AliTriggerClass* refClassObject = (AliTriggerClass*) classes.FindObject(refClass);
+  if (!refClassObject) { writeTree(fout,t); return 2; }
   Int_t refId = classes.IndexOf(refClassObject);
-  printf("refId=%i\n",refId);
   TString refCluster = refClassObject->GetCluster()->GetName();
   refCounts = (activeDetectorsString.Contains("TRD") && (refCluster.EqualTo("CENT") || refCluster.EqualTo("ALL") || refCluster.EqualTo("FAST"))) ? class_lMb[refId] : class_l0b[refId];
   if (refClass.Contains("1B-ABCE-")){
@@ -182,65 +222,29 @@ TString bitNames[NBITS] = {
   }
   
   Double_t totalBCs = orbitRate*run_duration*nBCsPerOrbit;
-  if (totalBCs<1 || refCounts<1) return 4;
-  printf ("refCounts=%i\n",refCounts);
+  if (totalBCs<1 || refCounts<1) { writeTree(fout,t); return 3; }
   refMu = -TMath::Log(1-Double_t(refCounts)/totalBCs); // mu
   Double_t refInteractionRate = (run_duration>1e-10) ? (refMu>1.e-10 ? refMu/(1-TMath::Exp(-refMu)):1)*refCounts/run_duration : 0;
   interactionRate = refInteractionRate/refEff; // INEL interaction rate 
   mu              = refMu/refEff;              // INEL mu value
-  if (refSigma>1.e-10) lumi_seen = run_duration*interactionRate/refSigma/1000; //[ub-1]
+  if (refSigma>1.e-10) lumi_seen = run_duration*refInteractionRate/refSigma/1000; //[ub-1]
 
   for (Int_t i=0;i<classes.GetEntriesFast();i++){
     // printf("%30s %12lli %10lli %10lli %10lli %10lli %10lli\n",classes.At(i)->GetName(),class_l0b[i],class_l0a[i],class_l1b[i],class_l1a[i],class_l2b[i],class_l2a[i]);
     class_lifetime[i] = class_lMb[i]>0 ? Double_t(class_lMa[i])/class_lMb[i]: 0;
-    class_lifetime[i] = class_l0b[i]>0 ? Double_t(class_l0a[i])/class_l0b[i]: 0;
+    class_lifetime[i]*= class_l0b[i]>0 ? Double_t(class_l0a[i])/class_l0b[i]: 0;
     class_lifetime[i]*= class_l1b[i]>0 ? Double_t(class_l1a[i])/class_l1b[i]: 0;
     class_lifetime[i]*= class_l2b[i]>0 ? Double_t(class_l2a[i])/class_l2b[i]: 0;
     class_lumi[i] = lumi_seen*class_lifetime[i];
   }
   
-  TFile* fout = new TFile("trending.root","recreate");
-  TTree* t = new TTree("trending","tree of trending variables");
-  t->Branch("run",&run);
-  t->Branch("fill",&fill);
-  t->Branch("bcs",&nBCsPerOrbit);
-  t->Branch("run_duration",&run_duration);
-  t->Branch("mu",&mu);
-  t->Branch("interactionRate",&interactionRate);
-  t->Branch("refCounts",&refCounts);
-  t->Branch("lumi_seen",&lumi_seen);
-  t->Branch("classes",&classes);
-  t->Branch("class_lMb",&class_lMb,Form("class_lMb[%i]/l",NMAXCLASSES));
-  t->Branch("class_lMa",&class_lMa,Form("class_lMa[%i]/l",NMAXCLASSES));
-  t->Branch("class_l0b",&class_l0b,Form("class_l0b[%i]/l",NMAXCLASSES));
-  t->Branch("class_l0a",&class_l0a,Form("class_l0a[%i]/l",NMAXCLASSES));
-  t->Branch("class_l1b",&class_l1b,Form("class_l1b[%i]/l",NMAXCLASSES));
-  t->Branch("class_l1a",&class_l1a,Form("class_l1a[%i]/l",NMAXCLASSES));
-  t->Branch("class_l2b",&class_l2b,Form("class_l2b[%i]/l",NMAXCLASSES));
-  t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
-  t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
-  t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
-  t->Branch("alias_recorded",&alias_recorded,Form("alias_recorded[%i]/l",NBITS));
-  t->Branch("alias_reconstructed",&alias_reconstructed,Form("alias_reconstructed[%i]/l",NBITS));
-  t->Branch("alias_accepted",&alias_accepted,Form("alias_accepted[%i]/l",NBITS));
-  t->Branch("alias_l0b_rate",&alias_lifetime,Form("alias_l0b_rate[%i]/D",NBITS));
-  t->Branch("alias_lifetime",&alias_lifetime,Form("alias_lifetime[%i]/D",NBITS));
-  t->Branch("alias_lumi_recorded",&alias_lumi_recorded,Form("alias_lumi_recorded[%i]/D",NBITS));
-  t->Branch("alias_lumi_reconstructed",&alias_lumi_reconstructed,Form("alias_lumi_reconstructed[%i]/D",NBITS));
-  t->Branch("alias_lumi_accepted",&alias_lumi_accepted,Form("alias_lumi_accepted[%i]/D",NBITS));
-  t->Branch("activeDetectors",&activeDetectors);
-  t->Branch("timeStart",&timeStart);
-  t->Branch("timeEnd",&timeEnd);
   
   TFile* fin = new TFile(qafilename);
   TH2D* h = fin ? (TH2D*) fin->Get("fHistStatistics") : 0;
   if (!fin || !h) {
     printf("fHistStatistics not found\n");
-    fout->cd();
-    t->Fill();
-    t->Write();
-    fout->Close();
-    return 1; 
+    writeTree(fout,t);
+    return 4; 
   }
   
   fout->cd();

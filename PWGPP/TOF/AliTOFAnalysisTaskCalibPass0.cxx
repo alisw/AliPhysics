@@ -267,25 +267,34 @@ AliTOFAnalysisTaskCalibPass0::UserCreateOutputObjects()
   Float_t pMin = 0.;
   Float_t pMax = 5.;
   
-  fHistoVertexTimestamp = new TH2F("hHistoVertexTimestamp", "Vertex position;elapsed time (s);z (cm);", timeBins, timeMin, timeMax, vertexBins, vertexMin, vertexMax);
+  // The histograms don't have a title since, at merging stage, in case of zero events in the first file, we want that the title is overwritten by the first file WITH a title (where the GRP info will be contained
+
+  // Vertex position
+  fHistoVertexTimestamp = new TH2F("hHistoVertexTimestamp", ";z (cm);", timeBins, timeMin, timeMax, vertexBins, vertexMin, vertexMax);
   fHistoList->Add(fHistoVertexTimestamp);
 
-  fHistoDeltatTimestamp = new TH2F("hHistoDeltatTimestamp", "Global time shift (T0-fill);elapsed time (s);t - t_{exp}^{(#pi)} (ps);", timeBins, timeMin, timeMax, deltatBins, deltatMin, deltatMax);
+  // Global time shift (T0-fill)
+  fHistoDeltatTimestamp = new TH2F("hHistoDeltatTimestamp", ";elapsed time (s);t - t_{exp}^{(#pi)} (ps);", timeBins, timeMin, timeMax, deltatBins, deltatMin, deltatMax);
   fHistoList->Add(fHistoDeltatTimestamp);
 
-  fHistoDeltazEta = new TH2F("hHistoDeltazEta", "Matching residuals (longitudinal);#eta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
+  // Matching residuals (longitudinal)
+  fHistoDeltazEta = new TH2F("hHistoDeltazEta", ";#eta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
   fHistoList->Add(fHistoDeltazEta);
 
-  fHistoDeltatEta = new TH2F("hHistoDeltatEta", "Global time shift (T0-fill) vs #eta; #eta; t - t_{exp}^{(#pi)} (ps);", etaBins, etaMin, etaMax, deltatBins, deltatMin, deltatMax);
+  // Global time shift (T0-fill) vs #eta
+  fHistoDeltatEta = new TH2F("hHistoDeltatEta", "; #eta; t - t_{exp}^{(#pi)} (ps);", etaBins, etaMin, etaMax, deltatBins, deltatMin, deltatMax);
   fHistoList->Add(fHistoDeltatEta);
 
-  fHistoDeltazCosTheta = new TH2F("hHistoDeltazCosTheta", "Matching residuals (longitudinal);cos #theta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
+  // Matching residuals (longitudinal)
+  fHistoDeltazCosTheta = new TH2F("hHistoDeltazCosTheta", ";cos #theta;#Deltaz (cm);", etaBins, etaMin, etaMax, deltazBins, deltazMin, deltazMax);
   fHistoList->Add(fHistoDeltazCosTheta);
 
-  fHistoAcceptedTracksEtaPt = new TH2F("hHistoAcceptedTracksEtaPt", "Accepted tracks;#eta;#p_{T} (GeV/c);", etaBins, etaMin, etaMax, pBins, pMin, pMax);
+  // Accepted tracks
+  fHistoAcceptedTracksEtaPt = new TH2F("hHistoAcceptedTracksEtaPt", ";#eta;#p_{T} (GeV/c);", etaBins, etaMin, etaMax, pBins, pMin, pMax);
   fHistoList->Add(fHistoAcceptedTracksEtaPt);
 
-  fHistoMatchedTracksEtaPt = new TH2F("hHistoMatchedTracksEtaPt", "Matched tracks;#eta;p_{T} (GeV/c);", etaBins, etaMin, etaMax, pBins, pMin, pMax);
+  // Matched tracks
+  fHistoMatchedTracksEtaPt = new TH2F("hHistoMatchedTracksEtaPt", ";#eta;p_{T} (GeV/c);", etaBins, etaMin, etaMax, pBins, pMin, pMax);
   fHistoList->Add(fHistoMatchedTracksEtaPt);
 
   /* post data */

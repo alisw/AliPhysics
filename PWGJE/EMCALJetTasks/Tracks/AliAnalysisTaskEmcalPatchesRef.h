@@ -19,6 +19,11 @@ public:
     kEPREG2,
     kEPREJ1,
     kEPREJ2,
+    kEPRDL0,
+    kEPRDG1,
+    kEPRDG2,
+    kEPRDJ1,
+    kEPRDJ2,
     kEPRntrig
   };
   AliAnalysisTaskEmcalPatchesRef();
@@ -31,8 +36,17 @@ public:
 
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void SetRequestAnalysisUtil(bool doUse) { fRequestAnalysisUtil = doUse; }
 
 protected:
+
+  void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
+  bool IsOfflineSimplePatch(TObject *o) const;
+  bool SelectDCALPatch(TObject *o) const;
+  bool SelectSingleShowerPatch(TObject *o) const;
+  bool SelectJetPatch(TObject *o) const;
+  double GetPatchEnergy(TObject *o) const;
+
   void CreateEnergyBinning(TArrayD& binning) const;
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi);
@@ -42,6 +56,7 @@ protected:
   AliAnalysisUtils                    *fAnalysisUtil;
   AliEMCalHistoContainer              *fHistos;
 
+  Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
   Double_t                            fOfflineEnergyThreshold[kEPRntrig];
 

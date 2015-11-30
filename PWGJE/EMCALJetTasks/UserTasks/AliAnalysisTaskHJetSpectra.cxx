@@ -90,6 +90,7 @@ fhJetPhi(0x0),  fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
  fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+fhSumPt(0x0), fhSumPtTT(0x0), fh2SumPtVsCent(0x0), fh2SumPtVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
 fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
@@ -139,6 +140,7 @@ fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+fhSumPt(0x0), fhSumPtTT(0x0), fh2SumPtVsCent(0x0), fh2SumPtVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
  fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
@@ -1077,20 +1079,31 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    // Track Multiplicity
    if(trkArrayRec){
       Int_t mult   = 0;
-      Int_t multTT = 0;
+      Double_t sumPt = 0;
       for(Int_t j = 0; j < trkArrayRec->GetEntries(); j++){ // loop over reconstructed tracks 
          constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
          if(!constTrackRec) continue;
          if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
          mult++;
-         if(trackTT) multTT++;
+         sumPt += constTrackRec->Pt();
       }
+
       fhTrackMultiplicity->Fill(mult);
-      if(trackTT) fhTrackMultiplicityTT->Fill(multTT);
+      fhSumPt->Fill(sumPt);
+
+      if(trackTT){
+         fhTrackMultiplicityTT->Fill(mult);
+         fhSumPtTT->Fill(sumPt); 
+      }
 
       if(centralityPercentile > -0.1){
          fh2TrackMultVsCent->Fill(centralityPercentile,mult);
-         if(trackTT) fh2TrackMultVsCentTT->Fill(centralityPercentile,multTT);
+         fh2SumPtVsCent->Fill(centralityPercentile, sumPt);
+   
+         if(trackTT){
+            fh2TrackMultVsCentTT->Fill(centralityPercentile,mult);
+            fh2SumPtVsCentTT->Fill(centralityPercentile, sumPt);
+         }
       }
   
       if(trackTT){ 
@@ -1408,6 +1421,18 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2TrackMultVsCentTT = (TH2D*) fh2TrackMultVsCent->Clone("fh2TrackMultVsCentTT");
    if(bNotKine) fOutput->Add(fh2TrackMultVsCentTT);
+
+   fhSumPt = new TH1D("fhSumPt","fhSumPt",2000,0,1000);
+   if(bNotKine) fOutput->Add(fhSumPt);
+
+   fhSumPtTT = (TH1D*) fhSumPt->Clone("fhSumPtTT");
+   if(bNotKine)  fOutput->Add(fhSumPtTT);
+
+   fh2SumPtVsCent = new TH2D("fh2SumPtVsCent","fh2SumPtVsCent",20,0,100,200,0,200);
+   if(bNotKine)  fOutput->Add(fh2SumPtVsCent);
+
+   fh2SumPtVsCentTT = (TH2D*) fh2SumPtVsCent->Clone("fh2SumPtVsCentTT");
+   if(bNotKine)  fOutput->Add(fh2SumPtVsCentTT);
    //-----------------------------------------------------
   /*
    if(fTypeOfAnal == kKine){ 

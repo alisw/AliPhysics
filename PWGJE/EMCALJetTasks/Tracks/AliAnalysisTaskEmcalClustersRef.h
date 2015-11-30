@@ -25,6 +25,11 @@ public:
     kECREG2,
     kECREJ1,
     kECREJ2,
+    kECRDL0,
+    kECRDG1,
+    kECRDG2,
+    kECRDJ1,
+    kECRDJ2,
     kECRntrig
   };
   AliAnalysisTaskEmcalClustersRef();
@@ -40,7 +45,16 @@ public:
 
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
+  void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
+
 protected:
+
+  void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
+  bool IsOfflineSimplePatch(TObject *o) const;
+  bool SelectDCALPatch(TObject *o) const;
+  bool SelectSingleShowerPatch(TObject *o) const;
+  bool SelectJetPatch(TObject *o) const;
+  double GetPatchEnergy(TObject *o) const;
 
   void CreateEnergyBinning(TArrayD& binning) const;
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
@@ -55,6 +69,7 @@ protected:
   AliEMCALGeometry                    *fGeometry;
   TString                             fClusterContainer;
 
+  Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
   Double_t                            fOfflineEnergyThreshold[kECRntrig];
 

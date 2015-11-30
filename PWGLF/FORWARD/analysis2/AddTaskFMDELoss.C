@@ -30,7 +30,8 @@
  */
 AliAnalysisTask*
 AddTaskFMDELoss(Bool_t        mc, 
-		Bool_t        onlyMB=false, 
+		Bool_t        onlyMB=false,
+		Double_t      lowCut=-1,
 		const Char_t* config="elossFitConfig.C",
 		const Char_t* corrs="",
 		const Char_t* extraDead="")
@@ -59,6 +60,8 @@ AddTaskFMDELoss(Bool_t        mc,
 
   // If we get extra dead map from outside, add it here
   if (extraDead && extraDead[0] != '\0') task->GetESDFixer().AddDead(extraDead);
+  // If we got a low cut value, set it 
+  if (lowCut > 0)   task->GetEnergyFitter().SetLowCut(lowCut);
   
   // --- General -----------------------------------------------------
   // If set, only collect statistics for MB.  This is to prevent a

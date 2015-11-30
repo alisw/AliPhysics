@@ -6,6 +6,7 @@
 #include "AliEmcalJetUtility.h"
 #include "AliFJWrapper.h"
 
+class TClonesArray;
 class AliEmcalJetTask;
 class AliEmcalJet;
 class AliFJWrapper;

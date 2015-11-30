@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include "TNamed.h"
+//For Run Ranges functionality
+#include <map>
 
 using namespace std;
 class AliESDEvent;
@@ -34,14 +36,27 @@ public:
         lNDesiredBoundaries = lNB;
     }
     
+    //Run Ranges Interface
+    Long_t GetNRunRanges() const {return fNRunRanges; }
+    void AddRunRange ( Int_t lFirst, Int_t lLast, AliMultSelection *lMultSelProvided );
+    
     //Getter for event selection criteria
     AliMultSelectionCuts * GetEventCuts() const { return fMultSelectionCuts;     }
     
     //Getter for MultSelection object
     AliMultSelection * GetMultSelection() const { return fSelection;     }
+    
+    //Setter (warning: not a copy...) 
+    void SetMultSelection(AliMultSelection *lMultSelProvided ){ fSelection = lMultSelProvided; }
 
     //Getter for MultInput object
     AliMultInput * GetMultInput() const { return fInput;     }
+    
+    //Setter for golden run
+    void SetRunToUseAsDefault ( Int_t lRunNumber ) { fRunToUseAsDefault = lRunNumber; }
+    
+    //Getter for golden run
+    Int_t GetRunToUseAsDefault() const { return fRunToUseAsDefault; } 
     
     //Configure standard input
     void SetupStandardInput();
@@ -54,11 +69,21 @@ public:
     
 private:
     AliMultInput     *fInput;     //Object for all input
-    AliMultSelection *fSelection; //Object for all estimators
+    AliMultSelection *fSelection; //(current) transient pointer object
 
     //Calibration Boundaries to locate
     Double_t *lDesiredBoundaries;
     Long_t   lNDesiredBoundaries;
+    
+    Int_t fRunToUseAsDefault; //Give preference for this run to be the default 
+    
+    //Run Ranges map - master storage
+    Long_t fNRunRanges;
+    std::map<int, int> fRunRangesMap;
+    Int_t fFirstRun[1000];
+    Int_t fLastRun[1000]; 
+    
+    TList *fMultSelectionList; // List of AliMultSelection objects to be used per run period 
     
     TString fInputFileName;  // Filename for TTree object for calibration purposes
     TString fBufferFileName; // Filename for TTree object (buffer file)

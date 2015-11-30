@@ -27,6 +27,7 @@
 #include "TRandom.h"
 #include "AliAnalysisEtCommon.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliLog.h"
 #include "AliPWG0Helper.h"
 #include "AliPIDResponse.h"
@@ -107,13 +108,18 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   if(checkLabelForHIJING) SetGeneratorMinMaxParticles(mcEvent);
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100 || fDataSet==2015 ||fDataSet==2011 ){//If this is Pb+Pb
+  if(fDataSet==20100  ||fDataSet==2011 ){//If this is Pb+Pb
 //     AliCentrality *centrality2 = realEvent->GetCentrality();
 //     if(fNCentBins<21) fCentBin= centrality2->GetCentralityClass10(fCentralityMethod);
 //     else{ fCentBin= centrality2->GetCentralityClass5(fCentralityMethod);}
 //     cout<<"centrality "<<fCentBin<<endl;
     AliCentrality *centrality =  realEvent->GetCentrality();
     fCentBin = GetCentralityBin(fNCentBins, centrality);
+    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+  }
+  if( fDataSet==2015){
+    AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+    fCentBin = GetCentralityBin(fNCentBins, MultSelection);
     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   AnalyseEvent(ev);
@@ -2118,13 +2124,17 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 100.0;
-  if(fDataSet==20100 || fDataSet==2011|| fDataSet==2015){
+  if(fDataSet==20100 || fDataSet==2011){
     maxEt=4000.0;
     maxEtPiKP = 2500;
   }
   if(fDataSet==2013){
     maxEt=100.0;
     maxEtPiKP = 100.0;
+  }
+  if(fDataSet==2015){
+    maxEt=6000.0;
+    maxEtPiKP = 3500.0;
   }
   Int_t nbinsEt = 100;
   char histoname[200];

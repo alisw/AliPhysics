@@ -670,7 +670,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDchi2]       = particle->GetTRDchi2();
-  values[AliDielectronVarManager::kTRDchi2Trklt]  = particle->GetTRDchi2() / particle->GetTRDntrackletsPID();
+  values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID() > 0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
@@ -895,7 +895,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDntracklets))  values[AliDielectronVarManager::kTRDntracklets] = 0;
   if(Req(kTRDpidQuality))  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   if(Req(kTRDchi2))        values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
-  if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = particle->GetTRDchi2() / particle->GetTRDntrackletsPID();
+  if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
 

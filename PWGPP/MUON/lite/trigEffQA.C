@@ -467,7 +467,10 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     }
     
     TList* trigEffList = (TList*)file->FindObjectAny("triggerChamberEff");
-    if ( ! trigEffList ) printf("Warning: histo list not found in %s. Check directly in file\n", filename.Data());
+    if ( ! trigEffList ) {
+      printf("Warning: histo list not found in %s.\n", filename.Data());
+      continue;
+    }
     if ( trigEffList->GetEntries() == 0 ) {
       printf("Warning: empty trigger list in file %s. Probably no MUON info there. Skip.\n", filename.Data());
       continue;
@@ -628,7 +631,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
     can->SetRightMargin(0.14);
     TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(iel, icount,ich)));
-    if ( ! histo ) continue;
+    if ( ! histo || histo->Integral() == 0. ) continue;
     TH2* outHisto = GetOutliers(histo);
     TString histoTitle = histo->GetTitle();
     histoTitle.ReplaceAll("efficiency","eff.-<eff.> for outliers");

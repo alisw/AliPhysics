@@ -41,9 +41,13 @@ public:
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    
+    void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+    void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+    
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
-    void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };  
-    void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };  
+    void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
+    void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
 private:
     enum{
@@ -61,13 +65,19 @@ private:
     Bool_t	 fEMCEG1;//EMcal Threshold EG1
     Bool_t	 fEMCEG2;//EMcal Threshold EG2
     
-    TClonesArray  *fTracks_tender;
-    TClonesArray  *fCaloClusters_tender;
- 
-    AliAODMCParticle 	*fMCparticle;
-    TClonesArray 	*fMCarray;
-   
-
+    TClonesArray  *fTracks_tender;//Tender tracks
+    TClonesArray  *fCaloClusters_tender;//Tender cluster
+    
+    AliAODMCParticle 	*fMCparticle;//! MC particle
+    TClonesArray 	*fMCarray;//! MC array
+    
+    TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker
+    Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
+    Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches
+    
+    Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
+    Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
+    
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fVtxZ;//!Vertex z
@@ -94,6 +104,7 @@ private:
     TH2F        *fdEdx;//!dedx vs pt
     TH2F        *fTPCNpts;//!TPC Npoints used for dedx
     TH2F        *fTPCnsig;//!TPC Nsigma
+    TH2F        *fTPCnsig_Pi;//!TPC Nsigma wrt pion
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
     TH2F        *fTPCnsigEta2;//!TPC Nsigma
@@ -130,10 +141,6 @@ private:
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
-    TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker  
-    Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
-    Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches
-    
     AliAnalysisTaskHFEemcQA(const AliAnalysisTaskHFEemcQA&); // not implemented
     AliAnalysisTaskHFEemcQA& operator=(const AliAnalysisTaskHFEemcQA&); // not implemented
     
@@ -141,4 +148,3 @@ private:
 };
 
 #endif
-

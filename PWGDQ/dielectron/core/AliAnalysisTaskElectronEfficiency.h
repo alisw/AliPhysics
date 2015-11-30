@@ -65,6 +65,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   virtual void  Terminate(const Option_t*);
   
   void          SetDoPairing(Bool_t b=kTRUE)                  {fDoPairing=b;}
+  void          SetCalcResolution(Bool_t b=kTRUE)             {fCalcResolution=b;}
+  void          SetResolutionCuts(AliAnalysisFilter *cuts)    {fResolutionCuts=cuts;}
   void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
   void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
@@ -159,6 +161,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH3F*                           fNgen;
   std::vector<TH3F*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3F*>              fvReco_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  std::vector<TH3F*>              fvReco_Ele_recoObs;           // store reconstructed electrons (N vs pT, eta, phi) per cutset. In reconstructed obervables
+  std::vector<TH3F*>              fvReco_Ele_recoObs_poslabel;  // store also result when using only tracks with positive label, for systematic checks. In reconstructed obervables
   std::vector<TH3F*>              fvAllPionsForRej;     // testparticles for prefilter efficiency determination.
   std::vector<TH3F*>              fvPionsRejByAllSigns;
   std::vector<TH3F*>              fvPionsRejByUnlike;
@@ -171,8 +175,16 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*                       fMeeBins;
   Double_t*                       fPteeBins;
   TH2F*                           fNgenPairs;
+  TH2F*                           fNgenPairs2;
   std::vector<TH2F*>              fvRecoPairs;
   std::vector<TH2F*>              fvRecoPairs_poslabel;
+  
+  Bool_t                          fCalcResolution;
+  TH2F*                           fPtResolutionAndBrems;
+  TH2F*                           fPtResolution;
+  TH2F*                           fPtResolutionAndBrems_poslabel;
+  TH2F*                           fPtResolution_poslabel;
+  AliAnalysisFilter*              fResolutionCuts;
   
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   

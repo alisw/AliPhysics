@@ -51,6 +51,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kTriggerRecalcGamma = 4
   };
 
+  enum EMCalTriggerMode_t {
+    kNoSpecialTreatment,       // No special treatment for EMCal triggers
+    kOverlapWithLowThreshold   // The overlap between low and high threshold trigger is assigned to the lower threshold only
+  };
+
   AliAnalysisTaskEmcal();
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
@@ -93,6 +98,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
+  void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -108,8 +114,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       GetNParticles(Int_t i=0)                           const;
   Int_t                       GetNClusters(Int_t i=0)                            const;
   AliEmcalTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
-  Bool_t		      HasTriggerType(TriggerType triggersel);
-  ULong_t 		      GetTriggerList();
+  Bool_t		                  HasTriggerType(TriggerType triggersel);
+  ULong_t 		                GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
 
   // Overloaded AliAnalysisTaskSE methods
@@ -170,6 +176,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   ULong_t                     fTriggers;                   // list of fired triggers
+  EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)
@@ -193,6 +200,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fPtHardBin;                  //!event pt hard bin
   Int_t                       fNTrials;                    //!event trials
   Float_t                     fXsection;                   //!x-section from pythia header
+
+  // Output
   TList                      *fOutput;                     //!output list
   TH1                        *fHistEventCount;             //!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
@@ -206,6 +215,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistZVertex;                //!z vertex position
   TH1                        *fHistEventPlane;             //!event plane distribution
   TH1                        *fHistEventRejection;         //!book keep reasons for rejecting event
+  TH1                        *fHistTriggerClasses;         //!number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented

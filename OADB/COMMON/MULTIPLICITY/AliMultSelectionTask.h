@@ -57,7 +57,7 @@ class AliMultSelectionTask : public AliAnalysisTaskSE {
 public:
     
     AliMultSelectionTask();
-    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE);
+    AliMultSelectionTask(const char *name, TString lExtraOptions = "", Bool_t lCalib = kFALSE, Int_t lNDebugEstimators = 1);
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
@@ -71,8 +71,9 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodName()             const; //no input required, will have all info in globals...
+    TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    void CreateEmptyOADB(); //In case we really didn't get anything ...
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
     Bool_t IsNotPileupMV           (AliVEvent *event);
@@ -90,7 +91,15 @@ public:
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
-    void SetAlternateOADBforEstimators ( TString lFile ){ fAlternateOADBForEstimators = lFile.Data(); }
+    void SetAlternateOADBforEstimators    ( TString lFile ){ fAlternateOADBForEstimators    = lFile.Data(); }
+    void SetAlternateOADBFullManualBypass ( TString lFile ){ fAlternateOADBFullManualBypass = lFile.Data(); }
+    
+    //Default Setters
+    void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
+    Bool_t GetUseDefaultCalib () const { return fkUseDefaultCalib; }
+    
+    void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
+    Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -115,11 +124,17 @@ private:
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
+    Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
+    
+    //Default options
+    Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
+    Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
     
     TString fAlternateOADBForEstimators;
+    TString fAlternateOADBFullManualBypass;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
@@ -131,15 +146,28 @@ private:
     //   Variables for Multiplicity Determination
     //===========================================================================
     AliMultVariable *fAmplitude_V0A;
+    AliMultVariable *fAmplitude_V0A1;
+    AliMultVariable *fAmplitude_V0A2;
+    AliMultVariable *fAmplitude_V0A3;
+    AliMultVariable *fAmplitude_V0A4;
     AliMultVariable *fAmplitude_V0C;
+    AliMultVariable *fAmplitude_V0C1;
+    AliMultVariable *fAmplitude_V0C2;
+    AliMultVariable *fAmplitude_V0C3;
+    AliMultVariable *fAmplitude_V0C4;
     AliMultVariable *fAmplitude_V0Apartial;
     AliMultVariable *fAmplitude_V0Cpartial;
     AliMultVariable *fAmplitude_V0AEq;
     AliMultVariable *fAmplitude_V0CEq;
     AliMultVariable *fAmplitude_OnlineV0A;
     AliMultVariable *fAmplitude_OnlineV0C;
+    AliMultVariable *fAmplitude_V0AADC;
+    AliMultVariable *fAmplitude_V0CADC;
+
     //Integer Variables 
     AliMultVariable *fnSPDClusters;
+    AliMultVariable *fnSPDClusters0;
+    AliMultVariable *fnSPDClusters1;
     AliMultVariable *fnTracklets; //tracklet estimator
     AliMultVariable *fRefMultEta5; //tracklet estimator
     AliMultVariable *fRefMultEta8; //tracklet estimator
@@ -161,16 +189,6 @@ private:
     
     //Event selection snippet for VtxZ as AliMultVariable
     AliMultVariable *fEvSel_VtxZ;
-    
-    // A.T.
-    Float_t fAmplitude_V0A1;   //!
-    Float_t fAmplitude_V0A2;   //!
-    Float_t fAmplitude_V0A3;   //!
-    Float_t fAmplitude_V0A4;   //!
-    Float_t fAmplitude_V0C1;   //!
-    Float_t fAmplitude_V0C2;   //!
-    Float_t fAmplitude_V0C3;   //!
-    Float_t fAmplitude_V0C4;   //!
 
     Int_t fRunNumber;                    
 
@@ -187,8 +205,6 @@ private:
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
-    Int_t   fnSPDClusters0;            //!
-    Int_t   fnSPDClusters1;            //!
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
@@ -203,6 +219,7 @@ private:
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
+    Int_t fEvSelCode; //Final code in event selection 
     Int_t fNDebug; // number of percentiles
     
     Float_t fAliCentralityV0M; //! percentiles from AliCentrality (for debugging) 
@@ -211,7 +228,11 @@ private:
     //Data needed for Monte Carlo
     Int_t fMC_NColl;
     Int_t fMC_NPart;
-
+    Int_t fMC_NchV0A;
+    Int_t fMC_NchV0C;
+    Int_t fMC_NchEta05;
+    Int_t fMC_NchEta08;
+    Int_t fMC_NchEta10;
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     

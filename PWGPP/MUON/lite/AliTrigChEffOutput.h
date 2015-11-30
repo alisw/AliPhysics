@@ -20,14 +20,13 @@ class TH1;
 
 class AliTrigChEffOutput : public AliMuonAnalysisOutput {
  public:
-  AliTrigChEffOutput();
-  AliTrigChEffOutput ( TObjArray* outputList );
-  AliTrigChEffOutput ( const char *filename, const char *outputName );
+  AliTrigChEffOutput ( TObjArray* outputList, const char* name = "" );
+  AliTrigChEffOutput ( const char *filename, const char *outputName = "testMTRChamberEff" );
 
   virtual ~AliTrigChEffOutput();
 
-  TList* GetEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection);
-  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod);
+  TList* GetEffHistoList ( TString physSel, TString trigClassNames, TString centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
+  TString GetHistoName ( Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod );
   TH1* GetCountHisto ( Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod );
 
   enum {

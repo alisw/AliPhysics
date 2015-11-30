@@ -26,6 +26,7 @@
 templateClassImp(AliEmcalTriggerAlgorithmAP)
 templateClassImp(AliEmcalJetTriggerAlgorithmAP)
 templateClassImp(AliEmcalGammaTriggerAlgorithmAP)
+templateClassImp(AliEmcalBkgTriggerAlgorithmAP)
 /// \endcond
 
 template<typename T>
@@ -34,8 +35,10 @@ TObject(),
 fRowMin(0),
 fRowMax(0),
 fPatchSize(0),
+fSubregionSize(1),
 fBitMask(0),
-fThreshold(0)
+fThreshold(0),
+fOfflineThreshold(0)
 {
 }
 
@@ -45,8 +48,10 @@ TObject(),
 fRowMin(rowmin),
 fRowMax(rowmax),
 fPatchSize(bitmask),
+fSubregionSize(1),
 fBitMask(0),
-fThreshold(0)
+fThreshold(0),
+fOfflineThreshold(0)
 {
 }
 
@@ -55,23 +60,26 @@ AliEmcalTriggerAlgorithmAP<T>::~AliEmcalTriggerAlgorithmAP() {
 }
 
 template<typename T>
-std::vector<AliEmcalTriggerRawPatchAP> AliEmcalTriggerAlgorithmAP<T>::FindPatches(const AliEmcalTriggerDataGridAP<T> &adc) const {
+std::vector<AliEmcalTriggerRawPatchAP> AliEmcalTriggerAlgorithmAP<T>::FindPatches(const AliEmcalTriggerDataGridAP<T> &adc, const AliEmcalTriggerDataGridAP<T> &offlineAdc) const {
   std::vector<AliEmcalTriggerRawPatchAP> result;
   T sumadc(0);
+  T sumofflineAdc(0);
   for(int irow = fRowMin; irow < fRowMax - fPatchSize; irow += fPatchSize){
     for(int icol = 0; icol < adc.GetNumberOfCols() - fPatchSize; icol += fPatchSize){
       sumadc = 0;
+      sumofflineAdc = 0;
       for(int jrow = irow; jrow < irow + fPatchSize; jrow++){
         for(int jcol = icol; jcol < icol + fPatchSize; jcol++){
           try{
             sumadc += adc(jcol, jrow);
+            sumofflineAdc += offlineAdc(jcol, jrow);
           } catch (typename AliEmcalTriggerDataGridAP<T>::OutOfBoundsException &e){
 
           }
         }
       }
-      if(sumadc > fThreshold){
-        AliEmcalTriggerRawPatchAP recpatch(icol, irow, fPatchSize, sumadc);
+      if(sumadc > fThreshold || sumofflineAdc > fOfflineThreshold){
+        AliEmcalTriggerRawPatchAP recpatch(icol, irow, fPatchSize, sumadc, sumofflineAdc);
         recpatch.SetBitmask(fBitMask);
         result.push_back(recpatch);
       }
@@ -86,6 +94,7 @@ AliEmcalJetTriggerAlgorithmAP<T>::AliEmcalJetTriggerAlgorithmAP():
 AliEmcalTriggerAlgorithmAP<T>()
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -93,6 +102,7 @@ AliEmcalJetTriggerAlgorithmAP<T>::AliEmcalJetTriggerAlgorithmAP(Int_t rowmin, In
 AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(16);
+  this->SetSubregionSize(4);
 }
 
 template<typename T>
@@ -104,6 +114,7 @@ AliEmcalGammaTriggerAlgorithmAP<T>::AliEmcalGammaTriggerAlgorithmAP():
 AliEmcalTriggerAlgorithmAP<T>()
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
@@ -111,10 +122,31 @@ AliEmcalGammaTriggerAlgorithmAP<T>::AliEmcalGammaTriggerAlgorithmAP(Int_t rowmin
 AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
 {
   this->SetPatchSize(2);
+  this->SetSubregionSize(1);
 }
 
 template<typename T>
 AliEmcalGammaTriggerAlgorithmAP<T>::~AliEmcalGammaTriggerAlgorithmAP(){
+}
+
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP():
+AliEmcalTriggerAlgorithmAP<T>()
+{
+  this->SetPatchSize(8);
+  this->SetSubregionSize(4);
+}
+
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t bitmask):
+AliEmcalTriggerAlgorithmAP<T>(rowmin, rowmax, bitmask)
+{
+  this->SetPatchSize(8);
+  this->SetSubregionSize(4);
+}
+
+template<typename T>
+AliEmcalBkgTriggerAlgorithmAP<T>::~AliEmcalBkgTriggerAlgorithmAP(){
 }
 
 template class AliEmcalTriggerAlgorithmAP<int>;
@@ -126,3 +158,6 @@ template class AliEmcalJetTriggerAlgorithmAP<float>;
 template class AliEmcalGammaTriggerAlgorithmAP<int>;
 template class AliEmcalGammaTriggerAlgorithmAP<double>;
 template class AliEmcalGammaTriggerAlgorithmAP<float>;
+template class AliEmcalBkgTriggerAlgorithmAP<int>;
+template class AliEmcalBkgTriggerAlgorithmAP<double>;
+template class AliEmcalBkgTriggerAlgorithmAP<float>;

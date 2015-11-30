@@ -19,7 +19,7 @@ WriteMuonConfig()
   if [ -e $cfgFilename ]; then
 
     # Change previous configuration if needed
-    if [[ "$period" =~ ^LHC15[a-z]$ ]]; then
+    if [[ "$period" =~ ^LHC15[a-l]$ ]]; then
       local hasFeature=$(grep -c "MUenablePhysSel=0" $cfgFilename)
       if [ $hasFeature -gt 0 ]; then
         local tmpCfgFile=${cfgFilename/".txt"/"_tmp.txt"}
@@ -63,25 +63,25 @@ GetMUvar()
 
   # Assume that "outputDir" is known from the steering runQA.sh
   local cfgFileDir="${outputDir}/configFiles"
-  local cfgFilename="${cfgFileDir}/cfg_MU_${dataType}_${period}_${pass}.txt"
-  local cfgFileSuffix="${dataType}_${period}.txt"
+  local cfgFilePrefix="${dataType}_${period}_${pass}"
+  local cfgFilename="${cfgFileDir}/${cfgFilePrefix}_cfgMU.txt"
 
   # FIXME: comment the following line when we will run at CERN
-  WriteMuonConfig "$cfgFilename"
+#  WriteMuonConfig "$cfgFilename"
 
   local what="$1"
   local output=""
   local filename=""
 
   if [ "$what" = "triggerList" ]; then
-    filename="${cfgFileDir}/trigList_${cfgFileSuffix}"
+    filename="${cfgFileDir}/${cfgFilePrefix}_trigList.txt"
     if [ -e "$filename" ]; then
       output="\"${filename}\""
     else
       output="0x0"
     fi
   elif [ "$what" = "runList" ]; then
-    filename="${cfgFileDir}/runList_${cfgFileSuffix}"
+    filename="${cfgFileDir}/${cfgFilePrefix}_runList.txt"
     if [ -e "$filename" ]; then
       output="$(cat ${filename} | xargs)"
     else
@@ -169,7 +169,7 @@ periodLevelQA()
   fi
 
   #if trigger list is provided, filter the tracking output accordngly
-local triggerList=$(GetMUvar "triggerList")
+  local triggerList=$(GetMUvar "triggerList")
 
   # First run tracker (it merges the QAresults and we need it for
   # scaler trending in trigger

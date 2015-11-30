@@ -1,5 +1,5 @@
 /**
- * \file AliEmcalTriggerBitConfig.h
+ * \file AliEmcalTriggerBitConfigAPAP.h
  * \brief Definition of EMCAL trigger bit configurations
  *
  * Two configuation are defined:
@@ -8,8 +8,8 @@
  *
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  */
-#ifndef ALIEMCALTRIGGERBITCONFIG_H
-#define ALIEMCALTRIGGERBITCONFIG_H
+#ifndef ALIEMCALTRIGGERBITCONFIGAP_H
+#define ALIEMCALTRIGGERBITCONFIGAP_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -17,20 +17,20 @@
 #include <TNamed.h>
 
 /**
- * \class AliEmcalTriggerBitConfig
+ * \class AliEmcalTriggerBitConfigAPAP
  * \brief Definition of trigger bit configurations
  *
  * Trigger bit configuration used in the trigger patch maker and by the trigger patches
  * themselves in order to identify of which type the trigger patch is. Can be adapted to different
  * trigger bit configurations use in different reconstructions
  */
-class AliEmcalTriggerBitConfig  : public TNamed {
+class AliEmcalTriggerBitConfigAP  : public TNamed {
 public:
-  AliEmcalTriggerBitConfig();
-  AliEmcalTriggerBitConfig(Int_t l0bit, Int_t j1bit, Int_t j2bit, Int_t g1bit, Int_t g2bit, Int_t mcoffset);
-  virtual ~AliEmcalTriggerBitConfig() {}
+  AliEmcalTriggerBitConfigAP();
+  AliEmcalTriggerBitConfigAP(Int_t l0bit, Int_t j1bit, Int_t j2bit, Int_t g1bit, Int_t g2bit, Int_t bkgbit, Int_t mcoffset);
+  virtual ~AliEmcalTriggerBitConfigAP() {}
 
-  void Initialise(const AliEmcalTriggerBitConfig &ref);
+  void Initialise(const AliEmcalTriggerBitConfigAP &ref);
 
   /**
    * Get the trigger bit for Level0 triggers
@@ -58,6 +58,11 @@ public:
    */
   Int_t GetGammaLowBit() const { if(fGLowBit < 0) AliFatal("Invalid trigger configuration: Gamma low bit < 0"); return fGLowBit; }
   /**
+   * Get trigger bit for the gamma trigger, low threshold
+   * @return Trigger bit number
+   */
+  Int_t GetBkgBit() const { if(fBkgBit < 0) AliFatal("Invalid trigger configuration: background bit < 0"); return fBkgBit; }
+  /**
    * Get the Monte-Carlo offset
    * @return MC offset
    */
@@ -69,45 +74,46 @@ protected:
  Int_t fJLowBit;                    ///< Jet Low bit
  Int_t fGHighBit;                   ///< Gamma High bit
  Int_t fGLowBit;                    ///< Gamma Low bit
+ Int_t fBkgBit;                     ///< Background bit
  Int_t fTriggerTypesEnd;            ///< Monte-Carlo offset
 
  /// \cond CLASSIMP
- ClassDef(AliEmcalTriggerBitConfig, 1);
+ ClassDef(AliEmcalTriggerBitConfigAP, 1);
  /// \endcond
 };
 
 /**
- * \class AliEmcalTriggerBitConfigOld
+ * \class AliEmcalTriggerBitConfigOldAP
  * \brief Definition of old trigger bit configuration
  *
  * Definition of old trigger bit configuration:
  * - 2 triggers, 1 threshold
  */
-class AliEmcalTriggerBitConfigOld : public AliEmcalTriggerBitConfig{
+class AliEmcalTriggerBitConfigOldAP : public AliEmcalTriggerBitConfigAP{
 public:
-  AliEmcalTriggerBitConfigOld();
-  virtual ~AliEmcalTriggerBitConfigOld() {}
+  AliEmcalTriggerBitConfigOldAP();
+  virtual ~AliEmcalTriggerBitConfigOldAP() {}
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerBitConfigOld, 1);
+  ClassDef(AliEmcalTriggerBitConfigOldAP, 1);
   /// \endcond
 };
 
 /**
- * \class AliEmcalTriggerBitConfigNew
+ * \class AliEmcalTriggerBitConfigNewAP
  * \brief Definition of new trigger bit configuration
  *
  * Definition of new trigger bit configuration:
  * - 2 triggers, 2 thresholds
  */
-class AliEmcalTriggerBitConfigNew : public AliEmcalTriggerBitConfig{
+class AliEmcalTriggerBitConfigNewAP : public AliEmcalTriggerBitConfigAP{
 public:
-  AliEmcalTriggerBitConfigNew();
-  virtual ~AliEmcalTriggerBitConfigNew() {}
+  AliEmcalTriggerBitConfigNewAP();
+  virtual ~AliEmcalTriggerBitConfigNewAP() {}
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerBitConfigNew, 1);
+  ClassDef(AliEmcalTriggerBitConfigNewAP, 1);
   /// \endcond
 };
 
-#endif /* ALIEMCALTRIGGERBITCONFIG_H */
+#endif /* ALIEMCALTRIGGERBITCONFIGAP_H */

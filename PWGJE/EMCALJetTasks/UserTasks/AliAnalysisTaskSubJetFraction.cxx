@@ -365,9 +365,9 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
   fShapesVarNames[4] = "Frac2_Data_or_Detector_Level_or_Embeded";
   fShapesVarNames[5] = "Frac2_Particle_Level";
   fShapesVarNames[6] = "1SubJettiness_Data_or_Detector_Level_or_Embeded";
-  fShapesVarNames[7] = "1Subjettiness_Particle_Level";
-  fShapesVarNames[8] = "2Subjettiness_Data_or_Detector_Level_or_Embeded";
-  fShapesVarNames[9] = "2Subjettiness_Particle_Level";
+  fShapesVarNames[7] = "1SubJettiness_Particle_Level";
+  fShapesVarNames[8] = "2SubJettiness_Data_or_Detector_Level_or_Embeded";
+  fShapesVarNames[9] = "2SubJettiness_Particle_Level";
   fShapesVarNames[10] = "Distance_Between_Two_Hardest_Subjets_Axis_Data_or_Detector_Level_or_Embeded";
   fShapesVarNames[11] = "Distance_Between_Two_Hardest_Subjets_Axis_Particle_Level";
   fShapesVarNames[12]= "Parton_Flavour_Data_or_Detector_Level_or_Embeded";
@@ -792,7 +792,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
       fhEventCounter_1->Fill(2); //Number of events with a jet container                                                                                               
       JetCont1->ResetCurrentID();
       while((Jet1=JetCont1->GetNextAcceptJet())) {
-	if( (!Jet1) || (Jet1->Pt()<fPtThreshold)) {
+	if( (!Jet1) || ((Jet1->Pt())<fPtThreshold)) {
 	  // fhEventCounter_1->Fill(3); //events where the jet had a problem                                                                                   
 	  continue;
 	}
@@ -995,12 +995,16 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Double_t SubJettiness1 =0;
     Double_t SubJettiness2 =0;
     Bool_t EventCounter=kFALSE;
+    Double_t JetPt_ForThreshold=0;
     fhEventCounter->Fill(1);
     if(JetCont) {
       fhEventCounter->Fill(2); //Number of events with a jet container
       JetCont->ResetCurrentID();
       while((Jet1=JetCont->GetNextAcceptJet())) {
-	if((!Jet1) || (Jet1->Pt()<fPtThreshold)) {
+	if(!Jet1) continue;
+	if(fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	else JetPt_ForThreshold = Jet1->Pt(); 
+	if(JetPt_ForThreshold<fPtThreshold) {
 	  //fhEventCounter->Fill(3); //events where the jet had a problem
 	  continue;
 	}
@@ -1066,7 +1070,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  }
 	  else Two_Hardest_SubJet_Distance=-2;
 	    fhSubJetiness2Distance->Fill(Two_Hardest_SubJet_Distance,SubJettiness2);
-	    fShapesVar[0]=Jet1->Pt();
+	    if(fJetShapeSub==kNoSub) fShapesVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	    else fShapesVar[0]=Jet1->Pt(); 
 	    fShapesVar[1]=0;
 	    fShapesVar[2]=SubJetFraction(Jet1, Reclusterer, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[3]=0;

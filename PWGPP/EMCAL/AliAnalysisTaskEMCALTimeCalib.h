@@ -33,6 +33,7 @@
 /// 2015.10.09 Modification to be consistent with OADB. Info about calibration constant
 ///            for cell with absId=0 is kept in 'underflow bin' 
 /// 2015.11.11 Modification to calibrate run by run by additional L1 phase
+/// 2015.11.19 Added histogram settings
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -81,6 +82,18 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
+    fRawTimeNbins (0),
+    fRawTimeMin   (0),
+    fRawTimeMax   (0),
+    fPassTimeNbins(0),
+    fPassTimeMin  (0),
+    fPassTimeMax  (0),
+    fEnergyNbins  (0),
+    fEnergyMin(0),
+    fEnergyMax(0),
+    fFineNbins(0),
+    fFineTmin(0),
+    fFineTmax(0),
     fReferenceFile(0),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
@@ -157,6 +170,29 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
   void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
 
+  //histogram settings
+  void SetRawTimeHisto (Int_t nbins,Double_t lower,Double_t upper) { 
+    fRawTimeNbins = nbins;
+    fRawTimeMin = lower ;
+    fRawTimeMax = upper ;
+  }
+  void SetPassTimeHisto (Int_t nbins,Double_t lower,Double_t upper) { 
+    fPassTimeNbins = nbins;
+    fPassTimeMin = lower ;
+    fPassTimeMax = upper ;
+  }
+  void SetEnergyHisto (Int_t nbins,Double_t lower,Double_t upper) { 
+    fEnergyNbins = nbins;
+    fEnergyMin = lower ;
+    fEnergyMax = upper ;
+  }
+  void SetFineT0Histo (Int_t nbins,Double_t lower,Double_t upper) { 
+    fFineNbins = nbins;
+    fFineTmin = lower ;
+    fFineTmax = upper ;
+  }
+
+
   // Switches
   void SwitchOnPileupFromSPD()  { fPileupFromSPD = kTRUE ; }
   void SwitchOffPileupFromSPD() { fPileupFromSPD = kFALSE ; }
@@ -214,6 +250,20 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t       fMinTime ;             ///< minimum cluster time after correction
   Double_t       fMaxTime ;             ///< maximum cluster time after correction
 
+  //histogram settings
+  Int_t          fRawTimeNbins ;        ///< number of bins of histo with raw time
+  Double_t       fRawTimeMin   ;        ///< lower range of histo with raw time
+  Double_t       fRawTimeMax   ;        ///< upper range of histo with raw time
+  Int_t          fPassTimeNbins;        ///< number of bins of histo with time in passX
+  Double_t       fPassTimeMin  ;        ///< lower range of histo with time in passX
+  Double_t       fPassTimeMax  ;        ///< upper range of histo with time in passX
+  Int_t          fEnergyNbins  ;        ///< number of bins of histo with energy
+  Double_t       fEnergyMin    ;        ///< lower range of histo with energy	
+  Double_t       fEnergyMax    ;        ///< upper range of histo with energy   
+  Int_t          fFineNbins    ;        ///< number of bins of histo with T0 time
+  Double_t       fFineTmin     ;        ///< lower range of histo with T0 time
+  Double_t       fFineTmax     ;        ///< upper range of histo with T0 time
+
   TFile         *fReferenceFile;        ///< file with reference for SM 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
@@ -241,7 +291,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
 
   // histo with reference values run-by-run after the first iteration 
-  TH1F		*fhRefRuns; ///> 20 entries per run: nSM
+  TH1C		*fhRefRuns; ///> 20 entries per run: nSM
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM

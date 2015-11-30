@@ -149,10 +149,12 @@ public:
     kADOR        = 0x100000,
     /** AD-AND */
     kADAND       = 0x200000,
+    /** Flag for filtering centrality not covered by calibration */
+    kCentNoCalib = 0x4000000,
     /** Flag that says the pattern is an OR rather than an AND */
     kInclusive   = 0x8000000,
     /** Our default negative filter */
-    kDefaultFilter = kPileupBins|kSPDOutlier
+    kDefaultFilter = kCentNoCalib|kPileupBins|kSPDOutlier
   };
   /** 
    * Bin numbers in trigger histograms 

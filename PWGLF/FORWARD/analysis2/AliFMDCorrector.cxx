@@ -349,6 +349,7 @@ AliFMDCorrector::CreateOutputObjects(TList* dir)
   //  
   DGUARD(fDebug, 1, "Define output of AliFMDCorrector");
   TList* d = new TList;
+  d->SetOwner();
   d->SetName(GetName());
   dir->Add(d);
 

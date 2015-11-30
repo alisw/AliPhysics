@@ -29,7 +29,8 @@ ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015)
 
 namespace EMCalTriggerPtAnalysis {
 
-const TString AliAnalysisTaskEMCALDCALTrigger2015::fkTriggerClasses[6] = {"INT7", "INT8", "EMC7", "EMC8", "DMC7", "DMC8"};
+const TString AliAnalysisTaskEMCALDCALTrigger2015::fgkTriggerClasses[11] = {"INT7", "EMC7", "DMC7", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2"};
+const TString AliAnalysisTaskEMCALDCALTrigger2015::fgkBeamDirs[4] = {"A", "B", "C", "E"};
 
 AliAnalysisTaskEMCALDCALTrigger2015::AliAnalysisTaskEMCALDCALTrigger2015() :
   AliAnalysisTaskSE(),
@@ -56,11 +57,9 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserCreateOutputObjects(){
   CreateLinearBinning(etabinning, 100, -1, 1);
   CreateLinearBinning(supermodulebinning, 20, -0.5, 19.5);
 
-  const TString beamdirs[4] = {"B", "A", "C", "E"};
-
   fHistos = new AliEMCalHistoContainer("histos");
-  for(const TString *trgit = fkTriggerClasses; trgit < fkTriggerClasses + sizeof(fkTriggerClasses)/sizeof(const TString); ++trgit){
-    for(const TString *beamit = beamdirs; beamit < beamdirs + sizeof(beamdirs)/sizeof(const TString); ++beamit){
+  for(const TString *trgit = fgkTriggerClasses; trgit < fgkTriggerClasses + sizeof(fgkTriggerClasses)/sizeof(const TString); ++trgit){
+    for(const TString *beamit = fgkBeamDirs; beamit < fgkBeamDirs + sizeof(fgkBeamDirs)/sizeof(const TString); ++beamit){
       fHistos->CreateTH1(Form("hEventCount%s%s", trgit->Data(), beamit->Data()), Form("Event counter for trigger class %s-%s", trgit->Data(), beamit->Data()), 1, 0.5, 1.5);
       fHistos->CreateTH1(Form("hVertexDistBefore%s%s", trgit->Data(), beamit->Data()), Form("Vertex distribution in trigger class %s-%s before event selection", trgit->Data(), beamit->Data()), 100, -40., 40.);
       fHistos->CreateTH1(Form("hVertexDistAfter%s%s", trgit->Data(), beamit->Data()), Form("Vertex distribution in trigger class %s-%s after event selection", trgit->Data(), beamit->Data()), 100, -40., 40.);
@@ -70,17 +69,21 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserCreateOutputObjects(){
       fHistos->CreateTH2(Form("hClusterEnergyEtaCalib%s%s", trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hClusterEnergySupermoduleUncalib%s%s", trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
       fHistos->CreateTH2(Form("hClusterEnergySupermoduleCalib%s%s", trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      /*
       fHistos->CreateTH1(Form("hPatchEnergyOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
       fHistos->CreateTH1(Form("hPatchEnergyOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
       fHistos->CreateTH2(Form("hPatchEnergyEtaOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hPatchEnergyEtaOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
       fHistos->CreateTH2(Form("hPatchEnergySupermoduleOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
       fHistos->CreateTH2(Form("hPatchEnergySupermoduleOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      */
       for(int ism = 0; ism < 20; ism++){
         fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dCalib%s%s", ism, trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
         fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dUncalib%s%s", ism, trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+        /*
         fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOnline%s%s", ism, trgit->Data(), beamit->Data()), Form("(Online) patch energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
         fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOffline%s%s", ism, trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+        */
       }
     }
   }
@@ -102,11 +105,9 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
 
   TString classes = fInputEvent->GetFiredTriggerClasses();
 
-  TString beamdirs[4] = {"B", "A", "C", "E"},
-      triggerclasses[6] = {"INT7", "INT8", "EMC7", "EMC8", "DMC7", "DMC8"};
-  for(TString *trgit = triggerclasses; trgit < triggerclasses + sizeof(triggerclasses)/sizeof(TString); ++ trgit){
-    for(TString *beamit = beamdirs; beamit < beamdirs + sizeof(beamdirs)/sizeof(TString); ++beamit){
-      if(classes.Contains(Form("C%s-%s-NOPF-CENT", trgit->Data(), beamit->Data())))
+  for(const TString *trgit = fgkTriggerClasses; trgit < fgkTriggerClasses + sizeof(fgkTriggerClasses)/sizeof(TString); ++ trgit){
+    for(const TString *beamit = fgkBeamDirs; beamit < fgkBeamDirs + sizeof(fgkBeamDirs)/sizeof(TString); ++beamit){
+      if(classes.Contains(Form("%s-%s", trgit->Data(), beamit->Data())))
         triggerclassesSelected.push_back(Form("%s%s", trgit->Data(), beamit->Data()));
 
     }
@@ -119,6 +120,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
   for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit < triggerclassesSelected.end(); ++trgit){
     fHistos->FillTH1(Form("hVertexDistBefore%s", trgit->Data()), spdvertex->GetZ());
   }
+  /*
   if(spdvertex->GetNContributors() < 1) return;
   if(InputEvent()->IsPileupFromSPD(5, 0.8, 3., 2., 5.)) return;
   if(TMath::Abs(spdvertex->GetZ()) > 10) return;
@@ -129,6 +131,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
     if(TMath::Abs(trk->Pt()) > 1.) ntrack++;
   }
   if(ntrack < 3) return;
+  */
 
   for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit < triggerclassesSelected.end(); ++trgit){
     fHistos->FillTH1(Form("hEventCount%s", trgit->Data()), 1.);
@@ -158,6 +161,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
   }
 
   // Loop over trigger patches
+  /*
   if(fPatchContainer){
     for(TIter patchiter = TIter(fPatchContainer).Begin(); patchiter != TIter::End(); ++patchiter){
       AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
@@ -173,7 +177,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
       }
     }
   }
-
+  */
   PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -192,6 +196,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::ProcessCluster(const TString &triggerc
   }
 }
 
+/*
 void AliAnalysisTaskEMCALDCALTrigger2015::ProcessPatch(const TString &triggerclass, const AliEmcalTriggerPatchInfo * const patch, bool isOnline){
   fHistos->FillTH1(Form("hPatchEnergy%s%s", isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetPatchE());
   fHistos->FillTH2(Form("hPatchEnergyEta%s%s", isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetEtaCM(), patch->GetPatchE());
@@ -201,7 +206,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::ProcessPatch(const TString &triggercla
     fHistos->FillTH2(Form("hPatchEnergyEtaSupermodule%d%s%s", supermoduleID,  isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetEtaCM(), patch->GetPatchE());
   }
 }
-
+*/
 void AliAnalysisTaskEMCALDCALTrigger2015::CreateEnergyBinning(TArrayD& binning) const {
   std::vector<double> mybinning;
   std::map<double,double> definitions;

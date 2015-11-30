@@ -109,7 +109,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
  protected:
   Short_t       fIDv0;                // unique track ID, points back to the ESD track
 
-  ClassDef(AliAODRecoCascadeHF, 2); // heavy-flavour cascade class
+  ClassDef(AliAODRecoCascadeHF, 3); // heavy-flavour cascade class
 };
 
 #endif

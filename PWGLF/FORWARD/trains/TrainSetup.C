@@ -89,6 +89,7 @@ struct TrainSetup
     fOptions.Add("tender", "WHICH",            "Specify tender supplies","");
     fOptions.Add("ocdb",   "(TENDER_SNAPSHOT)","Enable OCDB",            "");
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
+    fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -746,18 +747,19 @@ protected:
     LoadOADB();
     
     Bool_t mult = true; // true;
-    AliAnalysisTask* task = 0;
+    AliAnalysisTaskSE* task = 0;
     if (mult) {
       gROOT->SetMacroPath(Form("%s:"
 			       "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros",
 			       gROOT->GetMacroPath()));
-      CoupleCar("AddTaskMultSelection.C","false,true");
+      task = CoupleSECar("AddTaskMultSelection.C","false,true");
+      FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
     }
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD) return;
     
-    task = CoupleCar("AddTaskCentrality.C",
-		     Form("true,%s", isAOD ? "true" : "false"));
+    task = CoupleSECar("AddTaskCentrality.C",
+		       Form("true,%s", isAOD ? "true" : "false"));
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(task);
     if (!ctask) return;
@@ -794,7 +796,7 @@ protected:
     TString cmd(p);
     if (!args.IsNull()) 
       cmd.Append(TString::Format("(%s)", args.Data()));
-    
+    Info("CoupleCar", "Execute %s", cmd.Data());
     Int_t err;
     Long_t ret = gROOT->Macro(cmd.Data(), &err, false);
     if (!ret) { 
@@ -1063,6 +1065,48 @@ protected:
    * @name Set parameters on a task 
    */
   /** 
+   * Set a unsigned integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 UInt_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%u)",cls,task,what,val));
+  }    
+  /** 
+   * Set a integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Int_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+  }    
+  /** 
+   * Set a integer parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTask(AliAnalysisTaskSE* task,
+		 const char* what,
+		 Long64_t val)
+  {
+    const char* cls = task->ClassName();
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lld)",cls,task,what,val));
+  }    
+  /** 
    * Set a real parameter on the task 
    * 
    * @param task Task 
@@ -1074,7 +1118,7 @@ protected:
 		 Double_t val)
   {
     const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lf)",cls,task,what,val));
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lg)",cls,task,what,val));
   }    
   /** 
    * Set a boolean parameter on the task 
@@ -1154,8 +1198,40 @@ protected:
 		 const char* opt,
 		 const char* defval)
   {
-    TString val = fOptions.AsString(opt,defval);;
+    TString val = fOptions.AsString(opt,defval);
     SetOnTask(task, what, val.Data());
+  }
+  /** 
+   * Set a integer parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Int_t      defval)
+  {
+    Int_t   val = fOptions.AsInt(opt, defval);
+    SetOnTask(task, what, val);
+  }
+  /** 
+   * Set a integer parameter on the task based on option value 
+   * 
+   * @param task    Task 
+   * @param what    What to set 
+   * @param opt     Option name 
+   * @param defval  Default value if option not given
+   */
+  void FromOption(AliAnalysisTaskSE* task,
+		  const char* what,
+		  const char* opt,
+		  Long64_t    defval)
+  {
+    Long64_t   val = fOptions.AsLong(opt, defval);
+    SetOnTask(task, what, val);
   }
   /* @} */
 

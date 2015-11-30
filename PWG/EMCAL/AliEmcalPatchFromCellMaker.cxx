@@ -13,7 +13,8 @@
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfoAP.h"
-#include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerBitConfigAP.h"
+#include "AliEmcalTriggerConstantsAP.h"
 
 #include "AliEmcalPatchFromCellMaker.h"
 
@@ -102,7 +103,7 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
   }
 
   if(!fTriggerBitConfig)
-    fTriggerBitConfig = new AliEmcalTriggerBitConfigNew();
+    fTriggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
 
 }
 
@@ -239,7 +240,7 @@ Bool_t AliEmcalPatchFromCellMaker::FillPatchADCSimple()
     Int_t globCol=-1, globRow=-1;
     fGeom->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    fPatchADCSimple[globCol][globRow] += amp/kEMCL1ADCtoGeV;
+    fPatchADCSimple[globCol][globRow] += amp/EmcalTriggerAP::kEMCL1ADCtoGeV;
     fPatchESimple[globCol][globRow] += amp;
 
     TVector3 pos;

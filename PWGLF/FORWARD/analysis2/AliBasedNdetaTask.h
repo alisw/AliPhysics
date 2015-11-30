@@ -294,6 +294,14 @@ public:
    */
   virtual Bool_t Book();
   /** 
+   * Called before processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PreEvent() {
+    fCacheCent = -10; fCacheQual = 0xFFFF; return true; } 
+  /** 
    * Process a single event 
    * 
    * @return true on success
@@ -514,7 +522,15 @@ protected:
   
   // function which applies empirical correction to the AOD object 
   Bool_t ApplyEmpiricalCorrection(const AliAODForwardMult* aod,TH2D* data);
-
+  /** 
+   * Static function toe calculate the asymmetry of the input
+   * histogram around 0.
+   * 
+   * @param h Input histogram
+   * 
+   * @return Newly created histogram or null
+   */
+  static TH1* Asymmetry(TH1* h);
   /** 
    * Static member to get a simple ID from a centrality esitmator
    * string.  Used to check the validity of the centrality estimator 
@@ -533,14 +549,26 @@ protected:
    */
   static const char* GetCentMethod(UShort_t id);
   /** 
-   * Get the centrality 
+   * Get the centrality.  The trigger mask of the forward object is
+   * not modified
    * 
    * @param event    Our event 
    * @param forward  Our FMD event 
+   * @param qual     On return, the quality flag 
    *  
    * @return The centrality percentage 
    */
-  Double_t GetCentrality(AliAODEvent& event,
+  Double_t GetCentrality(AliAODEvent&       event,
+			 AliAODForwardMult* forward,
+			 Int_t&             qual);
+  /**
+   * Get the centrality.  If the quality is bad, set the corresponding
+   * bit on the forward object.
+   *
+   * @param event    Our event 
+   * @param forward  Our FMD event 
+   */
+  Double_t GetCentrality(AliAODEvent&       event,
 			 AliAODForwardMult* forward);
   //==================================================================
   /**
@@ -1019,7 +1047,9 @@ protected:
   TString         fCentMethod;    // Centrality estimator 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
   Bool_t          fUseUtilPileup; // Check for SPD outliers
-  TF1*            fIpzReweight;   // Re-weighing function 
+  TF1*            fIpzReweight;   // Re-weighing function
+  Double_t        fCacheCent;     // Stored centrality
+  Int_t           fCacheQual;     // Stored centrality quality flag 
   ClassDef(AliBasedNdetaTask,19); // Determine charged particle density
 };
 

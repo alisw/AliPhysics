@@ -474,7 +474,7 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
     
     for ( it = estimators.begin(); it != estimators.end(); ++it )
     {
-      TH1* h = new TH1F("Centrality","Centrality",12,-10,110);
+      TH1* h = new TH1F("Centrality","Centrality",350,-50,300);
       HistogramCollection()->Adopt(Form("/%s/%s/%s",eventSelection,triggerClassName,it->c_str()),h);
     }
     

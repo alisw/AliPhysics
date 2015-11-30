@@ -46,8 +46,14 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
   /// Select tracks in the given centrality range
   void SelectCentrality(Double_t min, Double_t max) {fCentMin = min; fCentMax = max;}
   
-  // set standard cuts to select tracks to be considered
+  // set cuts to select tracks to be considered
   void SetMuonTrackCuts(AliMuonTrackCuts &trackCuts);
+  
+  // set default cuts to select tracks to be considered
+  void SetDefaultMuonTrackCuts(Bool_t isMC);
+  
+  // get cuts to select tracks to be considered
+  AliMuonTrackCuts* MuonTrackCuts() {return fMuonTrackCuts;}
   
   /// set the muon low pT cut
   void SetMuonPtCut(Double_t cut) {fPtCut = cut;}
@@ -114,6 +120,7 @@ private:
   TObjArray *fDEPlanes; //!< vectors (x0, y0, z0, a, b, c) defining the plane of each DE in the global frame
   
   AliCounterCollection* fClusters; //!< detected (all), accepted (for efficiency calculation) and expected clusters
+  AliCounterCollection* fEvents; //!< number of analyzed events
   TList* fChamberTDHistList; //!< List of histograms of the tracks detected in the chambers.
   TList* fChamberTTHistList; //!< List of histograms of the tracks which have passed through the chambers.
   TList* fChamberSDHistList; //!< List of histograms of the tracks only detected by one chamber of the station.
@@ -128,9 +135,21 @@ private:
 //________________________________________________________________________
 inline void AliAnalysisTaskMuonTrackingEff::SetMuonTrackCuts(AliMuonTrackCuts &trackCuts)
 {
-  /// set standard cuts to select tracks to be considered
+  /// set cuts to select tracks to be considered
   delete fMuonTrackCuts;
   fMuonTrackCuts = new AliMuonTrackCuts(trackCuts);
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonTrackingEff::SetDefaultMuonTrackCuts(Bool_t isMC)
+{
+  /// set default cuts to select tracks to be considered
+  delete fMuonTrackCuts;
+  fMuonTrackCuts = new AliMuonTrackCuts("stdCuts", "stdCuts");
+  fMuonTrackCuts->SetAllowDefaultParams();
+  fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuMatchLpt | AliMuonTrackCuts::kMuEta |
+                                AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca);
+  fMuonTrackCuts->SetIsMC(isMC);
 }
 
 #endif

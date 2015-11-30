@@ -40,7 +40,7 @@
 ClassImp(AliAnalysisTaskLambdaStar)
 
 #endif 
- 
+
 //________________________________________________________________________
 AliAnalysisTaskLambdaStar::AliAnalysisTaskLambdaStar() 
   : AliAnalysisTaskSE(),
@@ -52,74 +52,14 @@ AliAnalysisTaskLambdaStar::AliAnalysisTaskLambdaStar()
   fCirc(0), 
   fCentMin(0), 
   fCentMax(0), 
-  fNSigma(0), 
+  fNSigma(0),
+  fRejNSigma(0),
   fClusterTPC(0),
   fDCAxy(0),
   fFilterBit(0),
   fNMix(0),
   fPatch(0),
   fCentPerPatch(0),
-  fStrong(0),
-  fResoBuffer(0),
-  fAOD(0), 
-  fPrimaryVtx(0), 
-  fOutputList(0), 
-  fOutputPrimaries(0),
-  fGTI(0),fTrackBuffSize(18000),
-  fHistGoodEvent(0),
-  fHistEvent(0),
-  fHistZVertexCent(0),
-  fPriHistShare(0),
-  fHistMassPtPKMin(0),   
-  fHistMassPtPbarKPlus(0),               
-  fHistMassPtPKMinMix(0),   
-  fHistMassPtPbarKPlusMix(0),               
-  fHistMassPtPKPlusLS(0),   
-  fHistMassPtPbarKMinLS(0),
-  fPriHistTPCnsigmakaon_nocut(0),
-  fPriHistTPCnsigmaproton_nocut(0),
-  fPriHistTOFnsigmakaon_nocut(0),
-  fPriHistTOFnsigmaproton_nocut(0),
-  fPriHistTPCTOFnsigmakaon_nocut(0),
-  fPriHistTPCTOFnsigmaproton_nocut(0),
-  fPriHistTPCnsigmakaon(0),
-  fPriHistTPCnsigmaproton(0),
-  fPriHistTOFnsigmakaon(0),
-  fPriHistTOFnsigmaproton(0),
-  fPriHistTPCTOFnsigmakaon(0),
-  fPriHistTPCTOFnsigmaproton(0),
-  fPriHistTPCsignalPos(0),
-  fPriHistTPCsignalNeg(0),            
-  fPriHistDCAxyYPtPro(0),           
-  fPriHistDCAxyYPtAPro(0),            
-  fPriHistDCAxyYPtKPlus(0),           
-  fPriHistDCAxyYPtKMinus(0)   
-
-{
-  // Dummy constructor
-  fPrimaryVtxPosition[0]=0;
-  fPrimaryVtxPosition[1]=0;
-  fPrimaryVtxPosition[2]=0;
-}
-//________________________________________________________________________
-AliAnalysisTaskLambdaStar::AliAnalysisTaskLambdaStar(const char *name) 
-  : AliAnalysisTaskSE(name),
-  fkAbsZvertexCut(10.0),
-  fkCentCut(80.0),
-  fkKaonMass(0.493),
-  fkProMass(0.9382720),
-  fPIDResponse(0), 
-  fCirc(0), 
-  fCentMin(0), 
-  fCentMax(0), 
-  fNSigma(0),   
-  fNMix(0),
-  fClusterTPC(0),
-  fDCAxy(0),
-  fFilterBit(0),
-  fPatch(0),
-  fCentPerPatch(0),
-  fStrong(0),
   fResoBuffer(0),
   fAOD(0), 
   fPrimaryVtx(0), 
@@ -149,24 +89,87 @@ AliAnalysisTaskLambdaStar::AliAnalysisTaskLambdaStar(const char *name)
   fPriHistTOFnsigmaproton(0),
   fPriHistTPCTOFnsigmakaon(0),
   fPriHistTPCTOFnsigmaproton(0),
-  fPriHistTPCsignalPos(0),
-  fPriHistTPCsignalNeg(0),            
+  fPriHistTPCsignal(0),
+  fPriHistTPCsignalproton(0),
+  fPriHistTPCsignalkaon(0),
   fPriHistDCAxyYPtPro(0),           
   fPriHistDCAxyYPtAPro(0),            
   fPriHistDCAxyYPtKPlus(0),           
   fPriHistDCAxyYPtKMinus(0)   
-   
+  
+{
+  // Dummy constructor
+  fPrimaryVtxPosition[0]=0;
+  fPrimaryVtxPosition[1]=0;
+  fPrimaryVtxPosition[2]=0;
+}
+//________________________________________________________________________
+AliAnalysisTaskLambdaStar::AliAnalysisTaskLambdaStar(const char *name) 
+  : AliAnalysisTaskSE(name),
+    fkAbsZvertexCut(10.0),
+    fkCentCut(80.0),
+    fkKaonMass(0.493),
+    fkProMass(0.9382720),
+    fPIDResponse(0), 
+    fCirc(0), 
+    fCentMin(0), 
+    fCentMax(0), 
+    fNSigma(0),
+    fRejNSigma(0),
+    fNMix(0),
+    fClusterTPC(0),
+    fDCAxy(0),
+    fFilterBit(0),
+    fPatch(0),
+    fCentPerPatch(0),
+    fResoBuffer(0),
+    fAOD(0), 
+    fPrimaryVtx(0), 
+    fOutputList(0), 
+    fOutputPrimaries(0),
+    fGTI(0),
+    fTrackBuffSize(18000),
+    fHistGoodEvent(0),
+    fHistEvent(0),
+    fHistZVertexCent(0),
+    fPriHistShare(0),
+    fHistMassPtPKMin(0),   
+    fHistMassPtPbarKPlus(0),               
+    fHistMassPtPKMinMix(0),   
+    fHistMassPtPbarKPlusMix(0),               
+    fHistMassPtPKPlusLS(0),   
+    fHistMassPtPbarKMinLS(0),
+    fPriHistTPCnsigmakaon_nocut(0),
+    fPriHistTPCnsigmaproton_nocut(0),
+    fPriHistTOFnsigmakaon_nocut(0),
+    fPriHistTOFnsigmaproton_nocut(0),
+    fPriHistTPCTOFnsigmakaon_nocut(0),
+    fPriHistTPCTOFnsigmaproton_nocut(0),
+    fPriHistTPCnsigmakaon(0),
+    fPriHistTPCnsigmaproton(0),
+    fPriHistTOFnsigmakaon(0),
+    fPriHistTOFnsigmaproton(0),
+    fPriHistTPCTOFnsigmakaon(0),
+    fPriHistTPCTOFnsigmaproton(0),
+    fPriHistTPCsignal(0),
+    fPriHistTPCsignalproton(0),
+    fPriHistTPCsignalkaon(0),
+    fPriHistDCAxyYPtPro(0),           
+    fPriHistDCAxyYPtAPro(0),            
+    fPriHistDCAxyYPtKPlus(0),           
+    fPriHistDCAxyYPtKMinus(0)   
+    
 {
   // Constructor
   fPrimaryVtxPosition[0]=0;
   fPrimaryVtxPosition[1]=0;
   fPrimaryVtxPosition[2]=0;
-
+  
   // Define output slots only here
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
- 
+  
 }
 //________________________________________________________________________
 AliAnalysisTaskLambdaStar::~AliAnalysisTaskLambdaStar() {
@@ -174,13 +177,12 @@ AliAnalysisTaskLambdaStar::~AliAnalysisTaskLambdaStar() {
   // fPIDResponse is just a pointer to the pid response task,
   // we don't create it so we don't delete it. It comes from 
   // the AliInputEventHandler
- 
+  
   if(fResoBuffer){
     delete fResoBuffer;
     fResoBuffer=0;
   }
-  
-
+    
   // The lists containing the histograms
   if (fOutputList){
     fOutputList->Delete();
@@ -192,21 +194,20 @@ AliAnalysisTaskLambdaStar::~AliAnalysisTaskLambdaStar() {
     delete fOutputPrimaries;
     fOutputPrimaries=0;
   }
-  
-
+    
   // Array, note the [] with the delete
   if (fGTI)
     delete[] fGTI;
   fGTI=0;
-
+  
 }
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
 {
   // Create histograms and other objects and variables
   // Called once
-
-   // Get the PID response object
+  
+  // Get the PID response object
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(!man){AliError("Couldn't get the analysis manager!");}
   
@@ -241,12 +242,12 @@ void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
   // Invariant mass binning for lambdas
   const Int_t nMinvBins = 300;
   const Float_t minvLowEdge=1.4, minvHiEdge=1.7;
-
+  
   // Control hist for event cuts
   fHistGoodEvent = new TH1F("h1GoodEvent","No of events passing the cuts.",10,-.5,9.5);
   fHistEvent = new TH1F("hEvent", "Accepted Event Vs. Centrality", 100,0.0,100);
-  fHistZVertexCent = new TH2D("fHistZVertexCent"," Vz  Vs Centrality; V_{Z} {cm} ; Centrality {%}", 60, -15, 15,100,0,100);
-    // 3d y pt mass
+  fHistZVertexCent = new TH2D("fHistZVertexCent"," Vz  Vs Centrality; V_{Z} {cm} ; Centrality {%}", 60, -14.5, 14.5,100,0,100);
+  // 3d y pt mass
   fHistMassPtPKMin = new TH2D ("InvMassPtPKMin","M_{inv}pt Vs mass",nMinvBins,minvLowEdge,minvHiEdge,300,0.,30.);  
   fHistMassPtPbarKPlus = new TH2D ("InvMassPtPKPlus","M_{inv}pt Vs mass",nMinvBins,minvLowEdge,minvHiEdge ,300, 0., 30.0);
   fHistMassPtPKMinMix = new TH2D ("InvMassPtPKMinMix","M_{inv}pt Vs mass",nMinvBins,minvLowEdge,minvHiEdge ,300, 0., 30.);
@@ -263,59 +264,53 @@ void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
   fOutputList->Add(fHistMassPtPbarKPlusMix);
   fOutputList->Add(fHistMassPtPKPlusLS);
   fOutputList->Add(fHistMassPtPbarKMinLS);
-    
-    
-    //nsigma plots before nsigma selection
-    fPriHistTPCnsigmakaon_nocut = new TH2D("nsigmaTPCkaonVsPt_nocut", "nsigmaTPC for kaon before nsigma selection",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCnsigmaproton_nocut = new TH2D("nsigmaTPCprotonVsPt_nocut", "nsigmaTPC for proton before nsigma selection",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTOFnsigmakaon_nocut = new TH2D("nsigmaTOFkaonVsPt_nocut", "nsigmaTOF for kaon before nsigma selection",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTOFnsigmaproton_nocut = new TH2D("nsigmaTOFprotonVsPt_nocut", "nsigmaTOF for proton before nsigma selection",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCTOFnsigmakaon_nocut = new TH2D("nsigmaTPCTOFkaonVsPt_nocut", "nsigmaTPCTOF for kaon before nsigma selection",200,-10.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCTOFnsigmaproton_nocut = new TH2D("nsigmaTPCTOFprotonVsPt_nocut", "nsigmaTPCTOF for proton before nsigma selection",200,-10.0,10.0, 200,-10.0,10.0 );
-    
-    
-    
-    //nsigma plots
-    fPriHistTPCnsigmakaon = new TH2D("nsigmaTPCkaonVsPt", "nsigmaTPC for kaon",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCnsigmaproton = new TH2D("nsigmaTPCprotonVsPt", "nsigmaTPC for proton",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTOFnsigmakaon = new TH2D("nsigmaTOFkaonVsPt", "nsigmaTOF for kaon ",500,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTOFnsigmaproton = new TH2D("nsigmaTOFprotonVsPt", "nsigmaTOF for proton ",100,0.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCTOFnsigmakaon = new TH2D("nsigmaTPCTOFkaonVsPt", "nsigmaTPCTOF for kaon",200,-10.0,10.0, 200,-10.0,10.0);
-    fPriHistTPCTOFnsigmaproton = new TH2D("nsigmaTPCTOFprotonVsPt", "nsigmaTPCTOF for proton",200,-10.0,10.0, 200,-10.0,10.0);
-    
-    
+  
+  //nsigma plots before nsigma selection
+  fPriHistTPCnsigmakaon_nocut = new TH2D("nsigmaTPCkaonVsPt_nocut", "nsigmaTPC for kaon before nsigma selection",300,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCnsigmaproton_nocut = new TH2D("nsigmaTPCprotonVsPt_nocut", "nsigmaTPC for proton before nsigma selection",300,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTOFnsigmakaon_nocut = new TH2D("nsigmaTOFkaonVsPt_nocut", "nsigmaTOF for kaon before nsigma selection",300,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTOFnsigmaproton_nocut = new TH2D("nsigmaTOFprotonVsPt_nocut", "nsigmaTOF for proton before nsigma selection",300,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCTOFnsigmakaon_nocut = new TH2D("nsigmaTPCTOFkaonVsPt_nocut", "nsigmaTPCTOF for kaon before nsigma selection",200,-10.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCTOFnsigmaproton_nocut = new TH2D("nsigmaTPCTOFprotonVsPt_nocut", "nsigmaTPCTOF for proton before nsigma selection",200,-10.0,10.0, 200,-10.0,10.0 );
+  
+  //nsigma plots
+  fPriHistTPCnsigmakaon = new TH2D("nsigmaTPCkaonVsPt", "nsigmaTPC for kaon",500,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCnsigmaproton = new TH2D("nsigmaTPCprotonVsPt", "nsigmaTPC for proton",500,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTOFnsigmakaon = new TH2D("nsigmaTOFkaonVsPt", "nsigmaTOF for kaon ",500,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTOFnsigmaproton = new TH2D("nsigmaTOFprotonVsPt", "nsigmaTOF for proton ",100,0.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCTOFnsigmakaon = new TH2D("nsigmaTPCTOFkaonVsPt", "nsigmaTPCTOF for kaon",200,-10.0,10.0, 200,-10.0,10.0);
+  fPriHistTPCTOFnsigmaproton = new TH2D("nsigmaTPCTOFprotonVsPt", "nsigmaTPCTOF for proton",200,-10.0,10.0, 200,-10.0,10.0);
   
   // Shared clusters
   fPriHistShare = new TH1F ("h1PriShare","Shared clusters, primaries;#shared clusters;counts", 160,0,160);
   // dEdx analysis
-  fPriHistTPCsignalPos = new TH2F ("h2TPCsignalPos","TPC signal for positives;p_{tot};dEdx",500,0.0,10.0,250,0.0,500);
-  fPriHistTPCsignalNeg = new TH2F ("h2TPCsignalNeg","TPC signal for negatives;p_{tot};dEdx",500,0.0,10.0,250,0.0,500);
- //  Common for all protons - DCA xy distribution to determine primaries, secondaries from weak decay and secondaries from material
+  fPriHistTPCsignal = new TH2F ("h2TPCsignal","TPC signal for all tracks ;p_{tot};dEdx",500,0.0,10.0,500,0.0,1000);
+  fPriHistTPCsignalkaon = new TH2F ("h2TPCsignalkaon","TPC signal for kaons;p_{tot};dEdx",500,0.0,10.0,500,0.0,1000);
+  fPriHistTPCsignalproton = new TH2F ("h2TPCsignalproton","TPC signal for protons;p_{tot};dEdx",500,0.0,10.0,500,0.0,1000);
+    
+    
+  //  Common for all protons - DCA xy distribution to determine primaries, secondaries from weak decay and secondaries from material
   fPriHistDCAxyYPtPro = new TH3F ("h3DCAxyYPtPro","DCAxy vs (y,pt) protons",100,-3.,3.,30,-1.5,1.5,100,0.,30);
   fPriHistDCAxyYPtAPro = new TH3F ("h3DCAxyYPtAPro","DCAxy vs (y,pt) anti-protons",100,-3.,3.,30,-1.5,1.5,100,0.,30);
   fPriHistDCAxyYPtKPlus = new TH3F ("h3DCAxyYPtKPlus","DCAxy vs (y,pt) kplus",100,-3.,3.,30,-1.5,1.5,100,0.,30.);
-  fPriHistDCAxyYPtKMinus = new TH3F ("h3DCAxyYPtKMinus","DCAxy vs (y,pt) kminus",100,-3.,3.,30,-1.5,1.5,100,0.,30.);
-    
-    
-    
-    
-    
-    
-    fOutputPrimaries->Add(fPriHistTPCnsigmakaon_nocut);
-    fOutputPrimaries->Add(fPriHistTPCnsigmaproton_nocut);
-    fOutputPrimaries->Add(fPriHistTOFnsigmakaon_nocut);
-    fOutputPrimaries->Add(fPriHistTOFnsigmaproton_nocut);
-    fOutputPrimaries->Add(fPriHistTPCTOFnsigmakaon_nocut);
-    fOutputPrimaries->Add(fPriHistTPCTOFnsigmaproton_nocut);
-    fOutputPrimaries->Add(fPriHistTPCnsigmakaon);
-    fOutputPrimaries->Add(fPriHistTPCnsigmaproton);
-    fOutputPrimaries->Add(fPriHistTOFnsigmakaon);
-    fOutputPrimaries->Add(fPriHistTOFnsigmaproton);
-    fOutputPrimaries->Add(fPriHistTPCTOFnsigmakaon);
-    fOutputPrimaries->Add(fPriHistTPCTOFnsigmaproton);
+  fPriHistDCAxyYPtKMinus = new TH3F ("h3DCAxyYPtKMinus","DCAxy vs (y,pt) kminus",100,-3.,3.,30,-1.5,1.5,100,0.,30.);  
+  
+  fOutputPrimaries->Add(fPriHistTPCnsigmakaon_nocut);
+  fOutputPrimaries->Add(fPriHistTPCnsigmaproton_nocut);
+  fOutputPrimaries->Add(fPriHistTOFnsigmakaon_nocut);
+  fOutputPrimaries->Add(fPriHistTOFnsigmaproton_nocut);
+  fOutputPrimaries->Add(fPriHistTPCTOFnsigmakaon_nocut);
+  fOutputPrimaries->Add(fPriHistTPCTOFnsigmaproton_nocut);
+  fOutputPrimaries->Add(fPriHistTPCnsigmakaon);
+  fOutputPrimaries->Add(fPriHistTPCnsigmaproton);
+  fOutputPrimaries->Add(fPriHistTOFnsigmakaon);
+  fOutputPrimaries->Add(fPriHistTOFnsigmaproton);
+  fOutputPrimaries->Add(fPriHistTPCTOFnsigmakaon);
+  fOutputPrimaries->Add(fPriHistTPCTOFnsigmaproton);
   fOutputPrimaries->Add(fPriHistShare);
-  fOutputPrimaries->Add(fPriHistTPCsignalPos);
-  fOutputPrimaries->Add(fPriHistTPCsignalNeg);
+  fOutputPrimaries->Add(fPriHistTPCsignal);
+  fOutputPrimaries->Add(fPriHistTPCsignalkaon);
+  fOutputPrimaries->Add(fPriHistTPCsignalproton);
   fOutputPrimaries->Add(fPriHistDCAxyYPtPro);
   fOutputPrimaries->Add(fPriHistDCAxyYPtAPro);
   fOutputPrimaries->Add(fPriHistDCAxyYPtKPlus);
@@ -324,17 +319,12 @@ void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
   // Post the data
   PostData(1, fOutputList);
   PostData(2, fOutputPrimaries);
-
+  
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::UserExec(Option_t *) 
 {
-    
-    
-
-    
-    
   // Main loop
   // Called for each event and Fill a control histogram
   fHistGoodEvent->Fill(0.0);
@@ -344,10 +334,10 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
     printf("ERROR: fAOD not available\n");
     return;
   }
-
+  
   // Fill a control histogram
   fHistGoodEvent->Fill(1.0);  
-
+  
   // Get the centrality selection
   AliCentrality *centrality=NULL;
   centrality = fAOD->GetCentrality();
@@ -355,49 +345,43 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
     printf ("ERROR: couldn't get the AliCentrality\n");
     return;
   }
-
+  
   // Fill a control histogram
   fHistGoodEvent->Fill(2.0);
- 
- if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())) return;
- 
+  
+  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())) return;
+  fHistGoodEvent->Fill(3.0);
+  
   // Analyze only events using multiplicity in V0 detector (standard)
   Float_t centralityPercentile = centrality->GetCentralityPercentileUnchecked("V0M");
   if(!centrality->GetCentralityPercentileUnchecked("V0M"))
     {return ;}
-
-  fHistGoodEvent->Fill(3.0);  
-
-   if ( centralityPercentile <= fCentMin || centralityPercentile > fCentMax){return;}
-
-   if ( centralityPercentile >= 5 && centralityPercentile <= 20){  
-     ApplyCentralityPatchPbPb2011(centrality);  }
-    
- //    fHistEvent->Fill(centralityPercentile);
-
+  fHistGoodEvent->Fill(4.0);
+  
+  if ( centralityPercentile <= fCentMin || centralityPercentile > fCentMax){return;}
+  if ( centralityPercentile >= 5 && centralityPercentile <= 20){  
+    ApplyCentralityPatchPbPb2011(centrality);  }
+  
   // Fill a control histogram
-     fHistGoodEvent->Fill(4.0);  
-
-     // Primary vertex, GetPrimaryVertex() returns the "best" reconstructed vertex
+  fHistGoodEvent->Fill(5.0);
+  
+  // Primary vertex, GetPrimaryVertex() returns the "best" reconstructed vertex
   fPrimaryVtx = fAOD->GetPrimaryVertex();
   if (!fPrimaryVtx){
     printf ("ERROR: no primary vertex\n");
     return;
   }
-  
-  // Fill a control histogram
-  fHistGoodEvent->Fill(5.0);  
-  
-  fPrimaryVtx->GetXYZ(fPrimaryVtxPosition);
-  
-  if (TMath::Abs(fPrimaryVtxPosition[2]) > fkAbsZvertexCut)
-   return;
-  
   // Fill a control histogram
   fHistGoodEvent->Fill(6.0);
-    //fill centrality histogram
-    fHistEvent->Fill(centralityPercentile);
-    
+  
+  fPrimaryVtx->GetXYZ(fPrimaryVtxPosition);  
+  if (TMath::Abs(fPrimaryVtxPosition[2]) > fkAbsZvertexCut)
+    return;
+  // Fill a control histogram
+  fHistGoodEvent->Fill(7.0);
+  //fill centrality histogram
+  fHistEvent->Fill(centralityPercentile);
+  
   //Fill  Z-vertex histo
   fHistZVertexCent->Fill(fPrimaryVtxPosition[2], centralityPercentile);
   
@@ -407,30 +391,26 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
   }
   
   // Fill a control histogram
-  fHistGoodEvent->Fill(7.0);
-
+  fHistGoodEvent->Fill(8.0);
+  
   // Set up the event buffer to store this event
   fResoBuffer->ShiftAndAdd(fAOD);
   
   // Reset the reference array to the global tracks..
   ResetGlobalTrackReference();
-
-
-    
-    //  AliAODTrack *track=NULL;
+  
+  //  AliAODTrack *track=NULL;
+   // cout<<"I am In .....the event loop."<<endl;
+   // cout<<"rejected nsigma = "<<fRejNSigma<<endl;
+  for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+    if (!track) continue;
+    // Store the reference of the global tracks
+    StoreGlobalTrackReference(track);  
+  }
   
   for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
-    
     AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-    //track = fAOD->GetTrack(iTrack); 
-    if (!track) continue; 
-    // Store the reference of the global tracks
-    StoreGlobalTrackReference(track);
-    
-  }
-  for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
-    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-    // track = fAOD->GetTrack(iTrack);
     if (!track) continue;
     if(!track->TestFilterBit(fFilterBit))  
       continue;
@@ -441,67 +421,66 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
       continue;
     
     // Visualization of TPC dE/dx
-      FillDedxHist(track);
-
+    FillDedxHist(track);
+    
     // Depending on momentum choose pid method
-    if (track->P() < 0.65){
-      ProcessTPC(track,fNSigma,fStrong);
+    if (track->P() < 0.5){
+      ProcessTPC(track,fNSigma);
     }
-     else if (track->P() < 1.2){
-       ProcessHybridPro(track,fCirc,fNSigma,fStrong);
-     }
-    else if (track->P() < 100.0) {
-      ProcessHybrid(track,fCirc,fNSigma,fStrong);
+      else if (track->P() < 0.7){
+       ProcessHybridPro(track,fCirc,fNSigma);
+       }
+   else if (track->P() < 100.0) {
+      ProcessHybrid(track,fCirc,fNSigma);
     }
-
+    
   } // End of loop over primary tracks
-
+  
   
   // Process real events
-   ProcessReal( );
-   ProcessLikeSignBkg();
-  
+  ProcessReal( );
+  ProcessLikeSignBkg(); 
   // Process mixed events
-   ProcessMixed();
+  ProcessMixed();
   
   // Post output data.
   PostData(1, fOutputList);
   PostData(2, fOutputPrimaries);
 
-
 }
 
 
 //________________________________________________________________________
-void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig, Bool_t strong){
-
-    Float_t TMom = track->Pt();
+void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig){
   
+  Float_t TMom = track->Pt();
   Double_t nsigmapion = 999, nsigmakaon=999,nsigmaproton=999,nsigmaelectron=999;
-
+  
   nsigmaelectron = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron) ;
   nsigmakaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon) ;
   nsigmapion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ;
-  nsigmaproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton) ;
-
-    fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
-    fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
-    
-  if( TMath::Abs(nsigmaelectron)  < 3.0  &&  TMath::Abs(nsigmapion)  > 3.0  && TMath::Abs(nsigmakaon)  > 3.0  && TMath::Abs(nsigmaproton) > 3.0 )
-  return;
+  nsigmaproton =fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton) ;
   
-  if(strong){ 
-    if(( TMath::Abs(nsigmakaon)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmakaon)==TMath::Abs(nsigmaproton) )) return ;
-    }
-
-  if( (TMath::Abs(nsigmakaon) < TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmakaon) < TMath::Abs(nsigmaproton)) && (TMath::Abs(nsigmakaon) <= nsig) ){
-
-      fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-    if (track->Charge()>0){
+  fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
+  fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
+  
+//  if(nsigmaelectron  < 3.0  &&  nsigmapion   > 3.0  && nsigmakaon   > 3.0
+//     && nsigmaproton > 3.0 ) return; // DANGEROUS LINE
+    
+//  if( ( nsigmakaon==nsigmapion ) && ( nsigmakaon==nsigmaproton )) return ; // USELESS LINE never happens
+  
+    // KAON IDENTIFICATION
+//  if( ( nsigmakaon   <  nsigmapion ) && ( nsigmakaon < nsigmaproton ) && (nsigmakaon <= nsig) ){ // NOT OKAY, only (nsigmakaon <= nsig) or if you want to reject pions and protons do (nsigmakaon <= nsig) && (nsigmapion >= rejnsig) && (nsigmaproton >= rejnsig)
+    
+    
+  if( (TMath::Abs(nsigmakaon) <= nsig) && (TMath::Abs(nsigmapion) >= fRejNSigma) && (TMath::Abs(nsigmaproton) >= fRejNSigma) ) {  // CLEAN KAON IDENTIFICATION
+    
+    fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+    fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
       
+    if (track->Charge()>0){  
       // Cut .1 cm on DCAxy and fill a histogram
       if(goodDCAKaon(track)){
-	
         // Add to the  event
 	fResoBuffer->GetEvt(0)->AddKPlus(track);
       }
@@ -509,26 +488,29 @@ void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig, Bo
     else{
       // Cut .1 cm on DCAxy and fill a histogram    
       if(goodDCAKaon(track)){
-
 	// Add to the  event
 	fResoBuffer->GetEvt(0)->AddKMin(track);
       }
     }
   }
 
-   if(strong){
-   if( ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmakaon) )) return ;
-   }
-     if(  (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmakaon))  && (TMath::Abs(nsigmaproton)   <= nsig) ){
-         fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
-       if (track->Charge()>0){
+ // if( ( nsigmaproton==nsigmapion ) && ( nsigmaproton==nsigmakaon )) return ; // USELESS LINE
+  
+    // PROTON IDENTIFICATION
+//  if( ( nsigmaproton   < nsigmapion ) && ( nsigmaproton < nsigmakaon ) && (nsigmaproton   <= nsig )){ // NOT OK, see above
+    
+    if( (TMath::Abs(nsigmaproton) <= nsig ) && (TMath::Abs(nsigmakaon) >= fRejNSigma) && (TMath::Abs(nsigmapion) >= fRejNSigma) ){ // CLEAN PROTON IDENTIFICATION
 
+        fPriHistTPCsignalproton->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+        fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
+
+    if (track->Charge()>0){
       // Cut .1 cm on DCAxy and fill a histogram
-	 if(goodDCA(track)){
+      if(goodDCA(track)){
 	// Add to the  event
 	fResoBuffer->GetEvt(0)->AddPro(track);
       }
-   }
+    }
     else{
       // Cut .1 cm on DCAxy and fill a histogram
       if(goodDCA(track)){
@@ -537,50 +519,43 @@ void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig, Bo
       }
     }
   }
-
+  
 } // End of void ProcessTPC
 
 
-
-
 //________________________________________________________________________
-void AliAnalysisTaskLambdaStar::ProcessHybridPro(AliAODTrack *track, Bool_t circ, Double_t nsig, Bool_t strong){
-    Float_t TMom = track->Pt();
+void AliAnalysisTaskLambdaStar::ProcessHybridPro(AliAODTrack *track, Bool_t circ, Double_t nsig){
+  Float_t TMom = track->Pt();
   Double_t nsigmapion = 999, nsigmakaon=999,nsigmaproton=999,nsigmaelectron=999;
- 
+  
   nsigmaelectron = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron) ;
   nsigmapion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ;
   nsigmakaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon) ;
   nsigmaproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton) ;
   
-    fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
-    fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
-    
+  fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
+  fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
+  
   Double_t nsigmaprotonTOF=999.,nsigmakaonTOF=999.,nsigmapionTOF=999.;
   Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
-  
   Bool_t fHasTOFPID;
-
-  if( nsigmaelectron  < 3.0  &&  nsigmapion  > 3.0  && nsigmakaon  > 3.0  && nsigmaproton > 3.0 )  return;
-
-  if(track->GetStatus() & AliVTrack::kTOFpid){
-    fHasTOFPID=kTRUE;
-    }
-    else{
-      fHasTOFPID=kFALSE;
-    }
-
-
+  
+  //if( nsigmaelectron  < 3.0  &&  nsigmapion  > 3.0  && nsigmakaon  > 3.0  && nsigmaproton > 3.0 )  return; //   DANGEROUS LINE
+  
+  if(track->GetStatus() & AliVTrack::kTOFpid){ fHasTOFPID=kTRUE; }
+  else{ fHasTOFPID=kFALSE; }
+  
+  
   if (fHasTOFPID){
     nsigmapionTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) ;
     nsigmakaonTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon) ;
     nsigmaprotonTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton) ;
-      
-      fPriHistTOFnsigmaproton_nocut->Fill(TMom,nsigmaprotonTOF);
-      fPriHistTPCTOFnsigmaproton_nocut->Fill(nsigmaprotonTOF,nsigmaproton);
-      fPriHistTOFnsigmakaon_nocut->Fill(TMom,nsigmakaonTOF);
-      fPriHistTPCTOFnsigmakaon_nocut->Fill(nsigmakaonTOF,nsigmakaon);
-
+    
+    fPriHistTOFnsigmaproton_nocut->Fill(TMom,nsigmaprotonTOF);
+    fPriHistTPCTOFnsigmaproton_nocut->Fill(nsigmaprotonTOF,nsigmaproton);
+    fPriHistTOFnsigmakaon_nocut->Fill(TMom,nsigmakaonTOF);
+    fPriHistTPCTOFnsigmakaon_nocut->Fill(nsigmakaonTOF,nsigmakaon);
+    
     
     if(circ){   
       Double_t d2Proton=nsigmaproton * nsigmaproton + nsigmaprotonTOF * nsigmaprotonTOF;
@@ -591,155 +566,133 @@ void AliAnalysisTaskLambdaStar::ProcessHybridPro(AliAODTrack *track, Bool_t circ
       nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
       nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
     }
-    else{
-      
+    else{  
       nsigmaTPCTOFkProton  =  nsigmaprotonTOF;
       nsigmaTPCTOFkKaon    =  nsigmakaonTOF;
       nsigmaTPCTOFkPion    =  nsigmapionTOF;
     }
   }
-  else 
-    {
-      nsigmaTPCTOFkProton = nsigmaproton;
-      nsigmaTPCTOFkKaon   = nsigmakaon;
-      nsigmaTPCTOFkPion   = nsigmapion;
-    }
-  
-  if(strong)
-    {
-      if(circ){
-	if( (TMath::Abs(nsigmaTPCTOFkKaon) >= TMath::Abs(nsigmaTPCTOFkPion) ) && ( TMath::Abs(nsigmaTPCTOFkKaon) >= TMath::Abs(nsigmaTPCTOFkProton) )) return ;
-      }
-      else{
-	if( (TMath::Abs(nsigmakaon) >=TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmakaon) >=TMath::Abs(nsigmaproton) )) return ;
-	if(fHasTOFPID)
-	  {
-	    if( (TMath::Abs(nsigmakaonTOF) >=TMath::Abs(nsigmapionTOF) ) && ( TMath::Abs(nsigmakaonTOF) >=TMath::Abs(nsigmaprotonTOF) )) return ;
-	  }	
-      }
-    }
-  
-  if(!circ)     {
-    if(fHasTOFPID){
-      
-      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= nsig ) ){
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-          fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
-          fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
-	// Distinguish between charges
-	if (track->Charge() > 0) {
-	  
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    
-	    // Add to the  event
-	    fResoBuffer->GetEvt(0)->AddKPlus(track);
-	  }
-	}
-	
-	else {
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    
-	    // add to the  event
-	    fResoBuffer->GetEvt(0)->AddKMin(track);
-	  }
-	}
-      }
-    }
-    else{
-      if(TMath::Abs(nsigmakaon) <= nsig){
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-
-	// Distinguish between charges
-	if (track->Charge() > 0) {
-	  
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    
-	    // Add to the  event
-	    fResoBuffer->GetEvt(0)->AddKPlus(track);
-	  }
-	}
-	else {
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    
-	    // add to the  event
-	    fResoBuffer->GetEvt(0)->AddKMin(track);
-	  }
-	}
-      }
-    }
-    
-  } //end of  if(!circ)
-  
-  else  // circular pid
-    {
-      
-      if( TMath::Abs(nsigmaTPCTOFkKaon)  <= nsig ){
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-          fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
-          fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
-	
-	if (track->Charge() > 0) {
-	  
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    
-	    // Add to the  event
-	    fResoBuffer->GetEvt(0)->AddKPlus(track);
-	  }
-	}
-	else {
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    // add to the  event
-	    fResoBuffer->GetEvt(0)->AddKMin(track);
-	  }
-	}
-      }
-    }
-  
-  if(strong){
-    
-    if( ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmakaon) )) return ;
+  else{
+    nsigmaTPCTOFkProton = nsigmaproton;
+    nsigmaTPCTOFkKaon   = nsigmakaon;
+    nsigmaTPCTOFkPion   = nsigmapion;
   }
   
-  if(  (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmakaon)) && (TMath::Abs(nsigmaproton)   <= nsig) ){
-      fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
+  
+  /*if(circ){ if( (nsigmaTPCTOFkKaon >= nsigmaTPCTOFkPion ) && ( nsigmaTPCTOFkKaon >= nsigmaTPCTOFkProton )) return ;  } // RANDOM Rejection not OkAY
+  else{ 
+    if( (nsigmakaon >= nsigmapion ) && ( nsigmakaon >= nsigmaproton )) return ; RANDOM Rejection not OkAY
+    if(fHasTOFPID) {
+      if( (nsigmakaonTOF >= nsigmapionTOF ) && ( nsigmakaonTOF >= nsigmaprotonTOF )) return ; }	
+      }*/ //USELESS line
+  
+  
+  if(!circ){
+    if(fHasTOFPID){ //PURE Kaon selection by TPC and TOF
+        if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma) && (TMath::Abs(nsigmaTPCTOFkProton) >= fRejNSigma)  && ( TMath::Abs(nsigmakaon) <= 5.0) ) {
+            
+	fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
+	fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
+	fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
+    fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
 
-    
+	// Distinguish between charges
+	if (track->Charge() > 0) {
+	  // Cut .1 cm on DCAxy and fill a histogram
+	  if(goodDCAKaon(track)){
+	    // Add to the  event
+	    fResoBuffer->GetEvt(0)->AddKPlus(track);
+	  }
+    }
+	else {
+	  // Cut .1 cm on DCAxy and fill a histogram
+	  if(goodDCAKaon(track)){
+	    // add to the  event
+	    fResoBuffer->GetEvt(0)->AddKMin(track);
+	  }
+	}
+      }
+    }
+    else  { //PURE Kaon selection by TPC if TOF is not present
+        if( (TMath::Abs(nsigmakaon) <= nsig) && (TMath::Abs(nsigmaproton) >= fRejNSigma) && (TMath::Abs(nsigmapion) >= fRejNSigma)){
+            
+            fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+            fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
+
+	// Distinguish between charges
+	if (track->Charge() > 0) {
+	  // Cut .1 cm on DCAxy and fill a histogram
+	  if(goodDCAKaon(track)){
+	    // Add to the  event
+	    fResoBuffer->GetEvt(0)->AddKPlus(track);
+	  }
+	}
+	else {
+	  // Cut .1 cm on DCAxy and fill a histogram
+	  if(goodDCAKaon(track)){
+	    // add to the  event
+	    fResoBuffer->GetEvt(0)->AddKMin(track);
+	  }
+	}
+      }
+    }    
+  } //end of  if(!circ)
+  
+  else { // circular pid PURE Kaon selection by TPC or TPC||TOF by circular nsigma cuts
+      if( (TMath::Abs(nsigmaTPCTOFkKaon)  <= nsig ) && (TMath::Abs(nsigmaTPCTOFkProton) >= fRejNSigma) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma) ){
+          
+          fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
+         fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
+         fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
+      if (track->Charge() > 0) {
+	// Cut .1 cm on DCAxy and fill a histogram
+	if(goodDCAKaon(track)){
+	  // Add to the  event
+	  fResoBuffer->GetEvt(0)->AddKPlus(track);
+	}
+      }
+      else {
+	// Cut .1 cm on DCAxy and fill a histogram
+	if(goodDCAKaon(track)){
+	  // add to the  event
+	  fResoBuffer->GetEvt(0)->AddKMin(track);
+	}
+      }
+    }
+  }
+  
+  //Proton selection
+  // if( ( nsigmaproton == nsigmapion ) && ( nsigmaproton == nsigmakaon )) return ; // USELESS LINE
+  // if( (nsigmaproton < nsigmapion) && ( nsigmaproton < nsigmakaon) && ( nsigmaproton   <= nsig) ){ //// USELESS LINE Random Rejection
+
+    if(  ( TMath::Abs(nsigmaproton)   <= nsig) &&( TMath::Abs(nsigmapion) >= fRejNSigma) && ( TMath::Abs(nsigmakaon) >= fRejNSigma)  ){  // CLEAN Proton Selection by TPC
+    fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
+        fPriHistTPCsignalproton->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+
     // Distinguish between charges
     if (track->Charge() > 0) {
-      
       // Cut .1 cm on DCAxy and fill a histogram
-      if(goodDCA(track)){
-	
+      if(goodDCA(track)){	
 	// Add to the  event
 	fResoBuffer->GetEvt(0)->AddPro(track);
       }
     }
     else {
       // Cut .1 cm on DCAxy and fill a histogram
-      
       if(goodDCA(track)){
-	
 	// add to the  event
-	
 	fResoBuffer->GetEvt(0)->AddAPro(track);
       }
     }  
   }
   
-  
-  
-} // End of ProcessHybrid
+} // End of ProcessHybridPro
+
 //________________________________________________________________________
 
-void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Double_t nsig,Bool_t strong){
-    Float_t TMom = track->Pt();
-
+void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Double_t nsig){
+  Float_t TMom = track->Pt();
   Double_t nsigmapion = 999, nsigmakaon=999,nsigmaproton=999,nsigmaelectron=999;
   
   nsigmaelectron = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron) ;
@@ -747,41 +700,29 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
   nsigmakaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon) ;
   nsigmaproton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton) ;
   
-    fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
-    fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
-
+  fPriHistTPCnsigmakaon_nocut->Fill(TMom,nsigmakaon);
+  fPriHistTPCnsigmaproton_nocut->Fill(TMom,nsigmaproton);
+  
   Double_t nsigmaprotonTOF=999.,nsigmakaonTOF=999.,nsigmapionTOF=999.;
   Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
-  
-  
   Bool_t fHasTOFPID;
   
-  if( TMath::Abs(nsigmaelectron)  < 3.0  &&  TMath::Abs(nsigmapion)  > 3.0  && TMath::Abs(nsigmakaon)  > 3.0  && TMath::Abs(nsigmaproton) > 3.0 )  return;
+  //if(nsigmaelectron  < 3.0 && nsigmapion   > 3.0  && nsigmakaon   > 3.0 && nsigmaproton > 3.0 ) return ; // DANGEROUS LINE
   
-  if(track->GetStatus() & AliVTrack::kTOFpid){
-    
-    fHasTOFPID=kTRUE;
-  }
-  else{
-    
-    fHasTOFPID=kFALSE;
-  }
-  
-  
-  if (fHasTOFPID){
-    
+  if(track->GetStatus() & AliVTrack::kTOFpid){ fHasTOFPID=kTRUE; }
+  else{ fHasTOFPID=kFALSE; }
+   
+  if (fHasTOFPID){  
     nsigmakaonTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon) ;
     nsigmaprotonTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton) ;
     nsigmapionTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) ;
-     
-      fPriHistTOFnsigmaproton_nocut->Fill(TMom,nsigmaprotonTOF);
-      fPriHistTPCTOFnsigmaproton_nocut->Fill(nsigmaprotonTOF,nsigmaproton);
-      fPriHistTOFnsigmakaon_nocut->Fill(TMom,nsigmakaonTOF);
-      fPriHistTPCTOFnsigmakaon_nocut->Fill(nsigmakaonTOF,nsigmakaon);
-
     
-    if(circ){
-      
+    fPriHistTOFnsigmaproton_nocut->Fill(TMom,nsigmaprotonTOF);
+    fPriHistTPCTOFnsigmaproton_nocut->Fill(nsigmaprotonTOF,nsigmaproton);
+    fPriHistTOFnsigmakaon_nocut->Fill(TMom,nsigmakaonTOF);
+    fPriHistTPCTOFnsigmakaon_nocut->Fill(nsigmakaonTOF,nsigmakaon);
+    
+    if(circ){  
       Double_t d2Proton=nsigmaproton * nsigmaproton + nsigmaprotonTOF * nsigmaprotonTOF;
       Double_t d2Kaon=nsigmakaon * nsigmakaon + nsigmakaonTOF * nsigmakaonTOF;
       Double_t d2Pion=nsigmapion * nsigmapion + nsigmapionTOF * nsigmapionTOF;
@@ -791,47 +732,32 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
       nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
     }
     else{
-      
       nsigmaTPCTOFkProton  =  nsigmaprotonTOF;
       nsigmaTPCTOFkKaon    =  nsigmakaonTOF;
       nsigmaTPCTOFkPion    =  nsigmapionTOF;
     }
   }
   else {
-    
     nsigmaTPCTOFkProton = nsigmaproton;
     nsigmaTPCTOFkKaon   = nsigmakaon;
     nsigmaTPCTOFkPion   = nsigmapion;
   }
   
-  if(strong)
-    {
-      if(circ){
-	if( (TMath::Abs(nsigmaTPCTOFkKaon) >= TMath::Abs(nsigmaTPCTOFkPion) ) && ( TMath::Abs(nsigmaTPCTOFkKaon) >= TMath::Abs(nsigmaTPCTOFkProton) )) return ;
-      }
-      else{
-	if( (TMath::Abs(nsigmakaon) >=TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmakaon) >=TMath::Abs(nsigmaproton) )) return ;
-	if(fHasTOFPID){
-	  if( (TMath::Abs(nsigmakaonTOF) >=TMath::Abs(nsigmapionTOF) ) && ( TMath::Abs(nsigmakaonTOF) >=TMath::Abs(nsigmaprotonTOF) )) return ;
-	}
-      }
-    }
+
   
   if(!circ){
     if(fHasTOFPID){
-      
-      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= nsig ) ){
+      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && (TMath::Abs(nsigmaTPCTOFkProton) >= fRejNSigma) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma)  && ( TMath::Abs(nsigmakaon) <= 5.0) ){
           
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-              fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
-              fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
-          
+    fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+	fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
+	fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
+	fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
 
-	
+	// Distinguish between charges
 	if (track->Charge() > 0) {
 	  // Cut .1 cm on DCAxy and fill a histogram
 	  if(goodDCAKaon(track)){
-	    
 	    // Add to the  event
 	    fResoBuffer->GetEvt(0)->AddKPlus(track);
 	  }
@@ -839,90 +765,73 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
 	else {
 	  // Cut .1 cm on DCAxy and fill a histogram
 	  if(goodDCAKaon(track)){
-	    
 	    // add to the  event
 	    fResoBuffer->GetEvt(0)->AddKMin(track);
 	  }
 	}
       }
     }
-    else{
-      if(TMath::Abs(nsigmakaon) <= nsig){
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
+    else if (track->P() < 0.8) {
+        if( (TMath::Abs(nsigmakaon) <= nsig) && (TMath::Abs(nsigmaproton) >= fRejNSigma) && (TMath::Abs(nsigmapion) >= fRejNSigma)){
+           
+            fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+            fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
 
+	// Distinguish between charges
 	if (track->Charge() > 0) {
 	  // Cut .1 cm on DCAxy and fill a histogram
 	  if(goodDCAKaon(track)){
-	    
 	    // Add to the  event
 	    fResoBuffer->GetEvt(0)->AddKPlus(track);
 	  }
-	}
+    }
 	else {
 	  // Cut .1 cm on DCAxy and fill a histogram
 	  if(goodDCAKaon(track)){
-	    
 	    // add to the  event
 	    fResoBuffer->GetEvt(0)->AddKMin(track);
 	  }
 	}
       }
     }
-    
     
   } //end of if(!circ)
   
-  else // for circular
-    {
-      if( TMath::Abs(nsigmaTPCTOFkKaon)  <= nsig ){
+  else  { // for circular
+      if(  (TMath::Abs(nsigmaTPCTOFkKaon)  <= nsig ) && (TMath::Abs(nsigmaTPCTOFkProton) >= fRejNSigma) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma) ){
           
-          fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
-          if (fHasTOFPID){
-              fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
-              fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
-          }
+      fPriHistTPCsignalkaon->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
 
-	if (track->Charge() > 0) {
-	  if(goodDCAKaon(track)){
-	    fResoBuffer->GetEvt(0)->AddKPlus(track);
-	  }
-	}
-	else {
-	  // Cut .1 cm on DCAxy and fill a histogram
-	  if(goodDCAKaon(track)){
-	    // add to the  event
-	    fResoBuffer->GetEvt(0)->AddKMin(track);
-	  }
+      if (fHasTOFPID){
+	fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
+	fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
+      }
+      if (track->Charge() > 0) {
+	if(goodDCAKaon(track)){
+	  fResoBuffer->GetEvt(0)->AddKPlus(track);
 	}
       }
-    }
-  
-  
-  //  proton selection
-  
-  if(strong){
-    if(circ){
-      if( (TMath::Abs(nsigmaTPCTOFkProton) >= TMath::Abs(nsigmaTPCTOFkPion) ) && ( TMath::Abs(nsigmaTPCTOFkProton) >= TMath::Abs(nsigmaTPCTOFkKaon) )) return ;
-    }
-    else{
-      if( (TMath::Abs(nsigmaproton) >=TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmaproton) >=TMath::Abs(nsigmakaon) )) return ;
-      if(fHasTOFPID){
-	if( (TMath::Abs(nsigmaprotonTOF) >=TMath::Abs(nsigmapionTOF) ) && ( TMath::Abs(nsigmaprotonTOF) >=TMath::Abs(nsigmakaonTOF) )) return ;
+      else {
+	// Cut .1 cm on DCAxy and fill a histogram
+	if(goodDCAKaon(track)){
+	  // add to the  event
+	  fResoBuffer->GetEvt(0)->AddKMin(track);
+	}
       }
     }
   }
   
+    
+  //  PROTON selection
   if(!circ){
     if(fHasTOFPID){
-      
-      if( ( TMath::Abs(nsigmaTPCTOFkProton)   <= nsig ) && ( TMath::Abs(nsigmaproton) <= nsig ) ){
-	
-          
-              fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
-              fPriHistTOFnsigmaproton->Fill(TMom,nsigmaprotonTOF);
-              fPriHistTPCTOFnsigmaproton->Fill(nsigmaprotonTOF,nsigmaproton);
-          
-
+        if( ( TMath::Abs(nsigmaTPCTOFkProton) <= nsig ) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma )&& (TMath::Abs(nsigmaTPCTOFkKaon)  >= fRejNSigma )  && ( TMath::Abs(nsigmaproton) <= 5.0 ) ){ //Clean Proton selection by TPC and TOF
+            
+    fPriHistTPCsignalproton->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+	fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
+	fPriHistTOFnsigmaproton->Fill(TMom,nsigmaprotonTOF);
+	fPriHistTPCTOFnsigmaproton->Fill(nsigmaprotonTOF,nsigmaproton);
 	if (track->Charge() > 0) {
 	  if(goodDCA(track)){
 	    fResoBuffer->GetEvt(0)->AddPro(track);
@@ -935,11 +844,12 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
 	}
       }
     }
-    else{
-      if(TMath::Abs(nsigmaproton) <= nsig){
+    else if(track->P() < 1.4){
+      if( (TMath::Abs(nsigmaproton) <= nsig)  &&  (TMath::Abs(nsigmapion) >= fRejNSigma) && (TMath::Abs(nsigmakaon) >= fRejNSigma) ){
+	
+          fPriHistTPCsignalproton->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
           fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
 
-	
 	if (track->Charge() > 0) {
 	  if(goodDCA(track)){
 	    fResoBuffer->GetEvt(0)->AddPro(track);
@@ -956,20 +866,21 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
   
   else
     {
-      if( TMath::Abs(nsigmaTPCTOFkProton)  <= nsig ){
-          fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
-          if (fHasTOFPID){
-              fPriHistTOFnsigmaproton->Fill(TMom,nsigmaprotonTOF);
-              fPriHistTPCTOFnsigmaproton->Fill(nsigmaprotonTOF,nsigmaproton);
-          }
+      if( (TMath::Abs(nsigmaTPCTOFkProton)  <= nsig) && (TMath::Abs(nsigmaTPCTOFkPion) >= fRejNSigma) && (TMath::Abs(nsigmaTPCTOFkKaon)  >= fRejNSigma )){
+          
+    fPriHistTPCsignalproton->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+	fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
 
+	if (fHasTOFPID){
+	  fPriHistTOFnsigmaproton->Fill(TMom,nsigmaprotonTOF);
+	  fPriHistTPCTOFnsigmaproton->Fill(nsigmaprotonTOF,nsigmaproton);
+	}
 	if (track->Charge() > 0) {
 	  if(goodDCA(track)){
 	    fResoBuffer->GetEvt(0)->AddPro(track);
 	  }
 	}
 	else {
-	  
 	  if(goodDCA(track)){
 	    fResoBuffer->GetEvt(0)->AddAPro(track);	    
 	  }
@@ -984,39 +895,36 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
 Double_t AliAnalysisTaskLambdaStar::ApplyCentralityPatchPbPb2011( AliCentrality *central){
   //This part rejects randomly events such that the centrality gets flat for LHC11h Pb-Pb data
   //for 0-5% and 10-20% centrality bin
+  Double_t cent = (Float_t)(central->GetCentralityPercentile("V0M"));
+  Double_t rnd_hc, testf, ff, N1, N2;
   
-    Double_t cent = (Float_t)(central->GetCentralityPercentile("V0M"));
-    Double_t rnd_hc, testf, ff, N1, N2;
+  if(fCentPerPatch==510){
     
-    // cout<<"Centrality patch value"<<fCentPerPatch<<endl;
-    
-    if(fCentPerPatch==510){
-      
-      N1 = 1.9404e+06;
-      N2 = 1.56435e+06;
-      ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
-    }
-    
-    if(fCentPerPatch==1020){
-      N1 = 1.56435e+06;
-      N2 = 4.20e+05;
-      ff = 1.68062e+08 - 5.19673e+07*cent + 6.4068e+06*cent*cent + 6.4068e+06*cent*cent*cent - 392687*cent*cent*cent*cent - 145.07*cent*cent*cent*cent*cent;
-    }
-    
-    testf = ( N2 + (N1-ff) ) / N1;
-    rnd_hc = gRandom->Rndm();
-    
-    
-    if (rnd_hc < 0 || rnd_hc > 1 )
-      {
-        AliWarning("Wrong Random number generated");
-        return -999.0;
-      }
-    
-    if (rnd_hc < testf)
-      return cent;
-    else
+    N1 = 1.9404e+06;
+    N2 = 1.56435e+06;
+    ff = 5.04167e+06 - 1.49885e+06*cent + 2.35998e+05*cent*cent -1.22873e+04*cent*cent*cent;
+  }
+  
+  if(fCentPerPatch==1020){
+    N1 = 1.56435e+06;
+    N2 = 4.20e+05;
+    ff = 1.68062e+08 - 5.19673e+07*cent + 6.4068e+06*cent*cent + 6.4068e+06*cent*cent*cent - 392687*cent*cent*cent*cent - 145.07*cent*cent*cent*cent*cent;
+  }
+  
+  testf = ( N2 + (N1-ff) ) / N1;
+  rnd_hc = gRandom->Rndm();
+  
+  
+  if (rnd_hc < 0 || rnd_hc > 1 )
+    {
+      AliWarning("Wrong Random number generated");
       return -999.0;
+    }
+  
+  if (rnd_hc < testf)
+    return cent;
+  else
+    return -999.0;
 }
 
 
@@ -1486,17 +1394,11 @@ void AliAnalysisTaskLambdaStar::FillDedxHist(const AliVTrack *track){
   // momentum of 0.75 GeV/c.
   
   // Positive tracks
-  if (track->Charge() > 0){
 
-    fPriHistTPCsignalPos->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
-  }
+    fPriHistTPCsignal->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
   
-  // Negative tracks
-  else{ 
   
-    fPriHistTPCsignalNeg->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
-    
-  }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::StoreGlobalTrackReference(AliAODTrack *track){
@@ -1558,10 +1460,10 @@ Bool_t AliAnalysisTaskLambdaStar::AcceptTrack(const AliAODTrack *track){
   Float_t nCrossed = track->GetTPCClusterInfo(2, 1);
   if(nCrossed<fClusterTPC)
     return kFALSE;
-  if(!track->GetTPCNclsF())
-    return kFALSE; // Note that the AliESDtrackCuts would here return kTRUE
-  if((nCrossed/track->GetTPCNclsF()) < .8)
-    return kFALSE;
+  //if(!track->GetTPCNclsF())
+  //  return kFALSE; // Note that the AliESDtrackCuts would here return kTRUE
+  //if((nCrossed/track->GetTPCNclsF()) < .8)
+  //  return kFALSE;
 
   if(TMath::Abs(track->Eta()) > 0.8) return kFALSE;
   if(TMath::Abs(track->Pt()) < 0.2) return kFALSE;
@@ -1579,9 +1481,11 @@ Bool_t AliAnalysisTaskLambdaStar::GoodTPCFitMapSharedMap(const AliAODTrack *trac
   // Get the shared maps
   const TBits sharedMap = track->GetTPCSharedMap();
   // Fill a control histogram
-  fPriHistShare->Fill(sharedMap.CountBits());
   // Reject shared clusters
   if((sharedMap.CountBits()) >= 1){
+      // Fill a control histogram
+      fPriHistShare->Fill(sharedMap.CountBits());
+
     // Bad track, has too many shared clusters!
     return kFALSE;
   }

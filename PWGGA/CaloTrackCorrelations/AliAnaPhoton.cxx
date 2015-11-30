@@ -731,11 +731,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
   {
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
-    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-    {
-      dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-    }
+//    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+//    {
+//      dR = 2000., dZ = 2000.;
+//      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+//    }
     
     if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
     {
@@ -985,11 +985,11 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
   Float_t dZ = cluster->GetTrackDz();
   Float_t dR = cluster->GetTrackDx();
   
-  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-  {
-    dR = 2000., dZ = 2000.;
-    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-  }
+//  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+//  {
+//    dR = 2000., dZ = 2000.;
+//    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+//  }
   
   AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
   

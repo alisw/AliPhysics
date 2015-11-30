@@ -90,8 +90,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15a3a_plus,
       k15a3b,
       k13b2_efix,
+      k13e7,
       k15h1,
-      k15h2
+      k15h2,
+      k14j4
     };
 
     //handeling of CutString
@@ -123,6 +125,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight=1.);
     Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
+    Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
     //correct NonLinearity
@@ -347,7 +350,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,16)
+    ClassDef(AliCaloPhotonCuts,17)
 };
 
 #endif

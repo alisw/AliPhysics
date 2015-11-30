@@ -101,7 +101,7 @@ namespace {
 }
 
 //______________________________________________________________________________
-AliAnalysisMuMuNch::AliAnalysisMuMuNch(TRootIOCtor* ioCtor)
+AliAnalysisMuMuNch::AliAnalysisMuMuNch(TRootIOCtor* /* ioCtor */)
 : AliAnalysisMuMuBase(),
 fSPDOneOverAccxEff(0x0),
 fSPDFluctuationsList(0x0),
@@ -1656,9 +1656,9 @@ void AliAnalysisMuMuNch::FillHistosForMCEvent(const char* eventSelection,const c
     AliVVZERO* vzero = Event()->GetVZEROData();
     if (vzero)
     {
-      Double_t multV0A = vzero->GetMTotV0A();
+//      Double_t multV0A = vzero->GetMTotV0A();
 //      V0AMult = AliESDUtils::GetCorrV0A(multV0A,MCZv);
-      Double_t multV0C = vzero->GetMTotV0C();
+//      Double_t multV0C = vzero->GetMTotV0C();
 //      V0CMult = AliESDUtils::GetCorrV0C(multV0C,MCZv);
 
       static_cast<TH2*>(MCHisto(eventSelection,triggerClassName,centrality,"V0AMultVsNch"))->Fill(V0AMult,nchSum,fMCWeight);

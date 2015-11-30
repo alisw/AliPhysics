@@ -12,6 +12,7 @@
 #include <TMath.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <TVector3.h>
 #include <iostream>
 #include <iomanip>
 
@@ -83,6 +84,7 @@ void
 AliFMDESDFixer::CreateOutputObjects(TList* l)
 {
   TList* d = new TList;
+  d->SetOwner();
   d->SetName(GetName());
   l->Add(d);
 
@@ -311,15 +313,23 @@ AliFMDESDFixer::CheckDead(UShort_t d, Char_t r, UShort_t s, UShort_t t,
 //____________________________________________________________________
 void
 AliFMDESDFixer::RecalculateEta(UShort_t d, Char_t r, UShort_t s, UShort_t t,
-			       const TVector3& ip, Double_t& eta, Double_t& mult, 
+			       const TVector3& ip, Double_t& eta,
+			       Double_t& mult, 
 			       Double_t& cosTheta)
 {
   Double_t oldEta = eta, newEta = eta, newPhi=0;
   // Double_t newEta = AliForwardUtil::GetEtaFromStrip(d,r,s,t, zvtx);
   // eta             = newEta;
-  AliForwardUtil::GetEtaPhi(d, r, s, t, ip, newEta, newPhi);
-  eta = newEta;
+  cosTheta = ETA2COS(eta);
+  if (!AliForwardUtil::GetEtaPhi(d, r, s, t, ip, newEta, newPhi)) return;
+  if (TMath::Abs(eta) < 1) {
+    ::Warning("RecalculateEta",
+	      "FMD%d%c[%2d,%3d] (%f,%f,%f) eta=%f phi=%f (was %f)",
+	      d, r, s, t, ip.X(), ip.Y(), ip.Z(), newEta, newPhi, oldEta);
+    return;
+  }
   
+  eta = newEta;
   fEtaChange->Fill(newEta-oldEta);
 
   if (mult == AliESDFMD::kInvalidMult) return;

@@ -99,6 +99,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff() :
   fTransformer(0x0),
   fDEPlanes(0x0),
   fClusters(0x0),
+  fEvents(0x0),
   fChamberTDHistList(0x0),
   fChamberTTHistList(0x0),
   fChamberSDHistList(0x0),
@@ -123,6 +124,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name) :
   fTransformer(0x0),
   fDEPlanes(0x0),
   fClusters(0x0),
+  fEvents(0x0),
   fChamberTDHistList(0x0),
   fChamberTTHistList(0x0),
   fChamberSDHistList(0x0),
@@ -132,10 +134,11 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name) :
   
   // Output slots
   DefineOutput(1, AliCounterCollection::Class());
-  DefineOutput(2, TList::Class());
+  DefineOutput(2, AliCounterCollection::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
   DefineOutput(5, TList::Class());
+  DefineOutput(6, TList::Class());
 }
 
 //________________________________________________________________________
@@ -145,6 +148,7 @@ AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
   if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fMuonTrackCuts;
     delete fClusters;
+    delete fEvents;
     delete fChamberTDHistList;
     delete fChamberTTHistList;
     delete fChamberSDHistList;
@@ -237,6 +241,12 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   fClusters->AddRubric("Manu", fgkNofManu);
   fClusters->AddRubric("Channel", AliMpConstants::ManuNofChannels());
   fClusters->Init();
+  
+  // events analyzed
+  fEvents = new AliCounterCollection(GetOutputSlot(2)->GetContainer()->GetName());
+  fEvents->AddRubric("event", "any");
+  fEvents->AddRubric("run", 100000);
+  fEvents->Init();
   
   fChamberTDHistList = new TList();
   fChamberTDHistList->SetOwner();
@@ -339,12 +349,16 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   TH2D *hDYOverDYMax = new TH2D("hDYOverDYMax", "DY / DYMax vs pYZ;pYZ;DY / DYMax", 50, 0., 500., 100, -1., 1.);
   fExtraHistList->AddAt(hDYOverDYMax,20);
   
+  THnSparse *hKine = new THnSparseT<TArrayF>("hKine", "kinematics distribution", nDims-1, &nBins[1], &xMin[1], &xMax[1]);
+  fExtraHistList->AddAt(hKine,21);
+  
   // post the output data at least once
   PostData(1, fClusters);  
-  PostData(2, fChamberTDHistList);
-  PostData(3, fChamberTTHistList);
-  PostData(4, fChamberSDHistList);
-  PostData(5, fExtraHistList);
+  PostData(2, fEvents);
+  PostData(3, fChamberTDHistList);
+  PostData(4, fChamberTTHistList);
+  PostData(5, fChamberSDHistList);
+  PostData(6, fExtraHistList);
 }
 
 //________________________________________________________________________
@@ -363,6 +377,9 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
   Double_t cent = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
   if (cent <= fCentMin || cent > fCentMax) return;
   static_cast<TH1F*>(fExtraHistList->At(0))->Fill(cent);
+  
+  // total number of events analyzed
+  fEvents->Count(Form("event:any/run:%d",fCurrentRunNumber));
   
   // loop over tracks
   AliMUONTrack track;
@@ -399,6 +416,7 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
     // convert to MUON track
     AliMUONESDInterface::ESDToMUON(*esdTrack, track);
     Double_t trackInfo[6] = {0., cent, pT, y, phi, static_cast<Double_t>(esdTrack->Charge())};
+    static_cast<THnSparse*>(fExtraHistList->At(21))->Fill(&trackInfo[1]);
     
     // tag the removable clusters/chambers, i.e. not needed to fulfill the tracking conditions
     Bool_t removableChambers[10];
@@ -463,11 +481,12 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
   }
   
   // post the output data:
-  PostData(1, fClusters);  
-  PostData(2, fChamberTDHistList);
-  PostData(3, fChamberTTHistList);
-  PostData(4, fChamberSDHistList);
-  PostData(5, fExtraHistList);
+  PostData(1, fClusters);
+  PostData(2, fEvents);
+  PostData(3, fChamberTDHistList);
+  PostData(4, fChamberTTHistList);
+  PostData(5, fChamberSDHistList);
+  PostData(6, fExtraHistList);
 }
     
 //________________________________________________________________________

@@ -162,11 +162,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice)
+set(LIBDEPS ANALYSISalice OADB)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

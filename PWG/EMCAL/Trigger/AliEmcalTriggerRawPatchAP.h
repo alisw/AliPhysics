@@ -35,7 +35,7 @@ public:
    * @param size Patch size
    * @param adc ADC value
    */
-  AliEmcalTriggerRawPatchAP(Int_t col0, Int_t row0, Int_t size, Double_t adc);
+  AliEmcalTriggerRawPatchAP(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineADC);
 
   /**
    * Destructor
@@ -62,12 +62,14 @@ public:
   void SetRowStart(Int_t row0) { fRow0 = row0; }
   void SetPatchSize(Int_t patchsize) { fSize = patchsize; }
   void SetADC(Double_t adc) { fADC = adc; }
+  void SetOfflineADC(Double_t adc) { fOfflineADC = adc; }
   void SetBitmask(ULong_t bitmask) { fBitMask = bitmask; }
 
   Int_t GetColStart() const { return fCol0; }
   Int_t GetRowStart() const { return fRow0; }
   Int_t GetPatchSize() const { return fSize; }
-  Int_t GetADC() const { return fADC; }
+  Double_t GetADC() const { return fADC; }
+  Double_t GetOfflineADC() const { return fOfflineADC; }
   ULong_t GetBitmask() const { return fBitMask; }
 
   /**
@@ -82,6 +84,7 @@ protected:
   Int_t                         fRow0;            ///< Start row of the patch
   Int_t                         fSize;            ///< Patch size in number of FAST-ors
   Double_t                      fADC;             ///< Patch ADC
+  Double_t                      fOfflineADC;      ///< Patch ADC
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerRawPatchAP, 1);

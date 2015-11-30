@@ -56,7 +56,7 @@ set(LIBDEPS ANALYSIS ANALYSISalice Tender EMCALbase EMCALrec EMCALUtils CORRFW O
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ANALYSIS ANALYSISalice Tender EMCALbase EMCALrec EMCALUtils CORRFW OADB PHOSbase PHOSrec PHOSUtils AOD CDB ESD STEER STEERBase T0rec TOFbase TOFrec TPCbase TRDbase VZERObase VZEROrec Core Geom Gpad Graf Hist MathCore Matrix Physics RIO Tree)
 
 # Additional compilation flags

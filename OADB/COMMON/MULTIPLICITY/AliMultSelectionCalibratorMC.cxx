@@ -36,7 +36,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
 {
     // Constructor
 
@@ -58,7 +58,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fBufferFileNameData("buffer.root"  ),
     fBufferFileNameMC  ("bufferMC.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0)
+    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1)
 {
     // Named Constructor
 
@@ -411,7 +411,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         Float_t lLocalVtxZ = fInput->GetVariable(iVtxZ_index)->GetValue();
 
         //Check Selections as they are in the fMultSelectionCuts Object
-        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE; //FIXME 
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
         if( TMath::Abs(lLocalVtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?
@@ -453,10 +453,16 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //==============================================================================
 
     Double_t *lValues;
-
+    
     //Determine max SPD tracklets: requires finding which estimator is SPD tracklets
-    Int_t iEstSPDtracklets = -1;
-    Int_t iEstSPDclusters = -1;
+    Int_t iEstSPDtracklets     = -1;
+    Int_t iEstSPDclusters      = -1;
+    Int_t iEstSPDtrackletscorr = -1;
+    Int_t iEstCL0  = -1;
+    Int_t iEstCL1  = -1;
+    
+    //FIXME: This can be done in a loop, will be adjusted later (but this will work as is)
+    
     TString lEstName;
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
         lEstName = fSelection->GetEstimator(iEst)->GetName();
@@ -467,6 +473,18 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if ( lEstName.EqualTo("SPDClusters") ) {
             cout<<"-> Found SPD clusters at estimator index position "<<iEst<<"..."<<endl;
             iEstSPDclusters = iEst;
+        }
+        if ( lEstName.EqualTo("SPDClustersCorr") ) {
+            cout<<"-> Found SPD clusters (vz corrected) at estimator index position "<<iEst<<"..."<<endl;
+            iEstSPDtrackletscorr = iEst;
+        }
+        if ( lEstName.EqualTo("CL0") ) {
+            cout<<"-> Found CL0 at estimator index position "<<iEst<<"..."<<endl;
+            iEstCL0 = iEst;
+        }
+        if ( lEstName.EqualTo("CL1") ) {
+            cout<<"-> Found CL1 at estimator index position "<<iEst<<"..."<<endl;
+            iEstCL1 = iEst;
         }
     }
 
@@ -581,7 +599,10 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitmc[iRun][iEst]->SetParameter(0,1.0);
             
             //remember to not be silly...
-            if( iEst != iEstSPDclusters && iEst != iEstSPDtracklets ){
+            TString lEstName = fSelection->GetEstimator(iEst)->GetName();
+            if( !lEstName.Contains("SPD") &&
+               !lEstName.Contains("CL0") &&
+               !lEstName.Contains("CL1") ){
                 profdata[iRun][iEst] -> Fit( Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
                 profmc[iRun][iEst] -> Fit( Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "QIREM0" );
             }
@@ -651,65 +672,107 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Create Stuff
     TFile * f = new TFile (fOutputFileName.Data(), "recreate");
     AliOADBContainer * oadbContMSout = new AliOADBContainer("MultSel");
-    AliOADBMultSelection * oadbMultSelectionout = new AliOADBMultSelection("Default");
-    AliMultSelectionCuts * cuts              = new AliMultSelectionCuts();
-    cuts = fMultSelectionCuts;
-    AliMultSelection     * fsels             = new AliMultSelection    ( fSelection );
     
-    cout<<"=================================================================================="<<endl;
-    cout<<"AliMultSelection Object to be saved (DEFAULT)"<<endl;
-    fsels->PrintInfo();
-    cout<<"=================================================================================="<<endl;
+    AliOADBMultSelection * oadbMultSelectionout = 0x0;
+    AliMultSelectionCuts * cuts              = 0x0;
+    AliMultSelection     * fsels             = 0x0;
+
+    AliOADBMultSelection * oadbMultSelectionoutdef = 0x0;
+    AliMultSelectionCuts * cutsdef              = 0x0;
+    AliMultSelection     * fselsdef             = 0x0;
     
     //Default Stuff
     TH1F * hDummy[lNEstimators];
     for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-        hDummy[iEst]= new TH1F (Form("hCalib_000000_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
+        hDummy[iEst]= new TH1F (Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()), "hdummy", 1, 0, 1);
         hDummy[iEst]->SetDirectory(0);
     }
-    
-    oadbMultSelectionout->SetEventCuts        ( cuts  );
-    oadbMultSelectionout->SetMultSelection    ( fsels );
-    for ( Int_t iEst=0; iEst<lNEstimators; iEst++) oadbMultSelectionout->AddCalibHisto( hDummy[iEst] );
-    oadbContMSout->AddDefaultObject(oadbMultSelectionout);
-    
+
     //Actual Calibration Histograms
     TH1F * hCalibData[lNEstimators];
     
     //Loop over existing runs and write objects as needed
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         cout<<"Processing run number "<<lRunNumbers[iRun]<<endl;
-        oadbMultSelectionout = new AliOADBMultSelection();
-        cuts              = new AliMultSelectionCuts();
-        cuts = fMultSelectionCuts;
-        fsels             = new AliMultSelection( fSelection );
-
-        //Write in scaling factors!
-        TString lTempDef;
-        for(Int_t iEst=0; iEst<lNEstimators; iEst++){
-            lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
-            lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
-            lTempDef.Append(")"); //don't forget parentheses...
-            fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
-        }
-        
-        oadbMultSelectionout->SetEventCuts    (cuts );
-        oadbMultSelectionout->SetMultSelection(fsels);
-        for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
-            //Average values
-            fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+        if ( sTreeMC[iRun]->GetEntries() > 10 && sTree[iRun]->GetEntries() > 10 ){
+            oadbMultSelectionout = new AliOADBMultSelection();
+            cuts              = new AliMultSelectionCuts();
+            cuts = fMultSelectionCuts;
+            fsels             = new AliMultSelection( fSelection );
             
-            //Protect from crashes in the general case
-            hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()) );
-            oadbMultSelectionout->AddCalibHisto( hCalibData[iEst]);
-            hCalibData[iEst]->SetDirectory(0);
+            //Write in scaling factors!
+            TString lTempDef;
+            for(Int_t iEst=0; iEst<lNEstimators; iEst++){
+                lTempDef = fsels->GetEstimator( iEst )->GetDefinition();
+                lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                lTempDef.Append(")"); //don't forget parentheses...
+                fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
+            }
+            
+            oadbMultSelectionout->SetEventCuts    (cuts );
+            oadbMultSelectionout->SetMultSelection(fsels);
+            for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
+                //Average values
+                fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+                
+                //Protect from crashes in the general case
+                hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
+                oadbMultSelectionout->AddCalibHisto( hCalibData[iEst]);
+                hCalibData[iEst]->SetDirectory(0);
+            }
+            cout<<"=================================================================================="<<endl;
+            cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
+            fsels->PrintInfo();
+            cuts->Print();
+            cout<<"=================================================================================="<<endl;
+            oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
+            
+            //Check if this corresponds to the reference run !
+            Bool_t lThisIsReference = kFALSE;
+            if( lRunNumbers[iRun] == fRunToUseAsDefault ) lThisIsReference = kTRUE;
+            if( lThisIsReference ){
+                cout<< "Reference Run found! Will save..."<<endl;
+                //========================================================================
+                //DEFAULT OADB Object saving procedure STARTS here
+                oadbMultSelectionoutdef = new AliOADBMultSelection("Default");
+                cutsdef              = new AliMultSelectionCuts();
+                cutsdef = fMultSelectionCuts;
+                fselsdef             = new AliMultSelection( fSelection );
+                
+                //Write in scaling factors!
+                TString lTempDef;
+                for(Int_t iEst=0; iEst<lNEstimators; iEst++){
+                    lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
+                    lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
+                    lTempDef.Append(")"); //don't forget parentheses...
+                    fselsdef->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
+                }
+                
+                oadbMultSelectionoutdef->SetEventCuts    (cutsdef );
+                oadbMultSelectionoutdef->SetMultSelection(fselsdef);
+                for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
+                    //Average values
+                    fselsdef->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+                    
+                    //Protect from crashes in the general case
+                    //hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fselsdef->GetEstimator(iEst)->GetName()) );
+                    oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst]);
+                    hDummy[iEst]->SetDirectory(0);
+                }
+                cout<<"=================================================================================="<<endl;
+                cout<<" Detected that this particular run / run range is special, will save it as default"<<endl;
+                cout<<" AliMultSelection Object to be saved (DEFAULT)"<<endl;
+                fselsdef->PrintInfo();
+                cout<<"=================================================================================="<<endl;
+                
+                //for ( Int_t iEst=0; iEst<lNEstimators; iEst++) oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst] );
+                oadbContMSout->AddDefaultObject(oadbMultSelectionoutdef);
+                //DEFAULT OADB Object saving procedure ENDS here
+                //========================================================================
+            }
+        }else{
+            cout<<"Insufficient statistics in either MC or data in run #"<<lRunNumbers[iRun]<<", skipping!"<<endl;
         }
-        cout<<"=================================================================================="<<endl;
-        cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
-        fsels->PrintInfo();
-        cuts->Print();
-        cout<<"=================================================================================="<<endl;
-        oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
     }
     cout<<"Write OADB..."<<endl;
     //pre-write dump
@@ -736,7 +799,7 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //============================================================
     // --- Definition of Variables for estimators ---
     //============================================================
-
+    
     //Create input variables in AliMultInput Class
     //V0 related
     AliMultVariable *fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
@@ -749,20 +812,25 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     AliMultVariable *fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
     //SPD Related
     AliMultVariable *fnSPDClusters         = new AliMultVariable("fnSPDClusters");
+    AliMultVariable *fnSPDClusters0        = new AliMultVariable("fnSPDClusters0");
+    AliMultVariable *fnSPDClusters1        = new AliMultVariable("fnSPDClusters1");
     fnSPDClusters->SetIsInteger( kTRUE );
+    fnSPDClusters0->SetIsInteger( kTRUE );
+    fnSPDClusters1->SetIsInteger( kTRUE );
     //AD Related
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
-
+    
     AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
     fRefMultEta5->SetIsInteger( kTRUE );
     AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
     fRefMultEta8->SetIsInteger( kTRUE );
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
-
+    
+    //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
-
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -775,11 +843,12 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     fInput->AddVariable( fMultiplicity_ADA );
     fInput->AddVariable( fMultiplicity_ADC );
     fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnSPDClusters0 );
+    fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
-    fInput->AddVariable( fEvSel_VtxZ );
-
+    fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
-
+    
 }

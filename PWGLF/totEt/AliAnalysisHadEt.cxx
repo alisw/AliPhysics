@@ -1,4 +1,4 @@
-//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass
 //University of Tennessee at Knoxville
 //
 // This class is designed for the analysis of the hadronic component of 
@@ -30,6 +30,7 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 using namespace std;
 
@@ -335,5 +336,23 @@ Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliCentrality *centr
     }
   }
   //cout<<" centrality bin "<<centralitybin<<endl;
+  return centralitybin;
+}
+Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliMultSelection *centrality){
+  Int_t centralitybin = -1;
+  Float_t lPercentile = centrality->GetMultiplicityPercentile("V0M");
+  if(lPercentile<0) return centralitybin;
+  if(numberofbins<21){//10% bins
+    centralitybin= lPercentile/10;
+  }
+  else{
+    if(numberofbins<41){//5% bins
+    centralitybin= lPercentile/5;
+    }
+    else{//2.5% bins
+      centralitybin= lPercentile/2.5;
+    }
+  }
+  //cout<<" centrality bin "<<centralitybin<<" percentile "<<lPercentile<<endl;
   return centralitybin;
 }
