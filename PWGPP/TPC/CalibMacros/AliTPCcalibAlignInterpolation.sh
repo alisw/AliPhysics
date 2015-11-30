@@ -1,36 +1,37 @@
 # 
-# Test for the interpolation
-# 
-#  Here we will paste command to check the processing
+# Shell script to create a correction/distortion maps
+#   
+#   tree->histogram
+#   histogram->map
+#   map->NDfit
+#   NDfit->Cheb.regression 
 #
-#  ( source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolation.sh submitRun 225582 /hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/data/2015/LHC15f/ )
-
-
+#     $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolation.sh
+#
 makeEnvLocal(){
 #
 #
 # Example usage local 
-# jobs to be submitted form the lxb1001 or lxb1002
-#(here we have 80 nodes and user disk)
-# 
+#   
+    export isBatch=1
     echo makeEnvLocal
     export baliceTPC="ali -n 1"
     ali -n 1
+    export isBatch=1
     export batchCommand="qsub -cwd  -V "
 }
 
 makeEnvHera(){
 #
 #
-# Example usage local 
-# jobs to be submitted form the lxb1001 or lxb1002
-#(here we have 80 nodes and user disk)
+# Example usage GSI farm
 # 
-    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
-    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
+    export isBatch=1
     echo makeEnvHera
-    alihera -n 1     
     export batchCommand="qsub -cwd -V -l h_rt=24:0:0,h_rss=4G  "
+    export balice=/hera/alice/miranov/bin/.baliceCalib.sh
+    export incScript=/hera/alice/miranov/alice-tpc-notes/aux/rootlogon.C
+    source $balice
 }
 
 
@@ -40,6 +41,7 @@ submitRunsFilteringPseudo(){
     #
     # OSBOLETE: This is pseudo code as was used for rub based residual maps creation
     #
+
     source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolation.sh
     #
     # make run list ls -d */ | sed s_000__ | sed s_"/"__ > run.list
@@ -56,8 +58,6 @@ submitRunsFilteringPseudo(){
     #
     # 1.) submit histogram creation# ResidualHisto.root=>  ResidualHistograms.root
     #
-    batchCommand="qsub -cwd  -V" 
-    #batchCommand="qsub  -cwd -l h_rt=24:0:0,h_rss=4G" 
     nTracks=10000000
     wdir=`pwd`
     for a in `cat run.list`; do  
@@ -173,18 +173,22 @@ submitRunsFilteringPseudo(){
 
 submitTimeDependent(){
     #
-    # Input
+    # Input 
     # run.list      - ascii file with runs 
     # residual.list - list of ResidualTree.root
     #  
-    # we assume that the run.list and residual list is 
-    source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh
+    # we assume that the run.list and residual list is     
+    source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolation.sh
+    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+
+    makeEnvLocal; 
+    #makeEnvHera; 
+
     # cp   $ALICE_PHYSICS/../src/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C 
     #
     # 0.) make directory structure
     # 
-    isBatch=1; # will be argument
-
+    #
     alilog_info "BEGIN: 0.) make directory structure"
     wdir=`pwd`
     for arun in `cat  run.list`; do
@@ -197,16 +201,14 @@ submitTimeDependent(){
     #
     alilog_info "BEGIN: 1.) Submit query  to get  time dependent info"
     wdir=`pwd` 
-    batchCommand="qsub -cwd  -V"     
-    #batchCommand="qsub -cwd  -V -l h_rt=24:0:0,h_rss=4G" 
     for arun in `cat run.list`; do
         [ -d $wdir/000$arun ]  &&  	cd $wdir/000$arun;   
         [ -d $wdir/$arun ] && cd $wdir/$arun;       
 	echo $wdir `pwd`; 	
-
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
-	echo aliroot -b -q  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) > submitTime.sh
+	echo source  $balice >  submitTime.sh
+	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) >> submitTime.sh
 	chmod a+x submitTime.sh  
 	if [ $isBatch -eq 0 ] ; then
 	    alilog_info "BEGIN:Processing run $arun"
@@ -226,9 +228,7 @@ submitTimeDependent(){
     #
     alilog_info "BEGIN: 2.) Submit hitogramming and filling jobs"
     wdir=`pwd` 
-    batchCommand="qsub -cwd  -V" 
-    #batchCommand="qsub -cwd  -V -l h_rt=24:0:0,h_rss=4G" 
-    timeDelta=300
+    timeDelta=600
     nTracks=100000000;
     for arun in `cat run.list`; do
 	wdirRun=$wdir/$arun
@@ -249,16 +249,17 @@ submitTimeDependent(){
 		wdirHis=$wdirTime/his$ihis
 		mkdir -p $wdirHis
 		cd $wdirHis
-		rm submit*.sh*
-		rm *.log
+		rm -f submit*.sh*
+		rm -f *.log
 		ln -sf $wdirRun/residual.list .
                 ln -sf $wdirRun/residualInfo.root .
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
 		echo export mapStopTime=$(($itime+$timeDelta)) >> submitHisto$ihis.sh
-		echo aliroot -b -q  AliTPCcalibAlignInterpolationMacro.C+\\\(1,$ihis,$nTracks\\\) >> submitHisto$ihis.sh
+		echo source  $balice >>submitHisto$ihis.sh
+		echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(1,$ihis,$nTracks\\\) >> submitHisto$ihis.sh
 		echo cp syswatch.log syswatch_His$ihis.log >>submitHisto$ihis.sh
-		echo aliroot -b -q  AliTPCcalibAlignInterpolationMacro.C+\\\(2,$ihis,0\\\) >> submitHisto$ihis.sh
+		echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(2,$ihis,0\\\) >> submitHisto$ihis.sh
 		echo cp syswatch.log syswatch_Map$ihis.log >>submitHisto$ihis.sh
                 chmod a+x submitHisto$ihis.sh
 	        echo qsub -cwd  -V -o submitHisto$ihis.log submitHisto$ihis.sh
@@ -281,12 +282,9 @@ submitTimeDependent(){
     #
     alilog_info "BEGIN: 3.) Submit NDlocalregrression jobs"
     wdir=`pwd` 
-    batchCommand="qsub -cwd  -V" 
-    #batchCommand="qsub -cwd  -V -l h_rt=24:0:0,h_rss=4G" 
-    find $wdir -iname "ResidualMapFull*" > map.list
-    secStep=4;
+    find $wdir -iname "ResidualMapFull*"  | grep his1 > map.list
+    secStep=2;
     treeNames=( 'deltaRPhiTPCITS' 'deltaRPhiTPCITSTRDDist'  'deltaRPhiTPCITSTOFDist'  'deltaZTPCITSDist'  'deltaZTPCITSTRDDist' 'deltaZTPCITSTOFDist' );
-
     for amap in `cat map.list`; do
 	mapDir=`dirname $amap`; 
 	inputFile=`basename $amap`
@@ -309,8 +307,10 @@ submitTimeDependent(){
 		echo export varSec0=$sec0           >> ${submitScript}
 		echo export varSec1=$sec1           >> ${submitScript}
 		echo export runNumber=$arun          >> ${submitScript}
-		#echo source /hera/alice/miranov/bin/.baliceCalib.sh  >> ${submitScript}
-		echo aliroot -b -q  AliTPCcalibAlignInterpolationMacro.C+\\\(3\\\) >>  ${submitScript}
+		echo source  $balice >> ${submitScript}
+		#cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
+		#echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(3\\\) >>  ${submitScript}
+		echo aliroot -b -q  $incScript $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C+\\\(3\\\) >>  ${submitScript}
 		mv ${submitScript} ${submitScript}.sh
 		chmod a+x  ${submitScript}.sh    
 		alilog_info "BEGIN:Processing ND fits at directory $mapDir, file $inputFile, type $ctype side $side sec = $sec"
@@ -323,3 +323,50 @@ submitTimeDependent(){
     
 
 }
+
+
+submitProfileHis(){
+    #
+    # This macros I used to submit callgrind/valgrind jobs
+    #
+    inputDir=$NOTES/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15l.2011test/000240194/Time1445891400/his1
+    calgrindCommand="/usr/bin/valgrind --tool=callgrind --log-file=cpu.txt   --num-callers=40 -v  --trace-children=yes aliroot "
+    valgrindCommand="/usr/bin/valgrind --leak-check=full --leak-resolution=high --num-callers=40 --error-limit=no --show-reachable=yes  --log-file=xxx.txt -v aliroot"
+    wdir=`pwd`
+    #
+    mkdir $wdir/calgrind/
+    cd $wdir/calgrind/
+    rm *
+    cp $inputDir/*.{list,log,sh,C} .
+    cat submitHisto1.sh | sed s_aliroot_"$calgrindCommand"_  | sed s_000_0_ | grep -v "(2,"  >calgrindHisto.sh
+    chmod u+x calgrindHisto.sh
+    $batchCommand -o calgrindHisto.log -e calgrindHisto.err  calgrindHisto.sh
+    #
+    mkdir $wdir/valgrind/
+    cd $wdir/valgrind/
+    rm *
+    cp $inputDir/*.{list,log,sh,C} .
+    cat submitHisto1.sh | sed s_aliroot_"$valgrindCommand"_  | sed s_000_0_ | grep -v "(2,"> valgrindHisto.sh
+    $batchCommand -o valgrindHisto.log -e valgrindHisto.err  valgrindHisto.sh
+    mkdir $wdir/calgrind/
+    #
+    mkdir $wdir/calgrindMap/
+    cd $wdir/calgrindMap/
+    rm *
+    cp $inputDir/*.{list,log,sh,C,root} .
+    cat submitHisto1.sh | sed s_aliroot_"$calgrindCommand"_  | sed s_000_0_ | grep -v "(1,"  >calgrindMap.sh
+    chmod u+x calgrindMap.sh
+    $batchCommand -o calgrindHisto.log -e calgrindHisto.err  calgrindMap.sh
+    #
+    mkdir $wdir/valgrindMap/
+    cd $wdir/valgrindMap/
+    rm *
+    cp $inputDir/*.{list,log,sh,C,root} .
+    cat submitHisto1.sh | sed s_aliroot_"$valgrindCommand"_  | sed s_000_0_ | grep -v "(1,"> valgrindMap.sh
+    $batchCommand -o valgrindHisto.log -e valgrindHisto.err  valgrindMap.sh
+
+
+
+
+}
+
