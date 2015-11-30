@@ -441,14 +441,15 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
 	if (pBlock)
 	{
 	    AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-	    if (tmpFlatEvent->GetSize()==pBlock->fSize )
+	    if (tmpFlatEvent)
 	    {
 		AliFlatESDEvent* tmpCopy = (AliFlatESDEvent*) new Byte_t[pBlock->fSize];
 		memcpy((void*) tmpCopy, (void*) tmpFlatEvent, pBlock->fSize);
 		tmpFlatEvent = tmpCopy;
 		tmpFlatEvent->Reinitialize();
 	    }
-	    else
+	    
+	    if (!(tmpFlatEvent && tmpFlatEvent->GetSize()==pBlock->fSize))
 	    {
 		tmpFlatEvent = NULL;
 		iResult=-1;
@@ -465,14 +466,15 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AliVEvent*& vEvent, AliVfriendEv
 	if (pBlock)
 	{
 	    AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-	    if (tmpFlatFriend->GetSize()==pBlock->fSize )
+	    if (tmpFlatFriend)
 	    {
 		AliFlatESDFriend* tmpCopy = (AliFlatESDFriend*) new Byte_t[pBlock->fSize];
 		memcpy((void*) tmpCopy, (void*) tmpFlatFriend, pBlock->fSize);
 		tmpFlatFriend = tmpCopy;
 		tmpFlatFriend->Reinitialize();
 	    }
-	    else
+	    
+	    if (!(tmpFlatFriend && tmpFlatFriend->GetSize() == pBlock->fSize))
 	    {
 		tmpFlatFriend = NULL;
 		iResult=-1;
