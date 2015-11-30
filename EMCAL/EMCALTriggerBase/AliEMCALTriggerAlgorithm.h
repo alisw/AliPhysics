@@ -1,23 +1,21 @@
 /**
- * @file AliEmcalTriggerAlgorithm.h
+ * @file AliEMCALTriggerAlgorithm.h
  * @date Oct. 23, 2015
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  */
-#ifndef ALIEMCALTRIGGERALGORITHM_H
-#define ALIEMCALTRIGGERALGORITHM_H
+#ifndef AliEMCALTRIGGERALGORITHM_H
+#define AliEMCALTRIGGERALGORITHM_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include "AliEMCALTriggerRawPatch.h"
 #include <TObject.h>
 #include <vector>
-
-#include "AliEMCALTriggerRawPatch.h"
-
 
 template<typename T> class AliEMCALTriggerDataGrid;
 
 /**
- * @class AliEmcalTriggerAlgorithm
+ * @class AliEMCALTriggerAlgorithm
  * @brief Base class for EMCAL Level1 trigger algorithms
  */
 template<typename T>
@@ -40,8 +38,8 @@ protected:
   Int_t                             fRowMin;
   Int_t                             fRowMax;
   Int_t                             fPatchSize;
-  Int_t								fSubregionSize;
-  UInt_t                           	fBitMask;
+  Int_t                             fSubregionSize;
+  UInt_t                            fBitMask;
   Float_t                           fThreshold;
   Float_t                           fOfflineThreshold;
 
@@ -51,7 +49,7 @@ protected:
 };
 
 /**
- * @class AliEmcalJetTriggerAlgorithm
+ * @class AliEMCALJetTriggerAlgorithm
  * @brief Implementation of the EMCAL jet trigger algorithm
  *
  * A jet
@@ -69,7 +67,7 @@ public:
    * @param rowmax Max. row used for patch finding
    * @param bitmask Bitmask stored in the raw patches
    */
-  AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
+  AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask);
   /**
    * Destructor
    */
@@ -84,12 +82,25 @@ template<typename T>
 class AliEMCALGammaTriggerAlgorithm : public AliEMCALTriggerAlgorithm<T> {
 public:
   AliEMCALGammaTriggerAlgorithm();
-  AliEMCALGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
+  AliEMCALGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t Bitmask);
   virtual ~AliEMCALGammaTriggerAlgorithm();
 
   /// \cond CLASSIMP
   ClassDef(AliEMCALGammaTriggerAlgorithm, 1);
   /// \endcond
 };
+
+template<typename T>
+class AliEMCALBkgTriggerAlgorithm : public AliEMCALTriggerAlgorithm<T> {
+public:
+  AliEMCALBkgTriggerAlgorithm();
+  AliEMCALBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t Bitmask);
+  virtual ~AliEMCALBkgTriggerAlgorithm();
+
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALBkgTriggerAlgorithm, 1);
+  /// \endcond
+};
+
 
 #endif

@@ -14,6 +14,7 @@ namespace EMCALTrigger {
 
 const Double_t kEMCL1ADCtoGeV = 0.07874;             ///< Conversion from EMCAL Level1 ADC to energy
 
+
 /**
  * \enum EMCalTriggerType_t
  * \brief Definition of different trigger patch types
@@ -24,51 +25,21 @@ const Double_t kEMCL1ADCtoGeV = 0.07874;             ///< Conversion from EMCAL 
  * geometric center
  */
 enum EMCalTriggerType_t {
-  kEMCalL0            = 0,    ///< EMCAL Level0 trigger patches
-  kEMCalL1GammaHigh   = 1,    ///< EMCAL Gamma trigger patches, high threshold
-  kEMCalL1GammaLow    = 2,    ///< EMCAL Gamma trigger patches, low threshold
-  kEMCalL1JetHigh     = 3,    ///< EMCAL Jet trigger patches, high threshold
-  kEMCalL1JetLow      = 4,    ///< EMCAL Jet trigger patches, low threshold
-  // leave some space for future implementation
-  kEMCalRecalcL0      = 15,   ///< EMCAL Level0 patches, recalculated
-  kEMCalRecalcL1Gamma = 16,   ///< EMCAL Gamma patches, recalculated
-  kEMCalRecalcL1Jet   = 17,   ///< EMCAL Jet patches, recalculated
-  kEMCalRecalcL1Bkg   = 18,   ///< EMCAL Background patches, recalculated
+  kTMEMCalLevel0 = 0,     ///< EMCAL Level0 patches
+  kTMEMCalGammaL = 1,     ///< EMCAL Gamma trigger
+  kTMEMCalGammaH = 2,     ///< EMCAL Gamma trigger
+  kTMEMCalJetL   = 3,     ///< EMCAL Jet trigger
+  kTMEMCalJetH   = 4,     ///< EMCAL Jet trigger
+  kTMEMCalBkg    = 5      ///< EMCAL background
 };
 
-const TString kEMCalTriggerNames[32] = {
+const TString kEMCalTriggerNames[6] = {
     "EMCL0",
-    "EMCGAH",
     "EMCGAL",
-    "EMCJEH",
+    "EMCGAH",
     "EMCJEL",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "EMCREL0",
-    "EMCREGA",
-    "EMCREJE",
-    "EMCREBKG",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    ""
+    "EMCJEH",
+    "EMCBKG"
 };
 
 }

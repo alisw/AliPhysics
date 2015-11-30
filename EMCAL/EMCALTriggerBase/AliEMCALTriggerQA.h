@@ -1,6 +1,6 @@
 /**
  * @file AliEMCALTriggerQA.h
- * @date Nov. 1, 2015
+ * @date Nov. 23, 2015
  * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
  */
 #ifndef ALIEMCALTRIGGERQA_H
@@ -24,42 +24,52 @@ class AliEMCALTriggerFastOR;
 class AliEMCALTriggerQA : public TNamed {
 public:
 
+  typedef EMCALTrigger::EMCalTriggerType_t EMCalTriggerType_t;
+
+  enum PatchTypes_t {
+    kOnlinePatch,
+    kRecalcPatch,
+    kOfflinePatch
+  };
+
   AliEMCALTriggerQA();
   AliEMCALTriggerQA(const char* name);
   virtual ~AliEMCALTriggerQA();
 
   void   SetDebugLevel(Int_t l)       { fDebugLevel        = l; }
   void   SetBkgPatchType(Int_t t)     { fBkgPatchType      = t; }
-  void   SetTrigThr(Int_t trigType, Int_t th) { if (trigType >= 0 && trigType < 32) fTrigThr[trigType] = th; }
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
   Int_t  GetBkgPatchType()      const { return fBkgPatchType  ; }
 
-  void Init();
-  void ProcessPatch(AliEMCALTriggerPatchInfo* patch);
-  void ProcessFastor(AliEMCALTriggerFastOR* fastor);
-  void EventCompleted();
+  void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
+
+  void   Init();
+  void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
+  void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
+  void   EventCompleted();
 
   THashList* GetListOfHistograms()  { return fHistos; }
 
 protected:
 
-  static const Int_t      fgkMaxPatchAmp[32];           ///< Maximum patch amplitude for the histograms
+  static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
+  static const TString    fgkPatchTypes[3];             ///< Patch type names
 
-  Int_t                   fTrigThr[32];                 ///< Thresholds
+  Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
   Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
   Int_t                   fBkgPatchType;                ///< Background patch type
-
+  Int_t                   fADCperBin;                   ///< ADC counts per bin
   Int_t                   fDebugLevel;                  ///< Debug level
 
-  TArrayI                 fBkgADCAmpEMCal[2];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
-  Int_t                   fNBkgPatchesEMCal[2];         //!<! Number of processed background patches (will be reset each event)
-  Int_t                   fMaxPatchEMCal[32][2];        //!<! EMCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  TArrayI                 fBkgADCAmpDCal[2];            //!<! ADC DCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
-  Int_t                   fNBkgPatchesDCal[2];          //!<! Number of processed background patches (will be reset each event)
-  Int_t                   fMaxPatchDCal[32][2];         //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-
+  TArrayI                 fBkgADCAmpEMCal[3];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
+  Int_t                   fNBkgPatchesEMCal[3];         //!<! Number of processed background patches (will be reset each event)
+  Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
+  TArrayI                 fBkgADCAmpDCal[3];            //!<! ADC DCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
+  Int_t                   fNBkgPatchesDCal[3];          //!<! Number of processed background patches (will be reset each event)
+  Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
+  Int_t                   fPatchSizes[6];               //!<! Patch sizes retrieved directly during the patch processing
   THashList              *fHistos;                      //!<! Histograms for QA
 
 private:
@@ -79,7 +89,7 @@ private:
   AliEMCALTriggerQA &operator=(const AliEMCALTriggerQA &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerQA, 2);
+  ClassDef(AliEMCALTriggerQA, 1);
   /// \endcond
 };
 

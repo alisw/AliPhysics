@@ -41,7 +41,7 @@ class AliEMCALTriggerFastOR {
   AliEMCALTriggerFastOR(UInt_t L0amp, UInt_t L1amp, Int_t globalRow, Int_t glocalCol, const AliEMCALGeometry* geom);
   
   void Initialize(UInt_t L0amp, UInt_t L1amp, Int_t absId, const AliEMCALGeometry* geom);
-  void Initialize(UInt_t L0amp, UInt_t L1amp, Int_t globalRow, Int_t glocalCol, const AliEMCALGeometry* geom);
+  void Initialize(UInt_t L0amp, UInt_t L1amp, Int_t globalRow, Int_t glocalCol, Int_t L0time, const AliEMCALGeometry* geom);
 
   void Initialize(Int_t absId, const AliEMCALGeometry* geom);
   void Initialize(Int_t globalRow, Int_t glocalCol, const AliEMCALGeometry* geom);
@@ -54,9 +54,11 @@ class AliEMCALTriggerFastOR {
   UChar_t                  GetRow()          const { return fRow       ; }
   UInt_t                   GetL0Amp()        const { return fL0Amp     ; }
   UInt_t                   GetL1Amp()        const { return fL1Amp     ; }
+  Int_t                    GetL0Time()       const { return fL0Time    ; }
 
   void                     SetL0Amp(UInt_t amp)    { fL0Amp     = amp  ; }
   void                     SetL1Amp(UInt_t amp)    { fL1Amp     = amp  ; }
+  void                     SetL0Time(Int_t t)      { fL0Time    = t    ; }
 
  private:
   /**Abs ID of the trigger FastOR */
@@ -75,6 +77,8 @@ class AliEMCALTriggerFastOR {
   UInt_t                    fL0Amp;
   /** L1 time sum in the trigger FastOR */
   UInt_t                    fL1Amp;
+  /** Time of the trigger FastOR */
+  Int_t                     fL0Time;
 };
 
 #endif

@@ -12,15 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <AliEMCALTriggerPatchInfo.h>
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "TArrayI.h"
 
-const Double_t AliEMCALTriggerPatchInfo::fgkEMCL1ADCtoGeV = 0.07874;
-
+/// \cond CLASSIMP
 ClassImp(AliEMCALTriggerPatchInfo)
+/// \endcond
 
+/**
+ * Default constructor
+ */
 AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   TObject(),
   fCenterGeo(),
@@ -31,8 +34,8 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   fADCOfflineAmp(0),
   fTriggerBits(0),
   fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
-  fRow0(0),
-  fCol0(0),
+  fRow0(-1),
+  fCol0(-1),
   fPatchSize(0),
   fDetectorType(kEMCALdet),
   fTriggerBitConfig()
@@ -41,6 +44,11 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   fEdgeCell[1] = -1;
 }
 
+/**
+ * Copy constructor
+ *
+ * @param p Reference for the copy
+ */
 AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInfo &p) :
   TObject(p),
   fCenterGeo(p.fCenterGeo),
@@ -62,10 +70,19 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInf
   fEdgeCell[1] = p.fEdgeCell[1];
 }
 
+/**
+ * Destructor
+ */
 AliEMCALTriggerPatchInfo::~AliEMCALTriggerPatchInfo()
 {
 }
 
+/**
+ * Assignment operator
+ *
+ * @param p Reference for assignment
+ * @return This object after assignment
+ */
 AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTriggerPatchInfo &p)
 {
   if (this != &p) {
@@ -75,15 +92,14 @@ AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTrig
     fEdge2 = p.fEdge2;
     fADCAmp = p.fADCAmp;
     fADCOfflineAmp = p.fADCOfflineAmp;
-    fDetectorType = p.fDetectorType;
     fTriggerBits = p.fTriggerBits;
+    fDetectorType = p.fDetectorType;
     fEdgeCell[0] = p.fEdgeCell[0];
     fEdgeCell[1] = p.fEdgeCell[1];
   }
 
   return *this;
 }
-
 void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
 {
   fCol0 = col0;
@@ -109,7 +125,7 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
     AliError("EMCal geometry pointer not set! Unable to recalculate the trigger patch kinematics!");
     return;
   }
-  
+
   // get the absolute trigger ID
   Int_t absId=-1;
   geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0, fRow0, absId);
@@ -136,14 +152,14 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
   // adjacent patches in the center
   // picking two diagonally closest cells from the patches
   posOffset = fPatchSize / 2 - 1;
- 
+
   geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0+posOffset, fRow0+posOffset, absId);
   geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
   TVector3 center1;
   geom->GetGlobal(cellAbsId[3], center1);
 
   posOffset = fPatchSize / 2;
-  
+
   geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0+posOffset, fRow0+posOffset, absId);
   geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
   TVector3 center2;
@@ -174,45 +190,69 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
     AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
   }
 
+  Int_t iSM = -1, iEta = -1, iPhi = -1;
+  geom->GetPositionInSMFromAbsFastORIndex(absId, iSM, iEta, iPhi);
+
+  if (geom->IsDCALSM(iSM)) {
+    SetDetectorType(kDCALPHOSdet);
+  }
+  else {
+    SetDetectorType(kEMCALdet);
+  }
+
   fCenterMass.SetPxPyPzE(0,0,0,0);
-  
+
   SetCenterGeo(centerGeo, patchE);
   SetEdge1(edge1, patchE);
   SetEdge2(edge2, patchE);
 }
 
-void AliEMCALTriggerPatchInfo::GetCellIndices(AliEMCALGeometry* geom, TArrayI* cells)
-{
-  Int_t globCol, globRow, i, j, k, absId, cellAbsId[4];;
 
-  cells->Set( 1024 );
+/**
+ * Return cell indices of the given patch in the cell array
+ * @param geom EMCAL Geometry used in the run where the trigger patch was created from
+ * @param cells Output array of cell indices corresponding to the given trigger patch
+ */
+void AliEMCALTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells ){
+
+	Int_t globCol, globRow, i, j, k, absId, cellAbsId[4];;
+
+	cells->Set( 1024 );
 	
-  // get corner, convert from cells to trigger channels
-  globCol = GetEdgeCellX() / 2;
-  globRow = GetEdgeCellY() / 2;
+	// get corner, convert from cells to trigger channels
+	globCol = GetEdgeCellX() / 2;
+	globRow = GetEdgeCellY() / 2;
 	
-  // get the absolute trigger ID
-  geom->GetAbsFastORIndexFromPositionInEMCAL( globCol, globRow, absId );
-  // convert to the 4 absId of the cells composing the trigger channel
-  geom->GetCellIndexFromFastORIndex( absId, cellAbsId );
+	// get the absolute trigger ID
+	geom->GetAbsFastORIndexFromPositionInEMCAL( globCol, globRow, absId );
+	// convert to the 4 absId of the cells composing the trigger channel
+	geom->GetCellIndexFromFastORIndex( absId, cellAbsId );
 	
-  // sum the available energy in the 32/32 window of cells
-  // step over trigger channels and get all the corresponding cells
-  for( i = 0; i < 16; i++ ){
-    for( j = 0; j < 16; j++ ){
-      // get the 4 cells composing the trigger channel
-      geom->GetAbsFastORIndexFromPositionInEMCAL( globCol+i, globRow+j, absId );
-      geom->GetCellIndexFromFastORIndex( absId, cellAbsId );
-      // add amplitudes and find patch edges
-      for( k = 0; k < 4; k++ ){
-	cells->SetAt( cellAbsId[k], i*16*4+j*4+k );
-      }
-    }
-  } // 32x32 cell window
+	// sum the available energy in the 32/32 window of cells
+	// step over trigger channels and get all the corresponding cells
+	for( i = 0; i < 16; i++ ){
+		for( j = 0; j < 16; j++ ){
+			// get the 4 cells composing the trigger channel
+			geom->GetAbsFastORIndexFromPositionInEMCAL( globCol+i, globRow+j, absId );
+			geom->GetCellIndexFromFastORIndex( absId, cellAbsId );
+			// add amplitudes and find patch edges
+			for( k = 0; k < 4; k++ ){
+				cells->SetAt( cellAbsId[k], i*16*4+j*4+k );
+			}
+		}
+	} // 32x32 cell window
+
+	
 }
 
-void AliEMCALTriggerPatchInfo::SetLorentzVector(TLorentzVector &lv, const TVector3 &v, Double_t e)
-{
+
+/**
+ * Define Lorentz vector of the given trigger patch
+ * @param lv Lorentz vector to be defined
+ * @param v Patch vector position
+ * @param e Patch energy
+ */
+void AliEMCALTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, const TVector3 &v, Double_t e ){
   // sets the vector
   Double_t r = TMath::Sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2] ) ; 
   

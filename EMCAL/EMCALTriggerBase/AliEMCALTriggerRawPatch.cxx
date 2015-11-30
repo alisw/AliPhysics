@@ -1,3 +1,8 @@
+/**
+ * @file AliEMCALTriggerRawPatch.cxx
+ * @since Oct 23, 2015
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ */
 /**************************************************************************
  * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,7 +18,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliEMCALTriggerRawPatch.h"
-
 #include <iostream>
 
 /// \cond CLASSIMP
@@ -30,13 +34,14 @@ AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch():
 {
 }
 
-AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineAdc):
+
+AliEMCALTriggerRawPatch::AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineADC):
   fBitMask(0),
   fCol0(col0),
   fRow0(row0),
   fSize(size),
   fADC(adc),
-  fOfflineADC(offlineAdc)
+  fOfflineADC(offlineADC)
 {
 }
 
