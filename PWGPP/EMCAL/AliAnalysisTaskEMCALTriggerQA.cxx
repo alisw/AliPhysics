@@ -1106,9 +1106,12 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   fEventSem  = kFALSE;
   
   // Minimum bias event trigger?
-  if((triggerclasses.Contains("CINT7") || triggerclasses.Contains("CPBI2_B1") ) &&
-     (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
-		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
+//  if((triggerclasses.Contains("CINT7") || triggerclasses.Contains("CPBI2_B1") ) &&
+//     (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
+//		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
+  
+  // CHECK HOW TO GENERALIZE FOR Run1
+  if(triggerclasses.Contains("CINT7-B-NOPF-CENT")) fEventMB  = kTRUE;
   
   if(fMCData && triggerclasses.Contains("MB")) fEventMB = kTRUE;
   
@@ -1503,12 +1506,22 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   }
   
   // Cluster histograms, E
-  TString hName  [] = { "MB","L0","L1G1","L1G2","L1J1","L1J2","L1G1NoL1J1","L1J1NoLG1","L1G2NoL1G1","L1J2NoL1J1",
-                        "L0E","L0D","L1EG1","L1DG1","L1EJ1","L1DJ1","Central","SemiCentral" } ;
-  TString hTitle [] = { "MB trigger","L0 trigger","L1 Gamma1 trigger","L1 Gamma2 trigger","L1 Jet1 trigger","L1 Jet2 trigger",
-                        "L1 Gamma1 trigger and not L1 Jet1"  ,"L1 Jet1 trigger and not L1 Gamma1",
-                        "L1 Gamma2 trigger and not L1 Gamma1","L1 Jet2 trigger and not L1 Jet1", 
-                        "L0 EMC Pure", "L0 DMC Pure", "L1-Gamma1 EMC Pure", "L1-Gamma1 DMC Pure", "L1-Jet EMC Pure", "L1-Jet DMC Pure"
+  TString hName  [] = { "MB","L0","L0D",
+                        "L1G1","L1G1D","L1G2","L1G2D",
+                        "L1J1","L1J1D","L1J2","L2J2D",
+                        "L1G1NoL1J1","L1G1NoL1J1D","L1J1NoL1G1","L1J1NoL1G1D",
+                        "L1G2NoL1G1","L1G2NoL1G1D","L1J2NoL1J1","L1J2NoL1J1D",
+                        "L0E","L0D","L1EG1","L1DG1","L1EJ1","L1DJ1",
+                        "Central","SemiCentral" } ;
+  TString hTitle [] = { "MB trigger","EMC-L0 trigger","DMC L0 trigger",
+                        "EMC-L1 Gamma1 trigger","EMC-L1 Gamma1 trigger", "EMC-L1 Gamma2 trigger","EMC-L1 Gamma2 trigger",
+                        "EMC-L1 Jet1 trigger"  ,"DMC-L1 Jet1 trigger"  , "DMC-L1 Jet2 trigger"  ,"DMC-L1 Jet2 trigger",
+                        "EMC-L1 Gamma1 trigger and not L1 Jet1",  "DMC-L1 Gamma1 trigger and not L1 Jet1",
+                        "EMC-L1 Jet1 trigger and not L1 Gamma1",  "DMC-L1 Jet1 trigger and not L1 Gamma1",
+                        "EMC-L1 Gamma2 trigger and not L1 Gamma1","DMC-L1 Gamma2 trigger and not L1 Gamma1",
+                        "EMC-L1 Jet2 trigger and not L1 Jet1",    "DMC-L1 Jet2 trigger and not L1 Jet1", 
+                        "L0 EMC Pure", "L0 DMC Pure", "L1-Gamma1 EMC Pure", "L1-Gamma1 DMC Pure", 
+                        "L1-Jet EMC Pure", "L1-Jet DMC Pure"
                         "Central trigger","SemiCentral trigger" } ;
 	
   for(Int_t i=0; i < 3; i++)
