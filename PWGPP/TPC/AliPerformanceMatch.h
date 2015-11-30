@@ -132,7 +132,7 @@ private:
   AliPerformanceMatch(const AliPerformanceMatch&); // not implemented
   AliPerformanceMatch& operator=(const AliPerformanceMatch&); // not implemented
 
-  ClassDef(AliPerformanceMatch,3);
+  ClassDef(AliPerformanceMatch,4);
 };
 
 #endif
