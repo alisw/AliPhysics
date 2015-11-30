@@ -33,6 +33,21 @@ class AliReducedBaseTrack : public TObject {
     Int_t  Charge()                        const {return fCharge;} 
     Bool_t IsCartesian() const {return fIsCartesian;}           
     
+    ULong_t GetQualityFlags()             const {return fQualityFlags;}
+    Bool_t UsedForQvector()               const {return fQualityFlags&(UShort_t(1)<<0);}
+    Bool_t TestQualityFlag(UShort_t iflag)  const {return (iflag<8*sizeof(ULong_t) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
+    Bool_t IsGammaLeg()                   const {return fQualityFlags&(ULong_t(1)<<1);}
+    Bool_t IsPureGammaLeg()            const {return fQualityFlags&(ULong_t(1)<<8);}
+    Bool_t IsK0sLeg()                           const {return fQualityFlags&(ULong_t(1)<<2);}
+    Bool_t IsPureK0sLeg()                   const {return fQualityFlags&(ULong_t(1)<<9);}
+    Bool_t IsLambdaLeg()                   const {return fQualityFlags&(ULong_t(1)<<3);}
+    Bool_t IsPureLambdaLeg()            const {return fQualityFlags&(ULong_t(1)<<10);}
+    Bool_t IsALambdaLeg()                 const {return fQualityFlags&(ULong_t(1)<<4);}
+    Bool_t IsPureALambdaLeg()          const {return fQualityFlags&(ULong_t(1)<<11);}
+    Bool_t IsKink(Int_t i=0)               const {return (i>=0 && i<3 ? ((fQualityFlags&(ULong_t(1)<<(5+i))) || 
+                                                                        (fFlags&(UShort_t(1)<<(12+i)))) : kFALSE);}
+    Float_t GetBayesProb(Int_t specie)  const { return (fQualityFlags&(ULong_t(1)<<(15+specie)) ? (fQualityFlags&(ULong_t(1)<<21) ? 0.9 : (fQualityFlags&(ULong_t(1)<<20) ? 0.8 : (fQualityFlags&(ULong_t(1)<<19)           ? 0.7 : 0.5)))   : 0.0);}
+    
     // setters
     void   Px(Float_t px) {fP[0] = px; fIsCartesian=kTRUE;}
     void   Py(Float_t py) {fP[1] = py; fIsCartesian=kTRUE;}
@@ -47,17 +62,42 @@ class AliReducedBaseTrack : public TObject {
     void   SetFlags(ULong_t flags) {fFlags=flags;}
     Bool_t SetFlag(UShort_t iflag)  {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fFlags|=(ULong_t(1)<<iflag); return kTRUE;}
     Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}  
+    Bool_t SetQualityFlag(UShort_t iflag)      {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(1)<<iflag); return kTRUE;}
+    Bool_t UnsetQualityFlag(UShort_t iflag)  {if (iflag>=8*sizeof(ULong_t)) return kFALSE; fQualityFlags|=(ULong_t(0)<<iflag); return kTRUE;}
         
   protected:
     Float_t fP[3];         // 3-momentum vector
     Bool_t  fIsCartesian;  // if false then the 3-momentum vector is in spherical coordinates (pt,phi,eta)
     Char_t  fCharge;       // electrical charge
     ULong_t fFlags;        // flags reserved for various operations
+    ULong_t fQualityFlags;          // BIT0 toggled if track used for TPC event plane
+                                                   // BIT1 toggled if track belongs to a gamma conversion
+                                                   // BIT2 toggled if track belongs to a K0s
+                                                   // BIT3 toggled if track belongs to a Lambda
+                                                   // BIT4 toggled if track belongs to an Anti-Lambda
+                                                   // BIT5 toggled if the track has kink0 index > 0
+                                                   // BIT6 toggled if the track has kink1 index > 0
+                                                   // BIT7 toggled if the track has kink2 index > 0
+                                                   // BIT8 toggled if track belongs to a pure gamma conversion
+                                                   // BIT9 toggled if track belongs to a pure K0s
+                                                   // BIT10 toggled if track belongs to a pure Lambda
+                                                   // BIT11 toggled if track belongs to a pure ALambda
+                                                   // BIT12 toggled if the track has kink0 index < 0
+                                                   // BIT13 toggled if the track has kink1 index < 0
+                                                   // BIT14 toggled if the track has kink2 index < 0
+                                                   // BAYES TPC(||TOF)
+                                                   // BIT15 toggled if electron (prob>0.5)
+                                                   // BIT16 toggled if pion (prob>0.5)
+                                                   // BIT17 toggled if kaon (prob>0.5)
+                                                   // BIT18 toggled if proton (prob>0.5)
+                                                   // BIT19 toggled if bayes probability > 0.7
+                                                   // BIT20 toggled if bayes probability > 0.8
+                                                   // BIT21 toggled if bayes probability > 0.9
         
     AliReducedBaseTrack(const AliReducedBaseTrack &c);      
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
     
-    ClassDef(AliReducedBaseTrack, 1)
+    ClassDef(AliReducedBaseTrack, 2)
 };
 
 //_______________________________________________________________________________
