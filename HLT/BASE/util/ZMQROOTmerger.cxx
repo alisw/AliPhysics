@@ -62,7 +62,7 @@ Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
 Bool_t  fAllowResetOnRequest=kTRUE;
-Bool_t  fAllowResetAtEOR=kTRUE;
+Bool_t  fAllowResetAtSOR=kTRUE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -234,7 +234,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
     if (runnumber!=fRunNumber) 
     {
       if (fVerbose) printf("Run changed, resetting!\n");
-      ResetOutputData(fAllowResetAtEOR);
+      ResetOutputData(fAllowResetAtSOR);
     }
    fRunNumber = runnumber; 
 
@@ -581,7 +581,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("AllowResetAtSOR"))
     {
-      fAllowResetAtEOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+      fAllowResetAtSOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
