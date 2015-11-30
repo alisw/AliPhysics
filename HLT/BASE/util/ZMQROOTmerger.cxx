@@ -231,7 +231,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
 
     int runnumber = atoi(runString.c_str());
     
-    if (runnumber!=fRunNumber) 
+    if (runnumber!=fRunNumber && fAllowResetAtSOR) 
     {
       if (ResetOutputData(fAllowResetAtSOR)>0)
       {
