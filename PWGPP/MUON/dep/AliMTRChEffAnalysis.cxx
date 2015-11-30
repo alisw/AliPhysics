@@ -61,6 +61,11 @@
 ClassImp(AliMTRChEffAnalysis) // Class implementation in ROOT context
 /// \endcond
 
+using std::cout;
+using std::endl;
+using std::cin;
+using std::ofstream;
+using std::ifstream;
 
 //________________________________________________________________________
 AliMTRChEffAnalysis::AliMTRChEffAnalysis() :
