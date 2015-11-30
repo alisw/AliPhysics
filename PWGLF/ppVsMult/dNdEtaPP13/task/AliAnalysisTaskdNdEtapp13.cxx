@@ -1919,7 +1919,7 @@ void AliAnalysisTaskdNdEtapp13::CheckCentralityVar(const char* var)
 }
 
 //______________________________________________
-void AliAnalysisTaskdNdEtapp13::SetCentPercentiles(Float_t *arr, Int_t nbins)
+void AliAnalysisTaskdNdEtapp13::SetCentPercentiles(const Float_t *arr, Int_t nbins)
 {
   // set user defined percentiles
   fCentPerc.Set(nbins+1);
@@ -1933,7 +1933,7 @@ void AliAnalysisTaskdNdEtapp13::SetCentPercentiles(Float_t *arr, Int_t nbins)
 }
 
 //______________________________________________
-void AliAnalysisTaskdNdEtapp13::SetCentPercentiles(Double_t *arr, Int_t nbins)
+void AliAnalysisTaskdNdEtapp13::SetCentPercentiles(const Double_t *arr, Int_t nbins)
 {
   // set user defined percentiles
   fCentPerc.Set(nbins+1);
