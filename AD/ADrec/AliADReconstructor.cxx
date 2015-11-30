@@ -278,7 +278,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   digitBranch->SetAddress(&fDigitsArray);
 
   Float_t   mult[16];  
-  Float_t    adc[16]; 
+  Float_t    adc[16];
+  Float_t   tail[16]; 
   Float_t   time[16]; 
   Float_t  width[16];
   Bool_t aBBflag[16];
@@ -286,6 +287,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
    
   for (Int_t i=0; i<16; i++){
        adc[i]    = 0.0;
+       tail[i]   = 0.0;
        mult[i]   = 0.0;
        time[i]   = kInvalidTime;
        width[i]  = 0.0;
@@ -332,6 +334,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	  if (end > 20) end = 20;
 	  for(Int_t iClock = start; iClock <= end; iClock++) {
 	    adc[pmNumber] += adcPedSub[iClock];
+	  }
+	  for(Int_t iClock = 14; iClock <= 20; iClock++) {
+	    tail[pmNumber] += adcPedSub[iClock];
 	  }
 	}
 
@@ -380,6 +385,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetWidth(width);
   fESDAD->SetBBFlag(aBBflag);
   fESDAD->SetBGFlag(aBGflag);
+  fESDAD->SetADCTail(tail);
   
   // Fill BB and BG flags for all channel in 21 clocks (called past-future flags)
   for(Int_t i = 0; i < 16; ++i) {

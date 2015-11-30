@@ -54,6 +54,9 @@ public:
   
   void SetPFBBFlag(Int_t channel, Int_t clock, Bool_t flag) { fIsBB[channel][clock] = flag; }
   void SetPFBGFlag(Int_t channel, Int_t clock, Bool_t flag) { fIsBG[channel][clock] = flag; }
+  
+  void SetADCTail(Float_t adc[16])
+    {for(Int_t i=0;i<16;i++) fAdcTail[i]=adc[i];}
 
   // Getters  
   virtual Short_t  GetNbPMADA() const;
@@ -93,7 +96,11 @@ public:
   virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
   
   virtual Bool_t   GetPFBBFlag(Int_t channel, Int_t clock) const { return fIsBB[channel][clock]; } 
-  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const { return fIsBG[channel][clock]; }   
+  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const { return fIsBG[channel][clock]; }
+  
+  virtual Float_t  GetAdcTail(Int_t i) const;
+  virtual Float_t  GetAdcTailADA(Int_t i) const; 
+  virtual Float_t  GetAdcTailADC(Int_t i) const;   
   
   AliESDAD &operator=(const AliESDAD& source);
     
@@ -105,7 +112,7 @@ protected:
   UInt_t  fBGtriggerADC;     // bit mask for Beam-Gas trigger in ADC
 
   Float_t fMultiplicity[16]; //  multiplicity for each channel
-  Float_t fAdc[16];          //  adc for each channel
+  Float_t fAdc[16];          //  charge signal for each channel
   Float_t fTime[16];         //  time for each channel
   Float_t fWidth[16];        //  time width for each channel
   Bool_t  fBBFlag[16];       //  BB Flags from Online AD Electronics
@@ -125,8 +132,10 @@ protected:
   
   Bool_t   fIsBB[16][21];  // BB flag for all channels and 21 clocks
   Bool_t   fIsBG[16][21];  // BG flag for all channels and 21 clocks
+  
+  Float_t fAdcTail[16];      //  tail of charge signal for each channel
 
-  ClassDef(AliESDAD,11)
+  ClassDef(AliESDAD,12)
 };
 
 #endif
