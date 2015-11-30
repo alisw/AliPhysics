@@ -148,9 +148,9 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-	if ( fInitializeByObjectInDoEvent ) {
-	  HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object" );
-	}
+    if ( fInitializeByObjectInDoEvent == 2 ) {
+          HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
+    }
     else if( fOfflineMode ) {
       err = fgTransform.Init( GetBz(), GetTimeStamp() );
 	  fInitialized = true;
@@ -222,6 +222,10 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
     } else if (argument.CompareTo("-initialize-on-the-fly")==0){
       fInitializeByObjectInDoEvent = 1;
       HLTDebug("Initialize on the fly mode set.");
+      iRet++;
+    } else if (argument.CompareTo("-update-object-on-the-fly")==0){
+      fInitializeByObjectInDoEvent = 2;
+      HLTDebug("Initialize object at startup and update on the fly mode set.");
       iRet++;
     } else {
       iRet = -EINVAL;
