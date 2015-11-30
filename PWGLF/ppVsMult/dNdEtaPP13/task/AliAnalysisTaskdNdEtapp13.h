@@ -18,6 +18,8 @@ class TNtuple;
 class AliMCParticle;
 class AliITSMultRecBg;
 class AliESDTrackCuts;
+class AliStack;
+class AliMultiplicity;
 
 class AliPPVsMultUtils;
 
@@ -162,8 +164,8 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   void       RegisterStat();
   //
   void       SetTriggerSelection(UInt_t sel=AliVEvent::kINT7) {fTrigSel = sel;}
-  void       SetCentPercentiles(Float_t *arr, Int_t nbins);
-  void       SetCentPercentiles(Double_t *arr, Int_t nbins);
+  void       SetCentPercentiles(const Float_t *arr, Int_t nbins);
+  void       SetCentPercentiles(const Double_t *arr, Int_t nbins);
   //
   void       CheckCentralityVar(const char* var);
   void       SetUseCentralityVar(Int_t v)              {fUseCentralityVar = fgCentSelName[v];}
