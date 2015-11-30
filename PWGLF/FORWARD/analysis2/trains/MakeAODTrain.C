@@ -77,7 +77,9 @@ protected:
     if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
 
     // --- Task to copy header information ---------------------------
-    CoupleCar("AddTaskCopyHeader.C", Form("\"%s\"", fOptions.Get("copy")));
+    TString cpy = fOptions.Get("copy");
+    Info("", "What to copy: %s", cpy.Data());
+    CoupleCar("AddTaskCopyHeader.C", Form("\"%s\"", cpy.Data()));
 
     // --- Get options -----------------------------------------------
     ULong_t  run  = fOptions.AsInt("run", 0);
@@ -167,6 +169,7 @@ protected:
     if (!fRailway || fRailway->Mode() != Railway::kGrid) return;
 
     SaveDownloadAODs();
+    SaveMakeIndex();
   }
   void SavedNdeta(Bool_t asShellScript)
   {
@@ -342,7 +345,18 @@ protected:
       << "// EOF\n"
       << std::endl;
     f.close();
-  }   
+  }
+  void SaveMakeIndex()
+  {
+    std::ofstream out("MakeIndex.C");
+    out << "// Made by " << ClassName() << "\n"
+	<< "void MakeIndex() {\n"
+	<< "  gROOT->LoadMacro(\"$ALICE_PHYSICS/PWGLF/FORWARD/trains/CreateIndex.C\"\);\n"
+	<< "  CreateIndex(\".\",\"aodTree\"\);\n"
+	<< "}\n"
+	<< "// EOD" << std::endl;
+    out.close();
+  }
   void PostShellCode(std::ostream& f)
   {
     f << "  echo \"=== Summarizing results ...\"\n"

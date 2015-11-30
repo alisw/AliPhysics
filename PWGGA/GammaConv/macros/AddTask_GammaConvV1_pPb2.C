@@ -11,7 +11,10 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 				Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 				Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
-				TString		periodNameV0Reader			= ""
+				TString		periodNameV0Reader			= "",
+                                Bool_t          doMultiplicityWeighting       = kFALSE,                  //
+                                TString         fileNameInputForMultWeighing  = "Multiplicity.root",    //
+                                TString         periodNameAnchor              = ""
                            ) {
  
 	// ================= Load Librariers =================================
@@ -168,6 +171,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 AddSignal Eta
 	} else if (trainConfig == 19) {
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, alpha 1
+	} else if (trainConfig == 20) {
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";   //standard
+	} else if (trainConfig == 21) {
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";   //standard
+	} else if (trainConfig == 22) {
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";   //standard Eta
+	} else if (trainConfig == 23) {
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";   //standard Eta
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -209,7 +220,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19){
+		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -220,13 +231,31 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				}
 			}
 		}   
-		if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18){
+		if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23){
 			if (doWeighting){
 				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
 																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 			}
 			
-		}   
+		}  
+
+
+		TString dataInputMultHisto  = "";
+		TString mcInputMultHisto    = "";
+		TString triggerString   = eventCutArray[i];
+		triggerString           = triggerString(3,2);
+		if (triggerString.CompareTo("03")==0) 
+		  triggerString         = "00";
+		
+		dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+		mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+		
+		if (doMultiplicityWeighting){
+		  cout << "enableling mult weighting" << endl;
+		  analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+		}
+
+ 
  		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

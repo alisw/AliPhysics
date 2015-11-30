@@ -921,6 +921,7 @@ protected:
 
     //Printf("Legend at (%f,%f)x(%f,%f)", x1, y1, x2, y2);
     TLegend* l = 0;
+    p->cd();
     if (autoFill) l = p->BuildLegend(x1, y1, x2, y2);
     else          l = new TLegend(x1, y1, x2, y2);
     l->SetFillColor(0);

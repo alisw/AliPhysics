@@ -14,6 +14,7 @@ class TCanvas;
 class TH1F;
 class TH2F;
 class TParticle;
+class TClonesArray;
 
 class AliESDVertex;
 class AliESDtrack;

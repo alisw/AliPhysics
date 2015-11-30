@@ -31,6 +31,7 @@ set(SRCS
   FILTER_RAWMUON.cxx
   FILTER_ESDMUON.cxx
   FILTER_AODMUONONLY_PP2015.cxx
+  FILTER_AODMUONONLY_PBPB2015.cxx
   )
 
 # Headers from sources
@@ -42,7 +43,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 set(EXE aaf-stage-and-filter)
 

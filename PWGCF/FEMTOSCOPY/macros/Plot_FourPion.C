@@ -41,12 +41,12 @@ int CollisionType_def=0;// PbPb, pPb, pp
 //
 int Mbin_def=0;// 0-9: centrality bin in widths of 5%
 bool SameCharge_def=1;// same-charge?
-int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
+int CHARGE_def=1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 int MixedCharge4pionType_def = 2;// 1(---+) or 2(--++)
 //
 int EDbin_def=0;// 0 or 1: Kt3 bin
 int TPNbin=3;// TPN bin for r3 and r4
-int Gbin = int( (48) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T)
+int Gbin = int( (0) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 155 (t=T).  215 for 35Gbin File
 int Ktbin_def=1;// 1(0.2-0.3),..., 6(0.7-0.8), 10 = Full Range
 bool FitBuild=0;
 //
@@ -199,7 +199,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   f41 -= 6*f42prime*(1-TwoFrac)/TwoFrac;
   f41 += 12*f43prime/f33prime*f32prime/TwoFrac*(1-TwoFrac);
   //
-  /*float shift4=0.06;
+  /*float shift4=0.08;
   f44 -= shift4;
   f43 += 1/3.*shift4/4.;
   f42 += 1/3.*shift4/6.;
@@ -394,6 +394,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	//_file0 = new TFile("Results/PDC_11h_Corrected2pionSelfBuild_OfflineCorrection_OnlineCorrection.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_QinvInterp_Cubic.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_LinearInterp_6kT.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_35Gsteps.root","READ");
 	_file0 = new TFile("Results/PDC_11h_InterpCorrected_M0to1.root","READ");// new one
       }else{
 	//_file0 = new TFile("Results/PDC_11h_M3to10_ZvtxEM.root","READ");
@@ -487,7 +488,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	
 	if(Ktbin==10) {Ktlowbin=1; Kthighbin=TwoParticle_2d[c1][c2][term]->GetNbinsX();}
 	TwoParticle[c1][c2][term] = (TH1D*)TwoParticle_2d[c1][c2][term]->ProjectionY(proname->Data(),Ktlowbin,Kthighbin);// bins:5-6 (kt:0.2-0.3)
-	cout<<"Low edge = "<<TwoParticle_2d[c1][c2][term]->GetXaxis()->GetBinLowEdge(Ktlowbin)<<"  High edge = "<<TwoParticle_2d[c1][c2][term]->GetXaxis()->GetBinUpEdge(Kthighbin)<<endl;
+	//cout<<"Low edge = "<<TwoParticle_2d[c1][c2][term]->GetXaxis()->GetBinLowEdge(Ktlowbin)<<"  High edge = "<<TwoParticle_2d[c1][c2][term]->GetXaxis()->GetBinUpEdge(Kthighbin)<<endl;
 	norm_2[term] = TwoParticle[c1][c2][term]->Integral(TwoParticle[c1][c2][term]->GetXaxis()->FindBin(NormQcutLow),TwoParticle[c1][c2][term]->GetXaxis()->FindBin(NormQcutHigh));
 	//cout<<"2-pion norms  "<<norm_2[term]<<endl;
 	TwoParticle[c1][c2][term]->Scale(norm_2[0]/norm_2[term]);
@@ -512,7 +513,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	    Build_TwoParticle[c1]->SetBinError(i+1,0.000001);
 	  }
 	}
-
+	
 	if(Mbin==0 && CollisionType==0 && !MCcase){
 	  TString *nameUM=new TString(name2->Data());
 	  nameUM->Append("_UnitMult");
@@ -1053,7 +1054,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   C2QS->Scale(1/TwoFrac);
   for(int bin=1; bin<=C2QS->GetNbinsX(); bin++) {
     Float_t K2 = 1.0;
-    if(FSICorrection) K2 = FSICorrelation(ch1_2, ch2_2, C2QS->GetXaxis()->GetBinCenter(bin));
+    // <qinv> is estimated as the bin center.  Should be somewhat shifted to larger values. The shift is approximately 0.0005 
+    if(FSICorrection) K2 = FSICorrelation(ch1_2, ch2_2, C2QS->GetXaxis()->GetBinCenter(bin) + 0.0005);
+    //K2 *= 0.95;
     C2QS->SetBinContent(bin, C2QS->GetBinContent(bin)/K2);
     C2QS->SetBinError(bin, C2QS->GetBinError(bin)/K2);
   }
@@ -1065,8 +1068,54 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 
   //for(int i=1; i<14; i++) cout<<C2QS->GetBinContent(i)<<", ";
   //cout<<endl;
+  float C2QSmm_fc2_0p8[13]={0, 1.74456, 1.48544, 1.30077, 1.17806, 1.10706, 1.06533, 1.04121, 1.02598, 1.01656, 1.01048, 1.00706, 1.00516};
+  float C2QSmm_fc2_0p75[13]={0, 1.76929, 1.50671, 1.31458, 1.18612, 1.11172, 1.06797, 1.0427, 1.02677, 1.01694, 1.0106, 1.00706, 1.00511};
+  float C2QSmm_fc2_0p7[13]={0, 1.79756, 1.53103, 1.33036, 1.19534, 1.11703, 1.07098, 1.0444, 1.02768, 1.01736, 1.01073, 1.00706, 1.00504};
+  float C2QSmm_fc2_0p65[13]={0, 1.83017, 1.55908, 1.34856, 1.20597, 1.12317, 1.07445, 1.04637, 1.02872, 1.01785, 1.01089, 1.00705, 1.00497};
+  float C2QSmm_fc2_0p6[13]={0, 1.86823, 1.59181, 1.3698, 1.21838, 1.13033, 1.0785, 1.04867, 1.02993, 1.01843, 1.01107, 1.00705, 1.00489};
+  //
+  float C2QSmp_fc2_0p8[13]={0, 0.970557, 0.986022, 0.990979, 0.994373, 0.996436, 0.997731, 0.998119, 0.998702, 0.998714, 0.998899, 0.998943, 0.99898};
+  float C2QSmp_fc2_0p75[13]={0, 0.983776, 0.993128, 0.995315, 0.997216, 0.998421, 0.999181, 0.999196, 0.999532, 0.999353, 0.999404, 0.999346, 0.999304};
+  float C2QSmp_fc2_0p7[13]={0, 0.998884, 1.00125, 1.00027, 1.00046, 1.00069, 1.00084, 1.00043, 1.00048, 1.00008, 0.99998, 0.999807, 0.999675};
+  float C2QSmp_fc2_0p65[13]={0, 1.01632, 1.01062, 1.00599, 1.00421, 1.00331, 1.00275, 1.00185, 1.00157, 1.00093, 1.00065, 1.00034, 1.0001};
+  float C2QSmp_fc2_0p6[13]={0, 1.03665, 1.02155, 1.01266, 1.00859, 1.00636, 1.00498, 1.00351, 1.00285, 1.00191, 1.00142, 1.00096, 1.0006};
+  //
+  //
+  C2QS->GetYaxis()->SetTitle("C_{2}^{QS}");
+  TH1D *C2mm_0p8 = (TH1D*)C2QS->Clone(); TH1D *C2mm_0p75 = (TH1D*)C2QS->Clone(); TH1D *C2mm_0p7 = (TH1D*)C2QS->Clone();
+  TH1D *C2mm_0p65 = (TH1D*)C2QS->Clone(); TH1D *C2mm_0p6 = (TH1D*)C2QS->Clone();
+  TH1D *C2mp_0p8 = (TH1D*)C2QS->Clone(); TH1D *C2mp_0p75 = (TH1D*)C2QS->Clone(); TH1D *C2mp_0p7 = (TH1D*)C2QS->Clone();
+  TH1D *C2mp_0p65 = (TH1D*)C2QS->Clone(); TH1D *C2mp_0p6 = (TH1D*)C2QS->Clone();
+  //
+  for(int i=1; i<14; i++){
+    C2mm_0p8->SetBinContent(i,C2QSmm_fc2_0p8[i-1]); C2mm_0p8->SetBinError(i, C2QS->GetBinError(i));
+    C2mm_0p75->SetBinContent(i,C2QSmm_fc2_0p75[i-1]); C2mm_0p75->SetBinError(i, C2QS->GetBinError(i));
+    C2mm_0p7->SetBinContent(i,C2QSmm_fc2_0p7[i-1]); C2mm_0p7->SetBinError(i, C2QS->GetBinError(i));
+    C2mm_0p65->SetBinContent(i,C2QSmm_fc2_0p65[i-1]); C2mm_0p65->SetBinError(i, C2QS->GetBinError(i));
+    C2mm_0p6->SetBinContent(i,C2QSmm_fc2_0p6[i-1]); C2mm_0p6->SetBinError(i, C2QS->GetBinError(i));
+    //
+    C2mp_0p8->SetBinContent(i,C2QSmp_fc2_0p8[i-1]); C2mp_0p8->SetBinError(i, C2QS->GetBinError(i));
+    C2mp_0p75->SetBinContent(i,C2QSmp_fc2_0p75[i-1]); C2mp_0p75->SetBinError(i, C2QS->GetBinError(i));
+    C2mp_0p7->SetBinContent(i,C2QSmp_fc2_0p7[i-1]); C2mp_0p7->SetBinError(i, C2QS->GetBinError(i));
+    C2mp_0p65->SetBinContent(i,C2QSmp_fc2_0p65[i-1]); C2mp_0p65->SetBinError(i, C2QS->GetBinError(i));
+    C2mp_0p6->SetBinContent(i,C2QSmp_fc2_0p6[i-1]); C2mp_0p6->SetBinError(i, C2QS->GetBinError(i));
+  }
+  C2mm_0p8->SetMarkerColor(1); C2mm_0p8->SetLineColor(1); C2mm_0p75->SetMarkerColor(2); C2mm_0p75->SetLineColor(2); 
+  C2mm_0p7->SetMarkerColor(4); C2mm_0p7->SetLineColor(4); C2mm_0p65->SetMarkerColor(6); C2mm_0p65->SetLineColor(6);
+  C2mm_0p6->SetMarkerColor(7); C2mm_0p6->SetLineColor(7); 
+  C2mp_0p8->SetMarkerColor(1); C2mp_0p8->SetLineColor(1); C2mp_0p75->SetMarkerColor(2); C2mp_0p75->SetLineColor(2);
+  C2mp_0p7->SetMarkerColor(4); C2mp_0p7->SetLineColor(4); C2mp_0p65->SetMarkerColor(6); C2mp_0p65->SetLineColor(6);
+  C2mp_0p6->SetMarkerColor(7); C2mp_0p6->SetLineColor(7);
+  //C2mm_0p8->Draw(); C2mm_0p75->Draw("same"); C2mm_0p7->Draw("same"); C2mm_0p65->Draw("same"); C2mm_0p6->Draw("same");
+  //C2mp_0p8->Draw(); C2mp_0p75->Draw("same"); C2mp_0p7->Draw("same"); C2mp_0p65->Draw("same"); C2mp_0p6->Draw("same");
+  //legend1->AddEntry(C2mm_0p8,"f_{c}^{2}=0.8","p"); legend1->AddEntry(C2mm_0p75,"f_{c}^{2}=0.75","p"); 
+  //legend1->AddEntry(C2mm_0p7,"f_{c}^{2}=0.7","p"); legend1->AddEntry(C2mm_0p65,"f_{c}^{2}=0.65","p"); 
+  //legend1->AddEntry(C2mm_0p6,"f_{c}^{2}=0.6","p"); 
+  //
+  //legend1->Draw("same");
+  
   //cout.precision(3);
-  Build_TwoParticle[ch1_2]->SetLineColor(4); 
+  /*Build_TwoParticle[ch1_2]->SetLineColor(4); 
   Build_TwoParticle[ch1_2]->Draw("same");
   TH1D *Ratio_C2=(TH1D*)C2QS->Clone();
   for(int i=2; i<=60; i++){
@@ -1082,7 +1131,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   //TF1 *GaussResidue=new TF1("GaussResidue","[0]+[1]*exp(-pow([2]*x/0.19733,2))",0,0.5);
   //GaussResidue->SetParameter(0,1); GaussResidue->SetParameter(1,0.1); GaussResidue->SetParameter(2,10);
   //Ratio_C2->Fit(GaussResidue,"","",0,0.05);
-
+  */
 
   //return;
   
@@ -1247,6 +1296,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   
   TH1D *n3QS = (TH1D*)N3QS->Clone();
   TH1D *c3QS = (TH1D*)N3QS->Clone();
+  TH1D *c3QS_partial = (TH1D*)N3QS->Clone();
   for(int bin=1; bin<=n3QS->GetNbinsX(); bin++){
     if(n3QS->GetBinContent(bin)==0) continue;
     double MuonCorr1=1.0, MuonCorr2=1.0, MuonCorr3=1.0, MuonCorr4=1.0;
@@ -1274,9 +1324,11 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //
     n3QS->SetBinContent(bin, value);
     c3QS->SetBinContent(bin, value + TERM5_3->GetBinContent(bin));
+    c3QS_partial->SetBinContent(bin, (TERM3_3->GetBinContent(bin) - (1-TwoFrac)*TERM5_3->GetBinContent(bin)) * K3avg[ch1_3][ch2_3][ch3_3][2]->GetBinContent(bin) / TwoFrac * MuonCorr3);
+    //c3QS_partial->SetBinContent(bin, (TERM3_3->GetBinContent(bin)* MuonCorr3));
   }
   c3QS->Divide(TERM5_3);
-
+  c3QS_partial->Divide(TERM5_3);
   
   C3QS->Draw();
   if(!MCcase) c3QS->Draw("same");
@@ -1293,11 +1345,12 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     CumulantBuild_ThreeParticle[ch1_3]->Draw("same");
   }
   
+  //c3QS_partial->Draw();
   //cout<<Build_ThreeParticle[ch1_3]->GetBinContent(2)<<endl;
-  //TH1D *C3raw = (TH1D*)TERM2_3->Clone();
+  //TH1D *C3raw = (TH1D*)TERM3_3->Clone();
   //C3raw->Divide(TERM5_3);
   //C3raw->SetMarkerColor(4);
-  ///C3raw->Draw();
+  //C3raw->Draw();
 
   legend2->AddEntry(C3QS,"C_{3}^{QS}","p");
   if(!MCcase){
@@ -1405,9 +1458,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //cout<<C3QS->GetBinContent(bin)<<", ";
     //cout<<c3QS->GetBinContent(bin)<<", ";
     //cout<<C3QSratio->GetBinContent(bin)<<", ";
-    cout<<Build_ThreeParticle[ch1_3]->GetBinContent(bin)<<", ";
+    //cout<<Build_ThreeParticle[ch1_3]->GetBinContent(bin)<<", ";
   }
-  cout<<endl;
+  //cout<<endl;
   for(int bin=1; bin<=10; bin++){
     //cout<<C3QS->GetBinError(bin)<<", ";
     //cout<<c3QS->GetBinError(bin)<<", ";
@@ -1737,7 +1790,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //
     c4QS_RemovalStage3->SetBinContent(bin, FinalValue[3]);
     c4QS_RemovalStage3->SetBinError(bin, FinalValue_e[3]);
-        
+    C4_pieces[5]->SetBinContent(bin, SubtractionTerm[6] / TERMS_4[12]->GetBinContent(bin));
   }
 
   C4QS->Divide(TERMS_4[12]);
@@ -1829,7 +1882,10 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     legend3->Draw("same");
   }
   Unity->Draw("same");
-    
+
+ 
+  //C4_pieces[5]->Draw();
+
   //int BOI=4;
   //double Perc=1.07;
   //double BuildMod = 1 + Perc*(Build_FourParticle[ch1_4]->GetBinContent(BOI)-PrimeBuild_FourParticle[ch1_4]->GetBinContent(BOI));
@@ -2029,11 +2085,13 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	CumulantBuild_FourParticle[ch1_4]->Write("c4QS_built");
 	//
 	Build_ThreeParticle_2D[ch1_3]->Write("C3QS_built2D");
+	CumulantBuild_ThreeParticle_2D[ch1_3]->Write("c3QS_built2D");
 	Build_FourParticle_2D[ch1_4]->Write("C4QS_built2D");
 	PrimeBuild_FourParticle_2D[ch1_4]->Write("a4QS_built2D");
 	PrimePrimeBuild_FourParticle_2D[ch1_4]->Write("b4QS_built2D");
 	CumulantBuild_FourParticle_2D[ch1_4]->Write("c4QS_built2D");
 	BuildNeg_ThreeParticle_2D[ch1_3]->Write("C3QS_Negbuilt2D");
+	CumulantBuildNeg_ThreeParticle_2D[ch1_3]->Write("c3QS_Negbuilt2D");
 	BuildNeg_FourParticle_2D[ch1_4]->Write("C4QS_Negbuilt2D");
 	PrimeBuildNeg_FourParticle_2D[ch1_4]->Write("a4QS_Negbuilt2D");
 	PrimePrimeBuildNeg_FourParticle_2D[ch1_4]->Write("b4QS_Negbuilt2D");

@@ -218,8 +218,9 @@ struct AvailableSoftware
     TIter next(tokens);
     TObjString* s = 0;
     while ((s = static_cast<TObjString*>(next()))) {
-      if (s->String().BeginsWith(which)) {
-	ret = s->String();
+      TString t = s->String().Strip(TString::kBoth);
+      if (t.BeginsWith(which)) {
+	ret = t;
 	ret.ReplaceAll(Form("%s::",which.Data()), "");
 	break;
       }

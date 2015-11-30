@@ -153,7 +153,7 @@ public:
   static TString ExpandPathName(const char* file);
   
   
-  Bool_t GetCollections(const char* rootfile,
+  Bool_t GetCollections(const char* rootfile, const char* subdir,
                         AliMergeableCollection*& oc,
                         AliCounterCollection*& cc,
                         AliAnalysisMuMuBinning*& bin,
@@ -233,12 +233,21 @@ private:
   void GetParametersFromMC(TString& fitType, const char* pathCentrPairCut, const char* spectraName, AliAnalysisMuMuBinning::Range* bin) const;
   void GetParametersFromResult(TString& fitType, AliAnalysisMuMuJpsiResult* minvResult) const;
 
+  void GetCollectionsFromAnySubdir(TDirectory& dir,
+                                   AliMergeableCollection*& oc,
+                                   AliCounterCollection*& cc,
+                                   AliAnalysisMuMuBinning*& bin);
+
+  void GetFileNameAndDirectory(const char* filename);
+
 private:
 
   void SetNofInputParticles(AliAnalysisMuMuJpsiResult& r);
 
   
   TString fFilename; // file containing the result collections (of objects and counters) from AliAnalysisTaskMuMu
+  TString fDirectory; // directory, within fFilename, containing the actual objects
+  
   AliCounterCollection* fCounterCollection; // collection of counters in file
 
   AliAnalysisMuMuBinning* fBinning; // binning
@@ -256,7 +265,7 @@ private:
 
   AliAnalysisMuMuConfig* fConfig; // configuration
   
-  ClassDef(AliAnalysisMuMu,12) // class to analysis results from AliAnalysisTaskMuMuXXX tasks
+  ClassDef(AliAnalysisMuMu,13) // class to analysis results from AliAnalysisTaskMuMuXXX tasks
 };
 
 #endif

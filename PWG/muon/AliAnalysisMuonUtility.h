@@ -75,10 +75,14 @@ class AliAnalysisMuonUtility : public TObject {
   
   // Utilities for ESD/AOD
   static Int_t GetPassNumber ( const AliInputEventHandler* eventHandler );
-  static Int_t GetPassNumber ( const char* str );
   static TString GetPassName ( const AliInputEventHandler* eventHandler );
+
+  // Path utilities
+  static Int_t GetPassNumber ( const char* str );
   static TString GetPassName ( const char* str );
-  
+  static Int_t GetRunNumber ( const char* str );
+  static TString GetRunNumberAsString ( const char* str );
+
   // Utilities for MC
   static TString GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent, Bool_t verbose = kFALSE );
   

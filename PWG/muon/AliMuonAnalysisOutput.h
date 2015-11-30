@@ -11,7 +11,7 @@
 /// \date Oct 21, 2015
 
 
-#include "TObject.h"
+#include "TNamed.h"
 
 class TObjArray;
 class THashList;
@@ -19,10 +19,9 @@ class TAxis;
 class AliCounterCollection;
 class AliMergeableCollection;
 
-class AliMuonAnalysisOutput : public TObject {
+class AliMuonAnalysisOutput : public TNamed {
  public:
-  AliMuonAnalysisOutput();
-  AliMuonAnalysisOutput ( TObjArray* outputList );
+  AliMuonAnalysisOutput ( TObjArray* outputList, const char* name = "" );
   AliMuonAnalysisOutput ( const char *filename, const char *outputName );
 
   virtual ~AliMuonAnalysisOutput();
@@ -40,6 +39,11 @@ class AliMuonAnalysisOutput : public TObject {
   /// Get mergeable collection
   AliMergeableCollection* GetMergeableCollection () { return fMergeableCollection; }
 
+  Bool_t RemoveFromList ( TObject* obj );
+
+  /// The container owns the output list
+  void SetOwner ( Bool_t isOwner = kTRUE ) { fIsOwner = isOwner; }
+
  private:
 
   AliMuonAnalysisOutput(const AliMuonAnalysisOutput&);
@@ -49,6 +53,7 @@ class AliMuonAnalysisOutput : public TObject {
   AliCounterCollection* fCounterCollection;  //!<! event counters
   AliMergeableCollection* fMergeableCollection; //!<! collection of mergeable objects
   TObjArray* fOutputList;  //!<! List of outputs
+  Bool_t fIsOwner; //!<! The class owns the output list
 
   /// \cond CLASSIMP
   ClassDef(AliMuonAnalysisOutput, 0); // Class for better handling of muon analysis output

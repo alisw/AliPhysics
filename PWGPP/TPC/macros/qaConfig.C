@@ -2,7 +2,7 @@
 Int_t qaConfig(TTree* tree, TString* returnStrings)
 {
   Float_t entryFrac=0.8, nsigmaOutlier=6., nsigmaWarning=3., epsilon=1.0e-6;
-  
+
   //
   // specify all variables for which the status aliases shall be defined.
   // only for these variables the lines in the trending plots can be computed and plotted.
@@ -16,7 +16,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   sTrendVars+=";dcar_posC_0;dcar_posC_1;dcar_posC_2;dcaz_posC_0;dcaz_posC_1;dcaz_posC_2;";
   sTrendVars+=";dcar_negA_0;dcar_negA_1;dcar_negA_2;dcaz_negA_0;dcaz_negA_1;dcaz_negA_2;";
   sTrendVars+=";dcar_negC_0;dcar_negC_1;dcar_negC_2;dcaz_negC_0;dcaz_negC_1;dcaz_negC_2;";
-  
+
   //
   // combined variables
   // name them '..._combN' with N being the number of combined variables!
@@ -34,22 +34,23 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   tree->SetAlias("dcaz1_comb4"            , "(TMath::Sqrt(dcaz_posA_1**2+dcaz_posC_1**2+dcaz_negA_1**2+dcaz_negC_1**2))");
   tree->SetAlias("dcaz2_comb4"            , "(TMath::Sqrt(dcaz_posA_2**2+dcaz_posC_2**2+dcaz_negA_2**2+dcaz_negC_2**2))");
   tree->SetAlias("MIPattachSlope_comb2"   , "((MIPattachSlopeA+MIPattachSlopeC*(-1))/2)");
-  
+  tree->SetAlias("PIDSepPow_comb2"        , "(meanMIPele-meanMIP)/(0.5*(resolutionMIP*meanMIP+resolutionMIPele*meanMIPele))");
+
   //
   // add all combined variables to sTrendVars!
   // only then the statistics aliases will be computed for them as well.
   //
   sTrendVars+=";meanMult_comb2;tpcItsMatch_comb4;itsTpcPulls_comb4;tpcConstrainPhi_comb2;";
   sTrendVars+=";offsetd_comb4;dcarFitpar_comb4;dcar0_comb4;dcar1_comb4;dcar2_comb4;dcaz0_comb4;dcaz1_comb4;dcaz2_comb4;";
-  sTrendVars+=";MIPattachSlope_comb2;";
-  
+  sTrendVars+=";MIPattachSlope_comb2;PIDSepPow_comb2;";
+
   //
   // specify criterion to mark runs with enough statistics.
   // these runs are the basis for the computation of the outlier criteria.
   // -> robust mean and rms are computed from given entry fraction (EF) of these runs!
   //
   tree->SetAlias("statisticOK", "(meanTPCncl>0)");
-  
+
   //
   // creation of aliases for Outliers, Warnings, PhysicsAcceptable ...
   // upper and lower limits needed separately to retrieve the numerical values for the line positions.
@@ -59,14 +60,14 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   for (Int_t vari=0; vari<oaTrendVars->GetEntriesFast(); vari++)
   {
     TString sVar( oaTrendVars->At(vari)->GetName() );
-    
+
     // outliers, warnings and robust mean are set for all variables identically.
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_OutlierMin:(MeanEF-%f*RMSEF-%f):%f", nsigmaOutlier, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_OutlierMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaOutlier, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_WarningMin:(MeanEF-%f*RMSEF-%f):%f", nsigmaWarning, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_WarningMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaWarning, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_RobustMean:(MeanEF+0):%f", entryFrac));
-    
+
     // physics acceptable should be set for each type of variable individually.
     // some sets of variables are already set here, the rest should be set appropriately after the loop!
     Float_t combfac=1.;
@@ -80,16 +81,15 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
     }
     else if (sVar.Contains("Pull")) {
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f+0)", 1.0*combfac)); // check them!
-      TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f+0)", 1.0*combfac));
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f+0)", 1.0*combfac));
     }
     else { // other variables set to +- 5% of the mean as default to avoid crashes:
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.05*combfac, entryFrac));
       TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.05*combfac, entryFrac));
     }
-    
+
   }
-  
+
   //
   // all aliases can just be overwritten here...
   // PhysAcc should be set to relative or absolute values appropriately!
@@ -114,7 +114,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
 //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchA",  "statisticOK", Form("varname_PhysAccMax:(%f+0)", 1.0 ));
 //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchC",  "statisticOK", Form("varname_PhysAccMin:(%f+0)", 0.7 ));
 //  TStatToolkit::SetStatusAlias(tree, "tpcItsMatchC",  "statisticOK", Form("varname_PhysAccMax:(%f+0)", 1.0 ));
-  
+
   //
   // now the actual criteria for each variable are set automatically.
   //
@@ -125,29 +125,38 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "", Form("varname_Warning:(varname>varname_WarningMax||varname<varname_WarningMin)"));
     TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "", Form("varname_PhysAcc:(varname>varname_PhysAccMin&&varname<varname_PhysAccMax)"));
   }
-  
+
+  // TStatToolkit::SetStatusAlias(tree, sVar.Data(),    "", Form("varname_Outlier:(varname>varname_OutlierMax||varname<varname_OutlierMin)"));
+
+
   //
   // COMBINED CRITERIA
   //
   // Adding new subcriteria to the following combined criteria may change the descision based on the individual ones.
   // e.g.: Assume a meanMIP warning that was vetoed by a meanMIP physacc before. It will not be vetoed anymore, if the physacc of MIPattach is very small.
   //
-  
+
   // combined MIP quality
-  tree->SetAlias("MIPquality_Outlier", "(meanMIP_Outlier||resolutionMIP_Outlier||MIPattachSlopeA_Outlier||MIPattachSlopeC_Outlier)");
-  tree->SetAlias("MIPquality_Warning", "(meanMIP_Warning||resolutionMIP_Warning||MIPattachSlopeA_Warning||MIPattachSlopeC_Warning)");
-  tree->SetAlias("MIPquality_PhysAcc", "(meanMIP_PhysAcc&&resolutionMIP_PhysAcc&&MIPattachSlopeA_PhysAcc&&MIPattachSlopeC_PhysAcc)");
-  
+  // tree->SetAlias("MIPquality_Outlier", "(meanMIP_Outlier||resolutionMIP_Outlier||MIPattachSlopeA_Outlier||MIPattachSlopeC_Outlier||PIDSepPow_comb2_Outlier)");
+  // tree->SetAlias("MIPquality_Warning", "(meanMIP_Warning||resolutionMIP_Warning||MIPattachSlopeA_Warning||MIPattachSlopeC_Warning||PIDSepPow_comb2_Warning)");
+  // tree->SetAlias("MIPquality_PhysAcc", "(meanMIP_PhysAcc&&resolutionMIP_PhysAcc&&MIPattachSlopeA_PhysAcc&&MIPattachSlopeC_PhysAcc&&PIDSepPow_comb2_PhysAcc)");
+  Float_t MeanMip_limitmax = 53.;
+  Float_t MeanMip_limitmin = 47.;
+  tree->SetAlias("MIPquality_Outlier", Form("(meanMIP_Outlier||resolutionMIP_Outlier||PIDSepPow_comb2_Outlier||meanMIP<%f||meanMIP>%f)", MeanMip_limitmin, MeanMip_limitmax));
+  tree->SetAlias("MIPquality_Warning", "(meanMIP_Warning||resolutionMIP_Warning||PIDSepPow_comb2_Warning)");
+  tree->SetAlias("MIPquality_PhysAcc", Form("(meanMIP_PhysAcc&&resolutionMIP_PhysAcc&&PIDSepPow_comb2_PhysAcc&&meanMIP>%f&&meanMIP<%f)", MeanMip_limitmin, MeanMip_limitmax));
+
   // combined matching efficiency
-  tree->SetAlias("tpcItsMatch_Outlier", "(tpcItsMatchA_Outlier||tpcItsMatchC_Outlier||tpcItsMatchHighPtA_Outlier||tpcItsMatchHighPtC_Outlier)");
+  Float_t TPC_ITS_limit = 0.5;
+  tree->SetAlias("tpcItsMatch_Outlier", Form("(tpcItsMatchA_Outlier||tpcItsMatchC_Outlier||tpcItsMatchHighPtA_Outlier||tpcItsMatchHighPtC_Outlier||tpcItsMatchA<%f||tpcItsMatchC<%f)", TPC_ITS_limit, TPC_ITS_limit));
   tree->SetAlias("tpcItsMatch_Warning", "(tpcItsMatchA_Warning||tpcItsMatchC_Warning||tpcItsMatchHighPtA_Warning||tpcItsMatchHighPtC_Warning)");
-  tree->SetAlias("tpcItsMatch_PhysAcc", "(tpcItsMatchA_PhysAcc&&tpcItsMatchC_PhysAcc&&tpcItsMatchHighPtA_PhysAcc&&tpcItsMatchHighPtC_PhysAcc)");
-  
+  tree->SetAlias("tpcItsMatch_PhysAcc", Form("(tpcItsMatchA_PhysAcc&&tpcItsMatchC_PhysAcc&&tpcItsMatchHighPtA_PhysAcc&&tpcItsMatchHighPtC_PhysAcc&&tpcItsMatchA>%f&&tpcItsMatchC>%f)", TPC_ITS_limit, TPC_ITS_limit));
+
   // combined matching quality (lambdaPull ptPull yPull zPull)
   tree->SetAlias("itsTpcPulls_Outlier", "(lambdaPull_Outlier||ptPull_Outlier||yPull_Outlier||zPull_Outlier)");
   tree->SetAlias("itsTpcPulls_Warning", "(lambdaPull_Warning||ptPull_Warning||yPull_Warning||zPull_Warning)");
   tree->SetAlias("itsTpcPulls_PhysAcc", "(lambdaPull_PhysAcc&&ptPull_PhysAcc&&yPull_PhysAcc&&zPull_PhysAcc)");
-  
+
   // combined DCA R and Z
   tree->SetAlias("dcar0_Outlier", "(dcar_posA_0_Outlier||dcar_posC_0_Outlier||dcar_negA_0_Outlier||dcar_negC_0_Outlier)");
   tree->SetAlias("dcar1_Outlier", "(dcar_posA_1_Outlier||dcar_posC_1_Outlier||dcar_negA_1_Outlier||dcar_negC_1_Outlier)");
@@ -157,7 +166,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   tree->SetAlias("dcaz1_Outlier", "(dcaz_posA_1_Outlier||dcaz_posC_1_Outlier||dcaz_negA_1_Outlier||dcaz_negC_1_Outlier)");
   tree->SetAlias("dcaz2_Outlier", "(dcaz_posA_2_Outlier||dcaz_posC_2_Outlier||dcaz_negA_2_Outlier||dcaz_negC_2_Outlier)");
   tree->SetAlias("dcaz_Outlier" , "(dcaz0_Outlier||dcaz1_Outlier||dcaz2_Outlier)");
-  
+
   tree->SetAlias("dcar0_Warning", "(dcar_posA_0_Warning||dcar_posC_0_Warning||dcar_negA_0_Warning||dcar_negC_0_Warning)");
   tree->SetAlias("dcar1_Warning", "(dcar_posA_1_Warning||dcar_posC_1_Warning||dcar_negA_1_Warning||dcar_negC_1_Warning)");
   tree->SetAlias("dcar2_Warning", "(dcar_posA_2_Warning||dcar_posC_2_Warning||dcar_negA_2_Warning||dcar_negC_2_Warning)");
@@ -166,7 +175,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   tree->SetAlias("dcaz1_Warning", "(dcaz_posA_1_Warning||dcaz_posC_1_Warning||dcaz_negA_1_Warning||dcaz_negC_1_Warning)");
   tree->SetAlias("dcaz2_Warning", "(dcaz_posA_2_Warning||dcaz_posC_2_Warning||dcaz_negA_2_Warning||dcaz_negC_2_Warning)");
   tree->SetAlias("dcaz_Warning" , "(dcaz0_Warning||dcaz1_Warning||dcaz2_Warning)");
-  
+
   tree->SetAlias("dcar0_PhysAcc", "(dcar_posA_0_PhysAcc&&dcar_posC_0_PhysAcc&&dcar_negA_0_PhysAcc&&dcar_negC_0_PhysAcc)");
   tree->SetAlias("dcar1_PhysAcc", "(dcar_posA_1_PhysAcc&&dcar_posC_1_PhysAcc&&dcar_negA_1_PhysAcc&&dcar_negC_1_PhysAcc)");
   tree->SetAlias("dcar2_PhysAcc", "(dcar_posA_2_PhysAcc&&dcar_posC_2_PhysAcc&&dcar_negA_2_PhysAcc&&dcar_negC_2_PhysAcc)");
@@ -175,15 +184,15 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   tree->SetAlias("dcaz1_PhysAcc", "(dcaz_posA_1_PhysAcc&&dcaz_posC_1_PhysAcc&&dcaz_negA_1_PhysAcc&&dcaz_negC_1_PhysAcc)");
   tree->SetAlias("dcaz2_PhysAcc", "(dcaz_posA_2_PhysAcc&&dcaz_posC_2_PhysAcc&&dcaz_negA_2_PhysAcc&&dcaz_negC_2_PhysAcc)");
   tree->SetAlias("dcaz_PhysAcc" , "(dcaz0_PhysAcc&&dcaz1_PhysAcc&&dcaz2_PhysAcc)");
-  
-  
+
+
   //
   // specify the variables which shall be included in the status bar.
   // give them meaningful names for the y axis of the status bar!
   //
   TString sStatusbarVars ("MIPquality;dcaz;dcar;tpcItsMatch;itsTpcPulls;meanTPCncl;global");
   TString sStatusbarNames("dE/dx (MIP);v_drift (DCAZ);space p.(DCAR);TPC-ITS m.eff.;ITS-TPC m.qual.;mean TPC Ncl;global result");
-  
+
   //
   // global descision is made automatically from the other entries in the status bar.
   //
@@ -209,16 +218,16 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   sGlobalCriterion.ReplaceAll("_Outlier","_Warning");
   cout << "global Warning:  " << sGlobalCriterion.Data() << endl;
   tree->SetAlias("global_Warning" , sGlobalCriterion.Data());
-  
+
   //
   // set Boolean criteria to be checked for the markers in the status bar:
   // separate them by colon ":"   (1) = true --> first marker always plotted
   //
   TString sCriteria("(1):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)"); // or to just show vetos: (varname_PhysAcc&&varname_Warning)
-  
+
   returnStrings[0] = sStatusbarVars;
   returnStrings[1] = sStatusbarNames;
   returnStrings[2] = sCriteria;
-  
+
   return 1;
 }

@@ -31,7 +31,7 @@ public:
   };
 
   AliCaloCellsQA();
-  AliCaloCellsQA(Int_t nmods, Int_t det = kEMCAL, Int_t startRunNumber = 100000, Int_t endRunNumber = 200000);
+  AliCaloCellsQA(Int_t nmods, Int_t det = kEMCAL, Int_t startRunNumber = 100000, Int_t endRunNumber = 300000);
 
   virtual ~AliCaloCellsQA();
 

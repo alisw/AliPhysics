@@ -17,6 +17,7 @@
 #include <TCanvas.h>
 #include <TTree.h>
 #include <TGListView.h>
+#include <TGStatusBar.h>
 #include <TDatime.h>
 #include <TParameter.h>
 #include <TPaveText.h>
@@ -60,6 +61,7 @@ class TGLVContainer;
 class TGHButtonGroup;
 class TGLayoutHints;
 class TGNumberEntry;
+class TGStatusBar;
 // #endif
 #endif
 
@@ -143,41 +145,43 @@ struct ForwardOADBGUI
 		TGNumberFormat::kNESReal,
 		TGNumberFormat::kNEANonNegative,
 		TGNumberFormat::kNELLimitMin, 0),
-    fRunMode(&fRunFrame),
-    fSysFrame(&fSelectFrame), 
-    fSysLabel(&fSysFrame, "System: "), 
-    fSysSelect(&fSysFrame),
-    fSNNFrame(&fSelectFrame), 
-    fSNNLabel(&fSNNFrame, "sqrt(sNN) [GeV]: "), 
-    fSNNInput(&fSNNFrame, 0, 0, -1, TGNumberFormat::kNESReal,
-	      TGNumberFormat::kNEANonNegative,
-	      TGNumberFormat::kNELLimitMin, 0),
-    fFldFrame(&fSelectFrame), 
-    fFldLabel(&fFldFrame, "L3 field [kG]: "), 
-    fFldSelect(&fFldFrame),
-    fOtherFrame(&fSelectFrame),
-    fMCButton(&fOtherFrame, "MC"),
-    fSatButton(&fOtherFrame, "Satellite"),
-    fOptionsFrame(&fSelectFrame), 
-    fOptionsLabel(&fOptionsFrame, "Draw/Print options:"),
-    fOptionsText(&fOptionsFrame, ""),
-    fCommandFrame(&fSelectFrame), 
-    fQueryButton(&fCommandFrame, "Query"),
-    fListButton(&fCommandFrame, "List table"),
-    fPrintButton(&fCommandFrame, "Print entry"),
-    fCopyButton(&fCommandFrame, "Copy entry"),
-    fDrawButton(&fCommandFrame, "Draw entry"),
-    fPDFButton(&fCommandFrame, "Summarize entry"),
-    fList(&fMain, 800, 400), 
-    fListContainer(&fList),
-    fFrameHints(kLHintsExpandX, 0, 0, 2, 0),
-    fLabelHints(kLHintsNoHints, 4, 2, 0, 0),
-    fEntryHints(kLHintsExpandX|kLHintsExpandY, 2, 4, 0, 0),
-    fButtonHints(kLHintsExpandX, 2, 2, 0, 0),
-    fListHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 4, 2),
-    fMsg(&fMain),
-    fDB(0),
-    fEntry(0)
+      fRunMode(&fRunFrame),
+      fSysFrame(&fSelectFrame), 
+      fSysLabel(&fSysFrame, "System: "), 
+      fSysSelect(&fSysFrame),
+      fSNNFrame(&fSelectFrame), 
+      fSNNLabel(&fSNNFrame, "sqrt(sNN) [GeV]: "), 
+      fSNNInput(&fSNNFrame, 0, 0, -1, TGNumberFormat::kNESReal,
+		TGNumberFormat::kNEANonNegative,
+		TGNumberFormat::kNELLimitMin, 0),
+      fFldFrame(&fSelectFrame), 
+      fFldLabel(&fFldFrame, "L3 field [kG]: "), 
+      fFldSelect(&fFldFrame),
+      fOtherFrame(&fSelectFrame),
+      fMCButton(&fOtherFrame, "MC"),
+      fSatButton(&fOtherFrame, "Satellite"),
+      fOptionsFrame(&fSelectFrame), 
+      fOptionsLabel(&fOptionsFrame, "Draw/Print options:"),
+      fOptionsText(&fOptionsFrame, ""),
+      fCommandFrame(&fSelectFrame), 
+      fQueryButton(&fCommandFrame, "Query"),
+      fListButton(&fCommandFrame, "List table"),
+      fPrintButton(&fCommandFrame, "Print entry"),
+      fCopyButton(&fCommandFrame, "Copy entry"),
+      fDrawButton(&fCommandFrame, "Draw entry"),
+      fPDFButton(&fCommandFrame, "Summarize entry"),
+      fList(&fMain, 800, 400), 
+      fListContainer(&fList),
+      fFrameHints(kLHintsExpandX, 0, 0, 2, 0),
+      fLabelHints(kLHintsNoHints, 4, 2, 0, 0),
+      fEntryHints(kLHintsExpandX|kLHintsExpandY, 2, 4, 0, 0),
+      fButtonHints(kLHintsExpandX, 2, 2, 0, 0),
+      fListHints(kLHintsExpandX|kLHintsExpandY, 2, 2, 4, 2),
+      fStatusBar(&fMain),
+      fStatusBarHints(kLHintsExpandX, 2, 2, 4, 2),
+      fMsg(&fMain),
+      fDB(0),
+      fEntry(0)
   {
     fMain.Connect("CloseWindow()", "ForwardOADBGUI", this, "HandleKill()");
     fMain.DontCallClose();
@@ -257,7 +261,7 @@ struct ForwardOADBGUI
     fOptionsFrame.AddFrame(&fOptionsLabel, &fLabelHints);
     fOptionsFrame.AddFrame(&fOptionsText, &fEntryHints);
 
-    Info("", "Connecting signals");
+    // Info("", "Connecting signals");
     fQueryButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleQuery()");
     fListButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleList()");
     fDrawButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleDraw()");
@@ -291,7 +295,9 @@ struct ForwardOADBGUI
     fList.SetMinWidth(400);
     fList.SetMinHeight(200);
     fMain.AddFrame(&fList, &fListHints);
-    
+
+    fStatusBar.SetParts(1);
+    fMain.AddFrame(&fStatusBar, &fStatusBarHints);
 #ifndef __CINT__
     ::SetErrorHandler(ForwardOADBGUIErrorHandler);
 #endif
@@ -327,39 +333,41 @@ struct ForwardOADBGUI
       fRunFrame(&fSelectFrame), 
       fRunLabel(&fRunFrame, ""), 
       fRunInput(&fRunFrame),
-    fRunMode(&fRunFrame),
-    fSysFrame(&fSelectFrame), 
-    fSysLabel(&fSysFrame, ""), 
-    fSysSelect(&fSysFrame),
-    fSNNFrame(&fSelectFrame), 
-    fSNNLabel(&fSNNFrame, ""), 
-    fSNNInput(&fSNNFrame),
-    fFldFrame(&fSelectFrame), 
-    fFldLabel(&fFldFrame, ""), 
-    fFldSelect(&fFldFrame),
-    fOtherFrame(&fSelectFrame),
-    fMCButton(&fOtherFrame, ""),
-    fSatButton(&fOtherFrame, ""),
-    fOptionsFrame(&fSelectFrame), 
-    fOptionsLabel(&fOptionsFrame, ""),
-    fOptionsText(&fOptionsFrame, ""),
-    fCommandFrame(&fSelectFrame), 
-    fQueryButton(&fCommandFrame, ""),
-    fListButton(&fCommandFrame, ""),
-    fPrintButton(&fCommandFrame, ""),
-    fCopyButton(&fCommandFrame, ""),
-    fDrawButton(&fCommandFrame, ""),
-    fPDFButton(&fCommandFrame, ""),
-    fList(&fMain, 800, 400), 
-    fListContainer(&fList),
-    fFrameHints(),
-    fLabelHints(),
-    fEntryHints(),
-    fButtonHints(),
-    fListHints(),
-    fMsg(0),
-    fDB(0),
-    fEntry(0)
+      fRunMode(&fRunFrame),
+      fSysFrame(&fSelectFrame), 
+      fSysLabel(&fSysFrame, ""), 
+      fSysSelect(&fSysFrame),
+      fSNNFrame(&fSelectFrame), 
+      fSNNLabel(&fSNNFrame, ""), 
+      fSNNInput(&fSNNFrame),
+      fFldFrame(&fSelectFrame), 
+      fFldLabel(&fFldFrame, ""), 
+      fFldSelect(&fFldFrame),
+      fOtherFrame(&fSelectFrame),
+      fMCButton(&fOtherFrame, ""),
+      fSatButton(&fOtherFrame, ""),
+      fOptionsFrame(&fSelectFrame), 
+      fOptionsLabel(&fOptionsFrame, ""),
+      fOptionsText(&fOptionsFrame, ""),
+      fCommandFrame(&fSelectFrame), 
+      fQueryButton(&fCommandFrame, ""),
+      fListButton(&fCommandFrame, ""),
+      fPrintButton(&fCommandFrame, ""),
+      fCopyButton(&fCommandFrame, ""),
+      fDrawButton(&fCommandFrame, ""),
+      fPDFButton(&fCommandFrame, ""),
+      fList(&fMain, 800, 400), 
+      fListContainer(&fList),
+      fFrameHints(),
+      fLabelHints(),
+      fEntryHints(),
+      fButtonHints(),
+      fListHints(),
+      fStatusBar(&fMain),
+      fStatusBarHints(),
+      fMsg(0),
+      fDB(0),
+      fEntry(0)
   {}
   ForwardOADBGUI& operator=(const ForwardOADBGUI&) { return *this; }
 
@@ -452,6 +460,7 @@ struct ForwardOADBGUI
       delete fDB;
       fDB = 0;
     }
+    SetStatus("No DB connected");
     HandleEnable();
   }
   void HandleOpen()
@@ -468,6 +477,7 @@ struct ForwardOADBGUI
       delete fDB;
       fDB = 0;
     }
+    SetStatus(Form("Connected to %s", fFileText.GetText()));
     // else 
     // fDB->Print();
     HandleEnable();
@@ -475,7 +485,9 @@ struct ForwardOADBGUI
   void HandleBrowse()
   {
     TGFileInfo fi;
-    TString iniDir(gSystem->ExpandPathName("$(OADB_PATH)"));
+    TString iniDir;
+    if (gSystem->Getenv("OADB_PATH")) 
+      iniDir = gSystem->ExpandPathName("$(OADB_PATH)");
     if (iniDir.IsNull()) 
       iniDir = gSystem->ExpandPathName("$(ALICE_PHYSICS)/OADB");
     iniDir.Append("/PWGLF/FORWARD/CORRECTIONS/data");
@@ -833,6 +845,10 @@ struct ForwardOADBGUI
     Info("CloseMsg", "Closing message window");
     fMsg.Hide();
   }
+  void SetStatus(const char* what)
+  {
+    fStatusBar.SetText(what,0);
+  }
   TGMainFrame       fMain;
   TGHorizontalFrame fOpenFrame;
   TGTextEntry       fFileText;
@@ -878,6 +894,8 @@ struct ForwardOADBGUI
   TGLayoutHints     fEntryHints; 
   TGLayoutHints     fButtonHints;
   TGLayoutHints     fListHints;
+  TGStatusBar       fStatusBar;
+  TGLayoutHints     fStatusBarHints;
   ForwardOADBDialog fMsg;
   AliOADBForward*   fDB;
   AliOADBForward::Entry* fEntry;
@@ -886,7 +904,8 @@ struct ForwardOADBGUI
 };
 
 
-TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
+TGMainFrame* ForwardOADBGui(AliOADBForward* db=0,
+			    const char* path=0)
 {
   const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward")) 
@@ -899,7 +918,10 @@ TGMainFrame* ForwardOADBGui(AliOADBForward* db=0)
   new TBrowser;
   // new TGClient();
   ForwardOADBGUI* gui = new ForwardOADBGUI();
-  if (db) gui->UseDB(db);
+  if (db) {
+    gui->UseDB(db);
+    if (path) gui->SetStatus(Form("Connected to %s", path));
+  }
   return gui->GetMain();
 }
   

@@ -45,7 +45,7 @@ AddTaskForwardMult(Bool_t   mc,
 		   Short_t  field=0,
 		   const char* config="ForwardAODConfig.C",
 		   const char* corrs=0,
-		   cosnt char* dead=0)
+		   const char* dead=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");

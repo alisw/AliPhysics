@@ -13,8 +13,8 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   }
   
   TString pat("*.root");
-  if      (tree.EqualTo("esdTree", TString::kIgnoreCase)) pat="AliESDs*";
-  else if (tree.EqualTo("aodTree", TString::kIgnoreCase)) pat="AliAOD*";
+  if      (tree.EqualTo("esdTree",  TString::kIgnoreCase)) pat="AliESDs*";
+  else if (tree.EqualTo("aodTree",  TString::kIgnoreCase)) pat="AliAOD*";
   else    Warning("", "Unknown tree: %s, pattern set to *.root", tree.Data());
   if (mc) {
     pat.Prepend("root_archive.zip@");

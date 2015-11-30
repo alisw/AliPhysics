@@ -41,6 +41,7 @@ class AliMCParticle;
 class AliAODMCParticle;
 class AliHFEcollection;
 class TTreeSRedirector;
+class TClonesArray;
 
 //________________________________________________________________
 class AliHFEmcQA: public TObject {

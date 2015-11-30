@@ -523,18 +523,18 @@ class AliThreeParticleCorrelator : public TNamed {
   std::vector<C*> fMETriggerCorrelations; //! ME analysis clones of workers, associated particles same events
   std::vector<C*> fMETACorrelations; //! ME analysis clones of workers, first associated particle from the same events as the trigger
   std::vector<C*> fMETA2Correlations; //! ME analysis clones of workers, second associated particle from the same events as the trigger
-  std::vector<AliActiveTrigger*> factiveTriggers; //Vector to contain the triggers.
-  std::vector<AliActiveTrigger*> factiveTriggersME; //Vector to contain the triggers for mixed event.
-  std::vector<AliActiveTrigger*> factiveTriggersMETrigger;//Vector to contain the triggers for mixed event with both associated from the same event.
-  std::vector<AliActiveTrigger*> factiveTriggersMETA;//Vector to contain the triggers for mixed event with first associated particle from the same events as the trigger
-  std::vector<AliActiveTrigger*> factiveTriggersMETA2;//Vector to contain the triggers for mixed event with second associated particle from the same events as the trigger
-  std::vector<AliVParticle*> fAssociated;//vector to contain the associated particles.
+  std::vector<AliActiveTrigger*> factiveTriggers; //!Vector to contain the triggers.
+  std::vector<AliActiveTrigger*> factiveTriggersME; //!Vector to contain the triggers for mixed event.
+  std::vector<AliActiveTrigger*> factiveTriggersMETrigger;//!Vector to contain the triggers for mixed event with both associated from the same event.
+  std::vector<AliActiveTrigger*> factiveTriggersMETA;//!Vector to contain the triggers for mixed event with first associated particle from the same events as the trigger
+  std::vector<AliActiveTrigger*> factiveTriggersMETA2;//!Vector to contain the triggers for mixed event with second associated particle from the same events as the trigger
+  std::vector<AliVParticle*> fAssociated;//!vector to contain the associated particles.
   std::vector<AliVParticle*> fAssociatedmixed1; //! buffer for Associated
   std::vector<AliVParticle*> fAssociatedmixed2; //! buffer for Associated
   AliEventPoolManager* fEventPoolMgr; //! event pool manager, external pointer
   Double_t fVz;//Vertex in z
   Double_t fMultiplicity;//Multiplicity in %
-  TRandom3 * fRandom;//to be able to pick mixed event tracks.
+  TRandom3 * fRandom;//!to be able to pick mixed event tracks.
   Double_t fMaxMixedPerEvent;//limit on the size of each event in the pool
   
   

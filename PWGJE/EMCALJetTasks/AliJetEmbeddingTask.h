@@ -10,6 +10,7 @@
 ///
 /// \author S.Aiola, 
 /// \author C.Loizides
+/// \author C. Bianchin for the mass histogram and TTree
 /// \date
 
 #ifndef ALIJETEMBEDDINGTASK_H
@@ -34,16 +35,19 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetPathAndNameInputpTDistribution(TString path, TString name) { fPathpTinputFile = path; fpTinputName = name;}
   void           SetPathAndNameInputMDistribution(TString path, TString name) { fPathMinputFile = path; fMinputName = name;}
   
- protected:
-  void           Run();
-  
-  void           SetMassDistribution(TH1F *hM);
+  void           SetTreeBranchName(TString brDet = "fJetDet.") {fBranchJDetName = brDet; }
   void           SetMassDistributionFromFile(TString filename, TString histoname);
   void           SetpTDistributionFromFile(TString filename, TString histoname);
   void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
-  void           SetTree(TTree *tree);
+  //void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
- 
+  void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
+  
+ protected:
+  void           Run();
+  void           SetTree(TTree *tree);
+  void           SetMassDistribution(TH1F *hM);
+  void           FillHistograms();
  private:
   Bool_t         fMassless;               ///< make particles massless
   Bool_t         fMassFromDistr;          ///< draw the particle mass from fHMassDistrib
@@ -61,7 +65,8 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TString        fBranchJDetName;         ///< name of the detector level jet branch in the TTree
   TTree*         fTreeJet4Vect;           //!<! tree containing the jet 4-vectors (input for embed.)
   Int_t          fCurrentEntry;           ///< Current TTree entry
-  
+  TList          *fInput;                 //!<! Input histograms saved in this list
+  Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   

@@ -7,6 +7,7 @@
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepPairCut;
 #pragma link C++ class AliFemtoPairCutRadialDistance;
 #pragma link C++ class AliFemtoESDTrackCut;
+#pragma link C++ class AliFemtoEventCutCentrality+;
 #pragma link C++ class AliFemtoKKTrackCut;
 #pragma link C++ class AliFemtoMJTrackCut;
 #pragma link C++ class AliFemtoPairCutRadialDistanceKK;

@@ -74,6 +74,8 @@ public:
 
   virtual void UserExec(Option_t* opt);
   
+  void UseLegacyCentrality() { fLegacyCentrality = kTRUE; }
+  
 private:
   
   void CreateTrackHisto(const char* eventSelection,
@@ -114,6 +116,9 @@ private:
   AliAnalysisTaskMuMu(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
   AliAnalysisTaskMuMu& operator=(const AliAnalysisTaskMuMu&); // not implemented (on purpose)
 
+  float CentralityFromCentrality(const char* estimator) const;
+  float CentralityFromMultSelection(const char* estimator) const;
+  
 private:
   
   AliMergeableCollection* fHistogramCollection; //! collection of histograms
@@ -139,8 +144,10 @@ private:
   //______
 
   Bool_t fDisableHistoLoop; //Flag to not enter in the Filling histos Loop without disabling the histogramming (neccesary to have dNhcdEta event info avaliable)
+
+  Bool_t fLegacyCentrality; // use old centrality framework
   
-  ClassDef(AliAnalysisTaskMuMu,27) // a class to analyse muon pairs (and single also ;-) )
+  ClassDef(AliAnalysisTaskMuMu,28) // a class to analyse muon pairs (and single also ;-) )
 };
 
 #endif

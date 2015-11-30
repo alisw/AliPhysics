@@ -37,7 +37,9 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false),
-    fIpzReweight(0)
+    fIpzReweight(0),
+    fCacheCent(-10),
+    fCacheQual(0xFFFF)
 {
   // 
   // Constructor
@@ -63,7 +65,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false),
-    fIpzReweight(0)
+    fIpzReweight(0),
+    fCacheCent(-10),
+    fCacheQual(0xFFFF)
 {
   // 
   // Constructor
@@ -406,10 +410,6 @@ AliBasedNdetaTask::Book()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums, fTriggerMask);
   
-  fMeanVsC=new TH2D("meanAbsSignalVsCentr",
-		    "Mean absolute signal versus centrality",
-		    400, 0, 20, 100, 0, 100);
-  fSums->Add(fMeanVsC);
 
   if (HasCentrality()) {
     if (fCentAxis.GetXbins()->GetArray()) {
@@ -420,20 +420,37 @@ AliBasedNdetaTask::Book()
       
       fSeenCent = new TH1D("centSeen", "Centralities seen",
 			    a.GetSize()-1, a.GetArray());
+      fMeanVsC=new TH2D("sumVsC",
+			"Integral vs centrality",
+			a.GetSize()-1, a.GetArray(),
+			400, 0, 20000);			
     }
-    else
+    else {
       fSeenCent = new TH1D("centSeen", "Centralities seen",
-			    fCentAxis.GetNbins()+1,
-			    fCentAxis.GetXmin(),
-			    fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));      
+			   fCentAxis.GetNbins()+1,
+			   fCentAxis.GetXmin(),
+			   fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));
+      fMeanVsC=new TH2D("sumVsC",
+			"Integral vs centrality",
+			fCentAxis.GetNbins()+1,
+			fCentAxis.GetXmin(),
+			fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1),
+			400, 0, 20000);			
+    }
   }
-  else
+  else {
     fSeenCent = new TH1D("centSeen", "Null",1, 0, 100);
+    fMeanVsC = new TH2D("sumVsC", "Null",1,0,20000,1,0,100);
+  }
   fSeenCent->SetDirectory(0);
   fSeenCent->SetXTitle(Form("Centrality (%s) [%%]",fCentMethod.Data()));
   fSeenCent->SetYTitle("Events");
   fSeenCent->SetFillStyle(3004);
   fSeenCent->SetFillColor(kYellow-2);
+  fMeanVsC->SetDirectory(0);
+  fMeanVsC->SetXTitle(fSeenCent->GetXaxis()->GetTitle());
+  fMeanVsC->SetYTitle("#int signal");  
+
   fTakenCent = static_cast<TH1D*>(fSeenCent->Clone("centTaken"));
   fTakenCent->SetTitle("Centralities taken by bins");
   fTakenCent->SetFillColor(kCyan-2);
@@ -442,6 +459,7 @@ AliBasedNdetaTask::Book()
   
   fSums->Add(fSeenCent);
   fSums->Add(fTakenCent);
+  fSums->Add(fMeanVsC);
 
   // fSums->ls();
   return true;
@@ -465,24 +483,42 @@ AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd)
 
 //____________________________________________________________________
 Double_t
+AliBasedNdetaTask::GetCentrality(AliAODEvent&       event,
+				 AliAODForwardMult* forward,
+				 Int_t&             qual)
+{
+  DGUARD(fDebug,2,"Getting centrality from event of object: %s",
+	 fCentMethod.Data());
+  if (fCacheCent > -1) {
+    // In case we already got the centrality, don't do it again
+    DMSG(fDebug,1,"Returning cached value: %5.1f%%", fCent);
+    qual = fCacheQual;
+    return fCacheCent;
+  }
+  qual            = 0;
+  Float_t cent    = AliBaseAODTask::GetCentrality(event,forward,qual);
+  DMSG(fDebug,1,"Centrality stored in AOD forward: %5.1f%%", cent);
+  if (!fCentMethod.IsNull()) {
+    // Clear bad cent if already set
+    cent = AliForwardUtil::GetCentrality(event,fCentMethod,qual,(fDebug > 1));
+    if      (cent < 0)                   cent = -.5; // Bad centrality 
+    else if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
+    DMSG(fDebug,1,"Centrality from mult: %5.1f%% (%d)", cent, qual);
+  }
+  fCacheQual        = qual;
+  return fCacheCent = cent;  
+}
+//____________________________________________________________________
+Double_t
 AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 				 AliAODForwardMult* forward)
 {
-  DGUARD(fDebug,1,"Getting centrality from event of object: %s",
-	 fCentMethod.Data());
-  Int_t   qual    = 0;
-  Float_t cent    = forward->GetCentrality();
-  DMSG(fDebug,2,"Centrality stored in AOD forward: %5.1f%%", cent);
-  if (!fCentMethod.IsNull()) 
-    cent = AliForwardUtil::GetCentrality(event,fCentMethod,qual,(fDebug > 1));
-  
-  if (cent < 0)    cent = -.5;
-  if (qual <= 0) {// OK centrality 
-    if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
-  }
+  Int_t    qual = 0;
+  Double_t cent = GetCentrality(event, forward, qual);
+  if (qual > 0)   forward->SetTriggerBits(AliAODForwardMult::kCentNoCalib);
   return cent;
-
 }
+  
 //____________________________________________________________________
 Bool_t
 AliBasedNdetaTask::Event(AliAODEvent& aod) 
@@ -529,10 +565,18 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   
   // Find this centrality bin
   if (HasCentrality()) {
-    taken                  = false;    
+    taken                  = false;
+    // After this call, the if the event isn't covered by the
+    // centrality calibrations, a flag will be set in the forward
+    // object.
     Double_t       cent    = GetCentrality(aod, forward);
+    fMeanVsC->Fill(cent, data->Integral());
+
     // fSeenCent->Fill(cent);
-    DMSG(fDebug,1,"Got event centrality %f", cent);
+    DMSG(fDebug,1,"Got event centrality %f (%s)", cent,
+	 forward->IsTriggerBits(AliAODForwardMult::kInclusive|
+				AliAODForwardMult::kCentNoCalib) ?
+	 "out-of-calib" : "in-calib");
     
     Int_t          icent   = fCentAxis.FindBin(cent);    
     if (icent == (fCentAxis.GetNbins()+1) &&
@@ -784,6 +828,8 @@ AliBasedNdetaTask::Finalize()
   gStyle->SetPalette(1);
   THStack* dndetaStack        = new THStack("dndeta", "dN/d#eta");
   THStack* dndetaMCStack      = new THStack("dndetaMC", "dN_{ch}/d#eta");
+  THStack* dndetaEmpStack     = new THStack("dndetaEmp", "dN_{ch}/d#eta");
+  THStack* leftRightStack     = new THStack("leftRight", "Left-right symmetry");
   
   TList* mclist = 0;
   TList* truthlist = 0;
@@ -809,11 +855,16 @@ AliBasedNdetaTask::Finalize()
       // If we have centrality bins, do not add the min-bias
       // distribution to the output stack.
       continue;
-    TH1* dndeta      =               bin->GetResult("");
-    TH1* dndetaMC    =               bin->GetResult("MC", false);
+    TH1* dndeta      = bin->GetResult("");
+    TH1* dndetaMC    = bin->GetResult("MC", false);
+    TH1* dndetaEmp   = bin->GetResult("Emp", false);
+    TH1* leftRight   = Asymmetry(dndetaEmp ? dndetaEmp : dndeta);
+    // if (leftRight) bin->fOutput->Add(leftRight);
     DMSG(fDebug,2,"Results: bare=%p mcbare=%p", dndeta, dndetaMC);
     if (dndeta)      dndetaStack->Add(dndeta);
     if (dndetaMC)    dndetaMCStack->Add(dndetaMC);
+    if (dndetaEmp)   dndetaEmpStack->Add(dndetaEmp);
+    if (leftRight)   leftRightStack->Add(leftRight);
   }
   // Output the stack
   fResults->Add(dndetaStack);
@@ -826,6 +877,25 @@ AliBasedNdetaTask::Finalize()
     dndetaMCStack = 0;
   }
   if (dndetaMCStack) fResults->Add(dndetaMCStack);
+
+  // If available, output track-ref stack
+  if (!dndetaEmpStack->GetHists() || 
+      dndetaEmpStack->GetHists()->GetEntries() <= 0) {
+    // AliWarning("No MC histograms found");
+    delete dndetaEmpStack;
+    dndetaEmpStack = 0;
+  }
+  if (dndetaEmpStack) fResults->Add(dndetaEmpStack);
+  
+
+  // If available, output track-ref stack
+  if (!leftRightStack->GetHists() || 
+      leftRightStack->GetHists()->GetEntries() <= 0) {
+    // AliWarning("No MC histograms found");
+    delete leftRightStack;
+    leftRightStack = 0;
+  }
+  if (leftRightStack) fResults->Add(leftRightStack);
 
   // Output collision energy string 
   if (sNN > 0) {
@@ -2031,6 +2101,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // if (!IsAllBin()) return;
 
 }
+
 //____________________________________________________________________
 void
 AliBasedNdetaTask::CentralityBin::Print(Option_t* option) const
@@ -2082,6 +2153,49 @@ AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,
     }
   }
   return true;
+}
+
+//____________________________________________________________________
+TH1*
+AliBasedNdetaTask::Asymmetry(TH1* h)
+{
+  if (!h) return 0;
+  
+  TH1* ret = static_cast<TH1*>(h->Clone(Form("%s_leftright", h->GetName())));
+  // Int_t    oBins = h->GetNbinsX();
+  // Double_t high  = h->GetXaxis()->GetXmax();
+  // Double_t low   = h->GetXaxis()->GetXmin();
+  // Double_t dBin  = (high - low) / oBins;
+  // Int_t    tBins = Int_t(2*high/dBin+.5);
+  // ret->SetBins(tBins, -high, high);
+  ret->SetDirectory(0);
+  ret->Reset();
+  ret->SetTitle(Form("%s (+/-)", h->GetTitle()));
+  ret->SetYTitle("Right/Left");
+  Int_t nBins = h->GetNbinsX();
+  for (Int_t i = 1; i <= nBins; i++) { 
+    Double_t x = h->GetBinCenter(i);
+    if (x > 0) break;
+    
+    Double_t c1 = h->GetBinContent(i);
+    Double_t e1 = h->GetBinError(i);
+    if (c1 <= 0) continue; 
+    
+    Int_t    j  = h->FindBin(-x);
+    if (j <= 0 || j > nBins) continue;
+    
+    Double_t c2 = h->GetBinContent(j);
+    Double_t e2 = h->GetBinError(j);
+    
+    Double_t c12 = c1*c1;
+    Double_t e   = TMath::Sqrt((e2*e2*c1*c1+e1*e1*c2*c2)/(c12*c12));
+    
+    Int_t    k   = ret->FindBin(x);
+    ret->SetBinContent(k, c2/c1);
+    ret->SetBinError(k, e);
+  }
+  
+  return ret;
 }
 
 //

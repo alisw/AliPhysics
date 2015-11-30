@@ -51,7 +51,10 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
   //MC related
   task->SetCutInjectedSignal(CutInjectedSignals);
-  //output related
+  // resolution calculation
+  task->SetCalcResolution(CalcResolution);
+  if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
+  // pair efficiency
   if(doPairing){
     Double_t MeeBins[nBinsMee+1];
     for(Int_t i=0;i<=nBinsMee;i++) { MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee; }

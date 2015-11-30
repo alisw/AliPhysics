@@ -8,143 +8,151 @@
 #include "AliEmcalTriggerChannelContainerAP.h"
 
 class TObjArray;
-class AliEmcalTriggerPatchInfo;
-class AliEmcalTriggerRawPatchAP;
+class AliEmcalTriggerPatchInfoAPV1;
 class AliEMCALGeometry;
 class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
 template<class T> class AliEmcalTriggerDataGridAP;
+template<class T> class AliEmcalTriggerAlgorithmAP;
+template<class T> class AliEmcalTriggerPatchFinderAP;
 
+/**
+ * @class AliEmcalTriggerMakerKernel
+ * @brief Kernel of the EMCAL trigger patch maker
+ *
+ * The trigger maker kernel contains the core functionality of
+ * the trigger maker:
+ * - Filling of the data grids
+ * - Steering and running the patch finders
+ * - Conversion of the raw patches obtained by the patch finders
+ *   to full EMCAL trigger patch info objects.
+ * I/O, which means interaction with the ALICE analysis system,
+ * is done outside in a dedicated steering task.
+ */
 class AliEmcalTriggerMakerKernel : public TObject {
 public:
-  /**
-   * \enum TriggerMakerTriggerType_t
-   * \brief Definition of different trigger patch types
-   *
-   * This enumeration defines the different trigger patch types
-   * processed by the trigger maker. Each trigger patch type has
-   * a certain patch size and therefore a certain length and
-   * geometric center
-   */
-  enum TriggerMakerTriggerType_t {
-    kTMEMCalJet = 0,            ///< EMCAL Jet trigger
-    kTMEMCalGamma = 1,          ///< EMCAL Gamma trigger
-    kTMEMCalLevel0 = 2,         ///< EMCAL Level0 patches
-    kTMEMCalRecalcJet = 3,      ///< EMCAL Jet patches, recalculated
-    kTMEMCalRecalcGamma = 4,    ///< EMCAL Gamma patches, recalculated
-    kTMUndefined = -1
-  };
 
+  /**
+   * Constructor
+   */
   AliEmcalTriggerMakerKernel();
+
+  /**
+   * Destructor
+   */
   virtual ~AliEmcalTriggerMakerKernel();
 
+  /**
+   * Initialize the trigger maker Kernel:
+   * - Allocates the data grids according to the EMCAL setup for
+   *   the given run (obtained from the geometry)
+   * - Initialize patch finders: Different patch finders are created
+   *   for EMCAL and DCAL both for gamma and jet patches, using the
+   *   data grids only in the active area of the EMCAL or DCAL
+   */
   void Init();
-  TObjArray *CreateTriggerPatches(const AliVEvent *inputevent);
 
-  inline Bool_t IsEJE(Int_t tBits) const;
-  inline Bool_t IsEGA(Int_t tBits) const;
-  inline Bool_t IsLevel0(Int_t tBits) const;
+  /**
+   * Run patch finders on input data. Patches are converted from raw patches into AliEMCALTriggerPatchInfo data.
+   * Trigger patches contain all information of the given category;
+   * - Bit selection map from the STU (bits for non-matching patch types are removed)
+   * - Offline trigger selection status
+   * - Recalculation trigger selection status
+   * There are no more several patches for the three categories. The only difference left over is the distinction of
+   * patch types according to
+   * - Jet patches (16x16 FAST-ors)
+   * - Gamma patches (2x2 FAST-ors)
+   * - Level0 patches (2x2 FAST-ors, using L0 amplitude and L0 times for the selection)
+   * @param inputevent Input ESD/AOD event, used for kinematics calculation
+   * @return Array of reconstructed trigger patches
+   */
+  TObjArray *CreateTriggerPatches(const AliVEvent *inputevent);
 
   void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[2][0] = a; fThresholdConstants[2][1] = b; fThresholdConstants[2][2] = c; }
   void SetTriggerThresholdJetHigh  ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[0][0] = a; fThresholdConstants[0][1] = b; fThresholdConstants[0][2] = c; }
   void SetTriggerThresholdGammaLow ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[3][1] = b; fThresholdConstants[3][2] = c; }
-  void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
-
-  void SetCaloTriggers(AliVCaloTrigger *triggers) { fCaloTriggers = triggers; }
-  void SetCaloCells(AliVCaloCells *cells) { fCaloCells = cells; }
-  void SetVZERO(AliVVZERO *vzero) { fV0 = vzero; }
-
-  void SetMC(Bool_t isMC) { fIsMC = isMC; }
-  void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
-
-  void SetGeometry(const AliEMCALGeometry *const geo) { fGeometry = geo; }
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfig *const config) { fTriggerBitConfig = config; }
-  void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
+  void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
+  void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
+  void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
+  /**
+   * Define whether running on MC or not (for offset)
+   * @param isMC Flag for MC
+   */
+  void SetIsMC(Bool_t isMC) { fIsMC = isMC; }
 
   /**
-   * Switch on rejection of patches which leave the EMCAL acceptance in \f$ \eta \f$ and \f$ \phi \f$
-   * \param doReject If true we reject patches outside the EMCAL acceptance
+   * Provide the EMCAL geometry to the trigger maker Kernel
+   * @param geo
    */
-  void SetRejectOffAcceptancePatches(Bool_t doReject = kTRUE) { fRejectOffAcceptancePatches = doReject; }
+  void SetGeometry(const AliEMCALGeometry *const geo) { fGeometry = geo; }
 
-  static const TString &GetTriggerTypeName(int index) { return fgkTriggerTypeNames[index]; }
+  /**
+   * Set the trigger bit configuration applied for the given data set
+   * @param config Trigger bit config applied
+   */
+  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP *const config) { fTriggerBitConfig = config; }
 
-  AliEmcalTriggerPatchInfo *ConvertRawPatch(const AliEmcalTriggerRawPatchAP *patch) const;
+  /**
+   * Reset data grids
+   */
+  void Reset();
+
+  /**
+   * Read the calo trigger data
+   * @param trigger Input calo trigger data
+   */
+  void ReadTriggerData(AliVCaloTrigger *trigger);
+
+  /**
+   * Read the EMCAL cell data
+   * @param cells EMCAL cell data
+   */
+  void ReadCellData(AliVCaloCells *cells);
+
+  /**
+   * Build VZERO-dependent thresholds for the offline trigger
+   * @param vzdata VERO charges
+   */
+  void BuildL1ThresholdsOffline(const AliVVZERO *vzdata);
 
 protected:
-  static const TString                      fgkTriggerTypeNames[5];       ///< Histogram name tags
-  static const int                          kColsEta;                     ///< Number of columns in eta direction
+  enum{
+    kColsEta = 48
+  };
 
-  void                                      RunSimpleOfflineTrigger();
-  Bool_t                                    NextTrigger( Bool_t &isOfflineSimple );
-  AliEmcalTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
-  Bool_t                                    CheckForL0(const AliVCaloTrigger &trg) const;
+  /**
+   * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
+   * in the same TRU
+   * @param trg Triggers object with the pointer set to the patch to inspect
+   * @return True if the patch is accepted, false otherwise.
+   */
+  Bool_t                                    CheckForL0(Int_t col, Int_t row) const;
 
   AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
-  const AliEmcalTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
-  AliEmcalTriggerSetupInfo                  *fCaloTriggerSetupOut;        //!<! trigger setup
 
-  AliEmcalTriggerDataGridAP<float>          *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEmcalTriggerDataGridAP<double>         *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
   AliEmcalTriggerDataGridAP<double>         *fPatchADCSimple;             //!<! patch map for simple offline trigger
-  AliEmcalTriggerDataGridAP<int>            *fPatchADC;                   //!<! ADC values map
+  AliEmcalTriggerDataGridAP<double>         *fPatchADC;                   //!<! ADC values map
   AliEmcalTriggerDataGridAP<char>           *fLevel0TimeMap;              //!<! Map needed to store the level0 times
+  AliEmcalTriggerDataGridAP<int>            *fTriggerBitMap;              //!<! Map of trigger bits
 
-  // Temporary objects from AliAnalysisTaskEmcal - will be refactored
-  AliVCaloCells                             *fCaloCells;
-  AliVCaloTrigger                           *fCaloTriggers;
-  AliVVZERO                                 *fV0;
-  AliAODCaloTrigger                         *fSimpleOfflineTriggers;      //!<! simple offline trigger
-  Double_t                                  fVertex[3];
+  AliEmcalTriggerPatchFinderAP<double>      *fPatchFinder;                //!<! The actual patch finder
+  AliEmcalTriggerAlgorithmAP<double>        *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
 
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
-  Bool_t                                    fIsMC;                        ///< Switch between data and MC mode
-  Int_t                                     fRunNumber;                   ///< Run number
-  Bool_t                                    fRunTriggerType[5];           ///< Run patch maker for a given trigger type
-  Bool_t                                    fRejectOffAcceptancePatches;  ///< Switch for rejection of patches outside the acceptance
+  ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
+  Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
+  Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
+  Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
-
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerMakerKernel, 1);
   /// \endcond
 };
-
-/**
- * Check whehter trigger is jet patch trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
- * @return True if fastor belongs to a jet patch trigger, false otherwise
- */
-Bool_t AliEmcalTriggerMakerKernel::IsEJE(Int_t tBits) const {
-  if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) ))
-    return kTRUE;
-  else
-    return kFALSE;
-}
-
-/**
- * Check whether trigger is gamma patch trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
- * @return True if fastor belongs to a gamma trigger, false otherwise
- */
-Bool_t AliEmcalTriggerMakerKernel::IsEGA(Int_t tBits) const {
-  if( tBits & ( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) ))
-    return kTRUE;
-  else
-    return kFALSE;
-}
-
-/**
- * Check whether trigger is level0 trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
- * @return True if fastor belongs to a level0 trigger, false otherwise
- */
-Bool_t AliEmcalTriggerMakerKernel::IsLevel0(Int_t tBits) const {
-  if( tBits & (1 << (fTriggerBitConfig->GetLevel0Bit() + fTriggerBitConfig->GetLevel0Bit()) | (1 << fTriggerBitConfig->GetLevel0Bit())))
-    return kTRUE;
-  return kFALSE;
-}
 
 #endif

@@ -198,7 +198,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutPostrackEta;
   Double_t fCutNegtrackEta;
   Double_t fCutEta;
-  Double_t fCutV0cosPointAngle;
+  Double_t fCutK0cosPointAngle;
+  Double_t fCutLacosPointAngle;
   Bool_t   fKinkDaughters;
   Bool_t   fRequireTPCRefit;
   Double_t fCutArmenteros; 
@@ -226,7 +227,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetCuttrackNegEta(Double_t negEta){fCutNegtrackEta=negEta; Printf("AliAnalysisTaskJetChem:: SetCuttrackNegEta %f",negEta);}
   void SetCutV0Eta(Double_t v0Eta){fCutEta=v0Eta; Printf("AliAnalysisTaskJetChem:: SetCutV0Eta %f",v0Eta);}
   void SetCutJetEta(Double_t jetEta){fCutjetEta=jetEta; Printf("AliAnalysisTaskJetChem:: SetCutjetEta %f",jetEta);}
-  void SetCosOfPointingAngle(Double_t cospointAng){fCutV0cosPointAngle=cospointAng; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngle %f",cospointAng);}
+  void SetCosOfPointingAngleK0(Double_t cospointAngK0){fCutK0cosPointAngle=cospointAngK0; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngleK0 %f",cospointAngK0);}
+  void SetCosOfPointingAngleLa(Double_t cospointAngLa){fCutLacosPointAngle=cospointAngLa; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngleLa %f",cospointAngLa);}
   void SetAcceptKinkDaughters(Bool_t isKinkDaughtersAccepted){fKinkDaughters=isKinkDaughtersAccepted; Printf("AliAnalysisTaskJetChem:: SetAcceptKinkDaughters %i", isKinkDaughtersAccepted);}
   void SetRequireTPCRefit(Bool_t isTPCRefit){fRequireTPCRefit=isTPCRefit; Printf("AliAnalysisTaskJetChem:: SetRequireTPCRefit %i", isTPCRefit);}
   void SetCutArmenteros(Double_t armenteros){fCutArmenteros=armenteros; Printf("AliAnalysisTaskJetChem:: SetCutArmenteros %f", armenteros);}

@@ -530,15 +530,22 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   fList->Add(fHCent);
 
   fHCentVsQual = new TH2F("centVsQuality", "Quality vs Centrality", 
-			  5, 0, 5, limits.GetSize()-1, limits.GetArray());
+			  9, 196.5, 205.5,
+			  limits.GetSize()-1, limits.GetArray());
   fHCentVsQual->SetXTitle("Quality");
   fHCentVsQual->SetYTitle("Centrality [%]");
   fHCentVsQual->SetZTitle("Events");
-  fHCentVsQual->GetXaxis()->SetBinLabel(1, "OK");
-  fHCentVsQual->GetXaxis()->SetBinLabel(2, "Outside v_{z} cut");
-  fHCentVsQual->GetXaxis()->SetBinLabel(3, "V0 vs SPD outlier");
-  fHCentVsQual->GetXaxis()->SetBinLabel(4, "V0 vs TPC outlier");
-  fHCentVsQual->GetXaxis()->SetBinLabel(5, "V0 vs ZDC outlier");
+  TAxis* qAxis = fHCentVsQual->GetXaxis();
+  qAxis->SetBinLabel(1, "OK");
+  qAxis->SetBinLabel(2, "198: beyond anchor");
+  qAxis->SetBinLabel(3, "199: no calib");
+  qAxis->SetBinLabel(4, "200: not desired trigger");
+  qAxis->SetBinLabel(5, "201: not INEL0 with tracklets");
+  qAxis->SetBinLabel(6, "202: vertex Z not within 10cm");
+  qAxis->SetBinLabel(7, "203: tagged as pileup (SPD)");
+  qAxis->SetBinLabel(8, "204: inconsistent SPD/tracking vertex");
+  qAxis->SetBinLabel(9, "205: rejected by tracklets-vs-clusters");
+
   fHCentVsQual->SetDirectory(0);
   fList->Add(fHCentVsQual);
 
@@ -795,19 +802,14 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     if (fDebug > 3) 
       AliWarning("Failed to get centrality");
   }
-  // --- check centrality cut
- 
-  if(fMinCent > -0.0001 && cent < fMinCent) return  kNoEvent; 
-  if(fMaxCent > -0.0001 && cent > fMaxCent) return  kNoEvent; 
-  if (cent >= 0) fHCent->Fill(cent);
-  if (qual == 0) fHCentVsQual->Fill(0., cent);
-  else { 
-    fHStatus->Fill(8);
-    for (UShort_t i = 0; i < 4; i++) 
-      if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
-  }
-	
+  // --- check centrality cut 
+  if (fMinCent > -0.0001 && cent < fMinCent) return  kNoEvent; 
+  if (fMaxCent > -0.0001 && cent > fMaxCent) return  kNoEvent; 
 
+  if (cent >= 0) {
+    fHCent->Fill(cent);
+    fHCentVsQual->Fill((qual == 0 ? 197 : qual), cent);
+  }
   fHEventsTrVtx->Fill(ip.Z());
   
   // --- Get the vertex bin ------------------------------------------
@@ -1467,11 +1469,19 @@ AliFMDEventInspector::CheckVertex(const AliESDEvent& esd,
   ip.SetZ(vertex->GetZ());
   const AliESDVertex* vertexXY = esd.GetPrimaryVertex();
     
-  
-  if(!vertexXY->IsFromVertexerZ()) {
-    ip.SetX(vertexXY->GetX());
-    ip.SetY(vertexXY->GetY());
-  }
+  DMSG(fDebug, 2, "Read vertex: Primary (%f,%f,%f) [%3s] SPD (%f,%f,%f) [%3s]",
+       vertexXY->GetX(), vertexXY->GetY(), vertexXY->GetZ(),
+       vertexXY->IsFromVertexerZ() ? "Z" : "XYZ",
+       vertex  ->GetX(), vertex  ->GetY(), vertex  ->GetZ(),
+       vertex  ->IsFromVertexerZ() ? "Z" : "XYZ");
+
+  // If from vertexer Z, we get the mean of X and Y
+  ip.SetX(vertexXY->GetX());
+  ip.SetY(vertexXY->GetY());
+  // if(!vertexXY->IsFromVertexerZ()) {
+  //   ip.SetX(vertexXY->GetX());
+  //   ip.SetY(vertexXY->GetY());
+  // }
   return kVtxOK;
 }
 

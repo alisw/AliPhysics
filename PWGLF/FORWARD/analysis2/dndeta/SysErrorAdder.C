@@ -228,10 +228,11 @@ struct SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l)
+  virtual GraphSysErr* Make(TH1* h, TLegend* l, Double_t eff=1,
+			    Bool_t verb=false)
   {
     // --- Reaction key ------------------------------------------------
-    Info("", "Making graph from %s %p", h->GetName(), l);
+    if (verb) Info("", "Making graph from %s %p", h->GetName(), l);
     TString reac = fSys;
     reac.ToUpper();
     reac.Insert(reac.Index("P", 1, 1, TString::kIgnoreCase), " ");
@@ -272,7 +273,8 @@ struct SysErrorAdder
     Int_t idHad   = MakeHadron(gse, l);
 
     Int_t cnt = 0;
-    Info("", "Looping over histogram w/%d bins", h->GetNbinsX());
+    if (verb) 
+      Info("", "Looping over histogram w/%d bins", h->GetNbinsX());
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
       Double_t y  = h->GetBinContent(i);
       if (y < 1e-6) continue;
@@ -280,9 +282,9 @@ struct SysErrorAdder
       Double_t ex = h->GetXaxis()->GetBinWidth(i)/2;
       Double_t x  = h->GetXaxis()->GetBinCenter(i);
 
-      gse->SetPoint(cnt, x, y);
+      gse->SetPoint(cnt, x, eff*y);
       gse->SetPointError(cnt, ex);
-      gse->SetStatError(cnt, ey);
+      gse->SetStatError(cnt, eff*ey);
 
       if (idMerge>=0)
 	gse->SetSysError(idMerge, cnt, ex, ex, GetMerging(-1), GetMerging(1));
@@ -296,7 +298,44 @@ struct SysErrorAdder
     }
     return gse;
   }
+  static SysErrorAdder* Create(const TString& t,
+			       const TString& s,
+			       UShort_t       e,
+			       const TString& c);
 };
+/**
+ * For pp INEL results
+ * 
+ */
+struct OfflineAdder : public SysErrorAdder
+{
+  /** 
+   * Constructor 
+   * 
+   * @param sys Collision system 
+   * @param sNN Collision energy
+   */
+  OfflineAdder(const TString& sys, UShort_t sNN)
+    : SysErrorAdder(sys, sNN, "OFFLINE")
+  {
+  }
+  /** 
+   * Get trigger systematic error 
+   * 
+   * @param low   On return, the low error 
+   * @param high  On return, the high error
+   */
+  virtual void GetTrigger(Double_t& low, Double_t& high) const
+  {
+    low  = 0;
+    high = 0;
+  }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    return -1;
+  }
+};
+
 /**
  * For pp INEL results
  * 
@@ -319,9 +358,10 @@ struct INELAdder : public SysErrorAdder
       switch (fSNN) {
       case  900:   fLow = 0.001;  fHigh = 0.003; break;
       case 2760:   fLow = 0.0035; fHigh = 0.006; break;
+      case 5023:   fLow = fHigh = 0.028;         break; 
       case 7000: 
       case 8000:   fLow = 0.003;  fHigh = 0.006; break;
-      case 13000:  fLow = fHigh = 0.028; break;
+      case 13000:  fLow = fHigh = 0.028;         break;
       default: break;
       }
     }
@@ -344,7 +384,7 @@ struct INELAdder : public SysErrorAdder
   }
 };
 /**
- * For pp INEL results
+ * For pp INEL>0 results
  * 
  */
 struct INELGt0Adder : public SysErrorAdder
@@ -528,11 +568,17 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @return Centrality 
    */
-  Double_t GetCentrality(TH1* h) 
+  Double_t GetCentrality(TH1* h, Bool_t verb=false) 
   {
     TString name(h->GetName());
-    Info("", "Extracting centrality from %s", name.Data());
+    if (verb) 
+      Info("", "Extracting centrality from %s", name.Data());
     Int_t idx = name.Index("_cent");
+    if (idx == kNPOS) {
+      Warning("GetCentrality", "Don't know how to parse %s",
+	      name.Data());
+      return -1;
+    }
     name.Remove(0,idx+5);
     name.ReplaceAll("d", ".");
     name.ReplaceAll("_", " ");
@@ -568,9 +614,39 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @return Graph 
    */  
-  virtual GraphSysErr* Make(TH1* h, TLegend* l)
+  virtual GraphSysErr* Make(TH1*     h,
+			    TLegend* l,
+			    Double_t eff=1,
+			    Bool_t   verb=false)
   {
-    fCent = GetCentrality(h);
-    return SysErrorAdder::Make(h, l);
+    fCent = GetCentrality(h, verb);
+    if (fCent < 0) return 0;
+    return SysErrorAdder::Make(h, l, eff, verb);
   }
 };
+
+
+SysErrorAdder*
+SysErrorAdder::Create(const TString& t,
+		      const TString& s,
+		      UShort_t       e,
+		      const TString& c)
+{
+  TString tt(t);
+  tt.ToUpper();
+
+  SysErrorAdder* a = 0;
+  if (tt.EqualTo("OFFLINE")    ||tt.EqualTo("UNKNOWN"))a=new OfflineAdder(s,e);
+  else if (tt.EqualTo("INEL")  ||tt.EqualTo("MBOR"))   a=new INELAdder(s,e);
+  else if (tt.EqualTo("INEL>0")||tt.EqualTo("INELGT0"))a=new INELGt0Adder(s,e);
+  else if (tt.EqualTo("NSD")   ||tt.EqualTo("V0AND"))  a=new NSDAdder(s,e);
+  else                                                 a=new CENTAdder(s,e,c);
+  Info("Create", "Created %s adder for %s/%s/%hu/%s: %p",
+       a->GetTriggerString(), t.Data(), s.Data(), e, c.Data(), a);
+  return a;
+}
+
+
+//
+// EOF
+//

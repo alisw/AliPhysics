@@ -15,22 +15,19 @@ fContainer(0),
 fMinFractionShared(-1),
 fLeadingJetOnly(0),
 fTreeJets(0),
-fJetDet(),
-fJetPart(),
-fJetDetL(),
-fJetPartL(),
+fJetDet(0),
+fJetPart(0),
+fJetDetL(0),
+fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0)
 {
    /// default constructor
-   //fJetGenSub = new TLorentzVector();
-   //fJetConSub = new TLorentzVector();
-   //fJetPart1   = new TLorentzVector();
-   //fJetPart2   = new TLorentzVector();
+   
    SetMakeGeneralHistograms(kTRUE);
    
-   //DefineOutput(2, TTree::Class());
+   DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________________________________
@@ -39,10 +36,10 @@ fContainer(0),
 fMinFractionShared(-1),
 fLeadingJetOnly(0),
 fTreeJets(0),
-fJetDet(),
-fJetPart(),
-fJetDetL(),
-fJetPartL(),
+fJetDet(0),
+fJetPart(0),
+fJetDetL(0),
+fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0)
@@ -52,6 +49,7 @@ fNAccJets(0)
    
    SetMakeGeneralHistograms(kTRUE);
    AliInfo("standard constructor");
+   DefineOutput(2, TTree::Class());
 }
 //________________________________________________________________________________________________
 
@@ -59,21 +57,23 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    /// Create output
    AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-   fJetDet.SetPtEtaPhiM(0,0,0,0);
-   fJetPart.SetPtEtaPhiM(0,0,0,0);
-   fJetDetL.SetPtEtaPhiM(0,0,0,0);
-   fJetPartL.SetPtEtaPhiM(0,0,0,0);
+   fJetDet   = new TLorentzVector();
+   fJetPart  = new TLorentzVector();
+   fJetDetL  = new TLorentzVector();
+   fJetPartL = new TLorentzVector();
    
    fTreeJets = new TTree("fTreeJet", "fTreeJet");
+   //Important! 'dot' after the name needed -- see TTree doc! otherwise the objects in the branches have all the same name and the output cannot be properly retrieved (only with the TBrowser)
    if(fLeadingJetOnly){
-      fTreeJets->Branch("fJetDetL", &fJetDetL);
-      fTreeJets->Branch("fJetPartL",&fJetPartL);
+      fTreeJets->Branch("fJetDetL.", fJetDetL);
+      fTreeJets->Branch("fJetPartL.",fJetPartL);
    } else {
-      fTreeJets->Branch("fJetDet", &fJetDet);
-      fTreeJets->Branch("fJetPart",&fJetPart);
+      fTreeJets->Branch("fJetDet.", fJetDet);
+      fTreeJets->Branch("fJetPart.",fJetPart);
    }
-   fOutput->Add(fTreeJets);
-
+   //fOutput->Add(fTreeJets);
+   PostData(2, fTreeJets);
+   
    //check
    const Int_t nBinsPt          = 40;
    const Int_t nBinsFraction    = 101;
@@ -115,8 +115,8 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
    }
    
    //TVector for leading jet
-   fJetDetL .SetPtEtaPhiM(0,0,0,0);
-   fJetPartL.SetPtEtaPhiM(0,0,0,0);
+   fJetDetL ->SetPtEtaPhiM(0,0,0,0);
+   fJetPartL->SetPtEtaPhiM(0,0,0,0);
       
    Int_t count = 0;
    jetCont->ResetCurrentID();
@@ -126,8 +126,8 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       if(!acc) {
       	 continue;
       }
-      fJetDet  .SetPtEtaPhiM(0,0,0,0);
-      fJetPart .SetPtEtaPhiM(0,0,0,0);
+      fJetDet  ->SetPtEtaPhiM(0,0,0,0);
+      fJetPart ->SetPtEtaPhiM(0,0,0,0);
       
       count++;
       fNumberOfJets->Fill(0);
@@ -141,12 +141,12 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       fhFractionSharedpT->Fill(jet->Pt(), fraction);
       if(fMinFractionShared<0. || fraction>fMinFractionShared) {
       	 fNumberOfJets->Fill(2);
-      	 fJetDet .SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
-      	 fJetPart.SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
+      	 fJetDet ->SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
+      	 fJetPart->SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
       	
-      	 if(fJetDet.Pt() > fJetDetL.Pt()){
-      	    fJetDetL.SetPtEtaPhiM(fJetDet.Pt(), fJetDet.Eta(), fJetDet.Phi(), fJetDet.M());
-      	    fJetPartL.SetPtEtaPhiM(fJetPart.Pt(), fJetPart.Eta(), fJetPart.Phi(), fJetPart.M());
+      	 if(fJetDet->Pt() > fJetDetL->Pt()){
+      	    fJetDetL->SetPtEtaPhiM(fJetDet->Pt(), fJetDet->Eta(), fJetDet->Phi(), fJetDet->M());
+      	    fJetPartL->SetPtEtaPhiM(fJetPart->Pt(), fJetPart->Eta(), fJetPart->Phi(), fJetPart->M());
       	 
       	 }
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
@@ -157,7 +157,7 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
    fNAccJets->Fill(count);
    
    if(fLeadingJetOnly) {
-      if(fJetPartL.Pt() > 0){ // fill only when there is a leading jet
+      if(fJetPartL->Pt() > 0){ // fill only when there is a leading jet
       	 fTreeJets->Fill();
       }
    }

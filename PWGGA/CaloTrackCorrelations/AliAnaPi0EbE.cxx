@@ -641,11 +641,11 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
     
-    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-    {
-      dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-    }
+//    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+//    {
+//      dR = 2000., dZ = 2000.;
+//      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+//    }
     //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
     
     AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());

@@ -1,12 +1,23 @@
 /// \file runEMCALTimeCalibTask.C
 /// \brief macro to run Time Calibration Task
 ///
-/// Run in two steps. 
+/// For Run1 data run in two iterations. 
 /// 1. First iteration over statistics gives calibration constants.
 /// Remember to apply energy cuts. We want to take into account only GOOD cells.
-/// 2. Run method ProduceCalibConsts(inputFile,outputFile) to obtain reference 
+/// 2. Run method ProduceCalibConsts(inputFile,outputFile,fFALSE) to obtain reference 
 /// file with constants. 
 /// 3. Second iteration with applied consatants plus extra timing cut gives corrected calibration constants.
+/// 4. Extract final calib constants ProduceCalibConsts(inputFile,outputFile,kTRUE).
+///
+/// For Run2 data run in three iterations. 
+/// 1. The same as 1 point for Run1 but run by run.
+/// 2. The same as 2 point for Run1 but run by run.
+/// 3. Extract L1 phase via ProduceOffsetForSMsV2(runNumber,inputFile,outputFile)
+/// to obtain phases per run; outputFile is the same.
+/// 4. Second iteration with info from L1 phase with loose time criteria
+/// 5. Run method ProduceCalibConsts(inputFile,outputFile,kTRUE) to obtain reference 
+/// file with constants for whole collection.
+/// 6. Third iteration with applied consatants plus L1phases, plus extra timing cut gives corrected calibration constants.
 ///
 /// \param type: Int_t, local or grid processing
 /// \param isESD: Bool_t, flag to process ESD or AOD
@@ -50,10 +61,6 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
   gSystem->AddIncludePath("-I$ALICE_ROOT");
   gSystem->AddIncludePath("-I$ALICE_PHYSICS");
   gSystem->AddIncludePath("-I./");     
-
-  // 	// test with lib from PWGGA train
-  
-
 
 
   //ANALYSIS PART
@@ -125,7 +132,18 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
   //  reco->SwitchOnRejectExoticCluster();
 
   taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
-  taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  //taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+
+  // to load reference histograms run-by-run in pass2
+  //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_v3.root");
+  //taskmbemcal->SetMinTime(300);
+  //taskmbemcal->SetMaxTime(900);
+  //taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+
+  // to load reference calibration constants in pass3
+  //taskmbemcal->SetReferenceFileName("Reference_LHC15i.root");
+  //taskmbemcal->LoadReferenceHistos();
+  //taskmbemcal->SetPassTimeHisto(1400,-350.,350.);
 
   //taskmbemcal->SelectCollisionCandidates(AliVEvent::kAnyINT);
   //taskmbemcal->SetDebugLevel(10);

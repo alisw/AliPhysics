@@ -262,7 +262,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
@@ -316,6 +316,8 @@ install(FILES TOF/trending/MakeTrendingTOFQA.C
               DESTINATION PWGPP/TOF/trending)
 install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
+install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".C")
+install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".sh")
 install(DIRECTORY TRD/macros DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.C")
 install(FILES TRD/run.C TRD/runQAesds.C TRD/cacheOCDB.C DESTINATION PWGPP/TRD)
 install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C

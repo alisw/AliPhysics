@@ -44,7 +44,11 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
     TString contName(wagonName);
     TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    contName.Append("Tree");
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    
     mgr->ConnectOutput(task,1,coutput1);
+    mgr->ConnectOutput(task,2,coutput2);
 
     return task;
 }

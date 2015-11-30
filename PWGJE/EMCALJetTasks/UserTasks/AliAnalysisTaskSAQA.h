@@ -80,6 +80,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistDeltaPtvsPt;       //!Pt-PtProp vs. Pt
 
   // Clusters
+  TH3                       **fHistClusPosition;           //!Position of the clusters (in cm)
   TH3                       **fHistClusPhiEtaEnergy;       //!Phi-Eta-Energy distribution of clusters
   TH2                       **fHistClusDeltaPhiEPEnergy;   //!DeltaPhi EP vs Energy of clusters
   TH2                       **fHistNCellsEnergy;           //!Number of cells vs. energy of cluster

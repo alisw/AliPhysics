@@ -84,12 +84,18 @@ if(FASTJET_FOUND)
     set(HDRS ${HDRS}
         ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h
     )
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
+    if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
+      set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
+    endif()
+  endif(ROOT_VERSION_MAJOR EQUAL 6)
 endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Matrix Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice CORRFW JETAN PWGTools PWGflowTasks PWGTRD)
@@ -117,8 +123,8 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

@@ -27,20 +27,23 @@ public:
   AliEmcalTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
   virtual ~AliEmcalTriggerAlgorithmAP();
 
-  void SetRowMin(Int_t rowmin);
-  void SetRowMax(Int_t rowmax);
-  void SetThreshold(Double_t threshold);
-  void SetBitMask(ULong_t bitmask);
-  void SetPatchSize(Int_t patchsize);
+  void SetRowMin(Int_t rowmin) { fRowMin = rowmin; }
+  void SetRowMax(Int_t rowmax) { fRowMax = rowmax; }
+  void SetThresholds(Float_t th, Float_t offTh) { fThreshold = th; fOfflineThreshold = offTh; }
+  void SetBitMask(UInt_t bitmask) { fBitMask = bitmask; }
+  void SetPatchSize(Int_t patchsize) { fPatchSize = patchsize; }
+  void SetSubregionSize(Int_t subregionSize) { fSubregionSize  = subregionSize; }
 
-  virtual std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc) const;
+  virtual std::vector<AliEmcalTriggerRawPatchAP> FindPatches(const AliEmcalTriggerDataGridAP<T> &adc, const AliEmcalTriggerDataGridAP<T> &offlineAdc) const;
 
 protected:
   int                               fRowMin;
   int                               fRowMax;
   int                               fPatchSize;
+  int                               fSubregionSize;
   ULong_t                           fBitMask;
   double                            fThreshold;
+  double                            fOfflineThreshold;
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerAlgorithmAP, 1);
@@ -88,5 +91,18 @@ public:
   ClassDef(AliEmcalGammaTriggerAlgorithmAP, 1);
   /// \endcond
 };
+
+template<typename T>
+class AliEmcalBkgTriggerAlgorithmAP : public AliEmcalTriggerAlgorithmAP<T> {
+public:
+  AliEmcalBkgTriggerAlgorithmAP();
+  AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
+  virtual ~AliEmcalBkgTriggerAlgorithmAP();
+
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalBkgTriggerAlgorithmAP, 1);
+  /// \endcond
+};
+
 
 #endif

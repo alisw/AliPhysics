@@ -26,7 +26,17 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskHMTFMCMultEst.cxx
-  AliMultiplicityEstimator.cxx
+  AliEventClassifierBase.cxx
+  AliEventClassifierMult.cxx
+  AliEventClassifierMPI.cxx
+  AliEventClassifierSphericity.cxx
+  AliEventClassifierSpherocity.cxx
+  AliEventClassifierQ2.cxx
+  AliIsPi0PhysicalPrimary.cxx
+  AliObservableBase.cxx
+  AliObservableClassifierpTPID.cxx
+  AliObservableCorrelationsOfClassifiers.cxx
+  AliObservableEtaNch.cxx
   MonteCarlo/AliAnalysisTaskHMTFMC.cxx
   )
 
@@ -39,7 +49,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
@@ -73,8 +83,10 @@ install (FILES
 
 set (INPUT_FILES
   MonteCarlo/template.jdl
+  MonteCarlo/templateEPOS3111.jdl
   MonteCarlo/DIPSYpp_HepMC.in
   MonteCarlo/crmc_template.param
+  MonteCarlo/pp.optns
   MonteCarlo/LoadLibs.C
   MonteCarlo/rungen.C
   MonteCarlo/runTask.C

@@ -298,8 +298,8 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   //----------------------------------------------------------------
   
   //acceptance correction  triangle  or mixed fevent
-  //  fGeometricAcceptanceCorrection = 1;
-  fGeometricAcceptanceCorrection = ( fsamplingMethod == 0 ) ? GetGeoAccCorrFlat(fDeltaEta) : GetGeoAccCorrIncl(fDeltaEta);
+    fGeometricAcceptanceCorrection = 1;
+  // fGeometricAcceptanceCorrection = ( fsamplingMethod == 0 ) ? GetGeoAccCorrFlat(fDeltaEta) : GetGeoAccCorrIncl(fDeltaEta);
   
   
   if(fpttBin<0 || fptaBin<0 || fEtaGapBin<0 ){

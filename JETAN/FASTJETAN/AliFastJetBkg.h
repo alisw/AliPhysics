@@ -22,6 +22,7 @@ namespace fastjet {
 }
 #endif
 class TString;
+class TClonesArray;
 class AliFastJetInput;
 
 class AliFastJetBkg : public TObject

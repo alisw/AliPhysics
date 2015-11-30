@@ -30,6 +30,7 @@ class TH2F;
 class TProfile;
 class TFile;
 class TList;
+class TClonesArray;
 
 //class AliCFManager;
 class AliESDtrackCuts;

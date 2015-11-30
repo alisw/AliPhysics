@@ -2904,11 +2904,11 @@ void  AliAnaInsideClusterInvariantMass::FillTrackMatchingHistograms(AliVCluster 
   Float_t dR  = cluster->GetTrackDx();
   Float_t en  = cluster->E();
   
-  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
-  {
-    dR = 2000., dZ = 2000.;
-    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-  }
+//  if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+//  {
+//    dR = 2000., dZ = 2000.;
+//    GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+//  }
   
   //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
   

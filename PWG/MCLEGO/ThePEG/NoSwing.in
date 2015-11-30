@@ -1,0 +1,26 @@
+read ../input/LHCpp.in
+set LHCGenerator:EventHandler:LuminosityFunction:Energy 7000
+
+set Frag8:FragmentationScheme pythia
+set Frag8:StringZ_aLund 0.30
+set Frag8:StringZ_bLund 0.36
+set Frag8:StringPT_sigma 0.32
+set Frag8:StringFlav_probQQtoQ 0.082
+set Frag8:StringFlav_probStoUD 0.22
+
+erase AriadneCascade:Emitters[0]
+
+set LHCEventHandler:LambdaQCD  2.542575e-01
+set LHCEventHandler:RMax  1.094638e+00
+set stdEmitter:PMinusOrdering  3.679527e-01
+set stdEmitter:PTScale  1.251578e+00
+
+set LHCGenerator:EventHandler:DecayHandler:MaxLifeTime 10
+
+
+set LHCEventHandler:LambdaQCD  2.941683e-01
+set LHCEventHandler:RMax       1.053750e+00
+set stdEmitter:PMinusOrdering  3.108775e-01
+set stdEmitter:PTScale         1.155761e+00
+
+saverun NoSwing LHCGenerator

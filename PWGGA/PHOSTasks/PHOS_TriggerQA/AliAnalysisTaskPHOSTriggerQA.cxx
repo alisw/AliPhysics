@@ -86,45 +86,45 @@ void AliAnalysisTaskPHOSTriggerQA::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH1F("hNtr","Number of fired 4x4 regions per event",nTrMax,0.,trMax));
 
-  for(Int_t sm=1; sm<4; sm++) {
+  for(Int_t sm=1; sm<5; sm++) {
 
     snprintf(key,55,"hNtrSM%d",sm);
-    snprintf(titl,55,"Number of fired 4x4 regions in SM%d",sm);
+    snprintf(titl,55,"Number of fired 4x4 regions in SM%d",5-sm);
     fOutputContainer->Add(new TH1F(key,titl,nTrMax/3,0.,trMax/3));
     
     snprintf(key,55,"h4x4SM%d",sm);
-    snprintf(titl,55,"SM%d 4x4 occupancy",sm);
+    snprintf(titl,55,"SM%d 4x4 occupancy",5-sm);
     fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
 
     snprintf(key,55,"h4x4CluSM%d",sm);
-    snprintf(titl,55,"SM%d 4x4 occupancy associated with clusters (E>2GeV)",sm);
+    snprintf(titl,55,"SM%d 4x4 occupancy associated with clusters (E>2GeV)",5-sm);
     fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
 
     snprintf(key,55,"hCluSM%d",sm);
-    snprintf(titl,55,"SM%d cluster occupancy",sm);
+    snprintf(titl,55,"SM%d cluster occupancy",5-sm);
     fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
  
     snprintf(key,55,"hCluTSM%d",sm);
-    snprintf(titl,55,"SM%d triggered cluster occupancy",sm);
+    snprintf(titl,55,"SM%d triggered cluster occupancy",5-sm);
     fOutputContainer->Add(new TH2F(key,titl,nRows,0.,nRows,nCols,0.,nCols));
    
     snprintf(key,55,"hPhotAllSM%d",sm);
-    snprintf(titl,55,"SM%d cluster energy",sm);
+    snprintf(titl,55,"SM%d cluster energy",5-sm);
     fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
 
     for(Int_t iTRU=1; iTRU<=8; iTRU++) {
       snprintf(key,55,"hPhotAllSM%dTRU%d",sm,iTRU);
-      snprintf(titl,55,"SM%d: clusters energy in TRU%d",sm,iTRU);
+      snprintf(titl,55,"SM%d: clusters energy in TRU%d",5-sm,iTRU);
       fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
     }
     
     snprintf(key,55,"hPhotTrigSM%d",sm);
-    snprintf(titl,55,"SM%d triggered cluster energy",sm);
+    snprintf(titl,55,"SM%d triggered cluster energy",5-sm);
     fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
     
     for(Int_t iTRU=1; iTRU<=8; iTRU++) {
       snprintf(key,55,"hPhotTrigSM%dTRU%d",sm,iTRU);
-      snprintf(titl,55,"SM%d: triggered clusters energy in TRU%d",sm,iTRU);
+      snprintf(titl,55,"SM%d: triggered clusters energy in TRU%d",5-sm,iTRU);
       fOutputContainer->Add(new TH1F(key,titl,nPtPhot,0.,ptPhotMax));
     }
     

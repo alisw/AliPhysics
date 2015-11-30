@@ -764,7 +764,7 @@ Int_t
 AliHistogramCollection::NumberOfHistograms() const
 {
   /// Get the number of histograms we hold
-  TIter next(CreateIterator(this));
+  TIter next(CreateIterator());
   Int_t n(0);
   while ( next() ) ++n;
   return n;
