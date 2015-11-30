@@ -140,7 +140,7 @@ protected:
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,7);
+  ClassDef(AliPerformanceObject,8);
 };
 
 #endif
