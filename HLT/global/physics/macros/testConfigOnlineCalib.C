@@ -6,22 +6,22 @@ void testConfigOnlineCalib()
 
 	if (1)
 	{
-		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3  -MinTracks=5 -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C('TPCCalib:CalibTimeDrift')");
+		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3 -MinTracks=5 -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C(\"TPCCalib:CalibTimeDrift\")");
 //		AliHLTConfiguration calib2("myCalibration2", "TPCCalibManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3");
 		AliHLTConfiguration calibmerge("myCalibrationMerger" , "RootObjectMerger" , "myCalibration1" , "-QueueDepth 0 -cumulative");
 		AliHLTConfiguration preproc("myTPCOfflinePreprocessor" , "TPCOfflinePreprocessorWrapper" , "myCalibrationMerger" , "-QueueDepth 0");
 
 		AliHLTConfiguration eventTrigger("myCustomTrigger", "Zero", "TPC-DP", "");
 
-		AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myTPCOfflinePreprocessor", "-ZMQsocketMode PUB -ZMQendpoint @tcp://*:60201");
-		AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "-ZMQsocketMode SUB -ZMQendpoint >tcp://localhost:60201");
+		AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myCalibrationMerger", "out=PUB@tcp://*:60203");
+		AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "in=SUB+tcp://localhost:60203");
 
 		AliHLTConfiguration mapPrepare1("myMapPrepare1", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 0 -MaxSector 35");
 		AliHLTConfiguration mapPrepare2("myMapPrepare2", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 36 -MaxSector 71");
 		AliHLTConfiguration mapPreparemerge("myMapPrepare", "RootObjectMerger", "myMapPrepare1 myMapPrepare2", "-QueueDepth 0");
 
 		TString clusterTransformation = "TPC-ClusterTransformation";
-		AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-initialize-on-the-fly");
+		AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-update-object-on-the-fly");
 
 		AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalibrationMerger myTPCOfflinePreprocessor myZMQsink GLOBAL-esd-converter", "-directory testDir -datafile test.root");
 	}
