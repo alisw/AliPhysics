@@ -42,7 +42,7 @@ Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoRequest(void* /*socket*/);
 
 //merger private functions
-void ResetOutputData(Bool_t force=kFALSE);
+int ResetOutputData(Bool_t force=kFALSE);
 Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
 int RemoveEntry(TObject* object);
@@ -233,8 +233,10 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
     
     if (runnumber!=fRunNumber) 
     {
-      if (fVerbose) printf("Run changed, resetting!\n");
-      ResetOutputData(fAllowResetAtSOR);
+      if (ResetOutputData(fAllowResetAtSOR)>0)
+      {
+        if (fVerbose) printf("Run changed, resetting!\n");
+      }
     }
    fRunNumber = runnumber; 
 
@@ -440,9 +442,14 @@ Int_t DoSend(void* socket)
 }
 
 //______________________________________________________________________________
-void ResetOutputData(Bool_t force)
+int ResetOutputData(Bool_t force)
 {
-  if (fAllowGlobalReset || force) fMergeObjectMap.DeleteAll();
+  if (fAllowGlobalReset || force) 
+  {
+      fMergeObjectMap.DeleteAll();
+      return 1;
+  }
+  return 0;
 }
 
 //_______________________________________________________________________________________
