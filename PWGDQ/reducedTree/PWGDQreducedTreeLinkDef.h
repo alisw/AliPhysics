@@ -6,7 +6,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliAnalysisTaskReducedEventProcessor+;
 #pragma link C++ class AliAnalysisTaskReducedTreeMaker+;
 #pragma link C++ class AliHistogramManager+;
 #pragma link C++ class AliMixingHandler+;
