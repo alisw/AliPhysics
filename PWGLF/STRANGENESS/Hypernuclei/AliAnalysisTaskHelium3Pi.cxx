@@ -712,8 +712,8 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   Double_t OrbitNumber=0.;
   Double_t PeriodNumber=0.;
   //RAMONA
-  //  Double_t        Helium3Mass = 2.80839; 
-  Double_t        Helium3Mass = 2.80894; //tri-mass
+  Double_t        Helium3Mass = 2.80839; 
+  //  Double_t        Helium3Mass = 2.80894; //tri-mass
   Double_t        PionMass    = 0.13957; 
   // TLORENTZ vectors
   
@@ -1156,8 +1156,8 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       if (PionTrack) 
 	DcaPionToPrimVertex = TMath::Abs(PionTrack->GetD(xPrimaryVertex, yPrimaryVertex,lMagneticField)); //OK
       
-      //      if(DcaPionToPrimVertex<0.2)continue; 
-      if(DcaPionToPrimVertex<0.1)continue; 
+      if(DcaPionToPrimVertex<0.2)continue; 
+      //      if(DcaPionToPrimVertex<0.1)continue; 
      
       
       AliExternalTrackParam trackInPion(*PionTrack);  
@@ -1180,7 +1180,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	if ( DcaPionToPrimVertex < fgDNmin)                //OK
 	  if ( DcaHeToPrimVertex < fgDNmin) continue;    //OK
   
-	if(DcaHeToPrimVertex<0.1)continue; 
+	//if(DcaHeToPrimVertex<0.1)continue; 
     	
 	Double_t xn, xp;
 	Double_t dca=0.;
@@ -1248,7 +1248,8 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	//RAMONA
 	//	vHelium.SetXYZM(2*momHeVettAt[0],2*momHeVettAt[1],2*momHeVettAt[2],Helium3Mass); 
 	//new
-	vHelium.SetXYZM(momHeVettAt[0],momHeVettAt[1],momHeVettAt[2],Helium3Mass); 
+	//	vHelium.SetXYZM(momHeVettAt[0],momHeVettAt[1],momHeVettAt[2],Helium3Mass); 
+	vHelium.SetXYZM(2*momHeVettAt[0],2*momHeVettAt[1],2*momHeVettAt[2],Helium3Mass); 
 	vPion.SetXYZM(momPionVettAt[0],momPionVettAt[1],momPionVettAt[2],PionMass);       
 	vSum=vHelium+vPion;
 	
