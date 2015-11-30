@@ -129,21 +129,32 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
 // is done in the ITS only. In the standard reconstruction chain this option
 // can be set via AliReconstruction::SetOption("ITS","onlyITS")
   Int_t rc=0;
-
+  TStopwatch sw;
   if(!fITSStandAlone){
+    sw.Start();
     rc=AliITStrackerMI::Clusters2Tracks(event);
+    sw.Stop();
+    AliInfoF("timingMI: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
   }
   else {
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
   }
   if(!rc){ 
-    if (event->GetNumberOfTPCClusters()) rc=FindTracks(event,kFALSE); //RS: do complementary reco if there are TPC clusters
+    if (event->GetNumberOfTPCClusters()) {
+      sw.Start();
+      rc=FindTracks(event,kFALSE); //RS: do complementary reco if there are TPC clusters
+      sw.Stop();
+      AliInfoF("timingSAcompl: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+    }
     Int_t nSPDcontr=0;
     const AliESDVertex *spdv = event->GetPrimaryVertexSPD();
     if(spdv) nSPDcontr = spdv->GetNContributors();
     if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kTRUE && 
        nSPDcontr<=AliITSReconstructor::GetRecoParam()->GetMaxSPDcontrForSAToUseAllClusters()) {
+      sw.Start();
       rc=FindTracks(event,kTRUE);
+      sw.Stop();
+      AliInfoF("timingSApure: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
     }
   }
   return rc;
