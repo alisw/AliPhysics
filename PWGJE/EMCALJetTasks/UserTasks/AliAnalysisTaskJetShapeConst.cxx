@@ -245,6 +245,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       
       //Fill histograms for matched jets
       fh2MSubMatch[fCentBin]->Fill(var,fMatch);
+      
       if(fMatch==1) {
       	 Double_t drToLJ = -1.;
       	 if(jetL) drToLJ = jet1->DeltaR(jetL);
@@ -270,10 +271,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	       mJetR  = vecpe->M();
       	       var2   = vecpe->M();
       	       ptJetR = vecpe->Pt();
-      	       
       	    }
       	 }
-      	 
+	 
       	 if(fJetMassVarType==kRatMPt) {
       	    if(ptJetR>0. || ptJetR<0.) var2 /= ptJetR;
       	 }

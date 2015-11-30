@@ -20,6 +20,8 @@
 
 #include "AliJetModelBaseTask.h"
 
+class TTree;
+
 class AliJetEmbeddingTask : public AliJetModelBaseTask {
  public:
   AliJetEmbeddingTask();
@@ -67,11 +69,12 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Int_t          fCurrentEntry;           ///< Current TTree entry
   TList          *fInput;                 //!<! Input histograms saved in this list
   Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
+  
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 6) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 7) /// Jet embedding task
   /// \endcond
 };
 #endif

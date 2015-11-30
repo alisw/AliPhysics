@@ -153,11 +153,12 @@ void AliJetEmbeddingTask::Run()
        	     }
        	     pTemb = jetDet->Pt();
        	     //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
-       	     fCurrentEntry++;
+
        	     if (pTemb >= fMinPtEmb) {
-       	     	AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
+       	     	AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, fCurrentEntry, charge, jetDet->M());
        	     	//Printf("Embedded (pT = %.2f)!!!!", jetDet->Pt());
        	     }
+       	     fCurrentEntry++;
        	  }
        } else {
        	  
