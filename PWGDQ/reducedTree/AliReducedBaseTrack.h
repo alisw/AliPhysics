@@ -93,6 +93,12 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT19 toggled if bayes probability > 0.7
                                                    // BIT20 toggled if bayes probability > 0.8
                                                    // BIT21 toggled if bayes probability > 0.9
+                                                   // For AliReducedPairInfo objects
+                                                   // BIT1 toggled for pure V0 K0s candidates
+                                                   // BIT2 toggled for pure V0 Lambda candidates
+                                                   // BIT3 toggled for pure V0 anti-Lambda candidates
+                                                   // BIT4 toggled for pure V0 photon candidates
+                                                   
         
     AliReducedBaseTrack(const AliReducedBaseTrack &c);      
     AliReducedBaseTrack& operator= (const AliReducedBaseTrack &c);
