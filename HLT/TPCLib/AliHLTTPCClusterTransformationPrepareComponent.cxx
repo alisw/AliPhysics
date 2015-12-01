@@ -57,6 +57,7 @@ Bool_t AliHLTTPCClusterTransformationPrepareComponent::fgTimeInitialisedFromEven
 AliHLTTPCClusterTransformationPrepareComponent::AliHLTTPCClusterTransformationPrepareComponent() :
   fMinInitSec(-1),
   fMaxInitSec(-1),
+  fNoInitialObject(false),
   fTmpFastTransformObject(NULL),
   fAsyncProcessor(),
   fAsyncProcessorQueueDepth(0),
@@ -136,8 +137,8 @@ AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::Ge
 	int err = fgTransform.Init( GetBz(), GetTimeStamp() );
 
 	timer.Stop();
-	cout<<"\n\n Creation of fast transformation map: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
-   
+	HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
+	   
 	AliHLTTPCFastTransformObject* obj = new AliHLTTPCFastTransformObject;
 	
 	fgTransform.GetFastTransformNonConst().WriteToObject(*obj);
@@ -174,7 +175,7 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
 	}
   }
 
-  fTmpFastTransformObject = GenerateFastTransformObject();
+  if (!fNoInitialObject) fTmpFastTransformObject = GenerateFastTransformObject();
   if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
   return iResult;
@@ -234,6 +235,11 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
 	  fMaxInitSec = atoi(argv[i]) + 1; //If we want to process sector n, the for loop with < comparison has to go to n+1
       HLTInfo("Max Sector set to %d.", fAsyncProcessorQueueDepth);
       iRet+=2;
+	}
+    else if (argument.CompareTo("-NoInitialObject")==0){
+      fNoInitialObject = true;
+      HLTInfo("Not creating initial transform object");
+      iRet+=1;
     } else {
       iRet = -EINVAL;
       HLTInfo("Unknown argument %s",argv[i]);     

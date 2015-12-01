@@ -83,6 +83,7 @@ private:
 
   Int_t fMinInitSec;	//Min sector for parallel initialization
   Int_t fMaxInitSec;	//Max sector for parallel initialization
+  bool fNoInitialObject; //Do not create an initial object at doinit
 
   static const char* fgkOCDBEntryClusterTransformation; //!transient
   static AliHLTTPCClusterTransformation fgTransform; //!transient
