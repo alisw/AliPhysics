@@ -1249,18 +1249,20 @@ Int_t AliCaloPhotonCuts::FindSecondLargestCellInCluster(AliVCluster* cluster, Al
   Float_t eMax            = 0.;
   Int_t idMax             = -1;
   Int_t idMax2            = -1;
+  Int_t iCellMax          = -1;
   
   if (nCells < 2) return idMax;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
     if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
       eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
       idMax               = cluster->GetCellAbsId(iCell);
+      iCellMax            = iCell;
     }  
   }  
   
   eMax                    = 0.;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
-    if (iCell == idMax) continue;
+    if (iCell == iCellMax) continue;
     if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
       eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
       idMax2              = cluster->GetCellAbsId(iCell);
