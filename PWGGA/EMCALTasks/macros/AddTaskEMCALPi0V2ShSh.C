@@ -7,10 +7,10 @@ AliAnalysisTaskEMCALPi0V2ShSh *AddTaskEMCALPi0V2ShSh(
                                                      const TString name       = "V1", // V1, V2, NxN, V1Unfold
                                                      const TString trigger    = "", 
                                                      const Bool_t  tm         = kTRUE, 
-                                                     const Int_t   minEcell   = 50,
-                                                     const Int_t   minEseed   = 100,
-                                                     const Int_t   maxDeltaT  = 250, // 0
-                                                     const Int_t   timeWindow = 1000, // 30
+                                                     const Int_t   minEcell   = 150,
+                                                     const Int_t   minEseed   = 300,
+                                                     const Int_t   maxDeltaT  = 0,
+                                                     const Int_t   timeWindow = 0,
                                                      const Int_t   minEUnf    = 15, 
                                                      const Int_t   minFrac    = 1,
                                                      const Bool_t  bRecalE    = kTRUE,
