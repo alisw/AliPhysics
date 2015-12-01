@@ -148,7 +148,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-    if ( fInitializeByObjectInDoEvent == 2 ) {
+    if ( fInitializeByObjectInDoEvent == 1 ) {
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
@@ -263,7 +263,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 		}
 		if (fInitialized)
 		{
-			HLTImportant("Received updated cluster transformation map");
+			HLTImportant("Received updated cluster transformation map with new calibration");
 			fgTransform.DeInit();
 		}
 		else
