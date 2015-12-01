@@ -624,7 +624,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
 //        gr->GetXaxis()->SetLabelSize(0.025*nColumns);
         gr->SetTitle("");
         gr->Draw(icount==0?"ap":"p");
-        leg->AddEntry(gr,icount==0?"bending plane":"non-bending plane","lp");
+        TString legTitle = ( icount==0 ) ? "bending plane" : "non-bending plane";
+        leg->AddEntry(gr,legTitle.Data(),"lp");
         if ( maxNsigmaOutliers > 0. ) {
           TGraphAsymmErrors* outliers = GetOutliers(gr,maxNsigmaOutliers);
           outliers->SetLineColor(6+icount);
@@ -632,6 +633,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
           outliers->SetMarkerStyle(20+2*icount);
           outliers->SetLineWidth(2);
           outliers->Draw("p");
+          legTitle.ReplaceAll("plane","outliers");
+          leg->AddEntry(outliers,legTitle.Data(),"lp");
         }
       }
       leg->Draw();
@@ -1107,7 +1110,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
   for ( Int_t ipt=0; ipt<graph->GetN(); ipt++ ) {
     graph->GetPoint(ipt,xpt,ypt);
     Double_t diff = ypt - func->Eval(xpt);
-    Double_t err = ( diff < 0 ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
+    Double_t err = ( diff > 0 ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
     if ( err < 0. || diff/err > maxNsigmas ) continue;
     outliers->RemovePoint(ipt-nremoved);
     nremoved++;
