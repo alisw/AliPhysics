@@ -54,7 +54,7 @@ ClassImp(AliAnalysisTaskEmcalJetBtagSV)
 
 //_____________________________________________________________________________________
 AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
-AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetBtagSV", kTRUE),
+AliAnalysisTaskEmcalJet("AnalysisTaskEmcalJetBtagSV", kTRUE),
 fCorrMode(kFALSE),
 fDoBkgRej(kTRUE),
 fDoQAVtx(kFALSE),
@@ -66,18 +66,17 @@ fGenNamePattern(""),
 fJetContName(""),
 fTrkContName(""),
 fRhoTaskName(""),
-fMcJetContName(""),
-fMcTrkContName(""),
-fMcRhoTaskName(""),
-fFiredClass(""),
+fMCJetContName(""),
+fMCTrkContName(""),
+fMCRhoTaskName(""),
 fTaggingRadius(0.4),
 fMCWeight(1.),
 fMCXsec(0.),
-fMCavgTrials(0.),
+fMCAvgTrials(0.),
 fCurrFileName(""),
 fCheckMCCrossSection(kFALSE),
+fSkipWeightInfo(kFALSE),
 fUseWeight(kFALSE),
-fIsMCInfoFilled(kFALSE),
 fDebug(AliLog::kInfo),
 fOutputList(NULL),
 fhJetVtxSim(NULL),
@@ -87,14 +86,17 @@ fhEntries(NULL),
 fhXsec(NULL),
 fhTrials(NULL),
 fEvent(NULL),
+fMCHeader(NULL),
 fTagger(NULL),
 fCutsHFjets(NULL),
 fAnalysisUtils(NULL),
 fMCTracksCont(NULL),
-fbJetArray(NULL),
-fArrayMC(NULL),
-fJetArray(NULL),
-fMcJetArray(NULL)
+fRecJetArray(NULL),
+fRecTrkArray(NULL),
+fMCJetArray(NULL),
+fMCPartArray(NULL),
+fHFvertexing(NULL),
+fAODgTrkMap(NULL)
 {
   // default constructor
 }
@@ -113,18 +115,17 @@ fGenNamePattern(""),
 fJetContName(""),
 fTrkContName(""),
 fRhoTaskName(""),
-fMcJetContName(""),
-fMcTrkContName(""),
-fMcRhoTaskName(""),
-fFiredClass(""),
+fMCJetContName(""),
+fMCTrkContName(""),
+fMCRhoTaskName(""),
 fTaggingRadius(0.4),
 fMCWeight(1.),
 fMCXsec(0.),
-fMCavgTrials(0.),
+fMCAvgTrials(0.),
 fCurrFileName(""),
 fCheckMCCrossSection(kFALSE),
+fSkipWeightInfo(kFALSE),
 fUseWeight(kFALSE),
-fIsMCInfoFilled(kFALSE),
 fDebug(AliLog::kInfo),
 fOutputList(NULL),
 fhJetVtxSim(NULL),
@@ -134,14 +135,17 @@ fhEntries(NULL),
 fhXsec(NULL),
 fhTrials(NULL),
 fEvent(NULL),
+fMCHeader(NULL),
 fTagger(NULL),
 fCutsHFjets(NULL),
 fAnalysisUtils(NULL),
 fMCTracksCont(NULL),
-fbJetArray(NULL),
-fArrayMC(NULL),
-fJetArray(NULL),
-fMcJetArray(NULL)
+fRecJetArray(NULL),
+fRecTrkArray(NULL),
+fMCJetArray(NULL),
+fMCPartArray(NULL),
+fHFvertexing(NULL),
+fAODgTrkMap(NULL)
 {
   // standard constructor
   AliInfo(MSGINFO("+++ Executing Constructor +++"));
@@ -162,6 +166,8 @@ AliAnalysisTaskEmcalJetBtagSV::~AliAnalysisTaskEmcalJetBtagSV() {
     if (fhJetVtxSim)  delete fhJetVtxSim;
     if (fhJetVtxData) delete fhJetVtxData;
     if (fhQaVtx)      delete fhQaVtx;
+    if (fHFvertexing) delete fHFvertexing;
+    if (fAODgTrkMap)  delete fAODgTrkMap;
   }
   
   if (fTagger)     delete fTagger;
@@ -210,8 +216,8 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects() {
   // Control histogram
   fhEntries = new TH1F("hEntries", "Analyzed sample properties", 9, -.5, 8.5);
   fhEntries->GetXaxis()->SetBinLabel(1, "nEventsAnal");
-  fhEntries->GetXaxis()->SetBinLabel(2, "nEvSel");
-  fhEntries->GetXaxis()->SetBinLabel(3, "nEvGoodVtx");
+  fhEntries->GetXaxis()->SetBinLabel(2, "nEvPhySel");
+  fhEntries->GetXaxis()->SetBinLabel(3, "nEvGoodJetArray");
   fhEntries->GetXaxis()->SetBinLabel(4, "nEvPile-up spd");
   fhEntries->GetXaxis()->SetBinLabel(5, "nEvPile-up mv");
   fhEntries->GetXaxis()->SetBinLabel(6, "nTracksEv");
@@ -238,22 +244,10 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects() {
 //_____________________________________________________________________________________
 void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t */*option*/) {
   
-  AliLog::SetGlobalLogLevel(fDebug);
-  
   AliInfo(MSGINFO("+++ Executing UserExec +++"));
-
-  // Execute analysis for current event
-  if (fCorrMode)
-    AnalyseCorrectionsMode(); // must be MC, all steps are filled for container kBJets (only)
-  else
-    AnalyseDataMode();        // can also be MC, only step kCFStepReco is filled also for kBJets
   
-  PostData(1, fOutputList);
-}
+  AliLog::SetGlobalLogLevel(fDebug);
 
-//_____________________________________________________________________________________
-void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
-{
   // AOD input event
   fEvent = dynamic_cast<AliAODEvent *> (InputEvent());
   if (!fEvent) {
@@ -267,31 +261,69 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
     else
       AliError(MSGERROR("No AOD handler found or no standard AOD!"));
   }
+
+  // load MC header
+  fMCHeader = (AliAODMCHeader *)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if (!fMCHeader && fCorrMode) {
+    
+    AliError(MSGERROR("MC header branch not found!"));
+    return;
+  }
   
+  if (!fGenNamePattern.IsNull() || !fGenNamePattern.IsWhitespace()) {
+    
+    TString title = (fMCHeader) ? fMCHeader->GetGeneratorName() : "";
+    if (!title.IsNull() && !title.Contains(fGenNamePattern))
+      return;
+  }
+
   // ALL EVENTS
   fhEntries->Fill(0); // EventsAnal
+  
+  if (fCheckMCCrossSection && !fSkipWeightInfo) {
+      
+      fhXsec->Fill(  1., fMCXsec);
+      fhTrials->Fill(1., fMCAvgTrials);
+      fSkipWeightInfo = kTRUE;
+  }
 
   if (!fCutsHFjets->IsEventSelected((AliAODEvent *)fEvent)) {
     
     AliDebug(AliLog::kDebug, MSGDEBUG("Event did not pass event selection from AliRDHFJetsCuts!"));
     return;
   }
-
+  
   fhEntries->Fill(1); // event selected, pileup, trigger, etc...
-
+  
   if (!GetArrays())
     return;
   
-  if (!fbJetArray)
-    fbJetArray = new TClonesArray("AliAODVertex", 0);
+  fhEntries->Fill(2); // events with Jet arrays
   
-  map_AliAODTrk *fAODgTrkMap = new map_AliAODTrk();       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
+  fHFvertexing = (!fHFvertexing) ? new TClonesArray("AliAODVertex", 0) : fHFvertexing;
+  fHFvertexing->SetOwner(kTRUE);
+  
+  fAODgTrkMap = (!fAODgTrkMap) ? new map_AliAODTrk() : fAODgTrkMap;  //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
   if (!FillMapWithAODtracks(fAODgTrkMap)) {
     
     AliError(MSGERROR("Error filling aod tracks info"));
     return;
   }
+
+  // Execute analysis for current event
+  if (fCorrMode)
+    AnalyseCorrectionsMode(); // must be MC, all steps are filled for container kBJets (only)
+  else
+    AnalyseDataMode();        // can also be MC, only step kCFStepReco is filled also for kBJets
   
+  fAODgTrkMap->clear();
+  PostData(1, fOutputList);
+  return;
+}
+
+//_____________________________________________________________________________________
+void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
+{
   // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
   AliAODVertex *pVtx = (AliAODVertex *)fEvent->GetPrimaryVertex();
   
@@ -304,21 +336,17 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
   
   Double_t magzkG = (Double_t)fEvent->GetMagneticField();
   
-  vctr_pair_dbl_int aVtxDisp;
-  aVtxDisp.reserve(10);
-  
-  Int_t nJets = fJetArray->GetEntries();
+  Int_t nJets = fRecJetArray->GetEntries();
   
   Double_t rho = (fDoBkgRej) ? GetExternalRho() : 0.;
+  
+  vctr_pair_dbl_int aVtxDisp;
+  aVtxDisp.reserve(5);   // reserve space for 5 vertex sigma position
   
   AliEmcalJet *jet;
   for (Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
     
-    jet = (AliEmcalJet *) fJetArray->UncheckedAt(jetcand);
-    
-    TClonesArray *fTrackArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject("PicoTracks"));
-    if (!fTrackArray)
-      return;
+    jet = (AliEmcalJet *) fRecJetArray->UncheckedAt(jetcand);
     
     if (!fCutsHFjets->IsJetSelected(jet)) {
       
@@ -328,107 +356,67 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
     
     Double_t ptJet_wBkgRej = jet->Pt() - (jet->Area() * rho);
     
-    aVtxDisp.clear();
     // Run b-tagger
-    Int_t nVtx = fTagger->FindVertices(jet, fAODgTrkMap, fTrackArray, (AliAODEvent *)fEvent,
-                                       esdVtx, magzkG, fbJetArray, aVtxDisp);
+    Int_t nVtx = fTagger->FindVertices(jet,
+                                       fAODgTrkMap,
+                                       fRecTrkArray,
+                                       (AliAODEvent *)fEvent,
+                                       esdVtx,
+                                       magzkG,
+                                       fHFvertexing,
+                                       aVtxDisp);
     
-    fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco, nVtx, 0, ptJet_wBkgRej, aVtxDisp, fbJetArray, pVtx, jet, fMCWeight);
-    
-    fbJetArray->Clear();
+    fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
+                                     nVtx,
+                                     0,
+                                     ptJet_wBkgRej,
+                                     aVtxDisp,
+                                     fHFvertexing,
+                                     pVtx,
+                                     jet,
+                                     fMCWeight);
+  
+    fHFvertexing->Clear();
+    aVtxDisp.clear();
   }
-  delete fAODgTrkMap;
+
   delete esdVtx;
 }
 
 //_____________________________________________________________________________________
-void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode() {
+void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
+{
+  // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
+  AliAODVertex *pVtx = (AliAODVertex *)fEvent->GetPrimaryVertex();
   
-  // AOD input event
-  fEvent = dynamic_cast<AliAODEvent *> (InputEvent());
-  if (!fEvent) {
-    
-    AliInfo(MSGINFO("Input AOD not available, trying with output handler..."));
-    if (AODEvent() && IsStandardAOD()) {
-      // In case there is an AOD filter writing a standard AOD, use the AOD
-      // event in memory rather than the input event.
-      fEvent = dynamic_cast<AliAODEvent *>(AODEvent());
-    }
-    else
-      AliError(MSGERROR("No AOD handler found or no standard AOD!"));
-  }
+  Double_t pvXYZ[3], pvCov[6];
   
-  // load MC header
-  AliAODMCHeader *aodmcHeader = (AliAODMCHeader *)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if (!aodmcHeader) {
-    
-    AliError(MSGERROR("MC header branch not found!"));
-    return;
-  }
+  pVtx->GetXYZ(pvXYZ);
+  pVtx->GetCovarianceMatrix(pvCov);
   
-  if (fCheckMCCrossSection && (!fGenNamePattern.IsNull() || !fGenNamePattern.IsWhitespace())) {
-    
-    TString title = aodmcHeader->GetGeneratorName();
-    if (!title.Contains(fGenNamePattern))
-      return;
-    
-    if (!fIsMCInfoFilled) {
-      
-      fhXsec->Fill(  1., fMCXsec);
-      fhTrials->Fill(1., fMCavgTrials);
-      fIsMCInfoFilled = kTRUE;
-    }
-  }
+  AliESDVertex *esdVtx = new AliESDVertex(pvXYZ, pvCov, pVtx->GetChi2(), pVtx->GetNContributors());
   
-  // ALL EVENTS
-  fhEntries->Fill(0); // EventsAnal
-  
-  if (!fCutsHFjets->IsEventSelected((AliAODEvent *)fEvent)) {
-    
-    AliDebug(AliLog::kDebug, MSGDEBUG("Event did not pass event selection from AliRDHFJetsCuts!"));
-    return;
-  }
-  
-  fhEntries->Fill(1); // event selected, pileup, trigger, etc...
-  
-  if (!GetArrays())
-    return;
-  
-  if (!fbJetArray)
-    fbJetArray = new TClonesArray("AliAODVertex", 0);
+  Double_t magzkG = (Double_t)fEvent->GetMagneticField();
 
-  // Get array of MC particles
-  fArrayMC = (TClonesArray *)fEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if (!fArrayMC)
-    AliError( MSGERROR("MC particles branch not found!") );
+  // MC primary vertex
+  Double_t vtxTrue[3];
+  fMCHeader->GetVertex(vtxTrue);
   
-  // Multiplicity MC (for vertex reco correction)
-  // Count number of primary MC partcles
-  //  Int_t multMC = 0;
-  //  if (0) {
-  //    Int_t nMC = fArrayMC->GetEntries();
-  //    for (Int_t i = 0; i < nMC; ++i) {
-  //
-  //      AliAODMCParticle *part = (AliAODMCParticle *)fArrayMC->At(i);
-  //      if (part->IsPhysicalPrimary())
-  //        multMC++;
-  //    }
-  //  }
-  vctr_pair_dbl_int aVtxDisp;
-  aVtxDisp.reserve(10);
-  
-  // Loop on MC jets
-  Int_t nMCJets = fMcJetArray->GetEntries();
-  
+  Int_t nMCJets = fMCJetArray->GetEntries();
+  Int_t nJets   = fRecJetArray->GetEntries();
+
   Double_t rhoMC = (fDoBkgRej) ? GetExternalRho(kTRUE)  : 0.;
   Double_t rho   = (fDoBkgRej) ? GetExternalRho(kFALSE) : 0.;
   
+  vctr_pair_dbl_int aVtxDisp;
+  aVtxDisp.reserve(5);
+  
+  // Loop on MC jets
   AliEmcalJet *jetMC;
   for (Int_t jetcand = 0; jetcand < nMCJets; ++jetcand) {
     
-    jetMC = (AliEmcalJet *)fMcJetArray->UncheckedAt(jetcand);
-    if (!jetMC)
-      continue;
+    jetMC = (AliEmcalJet *)fMCJetArray->UncheckedAt(jetcand);
+    if (!jetMC) continue;
 
     // restrict jet eta and pT ranges
     if (!fCutsHFjets->IsJetSelected(jetMC)) {
@@ -447,55 +435,25 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode() {
 
     // Fill container tagger
     // At this point we do not need to fill the secondary vertex QA container
-    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepEventSelected, 0, 0, ptJetGen_wBkgRej, aVtxDisp, NULL, NULL, jetMC, NULL, partonnatMC, ptpartMC, fMCWeight);
+    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepEventSelected, 0, 0, ptJetGen_wBkgRej, aVtxDisp,
+                                   NULL, NULL, jetMC, NULL, partonnatMC, ptpartMC, fMCWeight);
+    
+    aVtxDisp.clear(); //just on case
   } // end loop on jets
 
-  map_AliAODTrk *fAODgTrkMap = new map_AliAODTrk();       //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
-  if (!FillMapWithAODtracks(fAODgTrkMap)) {
-    
-    AliError(MSGERROR("Error filling aod tracks info"));
-    return;
-  }
   
-  // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
-  AliAODVertex *pVtx = (AliAODVertex *)fEvent->GetPrimaryVertex();
-  
-  Double_t pvXYZ[3], pvCov[6];
-  
-  pVtx->GetXYZ(pvXYZ);
-  pVtx->GetCovarianceMatrix(pvCov);
-  
-  AliESDVertex *esdVtx = new AliESDVertex(pvXYZ, pvCov, pVtx->GetChi2(), pVtx->GetNContributors());
-  
-  Double_t magzkG = (Double_t)fEvent->GetMagneticField();
-  
-  TClonesArray *arrayMC = 0x0;
-  Double_t vtxTrue[3];
-
-  // load MC particles
-  arrayMC = (TClonesArray *)fEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if (!arrayMC)
-    AliError(MSGERROR("MC particles branch not found!"));
-
-  // MC primary vertex
-  aodmcHeader->GetVertex(vtxTrue);
-
   // Loop on jets (clusterized on RECO particles)
-   
-  Int_t nJets = fJetArray->GetEntries();
   
   AliEmcalJet *jet;
   for (Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
     
-    jet = (AliEmcalJet *)fJetArray->UncheckedAt(jetcand);
+    jet = (AliEmcalJet *)fRecJetArray->UncheckedAt(jetcand);
 
     if (!fCutsHFjets->IsJetSelected(jet)) {
       
       AliDebugF(AliLog::kDebug, MSGDEBUG("Jet not selected: pT=%f, eta=%f!"), jet->Pt(), jet->Eta());
       continue;
     }
-    
-    TClonesArray *fTrackArrayRec = dynamic_cast<TClonesArray *>(fEvent->FindListObject("PicoTracks"));
     
     // Get jet flavour from 3 methods
     Double_t partonnat[2] = {-1, -1};
@@ -506,34 +464,64 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode() {
     Double_t ptJet_wBkgRej = jet->Pt() - (jet->Area() * rho);
     
     // // Run vertex tagging
-    Int_t nVtx = fTagger->FindVertices(jet, fAODgTrkMap, fTrackArrayRec, (AliAODEvent *)fEvent,
-                                       esdVtx, magzkG, fbJetArray, aVtxDisp);
+    Int_t nVtx = fTagger->FindVertices(jet,
+                                       fAODgTrkMap,
+                                       fRecTrkArray,
+                                       (AliAODEvent *)fEvent,
+                                       esdVtx,
+                                       magzkG,
+                                       fHFvertexing,
+                                       aVtxDisp);
 
+     // Fill jet-with-vertex container
+    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
+                                   nVtx,
+                                   0,
+                                   ptJet_wBkgRej,
+                                   aVtxDisp,
+                                   fHFvertexing,
+                                   pVtx,
+                                   jet,
+                                   fMCPartArray,
+                                   partonnat,
+                                   ptpart,
+                                   fMCWeight);
+    
     if (fDoQAVtx) {
-      fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepReco, nVtx, 0, pVtx, jet, fbJetArray, arrayMC, aVtxDisp, partonnat,fMCWeight);
+      fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepReco, nVtx, 0, pVtx, jet,
+                             fHFvertexing, fMCPartArray, aVtxDisp, partonnat, fMCWeight);
     }
-    // Fill jet-with-vertex container
-    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco, nVtx, 0, ptJet_wBkgRej, aVtxDisp, fbJetArray, pVtx, jet, arrayMC, partonnat, ptpart, fMCWeight);
     
-    AliEmcalJet *matchedjet = NULL;
-    
-    matchedjet = jet->ClosestJet();
-    if (!matchedjet)
-      continue;
+    AliEmcalJet *matchedjet = jet->ClosestJet();
+    if (!matchedjet) continue;
 
     GetFlavour2Methods(matchedjet, partonnat, ptpart, fTaggingRadius);
 
     Double_t ptJetMC_wBkgRej = matchedjet->Pt() - (matchedjet->Area() * rhoMC);
       
     // step kCFStepMatchedAny
-    if (fDoQAVtx) {
-      fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepMatchedAny, nVtx, 0, pVtx, jet, fbJetArray, arrayMC, aVtxDisp, partonnat, fMCWeight);
-    }
-    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepMatchedAny, nVtx, 0, ptJetMC_wBkgRej, aVtxDisp, fbJetArray, pVtx, matchedjet, arrayMC, partonnat, ptpart, fMCWeight);
+    fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepMatchedAny,
+                                   nVtx,
+                                   0,
+                                   ptJetMC_wBkgRej,
+                                   aVtxDisp,
+                                   fHFvertexing,
+                                   pVtx,
+                                   matchedjet,
+                                   fMCPartArray,
+                                   partonnat,
+                                   ptpart,
+                                   fMCWeight);
     
-    fbJetArray->Clear();
+    if (fDoQAVtx) {
+      fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepMatchedAny, nVtx, 0, pVtx, jet,
+                             fHFvertexing, fMCPartArray, aVtxDisp, partonnat, fMCWeight);
+    }
+    
+    fHFvertexing->Clear();
+    aVtxDisp.clear();
   }
-  
+
   delete esdVtx;
 }
 
@@ -579,7 +567,7 @@ void AliAnalysisTaskEmcalJetBtagSV::GetPythiaCrossSection() {
   }
   
   fMCXsec = xsection;
-  fMCavgTrials = trials;
+  fMCAvgTrials = trials;
   
   // average number of trials
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
@@ -587,13 +575,13 @@ void AliAnalysisTaskEmcalJetBtagSV::GetPythiaCrossSection() {
   //  if (trials >= nEntries && nEntries > 0.) fMCavgTrials /= nEntries;
   
   Printf(MSGINFO("xs %e, trial %e, avg trials %2.2f, events per file %e"),
-         xsection, trials, fMCavgTrials, nEntries);
+         xsection, trials, fMCAvgTrials, nEntries);
   
   AliDebugF(1, MSGDEBUG("Reading File %s"), curfile->GetName());
   
-  if (fMCavgTrials > 0.) {
+  if (fMCAvgTrials > 0.) {
     
-    fMCWeight =  (fUseWeight) ? fMCXsec / fMCavgTrials : 1.;
+    fMCWeight =  (fUseWeight) ? fMCXsec / fMCAvgTrials : 1.;
   }
   else {
     
@@ -702,8 +690,8 @@ void AliAnalysisTaskEmcalJetBtagSV::GetFlavour2Methods(AliEmcalJet *jet,
   
   AliAODMCParticle *parton[2];
   
-  parton[0] = (AliAODMCParticle *) fTagger->IsMCJetParton(fArrayMC, jet, radius); // method 2
-  parton[1] = (AliAODMCParticle *) fTagger->IsMCJetMeson(fArrayMC, jet, radius);  // method 3
+  parton[0] = (AliAODMCParticle *) fTagger->IsMCJetParton(fMCPartArray, jet, radius); // method 2
+  parton[1] = (AliAODMCParticle *) fTagger->IsMCJetMeson(fMCPartArray, jet, radius);  // method 3
   
   if (parton[0]) {
     
@@ -740,28 +728,53 @@ void AliAnalysisTaskEmcalJetBtagSV::GetFlavour2Methods(AliEmcalJet *jet,
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays() {
   
-  // Get jet collection
+  // Get jet and track collections
   if (!fJetContName.IsNull()) {
-    
+
     AliInfoF(MSGINFO("Retrieve jets %s!"), fJetContName.Data());
-    
-    fJetArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject(fJetContName));
-    if (!fJetArray) {
+  
+    fRecJetArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject(fJetContName));
+    if (!fRecJetArray) {
       
       AliErrorF(MSGERROR("%s: Could not retrieve jets %s!"), GetName(), fJetContName.Data());
       return kFALSE;
     }
   }
   
-  // Get Mc jet collection
-  if (!fMcJetContName.IsNull() && fCorrMode) {
+  if (!fTrkContName.IsNull()) {
+
+    AliInfoF(MSGINFO("Retrieve tracks %s!"), fTrkContName.Data());
     
-    AliInfoF(MSGINFO("Retrieve jets %s!"), fMcJetContName.Data());
+    fRecTrkArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject(fTrkContName));
+    if (!fRecTrkArray) {
     
-    fMcJetArray = dynamic_cast<TClonesArray *> (fEvent->FindListObject(fMcJetContName));
-    if (!fMcJetArray) {
+      AliErrorF(MSGERROR("%s: Could not retrieve tracks %s!"), GetName(), fTrkContName.Data());
+      return kFALSE;
+    }
+  }
+
+  //Get MC jet and particles collections
+  if (fCorrMode) {
+    
+    if (!fMCJetContName.IsNull()) {
       
-      AliErrorF(MSGERROR("%s: Could not retrieve MC jets %s!"), GetName(), fMcJetContName.Data());
+      AliInfoF(MSGINFO("Retrieve MC jets %s!"), fMCJetContName.Data());
+      
+      fMCJetArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject(fMCJetContName));
+      if (!fMCJetArray) {
+        
+        AliErrorF(MSGERROR("%s: Could not retrieve MC jets %s!"), GetName(), fMCJetContName.Data());
+        return kFALSE;
+      }
+    }
+
+    TString fMCPartContName(AliAODMCParticle::StdBranchName());
+    AliInfoF(MSGINFO("Retrieve MC particles %s!"), fMCPartContName.Data());
+    
+    fMCPartArray = dynamic_cast<TClonesArray *>(fEvent->FindListObject(fMCPartContName));
+    if (!fMCPartArray) {
+      
+      AliError( MSGERROR("MC particles branch not found!"));
       return kFALSE;
     }
   }
@@ -824,7 +837,7 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::FillV0trks(std::vector<Int_t> &TrkIDs) {
     TrkIDs.push_back(pTrack->GetID());
     TrkIDs.push_back(nTrack->GetID());
   }
-
+  
   return kTRUE;
 }
 
@@ -844,7 +857,7 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetExternalRho(Bool_t isMC) {
   // Get rho from event using CMS approach
   AliRhoParameter *rho = NULL;
   
-  TString rhoname = (!isMC) ? fRhoTaskName : fMcRhoTaskName;
+  TString rhoname = (!isMC) ? fRhoTaskName : fMCRhoTaskName;
   if (!rhoname.IsNull()) {
     
     rho = dynamic_cast<AliRhoParameter *>(InputEvent()->FindListObject(rhoname.Data()));

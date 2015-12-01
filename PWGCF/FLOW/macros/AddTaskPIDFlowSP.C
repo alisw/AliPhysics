@@ -39,7 +39,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
     cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,is2011,gCentralityEstimator,doQA);
 
     //Create the RP cut object
-    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,is2011,gAODfilterBit,doQA);        
+    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,is2011,gAODfilterBit,gCharge,doQA);        
 
     //Create the POI cut object
     cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,qVector,gEtaGap,isVZERO,is2011,isPbPb,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA); 
@@ -197,6 +197,7 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
 					Bool_t isVZERO = kFALSE,
 					Bool_t is2011 = kTRUE,
 					Int_t gAODfilterBit = 768,
+					Double_t gCharge = 0.,
 					Bool_t doQA = kFALSE) {
   //Part of the code that creates the RP cut objects
   Double_t gEtaMin = -0.8, gEtaMax = 0.8;
@@ -209,6 +210,8 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
     cutsRP->SetEtaRange(gEtaMin,gEtaMax);
     cutsRP->SetMinimalTPCdedx(gMinTPCdedx);
     cutsRP->SetAODfilterBit(gAODfilterBit);
+    
+    if (gCharge!=0) cutsRP->SetCharge(gCharge);
   }
   else if(isVZERO) { // use vzero sub analysis
     if(!is2011) 
@@ -217,6 +220,7 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
       cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011(); 
   }//VZERO
   
+
   cutsRP->SetQA(doQA);
   
   //return the object

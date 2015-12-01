@@ -98,7 +98,8 @@ AliMultSelectionTask::AliMultSelectionTask()
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
 fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -178,7 +179,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
 fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""), 
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -1150,17 +1152,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     TString lPeriodName     = GetPeriodNameByRunNumber();
     TString lProductionName = GetPeriodNameByPath( lPathInput );
      
-    AliInfo("==================================================");
-    AliInfoF(" Period Name (by run number)....: %s", lPeriodName.Data());
-    AliInfoF(" Production Name (by path)......: %s", lProductionName.Data());
-    AliInfo("==================================================");
+    AliWarning("==================================================");
+    AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
+    AliWarning(Form(" Production Name (by path)......: %s", lProductionName.Data()));
+    AliWarning("==================================================");
     if ( lPeriodName.EqualTo(lProductionName.Data()) == kTRUE ){
-        AliInfoF(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data());
-        AliInfo("==================================================");
+        AliWarning( Form(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data() ));
+        AliWarning("==================================================");
     }
     if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ){
-        AliInfo(" Auto-detected that this is MC, but you didn't provide a production name!");
-        AliInfoF(" Will input it automatically for you to %s",lProductionName.Data() );
+        AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
+        AliWarning(Form(" Will input it automatically for you to %s",lProductionName.Data() ));
         fAlternateOADBForEstimators = lProductionName;
         AliInfo("==================================================");
     }
@@ -1172,9 +1174,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     //Full Manual Bypass Mode (DEBUG ONLY)
     if ( fAlternateOADBFullManualBypass.EqualTo("")==kFALSE ){
-        AliInfo(" Extra option detected: FULL MANUAL BYPASS of OADB Location ");
-        AliInfo(" --- Warning: Use with care ---");
-        AliInfoF(" New complete path: %s", fAlternateOADBFullManualBypass.Data() );
+        AliWarning(" Extra option detected: FULL MANUAL BYPASS of DATA OADB Location ");
+        AliWarning(" --- Warning: Use with care ---");
+        AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypass.Data() ));
         fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
     }
     
@@ -1237,6 +1239,14 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliInfoF(" path: %s", fAlternateOADBForEstimators.Data() );
         
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        
+        //Full Manual Bypass Mode (DEBUG ONLY)
+        if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ){
+            AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
+            AliWarning(" --- Warning: Use with care ---");
+            AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
+            fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+        }
         
         AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
         Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");

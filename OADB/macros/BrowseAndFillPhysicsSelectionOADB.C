@@ -69,12 +69,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   // DefaultPbPb
   AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbDefaultPbPb");
   triggerCount = 0;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMB,"+CINT1-B-NOPF-CENTNOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kINT1,"+CINT1-B-NOPF-CENTNOTRD","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"SPDGFO >= 1 || V0A || V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG && ZDCTime && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kCINT5,"+CINT5-B-NOPF-CENT","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kINT5,"+CINT5-B-NOPF-CENT","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A || V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG && ZDCTime && !TPCHVdip");
   
@@ -94,22 +94,22 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"(ZDCTDCA || ZDCTDCC) && !V0ABG && !V0CBG && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMUSH7,"+CMSH7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMuonSingleHighPt7,"+CMSH7-B-NOPF-MUFAST","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMUS7,"+CMSL7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMuonSingleLowPt7,"+CMSL7-B-NOPF-MUFAST","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
   
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMUL7,"+CMLL7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMuonLikeLowPt7,"+CMLL7-B-NOPF-MUFAST","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
   
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMUU7,"+CMUL7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kMuonUnlikeLowPt7,"+CMUL7-B-NOPF-MUFAST","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
   
@@ -129,7 +129,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kPHI7,"+CPHI7-B-NOPF-CENTNOPMD,CINT7PH[L|M|H]-B-NOPF-CENTNOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kPHI7,"+CPHI7-B-NOPF-CENTNOPMD,CINT7PH[L|M|H]-B-NOPF-CENTNOPMD,CPER7PHM-B-NOPF-CENTNOPMD","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
   
