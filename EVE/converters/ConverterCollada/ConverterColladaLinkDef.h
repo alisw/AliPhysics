@@ -2,8 +2,8 @@
 // Created by jniedzie on 27/10/15.
 //
 
-#ifndef ALIROOT_COLLADACONVERTERLINKDEF_H
-#define ALIROOT_COLLADACONVERTERLINKDEF_H
+#ifndef ALIROOT_CONVERTERCOLLADALINKDEF_H
+#define ALIROOT_CONVERTERCOLLADALINKDEF_H
 
 #pragma link off all globals;
 #pragma link off all classes;
@@ -11,4 +11,4 @@
 
 #pragma link C++ class AliColladaBuffer+;
 
-#endif //ALIROOT_COLLADACONVERTERLINKDEF_H
+#endif

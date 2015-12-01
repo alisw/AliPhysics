@@ -34,7 +34,7 @@ void alieve_init_import_macros()
   // top-level GUI.
   typedef list<string> StringList;
 
-  TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+  TString macdir("$(ALICE_ROOT)/EVE/macros");
   gSystem->ExpandPathName(macdir);
 
   TFolder* f = gEve->GetMacroFolder();
@@ -64,7 +64,7 @@ void alieve_init_import_macros()
   gSystem->FreeDirectory(dirhandle);
 
   gROOT->GetListOfBrowsables()->Add
-    // (new TSystemDirectory("alice-macros", macdir.Data())); // !!!! this spits blood, but then works
+    // (new TSystemDirectory("macros", macdir.Data())); // !!!! this spits blood, but then works
     (new TSystemDirectory(macdir.Data(), macdir.Data()));
 
   {

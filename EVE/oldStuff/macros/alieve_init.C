@@ -122,7 +122,7 @@ void alieve_init_import_macros()
     // Put macros in the list of browsables, add a macro browser to
     // top-level GUI.
     
-    TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+    TString macdir("$(ALICE_ROOT)/EVE/macros");
     gSystem->ExpandPathName(macdir);
     
     TFolder* f = gEve->GetMacroFolder();

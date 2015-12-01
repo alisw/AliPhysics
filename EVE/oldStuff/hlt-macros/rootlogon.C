@@ -21,7 +21,7 @@
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/include ";
   includePath        += "-I${ALICE_ROOT}/EVE ";
-  includePath        += "-I${ALICE_ROOT}/EVE/alice-macros ";
+  includePath        += "-I${ALICE_ROOT}/EVE/macros ";
   includePath        += "-I${ALICE_ROOT}/EVE/EveBase ";
   includePath        += "-I${ALICE_ROOT}/EVE/EveDet ";
   includePath        += "-I${ALICE_ROOT}/EVE/EveHLT ";

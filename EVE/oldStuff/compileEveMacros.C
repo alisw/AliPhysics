@@ -36,7 +36,7 @@
  *  opt     - compilation options (See: TSystem::CompileMacro)
  * 
  * Default:
- *  - compiles all macros from AliRoot installation dir ($ALICE_ROOT/EVE/alice-macros)
+ *  - compiles all macros from AliRoot installation dir ($ALICE_ROOT/EVE/macros)
  *  - options for compilation (- k f c):
  * The possible options are:
      k : keep the shared library after the session end.
@@ -56,7 +56,7 @@ void compileEveMacros( const char * macDir="", Option_t *opt="")
    gSystem->Load("libPWGPP");
 
   if(macDir == "")
-    macDir = Form("%s/EVE/alice-macros", gSystem->Getenv("ALICE_ROOT") );
+    macDir = Form("%s/EVE/macros", gSystem->Getenv("ALICE_ROOT") );
   
   if(opt == "")
     opt = "-kc"; // compilation options

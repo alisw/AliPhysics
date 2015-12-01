@@ -26,7 +26,7 @@
 #include <AliESDEvent.h>
 #include <AliEveEventManager.h>
 
-#include <EVE/alice-macros/esd_tracks.C>
+#include <EVE/macros/esd_tracks.C>
 #endif
 
 /**
@@ -34,10 +34,10 @@
  *
  * Usage:
  * <pre>
- *   alieve $ALICE_ROOT/EVE/alice-macros/event_next.C \
+ *   alieve $ALICE_ROOT/EVE/macros/event_next.C \
  *          $ALICE_ROOT/EVE/macros/alieve_init.C \
- *          $ALICE_ROOT/EVE/alice-macros/geom_simple.C \
- *          $ALICE_ROOT/EVE/alice-macros/esd_hlt_tracks.C
+ *          $ALICE_ROOT/EVE/macros/geom_simple.C \
+ *          $ALICE_ROOT/EVE/macros/esd_hlt_tracks.C
  * </pre>
  * Display is changed to next event by executing event_next()
  * from the root prompt.

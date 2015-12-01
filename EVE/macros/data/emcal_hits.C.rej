@@ -1,4 +1,4 @@
-diff a/EVE/alice-macros/emcal_hits.C b/EVE/alice-macros/emcal_hits.C	(rejected hunks)
+diff a/EVE/macros/emcal_hits.C b/EVE/macros/emcal_hits.C	(rejected hunks)
 @@ -10,7 +10,7 @@
  /// \file emcal_hits.C
  /// \brief Visualize EMCAL digits

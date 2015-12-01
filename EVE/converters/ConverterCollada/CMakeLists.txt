@@ -13,10 +13,10 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-set(MODULE ColladaConverter)
+set(MODULE ConverterCollada)
 # Module include folder
 include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/EVE/${MODULE}
+                    ${AliRoot_SOURCE_DIR}/EVE/converters/${MODULE}
 )
 
 set(SRCS

@@ -17,17 +17,16 @@
 add_subdirectory(EveBase)
 add_subdirectory(EveDet)
 add_subdirectory(EveHLT)
-add_subdirectory(Converter)
-add_subdirectory(ColladaConverter)
+add_subdirectory(converters/ConverterJSON)
+add_subdirectory(converters/ConverterCollada)
 
-# EVE: alieve executable
+# EVE executables
 add_subdirectory(executables)
 
-# Installing the macros
-install(DIRECTORY alice-macros DESTINATION EVE)
+# Installing macros and examples
+install(DIRECTORY macros DESTINATION EVE)
 install(DIRECTORY resources DESTINATION EVE)
-install(DIRECTORY hlt-macros DESTINATION EVE)
-install(DIRECTORY ColladaConverter/examples DESTINATION EVE/ColladaConverter)
+install(DIRECTORY converters/ConverterCollada/examples DESTINATION EVE/ConverterCollada)
 
 message(STATUS "EVE enabled")
 

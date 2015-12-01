@@ -144,6 +144,6 @@ void trd_analyse()
   Info("trd_analyse", "E.g. If \"tracklet\" is a pointer to a TRD track than one can call :"); 
   Info("trd_analyse", "analyseTrack(track)");
 
-  //gROOT->LoadMacro("$ALICE_ROOT/EVE/alice-macros/trd_analyse.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/EVE/macros/trd_analyse.C");
   return;
 }

@@ -68,6 +68,6 @@ fi
 esd=\"$esd\"
 which aliroot 2> /dev/null || source `dirname $0`/setenv.sh
 
-test "x$verbose" != "x" && echo alieve $ALICE_ROOT/EVE/macros/alieve_init.C\'\(\"./\", 0, $esd\)\' $ALICE_ROOT/EVE/alice-macros/geom_simple.C $ALICE_ROOT/EVE/alice-macros/esd_tracks.C
-alieve $ALICE_ROOT/EVE/macros/alieve_init.C\(\"./\",\ 0,\ $esd\) $ALICE_ROOT/EVE/alice-macros/geom_simple.C $ALICE_ROOT/EVE/alice-macros/esd_tracks.C
+test "x$verbose" != "x" && echo alieve $ALICE_ROOT/EVE/macros/alieve_init.C\'\(\"./\", 0, $esd\)\' $ALICE_ROOT/EVE/macros/geom_simple.C $ALICE_ROOT/EVE/macros/esd_tracks.C
+alieve $ALICE_ROOT/EVE/macros/alieve_init.C\(\"./\",\ 0,\ $esd\) $ALICE_ROOT/EVE/macros/geom_simple.C $ALICE_ROOT/EVE/macros/esd_tracks.C
 

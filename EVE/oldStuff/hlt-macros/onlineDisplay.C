@@ -121,7 +121,7 @@
 #include "hlt_structs.C"
 #include "hlt_alieve_init.C"
 #include "geom_gentle_hlt.C"
-#include "alice-macros/esd_tracks.C"
+#include "macros/esd_tracks.C"
 #include "hlt_esd_tracks.C"
 
 //#include "alieve_vizdb.C"

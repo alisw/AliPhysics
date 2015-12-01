@@ -125,7 +125,7 @@ public:
   {
     std::cout << "Loading macros ... " << std::flush;
     TString savdir(gSystem->pwd());
-    TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
+    TString macdir("$(ALICE_ROOT)/EVE/macros");
     gSystem->ExpandPathName(macdir);
   
     TFolder*          f     = gEve->GetMacroFolder();

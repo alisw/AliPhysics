@@ -2,8 +2,8 @@
 // Created by mgrochow on 8/28/15.
 //
 
-#ifndef ALIROOT_CONVERTERLINKDEF_H
-#define ALIROOT_CONVERTERLINKDEF_H
+#ifndef ALIROOT_CONVERTERJSONLINKDEF_H
+#define ALIROOT_CONVERTERJSONLINKDEF_H
 
 #pragma link off all globals;
 #pragma link off all classes;
@@ -17,4 +17,4 @@
 #pragma link C++ class AliExternalFormatConverter+;
 #pragma link C++ class AliConverterPolylinesEngine+;
 
-#endif //ALIROOT_CONVERTERLINKDEF_H
+#endif

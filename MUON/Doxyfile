@@ -415,7 +415,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = . ../STEER ../EVGEN ../EVE/macros/alieve_init.C ../EVE/alice-macros/event_goto.C ../EVE/macros/muon_init.C ../EVE/alice-macros/esd_muon_tracks.C ../EVE/alice-macros/geom_gentle_muon.C ../EVE/alice-macros/muon_clusters.C ../EVE/alice-macros/muon_digits.C ../EVE/alice-macros/muon_raw.C ../EVE/alice-macros/muon_trackRefs.C ../EVE/alice-macros/MUON_displayData.C ../EVE/alice-macros/MUON_displaySimu.C  ../EVE/alice-macros/MUON_geomAll.C  ../EVE/alice-macros/MUON_geom.C  ../EVE/alice-macros/MUON_makeGeom.C
+INPUT                  = . ../STEER ../EVGEN ../EVE/macros/alieve_init.C ../EVE/macros/event_goto.C ../EVE/macros/muon_init.C ../EVE/macros/esd_muon_tracks.C ../EVE/macros/geom_gentle_muon.C ../EVE/macros/muon_clusters.C ../EVE/macros/muon_digits.C ../EVE/macros/muon_raw.C ../EVE/macros/muon_trackRefs.C ../EVE/macros/MUON_displayData.C ../EVE/macros/MUON_displaySimu.C  ../EVE/macros/MUON_geomAll.C  ../EVE/macros/MUON_geom.C  ../EVE/macros/MUON_makeGeom.C
 #INPUT                  = . 
 
 # If the value of the INPUT tag contains directories, you can use the 

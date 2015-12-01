@@ -77,7 +77,7 @@ color palette, this is a problem still to be fixed...
 Files:
 
 AliEveMUON*.cxx , AliEveMUON*.h   in $ALICE_ROOT/EVE/EveDet
-MUON*.C                           in $ALICE_ROOT/EVE/alice-macros
+MUON*.C                           in $ALICE_ROOT/EVE/macros
 
 Note: ... this is $ALICE_ROOT/EVE/README_MUON file.
 

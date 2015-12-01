@@ -26,7 +26,7 @@ include_directories(
                     ${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EVE/Converter
+                    ${AliRoot_SOURCE_DIR}/EVE/converters/ConverterJSON
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -39,7 +39,7 @@ include_directories(
 
 # aliconvertertest executable
 add_executable(aliconvertertest aliconvertertest.cxx)
-target_link_libraries(aliconvertertest Converter STEERBase STEER ESD)
+    target_link_libraries(aliconvertertest ConverterJSON STEERBase STEER ESD)
 
 # alieve executable
 add_executable(alieve alieve_main.cxx)
