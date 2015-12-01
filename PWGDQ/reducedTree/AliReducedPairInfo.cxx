@@ -22,8 +22,7 @@ AliReducedPairInfo::AliReducedPairInfo() :
   fMass(),
   fLxy(0.0),
   fPointingAngle(0.0),
-  fChisquare(0.0),
-  fQualityFlags(0)
+  fChisquare(0.0)
 {
   //
   // Constructor
@@ -42,8 +41,7 @@ AliReducedPairInfo::AliReducedPairInfo(const AliReducedPairInfo &c) :
   fMass(),
   fLxy(c.Lxy()),
   fPointingAngle(c.PointingAngle()),
-  fChisquare(c.Chi2()),
-  fQualityFlags(c.QualityFlags())
+  fChisquare(c.Chi2())
 {
   //
   // copy constructor

@@ -73,11 +73,10 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
   Float_t fLxy;                 // pseudo-proper decay length (pair candidates) or radius of the secondary vertex for V0s 
   Float_t fPointingAngle;       // angle between the pair momentum vector and the secondary vertex position vector
   Float_t fChisquare;           // chi2 for the legs matching
-  UInt_t  fQualityFlags;        // quality flags
   
   AliReducedPairInfo& operator= (const AliReducedPairInfo &c);
 
-  ClassDef(AliReducedPairInfo, 1);
+  ClassDef(AliReducedPairInfo, 2);
 };
 
 //_______________________________________________________________________________
