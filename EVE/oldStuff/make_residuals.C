@@ -539,12 +539,20 @@ void ButtonWindow::DrawResiduals()
       Info("make_residuals::DrawResiduals", "%s abs(track[].fP[0])<20", drawSelectionMerged2.Data());
       Info("make_residuals::DrawResiduals", "nEntries: %f", nEntries->GetNumber());
       Info("make_residuals::DrawResiduals", "firstEntry: %f", firstEntry->GetNumber());
-      
-      TEveUtil::LoadMacro("$ALICE_ROOT/ANALYSIS/macros/ConfigCalibTrain.C+");
-
+    
       AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
-
-      ConfigCalibTrain(esd->GetRunNumber());
+    
+        // OCDB
+        
+//        printf("setting run to %d\n",esd->GetRunNumber());
+//        AliCDBManager::Instance()->SetDefaultStorage("raw://");
+//        AliCDBManager::Instance()->SetRun(esd->GetRunNumber());
+    
+        // geometry
+//        AliGeomManager::LoadGeometry();
+//        AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC");
+    
+    
 
       /* OBSOLETE CODE - No function members defined
        * 

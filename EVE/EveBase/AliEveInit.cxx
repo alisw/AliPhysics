@@ -222,7 +222,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     if(defaultDataSource == AliEveEventManager::kSourceOffline){
         ((AliEveDataSourceOffline*)man->GetDataSourceOffline())->GotoEvent(0);
-        if(settings.GetValue("momentum.histograms.show",false)){man->GetMomentumHistogramsDrawer()->DrawAllEvents();}
+        if(settings.GetValue("momentum.histograms.all.events.show",false)){man->GetMomentumHistogramsDrawer()->DrawAllEvents();}
     }
 }
 

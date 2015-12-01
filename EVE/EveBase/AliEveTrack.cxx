@@ -15,6 +15,16 @@
 #include <TROOT.h>
 #include <TMath.h>
 
+#include <TEveUtil.h>
+#include <TEvePointSet.h>
+#include <TEveElement.h>
+#include <TEveManager.h>
+
+#include "its_hits.C"
+#include "tof_hits.C"
+#include "tpc_hits.C"
+#include "trd_hits.C"
+
 //______________________________________________________________________________
 // Full description of AliEveTrack
 //
@@ -123,11 +133,39 @@ void AliEveTrack::SetStartParams(const AliExternalTrackParam* tp)
 void AliEveTrack::ImportHits()
 {
   // Import hits with same label as the track.
-  // Uses macro "hits_from_label.C".
+    
+    TEveUtil::LoadMacro("its_hits.C");
+    
+    TEvePointSet* h = 0;
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    //PH  h = its_hits("fX:fY:fZ", Form("ITS.fTrack==%d", label));
+    char form[1000];
+    sprintf(form,"ITS.fTrack==%d", fLabel);
+    h = its_hits("fX:fY:fZ", form, this);
+    if (h) h->SetMarkerSize(1);
+    
+    TEveUtil::LoadMacro("tpc_hits.C");
+    sprintf(form,"TPC2.fArray.fTrackID==%d", fLabel);
+    h = tpc_hits("TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ",form, this);
+    //PH  h = tpc_hits("TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ",
+    //PH	       Form("TPC2.fArray.fTrackID==%d", label));
+    if (h) h->SetMarkerSize(1);
+    
+    TEveUtil::LoadMacro("trd_hits.C");
+    sprintf(form,"TRD.fTrack==%d", fLabel);
+    h = trd_hits("fX:fY:fZ", form, this);
+    if (h) h->SetMarkerSize(1);
+    
+    TEveUtil::LoadMacro("tof_hits.C");
+    sprintf(form,"TOF.fTrack==%d", fLabel);
+    h = tof_hits("fX:fY:fZ", form, this);
+    if (h) h->SetMarkerSize(1);
+    
+    gEve->Redraw3D();
 
-  TEveUtil::LoadMacro("hits_from_label.C");
-  gROOT->ProcessLine(Form("hits_from_label(%d, (TEveElement*)%p);",
-                          fLabel, this));
+    
 }
 
 //______________________________________________________________________________

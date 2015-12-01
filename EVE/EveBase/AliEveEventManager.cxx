@@ -552,10 +552,8 @@ void AliEveEventManager::AfterNewEventLoaded()
         TEnv settings;
         AliEveInit::GetConfig(&settings);
         
-        bool drawMomentumHistograms = settings.GetValue("momentum.histograms.show",false);
-
-        if(drawMomentumHistograms){fMomentumHistogramsDrawer->Draw();}
-        
+        if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
+        if(settings.GetValue("tracks.primary.vertex.show",false)){fESDdrawer->PrimaryVertexTracks();}
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
         if(fDrawESDtracksByType)fESDdrawer->ByType();
         

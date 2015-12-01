@@ -28,6 +28,7 @@ endif(ZEROMQ_FOUND)
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/EVE/macros/data
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase

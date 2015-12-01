@@ -772,6 +772,36 @@ TEveElementList* AliEveESDTracks::ByType()
     return cont;
 }
 
+TEveElementList* AliEveESDTracks::PrimaryVertexTracks()
+{
+    AliESDEvent   *esd = AliEveEventManager::GetMaster()->AssertESD();
+    const AliESDVertex *pv  = esd->GetPrimaryVertex();
+    
+    TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");
+    cont->SetMainColor(7);
+    TEveTrackPropagator* rnrStyle = cont->GetPropagator();
+    rnrStyle->SetMagField(-0.1*esd->GetMagneticField() );
+    rnrStyle->SetRnrFV(kTRUE);
+//    rnrStyle->fFVAtt.SetMarkerColor(2);
+    gEve->AddElement(cont);
+    
+    for (Int_t n=0; n<pv->GetNIndices(); n++)
+    {
+        AliESDtrack* at = esd->GetTrack(pv->GetIndices()[n]);
+        AliEveTrack* track = MakeTrack(at, cont);
+        track->SetLineWidth(4);
+        track->SetLineColor(cont->GetMainColor());
+        track->SetLineStyle(7);
+        gEve->AddElement(track, cont);
+    }
+    
+    cont->MakeTracks();
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
+
 TEveElementList* AliEveESDTracks::ByAnalCuts()
 {
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();

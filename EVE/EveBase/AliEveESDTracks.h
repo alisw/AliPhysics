@@ -27,6 +27,7 @@ public:
     
     TEveElementList* ByCategory();
     TEveElementList* ByType();
+    TEveElementList* PrimaryVertexTracks();
     
     void SetColorsByCategory(Color_t colors[9]){
         for(int i=0;i<9;i++){fColorsByCategory[i]=colors[i];}
@@ -34,6 +35,8 @@ public:
     void SetWidth(Width_t width){fWidth=width;}
     void SetDashNoRefit(bool dashNoRefit){fDashNoRefit=dashNoRefit;}
     void SetDrawNoRefit(bool drawNoRefit){fDrawNoRefit=drawNoRefit;}
+    
+    AliEveTrack* MakeTrack(AliESDtrack *at, TEveTrackList* cont);
     
 private:
     bool fUseIPonFailedITSrefit;
@@ -48,7 +51,6 @@ private:
     AliEveTrack* MakeITSstandaloneTrack(AliESDtrack *at, AliESDfriendTrack* aft, TEveTrackList* cont);
 
     AliEveTrack* MakeITStrack(AliESDtrack *at, AliESDfriendTrack* aft, TEveTrackList* cont);
-    AliEveTrack* MakeTrack(AliESDtrack *at, TEveTrackList* cont);
     TEveTrackList* TPCtracks();
     TEveTrackList* ITStracks();
     TEveTrackList* ITSstandaloneTracks();
