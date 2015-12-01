@@ -751,8 +751,8 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
       
    }
    
-   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 250, -0.5, 24999.5);
-   fh2AODevent = new TH2I("fh2AODevent","selected events;file;event", 250,-0.5,24999.5,500,-0.5,49999.5);
+   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 5000, -0.5, 4999.5);
+   fh2AODevent = new TH2I("fh2AODevent","selected events;file;event", 1000,-0.5,999.5,4000,-0.5,3999.5);
    fHistList->Add(fh1AODfile);
    fHistList->Add(fh2AODevent);
 
