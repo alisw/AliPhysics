@@ -20,6 +20,8 @@
 #include "AliEveMacroExecutor.h"
 #include "AliEveMacro.h"
 #include "AliEvePreferencesWindow.h"
+#include "AliEveCutsWindow.h"
+#include "AliEveMomentumVectors.h"
 
 //Storage Manager:
 #ifdef ZMQ
@@ -1020,16 +1022,18 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
     case kAEMCuts:
     {
 
-      TEveUtil::Macro("alieve_set_cuts.C");
-
+        TEveBrowser *browser = gEve->GetBrowser();
+        browser->StartEmbedding(TRootBrowser::kLeft);
+        new AliEveCutsWindow();
+        browser->StopEmbedding("Cuts");
+        
       break;
 
     }
 
     case kAEMVectors:
-    {
-
-      TEveUtil::Macro("set_momentum_vectors.C");
+      {
+        new AliEveMomentumVectors();
 
       break;
 

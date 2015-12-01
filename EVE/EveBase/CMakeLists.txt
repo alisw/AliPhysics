@@ -55,6 +55,7 @@ set(SRCS
     AliEveCascadeEditor.cxx
     AliEveCascadeListEditor.cxx
     AliEveConfigManager.cxx
+    AliEveCutsWindow.cxx
     AliEveDataSource.cxx
     AliEveDataSourceOffline.cxx
     AliEveESDTracks.cxx
@@ -72,6 +73,7 @@ set(SRCS
     AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx
     AliEveMagField.cxx
+    AliEveMomentumVectors.cxx
     AliEveMultiView.cxx
     AliEvePreferencesWindow.cxx
     AliEveSaveViews.cxx

@@ -70,3 +70,8 @@
 #pragma link C++ class AliEveKinkEditor+;
 #pragma link C++ class AliEveKinkListEditor+;
 
+// Common visualisation classes
+#pragma link C++ class AliEveCutsWindow+;
+#pragma link C++ class AliEveESDTracks+;
+#pragma link C++ class AliEveMomentumVectors+;
+
