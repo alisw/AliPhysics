@@ -44,6 +44,12 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fADCOfflineValues(NULL),
   fTriggerBitMasks(NULL),
   fTriggerBitConfig(NULL),
+  fJetPatchSize(8),
+  fJetSubregionSize(4),
+  fGammaPatchSize(2),
+  fGammaSubregionSize(1),
+  fBkgPatchSize(8),
+  fBkgSubregionSize(4),
   fBufferSize(0),
   fBkgThresholdOnline(0),
   fBkgThresholdOffline(0)
@@ -150,26 +156,38 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
 }
 
 void AliHLTEMCALTriggerMaker::InitializeEMCALPatchFinders(){
-  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(0, 63, 0);
+  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALTriggerAlgorithm<float>(0, 63, 0);
   gammatrigger->SetThresholds(0, 0);
+  gammatrigger->SetPatchSize(fGammaPatchSize);
+  gammatrigger->SetSubregionSize(fGammaSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(gammatrigger);
-  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(0, 63, 0);
+  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALTriggerAlgorithm<float>(0, 63, 0);
   jettrigger->SetThresholds(0, 0);
+  jettrigger->SetPatchSize(fJetPatchSize);
+  jettrigger->SetSubregionSize(fJetSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
-  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALBkgTriggerAlgorithm<float>(0, 63, 0);
+  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(0, 63, 0);
   jetmedian->SetThresholds(-1, -1);
+  jetmedian->SetPatchSize(fBkgPatchSize);
+  jetmedian->SetSubregionSize(fBkgSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
 
 void AliHLTEMCALTriggerMaker::InitializeDCALPatchFinders(){
-  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALGammaTriggerAlgorithm<float>(64, 103, 0);
+  AliEMCALTriggerAlgorithm<float> *gammatrigger = new AliEMCALTriggerAlgorithm<float>(64, 103, 0);
   gammatrigger->SetThresholds(0, 0);
+  gammatrigger->SetPatchSize(fGammaPatchSize);
+  gammatrigger->SetSubregionSize(fGammaSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(gammatrigger);
-  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALJetTriggerAlgorithm<float>(64, 103, 0);
+  AliEMCALTriggerAlgorithm<float> *jettrigger = new AliEMCALTriggerAlgorithm<float>(64, 103, 0);
   jettrigger->SetThresholds(0, 0);
+  jettrigger->SetPatchSize(fJetPatchSize);
+  jettrigger->SetSubregionSize(fJetSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
-  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALBkgTriggerAlgorithm<float>(64, 103, 0);
+  AliEMCALTriggerAlgorithm<float> *jetmedian = new AliEMCALTriggerAlgorithm<float>(64, 103, 0);
   jetmedian->SetThresholds(-1, -1);
+  jetmedian->SetPatchSize(fBkgPatchSize);
+  jetmedian->SetSubregionSize(fBkgSubregionSize);
   fPatchFinder->AddTriggerAlgorithm(jetmedian);
 }
 

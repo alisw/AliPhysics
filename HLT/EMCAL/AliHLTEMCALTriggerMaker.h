@@ -133,6 +133,27 @@ public:
    */
   void SetBkgThresholds(Float_t onlineTh, Float_t offlineTh) { fBkgThresholdOnline = onlineTh; fBkgThresholdOffline = offlineTh; }
 
+  /**
+   * Set the patch size/subregion for jet trigger patches
+   * @param size Size of the patch in number of FastORs
+   * @param subregion Subregion of the sliding window
+   */
+  void SetJetPatch(Int_t size, Int_t subregion)    { fJetPatchSize = size  ; fJetSubregionSize = subregion  ; }
+
+  /**
+   * Set the patch size/subregion for gamma trigger patches
+   * @param size Size of the patch in number of FastORs
+   * @param subregion Subregion of the sliding window
+   */
+  void SetGammaPatch(Int_t size, Int_t subregion)  { fGammaPatchSize = size; fGammaSubregionSize = subregion; }
+
+  /**
+   * Set the patch size/subregion for background trigger patches
+   * @param size Size of the patch in number of FastORs
+   * @param subregion Subregion of the sliding window
+   */
+  void SetBkgPatch(Int_t size, Int_t subregion)    { fBkgPatchSize = size  ; fBkgSubregionSize = subregion  ; }
+
 protected:
   /**
    * Convert raw patches found by the trigger patch finders into HLT EMCAL trigger patches.
@@ -165,10 +186,22 @@ private:
   /** Grid with trigger bit mask from STU */
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
   /** Trigger bit configurtion */
-  AliEMCALTriggerBitConfig						*fTriggerBitConfig;
+  AliEMCALTriggerBitConfig                      *fTriggerBitConfig;
+  /** Jet patch size **/
+  Int_t                                         fJetPatchSize;
+  /** Jet subregion size **/
+  Int_t                                         fJetSubregionSize;
+  /** Gamma patch size **/
+  Int_t                                         fGammaPatchSize;
+  /** Gamme subregion size **/
+  Int_t                                         fGammaSubregionSize;
+  /** Background patch size **/
+  Int_t                                         fBkgPatchSize;
+  /** Background subregion size **/
+  Int_t                                         fBkgSubregionSize;
 
   /** Available space in buffer */
-  AliHLTUInt32_t								fBufferSize;
+  AliHLTUInt32_t                                fBufferSize;
   /** online threshold for gamma patches */
   Float_t                                       fGammaThresholdOnline[2];
   /** offline threshold for gamma patches */
