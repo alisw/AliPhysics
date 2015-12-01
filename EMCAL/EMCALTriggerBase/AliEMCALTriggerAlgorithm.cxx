@@ -24,34 +24,31 @@
 
 /// \cond CLASSIMP
 templateClassImp(AliEMCALTriggerAlgorithm)
-templateClassImp(AliEMCALJetTriggerAlgorithm)
-templateClassImp(AliEMCALGammaTriggerAlgorithm)
-templateClassImp(AliEMCALBkgTriggerAlgorithm)
 /// \endcond
 
 template<typename T>
 AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm():
-TObject(),
-fRowMin(0),
-fRowMax(0),
-fPatchSize(0),
-fSubregionSize(1),
-fBitMask(0),
-fThreshold(0),
-fOfflineThreshold(0)
+  TObject(),
+  fRowMin(0),
+  fRowMax(0),
+  fPatchSize(0),
+  fSubregionSize(1),
+  fBitMask(0),
+  fThreshold(0),
+  fOfflineThreshold(0)
 {
 }
 
 template<typename T>
 AliEMCALTriggerAlgorithm<T>::AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask):
-TObject(),
-fRowMin(rowmin),
-fRowMax(rowmax),
-fPatchSize(0),
-fSubregionSize(1),
-fBitMask(bitmask),
-fThreshold(0),
-fOfflineThreshold(0)
+  TObject(),
+  fRowMin(rowmin),
+  fRowMax(rowmax),
+  fPatchSize(0),
+  fSubregionSize(1),
+  fBitMask(bitmask),
+  fThreshold(0),
+  fOfflineThreshold(0)
 {
 }
 
@@ -89,75 +86,6 @@ std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(co
   return result;
 }
 
-template<typename T>
-AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm():
-AliEMCALTriggerAlgorithm<T>()
-{
-  this->SetPatchSize(16);
-  this->SetSubregionSize(4);
-}
-
-template<typename T>
-AliEMCALJetTriggerAlgorithm<T>::AliEMCALJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask):
-AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
-{
-  this->SetPatchSize(16);
-  this->SetSubregionSize(4);
-}
-
-template<typename T>
-AliEMCALJetTriggerAlgorithm<T>::~AliEMCALJetTriggerAlgorithm(){
-}
-
-template<typename T>
-AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm():
-AliEMCALTriggerAlgorithm<T>()
-{
-  this->SetPatchSize(2);
-  this->SetSubregionSize(1);
-}
-
-template<typename T>
-AliEMCALGammaTriggerAlgorithm<T>::AliEMCALGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask):
-AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
-{
-  this->SetPatchSize(2);
-  this->SetSubregionSize(1);
-}
-
-template<typename T>
-AliEMCALGammaTriggerAlgorithm<T>::~AliEMCALGammaTriggerAlgorithm(){
-}
-
-template<typename T>
-AliEMCALBkgTriggerAlgorithm<T>::AliEMCALBkgTriggerAlgorithm():
-AliEMCALTriggerAlgorithm<T>()
-{
-  this->SetPatchSize(8);
-  this->SetSubregionSize(4);
-}
-
-template<typename T>
-AliEMCALBkgTriggerAlgorithm<T>::AliEMCALBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask):
-AliEMCALTriggerAlgorithm<T>(rowmin, rowmax, bitmask)
-{
-  this->SetPatchSize(8);
-  this->SetSubregionSize(4);
-}
-
-template<typename T>
-AliEMCALBkgTriggerAlgorithm<T>::~AliEMCALBkgTriggerAlgorithm(){
-}
-
 template class AliEMCALTriggerAlgorithm<int>;
 template class AliEMCALTriggerAlgorithm<double>;
 template class AliEMCALTriggerAlgorithm<float>;
-template class AliEMCALJetTriggerAlgorithm<int>;
-template class AliEMCALJetTriggerAlgorithm<double>;
-template class AliEMCALJetTriggerAlgorithm<float>;
-template class AliEMCALGammaTriggerAlgorithm<int>;
-template class AliEMCALGammaTriggerAlgorithm<double>;
-template class AliEMCALGammaTriggerAlgorithm<float>;
-template class AliEMCALBkgTriggerAlgorithm<int>;
-template class AliEMCALBkgTriggerAlgorithm<double>;
-template class AliEMCALBkgTriggerAlgorithm<float>;

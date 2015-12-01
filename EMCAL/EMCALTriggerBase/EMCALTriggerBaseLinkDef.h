@@ -16,15 +16,6 @@
 #pragma link C++ class AliEMCALTriggerAlgorithm<float>+;
 #pragma link C++ class AliEMCALTriggerAlgorithm<double>+;
 #pragma link C++ class AliEMCALTriggerAlgorithm<int>+;
-#pragma link C++ class AliEMCALJetTriggerAlgorithm<float>+;
-#pragma link C++ class AliEMCALJetTriggerAlgorithm<double>+;
-#pragma link C++ class AliEMCALJetTriggerAlgorithm<int>+;
-#pragma link C++ class AliEMCALGammaTriggerAlgorithm<float>+;
-#pragma link C++ class AliEMCALGammaTriggerAlgorithm<double>+;
-#pragma link C++ class AliEMCALGammaTriggerAlgorithm<int>+;
-#pragma link C++ class AliEMCALBkgTriggerAlgorithm<float>+;
-#pragma link C++ class AliEMCALBkgTriggerAlgorithm<double>+;
-#pragma link C++ class AliEMCALBkgTriggerAlgorithm<int>+;
 #pragma link C++ class AliEMCALTriggerChannelContainer+;
 #pragma link C++ class AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition+;
 #pragma link C++ class AliEMCALTriggerPatchInfo+;
