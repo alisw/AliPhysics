@@ -470,7 +470,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
 
   FillHistsCluster();  
   
-  FillHistsTrack();
+  // FillHistsTrack();
 
   PostData(1, fOutputList);
 }
@@ -884,8 +884,8 @@ Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsGoodPi0(const AliVCluster *c)
   Double_t M02 = c->GetM02();
 
   Double_t M02Min = exp(2.135-0.245*E);
-  Double_t M02Max = exp(0.0662-0.0201*E) - 0.0955 + 0.00186*E + 9.91/E; // NLM = 1
-  // Double_t M02Max = exp(0.353-0.0264*E) - 0.524 + 0.00559*E + 21.9/E; // NLM = 2
+  // Double_t M02Max = exp(0.0662-0.0201*E) - 0.0955 + 0.00186*E + 9.91/E; // NLM = 1
+  Double_t M02Max = exp(0.353-0.0264*E) - 0.524 + 0.00559*E + 21.9/E; // NLM = 2
 
   if (M02>M02Max || M02<M02Min) return kFALSE;
   if (fDebug)
