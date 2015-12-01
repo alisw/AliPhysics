@@ -76,13 +76,13 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
    // stores relevant tracks in another array
    Int_t nentr=(Int_t)event->GetNumberOfTracks();
-   TArrayI trk(nentr); Int_t ntr=0;
+   int trk[nentr], ntr=0;
    for (i=0; i<nentr; i++) {
-       AliESDtrack *esdtr=event->GetTrack(i);
-       ULong_t status=esdtr->GetStatus();
-
-       if ((status&AliESDtrack::kITSrefit)==0)
-	  if ((status&AliESDtrack::kTPCrefit)==0) continue;
+     AliESDtrack *esdtr=event->GetTrack(i);
+     ULong_t status=esdtr->GetStatus();
+     if (status&AliESDtrack::kITSpureSA) continue;
+     if ((status&AliESDtrack::kITSrefit)==0)
+       if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
        if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDBachMin) continue;
 
