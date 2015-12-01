@@ -112,6 +112,12 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    */
   int CheckTrigger(const char* name) const;
 
+  /** glob match name in trigger mask **/
+  int MatchTriggerGlob(const char* glob);
+
+  /** regex match in trigger mask **/
+  int MatchTriggerRE(const char* re);
+
   /**
    * Increment counter for CTP trigger classes
    * @param classIds  comma separated list of class ids
@@ -195,6 +201,10 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   int ReadMap(vector<unsigned> &map) const;
 
   int ReadMap() {return ReadMap(fMap);}
+
+  /** simple char-by-char glob string matching 
+   * e.g. ***FOO matches BARFOO **/
+  Bool_t Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize );
 
   AliHLTTriggerMask_t fMask;      /// mask of initialized trigger classes
   AliHLTTriggerMask_t fTriggers;  /// current trigger

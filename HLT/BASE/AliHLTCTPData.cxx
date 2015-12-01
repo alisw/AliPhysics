@@ -28,6 +28,7 @@
 #include "TFormula.h"
 #include "AliHLTComponent.h"
 #include "AliHLTCDHWrapper.h"
+#include "TPRegexp.h"
 #include <limits>
 #include <sstream>
 #include <RVersion.h>
@@ -511,3 +512,65 @@ std::string AliHLTCTPData::TriggerMaskToString(AliHLTTriggerMask_t mask) const
   return stream.str();
 }
 
+Bool_t AliHLTCTPData::Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize )
+{
+  if (globSize == 0) return kFALSE;
+  for (int i=0; i<((triggerNameSize<globSize)?triggerNameSize:globSize); i++)
+  {
+    if (!(glob[i]=='*' || triggerName[i]==glob[i])) {return kFALSE;}
+  }
+  return kTRUE;
+}
+
+int AliHLTCTPData::MatchTriggerGlob(const char* glob)
+{
+  //return 1 on (first) match, 0 otherwise
+  //only take what is not masked
+  AliHLTTriggerMask_t triggers = fTriggers;
+  triggers &= fMask;
+
+  int globsize = strnlen(glob,100);
+  if (globsize==0) return 1;
+
+  //check every fired trigger agains the expressions
+  for (int i=0; i<NCTPTRIGGERCLASSES; i++)
+  {
+    if (!triggers.test(i)) continue;
+
+    const char* triggerName = Name(i);
+    
+    if (Globncmp(triggerName, glob, strnlen(triggerName,100), globsize))
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int AliHLTCTPData::MatchTriggerRE(const char* restr)
+{
+  //return 1 on (first) match, 0 otherwise
+  //only take what is not masked
+  AliHLTTriggerMask_t triggers = fTriggers;
+  triggers &= fMask;
+
+  //compile the regex
+  TPRegexp re(restr);
+  
+  //if pattern empty: accept
+  if (re.GetPattern().IsNull()) return 1;
+
+  //check every fired trigger agains the expressions
+  for (int i=0; i<NCTPTRIGGERCLASSES; i++)
+  {
+    if (!triggers.test(i)) continue;
+
+    const char* triggerName = Name(i);
+    
+    if (re.Match(triggerName)>0)
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
