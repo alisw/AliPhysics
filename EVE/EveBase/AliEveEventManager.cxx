@@ -86,7 +86,7 @@ fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
 fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
-fExecutor(0),fViewsSaver(0),fESDdrawer(0),fAODdrawer(0),fPEventSelector(0),
+fExecutor(0),fViewsSaver(0),fESDdrawer(0),fAODdrawer(0),fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
 fgMagField(0),
 fSaveViews(false),
@@ -138,6 +138,7 @@ void AliEveEventManager::InitInternals()
     fViewsSaver = new AliEveSaveViews();
     fESDdrawer = new AliEveESDTracks();
     fAODdrawer = new AliEveAODTracks();
+    fMomentumHistogramsDrawer = new AliEveMomentumHistograms();
     
 #ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
@@ -548,6 +549,13 @@ void AliEveEventManager::AfterNewEventLoaded()
 
     if(HasESD())
     {
+        TEnv settings;
+        AliEveInit::GetConfig(&settings);
+        
+        bool drawMomentumHistograms = settings.GetValue("momentum.histograms.show",false);
+
+        if(drawMomentumHistograms){fMomentumHistogramsDrawer->Draw();}
+        
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
         if(fDrawESDtracksByType)fESDdrawer->ByType();
         

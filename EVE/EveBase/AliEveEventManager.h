@@ -15,7 +15,8 @@
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
 #include <AliEveAODTracks.h>
-#include "AliEveDataSource.h"
+#include <AliEveDataSource.h>
+#include <AliEveMomentumHistograms.h>
 
 #include <TEveEventManager.h>
 #include <TQObject.h>
@@ -119,10 +120,11 @@ public:
     void           SetHasEvent(bool hasEvent){fHasEvent=hasEvent;}
     
     // other public methods:
-    void                  ResetMagneticField(){fgMagField=0;}
-    virtual void          AfterNewEventLoaded();
-    AliEveMacroExecutor*  GetExecutor() const { return fExecutor; }
-    AliEveEventSelector*  GetEventSelector() const { return fPEventSelector; }
+    void                        ResetMagneticField(){fgMagField=0;}
+    virtual void                AfterNewEventLoaded();
+    AliEveMacroExecutor*        GetExecutor() const { return fExecutor; }
+    AliEveEventSelector*        GetEventSelector() const { return fPEventSelector; }
+    AliEveMomentumHistograms*   GetMomentumHistogramsDrawer(){return fMomentumHistogramsDrawer;}
     
     Bool_t InitOCDB(int runNo);
     
@@ -165,11 +167,12 @@ private:
     TEveElementList*  fTransients;      // Container for additional transient (per event) elements.
     TEveElementList*  fTransientLists;  // Container for lists of transient (per event) elements.
     
-    AliEveMacroExecutor*  fExecutor;        // Executor for std macros
-    AliEveSaveViews*      fViewsSaver;      // views saver
-    AliEveESDTracks*      fESDdrawer;       // drawer of ESD tracks
-    AliEveAODTracks*      fAODdrawer;       // drawer of AOD tracks
-    AliEveEventSelector*  fPEventSelector;  // Event filter
+    AliEveMacroExecutor*        fExecutor;                  // Executor for std macros
+    AliEveSaveViews*            fViewsSaver;                // views saver
+    AliEveESDTracks*            fESDdrawer;                 // drawer of ESD tracks
+    AliEveAODTracks*            fAODdrawer;                 // drawer of AOD tracks
+    AliEveMomentumHistograms*   fMomentumHistogramsDrawer;  // drawer of momentum histograms
+    AliEveEventSelector*        fPEventSelector;            // Event filter
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?
     AliMagF*  fgMagField;      // Global pointer to magnetic field.

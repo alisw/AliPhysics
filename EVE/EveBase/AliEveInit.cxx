@@ -219,6 +219,11 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     man->SetSaveViews(saveViews);
     man->SetAutoLoad(autoloadEvents);// set autoload by default
+    
+    if(defaultDataSource == AliEveEventManager::kSourceOffline){
+        ((AliEveDataSourceOffline*)man->GetDataSourceOffline())->GotoEvent(0);
+        if(settings.GetValue("momentum.histograms.show",false)){man->GetMomentumHistogramsDrawer()->DrawAllEvents();}
+    }
 }
 
 void AliEveInit::Init()
@@ -363,7 +368,8 @@ void AliEveInit::ImportMacros()
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     
     TString macdir("$(ALICE_ROOT)/EVE/macros/data");
-    macdir += ":$(ALICE_ROOT)/EVE/macros/common";
+    gSystem->ExpandPathName(macdir);
+    macdir = "$(ALICE_ROOT)/EVE/macros/common";
     gSystem->ExpandPathName(macdir);
     
     TFolder* f = gEve->GetMacroFolder();

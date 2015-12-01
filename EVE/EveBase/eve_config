@@ -5,74 +5,77 @@
 #                                                               #
 #===============================================================#
 
-trigger.class.filter:       none
+trigger.class.filter:                   none
 
-HLTESDtree.show:        	0
-MUON.show:              	1
-axes.show:                  1
-fullscreen.mode:            0
+HLTESDtree.show:                        0
+MUON.show:                              1
+axes.show:                              1
+fullscreen.mode:                        0
 
-tracks.width:           	2
-tracks.noRefit.dash:		1
-tracks.noRefit.show:		1
-tracks.byType.show:     	1
-tracks.byCategory.show:		0
-tracks.aod.byPID.show:      1
-tracks.shading:             0
+tracks.width:                           2
+tracks.noRefit.dash:                    1
+tracks.noRefit.show:                    1
+tracks.byType.show:                     1
+tracks.byCategory.show:                 0
+tracks.aod.byPID.show:                  1
+tracks.shading:                         0
 
-tracks.byType.electron:     600
-tracks.byType.muon:         416
-tracks.byType.pion:         632
-tracks.byType.kaon:         400
-tracks.byType.proton:       797
-tracks.byType.deuteron:     797
-tracks.byType.triton:       797
-tracks.byType.he3:          797
-tracks.byType.alpha:        403
-tracks.byType.photon:       0
-tracks.byType.pi0:          616
-tracks.byType.neutron:      900
-tracks.byType.kaon0:        801
-tracks.byType.elecon:       920
-tracks.byType.unknown:      920
+tracks.byType.electron:                 600
+tracks.byType.muon:                     416
+tracks.byType.pion:                     632
+tracks.byType.kaon:                     400
+tracks.byType.proton:                   797
+tracks.byType.deuteron:                 797
+tracks.byType.triton:                   797
+tracks.byType.he3:                      797
+tracks.byType.alpha:                    403
+tracks.byType.photon:                   0
+tracks.byType.pi0:                      616
+tracks.byType.neutron:                  900
+tracks.byType.kaon0:                    801
+tracks.byType.elecon:                   920
+tracks.byType.unknown:                  920
 
-PHOS.color:                 953
-TPC.color:                  3
-HMPID.color:                5
-TRD.color:                  920
-TRD.ref.color:              929
-MUON.color:                 920
-EMCAL.color:                953
-ITS.SPD.color:              924
-ITS.SDD.color:              925
-ITS.SSD.color:              926
-TOF.color:                  930
+momentum.histograms.show:               0
+momentum.histograms.all.events.show:    0
 
-clusters.show:          	0
-kinks.show:             	0
-V0s.show:               	0
-cascades.show:          	0
-rawData.show:           	0
-primary.vertex.show:		0
-hits.show:              	0
-digits.show:            	0
+PHOS.color:                             953
+TPC.color:                              3
+HMPID.color:                            5
+TRD.color:                              920
+TRD.ref.color:                          929
+MUON.color:                             920
+EMCAL.color:                            953
+ITS.SPD.color:                          924
+ITS.SDD.color:                          925
+ITS.SSD.color:                          926
+TOF.color:                              930
 
-events.autoload.set:		0
-ALICE_LIVE.send:        	0
+clusters.show:                          0
+kinks.show:                             0
+V0s.show:                               0
+cascades.show:                          0
+rawData.show:                           0
+primary.vertex.show:                    0
+hits.show:                              0
+digits.show:                            0
 
-OCDB.default.path:      	local://$(ALICE_ROOT)/../src/OCDB/
+events.autoload.set:                    0
+ALICE_LIVE.send:                        0
 
-logbook.host:           	logbook_host
-logbook.port:           	0000
-logbook.db:             	logbook_db
-logbook.user:           	logbook_user
-logbook.pass:           	logbook_pass
+OCDB.default.path:                      local://$(ALICE_ROOT)/../src/OCDB/
 
-screenshot.logo.draw		1
-screenshot.info.draw		1
-screenshot.projections.draw	1
-screenshot.force.energy     Energy: 13 TeV
-screenshot.force.system     System: Pb-Pb
+logbook.host:                           logbook_host
+logbook.port:                           0000
+logbook.db:                             logbook_db
+logbook.user:                           logbook_user
+logbook.pass:                           logbook_pass
 
-HLT.ZMQ.proxy:              tcp://localhost:60201
-offline.base.path           /home/user_name/events/
+screenshot.logo.draw                    1
+screenshot.info.draw                    1
+screenshot.projections.draw             1
+screenshot.force.energy                 Energy: 13 TeV
+screenshot.force.system                 System: Pb-Pb
+
+HLT.ZMQ.proxy:                          tcp://localhost:60201
+offline.base.path                       /home/user_name/events/

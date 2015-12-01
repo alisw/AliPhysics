@@ -7,6 +7,7 @@
 //
 
 #include "AliEveDataSourceOffline.h"
+#include "AliEveInit.h"
 
 #include "AliSysInfo.h"
 #include "AliEveEventSelector.h"

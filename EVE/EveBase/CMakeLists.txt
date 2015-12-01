@@ -73,6 +73,7 @@ set(SRCS
     AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx
     AliEveMagField.cxx
+    AliEveMomentumHistograms.cxx
     AliEveMomentumVectors.cxx
     AliEveMultiView.cxx
     AliEvePreferencesWindow.cxx
