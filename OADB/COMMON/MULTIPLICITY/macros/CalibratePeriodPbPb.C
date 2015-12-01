@@ -19,6 +19,9 @@ CalibratePeriodPbPb(TString lPeriodName = "LHC10h"){
     //All fine, let's try the calibrator
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
     
+    //Default run: this is the run whose calibration will be saved as default
+    //OADB object. Note that this is only a good guess and using this default will print
+    //out a warning message
     lCalib->SetRunToUseAsDefault( 244918 );
     
     //============================================================
@@ -49,9 +52,12 @@ CalibratePeriodPbPb(TString lPeriodName = "LHC10h"){
     lNDesiredBoundaries++;
     lDesiredBoundaries[lNDesiredBoundaries] = 0;
     
+    //This determines boundaries (in percentiles) that will be created in the calibration histogram
+    //Uses Floating Point precision
     lCalib->SetBoundaries( lNDesiredBoundaries, lDesiredBoundaries );
     cout<<"Boundaries set. Will attempt calibration now... "<<endl;
     
+    //Event Selection Snippets
     if ( lPeriodName.Contains("LHC10h") ){
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
         lCalib->GetEventCuts()->SetVzCut(10.0);
@@ -78,9 +84,13 @@ CalibratePeriodPbPb(TString lPeriodName = "LHC10h"){
     // --- Definition of Input Variables ---
     //============================================================
     
+    //Among the standard ones: fAmplitude_V0A, fAmplitudeV0C
+    //For a complete list, check AliMultSelectionCalibrator for
+    //this function definition
     lCalib->SetupStandardInput();
     
     //Changes in new version: create AliMultSelection here
+    //This is the central object which holds the estimators
     AliMultSelection *lMultSel = new AliMultSelection();
     lCalib->SetMultSelection(lMultSel);
     
@@ -210,25 +220,21 @@ CalibratePeriodPbPb(TString lPeriodName = "LHC10h"){
     lCalib->GetMultSelection() -> AddEstimator( fEstCL1minus05 );
     lCalib->GetMultSelection() -> AddEstimator( fEstCL1minus10 );
     
+    //Needed for calibrating for equal mid-rapidity Ntracklets in the MC calibrator!
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
 
-    
     //============================================================
     // --- Definition of Input/Output ---
     //============================================================
     
     if( !lPeriodName.Contains("test") ){
-        //Per Period calibration: standard locations...
-        lCalib -> SetInputFile  ( Form("~/work/calibs/Merged%s.root",lPeriodName.Data() ) );
-        lCalib -> SetBufferFile ( Form("~/work/fast/buffer-%s.root", lPeriodName.Data() ) );
-        
-        //Local running please
+        //Main Input file: Comes from TTree repository
         lCalib -> SetInputFile  ( Form("~/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
         lCalib -> SetBufferFile ( "buffer.root" );
-        
         lCalib -> SetOutputFile ( Form("OADB-%s.root", lPeriodName.Data() ) );
         lCalib -> Calibrate     ();
     }else{
+        //This is just a test
         lCalib -> SetInputFile  ( "../MultSelCalib/LHC10h/files/AnalysisResults_137161.root");
         lCalib -> SetBufferFile ( "buffer-test.root" );
         lCalib -> SetOutputFile ( "OADB-testing.root" );
