@@ -16,7 +16,6 @@
 // Task to create upc tree
 // evgeny.kryshen@cern.ch
 
-#include <RVersion.h>
 #include "AliAnalysisTaskUpcTree.h"
 #include "AliAnalysisTaskSE.h"
 #include "TChain.h"
@@ -42,6 +41,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliTriggerIR.h"
+#include "AliVAD.h"
 ClassImp(AliAnalysisTaskUpcTree)
 
 //-----------------------------------------------------------------------------
@@ -50,13 +50,10 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fIsMC(0),
   fIsAOD(0),
   fMuonTrackCuts(new AliMuonTrackCuts),
-  fTrackFilter(NULL),
   fListOfHistos(NULL),
   fEventStatistics(NULL),
   fTriggersPerRun(NULL),
   fTree(NULL),
-  fTPCtracks(NULL),
-  fMUONtracks(NULL),
   fChunkFileName(new TObjString()),
   fEventInFile(-1),
   fPeriod(-1),
@@ -70,8 +67,16 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fBGonlineV0A(kFALSE),
   fBBonlineV0C(kFALSE),
   fBGonlineV0C(kFALSE),
-  fV0ADecision(kFALSE),
-  fV0CDecision(kFALSE),
+  fV0ADecision(),
+  fV0CDecision(),
+  fADATime(),
+  fADCTime(),
+  fADADecision(),
+  fADCDecision(),
+  fMTotADA(0),
+  fMTotADC(0),
+  fTriggerChargeADA(0),
+  fTriggerChargeADC(0),
   fZNAtdc(kFALSE),
   fZNCtdc(kFALSE),
   fZPAtdc(kFALSE),
@@ -95,27 +100,50 @@ AliAnalysisTaskUpcTree::AliAnalysisTaskUpcTree(const char* name) :
   fIR1(),
   fIR2(),
   fFOmap(),
-  fFiredChipMap()
+  fFiredChipMap(),
+  fNofDimuons(0),
+  fDimuonM(0),
+  fDimuonY(0),
+  fDimuonPt(0),
+  fEta1(0),
+  fEta2(0),
+  fPhi1(0),
+  fPhi2(0),
+  fPt1(0),
+  fPt2(0),
+  fPx1(0),
+  fPy1(0),
+  fPz1(0),
+  fPx2(0),
+  fPy2(0),
+  fPz2(0),
+  fDca1(0),
+  fDca2(0),
+  fChi2perNDF1(0),
+  fChi2perNDF2(0),
+  fCharge1(0),
+  fCharge2(0),
+  fMatch1(0),
+  fMatch2(0),
+  fRabs1(0),
+  fRabs2(0),
+  fPdca1(0),
+  fPdca2(0),
+  fBBFlag(),
+  fBGFlag(),
+  fV0AMult(),
+  fV0CMult(),
+  fV0ATime(),
+  fV0CTime(),
+  fBBTriggerV0A(),
+  fBGTriggerV0A(),
+  fBBTriggerV0C(),
+  fBGTriggerV0C(),
+  fTriggerFired()
 {
-  fMuonTrackCuts->SetPassName("muon_pass2");
+  fMuonTrackCuts->SetPassName("muon_calo_pass1");
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
   fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
-
-  for (Int_t i=0;i<NTRIGGERS;i++) fTriggerFired[i]=0;
-  for (Int_t i=0;i<32;i++) {
-    fV0AMult[i]=0;
-    fV0CMult[i]=0;
-    fV0ATime[i]=0;
-    fV0CTime[i]=0;
-    fBBTriggerV0A[i]=0;
-    fBGTriggerV0A[i]=0;
-    fBBTriggerV0C[i]=0;
-    fBGTriggerV0C[i]=0;
-  }
-  for (Int_t i=0;i<64;i++) {
-    fBBFlag[i]=0;
-    fBGFlag[i]=0;
-  }
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
   DefineOutput(2,TTree::Class());
@@ -135,21 +163,15 @@ void AliAnalysisTaskUpcTree::NotifyRun(){
 void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
-  fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
-  fEventStatistics->SetBit(TH1::kCanRebin);
-#endif
+  fEventStatistics = new TH1D("fEventStatistics","",10,0,10);
+  fTriggersPerRun = new TH2D("fTriggersPerRun",";;Events",NTRIGGERS,-0.5,NTRIGGERS+0.5,1,0,1);
   fListOfHistos->Add(fEventStatistics);
-
-  fTriggersPerRun = new TH2I("fTriggersPerRun",";;Events",2000,195600,197600,NTRIGGERS,-0.5,NTRIGGERS+0.5);
   fListOfHistos->Add(fTriggersPerRun);
   
   TDirectory *owd = gDirectory;
   OpenFile(1);
   fTree = new TTree("events","events");
   owd->cd();
-  fTPCtracks = new TClonesArray("AliUpcParticle",100);
-  fMUONtracks = new TClonesArray("AliUpcParticle",10);
   fTree->Branch("fTriggerFired",&fTriggerFired,Form("fTriggerFired[%i]/O",NTRIGGERS));
   fTree->Branch("fChunkFileName",&fChunkFileName);
   fTree->Branch("fEventInFile",&fEventInFile);
@@ -174,6 +196,14 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fTree->Branch("fBGonlineV0C",&fBGonlineV0C);
   fTree->Branch("fV0ADecision",&fV0ADecision);
   fTree->Branch("fV0CDecision",&fV0CDecision);
+  fTree->Branch("fADATime",&fADATime);
+  fTree->Branch("fADCTime",&fADCTime);
+  fTree->Branch("fADADecision",&fADADecision);
+  fTree->Branch("fADCDecision",&fADCDecision);
+  fTree->Branch("fMTotADA",&fMTotADA);
+  fTree->Branch("fMTotADC",&fMTotADC);
+  fTree->Branch("fTriggerChargeADA",&fTriggerChargeADA);
+  fTree->Branch("fTriggerChargeADC",&fTriggerChargeADC);
   fTree->Branch("fZNAtdc",&fZNAtdc);
   fTree->Branch("fZNCtdc",&fZNCtdc);
   fTree->Branch("fZPAtdc",&fZPAtdc);
@@ -194,8 +224,6 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fTree->Branch("fVtxY",&fVtxY);
   fTree->Branch("fVtxZ",&fVtxZ);
   fTree->Branch("fVtxTPC",&fVtxTPC);
-  fTree->Branch("fTPCtracks",&fTPCtracks);
-  fTree->Branch("fMUONtracks",&fMUONtracks);
   fTree->Branch("fNofITSClusters",&fNofITSClusters,"fNofITSClusters[6]/I");
   fTree->Branch("fIR1",&fIR1);
   fTree->Branch("fIR2",&fIR2);
@@ -203,7 +231,34 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fTree->Branch("fL1inputs",&fL1inputs);
   fTree->Branch("fFOmap",&fFOmap);
   fTree->Branch("fFiredChipMap",&fFiredChipMap);
-
+  fTree->Branch("fNofDimuons",&fNofDimuons);
+  fTree->Branch("fDimuonM",&fDimuonM);
+  fTree->Branch("fDimuonY",&fDimuonY);
+  fTree->Branch("fDimuonPt",&fDimuonPt);
+  fTree->Branch("fEta1",&fEta1);
+  fTree->Branch("fEta2",&fEta2);
+  fTree->Branch("fPhi1",&fPhi1);
+  fTree->Branch("fPhi2",&fPhi2);
+  fTree->Branch("fPt1",&fPt1);
+  fTree->Branch("fPt2",&fPt2);
+  fTree->Branch("fPx1",&fPx1);
+  fTree->Branch("fPy1",&fPy1);
+  fTree->Branch("fPz1",&fPz1);
+  fTree->Branch("fPx2",&fPx2);
+  fTree->Branch("fPy2",&fPy2);
+  fTree->Branch("fPz2",&fPz2);
+  fTree->Branch("fDca1",&fDca1);
+  fTree->Branch("fDca2",&fDca2);
+  fTree->Branch("fChi2perNDF1",&fChi2perNDF1);
+  fTree->Branch("fChi2perNDF2",&fChi2perNDF2);
+  fTree->Branch("fCharge1",&fCharge1);
+  fTree->Branch("fCharge2",&fCharge2);
+  fTree->Branch("fMatch1",&fMatch1);
+  fTree->Branch("fMatch2",&fMatch2);
+  fTree->Branch("fRabs1",&fRabs1);
+  fTree->Branch("fRabs2",&fRabs2);
+  fTree->Branch("fPdca1",&fPdca1);
+  fTree->Branch("fPdca2",&fPdca2);
   PostData(1,fListOfHistos);
   PostData(2,fTree);
 }
@@ -212,38 +267,28 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
 
 //-----------------------------------------------------------------------------
 void AliAnalysisTaskUpcTree::UserExec(Option_t *){
-  fMUONtracks->Clear();
-  fTPCtracks->Clear();
   fEventStatistics->Fill("before cuts",1);
   
   TString trigger = fInputEvent->GetFiredTriggerClasses();
 
   for (Int_t i=0;i<NTRIGGERS;i++) fTriggerFired[i]=0;
   fTriggerFired[ 0] = 1;
-  fTriggerFired[ 1] = trigger.Contains("CCUP7-B");
-  fTriggerFired[ 2] = trigger.Contains("CMUP5-B");
-  fTriggerFired[ 3] = trigger.Contains("CMUP7-B");
-  fTriggerFired[ 4] = trigger.Contains("CMUP9-B");
-  fTriggerFired[ 5] = trigger.Contains("CMSL7-B-NOPF-MUON");
-  fTriggerFired[ 6] = trigger.Contains("CMSL7-B-NOPF-ALLNOTRD");
+  fTriggerFired[ 1] = trigger.Contains("CMUP10-B");
+  fTriggerFired[ 2] = trigger.Contains("CMUP11-B");
 
   fRunNumber  = fInputEvent->GetRunNumber();
   Bool_t isTrigger=0;
   for (Int_t i=0;i<NTRIGGERS;i++){
     if (!fTriggerFired[i]) continue;
-    fTriggersPerRun->Fill(fRunNumber,i);
+    fTriggersPerRun->Fill(i,Form("%i",fRunNumber),1);
     if (!i) continue;
     isTrigger=1;
   }
   if (!isTrigger && !fIsMC) { PostData(1,fListOfHistos); return; }
   fEventStatistics->Fill("after trigger check",1);
 
-
-  if (fNofTracklets>1 && fTriggerFired[5]) { PostData(1,fListOfHistos); return; }
-  if (fNofTracklets>1 && fTriggerFired[6]) { PostData(1,fListOfHistos); return; }
-  
-  fEventStatistics->Fill("after tracklet check",1);
-
+  fEventInFile = fInputEvent->GetEventNumberInFile();
+  fChunkFileName->SetString(((TTree*) GetInputData(0))->GetCurrentFile()->GetName());
   fPeriod       = fInputEvent->GetPeriodNumber();
   fOrbit        = fInputEvent->GetOrbitNumber();
   fBC           = fInputEvent->GetBunchCrossNumber();
@@ -252,7 +297,9 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fIR1          = fInputEvent->GetHeader()->GetIRInt1InteractionMap();
   fIR2          = fInputEvent->GetHeader()->GetIRInt2InteractionMap();
   fNofTracklets = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-  
+  fFOmap        = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+  fFiredChipMap = fInputEvent->GetMultiplicity()->GetFiredChipMap();
+
   for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fInputEvent->GetNumberOfITSClusters(i);
   
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
@@ -283,6 +330,17 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fV0ADecision = vzero->GetV0ADecision();
   fV0CDecision = vzero->GetV0CDecision();
 
+  // AD data
+  AliVAD* ad = fInputEvent->GetADData();
+  fADADecision      = ad->GetADADecision();
+  fADCDecision      = ad->GetADCDecision();
+  fMTotADA          = ad->GetMTotADA();
+  fMTotADC          = ad->GetMTotADC();
+  fTriggerChargeADA = ad->GetTriggerChargeA();
+  fTriggerChargeADC = ad->GetTriggerChargeC();
+  fADATime          = ad->GetADATime();
+  fADCTime          = ad->GetADCTime();
+  
   // ZDC data
   AliVZDC* zdc = fInputEvent->GetZDCData();
   fZNAenergy  = zdc->GetZNAEnergy();
@@ -295,24 +353,6 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fZNCtower0  = zdc->GetZNCTowerEnergy()[0];
   fZPAtower0  = zdc->GetZPATowerEnergy()[0];
   fZPCtower0  = zdc->GetZPCTowerEnergy()[0];
-  // ZDC timing
-  fZEM1tdc = kFALSE;
-  fZEM2tdc = kFALSE;
-  fZNCtdc  = kFALSE;
-  fZPCtdc  = kFALSE;
-  fZNAtdc  = kFALSE;
-  fZPAtdc  = kFALSE;
-  if (!fIsAOD) {
-    AliESDZDC* esdzdc = (AliESDZDC*) zdc;
-    for(Int_t i=0;i<4;i++) {
-      if (esdzdc->GetZDCTDCData( 8,i)) fZEM1tdc = kTRUE;
-      if (esdzdc->GetZDCTDCData( 9,i)) fZEM2tdc = kTRUE;
-      if (esdzdc->GetZDCTDCData(10,i)) fZNCtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(11,i)) fZPCtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(12,i)) fZNAtdc  = kTRUE;
-      if (esdzdc->GetZDCTDCData(13,i)) fZPAtdc  = kTRUE;
-    }
-  }
 
   const AliVVertex* vertex  = fInputEvent->GetPrimaryVertex();
   fVtxX   = vertex->GetX();
@@ -320,80 +360,44 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   fVtxZ   = vertex->GetZ();
   fVtxTPC = TString(vertex->GetName()).CompareTo("PrimaryVertex") && TString(vertex->GetName()).CompareTo("SPDVertex");
   
-  AliESDEvent* esd = !fIsAOD ? (AliESDEvent*) fInputEvent : 0;
-//  AliAODEvent* aod =  fIsAOD ? (AliAODEvent*) fInputEvent : 0;
-
-  if (!esd) return; // AOD not yet implemented
+  AliAODEvent* aod = (AliAODEvent*) fInputEvent;
   
-  fEventInFile = esd->GetHeader()->GetEventNumberInFile();
-  fChunkFileName->SetString(((TTree*) GetInputData(0))->GetCurrentFile()->GetName());
+  fNofDimuons = aod->GetNumberOfDimuons();
   
-  fFOmap = esd->GetMultiplicity()->GetFastOrFiredChips();
-  fFiredChipMap = esd->GetMultiplicity()->GetFiredChipMap();
+  if (fNofDimuons!=1) { PostData(1,fListOfHistos); return; }
+  fEventStatistics->Fill("after dimuon check",1);
   
-  for (Int_t itr=0;itr<esd->GetNumberOfTracks();itr++){
-    AliESDtrack* track = (AliESDtrack*) esd->GetTrack(itr);
-    Float_t pt   = track->Pt();
-    Float_t eta  = track->Eta();
-    Float_t phi  = track->Phi();
-    Short_t charge = track->Charge();
-    UInt_t mask = 0;//track->GetFilterMap();
-    
-    if (!fTrackFilter) AliFatal("Track filter undefined");
-    mask |= fTrackFilter->IsSelected(track);
-
-    if (!mask) continue;
-    UInt_t itsClusterMap      = track->GetITSClusterMap();
-    Bool_t itsRefit           = track->GetStatus() & AliVTrack::kITSrefit;
-    Bool_t tpcRefit           = track->GetStatus() & AliVTrack::kTPCrefit;
-    Bool_t kink               = track->GetKinkIndex(0)>0;
-    mask |= itsRefit      << 20;
-    mask |= tpcRefit      << 21;
-    mask |= kink          << 22;
-    mask |= itsClusterMap << 23;
-    
-    AliUpcParticle* part = new ((*fTPCtracks)[fTPCtracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,mask,10);
-    Float_t dedx              = track->GetTPCsignal();
-    Float_t nCrossedRaws      = track->GetTPCCrossedRows();
-    Float_t nFindableClusters = track->GetTPCNclsF();
-    Float_t nSharedClusters   = track->GetTPCnclsS();
-    Float_t nClusters         = track->GetTPCncls();
-    Float_t chi2tpc           = track->GetTPCchi2();
-    Float_t chi2its           = track->GetITSchi2();
-    Float_t chi2golden        = 0;//vertex ? track->GetChi2TPCConstrainedVsGlobal(vertex) : 0;
-    Float_t bxy,bz; 
-    track->GetImpactParameters(bxy,bz);
-    part->SetAt(dedx,0);
-    part->SetAt(nCrossedRaws,1);
-    part->SetAt(nFindableClusters,2);
-    part->SetAt(nSharedClusters,3);
-    part->SetAt(nClusters,4);
-    part->SetAt(chi2tpc,5);
-    part->SetAt(chi2its,6);
-    part->SetAt(chi2golden,7);
-    part->SetAt(bxy,8);
-    part->SetAt(bz,9);
-  }
-  
-  for (Int_t itr=0;itr<esd->GetNumberOfMuonTracks();itr++){
-    AliESDMuonTrack* track = esd->GetMuonTrack(itr);
-    if (!track->ContainTrackerData()) continue;
-    Float_t pt     = track->Pt();
-    Float_t eta    = track->Eta();
-    Float_t phi    = track->Phi();
-    Short_t charge = track->Charge();
-    UInt_t mask    = fMuonTrackCuts->IsSelected(track);
-    Float_t dca    = track->GetDCA();
-    Float_t chi2   = track->GetChi2();
-    Float_t ndf    = track->GetNDF();
-    Float_t rabs   = track->GetRAtAbsorberEnd();
-    Float_t match  = track->GetMatchTrigger();
-    AliUpcParticle* part = new ((*fMUONtracks)[fMUONtracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,mask,5);
-    part->SetAt(dca,0);
-    part->SetAt(chi2,1);
-    part->SetAt(ndf,2);
-    part->SetAt(rabs,3);
-    part->SetAt(match,4);
+  for (Int_t i=0;i<fNofDimuons;i++){
+    AliAODDimuon* dimuon = aod->GetDimuon(i);
+    fDimuonM  = dimuon->M();
+    fDimuonY  = dimuon->Y();
+    fDimuonPt = dimuon->Pt();
+    AliAODTrack* mu1 = dimuon->GetMu(0);
+    AliAODTrack* mu2 = dimuon->GetMu(1);
+    fPx1 = mu1->Px();
+    fPy1 = mu1->Py();
+    fPz1 = mu1->Pz();
+    fPx2 = mu2->Px();
+    fPy2 = mu2->Py();
+    fPz2 = mu2->Pz();
+    fPt1 = mu1->Pt();
+    fPt2 = mu2->Pt();
+    fPhi1 = mu1->Phi();
+    fPhi2 = mu2->Phi();
+    fEta1 = mu1->Eta();
+    fEta2 = mu2->Eta();
+    fDca1 = mu1->DCA();
+    fDca2 = mu2->DCA();
+    fChi2perNDF1 = mu1->Chi2perNDF();
+    fChi2perNDF2 = mu2->Chi2perNDF();
+    fRabs1 = mu1->GetRAtAbsorberEnd();
+    fRabs2 = mu2->GetRAtAbsorberEnd();
+    fMatch1   = mu1->GetMatchTrigger();
+    fMatch2   = mu2->GetMatchTrigger();
+    fCharge1  = mu1->Charge();
+    fCharge2  = mu2->Charge();
+    fPdca1 = fMuonTrackCuts ? fMuonTrackCuts->IsSelected(mu1) : 0;
+    fPdca2 = fMuonTrackCuts ? fMuonTrackCuts->IsSelected(mu2) : 0;
   }
   
   fTree->Fill();

@@ -32,7 +32,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0), 
-  fInput(0)
+  fInput(0),
+  fRandomEntry(0)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -58,7 +59,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0),
-  fInput(0)
+  fInput(0),
+  fRandomEntry(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -145,6 +147,7 @@ void AliJetEmbeddingTask::Run()
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
        	  Double_t pTemb = -1;
        	  while(pTemb < fMinPtEmb){
+       	     if(fRandomEntry) fCurrentEntry = gRandom->Integer(nentries);
        	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
        	     else {
        	     	fCurrentEntry = 0;
@@ -158,7 +161,7 @@ void AliJetEmbeddingTask::Run()
        	     	AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, fCurrentEntry, charge, jetDet->M());
        	     	//Printf("Embedded (pT = %.2f)!!!!", jetDet->Pt());
        	     }
-       	     fCurrentEntry++;
+       	     if(!fRandomEntry) fCurrentEntry++;
        	  }
        } else {
        	  
