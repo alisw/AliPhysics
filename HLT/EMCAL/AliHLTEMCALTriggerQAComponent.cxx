@@ -97,7 +97,10 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
   if (!blocks) return 0;
 
-  if (!RetrieveFiredTriggerClasses()) return 0;
+  //if (!RetrieveFiredTriggerClasses()) return 0;
+  if (!RetrieveFiredTriggerClasses()) {
+    HLTDebug("No trigger classes received\n");
+  }
 
   const AliHLTComponentBlockData* iter = 0;
 
