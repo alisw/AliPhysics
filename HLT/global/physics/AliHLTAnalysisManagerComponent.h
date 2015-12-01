@@ -78,7 +78,6 @@ public:
 
   /**  */
   Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
-  Int_t PushAndReset(TObject* object);
 
  protected:
 
@@ -139,6 +138,11 @@ private:
   {
 	  AliVEvent* fEvent;
 	  AliVfriendEvent* fFriend;
+  };
+  struct CalibManagerReturnData
+  {
+	  char* fPtr;
+	  size_t fSize;
   };
   
   void* AnalysisManagerInit(void*);

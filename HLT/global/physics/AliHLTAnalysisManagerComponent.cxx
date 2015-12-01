@@ -280,11 +280,11 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
   //configured with -pushback-period=n
   //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
   fNEvents++;
-  void* retVal = NULL;
+  TObject* retVal = NULL;
   if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
   {
     retVal = fAnalysisManager->GetOutputs();
-	HLTImportant("TPC Calib Manager pusing output: %p", retVal);
+    HLTImportant("TPC Calib Manager pushing output: %p", retVal);
   }
   
   if (fQueueDepth == 0)
@@ -297,6 +297,26 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
   delete eventData->fFriend;
   delete eventData;
 
+  //In AsyncMode, we copy the content to a temporary buffer an reset the Analysis Manager directly
+  if (retVal && fQueueDepth)
+  {
+    if (!CheckPushbackPeriod()) return(NULL);
+
+    char* tmpBuffer;
+    size_t size;
+    SerializeObject(retVal, tmpBuffer, size);
+    if (size == 0) return(NULL);
+    
+    if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+    
+    CalibManagerReturnData* ret = new CalibManagerReturnData;
+    ret->fPtr = tmpBuffer;
+    ret->fSize = size;
+
+    return(ret);
+  }
+
+  //In synchronous mode, we can just return the object
   return(retVal);
 }
 
@@ -348,18 +368,23 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
   while (fAsyncProcessor.IsQueuedTaskCompleted())
   {
-    TObject* retObj = (TObject*) fAsyncProcessor.RetrieveQueuedTaskResult();
-    if (retObj)
+    void* retVal = fAsyncProcessor.RetrieveQueuedTaskResult();
+    if (retVal)
     {
-      PushBack(retObj, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-      if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+      if (fQueueDepth)
+      {
+        CalibManagerReturnData* ret = (CalibManagerReturnData*) retVal;
+	PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+	delete ret->fPtr;
+	delete ret;
+      }
+      else
+      {
+        TObject* retObj = (TObject*) retVal;
+        int pushResult = PushBack(retObj, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+        if (pushResult > 0 && fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+      }
     }
-  }
-
-  if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
-  {
-    PushBack(fAnalysisManager->GetOutputs(), kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-    if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
   }
 
   return 0;
@@ -388,18 +413,6 @@ Int_t AliHLTAnalysisManagerComponent::Reconfigure(const Char_t* cdbEntry, const 
 Int_t AliHLTAnalysisManagerComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
   // see header file for class documentation
   ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
-  return 0;
-}
-
-// #################################################################################
-Int_t AliHLTAnalysisManagerComponent::PushAndReset(TObject* object)
-{
-  //push the data - the data might not get pushed, depending on the 
-  //"-pushback-period=" argument which might delay the actual push. 
-  //pushResult==0 if pushing delayed.
-  //
-  int pushResult = PushBack(object, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-  if (pushResult > 0 && fResetAfterPush) {fAnalysisManager->ResetOutputData();}
   return 0;
 }
 
@@ -516,7 +529,6 @@ int AliHLTAnalysisManagerComponent::ProcessOption(TString option, TString value)
   {
     fQueueDepth=atoi(value.Data());
     HLTInfo("fQueueDepth=%d\n",fQueueDepth);
-	if (fQueueDepth) HLTFatal("AliHLTTPCCalibManagerComponent cannot run with QueueDepth != 0 yet, reset of analysis manager must be synchronized properly!");
   }
   else if (option.Contains("ResetAfterPush"))
   {
