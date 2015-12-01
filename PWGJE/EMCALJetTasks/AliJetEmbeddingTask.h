@@ -44,6 +44,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   //void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
   void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
+  void           SetUseRandomEntry(Bool_t isrdm = kTRUE)       {fRandomEntry = isrdm; }
   
  protected:
   void           Run();
@@ -69,12 +70,13 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Int_t          fCurrentEntry;           ///< Current TTree entry
   TList          *fInput;                 //!<! Input histograms saved in this list
   Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
+  Bool_t         fRandomEntry;            ///< draw random number to extract the entry number in the tree
   
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 7) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 8) /// Jet embedding task
   /// \endcond
 };
 #endif
