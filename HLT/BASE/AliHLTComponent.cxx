@@ -2285,7 +2285,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
       //HLTImportant("time: %i, fLastPushBackTime: %i",(int)time.GetSec(),fLastPushBackTime);
     } else if ((int)time.GetSec()-fLastPushBackTime>=fPushbackPeriod) {
-      fLastPushBackTime=time.GetSec();
+      if (outputBlockCnt) fLastPushBackTime=time.GetSec();
     }
   }
 
