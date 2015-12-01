@@ -233,7 +233,8 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 	while (fAsyncProcessor.IsQueuedTaskCompleted())
 	{
 		AliCDBEntry* retVal = (AliCDBEntry*) fAsyncProcessor.RetrieveQueuedTaskResult();
-		PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
+		int pushResult = PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
+		if (pushResult) HLTImportant("Offline Preprocessor pushed CDB entry (%d bytes)", pushResult);
 		delete retVal;
 	}
 	
