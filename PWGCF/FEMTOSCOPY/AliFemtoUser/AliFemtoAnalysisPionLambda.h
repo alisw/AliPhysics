@@ -89,12 +89,27 @@ public:
    * Create a Cut-Parameter object with default options.
    */
   static CutParams DefaultCutConfig();
+
+  /**
+   * Create an analysis-parameter object with default options. This is used
+   * internally when using the default constructor. It is recommended to call
+   * this method to constrcut the AnalysisParams object, and modify that to
+   * create a custom AliFemtoAnalysisPionLambda.
+   */
   static AnalysisParams DefaultConfig();
 
+  /**
+   * Return the particle cut which selects the lambda-like particle
+   * (implemented as ParticleCut1 - but could change)
+   */
   AliFemtoV0TrackCut* GetLambdaCut();
-  AliFemtoTrackCut* GetPionCut();
-
   const AliFemtoV0TrackCut* GetLambdaCut() const;
+
+  /**
+   * Return the particle cut which selects the charged pion-like track
+   * (implemented as ParticleCut2 - but could change)
+   */
+  AliFemtoTrackCut* GetPionCut();
   const AliFemtoTrackCut* GetPionCut() const;
 
   AliFemtoV0TrackCut* BuildLambdaCut(const CutParams&) const;
@@ -102,13 +117,22 @@ public:
   AliFemtoBasicEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 
-  // Adds a AliFemtoCutMonitorPionLambda to the cuts
-  void AddPionLambdaCutMonitor(AliFemtoCutMonitorPionLambda*);
-
+  /**
+   * For each cut already set (i.e. pointer is not NULL) this function
+   * creates two "standard" cut monitor (for pass/fail) and adds them to the
+   * cut. These cut monitors are defined with the AliFemtoPionLambdaCutMonitor
+   * class.
+   */
   void AddStanardCutMonitors();
 
+  /**
+   * Returns a TList of all objects
+   */
   virtual TList *GetOutputList();
 
+  /**
+   * Returns a TList of TObjStrings containing the settings of the analysis.
+   */
   virtual TList *ListSettings();
 
 protected:
@@ -132,6 +156,7 @@ protected:
 
 private:
 
+  /// Internal initialization method used by all constructors
   void _Init(const CutParams& params);
 
 #ifndef __ROOT__
