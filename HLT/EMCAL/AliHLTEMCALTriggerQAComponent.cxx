@@ -363,7 +363,11 @@ AliHLTComponent* AliHLTEMCALTriggerQAComponent::Spawn()
 
 int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
 {
-  SetupCTPData();
+  //Init the CTP data
+  if (SetupCTPData() == -ENOMEM) {
+    HLTError("could not SetupCTPData(); ENOMEM");
+    return -ENOMEM;
+  }
   InitialiseGeometry();
   fTriggerQAPtr = new AliEMCALTriggerQA;
   fTriggerQAPtr->Init();
