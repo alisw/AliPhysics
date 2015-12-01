@@ -91,8 +91,9 @@ public:
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
-    void SetAlternateOADBforEstimators    ( TString lFile ){ fAlternateOADBForEstimators    = lFile.Data(); }
-    void SetAlternateOADBFullManualBypass ( TString lFile ){ fAlternateOADBFullManualBypass = lFile.Data(); }
+    void SetAlternateOADBforEstimators      ( TString lFile ){ fAlternateOADBForEstimators      = lFile.Data(); }
+    void SetAlternateOADBFullManualBypass   ( TString lFile ){ fAlternateOADBFullManualBypass   = lFile.Data(); }
+    void SetAlternateOADBFullManualBypassMC ( TString lFile ){ fAlternateOADBFullManualBypassMC = lFile.Data(); }
     
     //Default Setters
     void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
@@ -135,6 +136,7 @@ private:
     
     TString fAlternateOADBForEstimators;
     TString fAlternateOADBFullManualBypass;
+    TString fAlternateOADBFullManualBypassMC;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
