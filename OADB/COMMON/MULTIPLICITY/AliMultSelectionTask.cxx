@@ -1150,17 +1150,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     TString lPeriodName     = GetPeriodNameByRunNumber();
     TString lProductionName = GetPeriodNameByPath( lPathInput );
      
-    AliInfo("==================================================");
-    AliInfoF(" Period Name (by run number)....: %s", lPeriodName.Data());
-    AliInfoF(" Production Name (by path)......: %s", lProductionName.Data());
-    AliInfo("==================================================");
+    AliWarning("==================================================");
+    AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
+    AliWarning(Form(" Production Name (by path)......: %s", lProductionName.Data()));
+    AliWarning("==================================================");
     if ( lPeriodName.EqualTo(lProductionName.Data()) == kTRUE ){
-        AliInfoF(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data());
-        AliInfo("==================================================");
+        AliWarning( Form(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data() ));
+        AliWarning("==================================================");
     }
     if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ){
-        AliInfo(" Auto-detected that this is MC, but you didn't provide a production name!");
-        AliInfoF(" Will input it automatically for you to %s",lProductionName.Data() );
+        AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
+        AliWarning(Form(" Will input it automatically for you to %s",lProductionName.Data() ));
         fAlternateOADBForEstimators = lProductionName;
         AliInfo("==================================================");
     }
@@ -1172,9 +1172,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     //Full Manual Bypass Mode (DEBUG ONLY)
     if ( fAlternateOADBFullManualBypass.EqualTo("")==kFALSE ){
-        AliInfo(" Extra option detected: FULL MANUAL BYPASS of OADB Location ");
-        AliInfo(" --- Warning: Use with care ---");
-        AliInfoF(" New complete path: %s", fAlternateOADBFullManualBypass.Data() );
+        AliWarning(" Extra option detected: FULL MANUAL BYPASS of OADB Location ");
+        AliWarning(" --- Warning: Use with care ---");
+        AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypass.Data() ));
         fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
     }
     
