@@ -46,8 +46,15 @@ public:
 
   void   Init();
   void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
+  void   ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch);
   void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
   void   EventCompleted();
+  void   ComputeBackground();
+
+  void   GetEMCalMedian(Double_t median[3]) const { memcpy(median, fMedianEMCal, sizeof(Double_t)*3); }
+  void   GetDCalMedian(Double_t median[3])  const { memcpy(median, fMedianDCal, sizeof(Double_t)*3) ; }
+  void   GetEMCalBkg(Double_t bkg[3])       const { memcpy(bkg, fBkgEMCal, sizeof(Double_t)*3)      ; }
+  void   GetDCalBkg(Double_t bkg[3])        const { memcpy(bkg, fBkgDCal, sizeof(Double_t)*3)       ; }
 
   THashList* GetListOfHistograms()  { return fHistos; }
 
@@ -69,7 +76,11 @@ protected:
   TArrayI                 fBkgADCAmpDCal[3];            //!<! ADC DCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
   Int_t                   fNBkgPatchesDCal[3];          //!<! Number of processed background patches (will be reset each event)
   Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  Int_t                   fPatchSizes[6];               //!<! Patch sizes retrieved directly during the patch processing
+  Int_t                   fPatchAreas[6];               //!<! Patch sizes retrieved directly during the patch processing
+  Double_t                fMedianEMCal[3];              //!<! Median of background patches in the EMCal
+  Double_t                fMedianDCal[3];               //!<! Median of background patches in the DCal
+  Double_t                fBkgEMCal[3];                 //!<! Background in the EMCal
+  Double_t                fBkgDCal[3];                  //!<! Background in the DCal
   THashList              *fHistos;                      //!<! Histograms for QA
 
 private:

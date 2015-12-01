@@ -264,6 +264,18 @@ class AliEMCALTriggerPatchInfo: public TObject {
   Bool_t   IsOfflineSimple() const { return IsJetLowSimple() || IsJetHighSimple() || IsGammaLowSimple() || IsGammaHighSimple(); }
 
   /**
+   * Check whether patch is found by the simple offline trigger (on offline amplitudes)
+   * @return True if the patch is found by the simple offline trigger, false otherwise
+   */
+  Bool_t   IsRecalc() const { return IsJetLowRecalc() || IsJetHighRecalc() || IsGammaLowRecalc() || IsGammaHighRecalc(); }
+
+  /**
+   * Check whether patch is found by the simple offline trigger (on offline amplitudes)
+   * @return True if the patch is found by the simple offline trigger, false otherwise
+   */
+  Bool_t   IsOnline() const { return IsJetLow() || IsJetHigh() || IsGammaLow() || IsGammaHigh(); }
+
+  /**
    * Access to Lorentz Vector of the centre-of-mass of the trigger patch
    * @return Lorentz Vector of the centre-of-mass of the trigger patch
    */
