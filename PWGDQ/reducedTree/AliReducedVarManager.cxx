@@ -23,6 +23,7 @@ using std::ifstream;
 #include <TChain.h>
 //#include <TObject.h>
 
+#include "AliReducedBaseEvent.h"
 #include "AliReducedEventInfo.h"
 #include "AliReducedBaseTrack.h"
 #include "AliReducedEventPlaneInfo.h"
@@ -30,6 +31,7 @@ using std::ifstream;
 #include "AliReducedPairInfo.h"
 #include "AliReducedCaloClusterInfo.h"
 
+#define BASEEVENT AliReducedBaseEvent
 #define EVENT AliReducedEventInfo
 #define TRACK AliReducedTrackInfo
 #define PAIR  AliReducedPairInfo
@@ -48,7 +50,7 @@ const Float_t AliReducedVarManager::fgkParticleMass[AliReducedVarManager::kNSpec
     1.019455      // phi(1020) meson
 };
 
-const Char_t* AliReducedVarManager::fgkTrackingFlagNames[AliReducedVarManager::kNTrackingFlags] = {
+const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
     "kITSin", "kITSout", "kITSrefit", "kITSpid",
     "kTPCin", "kTPCout", "kTPCrefit", "kTPCpid",
     "kTRDin", "kTRDout", "kTRDrefit", "kTRDpid",
@@ -236,12 +238,39 @@ void AliReducedVarManager::FillEventInfo(Float_t* values) {
 }
 
 //__________________________________________________________________
+void AliReducedVarManager::FillBaseEventInfo(BASEEVENT* event, Float_t* values, EVENTPLANE* eventF/*=0x0*/) {
+   //
+   // Fill basic event information
+   //
+   values[kRunNo]                   = event->RunNo();
+   values[kVtxX]                      = event->Vertex(0);
+   values[kVtxY]                       = event->Vertex(1);
+   values[kVtxZ]                      = event->Vertex(2);
+   values[kNVtxContributors]= event->VertexNContributors(); 
+   
+   values[kCentVZERO]         = event->CentralityVZERO();
+   values[kCentSPD]              = event->CentralitySPD();
+   values[kCentTPC]              = event->CentralityTPC();
+   values[kCentZDC]             = event->CentralityZEMvsZDC();
+   values[kCentVZEROA]      = event->CentralityVZEROA();
+   values[kCentVZEROC]      = event->CentralityVZEROC();
+   values[kCentZNA]             = event->CentralityZNA();
+   values[kCentQuality]        = event->CentralityQuality();
+   
+   values[kNV0total]             = event->NV0CandidatesTotal();
+   values[kNV0selected]       = event->NV0Candidates();
+   values[kNtracksTotal]       = event->NTracksTotal();
+   values[kNtracksSelected] = event->NTracks();
+}
+
+//__________________________________________________________________
 void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLANE* eventF/*=0x0*/) {
   //
   // fill event wise info
   //
+  FillBaseEventInfo(event, values, eventF);
+   
   values[kEventNumberInFile]    = event->EventNumberInFile();
-  values[kRunNo]                = event->RunNo();
   values[kBC]                   = event->BC();
   values[kTimeStamp]            = event->TimeStamp();
   values[kEventType]            = event->EventType();
@@ -256,11 +285,7 @@ void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLA
   values[kNPMDtracks]           = event->NPMDtracks();
   values[kNTRDtracks]           = event->NTRDtracks();
   values[kNTRDtracklets]        = event->NTRDtracklets();
-  values[kNVtxContributors]     = event->VertexNContributors();
   values[kNVtxTPCContributors]  = event->VertexTPCContributors();
-  values[kVtxX]                 = event->Vertex(0);
-  values[kVtxY]                 = event->Vertex(1);
-  values[kVtxZ]                 = event->Vertex(2);
   values[kVtxXtpc]              = event->VertexTPC(0);
   values[kVtxYtpc]              = event->VertexTPC(1);
   values[kVtxZtpc]              = event->VertexTPC(2);
@@ -268,15 +293,15 @@ void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLA
   if(fgUsedVars[kDeltaVtxZ]) values[kDeltaVtxZ] = values[kVtxZ] - values[kVtxZtpc];
   
   for(Int_t iflag=0;iflag<32;++iflag) 
-    values[kNTracksPerTrackingFlag+iflag] = event->TracksPerTrackingFlag(iflag);
+    values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
   
   fgUsedVars[kNTracksTPCoutVsITSout] = kTRUE;
   fgUsedVars[kNTracksTRDoutVsITSout] = kTRUE;
   fgUsedVars[kNTracksTOFoutVsITSout] = kTRUE;
-  if(TMath::Abs(values[kNTracksPerTrackingFlag+kITSout])>0.01) {
-    values[kNTracksTPCoutVsITSout] = values[kNTracksPerTrackingFlag+kTPCout]/values[kNTracksPerTrackingFlag+kITSout];
-    values[kNTracksTRDoutVsITSout] = values[kNTracksPerTrackingFlag+kTRDout]/values[kNTracksPerTrackingFlag+kITSout]; 
-    values[kNTracksTOFoutVsITSout] = values[kNTracksPerTrackingFlag+kTOFout]/values[kNTracksPerTrackingFlag+kITSout];
+  if(TMath::Abs(values[kNTracksPerTrackingStatus+kITSout])>0.01) {
+    values[kNTracksTPCoutVsITSout] = values[kNTracksPerTrackingStatus+kTPCout]/values[kNTracksPerTrackingStatus+kITSout];
+    values[kNTracksTRDoutVsITSout] = values[kNTracksPerTrackingStatus+kTRDout]/values[kNTracksPerTrackingStatus+kITSout]; 
+    values[kNTracksTOFoutVsITSout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kITSout];
   }
   else {
     fgUsedVars[kNTracksTPCoutVsITSout] = kFALSE;
@@ -285,17 +310,17 @@ void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLA
   }
   fgUsedVars[kNTracksTRDoutVsTPCout] = kTRUE;
   fgUsedVars[kNTracksTOFoutVsTPCout] = kTRUE;
-  if(TMath::Abs(values[kNTracksPerTrackingFlag+kTPCout])>0.01) {
-    values[kNTracksTRDoutVsTPCout] = values[kNTracksPerTrackingFlag+kTRDout]/values[kNTracksPerTrackingFlag+kTPCout];
-    values[kNTracksTOFoutVsTPCout] = values[kNTracksPerTrackingFlag+kTOFout]/values[kNTracksPerTrackingFlag+kTPCout];
+  if(TMath::Abs(values[kNTracksPerTrackingStatus+kTPCout])>0.01) {
+    values[kNTracksTRDoutVsTPCout] = values[kNTracksPerTrackingStatus+kTRDout]/values[kNTracksPerTrackingStatus+kTPCout];
+    values[kNTracksTOFoutVsTPCout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kTPCout];
   }
   else {
     fgUsedVars[kNTracksTRDoutVsTPCout] = kFALSE;
     fgUsedVars[kNTracksTOFoutVsTPCout] = kFALSE;
   }
   fgUsedVars[kNTracksTOFoutVsTRDout] = kTRUE;
-  if(TMath::Abs(values[kNTracksPerTrackingFlag+kTRDout])>0.01)
-    values[kNTracksTOFoutVsTRDout] = values[kNTracksPerTrackingFlag+kTOFout]/values[kNTracksPerTrackingFlag+kTRDout];
+  if(TMath::Abs(values[kNTracksPerTrackingStatus+kTRDout])>0.01)
+    values[kNTracksTOFoutVsTRDout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kTRDout];
   else
     fgUsedVars[kNTracksTOFoutVsTRDout] = kFALSE;
   fgUsedVars[kNTracksITSoutVsSPDtracklets] = kTRUE;
@@ -303,10 +328,10 @@ void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLA
   fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kTRUE;
   fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kTRUE;
   if(values[kSPDntracklets]>0.01) {
-    values[kNTracksITSoutVsSPDtracklets] = values[kNTracksPerTrackingFlag+kITSout]/values[kSPDntracklets];
-    values[kNTracksTPCoutVsSPDtracklets] = values[kNTracksPerTrackingFlag+kTPCout]/values[kSPDntracklets];
-    values[kNTracksTRDoutVsSPDtracklets] = values[kNTracksPerTrackingFlag+kTRDout]/values[kSPDntracklets];
-    values[kNTracksTOFoutVsSPDtracklets] = values[kNTracksPerTrackingFlag+kTOFout]/values[kSPDntracklets];
+    values[kNTracksITSoutVsSPDtracklets] = values[kNTracksPerTrackingStatus+kITSout]/values[kSPDntracklets];
+    values[kNTracksTPCoutVsSPDtracklets] = values[kNTracksPerTrackingStatus+kTPCout]/values[kSPDntracklets];
+    values[kNTracksTRDoutVsSPDtracklets] = values[kNTracksPerTrackingStatus+kTRDout]/values[kSPDntracklets];
+    values[kNTracksTOFoutVsSPDtracklets] = values[kNTracksPerTrackingStatus+kTOFout]/values[kSPDntracklets];
   }
   else {
     fgUsedVars[kNTracksITSoutVsSPDtracklets] = kFALSE;
@@ -315,19 +340,7 @@ void AliReducedVarManager::FillEventInfo(EVENT* event, Float_t* values, EVENTPLA
     fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kFALSE;
   }
   
-  values[kCentVZERO]   = event->CentralityVZERO();
-  values[kCentSPD]     = event->CentralitySPD();
-  values[kCentTPC]     = event->CentralityTPC();
-  values[kCentZDC]     = event->CentralityZEMvsZDC();
-  values[kCentVZEROA]  = event->CentralityVZEROA();
-  values[kCentVZEROC]  = event->CentralityVZEROC();
-  values[kCentZNA]     = event->CentralityZNA();
-  values[kCentQuality] = event->CentralityQuality();
   
-  values[kNV0total]        = event->NV0CandidatesTotal();
-  values[kNV0selected]     = event->NV0Candidates();
-  values[kNtracksTotal]    = event->NTracksTotal();
-  values[kNtracksSelected] = event->NTracks();
   values[kNCaloClusters]   = event->GetNCaloClusters();
   values[kSPDntracklets]   = event->SPDntracklets();    
   for(Int_t ieta=0;ieta<32;++ieta) values[kSPDntrackletsEta+ieta] = event->SPDntracklets(ieta);  
@@ -536,6 +549,27 @@ void AliReducedVarManager::FillTPCclusterBitFlag(TRACK* track, Int_t bit, Float_
 
 
 //_________________________________________________________________
+void AliReducedVarManager::FillTrackingStatus(TRACK* p, Float_t* values) {
+  //
+  // Fill tracking flags
+  //
+  for(Int_t i=0; i<kNTrackingStatus; i++)
+    values[kTrackingStatus+i] = p->CheckTrackStatus(i)+10e-6;
+}
+
+//_________________________________________________________________
+void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
+  //
+  // Fill tracking flags
+  //
+  for(Int_t i=0; i<kNTrackingFlags; i++){
+    values[kTrackingFlags+i] = p->TestFlag(i)+10e-6;
+  }
+}
+
+
+
+//_________________________________________________________________
 void AliReducedVarManager::FillTrackingFlag(TRACK* track, UShort_t flag, Float_t* values) {
   //
   // fill the tracking flag
@@ -563,13 +597,23 @@ void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillEventOnlineTriggers(UShort_t triggerBit, Float_t* values) {
+void AliReducedVarManager::FillEventOnlineTriggers(AliReducedEventInfo* event, Float_t* values){
+  //
+  // fill the trigger bit input
+  //
+  for(UShort_t i=0; i<kNTriggers; i++){
+    values[kOnlineTriggersFired+i] = (event->TriggerMask()&(ULong_t(1)<<i) ? 1.0 : 0.0);
+  }
+}
+
+//_________________________________________________________________
+void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values) {
   //
   // fill the trigger bit input
   //
   if(triggerBit>=64) return;
   if(!fgEvent) return;
-  ULong64_t trigger = 0;
+  ULong64_t trigger = 1;
   values[kOnlineTrigger] = triggerBit;
   values[kOnlineTriggerFired] = (fgEvent->TriggerMask()&(trigger<<triggerBit) ? 1.0 : 0.0);
   values[kOnlineTriggerFired2] = (values[kOnlineTriggerFired]>0.01 ? triggerBit : -1.0); 
@@ -678,6 +722,7 @@ void AliReducedVarManager::FillTrackInfo(TRACK* p, Float_t* values) {
   values[kDcaZ]        = p->DCAz();
   values[kDcaXYTPC]    = p->DCAxyTPC();
   values[kDcaZTPC]     = p->DCAzTPC();
+  values[kCharge]      = p->Charge();
   
   if(fgUsedVars[kITSncls]) values[kITSncls] = p->ITSncls();
   values[kITSsignal] = p->ITSsignal();
@@ -731,6 +776,9 @@ void AliReducedVarManager::FillTrackInfo(TRACK* p, Float_t* values) {
       values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -999.0);
     }
   }  
+
+  FillTrackingStatus(p,values);
+  FillTrackingFlags(p,values);
 }
 
 
@@ -1170,9 +1218,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kVtxYtpc]              = "Vtx Y TPC";                       fgVariableUnits[kVtxYtpc]              = "cm";
   fgVariableNames[kVtxZtpc]              = "Vtx Z TPC";                       fgVariableUnits[kVtxZtpc]              = "cm";
   fgVariableNames[kDeltaVtxZ]            = "#Delta Z";                        fgVariableUnits[kDeltaVtxZ]            = "cm";
-  for(Int_t iflag=0; iflag<kNTrackingFlags; ++iflag) {
-    fgVariableNames[kNTracksPerTrackingFlag+iflag] = Form("Tracks with %s on", fgkTrackingFlagNames[iflag]); 
-    fgVariableUnits[kNTracksPerTrackingFlag+iflag] = ""; 
+  for(Int_t iflag=0; iflag<kNTrackingStatus; ++iflag) {
+    fgVariableNames[kNTracksPerTrackingStatus+iflag] = Form("Tracks with %s on", fgkTrackingStatusNames[iflag]); 
+    fgVariableUnits[kNTracksPerTrackingStatus+iflag] = ""; 
   }
   fgVariableNames[kNTracksTPCoutVsITSout]       = "TPCout/ITSout";                   fgVariableUnits[kNTracksTPCoutVsITSout] = "";
   fgVariableNames[kNTracksTRDoutVsITSout]       = "TRDout/ITSout";                   fgVariableUnits[kNTracksTRDoutVsITSout] = "";
@@ -1474,6 +1522,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALm02]              = "Cluster short axis M02";  fgVariableUnits[kEMCALm02] = "";  
   fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";  
   fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
+  fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
   fgVariableNames[kDeltaPhi]     = "#Delta #varphi"; fgVariableUnits[kDeltaPhi] = "rad.";  
   fgVariableNames[kDeltaTheta]   = "#Delta #theta";  fgVariableUnits[kDeltaTheta] = "rad.";
   fgVariableNames[kDeltaEta]     = "#Delta #eta";    fgVariableUnits[kDeltaEta] = "";

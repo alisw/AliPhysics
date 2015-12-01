@@ -117,13 +117,13 @@ void AliReducedAnalysisTest::Process() {
   AliReducedVarManager::FillEventInfo(event, fValues);
   fHistosManager->FillHistClass("Event_NoCuts", fValues);
   for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventOnlineTriggers(ibit, fValues);
+    AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
     fHistosManager->FillHistClass("OnlineTriggers_NoCuts", fValues);
   }
   if(!IsEventSelected(event)) return;
   
   for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventOnlineTriggers(ibit, fValues);
+    AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
     fHistosManager->FillHistClass("OnlineTriggers_AfterCuts", fValues);
     for(UShort_t i=0; i<32; ++i) {
       AliReducedVarManager::FillL0TriggerInputs(event, i, fValues);
