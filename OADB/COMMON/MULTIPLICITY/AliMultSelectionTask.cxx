@@ -1485,11 +1485,9 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     
     //==================================
     // Setup initial Info
-    Bool_t lLocated = kFALSE;
-    TString lProductionName = "";
+    TString lProductionName = lPath.Data();
     //==================================
-    TString lTag = "LHC";
-    AliInfoF(" Autodetecting production name from filename: %s", lPath.Data() );
+    AliInfoF(" Autodetecting production name from filename: %s", lProductionName.Data() );
     //==================================
     // Get Production name
     Long_t iOcurrence = 0;
