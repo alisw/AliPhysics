@@ -1,23 +1,22 @@
 AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "Tracks",
-                                                              const char *jetcontname   = "Jets",
-                                                              const char *mctrkcontname = "MCParticles",
-                                                              const char *mcjetcontname = "MCJets",
-                                                              Double_t jetRadius = 0.2,
-                                                              const char *type  = "TPC",
-                                                              TString fileout   = "standard",
-                                                              Bool_t corrMode   =  kFALSE,
-                                                              Bool_t doBkgRej   =  kTRUE,
-                                                              Bool_t doQAvtx    =  kFALSE,
-                                                              Bool_t doFillV0   =  kFALSE,
-                                                              Bool_t checkXsec  =  kFALSE,
-                                                              Bool_t useWeight  =  kFALSE,
-                                                              const char *patt  =  "",
-                                                              Int_t debug       = 1,
-                                                              Double_t tagRadius = 0.4,
-                                                              TString cutflname = "",
-                                                              Float_t minC = 0., Float_t maxC = 100.,
-                                                              const char *taskname = "HFjetsContainer"
-                                                              )
+                                                     const char *jetcontname   = "Jets",
+                                                     const char *mctrkcontname = "MCParticles",
+                                                     const char *mcjetcontname = "MCJets",
+                                                     Double_t jetRadius = 0.2,
+                                                     const char *type  = "TPC",
+                                                     TString fileout   = "standard",
+                                                     Bool_t corrMode   =  kFALSE,
+                                                     Bool_t doBkgRej   =  kTRUE,
+                                                     Bool_t doQAvtx    =  kFALSE,
+                                                     Bool_t doFillV0   =  kFALSE,
+                                                     Bool_t checkXsec  =  kFALSE,
+                                                     Bool_t useWeight  =  kFALSE,
+                                                     const char *patt  =  "",
+                                                     Int_t debug       = 1,
+                                                     Double_t tagRadius = 0.4,
+                                                     TString cutflname = "",
+                                                     Float_t minC = 0., Float_t maxC = 100.,
+                                                     const char *taskname = "HFjetsContainer")
 {
   // Mailto: ycorrale@cern.ch
 
@@ -63,8 +62,8 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   // also set mc jet and particle container
   if (corrMode) {
 
-    hfTask->SetMcJetContName(mcjetcontname);
-    hfTask->SetMcTrkContName(mctrkcontname);
+    hfTask->SetMCJetContName(mcjetcontname);
+    hfTask->SetMCTrkContName(mctrkcontname);
     hfTask->SetJetTaggingRadius(tagRadius);
   }
 

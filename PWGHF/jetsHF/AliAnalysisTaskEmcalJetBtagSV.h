@@ -30,7 +30,6 @@ class AliParticleContainer;
 #include "AliRDHFJetsCutsVertex.h"
 #include "AliHFJetsTaggingVertex.h"
 
-class AliRDHFJetsCuts;
 class AliHFJetsContainerVertex;
 
 //-------------------------------------------------------------------------------------
@@ -97,11 +96,11 @@ public:
   
   void SetRhoTaskName(char *name)        { fRhoTaskName = name; }
   
-  void SetMcJetContName(char *name)      { fMcJetContName = name; }
+  void SetMCJetContName(char *name)      { fMCJetContName = name; }
   
-  void SetMcTrkContName(char *name)      { fMcTrkContName = name; }
+  void SetMCTrkContName(char *name)      { fMCTrkContName = name; }
   
-  void SetMcRhoTaskName(char *name)      { fMcRhoTaskName = name; }
+  void SetMCRhoTaskName(char *name)      { fMCRhoTaskName = name; }
   
   void SetAnalysisUtils(AliAnalysisUtils *utils) { fAnalysisUtils = utils; }
   
@@ -158,10 +157,9 @@ private:
   TString     fJetContName;          //  Name of the found jet array
   TString     fTrkContName;          //  Name of the found track array
   TString     fRhoTaskName;          //  Name of the rho task
-  TString     fMcJetContName;        //  Name of the found jet array
-  TString     fMcTrkContName;        //  Name of the found track array
-  TString     fMcRhoTaskName;        //  Name of the rho task
-  TString     fFiredClass;           //  emcal trigger class
+  TString     fMCJetContName;        //  Name of the found jet array
+  TString     fMCTrkContName;        //  Name of the found track array
+  TString     fMCRhoTaskName;        //  Name of the rho task
   
   Double_t    fTaggingRadius;        // radius used in tagging the jet flavour
   
@@ -170,13 +168,13 @@ private:
   //
   Double_t    fMCWeight;             ///<  pT-hard bin MC weight. It is used only internally.
   Double_t    fMCXsec;
-  Double_t    fMCavgTrials;
+  Double_t    fMCAvgTrials;
   
   TString     fCurrFileName;         ///<  Current file path name.
   
   Bool_t      fCheckMCCrossSection;  ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
+  Bool_t      fSkipWeightInfo;
   Bool_t      fUseWeight;
-  Bool_t      fIsMCInfoFilled;
   
   TList                      *fOutputList;       // list of output objects
   
@@ -190,20 +188,24 @@ private:
   TH1F                       *fhTrials;          //!<! Number of event trials in PYTHIA.
   
   AliVEvent                  *fEvent;            //! Input event
+  AliAODMCHeader             *fMCHeader;         //! Input MC header
   
   AliHFJetsTaggingVertex     *fTagger;           // Jet Tagging object
   
-  AliRDHFJetsCuts            *fCutsHFjets;       // specific algo jet cut object
-  AliAnalysisUtils           *fAnalysisUtils;    // points to class with common analysis utilities
-  AliParticleContainer       *fMCTracksCont;     //!MC tracks
+  AliRDHFJetsCuts            *fCutsHFjets;       //  specific algo jet cut object
+  AliAnalysisUtils           *fAnalysisUtils;    //  points to class with common analysis utilities
+  AliParticleContainer       *fMCTracksCont;     //! MC tracks
+ 
+  TClonesArray               *fRecJetArray;      //! Array of the found jets
+  TClonesArray               *fRecTrkArray;      //! Array of PicoTracks
+  TClonesArray               *fMCJetArray;       //! Array of the found mc jets
+  TClonesArray               *fMCPartArray;      //! Array of MC particles for given event
   
-  TClonesArray               *fbJetArray;        //! b-tagged jets
-  TClonesArray               *fArrayMC;          //! array of MC particles for given event
-  TClonesArray               *fJetArray;         //! Array of the found jets
-  TClonesArray               *fMcJetArray;       //! Array of the found mc jets
+  TClonesArray               *fHFvertexing;      //! Array of reconstructed secondary vertex (b-tagged jets)
+  
+  map_AliAODTrk              *fAODgTrkMap;
   
   AliLog::EType_t             fDebug;
-  
   
   ClassDef(AliAnalysisTaskEmcalJetBtagSV, 2);  // analysis task for MC study
 };
@@ -218,7 +220,7 @@ inline Bool_t AliAnalysisTaskEmcalJetBtagSV::UserNotify() {
     AliDebugF(1, MSGDEBUG("MC pT-hard weight: %e"), fMCWeight);
   }
   
-  fIsMCInfoFilled = kFALSE;
+  fSkipWeightInfo = kFALSE;
   return kTRUE;
 }
 
