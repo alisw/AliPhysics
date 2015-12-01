@@ -1492,22 +1492,22 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     AliInfoF(" Autodetecting production name from filename: %s", lPath.Data() );
     //==================================
     // Get Production name
-    TObjArray* lArrStr = lPath.Tokenize("/");
-    if(lArrStr->GetEntriesFast()) {
-        TIter iString(lArrStr);
-        TObjString* os=0;
-        Int_t j=0;
-        while ((os=(TObjString*)iString())) {
-            if( os->GetString().Contains(lTag.Data()) ){
-                lProductionName = os->GetString().Data();
-                break; //stop, found
-            }
-            j++;
-        }
-    }
-    //Memory cleanup
-    delete lArrStr;
-    //Return production name
+    Long_t iOcurrence = 0;
+    
+    // 1) Check first occurence of LHC
+    iOcurrence = lProductionName.Index("LHC");
+    
+    // 2) Remove Anything prior to this, please
+    lProductionName.Remove(0,iOcurrence);
+    
+    // 3) Check first occurrence of "/" and strip
+    iOcurrence = lProductionName.Index("/");
+    lProductionName.Remove(iOcurrence, lProductionName.Length() );
+    
+    // 5) Check first occurrence of "__" (LEGO Train Executions)
+    iOcurrence = lProductionName.Index("__");
+    lProductionName.Remove(iOcurrence, lProductionName.Length() );
+    
     return lProductionName;
 }
 //______________________________________________________________________
