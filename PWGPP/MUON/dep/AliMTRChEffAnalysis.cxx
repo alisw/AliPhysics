@@ -933,7 +933,13 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 
   Int_t nRuns = fOutputs->GetEntriesFast();
 
-  TArrayI runChangeCount(nRuns);
+  TH1F* hRunChangeCount = new TH1F("runChangeCount","Number of RPCs changing efficiency per run",nRuns,-0.5,-0.5+(Double_t)nRuns);
+  hRunChangeCount->SetXTitle("Run num.");
+  hRunChangeCount->SetYTitle("Num. of RPCs with change in eff.");
+  for ( Int_t irun=0; irun<nRuns; irun++ ) {
+    hRunChangeCount->GetXaxis()->SetBinLabel(irun+1,Form("%i",GetRunNumber(irun)));
+  }
+
   for ( Int_t ich=0; ich<4; ich++ ) {
     TString canName = Form("testRanges_ch%i",11+ich);
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),10*ich,10*ich,1200,800);
@@ -958,8 +964,8 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
           TLatex text;
           text.DrawLatex((Double_t)(runIdx-3),maxEff-0.1*(maxEff-minEff)*(Double_t)(ichange/2),Form("%i",GetRunNumber(runIdx)));
         }
-        runChangeCount[runIdx]++;
-        if ( runChangeCount[runIdx] == 1 ) {
+        hRunChangeCount->Fill(runIdx);
+        if ( hRunChangeCount->GetBinContent(runIdx+1) == 1 ) {
           AliInfo(Form("Efficiency change in %i triggered by ch %i  RPC %i",GetRunNumber(runIdx),11+ich,irpc));
         }
       }
@@ -972,7 +978,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
   Double_t sumWgtRun = 0.;
   Double_t sumWgt = 0;
   for ( Int_t irun=0; irun<=nRuns; irun++ ) {
-    if ( irun == nRuns || runChangeCount[irun] == 0 ) {
+    if ( irun == nRuns || hRunChangeCount->GetBinContent(irun+1) == 0 ) {
       if ( sumWgt > 0. ) {
         Int_t averageRun = TMath::Nint(sumWgtRun / sumWgt);
         AliDebug(2,Form("Average run: %i => %i\n",averageRun,GetRunNumber(averageRun)));
@@ -983,12 +989,18 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
     }
     if ( irun == nRuns ) break;
 
-    AliDebug(2,Form("irun %i => %i: wgt %i",irun,GetRunNumber(irun),runChangeCount[irun]));
+    AliDebug(2,Form("irun %i => %i: wgt %g",irun,GetRunNumber(irun),hRunChangeCount->GetBinContent(irun+1)));
 
-    Double_t wgt = (Double_t)runChangeCount[irun];
+//    Double_t wgt = (Double_t)runChangeCount[irun];
+    Double_t wgt = hRunChangeCount->GetBinContent(irun+1);
     sumWgtRun += wgt*(Double_t)irun;
     sumWgt += wgt;
   }
+
+  TCanvas* summaryCan = new TCanvas("effChangeSummary","effChangeSummary",50,50,600,600);
+  summaryCan->SetLogy();
+  hRunChangeCount->GetXaxis()->LabelsOption("v");
+  hRunChangeCount->Draw();
 
   Int_t ientry = 0;
   TArrayI runRanges(nRuns);
