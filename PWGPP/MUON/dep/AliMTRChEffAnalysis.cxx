@@ -818,27 +818,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
   return kTRUE;
 }
 
-
-//________________________________________________________________________
-Double_t AliMTRChEffAnalysis::FitRangesFunc ( Double_t* x, Double_t* par )
-{
-  /// Function with multiple constant fixes
-  /// Parameters are:
-  /// [0] = number of break points dividing 2 sub ranges
-  /// [1] = value of efficiency in the first (or only) subrange
-  /// [2*ipar] (for ipar>=1) = position in x where efficiency value can change
-  /// [2*ipar+1] = value of efficiency in the ipar+1 subrange
-
-  Double_t xx = x[0];
-  Double_t val = par[1];
-  Int_t nChanges = par[0];
-  for ( Int_t iknot=0; iknot<nChanges; iknot++ ) {
-    if ( xx > par[2*(iknot+1)] ) val = par[2*(iknot+1)+1];
-  }
-  return val;
-}
-
-
 //________________________________________________________________________
 Bool_t AliMTRChEffAnalysis::ExecCommand ( TString command, Bool_t prompt ) const
 {
@@ -860,6 +839,25 @@ Bool_t AliMTRChEffAnalysis::ExecCommand ( TString command, Bool_t prompt ) const
   }
 
   return kFALSE;
+}
+
+//________________________________________________________________________
+Double_t AliMTRChEffAnalysis::FitRangesFunc ( Double_t* x, Double_t* par )
+{
+  /// Function with multiple constant fixes
+  /// Parameters are:
+  /// [0] = number of break points dividing 2 sub ranges
+  /// [1] = value of efficiency in the first (or only) subrange
+  /// [2*ipar] (for ipar>=1) = position in x where efficiency value can change
+  /// [2*ipar+1] = value of efficiency in the ipar+1 subrange
+
+  Double_t xx = x[0];
+  Double_t val = par[1];
+  Int_t nChanges = par[0];
+  for ( Int_t iknot=0; iknot<nChanges; iknot++ ) {
+    if ( xx > par[2*(iknot+1)] ) val = par[2*(iknot+1)+1];
+  }
+  return val;
 }
 
 //________________________________________________________________________
@@ -930,7 +928,7 @@ Double_t AliMTRChEffAnalysis::GetError ( Double_t errLow, Double_t errHigh ) con
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Double_t minEff, Double_t maxEff )
+TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
 {
   /// Get run ranges with an efficiency compatible with constant
 
@@ -953,7 +951,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
       gPad->SetTicks(1,1);
 //      for ( Int_t icount=0; icount<2; icount++ ) {
       TGraphAsymmErrors* trendGraph = GetTrendEff(AliTrigChEffOutput::kHslatEff,icount,ich,irpc);
-      TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,kTRUE);
+      TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
       trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
       trendGraph->Draw("ap");
       for ( Int_t ichange=0; ichange<range.GetSize(); ichange++ ) {
@@ -996,6 +994,11 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 
 //    Double_t wgt = (Double_t)runChangeCount[irun];
     Double_t wgt = hRunChangeCount->GetBinContent(irun+1);
+    if ( forcedChanges ) {
+      for ( Int_t ichange=0; ichange<forcedChanges->GetSize(); ichange++ ) {
+        if ( GetRunNumber(irun) == forcedChanges->At(ichange) ) wgt *= 10.;
+      }
+    }
     sumWgtRun += wgt*(Double_t)irun;
     sumWgt += wgt;
   }
@@ -1019,13 +1022,23 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t returnIndex )
+TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Bool_t returnIndex )
 {
   /// Get run ranges with an efficiency compatible with constant
 
   TArrayI runRanges;
   TF1* func = 0x0;
 //  TString canName = "fitTestCan";
+  TArrayD forcedChangesBin;
+  Int_t nForced = 0;
+  if ( forcedChanges ) {
+    forcedChangesBin.Set(forcedChanges->GetSize());
+    for ( Int_t ichange=0; ichange<forcedChanges->GetSize(); ichange++ ) {
+      Int_t idx = GetIndexFromRun(forcedChanges->At(ichange));
+      if ( idx >= 0 ) forcedChangesBin[nForced++] = (Double_t)idx;
+      else AliWarning(Form("Cannot find run %i\n",forcedChanges->At(ichange)));
+    }
+  }
 
   for ( Int_t istep=0; istep<maxNRanges; istep++ ) {
     Int_t nPars = 2*(istep+1);
@@ -1036,6 +1049,10 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
     for ( Int_t ipar=1; ipar<nPars; ipar++ ) {
       Double_t val = ( ipar%2 == 1 ) ? 0.95 : (xMax-xMin) * (Double_t)(ipar/2)/((Double_t)(istep+1));
       func->SetParameter(ipar,val);
+      if ( forcedChanges ) {
+        Int_t currChange = ipar/2 - 1;
+        if ( ipar%2==0 && currChange < nForced ) func->FixParameter(ipar,forcedChangesBin[currChange]);
+      }
     }
 //    trendGraph->Draw("ap");
     trendGraph->Fit(func,"NQ0");
@@ -1092,6 +1109,17 @@ TString AliMTRChEffAnalysis::GetIdentifier ( AliTrigChEffOutput* trigOut, TObjAr
   TString objName = trigOut->GetHistoName(itype, icount, ichamber, itrackSel, imatch, imethod);
   identifier += objName;
   return identifier;
+}
+
+//________________________________________________________________________
+Int_t AliMTRChEffAnalysis::GetIndexFromRun ( UInt_t runNumber ) const
+{
+  /// Get index from run number
+  for ( Int_t ipt=0; ipt<fOutputs->GetEntriesFast(); ipt++ ) {
+    UInt_t run = fOutputs->UncheckedAt(ipt)->GetUniqueID();
+    if ( run == runNumber ) return ipt;
+  }
+  return -1;
 }
 
 //________________________________________________________________________
