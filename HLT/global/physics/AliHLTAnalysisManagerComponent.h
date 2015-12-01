@@ -157,6 +157,7 @@ private:
   
   /** UID for merging */
   AliHLTUInt32_t fUID;                        // see above
+  bool fQuickEndRun;				//After end of run we should not further process async tasks but stop asap
 
   AliHLTAnalysisManager *fAnalysisManager;        // Manger
 

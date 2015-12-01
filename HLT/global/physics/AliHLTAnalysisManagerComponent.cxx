@@ -81,6 +81,7 @@ ClassImp(AliHLTAnalysisManagerComponent)
 AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
+  fQuickEndRun(false),
   fAnalysisManager(NULL),
   fInputHandler(NULL),
   fAddTaskMacro(""),
@@ -269,28 +270,32 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
 {
   CalibManagerQueueData* eventData = (CalibManagerQueueData*) tmpEventData;
   
-  TStopwatch stopwatch;
-  if (fQueueDepth == 0) stopwatch.Start();
-  
-  fInputHandler->InitTaskInputData(eventData->fEvent, eventData->fFriend, fAnalysisManager->GetTasks());
-  fAnalysisManager->ExecAnalysis();
-  fInputHandler->FinishEvent();
-  
-  //pushes once every n seconds if
-  //configured with -pushback-period=n
-  //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
-  fNEvents++;
   TObject* retVal = NULL;
-  if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
+
+  if (!*((volatile bool*) &fQuickEndRun))
   {
-    retVal = fAnalysisManager->GetOutputs();
-    HLTImportant("TPC Calib Manager pushing output: %p", retVal);
-  }
+    TStopwatch stopwatch;
+    if (fQueueDepth == 0) stopwatch.Start();
   
-  if (fQueueDepth == 0)
-  {
-    stopwatch.Stop();
-    AliSysInfo::AddStamp("analysisTiming",eventData->fEvent->GetNumberOfTracks(),stopwatch.RealTime()*1000,stopwatch.CpuTime()*1000);
+    fInputHandler->InitTaskInputData(eventData->fEvent, eventData->fFriend, fAnalysisManager->GetTasks());
+    fAnalysisManager->ExecAnalysis();
+    fInputHandler->FinishEvent();
+  
+    //pushes once every n seconds if
+    //configured with -pushback-period=n
+    //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
+    fNEvents++;
+    if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
+    {
+      retVal = fAnalysisManager->GetOutputs();
+      HLTImportant("TPC Calib Manager pushing output: %p", retVal);
+    }
+  
+    if (fQueueDepth == 0)
+    {
+      stopwatch.Stop();
+      AliSysInfo::AddStamp("analysisTiming",eventData->fEvent->GetNumberOfTracks(),stopwatch.RealTime()*1000,stopwatch.CpuTime()*1000);
+    }
   }
 
   delete eventData->fEvent;
@@ -363,6 +368,11 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   
   if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
   {
+    fQuickEndRun = false;
+  }
+  if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
+  {
+    fQuickEndRun = true;
     fAsyncProcessor.WaitForTasks(0);
   }
 
