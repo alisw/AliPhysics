@@ -1,4 +1,5 @@
 #!/bin/bash
+source ~/.bashrc
 
 #tpc a00
 POLLNODE=cn020.internal
@@ -16,6 +17,7 @@ pushd $RUN_DIR
 MACRO_DIR=$(dirname $(readlink -f $0))
 ln -sf ${MACRO_DIR}/rootlogon.C .
 ln -sf ${MACRO_DIR}/MonitorSandbox.C .
+
 run_compression_monitor(){
     aliroot -b -q -l rootlogon.C MonitorSandbox.C+"(\"${POLLNODE}\",${POLLPORT},${SERVERPORT},${POLLPERIOD},\"${CDBPATH}\",${CONFIG})"
 }

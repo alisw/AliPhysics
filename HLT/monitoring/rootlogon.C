@@ -18,7 +18,9 @@
  */
 rootlogon()
 {
-	TString includePath = "-I${ALICE_ROOT}/include ";
+	TString includePath = "-I${ALICE_SOURCE}/include ";
+	includePath        += "-I${ALICE_SOURCE}/HLT/BASE ";
+	includePath        += "-I${ALICE_SOURCE}/HLT/BASE/HOMER ";
 	gSystem->SetIncludePath(includePath.Data());
 	
 	gSystem->Load("libCDB.so");

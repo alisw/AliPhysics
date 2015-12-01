@@ -221,8 +221,17 @@ void Configure(int configId)
 		return;
 	}
 	
-	AliHLTConfiguration monitorRelay("monitorRelay", "MonitoringRelay", listOfChains.Data(), "-check-object"); 
-	AliHLTConfiguration writer("sink", "MonitorMemoryWriter", "monitorRelay", "");
+        //receive blocks via ZMQ
+        AliHLTConfiguration zmqSource("ZMQsource","ZMQsource",listOfChains.Data(),"in=REQ+tcp://ecs1.internal:60321 ZMQneverBlock=0 ZMQrequestTimeout=1000000");
+        listOfChains += " ZMQsource";
+	
+        //caching relay
+        AliHLTConfiguration monitorRelay("monitorRelay", "MonitoringRelay", listOfChains.Data(), "-check-object"); 
+        
+        //send blocks via ZMQ
+        AliHLTConfiguration zmqSink("ZMQsink","ZMQsink", "monitorRelay", "out=PUB>tcp://ecs1:60212");
+
+	AliHLTConfiguration writer("sink", "MonitorMemoryWriter", "monitorRelay ZMQsink", "");
 	
 	system->BuildTaskList("sink");
 }
@@ -697,7 +706,10 @@ void ReadEventFromHomer(int timeout = 1000000)
  */
 void FetchRunInformation(int& runNumber, TString& ctpTriggerClasses, TString& detectorList)
 {
-  const char* cmd1 = "ssh `read_nodelist.py --master $HLT_NODELIST_XML` 'cat $ECS_PROXY_RUNDIR/log/ECSProxy*.log | grep \"ECS-Proxy received parameter\" | sort | tail -n11 | sed -e \"s/.*ECS-Proxy received parameter //\"'";
+  //const char* cmd1 = "ssh ecs0 'cat $ECS_PROXY_RUNDIR/log/ECSProxy*.log | grep \"ECS-Proxy received parameter\" | sort | tail -n11 | sed -e \"s/.*ECS-Proxy received parameter //\"'";
+  //const char* cmd1 = "ssh ecs0 'tac $(ls -1t $ECS_PROXY_RUNDIR/log/ECSProxy*.log | head -1) | sed -n \"1,/.* ENGAGE.*/p\" | sed \"s/^.*received parameter //g\"'";
+  const char* cmd1 = "ssh ecs0 'tac $(ls -1t /opt/HLT/dist/ecs/log/ECSProxy*.log | head -1) | sed -n \"1,/.*\\<ENGAGE\\>.*/p\"|grep \"received parameter\"|sed \"s/^.*received parameter //g\"|sed \"s/ from ECS.//\"'";
+  printf("executing: %s\n", cmd1);
 	FILE* pipe = gSystem->OpenPipe(cmd1, "r");
 	if (pipe == NULL)
 	{
