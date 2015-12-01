@@ -16,7 +16,7 @@ AliAnalysisTaskEMCALPi0V2ShSh *AddTaskEMCALPi0V2ShSh(
                                                      const Bool_t  bRecalE    = kTRUE,
                                                      const Bool_t  bBad       = kTRUE,
                                                      const Bool_t  bRecalT    = kTRUE,
-                                                     const Bool_t  bNonLine   = kFALSE, // kTRUE
+                                                     const Bool_t  bNonLine   = kTRUE,
                                                      const Int_t   minCen     = -1,
                                                      const Int_t   maxCen     = -1,
                                                      const Float_t clusterEnergyCutEvent = -1,
