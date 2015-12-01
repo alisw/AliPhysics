@@ -1347,6 +1347,18 @@ class AliHLTComponent : public AliHLTLogging {
 	       void* pHeader=NULL, int headerSize=0);
 
   /**
+   * Checks whether the Pushback period has expired, i.e. if the
+   * compoenent will push back data.
+   */
+  bool CheckPushbackPeriod();
+  
+  /**
+   * Serializes an object into a buffer. Allocates memory for the pointer
+   * and returns the size of the buffer
+   */
+  void SerializeObject(TObject* obj, char* &buffer, size_t &size);
+
+  /**
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,
    * default is no header.

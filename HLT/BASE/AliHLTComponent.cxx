@@ -1465,18 +1465,49 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData*
   return iSpec;
 }
 
+bool AliHLTComponent::CheckPushbackPeriod()
+{
+  if (fPushbackPeriod>0) {
+    // suppress the output
+    TTimeStamp time;
+    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return false;
+  }
+  return(true);
+}
+
+void AliHLTComponent::SerializeObject(TObject* pObject, char* &buffer, size_t &size)
+{
+    //Copy from the PushBack function below to serialize into a new buffer
+    AliHLTMessage msg(kMESS_OBJECT);
+    msg.SetCompressionLevel(fCompressionLevel);
+    msg.WriteObject(pObject);
+    size = msg.Length();
+    if (size == 0)
+    {
+	buffer = NULL;
+	return;
+    }
+    msg.SetLength();
+    msg.Compress();
+    char *mbuf = msg.Buffer();
+    if (msg.CompBuffer())
+    {
+      msg.SetLength();
+      mbuf = msg.CompBuffer();
+      size = msg.CompLength();
+    }
+    buffer = new char[size];
+    memcpy(buffer, mbuf, size);
+}
+
 int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec, 
 			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
+  if (!CheckPushbackPeriod()) return 0;
   int iResult=0;
   fLastObjectSize=0;
-  if (fPushbackPeriod>0) {
-    // suppress the output
-    TTimeStamp time;
-    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return 0;
-  }
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
     msg.SetCompressionLevel(fCompressionLevel);
@@ -1532,12 +1563,7 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const AliHLTCompon
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
-  if (fPushbackPeriod>0) {
-    // suppress the output
-    TTimeStamp time;
-    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return 0;
-  }
-
+  if (!CheckPushbackPeriod()) return(0);
   return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
