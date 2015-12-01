@@ -139,6 +139,7 @@ void AliEveEventManager::InitInternals()
     fESDdrawer = new AliEveESDTracks();
     fAODdrawer = new AliEveAODTracks();
     fMomentumHistogramsDrawer = new AliEveMomentumHistograms();
+    fPrimaryVertexDrawer = new AliEvePrimaryVertex();
     
 #ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
@@ -554,6 +555,39 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
         if(settings.GetValue("tracks.primary.vertex.show",false)){fESDdrawer->PrimaryVertexTracks();}
+        
+        if(settings.GetValue("primary.vertex.global.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.global.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.global.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kCross);
+        }
+        
+        if(settings.GetValue("primary.vertex.tpc.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.tpc.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.tpc.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kCross);
+        }
+        
+        if(settings.GetValue("primary.vertex.spd.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.spd.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.spd.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kCross);
+        }
+        
+        
+        
         if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
         if(fDrawESDtracksByType)fESDdrawer->ByType();
         

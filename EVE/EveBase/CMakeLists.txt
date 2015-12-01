@@ -78,6 +78,7 @@ set(SRCS
     AliEveMomentumVectors.cxx
     AliEveMultiView.cxx
     AliEvePreferencesWindow.cxx
+    AliEvePrimaryVertex.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx

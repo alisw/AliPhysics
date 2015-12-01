@@ -75,5 +75,5 @@
 #pragma link C++ class AliEveESDTracks+;
 #pragma link C++ class AliEveMomentumHistograms+;
 #pragma link C++ class AliEveMomentumVectors+;
-
+#pragma link C++ class AliEvePrimaryVertex+;
 

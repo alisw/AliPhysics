@@ -37,6 +37,18 @@ tracks.byType.kaon0:                    801
 tracks.byType.elecon:                   920
 tracks.byType.unknown:                  920
 
+primary.vertex.global.box:              0
+primary.vertex.global.ellipse:          0
+primary.vertex.global.cross:            0
+
+primary.vertex.tpc.box:                 0
+primary.vertex.tpc.ellipse:             0
+primary.vertex.tpc.cross:               0
+
+primary.vertex.spd.box:                 0
+primary.vertex.spd.ellipse:             0
+primary.vertex.spd.cross:               0
+
 momentum.histograms.show:               0
 momentum.histograms.all.events.show:    0
 
@@ -57,7 +69,6 @@ kinks.show:                             0
 V0s.show:                               0
 cascades.show:                          0
 rawData.show:                           0
-primary.vertex.show:                    0
 hits.show:                              0
 digits.show:                            0
 

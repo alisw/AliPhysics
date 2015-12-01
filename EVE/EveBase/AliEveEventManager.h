@@ -17,6 +17,7 @@
 #include <AliEveAODTracks.h>
 #include <AliEveDataSource.h>
 #include <AliEveMomentumHistograms.h>
+#include <AliEvePrimaryVertex.h>
 
 #include <TEveEventManager.h>
 #include <TQObject.h>
@@ -172,6 +173,7 @@ private:
     AliEveESDTracks*            fESDdrawer;                 // drawer of ESD tracks
     AliEveAODTracks*            fAODdrawer;                 // drawer of AOD tracks
     AliEveMomentumHistograms*   fMomentumHistogramsDrawer;  // drawer of momentum histograms
+    AliEvePrimaryVertex*        fPrimaryVertexDrawer;       // drawer of primary vertex
     AliEveEventSelector*        fPEventSelector;            // Event filter
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?
