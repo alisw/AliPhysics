@@ -1,6 +1,6 @@
 void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
                                        Bool_t   isMC                      = kFALSE, //run MC 
-                                       Bool_t   enableQAMesonTask         = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+                                       Int_t   enableQAMesonTask          = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t   enableDoMesonChic         = kFALSE, // enable additional Chic analysis
                                        Bool_t   enableSetProdVtxVGamma    = kTRUE,
                                        TString  fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -319,7 +319,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
   } else if( trainConfig  == 68 ) {
     eventCutArray[0]="80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "20405400233002223710"; MesonCutarray[0] = "0263103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
   }
-  
+    
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *MesonCutList = new TList();
@@ -411,7 +411,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
   task->SetMoveParticleAccordingToVertex(kTRUE);
   
   if(enableSetProdVtxVGamma) task->SetProductionVertextoVGamma(kTRUE);
-  if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
+  task->SetDoMesonQA(enableQAMesonTask);
   if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
 
   //connect containers
