@@ -74,7 +74,7 @@ int AliHLTRootObjectMergerComponent::DoInit( int argc, const char** argv )
   
   if (fQueueDepth && fCumulative) HLTFatal("AliHLTRootObjectMergerComponent cannot run with QueueDepth != 0 and cumulative set yet. Proper synchronization missing!");
 
-  HLTImportant("AliHLTRootObjectMergerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
+  HLTInfo("AliHLTRootObjectMergerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth)) return(1);
 
   return 0;
@@ -208,6 +208,11 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		nInputs += mergeList->GetEntries();
 		
 		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, tmp);
+	}
+	else if (IsDataEvent() && returnObj && !fCumulative)
+	{
+		PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
+		delete returnObj;
 	}
 	
 	if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
