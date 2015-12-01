@@ -231,7 +231,7 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
     TTreeSRedirector::SetDisabled(kTRUE);
   }
 
-  HLTImportant("AliHLTAnalysisManagerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
+  HLTInfo("AliHLTAnalysisManagerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth)) return(1);
 
   fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL);
@@ -384,7 +384,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       {
         CalibManagerReturnData* ret = (CalibManagerReturnData*) retVal;
 	int pushResult = PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-	if (pushResult)  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+	if (pushResult)  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
 
 	delete ret->fPtr;
 	delete ret;
@@ -396,7 +396,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
         }
         delete retObj;
       }
@@ -550,6 +550,10 @@ int AliHLTAnalysisManagerComponent::ProcessOption(TString option, TString value)
   {
     fResetAfterPush=(value.Contains("0")?kFALSE:kTRUE);
     HLTInfo("fResetAfterPush=%i\n",fResetAfterPush?1:0);
+  }
+  else if (option.Contains("NoFullQueueWarning"))
+  {
+    fAsyncProcessor.SetFullQueueWarning(0);
   }
   else if (option.Contains("EnableDebug"))
   {
