@@ -71,6 +71,8 @@ AliHLTComponent* AliHLTRootObjectMergerComponent::Spawn() {
 int AliHLTRootObjectMergerComponent::DoInit( int argc, const char** argv ) 
 {
   ConfigureFromArgumentString(argc, argv);
+  
+  if (fQueueDepth && fCumulative) HLTFatal("AliHLTRootObjectMergerComponent cannot run with QueueDepth != 0 and cumulative set yet. Proper synchronization missing!");
 
   HLTImportant("AliHLTRootObjectMergerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth)) return(1);
@@ -124,7 +126,6 @@ int AliHLTRootObjectMergerComponent::ScanConfigurationArgument(int argc, const c
 		fQueueDepth = val.Atoi();
 		HLTInfo("AliHLTRootObjectMergerComponent Queue Depth set to: %d", fQueueDepth);
 		iRet+=2;
-		if (fQueueDepth) HLTFatal("AliHLTRootObjectMergerComponent cannot run with QueueDepth != 0 yet, must be synchronized properly!");
 	}
     else
 	{
@@ -228,10 +229,12 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			{
 				HLTImportant("Root objects merged from %d inputs", nInputs);
 			}
-			PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
-			char tmpType[100];
-			GetDataType().PrintDataType(tmpType, 100);
-			HLTImportant("Merger Component pushing data type %s (Class name %s)", tmpType, returnObj->ClassName());
+			if (PushBack(dynamic_cast<TObject*>(returnObj), GetDataType()) > 0)
+			{
+				char tmpType[100];
+				GetDataType().PrintDataType(tmpType, 100);
+				HLTImportant("Merger Component pushing data type %s (Class name %s)", tmpType, returnObj->ClassName());
+			}
 		}
 		if (!fCumulative) delete returnObj;
 	}

@@ -288,7 +288,6 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
     if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
     {
       retVal = fAnalysisManager->GetOutputs();
-      HLTImportant("TPC Calib Manager pushing output: %p", retVal);
     }
   
     if (fQueueDepth == 0)
@@ -357,7 +356,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
     if (vEvent->GetNumberOfTracks() >= fMinTracks)
     {
-      HLTImportant("Event has %d tracks, running AnalysisManager", vEvent->GetNumberOfTracks());
+      if (fMinTracks) HLTImportant("Event has %d tracks, running AnalysisManager", vEvent->GetNumberOfTracks());
       CalibManagerQueueData* eventData = new CalibManagerQueueData;
       eventData->fEvent = vEvent;
       eventData->fFriend = vFriend;
@@ -384,7 +383,9 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       if (fQueueDepth)
       {
         CalibManagerReturnData* ret = (CalibManagerReturnData*) retVal;
-	PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+	int pushResult = PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+	if (pushResult)  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+
 	delete ret->fPtr;
 	delete ret;
       }
@@ -392,7 +393,12 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       {
         TObject* retObj = (TObject*) retVal;
         int pushResult = PushBack(retObj, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
-        if (pushResult > 0 && fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+        if (pushResult > 0)
+        {
+           if (fResetAfterPush) fAnalysisManager->ResetOutputData();
+           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+        }
+        delete retObj;
       }
     }
   }
