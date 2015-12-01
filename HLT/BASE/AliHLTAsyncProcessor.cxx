@@ -22,6 +22,7 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessor() : AliHLTLogging(),
 	fInputQueueUsed(0),
 	fOutputQueueUsed(0),
 	fWaitingForTasks(0),
+	fFullQueueWarning(1),
 	fSynchronousOutput(NULL)
 {
 }
@@ -178,7 +179,7 @@ int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* 
 	if (GetTotalQueue() == fQueueDepth)
 	{
 		fBackend->UnlockMutex(1);
-		HLTWarning("Cannot Queue Task... Queue Full");
+		if (fFullQueueWarning) HLTWarning("Cannot Queue Task... Queue Full");
 		return(1);
 	}
 	fInputQueue[fInputQueueUsed].fFunction = processFunction;

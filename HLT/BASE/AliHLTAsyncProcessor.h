@@ -26,6 +26,7 @@ public:
 	//In that case, QueueAsyncTask() will just run the asynchronous task itself immediately.
 	//Returns 0 on success.
 	int Initialize(int depth);
+	void SetFullQueueWarning(int val) {fFullQueueWarning = val;}
 
 	int Deinitialize();
 	//Deinitialize async queue. Terminates async thread and frees buffers.
@@ -97,6 +98,7 @@ private:
 	void** fOutputQueue;
 	int fInputQueueUsed, fOutputQueueUsed;
 	int fWaitingForTasks;
+	int fFullQueueWarning;
 	
 	void* fSynchronousOutput;	//In synchronous mode, we need one output buffer, without initialization
 
