@@ -1504,9 +1504,23 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     iOcurrence = lProductionName.Index("/");
     lProductionName.Remove(iOcurrence, lProductionName.Length() );
     
-    // 5) Check first occurrence of "__" (LEGO Train Executions)
+    // 4) Check first occurrence of "__" (LEGO Train Executions)
     iOcurrence = lProductionName.Index("__");
     lProductionName.Remove(iOcurrence, lProductionName.Length() );
+    
+    //======================================================================
+    //
+    // --> More checks to be added for generality ?
+    //
+    // --> Note: if all else fails, this can always be bypassed by explicitly
+    //     defining production name calling
+    //
+    //     --- SetAlternateOADBforEstimators ( production name )
+    //
+    //     where production name can be real data (e.g. LHC15o)
+    //     or MC (e.g. LHC15k1_plus) and all will be fine...
+    //
+    //======================================================================
     
     return lProductionName;
 }
