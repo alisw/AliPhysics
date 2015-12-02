@@ -1,4 +1,4 @@
-// $Id$
+// AddTaskSAJF.C
 
 AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *ntracks            = "Tracks",
@@ -10,7 +10,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   Double_t    jetareacut         = 0.557,
   const char *cutType            = "TPC",
   Int_t       leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskSAJF"
+  const char *suffix             = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,7 +34,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(taskname);
+  TString name("AliAnalysisTaskSAJF");
   if (strcmp(njets,"")) {
     name += "_";
     name += njets;
@@ -45,6 +45,11 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   }
   name += "_";
   name += cutType;
+
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
+  }
 
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
   jetTask->SetVzRange(-10,10);
