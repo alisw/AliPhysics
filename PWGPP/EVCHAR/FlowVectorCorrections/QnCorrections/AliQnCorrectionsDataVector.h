@@ -19,7 +19,7 @@
 
 
 class AliQnCorrectionsQnVector;
-
+class TClonesArray;
 
 
 //_____________________________________________________________________
