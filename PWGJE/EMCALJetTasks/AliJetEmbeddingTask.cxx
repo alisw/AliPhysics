@@ -87,8 +87,22 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
       Printf("Emb task");
+      TLorentzVector *detjet = 0;
+      fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
       fTreeJet4Vect->Show();
+      if(fPtMin != 0 && fPtMax != 0){
+      	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
+      	 for(Int_t i = 0; i<fTreeJet4Vect->GetEntries(); i++){
+      	    fTreeJet4Vect->GetEntry(i);
+      	    if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
+      	       fCurrentEntry = i;
+      	       AliInfo(Form("Setting fCurrentEntry to %d: will loop from there", fCurrentEntry));
+      	       
+      	       break;
+      	    }
+      	 }
+      }
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -157,7 +171,8 @@ void AliJetEmbeddingTask::Run()
        	     pTemb = jetDet->Pt();
        	     //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
 
-       	     if (pTemb >= fMinPtEmb) {
+       	     if ((fRandomEntry && (pTemb >= fMinPtEmb)) || (!fRandomEntry && ((fPtMin == 0 && fPtMax == 0) || (pTemb > fPtMin && pTemb < fPtMax)))) {
+       	     	
        	     	AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, fCurrentEntry, charge, jetDet->M());
        	     	//Printf("Embedded (pT = %.2f)!!!!", jetDet->Pt());
        	     }

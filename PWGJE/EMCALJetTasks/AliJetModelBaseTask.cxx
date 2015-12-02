@@ -204,8 +204,8 @@ void AliJetModelBaseTask::UserCreateOutputObjects()
   fhPhiEmb->Sumw2();
   fOutput->Add(fhPhiEmb);
   
-  //fhLabel = new TH1I("fhLabel", "Label of embedded track(s)", fNTracks+1, fMarkMC+fMCLabelShift, fMarkMC+fMCLabelShift+fNTracks+1);
-  //fOutput->Add(fhLabel);
+  fhEvents = new TH1I("fhEvents", "Number of events", 3, 0, 2);
+  fOutput->Add(fhEvents);
   
   PostData(1, fOutput);
 }
@@ -1047,6 +1047,7 @@ void AliJetModelBaseTask::FillHistograms(){
    if(!fhpTEmb || !fhMEmb || !fhEtaEmb || !fhPhiEmb) {
       AliError("Histograms not found, are the QA histograms active?");
    }
+   fhEvents->Fill(0);
    // fill histograms
    Int_t nentries = fOutTracks->GetEntries();
    for(Int_t it = 0; it<fNTracks; it++){
