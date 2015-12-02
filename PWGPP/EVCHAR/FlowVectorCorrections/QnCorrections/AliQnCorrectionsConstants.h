@@ -9,14 +9,14 @@
  * See cxx source for GPL licence et. al.                                  *
  ***************************************************************************/
  
- 
- 
 #include<Rtypes.h>
-
 
 class AliQnCorrectionsConstants {
 
   public:
+
+  AliQnCorrectionsConstants() {};
+  virtual ~AliQnCorrectionsConstants() {};
 
   enum Constants {
     nHarmonics=6,
@@ -46,9 +46,6 @@ class AliQnCorrectionsConstants {
   ClassDef(AliQnCorrectionsConstants, 1);
 
 };
-
-
-
 
 
 #endif

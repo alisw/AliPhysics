@@ -39,15 +39,13 @@ ClassImp(AliQnCorrectionsQnVector)
 
 //_______________________________________________________________________________
 AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() :
-  //fQvecX(),
-  //fQvecY(),
   fQvectorX(0x0),
   fQvectorY(0x0),
   fBin(-1),
   fQvectorNormalization(3),
   fSumW(0.0),
   fN(0),
-  fEventPlaneStatus()
+  fQnVectorStatus()
 {
   //
   // Constructor
@@ -56,7 +54,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() :
 
   fQvectorX = TArrayF();
   fQvectorY = TArrayF();
-  fEventPlaneStatus = TArrayC();
+  fQnVectorStatus = TArrayC();
         
 
 }
@@ -64,15 +62,13 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() :
 
 //_______________________________________________________________________________
 AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(Int_t nHarmonics1) :
-  //fQvecX(),
-  //fQvecY(),
   fQvectorX(0x0),
   fQvectorY(0x0),
   fBin(-1),
   fQvectorNormalization(3),
   fSumW(0.0),
   fN(0),
-  fEventPlaneStatus()
+  fQnVectorStatus()
 {
   //
   // Constructor
@@ -80,7 +76,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(Int_t nHarmonics1) :
 
   fQvectorX = TArrayF(nHarmonics1);
   fQvectorY = TArrayF(nHarmonics1);
-  fEventPlaneStatus = TArrayC(nHarmonics1);
+  fQnVectorStatus = TArrayC(nHarmonics1);
         
 
 }
@@ -110,27 +106,8 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const AliQnCorrectionsQnVecto
   fQvectorNormalization=c.QvectorNormalization();
   fQvectorX=TArrayF(c.Qx());
   fQvectorY=TArrayF(c.Qy());
-  fEventPlaneStatus=TArrayC(c.GetEventPlaneStatus());
-  //fEventPlaneStatus.Set(c.Qx().GetSize());
-  ////for(Int_t ih=1; ih<=c.Qx().GetSize(); ++ih){
-  //  fQvecX[ih-1]=c.Qx(ih);
-  //  fQvecY[ih-1]=c.Qy(ih);
-  //  fEventPlaneStatus[ih-1]=c.GetEventPlaneStatus(ih);
-  //}
-
+  fQnVectorStatus=TArrayC(c.GetQnVectorStatus());
 
 }
-
-////_______________________________________________________________________________
-//void AliQnCorrectionsQnVector::SetEventPlaneStatus(Int_t harmonic, EventPlaneStatus status) { 
-//  if(harmonic>0 && harmonic<=fgkEPMaxHarmonics) 
-//    fEventPlaneStatus[harmonic-fgkEPMinHarmonics] |= (1<<status);
-//}
-//
-////_______________________________________________________________________________
-//void AliQnCorrectionsQnVector::UnsetEventPlaneStatus(Int_t harmonic, EventPlaneStatus status) { 
-//  if(harmonic>0 && harmonic<=fgkEPMaxHarmonics) 
-//    fEventPlaneStatus[harmonic-fgkEPMinHarmonics] |= (0<<status);
-//}
 
 

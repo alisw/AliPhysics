@@ -18,7 +18,6 @@
 //#include <Rtypes.h>
 
 
-class TClonesArray;
 class AliQnCorrectionsQnVector;
 
 
@@ -42,9 +41,6 @@ class AliQnCorrectionsDataVector : public TObject {
   void SetId(Int_t id) {fId = id;}
   void SetBin(Int_t bin) {fBin = bin;}
 
-  void SetEventPlaneDetector(Int_t det)  {fEventPlaneDetectorMask |= (1<<det);}
-  void SetEventPlaneDetectorMask(ULong64_t mask) {fEventPlaneDetectorMask=mask;}
-
   // getters
   Float_t Phi()	    const  	    {return fPhi;}
   Float_t X()	    const  	    {return fX;}
@@ -53,10 +49,7 @@ class AliQnCorrectionsDataVector : public TObject {
   Float_t Weight(Int_t method)	    const     {return fEqualizedWeight[method];}   // method 0: average equalized, 1: width equalized
   Int_t Id()	    const      {return fId;}
   Int_t Bin()	    const      {return fBin;}
-  Bool_t  CheckEventPlaneDetector(Int_t flag) const;
-  ULong64_t EventPlaneDetectorFlag() const {return fEventPlaneDetectorMask;}
 
-  static void FillQvector(TClonesArray* det, Int_t ep, AliQnCorrectionsQnVector* q, Int_t weight=-1);
   static void FillQvector(TClonesArray* dataVectorArray, AliQnCorrectionsQnVector* q, Int_t weight=-1);
   
  private:
@@ -69,10 +62,9 @@ class AliQnCorrectionsDataVector : public TObject {
   Int_t   fId;
   Int_t   fBin;
   //Float_t  fMinimumSignal;  
-  ULong64_t fEventPlaneDetectorMask;  // Bit maps for the event plane subdetectors
 
 
-  ClassDef(AliQnCorrectionsDataVector, 1);
+  ClassDef(AliQnCorrectionsDataVector, 2);
  
 
 };

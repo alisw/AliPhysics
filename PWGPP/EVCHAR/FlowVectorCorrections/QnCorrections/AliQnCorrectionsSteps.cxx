@@ -79,13 +79,13 @@ AliQnCorrectionsSteps::~AliQnCorrectionsSteps()
 //
 //
 //  if(QvectorOut->N()==0) {               // If detector is empty
-//    for(Int_t ih=minHar; ih<=maxHar; ++ih) QvectorOut->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kUndefined);
+//    for(Int_t ih=minHar; ih<=maxHar; ++ih) QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kUndefined);
 //    return;
 //  }
 //  else{
 //    for(Int_t ih=minHar; ih<=maxHar; ++ih){
-//      if(EqualizationMethod==-1) QvectorOut->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRaw);
-//      else                       QvectorOut->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kEqualized);
+//      if(EqualizationMethod==-1) QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRaw);
+//      else                       QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kEqualized);
 //    }
 //  }
 //
@@ -172,15 +172,15 @@ void AliQnCorrectionsSteps::RecenterQvec(AliQnCorrectionsQnVector* QvectorIn, Al
 
       for(Int_t ih=minHar; ih<= maxHar; ++ih) {
 
-        if(QvectorIn->CheckEventPlaneStatus(ih,AliQnCorrectionsConstants::kUndefined)) continue;
+        if(QvectorIn->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)) continue;
 
         QvectorOut->SetQx( ih, 
             QvectorIn->Qx(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,0)->GetBinContent(bin)/axentries);
         QvectorOut->SetQy( ih,  
             QvectorIn->Qy(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,1)->GetBinContent(bin)/axentries);
 
-        QvectorOut->SetEventPlaneStatus(ih, AliQnCorrectionsConstants::kRecentering);
-        if(axentries==1) QvectorOut->SetEventPlaneStatus(ih, AliQnCorrectionsConstants::kUndefined);   // With one event in the event class, Qvector becomes undefined after recentering
+        QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kRecentering);
+        if(axentries==1) QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kUndefined);   // With one event in the event class, Qvector becomes undefined after recentering
 
       }
 
@@ -258,7 +258,7 @@ return;
 //      while((qVector=static_cast<AliQnCorrectionsQnVector*>(nextQvector()))) {
 //        if(!qVector) continue;
 //
-//	      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//	      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -269,7 +269,7 @@ return;
 //	      qVector->SetQx( ih, QxTwist);
 //     	  qVector->SetQy( ih, QyTwist);
 //
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
 //      }
 //    }
 //  }
@@ -342,7 +342,7 @@ return;
 //      while((qVector=static_cast<AliQnCorrectionsQnVector*>(nextQvector()))) {
 //        if(!qVector) continue;
 //
-//	      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized)) continue;
+//	      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -353,7 +353,7 @@ return;
 //	      qVector->SetQx( ih, QxScaled);
 //     	  qVector->SetQy( ih, QyScaled);
 //
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
 //      }
 //    }
 //  }
@@ -427,7 +427,7 @@ return;
 //      while((qVector=static_cast<AliQnCorrectionsQnVector*>(nextQvector()))) {
 //        if(!qVector) continue;
 //
-//        if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//        if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -441,8 +441,8 @@ return;
 //        qVector->SetQx( ih, QxRescaled);
 //        qVector->SetQy( ih, QyRescaled);
 //
-//        qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
-//        qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+//        qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+//        qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
 //      }
 //    }
 //  }
@@ -515,10 +515,10 @@ return;
 //        qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
 //
 //        if(QnConf->QnConfigurationName().Contains("NoRec")){
-//          if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kEqualized)) continue;}
-//        else if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//          if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kEqualized)) continue;}
+//        else if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //
-//        //if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//        //if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -529,7 +529,7 @@ return;
 //        qVector->SetQx( ih, QxTwist);
 //        qVector->SetQy( ih, QyTwist);
 //
-//        qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+//        qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
 //      }
 //    }
 //  }
@@ -630,10 +630,10 @@ return;
 //      for(Int_t ibin=0; ibin<qvecList->GetEntriesFast(); ibin++){
 //        qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
 //
-//        //cout<<"hello  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kEqualized)<<"  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kUndefined)<<endl;
-//	      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized)) continue;
+//        //cout<<"hello  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kEqualized)<<"  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kUndefined)<<endl;
+//	      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized)) continue;
 //      
-//        //cout<<"hey  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kEqualized)<<"  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kUndefined)<<endl;
+//        //cout<<"hey  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kEqualized)<<"  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kUndefined)<<endl;
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
 //
@@ -643,9 +643,9 @@ return;
 //	      qVector->SetQx( ih, QxRescaled);
 //     	  qVector->SetQy( ih, QyRescaled);
 //
-//        //cout<<"hey 2  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled)<<endl;
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
-//        //cout<<"hey 3  "<<qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled)<<endl;
+//        //cout<<"hey 2  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled)<<endl;
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+//        //cout<<"hey 3  "<<qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled)<<endl;
 //      }
 //    }
 //  }
@@ -731,7 +731,7 @@ return;
 //      while((qVector=static_cast<AliQnCorrectionsQnVector*>(nextQvector()))) {
 //        if(!qVector) continue;
 //
-//	      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//	      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -745,8 +745,8 @@ return;
 //	      qVector->SetQx( ih, QxRescaled);
 //     	  qVector->SetQy( ih, QyRescaled);
 //
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
 //      }
 //    }
 //  }
@@ -840,7 +840,7 @@ void AliQnCorrectionsSteps::TwistQnVector() {
  //       qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
  //       //if(!qVector) break;
 
- //       if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+ //       if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 
  //       Qx = qVector->Qx(ih);
  //       Qy = qVector->Qy(ih);
@@ -853,7 +853,7 @@ void AliQnCorrectionsSteps::TwistQnVector() {
 
  //       //cout<<"Twist "<<QnConf->QnConfigurationName()<<endl;
  //       //cout<<Qx<<"  "<<Qy<<"   "<<Lp<<"  "<<Ln<<"  "<<Ap<<"  "<<An<<endl;
- //       qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+ //       qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
  //       if(fUseEvent){
  //         fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,0)->Fill(fillValues,qVector->Qx(ih));
  //         fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,1)->Fill(fillValues,qVector->Qy(ih));
@@ -928,7 +928,7 @@ void AliQnCorrectionsSteps::RescaleQnVector(Int_t u2npar) {
   //      qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
   //      //if(!qVector) break;
 
-  //      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+  //      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 
   //      Qx = qVector->Qx(ih);
   //      Qy = qVector->Qy(ih);
@@ -939,7 +939,7 @@ void AliQnCorrectionsSteps::RescaleQnVector(Int_t u2npar) {
   //      qVector->SetQx( ih, QxRescaling);
   //      qVector->SetQy( ih, QyRescaling);
 
-  //      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+  //      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
   //    }
   //  }
   //}
@@ -1008,7 +1008,7 @@ return;
 //      while((qVector=static_cast<AliQnCorrectionsQnVector*>(nextQvector()))) {
 //        if(!qVector) continue;
 //
-//	      if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//	      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
 //      
 //        Qx = qVector->Qx(ih);
 //        Qy = qVector->Qy(ih);
@@ -1022,8 +1022,8 @@ return;
 //	      qVector->SetQx( ih, QxRescaled);
 //     	  qVector->SetQy( ih, QyRescaled);
 //
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
-//	      qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRescaled);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
+//	      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kRescaled);
 //      }
 //    }
 //  }
@@ -1107,8 +1107,8 @@ return;
 //      for(Int_t ibin=0; ibin<qvecList->GetEntriesFast(); ibin++){
 //        qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
 //
-//        if(!qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
-//        if(qVector->CheckEventPlaneStatus(ih, AliQnCorrectionsQnVector::kAligned)) continue;
+//        if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
+//        if(qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kAligned)) continue;
 //
 //
 //        Qx = qVector->Qx(ih);
@@ -1123,7 +1123,7 @@ return;
 //        qVector->SetQx( ih, QxRotated);
 //        qVector->SetQy( ih, QyRotated);
 //
-//        qVector->SetEventPlaneStatus(ih, AliQnCorrectionsQnVector::kAligned);
+//        qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kAligned);
 //      }
 //    }
 //  }
