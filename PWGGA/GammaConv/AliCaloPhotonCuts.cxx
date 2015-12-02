@@ -1220,7 +1220,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 //________________________________________________________________________
 //************** Find number of local maxima in cluster ******************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event){
 
@@ -1302,7 +1302,7 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
 
 //________________________________________________________________________
 //************** Find number of local maxima in cluster ******************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event, Int_t *absCellIdList, Float_t* maxEList){
 
@@ -1396,7 +1396,7 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
 
 //________________________________________________________________________
 //************** Function to determine neighbours of cells ***************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
   Bool_t areNeighbours = kFALSE ;
@@ -1432,7 +1432,7 @@ Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
 
 //________________________________________________________________________
 //************** Function to obtain module number, row and column ********
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow){
   if( fClusterType == 1 ){ //EMCAL
@@ -1460,7 +1460,7 @@ Int_t AliCaloPhotonCuts::GetModuleNumberAndCellPosition(Int_t absCellId, Int_t &
 //___________________________________________________________________________
 // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
 // maxima are too close and have common cells, split the energy between the 2.
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //___________________________________________________________________________
 void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
                   AliVCluster* cluster,
@@ -1488,10 +1488,10 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
     eCluster+=ec;
   }
 
-  UShort_t absCellIdList1  [12];
-  Double_t fracList1     [12];
-  UShort_t absCellIdList2  [12];
-  Double_t fracList2     [12];
+  UShort_t absCellIdList1 [12];
+  Double_t fracList1      [12];
+  UShort_t absCellIdList2 [12];
+  Double_t fracList2      [12];
 
   // Init counters and variables
   Int_t ncells1         = 1 ;
