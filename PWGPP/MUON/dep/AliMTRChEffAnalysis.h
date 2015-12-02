@@ -67,6 +67,7 @@ class AliMTRChEffAnalysis : public TObject {
   Double_t FitRangesFunc ( Double_t* x, Double_t* par );
   Double_t GetError ( Double_t errLow, Double_t errHigh ) const;
   TList* GetEffHistoList ( AliTrigChEffOutput* trigOut, TObjArray* condition ) const;
+  TH1* GetHisto ( TList* effHistoList, Int_t itype, Int_t icount, Int_t ichamber ) const;
   TString GetIdentifier ( AliTrigChEffOutput* trigOut, TObjArray* condition, Int_t itype, Int_t icount, Int_t ichamber ) const;
   Int_t GetIndexFromRun ( UInt_t runNumber ) const;
   Int_t GetRunNumber ( Int_t ipt ) const;
@@ -75,6 +76,7 @@ class AliMTRChEffAnalysis : public TObject {
   TH1* GetSum ( AliTrigChEffOutput* trigOut, TObjArray* condition, Int_t itype, Int_t icount, Int_t ichamber ) const;
 
   Double_t GetThreeOfFour ( TArrayD eff, TArrayD effErr, Double_t &probErr ) const;
+
 
   Bool_t HasMergedResults () const;
 

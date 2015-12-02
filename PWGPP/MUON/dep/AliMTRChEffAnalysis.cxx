@@ -42,6 +42,7 @@
 #include "TLegend.h"
 #include "TLine.h"
 #include "TLatex.h"
+#include "TFileMerger.h"
 
 #include "AliLog.h"
 #include "AliMergeableCollection.h"
@@ -117,24 +118,22 @@ Bool_t AliMTRChEffAnalysis::AddToList ( const char *filename, const char *output
     return kFALSE;
   }
 
-  TString currRun = AliAnalysisMuonUtility::GetRunNumberAsString(filename);
-  trigOut->SetUniqueID(currRun.Atoi());
+  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
 
 //  // Delete counter collection to save memory
 //  trigOut->RemoveFromList(trigOut->GetCounterCollection());
   // Just keep counter and mergeable collections
-  TObjArray* out = trigOut->GetOutput();
-  while ( out->GetEntries() > 2 ) {
-    TObject* removedObj = out->Last();
-    AliDebug(1,Form("Run %u : remove %s",trigOut->GetUniqueID(),removedObj->GetName()));
-    trigOut->RemoveFromList(removedObj);
-  }
+  TList* effHistoList = GetEffHistoList(trigOut,condition);
+  effHistoList->SetName(filename);
+  TString currRun = AliAnalysisMuonUtility::GetRunNumberAsString(filename);
+  effHistoList->SetUniqueID(currRun.Atoi());
 
   if ( ! fOutputs ) {
     fOutputs = new TObjArray();
     fOutputs->SetOwner();
   }
-  fOutputs->Add(trigOut);
+  fOutputs->Add(effHistoList);
+  delete trigOut;
   return kTRUE;
 }
 
@@ -867,15 +866,15 @@ Double_t AliMTRChEffAnalysis::GetAverageStat ( Int_t firstRun, Int_t lastRun, In
   TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
 
   TIter next(fOutputs);
-  AliTrigChEffOutput* trigOut = 0x0;
-  while ( (trigOut = static_cast<AliTrigChEffOutput*>(next()) ) ) {
-    UInt_t run = trigOut->GetUniqueID();
+  TList* effHistoList = 0x0;
+  while ( (effHistoList = static_cast<TList*>(next()) ) ) {
+    UInt_t run = effHistoList->GetUniqueID();
     if ( run < firstRun || run > lastRun ) continue;
-    TH1* histo = GetSum(trigOut,condition,itype,AliTrigChEffOutput::kAllTracks,0);
-    if ( ! histo ) continue;
+    TH1* histo = GetHisto(effHistoList,itype,AliTrigChEffOutput::kAllTracks,0);
+//    if ( ! histo ) continue;
     if ( statHisto ) statHisto->Add(histo);
     else statHisto = static_cast<TH1*>(histo->Clone("tmpStatHisto"));
-    delete histo;
+//    delete histo;
   }
   if ( ! statHisto ) return 0.;
 
@@ -925,6 +924,14 @@ Double_t AliMTRChEffAnalysis::GetError ( Double_t errLow, Double_t errHigh ) con
 {
   /// Get error from the asymmetric error on efficiency
   return TMath::Max(errLow,errHigh);
+}
+
+//________________________________________________________________________
+TH1* AliMTRChEffAnalysis::GetHisto ( TList* effHistoList, Int_t itype, Int_t icount, Int_t ichamber ) const
+{
+  /// Get histogram
+  Int_t ihisto = ( itype == AliTrigChEffOutput::kHchamberEff ) ? itype : AliTrigChEffOutput::kNcounts + 4*AliTrigChEffOutput::kNcounts*(itype-1) + 4*icount + ichamber;
+  return static_cast<TH1*>(effHistoList->At(ihisto));
 }
 
 //________________________________________________________________________
@@ -1208,26 +1215,23 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
   TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
 
   TIter next(fOutputs);
-  AliTrigChEffOutput* trigOut = 0x0;
+  TList* effHistoList = 0x0;
   Int_t ibin = 0;
-  while ( (trigOut = static_cast<AliTrigChEffOutput*>(next()) ) ) {
+  while ( (effHistoList = static_cast<TList*>(next()) ) ) {
     ibin++;
-    TString identifier = GetIdentifier(trigOut,condition,itype,icount,ichamber);
+//    TString identifier = GetIdentifier(trigOut,condition,itype,icount,ichamber);
     if ( ! outHisto ) {
-      TString outName = identifier;
-      outName.ReplaceAll("/","_");
+//      TString outName = identifier;
+      TString outName = Form("histo_type%i_count%i_ch%i_",itype,icount,11+ichamber);
+//      outName.ReplaceAll("/","_");
       outName += Form("%i_trend",idetelem);
       outHisto = new TH1D(outName.Data(),outName.Data(),fOutputs->GetEntriesFast(),0.,(Double_t)fOutputs->GetEntriesFast());
       outHisto->SetDirectory(0);
       outHisto->GetXaxis()->SetTitle("Run num.");
     }
-    UInt_t run = trigOut->GetUniqueID();
+    UInt_t run = effHistoList->GetUniqueID();
     outHisto->GetXaxis()->SetBinLabel(ibin,Form("%u",run));
-    TH1* histo = GetSum(trigOut,condition,itype,icount,ichamber);
-    if ( ! histo ) {
-      AliWarning(Form("Run %u: cannot find %s",run,identifier.Data()));
-      continue;
-    }
+    TH1* histo = GetHisto(effHistoList,itype,icount,ichamber);
     Int_t currBin = histo->GetXaxis()->FindBin(idetelem);
     outHisto->SetBinContent(ibin,histo->GetBinContent(currBin));
     outHisto->SetBinError(ibin,histo->GetBinError(currBin));
@@ -1314,7 +1318,7 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
     fMergedOutputs->SetOwner();
   }
 
-  AliTrigChEffOutput* trigOut = 0x0;
+  TList* effHistoList = 0x0;
   for ( Int_t irange=0; irange<nRanges; irange++ ) {
     Int_t firstRun = mergedRanges[2*irange];
     Int_t lastRun = mergedRanges[2*irange+1];
@@ -1324,17 +1328,20 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
     }
 
     TObjArray* mergedOut = 0x0;
-    TList list;
     TIter next(fOutputs);
-    while ( (trigOut = static_cast<AliTrigChEffOutput*>(next()) ) ) {
-      UInt_t run = trigOut->GetUniqueID();
+    TFileMerger fileMerger;
+    while ( (effHistoList = static_cast<TList*>(next()) ) ) {
+      UInt_t run = effHistoList->GetUniqueID();
       if ( run < firstRun || run > lastRun ) continue;
-      if ( mergedOut ) list.Add(trigOut->GetOutput());
-      else mergedOut = static_cast<TObjArray*>(trigOut->GetOutput()->Clone());
+      fileMerger.AddFile(effHistoList->GetName(),kFALSE);
     }
-    mergedOut->Merge(&list);
-    trigOut = new AliTrigChEffOutput(mergedOut,Form("%i_%i",firstRun,lastRun));
-    trigOut->SetOwner();
+
+    TString sRange = Form("%i_%i",firstRun,lastRun);
+    TString mergedFilename = Form("mergedTrigEff_runs_%s.root",sRange.Data());
+    fileMerger.OutputFile(mergedFilename.Data());
+    fileMerger.Merge();
+    AliTrigChEffOutput* trigOut = new AliTrigChEffOutput(mergedFilename);
+    trigOut->SetName(sRange.Data());
     fMergedOutputs->Add(trigOut);
   }
   return kTRUE;
@@ -1456,6 +1463,8 @@ Bool_t AliMTRChEffAnalysis::SetOutList ( const char *localFileList, const char *
 {
   /// Initialize output list
 
+  if ( ! fConditions ) SetDefaultEffConditions();
+
   TString filename(localFileList);
   gSystem->ExpandPathName(filename);
   if ( gSystem->AccessPathName(filename.Data()) ) {
@@ -1474,8 +1483,6 @@ Bool_t AliMTRChEffAnalysis::SetOutList ( const char *localFileList, const char *
     if ( ! AddToList(currLine.Data(), outputName) ) isOk = kFALSE;
   }
   inFile.close();
-
-  if ( ! fConditions ) SetDefaultEffConditions();
 
   return isOk;
 }
@@ -1533,12 +1540,12 @@ Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB ) const
     TList* effList = GetEffHistoList(trigOut,condition);
     TString runRange = trigOut->GetName();
 
-    // Write full merged output in file
-    TFile* file = TFile::Open(Form("mergedTrigEff_runs_%s.root",runRange.Data()),"RECREATE");
-    effList->Write("triggerChamberEff",TObject::kSingleKey);
-    trigOut->GetOutput()->Write(trigOut->GetOutput()->GetName(),TObject::kSingleKey);
-    file->Close();
-    delete file;
+//    // Write full merged output in file
+//    TFile* file = TFile::Open(Form("mergedTrigEff_runs_%s.root",runRange.Data()),"RECREATE");
+//    effList->Write("triggerChamberEff",TObject::kSingleKey);
+//    trigOut->GetOutput()->Write(trigOut->GetOutput()->GetName(),TObject::kSingleKey);
+//    file->Close();
+//    delete file;
 
 
     // Write OCDB object
