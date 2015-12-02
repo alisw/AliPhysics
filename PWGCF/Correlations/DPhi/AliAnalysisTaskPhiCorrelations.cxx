@@ -1787,66 +1787,108 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
   else if (idet == 5)
     {
       if(!fAOD)
-	AliFatal("Cannot access jets without AOD");
+        AliFatal("Cannot access jets without AOD");
 
       // retrieve jet array
       TClonesArray *jetArray = 0x0;
       if (fJetBranchName.Length() > 0) {
-	jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
-	if (!jetArray) {
-	  fAOD->Print();
-	  AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
-	}
+        jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
+        if (!jetArray) {
+          fAOD->Print();
+          AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+        }
       }
 
       const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
-
       const Int_t nTracks = fAOD->GetNumberOfTracks();
+
+      // for (Int_t iJet = 0; iJet < nJets; ++iJet) {
+      // 	AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
+
+      // 	if (jet->Pt() < .1)
+      // 	  continue;
+
+      // 	Int_t nTracksInJet = 0;
+      // 	Int_t nTracksInJetId = 0;
+      // 	for (Int_t iTrackInJet = 0; iTrackInJet < nTracks; ++iTrackInJet) {
+      // 	  AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrackInJet));
+
+      // 	  if (jet->ContainsTrack(track, fAOD->GetTracks()) >= 0)
+      // 	    ++nTracksInJet;
+      // 	  if (jet->ContainsTrack(track->GetID()) >= 0)
+      // 	    ++nTracksInJetId;
+      // 	}
+      // 	if ((nTracksInJet != jet->GetNumberOfConstituents()) ||
+      // 	    (nTracksInJet != jet->GetNumberOfTracks()))
+      // 	  printf("jet %3i (pt = %g) has %i constituents and %i tracks; %i, %i / %i tracks attached %s\n",
+      // 		 iJet, jet->Pt(), jet->GetNumberOfConstituents(), jet->GetNumberOfTracks(),
+      // 		 nTracksInJet, nTracksInJetId, nTracks,
+      // 		 jet->HasGhost() ? "and ghosts" : "");
+      // }
+
       for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
-	AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
+        AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
 
-	if (!track)
-	  AliFatal("Not a standard AOD");
+        if (!track)
+          AliFatal("Not a standard AOD");
 
-	// track cuts
-	if (!track->IsHybridGlobalConstrainedGlobal() ||
-	    (TMath::Abs(track->Eta()) > fTrackEtaMax))
-	  continue;
+        // track cuts
+        if (!track->IsHybridGlobalConstrainedGlobal() ||
+            (TMath::Abs(track->Eta()) > fTrackEtaMax))
+          continue;
 
-	// check if track is part of a jet
-	Bool_t trackInJet = kFALSE;
-	for (Int_t iJet = 0; iJet < nJets; ++iJet) {
-	  AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
+        // check if track is part of a jet
+        Bool_t rejectTrack = kFALSE;
+        for (Int_t iJet = 0; iJet < nJets; ++iJet) {
+          AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
 
-	  // skip jets outside of acceptance and too low pt
-	  if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
-	      (jet->Pt() < fJetPtMin) ||
-	      (jet->GetNumberOfConstituents() < fJetConstMin))
-	    continue;
+          // skip jets outside of acceptance and too low pt
+          if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
+              (jet->Pt() < fJetPtMin) ||
+              (jet->GetNumberOfConstituents() < fJetConstMin))
+            continue;
 
-	  // exclude track if part of a jet
-	  if (fExclusionRadius > 0.) {
-	    if ((TMath::Power(TVector2::Phi_mpi_pi(jet->Phi() - track->Phi()), 2.) +
-		 TMath::Power(jet->Eta() - track->Eta(), 2.)) <
-		TMath::Power(fExclusionRadius, 2.)) {
-	      trackInJet = kTRUE;
-	      break;
-	    }
-	  } else if (jet->ContainsTrack(track->GetID())) {
-	    trackInJet = kTRUE;
-	    break;
-	  }
-	}
+          Bool_t trackInJet  = jet->ContainsTrack(track, fAOD->GetTracks()) >= 0;
+          // Bool_t trackInJetId = jet->ContainsTrack(track->GetID()) >= 0;
+          // if (trackInJet != trackInJetId)
+          //   printf("id (%5i): %5s - ar (%5i): %5s\n",
+          // 	   track->GetID(), trackInJetId ? "yes" : "no",
+          // 	   fAOD->GetTracks()->IndexOf(track), trackInJet ? "yes" : "no");
 
-	// skip track if it is in a selected jet
-	if (trackInJet)
-	  continue;
+          // exclude track if in cone around jet or assigned to jet
+          if (fExclusionRadius > 0.) {
+            Float_t dEta = track->Eta() - jet->Eta();
+            Float_t dPhi = TVector2::Phi_mpi_pi(track->Phi() - jet->Phi());
+            Float_t r = TMath::Sqrt(TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.));
+            Bool_t trackInCone = (TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.)) < TMath::Power(fExclusionRadius, 2.);
 
-	// add particle to array
-	AliDPhiBasicParticle* particle =
-	  new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
-	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
-	obj->Add(particle);
+            // if (trackInCone != trackInJet)
+            //   printf("%10s - %10s : Deta: %g - %g = %g, Dphi: %g - %g = %g -> r = %g - %g\n",
+            // 	     trackInJet ? "in jet" : "not in jet",
+            // 	     trackInCone ? "in cone" : "not in cone",
+            // 	     track->Eta(), jet->Eta(), dEta,
+            // 	     track->Phi(), jet->Phi(), dPhi,
+            // 	     TMath::Sqrt(jet->Area() / TMath::Pi()), r);
+
+            if (trackInCone) {
+              rejectTrack = kTRUE;
+              break;
+            }
+          } else if (trackInJet) {
+            rejectTrack = kTRUE;
+            break;
+          }
+        }
+
+        // skip track if it is in a selected jet
+        if (rejectTrack)
+          continue;
+
+        // add particle to array
+        AliDPhiBasicParticle* particle =
+          new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
+        particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+        obj->Add(particle);
       }
 
       // printf("accepted %i/%i tracks\n", obj->GetEntriesFast(), nTracks);
