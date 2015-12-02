@@ -16,6 +16,8 @@
 #define ASYNC_MUTEX_COUNT 5
 
 #include <pthread.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 class AliHLTAsyncProcessorBackend
 {
@@ -27,12 +29,16 @@ public:
 		for (int i = 0;i < ASYNC_MUTEX_COUNT;i++) pthread_mutex_destroy(&fMutexes[i]);
 	};
 
-	int Initialize()
+	int Initialize(bool shared)
 	{
+		pthread_mutexattr_t attr;
+		pthread_mutexattr_init(&attr);
+		if (shared) if (pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED)) return(1);
 		for (int i = 0;i < ASYNC_MUTEX_COUNT;i++)
 		{
-			if (pthread_mutex_init(&fMutexes[i], NULL)) return(1);
+			if (pthread_mutex_init(&fMutexes[i], &attr)) return(1);
 		}
+		pthread_mutexattr_destroy(&attr);
 
 		fInitialized = true;
 		return(0);
@@ -65,10 +71,31 @@ public:
 		return(retVal);
 	}
 
+	int StartProcess(void* (*function)(void*), void* data)
+	{
+		int pid = fork();
+		if (pid < 0) return(1);
+		if (pid == 0)
+		{
+			function(data);
+			exit(0);
+		}
+		fAsyncPID = pid;
+		return(0);
+	}
+	
+	int StopProcess()
+	{
+		int returnStatus;
+		waitpid(fAsyncPID, &returnStatus, 0);
+		return(returnStatus);
+	}
+
 private:
 	bool fInitialized;
 	pthread_mutex_t fMutexes[ASYNC_MUTEX_COUNT];
 	pthread_t fAsyncThread;
+	pid_t fAsyncPID;
 };
 
 #undef ASYNC_MUTEX_COUNT
