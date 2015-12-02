@@ -138,6 +138,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
 
+  static Double_t             fgkEMCalDCalPhiDivide;      //  phi value used to distinguish between DCal and EMCal
+
   // Task configuration
   BeamType                    fForceBeamType;              // forced beam type
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
