@@ -139,10 +139,10 @@ public:
 
 
   AliFemtoThreeVector NominalTpcEntrancePointPos() const;
-  AliFemtoThreeVector NominalTpcPointPos(int i);
+  AliFemtoThreeVector NominalTpcPointPos(int i) const;
   AliFemtoThreeVector NominalTpcExitPointPos() const;
   AliFemtoThreeVector NominalTpcEntrancePointNeg() const;
-  AliFemtoThreeVector NominalTpcPointNeg(int i);
+  AliFemtoThreeVector NominalTpcPointNeg(int i) const;
   AliFemtoThreeVector NominalTpcExitPointNeg() const;
   AliFemtoThreeVector NominalTpcPointPosShifted() const;
   AliFemtoThreeVector NominalTpcPointNegShifted() const;
