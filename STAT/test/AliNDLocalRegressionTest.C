@@ -381,7 +381,7 @@ Bool_t UnitTestContrain(){
   AliNDLocalRegression *regressionUpdate0 = (AliNDLocalRegression *)regression0->Clone();
   AliNDLocalRegression *regressionUpdate1 = (AliNDLocalRegression *)regression1->Clone();
  
-  for (Int_t iter=0; iter<3; iter++){
+  for (Int_t iter=0; iter<5; iter++){
     regressionUpdate0->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, pcstream);
     regressionUpdate1->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight1, pcstream);
   }
