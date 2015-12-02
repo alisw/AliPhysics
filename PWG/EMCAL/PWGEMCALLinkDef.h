@@ -64,15 +64,6 @@
 #pragma link C++ class AliEmcalTriggerAlgorithmAP<float>+;
 #pragma link C++ class AliEmcalTriggerAlgorithmAP<double>+;
 #pragma link C++ class AliEmcalTriggerAlgorithmAP<int>+;
-#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<float>+;
-#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<double>+;
-#pragma link C++ class AliEmcalJetTriggerAlgorithmAP<int>+;
-#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<float>+;
-#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<double>+;
-#pragma link C++ class AliEmcalGammaTriggerAlgorithmAP<int>+;
-#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<float>+;
-#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<double>+;
-#pragma link C++ class AliEmcalBkgTriggerAlgorithmAP<int>+;
 #pragma link C++ class AliEmcalTriggerChannelContainerAP+;
 #pragma link C++ class AliEmcalTriggerChannelContainerAP::AliEmcalTriggerChannelPositionAP+;
 #pragma link C++ class AliEmcalTriggerFastORAP+;

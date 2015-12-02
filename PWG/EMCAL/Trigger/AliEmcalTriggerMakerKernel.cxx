@@ -50,6 +50,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitMap(NULL),
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
+  fJetPatchsize(16),
   fBkgThreshold(-1),
   fL0Threshold(0),
   fIsMC(kFALSE),
@@ -88,17 +89,28 @@ void AliEmcalTriggerMakerKernel::Init(){
 
   // Initialize patch finder
   fPatchFinder = new AliEmcalTriggerPatchFinderAP<double>;
-  fPatchFinder->AddTriggerAlgorithm(new AliEmcalJetTriggerAlgorithmAP<double>(0, 63, 0));
-  fPatchFinder->AddTriggerAlgorithm(new AliEmcalGammaTriggerAlgorithmAP<double>(0, 63, 0));
-  fPatchFinder->AddTriggerAlgorithm(new AliEmcalBkgTriggerAlgorithmAP<double>(0, 63, 0));
+  fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(0, 63));
+  AliEmcalTriggerAlgorithmAP<double> *jettrigger = CreateJetTriggerAlgorithm(0, 63);
+  fPatchFinder->AddTriggerAlgorithm(jettrigger);
+  if(fJetPatchsize == 8){
+    jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
+  } else {
+    fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(0, 63));
+  }
   if(nrows > 64){
     // Add trigger algorithms for DCAL
-    fPatchFinder->AddTriggerAlgorithm(new AliEmcalJetTriggerAlgorithmAP<double>(64, nrows, 0));
-    fPatchFinder->AddTriggerAlgorithm(new AliEmcalGammaTriggerAlgorithmAP<double>(64, nrows, 0));
-    fPatchFinder->AddTriggerAlgorithm(new AliEmcalBkgTriggerAlgorithmAP<double>(64, nrows, 0));
+    fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(64, nrows));
+    jettrigger = CreateJetTriggerAlgorithm(64, nrows);
+    fPatchFinder->AddTriggerAlgorithm(jettrigger);
+    if(fJetPatchsize == 8) {
+      jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
+    } else {
+      fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(64, nrows));
+    }
   }
 
-  fLevel0PatchFinder = new AliEmcalGammaTriggerAlgorithmAP<double>(0, nrows, 0);
+  fLevel0PatchFinder = new AliEmcalTriggerAlgorithmAP<double>(0, nrows, 0);
+  fLevel0PatchFinder->SetPatchSize(2);
   fLevel0PatchFinder->SetSubregionSize(1);
 }
 
@@ -211,32 +223,31 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   TObjArray *result = new TObjArray(1000);
   for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     // Apply offline and recalc selection
-    Int_t offlinebits = 0;
-    if(patchit->GetPatchSize() == 2){
+    // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
+    Int_t offlinebits = 0, onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
+    if(IsGammaPatch(*patchit)){
       if(patchit->GetADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchit->GetADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
-    } else if (patchit->GetPatchSize() == 16){
+      onlinebits &= gammaPatchMask;
+    } else if (IsJetPatch(*patchit)){
       if(patchit->GetADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchit->GetADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
-    } else if (patchit->GetPatchSize() == 8){
+      onlinebits &= jetPatchMask;
+    } else if (IsBkgPatch(*patchit)){
       if(patchit->GetADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
       if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
+      onlinebits &= bkgPatchMask;
     }
-    // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
-    Int_t onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
-    if(patchit->GetPatchSize() == 2) onlinebits &= gammaPatchMask;
-    else if(patchit->GetPatchSize() == 16) onlinebits &= jetPatchMask;
-    else if(patchit->GetPatchSize() == 8) onlinebits &= bkgPatchMask;
     else onlinebits = 0;
     if(!(onlinebits || offlinebits)) continue;
     // convert
     AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EmcalTriggerAP::kEMCL1ADCtoGeV,
-        patchit->GetBitmask() | onlinebits | offlinebits, vertexvec, fGeometry);
+        onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     fullpatch->SetOffSet(offset);
     result->Add(fullpatch);
@@ -289,4 +300,43 @@ Bool_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
   }
   if (nvalid != 4) return false;
   return true;
+}
+
+AliEmcalTriggerAlgorithmAP<double> *AliEmcalTriggerMakerKernel::CreateGammaTriggerAlgorithm(int rowmin, int rowmax) const {
+  AliEmcalTriggerAlgorithmAP<double> *result = new AliEmcalTriggerAlgorithmAP<double>(rowmin, rowmax, 0);
+  result->SetPatchSize(2);
+  result->SetSubregionSize(1);
+  result->SetBitMask(1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit());
+  return result;
+}
+
+AliEmcalTriggerAlgorithmAP<double> *AliEmcalTriggerMakerKernel::CreateJetTriggerAlgorithm(int rowmin, int rowmax) const {
+  AliEmcalTriggerAlgorithmAP<double> *result = new AliEmcalTriggerAlgorithmAP<double>(rowmin, rowmax, 0);
+  result->SetPatchSize(fJetPatchsize);
+  result->SetSubregionSize(4);
+  result->SetBitMask(1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit());
+  return result;
+}
+
+AliEmcalTriggerAlgorithmAP<double> *AliEmcalTriggerMakerKernel::CreateBkgTriggerAlgorithm(int rowmin, int rowmax) const {
+  AliEmcalTriggerAlgorithmAP<double> *result = new AliEmcalTriggerAlgorithmAP<double>(rowmin, rowmax, 0);
+  result->SetPatchSize(8);
+  result->SetSubregionSize(4);
+  result->SetBitMask(1<<fTriggerBitConfig->GetBkgBit());
+  return result;
+}
+
+Bool_t AliEmcalTriggerMakerKernel::IsGammaPatch(const AliEmcalTriggerRawPatchAP &patch) const {
+  ULong_t bitmask = patch.GetBitmask(), testmask = 1 << fTriggerBitConfig->GetGammaHighBit() | 1 << fTriggerBitConfig->GetGammaLowBit();
+  return bitmask & testmask;
+}
+
+Bool_t AliEmcalTriggerMakerKernel::IsJetPatch(const AliEmcalTriggerRawPatchAP &patch) const {
+  ULong_t bitmask = patch.GetBitmask(), testmask = 1 << fTriggerBitConfig->GetJetHighBit() | 1 << fTriggerBitConfig->GetJetLowBit();
+  return bitmask & testmask;
+}
+
+Bool_t AliEmcalTriggerMakerKernel::IsBkgPatch(const AliEmcalTriggerRawPatchAP &patch) const {
+  ULong_t bitmask = patch.GetBitmask(), testmask = 1 << fTriggerBitConfig->GetBkgBit();
+  return bitmask & testmask;
 }
