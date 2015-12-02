@@ -56,6 +56,7 @@ fV0Trigger(0),             fV0A(0),              fV0C(0),
 fFillV0SigHisto(0),        fFillCenHisto(0),     fFillClusAcceptHisto(0),
 fMCData(kFALSE),
 fFirstSM   (0),            fLastSM    (0),
+fCentEstimator("V0M"),
 fEventMB   (0),            
 fEventL0   (0),            fEventL0D  (0),
 fEventL1G  (0),            fEventL1GD (0),                      
@@ -142,7 +143,6 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
           delete hbm;
         
         hbm=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
-        
         if (!hbm)
         {
           AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
@@ -151,6 +151,8 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
         
         hbm->SetDirectory(0);
         fRecoUtils->SetEMCALChannelStatusMap(i,hbm);
+        
+        printf("Bad map for SM %d: %3.0f entries\n",i,fRecoUtils->GetEMCALChannelStatusMap(i)->Integral());
         
       } // loop
     } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
@@ -391,7 +393,9 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   //InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   Float_t centrality = -1;
-  if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+  if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentEstimator);
+  
+  //printf("Centrality %f for estimator %s\n",centrality, fCentEstimator.Data());
   
   //if(!fEventMB) printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d \n",
 	//       fEventMB,fEventL0,fEventL1G,fEventL1G2,fEventL1J,fEventL1J2,fEventCen,fEventSem);
@@ -975,6 +979,8 @@ void AliAnalysisTaskEMCALTriggerQA::FillV0Histograms()
       if( fV0A+fV0C > fMaxV0Signal && DebugLevel() > 0)
         AliWarning(Form("Large fV0A+fV0C %f",fV0A+fV0C));
     }
+    
+    //printf("V0A %f, V0C %f\n",fV0A,fV0C);
     
     // Not interesting in case of data analysis, REVISE in future
     if(fMCData || !fFillV0SigHisto) return ;
