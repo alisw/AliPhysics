@@ -68,7 +68,7 @@ AliFemtoV0TrackPairCut &AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
   fMinDPhiStarNeg = cut.fMinDPhiStarNeg;
 
   fMinRad = cut.fMinRad;
-  
+
   return *this;
 }
 //__________________
@@ -206,14 +206,11 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
     Double_t pos_avgSep = 0.0,
              neg_avgSep = 0.0;
 
-    // create a mutable v0 pointer so we can use the NominalTpcPoint methods
-    AliFemtoV0 *mut_V0 = const_cast<AliFemtoV0*>(V0);
-
     // loop through NominalTpcPoints of the track and V0 daughters
     for (int i = 0; i < 8; i++) {
       // Grab references to each of the i'th points
-      const AliFemtoThreeVector &pos_p = mut_V0->NominalTpcPointPos(i),
-                                &neg_p = mut_V0->NominalTpcPointNeg(i),
+      const AliFemtoThreeVector &pos_p = V0->NominalTpcPointPos(i),
+                                &neg_p = V0->NominalTpcPointNeg(i),
                               &track_p = track->NominalTpcPoint(i);
 
       // if any track points are outside the boundary - skip
@@ -302,44 +299,44 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
-  
+
   //
   // Delta Eta* Delta Phi*cut
   //
   if (fMinRad > 0.0) {
-  
-    AliFemtoV0 *mut_V0 = const_cast<AliFemtoV0*>(V0);
-    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
+
+    AliFemtoV0 *V0 = const_cast<AliFemtoV0*>(V0);
+    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
     double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
     double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
     double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
     double detas_pos = etas1_pos - etas2_pos;
-    double distSft_pos = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointPosShifted().x() -
+    double distSft_pos = TMath::Sqrt(TMath::Power(V0->NominalTpcPointPosShifted().x() -
 						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(mut_V0->NominalTpcPointPosShifted().y() -
+				     TMath::Power(V0->NominalTpcPointPosShifted().y() -
 						  track->NominalTpcPointShifted().y(),2));
     double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2)));
 
-    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
+    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
     double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
     double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
     double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
     double detas_neg = etas1_neg - etas2_neg;
-    double distSft_neg = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointNegShifted().x() -
+    double distSft_neg = TMath::Sqrt(TMath::Power(V0->NominalTpcPointNegShifted().x() -
 						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(mut_V0->NominalTpcPointNegShifted().y() -
+				     TMath::Power(V0->NominalTpcPointNegShifted().y() -
 						  track->NominalTpcPointShifted().y(),2));
     double dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
-				  
+
     if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
 	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
 	 (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
 	  TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
-      fNPairsFailed++;     
+      fNPairsFailed++;
       return false;
     }
   }
-  
+
   fNPairsPassed++;
   return true;
 }

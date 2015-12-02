@@ -57,6 +57,38 @@ AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
   return *this;
 }
 
+inline
+bool is_unset_vector(const AliFemtoThreeVector& v)
+{
+  return v.x() <= -9999.0 || v.y() <= -9999.0 ||  v.z() <= -9999.0;
+}
+
+inline
+double calculate_avg_separation_daughters(const AliFemtoV0* V1,
+                                          const bool use_pos_daughter_1,
+                                          const AliFemtoV0* V2,
+                                          const bool use_pos_daughter_2)
+{
+   int counter = 0;
+   double avgSep = 0.0;
+
+   for (int i = 0; i < 8; i++) {
+     const AliFemtoThreeVector p1 = use_pos_daughter_1
+                                  ? V1->NominalTpcPointPos(i)
+                                  : V1->NominalTpcPointNeg(i),
+
+                               p2 = use_pos_daughter_2
+                                  ? V2->NominalTpcPointPos(i)
+                                  : V2->NominalTpcPointNeg(i);
+    if (is_unset_vector(p1) || is_unset_vector(p2)) {
+      continue;
+    }
+    avgSep += (p1 - p2).Mag();
+    counter++;
+  }
+  return avgSep / counter;
+}
+
 //__________________
 bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
 {
@@ -81,61 +113,34 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
                               diffNegEntrance = V0_1->NominalTpcEntrancePointNeg() - V0_2->NominalTpcEntrancePointNeg(),
                                   diffNegExit = V0_1->NominalTpcExitPointNeg() - V0_2->NominalTpcExitPointNeg();
 
-    if (diffPosEntrance.Mag() < fDTPCMin ||
-        diffNegEntrance.Mag() < fDTPCMin ||
-        diffPosExit.Mag() < fDTPCExitMin ||
-        diffNegExit.Mag() < fDTPCExitMin) {
+    if (diffPosEntrance.Mag() < fDTPCMin
+        || diffNegEntrance.Mag() < fDTPCMin
+        || diffPosExit.Mag() < fDTPCExitMin
+        || diffNegExit.Mag() < fDTPCExitMin) {
       return false;
     }
   }
 
   // Find average separations between tracks
-
-  // Remove const qualifier so we can use the non-const NominalTpcPoint functions (an oversight in AliFemtoV0 definition)
-  AliFemtoV0 *V1 = const_cast<AliFemtoV0*>(V0_1),
-             *V2 = const_cast<AliFemtoV0*>(V0_2);
-
   double avgSep = 0.0;
 
-  for (int i = 0; i < 8; i++) {
-    AliFemtoThreeVector delta = V1->NominalTpcPointPos(i) - V2->NominalTpcPointPos(i);
-    avgSep += delta.Mag();
-  }
-  avgSep /= 8.0;
+  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, true);
 
   if (avgSep < fMinAvgSepPosPos) {
     return false;
   }
 
-  avgSep = 0.0;
-
-  for (int i = 0; i < 8; i++) {
-    AliFemtoThreeVector delta = V1->NominalTpcPointPos(i) - V2->NominalTpcPointNeg(i);
-    avgSep += delta.Mag();
-  }
-  avgSep /= 8.0;
+  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, false);
   if (avgSep < fMinAvgSepPosNeg) {
     return false;
   }
 
-  avgSep = 0.0;
-
-  for (int i = 0; i < 8 ; i++) {
-    AliFemtoThreeVector delta = V1->NominalTpcPointNeg(i) - V2->NominalTpcPointPos(i);
-    avgSep += delta.Mag();
-  }
-  avgSep /= 8.0;
+  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, true);
   if (avgSep < fMinAvgSepNegPos) {
     return false;
   }
 
-  avgSep = 0.0;
-
-  for (int i = 0; i < 8 ; i++) {
-    AliFemtoThreeVector delta = V1->NominalTpcPointNeg(i) - V2->NominalTpcPointNeg(i);
-    avgSep += delta.Mag();
-  }
-  avgSep /= 8;
+  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, false);
   if (avgSep < fMinAvgSepNegNeg) {
     return false;
   }
@@ -211,12 +216,18 @@ void AliFemtoV0PairCut::SetTPCExitSepMinimum(double dtpc)
 
 void AliFemtoV0PairCut::SetMinAvgSeparation(int type, double minSep)
 {
-  if (type == 0) //Pos-Pos
+  switch (type) {
+  case 0: // Pos-Pos
     fMinAvgSepPosPos = minSep;
-  else if (type == 1) //Pos-Neg
+    break;
+  case 1: // Pos-Neg
     fMinAvgSepPosNeg = minSep;
-  else if (type == 2) //Neg-Pos
+    break;
+  case 2: // Neg-Pos
     fMinAvgSepNegPos = minSep;
-  else if (type == 3) //Neg-Neg
+    break;
+  case 3: // Neg-Neg
     fMinAvgSepNegNeg = minSep;
+    break;
+  }
 }
