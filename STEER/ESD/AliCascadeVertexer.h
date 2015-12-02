@@ -10,6 +10,7 @@
 //------------------------------------------------------------------
 
 #include "TObject.h"
+#include "TMath.h"
 
 class AliESDEvent;
 class AliESDv0;
@@ -55,21 +56,23 @@ private:
   Double_t fDBachMin;   // min. allowed bachelor impact parameter
   Double_t fDCAmax;     // maximal allowed DCA between the V0 and the track 
   Double_t fCPAmin;     // minimal allowed cosine of the cascade pointing angle
-  Double_t fRmin, fRmax;// max & min radii of the fiducial volume
+  Double_t fRmin2, fRmax2;// max & min radii^2 of the fiducial volume
+  Double_t fRmaxMargin2;// (rmax+margin)^2  for fast checks
   
-  ClassDef(AliCascadeVertexer,3)  // cascade verterxer 
+  ClassDef(AliCascadeVertexer,4)  // cascade verterxer 
 };
 
-inline AliCascadeVertexer::AliCascadeVertexer() :
-  TObject(),
+inline AliCascadeVertexer::AliCascadeVertexer() 
+:TObject(),
   fChi2max(fgChi2max), 
   fDV0min(fgDV0min),
   fMassWin(fgMassWin),
   fDBachMin(fgDBachMin),
   fDCAmax(fgDCAmax),
   fCPAmin(fgCPAmin), 
-  fRmin(fgRmin),
-  fRmax(fgRmax)
+  fRmin2(fgRmin*fgRmin),
+  fRmax2(fgRmax*fgRmax),
+  fRmaxMargin2((fgRmax+5)*(fgRmax+5))
 {
 }
 
@@ -77,7 +80,9 @@ inline void AliCascadeVertexer::SetCuts(const Double_t cuts[8]) {
   fChi2max=cuts[0]; 
   fDV0min=cuts[1];   fMassWin=cuts[2]; fDBachMin=cuts[3];
   fDCAmax=cuts[4];   fCPAmin=cuts[5];
-  fRmin=cuts[6];     fRmax=cuts[7]; 
+  fRmin2=cuts[6]*cuts[6]; 
+  fRmax2=cuts[7]*cuts[7]; 
+  fRmaxMargin2 = (cuts[7]+5)*(cuts[7]+5);
 }
 
 inline void AliCascadeVertexer::SetDefaultCuts(const Double_t cuts[8]) {
@@ -91,7 +96,7 @@ inline void AliCascadeVertexer::GetCuts(Double_t cuts[8]) const {
   cuts[0]=fChi2max; 
   cuts[1]=fDV0min;   cuts[2]=fMassWin;  cuts[3]=fDBachMin;
   cuts[4]=fDCAmax;   cuts[5]=fCPAmin;
-  cuts[6]=fRmin;     cuts[7]=fRmax; 
+  cuts[6]=TMath::Sqrt(fRmin2);     cuts[7]=TMath::Sqrt(fRmax2); 
 }
 
 inline void AliCascadeVertexer::GetDefaultCuts(Double_t cuts[8]) {
