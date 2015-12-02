@@ -172,6 +172,10 @@ void AliEmcalTriggerQATask::UserCreateOutputObjects()
 
     fHistEMCalTriggers->GetXaxis()->SetBinLabel(32, "MB or CALO");
 
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(33, "EMCal Any and !MB");
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(34, "DCal Any and !MB");
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(35, "EMCal/DCal Any and !MB");
+
     fOutput->Add(fHistEMCalTriggers);
 
     fOutput->Add(fEMCALTriggerQA->GetListOfHistograms());
@@ -250,6 +254,15 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
   if ((firedTriggerBits & kMinBiasbit) != 0) fHistEMCalTriggers->Fill("MB", 1);
 
   if ((firedTriggerBits & kCALOMinBias) != 0) fHistEMCalTriggers->Fill("MB or CALO", 1);
+
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kEMCalAnybit) != 0) fHistEMCalTriggers->Fill("EMCal Any and !MB", 1);
+
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kDCalAnybit) != 0) fHistEMCalTriggers->Fill("DCal Any and !MB", 1);
+
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kEMCalDCalAnybit) != 0) fHistEMCalTriggers->Fill("EMCal/DCal Any and !MB", 1);
 
   if (fTriggerPatches) {
     Int_t nPatches = fTriggerPatches->GetEntriesFast();
