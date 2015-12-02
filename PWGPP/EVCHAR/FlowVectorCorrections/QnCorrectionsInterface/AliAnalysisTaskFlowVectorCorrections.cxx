@@ -49,15 +49,18 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections() :
     fTriggerMask(0),
     fInitialized(kFALSE),
     fListInputHistogramsQnCorrections(0x0),
+    fEventQAList(0x0),
     fEventPlaneManager(0x0),
-    fEventPlaneHistos(0x0),
     fEventCuts(0x0),
     fFillEvent(0x0),
+    fEventPlaneHistos(0x0),
     fLabel(""),
-    fProvideQnVectorsList(kTRUE),
     fQAhistograms(""),
-    fOutputSlotHistQn(-1),
+    fFillEventQA(kTRUE),
+    fProvideQnVectorsList(kTRUE),
+    fOutputSlotEventQA(-1),
     fOutputSlotHistQA(-1),
+    fOutputSlotHistQn(-1),
     fOutputSlotQnVectorsList(-1),
     fOutputSlotTree(-1)
 {
@@ -75,15 +78,18 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections(const
   fTriggerMask(0),
   fInitialized(kFALSE),
   fListInputHistogramsQnCorrections(0x0),
+  fEventQAList(0x0),
   fEventPlaneManager(0x0),
-  fEventPlaneHistos(0x0),
   fEventCuts(0x0),
   fFillEvent(0x0),
+  fEventPlaneHistos(0x0),
   fLabel(""),
   fQAhistograms(""),
+  fFillEventQA(kTRUE),
   fProvideQnVectorsList(kTRUE),
-  fOutputSlotHistQn(-1),
+  fOutputSlotEventQA(-1),
   fOutputSlotHistQA(-1),
+  fOutputSlotHistQn(-1),
   fOutputSlotQnVectorsList(-1),
   fOutputSlotTree(-1)
 {
@@ -93,6 +99,10 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections(const
 
   //fFillEvent = new QnCorrectionsReducedVarManager();
   fFillEvent = new AliQnCorrectionsFillEvent();
+
+  fEventQAList = new TList();
+  fEventQAList->SetName("EventQA");
+  fEventQAList->SetOwner(kTRUE);
 
   fEventPlaneHistos = new AliQnCorrectionsHistos();
   fFillEvent->SetEventPlaneHistos(fEventPlaneHistos);
@@ -107,10 +117,11 @@ void AliAnalysisTaskFlowVectorCorrections::DefineInOutput(){
 
   DefineInput(0,TChain::Class());
   Int_t outputSlot=1;
-  if(fEventPlaneManager->ShouldFillHistogramsQnCorrections())   {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQn=outputSlot++;}   // Calibration histograms
-  if(fEventPlaneManager->ShouldFillTreeQnVectors())              {DefineOutput(outputSlot, TTree::Class()); fOutputSlotTree=outputSlot++;} // Calibrated qvector tree
-  if(fEventPlaneManager->ShouldFillHistogramsQA())             {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQA=outputSlot++;}  // QA histograms
-  if(fProvideQnVectorsList)                                {DefineOutput(outputSlot, TList::Class()); fOutputSlotQnVectorsList=outputSlot++;}   // Calibrated qvector list
+  if(fEventPlaneManager->ShouldFillHistogramsQnCorrections())  {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQn=outputSlot++;}   // Calibration histograms
+  if(fEventPlaneManager->ShouldFillTreeQnVectors())            {DefineOutput(outputSlot, TTree::Class()); fOutputSlotTree=outputSlot++;} // Calibrated qvector tree
+  if(fEventPlaneManager->ShouldFillHistogramsQA())             {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQA=outputSlot++;}  // Qvector QA histograms
+  if(fProvideQnVectorsList)                                    {DefineOutput(outputSlot, TList::Class()); fOutputSlotQnVectorsList=outputSlot++;}   // Calibrated qvector list
+  if(fFillEventQA)                                             {DefineOutput(outputSlot, TList::Class()); fOutputSlotEventQA=outputSlot++;}   // Event QA histograms
 
 }
 
@@ -129,6 +140,7 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
   if(fEventPlaneManager->ShouldFillHistogramsQnCorrections()) PostData(fOutputSlotHistQn, fEventPlaneManager->GetListOutputHistogramsQnCorrections());
   if(fEventPlaneManager->ShouldFillTreeQnVectors())   PostData(fOutputSlotTree, fEventPlaneManager->GetTreeQnVectors());
   if(fEventPlaneManager->ShouldFillHistogramsQA()) PostData(fOutputSlotHistQA, fEventPlaneManager->GetListHistogramsQA());
+  if(fFillEventQA)   PostData(fOutputSlotEventQA, fEventQAList);
 
 }
 
@@ -146,6 +158,7 @@ void AliAnalysisTaskFlowVectorCorrections::UserExec(Option_t *){
   fEventPlaneManager->ClearEvent();
 
   Float_t* values = fEventPlaneManager->GetDataContainer();
+
 
   fFillEvent->Process((AliAnalysisTaskSE*) this, event, values);
   //fFillEvent->Process(event, values);
@@ -193,6 +206,14 @@ void AliAnalysisTaskFlowVectorCorrections::UserExec(Option_t *){
     fEventPlaneManager->Finalize();
     //fEventPlaneManager->WriteCalibrationHistogramsToList();
     //fEventPlaneManager->WriteQaHistogramsToList();// fEventPlaneHistos->HistList());
+
+
+    THashList* hList = (THashList*) fEventPlaneHistos->HistList();
+    for(Int_t i=0; i<hList->GetEntries(); ++i) {
+      THashList* list = (THashList*)hList->At(i);
+      fEventQAList->Add(list);
+    }
+
 
   }
 

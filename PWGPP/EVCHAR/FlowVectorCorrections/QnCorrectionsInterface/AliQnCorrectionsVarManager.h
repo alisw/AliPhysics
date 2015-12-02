@@ -40,6 +40,8 @@ class AliQnCorrectionsVarManager : public TNamed {
     kZDC,    // 2
     kTZERO,   // 3
     kFMD,    // 4
+    kFMDraw,    // 5
+    kSPD,    // 6
     kNdetectors
   };
 
@@ -99,6 +101,7 @@ class AliQnCorrectionsVarManager : public TNamed {
     kNTracksTPCoutVsSPDtracklets,                        //  TPCout/SPDtracklets
     kNTracksTRDoutVsSPDtracklets,                        //  TRDout/SPDtracklets
     kNTracksTOFoutVsSPDtracklets,                        //  TOFout/SPDtracklets
+    kVZEROMultPercentile,  // multiplicity percentile for VZERO (PbPb2015)
     kCentVZERO,         // centrality from VZERO
     kCentSPD,           // centrality from SPD  
     kCentSPDcorr,       // corrected centrality from SPD
@@ -117,9 +120,12 @@ class AliQnCorrectionsVarManager : public TNamed {
     kNtracksSubEvLeft,  // number of tracks in the left sub-event (negative pseudo-rapidity)            
     kNtracksSubEvRight, // number of tracks in the left sub-event (positive pseudo-rapidity)            
     kNtracksEventPlane, // number of tracks used for event plane                
+    kSPDnSingleClusters,// SPD number of single clusters
     kSPDntracklets,     // SPD number of tracklets in |eta|<1.0                 
     kSPDntrackletsCorr, // SPD number of tracklets in |eta|<1.0                 
     kSPDntrackletsEta,  // SPD number of tracklets in -1.6+0.2*i < eta < -1.6+0.2*(i+1)
+    kSPDtrackletEta,    // SPD tracklet eta
+    kSPDtrackletPhi,    // SPD tracklet phi
     kNFMD1channels,      // FMD number of channels with nonzero multiplicity
     kNFMD2Ichannels,      // FMD number of channels with nonzero multiplicity
     kNFMD2Ochannels,      // FMD number of channels with nonzero multiplicity
