@@ -70,6 +70,8 @@ Bool_t fScaleLogZ = kFALSE;
 Bool_t fResetOnRequest = kFALSE;
 Int_t fHistStats = 0;
 
+Bool_t fAllowResetAtSOR = kTRUE;
+
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
@@ -85,6 +87,7 @@ const char* fUSAGE =
     " -file : dump input to file and exit\n"
     " -log[xyz] : use log scale on [xyz] dimension\n"
     " -histstats : histogram stat box options (default 0)\n"
+    " -AllowResetAtSOR : 0/1 to reset at change of run\n"
     ;
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
@@ -178,7 +181,7 @@ void* run(void* arg)
   
               int runnumber = atoi(runString.c_str());
   
-              if (runnumber!=fRunNumber) 
+              if (runnumber!=fRunNumber && fAllowResetAtSOR) 
               {
                   if (fVerbose) printf("Run changed, resetting!\n");
                   fDrawables.Delete();
@@ -424,6 +427,10 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("histstats"))
     {
       fHistStats = value.Atoi();
+    }
+    else if (option.EqualTo("AllowResetAtSOR"))
+    {
+      fAllowResetAtSOR = (option.Contains("0")||option.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
