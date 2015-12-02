@@ -81,13 +81,13 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
     if(wfile){
       fWeights = dynamic_cast<TH3D*>(wfile->Get("hnWeight")->Clone("hnWeight_task"));
       fWeights->SetTitle("Weight for low pT");
-      fWeights->GetXaxis()->SetTitle("Centrality [%]");
+      fWeights->GetXaxis()->SetTitle("eta []");
       fWeights->GetYaxis()->SetTitle("Vertex [cm]");
       fWeights->GetZaxis()->SetTitle("pT [GeV/c]");
       fWeights->SetDirectory(0x0);
       fWeightshpt = dynamic_cast<TH2D*>(wfile->Get("hnWeight_highpt")->Clone("hnWeight_highpt_task"));
       fWeightshpt->SetTitle("Weight for high pT");
-      fWeightshpt->GetXaxis()->SetTitle("Centrality [%]");
+      fWeightshpt->GetXaxis()->SetTitle("eta [%]");
       fWeightshpt->GetYaxis()->SetTitle("Vertex [cm]");
       fWeightshpt->SetDirectory(0x0);
       fpTfunction= dynamic_cast<TF1*>(wfile->Get("pT_function")->Clone("pT_function_task"));
