@@ -157,9 +157,8 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
   // see header file for class documentation
   
   int iResult=0;
-  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
-  if (iResult>=0 && argc>0)
+  if (argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   
   if (fMinInitSec != -1 || fMaxInitSec != -1)
@@ -175,7 +174,15 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
 	}
   }
 
-  if (!fNoInitialObject) fTmpFastTransformObject = GenerateFastTransformObject();
+  if (fNoInitialObject)
+  {
+	HLTInfo("Skipping creation of initial transform object");
+  }
+  else
+  {
+	fTmpFastTransformObject = GenerateFastTransformObject();
+  }
+  
   if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
   return iResult;
@@ -242,7 +249,7 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
       iRet+=1;
     } else {
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;

@@ -229,7 +229,7 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       iRet++;
     } else {
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;

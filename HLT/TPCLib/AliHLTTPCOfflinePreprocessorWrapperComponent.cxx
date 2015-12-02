@@ -172,7 +172,7 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::ScanConfigurationArgument(int 
       iRet+=2;
     } else {
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;

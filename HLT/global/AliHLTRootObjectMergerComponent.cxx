@@ -130,7 +130,7 @@ int AliHLTRootObjectMergerComponent::ScanConfigurationArgument(int argc, const c
     else
 	{
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;
