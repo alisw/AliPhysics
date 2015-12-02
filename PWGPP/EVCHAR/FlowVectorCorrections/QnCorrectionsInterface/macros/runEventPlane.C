@@ -76,20 +76,23 @@ void runEventPlane()
 
   if(isESD){
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+    AliMultSelectionTask * task = AddTaskMultSelection(kFALSE); // user mode:
+
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+
   }
 
-
+  // uncomment if par file is used (may have to comment out includes at beginning of file)
+  //if (!AliAnalysisAlien::SetupPar("PWGPPevcharQnInterface.par")) return;
 
   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/EventPlaneFramework/macros/AddTask_ep.C");
   gROOT->LoadMacro("AddTask_ep.C");
   AddTask_ep();
-  //mgr->AddTask(AddTask_jonderw_ep());
 
   // Enable debug printouts
   mgr->SetDebugLevel(5);

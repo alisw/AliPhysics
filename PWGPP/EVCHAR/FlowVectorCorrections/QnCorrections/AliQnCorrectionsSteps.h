@@ -25,8 +25,8 @@ class AliQnCorrectionsSteps  {
 
  public: 
 
-  AliQnCorrectionsSteps();
-  ~AliQnCorrectionsSteps();
+ AliQnCorrectionsSteps();
+ virtual ~AliQnCorrectionsSteps();
 
 
   //enum CorrectionSteps {
