@@ -13,35 +13,35 @@ using namespace std;
 #define NMAXCLASSES 100
 
 TString bitNames[NBITS] = {
-    "kINT1",
-    "kINT7",
-    "kMUON",
-    "kHighMult",
-    "kEMC1",
-    "kINT5",
-    "kCMUS5",
-    "kMuonSingleHighPt7",
-    "kMuonLikeLowPt7",
-    "kMuonUnlikeLowPt7",
-    "kEMC7",
-    "kMuonSingleLowPt7",
-    "kPHI1",
-    "kPHI78",
-    "kEMCEJE",
-    "kEMCEGA",
-    "kCentral",
-    "kSemiCentral",
-    "kDG5",
-    "kZED",
-    "kSPI78",
-    "kINT8",
-    "kMuonSingleLowPt8",
-    "kMuonSingleHighPt8",
-    "kMuonLikeLowPt8",
-    "kMuonUnlikeLowPt8",
-    "kMuonUnlikeLowPt0",
-    "kUserDefined",
-    "kTRD"
+"kINT1",
+"kINT7",
+"kMUON",
+"kHighMult",
+"kEMC1",
+"kINT5",
+"kCMUS5",
+"kMuonSingleHighPt7",
+"kMuonLikeLowPt7",
+"kMuonUnlikeLowPt7",
+"kEMC7",
+"kMuonSingleLowPt7",
+"kPHI1",
+"kPHI78",
+"kEMCEJE",
+"kEMCEGA",
+"kCentral",
+"kSemiCentral",
+"kDG5",
+"kZED",
+"kSPI78",
+"kINT8",
+"kMuonSingleLowPt8",
+"kMuonSingleHighPt8",
+"kMuonLikeLowPt8",
+"kMuonUnlikeLowPt8",
+"kMuonUnlikeLowPt0",
+"kUserDefined",
+"kTRD"
 };
 
 void SetHisto(TH1D* h);
@@ -157,8 +157,9 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
-    if (!partition->String().Contains("PHYSICS_1")) continue;
-    if (!lhcState->String().Contains("STABLE")) continue;
+//    if (!partition->String().Contains("PHYSICS_1")) continue;
+//    if (!lhcState->String().Contains("STABLE")) continue;
+//    if (!lhcPeriod->String().Contains("LHC15o")) continue;
     char* srun = Form("%i",run);
     hInteractionRate->Fill(srun,interactionRate);
     hMu             ->Fill(srun,mu);
@@ -379,109 +380,103 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TCanvas* cLumi             = new TCanvas("c_lumi"           ,"c_lumi"           ,1800,500);
   TCanvas* cAcceptedFraction = new TCanvas("accepted_fraction","accepted fraction",1800,500);
   TCanvas* cRejectedFraction = new TCanvas("rejected_fraction","rejected fraction",1800,500);
-  cCounts          ->SetMargin(0.05,0.01,0.18,0.06);
-  cLumi            ->SetMargin(0.05,0.01,0.18,0.06);
+  cCounts->SetMargin(0.05,0.01,0.18,0.06);
+  cLumi->SetMargin(0.05,0.01,0.18,0.06);
   cAcceptedFraction->SetMargin(0.05,0.01,0.18,0.06);
   cRejectedFraction->SetMargin(0.05,0.01,0.18,0.06);
   cRejectedFraction->SetLogy();
 
-  for (Int_t ibit=0;ibit<NBITS;ibit++) {
-    if (hRecorded[ibit]->Integral()<1) continue;
-    printf("bit=%i %s\n",ibit,bitName);
-
-    SetHisto(hRecorded[ibit]);
-    SetHisto(hReconstructed[ibit]);
-    SetHisto(hAccepted[ibit]);
-    SetHisto(hRejected[ibit]);
-    SetHisto(hLumiRecorded[ibit]);
-    SetHisto(hLumiReconstructed[ibit]);
-    SetHisto(hLumiAccepted[ibit]);
-    hRecorded[ibit]->Sumw2();
-    hReconstructed[ibit]->Sumw2();
-    hAccepted[ibit]->Sumw2();
-    hRejected[ibit]->Sumw2();
-    hRecorded[ibit]->SetLineColor(kRed+2);
-    hRecorded[ibit]->SetFillColor(kRed+2);
-    hReconstructed[ibit]->SetLineColor(kBlue);
-    hReconstructed[ibit]->SetFillColor(kBlue);
-    hAccepted[ibit]->SetLineColor(kGreen+2);
-    hAccepted[ibit]->SetFillColor(kGreen+2);
-    hLumiRecorded[ibit]->SetLineColor(kRed+2);
-    hLumiRecorded[ibit]->SetFillColor(kRed+2);
-    hLumiReconstructed[ibit]->SetLineColor(kBlue);
-    hLumiReconstructed[ibit]->SetFillColor(kBlue);
-    hLumiAccepted[ibit]->SetLineColor(kGreen+2);
-    hLumiAccepted[ibit]->SetFillColor(kGreen+2);
+  TFile* fstat = new TFile("alias_statistics.root","recreate");
+  for (Int_t i=1;i<=hRecorded->GetNbinsY();i++) {
+    char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
+    printf("bit=%i %s\n",i,bitName);
+    TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded%02i",i),i,i);
+    TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed%02i",i),i,i);
+    TH1D* hAccepted1D = hAccepted->ProjectionX(Form("hAccepted%02i",i),i,i);
+    TH1D* hRejected1D = hReconstructed->ProjectionX(Form("hRejected1D%02i",i),i,i);
+    TH1D* hLumiRecorded1D = hLumiRecorded->ProjectionX(Form("hLumiRecorded%02i",i),i,i);
+    TH1D* hLumiReconstructed1D = hLumiReconstructed->ProjectionX(Form("hLumiReconstructed%02i",i),i,i);
+    TH1D* hLumiAccepted1D = hLumiAccepted->ProjectionX(Form("hLumiAccepted%02i",i),i,i);
+    hRejected1D->Add(hAccepted1D,-1);
+    if (hRecorded1D->Integral()<1) continue;
+    SetHisto(hRecorded1D);
+    SetHisto(hReconstructed1D);
+    SetHisto(hAccepted1D);
+    SetHisto(hRejected1D);
+    SetHisto(hLumiRecorded1D);
+    SetHisto(hLumiReconstructed1D);
+    SetHisto(hLumiAccepted1D);
+    hRecorded1D->Sumw2();
+    hReconstructed1D->Sumw2();
+    hAccepted1D->Sumw2();
+//    hRejected1D->Sumw2();
+    hRecorded1D->SetLineColor(kRed+2);
+    hRecorded1D->SetFillColor(kRed+2);
+    hReconstructed1D->SetLineColor(kBlue);
+    hReconstructed1D->SetFillColor(kBlue);
+    hAccepted1D->SetLineColor(kGreen+2);
+    hAccepted1D->SetFillColor(kGreen+2);
+    hLumiRecorded1D->SetLineColor(kRed+2);
+    hLumiRecorded1D->SetFillColor(kRed+2);
+    hLumiReconstructed1D->SetLineColor(kBlue);
+    hLumiReconstructed1D->SetFillColor(kBlue);
+    hLumiAccepted1D->SetLineColor(kGreen+2);
+    hLumiAccepted1D->SetFillColor(kGreen+2);
     
     cCounts->cd();
-    hRecorded[ibit]->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded[ibit]->Integral(),hReconstructed[ibit]->Integral(),hAccepted[ibit]->Integral()));
-    hRecorded[ibit]->Draw("h");
-    hReconstructed[ibit]->Draw("h same");
-    hAccepted[ibit]->Draw("h same");
-    AddFillSeparationLines(hAccepted[ibit],fills);
+    hRecorded1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
+    hRecorded1D->Draw("h");
+    hReconstructed1D->Draw("h same");
+    hAccepted1D->Draw("h same");
+    AddFillSeparationLines(hAccepted1D,fills);
     gPad->RedrawAxis();
     gPad->Print("alias_event_statistics.pdf");
 
     cLumi->cd();
-    hLumiRecorded[ibit]->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded[ibit]->Integral(),hLumiReconstructed[ibit]->Integral(),hLumiAccepted[ibit]->Integral()));
-    hLumiRecorded[ibit]->Draw("h");
-    hLumiReconstructed[ibit]->Draw("h same");
-    hLumiAccepted[ibit]->Draw("h same");
-    AddFillSeparationLines(hLumiAccepted[ibit],fills);
+    hLumiRecorded1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
+    hLumiRecorded1D->Draw("h");
+    hLumiReconstructed1D->Draw("h same");
+    hLumiAccepted1D->Draw("h same");
+    AddFillSeparationLines(hLumiAccepted1D,fills);
     gPad->RedrawAxis();
     gPad->Print("alias_lumi_statistics.pdf");
 
-    if (hReconstructed[ibit]->Integral()<1) continue;
-    hAcceptedFraction[ibit] = (TH1D*) hReconstructed[ibit]->Clone(Form("hAcceptedFraction%02i",ibit));
-    hAcceptedFraction[ibit]->SetTitle(Form("Accepted fraction: %s",bitName));
-    hAcceptedFraction[ibit]->Divide(hAccepted[ibit],hReconstructed[ibit],1,1,"B");
-    hAcceptedFraction[ibit]->SetFillColor(0);
-    hAcceptedFraction[ibit]->SetLineWidth(2);
-    hRejectedFraction[ibit] = (TH1D*) hReconstructed[ibit]->Clone(Form("hRejectedFraction%02i",ibit));
-    hRejectedFraction[ibit]->SetTitle(Form("Rejected fraction: %s",bitName));
-    hRejectedFraction[ibit]->Divide(hRejected[ibit],hReconstructed[ibit],1,1,"B");
-    hRejectedFraction[ibit]->SetFillColor(0);
-    hRejectedFraction[ibit]->SetLineWidth(2);
+    if (hReconstructed1D->Integral()<1) continue;
+    hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction%02i",ibit));
+    hAcceptedFraction->SetTitle(Form("Accepted fraction: %s",bitName));
+    hAcceptedFraction->Divide(hAccepted1D,hReconstructed1D,1,1,"B");
+    hAcceptedFraction->SetFillColor(0);
+    hAcceptedFraction->SetLineWidth(2);
+    hRejectedFraction = (TH1D*) hReconstructed1D->Clone(Form("hRejectedFraction%02i",ibit));
+    hRejectedFraction->SetTitle(Form("Rejected fraction: %s",bitName));
+    hRejectedFraction->Divide(hRejected1D,hReconstructed1D,1,1,"B");
+    hRejectedFraction->SetFillColor(0);
+    hRejectedFraction->SetLineWidth(2);
 
     cAcceptedFraction->cd();
-    hAcceptedFraction[ibit]->SetTitle(Form("%s: average accepted fraction = %.3f",bitName,hAccepted[ibit]->Integral()/hReconstructed[ibit]->Integral()));
-    hAcceptedFraction[ibit]->Draw();
-    AddFillSeparationLines(hAcceptedFraction[ibit],fills);
+    hAcceptedFraction->SetTitle(Form("%s: average accepted fraction = %.3f",bitName,hAccepted1D->Integral()/hReconstructed1D->Integral()));
+    hAcceptedFraction->Draw();
+    AddFillSeparationLines(hAcceptedFraction,fills);
     gPad->Print("accepted_fraction.pdf");
     
     cRejectedFraction->cd();
-    hRejectedFraction[ibit]->SetMaximum(1);
-    hRejectedFraction[ibit]->SetTitle(Form("%s: average rejected fraction = %.3f",bitName,hRejected[ibit]->Integral()/hReconstructed[ibit]->Integral()));
-    hRejectedFraction[ibit]->Draw();
-    AddFillSeparationLines(hRejectedFraction[ibit],fills);
+    hRejectedFraction->SetMaximum(1);
+    hRejectedFraction->SetTitle(Form("%s: average rejected fraction = %.3f",bitName,hRejected1D->Integral()/hReconstructed1D->Integral()));
+    hRejectedFraction->Draw();
+    AddFillSeparationLines(hRejectedFraction,fills);
     gPad->Print("rejected_fraction.pdf");
 
+    hRecorded1D->Write();
+    hReconstructed1D->Write();
+    hAccepted1D->Write();
+    hAcceptedFraction->Write();
+    hRejectedFraction->Write();
   }
   dummy->Print("alias_event_statistics.pdf]");
   dummy->Print("alias_lumi_statistics.pdf]");
   dummy->Print("accepted_fraction.pdf]");
   dummy->Print("rejected_fraction.pdf]");
-
-  TFile* fstat = new TFile("accepted_event_statistics.root","recreate");
-  for (Int_t ibit=0;ibit<NBITS;ibit++) {
-    if (hRecorded[ibit])      hRecorded[ibit]->Write();
-    if (hReconstructed[ibit]) hReconstructed[ibit]->Write();
-    if (hAccepted[ibit])      hAccepted[ibit]->Write();
-  }
   fstat->Close();
-
-  TFile* faccepted = new TFile("accepted_fraction.root","recreate");
-  for (Int_t ibit=0;ibit<NBITS;ibit++) {
-    if (hAcceptedFraction[ibit]) hAcceptedFraction[ibit]->Write();
-  }
-  faccepted->Close();
-
-  TFile* frejected = new TFile("rejected_fraction.root","recreate");
-  for (Int_t ibit=0;ibit<NBITS;ibit++) {
-    if (hRejectedFraction[ibit]) hRejectedFraction[ibit]->Write();
-  }
-  frejected->Close();
-
 }
 
 void SetHisto(TH1D* h){
