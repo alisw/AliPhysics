@@ -785,6 +785,8 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
     Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
     
+    if (aEsd->GetRunNumber()>=245726) detChZNA = 10; // broken ZNA PMT
+        
     for(Int_t i=0;i<4;++i) {
       if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
       Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(detChZNC,i)-esdZDC->GetZDCTDCData(detChGate,i)); 
