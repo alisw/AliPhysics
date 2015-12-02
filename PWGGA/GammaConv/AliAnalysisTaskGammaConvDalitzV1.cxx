@@ -1720,7 +1720,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessPhotonCandidates()
 				  
 				  Double_t sparesFillZR[2] = {PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius()};										  
 				  sESDConvGammaZR[fiCut]->Fill(sparesFillZR);
-				  Double_t sparesFillXY[2] = {PhotonCandidate->GetConversionX(),PhotonCandidate->GetConversionX()};
+				  Double_t sparesFillXY[2] = {PhotonCandidate->GetConversionX(),PhotonCandidate->GetConversionY()};
 				  sESDConvGammaXY[fiCut]->Fill(sparesFillXY);
 				
 				  

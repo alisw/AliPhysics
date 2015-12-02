@@ -1,6 +1,6 @@
 void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 										Bool_t isMC       = kFALSE, //run MC 
-										Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+										Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
 										Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
 										TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
 										Bool_t doWeighting = kFALSE,  //enable Weighting
@@ -501,7 +501,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	task->SetProductionVertextoVGamma(kTRUE);
 
 
-	if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
+	task->SetDoMesonQA(enableQAMesonTask);
 	if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
 
 	//connect containers
