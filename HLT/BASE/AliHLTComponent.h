@@ -1353,10 +1353,11 @@ class AliHLTComponent : public AliHLTLogging {
   bool CheckPushbackPeriod();
   
   /**
-   * Serializes an object into a buffer. Allocates memory for the pointer
-   * and returns the size of the buffer
+   * Serializes an object into a buffer. If buffer is NULL Allocates memory for the pointer
+   * and returns the size of the buffer. If buffer is not NULL, provide a buffer to a preallocated buffer
+   * and the size of it.
    */
-  void SerializeObject(TObject* obj, char* &buffer, size_t &size);
+  int SerializeObject(TObject* obj, char* &buffer, size_t &size);
 
   /**
    * Insert an object into the output.
