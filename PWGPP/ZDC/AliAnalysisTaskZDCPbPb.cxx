@@ -189,11 +189,11 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fOutput->SetOwner();
   //fOutput->SetName("output");
   
-  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",60,-30.,30.);
+  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",120,-30.,30.);
   fhTDCZNSum->GetXaxis()->SetTitle("TDC_{ZNC}+TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNSum);      
   
-  fhTDCZNDiff = new TH1F("fhTDCZNDiff","TDC_{ZNC}-TDC_{ZNA}",60,-30.,30.);
+  fhTDCZNDiff = new TH1F("fhTDCZNDiff","TDC_{ZNC}-TDC_{ZNA}",120,-30.,30.);
   fhTDCZNDiff->GetXaxis()->SetTitle("TDC_{ZNC}-TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNDiff);     
   
@@ -210,13 +210,13 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 100,0., 2500.);
   fOutput->Add(fhZEM2Spectrum);      
   
-  fhZNCpmcUncalib = new TH1F("fhZNCpmcUncalib","ZNC PMC NO ENERGY calibration",200, 0., 2500.);
+  fhZNCpmcUncalib = new TH1F("fhZNCpmcUncalib","ZNC PMC NO ENERGY calibration",200, 0., 2000.);
   fOutput->Add(fhZNCpmcUncalib);      
-  fhZNApmcUncalib = new TH1F("fhZNApmcUncalib","ZNA PMC NO ENERGY calibration",200, 0., 2500.); 
+  fhZNApmcUncalib = new TH1F("fhZNApmcUncalib","ZNA PMC NO ENERGY calibration",200, 0., 2000.); 
   fOutput->Add(fhZNApmcUncalib);      
-  fhZPCpmcUncalib = new TH1F("fhZPCpmcUncalib","ZPC PMC NO ENERGY calibration",200, 0., 2500.); 
+  fhZPCpmcUncalib = new TH1F("fhZPCpmcUncalib","ZPC PMC NO ENERGY calibration",200, 0., 2000.); 
   fOutput->Add(fhZPCpmcUncalib);      
-  fhZPApmcUncalib = new TH1F("fhZPApmcUncalib","ZPA PMC NO ENERGY calibration",200, 0., 2500.); 
+  fhZPApmcUncalib = new TH1F("fhZPApmcUncalib","ZPA PMC NO ENERGY calibration",200, 0., 2000.); 
   fOutput->Add(fhZPApmcUncalib);      
   
   fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",250, 0., 250000.);
@@ -305,10 +305,10 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     const Double_t * towZNA = esdZDC->GetZN2TowerEnergy();
     const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
     //    
-    fhZNCpmcUncalib->Fill(towZNC[0]/16.);    
-    fhZNApmcUncalib->Fill(towZNA[0]/16.);    
-    fhZPCpmcUncalib->Fill(towZPC[0]/16.);    
-    fhZPApmcUncalib->Fill(towZPA[0]/16.);    
+    fhZNCpmcUncalib->Fill(towZNC[0]/2.);    
+    fhZNApmcUncalib->Fill(towZNA[0]/2.);    
+    fhZPCpmcUncalib->Fill(towZPC[0]/2.);    
+    fhZPApmcUncalib->Fill(towZPA[0]/2.);    
     //    
     fhZNCpmc->Fill(towZNC[0]);    
     fhZNApmc->Fill(towZNA[0]);    
