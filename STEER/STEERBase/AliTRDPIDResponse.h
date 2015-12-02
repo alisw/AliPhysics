@@ -61,6 +61,14 @@ class AliTRDPIDResponse : public TObject {
 	kNslicesLQ3D = 3,
 	kNslicesLQ7D = 7
     };
+    enum ETRDNsliceQ0 {
+	kNsliceQ0LQ1D = 1,
+	kNsliceQ0LQ2D = 4,
+	kNsliceQ0NN = 1,
+	kNsliceQ0LQ3D = 3,
+	kNsliceQ0LQ7D = 1
+    };
+
     AliTRDPIDResponse();
     AliTRDPIDResponse(const AliTRDPIDResponse &ref);
     AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
@@ -108,7 +116,7 @@ class AliTRDPIDResponse : public TObject {
     TH2D*     fhEtaCorr[1]; //! Map for TRD eta correction
     Double_t  fMagField;  //! Magnetic field
   
-  ClassDef(AliTRDPIDResponse, 5)    // Tool for TRD PID
+  ClassDef(AliTRDPIDResponse, 6)    // Tool for TRD PID
 };
 
 AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices(ETRDPIDMethod PIDmethod) const {

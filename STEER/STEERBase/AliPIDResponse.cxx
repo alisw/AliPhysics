@@ -1734,7 +1734,7 @@ void AliPIDResponse::SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::E
 	    TRDslicesForPID[0] = 0; // first Slice contains normalized dEdx
 	    TRDslicesForPID[1] = 0;
 	}
-	if(method==AliTRDPIDResponse::kLQ2D){
+	if((method==AliTRDPIDResponse::kLQ2D)||(method==AliTRDPIDResponse::kLQ3D)||(method==AliTRDPIDResponse::kLQ7D)){
 	    TRDslicesForPID[0] = 1;
 	    TRDslicesForPID[1] = 7;
 	}

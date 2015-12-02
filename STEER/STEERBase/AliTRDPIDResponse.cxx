@@ -48,6 +48,8 @@
 #include "AliTRDdEdxParams.h"
 #include "AliExternalTrackParam.h"
 
+
+
 ClassImp(AliTRDPIDResponse)
 
 //____________________________________________________________
@@ -142,7 +144,7 @@ Bool_t AliTRDPIDResponse::SetEtaCorrMap(Int_t i,TH2D* hMap)
   // If the map can be set, kTRUE is returned.
   //
   
-    delete fhEtaCorr[0];
+//    delete fhEtaCorr[0];
   
     if (!hMap) {
 	fhEtaCorr[0] = 0x0;
@@ -163,7 +165,7 @@ Double_t AliTRDPIDResponse::GetEtaCorrection(const AliVTrack *track, Double_t bg
     //
     
 
-    if (!fhEtaCorr[1]) {
+    if (!fhEtaCorr[0]) {
 	AliError(Form("Eta correction requested, but map not initialised for iterator:%i (usually via AliPIDResponse). Returning eta correction factor 1!",1));
 	return 1.;
 
@@ -594,20 +596,25 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[1]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
 	  if(in[islice]<=0){out[0]=0;out[1]=0;return kFALSE;}  // Require that all slices are filled
-	  if(islice<fkPIDResponseObject->GetNSlicesQ0())out[0]+= in[islice];
+
+	  if(islice<kNsliceQ0LQ2D)out[0]+= in[islice];
 	  else out[1]+= in[islice];
       }
       // normalize signal to number of slices
-      out[0]*=1./Double_t(fkPIDResponseObject->GetNSlicesQ0());
-      out[1]*=1./Double_t(nSlice-fkPIDResponseObject->GetNSlicesQ0());
+
+
+      out[0]*=1./Double_t(kNsliceQ0LQ2D);
+      out[1]*=1./Double_t(nSlice-kNsliceQ0LQ2D);
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f",out[0],out[1]));
       break;
   case kLQ1D: // 1D LQ
       out[0]= 0.;
-      for(Int_t islice = 0; islice < nSlice; islice++)
-	  if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
-      out[0]*=1./Double_t(nSlice);
+      for(Int_t islice = 0; islice < nSlice; islice++) {
+//	  if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
+	  if(in[islice] > 0) out[0] += in[islice];  // no neg dE/dx values
+      }
+      out[0]*=1./Double_t(kNsliceQ0LQ1D);
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx dEdx %f",out[0]));
       break;
@@ -617,19 +624,19 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[2]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
 	  if(in[islice]<=0){out[0]=0;out[1]=0;out[2]=0;return kFALSE;}  // Require that all slices are filled
-	  if(islice<fkPIDResponseObject->GetNSlicesQ0())out[0]+= in[islice];
-	  out[1]=(in[4]+in[5]);
-	  out[2]=(in[6]+in[7]);
+	  if(islice<kNsliceQ0LQ3D)out[0]+= in[islice];
+	  out[1]=(in[3]+in[4]);
+	  out[2]=(in[5]+in[6]);
       }
       // normalize signal to number of slices
-      out[0]*=1./Double_t(fkPIDResponseObject->GetNSlicesQ0());
+      out[0]*=1./Double_t(kNsliceQ0LQ3D);
       out[1]*=1./2.;
       out[2]*=1./2.;
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f Q2 %f",out[0],out[1],out[2]));
       break;
   case kLQ7D: // 7D LQ
-      for(Int_t i=0;i<8;i++) {out[i]=0;}
+      for(Int_t i=0;i<nSlice;i++) {out[i]=0;}
       for(Int_t islice = 0; islice < nSlice; islice++){
 	  if(in[islice]<=0){
 	      for(Int_t i=0;i<8;i++){

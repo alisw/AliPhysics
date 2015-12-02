@@ -134,6 +134,8 @@ AliTRDPIDResponseObject::~AliTRDPIDResponseObject(){
 //____________________________________________________________
 void AliTRDPIDResponseObject::SetPIDParams(AliTRDPIDParams *params,AliTRDPIDResponse::ETRDPIDMethod method){
 
+    printf("in trd pid response %i \n",method);
+
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
 	AliError("Method does not exist");
 	return;
