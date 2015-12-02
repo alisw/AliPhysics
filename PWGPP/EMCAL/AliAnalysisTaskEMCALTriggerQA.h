@@ -42,7 +42,7 @@ public:
   
   void   FillClusterHistograms(Int_t triggerNumber, Bool_t maxCluster,
                                Float_t e,Float_t eta,Float_t phi,
-                               Float_t ietamax,Float_t iphimax,
+                               Float_t ietamax,Float_t iphimax, Int_t sm,
                                Float_t centrality, Float_t v0AC);
   
   void   FillCorrelationHistograms();
@@ -95,9 +95,14 @@ public:
 
   void   SwitchOnV0SignalHistograms()    { fFillV0SigHisto    = kTRUE   ; }
   void   SwitchOffV0SignalHistograms()   { fFillV0SigHisto    = kFALSE  ; }
+
+  void   SwitchOnCentralityHistograms()  { fFillCenHisto      = kTRUE   ; }
+  void   SwitchOffCentralityHistograms() { fFillCenHisto      = kFALSE  ; }
   
   void   SwitchOnClusterAcceptanceHistograms()  { fFillClusAcceptHisto = kTRUE   ; }
   void   SwitchOffClusterAcceptanceHistograms() { fFillClusAcceptHisto = kFALSE  ; }
+  
+  void   SetSuperModulesRange(Int_t min, Int_t max) { fFirstSM = min ; if(max < 20) fLastSM = max ; else fLastSM = 19 ; }
   
   void   SetOADBFilePath(TString path)   { fOADBFilePath      = path    ; }
   
@@ -139,9 +144,13 @@ private:
   Float_t           fV0C;             ///<  V0 C signal
   
   Bool_t            fFillV0SigHisto;  ///<  V0 signal creation and fill
+  Bool_t            fFillCenHisto;    ///<  Centrality histograms creation and fill
   Bool_t            fFillClusAcceptHisto; ///<  Fill eta/phi distributions
   Bool_t            fMCData;          ///<   Simulation On/Off
-
+  Int_t             fFirstSM;         ///<  Fill SM histograms for SM >= fFirstSM
+  Int_t             fLastSM;          ///<  Fill SM histograms for SM <= fLastSM
+  
+  
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      ///<  Bit for MB events
   Bool_t            fEventL0   ;      ///<  Bit for L0 events
@@ -242,6 +251,10 @@ private:
   TH2F             *fhClusV0   [fgkTriggerCombi];                    //!<! Clusters V0 vs E distribution for a trigger
   TH2F             *fhClusV0Max[fgkTriggerCombi];                    //!<! Maximum E Cluster  vs Centrality per event distribution for a trigger
 
+  TH1F             *fhClusSM   [fgkTriggerCombi][20];                //!<! Clusters E distribution for a trigger, per SM
+  TH2F             *fhClusCenSM[fgkTriggerCombi][20];                //!<! Clusters Centrality vs E distribution for a trigger, per SM
+  TH2F             *fhClusV0SM [fgkTriggerCombi][20];                //!<! Clusters V0 vs E distribution for a trigger, per SM
+  
   TH2F             *fhClusEta   [fgkTriggerCombi];                   //!<! Clusters eta vs E distribution for a trigger
   TH2F             *fhClusEtaMax[fgkTriggerCombi];                   //!<! Maximum E Cluster  vs Eta per event distribution for a trigger
 
@@ -312,7 +325,7 @@ private:
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 15) ;
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 16) ;
   /// \endcond
 
 };
