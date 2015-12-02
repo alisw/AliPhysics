@@ -45,6 +45,9 @@ public:
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
+    void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
+    void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -78,16 +81,23 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
+    Int_t fcentMim; // mim. centrality
+    Int_t fcentMax; // max. centrality
+
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
+    TH1F        *fCent;//! centrality
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
     TH2F        *fTrigMulti;//!trigger multiplicity
     TH1F        *fHistClustE;//!cluster energy
+    TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
     TH1F        *fHistClustEEG1;//! Cluster Energy, Trigger patch > ThresholdEG1
+    TH2F        *fHistClustEEG1cent;//! Cluster Energy, Trigger patch > ThresholdEG1
     TH1F        *fHistClustEEG2;//! Cluster Energy, Trigger patch > ThresholdEG1
+    TH2F        *fHistClustEEG2cent;//! Cluster Energy, Trigger patch > ThresholdEG1
     TH2F        *fEMCClsEtaPhiEG1;//! EMC cluster eta and phi, Trigger patch > ThresholdEG1
     TH2F        *fEMCClsEtaPhiEG2;//! EMC cluster eta and phi, Trigger patch > ThresholdEG2
     TH1F        *fHistoNCls;//! No of clusters per event
