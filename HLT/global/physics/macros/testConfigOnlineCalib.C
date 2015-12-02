@@ -21,7 +21,7 @@ void testConfigOnlineCalib()
 		AliHLTConfiguration mapPreparemerge("myMapPrepare", "RootObjectMerger", "myMapPrepare1 myMapPrepare2", "-QueueDepth 0");
 
 		TString clusterTransformation = "TPC-ClusterTransformation";
-		AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-update-object-on-the-fly");
+		AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-update-object-on-the-fly -offline-mode");
 
 		AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalibrationMerger myTPCOfflinePreprocessor myZMQsink GLOBAL-esd-converter", "-directory testDir -datafile test.root");
 	}
