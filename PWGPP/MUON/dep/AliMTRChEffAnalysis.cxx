@@ -131,6 +131,7 @@ Bool_t AliMTRChEffAnalysis::AddToList ( const char *filename, const char *output
   if ( ! fOutputs ) {
     fOutputs = new TObjArray();
     fOutputs->SetOwner();
+    fOutputs->SetName(outputName);
   }
   fOutputs->Add(effHistoList);
   delete trigOut;
@@ -1437,6 +1438,18 @@ Bool_t AliMTRChEffAnalysis::SetCondition ( const char* physSel, const char* trig
     }
     fConditions->AddAt(addCondition,0);
     fConditions->Compress();
+
+    // Update outputs
+    if ( fOutputs ) {
+      TObjArray* tmpOutputs = static_cast<TObjArray*>(fOutputs->Clone());
+      fOutputs->Delete();
+      TIter next(tmpOutputs);
+      TList* effHistiList = 0x0;
+      while ( (effHistiList = static_cast<TList*>(next())) ) {
+        AddToList(effHistiList->GetName(), fOutputs->GetName());
+      }
+      delete tmpOutputs;
+    }
   }
   else fConditions->Add(addCondition);
 
