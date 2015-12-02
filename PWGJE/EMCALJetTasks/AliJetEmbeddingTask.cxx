@@ -33,7 +33,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fTreeJet4Vect(0),
   fCurrentEntry(0), 
   fInput(0),
-  fRandomEntry(0)
+  fRandomEntry(0),
+  fMaxMemory(2000000000)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -60,7 +61,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fTreeJet4Vect(0),
   fCurrentEntry(0),
   fInput(0),
-  fRandomEntry(0)
+  fRandomEntry(0),
+  fMaxMemory(2000000000)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -91,15 +93,18 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
       fTreeJet4Vect->Show();
-      if(fPtMin != 0 && fPtMax != 0){
-      	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
-      	 for(Int_t i = 0; i<fTreeJet4Vect->GetEntries(); i++){
-      	    fTreeJet4Vect->GetEntry(i);
-      	    if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
-      	       fCurrentEntry = i;
-      	       AliInfo(Form("Setting fCurrentEntry to %d: will loop from there", fCurrentEntry));
-      	       
-      	       break;
+      if(fRandomEntry) fTreeJet4Vect->LoadBaskets(fMaxMemory); //default 2GB (2000000000)
+      else{
+      	 if(fPtMin != 0 && fPtMax != 0){
+      	    AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
+      	    for(Int_t i = 0; i<fTreeJet4Vect->GetEntries(); i++){
+      	       fTreeJet4Vect->GetEntry(i);
+      	       if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
+      	       	  fCurrentEntry = i;
+      	       	  AliInfo(Form("Setting fCurrentEntry to %d: will loop from there", fCurrentEntry));
+      	       	  
+      	       	  break;
+      	       }
       	    }
       	 }
       }
