@@ -134,6 +134,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fImpactParameterMin=min;
     fImpactParameterMax=max;
   }
+  void SetUseMultSelectionFramework(Bool_t multFramework) { fUseMultSelectionFramework = multFramework;} 
+  void SetUseUncheckedCentrality(Bool_t unchecked) { fUseUncheckedCentrality = unchecked; }
+
 
   //multiplicity
   void SetMultiplicityEstimator(const char* multiplicityEstimator) {fMultiplicityEstimator = multiplicityEstimator;}
@@ -330,6 +333,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
   Bool_t fUseCentrality;//use the centrality (PbPb) or not (pp)
+  Bool_t fUseMultSelectionFramework;//use the AliMultSelection framework; default: kFALSE
+  Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Double_t fCentralityPercentileMin;//centrality percentile min
   Double_t fCentralityPercentileMax;//centrality percentile max
   Double_t fImpactParameterMin;//impact parameter min (used for MC)
