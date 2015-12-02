@@ -1,7 +1,7 @@
 #ifndef ALIHLTASYNCPROCESSOR_H
 #define ALIHLTASYNCPROCESSOR_H
 
-#define ALIHLTASYNCPROCESSOR_ALIGN 64
+#define ALIHLTASYNCPROCESSOR_ALIGN 64 //Must be capable to store at least an AliHLTAsyncProcessorBuffer object
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
 * ALICE Experiment at CERN, All rights reserved.                         *
@@ -79,8 +79,20 @@ public:
 	//Get size of async process shared buffer objects
 	int GetBufferSize() {return(fMe->fBufferSize);}
 	
+	struct AliHLTAsyncProcessorBuffer
+	{
+		void* fPtr;
+		size_t fSize;
+	};
+	
+	//Simple version to allocate and delete a void* ptr to a buffer for an async process only
 	void* AllocateBuffer();
 	void FreeBuffer(void* ptr);
+	
+	//More elaborate version: Allocate and delete a buffer object that contains also the size (good for passing with the functions).
+	//Works for async threads and async processes. For an async process, size = 0 allocates the maximum buffer size.
+	AliHLTAsyncProcessorBuffer* AllocateBuffer(size_t size);
+	void FreeBuffer(AliHLTAsyncProcessorBuffer* buffer);
 
 private:
 	AliHLTAsyncProcessor(const AliHLTAsyncProcessor&);

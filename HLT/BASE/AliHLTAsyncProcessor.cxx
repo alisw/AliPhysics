@@ -360,3 +360,35 @@ void AliHLTAsyncProcessor::FreeBuffer(void* ptr)
 		}
 	}
 }
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::AllocateBuffer(size_t size)
+{
+	AliHLTAsyncProcessorBuffer* retVal;
+	if (fMe->fAsyncProcess)
+	{
+		if (size == 0) size = fMe->fBufferSize - ALIHLTASYNCPROCESSOR_ALIGN;
+		if (size + ALIHLTASYNCPROCESSOR_ALIGN < fMe->fBufferSize) return(NULL);
+		retVal = (AliHLTAsyncProcessorBuffer*) AllocateBuffer();
+		if (retVal == NULL) return(NULL);
+	}
+	else
+	{
+		retVal = (AliHLTAsyncProcessorBuffer*) malloc(size + ALIHLTASYNCPROCESSOR_ALIGN);
+	}
+	if (retVal == NULL) return(NULL);
+	retVal->fSize = size;
+	retVal->fPtr = (AliHLTAsyncProcessorBuffer*) (((char*) retVal) + ALIHLTASYNCPROCESSOR_ALIGN);
+	return(retVal);
+}
+
+void AliHLTAsyncProcessor::FreeBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* buffer)
+{
+	if (fMe->fAsyncProcess)
+	{
+		FreeBuffer(buffer);
+	}
+	else
+	{
+		free(buffer);
+	}
+}
