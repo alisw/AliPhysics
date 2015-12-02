@@ -1802,30 +1802,6 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
       const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
       const Int_t nTracks = fAOD->GetNumberOfTracks();
 
-      // for (Int_t iJet = 0; iJet < nJets; ++iJet) {
-      // 	AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
-
-      // 	if (jet->Pt() < .1)
-      // 	  continue;
-
-      // 	Int_t nTracksInJet = 0;
-      // 	Int_t nTracksInJetId = 0;
-      // 	for (Int_t iTrackInJet = 0; iTrackInJet < nTracks; ++iTrackInJet) {
-      // 	  AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrackInJet));
-
-      // 	  if (jet->ContainsTrack(track, fAOD->GetTracks()) >= 0)
-      // 	    ++nTracksInJet;
-      // 	  if (jet->ContainsTrack(track->GetID()) >= 0)
-      // 	    ++nTracksInJetId;
-      // 	}
-      // 	if ((nTracksInJet != jet->GetNumberOfConstituents()) ||
-      // 	    (nTracksInJet != jet->GetNumberOfTracks()))
-      // 	  printf("jet %3i (pt = %g) has %i constituents and %i tracks; %i, %i / %i tracks attached %s\n",
-      // 		 iJet, jet->Pt(), jet->GetNumberOfConstituents(), jet->GetNumberOfTracks(),
-      // 		 nTracksInJet, nTracksInJetId, nTracks,
-      // 		 jet->HasGhost() ? "and ghosts" : "");
-      // }
-
       for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
         AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
 
@@ -1849,11 +1825,6 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
             continue;
 
           Bool_t trackInJet  = jet->ContainsTrack(track, fAOD->GetTracks()) >= 0;
-          // Bool_t trackInJetId = jet->ContainsTrack(track->GetID()) >= 0;
-          // if (trackInJet != trackInJetId)
-          //   printf("id (%5i): %5s - ar (%5i): %5s\n",
-          // 	   track->GetID(), trackInJetId ? "yes" : "no",
-          // 	   fAOD->GetTracks()->IndexOf(track), trackInJet ? "yes" : "no");
 
           // exclude track if in cone around jet or assigned to jet
           if (fExclusionRadius > 0.) {
@@ -1861,14 +1832,6 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
             Float_t dPhi = TVector2::Phi_mpi_pi(track->Phi() - jet->Phi());
             Float_t r = TMath::Sqrt(TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.));
             Bool_t trackInCone = (TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.)) < TMath::Power(fExclusionRadius, 2.);
-
-            // if (trackInCone != trackInJet)
-            //   printf("%10s - %10s : Deta: %g - %g = %g, Dphi: %g - %g = %g -> r = %g - %g\n",
-            // 	     trackInJet ? "in jet" : "not in jet",
-            // 	     trackInCone ? "in cone" : "not in cone",
-            // 	     track->Eta(), jet->Eta(), dEta,
-            // 	     track->Phi(), jet->Phi(), dPhi,
-            // 	     TMath::Sqrt(jet->Area() / TMath::Pi()), r);
 
             if (trackInCone) {
               rejectTrack = kTRUE;
@@ -1890,8 +1853,6 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
         particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
         obj->Add(particle);
       }
-
-      // printf("accepted %i/%i tracks\n", obj->GetEntriesFast(), nTracks);
     }
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
