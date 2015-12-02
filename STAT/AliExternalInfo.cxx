@@ -420,6 +420,7 @@ TTree* AliExternalInfo::GetTree(TString period, TString pass, TString anchorYear
   else if (type == kLogbook || type == kTriggerClasses || type == kTPC || type == kRawQATPC || type == kTOF || type == kEVS){
     TFile* treefile = new TFile(file.Data());
     tree = dynamic_cast<TTree*>( treefile->Get(name));
+    if (tree==NULL) tree= dynamic_cast<TTree*>( treefile->Get("trending")); // MI temporary FIX  - code has to be reviewed and rewritten
     if (tree != 0x0) {std::cout << "-- Successfully read in tree" << std::endl;}
     else std::cout << "-- Error while reading tree" << std::endl;
   }
