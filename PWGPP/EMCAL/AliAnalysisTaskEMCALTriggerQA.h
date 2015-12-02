@@ -104,7 +104,9 @@ public:
   
   void   SetSuperModulesRange(Int_t min, Int_t max) { fFirstSM = min ; if(max < 20) fLastSM = max ; else fLastSM = 19 ; }
   
-  void   SetOADBFilePath(TString path)   { fOADBFilePath      = path    ; }
+  void   SetCentralityEstimator(TString est) { fCentEstimator  = est    ; }
+  
+  void   SetOADBFilePath(TString path)       { fOADBFilePath   = path   ; }
   
   // Histogram setters
 
@@ -150,6 +152,7 @@ private:
   Int_t             fFirstSM;         ///<  Fill SM histograms for SM >= fFirstSM
   Int_t             fLastSM;          ///<  Fill SM histograms for SM <= fLastSM
   
+  TString           fCentEstimator;   ///< Centrality estimator string: V0M, TKL, FMD, ZEMvsZDC, ...
   
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      ///<  Bit for MB events
