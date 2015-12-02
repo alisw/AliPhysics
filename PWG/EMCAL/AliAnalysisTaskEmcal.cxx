@@ -39,6 +39,8 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 
+Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
+
 ClassImp(AliAnalysisTaskEmcal)
 
 //________________________________________________________________________
