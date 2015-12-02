@@ -170,7 +170,8 @@ ForwardAODConfig2(AliForwardMultiplicityBase* task)
   // Recalculate phi taking (x,y) offset of IP into account 
   task->GetDensityCalculator().SetRecalculatePhi(true);
   // Least acceptable quality of ELoss fits
-  task->GetDensityCalculator().SetMinQuality(8);
+  task->GetDensityCalculator()
+    .SetMinQuality(AliFMDCorrELossFit::kDefaultQuality);
   // Set the maximum ratio of outlier bins to the total number of bins
   // task->GetDensityCalculator().SetMaxOutliers(.10);
   task->GetDensityCalculator().SetMaxOutliers(1.0);//Disable filter
@@ -221,7 +222,7 @@ ForwardAODConfig2(AliForwardMultiplicityBase* task)
   // If this option is enabled, then the summed per-vertex, per-ring
   // d2N/detadphi histograms will be stored in the output, as well as
   // copies of the secondary maps
-  task->GetHistCollector().SetMakeBGHitMaps(true);
+  task->GetHistCollector().SetMakeBGHitMaps(false);
   //
   // If this option is enabled, then a 3D histogram will be made for
   // each ring, summing dN/deta for each centrality bin.
@@ -235,7 +236,7 @@ ForwardAODConfig2(AliForwardMultiplicityBase* task)
   // output AOD - one for each FMD ring.  The branches each contain a
   // TH2D object of the (primary) charged particle multiplicity per
   // (eta,phi)-bin in that event 
-  task->SetStorePerRing(true);
+  task->SetStorePerRing(false);
 
   // --- Set limits on fits the energy -------------------------------
   // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING

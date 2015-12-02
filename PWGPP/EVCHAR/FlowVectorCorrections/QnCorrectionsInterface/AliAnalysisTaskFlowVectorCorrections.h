@@ -54,13 +54,16 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
 
   AliQnCorrectionsManager* EventPlaneManager() {return fEventPlaneManager;}
   AliQnCorrectionsHistos* GetHistograms() {return fEventPlaneHistos;}
+  AliQnCorrectionsFillEvent* GetFillEvent() {return fFillEvent;}
   AliQnCorrectionsCuts* EventCuts()  const {return fEventCuts;}
+  Int_t OutputSlotEventQA()        const {return fOutputSlotEventQA;}
   Int_t OutputSlotHistQA()        const {return fOutputSlotHistQA;}
   Int_t OutputSlotHistQn()        const {return fOutputSlotHistQn;}
   Int_t OutputSlotGetListQnVectors() const {return fOutputSlotQnVectorsList;}
   Int_t OutputSlotTree()          const {return fOutputSlotTree;}
   Bool_t IsEventSelected(Float_t* values);
   Bool_t IsFillExchangeContainerWithQvectors() const  {return fProvideQnVectorsList;}
+  Bool_t IsFillEventQA() const  {return fFillEventQA;}
 
  private:
   Bool_t fRunLightWeight;
@@ -69,6 +72,7 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   UInt_t fTriggerMask;
   Bool_t fInitialized;
   TList* fListInputHistogramsQnCorrections;          //! List of input histograms for corrections
+  TList* fEventQAList;
   AliQnCorrectionsManager * fEventPlaneManager;
   AliQnCorrectionsCuts * fEventCuts;
   //QnCorrectionsReducedVarManager* fFillEvent;
@@ -76,7 +80,9 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   AliQnCorrectionsHistos* fEventPlaneHistos;
   TString fLabel;
   TString fQAhistograms;
+  Bool_t fFillEventQA;
   Bool_t fProvideQnVectorsList;
+  Int_t fOutputSlotEventQA;
   Int_t fOutputSlotHistQA;
   Int_t fOutputSlotHistQn;
   Int_t fOutputSlotQnVectorsList;

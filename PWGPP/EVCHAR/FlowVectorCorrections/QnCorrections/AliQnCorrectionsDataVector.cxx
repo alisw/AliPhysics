@@ -27,15 +27,12 @@
  * either version 3 of the License, or (at your option) any later version.                        *
  *                                                                                                *
  **************************************************************************************************/
- 
- 
   
 
 #include "AliQnCorrectionsDataVector.h"
 #include "AliQnCorrectionsQnVector.h"
 #include <TClonesArray.h>
 #include <TIterator.h>
-
 
 ClassImp(AliQnCorrectionsDataVector)
 
@@ -49,16 +46,11 @@ AliQnCorrectionsDataVector::AliQnCorrectionsDataVector() :
   fWeight(0.0),
   fEqualizedWeight(),
   fId(0),
-  fEventPlaneDetectorMask(0),
   fBin(0)
 {   
   //
   // Constructor
   //
-  //for(Int_t idet=0; idet<AliQnCorrectionsConstants::nQnConfigurations; ++idet)
-  //   for(Int_t imeth=0; imeth<2; ++imeth) {
-  //  fEqualizedWeight[idet][imeth]=0.0;
-  //}
 }
 
 
@@ -73,60 +65,16 @@ AliQnCorrectionsDataVector::~AliQnCorrectionsDataVector()
 
 
 
-
-//_______________________________________________________________________________
-Bool_t AliQnCorrectionsDataVector::CheckEventPlaneDetector(Int_t det) const {
-  //
-  // Check the status of the event plane for a given detector and harmonic
-  //
-  return (det<64 ? (fEventPlaneDetectorMask&(1<<(det))) : kFALSE);
-}
-
-
-//_______________________________________________________________________________
-void AliQnCorrectionsDataVector::FillQvector(TClonesArray* dataVectorArray, Int_t ep, AliQnCorrectionsQnVector* q, Int_t weight) {
-
-  //TIter nextEntry(dataVectorArray);
-  AliQnCorrectionsDataVector* dataVector=0x0;
-  Float_t w=0.0;
-  
-  for(Int_t idata=0; idata<dataVectorArray->GetEntriesFast(); idata++){
-    dataVector = static_cast<AliQnCorrectionsDataVector*>(dataVectorArray->At(idata));
-
-  //while((dataVectors=static_cast<AliQnCorrectionsDataVector*>(nextEntry()))) {
-      //if(!dataVectors) continue;
-      if(!dataVector->CheckEventPlaneDetector(ep)) continue;
-
-
-
-       weight==-1 ? w=dataVector->Weight() : w=dataVector->Weight(weight);
-      
-      if(w>1E-6) q->Add(dataVector->Phi(), w );
-  
-  }
-
-
-}
-
-
-
 //_______________________________________________________________________________
 void AliQnCorrectionsDataVector::FillQvector(TClonesArray* dataVectorArray, AliQnCorrectionsQnVector* q, Int_t weight) {
 
-  //TIter nextEntry(dataVectorArray);
   AliQnCorrectionsDataVector* dataVector=0x0;
   Float_t w=0.0;
   
   for(Int_t idata=0; idata<dataVectorArray->GetEntriesFast(); idata++){
     dataVector = static_cast<AliQnCorrectionsDataVector*>(dataVectorArray->At(idata));
-
-  //while((dataVectors=static_cast<AliQnCorrectionsDataVector*>(nextEntry()))) {
-      //if(!dataVectors) continue;
-       weight==-1 ? w=dataVector->Weight() : w=dataVector->Weight(weight);
-      
-       if(w>1E-6) q->Add(dataVector->Phi(), w );
-  
+    weight==-1 ? w=dataVector->Weight() : w=dataVector->Weight(weight);
+    if(w>1E-6) q->Add(dataVector->Phi(), w );
   }
-
 
 }
