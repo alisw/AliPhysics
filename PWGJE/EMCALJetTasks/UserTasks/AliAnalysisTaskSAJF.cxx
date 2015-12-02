@@ -149,7 +149,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   }
 
   title[dim] = "A_{jet}";
-  nbins[dim] = 100;
+  nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi()/0.006);
   min[dim] = 0;
   max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
   dim++;
