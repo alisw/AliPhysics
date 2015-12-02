@@ -1132,7 +1132,7 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   bool global = false;
   if(filename.CompareTo("AnalysisResults.root")==0) global = true;
   TFile * infile = TFile::Open(filename.Data(),"READ");
-  
+  if(!infile)return;
   
   THnF * hnTracksInBinstmp;  THnF * hnTracksInBins;
   THnF * hnTracksInBinsRecPPtmp;THnF * hnTracksInBinsRecPP;
@@ -1140,7 +1140,14 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   TH2D * hnCentVsVertextmp;  TH2D * hnCentVsVertex;
 
 
-  TList * dir = dynamic_cast<TList*>(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_16")->Get("ThreePartTrackEfficienciesPbPb_0_16_0_0Coutput1"));
+  TList * dir;
+  if(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_16")){
+   dir = dynamic_cast<TList*>(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_16")->Get("ThreePartTrackEfficienciesPbPb_0_16_0_0Coutput1"));
+  }
+  else if(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_100")){
+   dir = dynamic_cast<TList*>(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_100")->Get("ThreePartTrackEfficienciesPbPb_0_100_0_0Coutput1"));    
+  }
+  else return;
   for(int i=0;i<dir->GetEntries();i++){
     if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBins")==0)     hnTracksInBinstmp = dynamic_cast<THnF*>(dir->At(i));
     if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsRecPP")==0)hnTracksInBinsRecPPtmp = dynamic_cast<THnF*>(dir->At(i));
@@ -1167,7 +1174,7 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
     hnTracksInBinsMC = SumCent(50.0,100.0,hnTracksInBinsMCtmp,"hnTracksProduced");
     hnCentVsVertex = SumCent(50.0,100.0,hnCentVsVertextmp,"hnCentralityvsVertex");
   }
-  if(!filename.Contains("LHC")){
+  if(filename.Contains("LHC11a10a")){
     hnTracksInBins = SumCent(0.0,100.0,hnTracksInBinstmp,"hnTracksReconstruced");
     hnTracksInBinsRecPP = SumCent(0.0,100.0,hnTracksInBinsRecPPtmp,"hnTracksReconstruced_PP");
     hnTracksInBinsMC = SumCent(0.0,100.0,hnTracksInBinsMCtmp,"hnTracksProduced");
@@ -1177,7 +1184,7 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   delete hnTracksInBinstmp; delete hnTracksInBinsMCtmp; delete hnTracksInBinsRecPPtmp;delete hnCentVsVertextmp;
 
   //Axis: 0 - Centrality or multiplicity, 1 - Vertex , 2 - phi , 3 - eta , 4 - pT
-  
+
   TAxis * multaxis = hnTracksInBins->GetAxis(0);
   multaxis->SetTitle("Centrality [%]");
   hnTracksInBinsRecPP->GetAxis(0)->SetTitle("Centrality [%]");
@@ -1204,7 +1211,6 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   Errors(hnTracksInBins,"Errorsraw")->Write();
   Errors(hnTracksInBinsMC,"ErrorsMC")->Write();
   hnCentVsVertex->Write();
-  
   //1D projections
   TDirectory * dim1 = outfile->mkdir("Projections_1d");
   dim1->cd();
@@ -1496,6 +1502,7 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   etaptEffRec->Write();  
   delete etaptRec; delete etaptMC;delete etaptEffRec;
 
+  cout << "here"<<endl;
   //make more meaningful axes:
   outfile->cd();
   //mult: keep for now, unsure how it actually should look.
@@ -1504,6 +1511,14 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   //vz: 4 cm bins from -6 to 6,6-8,8-10 and the same on the other side:
   Double_t  vzaxisArray[8] = {-10.0,-7.5,-5.0,-2.0,2.0,5.0,7.5,10.0};
   TArrayD * vzaxisA = new TArrayD(8,vzaxisArray);
+  Double_t etamin = -0.9;
+  Double_t etamax = 0.9;
+  Double_t deta = (etamax - etamin)/63;
+  TArrayD * etaaxisAD = new TArrayD(63+1);
+  for(int i = 0; i<=63;i++){
+    etaaxisAD->AddAt(etamin+i*deta,i);
+  }
+  
   //phi need all the bins I can get... 
 //   const Double_t * phibins = hnTracksInBins->GetAxis(2)->GetXbins()->GetArray();
   //eta: same
@@ -1512,9 +1527,9 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   Double_t  pTaxisArray[16] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
   TArrayD * pTaxisA = new TArrayD(16,pTaxisArray);
   
-  TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+  TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",3,etaaxisAD,1,vzaxisA,4,pTaxisA,2,0);
   histrec->Write();
-  TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+  TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",3,etaaxisAD,1,vzaxisA,4,pTaxisA,2,0);
   histMC->Write();
   histMC->Divide(histrec);
   histMC->Write("Eff3d");
@@ -1544,9 +1559,9 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
 //   }
 //   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
 //   cout << etabins->GetSize()<<endl;
-  TH2D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
+  TH2D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",3,etaaxisAD,1,vzaxisA,0,2,4,2.0);
   histrechpT->Write();
-  TH2D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
+  TH2D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",3,etaaxisAD,1,vzaxisA,0,2,4,2.0);
   histhpTMC->Write();  
   histhpTMC->Divide(histrechpT);
   Double_t nbins = 0.0;

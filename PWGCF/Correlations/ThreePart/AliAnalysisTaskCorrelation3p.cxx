@@ -447,6 +447,19 @@ void AliAnalysisTaskCorrelation3p::FinishTaskOutput()
   // end of the processing
     TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject("trackCount")) ;
     if (hist) AliWarning(Form("FinishTaskOutput: %i events(s)",(int)hist->GetEntries()));
+    TTimeStamp now;
+    int timediff = (now.GetSec()-fstarttime);
+    int sec = timediff%60;
+    int min = ((timediff-sec)/60)%60;
+    int hour = (timediff-sec-60*min)/(60*60);    
+    if(hour ==0&&min==0){
+    AliWarning(Form("Time spent since UserCreateOutputObjects: %i seconds",sec));
+    }
+    if(hour ==0&&min!=0){
+    AliWarning(Form("Time spent since UserCreateOutputObjects: %i minutes %i seconds",min,sec));
+    }
+    if(hour !=0&&min!=0){
+    AliWarning(Form("Time spent since UserCreateOutputObjects: %i hours %i minutes %i seconds",hour,min,sec));}
 }
 
 void AliAnalysisTaskCorrelation3p::Terminate(Option_t *)
@@ -458,9 +471,9 @@ void AliAnalysisTaskCorrelation3p::Terminate(Option_t *)
 Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, AliVEvent *pEvent)
 {
   Int_t nofTracks = 0;
-  Int_t MultBin; Int_t VZbin;
+  Int_t VZbin;
   if(fWeights){
-    MultBin = fWeights->GetXaxis()->FindBin(fCentralityPercentile);
+//     MultBin = fWeights->GetXaxis()->FindBin(fCentralityPercentile);
     VZbin   = fWeights->GetYaxis()->FindBin(fVertex[2]);
   }
   nofTracks=pEvent->GetNumberOfTracks();
@@ -469,25 +482,26 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
-    if(fWeights){
-      if(t->Pt()<2.0){
-	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
-	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
-      }
-      else{
-	Weight = fWeightshpt->GetBinContent(MultBin,VZbin)*fpTfunction->Eval(t->Pt());
-      }
-    }
     if(fQA){
       FillHistogram("TracksperRun",fRunFillValue);
     }
-    FillHistogram("trackUnselectedPt",t->Pt(),Weight);
-    FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
-    FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
+    FillHistogram("trackUnselectedPt",t->Pt(),1.0);
+    FillHistogram("trackUnselectedPhi",t->Phi(),1.0);
+    FillHistogram("trackUnselectedTheta",t->Theta(),1.0);
     if (!IsSelected(t)) continue;
+    if(fWeights){
+      Int_t etabin = fWeights->GetXaxis()->FindBin(t->Eta());
+      if(t->Pt()<2.0){
+	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
+	Weight = fWeights->GetBinContent(etabin,VZbin,pTbin);
+      }
+      else{
+	Weight = fWeightshpt->GetBinContent(etabin,VZbin)*fpTfunction->Eval(t->Pt());
+      }
+    }
     if(allrelevantParticles){
 	AliFilteredTrack * filp = new AliFilteredTrack(*t);
-	filp->SetEff(Weight);      
+	filp->SetEff(Weight);
       allrelevantParticles->Add(filp);
     }
     if(fQA){

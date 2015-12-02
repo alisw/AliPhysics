@@ -38,6 +38,7 @@
 #include "TMath.h"
 #include <AliFilteredTrack.h>
 #include <AliEventplane.h>
+#include "AliAODMCParticle.h"
 // #include<iostream>
 #include <sstream>
 
@@ -62,6 +63,7 @@ AliAnalysisTaskBuildCorrTree::AliAnalysisTaskBuildCorrTree()
   , fperiod(AliAnalysisTaskBuildCorrTree::P11h)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
+  , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
   , fMaxNEventMix(100)
@@ -109,6 +111,7 @@ AliAnalysisTaskBuildCorrTree::AliAnalysisTaskBuildCorrTree(const char *name, con
   , fperiod(AliAnalysisTaskBuildCorrTree::P11h)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
+  , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
   , fMaxNEventMix(100)
@@ -196,13 +199,16 @@ void AliAnalysisTaskBuildCorrTree::UserExec(Option_t* /*option*/)
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
   if(!pEvent){AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));return;}
 
-
+  
   //Find out if it is AOD or ESD.  
   fisESD=pEvent->IsA()==AliESDEvent::Class();
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
   if(fisESD)return;//ESD analysis not implemented
   fRun = pEvent->GetRunNumber();
   fEvent->SetRunNr(fRun);
+  //Get the MC array:
+  GetMCArray();
+  
   
   TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
   if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
@@ -259,6 +265,7 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
     TClonesArray& tracks = *(fEvent->GetTracks());
     AliAODTrack *AODt = dynamic_cast<AliAODTrack*>(t);
     AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*AODt);
+    reducedParticle->SetMC(false);
     if(fCollisionType==AliAnalysisTaskBuildCorrTree::PbPb){
       FillHistogram("selectedTracksperRun",fRunFillValue);
       FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
@@ -273,8 +280,20 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
     fEvent->SetNtrks(fEvent->GetNtrks()+1);
   }
   
-
-
+  if(fMcArray){
+    int nofMCParticles = fMcArray->GetEntriesFast();
+    for (int i=0;i<nofMCParticles;i++){
+      AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
+      if (!t) continue;
+      if( t->Charge()!=0){//check if they are physical primary particles
+	if (!IsSelected(t)) continue;
+	TClonesArray& tracks = *(fEvent->GetTracks());
+	AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*t);
+	reducedParticle->SetMC(true);
+	fEvent->SetNtrks(fEvent->GetNtrks()+1);
+      }
+    }
+  }
   return nofTracks;
 }
 
@@ -319,6 +338,20 @@ Bool_t AliAnalysisTaskBuildCorrTree::IsSelectedTrackESD(AliVParticle* t)
 {
   if(t)return kFALSE;//ESD is currently not supported
   else return kFALSE;
+}
+
+void AliAnalysisTaskBuildCorrTree::GetMCArray()
+{//Gets the MCarray if we are in AOD.
+    fMcArray = 0;
+    AliAODInputHandler* aodHandler=dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (aodHandler){
+      AliAODEvent *aod=aodHandler->GetEvent();
+      if (aod ) {
+	fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+	if (!fMcArray) AliError("Could not retrieve MC array!");
+      }
+      else AliError("Could not retrieve AOD event! MC is only supported in AOD.");
+    }
 }
 
 void AliAnalysisTaskBuildCorrTree::GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt)
