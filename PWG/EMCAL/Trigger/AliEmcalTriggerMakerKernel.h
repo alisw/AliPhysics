@@ -9,6 +9,7 @@
 
 class TObjArray;
 class AliEmcalTriggerPatchInfoAPV1;
+class AliEmcalTriggerRawPatchAP;
 class AliEMCALGeometry;
 class AliVCaloCells;
 class AliVCaloTrigger;
@@ -77,6 +78,11 @@ public:
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
   /**
+   * Set the size of jet patches
+   * @param patchsize Size of jet patches
+   */
+  void SetJetPatchsize(Int_t patchsize)                          { fJetPatchsize = patchsize; }
+  /**
    * Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
@@ -130,6 +136,47 @@ protected:
    */
   Bool_t                                    CheckForL0(Int_t col, Int_t row) const;
 
+  /**
+   * Create trigger algorithm for gamma triggers
+   * @param rowmin Minimum row the trigger algorithm operates on
+   * @param rowmax Maximum row the trigger algorithm operates on
+   * @return The gamma trigger algorithm
+   */
+  AliEmcalTriggerAlgorithmAP<double> *CreateGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+  /**
+   * Create trigger algorithm for jet triggers
+   * @param rowmin Minimum row the trigger algorithm operates on
+   * @param rowmax Maximum row the trigger algorithm operates on
+   * @return The jet trigger algorithm
+   */
+  AliEmcalTriggerAlgorithmAP<double> *CreateJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+  /**
+   * Create trigger algorithm for jet triggers
+   * @param rowmin Minimum row the trigger algorithm operates on
+   * @param rowmax Maximum row the trigger algorithm operates on
+   * @return The jet trigger algorithm
+   */
+  AliEmcalTriggerAlgorithmAP<double> *CreateBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+
+  /**
+   * Check from the bitmask whether the patch is a gamma patch
+   * @param patch Patch to check
+   * @return True if patch is a gamma patch
+   */
+  Bool_t IsGammaPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+  /**
+   * Check from the bitmask whether the patch is a jet patch
+   * @param patch Patch to check
+   * @return True if patch is a jet patch
+   */
+  Bool_t IsJetPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+  /**
+   * Check from the bitmask whether the patch is a background patch
+   * @param patch Patch to check
+   * @return True if patch is a background patch
+   */
+  Bool_t IsBkgPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+
   AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
   const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
@@ -143,6 +190,7 @@ protected:
   AliEmcalTriggerPatchFinderAP<double>      *fPatchFinder;                //!<! The actual patch finder
   AliEmcalTriggerAlgorithmAP<double>        *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
 
+  Int_t                                     fJetPatchsize;                ///< Size of a jet patch
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
   ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
   Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
