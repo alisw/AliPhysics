@@ -539,7 +539,12 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
             mapsDDL[iHybrid][index/32]|=(1<<(index%32));
           }
           else{
-            AliWarning(Form("Invalid SDD cell: Carlos=%d,Module=%d,Anode=%d,TimeBin=%d",iCarlos,iModule,iz,itb));
+            static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+	    static int nErrors = 0;
+            if (show_info || nErrors++ < 100)
+	    {
+        	AliWarning(Form("Invalid SDD cell: Carlos=%d,Module=%d,Anode=%d,TimeBin=%d",iCarlos,iModule,iz,itb));
+    	    }
           }
         }
       }
