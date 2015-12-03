@@ -686,6 +686,14 @@ class AliHLTComponent : public AliHLTLogging {
   static void FillBlockData( AliHLTComponentBlockData& blockData );
 
   /**
+   * Serializes an object into a buffer. If buffer is NULL, this allocates memory for the pointer
+   * and returns the size of the buffer. The input-size is then used as offset of the object in the buffer,
+   * i.e. the buffer is chosen larger and [size] bytes are left at the beginning for a custom header.
+   * If buffer is not NULL, caller provides a preallocated buffer and the size of it.
+   */
+  int SerializeObject(TObject* obj, void* &buffer, size_t &size);
+
+  /**
    * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
    */
@@ -1352,13 +1360,6 @@ class AliHLTComponent : public AliHLTLogging {
    */
   bool CheckPushbackPeriod();
   
-  /**
-   * Serializes an object into a buffer. If buffer is NULL Allocates memory for the pointer
-   * and returns the size of the buffer. If buffer is not NULL, provide a buffer to a preallocated buffer
-   * and the size of it.
-   */
-  int SerializeObject(TObject* obj, char* &buffer, size_t &size);
-
   /**
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,

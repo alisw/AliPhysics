@@ -1475,9 +1475,11 @@ bool AliHLTComponent::CheckPushbackPeriod()
   return(true);
 }
 
-int AliHLTComponent::SerializeObject(TObject* pObject, char* &buffer, size_t &size)
+int AliHLTComponent::SerializeObject(TObject* pObject, void* &buffer_tmp, size_t &size)
 {
     //Copy from the PushBack function below to serialize into a new buffer
+    //See header file for input parameter description!!!
+    char* &buffer = (char*&) buffer_tmp;
     AliHLTMessage msg(kMESS_OBJECT);
     msg.SetCompressionLevel(fCompressionLevel);
     msg.WriteObject(pObject);
@@ -1498,16 +1500,17 @@ int AliHLTComponent::SerializeObject(TObject* pObject, char* &buffer, size_t &si
       mbuf = msg.CompBuffer();
       size = msg.CompLength();
     }
-    if (buffer != NULL && bufsize < size)
+    if (buffer != NULL)
     {
-	return(1);
+	if (bufsize < size) return(1);
+	bufsize = 0;
     }
     else if (buffer == NULL)
     {
-	buffer = new char[size];
+	buffer = (char*) malloc(size + bufsize);
 	if (buffer == NULL) return(1);
     }
-    memcpy(buffer, mbuf, size);
+    memcpy(buffer + bufsize, mbuf, size);
     return 0;
 }
 
