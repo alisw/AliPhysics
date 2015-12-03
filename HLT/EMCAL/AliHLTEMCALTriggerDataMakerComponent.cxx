@@ -125,6 +125,11 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
     } else if(iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerSTUDataType){
       // Handle STU data
       AliHLTEMCALSTUHeaderStruct *stuheader = reinterpret_cast<AliHLTEMCALSTUHeaderStruct *>(iter->fPtr);
+      AliHLTInt32_t sizeExpected = sizeof(AliHLTEMCALSTUHeaderStruct) + sizeof(AliHLTCaloTriggerRawDigitDataStruct) * stuheader->fNRawDigits;
+      if(iter->fSize != sizeExpected){
+        HLTWarning("STU-reader: Size of the input buffer not matching for amount of digits, expected %d, obtained %d", sizeExpected, iter->fSize);
+        continue;
+      }
       dataptr = reinterpret_cast<AliHLTCaloTriggerRawDigitDataStruct *>(reinterpret_cast<AliHLTUInt8_t*>(iter->fPtr) + sizeof(AliHLTEMCALSTUHeaderStruct));
       HLTDebug("Data containing %d STU digits", stuheader->fNRawDigits);
       ReadSTUData(stuheader, dataptr);
