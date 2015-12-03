@@ -363,17 +363,26 @@ Bool_t AliAltroRawStreamV3::NextBunch()
 
   fStartTimeBin = fBunchData[fBunchDataIndex++];
   if (fCheckAltroPayload) {
+    static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
     if ((fStartTimeBin-fBunchLength+1) < 0) {
-      AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0", fBunchDataIndex-1,
-		      fHWAddress,fDDLNumber,fStartTimeBin,fBunchLength));
+      static int nErrors = 0;
+      if (show_info || nErrors++ < 100)
+      {
+        AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0", fBunchDataIndex-1,
+		        fHWAddress,fDDLNumber,fStartTimeBin,fBunchLength));
+      }
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
       if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = fBunchLength = -1;
       return kFALSE;
     }
     if (fStartTimeBin >= prevTimeBin) {
-      AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d>=%d)", fBunchDataIndex-1,
-		      fHWAddress,fDDLNumber,fStartTimeBin,prevTimeBin));
+      static int nErrors = 0;
+      if (show_info || nErrors++ < 100)
+      {
+        AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d>=%d)", fBunchDataIndex-1,
+		        fHWAddress,fDDLNumber,fStartTimeBin,prevTimeBin));
+      }
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
       if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = fBunchLength = -1;
