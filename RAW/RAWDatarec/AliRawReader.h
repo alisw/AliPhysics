@@ -197,7 +197,7 @@ class AliRawReader: public TObject {
     virtual AliRawReader* CloneSingleEvent() const { return NULL; }
 
   protected :
-    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
+    virtual void     SelectEvents(Int_t type,ULong64_t triggerMask=0,const char *triggerExpr=NULL,ULong64_t triggerMask50=0);
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
 
@@ -216,6 +216,7 @@ class AliRawReader: public TObject {
     Bool_t           fSkipInvalid;          // skip invalid data
     Int_t            fSelectEventType;      // type of selected events (<0 = no selection)
     ULong64_t        fSelectTriggerMask;    // trigger mask for selecting events (0 = no selection)
+    ULong64_t        fSelectTriggerMask50;  // trigger maskNext50 for selecting events (0 = no selection)
     TString          fSelectTriggerExpr;    // trigger expression for selecting events (empty = no selection)
 
     Int_t            fErrorCode;            // code of last error

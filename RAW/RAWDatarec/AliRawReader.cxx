@@ -70,6 +70,7 @@ AliRawReader::AliRawReader() :
   fSkipInvalid(kFALSE),
   fSelectEventType(-1),
   fSelectTriggerMask(0),
+  fSelectTriggerMask50(0),
   fSelectTriggerExpr(),
   fErrorCode(0),
   fEventNumber(-1),
@@ -133,6 +134,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSkipInvalid(rawReader.fSkipInvalid),
   fSelectEventType(rawReader.fSelectEventType),
   fSelectTriggerMask(rawReader.fSelectTriggerMask),
+  fSelectTriggerMask50(rawReader.fSelectTriggerMask50),
   fSelectTriggerExpr(rawReader.fSelectTriggerExpr),
   fErrorCode(0),
   fEventNumber(-1),
@@ -167,6 +169,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSkipInvalid = rawReader.fSkipInvalid;
   fSelectEventType = rawReader.fSelectEventType;
   fSelectTriggerMask = rawReader.fSelectTriggerMask;
+  fSelectTriggerMask50 = rawReader.fSelectTriggerMask50;
   fSelectTriggerExpr = rawReader.fSelectTriggerExpr;
 
   fErrorCode = rawReader.fErrorCode;
@@ -280,7 +283,7 @@ AliRawReader* AliRawReader::Create(const char *uri)
   // Now apply event selection criteria (if specified)
   if (fields->GetEntries() > 1) {
     Int_t eventType = -1;
-    ULong64_t triggerMask = 0;
+    ULong64_t triggerMask=0,triggerMask50=0;
     TString triggerExpr;
     for(Int_t i = 1; i < fields->GetEntries(); i++) {
       if (!fields->At(i)) continue;
@@ -293,18 +296,28 @@ AliRawReader* AliRawReader::Create(const char *uri)
       if (option.BeginsWith("Trigger=",TString::kIgnoreCase)) {
 	option.ReplaceAll("Trigger=","");
 	if (option.IsDigit()) {
-	  triggerMask = option.Atoll();
+	  triggerMask |= option.Atoll();
 	}
 	else {
-	  triggerExpr = option.Data();
+	  triggerExpr += Form(" %s ",option.Data()); // pre/post-pend with spaces
+	}
+	continue;
+      }
+      else if (option.BeginsWith("Trigger50=",TString::kIgnoreCase)) {
+	option.ReplaceAll("Trigger50=","");
+	if (option.IsDigit()) {
+	  triggerMask50 |= option.Atoll();
+	}
+	else {
+	  triggerExpr += Form(" %s ",option.Data()); // pre/post-pend with spaces
 	}
 	continue;
       }
       AliWarningClass(Form("Ignoring invalid event selection option: %s",option.Data()));
     }
-    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx   trigger expression=%s",
-		 eventType,triggerMask,triggerExpr.Data()));
-    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data());
+    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx mask50=%llx  trigger expression=%s",
+		      eventType,triggerMask,triggerMask50,triggerExpr.Data()));
+    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data(),triggerMask50);
   }
 
   delete fields;
@@ -409,7 +422,7 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
 }
 
 void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
-				const char *triggerExpr)
+				const char *triggerExpr,ULong64_t triggerMask50)
 {
 // read only events with the given type and optionally
 // trigger mask.
@@ -421,6 +434,7 @@ void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
 
   fSelectEventType = type;
   fSelectTriggerMask = triggerMask;
+  fSelectTriggerMask50 = triggerMask50;
   if (triggerExpr) fSelectTriggerExpr = triggerExpr;
 }
 
@@ -529,9 +543,8 @@ Bool_t AliRawReader::IsEventSelected() const
 
   // Then check the trigger pattern and compared it
   // to the required trigger mask
-  if (fSelectTriggerMask != 0) {
-    if ((GetClassMask() & fSelectTriggerMask) != fSelectTriggerMask && 
-	(GetClassMaskNext50() & fSelectTriggerMask) != fSelectTriggerMask) return kFALSE;
+  if (fSelectTriggerMask!=0 || fSelectTriggerMask50!=0) {
+    if ( !(GetClassMask()&fSelectTriggerMask) && !(GetClassMaskNext50() & fSelectTriggerMask50)) return kFALSE;
   }
 
   if (  fIsTriggerClassLoaded && !fSelectTriggerExpr.IsNull()) {
