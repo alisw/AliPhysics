@@ -96,7 +96,7 @@ AliFemtoString AliFemtoVertexAnalysis::Report()
 
   report += TString::Format("Events are mixed in %d bins in the range %E cm to %E cm.\n", fVertexBins, fVertexZ[0], fVertexZ[1])
           + TString::Format("Events underflowing: %d\n", fUnderFlow)
-          + TString::Format("Events overflowing: %d\n",fOverFlow),
+          + TString::Format("Events overflowing: %d\n",fOverFlow)
           + TString::Format("Now adding AliFemtoSimpleAnalysis(base) Report\n");
 
   report += AliFemtoSimpleAnalysis::Report();
