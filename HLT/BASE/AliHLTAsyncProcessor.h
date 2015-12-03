@@ -16,6 +16,7 @@
 
 #include "AliHLTLogging.h"
 class AliHLTAsyncProcessorBackend;
+class AliHLTComponent;
 
 class AliHLTAsyncProcessor : public AliHLTLogging
 {
@@ -93,6 +94,9 @@ public:
 	//Works for async threads and async processes. For an async process, size = 0 allocates the maximum buffer size.
 	AliHLTAsyncProcessorBuffer* AllocateBuffer(size_t size);
 	void FreeBuffer(AliHLTAsyncProcessorBuffer* buffer);
+	
+	//Serializes an object into an AliHLTAsyncProcessorBuffer and returns the pointer to it, containing the pointer to the serialized object and its size
+	AliHLTAsyncProcessorBuffer* SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls);
 
 private:
 	AliHLTAsyncProcessor(const AliHLTAsyncProcessor&);

@@ -8,6 +8,7 @@
 
 #include "AliHLTAsyncProcessor.h"
 #include "AliHLTAsyncProcessorBackend.h"
+#include "AliHLTComponent.h"
 #include <sys/mman.h>
 
 ClassImp(AliHLTAsyncProcessor)
@@ -391,4 +392,28 @@ void AliHLTAsyncProcessor::FreeBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessor
 	{
 		free(buffer);
 	}
+}
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls)
+{
+	AliHLTAsyncProcessorBuffer* retVal;
+	if (fMe->fAsyncProcess)
+	{
+		if ((retVal = AllocateBuffer(0)) == NULL) return(NULL);
+		if (cls->SerializeObject(obj, retVal->fPtr, retVal->fSize))
+		{
+			FreeBuffer(retVal);
+			return(NULL);
+		}
+	}
+	else
+	{
+		size_t size = ALIHLTASYNCPROCESSOR_ALIGN;
+		char* buffer = NULL;
+		if (cls->SerializeObject(obj, (void*&) buffer, size)) return(NULL);
+		retVal = (AliHLTAsyncProcessorBuffer*) buffer;
+		retVal->fPtr = buffer + ALIHLTASYNCPROCESSOR_ALIGN;
+		retVal->fSize = size;
+	}
+	return(retVal);
 }
