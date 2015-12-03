@@ -204,7 +204,12 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
   }
   if (fRawReader->TestBlockAttribute(7)) { // bunch crossing difference error bit
     TString errMess = "High Multiplicity Event Flag Set";
-    AliError(errMess.Data());
+    static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+    static int nErrors = 0;
+    if (show_info || nErrors++ < 10)
+    {
+      AliError(errMess.Data());
+    }
     fRawReader->AddMajorErrorLog(kHighMultiplicityFlag,errMess.Data());
     if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHighMultiplicityFlag,ddlID,-1,-1,errMess.Data());
   }
@@ -364,7 +369,12 @@ Bool_t AliITSRawStreamSPD::Next() {
       Bool_t errorBit = fData & 0x1000;
       if (errorBit) {
 	TString errMess = Form("Trailer error bit set for chip (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
-	AliError(errMess.Data());
+	static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+	static int nErrors = 0;
+	if (show_info || nErrors++ < 10)
+	{
+	  AliError(errMess.Data());
+	}
 	fRawReader->AddMajorErrorLog(kTrailerErrorBitErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerErrorBitErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
       }
