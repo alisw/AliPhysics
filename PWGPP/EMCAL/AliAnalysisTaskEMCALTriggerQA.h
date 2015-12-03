@@ -301,7 +301,7 @@ private:
   //static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2;   // total number
     
   /// Total number of fake altro rows in EMCAL, temporary, not considers DCal yet (ALTRO channels in one SM times 5 SM divided by 2 per FALTRO)
-  static const int  fgkFALTRORows = 120; // 60 //AliEMCALGeoParams::fgkEMCALSTURows-4;
+  static const int  fgkFALTRORows = 104; // 60 //AliEMCALGeoParams::fgkEMCALSTURows-4;
   
   /// Total number of fake altro collumns in EMCAL,  (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALSTUCols;
