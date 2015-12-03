@@ -76,6 +76,14 @@ public:
   Bool_t  GetPositionInEMCALFromAbsFastORIndex( Int_t id,               Int_t& iEta, Int_t& iPhi) const;
 
   //********************************************
+  //TRU vs. STU
+  //********************************************
+  Bool_t  GetTRUFromSTU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC, Int_t detector) const;
+  Bool_t  GetSTUFromTRU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC                ) const;
+  Bool_t  GetTRUFromSTU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi, Int_t detector) const;
+  Bool_t  GetSTUFromTRU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi                ) const;
+
+  //********************************************
   //Cell Index
   //********************************************
   Bool_t  GetFastORIndexFromCellIndex(Int_t id, Int_t& idx) const;
@@ -86,6 +94,8 @@ public:
   //********************************************
   Bool_t  GetTRUIndexFromSTUIndex(    Int_t id, Int_t& idx , Int_t detector ) const;
   Int_t   GetTRUIndexFromSTUIndex(    Int_t id             , Int_t detector ) const;
+  Bool_t  GetSTUIndexFromTRUIndex(    Int_t id, Int_t& idx                  ) const;
+  Int_t   GetSTUIndexFromTRUIndex(    Int_t id                              ) const;
   Bool_t  GetTRUIndexFromOnlineIndex( Int_t id, Int_t& idx) const{idx = id  ; return kTRUE  ;};
   Int_t   GetTRUIndexFromOnlineIndex( Int_t id            ) const{return id ;};
   Bool_t  GetOnlineIndexFromTRUIndex( Int_t id, Int_t& idx) const{idx = id  ; return kTRUE  ;};
