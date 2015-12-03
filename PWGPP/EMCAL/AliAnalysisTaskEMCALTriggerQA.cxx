@@ -92,7 +92,7 @@ fNBinsV0Signal   (300),    fMaxV0Signal   (30000),
 fNBinsSTUFEERatio(300),    fMaxSTUFEERatio(100),
 fNBinsSTUTRURatio(300),    fMaxSTUTRURatio(100),
 fNBinsClusterE   (100),    fMaxClusterE   (50),
-fNBinsClusterPhi (110),    fMaxClusterPhi (3.15),  fMinClusterPhi (1.39),
+fNBinsClusterPhi (250),    fMaxClusterPhi (5.71),  fMinClusterPhi (1.39),
 fNBinsClusterEta (96),     fMaxClusterEta (0.7),
 fMapCell     (),
 fMapCellL1G  (),           fMapCellL1G2 (),
@@ -152,7 +152,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
         hbm->SetDirectory(0);
         fRecoUtils->SetEMCALChannelStatusMap(i,hbm);
         
-        printf("Bad map for SM %d: %3.0f entries\n",i,fRecoUtils->GetEMCALChannelStatusMap(i)->Integral());
+        //printf("Bad map for SM %d: %3.0f entries\n",i,fRecoUtils->GetEMCALChannelStatusMap(i)->Integral());
         
       } // loop
     } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
@@ -1155,12 +1155,12 @@ void AliAnalysisTaskEMCALTriggerQA::SetTriggerEventBit( TString triggerclasses)
   fEventSem  = kFALSE;
   
   // Minimum bias event trigger?
-//  if((triggerclasses.Contains("CINT7") || triggerclasses.Contains("CPBI2_B1") ) &&
-//     (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
-//		 triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
+  if((triggerclasses.Contains("CINT7") || triggerclasses.Contains("CPBI2_B1") ) &&
+     (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
+      triggerclasses.Contains("-NOPF") )   fEventMB  = kTRUE;
+     //triggerclasses.Contains("-NOPF-ALLNOTRD") )   fEventMB  = kTRUE;
   
-  // CHECK HOW TO GENERALIZE FOR Run1
-  if(triggerclasses.Contains("CINT7-B-NOPF-CENT")) fEventMB  = kTRUE;
+  //if(triggerclasses.Contains("CINT7-B-NOPF-CENT")) fEventMB  = kTRUE;
   
   if(fMCData && triggerclasses.Contains("MB")) fEventMB = kTRUE;
   
