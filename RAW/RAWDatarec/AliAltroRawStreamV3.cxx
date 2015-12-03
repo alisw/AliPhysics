@@ -297,8 +297,13 @@ Bool_t AliAltroRawStreamV3::NextChannel()
     word = Get32bitWord(fPosition++);
     if ((word >> 30) != 0) {
       // Unexpected end of altro channel payload
-      AliWarning(Form("Unexpected end of payload in altro channel payload! DDL=%03d, Address=0x%x, word=0x%x",
+      static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+      static int nErrors = 0;
+      if (show_info || nErrors++ < 10)
+      {
+          AliWarning(Form("Unexpected end of payload in altro channel payload! DDL=%03d, Address=0x%x, word=0x%x",
 		      fDDLNumber,fHWAddress,word));
+      }
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
       if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = -1;
