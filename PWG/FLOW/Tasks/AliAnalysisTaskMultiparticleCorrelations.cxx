@@ -26,7 +26,6 @@
 #include "AliAnalysisTaskMultiparticleCorrelations.h"
 #include "AliFlowAnalysisWithMultiparticleCorrelations.h"
 #include "AliLog.h"
-#include "AliMultSelection.h"
 
 using std::cout;
 using std::endl;
@@ -51,6 +50,7 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
  fFillMultCorrelationsHist(kFALSE),
+ fSkipSomeIntervals(kFALSE),
  fCalculateQvector(kFALSE),
  fCalculateDiffQvectors(kFALSE),
  fProduction(""),
@@ -150,6 +150,14 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   fMaxMult[0] = 3000.; // [RP]
   fMaxMult[1] = 3000.; // [POI]
   fMaxMult[2] = 3000.; // [REF]
+  // Initialize default rp, phi and eta intervals to be skipped:
+  for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+  {
+   for(Int_t i=0;i<10;i++) // interval boundaries, 5 intervals, 10 boundaries TBI
+   {
+    fSkip[ppe][i] = -44.;
+   }
+  } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations(const char *name, Bool_t useParticleWeights): 
 
@@ -171,6 +179,7 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
  fFillMultCorrelationsHist(kFALSE),
+ fSkipSomeIntervals(kFALSE),
  fCalculateQvector(kFALSE),
  fCalculateDiffQvectors(kFALSE),
  fProduction(""),
@@ -258,6 +267,14 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   fMaxMult[0] = 3000.; // [RP]
   fMaxMult[1] = 3000.; // [POI]
   fMaxMult[2] = 3000.; // [REF]
+  // Initialize default rp, phi and eta intervals to be skipped:
+  for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+  {
+   for(Int_t i=0;i<10;i++) // interval boundaries, 10 boundaries at max
+   {
+    fSkip[ppe][i] = -44.;
+   }
+  } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations():
 
@@ -360,6 +377,15 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
   fMPC->SetMinMult(typeMult[rpr].Data(),fMinMult[rpr]);
   fMPC->SetMaxMult(typeMult[rpr].Data(),fMaxMult[rpr]);
  } // for(Int_t rpr=0;rpr<3;rpr++) // [RP,POI,REF]
+
+ // Intervals to skip:
+ if(fSkipSomeIntervals)
+ {
+  // TBI some things are clearly hardwired here:
+  fMPC->SetIntervalsToSkip("Phi",10,fSkip[0]);
+  fMPC->SetIntervalsToSkip("Pt",10,fSkip[1]);
+  fMPC->SetIntervalsToSkip("Eta",10,fSkip[2]);
+ }
 
  // Initialize:
  fMPC->Init();
@@ -611,6 +637,54 @@ void AliAnalysisTaskMultiparticleCorrelations::SetMaxMult(const char *type, Doub
  fMaxMult[rpr] = maxMult;
 
 } // void AliAnalysisTaskMultiparticleCorrelations::SetMaxMult(const char *type, Double_t minMult)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t nBoundaries, Double_t *boundaries)
+{
+ // Set all pt, phi and eta intervals to be skipped.
+
+ // Example usage in the steering macro (before Init()):
+ //  Double_t skip[4] = {-0.1,0.2,0.8,0.9};
+ //  taskMPC->SetIntervalsToSkip("Eta",4,skip);
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)";
+
+ // Basic protection:
+ if(!(TString(ppe).EqualTo("Phi") || TString(ppe).EqualTo("Pt") || TString(ppe).EqualTo("Eta")))
+ {
+  cout<<"Well, could you perhaps try to use only Phi, Pt or Eta here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(ppe).EqualTo... type = %s ",ppe);
+ }
+
+ if(nBoundaries>10)
+ {
+  cout<<"Maximum number of boundaries is hardwired to be 10 at the moment, sorry..."<<endl;
+  Fatal(sMethodName.Data(),"nBoundaries = %d ",nBoundaries);
+ }
+
+ fSkipSomeIntervals = kTRUE;
+
+ Int_t index = -44;
+ if(TString(ppe).EqualTo("Phi"))
+ {
+  index = 0;
+ }
+ else if(TString(ppe).EqualTo("Pt"))
+ {
+  index = 1;
+ }
+ else
+ {
+  index = 2;
+ }
+
+ for(Int_t b=0;b<nBoundaries;b++) // boundaries
+ {
+  fSkip[index][b] = boundaries[b];
+ }
+
+} // void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)
 
 //=======================================================================================================================
 
