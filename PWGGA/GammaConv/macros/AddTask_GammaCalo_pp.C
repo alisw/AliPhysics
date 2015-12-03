@@ -110,7 +110,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   if (trainConfig == 31   || trainConfig == 4   || trainConfig == 5   || trainConfig == 6   || trainConfig == 7   ||
       trainConfig == 10   || trainConfig == 51  || trainConfig == 52  || trainConfig == 53  || trainConfig == 54  ||
       trainConfig == 55   || trainConfig == 56  || trainConfig == 57  || trainConfig == 58  || 
-      trainConfig == 60   || trainConfig == 61  || trainConfig == 62  || trainConfig == 64  || trainConfig == 70  ||
+      trainConfig == 60   || trainConfig == 61  || trainConfig == 62  || trainConfig == 64  || trainConfig == 69  || trainConfig == 70  ||
       trainConfig == 71   || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  || trainConfig == 75  ||
       trainConfig == 76   || trainConfig == 77  || trainConfig == 78  || trainConfig == 79  || trainConfig == 80  ||
       trainConfig == 81   || trainConfig == 102 || trainConfig == 110 || trainConfig == 8   || trainConfig == 203 )
@@ -318,6 +318,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121064032220000"; mesonCutArray[3] = "0163103100000050"; //
     eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111121065032220000"; mesonCutArray[4] = "0163103100000050"; //
     eventCutArray[ 5] = "00083113"; clusterCutArray[5] = "1111121066032220000"; mesonCutArray[5] = "0163103100000050"; //
+  } else if (trainConfig == 69){  // cuts all with trackMatching
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121063032220000"; mesonCutArray[0] = "0163103100000050"; // 
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121063032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121063032220000"; mesonCutArray[3] = "0163103100000050"; //
     
     // LHC11a cut studies
   } else if (trainConfig == 70){  // EMCAL clusters, MB (INT1) trigger
