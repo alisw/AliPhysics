@@ -157,6 +157,7 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
     ndigitddl = digitoutputsize/(sizeof(AliHLTCaloTriggerRawDigitDataStruct));
     dataIter += ndigitddl; // fSTURawDigitMaker->GetNumberOfRawDigits();
     ndigittotal += ndigitddl;
+    totSize += digitoutputsize;
   }
 
   headerPtr->fNRawDigits = ndigittotal;
