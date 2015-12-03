@@ -54,6 +54,8 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),   
  fFillMultCorrelationsHist(kFALSE),
+ fSkipSomeIntervals(kFALSE),
+ fNumberOfSkippedRPParticles(0),
  // 2.) Q-vector:
  fQvectorList(NULL),       
  fQvectorFlagsPro(NULL),
@@ -218,6 +220,59 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
 
  // b) Cross-check all pointers used in this method:
  this->CrossCheckPointersUsedInMake(); // TBI shall I call this method first  
+
+
+
+ // TBI temp gym: Remove this code eventually
+ if(fSkipSomeIntervals)
+ {
+  fNumberOfSkippedRPParticles = 0;
+  Int_t nTracks = anEvent->NumberOfTracks(); // TBI shall I promote this to data member?
+  for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+  {
+   AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
+   if(!pTrack->InRPSelection()){continue;}
+   if(pTrack)
+   {
+    Double_t dPhi = pTrack->Phi();
+    //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+    //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
+    Double_t dPt = pTrack->Pt();
+    Double_t dEta = pTrack->Eta();
+    Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
+
+    // Skip some intervals: TBI promote eventually to AFTC class
+    Bool_t bPasses = kTRUE;
+    Bool_t bAlreadyCounted = kFALSE;
+    for(Int_t ppe=0;ppe<3;ppe++)
+    {
+     if(!bPasses){break;} // found one kinematic window which shall be skipped
+     for(Int_t b=0;b<10;b+=2)
+     {
+      if(-44==(Int_t)fSkip[ppe][b]){continue;}
+      if(dPhiPtEta[ppe]>=fSkip[ppe][b] && dPhiPtEta[ppe]<fSkip[ppe][b+1])
+      {
+       bPasses = kFALSE;
+       if(!bAlreadyCounted)
+       {
+        fNumberOfSkippedRPParticles++;
+        bAlreadyCounted = kTRUE;
+       } // if(bAlreadyCounted)
+       break;
+      } // TBI this is a clear bug when this setter is used multiple times...
+     } // for(Int_t b=0;b<10;b++)
+    } // for(Int_t ppe=0;ppe<3;ppe++)
+    if(!bPasses){continue;}
+
+   } // if(pTrack)
+  } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ } // if(fSkipSomeIntervals)
+ if(fSkipSomeIntervals) // TBI tmp gym
+ {
+  if(anEvent->GetNumberOfRPs() - fNumberOfSkippedRPParticles < 8){return;} // TBI tmp gym
+ }
+
 
  // c) Fill control histograms:
  if(fFillControlHistograms){this->FillControlHistograms(anEvent);}
@@ -606,6 +661,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
 
  // a) Calculate all booked multi-particle correlations:
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+ if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; }
+
  for(Int_t cs=0;cs<2;cs++) // cos/sin 
  {
   if(fCalculateOnlyCos && 1==cs){continue;}
@@ -849,6 +906,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelatio
       cout<<Form("binLabelX = %s",binLabelX)<<endl;
       cout<<Form("binLabelY = %s",binLabelY)<<endl;
       cout<<Form("anEvent->GetNumberOfRPs() = %d",anEvent->GetNumberOfRPs())<<endl; 
+      cout<<Form("fNumberOfSkippedRPParticles = %d",fNumberOfSkippedRPParticles)<<endl;
       Fatal(sMethodName.Data(),"if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)");
      } // else
   } // for(Int_t by=1;by<bx;by++)
@@ -871,6 +929,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlow
 
  // a) Calculate and store e-b-e cumulants:
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+
+ if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; } // TBI tmp gym
+
  Int_t binNo[8]; for(Int_t c=0;c<8;c++){binNo[c]=1;} 
  // 1-p:
  for(Int_t n1=-fMaxHarmonic;n1<=fMaxHarmonic;n1++) 
@@ -1057,6 +1118,39 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEbECumulants(AliFlow
 
 //=======================================================================================================================
 
+Bool_t AliFlowAnalysisWithMultiparticleCorrelations::TrackIsInSpecifiedIntervals(AliFlowTrackSimple *pTrack)
+{
+ // TBI
+
+ if(!pTrack){exit(0);} // TBI
+
+ Double_t dPhi = pTrack->Phi();
+ Double_t dPt = pTrack->Pt();
+ Double_t dEta = pTrack->Eta();
+ Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
+
+ // Skip some intervals: TBI promote eventually to AFTC class
+ Bool_t bPasses = kTRUE;
+ for(Int_t ppe=0;ppe<3;ppe++)
+ {
+  if(!bPasses){break;} // found one kinematic window which shall be skipped
+  for(Int_t b=0;b<10;b+=2)
+  {
+   if(-44==(Int_t)fSkip[ppe][b]){continue;}
+   if(dPhiPtEta[ppe]>=fSkip[ppe][b] && dPhiPtEta[ppe]<fSkip[ppe][b+1])
+   {
+    bPasses = kFALSE;
+    break;
+   } // TBI this is a clear bug when this setter is used multiple times...
+  } // for(Int_t b=0;b<10;b++)
+ } // for(Int_t ppe=0;ppe<3;ppe++)
+
+ return bPasses;
+
+} // Bool_t AliFlowAnalysisWithMultiparticleCorrelations::TrackIsInSpecifiedIntervals(AliFlowTrackSimple *pTrack)
+
+//=======================================================================================================================
+
 void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(AliFlowEventSimple *anEvent)
 {
  // Cross-check results for multi-particle correlations with nested loops.
@@ -1130,6 +1224,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack = anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1 = aftsTrack->Phi(); 
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    // Fill:
@@ -1145,6 +1240,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack = anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1 = aftsTrack->Phi(); 
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1152,6 +1248,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack = anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2 = aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
     // Fill:
@@ -1168,6 +1265,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1175,6 +1273,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1182,6 +1281,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3 = Weight(dPhi3,"RP","phi");}
      // Fill:
@@ -1199,6 +1299,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   { 
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1206,6 +1307,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1213,6 +1315,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3 = Weight(dPhi3,"RP","phi");}
      for(Int_t i4=0;i4<nPrim;i4++)
@@ -1220,6 +1323,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
       if(i4==i1||i4==i2||i4==i3){continue;}
       aftsTrack=anEvent->GetTrack(i4);
       if(!(aftsTrack->InRPSelection())){continue;}
+      if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
       dPhi4=aftsTrack->Phi();
       if(fUseWeights[0][0]){wPhi4 = Weight(dPhi4,"RP","phi");}
       // Fill:
@@ -1238,6 +1342,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}  
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1245,6 +1350,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1252,6 +1358,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3 = Weight(dPhi3,"RP","phi");}
      for(Int_t i4=0;i4<nPrim;i4++)
@@ -1259,6 +1366,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
       if(i4==i1||i4==i2||i4==i3){continue;}
       aftsTrack=anEvent->GetTrack(i4);
       if(!(aftsTrack->InRPSelection())){continue;}
+      if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
       dPhi4=aftsTrack->Phi();
       if(fUseWeights[0][0]){wPhi4 = Weight(dPhi4,"RP","phi");}
       for(Int_t i5=0;i5<nPrim;i5++)
@@ -1266,6 +1374,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
        if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
        aftsTrack=anEvent->GetTrack(i5);
        if(!(aftsTrack->InRPSelection())){continue;}
+       if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
        dPhi5=aftsTrack->Phi();
        if(fUseWeights[0][0]){wPhi5 = Weight(dPhi5,"RP","phi");}
        // Fill:   
@@ -1285,6 +1394,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1292,6 +1402,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1299,6 +1410,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3 = Weight(dPhi3,"RP","phi");}
      for(Int_t i4=0;i4<nPrim;i4++)
@@ -1306,6 +1418,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
       if(i4==i1||i4==i2||i4==i3){continue;}
       aftsTrack=anEvent->GetTrack(i4);
       if(!(aftsTrack->InRPSelection())){continue;}
+      if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
       dPhi4=aftsTrack->Phi();
       if(fUseWeights[0][0]){wPhi4 = Weight(dPhi4,"RP","phi");}
       for(Int_t i5=0;i5<nPrim;i5++)
@@ -1313,6 +1426,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
        if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
        aftsTrack=anEvent->GetTrack(i5);
        if(!(aftsTrack->InRPSelection())){continue;}
+       if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
        dPhi5=aftsTrack->Phi();
        if(fUseWeights[0][0]){wPhi5=Weight(dPhi5,"RP","phi");}
        for(Int_t i6=0;i6<nPrim;i6++)
@@ -1320,6 +1434,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
         if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
         aftsTrack=anEvent->GetTrack(i6);
         if(!(aftsTrack->InRPSelection())){continue;}
+        if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
         dPhi6=aftsTrack->Phi(); 
         if(fUseWeights[0][0]){wPhi6=Weight(dPhi6,"RP","phi");}
         // Fill:   
@@ -1340,6 +1455,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   { 
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1=Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1347,6 +1463,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1354,6 +1471,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3=Weight(dPhi3,"RP","phi");}
      for(Int_t i4=0;i4<nPrim;i4++)
@@ -1361,6 +1479,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
       if(i4==i1||i4==i2||i4==i3){continue;}
       aftsTrack=anEvent->GetTrack(i4);
       if(!(aftsTrack->InRPSelection())){continue;}
+      if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
       dPhi4=aftsTrack->Phi();
       if(fUseWeights[0][0]){wPhi4=Weight(dPhi4,"RP","phi");}
       for(Int_t i5=0;i5<nPrim;i5++)
@@ -1368,6 +1487,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
        if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
        aftsTrack=anEvent->GetTrack(i5);
        if(!(aftsTrack->InRPSelection())){continue;}
+       if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
        dPhi5=aftsTrack->Phi();
        if(fUseWeights[0][0]){wPhi5=Weight(dPhi5,"RP","phi");}
        for(Int_t i6=0;i6<nPrim;i6++)
@@ -1375,6 +1495,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
         if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
         aftsTrack=anEvent->GetTrack(i6);
         if(!(aftsTrack->InRPSelection())){continue;}
+        if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
         dPhi6=aftsTrack->Phi(); 
         if(fUseWeights[0][0]){wPhi6=Weight(dPhi6,"RP","phi");}
         for(Int_t i7=0;i7<nPrim;i7++)
@@ -1382,6 +1503,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
          if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
          aftsTrack=anEvent->GetTrack(i7);
          if(!(aftsTrack->InRPSelection())){continue;}
+         if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
          dPhi7=aftsTrack->Phi(); 
          if(fUseWeights[0][0]){wPhi7=Weight(dPhi7,"RP","phi");}
          // Fill:   
@@ -1403,6 +1525,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
   {
    aftsTrack=anEvent->GetTrack(i1);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi1=Weight(dPhi1,"RP","phi");}
    for(Int_t i2=0;i2<nPrim;i2++)
@@ -1410,6 +1533,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
     for(Int_t i3=0;i3<nPrim;i3++)
@@ -1417,6 +1541,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
      if(i3==i1||i3==i2){continue;}
      aftsTrack=anEvent->GetTrack(i3);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi3=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi3=Weight(dPhi3,"RP","phi");}
      for(Int_t i4=0;i4<nPrim;i4++)
@@ -1424,6 +1549,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
       if(i4==i1||i4==i2||i4==i3){continue;}
       aftsTrack=anEvent->GetTrack(i4);
       if(!(aftsTrack->InRPSelection())){continue;}
+      if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
       dPhi4=aftsTrack->Phi();
       if(fUseWeights[0][0]){wPhi4=Weight(dPhi4,"RP","phi");}
       for(Int_t i5=0;i5<nPrim;i5++)
@@ -1431,6 +1557,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
        if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
        aftsTrack=anEvent->GetTrack(i5);
        if(!(aftsTrack->InRPSelection())){continue;}
+       if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
        dPhi5=aftsTrack->Phi();
        if(fUseWeights[0][0]){wPhi5=Weight(dPhi5,"RP","phi");}
        for(Int_t i6=0;i6<nPrim;i6++)
@@ -1438,6 +1565,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
         if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
         aftsTrack=anEvent->GetTrack(i6);
         if(!(aftsTrack->InRPSelection())){continue;}
+        if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
         dPhi6=aftsTrack->Phi();
         if(fUseWeights[0][0]){wPhi6=Weight(dPhi6,"RP","phi");}
         for(Int_t i7=0;i7<nPrim;i7++)
@@ -1445,6 +1573,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
          if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
          aftsTrack=anEvent->GetTrack(i7);
          if(!(aftsTrack->InRPSelection())){continue;}
+         if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
          dPhi7=aftsTrack->Phi();
          if(fUseWeights[0][0]){wPhi7=Weight(dPhi7,"RP","phi");}
          for(Int_t i8=0;i8<nPrim;i8++)
@@ -1452,6 +1581,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
           if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
           aftsTrack=anEvent->GetTrack(i8);
           if(!(aftsTrack->InRPSelection())){continue;}
+          if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
           dPhi8=aftsTrack->Phi();
           if(fUseWeights[0][0]){wPhi8=Weight(dPhi8,"RP","phi");}
           // Fill:   
@@ -1548,6 +1678,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  {
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
+  if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
   dPsi1=aftsTrack->Phi();
   if(fCalculateDiffCorrelationsVsPt)
   {
@@ -1564,6 +1695,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
    if(i2==i1){continue;} // get rid of autocorrelations
    aftsTrack=anEvent->GetTrack(i2);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi2=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
    // Fill profiles:
@@ -1582,6 +1714,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  {
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
+  if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
   dPsi1=aftsTrack->Phi();
   if(fCalculateDiffCorrelationsVsPt)
   {
@@ -1598,6 +1731,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
    if(i2==i1){continue;} // get rid of autocorrelations
    aftsTrack=anEvent->GetTrack(i2);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi2=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
    for(Int_t i3=0;i3<nPrim;i3++)
@@ -1605,6 +1739,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
     if(i3==i1||i3==i2){continue;} // get rid of autocorrelations
     aftsTrack=anEvent->GetTrack(i3);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi3=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi3=Weight(dPhi3,"RP","phi");}
     // Fill the profiles:
@@ -1624,6 +1759,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
  {
   aftsTrack=anEvent->GetTrack(i1);
   if(!(aftsTrack->InPOISelection())){continue;}
+  if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
   dPsi1=aftsTrack->Phi();
   if(fCalculateDiffCorrelationsVsPt)
   {
@@ -1640,6 +1776,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
    if(i2==i1){continue;} // get rid of autocorrelations
    aftsTrack=anEvent->GetTrack(i2);
    if(!(aftsTrack->InRPSelection())){continue;}
+   if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi2=aftsTrack->Phi();
    if(fUseWeights[0][0]){wPhi2=Weight(dPhi2,"RP","phi");}
    for(Int_t i3=0;i3<nPrim;i3++)
@@ -1647,6 +1784,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
     if(i3==i1||i3==i2){continue;} // get rid of autocorrelations
     aftsTrack=anEvent->GetTrack(i3);
     if(!(aftsTrack->InRPSelection())){continue;}
+    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi3=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi3=Weight(dPhi3,"RP","phi");}
     for(Int_t i4=0;i4<nPrim;i4++)
@@ -1654,6 +1792,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckDiffWithNestedLoops
      if(i4==i1||i4==i2||i4==i3){continue;} // get rid of autocorrelations
      aftsTrack=anEvent->GetTrack(i4);
      if(!(aftsTrack->InRPSelection())){continue;}
+     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
      dPhi4=aftsTrack->Phi();
      if(fUseWeights[0][0]){wPhi4=Weight(dPhi4,"RP","phi");}
      // Fill the profiles:
@@ -1706,7 +1845,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
  {
   AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FillQvector(...) !!!!"); continue;}
+
+  if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
+
   if(!(pTrack->InRPSelection() || pTrack->InPOISelection())){printf("\n AAAARGH: pTrack is neither RP nor POI !!!!"); continue;}
+
   if(pTrack->InRPSelection()) // fill Q-vector components only with reference particles
   {
    wPhi = 1.; wPt = 1.; wEta = 1.; wToPowerP = 1.; // TBI this shall go somewhere else, for performance sake
@@ -1720,6 +1863,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
    if(fUseWeights[0][1]){wPt = Weight(dPt,"RP","pt");} // corresponding pT weight
    dEta = pTrack->Eta();
    if(fUseWeights[0][2]){wEta = Weight(dEta,"RP","eta");} // corresponding eta weight
+
    // Calculate Q-vector components:
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
@@ -1746,6 +1890,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
    if(fUseWeights[1][1]){wPt = Weight(dPt,"POI","pt");} // corresponding pT weight
    dEta = pTrack->Eta();
    if(fUseWeights[1][2]){wEta = Weight(dEta,"POI","eta");} // corresponding eta weight
+
    // Determine bin:
    Int_t binNo = -44;
    if(fCalculateDiffCorrelationsVsPt)
@@ -2156,12 +2301,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
    if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
    if(pTrack)
    {
+
+    if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
+
     Double_t dPhi = pTrack->Phi(); 
-    //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
     //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+    //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
     Double_t dPt = pTrack->Pt();
     Double_t dEta = pTrack->Eta();
     Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
+
     for(Int_t rp=0;rp<2;rp++) // [RP,POI]
     {
      for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
@@ -2176,10 +2325,17 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
   } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
  } // if(fFillKinematicsHist)
 
- // b) Fill TH1D *fMultDistributionsHist[3]: 
+ // b) Fill TH1D *fMultDistributionsHist[3]:
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote these 3 variables into data members? 
  Double_t dMultPOI = anEvent->GetNumberOfPOIs();
  Double_t dMultREF = anEvent->GetReferenceMultiplicity();
+
+ if(fSkipSomeIntervals) // TBI tmp gym
+ {
+  dMultRP = dMultRP - fNumberOfSkippedRPParticles;
+  dMultPOI = -44;
+ }
+
  Double_t dMult[3] = {dMultRP,dMultPOI,dMultREF};
  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  {
@@ -2207,7 +2363,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
  // c) Initialize TH2D *fMultCorrelationsHist[3];  
  // d) Initialize Bool_t fDontFill[3];   
  // e) Initialize default binning values for fKinematicsHist[2][3];
- // f) Initialize default binning values for fMultCorrelationsHist[3].
+ // f) Initialize default binning values for fMultCorrelationsHist[3];
+ // g) Initialize default rp, phi and eta intervals to be skipped.
  
  // a) Initialize TH1D *fKinematicsHist[2][3]:
  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
@@ -2272,6 +2429,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
  fMaxMult[0] = 3000.; // [RP]
  fMaxMult[1] = 3000.; // [POI]
  fMaxMult[2] = 3000.; // [REF]
+
+ // g) Initialize default rp, phi and eta intervals to be skipped:
+ for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+ {
+  for(Int_t i=0;i<10;i++) // interval boundaries, 10 boundaries at max
+  {
+   fSkip[ppe][i] = -44.;
+  }
+ } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHistograms()
 
@@ -3420,7 +3586,6 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForSymmetryPlanes(
  {
   for(Int_t n=0;n<2;n++) // 'harmonic n for generic correlator': [[0]:n=1,[1]:n=2,...] TBI upper boundary will change
   {
-
    fSymmetryPlanesPro[gc][n] = dynamic_cast<TProfile*>(fSymmetryPlanesList->FindObject(Form("%d,%d",gc,n)));
    if(!fSymmetryPlanesPro[gc][n]){Fatal(sMethodName.Data(),"fSymmetryPlanesPro[%d][%d]",gc,n);}
   }
@@ -4946,6 +5111,55 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, 
 
 //=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t nBoundaries, Double_t *boundaries)
+{
+ // Set all pt, phi and eta intervals to be skipped.
+
+ // Example usage in the steering macro (before Init()):
+ //  Double_t skip[4] = {-0.1,0.2,0.8,0.9};
+ //  mpc->SetIntervalsToSkip("Eta",4,skip);
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)";
+
+ // Basic protection:
+ if(!(TString(ppe).EqualTo("Phi") || TString(ppe).EqualTo("Pt") || TString(ppe).EqualTo("Eta")))
+ {
+  cout<<"Well, could you perhaps try to use only Phi, Pt or Eta here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(ppe).EqualTo... type = %s ",ppe);
+ }
+
+ if(nBoundaries>10)
+ {
+  cout<<"Maximum number of boundaries is hardwired to be 10 at the moment, sorry..."<<endl;
+  Fatal(sMethodName.Data(),"nBoundaries = %d ",nBoundaries);
+ }
+
+ fSkipSomeIntervals = kTRUE;
+
+ Int_t index = -44;
+ if(TString(ppe).EqualTo("Phi"))
+ {
+  index = 0;
+ }
+ else if(TString(ppe).EqualTo("Pt"))
+ {
+  index = 1;
+ }
+ else
+ {
+  index = 2;
+ }
+
+ for(Int_t b=0;b<nBoundaries;b++) // boundaries
+ {
+  fSkip[index][b] = boundaries[b];
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)
+
+//=======================================================================================================================
+
+
 void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)
 {
  // Dump the points into the external file. 
@@ -4964,6 +5178,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSim
  // Determine event number and multiplicity:
  Int_t eventNo = (Int_t) fMultDistributionsHist[0]->GetEntries(); // TBI this is a little bit shaky...
  Int_t multRP = (Int_t) anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+ if(fSkipSomeIntervals){ multRP = multRP - fNumberOfSkippedRPParticles; } // TBI tmp gym
 
  // Determine external file name:
  Int_t fileCounter = (Int_t)((eventNo-1)/fMaxNoEventsPerFile);
@@ -5075,6 +5290,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFl
  TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)";
  if(!anEvent){Fatal(sMethodName.Data(),"Sorry, anEvent is NULL.");}
  Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
+ if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; } // TBI tmp gym
  if(dMultRP<0.){Fatal(sMethodName.Data(),"Sorry, dMultRP is negative.");}
 
  // b) Calculate and store symmetry plane correlations.

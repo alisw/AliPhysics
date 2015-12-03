@@ -144,6 +144,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetnBinsMult(const char *type, Int_t nBinsMult); // .cxx
   void SetMinMult(const char *type, Double_t minMult); // .cxx
   void SetMaxMult(const char *type, Double_t maxMult); // .cxx
+  void SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries); // .cxx
 
   //  5.2.) Q-vectors:
   void SetQvectorList(TList* const qvl) {this->fQvectorList = qvl;};
@@ -304,6 +305,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
   TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
   virtual Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k=0);
+  Bool_t TrackIsInSpecifiedIntervals(AliFlowTrackSimple *);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -350,6 +352,10 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fnBinsMult[3];                  // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMinMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMaxMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Bool_t fSkipSomeIntervals;            // skip intervals in phi, pt and eta
+  Int_t fNumberOfSkippedRPParticles;    // TBI temp gym
+  Double_t fSkip[3][10];                // determine intervals in phi, pt and eta to be skipped. TBI hardwired is max 5 intervals. TBI promote this eventually to AFTC class
+
 
   // 2.) Q-vectors:
   TList *fQvectorList;           // list to hold all Q-vector objects       

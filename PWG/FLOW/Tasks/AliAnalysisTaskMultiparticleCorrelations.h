@@ -64,6 +64,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetnBinsMult(const char *type, Int_t nBinsMult); // .cxx
   void SetMinMult(const char *type, Double_t minMult); // .cxx
   void SetMaxMult(const char *type, Double_t maxMult); // .cxx
+  void SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries); // .cxx
 
   // Q-vectors:
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
@@ -184,6 +185,8 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Int_t fnBinsMult[3];               // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMinMult[3];              // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMaxMult[3];              // [RP,POI,REF], corresponds to fMultDistributionsHist[3]  
+  Bool_t fSkipSomeIntervals;         // skip intervals in phi, pt and eta
+  Double_t fSkip[3][10];             // determine intervals in phi, pt and eta to be skipped. TBI hardwired is max 5 intervals. TBI promote this eventually to AFTC class
 
   // Q-vectors:
   Bool_t fCalculateQvector;      // to calculate or not to calculate Q-vector components, that's a Boolean...
