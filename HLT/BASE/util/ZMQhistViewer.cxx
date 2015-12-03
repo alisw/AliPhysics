@@ -198,7 +198,7 @@ void* run(void* arg)
 
         if (!fFileName.IsNull()) 
         {
-          DumpToFile(object);
+          if (object) DumpToFile(object);
         }
       }
       alizmq_msg_close(&message);
