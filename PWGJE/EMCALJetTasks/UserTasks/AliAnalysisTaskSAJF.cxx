@@ -93,7 +93,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   Double_t jetRadius = 0.4;
   AliJetContainer *jets = GetJetContainer(0);
   if (jets) jetRadius = jets->GetJetRadius();
-  
+
   TString title[20]= {""};
   Int_t nbins[20]  = {0};
   Double_t min[20] = {0.};
@@ -106,7 +106,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     min[dim] = 0;
     max[dim] = 100;
     dim++;
-    
+
     title[dim] = "#phi_{jet} - #psi_{RP}";
     nbins[dim] = 100;
     min[dim] = 0;
@@ -224,7 +224,7 @@ void AliAnalysisTaskSAJF::AllocateTHX()
     fHistJetPtEtaPhi[i]->GetYaxis()->SetTitle("#eta");
     fHistJetPtEtaPhi[i]->GetZaxis()->SetTitle("#phi_{jet} (rad)");
     fOutput->Add(fHistJetPtEtaPhi[i]);
-      
+
     histname = "fHistJetPtArea_";
     histname += i;
     fHistJetPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 150, 0, 1.5);
@@ -273,7 +273,7 @@ void AliAnalysisTaskSAJF::AllocateTHX()
       fHistJetCorrPtEtaPhi[i]->GetYaxis()->SetTitle("#eta");
       fHistJetCorrPtEtaPhi[i]->GetZaxis()->SetTitle("#phi_{jet} (rad)");
       fOutput->Add(fHistJetCorrPtEtaPhi[i]);
-      
+
       histname = "fHistJetCorrPtArea_";
       histname += i;
       fHistJetCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins*2, -fMaxBinPt, fMaxBinPt, 150, 0, 1.5);
@@ -323,13 +323,13 @@ void AliAnalysisTaskSAJF::AllocateTHX()
       fOutput->Add(fHistJetPtCorrPt[i]);
 
       if (fIsEmbedded) {
-	histname = "fHistJetMCPtCorrPt_";
-	histname += i;
-	fHistJetMCPtCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
-	fHistJetMCPtCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{MC} (GeV/c)");
-	fHistJetMCPtCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
-	fHistJetMCPtCorrPt[i]->GetZaxis()->SetTitle("counts");
-	fOutput->Add(fHistJetMCPtCorrPt[i]);
+        histname = "fHistJetMCPtCorrPt_";
+        histname += i;
+        fHistJetMCPtCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+        fHistJetMCPtCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{MC} (GeV/c)");
+        fHistJetMCPtCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
+        fHistJetMCPtCorrPt[i]->GetZaxis()->SetTitle("counts");
+        fOutput->Add(fHistJetMCPtCorrPt[i]);
       }
     }
 
@@ -354,12 +354,12 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
   Int_t constituentsNbins = 250;
   Double_t constituentsMax = 249.5;
-  
+
   if (fForceBeamType == kpp) {
     constituentsNbins = 50;
     constituentsMax = 49.5;
   }
-  
+
   if (fHistoType == 0) 
     AllocateTHX();
   else
@@ -373,7 +373,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
   fHistTracksZJetPtJetConst = new TH3*[fNcentBins];
   fHistClustersZJetPtJetConst = new TH3*[fNcentBins];
-  
+
   for (Int_t i = 0; i < fNcentBins; i++) {
     TString histname;
 
@@ -385,7 +385,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistTracksJetPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
       fHistTracksJetPt[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistTracksJetPt[i]);
-      
+
       histname = "fHistTracksPtDist_";
       histname += i;
       fHistTracksPtDist[i] = new TH2F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
@@ -451,7 +451,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   AliJetContainer *jets = GetJetContainer(0);
 
   if (!jets) return kFALSE;
-  
+
   AliEmcalJet* jet = 0;
 
   jets->ResetCurrentID();
@@ -481,34 +481,39 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     Double_t z = GetParallelFraction(leadPart.Vect(), jet);
     if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
 
-    FillJetHisto(fCent, ep, jet->Eta(), jet->Phi(), jet->Pt(), jet->MCPt(), corrPt, jet->Area(), 
-		 jet->NEF(), z, jet->GetNumberOfConstituents(), ptLeading);
+    FillJetHisto(fCent, ep, jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt(), jet->MCPt(), corrPt, jet->Area(),
+        jet->NEF(), z, jet->GetNumberOfConstituents(), ptLeading);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-	AliVParticle *track = jet->TrackAt(it, fTracks);
-	if (track) {
-	  fHistTracksJetPt[fCentBin]->Fill(track->Pt(), jet->Pt());
-	  Double_t dist = TMath::Sqrt((track->Eta() - jet->Eta()) * (track->Eta() - jet->Eta()) + (track->Phi() - jet->Phi()) * (track->Phi() - jet->Phi()));
-	  fHistTracksPtDist[fCentBin]->Fill(track->Pt(), dist);
+        AliVParticle *track = jet->TrackAt(it, fTracks);
+        if (track) {
+          fHistTracksJetPt[fCentBin]->Fill(track->Pt(), jet->Pt());
+          Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
+          Double_t deta = track->Eta() - jet->Eta();
+          Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
+          fHistTracksPtDist[fCentBin]->Fill(track->Pt(), dist);
           fHistTracksZJetPtJetConst[fCentBin]->Fill(GetParallelFraction(track, jet), jet->Pt(), jet->GetNumberOfConstituents());
-	}
+        }
       }
     }
 
     if (fCaloClusters) {
       for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-	AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
-	
-	if (cluster) {
-	  TLorentzVector nPart;
-	  cluster->GetMomentum(nPart, fVertex);
+        AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
 
-	  fHistClustersJetPt[fCentBin]->Fill(nPart.Pt(), jet->Pt());
-	  Double_t dist = TMath::Sqrt((nPart.Eta() - jet->Eta()) * (nPart.Eta() - jet->Eta()) + (nPart.Phi() - jet->Phi()) * (nPart.Phi() - jet->Phi()));
-	  fHistClustersPtDist[fCentBin]->Fill(nPart.Pt(), dist);
+        if (cluster) {
+          TLorentzVector nPart;
+          cluster->GetMomentum(nPart, fVertex);
+
+          Double_t dphi = TVector2::Phi_0_2pi(nPart.Phi() - jet->Phi());
+          Double_t deta = nPart.Eta() - jet->Eta();
+
+          fHistClustersJetPt[fCentBin]->Fill(nPart.Pt(), jet->Pt());
+          Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
+          fHistClustersPtDist[fCentBin]->Fill(nPart.Pt(), dist);
           fHistClustersZJetPtJetConst[fCentBin]->Fill(GetParallelFraction(nPart.Vect(), jet), jet->Pt(), jet->GetNumberOfConstituents());
-	}
+        }
       }
     }
   } //jet loop 
@@ -518,7 +523,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
-				       Double_t NEF, Double_t z, Int_t n, Double_t leadingpt)
+    Double_t NEF, Double_t z, Int_t n, Double_t leadingpt)
 {
   if (fHistoType == 0) {
     fHistJetPtEtaPhi[fCentBin]->Fill(pt,eta,phi);
@@ -536,43 +541,43 @@ void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta,
       fHistJetCorrPtLeadingPartPt[fCentBin]->Fill(corrpt,leadingpt);
       fHistJetPtCorrPt[fCentBin]->Fill(pt,corrpt);
       if (fIsEmbedded)
-	fHistJetMCPtCorrPt[fCentBin]->Fill(MCpt,corrpt);
+        fHistJetMCPtCorrPt[fCentBin]->Fill(MCpt,corrpt);
     }
     if (fIsEmbedded)
       fHistJetPtMCPt[fCentBin]->Fill(pt,MCpt);
   }
   else {
- 
+
     Double_t contents[20]={0};
 
     for (Int_t i = 0; i < fHistJetObservables->GetNdimensions(); i++) {
       TString title(fHistJetObservables->GetAxis(i)->GetTitle());
       if (title=="Centrality (%)")
-	contents[i] = cent;
+        contents[i] = cent;
       else if (title=="#phi_{jet} - #psi_{RP}")
-	contents[i] = ep;
+        contents[i] = ep;
       else if (title=="#eta_{jet}")
-	contents[i] = eta;
+        contents[i] = eta;
       else if (title=="#phi_{jet} (rad)")
-	contents[i] = phi;
+        contents[i] = phi;
       else if (title=="p_{T} (GeV/c)")
-	contents[i] = pt;
+        contents[i] = pt;
       else if (title=="p_{T}^{MC} (GeV/c)")
-	contents[i] = MCpt;
+        contents[i] = MCpt;
       else if (title=="p_{T}^{corr} (GeV/c)")
-	contents[i] = corrpt;
+        contents[i] = corrpt;
       else if (title=="A_{jet}")
-	contents[i] = area;
+        contents[i] = area;
       else if (title=="NEF")
-	contents[i] = NEF;
+        contents[i] = NEF;
       else if (title=="Z")
-	contents[i] = z;
+        contents[i] = z;
       else if (title=="No. of constituents")
-	contents[i] = n;
+        contents[i] = n;
       else if (title=="p_{T,particle}^{leading} (GeV/c)")
-	contents[i] = leadingpt;
+        contents[i] = leadingpt;
       else 
-	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
 
     fHistJetObservables->Fill(contents);
