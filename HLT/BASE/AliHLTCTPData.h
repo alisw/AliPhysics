@@ -113,10 +113,10 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   int CheckTrigger(const char* name) const;
 
   /** glob match name in trigger mask **/
-  int MatchTriggerGlob(const char* glob);
+  int MatchTriggerGlob(const char* glob) const;
 
   /** regex match in trigger mask **/
-  int MatchTriggerRE(const char* re);
+  int MatchTriggerRE(const char* re) const;
 
   /**
    * Increment counter for CTP trigger classes
@@ -204,7 +204,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
 
   /** simple char-by-char glob string matching 
    * e.g. ***FOO matches BARFOO **/
-  Bool_t Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize );
+  Bool_t Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize ) const;
 
   AliHLTTriggerMask_t fMask;      /// mask of initialized trigger classes
   AliHLTTriggerMask_t fTriggers;  /// current trigger

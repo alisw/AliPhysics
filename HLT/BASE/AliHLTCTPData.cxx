@@ -512,7 +512,7 @@ std::string AliHLTCTPData::TriggerMaskToString(AliHLTTriggerMask_t mask) const
   return stream.str();
 }
 
-Bool_t AliHLTCTPData::Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize )
+Bool_t AliHLTCTPData::Globncmp(const char* triggerName, const char* glob, int triggerNameSize, int globSize ) const
 {
   if (globSize == 0) return kFALSE;
   for (int i=0; i<((triggerNameSize<globSize)?triggerNameSize:globSize); i++)
@@ -522,7 +522,7 @@ Bool_t AliHLTCTPData::Globncmp(const char* triggerName, const char* glob, int tr
   return kTRUE;
 }
 
-int AliHLTCTPData::MatchTriggerGlob(const char* glob)
+int AliHLTCTPData::MatchTriggerGlob(const char* glob) const
 {
   //return 1 on (first) match, 0 otherwise
   //only take what is not masked
@@ -547,7 +547,7 @@ int AliHLTCTPData::MatchTriggerGlob(const char* glob)
   return 0;
 }
 
-int AliHLTCTPData::MatchTriggerRE(const char* restr)
+int AliHLTCTPData::MatchTriggerRE(const char* restr) const
 {
   //return 1 on (first) match, 0 otherwise
   //only take what is not masked
