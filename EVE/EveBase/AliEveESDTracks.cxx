@@ -883,6 +883,56 @@ TEveElementList* AliEveESDTracks::ByAnalCuts()
     return cont;
 }
 
+TEveTrackList* AliEveESDTracks::HLTTracks()
+{
+    AliEveEventManager* eveManager=AliEveEventManager::GetMaster();
+    
+    int eventId=eveManager->GetEventId();
+    TFile* esdFile=eveManager->GetESDFile();
+    if (!esdFile) {
+        Warning("AliEveESDTracks::HLTTracks", "can not get esd file from EVE manager");
+        return NULL;
+    }
+    
+    TObject* pObj=NULL;
+    TTree* pHLTTree=NULL;
+    esdFile->GetObject("HLTesdTree", pObj);
+    if (!pObj || (pHLTTree=dynamic_cast<TTree*>(pObj))==NULL) {
+        Info("AliEveESDTracks::HLTTracks", "no HLT ESD tree in ESD file");
+        return NULL;
+    }
+    if (pHLTTree->GetEntries()<=eventId) {
+        Warning("AliEveESDTracks::HLTTracks", "skiping event %d: out of range %lld", eventId, pHLTTree->GetEntries());
+        return NULL;
+    }
+    
+    AliESDEvent* esd=new AliESDEvent;
+    esd->ReadFromTree(pHLTTree);
+    pHLTTree->GetEntry(eventId);
+    
+    TEveTrackList* cont = new TEveTrackList("HLT ESD Tracks");
+    cont->SetMainColor(kCyan+3);
+    SetupPropagator(cont->GetPropagator(),0.1*esd->GetMagneticField(), 520);
+    
+    eveManager->AddElement(cont);
+    
+    Int_t count = 0;
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        ++count;
+        TEveTrack* track = MakeTrack(esd->GetTrack(n), cont);
+        
+        cont->AddElement(track);
+    }
+    cont->SetTitle(Form("N=%d", count));
+    cont->MakeTracks();
+    
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
+
 
 
 

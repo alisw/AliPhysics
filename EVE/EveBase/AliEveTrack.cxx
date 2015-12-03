@@ -231,17 +231,72 @@ void AliEveTrack::ImportClustersFromLabel()
 void AliEveTrack::ImportClustersFromIndex()
 {
     // Import clusters marked with same reconstructed track index as the track.
-    // Uses macro "clusters_from_index.C".
-    
     static const TEveException kEH("AliEveTrack::ImportClustersFromIndex ");
     
     if (fIndex == kMinInt)
         throw kEH + "index not set.";
     
-    TEveUtil::LoadMacro("clusters_from_index.C");
-    gROOT->ProcessLine(Form("clusters_from_index(%d, (TEveElement*)%p);",
-                            fIndex, this));
+    ImportClustersFromIndex(fIndex);
 }
+
+TEvePointSet* AliEveTrack::ImportClustersFromIndex(Int_t index)
+{
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    if (index < 0) {
+        Warning("AliEveTrack::ImportClustersFromIndex", "index not set.");
+        return 0;
+    }
+    
+    if (index >= esd->GetNumberOfTracks()) {
+        Warning("AliEveTrack::ImportClustersFromIndex", "index out of range");
+        return 0;
+    }
+    
+    TEvePointSet* clusters = new TEvePointSet(64);
+    clusters->SetOwnIds(kTRUE);
+    
+    AliESDtrack* at = esd->GetTrack(index);
+    const AliTrackPointArray* pArr = at->GetTrackPointArray();
+    if (pArr == 0) {
+        Warning("AliEveTrack::ImportClustersFromIndex", "TrackPointArray not stored with ESD track.");
+    }
+    
+    Int_t np =  pArr->GetNPoints();
+    const Float_t* x = pArr->GetX();
+    const Float_t* y = pArr->GetY();
+    const Float_t* z = pArr->GetZ();
+    for (Int_t i=0; i<np; ++i) {
+        clusters->SetNextPoint(x[i], y[i], z[i]);
+        AliTrackPoint *atp = new AliTrackPoint;
+        pArr->GetPoint(*atp, i);
+        clusters->SetPointId(atp);    }
+    
+    
+    if(clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
+        Warning("AliEveTrack::ImportClustersFromIndex", "No clusters for index '%d'", index);
+        delete clusters;
+        return 0;
+    }
+    
+    clusters->SetMarkerStyle(2);
+    clusters->SetMarkerSize(2);
+    clusters->SetMarkerColor(4);
+    
+    clusters->SetName(Form("Clusters idx=%d", index));
+    clusters->SetTitle(Form("N=%d", clusters->Size()));
+    
+    gEve->AddElement(clusters);
+    
+    if (AliEveMultiView::Instance())
+    {
+        AliEveMultiView::Instance()->ImportEventRPhi(clusters);
+        AliEveMultiView::Instance()->ImportEventRhoZ(clusters);
+    }
+    
+    gEve->Redraw3D();
+    
+    return clusters;}
 
 /******************************************************************************/
 

@@ -146,8 +146,6 @@ void AliEveHFEditor::DisplayDetailed()
   hflocation->SetMarkerSize(2.5);
   hflocation->SetMarkerColor(kOrange+8);
 
-  TEveUtil::LoadMacro("clusters_from_index.C");
-
   TEveTrack *negTrack =  fM->GetNegTrack();
   TEveTrack *posTrack =  fM->GetPosTrack();
 
@@ -158,8 +156,10 @@ void AliEveHFEditor::DisplayDetailed()
   TEvePointSet *posDaughterCluster = 0;
 
   daughterIndex = negTrack->GetIndex();
-  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
-  Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
+    
+    AliEveTrack *eveTrack = new AliEveTrack();
+    
+    Long_t negResult = eveTrack->ImportClustersFromIndex(daughterIndex);
   if (negResult) {
     negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
     if (negDaughterCluster){
@@ -174,8 +174,8 @@ void AliEveHFEditor::DisplayDetailed()
   }
 
   daughterIndex = posTrack->GetIndex();
-  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
-  Long_t posResult = gInterpreter->ProcessLine(macroWithIndex);
+
+    Long_t posResult = eveTrack->ImportClustersFromIndex(daughterIndex);
   if (posResult) {
     posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
     if (posDaughterCluster){
@@ -188,6 +188,9 @@ void AliEveHFEditor::DisplayDetailed()
   {
     Warning("DisplayDetailed", "Import of positive daughter's clusters failed.");
   }
+    
+    delete eveTrack;eveTrack=0;
+    
 
   //
   // This part is for the bending plane view

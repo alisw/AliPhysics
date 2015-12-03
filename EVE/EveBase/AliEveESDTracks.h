@@ -25,9 +25,10 @@ public:
     AliEveESDTracks();
     ~AliEveESDTracks();
     
-    TEveElementList* ByCategory();
-    TEveElementList* ByType();
-    TEveElementList* PrimaryVertexTracks();
+    TEveElementList*    ByCategory();
+    TEveElementList*    ByType();
+    TEveElementList*    PrimaryVertexTracks();
+    TEveTrackList*      HLTTracks();
     
     void SetColorsByCategory(Color_t colors[9]){
         for(int i=0;i<9;i++){fColorsByCategory[i]=colors[i];}

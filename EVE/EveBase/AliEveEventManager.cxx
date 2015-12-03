@@ -606,6 +606,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(settings.GetValue("MUON.show",true)){fMuonTracksDrawer->Draw();}
         if(settings.GetValue("SPD.tracklets.show",false)){fSPDTracklersDrawer->Draw();}
         if(settings.GetValue("kine.tracks.show",false)){fKineTracksDrawer->Draw();}
+        if(settings.GetValue("HLT.tracks.show",false)){fESDTracksDrawer->HLTTracks();}
         
         Double_t x[3] = { 0, 0, 0 };
         
