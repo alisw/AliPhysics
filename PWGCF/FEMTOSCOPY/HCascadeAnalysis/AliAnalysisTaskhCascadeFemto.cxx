@@ -203,7 +203,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistInvMassAntiL(0),
   fHistInvMassXiInPairs(0),
   fHistXiMultvsCent(0),
-  fCFContCascadeCuts(0),
+//  fCFContCascadeCuts(0),
 
   fHistpXiSignalRealKstar(0),
   fHistapXiSignalRealKstar(0),
@@ -374,7 +374,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistInvMassAntiL(0),
   fHistInvMassXiInPairs(0),
   fHistXiMultvsCent(0),
-  fCFContCascadeCuts(0),
+//  fCFContCascadeCuts(0),
 
   fHistpXiSignalRealKstar(0),
   fHistapXiSignalRealKstar(0),
@@ -429,7 +429,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(1, TList::Class());
-  DefineOutput(2, AliCFContainer::Class());
+//  DefineOutput(2, AliCFContainer::Class());
 
 }
 
@@ -440,7 +440,7 @@ AliAnalysisTaskhCascadeFemto::~AliAnalysisTaskhCascadeFemto() {
   // Destructor
   //
   if (fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())   { delete fOutputContainer;     fOutputContainer = 0x0;    }
-  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeCuts; fCFContCascadeCuts = 0x0; }
+//  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeCuts; fCFContCascadeCuts = 0x0; }
   if (fESDtrackCuts) delete fESDtrackCuts;
 
 
@@ -603,7 +603,7 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fHistInvMassXiInPairs = new TH2F("fHistInvMassXiInPairs","", fNbinsMassGm, fLowMassLimGm, fUpMassLimGm,200,0.,100.);
   fOutputContainer->Add(fHistInvMassXiInPairs);
 
-  if(! fCFContCascadeCuts && fUseContainer) {
+/*  if(! fCFContCascadeCuts) {
 
    // Container meant to store all the relevant distributions corresponding to the cut variables.
    // - NB overflow/underflow of variables on which we want to cut later should be 0!!!
@@ -755,7 +755,7 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetVarTitle(21, "Distance xy #Lambda-cascade ");
   
  }
-  
+*/  
 
   fHistpXiSignalRealKstar = new TH2F("fHistpXiSignalRealKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalRealKstar);
@@ -834,7 +834,7 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fOutputContainer->Add(fHistTrackBufferOverflow);
 
   PostData(1, fOutputContainer );
-  PostData(2, fCFContCascadeCuts);
+//  PostData(2, fCFContCascadeCuts);
 
 }
 
@@ -891,9 +891,6 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     const AliESDVertex *lPrimaryBestESDVtx = fESDevent->GetPrimaryVertex();
     if (!lPrimaryBestESDVtx){
       AliWarning("No prim. vertex in ESD... return!");
-      PostData(1, fOutputContainer);
-      PostData(2, fCFContCascadeCuts);
-
       return;
     }
     vertexmain = (AliVVertex*) lPrimaryBestESDVtx;
@@ -913,9 +910,6 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     const AliAODVertex *lPrimaryBestAODVtx = fAODevent->GetPrimaryVertex();
     if (!lPrimaryBestAODVtx){
       AliWarning("No prim. vertex in AOD... return!");
-      PostData(1, fOutputContainer);
-      PostData(2, fCFContCascadeCuts);
-
       return;
     }
     vertexmain = (AliVVertex*) lPrimaryBestAODVtx;
@@ -1104,7 +1098,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     nTPCclp = track->GetTPCncls();
     if (nTPCclp<70) continue;
 
-    sharedFractionTPCcl = (Float_t) nTPCclSp/nTPCclp;
+    sharedFractionTPCcl = (Float_t) nTPCclSp/nTPCclp; // can be > 1. 
     if (sharedFractionTPCcl>0.) continue; // for protons it is not more than 3% (without dca cuts) 
 //    cout<<"Shared fraction ncl "<<sharedFractionTPCcl<<endl;
 
@@ -1324,9 +1318,9 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     Int_t lNegTPCClustersS;
     Int_t lBachTPCClustersS;
 
-    Int_t sharedFractionTPCclPos;
-    Int_t sharedFractionTPCclNeg;
-    Int_t sharedFractionTPCclBach;
+    Float_t sharedFractionTPCclPos;
+    Float_t sharedFractionTPCclNeg;
+    Float_t sharedFractionTPCclBach;
 
     AliVTrack *pTrackXi = 0x0;
     AliVTrack *nTrackXi = 0x0;
@@ -1486,16 +1480,13 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         }
         lChargeXi = xi->Charge();
 
-//      if (fkQualityCutTPCrefit) {
-                 // 1 - Poor quality related to TPCrefit
         pStatus    = pTrackXi->GetStatus();
         nStatus    = nTrackXi->GetStatus();
         bachStatus = bachTrackXi->GetStatus();
 
-//        if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }i // Redundant required in V0f
-//        if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; } // idem
+//        if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; } // already in V0 finder
+//        if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; } 
         if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
-//      }
 
         xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
 
@@ -1529,22 +1520,23 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 //        AliWarning("Pb / Idx(Bach. track) = Idx(Pos. track) ... continue!"); continue;
 //      }
 
-//      if (fkQualityCutTPCrefit) { 
-
-//        if (!(aodpTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; } // already in vertexer
-//        if (!(aodnTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; } // idem
-//        if (!(aodbachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; } // TPC PID will remove this anyhow
-
-//      }
-
-     
-
         aodpTrackXi = dynamic_cast<AliAODTrack*>(pTrackXi); // to convert aod in vtracks
         aodnTrackXi = dynamic_cast<AliAODTrack*>(nTrackXi);
         aodbachTrackXi = dynamic_cast<AliAODTrack*>(bachTrackXi);
 
         //if (aodpTrackXi->Charge()<0) cout<<"Wrong Sign for pos!!!!!!!!!!!!"<<endl;
         //if (aodnTrackXi->Charge()>0) cout<<"Wrong Sign for neg!!!!!!!!!!!!"<<endl;
+
+//      if ((aodpTrackXi->IsOn(AliAODTrack::kITSpureSA)))    {  cout<<" ITSSAtrack POS!! "<<endl; }
+//      if ((aodnTrackXi->IsOn(AliAODTrack::kITSpureSA)))    {  cout<<" ITSSAtrack NEG!! "<<endl; }
+//      if ((aodbachTrackXi->IsOn(AliAODTrack::kITSpureSA))) {  cout<<" ITSSAtrack BACH!!"<<endl; }
+
+
+//        if (!(aodpTrackXi->IsOn(AliAODTrack::kTPCrefit)))    { AliWarning(" V0 Pos. track has no TPCrefit ... continue!"); continue; } // already in V0 finder
+//        if (!(aodnTrackXi->IsOn(AliAODTrack::kTPCrefit)))    { AliWarning(" V0 Neg. track has no TPCrefit ... continue!"); continue; }
+        if (!(aodbachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { /*AliWarning(" Bach.   track has no TPCrefit ... continue!");*/ continue; }
+
+
 
         lChargeXi = xiaod->ChargeXi();
         if ( lChargeXi < 0 )  { lInvMassXiMinus = xiaod->MassXi(); lInvMassLambdaAsCascDghter = xiaod->MassLambda(); lInvMassOmegaMinus = xiaod->MassOmega();}
@@ -1582,7 +1574,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         lDcaPosToPrimVertexXi = xiaod->DcaPosToPrimVertex();
         lDcaNegToPrimVertexXi = xiaod->DcaNegToPrimVertex();
  
-      //xiaod->DcaXiToPrimVertex(); // to be checked
+        //cout<<" dca xi to PV "<<xiaod->DcaXiToPrimVertex()<<endl;; // gives back -999 FIXME
 
         lPosXi[0] = xiaod->DecayVertexXiX();
         lPosXi[1] = xiaod->DecayVertexXiY();
@@ -1605,6 +1597,36 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         etaBach = aodbachTrackXi->Eta();
 
       }
+
+      lPosTPCClusters   = pTrackXi->GetTPCNcls();
+      lNegTPCClusters   = nTrackXi->GetTPCNcls();
+      lBachTPCClusters  = bachTrackXi->GetTPCNcls();
+
+      if (lPosTPCClusters  < 70) { //AliWarning("Pb / V0 Pos. track has less than minn TPC clusters ... continue!");
+        continue;
+      }
+      if (lNegTPCClusters  < 70) { //AliWarning("Pb / V0 Neg. track has less than minn TPC clusters ... continue!");
+        continue;
+      }
+      if (lBachTPCClusters < 70) { //AliWarning("Pb / Bach.   track has less than minn TPC clusters ... continue!");
+        continue;
+      }
+
+//    if (lXiTransvMom<0.8||lXiTransvMom>8.) continue;
+//    if (TMath::Abs(lRapXi)>0.5) continue;
+
+      if (TMath::Abs(etaBach)>0.8) continue;
+      if (TMath::Abs(etaPos)>0.8) continue;
+      if (TMath::Abs(etaNeg)>0.8) continue;
+      if (fkApplyYcutCasc) if (TMath::Abs(lRapXi)>0.5) continue; // basically contained in the previous cut
+
+      sharedFractionTPCclPos  = (Float_t) lPosTPCClustersS/lPosTPCClusters;
+      sharedFractionTPCclNeg  = (Float_t) lNegTPCClustersS/lNegTPCClusters;
+      sharedFractionTPCclBach = (Float_t) lBachTPCClustersS/lBachTPCClusters;
+//      cout<<" shared pos "<<sharedFractionTPCclPos<<" shared neg "<<sharedFractionTPCclNeg<<" shared bach "<<sharedFractionTPCclBach<<endl;
+      if (sharedFractionTPCclPos>0||sharedFractionTPCclNeg>0||sharedFractionTPCclBach>0) continue; // FIXME undestand if can be made looser
+
+
 
       lXiRadius = TMath::Sqrt( lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1] );
 
@@ -1633,35 +1655,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       if (lV0Mom!=0) lctauV0 = distV0Xi*fPDGL/lV0Mom;
       ldistTV0Xi = TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2));
 
-      lPosTPCClusters   = pTrackXi->GetTPCNcls();
-      lNegTPCClusters   = nTrackXi->GetTPCNcls();
-      lBachTPCClusters  = bachTrackXi->GetTPCNcls();
 
-      if (lPosTPCClusters  < 70) { //AliWarning("Pb / V0 Pos. track has less than minn TPC clusters ... continue!");
-        continue; 
-      }
-      if (lNegTPCClusters  < 70) { //AliWarning("Pb / V0 Neg. track has less than minn TPC clusters ... continue!");
-        continue; 
-      }
-      if (lBachTPCClusters < 70) { //AliWarning("Pb / Bach.   track has less than minn TPC clusters ... continue!");
-        continue; 
-      }
- 
-//    if (lXiTransvMom<0.8||lXiTransvMom>8.) continue;
-//    if (TMath::Abs(lRapXi)>0.5) continue;
-
-      if (TMath::Abs(etaBach)>0.8) continue;
-      if (TMath::Abs(etaPos)>0.8) continue;
-      if (TMath::Abs(etaNeg)>0.8) continue;
-      if (fkApplyYcutCasc) if (TMath::Abs(lRapXi)>0.5) continue; // basically contained in the previous cut
-
-      sharedFractionTPCclPos = (Float_t) lPosTPCClustersS/lPosTPCClusters;
-      sharedFractionTPCclNeg = (Float_t) lNegTPCClustersS/lNegTPCClusters;
-      sharedFractionTPCclBach = (Float_t) lBachTPCClustersS/lBachTPCClusters;
-
-      if (sharedFractionTPCclPos>0||sharedFractionTPCclNeg>0||sharedFractionTPCclBach>0) continue;
-
-      // TPC PID: 4-sigma bands on Bethe-Bloch curve
       // Bachelor
       if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fnSigmaTPCPIDsecondParticleDau) lIsBachelorKaonForTPC = kTRUE;
       if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fnSigmaTPCPIDsecondParticleDau) lIsBachelorPionForTPC = kTRUE;
@@ -1770,7 +1764,8 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     
 
       // Fill the container for topological cuts optimization
-      if (fUseContainer) {
+/*      if (fUseContainer) {
+
         lContainerCutVars[0] = lDcaXiDaughters;
         lContainerCutVars[1] = lDcaBachToPrimVertexXi;
         lContainerCutVars[2] = lXiCosineOfPointingAngle;
@@ -1809,7 +1804,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
         }
       }
-
+*/
     
       if (!fkCascadeSideBands) {  
         if (TMath::Abs(lInvMassXi-fPDGsecond) > fMassWindowCascades ) continue; // save only xis in the selected mass range
@@ -1949,7 +1944,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
 // Post output data
   PostData(1, fOutputContainer);
-  PostData(2, fCFContCascadeCuts);
+//  PostData(2, fCFContCascadeCuts);
 
 }
 
@@ -2331,11 +2326,11 @@ void AliAnalysisTaskhCascadeFemto::SelectBestCandidate ( const AliAnalysishCasca
 
    if (event->fReconstructedXi[i].doPickOne) {
    
-     deltamassi = TMath::Abs(fEvt->fReconstructedXi[i].xiMass - fPDGsecond);
+     deltamassi = TMath::Abs(event->fReconstructedXi[i].xiMass - fPDGsecond);
      //cout<<" Delta mass is for first "<<deltamassi<<endl;
      for (int j=i+1; j < event->fNumberCandidateXi; j++) {
        if (event->fReconstructedXi[j].doPickOne) {
-         deltamassj = TMath::Abs(fEvt->fReconstructedXi[j].xiMass - fPDGsecond);
+         deltamassj = TMath::Abs(event->fReconstructedXi[j].xiMass - fPDGsecond);
          //cout<<" Delta mass is for second "<<deltamassj<<endl;
          if (deltamassj > deltamassi) { 
          event->fReconstructedXi[j].doSkipOver = kTRUE;
