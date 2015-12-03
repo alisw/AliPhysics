@@ -158,7 +158,7 @@ int AliHLTEMCALTriggerDataMakerComponent::DoEvent( const AliHLTComponentEventDat
 void AliHLTEMCALTriggerDataMakerComponent::ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr){
   fSTUHeader = *headerptr;
   for(UShort_t idig = 0; idig < headerptr->fNRawDigits; idig++){
-	if(dataptr->fID > kMaxChannels){
+	if(dataptr->fID > kMaxChannels || dataptr->fID < 0){
 		HLTWarning("Invalid TRU index: %d", dataptr->fID);
 		continue;
 	}
