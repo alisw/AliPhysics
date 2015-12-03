@@ -21,10 +21,12 @@ public:
     ~AliEveESDV0s(){}
     
     AliEveV0List* Draw(Bool_t onFly=kFALSE);
-    
+    TEvePointSet* DrawPointsOffline();
+    TEvePointSet* DrawPointsOnfly();
 private:
     void InitRecTracks(TEveRecTrack& rt, const AliExternalTrackParam* tp);
     AliEveV0* MakeV0(TEveTrackPropagator* rnrStyleNeg,TEveTrackPropagator* rnrStylePos, AliESDVertex* primVtx, AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i);
+    void FillPointSet(TEvePointSet* ps, Bool_t onFly);
     
     AliEveESDV0s(const AliEveESDV0s&);
     AliEveESDV0s& operator=(const AliEveESDV0s&);

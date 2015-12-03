@@ -165,3 +165,33 @@ AliEveKinkList* AliEveESDKinks::Draw()
     
     return cont;
 }
+
+TEvePointSet* AliEveESDKinks::DrawPoints()
+{
+    TEvePointSet* points = new TEvePointSet("Kink vertex locations");
+    
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    for (Int_t n=0; n<esd->GetNumberOfTracks(); ++n)
+    {
+        AliESDtrack* track = esd->GetTrack(n);
+        if(track->GetKinkIndex(0)<0){
+            
+            AliESDkink *kink = esd->GetKink(TMath::Abs(track->GetKinkIndex(0))-1);
+            const TVector3 Position(kink->GetPosition());
+            points->SetNextPoint(Position.X(), Position.Y(), Position.Z());
+            points->SetPointId(kink);
+        }
+    }
+
+    points->SetTitle(Form("N=%d", points->Size()));
+    points->SetMarkerStyle(4);
+    points->SetMarkerSize(1.5);
+    points->SetMarkerColor(kOrange+8);
+    
+    gEve->AddElement(points);
+    gEve->Redraw3D();
+    
+    return points;
+}
+

@@ -21,7 +21,7 @@ public:
     ~AliEveESDCascades(){}
     
     AliEveCascadeList* Draw();
-    
+    TEvePointSet* DrawPoints();
 private:
     void InitRecTrack(TEveRecTrack& rt, const AliExternalTrackParam* tp);
     AliEveCascade* MakeCascade(TEveTrackPropagator* rnrStyleBac,TEveTrackPropagator* rnrStyleNeg,TEveTrackPropagator* rnrStylePos, AliESDVertex* primVtx,AliESDtrack* bac, AliESDcascade* cascade, Int_t i);

@@ -21,7 +21,7 @@ public:
     ~AliEveESDKinks(){}
     
     AliEveKinkList* Draw();
-    
+    TEvePointSet* DrawPoints();
 private:
     void InitRecTrackDother(TEveRecTrack& rt, const AliExternalTrackParam* tp);
     void InitRecTrackDaughter(TEveRecTrack& rt, const AliExternalTrackParam* tp, TEveVector* svt,TEveVector* spt);

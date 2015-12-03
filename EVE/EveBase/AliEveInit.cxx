@@ -274,8 +274,6 @@ void AliEveInit::AddMacros()
     
     bool drawClusters     = settings.GetValue("clusters.show",false);          // show clusters
     bool drawKinks        = settings.GetValue("kinks.show",false);             // show kinks
-    bool drawV0s          = settings.GetValue("V0s.show",false);               // show V0s
-    bool drawCascades     = settings.GetValue("cascades.show",false);          // show cascades
     bool drawRawData      = settings.GetValue("rawData.show",false);           // show raw data
     bool drawHits         = settings.GetValue("hits.show",false);              // show hits
     bool drawDigits       = settings.GetValue("digits.show",false);              // show digits
@@ -309,13 +307,6 @@ void AliEveInit::AddMacros()
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", drawRawData));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", drawRawData));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  "", drawRawData));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly","",  drawV0s));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_offline","",drawV0s));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points","", drawCascades));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points","",    drawKinks));
     
     // default appearance:
     //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));

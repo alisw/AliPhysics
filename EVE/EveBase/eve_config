@@ -66,8 +66,12 @@ TOF.color:                              930
 
 clusters.show:                          0
 kinks.show:                             0
+kinks.points.show:                      0
 V0s.show:                               0
+V0s.points.offline.show:                 0
+V0s.points.onfly.show:                  0
 cascades.show:                          0
+cascades.points.show:                   0
 rawData.show:                           0
 hits.show:                              0
 digits.show:                            0

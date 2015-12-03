@@ -20,6 +20,49 @@
 
 #include <AliEveEventManager.h>
 
+AliEveCascadeList* AliEveESDCascades::Draw()
+{
+    printf("*** ESD Cascades ***");
+    
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+    
+    AliEveCascadeList* cont = new AliEveCascadeList("ESD cascade");
+    cont->SetMainColor(kBlue+2);
+    TEveTrackPropagator* rnrStyleBac = cont->GetPropagatorBac();
+    TEveTrackPropagator* rnrStyleNeg = cont->GetPropagatorNeg();
+    TEveTrackPropagator* rnrStylePos = cont->GetPropagatorPos();
+    rnrStyleBac->SetMagField( 0.1*esd->GetMagneticField() );
+    rnrStyleNeg->SetMagField( 0.1*esd->GetMagneticField() );
+    rnrStylePos->SetMagField( 0.1*esd->GetMagneticField() );
+    
+    gEve->AddElement(cont);
+    
+    Int_t count = 0;
+    for (Int_t n=0; n<esd->GetNumberOfCascades(); ++n)
+    {
+        AliESDcascade *cascade = esd->GetCascade(n);
+        
+        Int_t bacInd = cascade->GetBindex();
+        AliESDtrack* bacTr = esd->GetTrack(bacInd);
+        
+        AliEveCascade* myCascade = MakeCascade(rnrStyleBac,rnrStyleNeg,rnrStylePos, primVertex, bacTr, cascade, n);
+        if (myCascade)
+        {
+            gEve->AddElement(myCascade, cont);
+            ++count;
+        }
+    }
+    
+    cont->SetTitle("Cascade candidates (reco)");
+    
+    cont->MakeCascades();
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
 void AliEveESDCascades::InitRecTrack(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
     Double_t      pbuf[3], vbuf[3];
@@ -113,46 +156,30 @@ AliEveCascade* AliEveESDCascades::MakeCascade(TEveTrackPropagator* rnrStyleBac,T
     return myCascade;
 }
 
-
-AliEveCascadeList* AliEveESDCascades::Draw()
+TEvePointSet* AliEveESDCascades::DrawPoints()
 {
-    printf("*** ESD Cascades ***");
+    TEvePointSet* points = new TEvePointSet("Cascade vertex locations");
     
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     
-    AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+    Int_t NCascades = esd->GetNumberOfCascades();
     
-    AliEveCascadeList* cont = new AliEveCascadeList("ESD cascade");
-    cont->SetMainColor(kBlue+2);
-    TEveTrackPropagator* rnrStyleBac = cont->GetPropagatorBac();
-    TEveTrackPropagator* rnrStyleNeg = cont->GetPropagatorNeg();
-    TEveTrackPropagator* rnrStylePos = cont->GetPropagatorPos();
-    rnrStyleBac->SetMagField( 0.1*esd->GetMagneticField() );
-    rnrStyleNeg->SetMagField( 0.1*esd->GetMagneticField() );
-    rnrStylePos->SetMagField( 0.1*esd->GetMagneticField() );
-    
-    gEve->AddElement(cont);
-    
-    Int_t count = 0;
-    for (Int_t n=0; n<esd->GetNumberOfCascades(); ++n)
+    Double_t x, y, z;
+    for (Int_t n = 0; n < NCascades; ++n)
     {
-        AliESDcascade *cascade = esd->GetCascade(n);
-        
-        Int_t bacInd = cascade->GetBindex();
-        AliESDtrack* bacTr = esd->GetTrack(bacInd);
-        
-        AliEveCascade* myCascade = MakeCascade(rnrStyleBac,rnrStyleNeg,rnrStylePos, primVertex, bacTr, cascade, n);
-        if (myCascade)
-        {
-            gEve->AddElement(myCascade, cont);
-            ++count;
-        }
+        AliESDcascade* av = esd->GetCascade(n);
+        av->GetXYZcascade(x, y, z);
+        points->SetNextPoint(x, y, z);
+        points->SetPointId(av);
     }
     
-    cont->SetTitle("Cascade candidates (reco)");
+    points->SetTitle(Form("N=%d", points->Size()));
+    points->SetMarkerStyle(4);
+    points->SetMarkerSize(1.5);
+    points->SetMarkerColor(kMagenta-9);
     
-    cont->MakeCascades();
+    gEve->AddElement(points);
     gEve->Redraw3D();
     
-    return cont;
+    return points;
 }

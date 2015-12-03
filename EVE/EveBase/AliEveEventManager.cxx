@@ -596,8 +596,12 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(fDrawESDtracksByType)fESDTracksDrawer->ByType();
         
         if(settings.GetValue("kinks.show",false)){fKinksDrawer->Draw();}
+        if(settings.GetValue("kinks.points.show",false)){fKinksDrawer->DrawPoints();}
         if(settings.GetValue("cascades.show",false)){fCascadesDrawer->Draw();}
+        if(settings.GetValue("cascades.points.show",false)){fCascadesDrawer->DrawPoints();}
         if(settings.GetValue("V0s.show",false)){fV0sDrawer->Draw();}
+        if(settings.GetValue("V0s.points.offline.show",false)){fV0sDrawer->DrawPointsOffline();}
+        if(settings.GetValue("V0s.points.onfly.show",false)){fV0sDrawer->DrawPointsOnfly();}
         if(settings.GetValue("MUON.show",true)){fMuonTracksDrawer->Draw();}
         if(settings.GetValue("SPD.tracklets.show",false)){fSPDTracklersDrawer->Draw();}
         

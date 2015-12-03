@@ -175,3 +175,60 @@ AliEveV0* AliEveESDV0s::MakeV0(TEveTrackPropagator* rnrStyleNeg,TEveTrackPropaga
     
     return myV0;
 }
+
+
+void AliEveESDV0s::FillPointSet(TEvePointSet* ps, Bool_t onFly)
+{
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    Int_t NV0s = esd->GetNumberOfV0s();
+    
+    Double_t x, y, z;
+    for (Int_t n = 0; n < NV0s; ++n)
+    {
+        AliESDv0* av = esd->GetV0(n);
+        if (av->GetOnFlyStatus() == onFly)
+        {
+            av->GetXYZ(x, y, z);
+            ps->SetNextPoint(x, y, z);
+            ps->SetPointId(av);
+        }
+    }
+}
+
+TEvePointSet* AliEveESDV0s::DrawPointsOffline()
+{
+    TEvePointSet* points = new TEvePointSet("V0 offline vertex locations");
+    
+    FillPointSet(points, kFALSE);
+    
+    points->SetTitle(Form("N=%d", points->Size()));
+    points->SetMarkerStyle(4);
+    points->SetMarkerSize(1.5);
+    points->SetMarkerColor(kOrange+8);
+    
+    gEve->AddElement(points);
+    gEve->Redraw3D();
+    
+    return points;
+}
+
+TEvePointSet* AliEveESDV0s::DrawPointsOnfly()
+{
+    TEvePointSet* points = new TEvePointSet("V0 on-the-fly vertex locations");
+    
+    FillPointSet(points, kTRUE);
+    
+    points->SetTitle(Form("N=%d", points->Size()));
+    points->SetMarkerStyle(4);
+    points->SetMarkerSize(1.5);
+    points->SetMarkerColor(kPink+10);
+    
+    gEve->AddElement(points);
+    gEve->Redraw3D();
+    
+    return points;
+}
+
+
+
