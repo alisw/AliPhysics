@@ -7,9 +7,9 @@ void InitializeRawDigit(AliHLTCaloTriggerRawDigitDataStruct &rawdigit){
   rawdigit.fTriggerBits = 0;
   rawdigit.fL1TimeSum = 0;
   rawdigit.fNL0Times = 0;
-  memset(rawdigit.fL0Times, 0, sizeof(UChar_t) * 10);
+  memset(rawdigit.fL0Times, 0, sizeof(rawdigit.fL0Times));
   rawdigit.fNTimeSamples = 0;
-  memset(rawdigit.fTimeSamples, 0, sizeof(Int_t) * 256);
+  memset(rawdigit.fTimeSamples, 0, sizeof(rawdigit.fTimeSamples));
 }
 
 void SetRawDigitID(AliHLTCaloTriggerRawDigitDataStruct &digit, Int_t id){

@@ -44,7 +44,7 @@ void AliHLTEMCALTRURawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunch
 
   Int_t idx;
 
-  Int_t timeSamples[15]; memset(timeSamples, 0, sizeof(Int_t) * 15);
+  Int_t timeSamples[15]; memset(timeSamples, 0, sizeof(timeSamples));
   UChar_t nSamples = 0;
 
   UInt_t iBin   = bunchlist.at(0).GetStartBin();
