@@ -39,6 +39,8 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 
+#include "AliMultSelection.h"
+
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
 ClassImp(AliAnalysisTaskEmcal)
@@ -84,6 +86,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
+  fUseNewCentralityEstimation(kFALSE),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -170,6 +173,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
+  fUseNewCentralityEstimation(kFALSE),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -309,7 +313,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrialsAfterSel);
-    
+
     fHistEventsAfterSel = new TH1F("fHistEventsAfterSel", "fHistEventsAfterSel", 11, 0, 11);
     fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
@@ -319,7 +323,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
-    
+
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
@@ -337,11 +341,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
     const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
     const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-    
+
     for (Int_t i = 1; i < 12; i++) {
       fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
       fHistEventsAfterSel->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-      
+
       fHistTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
       fHistXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
       fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
@@ -363,13 +367,13 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
     fHistCentrality->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCentrality);
-    
+
     fHistEventPlane = new TH1F("fHistEventPlane","Event plane", 120, -TMath::Pi(), TMath::Pi());
     fHistEventPlane->GetXaxis()->SetTitle("event plane");
     fHistEventPlane->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistEventPlane);
   }
-  
+
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fHistEventRejection->SetBit(TH1::kCanRebin);
@@ -425,7 +429,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistCentrality->Fill(fCent);
     fHistEventPlane->Fill(fEPV0);
   }
-  
+
   TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
   TIter next(triggerClasses);
   TObjString* triggerClass = 0;
@@ -472,7 +476,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
     if (!FillHistograms())
       return;
   }
-    
+
   if (fCreateHisto && fOutput) {
     // information for this iteration of the UserExec in the container
     PostData(1, fOutput);
@@ -551,24 +555,24 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
   TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); 
-  
+
   if (!fxsec) {
     // next trial fetch the histgram file
     fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
     if (!fxsec) {
-	// not a severe condition but inciate that we have no information
+      // not a severe condition but inciate that we have no information
       return kFALSE;
     } else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
       if (!key) {
-	fxsec->Close();
-	return kFALSE;
+        fxsec->Close();
+        return kFALSE;
       }
       TList *list = dynamic_cast<TList*>(key->ReadObj());
       if (!list) {
-	fxsec->Close();
-	return kFALSE;
+        fxsec->Close();
+        return kFALSE;
       }
       fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
@@ -742,10 +746,10 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
+        (runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
       return kAA;
     } else if ((runNumber>=188365 && runNumber <= 188366) ||   // LHC12g
-	       (runNumber >= 195344 && runNumber <= 196608)) { // LHC13b-f
+        (runNumber >= 195344 && runNumber <= 196608)) { // LHC13b-f
       return kpA;
     } else {
       return kpp;
@@ -844,7 +848,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
     }
-    
+
     TObjArray *arr = fTrigClass.Tokenize("|");
     if (!arr) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
@@ -949,21 +953,21 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     for (Int_t i = 0; i < ntracks; i++) {
       AliVParticle *track = GetAcceptParticleFromArray(i,0);
       if (!track)
-	continue;
+        continue;
 
       Double_t phiMin = fGeom->GetArm1PhiMin() * TMath::DegToRad();
       Double_t phiMax = fGeom->GetArm1PhiMax() * TMath::DegToRad();
       Int_t runNumber = InputEvent()->GetRunNumber();
       if (runNumber>=177295 && runNumber<=197470) { //small SM masked in 2012 and 2013
-	phiMin = 1.4;   
-	phiMax = TMath::Pi();
+        phiMin = 1.4;
+        phiMax = TMath::Pi();
       }
 
       if (track->Eta() < fGeom->GetArm1EtaMin() || track->Eta() > fGeom->GetArm1EtaMax() || track->Phi() < phiMin || track->Phi() > phiMax)
-	continue;
+        continue;
       if (track->Pt() > fMinPtTrackInEmcal) {
-	trackInEmcalOk = kTRUE;
-	break;
+        trackInEmcalOk = kTRUE;
+        break;
       }
     }
     if (!trackInEmcalOk) {
@@ -978,11 +982,11 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     for (Int_t i = 0; i < ntracks; i++) {
       AliVParticle *track = GetAcceptParticleFromArray(i,0);
       if (!track)
-	continue;
+        continue;
       if (track->Pt() > fTrackPtCut) {
-	nTracksAcc++;
-	if (nTracksAcc>=fMinNTrack)
-	  break;
+        nTracksAcc++;
+        if (nTracksAcc>=fMinNTrack)
+          break;
       }
     }
     if (nTracksAcc<fMinNTrack) {
@@ -994,16 +998,16 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (!(fEPV0 > fMinEventPlane && fEPV0 <= fMaxEventPlane) &&
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
       !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
-    {
-      if (fGeneralHistograms) fHistEventRejection->Fill("EvtPlane",1);
-      return kFALSE;
-    }
+  {
+    if (fGeneralHistograms) fHistEventRejection->Fill("EvtPlane",1);
+    return kFALSE;
+  }
 
   if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin)  {
-      if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
-      return kFALSE;
-    }
-  
+    if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 
@@ -1031,7 +1035,7 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
   TClass cls(objname);
   if (!cls.InheritsFrom(clname)) {
     AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
-                    GetName(), cls.GetName(), name, clname)); 
+        GetName(), cls.GetName(), name, clname));
     return 0;
   }
   return arr;
@@ -1056,33 +1060,63 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   fBeamType = GetBeamType();
 
   if (fBeamType == kAA || fBeamType == kpA ) {
-    AliCentrality *aliCent = InputEvent()->GetCentrality();
-    if (aliCent) {
-      fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
-      if (fNcentBins==4) {
-	if      (fCent >=  0 && fCent <   10) fCentBin = 0;
-	else if (fCent >= 10 && fCent <   30) fCentBin = 1;
-	else if (fCent >= 30 && fCent <   50) fCentBin = 2;
-	else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
-	else {
-	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
-	  fCentBin = fNcentBins-1;
-	}
-      } else {
-	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
-	if(centWidth>0.)
-	  fCentBin = TMath::FloorNint(fCent/centWidth);
-	else 
-	  fCentBin = 0;
-	if (fCentBin>=fNcentBins) {
-	  AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
-	  fCentBin = fNcentBins-1;
-	}
+    if (fUseNewCentralityEstimation) {
+      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+      if (MultSelection) {
+        fCent = MultSelection->GetMultiplicityPercentile("V0M");
       }
-    } else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      fCentBin = fNcentBins-1;
+      else {
+        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      }
     }
+    else { // old centrality estimation < 2015
+      AliCentrality *aliCent = InputEvent()->GetCentrality();
+      if (aliCent) {
+        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+      }
+      else {
+        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      }
+    }
+
+    if (fNcentBins==4) {
+      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+      else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
+      else {
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        fCentBin = fNcentBins-1;
+      }
+    }
+    else if (fNcentBins==5) {  // for PbPb 2015
+      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+      else if (fCent >= 50 && fCent <= 90) fCentBin = 3;
+      else if (fCent > 90) {
+        fCent = 99;
+        fCentBin = 4;
+      }
+      else {
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        fCentBin = fNcentBins-1;
+      }
+    }
+    else {
+      Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
+      if(centWidth>0.) {
+        fCentBin = TMath::FloorNint(fCent/centWidth);
+      }
+      else {
+        fCentBin = 0;
+      }
+      if (fCentBin>=fNcentBins) {
+        AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
+        fCentBin = fNcentBins-1;
+      }
+    }
+
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
@@ -1091,9 +1125,6 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     } else {
       AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
     }
-  } else {
-    fCent = 99;
-    fCentBin = 0;
   }
 
   if (fIsPythia) {
@@ -1101,15 +1132,15 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (MCEvent()) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
       if (!fPythiaHeader) {
-	// Check if AOD
-	AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
-	if (aodMCH) {
-	  for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-	    fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-	    if (fPythiaHeader) break;
-	  }
-	}
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fPythiaHeader) break;
+          }
+        }
       }
     }
 
@@ -1119,8 +1150,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
       const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
       for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-	if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
-	  break;
+        if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
+          break;
       }
 
       fXsection = fPythiaHeader->GetXsection();
@@ -1146,7 +1177,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n)
   cont = new AliParticleContainer();
   cont->SetArrayName(n);
   TString contName = cont->GetArrayName();
- 
+
   fParticleCollArray.Add(cont);
 
   return cont;
@@ -1331,11 +1362,11 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
             }
             break;
           case kTriggerLevel1Gamma:
-	    if(patch->IsGammaHighSimple() || patch->IsGammaLowSimple()){
-	      if(!selected) selected = patch;
-	      else if(patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp()) selected = patch;
-	    }
-	    break;
+            if(patch->IsGammaHighSimple() || patch->IsGammaLowSimple()){
+              if(!selected) selected = patch;
+              else if(patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp()) selected = patch;
+            }
+            break;
           default:   // Silence compiler warnings
             AliError("Untreated case: Main Patch is recalculated; should be in 'else' branch");
           };
@@ -1343,29 +1374,29 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
       } else {  // Not OfflineSimple
         switch(trigger){
         case kTriggerLevel0:
-            if(patch->IsLevel0()) selected = patch;
-            break;
+          if(patch->IsLevel0()) selected = patch;
+          break;
         case kTriggerLevel1Jet:
-            if(patch->IsJetHigh() || patch->IsJetLow()){
-              if(!selected) selected = patch;
-              else if (patch->GetADCAmp() > selected->GetADCAmp()) 
-                selected = patch;
-            }
-            break;
+          if(patch->IsJetHigh() || patch->IsJetLow()){
+            if(!selected) selected = patch;
+            else if (patch->GetADCAmp() > selected->GetADCAmp())
+              selected = patch;
+          }
+          break;
         case kTriggerLevel1Gamma:
-            if(patch->IsGammaHigh() || patch->IsGammaLow()){
-              if(!selected) selected = patch;
-              else if (patch->GetADCAmp() > selected->GetADCAmp()) 
-                selected = patch;
-            }
-            break;
-         default:
-            AliError("Untreated case: Main Patch is recalculated; should be in 'else' branch");
+          if(patch->IsGammaHigh() || patch->IsGammaLow()){
+            if(!selected) selected = patch;
+            else if (patch->GetADCAmp() > selected->GetADCAmp())
+              selected = patch;
+          }
+          break;
+        default:
+          AliError("Untreated case: Main Patch is recalculated; should be in 'else' branch");
         };
       }
     }
     else if ((trigger == kTriggerRecalcJet &&  patch->IsRecalcJet()) || 
-             (trigger == kTriggerRecalcGamma && patch->IsRecalcGamma())) {  // recalculated patches
+        (trigger == kTriggerRecalcGamma && patch->IsRecalcGamma())) {  // recalculated patches
       if (doSimpleOffline && patch->IsOfflineSimple()) {
         if(!selected) selected = patch;
         else if (patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp())  // this in fact should not be needed, but we have it in teh other branches as well, so keeping it for compleness
@@ -1434,7 +1465,7 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVParticle* part2)
 {
   // Calculates the fraction of momentum of part 1 w.r.t. part 2 in the direction of part 2.
-  
+
   TVector3 vect1(part1->Px(), part1->Py(), part1->Pz());
   TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
@@ -1445,7 +1476,7 @@ Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVPart
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(const TVector3& vect1, AliVParticle* part2)
 {
   // Calculates the fraction of momentum of vect 1 w.r.t. part 2 in the direction of part 2.
-  
+
   TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
   return z;

@@ -99,6 +99,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
+  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -179,6 +180,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fClusterCollArray;           // cluster collection array
   ULong_t                     fTriggers;                   // list of fired triggers
   EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
+  Bool_t                      fUseNewCentralityEstimation; // Use new centrality estimation (for 2015 data)
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)
