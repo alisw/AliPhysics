@@ -15,13 +15,13 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Int_t  multfirstpart = 3000, // 3000 for pions, 1000 ok for protons
                                                      Int_t  multsecondpart= 20,
 
-                                                     Bool_t kapplyttc = kTRUE,
+                                                     Bool_t kapplyttc = kFALSE,
                                                      Float_t dphismin = 0.06,    // 0.04 TPC 0.06 global // 0.045 for pi paper, 0.045 for protons, 0.015 for pi my cut
                                                      Float_t detasmin = 0.15,    // 0.1 TPC  0.15 global
 
-                                                     short nevmixing = 7,
+                                                     short nevmixing = 5,
 
-						     Float_t momemtumlimitforTOFPID = 0.8,
+						     Float_t momemtumlimitforTOFPID = 0.75,
                                                      Bool_t kusecrrfindratiocut = kFALSE,
                                                      Bool_t kusetpcip = kFALSE,
                                                      Float_t cutipxy = 0.1,      // TPC 2.4 protons 1. pions GLOBAL 0.1 protons pions
@@ -29,7 +29,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Float_t minptforprim = 0.7, // 0.7 protons  0.14 pions
                                                      Float_t maxptforprim = 4.,  // 4.  proton s 2.   pions
 
-                                                     Float_t minptforcasc = 0.6, 
+                                                     Float_t minptforcasc = 0.8, 
                                                      Float_t maxptforcasc = 10.,  
                                                      Float_t cutipbac = 0.1,     //0.03,
                                                      Bool_t kapplyycutcasc = kFALSE,
@@ -115,18 +115,18 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   TString outputfile = AliAnalysisManager::GetCommonFileName();
 
   outputfile += Form(":PWGCFFEMTO_outputHCascadeTask_%s",outfoldersuffix); 
-  AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(combinedName,  TList::Class(),
+  AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(Form("%s_%s",combinedName.Data(),outfoldersuffix),  TList::Class(),
                                                                AliAnalysisManager::kOutputContainer,outputfile);
 
-  AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer(Form("cfcontCutsXi_%s",combinedName.Data()),
-                                                              AliCFContainer::Class(),
-                                                              AliAnalysisManager::kOutputContainer,
-                                                              outputfile );
+//  AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer(Form("cfcontCutsXi_%s_%s",outfoldersuffix,combinedName.Data()),
+//                                                              AliCFContainer::Class(),
+//                                                              AliAnalysisManager::kOutputContainer,
+//                                                              outputfile );
 
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, cout_pXi);
-  mgr->ConnectOutput(task, 2, cout_pXi2);
+//  mgr->ConnectOutput(task, 2, cout_pXi2);
 
   if(!task) {
             Error("AddTaskhCascadeFemto","AliAnalysisTaskhCascadeFemto not created!");
