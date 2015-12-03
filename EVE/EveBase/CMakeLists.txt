@@ -72,6 +72,7 @@ set(SRCS
     AliEveGeomGentle.cxx
     AliEveInit.cxx
     AliEveKineTools.cxx
+    AliEveKineTracks.cxx
     AliEveKink.cxx
     AliEveKinkEditor.cxx
     AliEveKinkListEditor.cxx

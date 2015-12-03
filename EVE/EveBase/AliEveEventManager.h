@@ -23,6 +23,7 @@
 #include <AliEveDataSource.h>
 #include <AliEveMomentumHistograms.h>
 #include <AliEvePrimaryVertex.h>
+#include <AliEveKineTracks.h>
 
 #include <TEveEventManager.h>
 #include <TQObject.h>
@@ -184,6 +185,7 @@ private:
     AliEveESDV0s*               fV0sDrawer;                 // drawer of ESD v0s
     AliEveESDMuonTracks*        fMuonTracksDrawer;          // drawer of ESD muon tracks
     AliEveESDSPDTracklets*      fSPDTracklersDrawer;        // drawer of ESD SPD tracklets
+    AliEveKineTracks*           fKineTracksDrawer;          // drawer of tracks from Kinematics.root
     AliEveEventSelector*        fPEventSelector;            // Event filter
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?

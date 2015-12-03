@@ -23,9 +23,7 @@
 
 
 AliEveV0List* AliEveESDV0s::Draw(Bool_t onFly)
-{
-    printf("*** ESD V0s ***");
-    
+{    
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
     

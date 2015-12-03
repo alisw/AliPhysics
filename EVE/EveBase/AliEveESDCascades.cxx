@@ -21,9 +21,7 @@
 #include <AliEveEventManager.h>
 
 AliEveCascadeList* AliEveESDCascades::Draw()
-{
-    printf("*** ESD Cascades ***");
-    
+{    
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     
     AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();

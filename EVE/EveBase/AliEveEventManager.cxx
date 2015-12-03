@@ -85,7 +85,7 @@ fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
 fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
-fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0), fMomentumHistogramsDrawer(0),fPEventSelector(0),
+fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0),fKineTracksDrawer(0),  fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
 fgMagField(0),
 fSaveViews(false),
@@ -144,6 +144,7 @@ void AliEveEventManager::InitInternals()
     fV0sDrawer = new AliEveESDV0s();
     fMuonTracksDrawer = new AliEveESDMuonTracks();
     fSPDTracklersDrawer = new AliEveESDSPDTracklets();
+    fKineTracksDrawer = new AliEveKineTracks();
     
 #ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
@@ -604,6 +605,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(settings.GetValue("V0s.points.onfly.show",false)){fV0sDrawer->DrawPointsOnfly();}
         if(settings.GetValue("MUON.show",true)){fMuonTracksDrawer->Draw();}
         if(settings.GetValue("SPD.tracklets.show",false)){fSPDTracklersDrawer->Draw();}
+        if(settings.GetValue("kine.tracks.show",false)){fKineTracksDrawer->Draw();}
         
         Double_t x[3] = { 0, 0, 0 };
         

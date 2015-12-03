@@ -273,7 +273,6 @@ void AliEveInit::AddMacros()
     bool showMuon         = settings.GetValue("MUON.show", true);             // show MUON's geom
     
     bool drawClusters     = settings.GetValue("clusters.show",false);          // show clusters
-    bool drawKinks        = settings.GetValue("kinks.show",false);             // show kinks
     bool drawRawData      = settings.GetValue("rawData.show",false);           // show raw data
     bool drawHits         = settings.GetValue("hits.show",false);              // show hits
     bool drawDigits       = settings.GetValue("digits.show",false);              // show digits
@@ -332,7 +331,7 @@ void AliEveInit::AddMacros()
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
     }
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
+//    exec->alieveAddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
 }
 
 void AliEveInit::ImportMacros()

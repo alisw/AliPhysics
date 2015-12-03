@@ -83,4 +83,4 @@
 #pragma link C++ class AliEveMomentumVectors+;
 #pragma link C++ class AliEvePrimaryVertex+;
 #pragma link C++ class AliEveKineTools+;
-
+#pragma link C++ class AliEveKineTracks+;
