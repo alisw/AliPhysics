@@ -302,6 +302,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
 
   fCent = new TH1F("fCent","Centrality",100,0,100);
+  fOutputList->Add(fCent);
 
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
   fOutputList->Add(fVtxZ);
