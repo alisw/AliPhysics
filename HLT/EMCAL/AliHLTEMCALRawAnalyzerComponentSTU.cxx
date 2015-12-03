@@ -101,7 +101,7 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
     return 0;
   }
 
-  UInt_t totSize = 0, digitoutputsize = 0, ndigitddl = 0;
+  UInt_t totSize = 0, ndigitddl = 0;
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
 
@@ -153,7 +153,7 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
       headerPtr->fL1FrameMask = triggerData->GetL1FrameMask();
       headerInitialized = true;
     }
-    digitoutputsize += fSTURawDigitMaker->WriteRawDigitsBuffer(dataIter, availableSize);
+    int digitoutputsize = fSTURawDigitMaker->WriteRawDigitsBuffer(dataIter, availableSize);
     ndigitddl = digitoutputsize/(sizeof(AliHLTCaloTriggerRawDigitDataStruct));
     dataIter += ndigitddl; // fSTURawDigitMaker->GetNumberOfRawDigits();
     ndigittotal += ndigitddl;
