@@ -3,12 +3,15 @@
 ///
 
 #include "AliFemtoV0TrackPairCut.h"
+// #include "AliFemtoAvgSepCalculator.h"
 
 #include <string>
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoV0TrackPairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoV0TrackPairCut);
+  /// \endcond
 #endif
 
 //__________________
@@ -200,6 +203,13 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   // Test the average separation between the track and each daughter in TPC
   //
   {
+    // AliFemtoAvgSepCalculator avgsep_calc(track, V0);
+    //
+    // if (!avgsep_calc.track_v0_passes(fMinAvgSepTrackPos, fMinAvgSepTrackNeg)) {
+    //   fNPairsFailed++;
+    //   return false;
+    // }
+
     UInt_t pos_point_cnt = 0,
            neg_point_cnt = 0;
 
