@@ -37,6 +37,7 @@
 #include <AliESDtrack.h>
 #include <AliESDfriendTrack.h>
 #include <AliExternalTrackParam.h>
+#include <AliLog.h>
 
 #include <AliEveTrack.h>
 #include <AliEveTrackCounter.h>
@@ -59,7 +60,7 @@
 using namespace std;
 
 AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
-    fPath(path)
+fPath(path)
 {
     //==============================================================================
     // Reading preferences from config file
@@ -74,7 +75,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     bool tracksByType     = settings.GetValue("tracks.byType.show",true);     // colorize tracks by PID
     bool aodTracksByPID   = settings.GetValue("tracks.aod.byPID.show",true);  // colorize AOD tracks by PID
     bool tracksByCategory = settings.GetValue("tracks.byCategory.show",false);// colorize tracks by reconstruction quality
-
+    
     bool autoloadEvents   = settings.GetValue("events.autoload.set",false);   // set autoload by default
     bool saveViews        = settings.GetValue("ALICE_LIVE.send",false);       // send pictures to ALICE LIVE
     bool fullscreen       = settings.GetValue("fullscreen.mode",false);       // hide left and bottom tabs
@@ -82,12 +83,12 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
     
     
-    cout<<"\n\nOCDB path:"<<ocdbStorage<<endl<<endl<<endl;
-        
+    Info("AliEveInit",Form("\n\nOCDB path:%s\n\n",ocdbStorage.Data()));
+    
     //==============================================================================
     // Event Manager and different data sources
     //==============================================================================
-
+    
     AliEveEventManager *man = new AliEveEventManager(defaultDataSource);
     
     AliEveEventManager::SetCdbUri(ocdbStorage);
@@ -115,32 +116,32 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     AliEveMultiView *mv = new AliEveMultiView(false);
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
-
+    
     mv->SetDepth(-10);
-
+    
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
-                              geomGentle->GetGeomGentleRphi(),
-                              geomGentle->GetGeomGentleRhoz(),
-                              0/*geomGentle->GetGeomGentleRhoz()*/);
+                       geomGentle->GetGeomGentleRphi(),
+                       geomGentle->GetGeomGentleRhoz(),
+                       0/*geomGentle->GetGeomGentleRhoz()*/);
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
     mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
-//    mv->InitGeomGentleZdc(geomGentle->GetGeomGentleZDC());
+    //    mv->InitGeomGentleZdc(geomGentle->GetGeomGentleZDC());
     
     if(settings.GetValue("MUON.show", true)){
         mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
     }
     mv->SetDepth(0);
     
-//    AliEveEtaPtView *epview = new AliEveEtaPtView();
-//    epview->InitGeom();
+    //    AliEveEtaPtView *epview = new AliEveEtaPtView();
+    //    epview->InitGeom();
     
     AddMacros();
     
     //==============================================================================
     // Additional GUI components
     //==============================================================================
-
+    
     TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
     
     // QA viewer
@@ -150,7 +151,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
      new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
      slot->StopEmbedding("QA histograms");
      */
-//    browser->GetTabRight()->SetTab(1);
+    //    browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
     new AliEveEventManagerWindow(man,storageManager,defaultDataSource);
     browser->StopEmbedding("EventCtrl");
@@ -177,8 +178,8 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     
     // A refresh to show proper window.
-//    gEve->GetViewers()->SwitchColorSet();
-
+    //    gEve->GetViewers()->SwitchColorSet();
+    
     browser->MoveResize(0, 0, gClient->GetDisplayWidth(),gClient->GetDisplayHeight() - 32);
     gEve->Redraw3D(true);
     gSystem->ProcessEvents();
@@ -228,9 +229,9 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
 
 void AliEveInit::Init()
 {
-    cout<<"Adding standard macros"<<endl;
-    TEveUtil::AssertMacro("VizDB_scan.C");
-    gSystem->ProcessEvents();
+    Info("AliEveInit","Adding standard macros");
+    //    TEveUtil::AssertMacro("VizDB_scan.C");
+    //    gSystem->ProcessEvents();
     
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
     
@@ -311,13 +312,10 @@ void AliEveInit::AddMacros()
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_onfly","",  drawV0s));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0_points.C",       "esd_V0_points_offline","",drawV0s));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC V0",   "esd_V0.C",              "esd_V0","",               drawV0s));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade_points.C",  "esd_cascade_points","", drawCascades));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC CSCD", "esd_cascade.C",         "esd_cascade","",        drawCascades));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink_points.C",     "esd_kink_points","",    drawKinks));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC KINK", "esd_kink.C",            "esd_kink","",           drawKinks));
     
     // default appearance:
     //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
@@ -325,8 +323,6 @@ void AliEveInit::AddMacros()
     // preset for cosmics:
     //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
     
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklets SPD", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kTRUE));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
     
@@ -343,7 +339,6 @@ void AliEveInit::AddMacros()
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C", "muon_raw", "", drawRawData));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", drawDigits));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MUON", "esd_muon_tracks.C", "esd_muon_tracks", "kTRUE,kFALSE", kTRUE));
     }
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
@@ -405,18 +400,22 @@ void AliEveInit::ImportMacros()
 
 void AliEveInit::GetConfig(TEnv *settings)
 {
-    if(settings->ReadFile(Form("%s/eve_config",gSystem->Getenv("HOME")), kEnvUser) < 0){
-        cout<<"Warning - could not find eve_config in home directory! Trying in $ALICE_ROOT/EVE/EveBase/"<<endl;
-        if(settings->ReadFile(Form("%s/EVE/EveBase/eve_config",gSystem->Getenv("ALICE_ROOT")), kEnvUser) < 0){
-            cout<<"Error - could not find eve_config file!."<<endl;
+    TEveException kEH("AliEveInit::GetConfig");
+    
+    if(settings->ReadFile(Form("%s/eve_config",gSystem->Getenv("HOME")), kEnvUser) < 0)
+    {
+        Warning(kEH," could not find eve_config in home directory! Trying in $ALICE_ROOT/EVE/EveBase/");
+        if(settings->ReadFile(Form("%s/EVE/EveBase/eve_config",gSystem->Getenv("ALICE_ROOT")), kEnvUser) < 0)
+        {
+            Error(kEH,"could not find eve_config file!.");
             exit(0);
         }
         else{
-            cout<<"Read config from standard location"<<endl;
+            Info(kEH,"Read config from standard location");
         }
     }
     else{
-        cout<<"Read config from home directory"<<endl;
+        Info(kEH,"Read config from home directory");
     }
 }
 

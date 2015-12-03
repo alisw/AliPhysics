@@ -21,7 +21,6 @@
 #include "AliEveDataSourceHLTZMQ.h"
 #endif
 
-#include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 
@@ -86,7 +85,7 @@ fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
 fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
-fExecutor(0),fViewsSaver(0),fESDdrawer(0),fAODdrawer(0),fMomentumHistogramsDrawer(0),fPEventSelector(0),
+fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0), fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
 fgMagField(0),
 fSaveViews(false),
@@ -136,10 +135,15 @@ void AliEveEventManager::InitInternals()
     fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
     
     fViewsSaver = new AliEveSaveViews();
-    fESDdrawer = new AliEveESDTracks();
-    fAODdrawer = new AliEveAODTracks();
+    fESDTracksDrawer = new AliEveESDTracks();
+    fAODTracksDrawer = new AliEveAODTracks();
     fMomentumHistogramsDrawer = new AliEveMomentumHistograms();
     fPrimaryVertexDrawer = new AliEvePrimaryVertex();
+    fKinksDrawer = new AliEveESDKinks();
+    fCascadesDrawer = new AliEveESDCascades();
+    fV0sDrawer = new AliEveESDV0s();
+    fMuonTracksDrawer = new AliEveESDMuonTracks();
+    fSPDTracklersDrawer = new AliEveESDSPDTracklets();
     
 #ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
@@ -554,7 +558,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         AliEveInit::GetConfig(&settings);
         
         if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
-        if(settings.GetValue("tracks.primary.vertex.show",false)){fESDdrawer->PrimaryVertexTracks();}
+        if(settings.GetValue("tracks.primary.vertex.show",false)){fESDTracksDrawer->PrimaryVertexTracks();}
         
         if(settings.GetValue("primary.vertex.global.box",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kBox);
@@ -588,8 +592,14 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         
         
-        if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
-        if(fDrawESDtracksByType)fESDdrawer->ByType();
+        if(fDrawESDtracksByCategory)fESDTracksDrawer->ByCategory();
+        if(fDrawESDtracksByType)fESDTracksDrawer->ByType();
+        
+        if(settings.GetValue("kinks.show",false)){fKinksDrawer->Draw();}
+        if(settings.GetValue("cascades.show",false)){fCascadesDrawer->Draw();}
+        if(settings.GetValue("V0s.show",false)){fV0sDrawer->Draw();}
+        if(settings.GetValue("MUON.show",true)){fMuonTracksDrawer->Draw();}
+        if(settings.GetValue("SPD.tracklets.show",false)){fSPDTracklersDrawer->Draw();}
         
         Double_t x[3] = { 0, 0, 0 };
         
@@ -652,7 +662,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     }
     if(HasAOD())
     {
-        if(fDrawAODtracksByPID)fAODdrawer->ByPID();
+        if(fDrawAODtracksByPID)fAODTracksDrawer->ByPID();
         
         Double_t x[3] = { 0, 0, 0 };
         

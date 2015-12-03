@@ -11,7 +11,6 @@
 #include "AliEveInit.h"
 
 #include "AliZMQManager.h"
-#include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
 #include "AliEveInit.h"
 #include "AliCDBManager.h"

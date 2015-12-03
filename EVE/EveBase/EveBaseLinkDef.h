@@ -14,6 +14,7 @@
 #pragma link C++ class AliEveConfigManager+;
 
 // AliEveEventManager
+#pragma link C++ class AliEveInit+;
 #pragma link C++ class AliEveEventManager+;
 #pragma link C++ class AliEveDataSourceOffline+;
 #pragma link C++ class AliEveEventManagerEditor+;
@@ -72,8 +73,14 @@
 
 // Common visualisation classes
 #pragma link C++ class AliEveCutsWindow+;
+#pragma link C++ class AliEveESDCascades+;
+#pragma link C++ class AliEveESDKinks+;
+#pragma link C++ class AliEveESDMuonTracks+;
 #pragma link C++ class AliEveESDTracks+;
+#pragma link C++ class AliEveESDSPDTracklets+;
+#pragma link C++ class AliEveESDV0s+;
 #pragma link C++ class AliEveMomentumHistograms+;
 #pragma link C++ class AliEveMomentumVectors+;
 #pragma link C++ class AliEvePrimaryVertex+;
+#pragma link C++ class AliEveKineTools+;
 

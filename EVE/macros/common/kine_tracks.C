@@ -87,6 +87,8 @@ kine_tracks(Double_t min_pt,  Double_t min_p,
 	    Bool_t   pdg_col, Bool_t   recurse,
 	    Bool_t   use_track_refs)
 {
+    printf("\n\n*** kine_tracks.C ***\n\n");
+    
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();

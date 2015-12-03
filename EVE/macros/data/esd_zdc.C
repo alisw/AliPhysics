@@ -22,6 +22,9 @@ Float_t          g_zdc_cross   = 20;
 TEveGeoShape* zdc_make_shape(const Text_t* name, const Text_t* title_base,
 			     Double_t signal,    const Text_t* path)
 {
+    return 0;
+        printf("\n\nesd_zdc_make_shape\n\n");
+    
   if ( ! gGeoManager->cd(path))
   {
     Warning("zdc_make_shape", "Module name=%s, path='%s' not found.\n", name, path);
@@ -50,6 +53,8 @@ TEveStraightLineSet*
 zdc_make_cross(const Text_t* name, const Text_t* title_base,
                Float_t x, Float_t y, Float_t z, Float_t dx, Float_t dy, Float_t dz)
 {
+    printf("\n\nesd_zdc_make_cross\n\n");
+    
   TEveStraightLineSet* ls = new TEveStraightLineSet(name, Form("%s, x=%.3f, y=%.3f", title_base, x, y));
   ls->SetMainColor(kYellow);
   ls->SetLineWidth(2);
@@ -66,6 +71,8 @@ zdc_make_cross(const Text_t* name, const Text_t* title_base,
 
 void esd_zdc() 
 {
+    printf("\n\nesd_zdc\n\n");
+    
   AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliESDZDC *esd = AliEveEventManager::GetMaster()->AssertESD()->GetESDZDC();
@@ -164,23 +171,5 @@ void esd_zdc()
 			       "ALIC_1/ZDCA_1/ZPRO_2/ZPTX_4/ZP1_1"));
 
 
-  // Centroids
-  /*
-  TEveStraightLineSet *ls = 0;
-
-  const Double32_t *cNA = esd->GetZNACentroid();
-  ls = zdc_make_cross("ZNA Centroid", "ZNA",
-                      cNA[0], cNA[1],  g_zdc_dist * g_zdc_scale,
-                      g_zdc_cross, g_zdc_cross, g_zdc_cross);
-  l->AddElement(ls);
-
-  const Double32_t *cNC = esd->GetZNCCentroid();
-  ls = zdc_make_cross("ZNA Centroid", "ZNA",
-                      cNC[0], cNC[1], -g_zdc_dist * g_zdc_scale,
-                      g_zdc_cross, g_zdc_cross, g_zdc_cross);
-  l->AddElement(ls);
-  */
-
-  // End - refresh screen
   gEve->Redraw3D();
 }

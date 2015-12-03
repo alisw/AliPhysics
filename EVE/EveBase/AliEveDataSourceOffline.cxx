@@ -36,12 +36,8 @@ fESDfriendExists(kFALSE),
 fgAODfriends(0),
 fgRawFromStandardLoc(false)
 {
-    cout<<"Constructor of AliEveDataSourceOffline"<<endl;
-    cout<<"AliEveData initialized"<<endl;
-    
     fEventManager = AliEveEventManager::GetMaster();
     Open();
-    cout<<"Files opened"<<endl;
 }
 
 AliEveDataSourceOffline::~AliEveDataSourceOffline()
@@ -64,11 +60,9 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // This is not supported when raw-data is the only data-source
     // as the number of events is not known.
     
-    static const TEveException kEH("AliEveEventManager::GotoEvent ");
-    
     if(!fCurrentData.fESD && !fCurrentData.fAOD)
     {
-        cout<<"No ESD event avaliable. Probably files were not opened."<<endl;
+        AliWarning("No ESD event avaliable. Probably files were not opened.");
         return;
     }
     
@@ -89,7 +83,9 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         }
     }
     
-    if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
+    if (!fIsOpen){
+        AliFatal("Event-files not opened but ED is in offline mode.");
+    }
     
     fEventManager->SetHasEvent(false);
     
@@ -123,10 +119,10 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
         {
             maxEvent = 10000000;
             if (event < 0) {
-                Error(kEH, "current raw-data source does not support direct event access.");
+                AliError("current raw-data source does not support direct event access.");
                 return;
             }
-            Info(kEH, "number of events unknown for current raw-data source, setting max-event id to 10M.");
+            AliInfo("number of events unknown for current raw-data source, setting max-event id to 10M.");
         }
         else
         {
@@ -136,17 +132,16 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     }
     else
     {
-        throw (kEH + "neither RunLoader, ESD nor Raw loaded.");
+        AliFatal("neither RunLoader, ESD nor Raw loaded.");
     }
     if (event < 0)
     {
-        throw (kEH + Form("event %d not present, available range [%d, %d].",
-                          event, 0, maxEvent));
+        AliFatal(Form("event %d not present, available range [0, %d].",event, maxEvent));
     }
     if (event > maxEvent)
     {
         event=0;
-        cout<<"Event number out of range. Going to event 0"<<endl;
+        AliInfo("Event number out of range. Going to event 0");
     }
 
     TString sysInfoHeader;
@@ -159,19 +154,19 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     
     if (fCurrentData.fESDTree) {
         if (fCurrentData.fESDTree->GetEntry(event) <= 0)
-            throw (kEH + "failed getting required event from ESD.");
+            AliFatal("failed getting required event from ESD.");
         
         if (fESDfriendExists)
             fCurrentData.fESD->SetESDfriend(fCurrentData.fESDfriend);
     }
     if (fCurrentData.fAODTree) {
         if (fCurrentData.fAODTree->GetEntry(event) <= 0)
-            throw (kEH + "failed getting required event from AOD.");
+            AliFatal("failed getting required event from AOD.");
     }
     
     if (fCurrentData.fRunLoader) {
         if (fCurrentData.fRunLoader->GetEvent(event) != 0)
-            throw (kEH + "failed getting required event.");
+            AliFatal("failed getting required event.");
     }
     if (fCurrentData.fRawReader)
     {
@@ -191,11 +186,11 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
                 {
                     fCurrentData.fRawReader->RewindEvents();
                     fEventManager->SetEventId(-1);
-                    throw (kEH + Form("Error going to next raw-event from event %d.", rawEv));
+                    AliFatal(Form("Error going to next raw-event from event %d.", rawEv));
                 }
                 ++rawEv;
             }
-            Warning(kEH, "Loaded raw-event %d with fallback method.\n", rawEv);
+            AliWarning(Form("Loaded raw-event %d with fallback method.\n", rawEv));
         }
     }
     
@@ -216,8 +211,10 @@ void AliEveDataSourceOffline::Open()
     // Attempts to create AliRunLoader() and to open ESD with ESDfriends.
     // Warning is reported if run-loader or ESD is not found.
     
-    static const TEveException kEH("AliEveEventManager::Open ");
-    if (fIsOpen){throw (kEH + "Event-files already opened.");}
+    if (fIsOpen){
+        AliError("Event-files already opened.");
+        return;
+    }
     
     Int_t runNo = -1;
 
@@ -236,10 +233,13 @@ void AliEveDataSourceOffline::Open()
         
         
     }
-    else{Warning(kEH, "can not read ESD file '%s'.", fgESDFileName.Data());}
+    else
+    {
+        AliWarning(Form("can not read ESD file '%s'.", fgESDFileName.Data()));
+    }
     if (fCurrentData.fESDTree == 0)
     {
-        Warning(kEH, "ESD not initialized.");
+        AliWarning("ESD not initialized.");
     }
     
     // Open AOD and registered friends
@@ -268,7 +268,7 @@ void AliEveDataSourceOffline::Open()
             {
                 delete fCurrentData.fAODFile; fCurrentData.fAODFile = 0;
                 delete fCurrentData.fAOD;     fCurrentData.fAOD     = 0;
-                Warning(kEH, "failed getting the first entry from addTree.");
+                AliWarning("failed getting the first entry from addTree.");
             }
             else if (runNo < 0){runNo = fCurrentData.fAOD->GetRunNumber();}
         }
@@ -276,27 +276,27 @@ void AliEveDataSourceOffline::Open()
         {
             delete fCurrentData.fAODFile; fCurrentData.fAODFile = 0;
             delete fCurrentData.fAOD;     fCurrentData.fAOD     = 0;
-            Warning(kEH, "failed getting the aodTree.");
+            AliWarning("failed getting the aodTree.");
         }
     }
     else // aod not readable
     {
-        Warning(kEH, "can not read AOD file '%s'.", fgAODFileName.Data());
+        AliWarning(Form("can not read AOD file '%s'.", fgAODFileName.Data()));
     }
     if (fCurrentData.fAODTree == 0)
     {
-        Warning(kEH, "AOD not initialized.");
+        AliWarning("AOD not initialized.");
     }
     // Open RunLoader from galice.root
     //    fgGAliceFileName = "/Users/Jerus/galice.root"; // temp
     
     TFile *gafile = TFile::Open(fgGAliceFileName);
-    cout<<"Opening galice"<<endl;
+    
     if (gafile)
     {
         gafile->Close();
         delete gafile;
-        cout<<"SETTING RUN LOADER in Open()"<<endl;
+
         fCurrentData.fRunLoader = AliRunLoader::Open(fgGAliceFileName, fEventManager->GetName());
         if (fCurrentData.fRunLoader)
         {
@@ -304,42 +304,50 @@ void AliEveDataSourceOffline::Open()
             alicePath.Append("/");
             fCurrentData.fRunLoader->SetDirName(alicePath);
             
-            if (fCurrentData.fRunLoader->LoadgAlice() != 0){Warning(kEH, "failed loading gAlice via run-loader.");}
-            
+            if (fCurrentData.fRunLoader->LoadgAlice() != 0)
+            {
+                AliWarning("failed loading gAlice via run-loader.");
+            }
             if (fCurrentData.fRunLoader->LoadHeader() == 0){
                 if(runNo < 0){
                     runNo = fCurrentData.fRunLoader->GetHeader()->GetRun();
                 }
             }
             else{
-                Warning(kEH, "failed loading run-loader's header.");
+                AliWarning("failed loading run-loader's header.");
                 delete fCurrentData.fRunLoader;
                 fCurrentData.fRunLoader = 0;
             }
         }
-        else{Warning(kEH, "failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data());}
+        else
+        {
+            AliWarning(Form("failed opening ALICE run-loader from '%s'.", fgGAliceFileName.Data()));
+        }
     }
-    else{Warning(kEH, "can not read '%s'.", fgGAliceFileName.Data());}
+    else
+    {
+        AliWarning(Form("can not read '%s'.", fgGAliceFileName.Data()));
+    }
     
     if (fCurrentData.fRunLoader == 0)
     {
-        Warning(kEH, "Bootstraping of run-loader failed.");
+        AliWarning("Bootstraping of run-loader failed.");
     }
     // Open raw-data file
     TString rawPath;
     if (fgRawFromStandardLoc)
     {
         if (!fgRawFileName.BeginsWith("alien:")){
-            throw kEH + "Standard raw search requested, but the directory is not in AliEn.";
+            AliFatal("Standard raw search requested, but the directory is not in AliEn.");
         }
         if (!fgRawFileName.Contains("/ESDs/")){
-            throw kEH + "Standard raw search requested, but does not contain 'ESDs' directory.";
+            AliFatal("Standard raw search requested, but does not contain 'ESDs' directory.");
         }
         
         TPMERegexp chunk("/([\\d\\.])+/?$");
         Int_t nm = chunk.Match(fgRawFileName);
         if (nm != 2){
-            throw kEH + "Standard raw search requested, but the path does not end with chunk-id directory.";
+            AliFatal("Standard raw search requested, but the path does not end with chunk-id directory.");
         }
         
         TPMERegexp esdstrip("/ESDs/.*");
@@ -348,7 +356,7 @@ void AliEveDataSourceOffline::Open()
         rawPath += chunk[0];
         rawPath += ".root";
         
-        Info(kEH, "Standard raw search requested, using the following path:\n  %s\n", rawPath.Data());
+        AliInfo(Form("Standard raw search requested, using the following path:\n  %s\n", rawPath.Data()));
     }
     else
     {
@@ -371,15 +379,18 @@ void AliEveDataSourceOffline::Open()
     
     if (fCurrentData.fRawReader == 0)
     {
-        Warning(kEH, "raw-data not initialized.");
+        AliWarning("raw-data not initialized.");
     }
     if (runNo < 0)
     {
         if (fCurrentData.fRawReader)
         {
-            if (!fCurrentData.fRawReader->NextEvent()){throw (kEH + "can not go to first event in raw-reader to determine run-id.");}
+            if (!fCurrentData.fRawReader->NextEvent())
+            {
+                AliFatal("can not go to first event in raw-reader to determine run-id.");
+            }
             runNo = fCurrentData.fRawReader->GetRunNumber();
-            Info(kEH, "Determining run-no from raw ... run=%d.", runNo);
+            AliInfo(Form("Determining run-no from raw ... run=%d.", runNo));
             fCurrentData.fRawReader->RewindEvents();
         }
         else
@@ -397,13 +408,9 @@ void AliEveDataSourceOffline::Close()
     // Close the event data-files and delete ESD, ESDfriend, run-loader
     // and raw-reader.
     
-    cout<<"\n\n\nClose() called!!\n\n\n"<<endl;
-    
-    static const TEveException kEH("AliEveEventManager::Close ");
-    
     if (!fIsOpen)
     {
-        cout<<"AliEveEventManager::Close() -- files are not opened"<<endl;
+        AliError("files were are not opened");
         return;
     }
     
@@ -450,12 +457,7 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
     // If refresh_esd is true and ESD is the primary event-data source
     // its header is re-read from disk.
     
-    static const TEveException kEH("AliEveEventManager::GetMaxEventId ");
-    
-    if (fIsOpen == kFALSE)
-    {
-        return -1;
-    }
+    if (!fIsOpen){return -1;}
     
     if (fCurrentData.fESDTree!=0)
     {
@@ -481,7 +483,7 @@ Int_t AliEveDataSourceOffline::GetMaxEventId(Bool_t refreshESD) const
     }
     else
     {
-        throw (kEH + "neither ESD, AOD, RunLoader nor Raw loaded.");
+        AliFatal("neither ESD, AOD, RunLoader nor Raw loaded.");
     }
 }
 
@@ -514,7 +516,7 @@ void AliEveDataSourceOffline::AddAODfriend(const TString& friendFileName)
 
 void AliEveDataSourceOffline::SetFilesPath(const TString& urlPath)
 {
-    cout<<"\n\nAliEveDataSourceOffline -- setting path:"<<urlPath.Data()<<endl;
+    AliInfo(Form("setting path:%s",urlPath.Data()));
     
     TString path = urlPath;
     gSystem->ExpandPathName(path);
@@ -540,8 +542,6 @@ TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
 {
     if(!fCurrentData.fESDFile && !fCurrentData.fESD) return 0;
     
-    static const TEveException kEH("AliEveEventManager::readESDTree ");
-    
     TTree* tempTree = 0;
     
     tempTree =(TTree*) fCurrentData.fESDFile->Get(treeName);
@@ -563,16 +563,16 @@ TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
         if (fESDfriendExists)
         {
             fCurrentData.fESDfriend = (AliESDfriend*) fCurrentData.fESD->FindListObject("AliESDfriend");
-            Info(kEH, "found and attached ESD friend.");
+            AliInfo("found and attached ESD friend.");
         }
         else
         {
-            Warning(kEH, "ESDfriend not found.");
+            AliWarning("ESDfriend not found.");
         }
         
         if (tempTree->GetEntry(0) <= 0)
         {
-            Warning(kEH, "failed getting the first entry from tree: %s", treeName);
+            AliWarning(Form("failed getting the first entry from tree: %s", treeName));
         }
         else
         {
@@ -582,7 +582,7 @@ TTree* AliEveDataSourceOffline::readESDTree(const char *treeName, int &runNo)
     }
     else // tree == 0
     {
-        Warning(kEH, "failed getting the tree:%s", treeName);
+        AliWarning(Form("failed getting the tree:%s", treeName));
     }
     
     return tempTree;

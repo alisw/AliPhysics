@@ -71,6 +71,7 @@ cascades.show:                          0
 rawData.show:                           0
 hits.show:                              0
 digits.show:                            0
+SPD.tracklets.show:                     0
 
 events.autoload.set:                    0
 ALICE_LIVE.send:                        0

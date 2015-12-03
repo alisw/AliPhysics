@@ -14,6 +14,11 @@
 #include <AliESDEvent.h>
 #include <AliEveSaveViews.h>
 #include <AliEveESDTracks.h>
+#include <AliEveESDKinks.h>
+#include <AliEveESDCascades.h>
+#include <AliEveESDV0s.h>
+#include <AliEveESDMuonTracks.h>
+#include <AliEveESDSPDTracklets.h>
 #include <AliEveAODTracks.h>
 #include <AliEveDataSource.h>
 #include <AliEveMomentumHistograms.h>
@@ -85,10 +90,10 @@ public:
     void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
     void          SetAODtracksByPID(bool set){fDrawAODtracksByPID=set;}
     
-    void          SetESDcolorsByCategory(Color_t colors[9]){fESDdrawer->SetColorsByCategory(colors);}
-    void          SetESDwidth(Width_t width){fESDdrawer->SetWidth(width);}
-    void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
-    void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}
+    void          SetESDcolorsByCategory(Color_t colors[9]){fESDTracksDrawer->SetColorsByCategory(colors);}
+    void          SetESDwidth(Width_t width){fESDTracksDrawer->SetWidth(width);}
+    void          SetESDdashNoRefit(bool dashNoRefit){fESDTracksDrawer->SetDashNoRefit(dashNoRefit);}
+    void          SetESDdrawNoRefit(bool drawNoRefit){fESDTracksDrawer->SetDrawNoRefit(drawNoRefit);}
     
     
     // global and transient elements:
@@ -170,10 +175,15 @@ private:
     
     AliEveMacroExecutor*        fExecutor;                  // Executor for std macros
     AliEveSaveViews*            fViewsSaver;                // views saver
-    AliEveESDTracks*            fESDdrawer;                 // drawer of ESD tracks
-    AliEveAODTracks*            fAODdrawer;                 // drawer of AOD tracks
+    AliEveESDTracks*            fESDTracksDrawer;           // drawer of ESD tracks
+    AliEveAODTracks*            fAODTracksDrawer;           // drawer of AOD tracks
     AliEveMomentumHistograms*   fMomentumHistogramsDrawer;  // drawer of momentum histograms
     AliEvePrimaryVertex*        fPrimaryVertexDrawer;       // drawer of primary vertex
+    AliEveESDKinks*             fKinksDrawer;               // drawer of ESD kinks
+    AliEveESDCascades*          fCascadesDrawer;            // drawer of ESD cascades
+    AliEveESDV0s*               fV0sDrawer;                 // drawer of ESD v0s
+    AliEveESDMuonTracks*        fMuonTracksDrawer;          // drawer of ESD muon tracks
+    AliEveESDSPDTracklets*      fSPDTracklersDrawer;        // drawer of ESD SPD tracklets
     AliEveEventSelector*        fPEventSelector;            // Event filter
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?
