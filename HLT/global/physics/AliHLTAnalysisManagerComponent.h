@@ -76,9 +76,6 @@ public:
   int ProcessOptionString(TString arguments);
   int ProcessOption(TString option, TString value);
 
-  /**  */
-  Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
-
  protected:
 
   /*
@@ -138,13 +135,11 @@ private:
   {
 	  AliVEvent* fEvent;
 	  AliVfriendEvent* fFriend;
-  };
-  struct CalibManagerReturnData
-  {
-	  char* fPtr;
-	  size_t fSize;
+	  void* fBasePtr;
   };
   
+  Int_t ReadInput(CalibManagerQueueData* eventData);
+  void CleanEventData(CalibManagerQueueData* eventData);
   void* AnalysisManagerInit(void*);
   void* AnalysisManagerExit(void*);
   void* AnalysisManagerDoEvent(void*);
@@ -172,6 +167,7 @@ private:
   Int_t fNEvents;		//Number of events processed
   Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
   Int_t fQueueDepth;	//Depth of asynchronous Queue
+  Int_t fAsyncProcess;	//Use an async process instead of an async thread
   AliHLTAsyncMemberProcessor<AliHLTAnalysisManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
 
   ClassDef(AliHLTAnalysisManagerComponent, 1)
