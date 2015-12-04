@@ -125,7 +125,7 @@ void AddTask_GammaCalo_pPb(
   if (trainConfig == 14)
       numberOfCuts = 3;
   // change to 4 cuts per cutselection
-  if (  trainConfig == 9   || trainConfig == 10  || trainConfig == 11  || trainConfig == 12   || trainConfig == 13    || trainConfig == 15  ||
+  if (  trainConfig == 10  || trainConfig == 11  || trainConfig == 12  || trainConfig == 13   || trainConfig == 15  ||  trainConfig == 18  ||
         trainConfig == 40  || trainConfig == 41  || trainConfig == 43  || trainConfig == 44   || 
         trainConfig == 50  || trainConfig == 51  || trainConfig == 53  || trainConfig == 54   ||
         trainConfig == 60  || trainConfig == 61  || trainConfig == 63  || trainConfig == 64   ||
@@ -133,7 +133,8 @@ void AddTask_GammaCalo_pPb(
         trainConfig == 80 )
       numberOfCuts = 4;
   // change to 5 cuts per cutselection
-  if (  trainConfig == 5   || trainConfig == 6   || trainConfig == 42  || trainConfig == 52   || trainConfig == 62    ||
+  if (  trainConfig == 5   || trainConfig == 6   || trainConfig == 9   || trainConfig == 16   || trainConfig == 17 || 
+        trainConfig == 42  || trainConfig == 52   || trainConfig == 62    ||
         trainConfig == 72)
       numberOfCuts = 5;
   
@@ -179,6 +180,7 @@ void AddTask_GammaCalo_pPb(
     eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
     eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
     eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111182050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
+    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111189050032230000"; mesonCutArray[4] = "0163103100000050"; // calo
   } else if (trainConfig == 10){ // non linearity variations EMC7
     eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
     eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
@@ -209,7 +211,25 @@ void AddTask_GammaCalo_pPb(
     eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163403100000050"; // EMC7
     eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000050"; // EG1
     eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000050"; // EG2
+  } else if (trainConfig == 16){ // non linearity variations INT7 with TM
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100051032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
+    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111101051032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
+    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181051032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
+    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111182051032230000"; mesonCutArray[3] = "0163103100000050"; // calo
+    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111189051032230000"; mesonCutArray[4] = "0163103100000050"; // calo
+  } else if (trainConfig == 17){ // non linearity variations INT7 
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181051032230000"; mesonCutArray[0] = "0163103100000050"; // TM variations
+    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181052032230000"; mesonCutArray[1] = "0163103100000050"; 
+    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181053032230000"; mesonCutArray[2] = "0163103100000050"; 
+    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111181054032230000"; mesonCutArray[3] = "0163103100000050"; 
+    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111181055032230000"; mesonCutArray[4] = "0163103100000050"; 
+  } else if (trainConfig == 18){ // no non linearity with TM
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100051032230000"; mesonCutArray[0] = "0163103100000050"; // kINT7 // EMCAL clusters
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100051032230000"; mesonCutArray[1] = "0163103100000050"; // kEMC7 // EMCAL clusters
+    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111100051032230000"; mesonCutArray[2] = "0163103100000050"; // kEMCEG1 based on INT7 // EMCAL clusters
+    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111100051032230000"; mesonCutArray[3] = "0163103100000050"; // kEMCEG2 based on INT7 // EMCAL clusters
 
+    
   // SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 10-09-2015
   } else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
     eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
