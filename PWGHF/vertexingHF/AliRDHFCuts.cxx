@@ -44,6 +44,7 @@
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 #include "TRandom.h"
 #include <TF1.h>
 
@@ -1161,8 +1162,31 @@ Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
   }
   return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
 }
+
 //-------------------------------------------------------------------
 Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentrality estimator) {
+  
+  if(aodEvent->GetRunNumber()<244824)return GetCentralityOldFramework(aodEvent,estimator);
+  Double_t cent=-999;
+  AliMultSelection *multSelection = (AliMultSelection * ) aodEvent->FindListObject("MultSelection");
+  if(!multSelection){
+    AliWarning("AliMultSelection could not be found in the aod event list of objects");
+    return cent;
+  }
+  if(estimator==kCentV0M){
+    cent=multSelection->GetMultiplicityPercentile("V0M"); 
+    Int_t qual = multSelection->GetEvSelCode();
+    if(qual == 199 ) cent=-999;
+    return cent;
+  }
+  else {
+    AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATEOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
+    return cent;
+  }
+
+}
+//-------------------------------------------------------------------
+Float_t AliRDHFCuts::GetCentralityOldFramework(AliAODEvent* aodEvent,AliRDHFCuts::ECentrality estimator) {
   //
   // Get centrality percentile
   //
