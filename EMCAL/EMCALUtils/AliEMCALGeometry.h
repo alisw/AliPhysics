@@ -404,35 +404,30 @@ public:
   Int_t  GetNTotalTRU() const { 
     return fTriggerMapping->GetNTRU(); 
   }
-  Int_t GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm)const{
+  Int_t  GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm)const{
     return fTriggerMapping->GetTRUIndexFromOnlineHwAdd(hwAdd, ddl, sm);
   }
-
-
-
-
-  Bool_t  GetSTUIndexFromTRUIndex(    const Int_t id, Int_t& idx                                    ) const { 
+  Bool_t GetSTUIndexFromTRUIndex(    const Int_t id, Int_t& idx                                    ) const { 
     return fTriggerMapping->GetSTUIndexFromTRUIndex(id, idx ); 
   }
-  Int_t   GetSTUIndexFromTRUIndex(    const Int_t id                                                ) const { 
+  Int_t  GetSTUIndexFromTRUIndex(    const Int_t id                                                ) const { 
     return fTriggerMapping->GetSTUIndexFromTRUIndex(id      ); 
   }
-  Bool_t  GetTRUFromSTU(const Int_t iTRU, const Int_t iADC, Int_t& oTRU, Int_t& oADC, Int_t detector) const { 
+  Bool_t GetTRUFromSTU(const Int_t iTRU, const Int_t iADC, Int_t& oTRU, Int_t& oADC, Int_t detector) const { 
     return fTriggerMapping->GetTRUFromSTU(iTRU, iADC, oTRU, oADC, detector); 
   }
-  Bool_t  GetSTUFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& oTRU, Int_t& oADC                ) const {
+  Bool_t GetSTUFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& oTRU, Int_t& oADC                ) const {
     return fTriggerMapping->GetSTUFromTRU(iTRU, iADC, oTRU, oADC          ); 
   }
-  Bool_t  GetTRUFromSTU(const Int_t iTRU, const Int_t ieta, const Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi, Int_t detector) const {
+  Bool_t GetTRUFromSTU(const Int_t iTRU, const Int_t ieta, const Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi, Int_t detector) const {
     return fTriggerMapping->GetTRUFromSTU(iTRU, ieta, iphi, oTRU, oeta, ophi, detector) ;
   }
-  Bool_t  GetSTUFromTRU(const Int_t iTRU, const Int_t ieta, const Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi                ) const {
+  Bool_t GetSTUFromTRU(const Int_t iTRU, const Int_t ieta, const Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi                ) const {
     return fTriggerMapping->GetSTUFromTRU(iTRU, ieta, iphi, oTRU, oeta, ophi          ) ;
   }
-
-
-
-
+  Int_t  GetTriggerMappingVersion() const {
+    return fTriggerMapping->GetUniqueID();
+  }
 
 protected:
 
