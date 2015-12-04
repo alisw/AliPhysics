@@ -117,35 +117,6 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     } 
   }
 
-  //Load efficiency map
-  TFile* fileeff=TFile::Open(effName.Data());
-  if(!fileeff->IsOpen()){
-    cout<<"Input file not found for efficiency! Exiting..."<<endl;
-    return;
-  }  
-  TCanvas *c = (TCanvas*)fileeff->Get("c");
-  TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
-
-  //Load D0 efficiency map
-  TFile* fileeffD0c=TFile::Open(effD0namec.Data());
-  if(!fileeffD0c->IsOpen()){
-    cout<<"Input file not found for efficiency! Exiting..."<<endl;
-    return;
-  }
-  TCanvas *cc = (TCanvas*)fileeffD0c->Get("c1");
-  TH2D *hEffD0c = (TH2D*)cc->FindObject("h_Eff");
-
-  //Load D0 efficiency map from b
-  if(readMC) {
-    TFile* fileeffD0b=TFile::Open(effD0nameb.Data());
-    if(!fileeffD0b->IsOpen()){
-      cout<<"Input file not found for efficiency! Exiting..."<<endl;
-      return;
-    }
-    TCanvas *cb = (TCanvas*)fileeffD0b->Get("c1");
-    TH2D *hEffD0b = (TH2D*)cb->FindObject("h_Eff");
-  }
-
   //Cuts for correlated tracks/K0
   AliHFAssociatedTrackCuts* corrCuts=new AliHFAssociatedTrackCuts();
   corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get(cutsTrkname.Data());
@@ -155,9 +126,45 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   }
   corrCuts->SetTrackCutsNames();
   corrCuts->SetvZeroCutsNames();
-  if(recoD0MC) corrCuts->SetEfficiencyWeightMap(h3D); //data and MC Reco
-  if(recoD0MC) corrCuts->SetTriggerEffWeightMap(hEffD0c); //data and MC Reco
-  if(recoD0MC && readMC) corrCuts->SetTriggerEffWeightMapB(hEffD0b); //MC Reco
+
+  //Load efficiency map
+  if(!effName.EqualTo("")) {
+    TFile* fileeff=TFile::Open(effName.Data());
+    if(!fileeff->IsOpen()){
+      cout<<"Input file not found for efficiency! Exiting..."<<endl;
+      return;
+    }  
+    TCanvas *c = (TCanvas*)fileeff->Get("c");
+    TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+    if(recoD0MC) corrCuts->SetEfficiencyWeightMap(h3D); //data and MC Reco
+  } else cout<<"*** WARNING! No tracking efficiency map set! ***"<<endl;
+
+  //Load D0 efficiency map
+  if(!effD0namec.EqualTo("")) {
+    TFile* fileeffD0c=TFile::Open(effD0namec.Data());
+    if(!fileeffD0c->IsOpen()){
+      cout<<"Input file not found for efficiency! Exiting..."<<endl;
+      return;
+    }
+    TCanvas *cc = (TCanvas*)fileeffD0c->Get("c1");
+    TH2D *hEffD0c = (TH2D*)cc->FindObject("h_Eff");
+    if(recoD0MC) corrCuts->SetTriggerEffWeightMap(hEffD0c); //data and MC Reco
+  } else cout<<"*** WARNING! No prompt trigger efficiency map set! ***"<<endl;
+
+  //Load D0 efficiency map from b
+  if(readMC) {
+    if(!effD0nameb.EqualTo("")) {
+      TFile* fileeffD0b=TFile::Open(effD0nameb.Data());
+      if(!fileeffD0b->IsOpen()){
+        cout<<"Input file not found for efficiency! Exiting..."<<endl;
+        return;
+      }
+      TCanvas *cb = (TCanvas*)fileeffD0b->Get("c1");
+      TH2D *hEffD0b = (TH2D*)cb->FindObject("h_Eff");
+      if(recoD0MC && readMC) corrCuts->SetTriggerEffWeightMapB(hEffD0b); //MC Reco
+    } else cout<<"*** WARNING! No feed-down trigger efficiency map set! ***"<<endl;
+  }
+
   corrCuts->PrintAll();
 
   TString centr="";
