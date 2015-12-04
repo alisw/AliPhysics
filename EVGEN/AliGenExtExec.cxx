@@ -146,7 +146,7 @@ void AliGenExtExec::Generate()
 	   (fEventNumberInFile == fEventNumberInFileMax)) {
 
       if ((fFileConnected != 1) &&
-	  gSystem->AccessPathName(fPathFile1)) {
+	  !gSystem->AccessPathName(fPathFile1)) {
 	if (fInput == kEPOSroot)
 	  ((AliGenEposReader*) Reader())->ChangeFile(fPathFile1);
 	else
@@ -157,7 +157,7 @@ void AliGenExtExec::Generate()
 	fFileConnected = 1;
 	fEventNumberInFile = 0;
       } else if ((fFileConnected != 2) &&
-		 gSystem->AccessPathName(fPathFile2)) {
+		 !gSystem->AccessPathName(fPathFile2)) {
 	if (fInput == kEPOSroot)
 	  ((AliGenEposReader*) Reader())->ChangeFile(fPathFile2);
 	else
