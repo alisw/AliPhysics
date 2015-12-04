@@ -96,6 +96,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fTOFCutEnabled(false),
   fTOFCut(100.e-9),
   fFillWideTOF(false),
+  fTrigName(0x0),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -422,6 +423,11 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
   // Step 2: Internal Trigger Selection
   if( RejectTriggerMaskSelection() ) {
+    PostData(1, fOutputContainer);
+    return; // Reject!
+  }
+
+  if( RejectFiredTriggerClassSelection() ) {
     PostData(1, fOutputContainer);
     return; // Reject!
   }
@@ -2600,6 +2606,26 @@ Bool_t AliAnalysisTaskPi0Flow::RejectTriggerMaskSelection()
   }
 }
 
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPi0Flow::RejectFiredTriggerClassSelection()
+{
+    
+  TString trigClasses = fInputEvent->GetFiredTriggerClasses();
+  if(fDebug) std::cout<<" Fired trigger classes: "<<trigClasses;
+  
+  if(!fTrigName)
+    return false;
+  
+  if ( trigClasses.Contains(fTrigName) ) {
+    if(fDebug) std::cout << "     ==> Selected for " << fTrigName << std::endl;
+    return false; // selected!
+  }
+  else {
+    if(fDebug) std::cout << std::endl;
+    return true; // rejected!
+  }
+  
+}
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetVertex()

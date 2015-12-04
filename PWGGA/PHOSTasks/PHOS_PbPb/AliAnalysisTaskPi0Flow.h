@@ -59,6 +59,7 @@ public:
     //Where to read AODB object with EP calibration if not default
     void SetEPcalibFileName(const TString filename) {fEPcalibFileName = filename; }   
 
+    void SelectTrigger(char* trigname) { fTrigName = trigname; } 
 
 protected:
     AliAnalysisTaskPi0Flow(const AliAnalysisTaskPi0Flow&); // not implemented
@@ -77,7 +78,8 @@ protected:
 
     // Step 2:
     Bool_t RejectTriggerMaskSelection();
-
+    Bool_t RejectFiredTriggerClassSelection();
+  
     // Step 3:
     void SetVertex();
     Bool_t RejectEventVertex();
@@ -180,7 +182,8 @@ protected:
     Bool_t fTOFCutEnabled;
     Double_t fTOFCut;
     Bool_t fFillWideTOF;
-
+    char* fTrigName;
+  
 
     TList * fOutputContainer;        //final histogram container
 
