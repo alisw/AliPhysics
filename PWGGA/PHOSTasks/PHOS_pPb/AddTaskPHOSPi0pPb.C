@@ -8,7 +8,8 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
 					   const Int_t centEdge2 = 40,
 					   const Int_t centEdge3 = 60,
 					   const Int_t centEdge4 = 80,
-					   const Int_t centEdge5 = 100)
+					   const Int_t centEdge5 = 100,
+					   const char* trigname = 0)
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train, for LHC13 PbP data
   //Author: Paul Baetzing
@@ -54,9 +55,10 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0pPb (const char* name = "PHOSPi0pPb",
   
   task->SetEventMixingRPBinning(1);
   task->SelectCollisionCandidates(offlineTriggerMask);
+  task->SelectTrigger(trigname);
   task->SetEnablePHOSModule(2, kFALSE);
   task->EnableTOFCut(true, 100.e-9, true);
-
+  
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
