@@ -930,7 +930,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			const Int_t nDimRZ = 2;
 			Int_t   nBinsRZ[nDimRZ] = { 1200, 800};
 			Double_t xMinRZ[nDimRZ] = { -150, 0};
-			Double_t xMaxRZ[nDimRZ] = {  150, 180};
+			Double_t xMaxRZ[nDimRZ] = {  150, 200};
 			
 			const Int_t nDimXY = 2;
 			Int_t   nBinsXY[nDimXY] = { 1200, 1200};
