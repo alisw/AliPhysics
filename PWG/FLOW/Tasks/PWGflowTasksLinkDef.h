@@ -37,7 +37,6 @@
 #pragma link C++ class AliFlowVZEROResults+;
 #pragma link C++ class AliFlowVZEROQA+;
 #pragma link C++ class AliAnalysisTaskFlowEPCascade+;
-#pragma link C++ class AliAnalysisTaskJetFlowMC+;
 #pragma link C++ class AliAnalysisTaskMultiparticleCorrelations+;
 #pragma link C++ class AliAnalysisTaskPIDconfig+;
 
