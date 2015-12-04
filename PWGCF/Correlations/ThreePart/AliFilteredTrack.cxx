@@ -217,6 +217,7 @@ void AliFilteredTrack::SetAODFilterBits(const AliAODTrack* t)
   else ResetBit(kBIT5);
   if(t->TestFilterBit(BIT(6)))SetBit(kBIT6);
   else ResetBit(kBIT6);  
+  ResetBit(kMC);
 }
 
 

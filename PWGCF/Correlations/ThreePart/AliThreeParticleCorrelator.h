@@ -269,31 +269,22 @@ class AliThreeParticleCorrelator : public TNamed {
     if (fEventPoolMgr) {
       AliEventPool* pool=fEventPoolMgr->GetEventPool(fMultiplicity, fVz);
       int EventsInPool = pool->GetCurrentNEvents();
-      
 
       if (pool) {
 	if (pool->IsReady()) {
 	  //Correlate triggers from this event with past associated:
 	  MakeAssociatedM(Mixedparticles, fAssociated,true);
 	  for (int nEvent=0; nEvent<EventsInPool; nEvent++) {
+	    MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
+	    ProcessEvent(factiveTriggers,fAssociated,fAssociatedmixed1,fMETACorrelations.begin(),fMETACorrelations.end());
+	    ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociated,fMETA2Correlations.begin(),fMETA2Correlations.end());
+	    ProcessEvent(factiveTriggers, fAssociatedmixed1,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	    for(int mEvent=nEvent+1;mEvent<EventsInPool;mEvent++){
 	      // all particles from different events
-	      MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
 	      MakeAssociated(pool->GetEvent(mEvent), fAssociatedmixed2);
 	      ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociatedmixed2,fMECorrelations.begin(),fMECorrelations.end());
 	      ProcessEvent(factiveTriggers,fAssociatedmixed2,fAssociatedmixed1,fMECorrelations.begin(),fMECorrelations.end(),false,false);
-	      ProcessEvent(factiveTriggers,fAssociated,fAssociatedmixed1,fMETACorrelations.begin(),fMETACorrelations.end());
-	      ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociated,fMETA2Correlations.begin(),fMETA2Correlations.end());
-	      // associated particles from same event (skips the last event)
-	      ProcessEvent(factiveTriggers, fAssociatedmixed1,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	    }//end inner loop
-	    if(nEvent==EventsInPool-1){//last event.
-	      // associated particles from same event (only last event)
-	      MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
-	      ProcessEvent(factiveTriggers, fAssociatedmixed1,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
-	      ProcessEvent(factiveTriggers,fAssociated,fAssociatedmixed1,fMETACorrelations.begin(),fMETACorrelations.end());
-	      ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociated,fMETA2Correlations.begin(),fMETA2Correlations.end());
-	    }//end last event
 	  }//End mixed event loop
 	  
 	  //Correlate associated from this event with triggers and associated from past events:
@@ -303,7 +294,6 @@ class AliThreeParticleCorrelator : public TNamed {
 	    //Now factiveTriggers is the same event as fAssociatedmixed1.
 	    ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociated,fMETACorrelations.begin(),fMETACorrelations.end());
 	    ProcessEvent(factiveTriggers,fAssociated,fAssociatedmixed1,fMETA2Correlations.begin(),fMETA2Correlations.end());
-	    // associated particles from same event (skips the last event)
 	    ProcessEvent(factiveTriggers, fAssociated,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	    for(int mEvent=0;mEvent<EventsInPool;mEvent++){
 	      if(nEvent==mEvent)continue;//dont double count
