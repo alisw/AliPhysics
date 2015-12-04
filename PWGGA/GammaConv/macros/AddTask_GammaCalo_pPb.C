@@ -205,7 +205,6 @@ void AddTask_GammaCalo_pPb(
     eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050022230000"; mesonCutArray[0] = "0163103100000050"; // standard
     eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050022230000"; mesonCutArray[1] = "0163103100000060"; // 2 EMCal cell diagonals
     eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050022230000"; mesonCutArray[2] = "0163103100000040"; // 0.75 EMCal cell diagonals
-
   } else if(trainConfig == 15){
     eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // MB
     eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163403100000050"; // EMC7
