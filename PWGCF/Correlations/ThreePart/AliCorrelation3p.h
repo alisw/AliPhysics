@@ -122,6 +122,7 @@ class AliCorrelation3p : public TNamed {
 
   TH2D * DetaDphiAss(TH3F * hist,const char * name = "detadphiAss");
   TH2D * DeltaEtaCut(TH3F* hist, const char* option, const char* name="deltaetacut", Bool_t baverage = kFALSE) const ;
+  TH2D * AveragePhi(TH3F* hist,const char* name = "averagephi",bool sameside = false);
   TCanvas * Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats);
   TCanvas * Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* histbotl, TH2D* histbotr,const char* name, Bool_t Stats);
   TCanvas * Makecanvas(TH2D* hist,const char* name, Bool_t Stats);

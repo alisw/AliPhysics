@@ -91,10 +91,13 @@ protected:
   void 			GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt);
   void 			GetMCArray();
   void 			GetCentralityAndVertex();
+  void 			GetCentralityAndVertex(AliVEvent * pevent);
   Bool_t	    	IsSelected(AliVParticle * p);
   Bool_t 	    	IsSelectedTrack(AliVParticle * p);
   Bool_t 	    	IsSelectedTrackAOD(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackESD(AliVParticle* p);
+  Bool_t 	    	IsSelectedTrackFiltered(AliVParticle* p);
+  Bool_t		IsMCFilteredTrack(AliVParticle* p);
   Bool_t 		IsAddedSignal(AliVParticle* p);
   void 			GeneratorStat(AliVParticle* p);
   Int_t 		FillGen(Int_t GetGenereratorIndex);
@@ -111,6 +114,7 @@ protected:
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fRemoveSignals;
+  Bool_t 	    fisTree;
   TClonesArray*     fMcArray;
   //Objects that contain needed/used objects for the task:
   TArrayD 	    fMBinEdges; //Contains bin edges in centrality.
