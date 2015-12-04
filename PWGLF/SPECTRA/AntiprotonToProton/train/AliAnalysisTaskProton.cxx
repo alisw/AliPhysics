@@ -1,5 +1,5 @@
 /**************************************************************************
- * Author: Boris Hippolyte.                                               *
+ * Author: Michal Meres.                                               *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -12,9 +12,8 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskHyperonRatio class
-//            This task is for QAing the V0s from ESD/AOD
-//              Origin: B.H. Nov2007, hippolyt@in2p3.fr
+//                 AliAnalysisTaskProton class
+//            This task is for raw antiproton to proton ratio from ESD only
 //-----------------------------------------------------------------
 #include <TROOT.h>
 #include <TSystem.h>
