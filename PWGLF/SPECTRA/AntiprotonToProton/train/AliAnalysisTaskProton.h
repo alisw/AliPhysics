@@ -4,9 +4,8 @@
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskHyperonRatio class
-//            This task is for QAing the V0s from ESD/AOD
-//              Origin: B.H. Nov2007, hippolyt@in2p3.fr
+//                 AliAnalysisTaskProton class
+//            This task is for raw antiproton to proton ratio from ESD only
 //-----------------------------------------------------------------
 class TString;
 class TList;
