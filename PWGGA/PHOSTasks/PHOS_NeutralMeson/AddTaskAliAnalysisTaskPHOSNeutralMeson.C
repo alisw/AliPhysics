@@ -182,15 +182,10 @@ void AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	// *************************************************************
 	// make OutPutFileName after making all Settings
 	TString OutPutFileName = task->MakeOutputFileName();
-	
+
 	mgr->AddTask(task);
-	AliAnalysisDataContainer *coutput0 = 
-	mgr->CreateContainer(ContName.Data(),
-                         TList::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         OutPutFileName);
+
+	AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("%s:%s", ContName.Data(),OutPutFileName.Data()), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dirNeutralMeson", mgr->GetCommonFileName()));
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task,1,coutput0);
-    
-	RequestMemory(task,500*1024); // request 500mb memory for task
 } 
