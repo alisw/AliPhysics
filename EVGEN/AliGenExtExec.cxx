@@ -123,11 +123,10 @@ void AliGenExtExec::Init()
     AliFatal(Form("Invalid input type: %i", fInput));
   }
 
-  if (fMode == kFIFO)
+  if (fMode == kFIFO) {
     Reader()->SetFileName(fPathFIFO);
-
-  // proceed with init
-  AliGenExtFile::Init();
+    AliGenExtFile::Init();
+  }
 }
 
 void AliGenExtExec::Generate()
