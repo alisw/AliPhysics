@@ -232,9 +232,9 @@ void AliHLTEMCALTriggerDataMakerComponent::CombineTRUSTUDigit(
   AliHLTCaloTriggerRawDigitDataStruct merged;
   target.fID = trudigit.fID;
   target.fNTimeSamples = trudigit.fNTimeSamples;
-  memcpy(target.fTimeSamples, trudigit.fTimeSamples, sizeof(AliHLTCaloTriggerRawDigitDataStruct::fTimeSamples));
+  memcpy(target.fTimeSamples, trudigit.fTimeSamples, sizeof(target.fTimeSamples));
   target.fNL0Times = trudigit.fNL0Times;
-  memcpy(target.fL0Times, trudigit.fL0Times, sizeof(AliHLTCaloTriggerRawDigitDataStruct::fL0Times));
+  memcpy(target.fL0Times, trudigit.fL0Times, sizeof(target.fL0Times));
   target.fL1TimeSum = studigit.fL1TimeSum;
   target.fTriggerBits = trudigit.fTriggerBits | studigit.fTriggerBits;
 }
