@@ -36,7 +36,7 @@ Int_t StageAndFilter(const TString& from, const TString& to,
 
   if (from.Contains("alien://"))
   {
-      TGrid::Connect("alien://");
+      TGrid::Connect("alien://",0,0,"t");
 
       if (!gGrid)
       {
