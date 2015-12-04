@@ -1039,7 +1039,7 @@ Int_t AliTRDrawStream::ReadTrackingHeader(Int_t stack)
 	    trk->SetLayerMask((trackWord >> 56) & 0x3f);
 	    trk->SetA( (((trackWord >> 38) & 0x3ffff) ^ 0x20000) - 0x20000);
 	    trk->SetB( (((trackWord >> 20) & 0x3ffff) ^ 0x20000) - 0x20000);
-	    trk->SetC( (((trackWord >> 8)  &  0xffff) ^  0x8000) -  0x8000);
+	    trk->SetC( (((trackWord >> 8)  &   0xfff) ^   0x800) -   0x800);
 	    trk->SetPID((trackWord >>  0) & 0xff);
 	    trk->SetStack(stack);
 	    trk->SetLabel(-3);
