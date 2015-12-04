@@ -102,16 +102,7 @@ set(SRCS
   MultEvShape/AliMESpidTask.cxx
   MultEvShape/AliMESchgTask.cxx
   MultEvShape/AliMESppColTask.cxx
-  AntiprotonToProton/AliProtonAnalysisBase.cxx
-  AntiprotonToProton/AliProtonQAAnalysis.cxx
-  AntiprotonToProton/AliProtonAnalysis.cxx
-  AntiprotonToProton/AliAnalysisTaskProtons.cxx
-  AntiprotonToProton/AliAnalysisTaskProtonsQA.cxx  
-  AntiprotonToProton/AliProtonFeedDownAnalysisTask.cxx 
-  AntiprotonToProton/AliProtonFeedDownAnalysis.cxx 
-  AntiprotonToProton/AliProtonAbsorptionCorrection.cxx 
-  AntiprotonToProton/AliProtonSpectraCorrection.cxx 
-  AntiprotonToProton/AliProtonCorrectionAnalysisTask.cxx
+  AntiprotonToProton/train/AliAnalysisTaskProton.cxx
   Spherocity/AliTransverseEventShape.cxx
 )
 
@@ -178,3 +169,4 @@ install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
 install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "*.C")
 install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION  PWGLF/SPECTRA/MultEvShape)
 install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
+install(DIRECTORY AntiprotonToProton/train DESTINATION PWGLF/SPECTRA/AntiprotonToProton)
