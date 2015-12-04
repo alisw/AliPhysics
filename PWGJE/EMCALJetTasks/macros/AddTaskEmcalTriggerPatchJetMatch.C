@@ -19,6 +19,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
   TString     kPeriod             = "LHC13b",
   TString     kBeamType           = "pp", //or pPb or PbPb
   Bool_t      comments            = kFALSE,
+  Bool_t      UseAllRecalcPatches = kFALSE,
   TString     tag                 = ""
 ) {
   // The following three lines are added for backwards compatibility
