@@ -24,7 +24,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
@@ -63,7 +62,6 @@ set(SRCS
   AliFlowVZEROResults.cxx
   AliFlowVZEROQA.cxx
   AliAnalysisTaskFlowEPCascade.cxx
-  AliAnalysisTaskJetFlowMC.cxx
   AliAnalysisTaskMultiparticleCorrelations.cxx
   AliAnalysisTaskPIDconfig.cxx
   )
@@ -81,7 +79,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS PWGflowBase PWGmuon PWGEMCAL ANALYSIS ANALYSISalice AOD ESD STEERBase)
+set(LIBDEPS PWGflowBase PWGmuon ANALYSIS ANALYSISalice AOD ESD STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
