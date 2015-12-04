@@ -34,7 +34,9 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
   AliFlowTrackCuts* cutsPOI[nCentralitiesMax];
   TString suffixName[nCentralitiesMax];
   TString outputSlotName[nCentralitiesMax][nHarmonics];
-  for(Int_t iCentralityBin = 0; iCentralityBin < nCentralitiesMax - 1; iCentralityBin++) {
+  Int_t nCentralities = 2;
+  if(isPbPb) nCentralities = nCentralitiesMax;
+  for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
     //Create the event cut object
     cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,is2011,gCentralityEstimator,doQA);
 
@@ -79,7 +81,7 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
   TString myNameSP[nCentralitiesMax][nHarmonics];
   TString slot[nCentralitiesMax][nHarmonics];
   
-  for(Int_t iCentralityBin = 0; iCentralityBin < nCentralitiesMax - 1; iCentralityBin++) {
+  for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
       Error("AddTaskFlowEvent", "No analysis manager to connect to.");
