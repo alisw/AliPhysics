@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -14,6 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//_________________________________________________________________________
+//  This class provides access to EMCAL/DCAL STU DDL raw data.
+//--
+//  Author      : Hiroki Yokoyama (Univ. of TSUKUBA / Univ. of Grenoble)
+//  contact     : hiroki.yokoyama@cern.ch
+//  Last Update : 23. Nov. 2015
+//_________________________________________________________________________
 
 #include "AliEMCALTriggerSTURawStream.h"
 #include "AliRawReader.h"
@@ -184,14 +190,12 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       eqId   = fRawReader->GetEquipmentId();
       eqSize = fRawReader->GetEquipmentSize();
     }
+    if(iword > max_payload_size -1 )return kFALSE ;
     word32[iword++] = w32;
-    //cout<<dec<<iword<<" , "<<hex<<w32<<endl;
-
+    //cout<<dec<<setw(5)<<iword<<" , "<<hex<<setw(10)<<w32<<dec<<setw(10)<<w32<<endl;
   }
 
   Int_t   poffset = 0     ;
-  //firmware vesion confirmation (DCAL)
-  //Bool_t  isDCALfirst = ((word32[20] & 0x0000f000) == 0x0000d000)? kTRUE : kFALSE ;//DCAL first
   
   //payload type selector
   if(false){}
@@ -249,34 +253,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     fPayload        = V2EMCALRaw  ;
     fDetector       = kEMCAL      ;
   }
-
-  //else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL                           )){
-  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
-  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
-  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
-  //  fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCAL                                       ;
-  //}
-  //
-  //else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
-  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
-  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
-  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
-  //  fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCALRaw                                    ;
-  //}
-  //
-  //else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL                           )){
-  //  //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
-  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw    ;//DCAL  first
-  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
-  //  fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCAL                                       ;
-  //}
-  //
-  //else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
-  //  poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
-  //  if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw   ;//DCAL  first
-  //  else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
-  //  fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCALRaw                                    ;
-  //}
   
   else{
     AliError(Form("STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32", eqId, eqSize, iword));
@@ -289,14 +265,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     case V0Raw      :    case V1Raw      :    case V2EMCALRaw :    case V2DCALRaw  :  case V1_2Raw :  {fGetRawData=1;  break;}
     default :    {}
   }//end case
-
-  //std::cout <<"Selected DDL Configuration : "
-  //          <<" eqId : "    << eqId
-  //          <<" eqSize : "  << eqSize
-  //          <<" detector : "<< fDetector
-  //          <<" payload : " << fPayload
-  //          <<" RawData : " << fGetRawData
-  //          <<endl;
 
   int index         = poffset;
   int offset        = 0;
@@ -533,7 +501,9 @@ void AliEMCALTriggerSTURawStream::DecodeL1JetPatchIndexes(const int i, UInt_t *w
   for (Int_t ix = 0; ix < nSubregion_eta - (jetSize-1) ; ix++){
     UInt_t currentrow = word32[offset + ix];
     for (Int_t iy = 0; iy < nSubregion_phi - (jetSize-1); iy++){
-      if (currentrow & (1 << iy)){
+      Int_t bit = (fDetector == kDCAL)? (currentrow & (1 << iy)) : (currentrow & (1<<(nSubregion_phi-jetSize-iy)));
+      //if (currentrow & (1 << iy))
+      if (bit){
         fNL1JetPatch[i]                          = fNL1JetPatch[i] + 1;
         fL1JetPatchIndex[fNL1JetPatch[i] - 1][i] = ((ix << 8) & 0xFF00) | (iy & 0xFF);
       }
@@ -656,7 +626,7 @@ void AliEMCALTriggerSTURawStream::DecodeTRUADC(UInt_t *word32, const int offset)
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::DecodePHOSSubregion(UInt_t *word32, const int offset){
   for (Int_t index=0;index<36;index++){
-    fPHOSSubregion[index] = word32[offset + index] & 0x7FFFF  ;
+    fPHOSSubregion[index] = word32[offset + index] & 0xFFFFFFFF  ;
   }
 }
 

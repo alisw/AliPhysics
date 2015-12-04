@@ -3,6 +3,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/*
+Author: H. Yokoyama (Univ. of TSUKUBA/ Univ. of Grenoble)
+*/
+
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
@@ -92,16 +96,11 @@ class AliEMCALTriggerSTURawStream: public TObject
     static const Int_t kPayLoadSizeV1_2           = 390                         ;
     static const Int_t kPayLoadSizeV1_2_Raw       = 1536                        ;
 
-    //static const Int_t kPayLoadSizeV2_EMCAL       = 401   ;//10+17+11+11+96+128+128    
     static const Int_t kPayLoadSizeV2_EMCAL       = 391   ;//17+11+11+96+128+128    
     static const Int_t kPayLoadSizeV2_EMCAL_Raw   = 1536  ;//96*32/2                   
-    //static const Int_t kPayLoadSizeV2_DCAL        = 207   ;//10+21+11+11+42+ 56+ 56    
     static const Int_t kPayLoadSizeV2_DCAL        = 197   ;//21+11+11+42+ 56+ 56    
     static const Int_t kPayLoadSizeV2_DCAL_Raw    = 708   ;//96*14/2 +36               
 
-    //static const Int_t max_payload_size = kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw 
-    //                                    + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw ;
-    //static const Int_t max_payload_size = 915 + 1937 ;
     static const Int_t max_payload_size = 1937 ;
 
     static const Int_t max_L0GammaPatchIndex  = 3100 ;  // (48-1)*(64-1)  = 2961  (EMCAL)
