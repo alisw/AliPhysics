@@ -3437,9 +3437,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 81:
       label_case_81:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.982252, -3.49763, -0.969196);//v3
           //energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729);v0
           //energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501);v1
+          //energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
         if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.9936*0.972984, -3.4499, -0.363516);//v0
         else fPeriodNameAvailable = kFALSE;
       }
@@ -3449,9 +3450,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 82:
       label_case_82:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.973302, -2.41453, -1.88838);//v3
           //energy /= FunctionNL_kSDM(2.0*energy, 0.975467, -1.9989, -1.23208);v0
           //energy /= FunctionNL_kSDM(2.0*energy, 0.974716, -2.56403, -0.85898);v1
+          //energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
         if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.975679, -3.10412, -0.606205);//v0
         else fPeriodNameAvailable = kFALSE;
       }
@@ -3467,6 +3469,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 84:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_82;// goto previous case for shifting MC
+      break;
+
+    // NonLinearity LHC13 pPb Calo - excluding the two lowest pT points
+    case 89:
+      if(isMC>0){
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.973302, -3.12524, -1.13546);
+
+        else fPeriodNameAvailable = kFALSE;
+      }
       break;
 
 //----------------------------------------------------------------------------------------------------------
