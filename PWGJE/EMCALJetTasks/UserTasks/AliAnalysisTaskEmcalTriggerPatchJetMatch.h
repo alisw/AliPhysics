@@ -164,6 +164,8 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH3F     *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F     *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
 
+  TH1F     *fHistClusEnergy;                   //!
+  TH1F     *fHistClusofJetEnergy;              //!
   TH1F     *fHistEventSelectionQA;             //! trigger event class QA
   TH1F     *fhQAinfoAllPatchesCounter;         //!
   TH1F     *fhQAinfoCounter;                   //!
@@ -176,8 +178,6 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH1F     *fhJetLowSimplePatchEnergy;         //! Jet Low Simple patch energy distribution
   TH1F     *fhMainTriggerPatchEnergy;          //! Main Trigger patch energy distribution
 
-  TH1F     *fHistClusEnergy;                   //!
-  TH1F     *fHistClusofJetEnergy;              //!
   TH2F     *fHistdPhidEtaPatchJetCluster[16];  //!
 
   TClonesArray               *fJetTriggeredEvent;                    //!jets
