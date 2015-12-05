@@ -791,6 +791,19 @@ extern "C" {
     AliHLTUInt32_t GetSpecification() const {return fSpecification;}
   };
 
+  /**
+   * Helper function to compare topics
+   * a topic is a string representation of AliHLTComponentDataType
+   */
+  inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
+  {
+    for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
+    {
+      if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
+    }
+    return true;
+  }
+
   //this struct is meant to be used as a universal data block descriptor ("topic" + specification)
   //for ZMQ communication
   struct AliHLTDataTopic
@@ -838,6 +851,12 @@ extern "C" {
       memcpy( fTopic+kAliHLTComponentDataTypefIDsize, blockData.fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
       fSpecification = blockData.fSpecification;
       return *this;
+    }
+
+    bool operator==( const AliHLTDataTopic& dt )
+    {
+      bool topicMatch = Topicncmp(dt.fTopic, fTopic);
+      return dt.fSpecification==fSpecification && topicMatch;
     }
 
     std::string Description() const
@@ -1736,19 +1755,5 @@ inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const AliHLTCo
 {
   return AliHLTComponentDataTypeInitializer(src.fID, origin);
 }
-
-/**
- * Helper function to compare topics
- * a topic is a string representation of AliHLTComponentDataType
- */
-inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
-{
-  for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
-  {
-    if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
-  }
-  return true;
-}
-
 
 #endif 
