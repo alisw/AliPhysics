@@ -65,6 +65,7 @@
 #include "AliESDv0.h"
 #include "AliAODv0.h"
 #include "AliCodeTimer.h"
+#include "AliMultSelection.h"
 #include <cstring>
 
 /// \cond CLASSIMP
@@ -3109,8 +3110,17 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
     cent=((AliAODEvent*)event)->GetCentrality();
   }
-  Float_t centperc=cent->GetCentralityPercentile("V0M");
-
+  Float_t centperc=99;
+  if(event->GetRunNumber()<244824){
+    centperc=cent->GetCentralityPercentile("V0M");
+  }else{
+    AliMultSelection *multSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
+    if(multSelection){
+      centperc=multSelection->GetMultiplicityPercentile("V0M"); 
+      Int_t qual = multSelection->GetEvSelCode();
+      if(qual == 199 ) centperc=99.;
+    }
+  }
   Bool_t okDisplaced=kFALSE,okSoftPi=kFALSE,okFor3Prong=kFALSE;
   nSeleTrks=0;
  
