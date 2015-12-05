@@ -165,6 +165,7 @@ void* run(void* arg)
             //check if we have a runnumber in the string
             string info;
             alizmq_msg_iter_data(i,info);
+            if (fVerbose) Printf("processing INFO %s", info.c_str());
             
             fCanvas->SetTitle(info.c_str());
             size_t runTagPos = info.find("run");
