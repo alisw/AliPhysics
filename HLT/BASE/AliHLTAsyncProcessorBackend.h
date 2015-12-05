@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 class AliHLTAsyncProcessorBackend
 {
