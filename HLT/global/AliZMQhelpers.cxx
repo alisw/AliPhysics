@@ -240,7 +240,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_add(aliZMQmsg* message, std::string& topic, std::string& data)
+int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data)
 {
   //add a frame to the mesage
   int rc = 0;
