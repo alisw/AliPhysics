@@ -293,7 +293,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   fBenchmark.Start(0);
 
   // Initialise the transformation here once more for the case of off-line reprocessing
-  if( !fgTimeInitialisedFromEvent ){
+  if( fInitializeByObjectInDoEvent != 1 && fOfflineMode && !fgTimeInitialisedFromEvent ){
     Long_t currentTime = static_cast<AliHLTUInt32_t>(time(NULL));
     Long_t eventTimeStamp = GetTimeStamp();
     if( TMath::Abs( fgTransform.GetCurrentTimeStamp() - eventTimeStamp )>60 && 
