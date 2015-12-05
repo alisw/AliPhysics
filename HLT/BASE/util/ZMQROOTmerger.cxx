@@ -391,8 +391,7 @@ Int_t DoSend(void* socket)
 
   aliZMQmsg message;
   //forward the (run-)info string
-  string infoMessageString = "INFO";
-  alizmq_msg_add(&message, infoMessageString, fInfo);
+  alizmq_msg_add(&message, "INFO", fInfo);
   Int_t rc = 0;
   TObject* object = NULL;
   TObject* key = NULL;
