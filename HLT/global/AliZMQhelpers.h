@@ -48,7 +48,12 @@ int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
 
+//checking identity of the frame via iterator
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic);
 //helpers for accessing data via iterators
+int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);
+int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data);
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, AliHLTDataTopic& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object);
 

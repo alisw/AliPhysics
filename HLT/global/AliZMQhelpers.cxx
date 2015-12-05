@@ -397,6 +397,39 @@ int alizmq_msg_close(aliZMQmsg* message)
 }
 
 //_______________________________________________________________________________________
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic)
+{
+  AliHLTDataTopic actualTopic;
+  alizmq_msg_iter_topic(it, actualTopic);
+  if (actualTopic == topic) return 0;
+  return 1;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic)
+{
+  std::string actualTopic;
+  alizmq_msg_iter_topic(it, actualTopic);
+  return actualTopic.compare(0,topic.size(),topic);
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic)
+{
+  zmq_msg_t* message = it->first;
+  topic.assign((char*)zmq_msg_data(message),zmq_msg_size(message));
+  return 0;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data)
+{
+  zmq_msg_t* message = it->second;
+  data.assign((char*)zmq_msg_data(message),zmq_msg_size(message));
+  return 0;
+}
+
+//_______________________________________________________________________________________
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, AliHLTDataTopic& topic)
 {
   zmq_msg_t* message = it->first;
