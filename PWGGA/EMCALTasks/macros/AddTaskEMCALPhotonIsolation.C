@@ -146,7 +146,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
         includeNoITS = kTRUE;
       }
       else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
-        aodfilterAna->SetAODFilterBits(256,512);
+        aodfilterAna->SetAODfilterBits(256,512);
         includeNoITS=kFALSE;
       }
       else {
