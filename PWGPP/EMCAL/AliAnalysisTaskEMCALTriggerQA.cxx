@@ -395,6 +395,26 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   Float_t centrality = -1;
   if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentEstimator);
   
+  if(fFillCenHisto)
+  {
+    if( fEventL1G   ) fhCentrality[kL1GammaTrig]    ->Fill(centrality);
+    if( fEventL1G2  ) fhCentrality[kL1GammaTrig2]   ->Fill(centrality);
+    if( fEventL1J   ) fhCentrality[kL1JetTrig]      ->Fill(centrality);
+    if( fEventL1J2  ) fhCentrality[kL1JetTrig2]     ->Fill(centrality);
+    if( fEventL1GD  ) fhCentrality[kL1GammaTrigD]   ->Fill(centrality);
+    if( fEventL1G2D ) fhCentrality[kL1GammaTrig2D]  ->Fill(centrality);
+    if( fEventL1JD  ) fhCentrality[kL1JetTrigD]     ->Fill(centrality);
+    if( fEventL1J2D ) fhCentrality[kL1JetTrig2D]    ->Fill(centrality);
+    if( fEventMB  )   fhCentrality[kMBTrig]         ->Fill(centrality);
+    if( fEventL0  )   fhCentrality[kL0Trig]         ->Fill(centrality);
+    if( fEventCen )   fhCentrality[kCentralTrig]    ->Fill(centrality);
+    if( fEventSem )   fhCentrality[kSemiCentralTrig]->Fill(centrality);
+    if( fEventL1G  && !fEventL1J) fhCentrality[kL1GammaOnlyTrig]      ->Fill(centrality);
+    if( fEventL1J  && !fEventL1G) fhCentrality[kL1JetOnlyTrig]        ->Fill(centrality);
+    if( fEventL1G2 && !fEventL1G) fhCentrality[kL1Gamma2OnlyGammaTrig]->Fill(centrality);
+    if( fEventL1J2 && !fEventL1J) fhCentrality[kL1Jet2OnlyJetTrig]    ->Fill(centrality);
+  }
+  
   //printf("Centrality %f for estimator %s\n",centrality, fCentEstimator.Data());
   
   //if(!fEventMB) printf("MB : %d; L0 : %d; L1-Gam1 : %d; L1-Gam2 : %d; L1-Jet1 : %d; L1-Jet2 : %d; Central : %d; SemiCentral : %d \n",
@@ -1110,7 +1130,7 @@ void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
 {
   for (Int_t i = 0; i < fgkTriggerCombi; i++)
   {
-    fhV0     [i] = 0;
+    fhV0     [i] = 0;              fhCentrality[i] = 0;
     fhClus   [i] = 0;              fhClusMax   [i] = 0;
     fhClusCen[i] = 0;              fhClusCenMax[i] = 0;
     fhClusV0 [i] = 0;              fhClusV0Max [i] = 0;
@@ -1607,7 +1627,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
                          Form("V0 distribution for %s",hTitle[i].Data()),
                          fNBinsV0Signal,0,fMaxV0Signal);
       fhV0[i]->SetXTitle("V0");
-      fOutputList->Add(fhV0[i] );
+      fOutputList->Add(fhV0[i]);
 		}
     
     fhClus[i]    = new TH1F(Form("hClus%s",hName[i].Data()),
@@ -1626,18 +1646,25 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
     
     if(fFillCenHisto)
     {
+      
+      fhCentrality[i] = new TH1F(Form("hCentrality%s",hName[i].Data()),
+                         Form("Centrality distribution for %s",hTitle[i].Data()),
+                         100, 0, 100);
+      fhCentrality[i]->SetXTitle("Centrality (%)");
+      fOutputList->Add(fhCentrality[i]);
+      
       fhClusCen[i]    = new TH2F(Form("hClusCen%s",hName[i].Data()),
                                  Form("clusters E distribution vs centrality for %s",hTitle[i].Data()),
                                  fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
       fhClusCen[i]   ->SetXTitle("Energy (GeV)");
-      fhClusCen[i]   ->SetYTitle("Centrality");
+      fhClusCen[i]   ->SetYTitle("Centrality (%)");
       fOutputList->Add(fhClusCen[i]);
       
       fhClusCenMax[i] = new TH2F(Form("hClusCenMax%s",hName[i].Data()),
                                  Form("maximum energy cluster per event vs centrality for %s",hTitle[i].Data()),
                                  fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
       fhClusCenMax[i]->SetXTitle("Energy (GeV)");
-      fhClusCenMax[i]->SetYTitle("Centrality");
+      fhClusCenMax[i]->SetYTitle("Centrality (%)");
       fOutputList->Add(fhClusCenMax[i]);
     }
     
