@@ -119,22 +119,18 @@ void* run(void* arg)
     //send a request if we are using REQ
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
-      TString request;
-      TString requestTopic;
+      string request;
       
       if (fSelectionRegexp || fUnSelectionRegexp) 
       {
-        requestTopic = "CONFIG";
         if (fSelectionRegexp) request += " select="+fSelectionRegexp->GetPattern();
         if (fUnSelectionRegexp) request += " unselect="+fUnSelectionRegexp->GetPattern();
         if (fResetOnRequest) request += " ResetOnRequest";
-        zmq_send(fZMQin, requestTopic.Data(), requestTopic.Length(), ZMQ_SNDMORE);
-        zmq_send(fZMQin, request.Data(), request.Length(), ZMQ_SNDMORE);
+        alizmq_msg_send("CONFIG", request, fZMQin, ZMQ_SNDMORE);
       }
 
-      if (fVerbose) Printf("sending request %s %s",requestTopic.Data(), request.Data());
-      zmq_send(fZMQin, "", 0, ZMQ_SNDMORE);
-      zmq_send(fZMQin, "", 0, 0);
+      if (fVerbose) Printf("sending request CONFIG %s", request.c_str());
+      alizmq_msg_send("", "", fZMQin, 0);
     }
     
     //wait for the data
@@ -164,13 +160,12 @@ void* run(void* arg)
       alizmq_msg_recv(&message, fZMQin, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        zmq_msg_t* topicMsg = i->first;
-        zmq_msg_t* dataMsg = i->second;
-        if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
+        if (alizmq_msg_iter_check(i, "INFO")==0)
         {
             //check if we have a runnumber in the string
             string info;
-            info.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
+            alizmq_msg_iter_data(i,info);
+            
             fCanvas->SetTitle(info.c_str());
             size_t runTagPos = info.find("run");
             if (runTagPos != std::string::npos)
@@ -190,6 +185,7 @@ void* run(void* arg)
               }
               fRunNumber = runnumber; 
             }
+            continue;
         }
 
         TObject* object;
