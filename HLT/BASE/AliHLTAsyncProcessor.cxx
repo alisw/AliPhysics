@@ -6,6 +6,10 @@
 @author  David Rohr (drohr@cern.ch)
 */
 
+#ifdef __MACH__
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 #include "AliHLTAsyncProcessor.h"
 #include "AliHLTAsyncProcessorBackend.h"
 #include "AliHLTComponent.h"
