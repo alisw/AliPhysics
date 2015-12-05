@@ -61,7 +61,8 @@ fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),
 fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          
 fFillArmenterosThetaStar(0), fFillOnlyMCAcceptanceHisto(0),
-fCheckAccInSector(kFALSE),
+fCheckAccInSector(0),
+fPairWithOtherDetector(0),   fOtherDetectorInputName(""),
 fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
 fProdVertex(),
 
@@ -2060,18 +2061,57 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     return;
   }
   
+  //
   // Init some variables
-  Int_t   nPhot    = GetInputAODBranch()->GetEntriesFast() ;
+  //
+  
+  // Analysis within the same detector:
+  TClonesArray* secondLoopInputData = GetInputAODBranch();
+  
+  Int_t nPhot      = GetInputAODBranch()->GetEntriesFast() ;
+  Int_t nPhot2     = nPhot; // second loop
+  Int_t minEntries = 2;
+  Int_t last       = 1;     // last entry in first loop to be removed
+  
+  // Combine 2 detectors:
+  if(fPairWithOtherDetector)
+  {
+    // Input from CaloTrackCorr tasks
+    secondLoopInputData = (TClonesArray *) GetReader()->GetAODBranchList()->FindObject(fOtherDetectorInputName);
+    
+    // In case input from PCM or other external source
+    if(!secondLoopInputData) secondLoopInputData = (TClonesArray *) GetReader()->GetOutputEvent()->FindObject(fOtherDetectorInputName);
+    if(!secondLoopInputData) secondLoopInputData = (TClonesArray *) GetReader()->GetInputEvent ()->FindObject(fOtherDetectorInputName);
+
+    if(!secondLoopInputData)
+    {
+      AliFatal(Form("Input for other detector not found in branch %s!",fOtherDetectorInputName.Data()));
+      return ; // coverity
+    }
+    
+    nPhot2     = secondLoopInputData->GetEntriesFast() ; // add one since we remove one for the normal case
+    minEntries = 1;
+    last       = 0;
+  }
   
   AliDebug(1,Form("Photon entries %d", nPhot));
   
-  // If less than photon 2 entries in the list, skip this event
-  if ( nPhot < 2 )
+  // If less than photon 2 (1) entries in the list, skip this event
+  if ( nPhot < minEntries )
   {
     AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
     
     if ( GetNCentrBin() > 1 && IsHighMultiplicityAnalysisOn() )
         fhCentralityNoPair->Fill(GetEventCentralityBin(), GetEventWeight());
+    
+    return ;
+  }
+  else if(fPairWithOtherDetector && nPhot2 < minEntries)
+  {
+    AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
+    
+    if ( GetNCentrBin() > 1 && IsHighMultiplicityAnalysisOn() )
+      fhCentralityNoPair->Fill(GetEventCentralityBin(), GetEventWeight());
     
     return ;
   }
@@ -2105,7 +2145,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //---------------------------------
   // First loop on photons/clusters
   //---------------------------------
-  for(Int_t i1=0; i1<nPhot-1; i1++)
+  for(Int_t i1 = 0; i1 < nPhot-last; i1++)
   {
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
       
@@ -2158,9 +2198,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     //---------------------------------
     // Second loop on photons/clusters
     //---------------------------------
-    for(Int_t i2=i1+1; i2<nPhot; i2++)
+    Int_t first = i1+1;
+    if(fPairWithOtherDetector) first = 0;
+    
+    for(Int_t i2 = first; i2 < nPhot2; i2++)
     {
-      AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
+      //AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
+      AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (secondLoopInputData->At(i2)) ;
         
       // Select photons within a pT range
       if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
@@ -2414,11 +2458,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           } // pid bit cut loop
           
           // Several pt,ncell and asymmetry cuts
-          for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+          for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
           {
-            for(Int_t icell=0; icell<fNCellNCuts; icell++)
+            for(Int_t icell = 0; icell < fNCellNCuts; icell++)
             {
-              for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+              for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
               {
                 Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
                 if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        &&
@@ -2479,7 +2523,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //---------------------------------
       // First loop on photons/clusters
       //---------------------------------
-      for(Int_t i1=0; i1<nPhot; i1++)
+      for(Int_t i1 = 0; i1 < nPhot; i1++)
       {
         AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
         
@@ -2492,7 +2536,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //---------------------------------
         // Second loop on other mixed event photons/clusters
         //---------------------------------
-        for(Int_t i2=0; i2<nPhot2; i2++)
+        for(Int_t i2 = 0; i2 < nPhot2; i2++)
         {
           AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
           
@@ -2522,7 +2566,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           module2 = GetModuleNumber(p2);
           
           //-------------------------------------------------------------------------------------------------
-          //Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
+          // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
           //-------------------------------------------------------------------------------------------------
           if(a < fAsymCuts[0] && fFillSMCombinations)
           {
@@ -2555,8 +2599,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           Bool_t ok = kTRUE;
           if(fSameSM && module1!=module2) ok=kFALSE;
-          if(ok){
-            
+          if(ok)
+          {
             // Check if one of the clusters comes from a conversion
             if(fCheckConversion)
             {
@@ -2642,7 +2686,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // Add the current event to the list of events for mixing
     //--------------------------------------------------------
     
-    TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
+    //TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
+    TClonesArray *currentEvent = new TClonesArray(*secondLoopInputData);
+    
     // Add current event to buffer and Remove redundant events
     if( currentEvent->GetEntriesFast() > 0 )
     {

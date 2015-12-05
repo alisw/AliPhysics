@@ -131,6 +131,16 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
   void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
   
+  
+  //-------------------------------------------
+  // Pair 2 different inputs
+  //-------------------------------------------
+
+  void         SwitchOnPairWithOtherDetector() { fPairWithOtherDetector = kTRUE ; }    
+  void         SwitchOffPairWithOtherDetector(){ fPairWithOtherDetector = kFALSE; } 
+  void         SetOtherDetectorInputName(TString name)
+  { fOtherDetectorInputName = name ;   if(name != "") SwitchOnPairWithOtherDetector() ; }
+
   // MC analysis related methods
     
   void         SwitchOnConversionChecker()      { fCheckConversion     = kTRUE  ; }
@@ -190,6 +200,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOnlyMCAcceptanceHisto; ///<  Do analysis only of MC kinematics input
   
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
+  
+  Bool_t   fPairWithOtherDetector;     ///<  Pair (DCal and PHOS) or (PCM and (PHOS or DCAL or EMCAL))
+  TString  fOtherDetectorInputName;    ///<  String with name of extra detector data
   
   TLorentzVector fPhotonMom1;          //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom1Boost;     //!<! Photon cluster momentum, temporary array
@@ -435,7 +448,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,29) ;
+  ClassDef(AliAnaPi0,30) ;
   /// \endcond
   
 } ;
