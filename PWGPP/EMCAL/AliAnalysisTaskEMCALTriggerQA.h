@@ -276,7 +276,8 @@ private:
   TH2F             *fhClusEtaPhiLowCellMax      [fgkTriggerCombi];   //!<! Clusters maximum energy cell index eta vs phi distribution for a trigger, energy below fEtaPhiEnMin GeV
   TH2F             *fhClusEtaPhiLowCellMaxCluMax[fgkTriggerCombi];   //!<! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below fEtaPhiEnMin GeV
 
-  TH1F             *fhV0[fgkTriggerCombi];//! V0 distribution for a triggered event
+  TH1F             *fhV0[fgkTriggerCombi];                           //!<! V0 distribution for a triggered event
+  TH1F             *fhCentrality[fgkTriggerCombi];                   //!<! Centrality distribution for a triggered event
 
   // Histograms bins
   
@@ -328,7 +329,7 @@ private:
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 16) ;
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 17) ;
   /// \endcond
 
 };
