@@ -2206,10 +2206,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   for(Int_t i1 = 0; i1 < nPhot-last; i1++)
   {
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-      
+    
     // Select photons within a pT range
     if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
-
+    
     //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster1 id %d/%d\n",i1,nPhot-1);
     
     // get the event index in the mixed buffer where the photon comes from
@@ -2231,9 +2231,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if( IsHighMultiplicityAnalysisOn() )
       {
         fhCentrality->Fill(curCentrBin, GetEventWeight());
-          
+        
         if( GetEventPlane() )
-            fhEventPlaneResolution->Fill(curCentrBin, TMath::Cos(2.*GetEventPlane()->GetQsubRes()), GetEventWeight());
+          fhEventPlaneResolution->Fill(curCentrBin, TMath::Cos(2.*GetEventPlane()->GetQsubRes()), GetEventWeight());
       }
       
       currentEvtIndex = evtIndex1 ;
@@ -2249,9 +2249,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     //------------------------------------------
     // Recover original cluster
-//    Int_t iclus1 = -1 ;
-//    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
-//    if(!cluster1) AliWarning("Cluster1 not found!");
+    //    Int_t iclus1 = -1 ;
+    //    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
+    //    if(!cluster1) AliWarning("Cluster1 not found!");
     
     //---------------------------------
     // Second loop on photons/clusters
@@ -2263,10 +2263,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     {
       //AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (secondLoopInputData->At(i2)) ;
-        
+      
       // Select photons within a pT range
       if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
-
+      
       //printf("AliAnaPi0::MakeAnalysisFillHistograms() : cluster2 i %d/%d\n",i2,nPhot);
       
       //In case of mixing frame, check we are not in the same event as the first cluster
@@ -2327,11 +2327,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Float_t l02    = p2->GetM02();
       Int_t   ncell2 = p2->GetNCells();
       //printf("cluster2: E %2.2f, l0 %2.2f, tof %2.2f\n",p2->E(),l02,tof2);
-
+      
       Double_t t12diff = tof1-tof2;
       fhEPairDiffTime->Fill((fPhotonMom1 + fPhotonMom2).Pt(), t12diff, GetEventWeight());
       if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
-
+      
       //------------------------------------------
       
       //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
@@ -2443,147 +2443,150 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
       } // Pair only in same SM
       
-      if(ok)
+      if(!ok) continue;
+      
+      //
+      // Fill histograms with selected cluster pairs
+      //
+      
+      // Check if one of the clusters comes from a conversion
+      if(fCheckConversion)
       {
-        // Check if one of the clusters comes from a conversion
-        if(fCheckConversion)
+        if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt, m, GetEventWeight());
+        else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt, m, GetEventWeight());
+      }
+      
+      // Fill shower shape cut histograms
+      if(fFillSSCombinations)
+      {
+        if     ( l01 > 0.01 && l01 < 0.4  &&
+                 l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt, m, GetEventWeight()); // Tight
+        else if( l01 > 0.4  && l02 > 0.4 )               fhReSS[1]->Fill(pt, m, GetEventWeight()); // Loose
+        else if( l01 > 0.01 && l01 < 0.4  && l02 > 0.4 ) fhReSS[2]->Fill(pt, m, GetEventWeight()); // Both
+        else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt, m, GetEventWeight()); // Both
+      }
+      
+      // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
+      for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+      {
+        if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
         {
-          if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt, m, GetEventWeight());
-          else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt, m, GetEventWeight());
+          for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
+          {
+            if(a < fAsymCuts[iasym])
+            {
+              Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
+              //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
+              
+              if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+              
+              fhRe1     [index]->Fill(pt, m, GetEventWeight());
+              if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+              
+              if(fFillBadDistHisto)
+              {
+                if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                {
+                  fhRe2     [index]->Fill(pt, m, GetEventWeight()) ;
+                  if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                  
+                  if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                  {
+                    fhRe3     [index]->Fill(pt, m, GetEventWeight()) ;
+                    if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                  }// bad 3
+                }// bad2
+              }// Fill bad dist histos
+            }//assymetry cut
+          }// asymmetry cut loop
+        }// bad 1
+      }// pid bit loop
+      
+      // Fill histograms with opening angle
+      if(fFillAngleHisto)
+      {
+        fhRealOpeningAngle   ->Fill(pt, angle, GetEventWeight());
+        fhRealCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
+      }
+      
+      // Fill histograms with pair assymmetry
+      if(fFillAsymmetryHisto)
+      {
+        fhRePtAsym->Fill(pt, a, GetEventWeight());
+        if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt, a, GetEventWeight());
+        if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt, a, GetEventWeight());
+      }
+      
+      //---------
+      // MC data
+      //---------
+      // Do some MC checks on the origin of the pair, is there any common ancestor and if there is one, who?
+      if(IsDataMC())
+      {
+        if(GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) &&
+           GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
+        {
+          fhReMCFromConversion->Fill(pt, m, GetEventWeight());
+        }
+        else if(!GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) &&
+                !GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
+        {
+          fhReMCFromNotConversion->Fill(pt, m, GetEventWeight());
+        }
+        else
+        {
+          fhReMCFromMixConversion->Fill(pt, m, GetEventWeight());
         }
         
-        // Fill shower shape cut histograms
-        if(fFillSSCombinations)
-        {
-          if     ( l01 > 0.01 && l01 < 0.4  &&
-                   l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt, m, GetEventWeight()); // Tight
-          else if( l01 > 0.4  && l02 > 0.4 )               fhReSS[1]->Fill(pt, m, GetEventWeight()); // Loose
-          else if( l01 > 0.01 && l01 < 0.4  && l02 > 0.4 ) fhReSS[2]->Fill(pt, m, GetEventWeight()); // Both
-          else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt, m, GetEventWeight()); // Both
-        }
-        
-        // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
+        if(fFillOriginHisto)
+          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);
+      }
+      
+      //-----------------------
+      // Multi cuts analysis
+      //-----------------------
+      if(fMultiCutAna)
+      {
+        // Histograms for different PID bits selection
         for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
         {
-          if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
-          {
-            for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
-            {
-              if(a < fAsymCuts[iasym])
-              {
-                Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
-                //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
-                
-                if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
-                
-                fhRe1     [index]->Fill(pt, m, GetEventWeight());
-                if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                  
-                if(fFillBadDistHisto)
-                {
-                  if(p1->DistToBad()>0 && p2->DistToBad()>0)
-                  {
-                    fhRe2     [index]->Fill(pt, m, GetEventWeight()) ;
-                    if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                      
-                    if(p1->DistToBad()>1 && p2->DistToBad()>1)
-                    {
-                      fhRe3     [index]->Fill(pt, m, GetEventWeight()) ;
-                      if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                    }// bad 3
-                  }// bad2
-                }// Fill bad dist histos
-              }//assymetry cut
-            }// asymmetry cut loop
-          }// bad 1
-        }// pid bit loop
-        
-        // Fill histograms with opening angle
-        if(fFillAngleHisto)
-        {
-          fhRealOpeningAngle   ->Fill(pt, angle, GetEventWeight());
-          fhRealCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
-        }
-        
-        // Fill histograms with pair assymmetry
-        if(fFillAsymmetryHisto)
-        {
-          fhRePtAsym->Fill(pt, a, GetEventWeight());
-          if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt, a, GetEventWeight());
-          if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt, a, GetEventWeight());
-        }
-        
-        //---------
-        // MC data
-        //---------
-        // Do some MC checks on the origin of the pair, is there any common ancestor and if there is one, who?
-        if(IsDataMC())
-        {
-          if(GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) &&
-             GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
-          {
-            fhReMCFromConversion->Fill(pt, m, GetEventWeight());
-          }
-          else if(!GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) &&
-                  !GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
-          {
-            fhReMCFromNotConversion->Fill(pt, m, GetEventWeight());
-          }
-          else
-          {
-            fhReMCFromMixConversion->Fill(pt, m, GetEventWeight());
-          }
+          if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    &&
+             p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt, m, GetEventWeight()) ;
           
-          if(fFillOriginHisto)
-            FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);
-        }
+          //printf("ipt %d, ipid%d, name %s\n",ipt, ipid, fhRePtPIDCuts[ipt*fNPIDBitsBits+ipid]->GetName());
+        } // pid bit cut loop
         
-        //-----------------------
-        // Multi cuts analysis
-        //-----------------------
-        if(fMultiCutAna)
+        // Several pt,ncell and asymmetry cuts
+        for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
         {
-          // Histograms for different PID bits selection
-          for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
-          {
-            if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    &&
-               p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt, m, GetEventWeight()) ;
-            
-            //printf("ipt %d, ipid%d, name %s\n",ipt, ipid, fhRePtPIDCuts[ipt*fNPIDBitsBits+ipid]->GetName());
-          } // pid bit cut loop
-          
-          // Several pt,ncell and asymmetry cuts
-          for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
-          {
-            for(Int_t icell = 0; icell < fNCellNCuts; icell++)
-            {
-              for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
-              {
-                Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-                if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        &&
-                   a        <   fAsymCuts[iasym]                                  &&
-                   ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell])
-                {
-                  fhRePtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                  //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
-                  if(fFillSMCombinations && module1==module2)
-                  {
-                    fhRePtNCellAsymCutsSM[module1][index]->Fill(pt, m, GetEventWeight()) ;
-                  }
-                }
-              }// pid bit cut loop
-            }// icell loop
-          }// pt cut loop
-          
-          if(GetHistogramRanges()->GetHistoTrackMultiplicityBins())
+          for(Int_t icell = 0; icell < fNCellNCuts; icell++)
           {
             for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
             {
-              if(a < fAsymCuts[iasym]) fhRePtMult[iasym]->Fill(pt, GetTrackMultiplicity(), m, GetEventWeight()) ;
-            }
+              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+              if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        &&
+                 a        <   fAsymCuts[iasym]                                  &&
+                 ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell])
+              {
+                fhRePtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
+                //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
+                if(fFillSMCombinations && module1==module2)
+                {
+                  fhRePtNCellAsymCutsSM[module1][index]->Fill(pt, m, GetEventWeight()) ;
+                }
+              }
+            }// pid bit cut loop
+          }// icell loop
+        }// pt cut loop
+        
+        if(GetHistogramRanges()->GetHistoTrackMultiplicityBins())
+        {
+          for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
+          {
+            if(a < fAsymCuts[iasym]) fhRePtMult[iasym]->Fill(pt, GetTrackMultiplicity(), m, GetEventWeight()) ;
           }
-        }// multiple cuts analysis
-      }// ok if same sm
+        }
+      }// multiple cuts analysis
     }// second same event particle
   }// first cluster
   
@@ -2622,7 +2625,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       {
         AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
         
-        if(fSameSM && GetModuleNumber(p1)!=module1) continue;
+        // Not sure why this line is here
+        //if(fSameSM && GetModuleNumber(p1)!=module1) continue;
         
         //Get kinematics of cluster and (super) module of this cluster
         fPhotonMom1.SetPxPyPzE(p1->Px(),p1->Py(),p1->Pz(),p1->E());
@@ -2714,87 +2718,106 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }            
           }
           
-          Bool_t ok = kTRUE;
-          if(fSameSM && module1!=module2) ok=kFALSE;
-          if(ok)
+          Bool_t ok = kTRUE;          
+          if(fSameSM)
           {
-            // Check if one of the clusters comes from a conversion
-            if(fCheckConversion)
+            if(!fPairWithOtherDetector)
             {
-              if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt, m, GetEventWeight());
-              else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt, m, GetEventWeight());
+              if(module1!=module2) ok=kFALSE;
+            } 
+            else // PHOS and DCal in same sector
+            {
+              Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+              Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+              ok=kFALSE;
+              if      ( phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280)) ok = kTRUE;
+              else if ( phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300)) ok = kTRUE;
+              else if ( phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320)) ok = kTRUE;
             }
-              
-            // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
-            for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+          } // Pair only in same SM
+          
+          if(!ok) continue ;
+          
+          //
+          // Do the final histograms with the selected clusters
+          //
+          
+          // Check if one of the clusters comes from a conversion
+          if(fCheckConversion)
+          {
+            if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt, m, GetEventWeight());
+            else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt, m, GetEventWeight());
+          }
+          
+          // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
+          for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
+          {
+            if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
             {
-              if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
+              for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
               {
-                for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
+                if(a < fAsymCuts[iasym])
                 {
-                  if(a < fAsymCuts[iasym])
+                  Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
+                  
+                  if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+                  
+                  fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
+                  
+                  if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                  
+                  if(fFillBadDistHisto)
                   {
-                    Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
-                    
-                    if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
-                    
-                    fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
-                    
-                    if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                    
-                    if(fFillBadDistHisto)
+                    if(p1->DistToBad()>0 && p2->DistToBad()>0)
                     {
-                      if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                      fhMi2[index]->Fill(pt, m, GetEventWeight()) ;
+                      if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                      
+                      if(p1->DistToBad()>1 && p2->DistToBad()>1)
                       {
-                        fhMi2[index]->Fill(pt, m, GetEventWeight()) ;
-                        if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                          
-                        if(p1->DistToBad()>1 && p2->DistToBad()>1)
-                        {
-                          fhMi3[index]->Fill(pt, m, GetEventWeight()) ;
-                          if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
-                        }
+                        fhMi3[index]->Fill(pt, m, GetEventWeight()) ;
+                        if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                       }
-                    }// Fill bad dist histo
-                  }//Asymmetry cut
-                }// Asymmetry loop
-              }//PID cut
-            }//loop for histograms
-            
-            //-----------------------
-            // Multi cuts analysis
-            //-----------------------
-            if(fMultiCutAna)
-            {
-              // Several pt,ncell and asymmetry cuts
-              
-              for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
-              {
-                for(Int_t icell=0; icell<fNCellNCuts; icell++)
-                {
-                  for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
-                  {
-                    Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-                    if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        &&
-                       a        <   fAsymCuts[iasym]                                    //&&
-                       //p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell] // trick, correct it.
-                       )
-                    {
-                      fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                      //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                     }
-                  }// pid bit cut loop
-                }// icell loop
-              }// pt cut loop
-            } // Multi cut ana
+                  }// Fill bad dist histo
+                }//Asymmetry cut
+              }// Asymmetry loop
+            }//PID cut
+          }//loop for histograms
+          
+          //-----------------------
+          // Multi cuts analysis
+          //-----------------------
+          if(fMultiCutAna)
+          {
+            // Several pt,ncell and asymmetry cuts
             
-            // Fill histograms with opening angle
-            if(fFillAngleHisto)
+            for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
             {
-              fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
-              fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
-            }
-          }//ok
+              for(Int_t icell=0; icell<fNCellNCuts; icell++)
+              {
+                for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+                {
+                  Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+                  if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        &&
+                     a        <   fAsymCuts[iasym]                                    //&&
+                     //p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell] // trick, correct it.
+                     )
+                  {
+                    fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
+                    //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
+                  }
+                }// pid bit cut loop
+              }// icell loop
+            }// pt cut loop
+          } // Multi cut ana
+          
+          // Fill histograms with opening angle
+          if(fFillAngleHisto)
+          {
+            fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
+            fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
+          }
         }// second cluster loop
       }//first cluster loop
     }//loop on mixed events
