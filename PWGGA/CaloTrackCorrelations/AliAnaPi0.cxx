@@ -161,7 +161,7 @@ void AliAnaPi0::InitParameters()
   
   fUseAngleCut = kTRUE;
   fAngleCut    = 0.;
-  fAngleMaxCut = DegToRad(100.);  // 100 degrees cut, avoid EMCal/DCal combinations
+  fAngleMaxCut = DegToRad(80.);  // 80 degrees cut, avoid EMCal/DCal combinations
   
   fMultiCutAna = kFALSE;
   
@@ -590,19 +590,28 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhReMod                = new TH2F*[fNModules]   ;
   fhMiMod                = new TH2F*[fNModules]   ;
   
-  if(GetCalorimeter() == kPHOS)
+  if(!fPairWithOtherDetector)
   {
-    fhReDiffPHOSMod        = new TH2F*[fNModules]   ;
-    fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
+    if(GetCalorimeter() == kPHOS)
+    {
+      fhReDiffPHOSMod        = new TH2F*[fNModules]   ;
+      fhMiDiffPHOSMod        = new TH2F*[fNModules]   ;
+    }
+    else
+    {
+      fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
+      fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+      fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
+      fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+    }
   }
   else
   {
-    fhReSameSectorEMCALMod = new TH2F*[fNModules/2] ;
-    fhReSameSideEMCALMod   = new TH2F*[fNModules-2] ;
-    fhMiSameSectorEMCALMod = new TH2F*[fNModules/2] ;
-    fhMiSameSideEMCALMod   = new TH2F*[fNModules-2] ;
+    fhReSameSectorDCALPHOSMod = new TH2F*[6] ;
+    fhReDiffSectorDCALPHOSMod = new TH2F*[8] ;
+    fhMiSameSectorDCALPHOSMod = new TH2F*[6] ;
+    fhMiDiffSectorDCALPHOSMod = new TH2F*[8] ;
   }
-  
   
   fhRe1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   fhMi1 = new TH2F*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
@@ -1171,88 +1180,137 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   if(fFillSMCombinations)
   {
-    TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(0-4)","(1-3)","(1-4)","(2-3)","(2-4)","(3-4)"};
-    for(Int_t imod=0; imod<fNModules; imod++)
+    if(!fPairWithOtherDetector)
     {
-      //Module dependent invariant mass
-      snprintf(key, buffersize,"hReMod_%d",imod) ;
-      snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
-      fhReMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhReMod[imod]) ;
-      if(GetCalorimeter()==kPHOS)
+      TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(0-4)","(1-3)","(1-4)","(2-3)","(2-4)","(3-4)"};
+      for(Int_t imod=0; imod<fNModules; imod++)
       {
-        snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
-        snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
-        fhReDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-        fhReDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhReDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-        outputContainer->Add(fhReDiffPHOSMod[imod]) ;
-      }
-      else
-      {//EMCAL
-        if(imod<fNModules/2)
-        {
-          snprintf(key, buffersize,"hReSameSectorEMCAL_%d",imod) ;
-          snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
-          fhReSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhReSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhReSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-          outputContainer->Add(fhReSameSectorEMCALMod[imod]) ;
-        }
-        if(imod<fNModules-2)
-        {
-          snprintf(key, buffersize,"hReSameSideEMCAL_%d",imod) ;
-          snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
-          fhReSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhReSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhReSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-          outputContainer->Add(fhReSameSideEMCALMod[imod]) ;
-        }
-      }//EMCAL
-      
-      if(DoOwnMix())
-      {
-        snprintf(key, buffersize,"hMiMod_%d",imod) ;
-        snprintf(title, buffersize,"Mixed #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
-        fhMiMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-        fhMiMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-        outputContainer->Add(fhMiMod[imod]) ;
-        
+        //Module dependent invariant mass
+        snprintf(key, buffersize,"hReMod_%d",imod) ;
+        snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
+        fhReMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhReMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhReMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+        outputContainer->Add(fhReMod[imod]) ;
         if(GetCalorimeter()==kPHOS)
         {
-          snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
-          snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
-          fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhMiDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhMiDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-          outputContainer->Add(fhMiDiffPHOSMod[imod]) ;
-        }//PHOS
+          snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
+          snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
+          fhReDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhReDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhReDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhReDiffPHOSMod[imod]) ;
+        }
         else
         {//EMCAL
           if(imod<fNModules/2)
           {
-            snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",imod) ;
-            snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
-            fhMiSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMiSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            fhMiSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-            outputContainer->Add(fhMiSameSectorEMCALMod[imod]) ;
+            snprintf(key, buffersize,"hReSameSectorEMCAL_%d",imod) ;
+            snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
+            fhReSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhReSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhReSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhReSameSectorEMCALMod[imod]) ;
           }
-          if(imod<fNModules-2){
-            
-            snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",imod) ;
-            snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
-            fhMiSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-            fhMiSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            fhMiSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-            outputContainer->Add(fhMiSameSideEMCALMod[imod]) ;
+          if(imod<fNModules-2)
+          {
+            snprintf(key, buffersize,"hReSameSideEMCAL_%d",imod) ;
+            snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
+            fhReSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhReSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhReSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhReSameSideEMCALMod[imod]) ;
           }
-        } // EMCAL
-      } // own mix
-    } // loop combinations
+        }//EMCAL
+        
+        if(DoOwnMix())
+        {
+          snprintf(key, buffersize,"hMiMod_%d",imod) ;
+          snprintf(title, buffersize,"Mixed #it{M}_{#gamma#gamma} distr. for Module %d",imod) ;
+          fhMiMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhMiMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhMiMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhMiMod[imod]) ;
+          
+          if(GetCalorimeter()==kPHOS)
+          {
+            snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
+            snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
+            fhMiDiffPHOSMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiDiffPHOSMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhMiDiffPHOSMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhMiDiffPHOSMod[imod]) ;
+          }//PHOS
+          else
+          {//EMCAL
+            if(imod<fNModules/2)
+            {
+              snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",imod) ;
+              snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
+              fhMiSameSectorEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMiSameSectorEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhMiSameSectorEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+              outputContainer->Add(fhMiSameSectorEMCALMod[imod]) ;
+            }
+            if(imod<fNModules-2){
+              
+              snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",imod) ;
+              snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
+              fhMiSameSideEMCALMod[imod]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+              fhMiSameSideEMCALMod[imod]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhMiSameSideEMCALMod[imod]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+              outputContainer->Add(fhMiSameSideEMCALMod[imod]) ;
+            }
+          } // EMCAL
+        } // own mix
+      } // loop combinations
+    } // Not pair of detectors
+    else
+    {
+      Int_t dcSameSM[6] = {12,13,14,15,16,17}; // Check eta order
+      Int_t phSameSM[6] = {3,  3, 2, 2, 1, 1};
+
+      Int_t dcDiffSM[8] = {12,13,14,15,16,17,0,0};
+      Int_t phDiffSM[8] = {2,  2, 1, 1, 3, 3,0,0};
+      
+      for(Int_t icombi = 0; icombi < 8; icombi++)
+      {
+        snprintf(key, buffersize,"hReDiffSectorDCALPHOS_%d",icombi) ;
+        snprintf(title, buffersize,"Real pairs DCAL-PHOS, clusters in different sector, SM(%d,%d)",dcDiffSM[icombi],phDiffSM[icombi]) ;
+        fhReDiffSectorDCALPHOSMod[icombi]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhReDiffSectorDCALPHOSMod[icombi]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhReDiffSectorDCALPHOSMod[icombi]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+        outputContainer->Add(fhReDiffSectorDCALPHOSMod[icombi]) ;
+        if(DoOwnMix())
+        {
+          snprintf(key, buffersize,"hMiDiffSectorDCALPHOS_%d",icombi) ;
+          snprintf(title, buffersize,"Mixed pairs DCAL-PHOS, clusters in different sector, SM(%d,%d)",dcDiffSM[icombi],phDiffSM[icombi]) ;
+          fhMiDiffSectorDCALPHOSMod[icombi]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhMiDiffSectorDCALPHOSMod[icombi]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhMiDiffSectorDCALPHOSMod[icombi]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhMiDiffSectorDCALPHOSMod[icombi]) ;
+        }
+        
+        if(icombi > 5) continue ;
+        
+        snprintf(key, buffersize,"hReSameSectorDCALPHOS_%d",icombi) ;
+        snprintf(title, buffersize,"Real pairs DCAL-PHOS, clusters in same sector, SM(%d,%d)",dcSameSM[icombi],phSameSM[icombi]) ;
+        fhReSameSectorDCALPHOSMod[icombi]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhReSameSectorDCALPHOSMod[icombi]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhReSameSectorDCALPHOSMod[icombi]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+        outputContainer->Add(fhReSameSectorDCALPHOSMod[icombi]) ;
+        if(DoOwnMix())
+        {
+          snprintf(key, buffersize,"hMiSameSectorDCALPHOS_%d",icombi) ;
+          snprintf(title, buffersize,"Mixed pairs DCAL-PHOS, clusters in same sector, SM(%d,%d)",dcSameSM[icombi],phSameSM[icombi]) ;
+          fhMiSameSectorDCALPHOSMod[icombi]  = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhMiSameSectorDCALPHOSMod[icombi]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhMiSameSectorDCALPHOSMod[icombi]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+          outputContainer->Add(fhMiSameSectorDCALPHOSMod[icombi]) ;
+        }
+      }
+
+    }
   } // SM combinations
   
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
@@ -2317,37 +2375,74 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //-------------------------------------------------------------------------------------------------
       if(a < fAsymCuts[0] && fFillSMCombinations)
       {
-        if(module1==module2 && module1 >=0 && module1<fNModules)
-          fhReMod[module1]->Fill(pt, m, GetEventWeight()) ;
-        
-        if (GetCalorimeter() == kEMCAL )
+        if(!fPairWithOtherDetector)
         {
-          // Same sector
-          Int_t j=0;
-          for(Int_t i = 0; i < fNModules/2; i++)
-          {
-            j=2*i;
-            if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()) ;
-          }
+          if(module1==module2 && module1 >=0 && module1<fNModules)
+            fhReMod[module1]->Fill(pt, m, GetEventWeight()) ;
           
-          // Same side
-          for(Int_t i = 0; i < fNModules-2; i++){
-            if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
-          }
-        } // EMCAL
+          if (GetCalorimeter() == kEMCAL )
+          {
+            // Same sector
+            Int_t j=0;
+            for(Int_t i = 0; i < fNModules/2; i++)
+            {
+              j=2*i;
+              if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()) ;
+            }
+            
+            // Same side
+            for(Int_t i = 0; i < fNModules-2; i++){
+              if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
+            }
+          } // EMCAL
+          else
+          { // PHOS
+            if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
+            if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+          } // PHOS
+        }
         else
-        { // PHOS
-          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
-          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
-          if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
-        } // PHOS
-      }
+        {
+          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+          Bool_t etaside = 0;
+          if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+             || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+          
+          if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhReSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhReSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
+          else if (    phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320))  fhReSameSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight());
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(280) && phi1 < DegToRad(280) && phi2 < DegToRad(300)) 
+                   || (phi1 > DegToRad(280) && phi2 > DegToRad(260) && phi1 < DegToRad(300) && phi2 < DegToRad(280))) fhReDiffSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());  
+          else if (   (phi1 > DegToRad(280) && phi2 > DegToRad(300) && phi1 < DegToRad(300) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhReDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
+          else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
+                   || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhReDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
+          else                                                                                                            fhReDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
+        }
+      } // Fill SM combinations
       
       // In case we want only pairs in same (super) module, check their origin.
       Bool_t ok = kTRUE;
       
-      if(fSameSM && module1!=module2) ok=kFALSE;
-        
+      if(fSameSM)
+      {
+        if(!fPairWithOtherDetector)
+        {
+          if(module1!=module2) ok=kFALSE;
+        } 
+        else // PHOS and DCal in same sector
+        {
+          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+          ok=kFALSE;
+          if      ( phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280)) ok = kTRUE;
+          else if ( phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300)) ok = kTRUE;
+          else if ( phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320)) ok = kTRUE;
+        }
+      } // Pair only in same SM
+      
       if(ok)
       {
         // Check if one of the clusters comes from a conversion
@@ -2570,31 +2665,53 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           //-------------------------------------------------------------------------------------------------
           if(a < fAsymCuts[0] && fFillSMCombinations)
           {
-            if(module1==module2 && module1 >=0 && module1<fNModules)
-              fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
-            
-            if(GetCalorimeter()==kEMCAL)
+            if(!fPairWithOtherDetector)
             {
-              // Same sector
-              Int_t j=0;
-              for(Int_t i = 0; i < fNModules/2; i++)
-              {
-                j=2*i;
-                if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()) ;
-              }
+              if(module1==module2 && module1 >=0 && module1<fNModules)
+                fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
               
-              // Same side
-              for(Int_t i = 0; i < fNModules-2; i++)
+              if(GetCalorimeter()==kEMCAL)
               {
-                if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
-              }
-            } // EMCAL
+                // Same sector
+                Int_t j=0;
+                for(Int_t i = 0; i < fNModules/2; i++)
+                {
+                  j=2*i;
+                  if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt, m, GetEventWeight()) ;
+                }
+                
+                // Same side
+                for(Int_t i = 0; i < fNModules-2; i++)
+                {
+                  if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt, m, GetEventWeight());
+                }
+              } // EMCAL
+              else
+              { // PHOS
+                if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
+                if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
+              } // PHOS
+            }
             else
-            { // PHOS
-              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
-              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
-              if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt, m, GetEventWeight()) ;
-            } // PHOS
+            {
+              Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+              Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+              Bool_t etaside = 0;
+              if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+                 || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+              
+              if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
+              else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
+              else if (    phi1 > DegToRad(300) && phi2 > DegToRad(300) && phi1 < DegToRad(320) && phi2 < DegToRad(320))  fhMiSameSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight());
+              else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(280) && phi1 < DegToRad(280) && phi2 < DegToRad(300)) 
+                       || (phi1 > DegToRad(280) && phi2 > DegToRad(260) && phi1 < DegToRad(300) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());  
+              else if (   (phi1 > DegToRad(280) && phi2 > DegToRad(300) && phi1 < DegToRad(300) && phi2 < DegToRad(320)) 
+                       || (phi1 > DegToRad(300) && phi2 > DegToRad(280) && phi1 < DegToRad(320) && phi2 < DegToRad(300))) fhMiDiffSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight()); 
+              else if (   (phi1 > DegToRad(260) && phi2 > DegToRad(300) && phi1 < DegToRad(280) && phi2 < DegToRad(320)) 
+                       || (phi1 > DegToRad(300) && phi2 > DegToRad(260) && phi1 < DegToRad(320) && phi2 < DegToRad(280))) fhMiDiffSectorDCALPHOSMod[4+etaside]->Fill(pt, m, GetEventWeight()); 
+              else                                                                                                            fhMiDiffSectorDCALPHOSMod[6+etaside]->Fill(pt, m, GetEventWeight());
+            }            
           }
           
           Bool_t ok = kTRUE;
