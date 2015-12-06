@@ -134,6 +134,8 @@ void AliHLTGlobalCompareFlatComponent::printDiff( string name, TString val1, TSt
 // #################################################################################
 AliHLTGlobalCompareFlatComponent::AliHLTGlobalCompareFlatComponent() :
   AliHLTProcessor(),
+  outFile(),
+  conflictsFile(),
   fCurrentClass()
   {
   // an example component which implements the ALICE HLT processor
