@@ -125,6 +125,9 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
     HLTError("cannot initialize ZMQ socket %s, %s",fZMQinConfig.Data(),zmq_strerror(errno));
     return -1;
   }
+
+  //subscribe
+  rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fMessageFilter.Data(), fMessageFilter.Length());
   
   HLTMessage(Form("socket create ptr %p %s",fZMQin,(rc<0)?zmq_strerror(errno):""));
   HLTImportant(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
@@ -219,6 +222,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     }
 
     if (blockTopicSize <= 0) continue; //empty header, dont push back
+    if (blockSize <= 0) continue; //empty body, don't push back
 
     HLTMessage(Form("pushing back %s, %i bytes", blockTopic.Description().c_str(), blockSize));
     
@@ -262,7 +266,7 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
     }
   }
 
-  if (option.EqualTo("MessageFilter"))
+  if (option.EqualTo("MessageFilter") || option.EqualTo("subscription"))
   {
     fMessageFilter = value;
   }
