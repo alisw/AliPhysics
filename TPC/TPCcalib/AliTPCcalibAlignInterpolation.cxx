@@ -902,7 +902,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       tree->SetBranchStatus("vecSec.",kTRUE);
       tree->SetBranchStatus("vecPhi.",kTRUE);
       tree->SetBranchStatus("vecZ.",kTRUE);
-      tree->SetBranchStatus("track.",kTRUE);      
+      tree->SetBranchStatus("track.*",kTRUE);      
       tree->SetBranchAddress("vecR.",&vecR);
       tree->SetBranchAddress("vecSec.",&vecSec);
       tree->SetBranchAddress("vecPhi.",&vecPhi);
