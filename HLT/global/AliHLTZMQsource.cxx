@@ -165,7 +165,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
   void* block = NULL;
 
   int blockTopicSize=-1;
-  AliHLTDataTopic blockTopic;
+  AliHLTDataTopic blockTopic = kAliHLTAnyDataType | kAliHLTDataOriginAny;
   int rc = -1;
 
   //in case we do requests: request first and poll for replies
