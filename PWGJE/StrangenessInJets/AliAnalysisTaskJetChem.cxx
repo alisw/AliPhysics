@@ -3698,6 +3698,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){//Jet matching cuts (FractionPtEmbedded = 0.5, DeltaREmb = 0.75*R) are applied
 	  
+	  //filling of normalisation histo for OC method in hybrid events 
+	  Double_t dAreaExcludedPYTHIA = TMath::Pi()*dRadiusExcludeCone*dRadiusExcludeCone; // area of the cone
+	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta-jet->Eta()); // positive eta overhang
+	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta+jet->Eta()); // negative eta overhang
+	  fh1AreaExcluded->Fill(dAreaExcludedPYTHIA);//histo contains all areas that are jet related and have to be excluded concerning OC UE pt spectrum normalisation by area, also for PYTHIA jets
+	  
 	  //Float_t jetPtEmbAfterMatch = jet->Pt();//extra jet pt
 	  Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();//embedded true jet pt
 	  
