@@ -203,8 +203,10 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
 
   int64_t more=0;
   size_t moreSize=sizeof(more);
+  int frameNumber=0;
   do //multipart, get all parts
   {
+    frameNumber++;
     outputBufferCapacity -= blockSize;
     outputBufferSize += blockSize;
     block = outputBuffer + outputBufferSize;
@@ -221,8 +223,11 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     }
 
+    //if we subscribe AND the body is empty skip the frame as it is just a subscription topic
+    //TODO: rethink this logic
+    if (fZMQsocketType==ZMQ_SUB && !fMessageFilter.IsNull() && blockSize <= 0) continue;
+
     if (blockTopicSize <= 0) continue; //empty header, dont push back
-    if (blockSize <= 0) continue; //empty body, don't push back
 
     HLTMessage(Form("pushing back %s, %i bytes", blockTopic.Description().c_str(), blockSize));
     
