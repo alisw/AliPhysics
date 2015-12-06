@@ -60,6 +60,7 @@ AliESDHeader::AliESDHeader() :
   for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
   fTriggerInputsNames.SetOwner(kTRUE);
   for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=0;
+  fIRBufferArray.SetOwner(kTRUE);
 }
 
 AliESDHeader::~AliESDHeader() 
@@ -67,8 +68,7 @@ AliESDHeader::~AliESDHeader()
   // destructor
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i])delete fIRArray[i];
   delete fCTPConfig;
-
-  fIRBufferArray.Delete();
+  //  fIRBufferArray.Delete();
 }
 
 
@@ -111,6 +111,8 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
     if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
   }
   for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=header.fTPCNoiseFilterCounter[itype];
+  fTriggerInputsNames.SetOwner(kTRUE);
+  fIRBufferArray.SetOwner(kTRUE);
 }
 
 AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
@@ -205,7 +207,7 @@ void AliESDHeader::Reset()
    fIRArray[i]=0;
   }
   for (Int_t itype=0; itype<3; itype++) fTPCNoiseFilterCounter[itype]=0;
-  fIRBufferArray.Delete();
+  fIRBufferArray.Clear();
 }
 //______________________________________________________________________________
 Bool_t AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
