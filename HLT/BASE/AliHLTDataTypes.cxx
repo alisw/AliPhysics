@@ -79,6 +79,18 @@ const AliHLTComponentDataType kAliHLTDataTypeECSParam = AliHLTComponentDataTypeI
 const char kAliHLTComConfDataTypeIDstring[8] = kAliHLTComConfDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeComConf = AliHLTComponentDataTypeInitializer(kAliHLTComConfDataTypeIDstring, kAliHLTDataOriginPrivate);
 
+/** Direct configuration block data type */
+const char kAliHLTConfigDataTypeIDstring[8] = kAliHLTConfigDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeConfig = AliHLTComponentDataTypeInitializer(kAliHLTConfigDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** INFO string block data type */
+const char kAliHLTInfoDataTypeIDstring[8] = kAliHLTInfoDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeInfo = AliHLTComponentDataTypeInitializer(kAliHLTInfoDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** CDBEntry block data type */
+const char kAliHLTCDBEntryDataTypeIDstring[8] = kAliHLTCDBEntryDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeCDBEntry = AliHLTComponentDataTypeInitializer(kAliHLTCDBEntryDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** DCS value update event */
 const char kAliHLTUpdtDCSDataTypeIDstring[8] = kAliHLTUpdtDCSDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeUpdtDCS = AliHLTComponentDataTypeInitializer(kAliHLTUpdtDCSDataTypeIDstring, kAliHLTDataOriginPrivate);
@@ -360,6 +372,9 @@ const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize]   = {'A','D'
 
 /** PTR */
 const char kAliHLTDataOriginPTR[kAliHLTComponentDataTypefOriginSize]  = {'P','T','R','.'};
+
+/** config **/
+const char kAliHLTDataOriginCONFIG[kAliHLTComponentDataTypefOriginSize] = {'C','O','N','F'};
 
 void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen)
 {

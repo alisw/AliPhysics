@@ -81,6 +81,7 @@
  *  21       Add AliHLTDataTopic struct for ZMQ communication (as header).
  *  22       Add kAliHLTDataOriginPTR for passing pointers between threads
  *  23       Add Calo Trigger definitions
+ *  24       Add CONFIG,INFO and CDBEntry data block types
  */
 #define ALIHLT_DATA_TYPES_VERSION 23
 
@@ -355,6 +356,24 @@ const int kAliHLTComponentDataTypeTopicSize =
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTComConfDataTypeID  {'C','O','M','_','C','O','N','F'}
+
+/** Direct ComponentConfiguration event
+ * - payload contains the configuration string
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTConfigDataTypeID  {'C','O','N','F','I','G','_','_'}
+
+/** Information string
+ * - payload contains an information string
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTInfoDataTypeID  {'I','N','F','O','_','_','_','_'}
+
+/** CDB entry
+ * - payload contains the ROOT object containing the CDB entry
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTCDBEntryDataTypeID  {'C','D','B','E','N','T','R','Y'}
 
 /** DCS value update event
  * - payload contains string of relevant detectors
@@ -1233,6 +1252,21 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeComConf;
+
+  /** Direct configuration string block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeConfig;
+
+  /** Info string block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeInfo;
+
+  /** CDB entry block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeCDBEntry;
 
   /** DCS value update event 
    * @ingroup alihlt_component_datatypes
