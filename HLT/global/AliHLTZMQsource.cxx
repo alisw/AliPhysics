@@ -223,9 +223,12 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     }
 
-    //if we subscribe AND the body is empty skip the frame as it is just a subscription topic
+    //if we subscribe AND the body is empty skip the first frame as it is just a subscription topic
     //TODO: rethink this logic
-    if (fZMQsocketType==ZMQ_SUB && !fMessageFilter.IsNull() && blockSize <= 0) continue;
+    if (frameNumber==1 && 
+        fZMQsocketType==ZMQ_SUB && 
+        !fMessageFilter.IsNull() && 
+        blockSize <= 0 ) continue;
 
     if (blockTopicSize <= 0) continue; //empty header, dont push back
 
