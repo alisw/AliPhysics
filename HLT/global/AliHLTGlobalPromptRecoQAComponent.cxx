@@ -162,10 +162,10 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
       if (argument.CompareTo("-skip-events")==0) {
 	      argument.ReplaceAll("-skip-events=","");
         fSkipEvents = argument.Atoi();
-      } else if (argument.CompareTo("-histogram=")) {
+      } else if (argument.CompareTo("-histogram=")==0) {
         TString tmp = argument.ReplaceAll("-histogram=","");
         NewHistogram(tmp.Data());
-      } else if (argument.CompareTo("-axis=")) {
+      } else if (argument.CompareTo("-axis=")==0) {
         TString tmp = argument.ReplaceAll("-axis=","");
         NewAxis(tmp.Data());
       }	else if (argument.CompareTo("-print-stats")==0) {
