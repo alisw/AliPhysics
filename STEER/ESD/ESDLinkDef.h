@@ -22,7 +22,7 @@
   sourceClass="AliESDHeader" \
   targetClass="AliESDHeader" \
   source="TObjArray fIRBufferArray" \
-  version="[-13]"	\
+  version="[10-13]"	\
   target="fIRBufferArray" \
   targetType="TObjArray" \
   code="{fIRBufferArray=onfile.fIRBufferArray; fIRBufferArray.SetOwner(kTRUE); onfile.fIRBufferArray.SetOwner(kFALSE);onfile.fIRBufferArray.Clear();}"
