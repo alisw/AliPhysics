@@ -52,12 +52,12 @@ ClassImp(AliAnalysisTaskEMCALPi0V2ShSh)
 //________________________________________________________________________
 AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() : 
   AliAnalysisTaskSE("default_name"), 
-  fESD(0), fAOD(0),
+  fESD(0), fAOD(0), isPhosCali(0), isCentFlat(0),
   fCentrality(-999.), fEventPlane(0), fFlatContainer(0),
   fRunNumber(0), fInternalRunNum(0), 
   fTPCFlat(0x0), fV0AFlat(0x0), fV0CFlat(0x0),
-  fEMCALClustersListName(""), fESDClusters(0), fAODClusters(0),
-  fESDCells(0), fAODCells(0),
+  fEMCALClustersListName(""), fClusterArray(0),
+  // fESDCells(0), fAODCells(0),
   fGeom(0), fGeoName("EMCAL_COMPLETEV1"), fOADBContainer(0),
   fOutputList(0),
   fEPTPC(-999.), fEPTPCResolution(0.),
@@ -70,19 +70,19 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() :
   fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0),
   fHistEPV0AR(0), fHistEPV0CR(0), fHistEPV0R(0),
   fHistEPV0AR4(0), fHistEPV0AR7(0), fHistEPV0CR0(0), fHistEPV0CR3(0),
-  fHistDiffV0A_V0CR0(0), fHistDiffV0A_V0CR3(0), fHistDiffV0CR0_V0CR3(0),
-  fHistDiffV0C_V0AR4(0), fHistDiffV0C_V0AR7(0), fHistDiffV0AR4_V0AR7(0), fHistDiffV0AR_V0CR(0),
+  fHistEPDiffV0A_V0CR0(0), fHistEPDiffV0A_V0CR3(0), fHistEPDiffV0CR0_V0CR3(0),
+  fHistEPDiffV0C_V0AR4(0), fHistEPDiffV0C_V0AR7(0), fHistEPDiffV0AR4_V0AR7(0), fHistEPDiffV0AR_V0CR(0),
   fHistClusterEta(0), fHistClusterPhi(0), fHistClusterPhiEta(0),
   fHistClusterE(0), fHistClusterEt(0),
   fHistClusterN(0), fHistClusterM02(0),
   fHistClusterEN(0), fHistClusterEtN(0), 
-  fHistClusterEM02(0), fHistClusterEtM02(0),
+  fHistClusterEM02Raw(0), fHistClusterEM02Cut(0), fHistClusterEtM02(0),
   fHistClusterdphiV0(0),
   fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
   fClusterV0(0), fClusterV0A(0), fClusterV0C(0), fClusterTPC(0),
-  fHistEvtStat(0), fHistClusterStat(0), fHistRunNumStat(0), fHistCentrality(0), fHistCentralityCorrected(0),
+  fHistStatEvt(0), fHistStatCluster(0), fHistStatRunNum(0), fHistStatCentrality(0), fHistStatCentralityCorrected(0),
   fHistEPTPCFlatten(0), fHistEPV0AFlatten(0), fHistEPV0CFlatten(0), 
-  fHistRBRCosV0A(0), fHistRBRSinV0A(0), fHistRBRCosV0C(0), fHistRBRSinV0C(0), fHistRBRCosTPC(0), fHistRBRSinTPC(0)
+  fHistEPRBRCosV0A(0), fHistEPRBRSinV0A(0), fHistEPRBRCosV0C(0), fHistEPRBRSinV0C(0), fHistEPRBRCosTPC(0), fHistEPRBRSinTPC(0)
 { // Default constructor
   for (Int_t i = 0; i < 12; ++i) fGeomMatrix[i] = 0;
   DefineInput(0, TChain::Class());
@@ -92,12 +92,12 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() :
 //________________________________________________________________________
 AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) : 
   AliAnalysisTaskSE(name), 
-  fESD(0), fAOD(0),
+  fESD(0), fAOD(0), isPhosCali(0), isCentFlat(0),
   fCentrality(-999.), fEventPlane(0), fFlatContainer(0),
   fRunNumber(0), fInternalRunNum(0), 
   fTPCFlat(0x0), fV0AFlat(0x0), fV0CFlat(0x0),
-  fEMCALClustersListName(""), fESDClusters(0), fAODClusters(0),
-  fESDCells(0), fAODCells(0),
+  fEMCALClustersListName(""), fClusterArray(0),
+  // fESDCells(0), fAODCells(0),
   fGeom(0), fGeoName("EMCAL_COMPLETEV1"), fOADBContainer(0),
   fOutputList(0),
   fEPTPC(-999.), fEPTPCResolution(0.),
@@ -110,19 +110,19 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
   fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0),
   fHistEPV0AR(0), fHistEPV0CR(0), fHistEPV0R(0),
   fHistEPV0AR4(0), fHistEPV0AR7(0), fHistEPV0CR0(0), fHistEPV0CR3(0),
-  fHistDiffV0A_V0CR0(0), fHistDiffV0A_V0CR3(0), fHistDiffV0CR0_V0CR3(0),
-  fHistDiffV0C_V0AR4(0), fHistDiffV0C_V0AR7(0), fHistDiffV0AR4_V0AR7(0), fHistDiffV0AR_V0CR(0),
+  fHistEPDiffV0A_V0CR0(0), fHistEPDiffV0A_V0CR3(0), fHistEPDiffV0CR0_V0CR3(0),
+  fHistEPDiffV0C_V0AR4(0), fHistEPDiffV0C_V0AR7(0), fHistEPDiffV0AR4_V0AR7(0), fHistEPDiffV0AR_V0CR(0),
   fHistClusterEta(0), fHistClusterPhi(0), fHistClusterPhiEta(0),
   fHistClusterE(0), fHistClusterEt(0),
   fHistClusterN(0), fHistClusterM02(0),
   fHistClusterEN(0), fHistClusterEtN(0), 
-  fHistClusterEM02(0), fHistClusterEtM02(0),
+  fHistClusterEM02Raw(0), fHistClusterEM02Cut(0), fHistClusterEtM02(0),
   fHistClusterdphiV0(0),
   fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
   fClusterV0(0), fClusterV0A(0), fClusterV0C(0), fClusterTPC(0),
-  fHistEvtStat(0), fHistClusterStat(0), fHistRunNumStat(0), fHistCentrality(0), fHistCentralityCorrected(0),
+  fHistStatEvt(0), fHistStatCluster(0), fHistStatRunNum(0), fHistStatCentrality(0), fHistStatCentralityCorrected(0),
   fHistEPTPCFlatten(0), fHistEPV0AFlatten(0), fHistEPV0CFlatten(0), 
-  fHistRBRCosV0A(0), fHistRBRSinV0A(0), fHistRBRCosV0C(0), fHistRBRSinV0C(0), fHistRBRCosTPC(0), fHistRBRSinTPC(0)
+  fHistEPRBRCosV0A(0), fHistEPRBRSinV0A(0), fHistEPRBRCosV0C(0), fHistEPRBRSinV0C(0), fHistEPRBRCosTPC(0), fHistEPRBRSinTPC(0)
 { // Constructor
   for (Int_t i = 0; i < 12; ++i) fGeomMatrix[i] = 0;
   DefineInput(0, TChain::Class());
@@ -132,9 +132,6 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
 { // Create histograms, called once
-    
-  fESDClusters = new TObjArray();
-  fAODClusters = new TObjArray();
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
   fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"), "AliEMCALgeo");
@@ -144,31 +141,38 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging)   
 
-  fHistEvtStat = new TH1I("fHistEvtStat","",10,0,10);
-  fHistEvtStat->GetXaxis()->SetBinLabel(1, "All");
-  fHistEvtStat->GetXaxis()->SetBinLabel(2, "ESD");
-  fHistEvtStat->GetXaxis()->SetBinLabel(3, "AOD");
-  fHistEvtStat->GetXaxis()->SetBinLabel(4, "!(ESD/AOD)");
-  fHistEvtStat->GetXaxis()->SetBinLabel(5, "Cent");
-  fHistEvtStat->GetXaxis()->SetBinLabel(6, "VZERO");
-  fHistEvtStat->GetXaxis()->SetBinLabel(7, "Clust");
-  fOutputList->Add(fHistEvtStat);
+  fHistStatEvt = new TH1I("fHistStatEvt","",10,0,10);
+  fHistStatEvt->GetXaxis()->SetBinLabel(1, "All");
+  fHistStatEvt->GetXaxis()->SetBinLabel(2, "ESD");
+  fHistStatEvt->GetXaxis()->SetBinLabel(3, "AOD");
+  fHistStatEvt->GetXaxis()->SetBinLabel(4, "Vtx");
+  fHistStatEvt->GetXaxis()->SetBinLabel(5, "Cent");
+  fHistStatEvt->GetXaxis()->SetBinLabel(6, "EP");
+  fHistStatEvt->GetXaxis()->SetBinLabel(7, "Clust");
+  fOutputList->Add(fHistStatEvt);
 
-  fHistClusterStat = new TH1I("fHistClusterStat","",10,0,10);
-  fHistClusterStat->GetXaxis()->SetBinLabel(1, "All Clust.");
-  fHistClusterStat->GetXaxis()->SetBinLabel(2, "EMCal Clust.");
-  fHistClusterStat->GetXaxis()->SetBinLabel(3, "Good V1 Clust.");
-  fOutputList->Add(fHistClusterStat);
+  fHistStatCluster = new TH1I("fHistStatCluster","",15,0,15);
+  fHistStatCluster->GetXaxis()->SetBinLabel(1, "all");
+  fHistStatCluster->GetXaxis()->SetBinLabel(2, "emcal");
+  fHistStatCluster->GetXaxis()->SetBinLabel(3, "ncells");
+  fHistStatCluster->GetXaxis()->SetBinLabel(4, "e<1");
+  fHistStatCluster->GetXaxis()->SetBinLabel(5, "e ratio");
+  fHistStatCluster->GetXaxis()->SetBinLabel(6, "#eta");
+  fHistStatCluster->GetXaxis()->SetBinLabel(7, "within volume");
+  fHistStatCluster->GetXaxis()->SetBinLabel(8, "track match dr");
+  fHistStatCluster->GetXaxis()->SetBinLabel(9, "remove photon");
+  fHistStatCluster->GetXaxis()->SetBinLabel(10, "e>5");
+  fHistStatCluster->GetXaxis()->SetBinLabel(11, "ss");
+  fOutputList->Add(fHistStatCluster);
 
-  fHistRunNumStat = new TH1I("fHistRunNumStat", "", 45, 0, 45);
-  fHistRunNumStat->GetXaxis()->SetBinLabel(1, "167987");
-  fOutputList->Add(fHistRunNumStat);
+  fHistStatRunNum = new TH1I("fHistStatRunNum", "", 45, 0, 45);
+  fOutputList->Add(fHistStatRunNum);
 
-  fHistCentrality = new TH1D("fHistCentrality", "", 200, 0, 100);
-  fOutputList->Add(fHistCentrality);
+  fHistStatCentrality = new TH1D("fHistStatCentrality", "", 200, 0, 100);
+  fOutputList->Add(fHistStatCentrality);
 
-  fHistCentralityCorrected = new TH1D("fHistCentralityCorrected", "", 200, 0, 100);
-  fOutputList->Add(fHistCentralityCorrected);
+  fHistStatCentralityCorrected = new TH1D("fHistStatCentralityCorrected", "", 200, 0, 100);
+  fOutputList->Add(fHistStatCentralityCorrected);
   
   fHistEPV0MB = new TH1F("fHistEPV0MB","",100,0.0,TMath::Pi());
   fOutputList->Add(fHistEPV0MB);
@@ -230,44 +234,44 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistEPTPCFlatten = new TH2F("fHistEPTPFlatten","",100,0,100,100,0.0,TMath::Pi());
   fOutputList->Add(fHistEPTPCFlatten);
 
-  fHistDiffV0A_V0CR0 = new TH2F("fHistDiffV0A_V0CR0","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0A_V0CR0);
+  fHistEPDiffV0A_V0CR0 = new TH2F("fHistEPDiffV0A_V0CR0","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0A_V0CR0);
 
-  fHistDiffV0A_V0CR3 = new TH2F("fHistDiffV0A_V0CR3","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0A_V0CR3);
+  fHistEPDiffV0A_V0CR3 = new TH2F("fHistEPDiffV0A_V0CR3","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0A_V0CR3);
 
-  fHistDiffV0CR0_V0CR3 = new TH2F("fHistDiffV0CR0_V0CR3","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0CR0_V0CR3);
+  fHistEPDiffV0CR0_V0CR3 = new TH2F("fHistEPDiffV0CR0_V0CR3","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0CR0_V0CR3);
 
-  fHistDiffV0C_V0AR4 = new TH2F("fHistDiffV0C_V0AR4","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0C_V0AR4);
+  fHistEPDiffV0C_V0AR4 = new TH2F("fHistEPDiffV0C_V0AR4","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0C_V0AR4);
 
-  fHistDiffV0C_V0AR7 = new TH2F("fHistDiffV0C_V0AR7","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0C_V0AR7);
+  fHistEPDiffV0C_V0AR7 = new TH2F("fHistEPDiffV0C_V0AR7","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0C_V0AR7);
 
-  fHistDiffV0AR4_V0AR7 = new TH2F("fHistDiffV0AR4_V0AR7","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0AR4_V0AR7);
+  fHistEPDiffV0AR4_V0AR7 = new TH2F("fHistEPDiffV0AR4_V0AR7","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0AR4_V0AR7);
 
-  fHistDiffV0AR_V0CR = new TH2F("fHistDiffV0AR_V0CR","",100,0,100,100,-1.0,1.0);
-  fOutputList->Add(fHistDiffV0AR_V0CR);
+  fHistEPDiffV0AR_V0CR = new TH2F("fHistEPDiffV0AR_V0CR","",100,0,100,100,-1.0,1.0);
+  fOutputList->Add(fHistEPDiffV0AR_V0CR);
 
-  fHistRBRCosV0A = new TProfile("fHistRBRCosV0A","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRCosV0A);
+  fHistEPRBRCosV0A = new TProfile("fHistEPRBRCosV0A","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRCosV0A);
 
-  fHistRBRSinV0A = new TProfile("fHistRBRSinV0A","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRSinV0A);
+  fHistEPRBRSinV0A = new TProfile("fHistEPRBRSinV0A","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRSinV0A);
 
-  fHistRBRCosV0C = new TProfile("fHistRBRCosV0C","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRCosV0C);
+  fHistEPRBRCosV0C = new TProfile("fHistEPRBRCosV0C","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRCosV0C);
 
-  fHistRBRSinV0C = new TProfile("fHistRBRSinV0C","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRSinV0C);
+  fHistEPRBRSinV0C = new TProfile("fHistEPRBRSinV0C","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRSinV0C);
 
-  fHistRBRCosTPC = new TProfile("fHistRBRCosTPC","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRCosTPC);
+  fHistEPRBRCosTPC = new TProfile("fHistEPRBRCosTPC","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRCosTPC);
 
-  fHistRBRSinTPC = new TProfile("fHistRBRSinTPC","",45,0,45,-1.,1.);
-  fOutputList->Add(fHistRBRSinTPC);
+  fHistEPRBRSinTPC = new TProfile("fHistEPRBRSinTPC","",45,0,45,-1.,1.);
+  fOutputList->Add(fHistEPRBRSinTPC);
   
   fHistClusterEta = new TH1F("fHistClusterEta","Cluster Pseudorapidity Distribution",100,-1.0,1.0);
   fHistClusterEta->GetYaxis()->SetTitle("Entries"); fHistClusterEta->GetXaxis()->SetTitle("#eta");
@@ -297,9 +301,13 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistClusterEN->GetYaxis()->SetTitle("N"); fHistClusterEN->GetXaxis()->SetTitle("Energy [GeV]");
   fOutputList->Add(fHistClusterEN);
 
-  fHistClusterEM02 = new TH2F("fHistClusterEM02","Cluster Energy vs M02",100,0.0,50.0,100,0.0,10.0);
-  fHistClusterEM02->GetYaxis()->SetTitle("M02"); fHistClusterEM02->GetXaxis()->SetTitle("Energy [GeV]");
-  fOutputList->Add(fHistClusterEM02);
+  fHistClusterEM02Raw = new TH2F("fHistClusterEM02Raw","Cluster Energy vs M02",500,0.0,50.0,100,0.0,10.0);
+  fHistClusterEM02Raw->GetYaxis()->SetTitle("M02"); fHistClusterEM02Raw->GetXaxis()->SetTitle("Energy [GeV]");
+  fOutputList->Add(fHistClusterEM02Raw);
+
+  fHistClusterEM02Cut = new TH2F("fHistClusterEM02Cut","Cluster Energy vs M02",500,0.0,50.0,100,0.0,10.0);
+  fHistClusterEM02Cut->GetYaxis()->SetTitle("M02"); fHistClusterEM02Cut->GetXaxis()->SetTitle("Energy [GeV]");
+  fOutputList->Add(fHistClusterEM02Cut);
 
   fHistClusterPhiEta = new TH2F("fHistClusterPhiEta","Cluster Pseudorapidity vs #phi",100,-1.0,1.0,100,0.0,6.29);
   fHistClusterPhiEta->GetXaxis()->SetTitle("#eta"); fHistClusterPhiEta->GetYaxis()->SetTitle("#phi [rad]");
@@ -364,14 +372,9 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *) 
 { // Main loop, called for each event
-  fESDClusters = 0;
-  fESDCells = 0;
-  fAODClusters = 0;
-  fAODCells = 0;
-
   AliVEvent *event = InputEvent();
   if (!event) { Printf("ERROR: Could not retrieve event\n"); return; }
-  fHistEvtStat->Fill(0);
+  fHistStatEvt->Fill(0);
 
   fESD = dynamic_cast<AliESDEvent*>(event);
   if (!fESD) {
@@ -381,21 +384,24 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
       return;
     }
   }
-  if (fESD) fHistEvtStat->Fill(1);
-  if (fAOD) fHistEvtStat->Fill(2);
-  if (!fESD && !fAOD) fHistEvtStat->Fill(3);
+  if (fESD) fHistStatEvt->Fill(1);
+  if (fAOD) fHistStatEvt->Fill(2);
   
   fRunNumber = event->GetRunNumber();
   fInternalRunNum = GetInternalRunNum(fRunNumber);
-  fHistRunNumStat->Fill(fInternalRunNum);
+  fHistStatRunNum->Fill(fInternalRunNum);
+
+  // Vertex
+  if (TMath::Abs(event->GetPrimaryVertex()->GetZ()) > 10.) return;
+  fHistStatEvt->Fill(3);
   
   // Centrality
   if (event->GetCentrality()) {
     fCentrality = event->GetCentrality()->GetCentralityPercentile("V0M"); // CL1 ?
-    fHistCentrality->Fill(fCentrality);
-    if (!IsCentralityDistrCorrected()) return;
-    fHistCentralityCorrected->Fill(fCentrality);
-    fHistEvtStat->Fill(4);
+    fHistStatCentrality->Fill(fCentrality);
+    if (isCentFlat && !IsCentAccepted()) return;
+    fHistStatCentralityCorrected->Fill(fCentrality);
+    fHistStatEvt->Fill(4);
   } else {
     printf("ERROR: Could not retrieve the Centrality\n");
     return;
@@ -406,11 +412,10 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
   fTPCFlat = (AliEPFlattener*)maps->At(0);
   fV0AFlat = (AliEPFlattener*)maps->At(1);
   fV0CFlat = (AliEPFlattener*)maps->At(2);
-  Bool_t flattenEP = kTRUE;
   fEventPlane = event->GetEventplane();
   if (fEventPlane) {
-    VZEROEventPlane(flattenEP);
-    fHistEvtStat->Fill(5);
+    VZEROEventPlane(isPhosCali);
+    fHistStatEvt->Fill(5);
   } else {
     printf("ERROR: Could not retrieve the Event Plane\n");
     return;
@@ -449,35 +454,33 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
     // }
   } else if (fAOD) {
     if (event->FindListObject(fEMCALClustersListName))
-      fAODClusters = dynamic_cast<TClonesArray*>(event->FindListObject(fEMCALClustersListName));
-    if (!fAODClusters) {
-      AliWarning(Form("Wrong name of list with clusters? <%s>", fEMCALClustersListName.Data()));
+      fClusterArray = dynamic_cast<TClonesArray*>(event->FindListObject(fEMCALClustersListName));
+    if (!fClusterArray) {
+      cout << fEMCALClustersListName << " is not found " << endl;
       return;
     }
-
-    // fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
-    // TObjArray* fAODClusters1 = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
-    // fAODCells = fAOD->GetEMCALCells();
-
+    if (fClusterArray->GetEntriesFast()<1) {
+      cout << "No EMCAL clusters in this event" << endl;
+      return;
+    }    
     if (fDebug)
-      printf("AOD cluster mult = %d\n", fAODClusters->GetEntriesFast());
-    if (!fAODClusters || fAODClusters->GetEntriesFast()<1) {
-      printf("ERROR: There are no EMCAL clusters in this event\n");
-      return;
-    }
-    fHistEvtStat->Fill(6);
+      cout << fClusterArray->GetEntriesFast() << " clusters in " << fEMCALClustersListName << endl;
+    fHistStatEvt->Fill(6);
   }
 
-  FillHistsCluster();  
+  FillHistsCluster();
+
+  if (fDebug)
+    cout << fHistStatCluster->GetBinContent(11) << " good pi0 candidates are found" << endl;
   
-  // FillHistsTrack();
+  FillHistsTrack();
 
   PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPi0V2ShSh::GetInternalRunNum(Int_t runnumber)
-{ // convert runnumber into internal runnumber
+{ // LHC11h_AOD_145, train runlist listPCMgood+VaryingVoltages (no phi cut)
   Int_t stdRunNum[45] = {167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 
                          168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 
                          168988, 168992, 169035, 169091, 169094, 169138, 169143, 169144, 169145, 169148, 
@@ -485,6 +488,7 @@ Int_t AliAnalysisTaskEMCALPi0V2ShSh::GetInternalRunNum(Int_t runnumber)
                          169855, 169858, 169859, 169923, 169965};
 
   for (int i = 0; i < 45; ++i) {
+    if (i%10==0) fHistStatRunNum->GetXaxis()->SetBinLabel(i+1, Form("%i",stdRunNum[i]));    
     if (runnumber==stdRunNum[i]) return i;
   }
 
@@ -492,35 +496,35 @@ Int_t AliAnalysisTaskEMCALPi0V2ShSh::GetInternalRunNum(Int_t runnumber)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsCentralityDistrCorrected()
+Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsCentAccepted()
 {
-  Bool_t bIsNot = kFALSE;
   if (fCentrality<=10) {   // 0-10%
+    Bool_t isGoodCent = kFALSE;
     TRandom3 *rndm = new TRandom3(0);
     Double_t Nrndm = rndm->Uniform(0.,1.);
     if (fCentrality<=1) {
-      if(Nrndm > 0.77308) bIsNot = kTRUE;
+      if (Nrndm<0.77308) isGoodCent = kTRUE;
     } else if (1<fCentrality && fCentrality<=2) {
-      if (Nrndm>0.75863) bIsNot = kTRUE;
+      if (Nrndm<0.75863) isGoodCent = kTRUE;
     } else if (2<fCentrality && fCentrality<=3){
-      if (Nrndm>0.76365) bIsNot = kTRUE;
+      if (Nrndm<0.76365) isGoodCent = kTRUE;
     } else if (3<fCentrality && fCentrality<=4){
-      if (Nrndm>0.76763) bIsNot = kTRUE;
+      if (Nrndm<0.76763) isGoodCent = kTRUE;
     } else if (4<fCentrality && fCentrality<=5){
-      if (Nrndm>0.76251) bIsNot = kTRUE;
+      if (Nrndm<0.76251) isGoodCent = kTRUE;
     } else if (5<fCentrality && fCentrality<=6){
-      if (Nrndm>0.79069) bIsNot = kTRUE;
+      if (Nrndm<0.79069) isGoodCent = kTRUE;
     } else if (6<fCentrality && fCentrality<=7){
-      if (Nrndm>0.77669) bIsNot = kTRUE;
+      if (Nrndm<0.77669) isGoodCent = kTRUE;
     } else if (7<fCentrality && fCentrality<=8){
-      if (Nrndm>0.78537) bIsNot = kTRUE;
+      if (Nrndm<0.78537) isGoodCent = kTRUE;
     } else if (8<fCentrality && fCentrality<=9){
-      if (Nrndm>0.82727) bIsNot = kTRUE;
+      if (Nrndm<0.82727) isGoodCent = kTRUE;
     } else if (9<fCentrality && fCentrality<=10){
-      if (Nrndm>1) bIsNot = kTRUE;
+      if (Nrndm<1) isGoodCent = kTRUE;
     }
     delete rndm; rndm = NULL;
-    return bIsNot;
+    return isGoodCent;
   } else if (10<fCentrality && fCentrality<=50) {  // 10-50%
     TString centfired;
     if (fESD) {
@@ -603,21 +607,21 @@ void AliAnalysisTaskEMCALPi0V2ShSh::VZEROEventPlane(Bool_t flattenEP)
     fHistEPV0CFlatten->Fill(fCentrality, fEPV0C);
   }
 
-  fHistDiffV0A_V0CR0->Fill(fCentrality, TMath::Cos(2.0*(fEPV0A - fEPV0CR0)));
-  fHistDiffV0A_V0CR3->Fill(fCentrality, TMath::Cos(2.0*(fEPV0A - fEPV0CR3)));
-  fHistDiffV0CR0_V0CR3->Fill(fCentrality, TMath::Cos(2.0*(fEPV0CR0 - fEPV0CR3)));
-  fHistDiffV0C_V0AR4->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR4)));
-  fHistDiffV0C_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR7)));
-  fHistDiffV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR4 - fEPV0AR7)));   
-  fHistDiffV0AR_V0CR->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR - fEPV0CR)));
+  fHistEPDiffV0A_V0CR0->Fill(fCentrality, TMath::Cos(2.0*(fEPV0A - fEPV0CR0)));
+  fHistEPDiffV0A_V0CR3->Fill(fCentrality, TMath::Cos(2.0*(fEPV0A - fEPV0CR3)));
+  fHistEPDiffV0CR0_V0CR3->Fill(fCentrality, TMath::Cos(2.0*(fEPV0CR0 - fEPV0CR3)));
+  fHistEPDiffV0C_V0AR4->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR4)));
+  fHistEPDiffV0C_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR7)));
+  fHistEPDiffV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR4 - fEPV0AR7)));   
+  fHistEPDiffV0AR_V0CR->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR - fEPV0CR)));
 
   // run-by-run QA
-  fHistRBRCosV0A->Fill(fInternalRunNum, TMath::Cos(2*fEPV0A));
-  fHistRBRSinV0A->Fill(fInternalRunNum, TMath::Sin(2*fEPV0A));
-  fHistRBRCosV0C->Fill(fInternalRunNum, TMath::Cos(2*fEPV0C));
-  fHistRBRSinV0C->Fill(fInternalRunNum, TMath::Sin(2*fEPV0C));
-  fHistRBRCosTPC->Fill(fInternalRunNum, TMath::Cos(2*fEPTPC));
-  fHistRBRSinTPC->Fill(fInternalRunNum, TMath::Sin(2*fEPTPC));
+  fHistEPRBRCosV0A->Fill(fInternalRunNum, TMath::Cos(2*fEPV0A));
+  fHistEPRBRSinV0A->Fill(fInternalRunNum, TMath::Sin(2*fEPV0A));
+  fHistEPRBRCosV0C->Fill(fInternalRunNum, TMath::Cos(2*fEPV0C));
+  fHistEPRBRSinV0C->Fill(fInternalRunNum, TMath::Sin(2*fEPV0C));
+  fHistEPRBRCosTPC->Fill(fInternalRunNum, TMath::Cos(2*fEPTPC));
+  fHistEPRBRSinTPC->Fill(fInternalRunNum, TMath::Sin(2*fEPTPC));
 }
 
 //________________________________________________________________________
@@ -642,25 +646,24 @@ Double_t  AliAnalysisTaskEMCALPi0V2ShSh::ApplyFlatteningTPC(Double_t phi, Double
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0V2ShSh::FillHistsCluster()
 { // Fill cluster histograms
-  TObjArray *clustersArray = fESDClusters;
-  if (!clustersArray) clustersArray = fAODClusters;
-  if (!clustersArray) return;
-
-  const Int_t nclus = clustersArray->GetEntries();
-  if (nclus==0) return;
-
-  Float_t pos[3]; 
-  for (Int_t iclus = 0; iclus < nclus; iclus++) {
-    fHistClusterStat->Fill(0);
-    AliVCluster *clus = (AliVCluster*)clustersArray->At(iclus);
+  const Int_t nclust = fClusterArray->GetEntries();
+  Float_t pos[3];
+  for (Int_t i = 0; i < nclust; i++) {
+    AliVCluster *clus = (AliVCluster*)fClusterArray->At(i);
     if (!clus) continue;
+    fHistStatCluster->Fill(0);
     if (!clus->IsEMCAL()) continue;
-    fHistClusterStat->Fill(1);
+    fHistStatCluster->Fill(1);
 
-    if (!IsGoodClusterV1(clus)) continue;
-    if (!IsGoodPi0(clus)) continue;
-    fHistClusterStat->Fill(2);
-    
+    if (!IsGoodCluster(clus)) continue;
+    fHistClusterEM02Raw->Fill(clus->E(),clus->GetM02());
+    if (clus->GetM02()<0.3) continue; // remove photon
+    fHistStatCluster->Fill(8);
+    if (clus->E()<5.) continue; // only accept high energy pi0
+    fHistStatCluster->Fill(9);
+    if (!IsPi0Candidate(clus)) continue; // shower shape cut 
+    fHistStatCluster->Fill(10);
+   
     clus->GetPosition(pos);
     TVector3 vpos(pos[0],pos[1],pos[2]);
     Double_t N = clus->GetNCells();
@@ -715,31 +718,28 @@ void AliAnalysisTaskEMCALPi0V2ShSh::FillHistsCluster()
     fHistClusterEta->Fill(eta);
     fHistClusterPhiEta->Fill(eta,phi);
     fHistClusterEN->Fill(E,N);
-    fHistClusterEM02->Fill(E,M02);
+    fHistClusterEM02Cut->Fill(E,M02);
     fHistClusterEtN->Fill(Et,N);
     fHistClusterEtM02->Fill(Et,M02);
     fHistClusterdphiV0->Fill(dphiV0);
   }
-
-  if (fDebug)
-    cout << "Good Pi0 cluster mult = " << fHistClusterStat->GetBinContent(3) << endl;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsGoodClusterV1(const AliVCluster *c) const
+Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsGoodCluster(const AliVCluster *c) const
 {
   if (!c) return kFALSE;
 
   if (c->GetNCells()<2.) return kFALSE;
-  fHistClusterStat->Fill(3);
+  fHistStatCluster->Fill(2);
 
   if (c->E()<1.) return kFALSE;
-  fHistClusterStat->Fill(4);
+  fHistStatCluster->Fill(3);
 
   Short_t id = -1;
   Double_t maxE = GetMaxCellEnergy(c, id);
   if ((1. - double(GetCrossEnergy(c,id))/maxE) > 0.97) return kFALSE;
-  fHistClusterStat->Fill(5);
+  fHistStatCluster->Fill(4);
 
   Float_t pos1[3];
   c->GetPosition(pos1);
@@ -747,18 +747,14 @@ Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsGoodClusterV1(const AliVCluster *c) cons
   Double_t eta = clsPos.Eta();
 
   if (TMath::Abs(eta) > 0.65) return kFALSE;
-  fHistClusterStat->Fill(6);
+  fHistStatCluster->Fill(5);
 
   if (!IsWithinFiducialVolume(id)) return kFALSE;
-  fHistClusterStat->Fill(7);
+  fHistStatCluster->Fill(6);
 
-  if (c->GetM02() <0.3) return kFALSE;
-  fHistClusterStat->Fill(8);
-
-  Double_t dr = TMath::Sqrt(c->GetTrackDx() * c->GetTrackDx() + 
-                            c->GetTrackDz() * c->GetTrackDz());
-  if (dr<0.025) return kFALSE;
-  fHistClusterStat->Fill(9);
+  if (TMath::Abs(c->GetTrackDx()) < 0.03 &&
+      TMath::Abs(c->GetTrackDz()) < 0.025) return kFALSE;  
+  fHistStatCluster->Fill(7);
 
   return kTRUE;
 }
@@ -877,7 +873,7 @@ Double_t AliAnalysisTaskEMCALPi0V2ShSh::GetCrossEnergy(const AliVCluster *cluste
 }
 
 //_____________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsGoodPi0(const AliVCluster *c)
+Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsPi0Candidate(const AliVCluster *c)
 {
   Double_t E = c->E();
   // Double_t Et = (E / (TMath::CosH(vpos.Eta())));
