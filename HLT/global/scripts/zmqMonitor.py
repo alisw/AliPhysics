@@ -9,8 +9,11 @@ def Exit_gracefully(signal, frame):
 signal.signal(signal.SIGINT, Exit_gracefully)
 
 endpoint="SUB>tcp://localhost:60202"
-requestHeader="INFO"
+requestHeader=""
 requestBody=""
+requestHeader1=""
+requestBody1=""
+
 if len(sys.argv)==1:
     print "Usage:"
     print sys.argv[0]+" \"PULL@tcp://localhost:60202\""
@@ -36,6 +39,10 @@ if len(sys.argv)>2:
     requestHeader=sys.argv[2]
 if len(sys.argv)>3:
     requestBody=sys.argv[3]
+if len(sys.argv)>4:
+    requestHeader1=sys.argv[4]
+if len(sys.argv)>5:
+    requestBody1=sys.argv[5]
 
 print "mode: "+mode+" endpoint: "+endpoint
 
@@ -70,8 +77,14 @@ endless=True
 if mode=="REQ" or mode=="PUSH" or mode=="PUB":
     endless=False
     socket.send(requestHeader,zmq.SNDMORE)
-    socket.send(requestBody)
-    print("sent: "+requestHeader+" "+requestBody)
+    if len(requestHeader1)> 0:
+      socket.send(requestBody,zmq.SNDMORE)
+      socket.send(requestHeader1,zmq.SNDMORE)
+      socket.send(requestBody1)
+      print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
+    else:
+      socket.send(requestBody)
+      print("sent: "+requestHeader+" "+requestBody)
 
 while True:
     if mode=="SUB" or mode=="PULL" or mode=="REP" or mode=="REQ":
@@ -86,7 +99,13 @@ while True:
                 print "  messagesize: "+str(sys.getsizeof(message))
                 i=0
     if mode=="REP":
-        socket.send(requestHeader,zmq.SNDMORE)
+      socket.send(requestHeader,zmq.SNDMORE)
+      if len(requestHeader1) > 0:
+        socket.send(requestBody,zmq.SNDMORE)
+        socket.send(requestHeader1,zmq.SNDMORE)
+        socket.send(requestBody1)
+        print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
+      else:
         socket.send(requestBody)
         print "  sent back: "+requestHeader+" "+requestBody
     if not endless:
