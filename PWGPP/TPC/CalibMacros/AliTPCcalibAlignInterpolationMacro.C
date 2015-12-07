@@ -457,7 +457,7 @@ void MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int
   TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
   Int_t nFiles=array->GetEntries();
   if (nFiles<=0) {
-    ::Error("GetResidualStatInfo. Wrong input list",inputList);
+    ::Error("GetResidualStatInfo", "Wrong input list %s", inputList);
     return;
   }
   TStopwatch timer;
@@ -608,8 +608,8 @@ void MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int
   delete hisEvent;
   delete pcstream;
 
-  printf("StatInfo.minTime\t%d\n",minTime);
-  printf("StatInfo.maxTime\t%d\n",maxTime);
+  printf("StatInfo.minTime\t%lld\n",minTime);
+  printf("StatInfo.maxTime\t%lld\n",maxTime);
   delete array;
 }
 
@@ -632,7 +632,7 @@ void makeCurrentTrend(){
     Double_t median=TMath::Median(entries,tree->GetV1());
     printf("isec=%d\tnorm=%f\n",iSec,median);
     tree->SetAlias(TString::Format("normNcl%d",iSec).Data(),  TString::Format("(grNcl%d.fY)/(%f+0)",iSec,median).Data());
-    tree->SetAlias(TString::Format("normNclRatio%d",iSec).Data(),  TString::Format("(grNcl%d.fY/grNcl%d.fY)/(%f+0)",iSec,median).Data());   
+    tree->SetAlias(TString::Format("normNclRatio%d",iSec).Data(),  TString::Format("(grNcl%d.fY/grNcl%d.fY)/(%f+0)",iSec,iSec,median).Data());   
   }
 
   TCanvas *pcanvasCurrent[4]={0};
