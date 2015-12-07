@@ -43,7 +43,7 @@ AliAnalysisTaskBuildCorrTree* AddTaskThreePartBuildTreePbPb (const char* name = 
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB + AliVEvent::kSemiCentral + AliVEvent::kCentral);
+  eventplaneTask->SelectCollisionCandidates(offlineTriggerMask);
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
   }

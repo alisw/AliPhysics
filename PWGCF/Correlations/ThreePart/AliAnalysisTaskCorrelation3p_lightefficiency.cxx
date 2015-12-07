@@ -204,12 +204,11 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/
   fRun = pEvent->GetRunNumber();
   TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
   if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
-  
+
   //Get the runnumber and find which bin and fill value this corresponds to.
   if(!fisTree)GetCentralityAndVertex();
   if(fisTree)GetCentralityAndVertex(pEvent);
   if(!SelectEvent()) return;//events are rejected.
-
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
   FillHistogram("EventsperRun", fRunFillValue);
@@ -243,7 +242,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::Terminate(Option_t *)
 Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrelevantParticles, AliVEvent *pEvent)
 {
   Int_t nofTracks = 0;
-  nofTracks=pEvent->GetNumberOfTracks();
+  nofTracks = pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
   for (int i=0; i<nofTracks; i++) {
     AliVParticle* t=pEvent->GetTrack(i);
@@ -413,8 +412,9 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(Ali
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsMCFilteredTrack(AliVParticle* p)
 {
-  if(dynamic_cast<AliFilteredTrack*>(t)){
-    return dynamic_cast<AliFilteredTrack*>(t)->IsMC();    
+  if(dynamic_cast<AliFilteredTrack*>(p)){
+    if(dynamic_cast<AliFilteredTrack*>(p)->IsMC()) cout << "mc"<<endl;
+    return dynamic_cast<AliFilteredTrack*>(p)->IsMC();    
   }
   return kFALSE;
 }
@@ -639,9 +639,10 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::SelectEvent()
     FillHistogram("multiplicity",fMultiplicity,0.75);
     }
     if(fCollisionType == PbPb){
-      FillHistogram("centrality",fCentralityPercentile,0.75);
+//       FillHistogram("centrality",fCentralityPercentile,0.75);
     }
-    FillHistogram("vertex",fVertex[2],0.75);
+//     FillHistogram("vertex",fVertex[2],0.75);
+  if(fCentralityPercentile>fMaxMult) return kFALSE;//Out of centrality bounds in PbPb, will not fill any histogram.
   }
   if(fCollisionType==pp&&!fisTree){//With pp, the following cuts are applied:
     FillHistogram("multiplicity",fMultiplicity,0.25);
