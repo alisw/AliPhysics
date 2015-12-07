@@ -19,6 +19,7 @@ set(MODULE PWGUDdiffractive)
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -32,6 +33,8 @@ set(SRCS
     example/AliAnalysisTaskCDex.cxx
     example/AliCDMesonBaseStripped.cxx
     example/AliCDMesonUtilsStripped.cxx
+    legotrain/AliAnalysisTaskCDTree.cxx
+    legotrain/AliMultiplicitySelectionCP.cxx
     QA/AliAnalysisTaskCPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
     xsAndTwoProng/AliAnalysisTaskCDskimESD.cxx
