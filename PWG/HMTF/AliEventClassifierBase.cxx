@@ -17,8 +17,7 @@ AliEventClassifierBase::AliEventClassifierBase()
   fExpectedMaxValue(0),
   fClassifierValueIsCached(false),
   fClassifierOutputList(0),
-  fTaskOutputList(0),
-  fSafePdgCodes(0)
+  fTaskOutputList(0)
 {
   
 }
@@ -29,16 +28,11 @@ AliEventClassifierBase::AliEventClassifierBase(const char* name, const char* tit
     fExpectedMaxValue(0),
     fClassifierValueIsCached(false),
     fClassifierOutputList(0),
-    fTaskOutputList(taskOutputList),
-    fSafePdgCodes(0)
+    fTaskOutputList(taskOutputList)
 {
   fClassifierOutputList = new TList();
   fClassifierOutputList->SetName(name);
   fTaskOutputList->Add(fClassifierOutputList);
-
-  // asign valid pdgs; detour for cxx98
-  Int_t pdgs[] = {111, 211, 321, 2212, 310, 3122, 3312, 3334, 333, 313};
-  fSafePdgCodes.assign(&pdgs[0], &pdgs[0] + (sizeof(pdgs) / sizeof(Int_t)));
 }
 
 
