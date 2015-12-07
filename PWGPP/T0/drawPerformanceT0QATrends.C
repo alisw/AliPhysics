@@ -131,8 +131,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   double oraplusorcMin = -100, oraplusorcMax = 100;   // OR A + OR CA
   double oraMin        = -100, oraMax        = 100;   // OR A  
   double orcMin        = -100, orcMax        = 100;   // OR C
-  double amplMin       =0,    amplMax    =3   ;     // amplitude in each PMT
-  double timeMin     =  2900,   timeMax =3300       ;     // amplitude in each PMT
+  //  double amplMin       =0,    amplMax    =3   ;     // amplitude in each PMT
+  //  double timeMin     =  2900,   timeMax =3300       ;     // amplitude in each PMT
   //-----> add ranges of your new trending plot
 
 
@@ -220,7 +220,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
 
   for(int ipmt=1;ipmt<=kNPMTs; ipmt++){
     sprintf(name,"amplPMT%d:run",ipmt);
-    gr = MakeGraphSparse(tree,name,"");
+    TString cutamp = Form("amplPMT%i>0",ipmt);
+    gr = MakeGraphSparse(tree,name,cutamp.Data());
     gr->SetMarkerStyle(20);
     gr->SetMarkerSize(1.0);
     gr->SetMarkerColor(6);
@@ -229,8 +230,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
 
     int nRuns = gr->GetN();
     double *y =  gr->GetY();
-	double min = y[0];
-	double max = y[0];
+    double min = y[0];
+    double max = y[0];
     for(int irun =1; irun<nRuns;irun++){
       if(min > y[irun] & y[irun]>0) min = y[irun];
       if(max < y[irun]) max = y[irun];
@@ -238,8 +239,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
     //  amplMin = min - 2; 
     //  amplMax = max + 2; 
 
-    gr->GetHistogram()->SetMinimum(amplMin);
-    gr->GetHistogram()->SetMaximum(amplMax);
+    //    gr->GetHistogram()->SetMinimum(amplMin);
+    //   gr->GetHistogram()->SetMaximum(amplMax);
     gr->Draw("AP");
     gr->GetXaxis()->LabelsOption("v");
     c1->SaveAs(Form("meanAmplPMT%d_vs_run.gif",ipmt));
@@ -247,7 +248,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   /****** Mean Time in PMT ******/
   for(int ipmt=1;ipmt<=kNPMTs; ipmt++){
     sprintf(name,"timePMT%d:run",ipmt);
-    gr = MakeGraphSparse(tree,name,"");
+    TString cut = Form("timePMT%i>0",ipmt);
+    gr = MakeGraphSparse(tree,name,cut.Data());
 
 
     sprintf(name,"timeDelayPMT%d:run",ipmt);
@@ -281,8 +283,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
 
     gr->GetHistogram()->SetYTitle("mean [channels]");
     gr->GetHistogram()->SetTitle(Form("Time PMT%d",ipmt));
-    gr->GetHistogram()->SetMinimum(timeMin);
-    gr->GetHistogram()->SetMaximum(timeMax);
+    //    gr->GetHistogram()->SetMinimum(timeMin);
+    // gr->GetHistogram()->SetMaximum(timeMax);
     gr->GetXaxis()->LabelsOption("v");
     gr->Draw("AP");
     grDelay->Draw("Psame");
