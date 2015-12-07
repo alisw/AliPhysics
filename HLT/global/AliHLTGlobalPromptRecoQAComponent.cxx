@@ -158,14 +158,24 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
       argument=((TObjString*)pTokens->At(i))->String();	
       if (argument.IsNull()) continue;
+      argument = argument.Strip(TString::kBoth,' ');
+      argument = argument.Strip(TString::kBoth,'\t');
+      if (argument.BeginsWith("#")) continue;
+      if (argument.BeginsWith("//")) continue;
       
-      if (argument.CompareTo("-skip-events")==0) {
-	      argument.ReplaceAll("-skip-events=","");
+      if (argument.Contains("-skip-events")) {
+        argument.ReplaceAll("-skip-events=","");
         fSkipEvents = argument.Atoi();
-      } else if (argument.CompareTo("-histogram=")==0) {
+      } else if (argument.Contains("-histogram")) {
         TString tmp = argument.ReplaceAll("-histogram=","");
         NewHistogram(tmp.Data());
-      } else if (argument.CompareTo("-axis=")==0) {
+      } else if (argument.BeginsWith("-reset")) {
+        HLTImportant("received RESET, destroying histograms");
+        Reset();
+      } else if (argument.BeginsWith("-resetIncludingDownstream")) {
+        HLTImportant("received RESET, destroying histograms");
+        Reset(true);
+      } else if (argument.Contains("-axis")) {
         TString tmp = argument.ReplaceAll("-axis=","");
         NewAxis(tmp.Data());
       }	else if (argument.CompareTo("-print-stats")==0) {
@@ -194,6 +204,21 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
   }
 
   return iResult;
+}
+
+int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
+{
+  int rc = 0;
+  for (std::map<string,histStruct>::iterator i=fHistograms.begin(); i!=fHistograms.end(); ++i)
+  {
+    delete i->second.hist;
+  }
+  fHistograms.clear();
+  
+  if (resetDownstream) 
+  {
+    rc = PushBack("reset", kAliHLTDataTypeConfig);
+  }
 }
 
 int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const char* chainId)
@@ -318,35 +343,35 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
       mgr.GetGRPData()->GetBeamType() == "A-A" ||
       mgr.GetGRPData()->GetBeamType() == "AA" )
   {
-    fAxes["nClustersSPD"].set( 100, 0., 30000.,  &fnClustersSPD );
-    fAxes["rawSizeSPD"].set( 100, 0., 140000., &frawSizeSPD );
-    fAxes["nClustersSDD"].set( 100, 0., 26000.,  &fnClustersSDD );
-    fAxes["rawSizeSDD"].set( 100, 0., 700000., &frawSizeSDD );
-    fAxes["nClustersSSD"].set( 100, 0., 31000.,  &fnClustersSSD );
-    fAxes["rawSizeSSD"].set( 100, 0., 700000., &frawSizeSSD );
-    fAxes["nClustersITS"].set( 100, 0., 100000., &fnClustersITS );
-    fAxes["rawSizeITS"].set( 100, 0., 1000000., &frawSizeITS );
-    fAxes["rawSizeVZERO"].set( 100, 0., 6000., &frawSizeVZERO );
-    fAxes["rawSizeEMCAL"].set( 100, 0., 100000., &frawSizeEMCAL );
-    fAxes["rawSizeZDC"].set( 100, 0., 100000., &frawSizeZDC );
-    fAxes["nClustersTPC"].set( 100, 0., 600000., &fnClustersTPC );
-    fAxes["rawSizeTPC"].set( 100, 0., 185000000., &frawSizeTPC );
-    fAxes["hwcfSizeTPC"].set( 100, 0., 1., &fhwcfSizeTPC );
+    fAxes["nClustersSPD"].set( 100, 0., 30e3,  &fnClustersSPD );
+    fAxes["rawSizeSPD"].set( 100, 0., 140e3, &frawSizeSPD );
+    fAxes["nClustersSDD"].set( 100, 0., 26e3,  &fnClustersSDD );
+    fAxes["rawSizeSDD"].set( 100, 0., 700e3, &frawSizeSDD );
+    fAxes["nClustersSSD"].set( 100, 0., 31e3,  &fnClustersSSD );
+    fAxes["rawSizeSSD"].set( 100, 0., 700e3, &frawSizeSSD );
+    fAxes["nClustersITS"].set( 100, 0., 100e3, &fnClustersITS );
+    fAxes["rawSizeITS"].set( 100, 0., 1e6, &frawSizeITS );
+    fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
+    fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
+    fAxes["rawSizeZDC"].set( 100, 0., 100e3, &frawSizeZDC );
+    fAxes["nClustersTPC"].set( 100, 0., 600e3, &fnClustersTPC );
+    fAxes["rawSizeTPC"].set( 100, 0., 185e6, &frawSizeTPC );
+    fAxes["hwcfSizeTPC"].set( 100, 0., 185e6, &fhwcfSizeTPC );
     fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
-    fAxes["clusterSizeTPC"].set( 100, 0., 6500000., &fclusterSizeTPC );
-    fAxes["compressedSizeTPC"].set( 100, 0., 50000000., &fcompressedSizeTPC );
-    fAxes["nITSSAPtracks"].set( 100, 0., 2000., &fnITSSAPtracks );
-    fAxes["nTPCtracklets"].set( 100, 0., 60000., &fnTPCtracklets );
-    fAxes["nTPCtracks"].set( 100, 0., 40000., &fnTPCtracks );
+    fAxes["clusterSizeTPC"].set( 100, 0., 6500e3, &fclusterSizeTPC );
+    fAxes["compressedSizeTPC"].set( 100, 0., 50e6, &fcompressedSizeTPC );
+    fAxes["nITSSAPtracks"].set( 100, 0., 2e3, &fnITSSAPtracks );
+    fAxes["nTPCtracklets"].set( 100, 0., 60e3, &fnTPCtracklets );
+    fAxes["nTPCtracks"].set( 100, 0., 40e3, &fnTPCtracks );
     fAxes["nITSTracks"].set( 100, 0., 1., &fnITSTracks );
     fAxes["nITSOutTracks"].set( 100, 0., 1., &fnITSOutTracks );
-    fAxes["vZEROMultiplicity"].set( 100, 0., 60000., &fvZEROMultiplicity );
-    fAxes["vZEROTriggerChargeA"].set( 100, 0., 30000., &fvZEROTriggerChargeA );
-    fAxes["vZEROTriggerChargeC"].set( 100, 0., 30000., &fvZEROTriggerChargeC );
-    fAxes["vZEROTriggerChargeAC"].set( 100, 0., 60000., &fvZEROTriggerChargeAC );
-    fAxes["zdcZNC"].set( 100, 0., 20000., &fzdcZNC );
-    fAxes["zdcZNA"].set( 100, 0., 20000., &fzdcZNA );
-    fAxes["zdcZNAC"].set( 100, 0., 40000., &fzdcZNAC );
+    fAxes["vZEROMultiplicity"].set( 100, 0., 60e3, &fvZEROMultiplicity );
+    fAxes["vZEROTriggerChargeA"].set( 100, 0., 30e3, &fvZEROTriggerChargeA );
+    fAxes["vZEROTriggerChargeC"].set( 100, 0., 30e3, &fvZEROTriggerChargeC );
+    fAxes["vZEROTriggerChargeAC"].set( 100, 0., 60e3, &fvZEROTriggerChargeAC );
+    fAxes["zdcZNC"].set( 100, 0., 20e3, &fzdcZNC );
+    fAxes["zdcZNA"].set( 100, 0., 20e3, &fzdcZNA );
+    fAxes["zdcZNAC"].set( 100, 0., 40e3, &fzdcZNAC );
     fAxes["zdcRecoSize"].set( 100, 0., 1., &fzdcRecoSize );
     fAxes["emcalRecoSize"].set( 100, 0., 1., &femcalRecoSize );
     fAxes["emcalTRU"].set( 100, 0., 1., &femcalTRU );
@@ -358,41 +383,41 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nESDFriendSize"].set( 100, 0., 1., &fnESDFriendSize );
     fAxes["nFlatESDSize"].set( 100, 0., 1., &fnFlatESDSize );
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
-    fAxes["nHLTInSize"].set( 100, 0., 200000000., &fnHLTInSize );
-    fAxes["nHLTOutSize"].set( 100, 0., 70000000., &fnHLTOutSize );
+    fAxes["nHLTInSize"].set( 100, 0., 200e6, &fnHLTInSize );
+    fAxes["nHLTOutSize"].set( 100, 0., 70e6, &fnHLTOutSize );
 
   }
   else
   {
     fAxes["nClustersSPD"].set( 100, 0., 500.,  &fnClustersSPD );
-    fAxes["rawSizeSPD"].set( 100, 0., 10000., &frawSizeSPD );
+    fAxes["rawSizeSPD"].set( 100, 0., 10e3, &frawSizeSPD );
     fAxes["nClustersSDD"].set( 100, 0., 500.,  &fnClustersSDD );
-    fAxes["rawSizeSDD"].set( 100, 0., 50000., &frawSizeSDD );
+    fAxes["rawSizeSDD"].set( 100, 0., 50e3, &frawSizeSDD );
     fAxes["nClustersSSD"].set( 100, 0., 600.,  &fnClustersSSD );
-    fAxes["rawSizeSSD"].set( 100, 0., 8000., &frawSizeSSD );
-    fAxes["nClustersITS"].set( 100, 0., 10000., &fnClustersITS );
-    fAxes["rawSizeITS"].set( 100, 0., 100000., &frawSizeITS );
-    fAxes["rawSizeVZERO"].set( 100, 0., 6000., &frawSizeVZERO );
-    fAxes["rawSizeEMCAL"].set( 100, 0., 100000., &frawSizeEMCAL );
-    fAxes["rawSizeZDC"].set( 100, 0., 10000., &frawSizeZDC );
-    fAxes["nClustersTPC"].set( 100, 0., 20000., &fnClustersTPC );
-    fAxes["rawSizeTPC"].set( 100, 0., 5000000., &frawSizeTPC );
+    fAxes["rawSizeSSD"].set( 100, 0., 8e3, &frawSizeSSD );
+    fAxes["nClustersITS"].set( 100, 0., 10e3, &fnClustersITS );
+    fAxes["rawSizeITS"].set( 100, 0., 100e3, &frawSizeITS );
+    fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
+    fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
+    fAxes["rawSizeZDC"].set( 100, 0., 10e3, &frawSizeZDC );
+    fAxes["nClustersTPC"].set( 100, 0., 20e3, &fnClustersTPC );
+    fAxes["rawSizeTPC"].set( 100, 0., 5e6, &frawSizeTPC );
     fAxes["hwcfSizeTPC"].set( 100, 0., 1., &fhwcfSizeTPC );
     fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
-    fAxes["clusterSizeTPC"].set( 100, 0., 6500000., &fclusterSizeTPC );
-    fAxes["compressedSizeTPC"].set( 100, 0., 1500000., &fcompressedSizeTPC );
+    fAxes["clusterSizeTPC"].set( 100, 0., 6500e3, &fclusterSizeTPC );
+    fAxes["compressedSizeTPC"].set( 100, 0., 1500e3, &fcompressedSizeTPC );
     fAxes["nITSSAPtracks"].set( 100, 0., 100., &fnITSSAPtracks );
-    fAxes["nTPCtracklets"].set( 100, 0., 1000., &fnTPCtracklets );
+    fAxes["nTPCtracklets"].set( 100, 0., 1e3, &fnTPCtracklets );
     fAxes["nTPCtracks"].set( 100, 0., 700., &fnTPCtracks );
     fAxes["nITSTracks"].set( 100, 0., 1., &fnITSTracks );
     fAxes["nITSOutTracks"].set( 100, 0., 1., &fnITSOutTracks );
-    fAxes["vZEROMultiplicity"].set( 100, 0., 40000., &fvZEROMultiplicity );
-    fAxes["vZEROTriggerChargeA"].set( 100, 0., 2000., &fvZEROTriggerChargeA );
-    fAxes["vZEROTriggerChargeC"].set( 100, 0., 2000., &fvZEROTriggerChargeC );
-    fAxes["vZEROTriggerChargeAC"].set( 100, 0., 4000., &fvZEROTriggerChargeAC );
+    fAxes["vZEROMultiplicity"].set( 100, 0., 40e3, &fvZEROMultiplicity );
+    fAxes["vZEROTriggerChargeA"].set( 100, 0., 2e3, &fvZEROTriggerChargeA );
+    fAxes["vZEROTriggerChargeC"].set( 100, 0., 2e3, &fvZEROTriggerChargeC );
+    fAxes["vZEROTriggerChargeAC"].set( 100, 0., 4e3, &fvZEROTriggerChargeAC );
     fAxes["zdcZNC"].set( 100, 0., 500., &fzdcZNC );
     fAxes["zdcZNA"].set( 100, 0., 500., &fzdcZNA );
-    fAxes["zdcZNAC"].set( 100, 0., 1000., &fzdcZNAC );
+    fAxes["zdcZNAC"].set( 100, 0., 1e3, &fzdcZNAC );
     fAxes["zdcRecoSize"].set( 100, 0., 1., &fzdcRecoSize );
     fAxes["emcalRecoSize"].set( 100, 0., 1., &femcalRecoSize );
     fAxes["emcalTRU"].set( 100, 0., 1., &femcalTRU );
@@ -404,8 +429,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nESDFriendSize"].set( 100, 0., 1., &fnESDFriendSize );
     fAxes["nFlatESDSize"].set( 100, 0., 1., &fnFlatESDSize );
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
-    fAxes["nHLTInSize"].set( 100, 0., 6000000., &fnHLTInSize );
-    fAxes["nHLTOutSize"].set( 100, 0., 2000000., &fnHLTOutSize );
+    fAxes["nHLTInSize"].set( 100, 0., 6e6, &fnHLTInSize );
+    fAxes["nHLTOutSize"].set( 100, 0., 2e6, &fnHLTOutSize );
   }
 
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
@@ -493,6 +518,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   if (fHistograms.size()>100)
   {
     HLTWarning("ignoring hist %s, too many histograms", histName.c_str());
+    return;
   }
 
   axisStruct x = fAxes[xname];
@@ -691,6 +717,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       char* configCharArr = reinterpret_cast<char*>(iter->fPtr);
       string configString;
       configString.assign(configCharArr,iter->fSize);
+      HLTImportant("reconfiguring with: %s", configString.c_str());
       Configure(configString.c_str());
     }
 
@@ -895,7 +922,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   compressionRatioFull = compressedSizeTPC > 0 ? ((float) rawSizeTPC / (float) compressedSizeTPC) : 0.f;
 
   nHLTInSize = rawSizeSPD + rawSizeSSD + rawSizeSDD + rawSizeTPC + rawSizeVZERO + rawSizeEMCAL + rawSizeZDC;
-  nHLTOutSize = nESDSize + nESDFriendSize + nFlatESDSize + nFlatESDFriendSize + compressedSizeTPC;
+  nHLTOutSize = nESDSize + compressedSizeTPC;
   hltRatio = nHLTInSize > 0 ? ((float) nHLTOutSize / (float) nHLTInSize) : 0.f;
 
   //convert the numbers fo floats for histograms
@@ -949,7 +976,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fPrintStats && (fPrintStats == 2 || pushed_something) && nPrinted++ % fPrintDownscale == 0) //Don't print this for every event if we use a pushback period
   {
     HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx (%'d)"
-      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %d / %d (%d / %d)",
+      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)",
       nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, compressedSizeTPC,
       nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize);
   }

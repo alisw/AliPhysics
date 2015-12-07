@@ -32,7 +32,9 @@ struct axisStruct {
   double high;
   double* value;
   std::map<std::string,bool> histograms;
-  axisStruct() : bins(1), low(0.), high(1.), value(NULL) {}
+  axisStruct() : bins(1), low(0.), high(1.), value(NULL), histograms() {}
+  axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms) {}
+  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; histograms=s.histograms; return *this;}
   void set( int b, double l, double h, double* v )
   { bins=b; low=l; high=h; value=v; }
 };
@@ -44,7 +46,9 @@ struct histStruct {
   string trigger; //trigger name
   string config; //full config string
   int Fill();
-  histStruct() : hist(NULL), x(), y(), trigger() {}
+  histStruct() : hist(NULL), x(), y(), trigger(), config() {}
+  histStruct( const histStruct& s) : hist(s.hist), x(s.x), y(s.y), trigger(s.trigger), config(s.config) {}
+  histStruct& operator=(const histStruct& s) {hist=s.hist; x=s.x; y=s.y; trigger=s.trigger; config=s.config; return *this;}
 };
 
 class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
@@ -83,6 +87,9 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
   AliHLTGlobalPromptRecoQAComponent(const AliHLTGlobalPromptRecoQAComponent&);
   /** assignment operator prohibited */
   AliHLTGlobalPromptRecoQAComponent& operator=(const AliHLTGlobalPromptRecoQAComponent&);
+
+  //destroy all histograms
+  int Reset(bool resetDownstream=false);
 
   /**
    * (Re)Configure from the CDB
