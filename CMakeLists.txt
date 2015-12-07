@@ -198,13 +198,16 @@ else()
 
 endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
 
-# enable testing
+# Test library loading. Best output with:
+# ctest --output-on-failure
 enable_testing()
-
-# check for usable ROOT
-add_test(ROOT root -l -b -q)
-
-# check loading of libraries
-foreach(lib ${ALILIBSTESTED})
-  add_test(${lib} root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/Tools/macros/LoadLib.C (\"lib${lib}\")" )
+foreach(TEST_LIB ${ALILIBSTESTED})
+  add_test(${TEST_LIB}
+    env
+    LD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH}"
+    DYLD_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:$ENV{DYLD_LIBRARY_PATH}"
+    PATH="${ROOTSYS}/bin:$ENV{PATH}"
+    ALICE_ROOT="${ALIROOT}"
+    ALICE_PHYSICS="${CMAKE_INSTALL_PREFIX}"
+    root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/Tools/macros/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()
