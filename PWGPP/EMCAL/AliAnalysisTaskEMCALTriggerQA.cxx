@@ -103,9 +103,7 @@ fMapTrigL0L1G(),           fMapTrigL0L1J(),
 fMapTrigL1G  (),           fMapTrigL1G2 (),
 fMapTrigL1J  (),           fMapTrigL1J2 ()
 {
-  InitHistogramArrays();
-  
-  DefineOutput(1, TList::Class());
+  InitHistogramArrays();  
 }
 
 //______________________________________________________________________________
