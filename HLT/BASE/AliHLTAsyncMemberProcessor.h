@@ -18,6 +18,7 @@
 //as callback paramters. Hence, the class instance (usually 'this') must be passed first.
 
 #include "AliHLTAsyncProcessor.h"
+#include "AliHLTAsyncProcessorBackend.h"
 
 template <class T>
 class AliHLTAsyncMemberProcessor : public AliHLTAsyncProcessor
@@ -28,39 +29,78 @@ public:
 
 	int QueueAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data)
 	{
-		AliHLTAsyncMemberProcessorContainer* tmp = new AliHLTAsyncMemberProcessorContainer(obj, function, data);
+		AliHLTAsyncMemberProcessorContainer* tmp = GetContainer();
+		if (tmp == NULL) return(1);
+		tmp->Set(obj, function, data);
 		int retVal = QueueAsyncTask(&QueueAsyncMemberTaskHelper, tmp);
-		if (retVal) delete tmp;
+		if (retVal) FreeContainer(tmp);
 		return (retVal);
 	}
 
 	void* InitializeAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data)
 	{
-		AliHLTAsyncMemberProcessorContainer* tmp = new AliHLTAsyncMemberProcessorContainer(obj, function, data);
+		AliHLTAsyncMemberProcessorContainer* tmp = GetContainer();
+		if (tmp == NULL) return(NULL);
+		tmp->Set(obj, function, data);
 		void* retVal = InitializeAsyncTask(&QueueAsyncMemberTaskHelper, tmp);
-		if (retVal == NULL) delete tmp;
+		if (retVal == NULL) FreeContainer(tmp);
 		return (retVal);
 	}
 
 private:
 	AliHLTAsyncMemberProcessor(const AliHLTAsyncMemberProcessor&);
 	AliHLTAsyncMemberProcessor& operator=(const AliHLTAsyncMemberProcessor&);
-
+	
 	struct AliHLTAsyncMemberProcessorContainer
 	{
-		AliHLTAsyncMemberProcessorContainer(T* obj, void* (T::*function)(void*), void* data) : fObj(obj), fFunction(function), fData(data) {}
+		void Set(T* obj, void* (T::*function)(void*), void* data) {fObj = obj; fFunction = function; fData = data; fUsed = true;}
 		T* fObj;
 		void* (T::*fFunction)(void*);
 		void* fData;
+		bool fUsed;
+		bool fStaticallyAllocated;
 	};
+
+	AliHLTAsyncMemberProcessorContainer* GetContainer()
+	{
+		AliHLTAsyncMemberProcessorContainer* container;
+		if (fMe->fQueueDepth == 0)
+		{
+			container = new AliHLTAsyncMemberProcessorContainer;
+			container->fStaticallyAllocated = false;
+			return(new AliHLTAsyncMemberProcessorContainer);
+		}
+		container = (AliHLTAsyncMemberProcessorContainer*) fMe->fChildBufferSpace;
+		fMe->fBackend->LockMutex(5);
+		for (int i = 0;i <= fMe->fQueueDepth;i++)
+		{
+			if (!container[i].fUsed)
+			{
+				container[i].fUsed = true;
+				container[i].fStaticallyAllocated = true;
+				fMe->fBackend->UnlockMutex(5);
+				return(&container[i]);
+			}
+		}
+		fMe->fBackend->UnlockMutex(5);
+		return(NULL);
+	}
+	
+	static void FreeContainer(AliHLTAsyncMemberProcessorContainer* ptr)
+	{
+		if (!ptr->fStaticallyAllocated) delete ptr;
+		else ptr->fUsed = false;
+	}
 
 	static void* QueueAsyncMemberTaskHelper(void* data)
 	{
 		AliHLTAsyncMemberProcessorContainer *tmpData = (AliHLTAsyncMemberProcessorContainer*) data;
 		AliHLTAsyncMemberProcessorContainer tmpDataCopy = *tmpData;
-		delete tmpData;
+		FreeContainer(tmpData);
 		return((tmpDataCopy.fObj->*tmpDataCopy.fFunction)(tmpDataCopy.fData));
 	}
+	
+	virtual size_t ChildSharedProcessBufferSize() {return sizeof(AliHLTAsyncMemberProcessorContainer) * (fMe->fQueueDepth + 1);}
 };
 
 #endif
