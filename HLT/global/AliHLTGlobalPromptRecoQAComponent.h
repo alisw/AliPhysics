@@ -31,6 +31,7 @@ struct axisStruct {
   double low;
   double high;
   double* value;
+  std::map<std::string,bool> histograms;
   axisStruct() : bins(1), low(0.), high(1.), value(NULL) {}
   void set( int b, double l, double h, double* v )
   { bins=b; low=l; high=h; value=v; }
@@ -41,6 +42,7 @@ struct histStruct {
   axisStruct x; //x data
   axisStruct y; //y data
   string trigger; //trigger name
+  string config; //full config string
   int Fill();
   histStruct() : hist(NULL), x(), y(), trigger() {}
 };
@@ -97,7 +99,7 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
   
   void NewAxis(string config);
   void NewAxis(string name, int bins, float low, float high);
-  void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname );
+  void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
   void NewHistogram(std::string histConfig);
   int FillHistograms();
 

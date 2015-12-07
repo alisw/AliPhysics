@@ -462,7 +462,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
   }
   if (tokens.size()==5)
   {
-    NewHistogram(tokens[0],tokens[1],tokens[2],tokens[3],tokens[4]);
+    NewHistogram(tokens[0],tokens[1],tokens[2],tokens[3],tokens[4], histConfig);
   }
   else
   {
@@ -472,9 +472,9 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
 
 }
 
-void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string histName, string histTitle, string xname, string yname )
+void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config )
 {
-  //check it we are not duplicating a histogram
+  //some sanity checks
   if (histTitle.size()==0)
   {
     HLTWarning("histogram title cannot be empty!");
@@ -509,6 +509,10 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   hist.x = x;
   hist.y = y;
   hist.trigger = trigName;
+  hist.config=config;
+  //register which axes we're using
+  fAxes[xname].histograms[histName]=true;
+  fAxes[yname].histograms[histName]=true;
 }
 
 void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
@@ -550,6 +554,11 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low
   fAxes[name].bins=bins;
   fAxes[name].low=low;
   fAxes[name].high=high;
+  //reinitialize the histograms that use this axis
+  for (std::map<std::string,bool>::iterator i=fAxes[name].histograms.begin(); i!=fAxes[name].histograms.end(); ++i)
+  {
+    NewHistogram(fHistograms[i->first].config);
+  }
 }
 
 int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
