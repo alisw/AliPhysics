@@ -321,11 +321,11 @@ int AliHLTTPCDataCompressionMonitorComponent::Publish(int mode)
   TObjArray* pArray=mode==kPublishArray?(new TObjArray):NULL;
   TList* pList=mode==kPublishList?(new TList):NULL;
   if (mode==kPublishSeparate) {
-    if (fHistoHWCFDataSize)        PushBack(fHistoHWCFDataSize       , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
-    if (fHistoHWCFReductionFactor) PushBack(fHistoHWCFReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
-    if (fHistoNofClusters)         PushBack(fHistoNofClusters        , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
-    if (fHistoNofClustersReductionFactor) PushBack(fHistoNofClustersReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
-    if (fHistoTotalReductionFactor) PushBack(fHistoTotalReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoHWCFDataSize && fHistoHWCFDataSize->GetEntries())        PushBack(fHistoHWCFDataSize       , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoHWCFReductionFactor && fHistoHWCFReductionFactor->GetEntries()) PushBack(fHistoHWCFReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoNofClusters && fHistoNofClusters->GetEntries())         PushBack(fHistoNofClusters        , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoNofClustersReductionFactor && fHistoNofClusters->GetEntries()) PushBack(fHistoNofClustersReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoTotalReductionFactor && fHistoNofClusters->GetEntries()) PushBack(fHistoTotalReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
   } else if (pList) {
     if (fHistoHWCFDataSize)        pList->Add(fHistoHWCFDataSize->Clone());
     if (fHistoHWCFReductionFactor) pList->Add(fHistoHWCFReductionFactor->Clone());
@@ -371,7 +371,8 @@ int AliHLTTPCDataCompressionMonitorComponent::Publish(int mode)
 	    }
 	    ///
 	    if (mode==kPublishSeparate) {
-	      iResult=PushBack(histograms->At(i), kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+        if (histograms->At(i) && ((TH1*)histograms->At(i))->GetEntries())
+          iResult=PushBack(histograms->At(i), kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
 	    } else if (pList) {
 	      pList->Add(histograms->At(i)->Clone());
 	    } else if (pArray) {
@@ -380,7 +381,8 @@ int AliHLTTPCDataCompressionMonitorComponent::Publish(int mode)
 	  }
 	  for (int i=0; i<derivedHistos->GetEntriesFast() && iResult>=0; i++) {
 	    if (mode==kPublishSeparate) {
-	      iResult=PushBack(derivedHistos->At(i), kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+        if (derivedHistos->At(i) && ((TH1*)derivedHistos->At(i))->GetEntries())
+          iResult=PushBack(derivedHistos->At(i), kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
 	    } else if (pList) {
 	      pList->Add(derivedHistos->At(i)->Clone());
 	    } else if (pArray) {
