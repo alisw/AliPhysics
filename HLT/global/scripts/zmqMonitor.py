@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import zmq,sys
 import signal
+import re
 
 def Exit_gracefully(signal, frame):
   context.destroy()
@@ -75,38 +76,40 @@ elif endpoint[0]=='@':
 
 endless=True
 if mode=="REQ" or mode=="PUSH" or mode=="PUB":
-    endless=False
+  endless=False
+  socket.send(requestHeader,zmq.SNDMORE)
+  if len(requestHeader1)> 0:
+    socket.send(requestBody,zmq.SNDMORE)
+    socket.send(requestHeader1,zmq.SNDMORE)
+    socket.send(requestBody1)
+    print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
+  else:
+    socket.send(requestBody)
+    print("sent: "+requestHeader+" "+requestBody)
+
+while True:
+  if mode=="SUB" or mode=="PULL" or mode=="REP" or mode=="REQ":
+    msg = socket.recv_multipart();
+    print "_________________________"
+    i=0;
+    for message in msg:
+      if i==0:
+        print "topic: "+str(message)+" msgsize: "+str(sys.getsizeof(message))
+        i=1
+      elif i==1:
+        dirty = str(message)[0:80]
+        clean = re.sub('[^\s!-~]', '.', dirty)
+        print clean
+        i=0
+  if mode=="REP":
     socket.send(requestHeader,zmq.SNDMORE)
-    if len(requestHeader1)> 0:
+    if len(requestHeader1) > 0:
       socket.send(requestBody,zmq.SNDMORE)
       socket.send(requestHeader1,zmq.SNDMORE)
       socket.send(requestBody1)
       print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
     else:
       socket.send(requestBody)
-      print("sent: "+requestHeader+" "+requestBody)
-
-while True:
-    if mode=="SUB" or mode=="PULL" or mode=="REP" or mode=="REQ":
-        msg = socket.recv_multipart();
-        print "_________________________"
-        i=0;
-        for message in msg:
-            if i==0:
-                print "topic: "+str(message)
-                i=1
-            elif i==1:
-                print "  messagesize: "+str(sys.getsizeof(message))
-                i=0
-    if mode=="REP":
-      socket.send(requestHeader,zmq.SNDMORE)
-      if len(requestHeader1) > 0:
-        socket.send(requestBody,zmq.SNDMORE)
-        socket.send(requestHeader1,zmq.SNDMORE)
-        socket.send(requestBody1)
-        print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
-      else:
-        socket.send(requestBody)
-        print "  sent back: "+requestHeader+" "+requestBody
-    if not endless:
-        break
+      print "  sent back: "+requestHeader+" "+requestBody
+  if not endless:
+      break
