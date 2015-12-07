@@ -37,6 +37,7 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessor() : AliHLTLogging(), fMe(new AliHLTAs
 	fMe->fAsyncProcess = 0;
 	fMe->fChildBufferSpace = NULL;
 	fMe->fmmapSize = 0;
+	fMe->fRequestPush = false;
 }
 
 AliHLTAsyncProcessor::~AliHLTAsyncProcessor()
@@ -182,6 +183,7 @@ int AliHLTAsyncProcessor::Deinitialize()
 	fMe->fAsyncProcess = 0;
 	fMe->fChildBufferSpace = NULL;
 	fMe->fmmapSize = 0;
+	fMe->fRequestPush = false;
 
 	HLTInfo("Deinitialization of ASYNC Processor done");
 	return(0);

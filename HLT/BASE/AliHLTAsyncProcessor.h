@@ -99,6 +99,8 @@ public:
 	AliHLTAsyncProcessorBuffer* SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls);
 	
 	size_t BufferSize() {return(fMe->fBufferSize);}
+	void RequestPush() {fMe->fRequestPush = true;}
+	bool PushRequested() {bool tmp = fMe->fRequestPush;fMe->fRequestPush = false;return tmp;}
 
 private:
 	AliHLTAsyncProcessor(const AliHLTAsyncProcessor&);
@@ -145,6 +147,8 @@ protected:
 		
 		int fAsyncProcess;
 		void* fChildBufferSpace;
+		
+		bool fRequestPush;
 	};
 	
 	int LockMutex(int i);
