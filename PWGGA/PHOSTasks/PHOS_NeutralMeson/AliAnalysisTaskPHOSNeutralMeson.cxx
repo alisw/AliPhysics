@@ -1107,6 +1107,13 @@ void AliAnalysisTaskPHOSNeutralMeson::UserExec(Option_t *) {
 
 	Int_t runNumber = 0;
 	runNumber = fAnyEv->GetRunNumber();
+
+	if (fPHOSGeo==0) {
+
+
+	
+	}
+
 	if(fEventCounter == 0) { // Only done for the first Event
 		AliOADBContainer geomContainer("phosGeo");
 		geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");

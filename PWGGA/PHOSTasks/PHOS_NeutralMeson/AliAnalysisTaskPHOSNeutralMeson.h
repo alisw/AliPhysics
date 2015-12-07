@@ -471,7 +471,7 @@ class AliAnalysisTaskPHOSNeutralMeson : public AliAnalysisTaskSE {
 		TNtuple			*fNTupelClusterEnergyMod2; 	//! NTuple to make modulewise calibration 
 		TNtuple			*fNTupelClusterEnergyMod3;		//! NTuple to make modulewise calibration 
 
-		AliPHOSGeometry	*fPHOSGeo;   //PHOS geometry
+		AliPHOSGeometry	*fPHOSGeo;   //!PHOS geometry
 		AliPHOSCalibData	*fPHOSCalibData; //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
 		AliAnalysisUtils	*fUtils;     //utils for zvtxcut
 
