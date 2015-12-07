@@ -55,6 +55,9 @@ class AliVAODHeader : public AliVHeader {
   virtual void     SetEventType(UInt_t evttype)         = 0;
   virtual UInt_t   GetEventType()           const       = 0;
   virtual void     SetTriggerMask(ULong64_t trigMsk)    = 0;
+  virtual void     SetTriggerMaskNext50(ULong64_t trigMsk) = 0;
+  virtual ULong64_t GetTriggerMask()        const       = 0;
+  virtual ULong64_t GetTriggerMaskNext50()  const       = 0;
   virtual void     SetTriggerCluster(UChar_t trigClus)  = 0;
   virtual void     SetFiredTriggerClasses(TString trig) = 0;
   virtual TString  GetFiredTriggerClasses() const       = 0;

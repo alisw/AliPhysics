@@ -23,6 +23,7 @@ public:
   virtual UInt_t    GetOrbitNumber()        const { NotImplemented();return 0;}
   virtual UInt_t    GetPeriodNumber()       const { NotImplemented();return 0;}
   virtual ULong64_t GetTriggerMask()        const { NotImplemented();return 0;}
+  virtual ULong64_t GetTriggerMaskNext50()  const { NotImplemented();return 0;}
   virtual UChar_t   GetTriggerCluster()     const { NotImplemented();return 0;}
   virtual UInt_t    GetEventType()          const { NotImplemented();return 0;}
 
@@ -47,6 +48,7 @@ public:
   virtual void     SetBunchCrossNumber(UShort_t /* nBx */)    {NotImplemented(); };
   virtual void     SetEventType(UInt_t /* evttype */)         {NotImplemented(); };
   virtual void     SetTriggerMask(ULong64_t /* trigMsk */)    {NotImplemented(); };
+  virtual void     SetTriggerMaskNext50(ULong64_t /* trigMsk */) {NotImplemented(); };
   virtual void     SetTriggerCluster(UChar_t /* trigClus */)  {NotImplemented(); };
   virtual void     SetFiredTriggerClasses(TString /* trig */) {NotImplemented(); };
   virtual TString  GetFiredTriggerClasses() const             {NotImplemented(); return "";};
