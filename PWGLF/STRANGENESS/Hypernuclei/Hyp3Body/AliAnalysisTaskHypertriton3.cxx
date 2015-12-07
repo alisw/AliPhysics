@@ -89,6 +89,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCentrality(0x0),
   fCentralityPercentile(0x0),
   fTriggerConfig(1),
+  fRequestTPCSigmas(3),
+  fRequestTOFSigmas(3),
   fSideBand(kFALSE),
   fDCAPiPVmin(0.1),
   fDCAzPPVmax(999.),
@@ -129,12 +131,12 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistTPCprosignal(0x0),
   fHistTPCpionsignal(0x0),
   fHistTOFsignal(0x0),
-  //fHistTOFdeusignal(0x0),
-  //fHistTOFprosignal(0x0),
+  fHistTOFdeusignal(0x0),
+  fHistTOFprosignal(0x0),
   //fHistTOFantideusignal(0x0),
   //fHistTOFantiprosignal(0x0),
-  fHistTOFdeumass(0x0),
-  fHistTOFpromass(0x0),
+  //fHistTOFdeumass(0x0),
+  //fHistTOFpromass(0x0),
   fHistpionTPCcls(0x0),
   fHistpTpion(0x0),
   //fHistCorrDCAdprimary(0x0),
@@ -367,6 +369,7 @@ Double_t AliAnalysisTaskHypertriton3::GetDCAcut(Int_t part, Double_t dca)const{
   return -1;
 }
 
+
 //________________________________________________________________________
 void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs)const{
 
@@ -399,6 +402,50 @@ void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp,
   fVtx2->SetID(ESDvtxs->GetID());
   fVtx2->SetType(AliAODVertex::kUndef);
   
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskHypertriton3::HasTOF(AliESDtrack *trk, float &beta_tof){
+    // TOF signal
+    Bool_t TOFon = kFALSE;
+    Bool_t isTOFout = trk->GetStatus() & AliESDtrack::kTOFout;
+    Bool_t isTOFtime = trk->GetStatus() & AliESDtrack::kTIME;
+    const float TOFlength = trk->GetIntegratedLength();
+    Bool_t isTOFreached = Bool_t(isTOFout & isTOFtime) && TOFlength > 350.;
+    if(!isTOFreached){
+        TOFon = kFALSE;
+    }
+    else{
+        const float time = trk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
+        
+        if (time < 0 || time < TOFlength/2.99792457999999984e-02) {
+            TOFon = kFALSE;
+        } else {
+            beta_tof = TOFlength / (2.99792457999999984e-02 * time);
+            //const float gamma = 1/TMath::Sqrt(1-beta*beta);
+            //const float mass = p/TMath::Sqrt(gamma*gamma - 1);
+            TOFon = kTRUE;
+        }
+    }
+    return TOFon;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskHypertriton3::PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin){
+    //PID selection
+    bool tofPID = kTRUE, tpcPID = kTRUE;
+    //TPC-pid
+    float const nsigmaTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::EParticleType (specie)));
+    if(nsigmaTPC>fRequestTPCSigmas) tpcPID = kFALSE;
+    else tpcPID = kTRUE;
+    //TOF-pid
+    if(isTOFin){
+        float const nsigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::EParticleType (specie)));
+        if(nsigmaTOF>fRequestTOFSigmas) tofPID = kFALSE;
+        else tofPID = kTRUE;
+    }
+    
+    return tpcPID && tofPID;
 }
 
 //________________________________________________________________________
@@ -466,17 +513,17 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   
   fHistTOFsignal = new TH2F("fHistTOFsignal","TOF signal; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  //fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs TPCmom - deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs TPCmom - deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  //fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs TPCmom - proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs TPCmom - proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
   //fHistTOFantideusignal = new TH2F("fHistTOFantideusignal","#beta vs TPCmom - anti-deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
   //fHistTOFantiprosignal = new TH2F("fHistTOFantiprosignal","#beta vs TPCmom - anti-proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
   
-  fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
+  //fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
   
-  fHistTOFpromass = new TH1F("fHistTOFpromass","proton mass distribution - TOF; mass (GeV/c^{2}); entries",200,0.5,1.5);
+  //fHistTOFpromass = new TH1F("fHistTOFpromass","proton mass distribution - TOF; mass (GeV/c^{2}); entries",200,0.5,1.5);
 
 
   fHistpionTPCcls = new TH1F("fHistpionTPCcls","#pi^{-} TPC clusters; TPC clusters; entries",201,-0.5,200.5);
@@ -629,12 +676,12 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistTPCprosignal);
   fOutput->Add(fHistTPCpionsignal);
   fOutput->Add(fHistTOFsignal);
-  //fOutput->Add(fHistTOFdeusignal);
-  //fOutput->Add(fHistTOFprosignal);
+  fOutput->Add(fHistTOFdeusignal);
+  fOutput->Add(fHistTOFprosignal);
   //fOutput->Add(fHistTOFantideusignal);
   //fOutput->Add(fHistTOFantiprosignal);
-  fOutput->Add(fHistTOFdeumass);
-  fOutput->Add(fHistTOFpromass);
+  //fOutput->Add(fHistTOFdeumass);
+  //fOutput->Add(fHistTOFpromass);
   fOutput->Add(fHistpionTPCcls);
   fOutput->Add(fHistpTpion);
   //fOutput->Add(fHistCorrDCAdprimary);
@@ -853,10 +900,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   //==========Define variables==========//
   //===PID loop===//
+  Bool_t useTOF = kFALSE;
   Int_t ntracks,label, labelM = 0 ;
   Double_t chi2PerClusterTPC, nClustersTPC=0.;
-  Double_t p, pOverZ = 0.;
-  Float_t mass, beta, time, time0, gamma = 0.;
+  Double_t p, pOverZ, pT = 0.;
+  Float_t beta = 0.;
   AliESDtrack *track = 0x0;
 
 
@@ -1032,7 +1080,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   for(Int_t i=0; i < ntracks; i++) {
     track = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(i));
-    
+    beta = 0.;
+    useTOF = kFALSE;
     // Chi2/TPCcls
     nClustersTPC = track->GetTPCclusters(0);
     chi2PerClusterTPC = track->GetTPCchi2()/nClustersTPC;
@@ -1048,27 +1097,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     
     p = track->GetInnerParam()->GetP(); //track->GetTPCmomentum()
     pOverZ = p*track->GetSign();
+    pT = track->Pt();
     //if(p<0.2) continue;
     
     fHistTPCpid->Fill(pOverZ, track->GetTPCsignal());
+    useTOF = HasTOF(track, beta);
+    if(useTOF)fHistTOFsignal->Fill(p,beta);
 
-    // TOF signal
-    mass = 0.;
-    beta = 0.;  
- 
-      if(track->GetIntegratedLength() > 350.){
-	time0 = fPIDResponse->GetTOFResponse().GetStartTime(track->P());
-	time = track->GetTOFsignal() - time0;
-
-	if(time > 0){
-	  beta = (track->GetIntegratedLength()) / (2.99792457999999984e-02 * time);
-	  gamma = 1/TMath::Sqrt(1-beta*beta);
-	  mass = p/TMath::Sqrt(gamma*gamma - 1);
-
-	  fHistTOFsignal->Fill(p,beta);
-	} // time > 0	
-      } // track->GetIntergratedLength > 350
-      
     //Filling PID histo
     label = track->GetLabel();
     
@@ -1078,7 +1113,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFdeusignal->Fill(p,beta);
-	  fHistTOFdeumass->Fill(mass);
+	  //fHistTOFdeumass->Fill(mass);
 	}
 	cdeuteron[nDeuTPC++] = i;
 	//cdeuteron.push_back(track);
@@ -1088,7 +1123,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
 	if(track->GetIntegratedLength() > 350.){
 	    //fHistTOFprosignal->Fill(p,beta);
-	  fHistTOFpromass->Fill(mass);
+	  //fHistTOFpromass->Fill(mass);
 	  }
 	cproton[nProTPC++] = i;
 	//cproton.push_back(track);
@@ -1100,31 +1135,36 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }
     } // end of MC PID
     else {
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 3) { //deuteron
-	fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
-	if(track->GetIntegratedLength() > 350.){
-	  //fHistTOFdeusignal->Fill(p,beta);
-	  fHistTOFdeumass->Fill(mass);
-	  //cmassd.push_back(mass);
-	}
-	cdeuteron[nDeuTPC++] = i;
+    if(pT > 7) continue;
+    if(pT >= 1){
+        if(PassPIDSelection(track, AliPID::kDeuteron, useTOF)) { //deuteron
+          fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
+          if(useTOF){
+              fHistTOFdeusignal->Fill(p,beta);
+              //fHistTOFdeumass->Fill(mass);
+              //cmassd.push_back(mass);
+          }
+         cdeuteron[nDeuTPC++] = i;
+       }
+     }
+    if(pT >= 0.4 && pT <= 4.){
+      if(PassPIDSelection(track,AliPID::kProton, useTOF)) { // proton
+          
+          fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
+          if(useTOF){
+              fHistTOFprosignal->Fill(p,beta);
+              //fHistTOFpromass->Fill(mass);
+              //cmassp.push_back(mass);
+            }
+          cproton[nProTPC++] = i;
       }
-      
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 3) { // proton
-	fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
-	if(track->GetIntegratedLength() > 350.){
-	  //fHistTOFprosignal->Fill(p,beta);
-	  fHistTOFpromass->Fill(mass);
-	  //cmassp.push_back(mass);
-	}
-	cproton[nProTPC++] = i;
-      }
-      
+    }
+      if(!fESDtrackCutsV0->AcceptTrack(track)) continue;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 3) { //pion^+
-	fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
-	cpion[nPioTPC++] = i;
+          fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
+          cpion[nPioTPC++] = i;
       }
-    } 
+    }
   } // end of PID loop
   
   cdeuteron.Set(nDeuTPC);
@@ -1221,7 +1261,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
 	fHistpTpion->Fill(trackNPi->Pt());
 
-	if(!fESDtrackCutsV0->AcceptTrack(trackNPi)) continue;
+	
 
 	
 
