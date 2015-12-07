@@ -462,7 +462,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   else if(year >  2013) cu->SetNumberOfSuperModulesUsed(20);
   else                  cu->SetNumberOfSuperModulesUsed(10);
   
-  if(kAnaPi0.Contains("_PHOS_")) 
+  if(kAnaPi0.Contains("_PHOS_") && !kAnaPi0.Contains("EMCAL") && !kAnaPi0.Contains("Both")) 
   {
      if(year <= 2013) cu->SetNumberOfSuperModulesUsed(3); 
      else             cu->SetNumberOfSuperModulesUsed(4); 
@@ -739,7 +739,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   AliHistogramRanges* histoRanges = ana->GetHistogramRanges();
   
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
-  
+    
   if(calorimeter=="EMCAL")
   {
     if(year==2010)
@@ -837,6 +837,9 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
+  
+  if(col.Contains("PbPb")) ana->SwitchOnFillHighMultiplicityHistograms();
+  else                     ana->SwitchOffFillHighMultiplicityHistograms();
   
   //Set here generator name, default pythia
   //ana->GetMCAnalysisUtils()->SetMCGenerator("");
