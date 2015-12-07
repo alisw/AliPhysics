@@ -29,6 +29,8 @@ class AliEMCALRecoUtils;
 class AliAnalysisTaskEMCALTriggerQA : public AliAnalysisTaskSE 
 {
 public:
+
+  AliAnalysisTaskEMCALTriggerQA();                   // default constructor
   
   AliAnalysisTaskEMCALTriggerQA(const char *name);   // named constructor
   
