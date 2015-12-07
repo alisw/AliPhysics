@@ -68,6 +68,7 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
     //Filter Bit 6 - 3
     if(TString(cutmask).CompareTo("BIT6")==0) fCutMask = 3;
   }
+  void SetTree(bool istree){fisTree=istree;}
 protected:
   TList*  fOutput;                  //! list send on output slot 1
   TText*  fTextBox;                 //! text information
