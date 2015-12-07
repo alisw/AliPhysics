@@ -265,7 +265,7 @@ void AliJetEmbeddingTask::Run()
 Float_t AliJetEmbeddingTask::GetDownscalinigFactor(){
    
    if(fCount > fNevPerBin) {
-      Printf(Form("%d = fCount, Increasing fCurrentBin %d -> %d", fCount, fCurrentBin, fCurrentBin+1));
+      //Printf("%d = fCount, Increasing fCurrentBin %d -> %d", fCount, fCurrentBin, fCurrentBin+1);
       fCurrentBin++;
       fCount = 0;
       
@@ -273,7 +273,8 @@ Float_t AliJetEmbeddingTask::GetDownscalinigFactor(){
 
    if (fCurrentBin >= fNBins) {
       AliError(Form("Bin %d out of bound %d, set to fNBins - 1 = %d", fCurrentBin, fNBins, fNBins - 1));
-      fCurrentBin = fNBins - 1;
+      fCurrentBin = fNBins - fGoBack;
+      if (fCurrentBin < 0) fCurrentBin = fNBins - 1;
       fGoBack++;
    }
    return fDownscale[fCurrentBin];
