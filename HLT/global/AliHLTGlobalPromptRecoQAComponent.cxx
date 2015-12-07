@@ -425,9 +425,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistVZERO_SPDClusters,SPD Clusters vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nClustersSPD");
   NewHistogram(",fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
 
-  NewHistogram("MUON,fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
+  NewHistogram("MUFAST,fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
   NewHistogram("CINT7,fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
-  NewHistogram("MUON,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
+  NewHistogram("MUFAST,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
   NewHistogram("CINT7,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
 
   fpHWCFData = new AliHLTTPCHWCFData;
@@ -480,7 +480,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
     HLTWarning("histogram title cannot be empty!");
     return;
   }
-  if (histName.size()==0) histName=histTitle;
+  if (histName.empty()) histName=histTitle;
   if (!trigName.empty()) histName=histName+"_"+trigName;
   if (!trigName.empty()) histTitle=histTitle+" <"+trigName+">";
 
