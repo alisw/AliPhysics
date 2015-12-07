@@ -1591,6 +1591,14 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const char* dtID, 
   return PushBack(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
+int AliHLTComponent::PushBack(const std::string& pString, const AliHLTComponentDataType& dt, 
+	                      AliHLTUInt32_t spec, void* pHeader, int headerSize)
+{
+  int rc = 0;
+  rc = InsertOutputBlock(pString.c_str(), pString.size(), dt, spec, pHeader, headerSize);
+  return rc;
+}
+
 int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
 				       const void* pHeader, int iHeaderSize)
 {

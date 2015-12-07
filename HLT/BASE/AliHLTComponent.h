@@ -692,7 +692,7 @@ class AliHLTComponent : public AliHLTLogging {
    * If buffer is not NULL, caller provides a preallocated buffer and the size of it.
    */
   int SerializeObject(TObject* obj, void* &buffer, size_t &size);
-
+  
   /**
    * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
@@ -1335,6 +1335,24 @@ class AliHLTComponent : public AliHLTLogging {
    * @return neg. error code if failed
    */
   int Forward(const AliHLTComponentBlockData* pBlock=NULL);
+
+  /**
+   * Insert a string in the output
+   * If header is specified, it will be inserted before the root object,
+   * default is no header.
+   * The publishing can be downscaled by means of the -pushback-period
+   * parameter. This is especially useful for histograms which do not
+   * need to be sent for every event. At EOR data is always pushed.
+   * @param pString     pointer to string
+   * @param dt          data type of the object
+   * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param headerSize  size of Header
+   * @return neg. error code if failed 
+   */
+  int PushBack(const std::string& string, const AliHLTComponentDataType& dt, 
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec, 
+	       void* pHeader=NULL, int headerSize=0);
 
   /**
    * Insert an object into the output.
