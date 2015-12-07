@@ -2625,6 +2625,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       {
         AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
         
+        // Select photons within a pT range
+        if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
+        
         // Not sure why this line is here
         //if(fSameSM && GetModuleNumber(p1)!=module1) continue;
         
@@ -2638,6 +2641,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         for(Int_t i2 = 0; i2 < nPhot2; i2++)
         {
           AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
+          
+          // Select photons within a pT range
+          if ( p2->Pt() < GetMinPt() || p2->Pt()  > GetMaxPt() ) continue ;
           
           // Get kinematics of second cluster and calculate those of the pair
           fPhotonMom2.SetPxPyPzE(p2->Px(),p2->Py(),p2->Pz(),p2->E());
