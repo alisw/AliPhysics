@@ -42,6 +42,73 @@ ClassImp(AliAnalysisTaskEMCALTriggerQA) ;
 /// \endcond
 
 //______________________________________________________________________________
+/// Default Constructor. Init stuff.
+/// Needed by alien plugin.
+//______________________________________________________________________________
+AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() :
+AliAnalysisTaskSE(),
+fOutputList(0),            fRecoUtils(0x0),
+fGeoSet(0),                fGeometry(0),         fGeoName(""),
+fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
+fBitEGA(0),                fBitEJE(0),
+fEtaPhiEnMin(2.),
+fSTUTotal(0),              fTRUTotal(0),
+fV0Trigger(0),             fV0A(0),              fV0C(0),
+fFillV0SigHisto(0),        fFillCenHisto(0),     fFillClusAcceptHisto(0),
+fMCData(kFALSE),
+fFirstSM   (0),            fLastSM    (0),
+fCentEstimator("V0M"),
+fEventMB   (0),            
+fEventL0   (0),            fEventL0D  (0),
+fEventL1G  (0),            fEventL1GD (0),                      
+fEventL1G2 (0),            fEventL1G2D(0),
+fEventL1J  (0),            fEventL1JD (0),            
+fEventL1J2 (0),            fEventL1J2D(0),
+fEventCen  (0),            fEventSem  (0),
+fMomentum(),
+//Histograms
+fhNEvents(0),              fhFORAmp(0),
+fhFORAmpL1G(0),            fhFORAmpL1G2(0),
+fhFORAmpL1J(0),            fhFORAmpL1J2(0),
+fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
+fhL1Amp(0),                fhL1GAmp(0),          fhL1G2Amp(0),
+fhL1JAmp(0),               fhL1J2Amp(0),         fhL1FOREnergy(0),
+fhL0Patch(0),              fhL1GPatch(0),        fhL1G2Patch(0),
+fhL1GPatchNotFake(0),      fhL1GPatchFake(0),    fhL1GPatchNotAllFake(0),
+fhL1GPatchAllFake(0),      fhL1GPatchNotAllFakeMax(0),
+fhL1GPatchAllFakeMax(0),   fhL1GPatchNotAllFakeMaxE(0),
+fhL1GPatchAllFakeMaxE(0),  fhL1GPatchNotAllFakeE(0),
+fhL1GPatchAllFakeE(0),     fhL1GPatchFakeE(0),
+fhL1GPatchNotFakeE(0),     fhNPatchFake(0),      fhNPatchNotFake(0),
+fhL1JPatch(0),             fhL1J2Patch(0),
+fhFEESTU(0),               fhTRUSTU(0),          fhV0STU(0),
+fhGPMaxVV0TT(0),           fhJPMaxVV0TT(0),
+fhFORMeanAmp(0),           fhL0MeanAmp(0),       fhL1MeanAmp(0),
+fhL1GPatchMax(0),          fhL1G2PatchMax(0),
+fhL1JPatchMax(0),          fhL1J2PatchMax(0),
+//Histogram settings
+fNBinsSTUSignal  (300),    fMaxSTUSignal  (30000),
+fNBinsTRUSignal  (300),    fMaxTRUSignal  (30000),
+fNBinsV0Signal   (300),    fMaxV0Signal   (30000),
+fNBinsSTUFEERatio(300),    fMaxSTUFEERatio(100),
+fNBinsSTUTRURatio(300),    fMaxSTUTRURatio(100),
+fNBinsClusterE   (100),    fMaxClusterE   (50),
+fNBinsClusterPhi (250),    fMaxClusterPhi (5.71),  fMinClusterPhi (1.39),
+fNBinsClusterEta (96),     fMaxClusterEta (0.7),
+fMapCell     (),
+fMapCellL1G  (),           fMapCellL1G2 (),
+fMapCellL1J  (),           fMapCellL1J2 (),
+fMapTrigL0   (),           fMapTrigL1   (),
+fMapTrigL0L1G(),           fMapTrigL0L1J(),
+fMapTrigL1G  (),           fMapTrigL1G2 (),
+fMapTrigL1J  (),           fMapTrigL1J2 ()
+{
+  InitHistogramArrays();
+  
+  DefineOutput(1, TList::Class());
+}
+
+//______________________________________________________________________________
 /// Constructor. Init stuff.
 //______________________________________________________________________________
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) :
