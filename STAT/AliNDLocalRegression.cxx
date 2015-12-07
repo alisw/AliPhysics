@@ -764,6 +764,8 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	if (binIndexSide[iDim]<0) binIndexSide[iDim]=0;
 	if (binIndexSide[iDim]>his->GetAxis(iDim)->GetNbins())  binIndexSide[iDim]=his->GetAxis(iDim)->GetNbins();
 	Bool_t isConst=binIndexSide[iDim]>0 &&binIndexSide[iDim]<=his->GetAxis(iDim)->GetNbins() && (fLocalFitParam)->UncheckedAt(his->GetBin(binIndexSide))!=NULL; 
+	Int_t binSide=his->GetBin(binIndexSide);
+	if (binSide>=nBins ) binIndexSide[iDim]=binIndex[iDim];
 	if ((fLocalFitParam)->UncheckedAt(his->GetBin(binIndexSide))==NULL) binIndexSide[iDim]=binIndex[iDim];
 	if (isConst)  constCounter++;
 	Double_t localCenter=his->GetAxis(iDim)->GetBinCenter(binIndex[iDim]);
