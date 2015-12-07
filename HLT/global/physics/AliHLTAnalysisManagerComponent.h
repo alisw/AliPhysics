@@ -131,15 +131,16 @@ private:
    * ---------------------------------------------------------------------------------
    */
   
-  struct CalibManagerQueueData
+  struct AnalysisManagerQueueData
   {
+	  AnalysisManagerQueueData() : fEvent(NULL), fFriend(NULL), fRequestPush(false) {}
 	  AliVEvent* fEvent;
 	  AliVfriendEvent* fFriend;
-	  void* fBasePtr;
+	  bool fRequestPush;
   };
   
-  Int_t ReadInput(CalibManagerQueueData* eventData);
-  void CleanEventData(CalibManagerQueueData* eventData);
+  Int_t ReadInput(AnalysisManagerQueueData* eventData);
+  void CleanEventData(AnalysisManagerQueueData* eventData);
   void* AnalysisManagerInit(void*);
   void* AnalysisManagerExit(void*);
   void* AnalysisManagerDoEvent(void*);
@@ -162,12 +163,13 @@ private:
   TString fAddTaskMacro;
   Bool_t fWriteAnalysisToFile;
   Bool_t fEnableDebug; //enable debug output - sysinfo,debug streamer, other files
-  Bool_t fResetAfterPush; //reset the calibration after pushing for merging
+  Bool_t fResetAfterPush; //reset the AnalysisManager after pushing for merging
   Int_t fPushEventModulo; //Push every n-th event
   Int_t fNEvents;		//Number of events processed
   Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
   Int_t fQueueDepth;	//Depth of asynchronous Queue
   Int_t fAsyncProcess;	//Use an async process instead of an async thread
+  Bool_t fPushRequestOngoing; //Have we already requested a push? If so, wait until push before request again
   AliHLTAsyncMemberProcessor<AliHLTAnalysisManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
 
   ClassDef(AliHLTAnalysisManagerComponent, 1)

@@ -93,6 +93,7 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   fMinTracks(0),
   fQueueDepth(0),
   fAsyncProcess(0),
+  fPushRequestOngoing(kFALSE),
   fAsyncProcessor()
 {
   // an example component which implements the ALICE HLT processor
@@ -267,23 +268,23 @@ Int_t AliHLTAnalysisManagerComponent::DoDeinit() {
   return 0;
 }
 
-void AliHLTAnalysisManagerComponent::CleanEventData(CalibManagerQueueData* data)
+void AliHLTAnalysisManagerComponent::CleanEventData(AnalysisManagerQueueData* eventData)
 {
   if (fAsyncProcess)
   {
-    fAsyncProcessor.FreeBuffer(data->fBasePtr);
+    fAsyncProcessor.FreeBuffer(eventData);
   }
   else
   {
-    delete data->fEvent;
-    delete data->fFriend;
+    delete eventData->fEvent;
+    delete eventData->fFriend;
+    delete eventData;
   }
-  delete data;
 }
 
 void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
 {
-  CalibManagerQueueData* eventData = (CalibManagerQueueData*) tmpEventData;
+  AnalysisManagerQueueData* eventData = (AnalysisManagerQueueData*) tmpEventData;
   
   void* retVal = NULL;
 
@@ -312,12 +313,14 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
     }
   }
 
+  bool requestPush = eventData->fRequestPush;
   CleanEventData(eventData);
 
   //In AsyncMode, we copy the content to a temporary buffer an reset the Analysis Manager directly
   if (retVal && fQueueDepth)
   {
-    if (!CheckPushbackPeriod()) return(NULL);
+    //If we are an async process, we cannot access the pushback-period of the parent process, so we use this flag
+    if (!(fAsyncProcess ? requestPush : CheckPushbackPeriod())) return(NULL); 
 
     retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
     if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
@@ -349,25 +352,47 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     // -------------------
     AliVEvent* vEvent=NULL;
     AliVfriendEvent* vFriend=NULL;
-    CalibManagerQueueData* eventData = new CalibManagerQueueData;
+    AnalysisManagerQueueData* eventData;
+    if (fAsyncProcess)
+    {
+      eventData = (AnalysisManagerQueueData*) fAsyncProcessor.AllocateBuffer();
+    }
+    else
+    {
+      eventData = new AnalysisManagerQueueData;
+    }
+    if (eventData == NULL)
+    {
+      HLTError("Memory Allocation Error");
+      return(-ENOSPC);
+    }
     iResult = ReadInput(eventData);
-    if (iResult != 0) return(iResult);
-
-    if (!eventData->fEvent) return -1; //No buffer allocated, we can quit
+    if (iResult != 0 || !eventData->fEvent)
+    {
+      CleanEventData(eventData);
+      return(iResult);
+    }
 
     if (eventData->fEvent) {HLTInfo("----> event %p has %d tracks: \n", eventData->fEvent, eventData->fEvent->GetNumberOfTracks());}
-    if(eventData->fFriend) {HLTInfo("----> friend %p has %d tracks: \n", eventData->fFriend, eventData->fFriend->GetNumberOfTracks());}
+    if (eventData->fFriend) {HLTInfo("----> friend %p has %d tracks: \n", eventData->fFriend, eventData->fFriend->GetNumberOfTracks());}
 
     if (eventData->fEvent->GetNumberOfTracks() >= fMinTracks)
     {
       if (fMinTracks) HLTImportant("Event has %d tracks, running AnalysisManager", eventData->fEvent->GetNumberOfTracks());
-      fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent, eventData);
+      eventData->fRequestPush = CheckPushbackPeriod() && !fPushRequestOngoing;
+      if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent, eventData))
+      {
+        CleanEventData(eventData); //Could not queue this task, clean up
+      }
+      else if (eventData->fRequestPush)
+      {
+        fPushRequestOngoing = kTRUE;
+      }
     }
     else
     {
       CleanEventData(eventData); //Buffers have been allocated, clean up
     }
-    
   }
   
   if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
@@ -389,6 +414,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       {
         AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* ret = (AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer*) retVal;
 	int pushResult = PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+	fPushRequestOngoing = kFALSE;
 	if (pushResult)  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
 
 	fAsyncProcessor.FreeBuffer(ret);
@@ -437,7 +463,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadPreprocessorValues(const Char_t* /*mod
 }
 
 // #################################################################################
-Int_t AliHLTAnalysisManagerComponent::ReadInput(CalibManagerQueueData* eventData)
+Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventData)
 {
   //read input, return code 0 for normal events, 1 for EOR
   
@@ -492,15 +518,14 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(CalibManagerQueueData* eventData
 		AliFlatESDEvent* tmpCopy;
 		if (fAsyncProcess)
 		{
-			if (pBlock->fSize > fAsyncProcess)
+			if (pBlock->fSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD");
 				tmpFlatEvent = NULL;
 			}
 			else
 			{
-				eventData->fBasePtr = fAsyncProcessor.AllocateBuffer();
-				tmpCopy = (AliFlatESDEvent*) eventData->fBasePtr;
+				tmpCopy = (AliFlatESDEvent*) (((char*) eventData) + sizeof(AnalysisManagerQueueData));
 			}
 		}
 		else
@@ -549,14 +574,14 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(CalibManagerQueueData* eventData
 		AliFlatESDFriend* tmpCopy;
 		if (fAsyncProcess)
 		{
-			if (pBlock->fSize + flatEsdSize > fAsyncProcess)
+			if (pBlock->fSize + flatEsdSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD Friend");
 				tmpFlatFriend = NULL;
 			}
 			else
 			{
-				tmpCopy = (AliFlatESDFriend*) (((char*) eventData->fBasePtr) + flatEsdSize);
+				tmpCopy = (AliFlatESDFriend*) (((char*) vEvent) + flatEsdSize);
 			}
 		}
 		else
