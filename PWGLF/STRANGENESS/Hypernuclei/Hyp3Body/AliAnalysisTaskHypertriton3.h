@@ -42,7 +42,9 @@ class TTree;
 class AliAODVertex;
 class AliESDEvent;
 class AliESDtrackCuts;
+class AliESDtrack;
 class AliESDVertex;
+class AliPID;
 class AliPIDResponse;
 class AliVertexerTracks; 
 
@@ -59,6 +61,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
+  void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
+  void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
@@ -97,6 +101,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const; //!<! method to set the value for the converted AOD vertices
 
  private:
+  Bool_t HasTOF(AliESDtrack *trk, float &beta_tof);
+  Bool_t PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
 
   AliESDEvent        *fESDevent;                   ///< ESD event
   AliESDtrackCuts    *fESDtrackCuts;               ///< First set of ESD track cuts
@@ -116,6 +122,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
+  Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
+  Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
 
   //Cut variables
@@ -168,12 +176,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //--> TOF
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
-  //TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
-  //TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
+  TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
+  TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
   //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
   //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
-  TH1F               *fHistTOFdeumass;                      //!<! TOF mass of deuteron identified with TPC
-  TH1F               *fHistTOFpromass;                      //!<! TOF mass of proton identified with TPC
+  //TH1F               *fHistTOFdeumass;                      //!<! TOF mass of deuteron identified with TPC
+  //TH1F               *fHistTOFpromass;                      //!<! TOF mass of proton identified with TPC
 
   //Candidate combination
   // Data and MC histograms
