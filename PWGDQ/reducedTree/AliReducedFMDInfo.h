@@ -8,9 +8,6 @@
 #include <TMath.h>
 #include <TObject.h>
 
-//class TObject;
-
-
 
 //_____________________________________________________________________
 class AliReducedFMDInfo : public TObject {
@@ -82,8 +79,7 @@ return phi;
 
 }
 
-//
-//
+
 //_______________________________________________________________________________
 inline Double_t AliReducedFMDInfo::RawPhi(Int_t det, Int_t nEtaSlices) const
 {

@@ -4,42 +4,57 @@ void DefineHistograms(AliHistogramManager* man, Int_t run=-1);
 
 
 //__________________________________________________________________________________________
-AliReducedAnalysisTaskSE* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE){    // isAliRoot=kTRUE for ESD/AOD analysis in AliROOT, kFALSE for root analysis on reduced trees
-  //get the current analysis manager
+AliReducedAnalysisTaskSE* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=1){    
+   //
+   // isAliRoot=kTRUE for ESD/AOD analysis in AliROOT, kFALSE for root analysis on reduced trees
+   //
+   //get the current analysis manager
 
-
+   cout << "AddTask_iarsene_testTask() isAliRoot, runMode :: " << isAliRoot << ", " << runMode << endl;
   if(isAliRoot){
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-      Error("AddTask_iarsene_dst", "No analysis manager found.");
-      return 0;
-    }
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (!mgr) {
+         Error("AddTask_iarsene_dst", "No analysis manager found.");
+         return 0;
+      }
   }
-
 
   // REDUCED TASKS
-
   AliReducedAnalysisTaskSE* testAnalysis = new AliReducedAnalysisTest("TestAnalysis","Test analysis");
   testAnalysis->Init();
-  Setup(testAnalysis, 138534);
-
+  Setup(testAnalysis, 170389);
+  
   if(isAliRoot){
-  AliAnalysisDataContainer* cReducedEvent = mgr->GetContainers()->FindObject("ReducedEventDQ");
-  if(!cReducedEvent) {cout<<"Couldn't find exchange container with ReducedEvent, run AddTask_iarsene_dst.C"<<endl; return;}
-  AliAnalysisTaskReducedEventProcessor* redTask = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager");
-  redTask->AddTask(testAnalysis);
-
-  AliAnalysisDataContainer *cOutputHist =
-    mgr->CreateContainer("testHistos",
-                         THashList::Class(),
-                         AliAnalysisManager::kOutputContainer,
-                         "test.root");
-
-  mgr->AddTask(redTask);
-  mgr->ConnectInput( redTask, 0, cReducedEvent);
-  mgr->ConnectOutput(redTask, 1, cOutputHist );
-
+      AliAnalysisDataContainer* cReducedEvent = NULL;
+      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) {
+         cout << "AddTask_iarsene_testTask() use on the fly events "  << endl;
+         cReducedEvent = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ReducedEventDQ");
+         if(!cReducedEvent) {
+            cout<<"Couldn't find exchange container with ReducedEvent, run AddTask_iarsene_dst.C"<<endl; 
+            return;
+         }
+      }
+      //AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager",AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
+      AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
+      task->AddTask(testAnalysis);
+  
+      AliAnalysisDataContainer *cOutputHist = mgr->CreateContainer("testHistos", THashList::Class(),
+                                          AliAnalysisManager::kOutputContainer, "test.root");
+    
+      mgr->AddTask(task);
+  
+      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree) {
+         cout << "AddTask_iarsene_testTask() connect tree as input"  << endl;
+        mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+      }
+      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) {
+         cout << "AddTask_iarsene_testTask() connect the exchange container as input "  << endl;
+        mgr->ConnectInput(task, 0, cReducedEvent);
+      }
+  
+      mgr->ConnectOutput(task, 1, cOutputHist );
   }
+  
   return testAnalysis;
 }
 
@@ -57,9 +72,9 @@ void Setup(AliReducedAnalysisTaskSE* processor, Int_t run /*=-1*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->SetCentVZERORange(0.0,10.0);
+  evCut1->SetCentVZERORange(0.0,90.0);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
-  evCut2->SetVertexZRange(-6.0,6.0);
+  evCut2->SetVertexZRange(-7.0,7.0);
   processor->AddEventCut(evCut1);
   processor->AddEventCut(evCut2);
   
@@ -404,10 +419,10 @@ void DefineHistograms(AliHistogramManager* man, Int_t run /*=-1*/) {
                    runNBins, runHistRange[0], runHistRange[1], AliReducedVarManager::kRunNo, 2, 0.5, 2.5, AliReducedVarManager::kEMCALdetector, 200, -300.0, 300.0, AliReducedVarManager::kEMCALclusterDz, "", "EMCAL;PHOS");
     }  // end if "CaloClusters" histograms
     
-    TString trkFlagNames = "";
-    for(Int_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-      trkFlagNames += AliReducedVarManager::fgkTrackingFlagNames[iflag];
-      trkFlagNames += ";";
+    TString trkStatusNames = "";
+    for(Int_t iflag=0; iflag<AliReducedVarManager::kNTrackingStatus; ++iflag) {
+      trkStatusNames += AliReducedVarManager::fgkTrackingStatusNames[iflag];
+      trkStatusNames += ";";
     }
     TString trackQualityFlagNames = "EP;#gamma;K^{0}_{S};#Lambda;#bar{#Lambda};kink0;kink1;kink2;";
     trackQualityFlagNames += "pure #gamma;pure K^{0}_{S};pure #Lambda;pure #bar{#Lambda};-kink0;-kink1;-kink2;";
@@ -417,8 +432,8 @@ void DefineHistograms(AliHistogramManager* man, Int_t run /*=-1*/) {
       man->AddHistClass(classStr.Data());
       cout << classStr.Data() << endl;
       man->AddHistogram(classStr.Data(), "TrackingFlags", "Tracking flags;;", kFALSE,
-	                AliReducedVarManager::kNTrackingFlags, -0.5, AliReducedVarManager::kNTrackingFlags-0.5, AliReducedVarManager::kTrackingFlag, 
-			0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trkFlagNames.Data());
+	                AliReducedVarManager::kNTrackingStatus, -0.5, AliReducedVarManager::kNTrackingFlags-0.5, AliReducedVarManager::kTrackingFlag, 
+			0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trkStatusNames.Data());
       continue;
     }
     
@@ -554,7 +569,7 @@ void DefineHistograms(AliHistogramManager* man, Int_t run /*=-1*/) {
     if(classStr.Contains("PairQualityFlags")) {
       man->AddHistClass(classStr.Data());
       cout << classStr.Data() << endl;
-      TString pairQualityFlagNames = "";
+      TString pairQualityFlagNames = " ;K^{0}_{S}#rightarrow#pi^{+}#pi^{-};#Lambda#rightarrow p#pi^{-};#bar{#Lambda}#rightarrow #bar{p}#pi^{+};#gamma#rightarrow e^{+}e^{-};";
       man->AddHistogram(classStr.Data(), "PairQualityFlags", "Pair quality flags;;", kFALSE,
 	                32, -0.5, 31.5, AliReducedVarManager::kPairQualityFlag, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, pairQualityFlagNames.Data());
       continue;

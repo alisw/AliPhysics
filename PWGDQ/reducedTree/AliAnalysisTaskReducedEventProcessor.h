@@ -6,12 +6,11 @@
   *********************************************************
 */
 
-//#include "AliSysInfo.h"
-
 #ifndef ALIANALYSISTASKREDUCEDEVENTPROCESSOR_H
 #define ALIANALYSISTASKREDUCEDEVENTPROCESSOR_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliReducedBaseEvent.h"
 
 class TObject;
 class AliAnalysis;
@@ -20,13 +19,16 @@ class AliReducedAnalysisTaskSE;
 //_________________________________________________________
 class AliAnalysisTaskReducedEventProcessor : public AliAnalysisTaskSE {
 
+public:
   enum Constants {
-    kMaxOutputs=100
+    kMaxOutputs=100,
+    kUseOnTheFlyReducedEvents=1,      // use events from exchange container published by the tree maker task
+    kUseEventsFromTree=2                     // run directly over trees of reduced events
   };
-
+  
  public:
   AliAnalysisTaskReducedEventProcessor();
-  AliAnalysisTaskReducedEventProcessor(const char *name);
+  AliAnalysisTaskReducedEventProcessor(const char *name, Int_t runningMode=kUseEventsFromTree);
   virtual ~AliAnalysisTaskReducedEventProcessor(){}
 
   void AddTask(AliReducedAnalysisTaskSE* task) {fReducedTask=task;}
@@ -34,19 +36,25 @@ class AliAnalysisTaskReducedEventProcessor : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void UserCreateOutputObjects();
   virtual void FinishTaskOutput();
+  
+  virtual void ConnectInputData(Option_t *option = "");
 
- private:
-  AliReducedAnalysisTaskSE* fReducedTask;
+  Int_t GetRunningMode() const {return fRunningMode;}  
+  
+ protected:
+  AliReducedAnalysisTaskSE* fReducedTask;      // Pointer to the analysis task which will process the reduced events
   TObject* fOutputSlot[kMaxOutputs];
   Int_t fContainerType[kMaxOutputs]; // 0: output   1: exchange
   Int_t fNoutputSlots;
   
+  Int_t fRunningMode;                               // Running mode, as specified in options 1 and 2 from Constants
+  
+  AliReducedBaseEvent* fReducedEvent;   //! reduced event
+  
   AliAnalysisTaskReducedEventProcessor(const AliAnalysisTaskReducedEventProcessor &c);
   AliAnalysisTaskReducedEventProcessor& operator= (const AliAnalysisTaskReducedEventProcessor &c);
 
-  ClassDef(AliAnalysisTaskReducedEventProcessor, 1);
+  ClassDef(AliAnalysisTaskReducedEventProcessor, 2);
 };
 
 #endif
-
-

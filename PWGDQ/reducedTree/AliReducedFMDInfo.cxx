@@ -43,5 +43,3 @@ AliReducedFMDInfo::~AliReducedFMDInfo()
   // De-Constructor
   //
 }
-
-

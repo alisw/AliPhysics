@@ -436,7 +436,7 @@ class AliReducedVarManager : public TObject {
   static void SetBeamMomentum(Float_t beamMom) {fgBeamMomentum = beamMom;}
   static Float_t GetBeamMomentum() {return fgBeamMomentum;}
   
-  static void SetEvent(AliReducedEventInfo* const ev) {fgEvent = ev;};
+  static void SetEvent(AliReducedBaseEvent* const ev) {fgEvent = ev;};
   static void SetEventPlane(AliReducedEventPlaneInfo* const ev) {fgEventPlane = ev;};
   static void SetUseVariable(Variables var) {fgUsedVars[var] = kTRUE; SetVariableDependencies();}
   static void SetUseVars(Bool_t* usedVars) {
@@ -447,26 +447,24 @@ class AliReducedVarManager : public TObject {
   static Bool_t GetUsedVar(Variables var) {return fgUsedVars[var];}
   
   static void FillEventInfo(Float_t* values);
-  static void FillEventInfo(AliReducedEventInfo* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
-  static void FillBaseEventInfo(AliReducedBaseEvent* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
+  static void FillEventInfo(AliReducedBaseEvent* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
   static void FillEventOnlineTriggers(AliReducedEventInfo* event, Float_t* values);
   static void FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values);
-  static void FillEventTagInput(AliReducedEventInfo* event, Int_t input, Float_t* values);
+  static void FillEventTagInput(AliReducedBaseEvent* event, Int_t input, Float_t* values);
   static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UShort_t flag, Float_t* values);
-  static void FillTrackQualityFlag(AliReducedTrackInfo* track, UShort_t flag, Float_t* values);
+  static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values);
-  static void FillBaseTrackInfo(AliReducedBaseTrack* p, Float_t* values);
-  static void FillTrackInfo(AliReducedTrackInfo* p, Float_t* values);
+  static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* p, Float_t* values);
-  static void FillPairInfo(AliReducedTrackInfo* t1, AliReducedTrackInfo* t2, Int_t type, Float_t* values);
-  static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedTrackInfo* leg2, Int_t type, Float_t* values);
+  static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
+  static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
-  static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedTrackInfo* t, Float_t* values);
+  static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
   static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
@@ -488,7 +486,7 @@ class AliReducedVarManager : public TObject {
   
  private:
   static Float_t fgBeamMomentum;                  // beam energy (needed when calculating polarization angles) 
-  static AliReducedEventInfo* fgEvent;            // pointer to the current event
+  static AliReducedBaseEvent* fgEvent;            // pointer to the current event
   static AliReducedEventPlaneInfo* fgEventPlane;  // pointer to the current event plane
   static Bool_t fgUsedVars[kNVars];              // array of flags toggled in the histogram manager 
                                                  //   when a variable is used
