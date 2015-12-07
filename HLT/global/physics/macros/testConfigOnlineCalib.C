@@ -2,36 +2,25 @@
 
 void testConfigOnlineCalib()
 {
-	AliHLTSystem* pHLT = AliHLTPluginBase::GetInstance();
+	AliHLTPluginBase::InitInstance();
 
-	if (1)
-	{
-		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3 -MinTracks=5 -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C(\"TPCCalib:CalibTimeDrift\")");
-//		AliHLTConfiguration calib2("myCalibration2", "TPCCalibManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3");
-		AliHLTConfiguration calibmerge("myCalibrationMerger" , "RootObjectMerger" , "myCalibration1" , "-QueueDepth 0 -cumulative");
-		AliHLTConfiguration preproc("myTPCOfflinePreprocessor" , "TPCOfflinePreprocessorWrapper" , "myCalibrationMerger" , "-QueueDepth 0");
+	AliHLTConfiguration calib1("myCalibration", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3 -MinTracks=5 -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C(\"TPCCalib:CalibTimeDrift\")");
+/*	AliHLTConfiguration calibmerge("myCalibrationMerger" , "RootObjectMerger" , "myCalibration" , "-QueueDepth 0 -cumulative");
+	AliHLTConfiguration preproc("myTPCOfflinePreprocessor" , "TPCOfflinePreprocessorWrapper" , "myCalibrationMerger" , "-QueueDepth 0");
 
-		AliHLTConfiguration eventTrigger("myCustomTrigger", "Zero", "TPC-DP", "");
+	AliHLTConfiguration eventTrigger("myCustomTrigger", "Zero", "TPC-DP", "");
 
-		AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myTPCOfflinePreprocessor", "out=PUB@tcp://*:60203");
-		AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "in=SUB+tcp://localhost:60203");
+	AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myTPCOfflinePreprocessor", "out=PUB@tcp://*:60203");
+	AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "in=SUB+tcp://localhost:60203");
 
-		AliHLTConfiguration mapPrepare1("myMapPrepare1", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 0 -MaxSector 35 -NoInitialObject");
-		AliHLTConfiguration mapPrepare2("myMapPrepare2", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 36 -MaxSector 71 -NoInitialObject");
-		AliHLTConfiguration mapPreparemerge("myMapPrepare", "RootObjectMerger", "myMapPrepare1 myMapPrepare2", "-QueueDepth 0");
+	AliHLTConfiguration mapPrepare1("myMapPrepare1", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 0 -MaxSector 35 -NoInitialObject");
+	AliHLTConfiguration mapPrepare2("myMapPrepare2", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 36 -MaxSector 71 -NoInitialObject");
+	AliHLTConfiguration mapPreparemerge("myMapPrepare", "RootObjectMerger", "myMapPrepare1 myMapPrepare2", "-QueueDepth 0");*/
+	
+	TString clusterTransformation = "TPC-ClusterTransformation";
+	AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder", "-update-object-on-the-fly");
+	/*AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-update-object-on-the-fly");*/
 
-		TString clusterTransformation = "TPC-ClusterTransformation";
-		AliHLTConfiguration overrideClusterTransformation(clusterTransformation.Data(), "TPCClusterTransformation", "TPC-HWCFDecoder myMapPrepare", "-update-object-on-the-fly -offline-mode");
-
-		AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalibrationMerger myTPCOfflinePreprocessor myZMQsink GLOBAL-esd-converter", "-directory testDir -datafile test.root");
-	}
-	else if (0)
-	{
-		AliHLTConfiguration calib("myCalib", "TPCCalibManagerComponent", "GLOBAL-esd-converter", "");
-		AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalib", "-directory testDir -datafile test-calib.root");
-	}
-	else
-	{
-		AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "GLOBAL-esd-converter", "-directory testDir -datafile test-esdevent.root");
-	}
+	AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalibration GLOBAL-esd-converter", "-directory testDir -datafile test.root");
+	/*AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "myCalibrationMerger myTPCOfflinePreprocessor myZMQsink GLOBAL-esd-converter", "-directory testDir -datafile test.root");*/
 }
