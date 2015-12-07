@@ -34,7 +34,7 @@ public:
    
 public:
   AliAnalysisTaskReducedTreeMaker();
-  AliAnalysisTaskReducedTreeMaker(const char *name);
+  AliAnalysisTaskReducedTreeMaker(const char *name, Bool_t writeTree=kTRUE);
   virtual ~AliAnalysisTaskReducedTreeMaker(){  }
 
   virtual void UserExec(Option_t *option);
@@ -73,6 +73,9 @@ public:
   
   // Select the type of information to be written
   void SetTreeWritingOption(Int_t option)         {fTreeWritingOption = option;}
+  // Suppress writing the tree to disk
+  void SetWriteTree(Bool_t option=kTRUE)  {fWriteTree = option;}
+  Bool_t WriteTree() const {return fWriteTree;}
   
   // Toggle on/off information branches
   void SetFillTrackInfo(Bool_t flag=kTRUE)        {fFillTrackInfo = flag;}
@@ -101,6 +104,7 @@ public:
   Bool_t fRejectPileup;              // pileup rejection wanted
   
   Int_t    fTreeWritingOption;     // one of the options described by ETreeWritingOptions
+  Bool_t fWriteTree;                   // if kFALSE don't write the tree, use task only to produce on the fly reduced events
 
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillV0Info;                // fill the V0 information

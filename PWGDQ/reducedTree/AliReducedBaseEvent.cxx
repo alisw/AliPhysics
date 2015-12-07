@@ -82,7 +82,6 @@ AliReducedBaseEvent::~AliReducedBaseEvent()
   //
   // De-Constructor
   //
-  //ClearEvent();
 }
 
 //_____________________________________________________________________________

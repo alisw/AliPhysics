@@ -3,8 +3,13 @@
 #include<TSystem.h>
 #include<TROOT.h>
 
-void runAnalysisTrain(const Char_t* infile)
+void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD",
+                                     Int_t reducedEventType = -1, Bool_t writeTree = kFALSE,
+                                     Int_t nEntries=1234567890, Int_t firstEntry=0)
 {
+   //
+   // infile: list of input files if mode is local, or list of runs for job submission if mode is grid
+   //
    // Load common libraries
    gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
@@ -44,65 +49,99 @@ void runAnalysisTrain(const Char_t* infile)
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    gROOT->ProcessLine(".include $ROOTSYS/include");
 
-   // Create and configure the alien handler plugin
-   /*gROOT->LoadMacro("CreateAlienHandlerPbPb.C");
-   AliAnalysisGrid *alienHandler = CreateAlienHandlerPbPb();  
-   if (!alienHandler) return;*/
-
    // Create the analysis manager
-   AliAnalysisManager *mgr = new AliAnalysisManager("ReducedTreeMaker");
+   AliAnalysisManager *mgr = new AliAnalysisManager("ReducedTreeAnalysis");
+   
+   // Create and configure the alien handler plugin
+   TString runmodestr(runmode); runmodestr.ToLower();
+   AliAnalysisGrid *alienHandler = NULL;
+   if(runmodestr.Contains("grid")) {
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/CreateAlienHandler.C");
+     alienHandler = CreateAlienHandlerPbPb(infile);  
+     if (!alienHandler) {
+        cout << "runAnalysisTrain.C ::      Could not create the alien handler. Check it out!" << endl;
+        return;
+     }
+     mgr->SetGridHandler(alienHandler);
+   }
 
-   // Connect plug-in to the analysis manager
-   //mgr->SetGridHandler(alienHandler);
-
-   AliESDInputHandler* esdH = new AliESDInputHandler();
-   esdH->SetReadFriends(kFALSE);
-   mgr->SetInputEventHandler(esdH);
-
+   // Create the input handler
+   TString inputTypeStr(inputType); inputTypeStr.ToLower();
+   AliInputEventHandler* inputHandler = NULL; 
+   if(inputTypeStr.Contains("esd")) {                               // ESDs
+     inputHandler = new AliESDInputHandler();
+     ((AliESDInputHandler*)inputHandler)->SetReadFriends(kFALSE);
+   }
+   if(inputTypeStr.Contains("reducedevent")) {              // AliReducedEventInfo
+      inputHandler = new AliReducedEventInputHandler();
+      ((AliReducedEventInputHandler*)inputHandler)->SetInputEventType(AliReducedEventInputHandler::kReducedEventInfo);
+   }
+   if(inputTypeStr.Contains("baseevent")) {                    // AliReducedBaseEvent
+      inputHandler = new AliReducedEventInputHandler();
+      ((AliReducedEventInputHandler*)inputHandler)->SetInputEventType(AliReducedEventInputHandler::kReducedBaseEvent);
+   }
+   mgr->SetInputEventHandler(inputHandler);
+   
+   
    //==== Add tender ====
    //   gROOT->LoadMacro("AddTaskTender.C");
    //   AddTaskTender();
 
-   //==== Physics Selection ====
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+   if(inputTypeStr.Contains("esd")) {         // no need if we run over reduced events
+      //==== Physics Selection ====
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
-   //===== ADD CENTRALITY: ===
-   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-   AddTaskCentrality();
+      //===== ADD CENTRALITY: ===
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+      AddTaskCentrality();
 
-   //===== ADD PID RESPONSE: ===
-   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-   AddTaskPIDResponse();
+      //===== ADD PID RESPONSE: ===
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+      AddTaskPIDResponse();
+   }
    
-   //===== ADD TASK::
-   //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/AddTask_ReducedTree.C");
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_dst.C");
-   //gROOT->LoadMacro("AddTask_iarsene_testTask.C");
-   //AddTask_ReducedTree();   
-   AddTask_iarsene_dst();
-   //AddTask_iarsene_testTask(kTRUE);
-
+   //===== Add the reduced event producer task, if needed
+   if(inputTypeStr.Contains("esd")) {         // if we run over reduced events this not needed anymore
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_dst.C");
+      AddTask_iarsene_dst(reducedEventType, writeTree);
+   }
+   //===== Add consumer tasks for the reduced events
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
+   if(inputTypeStr.Contains("esd"))
+      AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
+   if(inputTypeStr.Contains("reducedevent") || inputTypeStr.Contains("baseevent"))
+      AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree);
 
    // Enable debug printouts
    //mgr->SetDebugLevel(10);
 
-   if (!mgr->InitAnalysis())
-	  return;
+   if (!mgr->InitAnalysis()) return;
 
-   TChain* chain = makeChain(infile);
+   TChain* chain = NULL;
+   if(!runmodestr.Contains("grid"))
+      chain = makeChain(infile, inputType);
    
    mgr->PrintStatus();
-   // Start analysis in grid.
-   mgr->StartAnalysis("local",chain);
+   // Start analysis
+   if(runmodestr.Contains("local"))
+      mgr->StartAnalysis("local", chain, nEntries, firstEntry);
+   if(runmodestr.Contains("grid"))
+      mgr->StartAnalysis("grid", nEntries, firstEntry);
 };
 
 //_______________________________________________________________________________
-TChain* makeChain(const Char_t* filename) {
+TChain* makeChain(const Char_t* filename, const Char_t* inputType) {
   //
   // make a chain using the trees from the list of filenames in "filename"
   //
-  TChain *chain=new TChain("esdTree");
+  TString itStr(inputType); itStr.ToLower();
+  TChain *chain = NULL;
+  if(itStr.Contains("reducedevent") || itStr.Contains("baseevent"))
+    chain=new TChain("DstTree");
+  if(itStr.Contains("esd"))
+    chain=new TChain("esdTree");
+  
   ifstream in;
   in.open(filename);
                                                                                                                                                                

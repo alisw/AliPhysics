@@ -16,8 +16,6 @@
 
 class TAxis;
 class TArrayD;
-//class TList;
-//class THashList;
 class TObjArray;
 class TDirectoryFile;
 class TFile;

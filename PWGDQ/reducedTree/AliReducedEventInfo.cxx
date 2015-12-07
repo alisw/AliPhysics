@@ -147,7 +147,6 @@ AliReducedEventInfo::~AliReducedEventInfo()
   //
   // De-Constructor
   //
-  //ClearEvent();
 }
 
 //_____________________________________________________________________________

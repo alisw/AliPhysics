@@ -81,6 +81,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTriggerMask(AliVEvent::kAny),
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
+  fWriteTree(kTRUE),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -119,7 +120,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
 }
 
 //_________________________________________________________________________________
-AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *name) :
+AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *name, Bool_t writeTree /*=kTRUE*/) :
   AliAnalysisTaskSE(name),
   fAnalysisUtils(0x0),
   fUseAnalysisUtils(kFALSE),
@@ -130,6 +131,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTriggerMask(AliVEvent::kAny),
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
+  fWriteTree(writeTree),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -173,11 +175,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
  
   DefineInput(0,TChain::Class());
   //DefineInput(2,AliAODForwardMult::Class());
-  DefineOutput(1, AliReducedEventInfo::Class());   // reduced information tree
-  DefineOutput(2, TTree::Class());   // reduced information tree
-  //if(fFillFriendInfo) DefineOutput(3, TTree::Class());   // reduced information tree with friends
-  //DefineOutput(2, TTree::Class());   // reduced information tree with friends
-  //DefineOutput(2, TTree::Class());   // reduced information tree 
+  DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
+  if(writeTree)
+    DefineOutput(2, TTree::Class());   // reduced information tree
 }
 
 
@@ -190,9 +190,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   if(fUseAnalysisUtils) fAnalysisUtils = new AliAnalysisUtils();
   if (fTree) return; //already initialised
   
-  //fTreeFile = new TFile("dstTree.root", "RECREATE");
-  OpenFile(2);
-  fTree = new TTree("DstTree","Reduced ESD information");
+  if(fWriteTree) {
+    OpenFile(2);
+    fTree = new TTree("DstTree","Reduced ESD information");
+  }
   
   switch(fTreeWritingOption) {
      case kBaseEventsWithBaseTracks:
@@ -211,7 +212,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
         break;
   };
  
-  fTree->Branch("Event",&fReducedEvent,16000,99);
+  if(fWriteTree)
+    fTree->Branch("Event",&fReducedEvent,16000,99);
  
   if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
@@ -219,7 +221,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   }
   
   PostData(1, fReducedEvent);
-  PostData(2, fTree);
+  if(fWriteTree)
+    PostData(2, fTree);
   //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
   //PostData(1, fTree);
@@ -231,15 +234,12 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //
   // Main loop. Called for every event
   //  
-
-
   option = option;
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   fNevents++;
-  
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
@@ -262,18 +262,19 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   fReducedEvent->ClearEvent();
   
   if(isSelected==0) {
-    PostData(1, fReducedEvent);
+    cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
+    //PostData(1, fReducedEvent);
     return;
   }
 
   //event filter
   if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) {PostData(1, fReducedEvent);return;}
+    if (!fEventFilter->IsSelected(InputEvent())) return;
   }
   
   //pileup
   if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) {PostData(1, fReducedEvent);return;}
+    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
   }
 
   //bz for AliKF
@@ -289,13 +290,15 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   
   // Retrieve FMD histogram
   //
-  fTree->Fill();
+  if(fWriteTree)
+    fTree->Fill();
         
   // if there are candidate pairs, add the information to the reduced tree
   //if(fFillFriendInfo) PostData(3, fFriendTree);
   PostData(1, fReducedEvent);
   //PostData(2, fFriendTree);
-  PostData(2, fTree);
+  if(fWriteTree)
+    PostData(2, fTree);
 }
 
 
@@ -567,10 +570,6 @@ void AliAnalysisTaskReducedTreeMaker::FillFMDInfo()
   
   TClonesArray& fmd = *(eventInfo->GetFMD());
 
-  //Int_t nPhi = histos[2]->GetYaxis()->GetNbins();
-
-  //Double_t xc[5]={0.0},yc[5]={0.0};
-
   // Loop over eta 
   Int_t nFMD=-1;
   for (Int_t ih = 0; ih < 5; ih++) {
@@ -736,14 +735,12 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       for(Int_t ii=0; ii<nPureV0LegsTagged[i]; ++ii) {
         if(UShort_t(trackId)==trackIdsPureV0[i][ii]) {
           usedForPureV0[i] = kTRUE;
-          //cout << "track " << trackId << " used for pure V0 type " << i << endl;
           break;
         }
       }
     }
         
     ULong_t status = (isESD ? esdTrack->GetStatus() : aodTrack->GetStatus());
-    //cout << "TRACK" << endl;
     
     AliReducedEventInfo* eventInfo = NULL; 
         
@@ -922,7 +919,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
     }  // end if(isAOD)
 
-    //continue;
     fReducedEvent->fNtracks[1] += 1;
   }
 }
@@ -1202,8 +1198,6 @@ Int_t AliAnalysisTaskReducedTreeMaker::GetSPDTrackletMultiplicity(AliVEvent* eve
 }
 
 
-
-
 //_________________________________________________________________________________
 void AliAnalysisTaskReducedTreeMaker::FinishTaskOutput()
 {
@@ -1211,7 +1205,4 @@ void AliAnalysisTaskReducedTreeMaker::FinishTaskOutput()
   // Finish Task 
   //
   PostData(2, fTree);
-  
-  //fTreeFile->Write();
-  //fTreeFile->Close();
 }

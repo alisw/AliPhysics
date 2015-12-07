@@ -45,6 +45,7 @@ set(SRCS
       AliReducedCaloClusterInfo.cxx
       AliReducedEventCut.cxx
       AliReducedEventInfo.cxx
+      AliReducedEventInputHandler.cxx
       AliReducedEventPlaneInfo.cxx
       AliReducedFMDInfo.cxx
       AliReducedInfoCut.cxx
