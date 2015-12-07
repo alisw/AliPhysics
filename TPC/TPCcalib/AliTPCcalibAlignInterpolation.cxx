@@ -59,6 +59,7 @@
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliPID.h"
 #include "TSystem.h"
+#include "TGrid.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
 
@@ -888,6 +889,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
     if (selHis>=0 && ihis!=selHis) continue;
     for (Int_t iesd=0; iesd<nesd; iesd++){
       TStopwatch timerFile;
+      TString fileNameString(esdArray->At(iesd)->GetName());
+      if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta");
@@ -1021,6 +1024,8 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
   Int_t iter=0;
   Int_t currentCl=0;
   for (Int_t iesd=0; iesd<nesd; iesd++){
+    TString fileNameString(esdArray->At(iesd)->GetName());
+    if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
     TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
     if (!esdFile) continue;
     TTree *tree = (TTree*)esdFile->Get("ErrParam"); 
@@ -1071,13 +1076,13 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   //
   TFile * fin = TFile::Open(fname);
   if (fin==NULL) {
-    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistortionTree", "file %s not readable", fname);
     return 0;
   }
   TTree * treeFriend = (TTree*) fin->Get(treeName);
   
   if (treeFriend==NULL){
-    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistortionTree", "file %s not readable", fname);
     return 0;
   }
   if (tree==NULL) {
@@ -1148,7 +1153,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
   Int_t nFiles=array->GetEntries();
   if (nFiles<=0) {
-    ::Error("GetResidualStatInfo. Wrong input list",inputList);
+    ::Error("GetResidualStatInfo", "Wrong input list %s", inputList);
     return;
   }
   TStopwatch timer;
@@ -1159,6 +1164,8 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
   for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
     timer.Start();
+    TString fileName = array->At(iFile)->GetName();
+    if (fileName.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
     printf("%d\t%s\n",iFile,array->At(iFile)->GetName());
     TFile * f = TFile::Open(array->At(iFile)->GetName());
     if (f==NULL) continue;
@@ -1299,7 +1306,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   delete hisEvent;
   delete pcstream;
 
-  printf("StatInfo.minTime\t%d\n",minTime);
-  printf("StatInfo.maxTime\t%d\n",maxTime);
+  printf("StatInfo.minTime\t%lld\n",minTime);
+  printf("StatInfo.maxTime\t%lld\n",maxTime);
   delete array;
 }
