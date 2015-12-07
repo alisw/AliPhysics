@@ -41,18 +41,21 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetMassDistributionFromFile(TString filename, TString histoname);
   void           SetpTDistributionFromFile(TString filename, TString histoname);
   void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
-  //void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
   void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
   void           SetUseRandomEntry(Bool_t isrdm = kTRUE)       {fRandomEntry = isrdm; }
-  void           SetMaxMemory(Long64_t maxmem = 2000000000)    {fMaxMemory = maxmem;}
-  void           SetUseRandomEntryAndMemory(Bool_t isrdm = kTRUE, Long64_t maxmem = 2000000000)   { SetMaxMemory(maxmem); SetUseRandomEntry(isrdm); }
-  
+  void           SetNBinsEmbedding(Int_t n)      { fNBins = n; }
+  void           SetRejection(Float_t* rej);
+  void           SetPtRangesEmb(Float_t* ptlims);
+  void           SetNevPerBin(Int_t n)           { fNevPerBin = n; }
+    
  protected:
   void           Run();
   void           SetTree(TTree *tree);
   void           SetMassDistribution(TH1F *hM);
   void           FillHistograms();
+  Float_t        GetDownscalinigFactor();
+  void           Terminate();
  private:
   Bool_t         fMassless;               ///< make particles massless
   Bool_t         fMassFromDistr;          ///< draw the particle mass from fHMassDistrib
@@ -73,13 +76,21 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TList          *fInput;                 //!<! Input histograms saved in this list
   Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
   Bool_t         fRandomEntry;            ///< draw random number to extract the entry number in the tree
-  Long64_t       fMaxMemory;              ///< load fMaxMemory of baskets when random access to the TTree is requested
+  Int_t          fNBins;                  ///< pT ranges considered for embedding
+  /// factor to exclude randomly entries from the embedding
+  Float_t        *fDownscale;             //[fNBins]
+  /// low lims of the pT ranges corresponding to the fDownscale bin
+  Float_t        *fPtRanges;              //[fNBins]
+  Int_t          fNevPerBin;              ///< number of embedded tracks per pT bins
+  Int_t          fCount;                  ///< counts number of embedded tracks in the current pT bin
+  Int_t          fCurrentBin;             ///< the current pT bin
+  Int_t          fGoBack;                 ///< how many times fCurrentBin is set back to 0
   
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 9) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 10) /// Jet embedding task
   /// \endcond
 };
 #endif
