@@ -511,7 +511,6 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       clusterArray[iPoint].SetY(x[1]);
       clusterArray[iPoint].SetZ(x[2]);
     }
-    transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(backupUseComposedCorrection);
     //
     // 4.) Propagate  ITS tracks outward
     // 
