@@ -12,8 +12,8 @@
 //This file is a backend for AliHLTAsyncProcessor, that implements the
 //mutex and thread handling via pthreads
 
-//0: User Mutex, 1: Operation Mutex, 2: Input Mutex, 3: Output Mutex, 4: Output Full Mutex
-#define ASYNC_MUTEX_COUNT 5
+//0: User Mutex, 1: Operation Mutex, 2: Input Mutex, 3: Output Mutex, 4: Output Full Mutex, 5: Buffer Mutex
+#define ASYNC_MUTEX_COUNT 6
 
 #include <pthread.h>
 #include <sys/wait.h>
@@ -23,7 +23,7 @@
 class AliHLTAsyncProcessorBackend
 {
 public:
-	AliHLTAsyncProcessorBackend() : fInitialized(false) {};
+	AliHLTAsyncProcessorBackend() : fInitialized(false), fAsyncThread(0), fAsyncPID(0) {};
 	~AliHLTAsyncProcessorBackend()
 	{
 		if (!fInitialized) return;

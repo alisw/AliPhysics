@@ -1,7 +1,7 @@
 #ifndef ALIHLTASYNCPROCESSOR_H
 #define ALIHLTASYNCPROCESSOR_H
 
-#define ALIHLTASYNCPROCESSOR_ALIGN 64 //Must be capable to store at least an AliHLTAsyncProcessorBuffer object
+#define ALIHLTASYNCPROCESSOR_ALIGN 64 //Must be capable to store at least an AliHLTAsyncProcessorBuffer object (normally 16 bytes)
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
 * ALICE Experiment at CERN, All rights reserved.                         *
@@ -97,10 +97,16 @@ public:
 	
 	//Serializes an object into an AliHLTAsyncProcessorBuffer and returns the pointer to it, containing the pointer to the serialized object and its size
 	AliHLTAsyncProcessorBuffer* SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls);
+	
+	size_t BufferSize() {return(fMe->fBufferSize);}
 
 private:
 	AliHLTAsyncProcessor(const AliHLTAsyncProcessor&);
 	AliHLTAsyncProcessor& operator=(const AliHLTAsyncProcessor&);
+	
+	//Provide additional shared buffer resources for a derived class when mode is fAsyncProcess.
+	//Memory is zero-initialized.
+	virtual size_t ChildSharedProcessBufferSize();
 
 	struct AliHLTAsyncProcessorInput
 	{
@@ -113,6 +119,9 @@ private:
 	static void* AsyncThreadStartHelper(void*);
 	static void* AsyncThreadStop(void*);
 
+	static void* alignPointer(void* ptr, size_t size);
+	
+protected:
 	struct AliHLTAsyncProcessorContent
 	{
 		int fQueueDepth;
@@ -135,9 +144,8 @@ private:
 		size_t fmmapSize;
 		
 		int fAsyncProcess;
+		void* fChildBufferSpace;
 	};
-	
-	static void* alignPointer(void* ptr, size_t size);
 	
 	AliHLTAsyncProcessorContent* fMe;	//This points to the interior of the Async Processor, possible in shared memory if the async part is an individual process
 

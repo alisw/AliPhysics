@@ -35,6 +35,7 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessor() : AliHLTLogging(), fMe(new AliHLTAs
 	fMe->fBufferPtr = NULL;
 	fMe->fBufferSize = 0;
 	fMe->fAsyncProcess = 0;
+	fMe->fChildBufferSpace = NULL;
 	fMe->fmmapSize = 0;
 }
 
@@ -60,36 +61,57 @@ int AliHLTAsyncProcessor::Initialize(int depth, bool process, size_t process_buf
 	if (fMe->fQueueDepth)
 	{
 		fMe->fAsyncProcess = process;
-		size_t size = sizeof(AliHLTAsyncProcessorBackend) + (sizeof(AliHLTAsyncProcessorInput) + sizeof(void*)) * fMe->fQueueDepth + process_buffer_size * (fMe->fQueueDepth + 1) + (5 + fMe->fQueueDepth) * ALIHLTASYNCPROCESSOR_ALIGN;
+		size_t size = sizeof(AliHLTAsyncProcessorBackend) +
+		              (sizeof(AliHLTAsyncProcessorInput) + sizeof(void*)) * fMe->fQueueDepth +
+		              process_buffer_size * (fMe->fQueueDepth + 1) +
+		              ChildSharedProcessBufferSize() +
+		              (6 + fMe->fQueueDepth) * ALIHLTASYNCPROCESSOR_ALIGN;
+		void* tmpPtr;
 		if (fMe->fAsyncProcess) //promote to running async process instead of async thread
 		{
-			fMe->fmmapSize = sizeof(AliHLTAsyncProcessorContent) + sizeof(bool) * (fMe->fQueueDepth + 1) + 2 * ALIHLTASYNCPROCESSOR_ALIGN + size;
+			fMe->fmmapSize = sizeof(AliHLTAsyncProcessorContent) +
+			                 sizeof(bool) * (fMe->fQueueDepth + 1) +
+			                 2 * ALIHLTASYNCPROCESSOR_ALIGN +
+			                 size;
 			fMe->fBasePtr = mmap(NULL, fMe->fmmapSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
 			if (fMe->fBasePtr == NULL) return(1);
 			memcpy(fMe->fBasePtr, fMe, sizeof(AliHLTAsyncProcessorContent));
 			delete fMe;
 			fMe = (AliHLTAsyncProcessorContent*) fMe->fBasePtr;
-			fMe->fBufferPtr = alignPointer(fMe->fBasePtr, sizeof(AliHLTAsyncProcessorContent));
 			fMe->fBufferSize = process_buffer_size;
 			if (fMe->fBufferSize % ALIHLTASYNCPROCESSOR_ALIGN) fMe->fBufferSize += ALIHLTASYNCPROCESSOR_ALIGN - fMe->fBufferSize % ALIHLTASYNCPROCESSOR_ALIGN;
-			fMe->fBufferPtr = alignPointer(fMe->fBasePtr, sizeof(AliHLTAsyncProcessorContent));
-			fMe->fBufferUsed = new (fMe->fBufferPtr) bool[fMe->fQueueDepth + 1];
+			tmpPtr = alignPointer(fMe->fBasePtr, sizeof(AliHLTAsyncProcessorContent));
+			
+			fMe->fBufferUsed = new (tmpPtr) bool[fMe->fQueueDepth + 1];
 			memset(fMe->fBufferUsed, 0, sizeof(bool) * (fMe->fQueueDepth + 1));
-			fMe->fBufferPtr = alignPointer(fMe->fBufferPtr, sizeof(bool) * (fMe->fQueueDepth + 1));
+			tmpPtr = alignPointer(tmpPtr, sizeof(bool) * (fMe->fQueueDepth + 1));
 		}
 		else
 		{
 			fMe->fBasePtr = malloc(size);
 			if (fMe->fBasePtr == 0) return(1);
-			fMe->fBufferPtr = fMe->fBasePtr;
+			tmpPtr = fMe->fBasePtr;
 		}
 		
-		fMe->fBackend = new (fMe->fBufferPtr) AliHLTAsyncProcessorBackend;
+		fMe->fBackend = new (tmpPtr) AliHLTAsyncProcessorBackend;
 		if (fMe->fBackend->Initialize(fMe->fAsyncProcess)) return(1);
-		fMe->fBufferPtr = alignPointer(fMe->fBufferPtr, sizeof(AliHLTAsyncProcessorBackend));
-		fMe->fInputQueue = new (fMe->fBufferPtr) AliHLTAsyncProcessorInput[fMe->fQueueDepth];
-		fMe->fBufferPtr = alignPointer(fMe->fBufferPtr, sizeof(AliHLTAsyncProcessorInput) * fMe->fQueueDepth);
-		fMe->fOutputQueue = new (fMe->fBufferPtr) void*[fMe->fQueueDepth];
+		tmpPtr = alignPointer(tmpPtr, sizeof(AliHLTAsyncProcessorBackend));
+		
+		fMe->fInputQueue = new (tmpPtr) AliHLTAsyncProcessorInput[fMe->fQueueDepth];
+		tmpPtr = alignPointer(tmpPtr, sizeof(AliHLTAsyncProcessorInput) * fMe->fQueueDepth);
+		
+		fMe->fOutputQueue = new (tmpPtr) void*[fMe->fQueueDepth];
+		tmpPtr = alignPointer(tmpPtr, sizeof(void*) * fMe->fQueueDepth);
+		
+		if (ChildSharedProcessBufferSize())
+		{
+			fMe->fChildBufferSpace = tmpPtr;
+			memset(fMe->fChildBufferSpace, 0, ChildSharedProcessBufferSize());
+			tmpPtr = alignPointer(tmpPtr, ChildSharedProcessBufferSize());
+		}
+		
+		fMe->fBufferPtr = tmpPtr;
+		
 		for (int i = 2;i <= 4;i++) fMe->fBackend->LockMutex(i); //Lock thread control mutexes
 		if (fMe->fAsyncProcess)
 		{
@@ -146,7 +168,21 @@ int AliHLTAsyncProcessor::Deinitialize()
 	{
 		free(fMe->fBasePtr);
 	}
-	
+
+	fMe->fExit = false;
+	fMe->fBackend = NULL;
+	fMe->fInputQueue = NULL;
+	fMe->fOutputQueue = NULL;
+	fMe->fInputQueueUsed = 0;
+	fMe->fOutputQueueUsed = 0;
+	fMe->fWaitingForTasks = 0;
+	fMe->fBasePtr = NULL;
+	fMe->fBufferPtr = NULL;
+	fMe->fBufferSize = 0;
+	fMe->fAsyncProcess = 0;
+	fMe->fChildBufferSpace = NULL;
+	fMe->fmmapSize = 0;
+
 	HLTInfo("Deinitialization of ASYNC Processor done");
 	return(0);
 }
@@ -340,14 +376,17 @@ int AliHLTAsyncProcessor::TryLockMutex()
 void* AliHLTAsyncProcessor::AllocateBuffer()
 {
 	if (!fMe->fAsyncProcess) return NULL;
+	fMe->fBackend->LockMutex(5);
 	for (int i = 0;i <= fMe->fQueueDepth;i++)
 	{
 		if (!fMe->fBufferUsed[i])
 		{
 			fMe->fBufferUsed[i] = true;
+			fMe->fBackend->UnlockMutex(5);
 			return(((char*) fMe->fBufferPtr) + i * fMe->fBufferSize);
 		}
 	}
+	fMe->fBackend->UnlockMutex(5);
 	return(NULL);
 }
 
@@ -390,7 +429,7 @@ void AliHLTAsyncProcessor::FreeBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessor
 {
 	if (fMe->fAsyncProcess)
 	{
-		FreeBuffer(buffer);
+		FreeBuffer((void*) buffer);
 	}
 	else
 	{
@@ -420,4 +459,9 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::Serializ
 		retVal->fSize = size;
 	}
 	return(retVal);
+}
+
+size_t AliHLTAsyncProcessor::ChildSharedProcessBufferSize()
+{
+	return 0;
 }
