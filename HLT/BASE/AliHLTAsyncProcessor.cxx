@@ -465,3 +465,6 @@ size_t AliHLTAsyncProcessor::ChildSharedProcessBufferSize()
 {
 	return 0;
 }
+
+int AliHLTAsyncProcessor::LockMutex(int i) {return(fMe->fBackend->LockMutex(i));}
+int AliHLTAsyncProcessor::UnlockMutex(int i) {return(fMe->fBackend->UnlockMutex(i));}

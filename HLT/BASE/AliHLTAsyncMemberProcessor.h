@@ -18,7 +18,6 @@
 //as callback paramters. Hence, the class instance (usually 'this') must be passed first.
 
 #include "AliHLTAsyncProcessor.h"
-#include "AliHLTAsyncProcessorBackend.h"
 
 template <class T>
 class AliHLTAsyncMemberProcessor : public AliHLTAsyncProcessor
@@ -71,18 +70,18 @@ private:
 			return(new AliHLTAsyncMemberProcessorContainer);
 		}
 		container = (AliHLTAsyncMemberProcessorContainer*) fMe->fChildBufferSpace;
-		fMe->fBackend->LockMutex(5);
+		LockMutex(5);
 		for (int i = 0;i <= fMe->fQueueDepth;i++)
 		{
 			if (!container[i].fUsed)
 			{
 				container[i].fUsed = true;
 				container[i].fStaticallyAllocated = true;
-				fMe->fBackend->UnlockMutex(5);
+				UnlockMutex(5);
 				return(&container[i]);
 			}
 		}
-		fMe->fBackend->UnlockMutex(5);
+		UnlockMutex(5);
 		return(NULL);
 	}
 	

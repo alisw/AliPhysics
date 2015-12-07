@@ -147,6 +147,9 @@ protected:
 		void* fChildBufferSpace;
 	};
 	
+	int LockMutex(int i);
+	int UnlockMutex(int i);
+	
 	AliHLTAsyncProcessorContent* fMe;	//This points to the interior of the Async Processor, possible in shared memory if the async part is an individual process
 
 	ClassDef(AliHLTAsyncProcessor, 0);
