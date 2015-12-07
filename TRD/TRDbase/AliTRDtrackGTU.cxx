@@ -240,8 +240,8 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
 
   AliESDTrdTrack *trk = new AliESDTrdTrack();
   trk->SetA((Int_t) fA);
-  trk->SetB(TMath::Nint(128. * fB));
-  trk->SetC(TMath::Nint(256. * fC));
+  trk->SetB((Int_t) fB);
+  trk->SetC((Int_t) fC);
   trk->SetLayerMask(fTrackletMask);
   trk->SetPID(fPID);
   trk->SetStack(fStack);

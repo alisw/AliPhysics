@@ -43,8 +43,8 @@ class AliTRDtrackGTU : public TObject {
 
 // ----- Quantities used internally for the calculation
   Float_t GetA() const { return fA; }
-  Float_t GetB() const { return fB; }
-  Float_t GetC() const { return fC; }
+  Float_t GetB() const { return (fB / 128.); }
+  Float_t GetC() const { return (fC / 256.); }
   Int_t GetInvPtDev() const { return fInvPtDev; }
   Int_t GetZChannel() const { return fZChannel; }
   Int_t GetZSubChannel();

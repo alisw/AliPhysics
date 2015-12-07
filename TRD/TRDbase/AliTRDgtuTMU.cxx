@@ -1211,7 +1211,7 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
 
   invPtDev = a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - s;
 
-  track->SetFitParams(a << 2, b, c);
+  track->SetFitParams(a << 2, TMath::Nint(128. * b), TMath::Nint(256. * c));
   if (corrMode == 0)      track->SetInvPtDev(invPtDev);
   else if (corrMode != 0) track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - ((Int_t) sTmp) );
   //following lines are for debugging purposes only
