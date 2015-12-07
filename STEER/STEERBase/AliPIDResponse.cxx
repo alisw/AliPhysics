@@ -2787,7 +2787,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse:: GetTPCPIDStatus(const AliVTrack *
   const UShort_t signalN=track->GetTPCsignalN();
   if (signalN<10 || dedx<10) return kDetNoSignal;
 
-  if (!(fArrPidResponseMaster && fArrPidResponseMaster->At(AliPID::kPion))) return kDetNoParams;
+  if (!fTPCResponse.GetResponseFunction(AliPID::kPion)) return kDetNoParams;
 
   return kDetPidOk;
 }

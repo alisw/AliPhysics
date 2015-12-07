@@ -82,7 +82,7 @@ public:
   Bool_t GetUseDatabase() const { return fUseDatabase;}
   
   void SetResponseFunction(AliPID::EParticleType type, TObject * const o) { fResponseFunctions.AddAt(o,(Int_t)type); }
-  const TObject * GetResponseFunction(AliPID::EParticleType type) { return fResponseFunctions.At((Int_t)type); }
+  const TObject * GetResponseFunction(AliPID::EParticleType type) const { return fResponseFunctions.At((Int_t)type); }
   void SetVoltage(Int_t n, Float_t v) {fVoltageMap[n]=v;}
   void SetVoltageMap(const TVectorF& a) {fVoltageMap=a;} //resets ownership, ~ will not delete contents
   Float_t GetVoltage(Int_t n) const {return fVoltageMap[n];}
