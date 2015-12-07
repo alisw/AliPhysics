@@ -114,8 +114,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
         TH2F 								**hESDConvGammaPsiPairPt;							//!
 		TTree 								**tESDConvGammaPtDcazCat;							//!
 		Float_t 							fPtGamma;											//!
-		Int_t        fnITSclusterPosTrack;
-		Int_t        fnITSclusterNegTrack;
 		Float_t 							fDCAzPhoton;										//!
 		Float_t 							fRConvPhoton;										//!
 		Float_t 							fEtaPhoton;											//!
@@ -302,7 +300,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-        ClassDef(AliAnalysisTaskGammaConvV1, 28);
+		ClassDef(AliAnalysisTaskGammaConvV1, 27);
 };
 
 #endif

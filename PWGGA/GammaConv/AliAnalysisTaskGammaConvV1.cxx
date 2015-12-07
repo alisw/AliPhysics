@@ -95,8 +95,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   hESDConvGammaPsiPairPt(NULL),
   tESDConvGammaPtDcazCat(NULL),
   fPtGamma(0),
-  fnITSclusterPosTrack(0),
-  fnITSclusterNegTrack(0),
   fDCAzPhoton(0),
   fRConvPhoton(0),
   fEtaPhoton(0),
@@ -303,8 +301,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   hESDConvGammaPsiPairPt(NULL),
   tESDConvGammaPtDcazCat(NULL),
   fPtGamma(0),
-  fnITSclusterPosTrack(0),
-  fnITSclusterNegTrack(0),
   fDCAzPhoton(0),
   fRConvPhoton(0),
   fEtaPhoton(0),
@@ -842,12 +838,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fPhotonDCAList[iCut]->SetName(Form("%s_%s_%s Photon DCA tree",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringMeson.Data()));
       fPhotonDCAList[iCut]->SetOwner(kTRUE);
       fCutFolder[iCut]->Add(fPhotonDCAList[iCut]);
-   
+        
       tESDConvGammaPtDcazCat[iCut] = new TTree("ESD_ConvGamma_Pt_Dcaz_R_Eta","ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");   
       tESDConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/F");
-      tESDConvGammaPtDcazCat[iCut]->Branch("nITSclusterPosTrack",&fnITSclusterPosTrack,"fnITSclusterPosTrack/I");
-      tESDConvGammaPtDcazCat[iCut]->Branch("nITSclusterNegTrack",&fnITSclusterNegTrack,"fnITSclusterNegTrack/I");
   //          tESDConvGammaPtDcazCat[iCut]->Branch("R",&fRConvPhoton,"fRConvPhoton/F");
   //          tESDConvGammaPtDcazCat[iCut]->Branch("Eta",&fEtaPhoton,"fEtaPhoton/F");
       
@@ -1805,8 +1799,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if (fIsFromMBHeader && fDoPhotonQA == 2){
         if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
           fPtGamma = PhotonCandidate->Pt();
-          fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-          fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
           fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
           fRConvPhoton = PhotonCandidate->GetConversionRadius();
           fEtaPhoton = PhotonCandidate->GetPhotonEta();
@@ -1814,8 +1806,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
           tESDConvGammaPtDcazCat[fiCut]->Fill();
         } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
           fPtGamma = PhotonCandidate->Pt();
-          fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-          fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
           fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
           fRConvPhoton = PhotonCandidate->GetConversionRadius();
           fEtaPhoton = PhotonCandidate->GetPhotonEta();
@@ -1880,8 +1870,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if (fIsFromMBHeader && fDoPhotonQA == 2){
         if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
         fPtGamma = PhotonCandidate->Pt();
-        fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-        fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
         fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
         fRConvPhoton = PhotonCandidate->GetConversionRadius();
         fEtaPhoton = PhotonCandidate->GetPhotonEta();
@@ -1889,8 +1877,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         tESDConvGammaPtDcazCat[fiCut]->Fill();
         } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
         fPtGamma = PhotonCandidate->Pt();
-        fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-        fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
         fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
         fRConvPhoton = PhotonCandidate->GetConversionRadius();
         fEtaPhoton = PhotonCandidate->GetPhotonEta();
@@ -1945,8 +1931,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if (fIsFromMBHeader && fDoPhotonQA == 2){
       if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
         fPtGamma = PhotonCandidate->Pt();
-        fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-        fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
         fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
         fRConvPhoton = PhotonCandidate->GetConversionRadius();
         fEtaPhoton = PhotonCandidate->GetPhotonEta();
@@ -1954,8 +1938,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         tESDConvGammaPtDcazCat[fiCut]->Fill();
         } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
         fPtGamma = PhotonCandidate->Pt();
-        fnITSclusterPosTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel1()))->GetNumberOfITSClusters();
-        fnITSclusterNegTrack = ((AliVTrack*)fInputEvent->GetTrack(PhotonCandidate->GetLabel2()))->GetNumberOfITSClusters();
         fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
         fRConvPhoton = PhotonCandidate->GetConversionRadius();
         fEtaPhoton = PhotonCandidate->GetPhotonEta();
