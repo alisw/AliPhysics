@@ -481,8 +481,8 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
     return;
   }
   if (histName.size()==0) histName=histTitle;
-  if (!trigName.empty()) histName=trigName+"_"+histName;
-  if (!trigName.empty()) histTitle="<"+trigName+"> "+histTitle;
+  if (!trigName.empty()) histName=histName+"_"+trigName;
+  if (!trigName.empty()) histTitle=histTitle+" <"+trigName+">";
 
   //get ref to the old histogram (if any)
   histStruct& hist = fHistograms[histName];
