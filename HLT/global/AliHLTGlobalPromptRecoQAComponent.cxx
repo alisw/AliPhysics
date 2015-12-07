@@ -153,7 +153,7 @@ int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
   TString argument;
   int bMissingParam=0;
 
-  TObjArray* pTokens=allArgs.Tokenize(" ");
+  TObjArray* pTokens=allArgs.Tokenize(" \n\r");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
       argument=((TObjString*)pTokens->At(i))->String();	
@@ -237,6 +237,9 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   
   list.push_back(kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD); //SPD Vertex
+
+  //config
+  list.push_back(kAliHLTDataTypeConfig);
   
   list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC); //HLT-TPC clusters from HWCF
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC); //TPC DDL raw data
@@ -681,7 +684,16 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   int nBlocks = evtData.fBlockCnt;  
   for (int ndx=0; ndx<nBlocks; ndx++) {
     const AliHLTComponentBlockData* iter = blocks+ndx;
-    
+   
+    //reconfigure on request
+    if (iter->fDataType == kAliHLTDataTypeConfig)
+    {
+      char* configCharArr = reinterpret_cast<char*>(iter->fPtr);
+      string configString;
+      configString.assign(configCharArr,iter->fSize);
+      Configure(configString.c_str());
+    }
+
     //SPD Vertex Found
     if (iter->fDataType == (kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD))
     {
