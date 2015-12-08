@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist = kTRUE,Bool_t runSyst = kFALSE){
+AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist = kTRUE,Bool_t runSyst = kFALSE,Int_t tracking = 0){
 
   
   //--- get the current analysis manager ---//
@@ -25,6 +25,7 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   task->SetRunHist(runHist);
   task->SetIsMC(isMC);
   task->SetRunSyst(runSyst);
+  task->SetTracking(tracking);
   mgr->AddTask(task);
 
 
