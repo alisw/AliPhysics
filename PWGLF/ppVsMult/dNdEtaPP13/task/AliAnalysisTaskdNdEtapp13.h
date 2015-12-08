@@ -114,6 +114,10 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   enum {kDummyBin,
 	kEvTot0,      // events read
 	kEvTot,       // events read after vertex quality selection
+        kEvAfterPhysSel  , // events after pileup rejection
+        kEvAfterPileUp  , // events after pileup rejection
+        kEvAfterClsVsTrk, // events after the cluster vs tracklet cut
+        kEvAfterAsymCut , // events after V0 asymmetry cut
 	kOneUnit,     // just 1 to track primate merges
 	kNWorkers,    // n workers
 	//

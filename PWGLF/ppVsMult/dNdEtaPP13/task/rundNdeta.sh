@@ -8,11 +8,13 @@ PROOFDATASET="Find;BasePath=/alice/data/2015/LHC15f/000226062/pass2/%.%/;FileNam
 isMC="kFALSE"
 NEV=2000
 FIRSTEV=0
-ADDTASKMACRO="AddAnalysisTaskdNdEtaPP13(\\\"outfile.root\\\",\\\"%s\\\",%f,%f,%f,%f,\\\"%s\\\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d)"
+#ADDTASKMACRO="AddAnalysisTaskdNdEtaPP13(\\\"outfile.root\\\",\\\"%s\\\",%f,%f,%f,%f,\\\"%s\\\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d)"
+ADDTASKMACRO="AddAnalysisTaskdNdEtaPP13(<outname>,\\\"%s\\\",%f,%f,%f,%f,\\\"%s\\\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d,%u)"
 #outname is replaced dynamically below, chance the code if you want to change the filename policy
 # is mc is replaced below
-USEPHYSICSSELECTION=kFALSE
-OUTFNAME="out.root"
+USEPHYSICSSELECTION=kTRUE
+OUTFNAME="AnalysisResults.root"
+DOMULTSELTREE=kFALSE
 
 # GRID STUFF
 DATADIR="/alice/sim/2015/LHC15g3c2/"
@@ -24,6 +26,12 @@ RUNPROOF="NO"
 RUNLOCAL="NO"
 RUNTESTDEST="NO"
 RUNGRID="NO"
+RUNCORRECTION="NO"
+
+OADBMCMULT="OADB-LHC15g3c2_plus.root"
+GRIDMODE="full"
+
+UNIQUENAMECORR="dndeta"
 
 give_help() {
 
@@ -39,10 +47,17 @@ give_help() {
     echo "                       Run on proof, locally or on grid. The dset mode simply checks the dataset creation on VAF"
     echo "                       for grid, you also have to specify the additional options below"
     echo " -n <nev>              Set number of events (default: $NEV)"
-    echo " -g                    Show FIXME and TODO from classes and macros"
+    echo " -u                    Show FIXME and TODO from classes and macros"
     echo " -s kTRUE|kFALSE       Use physics selection (default: $USEPHYSICSSELECTION)"
     echo " -m                    Use this flag if processing MC"
+    echo " -t                    Enable multiplicity selection trees (not yet supported on proof, flag needs to be propagated)"
     echo " -o fname              Set out filename (default $OUTFNAME)"
+    echo " -a oadbMCMult         Set the OADB to be used for the mult selection in the MC. Can either be a period name "
+    echo "                       (e.g. LHC15f), to use the same absolute boundaries used in data, or a root file "
+    echo "                       (e.g. OADB-LHC15g3c2_plus.root) which contains the calibration histos to be shipped with "
+    echo "                       the analysis task. The root file can be obtained with the macro"
+    echo "                       OADB/COMMON/MULTIPLICITY/macros/CalibratePeriodMC.C"
+    echo "                       (Default: $OADBMCMULT)"
     echo ""
     echo "Other GRID Options"
     echo " -b <basedir>          Set the base data dir for GRID processing (Default: $DATADIR)"
@@ -50,6 +65,11 @@ give_help() {
     echo "                       Default: $DATAPATTERN"
     echo " -w <workdir>          Set The workdir (Default $GRIDWORKINGDIR)"
     echo " -x <RUNLIST>          Runlist, comma separated (Default $RUNLIST)"
+    echo " -g <gridmode>         Typically, full or test (Default: $GRIDMODE)"
+    echo ""
+    echo "Correction:"
+    echo " -c filedata.root filemc.root    Runs the correction macro"
+    echo " -o <tag>                        Unique name prepended to corrected histos output (Default $UNIQUENAMECORR)"
     echo ""
     echo "VAF Cheatsheet"
     echo "vaf-enter"
@@ -60,7 +80,7 @@ give_help() {
 
 }
 
-while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
+while getopts "hd:l:mr:gn:s:o:p:w:x:b:ca:t" opt; do
   case $opt in
       h) 
 	  give_help
@@ -82,8 +102,12 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
       n) 
 	  NEV=$OPTARG
 	  ;;
+      a) 
+	  OADBMCMULT=$OPTARG
+	  ;;
       o) 
 	  OUTFNAME=$OPTARG
+          UNIQUENAMECORR=$OPTARG
 	  ;;
       p) 
 	  PATTERN=$OPTARG
@@ -100,6 +124,12 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
       s) 
 	  USEPHYSICSSELECTION=$OPTARG
 	  ;;
+      t)
+          DOMULTSELTREE=kTRUE
+          ;;
+      g)
+          GRIDMODE=$OPTARG
+          ;;
 
       r)
 	  if [ "$OPTARG" = "proof" ]
@@ -119,7 +149,7 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
 	      RUNGRID=YES
 	  fi
 	  ;;
-      l) 
+      u) 
 	  for i in `ls *.{cxx,h,C}`
 	  do
 	      # the first grep is just used for the return code (stored in $?) so that we only pring relevant files
@@ -133,6 +163,9 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
 	  done
 	  exit 1
 	  ;;
+      c)
+          RUNCORRECTION=YES
+          ;;
 
       \?)
 	  echo "Invalid option: -$OPTARG" >&2
@@ -146,11 +179,13 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:c" opt; do
   esac
 done
 
+if [ $OPTIND -eq 1 ]; then give_help; fi
+
 if [ "$RUNPROOF" = "YES" ]
     then   
         #    ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"out_`basename $PROOFDATASET`.root\\\"}
     ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"$OUTFNAME\\\"}
-    root -b -q runProofdNdeta.C\(\"$PROOFDATASET\",$USEPHYSICSSELECTION,$isMC,$NEV,$FIRSTEV,\"$ADDTASKMACRO\"\)
+    root -b -q runProofdNdeta.C\(\"$PROOFDATASET\",$USEPHYSICSSELECTION,$isMC,$NEV,$FIRSTEV,\"$OADBMCMULT\",\"$ADDTASKMACRO\"\)
 fi
 
 if [ "$RUNLOCAL" = "YES" ]
@@ -161,7 +196,7 @@ fi
 if [ "$RUNGRID" = "YES" ]
     then   
     ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"$OUTFNAME\\\"}
-    root -b -q runGridEsd.C\(\"$DATADIR\",\"$RUNLIST\",\"$DATAPATTERN\",\"$GRIDWORKINGDIR\",$USEPHYSICSSELECTION,$isMC,\"$ADDTASKMACRO\"\)
+    root -b -q runGridEsd.C\(\"$DATADIR\",\"$RUNLIST\",\"$DATAPATTERN\",\"$GRIDWORKINGDIR\",$USEPHYSICSSELECTION,$isMC,$DOMULTSELTREE,\"$OADBMCMULT\",\"$GRIDMODE\",\"$ADDTASKMACRO\"\)
 fi
 
 if [ "$RUNTESTDSET" = "YES" ]
@@ -169,3 +204,10 @@ if [ "$RUNTESTDSET" = "YES" ]
     root -b -q CreateVAFDataset.C\(\"$PROOFDATASET\"\)
 fi
 
+
+if [ "$RUNCORRECTION" = "YES" ]
+then
+    shift $((OPTIND -1)) # allows remaining parameters to be parsed as $1 ...
+    root ../macros/ SaveCanvas.C+ CorrectSpectraMultiMCBG.C+\(\"$1\",\"$2\",\"clist\",\"$UNIQUENAMECORR\"\)
+fi
+  

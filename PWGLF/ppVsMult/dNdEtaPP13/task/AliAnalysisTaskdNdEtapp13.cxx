@@ -577,15 +577,18 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   // FIXME: add event selection histo, can probably adapt hstat
   Bool_t pileup = esd->IsPileupFromSPDInMultBins();
   fIsSelected = trg & fTrigSel; //AliVEvent::kINT7;
-  fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);
+  if(fIsSelected) hstat->Fill(kEvAfterPhysSel, fWeight);
+  fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);  
   fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
-
+  if(fIsSelected) hstat->Fill(kEvAfterPileUp);
+  
+  
   // Clusters vs trakclets
   Int_t fNofTracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
   Int_t fNofITSClusters0 = esd->GetNumberOfITSClusters(0);
   Int_t fNofITSClusters1 = esd->GetNumberOfITSClusters(1);
   if ( fNofITSClusters0+ fNofITSClusters1 > 65+4*fNofTracklets) fIsSelected = kFALSE;
-
+  if(fIsSelected) hstat->Fill(kEvAfterClsVsTrk, fWeight);
   // hm tail in V0
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
@@ -593,7 +596,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
 
   fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
   fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
-
+  if(fIsSelected) hstat->Fill(kEvAfterAsymCut);
   /*
     if (!fUseMC) {
     TString trigStr(esd->GetFiredTriggerClasses());
@@ -954,6 +957,14 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   //
   hstat->GetXaxis()->SetBinLabel(kEvTot0, "Ev.Tot0");
   hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot");
+
+  hstat->GetXaxis()->SetBinLabel(kEvAfterPhysSel , "Ev. After PS");
+  hstat->GetXaxis()->SetBinLabel(kEvAfterPileUp  , "Ev. After Pup");
+  hstat->GetXaxis()->SetBinLabel(kEvAfterClsVsTrk, "Ev. After ClsVsTrk");
+  hstat->GetXaxis()->SetBinLabel(kEvAfterAsymCut , "Ev. After V0 Asym");
+
+
+  
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
   //

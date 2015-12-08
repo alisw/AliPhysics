@@ -53,6 +53,7 @@ float  ovlPhiCut   = 0.005;
 float  ovlZetaCut  = 0.05;
 Bool_t checkReconstructables = kFALSE;//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
 
+UInt_t trigSel = AliVEvent::kMB;
 
 
 //______________________________________________________________________________
@@ -79,7 +80,8 @@ void runProofdNdeta(
                   Bool_t isMC = 0,
                   Int_t numEvents = 999999999,
                   Int_t firstEvent = 0,
-                  const char * addTaskString = "AddAnalysisTaskdNdEtaPP13(\"outfile.root\",\"%s\",%f,%f,%f,%f,\"%s\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d)"
+                  const char * oadbMultSel = "LHC15f",                  
+                  const char * addTaskString = "AddAnalysisTaskdNdEtaPP13(\"outfile.root\",\"%s\",%f,%f,%f,%f,\"%s\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d,%u)"
                   
 ) {
 
@@ -113,13 +115,12 @@ void runProofdNdeta(
   gProof->EnablePackage(aliceVafPar.Data(), list);  // this "list" is the same as always
 
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train");
-  mgr->SetSpecialOutputLocation("root://lxplus0090.cern.ch//tmp/craucheg/outputtmp/");
-  //AliVEventHandler* iH = new AliESDInputHandler(); // WARNING: this needs to be changed for AOD!
+  AliVEventHandler* iH = new AliESDInputHandler(); // WARNING: this needs to be changed for AOD!
   //    AliAODInputHandler* iH = new AliAODInputHandler();
-  //mgr->SetInputEventHandler(iH);
-  AliESDInputHandler *esdInputHandler = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  mgr->SetInputEventHandler(iH);
+  //AliESDInputHandler *esdInputHandler = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   //  if (!esdInputHandler) esdInputHandler = new AliESDInputHandlerRP();
-  mgr->SetInputEventHandler(esdInputHandler);
+  //mgr->SetInputEventHandler(esdInputHandler);
 
   if(isMC) {
     AliMCEventHandler* mchandler = new AliMCEventHandler();
@@ -131,7 +132,7 @@ void runProofdNdeta(
   if(usePhysicsSelection){
     std::cout << "WARNING! Custom Phuscs Selection" << std::endl;
     AliOADBPhysicsSelection *customPS = new AliOADBPhysicsSelection("customPS");
-    customPS->AddCollisionTriggerClass(AliVEvent::kMB,"+CINT7-B-NOPF-ALLNOTRD","B",0);
+    customPS->AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel),"+CINT7-B-NOPF-ALLNOTRD","B",0);
     customPS->SetHardwareTrigger(0, "1");
     customPS->SetOfflineTrigger(0, "1");
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
@@ -144,10 +145,14 @@ void runProofdNdeta(
   // MULT SELECTION
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   //AddTask: Should take care of everything transparently...
-  AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine( "AddTaskMultSelection();");
+    AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine( "AddTaskMultSelection();");
+  //  AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine( "AddTaskMultSelection(kTRUE);"); // produces tree for centrality calibration with the true option
     
   //User Case FIXME??
   taskMS->SetAddInfo(kTRUE);
+
+  taskMS->SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel));
+  taskMS -> SetAlternateOADBforEstimators ( oadbMultSel );
 
 
  
@@ -168,7 +173,7 @@ void runProofdNdeta(
   {
     TString buf1, buf2;
     buf1.Form("%s", addTaskString);
-    buf2.Form(buf1.Data(), listname,etaMin, etaMax, zMin, zMax, useCentVar, cutSigNStd, cutSigDPhiS, isMC, doRec, doInj, doRot, phiRot, injScale, scaleDTheta, nStdDev, dphi, dtht, phishift, remOvl, ovlPhiCut, ovlZetaCut, checkReconstructables);
+    buf2.Form(buf1.Data(), listname,etaMin, etaMax, zMin, zMax, useCentVar, cutSigNStd, cutSigDPhiS, isMC, doRec, doInj, doRot, phiRot, injScale, scaleDTheta, nStdDev, dphi, dtht, phishift, remOvl, ovlPhiCut, ovlZetaCut, checkReconstructables, trigSel);
     std::cout << "Add macro: " << buf2.Data() << std::endl;
     
     task = (AliAnalysisTaskSE *)gROOT->ProcessLine( buf2.Data() );
