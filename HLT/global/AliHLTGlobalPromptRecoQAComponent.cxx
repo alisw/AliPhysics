@@ -152,27 +152,27 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
   if (option.BeginsWith("#")) return 0;
   if (option.BeginsWith("//")) return 0;
 
-  if (option.Contains("reset")) {
+  if (option.EqualTo("reset")) {
     HLTImportant("received RESET, destroying histograms");
     Reset();
-  } else if (option.Contains("resetIncludingDownstream")) {
+  } else if (option.EqualTo("resetIncludingDownstream")) {
     HLTImportant("received RESET, destroying histograms");
     Reset(true);
-  } else if (option.Contains("skip-events")) {
+  } else if (option.EqualTo("skip-events")) {
     fSkipEvents = value.Atoi();
-  } else if (option.Contains("axis")) {
+  } else if (option.EqualTo("axis")) {
     NewAxis(value.Data());
-  } else if (option.Contains("histogram")) {
+  } else if (option.EqualTo("histogram")) {
     NewHistogram(value.Data());
-  }	else if (option.Contains("print-stats")) {
+  }	else if (option.EqualTo("print-stats")) {
     fPrintStats = 1;
-  }	else if (option.Contains("print-stats-verbose")) {
+  }	else if (option.EqualTo("print-stats-verbose")) {
     fPrintStats = 2;
-  }	else if (option.Contains("print-stats-downscale")) {
+  }	else if (option.EqualTo("print-stats-downscale")) {
     fPrintDownscale = atoi(value);
-  } else if (option.Contains("PushEmptyHistograms")) {
+  } else if (option.EqualTo("PushEmptyHistograms")) {
     fPushEmptyHistograms=kTRUE;
-  } else if (option.Contains("pushback-period")) {
+  } else if (option.EqualTo("pushback-period")) {
   } else {
     HLTError("invalid option: %s", value.Data());
     return -EINVAL;
@@ -191,7 +191,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   
   if (resetDownstream) 
   {
-    rc = PushBack("reset", kAliHLTDataTypeConfig);
+    rc = PushBack("reset", kAliHLTDataTypeConfig|kAliHLTDataOriginHLT);
   }
   return 0;
 }
