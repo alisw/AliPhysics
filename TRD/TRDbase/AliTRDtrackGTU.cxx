@@ -248,7 +248,7 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
   trk->SetSector(fSector);
   trk->SetLabel(fLabel);
 
-  if ( TMath::Abs(fInvPtDev) > AliTRDgtuParam::GetPtCut() )
+  if ( TMath::Abs(fInvPtDev) > AliTRDgtuParam::GetInvPtDevCut() )
     trk->SetFlags(1 << 5);
 
   for (Int_t iLayer = 0; iLayer < AliTRDgtuParam::GetNLayers(); iLayer++) {
