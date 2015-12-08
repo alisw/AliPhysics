@@ -119,31 +119,31 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     Int_t type = -1;
     if (fAODfilterBits[0] < 0) {
       if (track->IsHybridGlobalConstrainedGlobal())
-	type = 3;
+        type = 3;
       else /*not a good track*/
-	continue;
+        continue;
     } else {
       if (track->TestFilterBit(fAODfilterBits[0])) {
-	type = 0;
+        type = 0;
       } else if (fAODfilterBits[1]>-1 && track->TestFilterBit(fAODfilterBits[1])) {
-	if ((track->GetStatus()&AliVTrack::kITSrefit)==0) {
-	  if (fIncludeNoITS)
-	    type = 2;
-	  else
-	    continue;
-	} else {
-	  type = 1;
-	}
+        if ((track->GetStatus()&AliVTrack::kITSrefit)==0) {
+          if (fIncludeNoITS)
+            type = 2;
+          else
+            continue;
+        } else {
+          type = 1;
+        }
       }
       else {/*not a good track*/
-	continue;
+        continue;
       }
     }
 
     if (fCutMaxFrShTPCClus > 0) {
       Double_t frac = Double_t(track->GetTPCnclsS()) / Double_t(track->GetTPCncls());
       if (frac > fCutMaxFrShTPCClus) {
-	continue;
+        continue;
       }
     }
 
@@ -163,9 +163,9 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       propthistrack = kTRUE;
     else if (!newt->IsExtrapolatedToEMCAL()) {
       if (fAttemptProp)
-	propthistrack = kTRUE;
+        propthistrack = kTRUE;
       else if (fAttemptPropMatch && newt->IsEMCAL())
-	propthistrack = kTRUE;
+        propthistrack = kTRUE;
     }
     if (propthistrack)
       AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newt,fDist);
@@ -173,18 +173,18 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     Int_t label = 0;
     if (fIsMC) {
       if (fUseNegativeLabels)
-	label = track->GetLabel();
+        label = track->GetLabel();
       else 
-	label = TMath::Abs(track->GetLabel());
+        label = TMath::Abs(track->GetLabel());
       if (label == 0) 
-	AliDebug(2,Form("Track %d with label==0", iTracks));
+        AliDebug(2,Form("Track %d with label==0", iTracks));
     }
     if(fKeepInvMassTag && !fIsMC && (track->GetLabel() == 1011000 ||
-       track->GetLabel() == 1012000 ||
-       track->GetLabel() == 1021000 ||
-       track->GetLabel() == 1022000 ||
-       track->GetLabel() == 1031000 ||
-	track->GetLabel() == 1032000)){
+        track->GetLabel() == 1012000 ||
+        track->GetLabel() == 1021000 ||
+        track->GetLabel() == 1022000 ||
+        track->GetLabel() == 1031000 ||
+        track->GetLabel() == 1032000)){
       newt->SetLabel(track->GetLabel());
     }
     else
