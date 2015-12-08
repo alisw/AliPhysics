@@ -172,6 +172,7 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
     fPrintDownscale = atoi(value);
   } else if (option.Contains("PushEmptyHistograms")) {
     fPushEmptyHistograms=kTRUE;
+  } else if (option.Contains("pushback-period")) {
   } else {
     HLTError("invalid option: %s", value.Data());
     return -EINVAL;
