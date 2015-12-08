@@ -120,14 +120,33 @@ void AliJetContainer::SetArray(AliVEvent *event)
 
   AliEmcalContainer::SetArray(event);
 
-  if(fJetAcceptanceType==kTPC) {
+  switch (fJetAcceptanceType) {
+  case kTPC:
     AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
     SetJetEtaPhiTPC();
-  }
-  else if(fJetAcceptanceType==kEMCAL) {
+    break;
+  case kTPCfid:
+    AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
+    SetJetEtaPhiTPC(fJetRadius);
+    break;
+  case kEMCAL:
     AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiEMCAL();
- }
+  case kEMCALfid:
+    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
+    SetJetEtaPhiEMCAL(fJetRadius);
+    break;
+  case kDCALfid:
+    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
+    SetJetEtaPhiDCAL();
+    break;
+  case kDCAL:
+    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
+    SetJetEtaPhiDCAL(fJetRadius);
+    break;
+  case kUser:
+    break;
+  }
 }
 
 
@@ -185,15 +204,15 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
 //________________________________________________________________________
 void AliJetContainer::LoadPythiaInfo(AliVEvent *event)
 {
-    // Load parton info
-    
-    if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
-        fPythiaInfo = dynamic_cast<AliPythiaInfo*>(event->FindListObject(fPythiaInfoName));
-        if (!fPythiaInfo) {
-           AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPythiaInfoName.Data()));    
-        return;
-        }
+  // Load parton info
+
+  if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
+    fPythiaInfo = dynamic_cast<AliPythiaInfo*>(event->FindListObject(fPythiaInfoName));
+    if (!fPythiaInfo) {
+      AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPythiaInfoName.Data()));
+      return;
     }
+  }
 }
 
 
@@ -214,7 +233,7 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
   if (option.Contains("rho")) {
     while ((jet = GetNextAcceptJet())) {
       if ( (jet->Pt()-jet->Area()*GetRhoVal()) > (jetMax->Pt()-jetMax->Area()*GetRhoVal()) )
-	jetMax = jet;
+        jetMax = jet;
     }
   }
   else {
@@ -254,7 +273,7 @@ AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) {
 AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
 
   //Get particle with label lab in array
-  
+
   Int_t i = GetIndexFromLabel(lab);
   return GetJet(i);
 }
@@ -263,7 +282,7 @@ AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
 AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) {
 
   //Get particle with label lab in array
-  
+
   Int_t i = GetIndexFromLabel(lab);
   return GetAcceptJet(i);
 }
@@ -346,7 +365,7 @@ Bool_t AliJetContainer::AcceptBiasJet(const AliEmcalJet *jet)
 //________________________________________________________________________
 Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
 {   
-   // Return true if jet is accepted.
+  // Return true if jet is accepted.
 
   fRejectionReason = 0;
 
@@ -367,7 +386,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   Double_t tpi = TMath::TwoPi();
   if(jetPhi<0.)  jetPhi+=tpi;
   if(jetPhi>tpi) jetPhi-=tpi;
-   
+
   // if limits are given in (-pi, pi) range
   if (fJetMinPhi < -1e-6) jetPhi -= TMath::Pi() * 2;
 
@@ -394,13 +413,13 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     fRejectionReason |= kAreaEmcCut;
     return kFALSE;
   }
-   
+
   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut) {
     AliDebug(11,"Cut rejecting jet: ZLeading");
     fRejectionReason |= kZLeadingChCut;
     return kFALSE;
   }
-   
+
   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut) {
     AliDebug(11,"Cut rejecting jet: ZLeadEmc");
     fRejectionReason |= kZLeadingEmcCut;
@@ -412,7 +431,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     fRejectionReason |= kNEFCut;
     return kFALSE;
   }
-   
+
   if (!AcceptBiasJet(jet)) {
     AliDebug(11,"Cut rejecting jet: Bias");
     fRejectionReason |= kMinLeadPtCut;
@@ -437,13 +456,13 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     fRejectionReason |= kMaxClusterPtCut;
     return kFALSE;
   }
-   
+
   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection)) {
     AliDebug(11,"Cut rejecting jet: Flavour");
     fRejectionReason |= kFlavourCut;
     return kFALSE;
   }
-   
+
   if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
     AliDebug(11,"Cut rejecting jet: tag status");
     fRejectionReason |= kTagStatus;
@@ -470,23 +489,23 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
   Double_t maxClusterPt = 0;
   Double_t maxClusterEta = 0;
   Double_t maxClusterPhi = 0;
-  
+
   Double_t maxTrackPt = 0;
   Double_t maxTrackEta = 0;
   Double_t maxTrackPhi = 0;
-      
+
   if (fClusterContainer && fClusterContainer->GetArray() && (fLeadingHadronType == 1 || fLeadingHadronType == 2)) {
     AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
     if (cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
-      
+
       maxClusterEta = nPart.Eta();
       maxClusterPhi = nPart.Phi();
       maxClusterPt = nPart.Pt();
     }
   }
-      
+
   if (fParticleContainer && fParticleContainer->GetArray() && (fLeadingHadronType == 0 || fLeadingHadronType == 2)) {
     AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
     if (track) {
@@ -495,7 +514,7 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
       maxTrackPt = track->Pt();
     }
   }
-      
+
   if (maxTrackPt > maxClusterPt) 
     mom.SetPtEtaPhiM(maxTrackPt,maxTrackEta,maxTrackPhi,0.139);
   else 
@@ -508,11 +527,11 @@ Double_t AliJetContainer::GetZLeadingEmc(const AliEmcalJet *jet) const
 
   if (fClusterContainer && fClusterContainer->GetArray()) {
     TLorentzVector mom;
-    
+
     AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
     if (cluster) {
       cluster->GetMomentum(mom, const_cast<Double_t*>(fVertex));
-      
+
       return GetZ(jet,mom);
     }
     else
@@ -528,11 +547,11 @@ Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 
   if (fParticleContainer && fParticleContainer->GetArray() ) {
     TLorentzVector mom;
-    
+
     AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
     if (track) {
       mom.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.139);
-      
+
       return GetZ(jet,mom);
     }
     else
@@ -558,33 +577,52 @@ Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
 }
 
 //________________________________________________________________________
-void AliJetContainer::SetJetEtaPhiEMCAL()
+void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
 {
-  //Set default cuts for full jets
+  //Set default cuts for full jets in EMCal
 
   if (!fGeom) SetEMCALGeometry();
   if (fGeom) {
-    SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
+    SetJetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
 
-    if(fRunNumber>=177295 && fRunNumber<=197470) //small SM masked in 2012 and 2013
-      SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
-    else
-      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+    if(fRunNumber>=177295 && fRunNumber<=197470) {//small SM masked in 2012 and 2013
+      SetJetPhiLimits(1.405 + r,3.135 - r);
+    }
+    else {
+      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetArm1PhiMax() * TMath::DegToRad() - r);
+    }
   }
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-    SetJetEtaLimits(-0.7+fJetRadius,0.7-fJetRadius);
-    SetJetPhiLimits(1.405+fJetRadius,3.135-fJetRadius);
+    SetJetEtaLimits(-0.7 + r, 0.7 - r);
+    SetJetPhiLimits(1.405 + r, 3.135 - r);
   }
 }
 
 //________________________________________________________________________
-void AliJetContainer::SetJetEtaPhiTPC()
+void AliJetContainer::SetJetEtaPhiDCAL(Double_t r)
+{
+  //Set default cuts for full jets in DCal
+
+  if (!fGeom) SetEMCALGeometry();
+  if (fGeom) {
+    SetJetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
+    SetJetPhiLimits(fGeom->GetDCALPhiMin() * TMath::DegToRad() + r, fGeom->GetDCALPhiMax() * TMath::DegToRad() - r);
+  }
+  else {
+    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
+    SetJetEtaLimits(-0.7 + r, 0.7 - r);
+    SetJetPhiLimits(4.538 + r, 5.727 - r);
+  }
+}
+
+//________________________________________________________________________
+void AliJetContainer::SetJetEtaPhiTPC(Double_t r)
 {
   //Set default cuts for charged jets
 
-  SetJetEtaLimits(-0.9+fJetRadius, 0.9-fJetRadius);
-  SetJetPhiLimits(0, TMath::TwoPi()+0.1);
+  SetJetEtaLimits(-0.9 + r, 0.9 - r);
+  SetJetPhiLimits(0, TMath::TwoPi() + 0.1);
 }
 
 //________________________________________________________________________
@@ -685,22 +723,22 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
       iFound = 0;
       //Printf("Track j2 number %d", icc);
       for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
-      	 if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
-      	    //Printf("Mode ID, id = %d", idx);
-      	    iFound=1;
-      	    vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
-      	    if(vpf) sumPt += vpf->Pt();
-      	    continue;
-      	 }
-      	 if(bgeom){
-      	    //Printf("Track j1 number %d", icf);
-      	    vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
-      	    if(!vpf) continue;
-      	    if(!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
-      	    //else Printf("Same track!!!");
-      	    sumPt += vpf->Pt();
-      	 }
-      	 //Printf("Sum %d+%d tracks = %f", icc, icf, sumPt);
+        if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
+          //Printf("Mode ID, id = %d", idx);
+          iFound=1;
+          vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+          if(vpf) sumPt += vpf->Pt();
+          continue;
+        }
+        if(bgeom){
+          //Printf("Track j1 number %d", icf);
+          vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+          if(!vpf) continue;
+          if(!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
+          //else Printf("Same track!!!");
+          sumPt += vpf->Pt();
+        }
+        //Printf("Sum %d+%d tracks = %f", icc, icf, sumPt);
       }
     }
     fraction = sumPt/jetPt2;

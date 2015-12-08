@@ -22,9 +22,13 @@ class AliJetContainer : public AliEmcalContainer {
  public:
  
   enum JetAcceptanceType {
-    kTPC       = 0,     // TPC acceptance
-    kEMCAL     = 1,     // EMCal acceptance
-    kUser      = 2      // User defined acceptance
+    kTPC       ,     // TPC acceptance
+    kTPCfid    ,     // TPC fiducial acceptance
+    kEMCAL     ,     // EMCal acceptance
+    kEMCALfid  ,     // EMCal fiducial acceptance
+    kDCAL      ,     // DCal acceptance
+    kDCALfid   ,     // DCal fiducial acceptance
+    kUser            // User defined acceptance
   };
 
 
@@ -40,8 +44,9 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
   void                        PrintCuts();
   void                        ResetCuts();
-  void                        SetJetEtaPhiEMCAL() ;
-  void                        SetJetEtaPhiTPC()   ;
+  void                        SetJetEtaPhiEMCAL(Double_t r=0.) ;
+  void                        SetJetEtaPhiDCAL(Double_t r=0.)  ;
+  void                        SetJetEtaPhiTPC(Double_t r=0.)   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.) { fJetMinPhi = min, fJetMaxPhi = max ; fPhiOffset = offset;}
