@@ -591,9 +591,9 @@ TString AliOptionParser::GetFullArgString(int argc, char** argv)
 int AliOptionParser::ProcessOptionString(TString arguments)
 {
   //process passed options, return number of processed valid options
-  stringMap* options = TokenizeOptionString(arguments);
+  aliStringVec* options = TokenizeOptionString(arguments);
   int nOptions=0;
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //printf("  %s : %s\n", i->first.data(), i->second.data());
     if (ProcessOption(i->first,i->second)<0)
@@ -609,7 +609,7 @@ int AliOptionParser::ProcessOptionString(TString arguments)
 }
 
 //______________________________________________________________________________
-stringMap* AliOptionParser::TokenizeOptionString(const TString strIn)
+aliStringVec* AliOptionParser::TokenizeOptionString(const TString strIn)
 {
   //options have the form:
   // -option value
@@ -634,10 +634,10 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString strIn)
                    "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
                    "|[^ =]+))");
 
-  stringMap* options = new stringMap;
+  aliStringVec* options = new aliStringVec;
 
   //first split in lines (by newline) and ignore comments
-  TObjArray* lines = strIn.Tokenize("\n");
+  TObjArray* lines = strIn.Tokenize("\n\r");
   TIter nextLine(lines);
   while (TObjString* objString = (TObjString*)nextLine())
   {
@@ -676,7 +676,7 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString strIn)
     //skip empty entries
     if (nOption>0 || nValue>0)
     {
-      (*options)[optionStr.Data()] = valueStr.Data();
+      options->push_back(std::make_pair(optionStr.Data(),valueStr.Data()));
     }
 
     if (start>=line.Length()-1 || start==prevStart ) break;

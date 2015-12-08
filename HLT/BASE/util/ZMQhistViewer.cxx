@@ -360,9 +360,9 @@ int UpdatePad(TObject* object)
 int ProcessOptionString(TString arguments)
 {
   //process passed options
-  stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
+  aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
   int nOptions = 0;
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first;

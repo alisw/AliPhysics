@@ -16,6 +16,7 @@ typedef std::map<std::string,std::string> stringMap;
 typedef std::pair<zmq_msg_t*, zmq_msg_t*> aliZMQframe;
 typedef std::vector<aliZMQframe> aliZMQmsg;
 typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
+typedef std::vector<std::pair<std::string, std::string> > aliStringVec;
 
 //  Init and bind/connect a ZMQ socket using a string:
 //  PUB@tcp://*:123123
@@ -104,7 +105,7 @@ public:
 
   //convert argc/argv into a TString of options
   static TString GetFullArgString(int argc, char** argv);
-  static stringMap* TokenizeOptionString(const TString str);
+  static aliStringVec* TokenizeOptionString(const TString str);
 };
 
 #endif

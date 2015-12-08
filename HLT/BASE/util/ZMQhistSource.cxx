@@ -125,8 +125,8 @@ int ProcessOptionString(TString arguments)
 {
   //process passed options
   int nOptions = 0;
-  stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
+  for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first;

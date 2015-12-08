@@ -23,8 +23,6 @@
 //zmq payloads, maybe a AliZMQmessage class which would by default be multipart and provide
 //easy access to payloads based on topic or so (a la HLT GetFirstInputObject() etc...)
 
-typedef std::map<std::string,std::string> stringMap;
-
 //methods
 TObject* UnpackMessage(zmq_msg_t* message);
 Int_t ProcessOptionString(TString arguments);
@@ -504,8 +502,8 @@ Int_t ProcessOptionString(TString arguments)
 {
   //process passed options
   Int_t nOptions=0;
-  stringMap* options = AliOptionParser::TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
+  for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first; 
