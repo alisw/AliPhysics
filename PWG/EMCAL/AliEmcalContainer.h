@@ -34,7 +34,8 @@ class AliEmcalContainer : public TNamed {
     kIsEMCalCut = 1<<13,
     kTimeCut = 1<<14,
     kEnergyCut = 1<<15,
-    // leave bits 16-17 free for future implementations
+    kExoticCut = 1<<16,
+    // leave bit 17 free for future implementations
 
     // AliJetContainer
     kAreaCut = 1<<18,
