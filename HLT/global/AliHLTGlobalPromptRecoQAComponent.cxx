@@ -87,6 +87,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fPrintStats(0)
   , fPrintDownscale(1)
   , fEventsSinceSkip(0)
+  , fPushEmptyHistograms(false)
   , fHistograms()
   , fAxes()
   , fnClustersSPD(0.)
@@ -143,66 +144,38 @@ AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
   // see header file for class documentation
 }
 
-int AliHLTGlobalPromptRecoQAComponent::Configure(const char* arguments)
+int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString value)
 {
   // see header file for class documentation
   int iResult=0;
-  if (!arguments) return iResult;
 
-  TString allArgs=arguments;
-  TString argument;
-  int bMissingParam=0;
+  if (option.BeginsWith("#")) return 0;
+  if (option.BeginsWith("//")) return 0;
 
-  TObjArray* pTokens=allArgs.Tokenize(" \n\r");
-  if (pTokens) {
-    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->String();	
-      if (argument.IsNull()) continue;
-      argument = argument.Strip(TString::kBoth,' ');
-      argument = argument.Strip(TString::kBoth,'\t');
-      if (argument.BeginsWith("#")) continue;
-      if (argument.BeginsWith("//")) continue;
-      
-      if (argument.Contains("-skip-events")) {
-        argument.ReplaceAll("-skip-events=","");
-        fSkipEvents = argument.Atoi();
-      } else if (argument.Contains("-histogram")) {
-        TString tmp = argument.ReplaceAll("-histogram=","");
-        NewHistogram(tmp.Data());
-      } else if (argument.BeginsWith("-reset")) {
-        HLTImportant("received RESET, destroying histograms");
-        Reset();
-      } else if (argument.BeginsWith("-resetIncludingDownstream")) {
-        HLTImportant("received RESET, destroying histograms");
-        Reset(true);
-      } else if (argument.Contains("-axis")) {
-        TString tmp = argument.ReplaceAll("-axis=","");
-        NewAxis(tmp.Data());
-      }	else if (argument.CompareTo("-print-stats")==0) {
-        fPrintStats = 1;
-      }	else if (argument.CompareTo("-print-stats-verbose")==0) {
-        fPrintStats = 2;
-      }	else if (argument.CompareTo("-print-stats-downscale")==0) {
-        if (++i >= pTokens->GetEntries())
-        {
-          bMissingParam++;
-          break;
-        }
-        argument=((TObjString*)pTokens->At(i))->String();	
-        fPrintDownscale = atoi(argument);
-      }	else if (!argument.Contains("pushback-period")) {
-	HLTError("unknown argument %s", argument.Data());
-	iResult=-EINVAL;
-	break;
-      }
-    }
-    delete pTokens;
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-
+  if (option.Contains("reset")) {
+    HLTImportant("received RESET, destroying histograms");
+    Reset();
+  } else if (option.Contains("resetIncludingDownstream")) {
+    HLTImportant("received RESET, destroying histograms");
+    Reset(true);
+  } else if (option.Contains("skip-events")) {
+    fSkipEvents = value.Atoi();
+  } else if (option.Contains("axis")) {
+    NewAxis(value.Data());
+  } else if (option.Contains("histogram")) {
+    NewHistogram(value.Data());
+  }	else if (option.Contains("print-stats")) {
+    fPrintStats = 1;
+  }	else if (option.Contains("print-stats-verbose")) {
+    fPrintStats = 2;
+  }	else if (option.Contains("print-stats-downscale")) {
+    fPrintDownscale = atoi(value);
+  } else if (option.Contains("PushEmptyHistograms")) {
+    fPushEmptyHistograms=kTRUE;
+  } else {
+    HLTError("invalid option: %s", value.Data());
+    return -EINVAL;
+  }  
   return iResult;
 }
 
@@ -239,7 +212,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const c
       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
       if (pString) {
 	HLTInfo("received configuration object string: \'%s\'", pString->String().Data());
-	iResult=Configure(pString->String().Data());
+	iResult=ProcessOptionString(pString->String());
       } else {
 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
       }
@@ -464,8 +437,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   setlocale(LC_NUMERIC, ""); //Make printf with 1000 separators work
 
   //parse the config string AFTER the defaults are set
-  std::string argString = GetComponentArgs();
-  if (Configure(argString.c_str())<0) return -EINVAL;
+  if (ProcessOptionString(GetComponentArgs())<0) 
+  {
+    HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
+    return -EINVAL;
+  }
 
   return iResult;
 }
@@ -613,7 +589,7 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
 
 
     if ( triggerMatched && 
-         hist.Fill() > 0 && 
+         ((hist.Fill() > 0) || fPushEmptyHistograms) && 
          PushBack(hist.hist, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT) > 0 )
     {
       nPushedHistograms++;
@@ -720,7 +696,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       string configString;
       configString.assign(configCharArr,iter->fSize);
       HLTImportant("reconfiguring with: %s", configString.c_str());
-      Configure(configString.c_str());
+      ProcessOptionString(configString.c_str());
     }
 
     //SPD Vertex Found

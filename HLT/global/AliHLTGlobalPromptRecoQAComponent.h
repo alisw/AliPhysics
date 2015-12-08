@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include "TH1.h"
+#include "AliZMQhelpers.h"
 
 // forward declarations
 class AliESDEvent;
@@ -51,7 +52,7 @@ struct histStruct {
   histStruct& operator=(const histStruct& s) {hist=s.hist; x=s.x; y=s.y; trigger=s.trigger; config=s.config; return *this;}
 };
 
-class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
+class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOptionParser
 {
  public:
   /** standard constructor */
@@ -78,8 +79,6 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
 		       AliHLTUInt32_t& size,
 		       AliHLTComponentBlockDataList& outputBlocks );
 
-  
-
   using AliHLTProcessor::DoEvent;
 
  private:
@@ -99,10 +98,12 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor
 
   /**
    * Configure the component.
+   * overloaded from AliOptionParser
    * Parse a string for the configuration arguments and set the component
    * properties.
    */
-  int Configure(const char* arguments);
+  int ProcessOption(TString option, TString value);
+
   
   void NewAxis(string config);
   void NewAxis(string name, int bins, float low, float high);
@@ -121,6 +122,7 @@ protected:
   Int_t fPrintStats; //print status messages: 0: never, 1: when pushing histograms (respect pushback-period), 2: always
   Int_t fPrintDownscale;
   Int_t fEventsSinceSkip;
+  Bool_t fPushEmptyHistograms;
 
   std::map<string,histStruct> fHistograms;
   std::map<string,axisStruct> fAxes;
