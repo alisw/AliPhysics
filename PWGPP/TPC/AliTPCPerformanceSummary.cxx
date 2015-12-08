@@ -94,7 +94,7 @@ Bool_t AliTPCPerformanceSummary::GetFitInfo(TF1 * fitFunction, TVectorF &fitInfo
     fitInfo[ipar]=fitFunction->GetParameter(ipar);
     fitInfo[npar+ipar]=fitFunction->GetParError(ipar);
   }
-  fitInfo[2*npar]=fitFunction->GetChisquare()/fitFunction->GetNDF();
+  if (fitFunction->GetNDF()>0.) fitInfo[2*npar]=fitFunction->GetChisquare()/fitFunction->GetNDF();
   return kTRUE;
 }
 
