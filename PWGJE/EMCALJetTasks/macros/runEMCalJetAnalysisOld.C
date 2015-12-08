@@ -26,7 +26,6 @@ void runEMCalJetAnalysisOld(
   const Bool_t   bDoChargedJets       = kTRUE;
   const Bool_t   bDoFullJets          = kTRUE;
   const Bool_t   bDoTender            = kTRUE;
-  const Bool_t   bDoReclusterize      = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
   const Double_t kJetRadius           = 0.4;
   const Double_t kClusPtCut           = 0.30;
@@ -133,7 +132,7 @@ void runEMCalJetAnalysisOld(
   AliEmcalPicoTrackMaker *pPicoTrackTask = AddTaskEmcalPicoTrackMaker(sTracksName, "HybridTracks");
   pPicoTrackTask->SelectCollisionCandidates(kPhysSel);
 
-  if (bDoTender || bDoReclusterize) {
+  if (bDoTender) {
     // QA task
     AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sOrigClusName, sCellName, "", "",
         0, 0, 0, 0., 0., "TPC", "BeforeTender");
@@ -145,42 +144,39 @@ void runEMCalJetAnalysisOld(
 
   // Tender Supplies
   if (bDoTender) {
-    Bool_t  bDistBC         = kFALSE; //switch for recalculation cluster position from bad channel 
-    Bool_t  bRecalibClus    = kFALSE;
-    Bool_t  bRecalcClusPos  = kFALSE;
-    Bool_t  bNonLinearCorr  = kFALSE;
-    Bool_t  bRemExoticCell  = kFALSE;
-    Bool_t  bRemExoticClus  = kFALSE;
-    Bool_t  bFidRegion      = kFALSE;
-    Bool_t  bCalibEnergy    = kTRUE;
-    Bool_t  bCalibTime      = kTRUE;
-    Bool_t  bRemBC          = kTRUE;
-    UInt_t  iNonLinFunct    = 0;
-    Bool_t  bReclusterize   = kFALSE;
-    Float_t fSeedThresh     = 0.1;      // 100 MeV
-    Float_t fCellThresh     = 0.05;     // 50 MeV 
-    UInt_t  iClusterizer    = 0;
-    Bool_t  bTrackMatch     = kFALSE;
-    Bool_t  bUpdateCellOnly = kFALSE;
-    Float_t fTimeMin        = -50e-6;   // minimum time of physical signal in a cell/digit
-    Float_t fTimeMax        =  50e-6;   // maximum time of physical signal in a cell/digit
-    Float_t fTimeCut        =  25e-6;
-    const char *cPass       = 0;
+    const char *cPass        = 0;
+    Bool_t   bDistBC         = kFALSE; //switch for recalculation cluster position from bad channel
+    Bool_t   bRecalibClus    = kFALSE;
+    Bool_t   bRecalcClusPos  = kFALSE;
+    Bool_t   bNonLinearCorr  = kFALSE;
+    Bool_t   bRemExoticCell  = kFALSE;
+    Bool_t   bRemExoticClus  = kFALSE;
+    Bool_t   bFidRegion      = kFALSE;
+    Bool_t   bCalibEnergy    = kTRUE;
+    Bool_t   bCalibTime      = kTRUE;
+    Bool_t   bRemBC          = kTRUE;
+    UInt_t   iNonLinFunct    = 0;
+    Bool_t   bReclusterize   = kFALSE;
+    Float_t  fSeedThresh     = 0.1;      // 100 MeV
+    Float_t  fCellThresh     = 0.05;     // 50 MeV
+    UInt_t   iClusterizer    = 0;
+    Bool_t   bTrackMatch     = kFALSE;
+    Bool_t   bUpdateCellOnly = kFALSE;
+    Float_t  fEMCtimeMin     = -50e-6;
+    Float_t  fEMCtimeMax     =  50e-6;
+    Float_t  fEMCtimeCut     =  1e6;
+    if (strcmp(cRunPeriod, "LHC11h") == 0) {
+      fEMCtimeMin = -50e-9;
+      fEMCtimeMax = 100e-9;
+    }
 
     AliAnalysisTaskSE *pTenderTask = AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
         bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
-        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fTimeMin, fTimeMax, fTimeCut, cPass);
+        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, cPass);
     pTenderTask->SelectCollisionCandidates(kPhysSel);
-  }
-
-  if (bDoReclusterize) {
-
-    const Double_t kEMCtimeMin          = -50e-6;
-    const Double_t kEMCtimeMax          = 100e-6;
-    const Double_t kEMCtimeCut          =  75e-6;
 
     AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", kClusterizerType, 
-        0.05, 0.1, kEMCtimeMin, kEMCtimeMax, kEMCtimeCut,
+        fCellThresh, fSeedThresh, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut,
         kFALSE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
 
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
@@ -191,7 +187,7 @@ void runEMCalJetAnalysisOld(
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
   }
 
-  if (bDoTender || bDoReclusterize) {
+  if (bDoTender) {
     // QA task
 
     AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sOrigClusName, sCellName, "", "",
