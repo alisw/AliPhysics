@@ -38,7 +38,9 @@ class AliFemtoModelManager
  private:
 		
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelManager, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelManager, 1);
+  /// \endcond
 #endif
 
     };

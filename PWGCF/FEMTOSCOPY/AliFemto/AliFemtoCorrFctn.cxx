@@ -17,5 +17,7 @@ void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* aEvent */) { /* no-op */
 void AliFemtoCorrFctn::SetPairSelectionCut(AliFemtoPairCut* aCut) { fPairCut =  aCut; }
 
 #ifdef __ROOT__
-ClassImp(AliFemtoCorrFctn)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctn);
+  /// \endcond
 #endif

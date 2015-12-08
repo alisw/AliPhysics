@@ -97,7 +97,9 @@ typedef struct { REAL re; REAL im; } COMPLEX;
 extern "C" {COMPLEX type_of_call cgamma_(COMPLEX*);}
 
 #ifdef __ROOT__
-ClassImp(AliFemtoModelWeightGeneratorLednicky)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelWeightGeneratorLednicky);
+  /// \endcond
 #endif
 
 AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky() : 

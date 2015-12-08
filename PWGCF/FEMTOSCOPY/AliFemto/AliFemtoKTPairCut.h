@@ -55,7 +55,9 @@ public:
   Double_t fPtMax;          // Maximum per-particle pT
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoKTPairCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoKTPairCut, 0);
+  /// \endcond
 #endif
 };
 

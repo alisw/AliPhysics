@@ -15,8 +15,10 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction);
+  /// \endcond
 #endif
   
 #define PIH 1.57079632679489656

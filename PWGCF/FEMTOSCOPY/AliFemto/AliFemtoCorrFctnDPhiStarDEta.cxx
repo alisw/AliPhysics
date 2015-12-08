@@ -13,8 +13,10 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctnDPhiStarDEta)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnDPhiStarDEta);
+  /// \endcond
 #endif
   
 #define PIH 1.57079632679489656

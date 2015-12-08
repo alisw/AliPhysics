@@ -75,7 +75,9 @@ class AliFemtoEventReaderStandard : public AliFemtoEventReader
   bool                 fUseTPCOnly;    // if true the TPC only parameters will be used
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderStandard, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderStandard, 1);
+  /// \endcond
 #endif
 
 };

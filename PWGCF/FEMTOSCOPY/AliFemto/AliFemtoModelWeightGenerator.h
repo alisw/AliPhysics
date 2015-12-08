@@ -79,7 +79,9 @@ class AliFemtoModelWeightGenerator
  private:
   
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelWeightGenerator, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelWeightGenerator, 1);
+  /// \endcond
 #endif
 
     };
