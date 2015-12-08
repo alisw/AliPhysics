@@ -10,10 +10,7 @@ def Exit_gracefully(signal, frame):
 signal.signal(signal.SIGINT, Exit_gracefully)
 
 endpoint="SUB>tcp://localhost:60202"
-requestHeader=""
-requestBody=""
-requestHeader1=""
-requestBody1=""
+theMessage=[]
 
 if len(sys.argv)==1:
     print "Usage:"
@@ -36,16 +33,16 @@ if len(sys.argv)>1:
       quit()
     mode=endpoint[0:sepindex]
     endpoint=endpoint[sepindex:]
-if len(sys.argv)>2:
-    requestHeader=sys.argv[2]
-if len(sys.argv)>3:
-    requestBody=sys.argv[3]
-if len(sys.argv)>4:
-    requestHeader1=sys.argv[4]
-if len(sys.argv)>5:
-    requestBody1=sys.argv[5]
 
 print "mode: "+mode+" endpoint: "+endpoint
+
+if len(sys.argv)>2:
+  theMessage=sys.argv[2:]
+
+if len(theMessage)<1:
+  theMessage = [ "","" ]
+if len(theMessage)%2==1:
+  theMessage.append("")
 
 #  Prepare our context and sockets
 context = zmq.Context()
@@ -56,7 +53,7 @@ elif mode=="PULL":
     socket = context.socket(zmq.PULL)
 elif mode=="SUB":
     socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.SUBSCRIBE, requestHeader)
+    socket.setsockopt(zmq.SUBSCRIBE, theMessage)
 elif mode=="PUB":
     socket = context.socket(zmq.PUB)
 elif mode=="REQ":
@@ -77,39 +74,25 @@ elif endpoint[0]=='@':
 endless=True
 if mode=="REQ" or mode=="PUSH" or mode=="PUB":
   endless=False
-  socket.send(requestHeader,zmq.SNDMORE)
-  if len(requestHeader1)> 0:
-    socket.send(requestBody,zmq.SNDMORE)
-    socket.send(requestHeader1,zmq.SNDMORE)
-    socket.send(requestBody1)
-    print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
-  else:
-    socket.send(requestBody)
-    print("sent: "+requestHeader+" "+requestBody)
+  socket.send_multipart(theMessage)
 
 while True:
   if mode=="SUB" or mode=="PULL" or mode=="REP" or mode=="REQ":
     msg = socket.recv_multipart();
-    print "_________________________"
+    print "###################################################"
     i=0;
     for message in msg:
       if i==0:
-        print "topic: "+str(message)+" msgsize: "+str(sys.getsizeof(message))
+        print "topic: "+str(message)
         i=1
       elif i==1:
         dirty = str(message)[0:80]
         clean = re.sub('[^\s!-~]', '.', dirty)
+        print "message size: "+str(sys.getsizeof(message))
         print clean
+        print "___________________________________________________"
         i=0
   if mode=="REP":
-    socket.send(requestHeader,zmq.SNDMORE)
-    if len(requestHeader1) > 0:
-      socket.send(requestBody,zmq.SNDMORE)
-      socket.send(requestHeader1,zmq.SNDMORE)
-      socket.send(requestBody1)
-      print("sent: "+requestHeader+" "+requestBody+" | "+requestHeader1+" "+requestBody1)
-    else:
-      socket.send(requestBody)
-      print "  sent back: "+requestHeader+" "+requestBody
+    socket.send_multipart(theMessage)
   if not endless:
       break
