@@ -35,6 +35,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCcalibTime.h"
+#include "AliHLTMessage.h"
 
 #include "TMath.h"
 #include "TObjString.h" 
@@ -91,7 +92,18 @@ AliHLTComponent* AliHLTTPCOfflinePreprocessorWrapperComponent::Spawn() {
 
 AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAnalysisDataContainer* dataContainer)
 {
-
+	if (fAsyncProcess)
+	{
+		AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* buffer = (AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer*) dataContainer;
+		TObject* tmpObject = AliHLTMessage::Extract(buffer->fPtr, buffer->fSize);
+		if (tmpObject == NULL)
+		{
+			HLTError("Error deserializing object");
+			return(NULL);
+		}
+		fAsyncProcessor.FreeBuffer(buffer);
+		dataContainer = GetDataContainer((TObject*) tmpObject);
+	}
 	AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(dataContainer->GetData());
 	AliCDBEntry* retVal = NULL;
 	if (timeObj == NULL)
@@ -113,6 +125,11 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAn
 	//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
 	//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
 	
+	if (fAsyncProcess)
+	{
+		return((AliCDBEntry*) fAsyncProcessor.SerializeIntoBuffer(retVal, this));
+	}
+	
 	return(retVal);
 }
 
@@ -131,7 +148,7 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::DoInit( int argc, const char**
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   
-  if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
+  if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth, fAsyncProcess, fAsyncProcess ? 100000000 : 0)) return(1);
 
   return iResult;
 } // end DoInit()
@@ -170,6 +187,10 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::ScanConfigurationArgument(int 
 	  fAsyncProcessorQueueDepth = atoi(argv[i]);
       HLTInfo("Queue Depth set to %d.", fAsyncProcessorQueueDepth);
       iRet+=2;
+          }
+    else if (argument.CompareTo("-AsyncProcess")==0){
+	  fAsyncProcess = 1;
+      iRet++;
     } else {
       iRet = -EINVAL;
       HLTError("Unknown argument %s",argv[i]);     
@@ -178,6 +199,39 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::ScanConfigurationArgument(int 
   return iRet;
 }
 
+AliAnalysisDataContainer* AliHLTTPCOfflinePreprocessorWrapperComponent::GetDataContainer(TObject* obj)
+{
+	AliAnalysisDataContainer* tmpContainer = NULL;
+	TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(obj);
+	tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(obj);
+	if (tmpContainer)
+	{
+		if (!fAsyncProcess) RemoveInputObjectFromCleanupList(tmpContainer);
+	}
+	else if (tmpArray)
+	{
+		for (int i = 0;i <= tmpArray->GetLast();i++)
+		{
+			tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
+			if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
+			{
+				if (!fAsyncProcess) RemoveInputObjectFromCleanupList(tmpArray);
+				tmpArray->Remove(tmpContainer);
+				break;
+			}
+			else
+			{
+				tmpContainer = NULL;
+			}
+		}
+	}
+	
+	if (!tmpContainer)
+	{
+		HLTImportant("TPC Offline Preprocessor component received object that is no AliAnalysisDataContainer!");
+	}
+	return(tmpContainer);
+}
 
 Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/) {
 	// see header file for class documentation
@@ -186,41 +240,40 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 	if (IsDataEvent())
 	{
 		AliAnalysisDataContainer* tmpContainer = NULL;
-		for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
+		if (fAsyncProcess)
 		{
-			TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(iter);
-			tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(iter);
-			if (tmpContainer)
+			const AliHLTComponentBlockData* blk = GetFirstInputBlock(kAliHLTDataTypeTObject);
+			if (blk)
 			{
-				RemoveInputObjectFromCleanupList(tmpContainer);
-			}
-			else if (tmpArray)
-			{
-				for (int i = 0;i <= tmpArray->GetLast();i++)
+				AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* myBuffer = fAsyncProcessor.AllocateBuffer(blk->fSize);
+				if (myBuffer == NULL)
 				{
-					tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
-					if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
+					HLTError("No shared buffer available (Buf Size %d, Requested %d)", (int) fAsyncProcessor.BufferSize(), blk->fSize);
+				}
+				else
+				{
+					memcpy(myBuffer->fPtr, blk->fPtr, blk->fSize);
+					myBuffer->fSize = blk->fSize;
+					if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor, myBuffer))
 					{
-						RemoveInputObjectFromCleanupList(tmpArray);
-						tmpArray->Remove(tmpContainer);
-						break;
-					}
-					else
-					{
-						tmpContainer = NULL;
+						fAsyncProcessor.FreeBuffer(myBuffer);
 					}
 				}
 			}
-			
-			if (!tmpContainer)
-			{
-				HLTImportant("TPC Offline Preprocessor component received object that is no AliAnalysisDataContainer!");
-			}
 		}
-		
-		if (tmpContainer)
+		else
 		{
-			fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor, tmpContainer);
+			for (const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject())
+			{
+				if ((tmpContainer = GetDataContainer((TObject*) iter))) break;
+			}
+			if (tmpContainer)
+			{
+				if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor, tmpContainer))
+				{
+					delete tmpContainer;
+				}
+			}
 		}
 	}
 	
@@ -228,16 +281,27 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 	{
 		fAsyncProcessor.WaitForTasks(0);
 	}
-	
+
 	//If a new transform map is available from an async creation task, we ship the newest one.
 	while (fAsyncProcessor.IsQueuedTaskCompleted())
 	{
-		AliCDBEntry* retVal = (AliCDBEntry*) fAsyncProcessor.RetrieveQueuedTaskResult();
-		int pushResult = PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
+		AliCDBEntry* retVal;
+		int pushResult;
+		if (fAsyncProcess)
+		{
+			AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* buf = (AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer*) fAsyncProcessor.RetrieveQueuedTaskResult();
+			pushResult = PushBack(buf->fPtr, buf->fSize, kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
+			fAsyncProcessor.FreeBuffer(buf);
+		}
+		else
+		{
+			retVal = (AliCDBEntry*) fAsyncProcessor.RetrieveQueuedTaskResult();
+			pushResult = PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
+			delete retVal;
+		}
 		if (pushResult) HLTImportant("Offline Preprocessor pushed CDB entry (%d bytes)", pushResult);
-		delete retVal;
 	}
-	
+
 	return 0;
 }
 

@@ -78,12 +78,15 @@ private:
 
   /** assignment operator prohibited */
   AliHLTTPCOfflinePreprocessorWrapperComponent& operator=(const AliHLTTPCOfflinePreprocessorWrapperComponent&);
+  
+  AliAnalysisDataContainer* GetDataContainer(TObject* obj);
 
   AliCDBEntry* RunPreprocessor(AliAnalysisDataContainer* dataContainer);
   void* AsyncRunPreprocessor(void*);
   
   AliHLTAsyncMemberProcessor<AliHLTTPCOfflinePreprocessorWrapperComponent> fAsyncProcessor;
   int fAsyncProcessorQueueDepth;
+  int fAsyncProcess;
   
   ClassDef(AliHLTTPCOfflinePreprocessorWrapperComponent, 0)
 };
