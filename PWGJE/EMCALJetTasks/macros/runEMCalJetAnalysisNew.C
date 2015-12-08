@@ -117,9 +117,6 @@ void runEMCalJetAnalysisNew(
     sClusName = "CaloClusters";
   }
 
-  AliEmcalTrackPropagatorTask* pTrackProp = AddTaskEmcalTrackPropagator();
-  pTrackProp->SelectCollisionCandidates(kPhysSel);
-
   if (bDoTender) {
     // QA task
     if (1) {
@@ -206,7 +203,7 @@ void runEMCalJetAnalysisNew(
 
   if (1) {
     AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sClusName, sCellName, "", "", 0, 0, 0, 0., 0., "TPC", "AliAnalysisTaskSAQA_AfterTender");
-    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.15);
+    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
     pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
     pQATaskAfter->SetHistoBins(200, 0, 30);
@@ -313,7 +310,6 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");
