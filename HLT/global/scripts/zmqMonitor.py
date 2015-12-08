@@ -2,6 +2,7 @@
 import zmq,sys
 import signal
 import re
+import time
 
 def Exit_gracefully(signal, frame):
   context.destroy()
@@ -53,7 +54,7 @@ elif mode=="PULL":
     socket = context.socket(zmq.PULL)
 elif mode=="SUB":
     socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.SUBSCRIBE, theMessage)
+    socket.setsockopt(zmq.SUBSCRIBE, theMessage[0])
 elif mode=="PUB":
     socket = context.socket(zmq.PUB)
 elif mode=="REQ":
@@ -70,6 +71,10 @@ if endpoint[0]=='>' or endpoint[0]=='-' or endpoint[0]=='+':
 elif endpoint[0]=='@':
     print "bind to: "+endpoint[1:]
     socket.bind(str(endpoint[1:]))
+
+#avoid late subscriber syndrome
+if mode=="PUB":
+  time.sleep(0.5)
 
 endless=True
 if mode=="REQ" or mode=="PUSH" or mode=="PUB":
