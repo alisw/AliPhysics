@@ -14,6 +14,8 @@ endpoint="SUB>tcp://localhost:60202"
 theMessage=[]
 
 if len(sys.argv)==1:
+    print "A simple debugging/monitoring tool for ZMQ sockets"
+    print "supports multi-part messages (can both send/receive)"
     print "Usage:"
     print sys.argv[0]+" \"PULL@tcp://localhost:60202\""
     print sys.argv[0]+" \"SUB>tcp://localhost:60202\" \"optional subscription\""

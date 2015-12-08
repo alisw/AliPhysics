@@ -120,4 +120,5 @@ if(ZEROMQ_FOUND)
   
   # Installation of 
   install(TARGETS ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQDIMlumiregServer RUNTIME DESTINATION bin)
+  install(PROGRAMS ZMQmonitor.py DESTINATION bin)
 endif(ZEROMQ_FOUND)
