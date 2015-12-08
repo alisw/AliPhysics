@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 AlianalysisTaskDptPID *AddTaskDptpid
 (
- int    system                  = 2, 
+ int    system                  = 0, 
  int    singlesOnly             = 1,
  int    useWeights              = 0, 
  int    centralityMethod        = 4, 
@@ -26,7 +26,7 @@ AlianalysisTaskDptPID *AddTaskDptpid
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  3,
+ int nCentrality                =  2,
  Bool_t trigger                 = kFALSE,
  const char* taskname           = "WgtPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Calib/EtaAssym.root")
@@ -46,8 +46,8 @@ AlianalysisTaskDptPID *AddTaskDptpid
     {
       if (centralityMethod == 4 )
 	{
-	  minCentrality[0] = 0.0;  maxCentrality[0]  = 5.0; 
-	  minCentrality[1] = 5.0;  maxCentrality[1]  = 10.0;
+	  minCentrality[0] = 70.0;  maxCentrality[0]  = 80.0; 
+	  minCentrality[1] = 80.0;  maxCentrality[1]  = 90.0; //checking Dec7, 2015
 	  minCentrality[2] = 10.0; maxCentrality[2]  = 20.0;
 	  
 	}
