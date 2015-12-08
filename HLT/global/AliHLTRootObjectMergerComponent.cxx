@@ -168,7 +168,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 	int nInputs = 0;
 	TList* mergeList = new TList;
 	bool writeOutput = false; //For cumulative mode we should make sure we do not send the same merged object again and again
-	size_t inputSize;
+	size_t inputSize = 0;
 
 	for (const TObject *obj = GetFirstInputObject(kAliHLTAllDataTypes); obj != NULL; obj = GetNextInputObject())
 	{
