@@ -73,6 +73,8 @@ protected:
   using AliHLTProcessor::DoEvent;
   
 private:
+  int BuildMergeList(TObject*& returnObj, TList*& mergeList, TObject* obj);
+  void ClearBuffers(void* buffer, bool isMergeObjectStruct = false);
 	
   struct MergeObjectStruct
   {
@@ -84,6 +86,10 @@ private:
   int fTotalInputs;
   TObject* fObj;
   int fQueueDepth;
+  int fAsyncProcess;
+  
+  bool fDataTypeSet;
+  AliHLTComponentDataType fDataType;
   
   void* MergeObjects(void*);
           

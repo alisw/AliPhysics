@@ -24,6 +24,7 @@
 #include "AliHLTRootObjectMergerComponent.h"
 #include "transform/AliHLTTPCFastTransformObject.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTMessage.h"
 #include "TList.h"
 #include "TClass.h"
 
@@ -32,7 +33,7 @@ using namespace std;
 ClassImp(AliHLTRootObjectMergerComponent) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTRootObjectMergerComponent::AliHLTRootObjectMergerComponent() :
-fCumulative(0), fTotalInputs(0), fObj(NULL), fQueueDepth(0), fAsyncProcessor()
+fCumulative(0), fTotalInputs(0), fObj(NULL), fQueueDepth(0), fAsyncProcess(0), fDataType(kAliHLTAllDataTypes|kAliHLTDataOriginAny), fDataTypeSet(false), fAsyncProcessor()
 {}
 
 AliHLTRootObjectMergerComponent::~AliHLTRootObjectMergerComponent()
@@ -72,10 +73,8 @@ int AliHLTRootObjectMergerComponent::DoInit( int argc, const char** argv )
 {
   ConfigureFromArgumentString(argc, argv);
   
-  if (fQueueDepth && fCumulative) HLTFatal("AliHLTRootObjectMergerComponent cannot run with QueueDepth != 0 and cumulative set yet. Proper synchronization missing!");
-
   HLTInfo("AliHLTRootObjectMergerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
-  if (fAsyncProcessor.Initialize(fQueueDepth)) return(1);
+  if (fAsyncProcessor.Initialize(fQueueDepth, fAsyncProcess, fAsyncProcess ? 100000000 : 0)) return(1);
 
   return 0;
 }
@@ -109,23 +108,44 @@ int AliHLTRootObjectMergerComponent::ScanConfigurationArgument(int argc, const c
   if (argc<=0) return 0;
   int iRet = 0;
   for( int i=0; i<argc; i++ ){
-    TString argument=argv[i];  
-    if (argument.CompareTo("-cumulative")==0){
-	  fCumulative = 1;
-      HLTInfo("Cumulative object merging activated");
-      iRet++;
-    }
- 	else if (argument.CompareTo( "-QueueDepth" ) == 0)
+	TString argument=argv[i];  
+	if (argument.CompareTo("-cumulative")==0){
+		fCumulative = 1;
+		HLTInfo("Cumulative object merging activated");
+		iRet++;
+	}
+	else if (argument.CompareTo( "-QueueDepth" ) == 0)
 	{
 		if (++i >= argc)
 		{
 			HLTError("QueueDepth value missing");
-			continue;
+			return(-1);
 		}
 		TString val = argv[i];  
 		fQueueDepth = val.Atoi();
 		HLTInfo("AliHLTRootObjectMergerComponent Queue Depth set to: %d", fQueueDepth);
 		iRet+=2;
+	}
+	else if (argument.CompareTo( "-DataType" ) == 0)
+	{
+		if (i + 2 > argc)
+		{
+			HLTError("DataType missing");
+			return(-1);
+		}
+		
+		fDataType = AliHLTComponentDataTypeInitializerWithPadding(argv[i + 1], argv[i + 2]);
+		fDataTypeSet = true;
+		char tmpType[32];
+		fDataType.PrintDataType(tmpType, 32);
+		HLTInfo("AliHLTRootObjectMergerComponent Data Type set to: %s", tmpType);
+		i += 2;
+		iRet += 3;
+	}
+ 	else if (argument.CompareTo( "-AsyncProcess" ) == 0)
+	{
+		fAsyncProcess = 1;
+		iRet++;
 	}
     else
 	{
@@ -136,26 +156,101 @@ int AliHLTRootObjectMergerComponent::ScanConfigurationArgument(int argc, const c
   return iRet;
 }
 
-void* AliHLTRootObjectMergerComponent::MergeObjects(void* tmpObjects)
+void* AliHLTRootObjectMergerComponent::MergeObjects(void* input)
 {
-	MergeObjectStruct* objects = (MergeObjectStruct*) tmpObjects;
-	TList* mergeList = objects->fList;
-	TObject* returnObj = objects->fObject;
-	delete objects;
-	
-	Int_t error = 0;
-	TString listHargs;
-	listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
-	returnObj->Execute("Merge", listHargs.Data(), &error);
-	if (error)
+	MergeObjectStruct* objects;
+	if (fAsyncProcess)
 	{
-		HLTError("Error running merge!");
-		return(NULL);
+		AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buf = (AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer*) input;
+		objects = new MergeObjectStruct;
+		objects->fObject = NULL;
+		objects->fList = new TList;
+		for (int i = 0;i < buf->fNumberOfEntries;i++)
+		{
+			AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* entry = fAsyncProcessor.GetEntry(buf, i);
+			BuildMergeList(objects->fObject, objects->fList, AliHLTMessage::Extract(entry->fPtr, entry->fSize));
+		}
+	}
+	else
+	{
+		objects = (MergeObjectStruct*) input;
 	}
 	
-	mergeList->Delete();
+	TList* mergeList = objects->fList;
+	TObject* returnObj = objects->fObject;
+	
+	if (returnObj && mergeList->GetEntries())
+	{
+		Int_t error = 0;
+		TString listHargs;
+		listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
+		returnObj->Execute("Merge", listHargs.Data(), &error);
+		if (error)
+		{
+			HLTError("Error running merge!");
+			return(NULL);
+		}
+	}
+	
+	AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* ptr;
+	if (returnObj && (fAsyncProcess ? fAsyncProcessor.PushRequested() : CheckPushbackPeriod()))
+	{
+		ptr = fAsyncProcessor.SerializeIntoBuffer(returnObj, this);
+	}
+	else
+	{
+		ptr = NULL;
+	}
+	
+	ClearBuffers(input);
+	if (fAsyncProcess) ClearBuffers(objects, true);
+	return(ptr);
+}
 
-	return(returnObj);
+void AliHLTRootObjectMergerComponent::ClearBuffers(void* buffer, bool isMergeObjectStruct)
+{
+	if (fAsyncProcess && !isMergeObjectStruct)
+	{
+		fAsyncProcessor.FreeBuffer((AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer*) buffer);
+	}
+	else
+	{
+		MergeObjectStruct* tmp = (MergeObjectStruct*) buffer;
+		tmp->fList->Delete();
+		delete tmp->fList;
+		if (!fCumulative) delete tmp->fObject;
+		delete tmp;
+	}
+}
+
+int AliHLTRootObjectMergerComponent::BuildMergeList(TObject*& returnObj, TList*& mergeList, TObject* obj)
+{
+	if (obj == NULL)
+	{
+		HLTError("NULL Ptr to object received");
+		return(-1);
+	}
+
+	if (!obj->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
+	{
+		HLTError("Object does not implement a merge function!");
+		return(-1);
+	}
+
+	if (returnObj == NULL)
+	{
+		returnObj = obj;
+		if (fCumulative)
+		{
+			fObj = returnObj;
+		}
+	}
+	else
+	{
+		mergeList->Add(obj);
+	}
+
+	return(0);
 }
 
 int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
@@ -164,57 +259,80 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 					          AliHLTUInt32_t& size, 
 					          vector<AliHLTComponentBlockData>& outputBlocks )
 {
+	if (evtData.fBlockCnt == 0) return(0);
+	
 	TObject* returnObj = fObj;
-	int nInputs = 0;
 	TList* mergeList = new TList;
-	bool writeOutput = false; //For cumulative mode we should make sure we do not send the same merged object again and again
 	size_t inputSize = 0;
-
-	for (const TObject *obj = GetFirstInputObject(kAliHLTAllDataTypes); obj != NULL; obj = GetNextInputObject())
+	int nInputs = 0;
+	
+	void* objectForAsyncProcessor;
+	if (fAsyncProcess)
 	{
-		inputSize += blocks[GetCurrentInputBlockIndex()].fSize;
-		writeOutput = true;
-		TObject* nonConstObj;
-		if ((nonConstObj = RemoveInputObjectFromCleanupList(obj)) == NULL)
+		AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buf = NULL;
+		for (const AliHLTComponentBlockData* blk = GetFirstInputBlock(fDataType); blk != NULL; blk = GetNextInputBlock())
 		{
-			HLTError("Error taking ownership of object.");
-			return(-1);
-		}
-
-		if (returnObj == NULL)
-		{
-			returnObj = nonConstObj;
-			if (fCumulative)
+			if (buf == NULL) buf = fAsyncProcessor.AllocateMultiBuffer();
+			if (buf == NULL)
 			{
-				fObj = returnObj;
+				HLTError("Error obtaining multi-part buffer");
+				return(1);
 			}
-			nInputs = 1;
+			nInputs++;
+			inputSize += blk->fSize;
+			if (fAsyncProcessor.AddBuffer(buf, blk->fSize, blk->fPtr) == NULL)
+			{
+				HLTError("Error adding input to asynchronous buffer");
+			}
+		}
+		objectForAsyncProcessor = buf;
+	}
+	else
+	{
+		MergeObjectStruct* tmp = NULL;
+		for (const TObject *obj = GetFirstInputObject(fDataType); obj != NULL; obj = GetNextInputObject())
+		{
+			if (tmp == NULL)
+			{
+				tmp = new MergeObjectStruct;
+				tmp->fObject = NULL;
+				tmp->fList = new TList;
+			}
+
+			nInputs++;
+			inputSize += blocks[GetCurrentInputBlockIndex()].fSize;
+			TObject* nonConstObj;
+			if ((nonConstObj = RemoveInputObjectFromCleanupList(obj)) == NULL)
+			{
+				HLTError("Error taking ownership of object.");
+				return(-1);
+			}
+			BuildMergeList(tmp->fObject, tmp->fList, nonConstObj);
+		}
+		objectForAsyncProcessor = tmp;
+	}
+	
+	if (nInputs)
+	{
+		if (!fDataTypeSet)
+		{
+			fDataType = GetDataType();
+			char tmpType[32];
+			fDataType.PrintDataType(tmpType, 32);
+			HLTInfo("Automatic data type setting set to %s", tmpType);
+			fDataTypeSet = true;
+		}
+		
+		if (fCumulative)
+		{
+			fTotalInputs += nInputs;
+			HLTImportant("Root objects merging cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
 		}
 		else
 		{
-			mergeList->Add(nonConstObj);
+			HLTImportant("Root objects merging from %d inputs", nInputs);
 		}
-	}
-	
-	if (mergeList->GetEntries())
-	{
-		if (!returnObj->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
-		{
-			HLTError("Object does not implement a merge function!");
-			return(-1);
-		}
-		
-		MergeObjectStruct* tmp = new MergeObjectStruct;
-		tmp->fObject = returnObj;
-		tmp->fList = mergeList;
-		nInputs += mergeList->GetEntries();
-		
-		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, tmp);
-	}
-	else if (IsDataEvent() && returnObj && !fCumulative)
-	{
-		PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
-		delete returnObj;
+		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, objectForAsyncProcessor);
 	}
 	
 	if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
@@ -224,31 +342,26 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 
 	while (fAsyncProcessor.IsQueuedTaskCompleted())
 	{
-		TObject* returnObj = (TObject*) fAsyncProcessor.RetrieveQueuedTaskResult();
-		if (writeOutput && returnObj)
+		AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* returnObj = (AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer*) fAsyncProcessor.RetrieveQueuedTaskResult();
+		if (returnObj)
 		{
-			if (fCumulative)
-			{
-				fTotalInputs += nInputs;
-				HLTImportant("Root objects merged cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
-			}
-			else
-			{
-				HLTImportant("Root objects merged from %d inputs", nInputs);
-			}
-			int pushresult = PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
+			int pushresult = PushBack(returnObj->fPtr, returnObj->fSize, fDataType);
+			fAsyncProcessor.FreeBuffer(returnObj);
 			if (pushresult > 0)
 			{
-				char tmpType[100];
-				GetDataType().PrintDataType(tmpType, 100);
-				HLTImportant("Merger Component pushed data type %s (Class name %s, %d bytes)", tmpType, returnObj->ClassName(), pushresult);
+				char tmpType[32];
+				fDataType.PrintDataType(tmpType, 32);
+				HLTImportant("Merger Component pushing (%s, %d bytes)", tmpType, pushresult);
 			}
 		}
-		if (!fCumulative) delete returnObj;
+		else if (fAsyncProcess && CheckPushbackPeriod())
+		{
+			fAsyncProcessor.RequestPush();
+		}
 	}
 	
 	return 0;
-} // end DoEvent()
+}
 
 void AliHLTRootObjectMergerComponent::GetOCDBObjectDescription( TMap* const targetMap)
 {
