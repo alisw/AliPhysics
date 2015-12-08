@@ -54,7 +54,7 @@ AliEmcalParticle::AliEmcalParticle(AliVTrack* track, Int_t id) :
 }
 
 //_________________________________________________________________________________________________
-AliEmcalParticle::AliEmcalParticle(AliVCluster* cluster, Int_t id, Double_t vx, Double_t vy, Double_t vz) :
+AliEmcalParticle::AliEmcalParticle(AliVCluster* cluster, Int_t id, Double_t vx, Double_t vy, Double_t vz, Int_t ude) :
   AliVParticle(),
   fTrack(0), 
   fCluster(cluster),
@@ -72,10 +72,15 @@ AliEmcalParticle::AliEmcalParticle(AliVCluster* cluster, Int_t id, Double_t vx, 
     AliWarning("Null pointer passed as particle.");
     return;
   }
-
+  
   Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
   TLorentzVector vect;
-  fCluster->GetMomentum(vect, vtx);
+  if (ude >= 0 && ude <= AliVCluster::kLastUserDefEnergy) {
+    fCluster->GetMomentum(vect, vtx, (AliVCluster::VCluUserDefEnergy_t)ude);
+  }
+  else {
+    fCluster->GetMomentum(vect, vtx);
+  }
   fEta = vect.Eta();
   fPhi = vect.Phi();
   fPt  = vect.Pt();
