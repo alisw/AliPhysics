@@ -1,13 +1,10 @@
-// $Id$
-
-AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
-  const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
-  const Bool_t remExClus     = kTRUE,
-  const char *nClusters      = 0,
-  const char *outClusName    = "EmcCaloClusters",
-  const Double_t emin        = 0.3,
-  const Bool_t   histo       = kFALSE,
-  const char *outputname     = "AnalysisResults.root"
+AliEmcalClusterMaker* AddTaskEmcalClusterMaker(const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
+                                               const Bool_t remExClus     = kTRUE,
+                                               const char *nClusters      = 0,
+                                               const char *outClusName    = "EmcCaloClusters",
+                                               const Double_t emin        = 0.3,
+                                               const Bool_t   histo       = kFALSE,
+                                               const char *outputname     = "AnalysisResults.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -44,7 +41,8 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("EmcalClusterMaker_%s_%s", nClusters, outClusName));
+  TString name(Form("EmcalClusterMaker_%s", nClusters));
+  if (strcmp(outClusName, "") != 0) name += Form("_%s", outClusName);
   AliEmcalClusterMaker *ecm = new AliEmcalClusterMaker(name, histo);
   ecm->SetOutClusName(outClusName);
   ecm->SetCaloCellsName(nCells);

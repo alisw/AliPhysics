@@ -1,12 +1,10 @@
-// $Id$
-
-AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
-  const char *nTracks          = "EmcalTracks",
-  const char *nClusters        = "EmcalClusters",
-  const Double_t maxDist       = 0.1,
-  const Bool_t modify          = kTRUE, 
-  const Bool_t createHisto     = kFALSE
-)
+AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(const char *nTracks          = "tracks",
+                                                           const char *nClusters        = "caloClusters",
+                                                           const Double_t maxDist       = 0.1,
+                                                           const Bool_t attachEmcalPart = kFALSE,
+                                                           const Bool_t updateClusters  = kTRUE,
+                                                           const Bool_t updateTracks    = kTRUE,
+                                                           const Bool_t createHisto     = kFALSE)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -28,12 +26,13 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("ClusTrackMatcher_%s_%s",nTracks,nClusters));
+  TString name(Form("ClusTrackMatcher_%s_%s", nTracks, nClusters));
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name, createHisto);
   matcher->AddParticleContainer(nTracks);
-  matcher->AddParticleContainer(nClusters);
+  matcher->AddClusterContainer(nClusters);
   matcher->SetMaxDistance(maxDist);
-  matcher->SetModifyObjs(modify);
+  matcher->SetUpdateClusters(updateClusters);
+  matcher->SetUpdateTracks(updateTracks);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
