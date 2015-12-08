@@ -541,7 +541,7 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
           else{
             static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
 	    static int nErrors = 0;
-            if (show_info || nErrors++ < 100)
+            if (show_info || nErrors++ < 10)
 	    {
         	AliWarning(Form("Invalid SDD cell: Carlos=%d,Module=%d,Anode=%d,TimeBin=%d",iCarlos,iModule,iz,itb));
     	    }

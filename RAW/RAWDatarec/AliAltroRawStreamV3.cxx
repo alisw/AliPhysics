@@ -366,7 +366,7 @@ Bool_t AliAltroRawStreamV3::NextBunch()
     static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
     if ((fStartTimeBin-fBunchLength+1) < 0) {
       static int nErrors = 0;
-      if (show_info || nErrors++ < 100)
+      if (show_info || nErrors++ < 10)
       {
         AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0", fBunchDataIndex-1,
 		        fHWAddress,fDDLNumber,fStartTimeBin,fBunchLength));
