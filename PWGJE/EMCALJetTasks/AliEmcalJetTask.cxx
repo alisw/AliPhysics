@@ -48,7 +48,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fMinMCLabel(0),
   fRadius(0.4),
   fMinJetTrackPt(0.15),
-  fMinJetClusPt(0.15),
+  fMinJetClusPt(0.),
+  fMinJetClusE(0.30),
   fPhiMin(0),
   fPhiMax(TMath::TwoPi()),
   fEtaMin(-0.9),
@@ -67,6 +68,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fUtilities(0),
   fFilterHybridTracks(kFALSE),
   fUseExchangeCont(0),
+  fClusterEnergyType(-1),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -101,7 +103,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fMinMCLabel(0),
   fRadius(0.4),
   fMinJetTrackPt(0.15),
-  fMinJetClusPt(0.15),
+  fMinJetClusPt(0.),
+  fMinJetClusE(0.30),
   fPhiMin(0),
   fPhiMax(TMath::TwoPi()),
   fEtaMin(-0.9),
@@ -120,6 +123,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fUtilities(0),
   fFilterHybridTracks(kFALSE),
   fUseExchangeCont(useExchangeCont),
+  fClusterEnergyType(-1),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -159,8 +163,8 @@ AliEmcalJetUtility* AliEmcalJetTask::AddUtility(AliEmcalJetUtility* utility)
 
   if (!fUtilities) fUtilities = new TObjArray();
   if (fUtilities->FindObject(utility)) {
-     Error("AddSupply", "Jet utility %s already connected.", utility->GetName());
-     return utility;
+    Error("AddSupply", "Jet utility %s already connected.", utility->GetName());
+    return utility;
   }   
   fUtilities->Add(utility);
   utility->SetJetTask(this);
@@ -225,7 +229,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
   Int_t n = FindJets();
 
   if (n == 0) return;
-  
+
   FillJetBranch();
 }
 
@@ -271,7 +275,7 @@ Int_t AliEmcalJetTask::FindJets()
         AliDebug(2,Form("Skipping track %d because it is charged.", iTracks));
         continue;
       }
-      
+
       Int_t lab = TMath::Abs(t->GetLabel());
       if (lab < fMinLabelTracks || lab > fMaxLabelTracks) {
         AliDebug(2,Form("Skipping track %d because label %d is not in range (%d, %d)", iTracks, lab, fMinLabelTracks, fMaxLabelTracks));
@@ -279,22 +283,22 @@ Int_t AliEmcalJetTask::FindJets()
       }
 
       if ((t->GetFlag() & fMCFlag) != fMCFlag) {
-	AliDebug(2,Form("Skipping track %d because it does not match the MC flags", iTracks));
-	continue;
+        AliDebug(2,Form("Skipping track %d because it does not match the MC flags", iTracks));
+        continue;
       }
 
       if (fGeneratorIndex >= 0 && t->GetGeneratorIndex() != fGeneratorIndex) {
-	AliDebug(2,Form("Skipping track %d because it does not match the MC generator index", iTracks));
-	continue;
+        AliDebug(2,Form("Skipping track %d because it does not match the MC generator index", iTracks));
+        continue;
       }
 
       // artificial inefficiency
       if (fTrackEfficiency < 1.) {
-	Double_t rnd = gRandom->Rndm();
-	if (fTrackEfficiency < rnd) {
-	  AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", iTracks));
-	  continue;
-	}
+        Double_t rnd = gRandom->Rndm();
+        if (fTrackEfficiency < rnd) {
+          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", iTracks));
+          continue;
+        }
       }
 
       // offset of 100 for consistency with cluster ids
@@ -310,37 +314,46 @@ Int_t AliEmcalJetTask::FindJets()
       Double_t cEta=0,cPhi=0,cPt=0;
       Double_t cPx=0,cPy=0,cPz=0;
       if (fIsEmcPart) {
-	AliEmcalParticle *ep = static_cast<AliEmcalParticle*>(fClus->At(iClus));
-	if (!ep) continue;
-	c = ep->GetCluster();
-	if (!c) continue;
+        AliEmcalParticle *ep = static_cast<AliEmcalParticle*>(fClus->At(iClus));
+        if (!ep) continue;
+        c = ep->GetCluster();
+        if (!c) continue;
 
-	cEta = ep->Eta();
-	cPhi = ep->Phi();
-	cPt  = ep->Pt();
-	cPx  = ep->Px();
-	cPy  = ep->Py();
-	cPz  = ep->Pz();
+        cEta = ep->Eta();
+        cPhi = ep->Phi();
+        cPt  = ep->Pt();
+        cPx  = ep->Px();
+        cPy  = ep->Py();
+        cPz  = ep->Pz();
       } 
       else {
-	c = static_cast<AliVCluster*>(fClus->At(iClus));
-	if (!c) continue;
+        c = static_cast<AliVCluster*>(fClus->At(iClus));
+        if (!c) continue;
 
-	TLorentzVector nP;
-	c->GetMomentum(nP, fVertex);
-	cEta = nP.Eta();
-	cPhi = nP.Phi();
-	cPt  = nP.Pt();
-	cPx  = nP.Px();
-	cPy  = nP.Py();
-	cPz  = nP.Pz();
+        TLorentzVector nP;
+        if (fClusterEnergyType >= 0 &&  fClusterEnergyType <= AliVCluster::kLastUserDefEnergy) {
+          c->GetMomentum(nP, fVertex, (AliVCluster::VCluUserDefEnergy_t)fClusterEnergyType);
+        }
+        else {
+          c->GetMomentum(nP, fVertex);
+        }
+        cEta = nP.Eta();
+        cPhi = nP.Phi();
+        cPt  = nP.Pt();
+        cPx  = nP.Px();
+        cPy  = nP.Py();
+        cPz  = nP.Pz();
       }
+      Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
+      AliDebug(2,Form("Cluster %d (label = %d, energy = %.3f)", iClus, c->GetLabel(), e));
 
       if (!c->IsEMCAL()) continue;
       if (cPt < fMinJetClusPt) continue;
+      if (e < fMinJetClusE) continue;
       if ((cEta<fEtaMin) || (cEta>fEtaMax) ||
-	  (cPhi<fPhiMin) || (cPhi>fPhiMax))
-	continue;
+          (cPhi<fPhiMin) || (cPhi>fPhiMax))
+        continue;
+      if (c->GetIsExotic()) continue;
 
       Int_t lab = TMath::Abs(c->GetLabel());
       if (lab < fMinLabelClusters || lab > fMaxLabelClusters) {
@@ -349,14 +362,13 @@ Int_t AliEmcalJetTask::FindJets()
       }
 
       // offset of 100 to skip ghost particles uid = -1
-      AliDebug(2,Form("Cluster %d accepted (label = %d)", iClus, c->GetLabel()));
-      Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
+      AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", iClus, c->GetLabel(), e));
       fFastJetWrapper.AddInputVector(cPx, cPy, cPz, e, -iClus - 100);
     }
   }
 
   if (fFastJetWrapper.GetInputVectors().size() == 0) return 0;
-  
+
   // run jet finder
   fFastJetWrapper.Run();
 
@@ -384,11 +396,11 @@ void AliEmcalJetTask::FillJetBranch()
     if (jets_incl[ij].perp() < fMinJetPt) continue;
     if (fFastJetWrapper.GetJetArea(ij) < fMinJetArea) continue;
     if ((jets_incl[ij].eta() < fJetEtaMin) || (jets_incl[ij].eta() > fJetEtaMax) ||
-	(jets_incl[ij].phi() < fJetPhiMin) || (jets_incl[ij].phi() > fJetPhiMax))
+        (jets_incl[ij].phi() < fJetPhiMin) || (jets_incl[ij].phi() > fJetPhiMax))
       continue;
 
     AliEmcalJet *jet = new ((*fJets)[jetCount])
-      AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
+    		          AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
     jet->SetLabel(ij);
 
     fastjet::PseudoJet area(fFastJetWrapper.GetJetAreaVector(ij));
@@ -516,7 +528,7 @@ Bool_t AliEmcalJetTask::DoInit()
       }
     }
   }
-  
+
   if (fClus) {
     TClass cls(fClus->GetClass()->GetName());
     if (cls.InheritsFrom("AliEmcalParticle")) {
@@ -582,7 +594,7 @@ Bool_t AliEmcalJetTask::DoInit()
 
 //___________________________________________________________________________________________________________________
 void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents, TClonesArray *tracks, TClonesArray *clusters,
-                                          std::vector<fastjet::PseudoJet>& constituents_unsub, Int_t flag, TClonesArray *particles_sub)
+    std::vector<fastjet::PseudoJet>& constituents_unsub, Int_t flag, TClonesArray *particles_sub)
 {
   Int_t nt            = 0;
   Int_t nc            = 0;
@@ -619,7 +631,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         continue;
       }
     }
-    
+
     AliDebug(3,Form("Processing constituent %d", uid));
     if (uid == -1) { //ghost particle
       ++gall;
@@ -634,9 +646,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       if (fFillGhost) jet->AddGhost(constituents[ic].px(),
-                                    constituents[ic].py(),
-                                    constituents[ic].pz(),
-                                    constituents[ic].e());
+          constituents[ic].py(),
+          constituents[ic].pz(),
+          constituents[ic].e());
     }	
     else if ((uid >= 100) && tracks) { // track constituent
       Int_t tid = uid - 100;
@@ -766,11 +778,11 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::Pseudo
 {
   Double_t dphi=0;
   for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
-  Double_t phi_unsub = constituents_unsub[ii].phi();
-  dphi=phi_unsub-phi_sub;
-  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
-  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-  if (TMath::Abs(dphi)<0.1 && constituents_unsub[ii].user_index()!=-1)  return constituents_unsub[ii].user_index();
+    Double_t phi_unsub = constituents_unsub[ii].phi();
+    dphi=phi_unsub-phi_sub;
+    if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+    else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+    if (TMath::Abs(dphi)<0.1 && constituents_unsub[ii].user_index()!=-1)  return constituents_unsub[ii].user_index();
   }
 
   return 0;
