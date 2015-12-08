@@ -1,7 +1,7 @@
 #ifndef ALIHLTASYNCPROCESSOR_H
 #define ALIHLTASYNCPROCESSOR_H
 
-#define ALIHLTASYNCPROCESSOR_ALIGN 64 //Must be capable to store at least an AliHLTAsyncProcessorBuffer object (normally 16 bytes)
+#define ALIHLTASYNCPROCESSOR_ALIGN 64
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
 * ALICE Experiment at CERN, All rights reserved.                         *
@@ -82,9 +82,23 @@ public:
 	
 	struct AliHLTAsyncProcessorBuffer
 	{
+		friend class AliHLTAsyncProcessor;
+
 		void* fPtr;
 		size_t fSize;
+
+		private:
+		AliHLTAsyncProcessorBuffer* fNext;
+		bool fTObject;
 	};
+	static const size_t fgkBufferHeaderSize = sizeof(AliHLTAsyncProcessorBuffer) + (ALIHLTASYNCPROCESSOR_ALIGN - sizeof(AliHLTAsyncProcessorBuffer) % ALIHLTASYNCPROCESSOR_ALIGN) % ALIHLTASYNCPROCESSOR_ALIGN;
+	
+	struct AliHLTAsyncProcessorMultiBuffer
+	{
+		size_t fNumberOfEntries;
+		AliHLTAsyncProcessorBuffer* fFirst;
+	};
+	static const size_t fgkMultiBufferHeaderSize = sizeof(AliHLTAsyncProcessorMultiBuffer) + (ALIHLTASYNCPROCESSOR_ALIGN - sizeof(AliHLTAsyncProcessorMultiBuffer) % ALIHLTASYNCPROCESSOR_ALIGN) % ALIHLTASYNCPROCESSOR_ALIGN;
 	
 	//Simple version to allocate and delete a void* ptr to a buffer for an async process only
 	void* AllocateBuffer();
@@ -96,7 +110,15 @@ public:
 	void FreeBuffer(AliHLTAsyncProcessorBuffer* buffer);
 	
 	//Serializes an object into an AliHLTAsyncProcessorBuffer and returns the pointer to it, containing the pointer to the serialized object and its size
-	AliHLTAsyncProcessorBuffer* SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls);
+	AliHLTAsyncProcessorBuffer* SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls, AliHLTAsyncProcessorMultiBuffer* multiBuf = NULL);
+	
+	//Allocate and Free MultiBuffer that stores multiple objects
+	AliHLTAsyncProcessorMultiBuffer* AllocateMultiBuffer();
+	void FreeBuffer(AliHLTAsyncProcessorMultiBuffer* ptr);
+	
+	//Add a new buffer to a multibuffer. If ptr is nonzero, copy the content of ptr there.
+	AliHLTAsyncProcessorBuffer* AddBuffer(AliHLTAsyncProcessorMultiBuffer* multiBuf, size_t size, void* ptr = NULL);
+	AliHLTAsyncProcessorBuffer* GetEntry(AliHLTAsyncProcessorMultiBuffer* multiBuf, int num);
 	
 	size_t BufferSize() {return(fMe->fBufferSize);}
 	void RequestPush() {fMe->fRequestPush = true;}
@@ -109,6 +131,8 @@ private:
 	//Provide additional shared buffer resources for a derived class when mode is fAsyncProcess.
 	//Memory is zero-initialized.
 	virtual size_t ChildSharedProcessBufferSize();
+	
+	size_t GetTotalSize(AliHLTAsyncProcessorMultiBuffer* multiBuf);
 
 	struct AliHLTAsyncProcessorInput
 	{
@@ -122,6 +146,7 @@ private:
 	static void* AsyncThreadStop(void*);
 
 	static void* alignPointer(void* ptr, size_t size);
+	static size_t alignSize(size_t size);
 	
 protected:
 	struct AliHLTAsyncProcessorContent

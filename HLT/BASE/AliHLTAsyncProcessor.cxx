@@ -46,11 +46,17 @@ AliHLTAsyncProcessor::~AliHLTAsyncProcessor()
 	delete fMe;
 }
 
+size_t AliHLTAsyncProcessor::alignSize(size_t size)
+{
+	if (size % ALIHLTASYNCPROCESSOR_ALIGN) size += ALIHLTASYNCPROCESSOR_ALIGN - size % ALIHLTASYNCPROCESSOR_ALIGN;
+	return(size);
+}
+
 void* AliHLTAsyncProcessor::alignPointer(void* ptr, size_t size)
 {
 	size_t tmp = (size_t) ptr;
 	tmp += size;
-	if (tmp % ALIHLTASYNCPROCESSOR_ALIGN) tmp += ALIHLTASYNCPROCESSOR_ALIGN - tmp % ALIHLTASYNCPROCESSOR_ALIGN;
+	alignSize(tmp);
 	return (void*) tmp;
 }
 
@@ -412,18 +418,17 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::Allocate
 	AliHLTAsyncProcessorBuffer* retVal;
 	if (fMe->fAsyncProcess)
 	{
-		if (size == 0) size = fMe->fBufferSize - ALIHLTASYNCPROCESSOR_ALIGN;
-		if (size + ALIHLTASYNCPROCESSOR_ALIGN > fMe->fBufferSize) return(NULL);
+		if (size == 0) size = fMe->fBufferSize - fgkBufferHeaderSize;
+		if (size + fgkBufferHeaderSize > fMe->fBufferSize) return(NULL);
 		retVal = (AliHLTAsyncProcessorBuffer*) AllocateBuffer();
-		if (retVal == NULL) return(NULL);
 	}
 	else
 	{
-		retVal = (AliHLTAsyncProcessorBuffer*) malloc(size + ALIHLTASYNCPROCESSOR_ALIGN);
+		retVal = (AliHLTAsyncProcessorBuffer*) malloc(size + fgkBufferHeaderSize);
 	}
 	if (retVal == NULL) return(NULL);
 	retVal->fSize = size;
-	retVal->fPtr = (AliHLTAsyncProcessorBuffer*) (((char*) retVal) + ALIHLTASYNCPROCESSOR_ALIGN);
+	retVal->fPtr = (AliHLTAsyncProcessorBuffer*) (((char*) retVal) + fgkBufferHeaderSize);
 	return(retVal);
 }
 
@@ -439,8 +444,13 @@ void AliHLTAsyncProcessor::FreeBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessor
 	}
 }
 
-AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls)
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::SerializeIntoBuffer(TObject* obj, AliHLTComponent* cls, AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* multiBuf)
 {
+	if (multiBuf)
+	{
+		HLTFatal("Not yet implemented!!!");
+	}
 	AliHLTAsyncProcessorBuffer* retVal;
 	if (fMe->fAsyncProcess)
 	{
@@ -453,14 +463,97 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::Serializ
 	}
 	else
 	{
-		size_t size = ALIHLTASYNCPROCESSOR_ALIGN;
+		size_t size = fgkBufferHeaderSize;
 		char* buffer = NULL;
 		if (cls->SerializeObject(obj, (void*&) buffer, size)) return(NULL);
 		retVal = (AliHLTAsyncProcessorBuffer*) buffer;
-		retVal->fPtr = buffer + ALIHLTASYNCPROCESSOR_ALIGN;
+		retVal->fPtr = buffer + fgkBufferHeaderSize;
 		retVal->fSize = size;
 	}
 	return(retVal);
+}
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::AddBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* multiBuf, size_t size, void* ptr)
+{
+	AliHLTAsyncProcessorBuffer* retVal;
+	if (fMe->fAsyncProcess)
+	{
+		size_t totalSize = GetTotalSize(multiBuf);
+		if (totalSize + fgkBufferHeaderSize + size > fMe->fBufferSize) return(NULL);
+		retVal = (AliHLTAsyncProcessorBuffer*) (((char*) multiBuf) + totalSize);
+	}
+	else
+	{
+		retVal = (AliHLTAsyncProcessorBuffer*) malloc(size + fgkBufferHeaderSize);
+		if (retVal == NULL) return(NULL);
+	}
+	AliHLTAsyncProcessorBuffer** b = &multiBuf->fFirst;
+	for (int i = 0;i < multiBuf->fNumberOfEntries;i++) b = &((*b)->fNext);
+	*b = retVal;
+	retVal->fSize = size;
+	retVal->fPtr = (AliHLTAsyncProcessorBuffer*) (((char*) retVal) + fgkBufferHeaderSize);
+	retVal->fNext = NULL;
+	if (ptr) memcpy(retVal->fPtr, ptr, size);
+	multiBuf->fNumberOfEntries++;
+	return(retVal);
+}
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::GetEntry(AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* multiBuf, int num)
+{
+	if (num >= multiBuf->fNumberOfEntries) return(NULL);
+	AliHLTAsyncProcessorBuffer* b = multiBuf->fFirst;
+	for (int i = 0;i < multiBuf->fNumberOfEntries - 1;i++) b = b->fNext;
+	return(b);
+}
+
+size_t AliHLTAsyncProcessor::GetTotalSize(AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* multiBuf)
+{
+	size_t totalSize = fgkMultiBufferHeaderSize;
+	AliHLTAsyncProcessorBuffer* b = multiBuf->fFirst;
+	for (int i = 0;i < multiBuf->fNumberOfEntries;i++)
+	{
+		totalSize += fgkBufferHeaderSize;
+		totalSize += alignSize(b->fSize);
+		b = b->fNext;
+	}
+	return(totalSize);
+}
+
+AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* AliHLTAsyncProcessor::AllocateMultiBuffer()
+{
+	AliHLTAsyncProcessorMultiBuffer* retVal;
+	if (fMe->fAsyncProcess)
+	{
+		if (fgkMultiBufferHeaderSize > fMe->fBufferSize) return(NULL);
+		retVal = (AliHLTAsyncProcessorMultiBuffer*) AllocateBuffer();
+	}
+	else
+	{
+		retVal = (AliHLTAsyncProcessorMultiBuffer*) malloc(fgkBufferHeaderSize);
+	}
+	if (retVal == NULL) return(NULL);
+	retVal->fNumberOfEntries = 0;
+	retVal->fFirst = NULL;
+	return(retVal);
+}
+
+void AliHLTAsyncProcessor::FreeBuffer(AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buffer)
+{
+	if (fMe->fAsyncProcess)
+	{
+		FreeBuffer((void*) buffer);
+	}
+	else
+	{
+		AliHLTAsyncProcessorBuffer* b = buffer->fFirst;
+		for (int i = 0;i < buffer->fNumberOfEntries;i++)
+		{
+			AliHLTAsyncProcessorBuffer* del = b;
+			b = b->fNext;
+			FreeBuffer(del);
+		}
+		free(buffer);
+	}
 }
 
 size_t AliHLTAsyncProcessor::ChildSharedProcessBufferSize()
