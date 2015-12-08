@@ -3478,7 +3478,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     // NonLinearity LHC13 pPb Calo - excluding the two lowest pT points
     case 89:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.973302, -3.12524, -1.13546);
+        if( fCurrentMC==k13b2_efix || fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.973302, -3.12524, -1.13546);
 
         else fPeriodNameAvailable = kFALSE;
       }
