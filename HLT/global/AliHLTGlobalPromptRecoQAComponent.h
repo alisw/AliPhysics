@@ -34,7 +34,7 @@ struct axisStruct {
   std::map<std::string,bool> histograms;
   axisStruct() : bins(1), low(0.), high(1.), value(NULL), histograms() {}
   axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms) {}
-  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; histograms=s.histograms; return *this;}
+  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; value=s.value; histograms=s.histograms; return *this;}
   void set( int b, double l, double h, double* v )
   { bins=b; low=l; high=h; value=v; }
 };
