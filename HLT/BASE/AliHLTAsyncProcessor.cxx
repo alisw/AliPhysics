@@ -413,7 +413,7 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* AliHLTAsyncProcessor::Allocate
 	if (fMe->fAsyncProcess)
 	{
 		if (size == 0) size = fMe->fBufferSize - ALIHLTASYNCPROCESSOR_ALIGN;
-		if (size + ALIHLTASYNCPROCESSOR_ALIGN < fMe->fBufferSize) return(NULL);
+		if (size + ALIHLTASYNCPROCESSOR_ALIGN > fMe->fBufferSize) return(NULL);
 		retVal = (AliHLTAsyncProcessorBuffer*) AllocateBuffer();
 		if (retVal == NULL) return(NULL);
 	}
