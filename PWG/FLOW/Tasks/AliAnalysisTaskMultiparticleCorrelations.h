@@ -239,7 +239,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Symmetry plane correlations:
   Bool_t fCalculateSymmetryPlanes; // calculate correlations between symmetry planes
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,3);
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,4);
 
 };
 

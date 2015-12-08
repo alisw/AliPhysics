@@ -448,7 +448,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   //Int_t fnHighestHarmonicSPC;       // highest harmonic for evaluation of generic correlators TBI implement this more differentially
   //Int_t fnHighestOptimizerSPC;      // highest optimizer TBI implement this more differentially
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,3);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,4);
 
 };
 
