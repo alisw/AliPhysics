@@ -281,12 +281,13 @@ void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const cha
 void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1){
   //
   /*
-    const char * inputFile="ResidualMapFull_0.root"
+    const char * inputFile="ResidualMapFull_1.root"
     const char * inputTree="deltaRPhiTPCITSTRDDist"
-    Float_t sector0=0,Int_t(sector1)=1;
+    Float_t sector0=2, sector1 =3;
     Float_t theta0=0, theta1=1;
   */
   TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
+  TTreeSRedirector * pcstreamFit = new TTreeSRedirector(TString::Format("fitTree_%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
 
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
   TFile * fdist = TFile::Open(inputFile);
@@ -319,8 +320,8 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
     fitCorrs[0]->SetStreamer(pcstream);
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.000001);
-    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.00001);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.001);
+    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("meanG_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
@@ -354,9 +355,10 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
   
   TH1* his=0;
   TFile * fout = pcstream->GetFile();
+  pcstream->GetFile()->cd();
   for (Int_t iter=0; iter<6; iter++){
     fitCorrs[iter]->Write();
-    fitCorrs[iter]->DumpToTree(4, (*pcstream)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
+    fitCorrs[iter]->DumpToTree(4, (*pcstreamFit)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
   }
   canvasQA->cd(1)->SetLogz();
   treeDist->Draw("meanG_Fit0:meanG>>hisQA2D(200,-1,1,200,-1,1)",cutFit+cutAcceptDraw,"colz");
@@ -412,7 +414,7 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     "\n";
   
   delete pcstream;
-
+  delete pcstreamFit;
 
 }
 
