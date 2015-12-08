@@ -222,16 +222,22 @@ private:
 	Float_t fCorrVariableMC_tPt1MotherMC;
 	Float_t fCorrVariableMC_tPt2MotherMC;
 	Float_t fCorrVariableMC_tPt3MotherMC;
+	Float_t fCorrVariableMC_tPt1MothersMotherMC;
+	Float_t fCorrVariableMC_tPt2MothersMotherMC;
+	Float_t fCorrVariableMC_tPt3MothersMotherMC;
+
 
 	Int_t fCorrVariableMC_Pdg1;
 	Int_t fCorrVariableMC_Pdg2;
 	Int_t fCorrVariableMC_Pdg3;
 
+	Int_t fCorrVariableMC_PdgMothersMother1;
+	Int_t fCorrVariableMC_PdgMothersMother2;
+	Int_t fCorrVariableMC_PdgMothersMother3;
+
 	Int_t fCorrVariableMC_PdgMother1;
 	Int_t fCorrVariableMC_PdgMother2;
 	Int_t fCorrVariableMC_PdgMother3;
-
-
 	Int_t 	fCorrVariable_flv;//[2]
 	Int_t 	fCorrVariable_qty;//[2]
 
