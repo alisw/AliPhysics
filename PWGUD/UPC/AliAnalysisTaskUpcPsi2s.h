@@ -40,12 +40,14 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
   void SetRunSyst(Bool_t runSyst){fRunSystematics = runSyst;}
+  void SetTracking(Int_t tracking){fTracking = tracking;}
   void SetIsMC(Bool_t MC){isMC = MC;}
   void InitSystematics();
   Double_t GetMedian(Double_t *daArray);
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
+  Int_t fTracking; //0 - Global, 1 - ITSsa
   Bool_t isMC;
   Bool_t fRunTree; 
   Bool_t fRunHist;
@@ -95,6 +97,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Double_t fZPAenergy, fZPCenergy;
   Double_t fZDCAtime, fZDCCtime;
   Int_t fV0Adecision, fV0Cdecision;
+  Int_t fADAdecision, fADCdecision;
   //input data
   TObjString *fDataFilnam;
   Short_t fRecoPass;
@@ -151,7 +154,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 3); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 4); 
 };
 
 #endif
