@@ -7,6 +7,7 @@
 #include "TMap.h"
 #include "TPRegexp.h"
 #include "TObjString.h"
+#include "TH1.h"
 #include "TList.h"
 #include "TMessage.h"
 #include "TRint.h"
@@ -479,22 +480,32 @@ TObject* UnpackMessage(zmq_msg_t* message)
 //_______________________________________________________________________________________
 Int_t Merge(TObject* object, TCollection* mergeList)
 {
-  if (!object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
+  int rc=0;
+  TH1* hist = dynamic_cast<TH1*>(object);
+  if (hist)
+  {
+    rc = hist->Merge(mergeList);
+    return rc;
+  }
+  else if (object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
+  {
+    Int_t error = 0;
+    TString listHargs;
+    listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
+    //Printf("listHargs: %s", listHargs.Data());
+    object->Execute("Merge", listHargs.Data(), &error);
+    if (error)
+    {
+      //Printf("Error %i running merge!", error);
+      return(-1);
+    }
+    mergeList->Delete();
+  }
+  else if (!object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
   {
     Printf("Object does not implement a merge function!");
     return(-1);
   }
-  Int_t error = 0;
-  TString listHargs;
-  listHargs.Form("((TCollection*)0x%lx)", (ULong_t) mergeList);
-  //Printf("listHargs: %s", listHargs.Data());
-  object->Execute("Merge", listHargs.Data(), &error);
-  if (error)
-  {
-    //Printf("Error %i running merge!", error);
-    return(-1);
-  }
-  mergeList->Delete();
   return 0;
 }
 
