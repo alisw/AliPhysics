@@ -1323,6 +1323,11 @@ AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
   return dt;
 }
 
+int AliHLTComponent::GetCurrentInputBlockIndex()
+{
+  return(fCurrentInputBlock);
+}
+
 AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
 {
   // see header file for function documentation

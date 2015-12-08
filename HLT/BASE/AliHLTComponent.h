@@ -1302,6 +1302,12 @@ class AliHLTComponent : public AliHLTLogging {
    * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    */
   const AliHLTComponentBlockData* GetNextInputBlock();
+  
+  /**
+   * Returns the index of the last input block obtained via
+   * GetFirstInputBlock or GetFirstInputObject.
+   */
+  int GetCurrentInputBlockIndex();
 
   /**
    * Get data specification of an input block.
