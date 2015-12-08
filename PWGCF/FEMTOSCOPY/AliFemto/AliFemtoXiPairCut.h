@@ -24,19 +24,18 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoXiPairCut, 0)
+  ClassDef(AliFemtoXiPairCut, 0);
   /// \endcond
 #endif
 };
- 
+
 inline AliFemtoXiPairCut::AliFemtoXiPairCut(const AliFemtoXiPairCut &c):
   AliFemtoPairCut(c),
   fNPairsPassed(c.fNPairsPassed),
   fNPairsFailed(c.fNPairsFailed),
   fDataType(c.fDataType)
-
 {
-  /// no-op
+  // no-op
 }
 
 inline AliFemtoPairCut *AliFemtoXiPairCut::Clone()

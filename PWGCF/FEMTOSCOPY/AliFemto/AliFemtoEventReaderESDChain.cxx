@@ -25,7 +25,11 @@
 #include "AliPID.h"
 #include "AliAnalysisUtils.h"
 
-ClassImp(AliFemtoEventReaderESDChain)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderESDChain);
+  /// \endcond
+#endif
 
 #if !(ST_NO_NAMESPACES)
   using namespace units;
@@ -44,7 +48,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fCurFile(0),
   fEvent(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kReferenceITSTPC), 
+  fEstEventMult(kReferenceITSTPC),
   fEventTrig(AliVEvent::kMB), //trigger
   fESDpid(0),
   fIsPidOwner(0),
@@ -57,7 +61,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0)
 {
-  //constructor with 0 parameters , look at default settings 
+  //constructor with 0 parameters , look at default settings
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
   //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
   //     fClusterPerPadrow[tPad] = new list<Int_t>();
@@ -175,7 +179,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
   //  fEventFriend = aReader.fEventFriend;
-  
+
   //   if (fClusterPerPadrow) {
   //     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
   //       fClusterPerPadrow[tPad]->clear();
@@ -183,7 +187,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   //     }
   //     delete [] fClusterPerPadrow;
   //   }
-  
+
   //   if (fSharedList) {
   //     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
   //       fSharedList[tPad]->clear();
@@ -208,7 +212,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   //       fSharedList[tPad]->push_back(*iter);
   //     }
   //   }
-  
+
   return *this;
 }
 //__________________
@@ -264,28 +268,28 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   // and fill the AliFemtoEvent class
   // Returns a valid AliFemtoEvent
   AliFemtoEvent *hbtEvent = 0;
- 
+
 
   hbtEvent = new AliFemtoEvent;
 
   CopyESDtoFemtoEvent(hbtEvent);
 
-  fCurEvent++;	
+  fCurEvent++;
 
 
-  return hbtEvent; 
+  return hbtEvent;
 }
 
 void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 {
-  
+
 
  //string tFriendFileName;
   // Get the friend information
   if (Debug()>1) cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
   if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
-  
+
 
 
    //setting basic things
@@ -310,9 +314,9 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   else if ((fEvent->IsTriggerClassFired("CSH1WU-B-NOPF-ALL")) ||
 	   (fEvent->IsTriggerClassFired("CSH1-B-NOPF-ALLNOTRD")))
     hbtEvent->SetTriggerCluster(2);
-  else 
+  else
     hbtEvent->SetTriggerCluster(0);
-	
+
   //Vertex
   double fV1[3];
   double fVCov[6];
@@ -331,7 +335,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
       if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
 	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
-      delete anaUtil;   
+      delete anaUtil;
     }
 
 
@@ -347,20 +351,20 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   else {
     const AliESDVertex* esdvertex = (AliESDVertex*) fEvent->GetPrimaryVertex();
     if(!esdvertex || esdvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
-   
+
     esdvertex->GetXYZ(fV1);
     esdvertex->GetCovMatrix(fVCov);
     if (!esdvertex->GetStatus())
       fVCov[4] = -1001.0;
   }
-    
+
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
-  
+
   Int_t spdetaonecount = 0;
-  
-  for (int iter=0; iter<fEvent->GetMultiplicity()->GetNumberOfTracklets(); iter++) 
+
+  for (int iter=0; iter<fEvent->GetMultiplicity()->GetNumberOfTracklets(); iter++)
     if (fabs(fEvent->GetMultiplicity()->GetEta(iter)) < 1.0)
       spdetaonecount++;
 
@@ -399,7 +403,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   // 	}
   //       }
   //     }
-      
+
   //   }
 
   int tNormMult = 0;
@@ -412,15 +416,15 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   Float_t bCov[3];
 
   Int_t tTracklet=0, tITSTPC=0;
-  
+
   //W-AliESDEvent::EstimateMultiplicity: This obsolete method will be eliminated soon. Use AliESDtrackCuts::GetReferenceMultiplicity
   //fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
-  
+
   hbtEvent->SetMultiplicityEstimateITSTPC(tITSTPC);
   hbtEvent->SetMultiplicityEstimateTracklets(tTracklet);
   //  hbtEvent->SetMultiplicityEstimateITSPure(tITSPure);
   hbtEvent->SetMultiplicityEstimateITSPure(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
-  
+
   for (int i=0;i<nofTracks;i++)
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
@@ -430,9 +434,9 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 
       if ((esdtrack->GetStatus() & AliESDtrack::kTPCrefit) &&
 	  (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
-	if (esdtrack->GetTPCNcls() > 70) 
+	if (esdtrack->GetTPCNcls() > 70)
 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
-	    if (esdtrack->Pt() > 0.15 && esdtrack->Pt() < 20) 
+	    if (esdtrack->Pt() > 0.15 && esdtrack->Pt() < 20)
 	      if (TMath::Abs(esdtrack->Eta()) < 0.8) {
 		esdtrack->GetImpactParameters(b,bCov);
 		if ((b[0]<0.2) && (b[1] < 2.0)) {
@@ -445,8 +449,8 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 
       hbtEvent->SetZDCEMEnergy(tTotalPt);
       //       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
-      // 	if (esdtrack->GetTPCNcls() > 80) 
-      // 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
+      // 	if (esdtrack->GetTPCNcls() > 80)
+      // 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0)
       // 	    if (esdtrack->GetConstrainedParam())
       // 	      if (fabs(esdtrack->GetConstrainedParam()->Eta()) < 0.5)
       // 		if (esdtrack->GetConstrainedParam()->Pt() < 1.0) {
@@ -470,11 +474,11 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	}
       }
 
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
       trackCopy->SetCharge((short)esdtrack->GetSign());
 
-      //in aliroot we have AliPID 
-      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+      //in aliroot we have AliPID
+      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon
       //we use only 5 first
       double esdpid[5];
       //       esdtrack->GetESDpid(esdpid);
@@ -581,7 +585,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
 	    trackCopy->SetHiddenInfo(tInfo);
 	  }
-	
+
 	  AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	  if (v.Mag() < 0.0001) {
 	    //	cout << "Found 0 momentum ???? " <<endl;
@@ -594,22 +598,22 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	  const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
 	  const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 	  //setting helix I do not if it is ok
-	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge()));
 	  trackCopy->SetHelix(helix);
 
-	  //some stuff which could be useful 
+	  //some stuff which could be useful
 	  trackCopy->SetImpactD(impact[0]);
 	  trackCopy->SetImpactZ(impact[1]);
 	  trackCopy->SetCdd(covimpact[0]);
 	  trackCopy->SetCdz(covimpact[1]);
 	  trackCopy->SetCzz(covimpact[2]);
-	  trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
+	  trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));
 
 	  delete param;
 	}
 	else {
 	  if (fReadInner == true) {
-	  
+
 	    if (esdtrack->GetTPCInnerParam()) {
 	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetInnerParam());
 	      //trackCopy->SetInnerMomentum(param->P());
@@ -618,7 +622,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	      //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
 	      param->GetPxPyPz(pxyz);//reading noconstarined momentum
 	      delete param;
-	    
+
 	      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
 	      tInfo->SetPDGPid(211);
 	      tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
@@ -631,7 +635,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	  }
 
 	  if (fTrackType == kGlobal) {
-	    if (fConstrained==true)		    
+	    if (fConstrained==true)
 	      tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
 	    else
 	      tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
@@ -645,7 +649,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	    }
 	  }
 	  else if (fTrackType == kITSOnly) {
-	    if (fConstrained==true)		    
+	    if (fConstrained==true)
 	      tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
 	    else
 	      tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
@@ -663,10 +667,10 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	  const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
 	  const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 	  //setting helix I do not if it is ok
-	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge()));
 	  trackCopy->SetHelix(helix);
 
-	  //some stuff which could be useful 
+	  //some stuff which could be useful
 	  float imp[2];
 	  float cim[3];
 	  // if (fTrackType == kTPCOnly) {
@@ -693,18 +697,18 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	trackCopy->SetTrackId(esdtrack->GetID());
 	trackCopy->SetFlags(esdtrack->GetStatus());
 	trackCopy->SetLabel(esdtrack->GetLabel());
-		
-	trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
+
+	trackCopy->SetITSchi2(esdtrack->GetITSchi2());
 	if (esdtrack->GetITSFakeFlag())
-	  trackCopy->SetITSncls(-esdtrack->GetNcls(0));     
+	  trackCopy->SetITSncls(-esdtrack->GetNcls(0));
 	else
-	  trackCopy->SetITSncls(esdtrack->GetNcls(0));     
-	trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
-	trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
-	trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
+	  trackCopy->SetITSncls(esdtrack->GetNcls(0));
+	trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());
+	trackCopy->SetTPCncls(esdtrack->GetTPCNcls());
+	trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());
 	trackCopy->SetTPCsignal(esdtrack->GetTPCsignal());
-	trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
-	trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
+	trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class
+	trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma());
 
 	trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
 	trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
@@ -729,7 +733,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	}
 
 	//decision if we want this track
-	//if we using diffrent labels we want that this label was use for first time 
+	//if we using diffrent labels we want that this label was use for first time
 	//if we use hidden info we want to have match between sim data and ESD
 	if (tGoodMomentum==true)
 	  {
@@ -741,10 +745,10 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	  {
 	    delete  trackCopy;
 	  }
-		
+
     }
 
-  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
 
   AliCentrality *cent = fEvent->GetCentrality();
   if (cent) {
@@ -765,7 +769,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
     if (Debug()>1) printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
   }
 
-  if (fEstEventMult == kGlobalCount) 
+  if (fEstEventMult == kGlobalCount)
     hbtEvent->SetNormalizedMult(tNormMult);
   else if (fEstEventMult == kReferenceITSTPC)
     hbtEvent->SetNormalizedMult(AliESDtrackCuts::GetReferenceMultiplicity(fEvent,AliESDtrackCuts::kTrackletsITSTPC,1.0));
@@ -790,7 +794,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
     }
   }
@@ -802,7 +806,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0A")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("V0A"), lrint(10.0*cent->GetCentralityPercentile("V0A")));
     }
   }
@@ -814,7 +818,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0C")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("V0C"), lrint(10.0*cent->GetCentralityPercentile("V0C")));
     }
   }
@@ -826,7 +830,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("ZNA")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("ZNA"), lrint(10.0*cent->GetCentralityPercentile("ZNA")));
     }
   }
@@ -838,7 +842,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("ZNC")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("ZNC"), lrint(10.0*cent->GetCentralityPercentile("ZNC")));
     }
   }
@@ -850,7 +854,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("CL1")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("CL1"), lrint(10.0*cent->GetCentralityPercentile("CL1")));
     }
   }
@@ -862,7 +866,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("CL0")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("CL0"), lrint(10.0*cent->GetCentralityPercentile("CL0")));
     }
   }
@@ -874,7 +878,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("TRK")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("TRK"), lrint(10.0*cent->GetCentralityPercentile("TRK")));
     }
   }
@@ -886,7 +890,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("TKL")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("TKL"), lrint(10.0*cent->GetCentralityPercentile("TKL")));
     }
   }
@@ -898,7 +902,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("NPA")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("NPA"), lrint(10.0*cent->GetCentralityPercentile("NPA")));
     }
   }
@@ -910,7 +914,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("CND")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("CND"), lrint(10.0*cent->GetCentralityPercentile("CND")));
     }
   }
@@ -922,7 +926,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("FMD")));
-      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(),
 			     10.0*cent->GetCentralityPercentile("FMD"), lrint(10.0*cent->GetCentralityPercentile("FMD")));
     }
   }
@@ -933,7 +937,7 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
     hbtEvent->SetZDCParticipants(tNormMultPos);
   else
     hbtEvent->SetZDCParticipants(tNormMultNeg);
-  
+
   AliEventplane* ep = fEvent->GetEventplane();
   if (ep) {
     hbtEvent->SetEP(ep);
@@ -1086,12 +1090,12 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 
       tFemtoV0->SetptotPos(trackpos->P());
       tFemtoV0->SetptNeg(trackneg->Pt());
       tFemtoV0->SetptotNeg(trackneg->P());
-      
+
       tFemtoV0->SetidNeg(trackneg->GetID());
       //cout<<"tESDv0->GetNegID(): "<<tESDv0->GetNegID()<<endl;
       //cout<<"tFemtoV0->IdNeg(): "<<tFemtoV0->IdNeg()<<endl;
       tFemtoV0->SetidPos(trackpos->GetID());
-      
+
       tFemtoV0->SetEtaPos(trackpos->Eta());
       tFemtoV0->SetEtaNeg(trackneg->Eta());
 

@@ -10,9 +10,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoBPLCMS3DCorrFctn)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoBPLCMS3DCorrFctn);
+  /// \endcond
 #endif
 
 //____________________________

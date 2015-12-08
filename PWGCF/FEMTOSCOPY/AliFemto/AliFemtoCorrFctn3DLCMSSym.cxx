@@ -13,7 +13,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoCorrFctn3DLCMSSym)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctn3DLCMSSym);
+  /// \endcond
 #endif
 
 //____________________________

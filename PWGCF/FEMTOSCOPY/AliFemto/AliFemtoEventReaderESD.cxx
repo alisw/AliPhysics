@@ -55,7 +55,12 @@
 #include "AliFemtoEvent.h"
 #include "AliFemtoModelHiddenInfo.h"
 
-ClassImp(AliFemtoEventReaderESD)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderESD);
+  /// \endcond
+#endif
+
 
 #if !(ST_NO_NAMESPACES)
   using namespace units;
@@ -63,7 +68,7 @@ ClassImp(AliFemtoEventReaderESD)
 
 using namespace std;
 //____________________________
-//constructor with 0 parameters , look at default settings 
+//constructor with 0 parameters , look at default settings
 AliFemtoEventReaderESD::AliFemtoEventReaderESD():
   fInputFile(" "),
   fFileName(" "),
@@ -146,7 +151,7 @@ AliFemtoString AliFemtoEventReaderESD::Report()
 //__________________
 void AliFemtoEventReaderESD::SetInputFile(const char* inputFile)
 {
-  //setting the name of file where names of ESD file are written 
+  //setting the name of file where names of ESD file are written
   //it takes only this files which have good trees
   char buffer[256];
   fInputFile=string(inputFile);
@@ -156,7 +161,7 @@ void AliFemtoEventReaderESD::SetInputFile(const char* inputFile)
   fTree = new TChain("esdTree");
 
   if(infile.good()==true)
-    { 
+    {
       //checking if all give files have good tree inside
       while (infile.eof()==false)
 	{
@@ -164,7 +169,7 @@ void AliFemtoEventReaderESD::SetInputFile(const char* inputFile)
 	  //ifstream test_file(buffer);
 	  TFile *esdFile=TFile::Open(buffer,"READ");
 	  if (esdFile!=0x0)
-	    {	
+	    {
 	      TTree* tree = (TTree*) esdFile->Get("esdTree");
 	      if (tree!=0x0)
 		{
@@ -172,7 +177,7 @@ void AliFemtoEventReaderESD::SetInputFile(const char* inputFile)
 		  fTree->AddFile(buffer);
 		  delete tree;
 		}
-	      esdFile->Close();	
+	      esdFile->Close();
 	    }
 	  delete esdFile;
 	}
@@ -206,20 +211,20 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
   // for further analysis
   AliFemtoEvent *hbtEvent = 0;
 
-  if (fCurEvent==fNumberofEvent)//open next file  
+  if (fCurEvent==fNumberofEvent)//open next file
     {
-      if(fNumberofEvent==0)	
+      if(fNumberofEvent==0)
 	{
 	  //	  delete fEvent;//added 1.04.2007
 	  fEvent=new AliESDEvent();
 	  //	  delete fTree;
 	  //fTree=0;
 	  //	  delete fEsdFile;
-		
+
 	  //ESD data
 	  //	  fEsdFile=TFile::Open(fFileName.c_str(),"READ");
-	  //	  fTree = (TTree*) fEsdFile->Get("esdTree");			
-	  //	  fTree->SetBranchAddress("ESD", &fEvent);			
+	  //	  fTree = (TTree*) fEsdFile->Get("esdTree");
+	  //	  fTree->SetBranchAddress("ESD", &fEvent);
 	  fTree->SetBranchStatus("MuonTracks*",0);
 	  fTree->SetBranchStatus("PmdTracks*",0);
 	  fTree->SetBranchStatus("TrdTracks*",0);
@@ -240,14 +245,14 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	{
 	  cout<<"no more files "<<hbtEvent<<endl;
 	  fReaderStatus=1;
-	  return hbtEvent; 
+	  return hbtEvent;
 	}
-    }		
+    }
   cout<<"starting to read event "<<fCurEvent<<endl;
   fTree->GetEvent(fCurEvent);//getting next event
   cout << "Read event " << fEvent << " from file " << fTree << endl;
   //  vector<int> tLabelTable;//to check labels
-	
+
   hbtEvent = new AliFemtoEvent;
   //setting basic things
   //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
@@ -262,14 +267,14 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
   hbtEvent->SetZDCParticipants(fEvent->GetZDCParticipants());
   hbtEvent->SetTriggerMask(fEvent->GetTriggerMask());
   hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
-	
+
   //Vertex
   double fV1[3];
   fEvent->GetVertex()->GetXYZ(fV1);
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
-	
+
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
@@ -279,15 +284,15 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
   for (int i=0;i<nofTracks;i++)
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
-		
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
       //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
 
       trackCopy->SetCharge((short)esdtrack->GetSign());
 
-      //in aliroot we have AliPID 
-      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+      //in aliroot we have AliPID
+      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon
       //we use only 5 first
       double esdpid[5];
       esdtrack->GetESDpid(esdpid);
@@ -296,10 +301,10 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       trackCopy->SetPidProbPion(esdpid[2]);
       trackCopy->SetPidProbKaon(esdpid[3]);
       trackCopy->SetPidProbProton(esdpid[4]);
-						
+
       double pxyz[3];
       if (fReadInner == true) {
-	
+
 	if (esdtrack->GetTPCInnerParam()) {
 	  AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
 	  param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
@@ -313,7 +318,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	  trackCopy->SetHiddenInfo(tInfo);
 	}
       }
-      if (fConstrained==true)		    
+      if (fConstrained==true)
 	tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
       else
 	tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
@@ -327,14 +332,14 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       }
       const AliFmThreeVectorD origin(fV1[0],fV1[1],fV1[2]);
       //setting helix I do not if it is ok
-      AliFmPhysicalHelixD helix(ktP,origin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+      AliFmPhysicalHelixD helix(ktP,origin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge()));
       trackCopy->SetHelix(helix);
-	    	
+
       trackCopy->SetTrackId(esdtrack->GetID());
       trackCopy->SetFlags(esdtrack->GetStatus());
       trackCopy->SetLabel(esdtrack->GetLabel());
-		
-      //some stuff which could be useful 
+
+      //some stuff which could be useful
       float impact[2];
       float covimpact[3];
       esdtrack->GetImpactParameters(impact,covimpact);
@@ -343,13 +348,13 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       trackCopy->SetCdd(covimpact[0]);
       trackCopy->SetCdz(covimpact[1]);
       trackCopy->SetCzz(covimpact[2]);
-      trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
-      trackCopy->SetITSncls(esdtrack->GetNcls(0));     
-      trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
-      trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
-      trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
-      trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
-      trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
+      trackCopy->SetITSchi2(esdtrack->GetITSchi2());
+      trackCopy->SetITSncls(esdtrack->GetNcls(0));
+      trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());
+      trackCopy->SetTPCncls(esdtrack->GetTPCNcls());
+      trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());
+      trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class
+      trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma());
 
       trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
       trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
@@ -372,7 +377,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       }
       trackCopy->SetKinkIndexes(indexes);
       //decision if we want this track
-      //if we using diffrent labels we want that this label was use for first time 
+      //if we using diffrent labels we want that this label was use for first time
       //if we use hidden info we want to have match between sim data and ESD
       if (tGoodMomentum==true)
 	{
@@ -383,26 +388,17 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	{
 	  delete  trackCopy;
 	}
-		
+
     }
 
-  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
-  fCurEvent++;	
+  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
+  fCurEvent++;
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 //   if (fCurEvent== fNumberofEvent)//if end of current file close all
-//     {   
-//       fTree->Reset(); 
+//     {
+//       fTree->Reset();
 //       delete fTree;
 //       fEsdFile->Close();
 //     }
-  return hbtEvent; 
+  return hbtEvent;
 }
-
-
-
-
-
-
-
-
-

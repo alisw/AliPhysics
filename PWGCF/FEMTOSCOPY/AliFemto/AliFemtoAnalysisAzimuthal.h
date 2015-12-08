@@ -59,7 +59,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoAnalysisAzimuthal, 0)
+  ClassDef(AliFemtoAnalysisAzimuthal, 0);
   /// \endcond
 #endif
 

@@ -22,15 +22,15 @@ protected:
   long fNPairsFailed;          ///< Number of pairs consideered that failed the cut
 
   AliFemtoDataType fDataType;  ///< Use ESD / AOD / Kinematics.
-  Bool_t fTrackTPCOnly;       ///< Track ids will be converted to appropriate TPC/Global value 
+  Bool_t fTrackTPCOnly;       ///< Track ids will be converted to appropriate TPC/Global value
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoXiTrackPairCut, 0)
+  ClassDef(AliFemtoXiTrackPairCut, 0);
   /// \endcond
 #endif
 };
- 
+
 inline AliFemtoXiTrackPairCut::AliFemtoXiTrackPairCut(const AliFemtoXiTrackPairCut &c):
   AliFemtoPairCut(c),
   fNPairsPassed(c.fNPairsPassed),

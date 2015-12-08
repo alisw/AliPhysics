@@ -8,10 +8,10 @@
 #include "AliFemtoPicoEventCollectionVector.h"
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
-#ifdef __ROOT__ 
-/// \cond CLASSIMP
-ClassImp(AliFemtoLikeSignAnalysis)
-/// \endcond
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoLikeSignAnalysis);
+  /// \endcond
 #endif
 
 // this little function used to apply ParticleCuts (TrackCuts or V0Cuts) and fill ParticleCollections of picoEvent
@@ -22,50 +22,50 @@ void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
 			       AliFemtoEvent*               hbtEvent,
 			       AliFemtoParticleCollection*  partCollection,
 			       bool performSharedDaughterCut=kFALSE);
- 
+
 //____________________________
-AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min, double max) : 
+AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min, double max) :
   AliFemtoSimpleAnalysis(),
   fVertexBins(0),
-  fOverFlow(0),  
-  fUnderFlow(0)  
+  fOverFlow(0),
+  fUnderFlow(0)
 {
   /// standard constructor
 
   fVertexBins = bins;
   fVertexZ[0] = min;
   fVertexZ[1] = max;
-  fUnderFlow = 0; 
-  fOverFlow = 0; 
+  fUnderFlow = 0;
+  fOverFlow = 0;
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
     /* no-op */
 }
 //____________________________
-AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysis& a) : 
+AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysis& a) :
   AliFemtoSimpleAnalysis(a) ,
   fVertexBins(0),
-  fOverFlow(0),  
-  fUnderFlow(0)  
+  fOverFlow(0),
+  fUnderFlow(0)
 {
   /// copy constructor
 
-  fVertexBins = a.fVertexBins; 
-  fVertexZ[0] = a.fVertexZ[0]; 
+  fVertexBins = a.fVertexBins;
+  fVertexZ[0] = a.fVertexZ[0];
   fVertexZ[1] = a.fVertexZ[1];
-  fUnderFlow = 0; 
-  fOverFlow = 0; 
+  fUnderFlow = 0;
+  fOverFlow = 0;
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
  }
 AliFemtoLikeSignAnalysis& AliFemtoLikeSignAnalysis::operator=(const AliFemtoLikeSignAnalysis& OriginalAnalysis)
 {
   if (this != &OriginalAnalysis) {
-    fVertexBins = OriginalAnalysis.fVertexBins; 
-    fVertexZ[0] = OriginalAnalysis.fVertexZ[0]; 
+    fVertexBins = OriginalAnalysis.fVertexBins;
+    fVertexZ[0] = OriginalAnalysis.fVertexZ[0];
     fVertexZ[1] = OriginalAnalysis.fVertexZ[1];
-    fUnderFlow = 0; 
-    fOverFlow = 0; 
+    fUnderFlow = 0;
+    fOverFlow = 0;
     if (fMixingBuffer) delete fMixingBuffer;
     if (fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
     fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
@@ -75,7 +75,7 @@ AliFemtoLikeSignAnalysis& AliFemtoLikeSignAnalysis::operator=(const AliFemtoLike
 
 }
 
-//____________________________ 
+//____________________________
 AliFemtoLikeSignAnalysis::~AliFemtoLikeSignAnalysis(){
   /// destructor
 
@@ -83,7 +83,7 @@ AliFemtoLikeSignAnalysis::~AliFemtoLikeSignAnalysis(){
 }
 //____________________________
 AliFemtoString AliFemtoLikeSignAnalysis::Report()
-{  
+{
   /// prepare report
 
   char tCtemp[200];
@@ -96,7 +96,7 @@ AliFemtoString AliFemtoLikeSignAnalysis::Report()
   snprintf(tCtemp , 200, "Events overflowing: %d\n",fOverFlow);
   temp += tCtemp;
   snprintf(tCtemp , 200, "Now adding AliFemtoSimpleAnalysis(base) Report\n");
-  temp += tCtemp; 
+  temp += tCtemp;
   temp += "Adding AliFemtoSimpleAnalysis(base) Report now:\n";
   temp += AliFemtoSimpleAnalysis::Report();
   temp += "-------------\n";
@@ -109,15 +109,15 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   /// get right mixing buffer
 
   double vertexZ = hbtEvent->PrimVertPos().z();
-  fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ); 
+  fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ);
   if (!fMixingBuffer) {
     if ( vertexZ < fVertexZ[0] ) fUnderFlow++;
     if ( vertexZ > fVertexZ[1] ) fOverFlow++;
     return;
   }
 
-  // startup for EbyE 
-  EventBegin(hbtEvent);  
+  // startup for EbyE
+  EventBegin(hbtEvent);
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
   fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
@@ -133,20 +133,20 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       cout <<"   #particles in First, Second Collections: " <<
 	picoEvent->FirstParticleCollection()->size() << " " <<
 	picoEvent->SecondParticleCollection()->size() << endl;
-      
+
       if (picoEvent->SecondParticleCollection()->size()*picoEvent->FirstParticleCollection()->size()==0) {
 	delete picoEvent;
-	cout << "AliFemtoLikeSignAnalysis - picoEvent deleted due to empty collection " <<endl; 
+	cout << "AliFemtoLikeSignAnalysis - picoEvent deleted due to empty collection " <<endl;
 	return;
       }
       // OK, pico event is built
       // make real pairs...
-      
+
       // Fabrice points out that we do not need to keep creating/deleting pairs all the time
       // We only ever need ONE pair, and we can just keep changing internal pointers
       // this should help speed things up
       AliFemtoPair* tThePair = new AliFemtoPair;
-      
+
       AliFemtoParticleIterator tPartIter1;
       AliFemtoParticleIterator tPartIter2;
       AliFemtoCorrFctnIterator tCorrFctnIter;
@@ -244,7 +244,7 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 #ifdef STHBTDEBUG
       cout << "AliFemtoLikeSignAnalysis::ProcessEvent() - like sign second collection done" << endl;
 #endif
-      
+
       if (MixingBufferFull()){
 #ifdef STHBTDEBUG
 	cout << "Mixing Buffer is full - lets rock and roll" << endl;
@@ -278,7 +278,7 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 		for (tCorrFctnIter=fCorrFctnCollection->begin();
 		     tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
 		  AliFemtoLikeSignCorrFctn* tCorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
-		  if (tCorrFctn) { 
+		  if (tCorrFctn) {
 		    tCorrFctn->AddMixedPair(tThePair);
 		    //cout << " tThePair has been added to MixedPair method " << endl;
 		  }
@@ -295,9 +295,6 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       delete tThePair;
       MixingBuffer()->push_front(picoEvent);  // store the current pico-event in buffer
     }   // if currentEvent is accepted by currentAnalysis
-    EventEnd(hbtEvent);  // cleanup for EbyE 
+    EventEnd(hbtEvent);  // cleanup for EbyE
     //    cout << "AliFemtoLikeSignAnalysis::ProcessEvent() - return to caller ... " << endl;
 }
-
-
-

@@ -67,7 +67,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoCutMonitorHandler, 0)
+  ClassDef(AliFemtoCutMonitorHandler, 0);
   /// \endcond
 #endif
 

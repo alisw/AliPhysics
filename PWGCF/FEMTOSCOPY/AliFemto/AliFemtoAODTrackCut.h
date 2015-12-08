@@ -40,7 +40,7 @@ public:
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
-  void SetNoMostProbable(); 
+  void SetNoMostProbable();
 
 private:   // here are the quantities I want to cut on...
 
@@ -64,9 +64,9 @@ private:   // here are the quantities I want to cut on...
   float PidFractionKaon(float mom) const;
   float PidFractionProton(float mom) const;
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoAODTrackCut, 1)
+  ClassDef(AliFemtoAODTrackCut, 1);
   /// \endcond
 #endif
 };
@@ -89,4 +89,3 @@ inline void AliFemtoAODTrackCut::SetMaxChiNdof(const float& maxchi) { fMaxchiNdo
 inline void AliFemtoAODTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
 
 #endif
-
