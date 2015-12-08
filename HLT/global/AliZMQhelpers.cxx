@@ -11,7 +11,9 @@
 
 #include "AliHLTDataTypes.h"
 #include "TString.h"
+#include "TObjString.h"
 #include "TPRegexp.h"
+#include "TObjArray.h"
 #include "AliHLTMessage.h"
 
 
@@ -607,7 +609,7 @@ int AliOptionParser::ProcessOptionString(TString arguments)
 }
 
 //______________________________________________________________________________
-stringMap* AliOptionParser::TokenizeOptionString(const TString str)
+stringMap* AliOptionParser::TokenizeOptionString(const TString strIn)
 {
   //options have the form:
   // -option value
@@ -634,6 +636,14 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
 
   stringMap* options = new stringMap;
 
+  //first split in lines (by newline) and ignore comments
+  TObjArray* lines = strIn.Tokenize("\n");
+  TIter nextLine(lines);
+  while (TObjString* objString = (TObjString*)nextLine())
+  {
+  TString line = objString->String();
+  if (line.BeginsWith("#")) continue;
+  if (line.BeginsWith("//")) continue;
   TArrayI pos;
   const TString mods="";
   Int_t start = 0;
@@ -643,10 +653,10 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     TString valueStr="";
 
     //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
+    Int_t nOption=optionRE.Match(line,mods,start,10,&pos);
     if (nOption>0)
     {
-      optionStr = str(pos[6],pos[7]-pos[6]);
+      optionStr = line(pos[6],pos[7]-pos[6]);
       optionStr=optionStr.Strip(TString::kBoth,'\n');
       optionStr=optionStr.Strip(TString::kBoth,'\'');
       optionStr=optionStr.Strip(TString::kLeading,'-');
@@ -654,10 +664,10 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     }
 
     //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
+    Int_t nValue=valueRE.Match(line,mods,start,10,&pos);
     if (nValue>0)
     {
-      valueStr = str(pos[0],pos[1]-pos[0]);
+      valueStr = line(pos[0],pos[1]-pos[0]);
       valueStr=valueStr.Strip(TString::kBoth,'\n');
       valueStr=valueStr.Strip(TString::kBoth,'\'');
       start=pos[1]; //update the current character to the end of match
@@ -669,8 +679,13 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
       (*options)[optionStr.Data()] = valueStr.Data();
     }
 
-    if (start>=str.Length()-1 || start==prevStart ) break;
+    if (start>=line.Length()-1 || start==prevStart ) break;
   }
+
+  }//while(nextLine())
+  lines->Delete();
+  delete lines;
+
   return options;
 }
 
