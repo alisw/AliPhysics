@@ -44,8 +44,8 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(
   UInt_t clusterizerT   = 0;
   Bool_t trackMatch     = kFALSE;
   Bool_t updateCellOnly = kFALSE;
-  Float_t timeMin       = -50e-9;   // minimum time of physical signal in a cell/digit
-  Float_t timeMax       =  50e-9;   // maximum time of physical signal in a cell/digit
+  Float_t timeMin       = -50e-6;   // minimum time of physical signal in a cell/digit
+  Float_t timeMax       =  50e-6;   // maximum time of physical signal in a cell/digit
   Float_t timeCut       = 1e6;
   if(period.Contains("lhc11h")) {
     timeMin = -50e-9;
@@ -96,7 +96,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(
 #endif
 
   //----------------------- Add clusterizer -------------------------------------------------------
-  remExoticCell  = kTRUE;
+  remExoticCell  = kFALSE;
 #ifdef __CLING__
   // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
   std::stringstream clusterizeradd;
@@ -140,10 +140,6 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(
   }
 
   //----------------------- Add cluster maker -----------------------------------------------------
-TString clusName = "CaloClusters";
-if (!evhand->InheritsFrom("AliESDInputHandler"))
-  clusName = "caloClusters";
-
   nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
   if(isMC) {
     if(period == "lhc12a15a") 
@@ -169,7 +165,7 @@ if (!evhand->InheritsFrom("AliESDInputHandler"))
 #else
   // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity,
-  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,clusName,"EmcCaloClusters",0.,kTRUE);
+  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,0,"EmcCaloClusters",0.,kTRUE);
 #endif
   clusMaker->GetClusterContainer(0)->SetClusPtCut(0.);
   clusMaker->GetClusterContainer(0)->SetClusECut(0.);

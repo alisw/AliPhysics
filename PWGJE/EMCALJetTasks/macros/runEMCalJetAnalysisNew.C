@@ -24,7 +24,6 @@ void runEMCalJetAnalysisNew(
   const Bool_t   bDoChargedJets       = kTRUE;
   const Bool_t   bDoFullJets          = kTRUE;
   const Bool_t   bDoTender            = kTRUE;
-  const Bool_t   bDoReclusterize      = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
   const Double_t kJetRadius           = 0.4;
   const Double_t kClusPtCut           = 0.30;
@@ -33,7 +32,6 @@ void runEMCalJetAnalysisNew(
   const Double_t kGhostArea           = 0.005;
   const Double_t kHadCorrF            = 2.;
   const Int_t    kHistoType           = 1;
-  const UInt_t   kClusterizerType     = AliEMCALRecParam::kClusterizerv2;
   
   enum eDataType { kAod, kEsd };
 
@@ -98,7 +96,7 @@ void runEMCalJetAnalysisNew(
   }
     
   // Setup task
-  if (bDoFullJets || bDoTender || bDoReclusterize || bDoHadCorr) {
+  if (bDoFullJets || bDoTender || bDoHadCorr) {
     AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
   }
 
@@ -122,7 +120,7 @@ void runEMCalJetAnalysisNew(
   AliEmcalTrackPropagatorTask* pTrackProp = AddTaskEmcalTrackPropagator();
   pTrackProp->SelectCollisionCandidates(kPhysSel);
 
-  if (bDoTender || bDoReclusterize) {
+  if (bDoTender) {
     // QA task
     if (1) {
       AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sClusName, sCellName, "", "",
@@ -132,50 +130,48 @@ void runEMCalJetAnalysisNew(
       pQATaskBefore->SetHistoBins(200, 0, 30);
       pQATaskBefore->SelectCollisionCandidates(kPhysSel);
     }
-  }
-  
-  // Tender Supplies
-  if (bDoTender) {
-    Bool_t  bDistBC         = kFALSE; //switch for recalculation cluster position from bad channel 
-    Bool_t  bRecalibClus    = kFALSE;
-    Bool_t  bRecalcClusPos  = kFALSE;
-    Bool_t  bNonLinearCorr  = kFALSE;
-    Bool_t  bRemExoticCell  = kFALSE;
-    Bool_t  bRemExoticClus  = kFALSE;
-    Bool_t  bFidRegion      = kFALSE;
-    Bool_t  bCalibEnergy    = kTRUE;
-    Bool_t  bCalibTime      = kTRUE;
-    Bool_t  bRemBC          = kTRUE;
-    UInt_t  iNonLinFunct    = 0;
-    Bool_t  bReclusterize   = kFALSE;
-    Float_t fSeedThresh     = 0.1;      // 100 MeV
-    Float_t fCellThresh     = 0.05;     // 50 MeV 
-    UInt_t  iClusterizer    = 0;
-    Bool_t  bTrackMatch     = kFALSE;
-    Bool_t  bUpdateCellOnly = kFALSE;
-    Float_t fTimeMin        = -50e-6;   // minimum time of physical signal in a cell/digit
-    Float_t fTimeMax        =  50e-6;   // maximum time of physical signal in a cell/digit
-    Float_t fTimeCut        =  25e-6;
-    const char *cPass       = 0;
+
+    const char *cPass        = 0;
+    Bool_t   bDistBC         = kFALSE; //switch for recalculation cluster position from bad channel
+    Bool_t   bRecalibClus    = kFALSE;
+    Bool_t   bRecalcClusPos  = kFALSE;
+    Bool_t   bNonLinearCorr  = kFALSE;
+    Bool_t   bRemExoticCell  = kFALSE;
+    Bool_t   bRemExoticClus  = kFALSE;
+    Bool_t   bFidRegion      = kFALSE;
+    Bool_t   bCalibEnergy    = kTRUE;
+    Bool_t   bCalibTime      = kTRUE;
+    Bool_t   bRemBC          = kTRUE;
+    UInt_t   iNonLinFunct    = AliEMCALRecoUtils::kNoCorrection;
+    Bool_t   bReclusterize   = kFALSE;
+    Float_t  fSeedThresh     = 0.1;      // 100 MeV
+    Float_t  fCellThresh     = 0.05;     // 50 MeV
+    UInt_t   iClusterizer    = AliEMCALRecParam::kClusterizerv2;
+    Bool_t   bTrackMatch     = kFALSE;
+    Bool_t   bUpdateCellOnly = kFALSE;
+    Float_t  fEMCtimeMin     = -50e-6;
+    Float_t  fEMCtimeMax     =  50e-6;
+    Float_t  fEMCtimeCut     =  1e6;
+    if (strcmp(cRunPeriod, "LHC11h") == 0) {
+      fEMCtimeMin = -50e-9;
+      fEMCtimeMax = 100e-9;
+    }
 
     AliAnalysisTaskSE *pTenderTask = AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
                                                         bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
-                                                        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fTimeMin, fTimeMax, fTimeCut, cPass);
+                                                        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, cPass);
     pTenderTask->SelectCollisionCandidates(kPhysSel);
-  }
-  
-  if (bDoReclusterize) {
-    const Double_t kEMCtimeMin          = -50e-6;
-    const Double_t kEMCtimeMax          = 100e-6;
-    const Double_t kEMCtimeCut          =  75e-6;
     
-    AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", kClusterizerType, 
-                                                                                  0.05, 0.1, kEMCtimeMin, kEMCtimeMax, kEMCtimeCut, 
+    AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer,
+                                                                                  0.05, 0.1, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut,
                                                                                   kFALSE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
     
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
 
-    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(AliEMCALRecoUtils::kBeamTestCorrected, kTRUE, 0, "", 0., kTRUE);
+    bRemExoticClus  = kTRUE;
+    iNonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
+
+    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, 0, "", 0., kTRUE);
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
