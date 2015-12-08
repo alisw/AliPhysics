@@ -102,7 +102,11 @@ set(SRCS
   MultEvShape/AliMESpidTask.cxx
   MultEvShape/AliMESchgTask.cxx
   MultEvShape/AliMESppColTask.cxx
+  AntiprotonToProton/AliProtonAnalysis.cxx
+  AntiprotonToProton/AliProtonAnalysisBase.cxx
   AntiprotonToProton/train/AliAnalysisTaskProton.cxx
+  AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
+  AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
 )
 

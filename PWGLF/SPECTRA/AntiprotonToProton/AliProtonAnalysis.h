@@ -4,7 +4,7 @@
 /*  See cxx source for full Copyright notice */
 
 
-/* $Id$ */
+/* $Id: AliProtonAnalysis.h 42221 2010-07-11 13:13:27Z pchrist $ */
 
 //-------------------------------------------------------------------------
 //                       Class AliProtonAnalysis
@@ -38,8 +38,8 @@ class AliProtonAnalysis : public TObject {
  public:
   enum {
     kStepSurvived        = 0,
-    kStepIsPrimary       = 1,
-    kStepIdentified      = 2,
+    kStepIdentified      = 1,
+    kStepIsPrimary       = 2,
     kStepInPhaseSpace    = 3,
     kNSteps = 4
   };
@@ -62,21 +62,29 @@ class AliProtonAnalysis : public TObject {
   Bool_t ReadFromFile(const char* filename);
   void Analyze(AliESDEvent *fESD, 
 	       const AliESDVertex *vertex);
+  void AnalyzeQA(AliESDEvent *fESD, 
+	       const AliESDVertex *vertex);
   void Analyze(AliAODEvent *fAOD);
   void Analyze(AliStack *stack, Bool_t iInclusive);
+  void FillSystematics(AliESDEvent *esd, const AliESDVertex *vertex, AliESDtrack *track);
   
+  void InitSystematicsHistogram();
   //QA for real data
   void InitQA();
   void FillQA(AliESDEvent *esd,
 	      const AliESDVertex *vertex, 
 	      AliESDtrack* track);
   TList *GetQAList() {return fGlobalQAList;}
+  TList *GetProtonLow() {return fSysProtonLow;}
+  TList *GetAntiProtonLow() {return fSysAntiProtonLow;}
+  TList *GetProtonHigh() {return fSysProtonHigh;}
+  TList *GetAntiProtonHigh() {return fSysAntiProtonHigh;}
 
   AliCFContainer *GetProtonContainer() const {return fProtonContainer;}
   AliCFContainer *GetAntiProtonContainer() const {return fAntiProtonContainer;}
 
-  TH2D *GetProtonYPtHistogram() const {return fHistYPtProtons;}
-  TH2D *GetAntiProtonYPtHistogram() const {return fHistYPtAntiProtons;}
+  TH2D *GetProtonYPtHistogram();
+  TH2D *GetAntiProtonYPtHistogram();
   TH2D *GetProtonYPtCorrectedHistogram() const {
     return fHistYPtProtonsCorrected;}
   TH2D *GetAntiProtonCorrectedYPtHistogram() const {
@@ -87,8 +95,8 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetAntiProtonPtHistogram();
   TH1D *GetProtonCorrectedYHistogram();
   TH1D *GetAntiProtonCorrectedYHistogram();
-  TH1D *GetProtonCorrectedPtHistogram();
-  TH1D *GetAntiProtonCorrectedPtHistogram();
+  TH1D *GetProtonCorrectedPtHistogram(Int_t Low,Int_t High);
+  TH1D *GetAntiProtonCorrectedPtHistogram(Int_t Low,Int_t High);
 
   TH1F *GetEventStatistics() {return fHistEventStats;}
 
@@ -96,13 +104,16 @@ class AliProtonAnalysis : public TObject {
   TH1D *GetYRatioHistogram();
   TH1D *GetYRatioCorrectedHistogram();
   TH1D *GetPtRatioHistogram();
-  TH1D *GetPtRatioCorrectedHistogram();
+  TH1D *GetPtRatioCorrectedHistogram(Int_t Low,Int_t High,Int_t Rebin);
   TH1D *GetYAsymmetryHistogram();
   TH1D *GetPtAsymmetryHistogram();
+  TH1D *GetYAsymmetryCorrectedHistogram();
+  TH1D *GetPtAsymmetryCorrectedHistogram(Int_t Low,Int_t High);
   TH2D *GetProtonsAbsorptionMaps() {return fHistEfficiencyYPtProtons;}
   TH2D *GetAntiProtonsAbsorptionMaps() {return fHistEfficiencyYPtAntiProtons;}
 
   TH1I *GetEventHistogram() const {return fHistEvents;}
+  TH1D *GetMultiplicityHistogram() {return fHistMultiplicity;}
 
   Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEventStats->GetBinContent(5);}
   Bool_t  PrintMean(TH1 *hist, Double_t edge);
@@ -110,8 +121,7 @@ class AliProtonAnalysis : public TObject {
 
   //interface to the correction framework
   void Correct();
-  void Correct(Int_t step);
-  Bool_t ReadCorrectionContainer(const char* filename);
+  Bool_t ReadCorrectionContainer(const char* filename, Int_t CS);
 
   void SetCorrectionMapForFeedDown(const char* filename);
   TH2D *GetCorrectionMapForFeedDownProtons() {
@@ -163,24 +173,13 @@ class AliProtonAnalysis : public TObject {
   AliCFContainer *fProtonContainer; //container for protons
   AliCFContainer *fAntiProtonContainer; //container for antiprotons
   TH1I *fHistEvents; //event counter
-  TH2D *fHistYPtProtons; //Y-Pt of Protons
-  TH2D *fHistYPtAntiProtons; // Y-Pt of Antiprotons
   TH2D *fHistYPtProtonsCorrected; //Y-Pt of Protons (corrected)
   TH2D *fHistYPtAntiProtonsCorrected; // Y-Pt of Antiprotons (corrected)
   TH1F *fHistEventStats;//Event statistics
+  TH1D *fHistMultiplicity;//Multiplicity
   TList *fYRatioInPtBinsList;//TList of the eta dependent ratios for each pT bin
 
   //Corrections
-  TList *fEffGridListProtons; //list for the efficiency grid - protons 
-  TList *fCorrectionListProtons2D; //list for the 2d corrections 
-  TList *fEfficiencyListProtons1D; //list for the 1d efficiencies
-  TList *fCorrectionListProtons1D; //list for the 1d corrections 
-  TList *fEffGridListAntiProtons; //list for the efficiency grid - antiprotons 
-  TList *fCorrectionListAntiProtons2D; //list for the 2d corrections 
-  TList *fEfficiencyListAntiProtons1D; //list for the 1d efficiencies
-  TList *fCorrectionListAntiProtons1D; //list for the 1d corrections 
-  AliCFDataGrid *fCorrectProtons; //corrected data grid for protons
-  AliCFDataGrid *fCorrectAntiProtons; //corrected data grid for antiprotons
   TH2D *fHistEfficiencyYPtProtons;//efficiency 2D for the corrections - protons
   TH2D *fHistEfficiencyYPtAntiProtons;//efficiency 2D for the corrections - antiprotons
   TH2D *fHistCorrectionForCrossSectionYPtProtons;//correction for the proper cross-section - 2D protons
@@ -201,6 +200,7 @@ class AliProtonAnalysis : public TObject {
   //QA lists
   TList *fGlobalQAList; //global list
   TList *fQA2DList; //QA 2D list
+  TList *fSysProtonLow; TList *fSysAntiProtonLow; TList *fSysProtonHigh; TList *fSysAntiProtonHigh;
   TList *fQAProtonsAcceptedList; //accepted protons
   TList *fQAProtonsRejectedList; //rejected protons
   TList *fQAAntiProtonsAcceptedList; //accepted antiprotons

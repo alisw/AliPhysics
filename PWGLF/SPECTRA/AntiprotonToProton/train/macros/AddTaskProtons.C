@@ -43,10 +43,10 @@ AliAnalysisTaskProton *AddTaskProtons(Bool_t lCollidingSystems=kTRUE,Bool_t lDel
 AliAnalysisTaskProton *taskcheck = new AliAnalysisTaskProton(taskname);
 
 //--- analysis modes ---//
-//taskcheck->SetCollidingSystems(lCollidingSystems);
-//taskcheck->SetUsePhysicsSelection(lDelegateSelection);
-//taskcheck->SetMultiplicityMode(lCollidingSystems);
-//taskcheck->SetCentralityWindow(0,100);
+taskcheck->SetCollidingSystems(lCollidingSystems);
+taskcheck->SetUsePhysicsSelection(lDelegateSelection);
+taskcheck->SetMultiplicityMode(lCollidingSystems);
+taskcheck->SetCentralityWindow(0,100);
 
 //--- Acceptance  cuts ---//
 taskcheck->SetPtSpace(6, 0.45, 1.05);
@@ -74,12 +74,12 @@ mgr->AddTask(taskcheck);
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outname,
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            Form("%s:mmeres", AliAnalysisManager::GetCommonFileName()));
+                                                            AliAnalysisManager::GetCommonFileName());
 outname  +="_QA";
 	 AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outname,
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            Form("%s:mmeres", AliAnalysisManager::GetCommonFileName()));
+                                                            AliAnalysisManager::GetCommonFileName());
 //outname  +="_Syst";
 // AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(outname,
 //                                                           TList::Class(),
