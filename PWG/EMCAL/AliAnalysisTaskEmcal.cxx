@@ -29,6 +29,7 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliAODTrack.h"
 #include "AliVCaloTrigger.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODMCHeader.h"
@@ -1413,14 +1414,39 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj)
+void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj, Bool_t attempt)
 {
   // Add object to event
 
   if (!(InputEvent()->FindListObject(obj->GetName()))) {
     InputEvent()->AddObject(obj);
-  } else {
-    AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
+  }
+  else {
+    if (!attempt) {
+      AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
+    }
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges) const
+{
+  // Determines if a track is inside the EMCal acceptance, using eta/phi at the vertex (no propagation).
+  // Includes +/- edges. Useful to determine whether track propagation should be attempted.
+
+  if (!fGeom) {
+    AliWarning(Form("%s - AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance - Geometry is not available!", GetName()));
+    return kFALSE;
+  }
+
+  Double_t minPhi = fGeom->GetArm1PhiMin() - edges;
+  Double_t maxPhi = fGeom->GetArm1PhiMax() + edges;
+
+  if (part->Phi() > minPhi && part->Phi() < maxPhi) {
+    return kTRUE;
+  }
+  else {
+    return kFALSE;
   }
 }
 
@@ -1480,4 +1506,68 @@ Double_t AliAnalysisTaskEmcal::GetParallelFraction(const TVector3& vect1, AliVPa
   TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
   return z;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskEmcal::GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+{
+  // Calculate phi and eta difference between track and cluster.
+ 
+  phidiff = 999;
+  etadiff = 999;
+
+  if (!t||!v) return;
+
+  Double_t veta = t->GetTrackEtaOnEMCal();
+  Double_t vphi = t->GetTrackPhiOnEMCal();
+
+  Float_t pos[3] = {0};
+  v->GetPosition(pos);  
+  TVector3 cpos(pos); 
+  Double_t ceta     = cpos.Eta();
+  Double_t cphi     = cpos.Phi();
+  etadiff=veta-ceta;
+  phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+}
+
+//_________________________________________________________________________________________________
+Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliVTrack *t)
+{
+  // Get track type encoded from bits 20 and 21.
+
+  Byte_t ret = 0;
+  if (t->TestBit(BIT(22)) && !t->TestBit(BIT(23)))
+    ret = 1;
+  else if (!t->TestBit(BIT(22)) && t->TestBit(BIT(23)))
+    ret = 2;
+  else if (t->TestBit(BIT(22)) && t->TestBit(BIT(23)))
+    ret = 3;
+  return ret;
+}
+
+//________________________________________________________________________
+Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2)
+{
+  // Return track type: 0 = filterBit1, 1 = filterBit2 && ITS, 2 = filterBit2 && !ITS.
+  // Returns 3 if filterBit1 and filterBit2 do not test.
+  // WARNING: only works with AOD tracks and AOD filter bits must be provided. Otherwise will always return 0.
+
+  Int_t res = 0;
+
+  if (aodTrack->TestFilterBit(filterBit1)) {
+    res = 0;
+  }
+  else if (aodTrack->TestFilterBit(filterBit2)) {
+    if ((aodTrack->GetStatus()&AliVTrack::kITSrefit)!=0) {
+      res = 1;
+    }
+    else {
+      res = 2;
+    }
+  }
+  else {
+    res = 3;
+  }
+
+  return res;
 }
