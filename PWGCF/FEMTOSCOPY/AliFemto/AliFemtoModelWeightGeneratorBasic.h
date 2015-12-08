@@ -32,7 +32,9 @@ class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
   AliFemtoModelWeightGenerator* GetGenerator() const;
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelWeightGeneratorBasic, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelWeightGeneratorBasic, 1);
+  /// \endcond
 #endif
 
     };

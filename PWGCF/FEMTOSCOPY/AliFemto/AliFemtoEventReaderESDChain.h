@@ -113,7 +113,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   Int_t fMinPlpContribSPD; //no of contributors for SPD pile-up rejection
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderESDChain, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderESDChain, 1);
+  /// \endcond
 #endif
 
     };

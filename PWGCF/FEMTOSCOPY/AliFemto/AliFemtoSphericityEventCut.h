@@ -50,7 +50,9 @@ private:   // here are the quantities I want to cut on...
   int  fSelectTrigger;    // If set, only given trigger will be selected
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoSphericityEventCut, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoSphericityEventCut, 1);
+  /// \endcond
 #endif
 
 };

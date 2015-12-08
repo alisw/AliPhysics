@@ -25,7 +25,9 @@ public:
   virtual AliFemtoTrackCut* Clone() { return 0;}
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoTrackCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoTrackCut, 0);
+  /// \endcond
 #endif
 };
 

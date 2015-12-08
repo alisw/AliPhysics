@@ -148,7 +148,9 @@ public:
 protected:
   T    mX1, mX2, mX3;  // Vector components
 #ifdef __ROOT__
-  ClassDef(AliFmThreeVector, 3)
+  /// \cond CLASSIMP
+  ClassDef(AliFmThreeVector, 3);
+  /// \endcond
 #endif /* __ROOT__ */
 };
 

@@ -122,7 +122,9 @@ class AliFemtoCorrFctnDPhiStarDEtaStar : public AliFemtoCorrFctn {
   AliFemtoPairType fPairType;
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctnDPhiStarDEtaStar, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctnDPhiStarDEtaStar, 1);
+  /// \endcond
 #endif
     };
 

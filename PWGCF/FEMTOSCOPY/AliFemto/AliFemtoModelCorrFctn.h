@@ -58,7 +58,9 @@ protected:
 private:
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelCorrFctn, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelCorrFctn, 1);
+  /// \endcond
 #endif
 };
 
