@@ -120,6 +120,7 @@ float  ovlPhiCut   = 0.005;
 float  ovlZetaCut  = 0.05;
 Bool_t checkReconstructables = kFALSE;//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
 
+UInt_t trigSel = AliVEvent::kMB;
 
 void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
                 TString strRunList = "226062",
@@ -127,8 +128,11 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
                 TString workingDir = "dNdeta_LHC15g3c2_MC",
                 Bool_t usePhysicsSelection = kFALSE,
                 Bool_t fIsMC = 0,
-                const char * addTaskString = "AddAnalysisTaskdNdEtaPP13(\"outfile.root\",\"%s\",%f,%f,%f,%f,\"%s\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d)"
-){
+                Bool_t doMultSelTrees = kFALSE,
+                const char * oadbMultSel = "LHC15f",
+                const char * gridMode = "full",
+                const char * addTaskString = "AddAnalysisTaskdNdEtaPP13(\"outfile.root\",\"%s\",%f,%f,%f,%f,\"%s\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d,%u)"
+                ){
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 
   // Build runList
@@ -157,11 +161,19 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   handler->SetReadFriends(kTRUE);
   mgr->SetInputEventHandler(handler);
 
+  if(fIsMC) {
+    AliMCEventHandler* mchandler = new AliMCEventHandler();
+    // Not reading track references
+    mchandler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(mchandler);
+  }   
+
+  
   // PHYSICS SELECTION
   if(usePhysicsSelection){
     std::cout << "WARNING! Custom Physics Selection" << std::endl;
     AliOADBPhysicsSelection *customPS = new AliOADBPhysicsSelection("customPS");
-    customPS->AddCollisionTriggerClass(AliVEvent::kMB,"+CINT7-B-NOPF-ALLNOTRD","B",0);
+    customPS->AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel),"+CINT7-B-NOPF-ALLNOTRD","B",0);
     customPS->SetHardwareTrigger(0, "1");
     customPS->SetOfflineTrigger(0, "1");
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
@@ -175,8 +187,16 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   // MULT SELECTION
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   //AddTask: Should take care of everything transparently...
-  AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine( "AddTaskMultSelection();");
-    
+  //  AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine( "AddTaskMultSelection(kTRUE);");
+  TString multSelMacro = ""; // comment for AODs"
+  multSelMacro.Form("AddTaskMultSelection(%d)",doMultSelTrees);
+  AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine(multSelMacro.Data());// With the true option it saves the trees for calibration
+
+  taskMS -> SetAlternateOADBforEstimators ( oadbMultSel );
+  //  alien:///Users/mfloris/Work/ALICE/ANALYSIS/current/HMTF/dNdeta/task/
+  //  taskMS -> SetAlternateOADBFullManualBypassMC("alien:///alice/cern.ch/user/m/mfloris/dNdeta13TeV/OADB-LHC15g3c2_plus.root");
+  taskMS->SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel));
+    //taskMS -> SetAlternateOADBFullManualBypassMC("LHC15f");
   //User Case FIXME??
   taskMS->SetAddInfo(kTRUE);
   //  taskMS->SetSaveCalibInfo(kTRUE); //cross-check information for debugging
@@ -204,7 +224,7 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   {
     TString buf1, buf2;
     buf1.Form("%s", addTaskString);
-    buf2.Form(buf1.Data(), listname,etaMin, etaMax, zMin, zMax, useCentVar, cutSigNStd, cutSigDPhiS, fIsMC, doRec, doInj, doRot, phiRot, injScale, scaleDTheta, nStdDev, dphi, dtht, phishift, remOvl, ovlPhiCut, ovlZetaCut, checkReconstructables);
+    buf2.Form(buf1.Data(), listname,etaMin, etaMax, zMin, zMax, useCentVar, cutSigNStd, cutSigDPhiS, fIsMC, doRec, doInj, doRot, phiRot, injScale, scaleDTheta, nStdDev, dphi, dtht, phishift, remOvl, ovlPhiCut, ovlZetaCut, checkReconstructables, trigSel);
     std::cout << "Add macro: " << buf2.Data() << std::endl;
     
     task = (AliAnalysisTaskSE *)gROOT->ProcessLine( buf2.Data() );
@@ -252,8 +272,7 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   if (!mgr->InitAnalysis()) return;
   
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  plugin->SetRunMode("full");
-  //  plugin->SetRunMode("test"); // FIXME
+  plugin->SetRunMode(gridMode);
   plugin->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   plugin->SetNtestFiles(2);
   plugin->SetAPIVersion("V1.1x");

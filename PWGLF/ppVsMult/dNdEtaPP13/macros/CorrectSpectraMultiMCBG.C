@@ -52,12 +52,13 @@ Int_t    useMCLB      = 2;             // use Comb MC Labels as a template for B
 Double_t scaleBG      = 1.3;    // apply scaling to extracted bg for data
 Int_t    useScaleType = kSclIntegral;//kSclWghMean;       // which type of tails normalization to use
 Bool_t   useZbinWAv  = kFALSE;//kFALSE;
-//Bool_t   normToMB =  kFALSE;    // normalize with MB MC truth, rather than for selected events
-Bool_t   normToMB =  kTRUE;    // normalize with MB MC truth, rather than for selected events
+Bool_t   normToMB =  kFALSE;    // normalize with MB MC truth, rather than for selected events FIXME: WHAT IS THIS FOR???? only used to decide if one has to scale mc prim, and no other histo. Conflicting with ForceMB?
+//Bool_t   normToMB =  kTRUE;    // normalize with MB MC truth, rather than for selected events
 const double kEtaFitRange = 1.;//0.5;
 
 Double_t minAlpha = 0.;
-Double_t maxAlpha = 2.5;
+//Double_t maxAlpha = 2.5;
+Double_t maxAlpha = 2500;
 
 enum {kBitNormPerEvent=BIT(14)};
 // bins for saved parameters in the hStat histo
@@ -196,6 +197,9 @@ void CorrectSpectraMultiMCBG(const char* flNameData, const char* flNameMC, const
     for (int ib=0;ib<nCentBins;ib++) {
       if (!PrepareHistosHack(ib,listMC,kTRUE,forceMCMB))  continue; // R+HACK
       if (!PrepareHistosHack(ib,listDt,kFALSE,forceMCMB)) continue;
+      // // FIXME: should this be Hack or not hack?
+      // if (!PrepareHistos(ib,listMC,kTRUE))  continue; // 
+      // if (!PrepareHistos(ib,listDt,kFALSE)) continue;
       ProcessHistos(ib);
       //
     }
@@ -515,6 +519,7 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
 Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
 {
 
+  // MF 2015-12-08 This was created by Roberto. If I understand it correctly, if forces the usage of the MB bin for corrections, by setting the bin_ variables
   int bin_ = bin;
   int bin__ = bin;
   if (forceMCMB)
@@ -611,6 +616,8 @@ Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
         hBgEst = hBMCLB;
         res->AddAtAndExpand(hBgEst,kBgEst +shift);
     }
+
+    
     //
     // 1-beta for "data" = (Data_cut - Bg_cut) / Data_cut
     sprintf(buffn,"bin%d_%s_1mBeta",bin,isMC ? "mc":"dt");
@@ -815,7 +822,7 @@ void ProcessHistos(int bin)
     TH2* halp = (TH2*)res->At(shift + kMCShift + kMCPrim);
     printf("XXXXX %p XXXXX\n", halp);
     halp->Print();
-    
+
     halp = (TH2*) halp->Clone(prefN+"Alpha");
     halp->SetTitle(prefN+"#alpha");
     printf("Halp: %p %d %d\n",halp,halp->GetNbinsX(),halp->GetNbinsY()); halp->Print();
@@ -825,8 +832,10 @@ void ProcessHistos(int bin)
     halp->Divide( (TH2*)res->At(shift + kMCShift + kRawDtCut) );
     res->AddAtAndExpand(halp, shift + kAlpha);
     //
+
     KillBadBins(halp,minAlpha,maxAlpha);
     //
+
     // build alpha matrix with MC labels bg
     TH2* halpMC = (TH2*)res->At(shift + kMCShift + kMCPrim);
     halpMC = (TH2*) halpMC->Clone(prefN + "AlphaMC");
@@ -1405,6 +1414,7 @@ void PlotAlphaBeta(int bin)
     canvFin->cd(6);
     AddLabel(outTitle,0.1,0.5, kBlack, 0.02);
     //
+    
     if (creatAlphaBetaCMacro) {
         sprintf(buff,"%s/%sAlphaBeta_%s",figDir,uniqueName.Data(),outStr);
         SaveCanvas(canvFin,buff,"cg");
@@ -2049,6 +2059,7 @@ void KillBadBins(TH2* histo, double mn,double mx)
         for (int iy=1;iy<=nby;iy++) {
             double vl = histo->GetBinContent(ix,iy);
             if (vl>mx || vl<mn) {
+              
                 histo->SetBinContent(ix,iy,0);
                 histo->SetBinError(ix,iy,0);
             }

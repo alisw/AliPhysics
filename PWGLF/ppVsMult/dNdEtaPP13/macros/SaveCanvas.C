@@ -25,6 +25,13 @@ TLatex* AddLabel(const char*txt,float x=0.1,float y=0.9,int color=kBlack,float s
 void wAv(double v1,double v2, double err1=0,double err2=0, double* wv=0,double *we=0);
 void wSum(double v1,double v2, double err1=0,double err2=0, double* wv=0,double *we=0);
 
+
+void SaveCanvas(){
+  // This dummy method allows loading save canvas from the command line as root SaveCanvas.C+
+  std::cout << "Save Canvas lib loaded" << std::endl;
+  
+}
+
 void SaveCanvas(TCanvas* canv,const char* path="canv",const Option_t *option="ecg")
 {
   TString name;
