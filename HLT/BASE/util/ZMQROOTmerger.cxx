@@ -592,7 +592,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     else
     {
-      Printf("unrecognized option %s",option.Data());
+      Printf("unrecognized option |%s|",option.Data());
       nOptions=-1;
       break;
     }

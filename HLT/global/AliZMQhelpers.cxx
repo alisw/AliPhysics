@@ -647,6 +647,7 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     if (nOption>0)
     {
       optionStr = str(pos[6],pos[7]-pos[6]);
+      optionStr=optionStr.Strip(TString::kBoth,'\n');
       optionStr=optionStr.Strip(TString::kBoth,'\'');
       optionStr=optionStr.Strip(TString::kLeading,'-');
       start=pos[1]; //update the current character to the end of match
@@ -657,6 +658,7 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     if (nValue>0)
     {
       valueStr = str(pos[0],pos[1]-pos[0]);
+      valueStr=valueStr.Strip(TString::kBoth,'\n');
       valueStr=valueStr.Strip(TString::kBoth,'\'');
       start=pos[1]; //update the current character to the end of match
     }
