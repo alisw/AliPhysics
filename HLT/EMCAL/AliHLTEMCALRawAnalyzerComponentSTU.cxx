@@ -163,6 +163,8 @@ int AliHLTEMCALRawAnalyzerComponentSTU::DoEvent( const AliHLTComponentEventData&
   headerPtr->fNRawDigits = ndigittotal;
   HLTDebug("Successfully decoded %d digits.", headerPtr->fNRawDigits);
 
+  if (ndigittotal == 0) return 0; //Do not push an empty block
+
   AliHLTComponentBlockData bdChannelData;
   FillBlockData( bdChannelData );
   bdChannelData.fOffset = 0; //FIXME
