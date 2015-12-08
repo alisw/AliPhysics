@@ -1,8 +1,7 @@
-// $Id$
 //
 // Cluster maker task.
 //
-// Author: C.Loizides
+// Author: C.Loizides, S.Aiola
 
 #include <TChain.h>
 #include <TClonesArray.h>
@@ -100,26 +99,32 @@ void AliEmcalClusterMaker::ExecOnce()
 
   // Do base class initializations and if it fails -> bail out
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized)
+  if (!fInitialized) {
     return;
+  }
 
-  if (dynamic_cast<AliAODEvent*>(InputEvent())) 
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) {
     fEsdMode = kFALSE;
+  }
 
-  if (fEsdMode) 
-    fOutClusters = new TClonesArray("AliESDCaloCluster");
-  else 
-    fOutClusters = new TClonesArray("AliAODCaloCluster");
+  if (!fOutCaloName.IsNull()) {  // if empty updates old clusters instead of creating a new collection
+    if (fEsdMode) {
+      fOutClusters = new TClonesArray("AliESDCaloCluster");
+    }
+    else {
+      fOutClusters = new TClonesArray("AliAODCaloCluster");
+    }
+    fOutClusters->SetName(fOutCaloName);
 
-  fOutClusters->SetName(fOutCaloName);
-
-  // post output in event if not yet present
-  if (!(InputEvent()->FindListObject(fOutCaloName))) {
-    InputEvent()->AddObject(fOutClusters);
-  } else {
-    fInitialized = kFALSE;
-    AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
-    return;
+    // post output in event if not yet present
+    if (!(InputEvent()->FindListObject(fOutCaloName))) {
+      InputEvent()->AddObject(fOutClusters);
+    }
+    else {
+      fInitialized = kFALSE;
+      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
+      return;
+    }
   }
 }
 
@@ -129,66 +134,85 @@ Bool_t AliEmcalClusterMaker::Run()
   // Run the cluster maker
 
   // delete output
-  fOutClusters->Delete();
+  if (fOutClusters) fOutClusters->Delete();
 
   // loop over clusters
   Int_t clusCount = 0;
   Int_t entries   = fCaloClusters->GetEntries();
-  for (Int_t i=0; i<entries; ++i) {
+  for (Int_t i = 0; i < entries; ++i) {    
     AliVCluster *clus = static_cast<AliVCluster*>(fCaloClusters->At(i));
-    if (!clus || !clus->IsEMCAL())
+    if (!clus || !clus->IsEMCAL()) {
       continue;
+    }
 
     if (fCreateHisto) {
       fEnergyDistBefore->Fill(clus->E());
-      Float_t pos[3] ={0,0,0};
+      Float_t pos[3] = {0.};
       clus->GetPosition(pos);
       TVector3 vec(pos);
       fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
-      fEnergyTimeHistBefore->Fill(clus->E(),clus->GetTOF());
+      fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
     }
 
     AliVCluster *oc = 0;
-    if (fEsdMode) {
-      AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(clus);
-      if (!ec) continue;
-      oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
-    } else { 
-      AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(clus);
-      if (!ac) continue;
-      oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
+    if (fOutClusters) {
+      if (fEsdMode) {
+        AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(clus);
+        if (!ec) continue;
+        oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
+      }
+      else { 
+        AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(clus);
+        if (!ac) continue;
+        oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
+      }
     }
+
+    Bool_t exResult = kFALSE;
+    
     if (fRecoUtils) {
       if (fRecoUtils->IsRejectExoticCluster()) {
 	Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
 	fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
-	Bool_t exResult = fRecoUtils->IsExoticCluster(oc,fCaloCells);
+        exResult = fRecoUtils->IsExoticCluster(clus, fCaloCells);
 	if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
-	if(exResult) {
-	  fEnergyExoticClusters->Fill(oc->E());
-	  continue;
+        
+        clus->SetIsExotic(exResult);
+        
+	if (exResult) {
+	  fEnergyExoticClusters->Fill(clus->E());
 	}
       }
-      if (fRecoUtils->GetNonLinearityFunction()!=AliEMCALRecoUtils::kNoCorrection) {
-	Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(oc);
-	oc->SetE(energy);
+      if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
+	Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
+        clus->SetNonLinCorrEnergy(energy);
+        
+	if (oc) oc->SetE(energy);
       }
     }
-    if (!AcceptCluster(oc))
-      continue;
-    clusCount++;
 
-    if (fCreateHisto) {
-      fEnergyDistAfter->Fill(oc->E());
-      Float_t pos[3] ={0,0,0};
-      oc->GetPosition(pos);
-      TVector3 vec(pos);
-      fEtaPhiDistAfter->Fill(vec.Eta(),vec.Phi());
-      fEnergyTimeHistAfter->Fill(oc->E(),oc->GetTOF());
+    if (!AcceptCluster(oc) || exResult) {
+      continue;
+    }
+    
+    if (fOutClusters) {
+      clusCount++;
     }
 
+    if (fCreateHisto) {
+      fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
+      Float_t pos[3] = {0.};
+      clus->GetPosition(pos);
+      TVector3 vec(pos);
+      fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+      fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+    }
   }
-  if ((clusCount>0) && (clusCount==fOutClusters->GetEntries()))
+  
+  if (fOutClusters && (clusCount > 0) && (clusCount == fOutClusters->GetEntries())) {
     fOutClusters->RemoveAt(clusCount);
+  }
+
+
   return kTRUE;
 }

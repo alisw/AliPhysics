@@ -1,8 +1,6 @@
 #ifndef ALIEMCALCLUSTERMAKER_H
 #define ALIEMCALCLUSTERMAKER_H
 
-// $Id$
-
 class TClonesArray;
 class TH1F;
 class TH2F;
@@ -25,7 +23,7 @@ class AliEmcalClusterMaker : public AliAnalysisTaskEmcal {
   Bool_t                 Run()                                          ;
   void                   ExecOnce()                                     ;
 
-  TString                fOutCaloName;               // name of output clusters
+  TString                fOutCaloName;               // name of output clusters; if empty updates old clusters instead of creating a new collection
   AliEMCALRecoUtils     *fRecoUtils;                 // pointer to reco utils
   Bool_t                 fEsdMode;                   //!ESD/AOD mode
   TClonesArray          *fOutClusters;               //!output cluster collection
