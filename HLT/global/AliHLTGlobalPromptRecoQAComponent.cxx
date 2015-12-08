@@ -183,11 +183,17 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
 int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
 {
   int rc = 0;
+  //reset the histograms
   for (std::map<string,histStruct>::iterator i=fHistograms.begin(); i!=fHistograms.end(); ++i)
   {
     delete i->second.hist;
   }
   fHistograms.clear();
+  //reset axes
+  for (std::map<string,axisStruct>::iterator i=fAxes.begin(); i!=fAxes.end(); ++i)
+  {
+    i->second.histograms.clear();
+  }
   
   if (resetDownstream) 
   {
