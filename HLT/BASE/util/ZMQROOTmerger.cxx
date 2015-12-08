@@ -233,7 +233,7 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
     {
       if (ResetOutputData(fAllowResetAtSOR)>0)
       {
-        if (fVerbose) printf("Run changed, resetting!\n");
+        if (fVerbose) printf("Run changed, merger reset!\n");
       }
     }
    fRunNumber = runnumber; 
@@ -444,6 +444,7 @@ int ResetOutputData(Bool_t force)
 {
   if (fAllowGlobalReset || force) 
   {
+      if (fVerbose) Printf("Resetting the merger");
       fMergeObjectMap.DeleteAll();
       return 1;
   }
