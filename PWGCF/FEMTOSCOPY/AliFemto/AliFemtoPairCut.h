@@ -53,7 +53,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoPairCut, 0)
+  ClassDef(AliFemtoPairCut, 0);
   /// \endcond
 #endif
 };
@@ -71,4 +71,3 @@ inline void AliFemtoPairCut::EventBegin(const AliFemtoEvent* /* aEvent */ ) { /*
 inline void AliFemtoPairCut::EventEnd(const AliFemtoEvent* /* aEvent */ ) { /* no-op */ }
 
 #endif
-

@@ -31,7 +31,12 @@
 #include <cassert>
 #include <map>
 
-ClassImp(AliFemtoEventReaderAOD)
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderAOD);
+  /// \cond CLASSIMP
+#endif
 
 #if !(ST_NO_NAMESPACES)
 using namespace units;

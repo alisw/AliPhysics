@@ -15,9 +15,14 @@
 
 class AliFemtoCorrFctn3DSpherical : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctn3DSpherical(char* title, 
-			      const int& nqbins, const float& QLo, const float& QHi,
-			      const int& nphibins, const int& ncthetabins);
+
+  AliFemtoCorrFctn3DSpherical(char* title,
+                              const int& nqbins,
+                              const float& QLo,
+                              const float& QHi,
+                              const int& nphibins,
+                              const int& ncthetabins);
+
   AliFemtoCorrFctn3DSpherical(const AliFemtoCorrFctn3DSpherical& aCorrFctn);
   virtual ~AliFemtoCorrFctn3DSpherical();
 
@@ -42,11 +47,12 @@ private:
   //  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctn3DSpherical, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctn3DSpherical, 1);
+  /// \endcond
 #endif
 };
 
 //inline  void AliFemtoCorrFctn3DSpherical::SetSpecificPairCut(AliFemtoPairCut* pc){fPairCut=pc;}
 
 #endif
-

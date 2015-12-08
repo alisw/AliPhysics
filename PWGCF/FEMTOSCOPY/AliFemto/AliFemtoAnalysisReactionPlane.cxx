@@ -16,14 +16,14 @@
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoAnalysisReactionPlane)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoAnalysisReactionPlane);
+  /// \endcond
 #endif
 
 //____________________________
 AliFemtoAnalysisReactionPlane::AliFemtoAnalysisReactionPlane(unsigned int binsVertex, double minVertex, double maxVertex,
-						       unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP) 
+						       unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP)
   :
   fVertexZBins(binsVertex),
   fOverFlowVertexZ(0),

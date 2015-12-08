@@ -5,7 +5,7 @@
  * Author: Brian Lasiuk, Thomas Ullrich, April 1998
  ***************************************************************************
  *
- * Description:  
+ * Description:
  *
  * Remarks:   Since not all compilers support member templates
  *            we have to specialize the templated member on these
@@ -107,7 +107,7 @@ using namespace std;
 
 
 template<class T> class AliFmThreeVector {
-public:    
+public:
     AliFmThreeVector(T = 0, T = 0, T = 0);
   //                     ROOT_VERSION(5,03,01)
 #if ROOT_VERSION_CODE >= 328449
@@ -117,21 +117,21 @@ public:
 
 #ifndef ST_NO_MEMBER_TEMPLATES
     template<class X> AliFmThreeVector(const AliFmThreeVector<X>&);
-    template<class X> AliFmThreeVector(const X*);  
+    template<class X> AliFmThreeVector(const X*);
     template<class X> AliFmThreeVector<T>& operator=(const AliFmThreeVector<X>&);
     // AliFmThreeVector(const AliFmThreeVector<T>&);                use default
     // AliFmThreeVector<T>& operator=(const AliFmThreeVector<T>&);  use default
-#else    
+#else
     AliFmThreeVector(const AliFmThreeVector<float>&);
     AliFmThreeVector(const AliFmThreeVector<double>&);
-    
-    AliFmThreeVector(const float*); 
+
+    AliFmThreeVector(const float*);
     AliFmThreeVector(const double*);
-    
+
     AliFmThreeVector<T>& operator=(const AliFmThreeVector<float>&);
     AliFmThreeVector<T>& operator=(const AliFmThreeVector<double>&);
 #endif
-    
+
     void SetX(T);
     void SetY(T);
     void SetZ(T);
@@ -140,7 +140,7 @@ public:
     void SetTheta(T);
     void SetMag(T);
     void SetMagnitude(T);
-    
+
     T   x()                        const;
     T   y()                        const;
     T   z()                        const;
@@ -158,39 +158,39 @@ public:
 
     T&  operator() (size_t);
     T&  operator[] (size_t);
-    
+
     T   MassHypothesis(T mass)     const;
-    
+
     AliFmThreeVector<T>  Unit()       const;
     AliFmThreeVector<T>  Orthogonal() const;
 
     void  RotateX(T);
     void  RotateY(T);
     void  RotateZ(T);
-    
+
     AliFmThreeVector<T>  operator- ();
     AliFmThreeVector<T>  operator+ ();
     AliFmThreeVector<T>& operator*= (double);
     AliFmThreeVector<T>& operator/= (double);
     AliFmThreeVector<T>  PseudoProduct(double,double,double) const;
- 
+
 #ifndef ST_NO_MEMBER_TEMPLATES
     template<class X> T                Angle(const AliFmThreeVector<X>&) const;
     template<class X> AliFmThreeVector<T> Cross(const AliFmThreeVector<X>&) const;
     template<class X> T                Dot  (const AliFmThreeVector<X>&) const;
     template<class X> AliFmThreeVector<T> PseudoProduct(const AliFmThreeVector<X>&) const;
-    
+
     template<class X> bool operator == (const AliFmThreeVector<X>& v) const;
     template<class X> bool operator != (const AliFmThreeVector<X>& v) const;
 
     template<class X> AliFmThreeVector<T>& operator+= (const AliFmThreeVector<X>&);
     template<class X> AliFmThreeVector<T>& operator-= (const AliFmThreeVector<X>&);
-#else    
+#else
     T                Angle(const AliFmThreeVector<float>&) const;
     AliFmThreeVector<T> Cross(const AliFmThreeVector<float>&) const;
     T                Dot  (const AliFmThreeVector<float>&) const;
     AliFmThreeVector<T> PseudoProduct(const AliFmThreeVector<float>&) const;
-    
+
     T                Angle(const AliFmThreeVector<double>&) const;
     T                Dot  (const AliFmThreeVector<double>&) const;
     AliFmThreeVector<T> Cross(const AliFmThreeVector<double>&) const;
@@ -200,19 +200,23 @@ public:
     bool operator != (const AliFmThreeVector<float>& v) const;
     AliFmThreeVector<T>& operator+= (const AliFmThreeVector<float>&);
     AliFmThreeVector<T>& operator-= (const AliFmThreeVector<float>&);
-    
+
     bool operator == (const AliFmThreeVector<double>& v) const;
     bool operator != (const AliFmThreeVector<double>& v) const;
     AliFmThreeVector<T>& operator+= (const AliFmThreeVector<double>&);
     AliFmThreeVector<T>& operator-= (const AliFmThreeVector<double>&);
 #endif
   int             valid(double world = 1.e+5) const;
-    int               bad(double world = 1.e+5) const;
+  int               bad(double world = 1.e+5) const;
+
 protected:
     T    mX1, mX2, mX3;  // Three vector components
+
 #ifdef __ROOT__
-  ClassDef(AliFmThreeVector,3)
-#endif /* __ROOT__ */
+  /// \cond CLASSIMP
+  ClassDef(AliFmThreeVector, 3);
+  /// \endcond
+#endif
 };
 
 #ifndef __CINT__
@@ -239,7 +243,7 @@ void AliFmThreeVector<T>::SetPhi(T angle)
 {
     double  r = Magnitude();
     double th = Theta();
-    
+
     mX1 = r*sin(th)*cos(angle);
     mX2 = r*sin(th)*sin(angle);
 }
@@ -260,7 +264,7 @@ void AliFmThreeVector<T>::SetMagnitude(T r)
 {
     double th = Theta();
     double ph = Phi();
-    
+
     mX1 = r*sin(th)*cos(ph);
     mX2 = r*sin(th)*sin(ph);
     mX3 = r*cos(th);
@@ -331,7 +335,7 @@ AliFmThreeVector<T> AliFmThreeVector<T>::Orthogonal() const
     double x = (mX1 < 0.0) ? -mX1 : mX1;
     double y = (mX2 < 0.0) ? -mX2 : mX2;
     double z = (mX3 < 0.0) ? -mX3 : mX3;
-    
+
     if(x<y)
 	return x < z ? AliFmThreeVector<T>(0,mX3,-mX2) :  AliFmThreeVector<T>(mX2,-mX1,0);
     else
@@ -414,7 +418,7 @@ inline T AliFmThreeVector<T>::operator() (size_t i) const
 }
 
 template<class T>
-inline T& AliFmThreeVector<T>::operator() (size_t i) 
+inline T& AliFmThreeVector<T>::operator() (size_t i)
 {
     if (0 <=i && i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
@@ -430,7 +434,7 @@ inline T AliFmThreeVector<T>::operator[] (size_t i) const
 {
     if (0 <=i && i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmThreeVector<T>::operator[]: bad index"); 
+      throw out_of_range("AliFmThreeVector<T>::operator[]: bad index");
 #else
       cerr << "AliFmThreeVector<T>::operator[]: bad index" << endl;
 #endif
@@ -438,11 +442,11 @@ inline T AliFmThreeVector<T>::operator[] (size_t i) const
 }
 
 template<class T>
-inline T &AliFmThreeVector<T>::operator[] (size_t i) 
+inline T &AliFmThreeVector<T>::operator[] (size_t i)
 {
     if (0 <=i && i <= 2)  return (&mX1)[i];
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmThreeVector<T>::operator[]: bad index"); 
+      throw out_of_range("AliFmThreeVector<T>::operator[]: bad index");
 #else
       cerr << "AliFmThreeVector<T>::operator[]: bad index" << endl;
 #endif
@@ -563,8 +567,8 @@ template<class T>
 template<class X>
 inline T AliFmThreeVector<T>::Angle(const AliFmThreeVector<X>& vec) const
 {
-    double norm = this->Mag2()*vec.Mag2(); 
-    
+    double norm = this->Mag2()*vec.Mag2();
+
     return norm > 0 ? acos(this->Dot(vec)/(::sqrt(norm))) : 0;
 }
 
@@ -746,10 +750,10 @@ inline int
 AliFmThreeVector<T>::bad(double world) const
 {
   for (int i=0;i<3;i++) {
-	  if (!finite((&mX1)[i])      ) return 10+i; 		
-	  if ( fabs  ((&mX1)[i])>world) return 20+i; 		
-  }		
-  return 0;		
+	  if (!finite((&mX1)[i])      ) return 10+i;
+	  if ( fabs  ((&mX1)[i])>world) return 20+i;
+  }
+  return 0;
 }
 #endif /*! __CINT__ */
 #ifdef __CINT__

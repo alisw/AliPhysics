@@ -6,7 +6,9 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-  ClassImp(AliFemtoModelGausLCMSFreezeOutGenerator, 1)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelGausLCMSFreezeOutGenerator, 1);
+  /// \endcond
 #endif
 
 #include "math.h"
@@ -55,7 +57,7 @@ AliFemtoModelGausLCMSFreezeOutGenerator& AliFemtoModelGausLCMSFreezeOutGenerator
 void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aPair)
 {
   // Generate two particle emission points with respect
-  // to their pair momentum 
+  // to their pair momentum
   // The source is the 3D Gaussian ellipsoid in the LCMS frame
   //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
@@ -78,16 +80,16 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tRout = fRandom->Gaus(0.0, fSizeOut);
   Double_t tRside = fRandom->Gaus(0.0, fSizeSide);
   Double_t tRlong = fRandom->Gaus(0.0, fSizeLong);
-  
+
   Double_t tXout = (tPx * tRout + tPy * tRside)/tPt;
   Double_t tXside = (tPy * tRout - tPx * tRside)/tPt;
 
   Double_t tBetaz = tPz/tEs;
   Double_t tGammaz = 1.0/TMath::Sqrt(1-tBetaz*tBetaz);
-  
+
   Double_t tXlong = tGammaz * (tRlong + tBetaz * 0);
   Double_t tXtime = tGammaz * (0 + tBetaz * tRlong);
-  
+
   if (!(inf1->GetEmissionPoint())) {
     AliFemtoLorentzVector *tPos = new AliFemtoLorentzVector(0,0,0,0);
     inf1->SetEmissionPoint(tPos);
@@ -137,11 +139,11 @@ Double_t AliFemtoModelGausLCMSFreezeOutGenerator::GetSizeLong() const
 }
 //_______________________
 AliFemtoModelFreezeOutGenerator* AliFemtoModelGausLCMSFreezeOutGenerator::Clone() const
-{ 
-  return GetGenerator(); 
+{
+  return GetGenerator();
 }
 //_______________________
-AliFemtoModelFreezeOutGenerator* AliFemtoModelGausLCMSFreezeOutGenerator::GetGenerator() const 
-{ 
-  AliFemtoModelFreezeOutGenerator* tModel = new AliFemtoModelGausLCMSFreezeOutGenerator(*this); return tModel; 
+AliFemtoModelFreezeOutGenerator* AliFemtoModelGausLCMSFreezeOutGenerator::GetGenerator() const
+{
+  AliFemtoModelFreezeOutGenerator* tModel = new AliFemtoModelGausLCMSFreezeOutGenerator(*this); return tModel;
 }

@@ -10,7 +10,7 @@
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassImp(AliFemtoCutMonitorHandler)
+  ClassImp(AliFemtoCutMonitorHandler);
   /// \endcond
 #endif
 

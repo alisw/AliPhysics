@@ -170,7 +170,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     new AliFemtoCutMonitorParticleYPt("PionPass", PionMass),
     new AliFemtoCutMonitorParticleYPt("PionFail", PionMass)
   );
-    
+
 
     // Track quality cuts
 /*

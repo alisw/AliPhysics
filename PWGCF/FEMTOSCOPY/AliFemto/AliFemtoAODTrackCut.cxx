@@ -41,9 +41,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoAODTrackCut)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoAODTrackCut);
+  /// \endcond
 #endif
 
 
