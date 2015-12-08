@@ -1777,6 +1777,27 @@ inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const char id[
   return dt;
 }
 
+
+/**
+ * Helper function as above, but takes 0 terminates string input and pads with  spaces on the right
+ */
+ 
+inline AliHLTComponentDataType AliHLTComponentDataTypeInitializerWithPadding(const char* ID, const char* origin)
+{
+  char src[kAliHLTComponentDataTypefIDsize + 1];
+  char org[kAliHLTComponentDataTypefOriginSize + 1];
+  int j;
+  int max = kAliHLTComponentDataTypefIDsize < strlen(ID) ? kAliHLTComponentDataTypefIDsize : strlen(ID);
+  for (j = 0;j < max;j++) src[j] = ID[j];
+  for (;j < kAliHLTComponentDataTypefIDsize;j++) src[j] = ' ';
+  src[j] = 0;
+  max = kAliHLTComponentDataTypefOriginSize < strlen(origin) ? kAliHLTComponentDataTypefOriginSize : strlen(origin);
+  for (j = 0;j < max;j++) org[j] = origin[j];
+  for (;j < kAliHLTComponentDataTypefOriginSize;j++) org[j] = ' ';
+  org[j] = 0;
+  return AliHLTComponentDataTypeInitializer(src, org);
+}
+
 /**
  * Helper function to initialize a data type from a default data type and
  * an origin string. Basically it merges the specified origin into the data
