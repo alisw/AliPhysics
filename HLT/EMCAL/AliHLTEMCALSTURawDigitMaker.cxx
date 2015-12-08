@@ -212,6 +212,11 @@ Int_t AliHLTEMCALSTURawDigitMaker::WriteRawDigitsBuffer(AliHLTCaloTriggerRawDigi
 		HLTWarning("Buffer exceeded after %d digits", idig);
 		break;
 	}
+	if (fRawDigitBuffer[idig].fID < 0 || fRawDigitBuffer[idig].fID >= fgkNRawDigits)
+	{
+		HLTWarning("Invalid TRU Index in Output %d", fRawDigitBuffer[idig].fID);
+		continue;
+	}
     *bufferptr = fRawDigitBuffer[idig];
     bufferptr++;
     outputsize += sizeof(AliHLTCaloTriggerRawDigitDataStruct);
@@ -227,6 +232,12 @@ void AliHLTEMCALSTURawDigitMaker::Reset() {
 }
 
 AliHLTCaloTriggerRawDigitDataStruct &AliHLTEMCALSTURawDigitMaker::GetRawDigit(Int_t index){
+  if (index < 0){
+    HLTWarning("Invalid STU Index %d", index);
+    AliHLTCaloTriggerRawDigitDataStruct &dig = fRawDigitBuffer[fgkNRawDigits - 1];
+    InitializeRawDigit(dig);
+    return dig;
+  }
   if(fRawDigitIndex[index] >= 0){
     return fRawDigitBuffer[fRawDigitIndex[index]];
   }
