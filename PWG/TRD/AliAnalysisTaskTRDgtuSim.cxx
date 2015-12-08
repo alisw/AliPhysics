@@ -20,6 +20,8 @@ AliAnalysisTaskTRDgtuSim::AliAnalysisTaskTRDgtuSim(const char *name) :
   fOutputList(0x0),
   fHistStat(0x0),
   fHistDeltaA(0x0),
+  fHistDeltaB(0x0),
+  fHistDeltaC(0x0),
   fGtuSim(new AliTRDgtuSim()),
   fTrackletLabel(-2),
   fLabel(-10),
@@ -64,6 +66,12 @@ void AliAnalysisTaskTRDgtuSim::UserCreateOutputObjects()
 
   fHistDeltaA = new TH1F("deltaA", "delta A", 100, -100., 100.);
   fOutputList->Add(fHistDeltaA);
+
+  fHistDeltaB = new TH1F("deltaB", "delta B", 100, -4500., 4500.);
+  fOutputList->Add(fHistDeltaB);
+
+  fHistDeltaC = new TH1F("deltaC", "delta C", 100, -100., 100.);
+  fOutputList->Add(fHistDeltaC);
 
   PostData(1, fOutputList);
 }
@@ -147,6 +155,10 @@ void AliAnalysisTaskTRDgtuSim::Check(Int_t label, Int_t labelRef)
 	  fHistStat->Fill(1);
 	  Int_t deltaA = trk->GetA() - trkRef->GetA();
 	  fHistDeltaA->Fill(deltaA);
+	  Int_t deltaB = trk->GetB() - trkRef->GetB();
+	  fHistDeltaB->Fill(deltaB);
+	  Int_t deltaC = trk->GetC() - trkRef->GetC();
+	  fHistDeltaC->Fill(deltaC);
 	}
 	else {
 	  // track with different tracklets
