@@ -7,6 +7,7 @@
   3.) Check outlier handling
   .x $NOTES/aux/rootlogon.C
   gSystem->AddIncludePath("-I$ALICE_ROOT/../src/STAT/");
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include");
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+  
   AliNDLocalRegressionTest(10000,2,"cos(7*x[0]/pi)*sin(11*x[1]/pi)",0.1);
   //
