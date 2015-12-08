@@ -219,6 +219,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   {
     rc = PushBack("reset", kAliHLTDataTypeConfig);
   }
+  return 0;
 }
 
 int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const char* chainId)
@@ -843,10 +844,13 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       AliHLTCDHWrapper header(iter->fPtr);
       AliHLTUInt8_t* pData = reinterpret_cast<AliHLTUInt8_t*>(iter->fPtr);
       pData+=header.GetHeaderSize();
-      fpHWCFData->Init(pData, iter->fSize-header.GetHeaderSize());
-      const AliHLTUInt32_t* pRCUTrailer = reinterpret_cast<const AliHLTUInt32_t*>(fpHWCFData->GetRCUTrailer());
-      AliHLTUInt32_t payloadSize = (*pRCUTrailer) & 0x00ffffff;
-      rawSizeTPC += header.GetHeaderSize() + payloadSize * sizeof(AliHLTUInt32_t) + fpHWCFData->GetRCUTrailerSize();
+      int rc = fpHWCFData->Init(pData, iter->fSize-header.GetHeaderSize());
+      if (rc>=0)
+      {
+        const AliHLTUInt32_t* pRCUTrailer = reinterpret_cast<const AliHLTUInt32_t*>(fpHWCFData->GetRCUTrailer());
+        AliHLTUInt32_t payloadSize = (*pRCUTrailer) & 0x00ffffff;
+        rawSizeTPC += header.GetHeaderSize() + payloadSize * sizeof(AliHLTUInt32_t) + fpHWCFData->GetRCUTrailerSize();
+      }
     }
     if (iter->fDataType == (AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC)) //Size of transformed HLT-TPC clusters
     {
