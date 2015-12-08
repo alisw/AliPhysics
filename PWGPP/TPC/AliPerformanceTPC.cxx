@@ -712,7 +712,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 	  Double_t vTPCClust[3] = { static_cast<Double_t>(irow), phi, static_cast<Double_t>(TPCside) };
         if(fUseSparse) fTPCClustHisto->Fill(vTPCClust);
         else{
-            h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
+            if(h_tpc_clust_0_1_2) h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
         }
     } //end if(bUseVfriend && vfriendEvent && ...)
       }}
@@ -989,14 +989,14 @@ TTree* AliPerformanceTPC::CreateSummary()
 void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
 
     if(vTPCEvent[6] > 0.999){
-        h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
-        h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
-        h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
-        h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
-        h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
-        h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
+        if (h_tpc_event_recvertex_0) h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
+        if (h_tpc_event_recvertex_1) h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
+        if (h_tpc_event_recvertex_2) h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
+        if (h_tpc_event_recvertex_3) h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
+        if (h_tpc_event_recvertex_4) h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
+        if (h_tpc_event_recvertex_5) h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
     }
-    h_tpc_event_6->Fill(vTPCEvent[6]);
+    if (h_tpc_event_6) h_tpc_event_6->Fill(vTPCEvent[6]);
 
 }
 
@@ -1007,30 +1007,30 @@ void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
 
     double q = vTPCTrackHisto[8];
 
-    h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
-    h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
+    if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     
-    h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(q > 0 && h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    else if(h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     
-    h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else h_tpc_track_neg_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_3_5_7) h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(q > 0 && h_tpc_track_pos_recvertex_3_5_7) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    else if(h_tpc_track_neg_recvertex_3_5_7) h_tpc_track_neg_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     
-    h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_4_5_7) h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(q > 0 && h_tpc_track_pos_recvertex_4_5_7) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    else if(h_tpc_track_neg_recvertex_4_5_7) h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
 
-    if(q > 0)h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    if(q > 0 && h_tpc_track_pos_recvertex_3_5_6)h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    else if(h_tpc_track_neg_recvertex_3_5_6) h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     
-    if(q > 0)h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    if(q > 0 && h_tpc_track_pos_recvertex_4_5_6) h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    else if(h_tpc_track_neg_recvertex_4_5_6) h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     
-    if(q > 0) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    if(q > 0 && h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    else if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
 
 }
 

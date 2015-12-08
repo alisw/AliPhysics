@@ -356,8 +356,8 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliVTrack *co
     Double_t vecTrackingEff[5] = { static_cast<Double_t>(isMatch),vTrack->Phi(), vTrack->Pt(),vTrack->Eta(),static_cast<Double_t>(vTrack->GetITSclusters(0)) };
     if(fUseSparse) fTrackingEffHisto->Fill(vecTrackingEff);
     else{
-        if(vecTrackingEff[0] > -0.5) h_tpc_match_trackingeff_all_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
-        if(vecTrackingEff[0] > 0.5) h_tpc_match_trackingeff_tpc_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
+        if(vecTrackingEff[0] > -0.5) if(h_tpc_match_trackingeff_all_2_3) h_tpc_match_trackingeff_all_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
+        if(vecTrackingEff[0] > 0.5) if (h_tpc_match_trackingeff_tpc_2_3) h_tpc_match_trackingeff_tpc_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
         //std::cout<<" mean "<<h_tpc_match_trackingeff_all_2_3->GetMean(1)<<endl;
     
     }
@@ -408,7 +408,7 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliVEve
   Double_t vTPCConstrain[4] = {pullPhi,vTrack->Phi(),vTrack->Pt(),vTrack->Eta()};
   if(fUseSparse) fTPCConstrain->Fill(vTPCConstrain);
   else {
-      h_tpc_constrain_tpc_0_2_3->Fill(vTPCConstrain[0],vTPCConstrain[2],vTPCConstrain[3]);
+      if(h_tpc_constrain_tpc_0_2_3) h_tpc_constrain_tpc_0_2_3->Fill(vTPCConstrain[0],vTPCConstrain[2],vTPCConstrain[3]);
   }
   if(TPCinnerC)
     delete TPCinnerC;
@@ -475,11 +475,11 @@ void AliPerformanceMatch::FillHistograms(AliVTrack *const refParamVTrack, AliVTr
             if(vPullHisto[6] > 0. && vPullHisto[6] < 1.49)
             if(vPullHisto[7] > 0.01 && vPullHisto[7] < 10)
             if(vPullHisto[8] > 1.0 && vPullHisto[8] < 2.0){
-                h_tpc_match_pull_2_7->Fill(vPullHisto[2],vPullHisto[7]);
-                h_tpc_match_pull_4_7->Fill(vPullHisto[4],vPullHisto[7]);
-                h_tpc_match_pull_0_7->Fill(vPullHisto[0],vPullHisto[7]);
-                h_tpc_match_pull_1_7->Fill(vPullHisto[1],vPullHisto[7]);
-                h_tpc_match_pull_3_7->Fill(vPullHisto[3],vPullHisto[7]);
+                if(h_tpc_match_pull_2_7) h_tpc_match_pull_2_7->Fill(vPullHisto[2],vPullHisto[7]);
+                if(h_tpc_match_pull_4_7) h_tpc_match_pull_4_7->Fill(vPullHisto[4],vPullHisto[7]);
+                if(h_tpc_match_pull_0_7) h_tpc_match_pull_0_7->Fill(vPullHisto[0],vPullHisto[7]);
+                if(h_tpc_match_pull_1_7) h_tpc_match_pull_1_7->Fill(vPullHisto[1],vPullHisto[7]);
+                if(h_tpc_match_pull_3_7) h_tpc_match_pull_3_7->Fill(vPullHisto[3],vPullHisto[7]);
             }
             
         }
