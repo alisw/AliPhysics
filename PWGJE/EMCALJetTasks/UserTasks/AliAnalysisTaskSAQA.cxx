@@ -50,6 +50,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
   fSeparateEMCalDCal(kTRUE),
+  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -78,6 +79,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistClusMCEnergyFraction(0),
+  fHistClusEnergy(0),
+  fHistClusNonLinCorrEnergy(0),
+  fHistClusHadCorrEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0)
@@ -107,6 +111,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
   fSeparateEMCalDCal(kTRUE),
+  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -135,6 +140,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistClusMCEnergyFraction(0),
+  fHistClusEnergy(0),
+  fHistClusNonLinCorrEnergy(0),
+  fHistClusHadCorrEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0)
@@ -179,6 +187,9 @@ void AliAnalysisTaskSAQA::AllocateHistogramArrays()
   fHistFcrossEnergy = new TH2*[fNcentBins];
   fHistClusTimeEnergy = new TH2*[fNcentBins];
   fHistClusMCEnergyFraction = new TH1*[fNcentBins];
+  fHistClusEnergy = new TH1*[fNcentBins];
+  fHistClusNonLinCorrEnergy = new TH1*[fNcentBins];
+  fHistClusHadCorrEnergy = new TH1*[fNcentBins];
 
   fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
 
@@ -210,6 +221,9 @@ void AliAnalysisTaskSAQA::AllocateHistogramArrays()
     fHistFcrossEnergy[i] = 0;
     fHistClusTimeEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
+    fHistClusEnergy[i] = 0;
+    fHistClusNonLinCorrEnergy[i] = 0;
+    fHistClusHadCorrEnergy[i] = 0;
 
     fHistCellsAbsIdEnergy[i] = 0;
 
@@ -363,6 +377,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistClusTimeEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
       fHistClusTimeEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistClusTimeEnergy[i]->GetYaxis()->SetTitle("Time");
+      fHistClusTimeEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClusTimeEnergy[i]);
 
       Int_t nbins = fMaxCellsInCluster;
@@ -372,6 +387,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistNCellsEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
       fHistNCellsEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistNCellsEnergy[i]->GetYaxis()->SetTitle("N_{cells}");
+      fHistNCellsEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistNCellsEnergy[i]);
 
       histname = "fHistFcrossEnergy_";
@@ -379,6 +395,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistFcrossEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
       fHistFcrossEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistFcrossEnergy[i]->GetYaxis()->SetTitle("F_{cross}");
+      fHistFcrossEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistFcrossEnergy[i]); 
 
       histname = "fHistCellsAbsIdEnergy_";
@@ -388,6 +405,27 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cell} (GeV)");
       fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");    
       fOutput->Add(fHistCellsAbsIdEnergy[i]);
+
+      histname = "fHistClusEnergy_";
+      histname += i;
+      fHistClusEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusEnergy[i]);
+
+      histname = "fHistClusNonLinCorrEnergy_";
+      histname += i;
+      fHistClusNonLinCorrEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusNonLinCorrEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusNonLinCorrEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusNonLinCorrEnergy[i]);
+
+      histname = "fHistClusHadCorrEnergy_";
+      histname += i;
+      fHistClusHadCorrEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusHadCorrEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusHadCorrEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusHadCorrEnergy[i]);
     }
   }
 
@@ -928,22 +966,32 @@ void AliAnalysisTaskSAQA::DoClusterLoop()
   AliVCluster* cluster = 0;
   clusters->ResetCurrentID();
   while ((cluster = clusters->GetNextAcceptCluster())) {
+    TLorentzVector nPart;
+    Double_t energy = 0;
+
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      energy = cluster->GetUserDefEnergy(fDefaultClusterEnergy);
+      cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      energy = cluster->E();
+      cluster->GetMomentum(nPart, fVertex);
+    }
+
+    if (energy <= 0) continue;
+
     Float_t pos[3]={0};
     cluster->GetPosition(pos);
     fHistClusPosition[fCentBin]->Fill(pos[0], pos[1], pos[2]);
-
-
-    TLorentzVector nPart;
-    cluster->GetMomentum(nPart, fVertex);
 
     Double_t phi = TVector2::Phi_0_2pi(nPart.Phi());
 
     Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
 
-    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), phi, cluster->E());
+    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), phi, energy);
 
     if (!fLeadingCluster[isDcal] || fLeadingCluster[isDcal]->E() < cluster->E()) fLeadingCluster[isDcal] = cluster;
-    fSumClusters[isDcal] += cluster->E();
+    fSumClusters[isDcal] += energy;
 
     if (fHistClusDeltaPhiEPEnergy[fCentBin]) {
       Double_t ep = nPart.Phi() - fEPV0;
@@ -961,6 +1009,10 @@ void AliAnalysisTaskSAQA::DoClusterLoop()
     if (fHistClusMCEnergyFraction[fCentBin]) {
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
     }
+
+    fHistClusEnergy[fCentBin]->Fill(cluster->E());
+    if (cluster->GetNonLinCorrEnergy() > 0.) fHistClusNonLinCorrEnergy[fCentBin]->Fill(cluster->GetNonLinCorrEnergy());
+    if (cluster->GetHadCorrEnergy() > 0.) fHistClusHadCorrEnergy[fCentBin]->Fill(cluster->GetHadCorrEnergy());
 
     fNTotClusters[isDcal]++;
   }
