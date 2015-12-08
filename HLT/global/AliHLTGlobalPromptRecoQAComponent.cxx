@@ -624,8 +624,9 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
 
 int histStruct::Fill()
 {
-  if (*x.value * *y.value)
+  if ((x.value && y.value) && (*x.value * *y.value)!=0 )
   {
+    if (!hist) return 0;
     hist->Fill(*x.value, *y.value);
     return 1;
   }
