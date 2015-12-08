@@ -168,9 +168,11 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 	int nInputs = 0;
 	TList* mergeList = new TList;
 	bool writeOutput = false; //For cumulative mode we should make sure we do not send the same merged object again and again
+	size_t inputSize;
 
 	for (const TObject *obj = GetFirstInputObject(kAliHLTAllDataTypes); obj != NULL; obj = GetNextInputObject())
 	{
+		inputSize += blocks[GetCurrentInputBlockIndex()].fSize;
 		writeOutput = true;
 		TObject* nonConstObj;
 		if ((nonConstObj = RemoveInputObjectFromCleanupList(obj)) == NULL)
@@ -228,17 +230,18 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			if (fCumulative)
 			{
 				fTotalInputs += nInputs;
-				HLTImportant("Root objects merged cumulatively: %d new inputs, %d total inputs", nInputs, fTotalInputs);
+				HLTImportant("Root objects merged cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
 			}
 			else
 			{
 				HLTImportant("Root objects merged from %d inputs", nInputs);
 			}
-			if (PushBack(dynamic_cast<TObject*>(returnObj), GetDataType()) > 0)
+			int pushresult = PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
+			if (pushresult > 0)
 			{
 				char tmpType[100];
 				GetDataType().PrintDataType(tmpType, 100);
-				HLTImportant("Merger Component pushing data type %s (Class name %s)", tmpType, returnObj->ClassName());
+				HLTImportant("Merger Component pushed data type %s (Class name %s, %d bytes)", tmpType, returnObj->ClassName(), pushresult);
 			}
 		}
 		if (!fCumulative) delete returnObj;
