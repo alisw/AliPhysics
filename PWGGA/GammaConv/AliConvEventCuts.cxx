@@ -1601,7 +1601,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
-      {9999,1550}, //  0 //changed from 9999 on 18 Feb 
+      {9999,9999}, //  0 //1550 changed to 9999 on 9 Dec 
       {1210, 928}, // 10
       { 817, 658}, // 20
       { 536, 435}, // 30
@@ -1615,7 +1615,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
     };
   Int_t PrimaryTracks5a[11][2] =
     {
-      {9999,1550}, // 0 //changed from 9999 on 18 Feb
+      {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec 
       {1485,1168}, // 5
       {1210, 928}, // 10
       { 995, 795}, // 15
