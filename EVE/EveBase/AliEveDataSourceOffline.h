@@ -71,6 +71,8 @@ private:
     
     Bool_t   fgRawFromStandardLoc; // Global flag to enable looking for raw data in ../../../raw/, as it is stored for central reco.
 
+    AliEveDataSourceOffline(const AliEveDataSourceOffline&);
+    AliEveDataSourceOffline& operator=(const AliEveDataSourceOffline&);
     
    ClassDef(AliEveDataSourceOffline, 0);
 };

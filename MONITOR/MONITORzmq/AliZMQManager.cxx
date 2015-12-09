@@ -30,6 +30,12 @@ AliZMQManager *AliZMQManager::fManagerInstance = 0;
 /// In constructor, config files with hostnames and port number are being read.
 /// Contexts for all sockets are being created.
 AliZMQManager::AliZMQManager()
+	: fStorageServer()
+	, fEventServer()
+	, fStorageServerPort(0)
+	, fStorageClientPort(0)
+	, fEventServerPort(0)
+	, fXmlServerPort(0)
 {
     //read config file
     ifstream configFile (GetConfigFilePath());

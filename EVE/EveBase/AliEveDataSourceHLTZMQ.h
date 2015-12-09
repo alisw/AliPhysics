@@ -33,6 +33,10 @@ private:
     void* fZMQContext;
     void* fZMQeventQueue; //this is the ONLY queue for threads!
     TString fHLTPublisherAddress;
+
+    AliEveDataSourceHLTZMQ(const AliEveDataSourceHLTZMQ&);
+    AliEveDataSourceHLTZMQ& operator=(const AliEveDataSourceHLTZMQ&);
+
     ClassDef(AliEveDataSourceHLTZMQ, 0); // Interface for getting all event components in a uniform way.
 };
 
