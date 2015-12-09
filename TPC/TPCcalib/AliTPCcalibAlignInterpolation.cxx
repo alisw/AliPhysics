@@ -686,6 +686,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "nPrimTracks="<<nPrimTracks<<       // number of tracks pointed to primary vertes of selected event
       "timeStamp="<<timeStamp<<           // time stamp
       "itrack="<<fTrackCounter<<          // total track #
+      "gid="<<gid<<                       // global ID of the event
       "itsNCl="<<itsNCl<<
       "trdNCl="<<trdNCl<<
       "tofNCl="<<tofNCl<<
