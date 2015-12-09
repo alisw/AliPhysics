@@ -93,6 +93,7 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   fMinTracks(0),
   fQueueDepth(0),
   fAsyncProcess(0),
+  fForceKillAsyncProcess(-1),
   fPushRequestOngoing(kFALSE),
   fAsyncProcessor()
 {
@@ -253,6 +254,7 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerExit(void*)
 Int_t AliHLTAnalysisManagerComponent::DoDeinit() {
   // see header file for class documentation
 
+  if (fForceKillAsyncProcess != -1) fAsyncProcessor.ForceChildExit(fForceKillAsyncProcess);
   if (fAsyncProcessor.GetNumberOfAsyncTasksInQueue())
   {
     HLTError("Cannot deinitialize AsyncProcessor - Still tasks in queue");
@@ -262,7 +264,10 @@ Int_t AliHLTAnalysisManagerComponent::DoDeinit() {
     while (fAsyncProcessor.IsQueuedTaskCompleted()) fAsyncProcessor.RetrieveQueuedTaskResult();
   }
 
-  fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerExit, NULL);
+  if (fForceKillAsyncProcess == -1)
+  {
+    fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerExit, NULL);
+  }
 
   fAsyncProcessor.Deinitialize();
   return 0;
@@ -402,6 +407,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
   {
     fQuickEndRun = true;
+    if (fForceKillAsyncProcess != -1) fAsyncProcessor.ForceChildExit(fForceKillAsyncProcess);
     fAsyncProcessor.WaitForTasks(0);
   }
 
@@ -626,47 +632,52 @@ int AliHLTAnalysisManagerComponent::ProcessOption(TString option, TString value)
 {
   //process option
   //to be implemented by the user
-  if (option.Contains("WriteAnalysisToFile")) 
+  if (option.EqualTo("WriteAnalysisToFile")) 
   {
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
     HLTInfo("fWriteAnalysisToFile=%i\n",fWriteAnalysisToFile?1:0);
   }
-  else if (option.Contains("AddTaskMacro"))
+  else if (option.EqualTo("AddTaskMacro"))
   {
     fAddTaskMacro=value;
     HLTInfo("fAddTaskMacro=%s\n",fAddTaskMacro.Data());
   }
-  else if (option.Contains("PushEventModulo"))
+  else if (option.EqualTo("PushEventModulo"))
   {
     fPushEventModulo=atoi(value.Data());
     HLTInfo("fPushEventModulo=%d\n",fPushEventModulo);
   }
-  else if (option.Contains("MinTracks"))
+  else if (option.EqualTo("MinTracks"))
   {
     fMinTracks=atoi(value.Data());
     HLTInfo("fMinTracks=%d\n",fMinTracks);
   }
-  else if (option.Contains("QueueDepth"))
+  else if (option.EqualTo("QueueDepth"))
   {
     fQueueDepth=atoi(value.Data());
     HLTInfo("fQueueDepth=%d\n",fQueueDepth);
   }
-  else if (option.Contains("AsyncProcess"))
+  else if (option.EqualTo("AsyncProcess"))
   {
     fAsyncProcess=atoi(value.Data());
     if (fAsyncProcess == 1) fAsyncProcess = 100000000;
     if (fAsyncProcess) HLTInfo("AsyncProcess (%d bytes buffer)\n", fAsyncProcess);
   }
-  else if (option.Contains("ResetAfterPush"))
+  else if (option.EqualTo("ForceKillAsyncProcess"))
+  {
+    fForceKillAsyncProcess=atoi(value.Data());
+    if (fAsyncProcess) HLTInfo("ForceKillAsyncProcess set to %d\n", fForceKillAsyncProcess);
+  }
+  else if (option.EqualTo("ResetAfterPush"))
   {
     fResetAfterPush=(value.Contains("0")?kFALSE:kTRUE);
     HLTInfo("fResetAfterPush=%i\n",fResetAfterPush?1:0);
   }
-  else if (option.Contains("NoFullQueueWarning"))
+  else if (option.EqualTo("NoFullQueueWarning"))
   {
     fAsyncProcessor.SetFullQueueWarning(0);
   }
-  else if (option.Contains("EnableDebug"))
+  else if (option.EqualTo("EnableDebug"))
   {
     fEnableDebug=value.Contains("1");
     HLTInfo("fEnableDebug=%s",fEnableDebug?"1":"0");

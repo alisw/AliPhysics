@@ -169,6 +169,7 @@ private:
   Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
   Int_t fQueueDepth;	//Depth of asynchronous Queue
   Int_t fAsyncProcess;	//Use an async process instead of an async thread
+  Int_t fForceKillAsyncProcess; //Kill async process after n msec, -1 to disable
   Bool_t fPushRequestOngoing; //Have we already requested a push? If so, wait until push before request again
   AliHLTAsyncMemberProcessor<AliHLTAnalysisManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
 
