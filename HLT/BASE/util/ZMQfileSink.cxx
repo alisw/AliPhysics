@@ -62,6 +62,8 @@ Int_t fRunNumber = 0;
 TPRegexp* fSelectionRegexp = NULL;
 TPRegexp* fUnSelectionRegexp = NULL;
 
+bool fgTerminationSignaled=false;
+
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
@@ -75,11 +77,20 @@ const char* fUSAGE =
     " -unselect : as select, only inverted\n"
     " -file : dump input to file and exit\n"
     ;
+
+//_______________________________________________________________________________________
+void sig_handler(int signo)
+{
+  if (signo == SIGINT)
+    printf("received signal\n");
+  fgTerminationSignaled=true;
+}
+
 //_______________________________________________________________________________________
 void* run(void* arg)
 {
   //main loop
-  while(true)
+  while(!fgTerminationSignaled)
   {
     errno=0;
     //send a request if we are using REQ
@@ -158,9 +169,10 @@ void* run(void* arg)
           TTimeStamp time;
           TString timestamp = time.AsString("s");
           timestamp.ReplaceAll(" ","_");
-          fFileName  = fFileNameBase+"_";
+          fFileName  = fFileNameBase;
+          fFileName += "_"+timestamp+"_";
           fFileName += fFileNumber;
-          fFileName += "_"+timestamp+".root";
+          fFileName += ".root";
           if (fVerbose) Printf("opening file: %s", fFileName.Data());
           if (!fFile) fFile = new TFile(fFileName,fileMode);
           DumpToFile(object);
@@ -207,12 +219,18 @@ int main(int argc, char** argv)
   fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
   if (fZMQsocketModeIN < 0) return 1;
 
-  //if (signal(SIGINT, sig_handler) == SIG_ERR)
-  //printf("\ncan't catch SIGINT\n");
+  if (signal(SIGHUP, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGHUP\n");
+  if (signal(SIGINT, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGINT\n");
+  if (signal(SIGQUIT, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGQUIT\n");
+  if (signal(SIGTERM, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGTERM\n");
 
   run(NULL);
 
-  Printf("exiting...");
+  Printf("closing file(s) and exiting...");
   if (fFile) fFile->Close();
   delete fFile; fFile=0;
 
