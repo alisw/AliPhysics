@@ -492,6 +492,12 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
     HLTWarning("histogram title cannot be empty!");
     return;
   }
+  if (xname.empty() && yname.empty())
+  {
+    HLTWarning("both axis names empty! at least one needed (%s)", config.c_str());
+    return;
+  }
+
   if (histName.empty()) histName=histTitle;
   if (!trigName.empty()) histName=histName+"_"+trigName;
   if (!trigName.empty()) histTitle=histTitle+" <"+trigName+">";
@@ -507,18 +513,29 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
 
   axisStruct x = fAxes[xname];
   axisStruct y = fAxes[yname];
-  if (!x.value) 
+  if (!x.value && !xname.empty()) 
   {
     HLTWarning("empty variable %s",xname.c_str());
     return;
   }
-  if (!y.value) 
+  if (!y.value && !yname.empty()) 
   {
     HLTWarning("empty variable %s",yname.c_str());
     return;
   }
   delete hist.hist;
-  hist.hist = new TH2F(histName.c_str(), histTitle.c_str(), x.bins, x.low, x.high, y.bins, y.low, y.high);
+  if (!xname.empty() && !yname.empty())
+  {
+    //both axes specified, TH2
+    hist.hist = new TH2F(histName.c_str(), histTitle.c_str(), x.bins, x.low, x.high, y.bins, y.low, y.high);
+  } 
+  else
+  {
+    //only one axis specified (the case of both axes empty is excluded above)
+    axisStruct* ax = &x;
+    if (xname.empty()) ax=&y;
+    hist.hist = new TH1F(histName.c_str(), histTitle.c_str(), (*ax).bins, (*ax).low, (*ax).high);
+  }
   hist.x = x;
   hist.y = y;
   hist.trigger = trigName;
