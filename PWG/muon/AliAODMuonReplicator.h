@@ -16,7 +16,7 @@
 
 //
 // Implementation of a branch replicator 
-// to produce slim muon and dimuon aods.
+// to produce slim muon aods.
 //
 // Author: L. Aphecetche (Subatech)
 
@@ -59,7 +59,6 @@ private:
   mutable TClonesArray* fTracks; //! internal array of muon tracks
   AliAnalysisCuts* fVertexCut; // decides which vertices to keep
   mutable TClonesArray* fVertices; //! internal array of vertices
-  mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable AliAODVZERO* fVZERO; //! internal vzero object
   mutable AliAODTZERO* fTZERO; //! internal tzero object
   mutable AliAODAD* fAD; //!internal ad object
@@ -80,7 +79,7 @@ private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,8) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,9) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

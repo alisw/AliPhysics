@@ -38,7 +38,6 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisNonMuonTrackCuts.h"
 #include "AliAnalysisNonPrimaryVertices.h"
-#include "AliAODDimuon.h"
 #include "AliAODEvent.h"
 #include "AliAODExtension.h"
 #include "AliAODHandler.h"
@@ -69,7 +68,6 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon, Bool
   AliAnalysisTaskSE(),
   fTrackFilter(0x0),
   fEnableMuonAOD(kFALSE),
-  fEnableDimuonAOD(kFALSE),
   fOnlyMuon(onlyMuon),
   fKeepAllEvents(keepAllEvents),
   fMCMode(mcMode),
@@ -82,7 +80,6 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name, Boo
   AliAnalysisTaskSE(name),
   fTrackFilter(0x0),
   fEnableMuonAOD(kFALSE),
-  fEnableDimuonAOD(kFALSE),
   fOnlyMuon(onlyMuon),
   fKeepAllEvents(keepAllEvents),
   fMCMode(mcMode),
@@ -174,7 +171,6 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
     
     ext->FilterBranch("tracks",murep);    
     ext->FilterBranch("vertices",murep);  
-    ext->FilterBranch("dimuons",murep);
     ext->FilterBranch("AliAODVZERO",murep);
     ext->FilterBranch("AliAODTZERO",murep);
     ext->FilterBranch("AliAODZDC",murep);
@@ -202,7 +198,6 @@ void AliAnalysisTaskESDMuonFilter::Init()
 {
   /// Initialization
   if(fEnableMuonAOD) AddFilteredAOD("AliAOD.Muons.root", "MuonEvents");
-  if(fEnableDimuonAOD) AddFilteredAOD("AliAOD.Dimuons.root", "DimuonEvents");    
 }
 
 
@@ -267,12 +262,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t nPosTracks = header->GetRefMultiplicityPos();
   Int_t nNegTracks = header->GetRefMultiplicityNeg();
   
-  // Access to the AOD container of dimuons
-  TClonesArray &dimuons = *(AODEvent()->GetDimuons());
-  
   Int_t nMuons=0;
-  Int_t nDimuons=0;
-  Int_t jDimuons=0;
   Int_t nMuonTrack[100];
   UChar_t itsClusMap(0);
   
@@ -346,32 +336,10 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     ++nMuons;
   }
   
-  if(nMuons>=2) 
-  { 
-    for(int i=0;i<nMuons;i++){
-      Int_t index0 = nMuonTrack[i];
-      for(int j=i+1;j<nMuons;j++){
-        Int_t index1 = nMuonTrack[j];
-        new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
-        ++nDimuons;
-        if (fDebug > 1){
-          AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jDimuons-1);
-          printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
-          AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
-          AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
-          printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
-          printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
-        }  
-      }
-    }
-  }
-  
-  
-  header->SetRefMultiplicity(nTracks); 
+  header->SetRefMultiplicity(nTracks);
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nNegTracks);
   header->SetNumberOfMuons(nMuons);
-  header->SetNumberOfDimuons(nDimuons);
   
   // ----------------- MFT + MUON TRACKS -----------------------------------------------------
 
@@ -385,8 +353,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   for (Int_t iTrack=0; iTrack<nMuGlobalTracks; ++iTrack) esd->GetMuonGlobalTrack(iTrack)->SetESDEvent(esd);
   
   Int_t nGlobalMuons=0;
-  Int_t nGlobalDimuons=0;
-  Int_t jGlobalDimuons=0;
   Int_t nMuonGlobalTrack[100];
   itsClusMap = 0;
   
@@ -468,27 +434,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     ++nGlobalMuons;
   }
 
-  if (nGlobalMuons >= 2) { 
-    for (Int_t i=0; i<nGlobalMuons; i++) {
-      Int_t index0 = nMuonGlobalTrack[i];
-      for (Int_t j=i+1; j<nGlobalMuons; j++) {
-        Int_t index1 = nMuonGlobalTrack[j];
-        new (dimuons[jGlobalDimuons++]) AliAODDimuon(tracks.At(index0), tracks.At(index1));
-        ++nDimuons;
-        if (fDebug > 1) {
-          AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jGlobalDimuons-1);
-          printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
-          AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
-          AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
-          printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
-          printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
-        }  
-      }
-    }
-  }
-  
   header->SetNumberOfGlobalMuons(nGlobalMuons);
-  header->SetNumberOfGlobalDimuons(nGlobalDimuons);
   
   // -----------------------------------------------------------------------
 
@@ -499,13 +445,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     AliAODExtension *extMuons = handler->GetFilteredAOD("AliAOD.Muons.root");
     if ( extMuons ) extMuons->SelectEvent();
   }
-  
-  if ( handler && fEnableDimuonAOD && ( (nMuons>1) || fKeepAllEvents )  )
-  {
-    AliAODExtension *extDimuons = handler->GetFilteredAOD("AliAOD.Dimuons.root");
-    if ( extDimuons ) extDimuons->SelectEvent();
-  }
-  
 }
 
 //====================================================================================================================================================
