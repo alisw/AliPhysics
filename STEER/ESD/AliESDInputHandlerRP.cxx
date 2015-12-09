@@ -30,11 +30,13 @@
 #include <TObjArray.h>
 #include <TProcessID.h>
 #include <TSystem.h>
+#include <TGrid.h>
 
 #include "AliESDInputHandlerRP.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 
 ClassImp(AliESDInputHandlerRP)
 
@@ -51,7 +53,8 @@ AliESDInputHandlerRP::AliESDInputHandlerRP() :
     fEventsPerFile(0),
     fExtension(""),
     fPathName(new TString("./")),
-    fIsArchive(kFALSE)
+    fIsArchive(kFALSE),
+    fReadDirectory(kFALSE)
 {
   // Default constructor
 }
@@ -70,7 +73,8 @@ AliESDInputHandlerRP::AliESDInputHandlerRP(const char* name, const char* title):
     fEventsPerFile(0),
     fExtension(""),
     fPathName(new TString("./")),
-    fIsArchive(kFALSE)
+    fIsArchive(kFALSE),
+    fReadDirectory(kFALSE)
 {
     // Constructor
 }
@@ -93,16 +97,17 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     TFile* file = 0;
     while ((det = (TNamed*) next()))
     {
-	if (!fIsArchive) {
-	    file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
-	} else {
-	    file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
-	}
-	if (!file) {
-	  AliError(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
-	  return kFALSE;
-	}
-	fRFiles->Add(file);
+      if (det->TestBit(kReadFromArchiveBIT)) {
+	file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
+      }
+      else {
+	file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
+      } 
+      if (!file) {
+	AliError(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
+	return kFALSE;
+      }
+      fRFiles->Add(file);
     }
 
     if (file) {
@@ -200,13 +205,14 @@ Bool_t AliESDInputHandlerRP::OpenFile(Int_t i)
     TFile* file;
     while ((det = (TNamed*) next()))
     {
-	if (!fIsArchive) {
-	    file = TFile::Open(Form("%s%s.RecPoints%s.root", fPathName->Data(), det->GetName(), fExtension));
-	} else {
-	    file = TFile::Open(Form("%s#%s.RecPoints%s.root", fPathName->Data(), det->GetName(), fExtension));
-	}
-	if (!file) AliFatal(Form("AliESDInputHandlerRP: RecPoints.root not found in %s ! \n", fPathName->Data()));
-	fRFiles->Add(file);
+      if (det->TestBit(kReadFromArchiveBIT)) {
+	file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
+      }
+      else {
+	file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
+      } 
+      if (!file) AliFatal(Form("AliESDInputHandlerRP: RecPoints.root not found in %s ! \n", fPathName->Data()));
+      fRFiles->Add(file);
     }
     return ok;
 }
@@ -239,14 +245,14 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     //
     // Now filter the files containing RecPoints *.RecPoints.*
 
-    TSeqCollection* members;
+    TSeqCollection* membersArch=0;
 
     
     if (fIsArchive) {
 	// Archive
       TFile* file = TFile::Open(fPathName->Data());
       TArchiveFile* arch = file->GetArchive();
-      members = arch->GetMembers();
+      membersArch = arch->GetMembers();
       fPathName->ReplaceAll("#", "");
       fPathName->ReplaceAll(esdname, "");
     } else {
@@ -254,22 +260,17 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
       if (fileName.BeginsWith("alien:")) {
         TFile* file = TFile::Open(Form("%s/root_archive.zip", fPathName->Data()));
         TArchiveFile* arch = file->GetArchive();
-        members = arch->GetMembers();
-      } else {  
-        TString wd = gSystem->WorkingDirectory();
-        TSystemDirectory dir(".", fPathName->Data());
-        members = dir.GetListOfFiles();
-        gSystem->cd(wd);
-      }  
+        membersArch = arch->GetMembers();
+      } 
     }
 
-    TIter next(members);
     TFile* entry;
     Int_t ien = 0;
-    fDetectors->Delete();
+    fDetectors->Delete(); 
     
-    while ( (entry = (TFile*) next()) )
-    {
+    if (membersArch) {
+      TIter next(membersArch);
+      while ( (entry = (TFile*) next()) ) {
 	TString name(entry->GetName());
 	TObjArray* tokens = name.Tokenize(".");
 	Int_t ntok = 0;
@@ -281,17 +282,31 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 	if (ntok <= 1) continue;
 	TString str = ((TObjString*) tokens->At(1))->GetString();
 	if (!(strcmp(str.Data(), "RecPoints"))){
-	    TString det = ((TObjString*) tokens->At(0))->GetString();
-	    printf("Found file with RecPoints for %s \n", det.Data());
-	    TNamed* ent = new TNamed(det.Data(), det.Data());
-	    fRTrees->AddAt(0, ien);
-	    ent->SetUniqueID(ien++);
-	    fDetectors->Add(ent);
+	  TString det = ((TObjString*) tokens->At(0))->GetString();
+	  printf("Found file with RecPoints for %s \n", det.Data());
+	  TNamed* ent = new TNamed(det.Data(), det.Data());
+	  fRTrees->AddAt(0, ien);
+	  ent->SetUniqueID(ien++);
+	  ent->SetBit(kReadFromArchiveBIT);
+	  fDetectors->Add(ent);
 	}
 	if(tokens) delete tokens;
-    } // loop over files
-
-
+      } // loop over files
+    }
+    //
+    if (!fDetectors->GetEntries() || fReadDirectory) { // read from directory, overlaps will be sorted out later
+      if (fPathName->BeginsWith("alien:") && !gGrid) TGrid::Connect("alien://");
+      for (int id=0;id<AliDAQ::kNDetectors;id++) {
+	const char* dname = AliDAQ::OfflineModuleName(id);
+	if (!dname || fDetectors->FindObject(dname)) continue; // skip already accounted one
+	if (gSystem->AccessPathName(Form("%s%s.RecPoints.root",fPathName->Data(),dname))) continue; // no recpoints
+	TNamed* ent = new TNamed(dname, dname);
+	fRTrees->AddAt(0, ien);
+	ent->SetUniqueID(ien++);
+	fDetectors->Add(ent);
+      }
+    }  
+    //
     // Now we have the path and the list of detectors
     
     printf("AliESDInputHandlerRP::Notify() Path: %s\n", fPathName->Data());
@@ -299,7 +314,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     ResetIO();
     InitIO("");
     // Some clean-up
-    if (members) members->Delete();
+    if (membersArch) membersArch->Delete();
 
     AliESDInputHandler::Notify(path);
     
