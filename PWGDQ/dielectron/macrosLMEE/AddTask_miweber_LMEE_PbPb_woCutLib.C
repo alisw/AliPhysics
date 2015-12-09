@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_PbPb", Bool_t isNano = kFALSE){
+AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_PbPb", Bool_t isNano = kFALSE, Bool_t bCutQA = kTRUE){
 
 
   //get the current analysis manager
@@ -38,7 +38,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   if (!hasMC && !isNano) task->UsePhysicsSelection();
 
   //Add event filter
-  Int_t triggerNames = AliVEvent::kMB;//PbPb Min Bias, can be set also from outside
+  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias, can be set also from outside
 
   // for Nano AODs this has been done already  
   if(!isNano){
@@ -56,7 +56,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA);
+  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA);
   if(diel_low){
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
