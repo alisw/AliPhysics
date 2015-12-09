@@ -75,6 +75,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void Make(AliFlowEventSimple *anEvent);
    virtual Bool_t CrossCheckInternalFlags(AliFlowEventSimple *anEvent);
    virtual void CrossCheckPointersUsedInMake(); 
+   virtual void DetermineRandomIndices(AliFlowEventSimple *anEvent);
    virtual void FillControlHistograms(AliFlowEventSimple *anEvent);
    virtual void FillQvector(AliFlowEventSimple *anEvent);
    virtual void CalculateCorrelations(AliFlowEventSimple *anEvent);
@@ -117,6 +118,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetAnalysisTag(const char *at) {this->fAnalysisTag = TString(at);};
   TString GetAnalysisTag() const {return this->fAnalysisTag;};
   void SetDumpThePoints(Bool_t dtp, Int_t max) {this->fDumpThePoints = dtp; this->fMaxNoEventsPerFile = max;};
+  void SetSelectRandomlyRPs(Int_t nSelectedRandomlyRPs) {this->fSelectRandomlyRPs = kTRUE; this->fnSelectedRandomlyRPs = nSelectedRandomlyRPs;};
 
   //  5.1.) Control histograms:  
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -334,6 +336,9 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TString fAnalysisTag;        // tag internally this analysis
   Bool_t fDumpThePoints;       // dump the data points into the external file 
   Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
+  Bool_t fSelectRandomlyRPs;   // enable random shuffling to estimate 'fake flow'
+  Int_t fnSelectedRandomlyRPs; // how many RPs will be taken for the analysis after random shuffling?
+  TArrayI *fRandomIndicesRPs;  // well, these are random indices...
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
@@ -448,7 +453,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   //Int_t fnHighestHarmonicSPC;       // highest harmonic for evaluation of generic correlators TBI implement this more differentially
   //Int_t fnHighestOptimizerSPC;      // highest optimizer TBI implement this more differentially
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,4);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,5);
 
 };
 

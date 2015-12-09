@@ -41,6 +41,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetAnalysisTag(const char *at) {this->fAnalysisTag = TString(at);};
   TString GetAnalysisTag() const {return this->fAnalysisTag;};
   void SetDumpThePoints(Bool_t dtp, Int_t max) {this->fDumpThePoints = dtp; this->fMaxNoEventsPerFile = max;};
+  void SetSelectRandomlyRPs(Int_t nSelectedRandomlyRPs) {this->fSelectRandomlyRPs = kTRUE; this->fnSelectedRandomlyRPs = nSelectedRandomlyRPs;}
 
   // Control histograms:
   void SetFillControlHistograms(Bool_t fch) {this->fFillControlHistograms = fch;};
@@ -165,13 +166,15 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
 
   // Internal flags:
-  Bool_t fUseInternalFlags;  // use internal flags (automatically set if some internal flag is used)
-  Int_t fMinNoRPs;           // minimum number of RPs required for the analysis 
-  Int_t fMaxNoRPs;           // maximum number of RPs allowed for the analysis 
-  Int_t fExactNoRPs;         // exact (randomly shuffled) number of RPs selected for the analysis 
-  TString fAnalysisTag;      // tag internally this analysis
-  Bool_t fDumpThePoints;     // dump the data points into the external file
-  Int_t fMaxNoEventsPerFile; // maximum number of events to be dumped in a single file
+  Bool_t fUseInternalFlags;    // use internal flags (automatically set if some internal flag is used)
+  Int_t fMinNoRPs;             // minimum number of RPs required for the analysis
+  Int_t fMaxNoRPs;             // maximum number of RPs allowed for the analysis
+  Int_t fExactNoRPs;           // exact (randomly shuffled) number of RPs selected for the analysis
+  TString fAnalysisTag;        // tag internally this analysis
+  Bool_t fDumpThePoints;       // dump the data points into the external file
+  Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
+  Bool_t fSelectRandomlyRPs;   // enable random shuffling to estimate 'fake flow'
+  Int_t fnSelectedRandomlyRPs; // how many RPs will be taken for the analysis after random shuffling?
 
   // Control histograms:
   Bool_t fFillControlHistograms;     // fill or not control histograms (by default they are filled)
@@ -239,7 +242,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Symmetry plane correlations:
   Bool_t fCalculateSymmetryPlanes; // calculate correlations between symmetry planes
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,4);
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,5);
 
 };
 

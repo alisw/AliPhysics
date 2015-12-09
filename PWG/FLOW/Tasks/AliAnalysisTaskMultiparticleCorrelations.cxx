@@ -46,6 +46,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fAnalysisTag(""),
  fDumpThePoints(kFALSE),
  fMaxNoEventsPerFile(100),
+ fSelectRandomlyRPs(kFALSE),
+ fnSelectedRandomlyRPs(-44),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -175,6 +177,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fAnalysisTag(""),
  fDumpThePoints(kFALSE),
  fMaxNoEventsPerFile(0),
+ fSelectRandomlyRPs(kFALSE),
+ fnSelectedRandomlyRPs(-44),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -296,6 +300,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  if(fUseInternalFlags){fMPC->SetExactNoRPs(fExactNoRPs);}
  fMPC->SetAnalysisTag(fAnalysisTag.Data());
  fMPC->SetDumpThePoints(fDumpThePoints,fMaxNoEventsPerFile);
+ if(fSelectRandomlyRPs){fMPC->SetSelectRandomlyRPs(fnSelectedRandomlyRPs);}
  fMPC->SetFillControlHistograms(fFillControlHistograms);
  if(fDontFill[0]){fMPC->SetDontFill("RP");}
  if(fDontFill[1]){fMPC->SetDontFill("POI");}
