@@ -186,6 +186,7 @@ void* run(void* arg)
                   if (fVerbose) printf("Run changed, resetting!\n");
                   fDrawables.Delete();
                   fCanvas->Clear();
+                  gSystem->ProcessEvents();
               }
               fRunNumber = runnumber; 
             }
