@@ -56,7 +56,7 @@ void* AliHLTAsyncProcessor::alignPointer(void* ptr, size_t size)
 {
 	size_t tmp = (size_t) ptr;
 	tmp += size;
-	alignSize(tmp);
+	tmp = alignSize(tmp);
 	return (void*) tmp;
 }
 
