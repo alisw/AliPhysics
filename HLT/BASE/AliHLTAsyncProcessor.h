@@ -64,6 +64,11 @@ public:
 	//Fetch the result of the first task that finished.
 	//Returns NULL if no task has finished.
 	void* RetrieveQueuedTaskResult();
+	
+	//Force the child process to quit. Only works with async process not thread.
+	//WaitTime is the maximum time allowed for the child to quit properly in msec.
+	//Returns 0 if the child exited properly, 1 if the child was killed hard, -1 on error
+	int ForceChildExit(int waitTime);
 
 	//Wait for n async tasks to finish, where n is the argument passed.
 	//If n=0, the function waits for all queued tasks to finish.
@@ -154,6 +159,7 @@ protected:
 		int fQueueDepth;
 		bool fAsyncThreadRunning, fAsyncThreadProcessing;
 		bool fExit;
+		bool fChildStopped;
 		AliHLTAsyncProcessorBackend* fBackend;
 
 		AliHLTAsyncProcessorInput* fInputQueue;

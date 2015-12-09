@@ -137,6 +137,29 @@ public:
 		waitpid(fAsyncPID, &returnStatus, 0);
 		return(returnStatus);
 	}
+	
+	int KillChildProcess(int waitTime)
+	{
+		do
+		{
+			int status;
+			pid_t result = waitpid(fAsyncPID, &status, WNOHANG);
+			if (result == 0)
+			{
+				usleep(1000);
+			}
+			else if (result == -1)
+			{
+				return(-1);
+			}
+			else
+			{
+				return(0);
+			}
+		} while (waitTime-- > 0);
+		if (kill(fAsyncPID, SIGKILL)) return(-1);
+		return(1);
+	}
 
 private:
 #ifdef HLT_ASYNC_USE_SEM_T

@@ -23,6 +23,7 @@ AliHLTAsyncProcessor::AliHLTAsyncProcessor() : AliHLTLogging(), fMe(new AliHLTAs
 	fMe->fAsyncThreadRunning = false;
 	fMe->fAsyncThreadProcessing = false;
 	fMe->fExit = false;
+	fMe->fChildStopped = false;
 	fMe->fBackend = NULL;
 	fMe->fInputQueue = NULL;
 	fMe->fOutputQueue = NULL;
@@ -144,7 +145,7 @@ int AliHLTAsyncProcessor::Deinitialize()
 		return(1);
 	}
 	fMe->fBackend->UnlockMutex(1);
-	QueueAsyncTask(AsyncThreadStop, this);
+	if (!fMe->fChildStopped) QueueAsyncTask(AsyncThreadStop, this);
 	if (fMe->fAsyncProcess)
 	{
 		fMe->fBackend->StopProcess();
@@ -177,6 +178,7 @@ int AliHLTAsyncProcessor::Deinitialize()
 	}
 
 	fMe->fExit = false;
+	fMe->fChildStopped = false;
 	fMe->fBackend = NULL;
 	fMe->fInputQueue = NULL;
 	fMe->fOutputQueue = NULL;
@@ -288,6 +290,11 @@ void* AliHLTAsyncProcessor::InitializeAsyncTask(void* (*initFunction)(void*), vo
 
 int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* data)
 {
+	if (fMe->fChildStopped)
+	{
+		HLTError("Cannot queue new tasks after the child was stopped");
+		return(1);
+	}
 	if (fMe->fQueueDepth == 0)
 	{
 		if (fMe->fOutputQueueUsed) return(1);
@@ -563,3 +570,20 @@ size_t AliHLTAsyncProcessor::ChildSharedProcessBufferSize()
 
 int AliHLTAsyncProcessor::LockMutex(int i) {return(fMe->fBackend->LockMutex(i));}
 int AliHLTAsyncProcessor::UnlockMutex(int i) {return(fMe->fBackend->UnlockMutex(i));}
+
+int AliHLTAsyncProcessor::ForceChildExit(int waitTime)
+{
+	if (fMe->fChildStopped) return(0);
+	if (!fMe->fAsyncProcess) return(-1);
+	if (fMe->fQueueDepth == 0) return(0);
+	fMe->fExit = true;
+	QueueAsyncTask(AsyncThreadStop, this);
+	int retVal = fMe->fBackend->KillChildProcess(waitTime);
+	if (retVal == 1) HLTWarning("Child dit not terminate in time and was killed");
+	fMe->fChildStopped = true;
+	fMe->fInputQueueUsed = 0;
+	fMe->fAsyncThreadProcessing = false;
+	fMe->fAsyncThreadRunning = false;
+	if (retVal == -1) HLTError("Error: Cannot stop async child");
+	return(retVal);
+}
