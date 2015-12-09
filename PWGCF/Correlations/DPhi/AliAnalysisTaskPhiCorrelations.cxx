@@ -1824,26 +1824,25 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
               (jet->GetNumberOfConstituents() < fJetConstMin))
             continue;
 
+          Float_t dEta = track->Eta() - jet->Eta();
+          Float_t dPhi = TVector2::Phi_mpi_pi(track->Phi() - jet->Phi());
+          Bool_t trackInCone = (TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.)) < TMath::Power(fExclusionRadius, 2.);
           Bool_t trackInJet  = jet->ContainsTrack(track, fAOD->GetTracks()) >= 0;
 
-          // exclude track if in cone around jet or assigned to jet
-          if (fExclusionRadius > 0.) {
-            Float_t dEta = track->Eta() - jet->Eta();
-            Float_t dPhi = TVector2::Phi_mpi_pi(track->Phi() - jet->Phi());
-            Float_t r = TMath::Sqrt(TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.));
-            Bool_t trackInCone = (TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.)) < TMath::Power(fExclusionRadius, 2.);
+          if (trackInJet != trackInCone)
+            AliDebug(2, Form("track %15s - %15s",
+                             trackInJet ? "in jet" : "not in jet",
+                             trackInCone ? "in cone" : "not in cone"));
 
-            if (trackInCone) {
-              rejectTrack = kTRUE;
-              break;
-            }
-          } else if (trackInJet) {
-            rejectTrack = kTRUE;
+          // exclude track if in cone around jet or assigned to jet
+          rejectTrack = fExclusionRadius > 0. ? trackInCone : trackInJet;
+
+          if (rejectTrack)
             break;
-          }
         }
 
-        // skip track if it is in a selected jet
+        // skip track if it is associated to a selected jet
+        // (either by jet finder or by cone radius)
         if (rejectTrack)
           continue;
 
