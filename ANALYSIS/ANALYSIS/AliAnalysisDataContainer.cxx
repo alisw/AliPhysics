@@ -56,6 +56,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
+#include "AliLog.h"
 
 using std::endl;
 using std::cout;
@@ -239,7 +240,7 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
 // Merge a list of containers with this one. Containers in the list must have
 // data of the same type.
    if (!list || !fData) return 0;
-   printf("Merging %d containers %s\n", list->GetSize()+1, GetName());
+   AliInfo(Form("Merging %d containers %s\n", list->GetSize()+1, GetName()));
    TMethodCall callEnv;
    if (fData->IsA())
       callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
@@ -262,7 +263,7 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
          cout << "Not merging containers with different names !" << endl;
          continue;
       }
-      printf(" ... merging object %s\n", data->GetName());
+      AliInfo(Form(" ... merging object %s\n", data->GetName()));
       collectionData->Add(data);
       count++;
    }
