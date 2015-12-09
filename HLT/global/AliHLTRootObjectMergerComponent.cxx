@@ -261,7 +261,6 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 {
 	if (evtData.fBlockCnt == 0) return(0);
 	
-	TObject* returnObj = fObj;
 	TList* mergeList = new TList;
 	size_t inputSize = 0;
 	int nInputs = 0;
@@ -295,7 +294,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			if (tmp == NULL)
 			{
 				tmp = new MergeObjectStruct;
-				tmp->fObject = NULL;
+				tmp->fObject = fObj;
 				tmp->fList = new TList;
 			}
 
