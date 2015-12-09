@@ -28,6 +28,7 @@ int fZMQsocketModeOUT = -1;
 float fSleep = 1e6; //in microseconds
 int fCount = 0;
 int fNentries = 1;
+int fRunNumber = -1;
 
 vector<TH1F*> fHistograms;
 int fNHistos = 1;
@@ -100,6 +101,12 @@ int main(int argc, char** argv)
       rc = alizmq_msg_recv(&request, fZMQout, 0);
     }
     
+    if (fRunNumber>=0) 
+    {
+      TString runInfo = "run=";
+      runInfo+=fRunNumber;
+      rc=alizmq_msg_send("INFO",runInfo.Data(), fZMQout, ZMQ_SNDMORE);
+    }
     for (int i = 0; i < fNHistos - 1; i++) 
     {
       rc = alizmq_msg_send(topic, fHistograms[i], fZMQout, ZMQ_SNDMORE, 0);
@@ -146,6 +153,10 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("distribution"))
     {
       fHistDistribution = value;
+    }
+    else if (option.EqualTo("run"))
+    {
+      fRunNumber = value.Atoi();
     }
     else if (option.EqualTo("range"))
     {

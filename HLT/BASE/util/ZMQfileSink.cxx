@@ -134,6 +134,15 @@ void* run(void* arg)
       //get all data (topic+body), possibly many of them
       aliZMQmsg message;
       alizmq_msg_recv(&message, fZMQin, 0);
+      
+      //count ROOT objects
+      int numberOfTObjects=0;
+      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+      {
+        if (alizmq_msg_iter_check(i, "ROOT")==0) numberOfTObjects++;
+      }
+
+      //process
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_msg_iter_check(i, "INFO")==0)
@@ -169,8 +178,21 @@ void* run(void* arg)
           TTimeStamp time;
           TString timestamp = time.AsString("s");
           timestamp.ReplaceAll(" ","_");
+
+          char runStr[10];
+          snprintf(runStr,10,"%.9i",fRunNumber);
+
           fFileName  = fFileNameBase;
-          fFileName += "_"+timestamp+"_";
+          fFileName += "_";
+          fFileName += runStr;
+          fFileName += "_"+timestamp;
+          if (numberOfTObjects==1) 
+          {
+            TString objectName = object->GetName();
+            objectName.ReplaceAll(" ","_");
+            fFileName += "_"+objectName;
+          }
+          fFileName += ".";
           fFileName += fFileNumber;
           fFileName += ".root";
           if (fVerbose) Printf("opening file: %s", fFileName.Data());
