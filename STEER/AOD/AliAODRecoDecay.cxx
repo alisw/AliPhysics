@@ -67,10 +67,10 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   // Constructor with AliAODVertex for decay vertex
   //
 
-  fPx = new Double_t[GetNProngs()];
-  fPy = new Double_t[GetNProngs()];
-  fPz = new Double_t[GetNProngs()];
-  fd0 = new Double_t[GetNProngs()];
+  fPx = new Double32_t[GetNProngs()];
+  fPy = new Double32_t[GetNProngs()];
+  fPz = new Double32_t[GetNProngs()];
+  fd0 = new Double32_t[GetNProngs()];
   for(Int_t i=0; i<GetNProngs(); i++) {
     fPx[i] = px[i];
     fPy[i] = py[i];
@@ -96,8 +96,16 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
   //
 
-  fd0 = new Double_t[GetNProngs()];
-  for(Int_t i=0; i<GetNProngs(); i++) fd0[i] = d0[i];
+  fPx = new Double32_t[GetNProngs()];
+  fPy = new Double32_t[GetNProngs()];
+  fPz = new Double32_t[GetNProngs()];
+  fd0 = new Double32_t[GetNProngs()];
+  for(Int_t i=0; i<GetNProngs(); i++){
+    fPx[i] = 0;;
+    fPy[i] = 0.;
+    fPz[i] = 0.;
+    fd0[i] = d0[i];
+  }
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
