@@ -197,10 +197,23 @@ void AliJetEmbeddingTask::Run()
        	     	pTemb = jetDet->Pt();
        	     }
        	  }
-       	  // exclude a fraction of the entries
+       	  // exclude a fraction of the entries -- doesn't work very well
        	  if(fRandomEntry){
-       	     while(pTemb < fMinPtEmb){
+  
+     	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     else {
+       	     	fCurrentEntry = 0;
+       	     	AliWarning("Starting from first entry again");
+       	     	bDet->GetEntry(fCurrentEntry);
+       	     }
+       	     pTemb = jetDet->Pt();
+       	     
+       	     Float_t downscl = GetDownscalinigFactor();
+       	     Float_t random = gRandom->Rndm();
+       	     
+       	     while (random > downscl){
        	     	fCurrentEntry++;
+       	     	random = gRandom->Rndm();
        	     	if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
        	     	else {
        	     	   fCurrentEntry = 0;
@@ -208,30 +221,21 @@ void AliJetEmbeddingTask::Run()
        	     	   bDet->GetEntry(fCurrentEntry);
        	     	}
        	     	pTemb = jetDet->Pt();
+       	     	if(pTemb < fPtRanges[fCurrentBin]) {
+       	     	   random = gRandom->Rndm();
+       	     	   continue;
+       	     	}
+       	     	   
        	     }
-       	     Float_t downscl = GetDownscalinigFactor();
-       	     Float_t random = gRandom->Rndm();
-       	     while (pTemb < fPtRanges[fCurrentBin]) {
-       	     	fCurrentEntry++;
-       	     	bDet->GetEntry(fCurrentEntry);
-       	     	pTemb = jetDet->Pt();
-       	     }
-       	     while (random > downscl){
-       	     	fCurrentEntry++;
-       	     	random = gRandom->Rndm();
-       	     }
-       	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
-       	     else {
-       	     	fCurrentEntry = 0;
-       	     	AliWarning("Starting from first entry again");
-       	     	bDet->GetEntry(fCurrentEntry);
-       	     }
+       	     
        	  }
-       	  //if(fRandomEntry) fCurrentEntry = gRandom->Integer(nentries);
+
        	  // Add the track that complies with the settings 
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, jetDet->M());
-       	  fCount++;
-       	  //Printf("fCount %d",fCount);
+       	  
+       	  fCount++; // count the number of track embedded in the current pT range
+       	  fCurrentEntry++; //increase for next iteration
+       	  
        } else { //other inputs
        	  
        	  Double_t mass = fMass;
@@ -403,7 +407,10 @@ void AliJetEmbeddingTask::SetRejection(Float_t* rej) {
    }
    Printf("Creating array of factors with size %d", fNBins);
    fDownscale = new Float_t[fNBins];
-   for(Int_t i = 0; i<fNBins; i++) fDownscale[i] = rej[i];
+   for(Int_t i = 0; i<fNBins; i++) {
+      fDownscale[i] = rej[i];
+      Printf("Bin %d -> Factor = %e", i, fDownscale[i]);
+   }
    return;
 }
 
@@ -417,7 +424,14 @@ void AliJetEmbeddingTask::SetPtRangesEmb(Float_t* ptlims) {
    }
    Printf("Creating array of pt limits with size %d", fNBins);
    fPtRanges = new Float_t[fNBins];
-   for(Int_t i = 0; i<fNBins; i++) fPtRanges[i] = ptlims[i];
+   for(Int_t i = 0; i<fNBins; i++){
+      fPtRanges[i] = ptlims[i];
+      if(fPtRanges[i] < fMinPtEmb){
+      	 fPtRanges[i] = fMinPtEmb;
+      	 AliError(Form("Minimum pT set to %.2f", fMinPtEmb));
+      }
+      Printf("Bin %d -> PtRange = %e", i, fPtRanges[i]);
+   }
    return;
  }
  
