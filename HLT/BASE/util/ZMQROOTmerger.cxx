@@ -354,6 +354,8 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
             if (fVerbose) Printf("Merging failed, replacing with new object  %s's",name);
             RemoveEntry(entry, &fMergeObjectMap);
             mergingList->Remove(object);
+            //if the merging list has more objects, flush the list to avoid problems
+            if (mergingList->GetEntries()>0) mergingList->Delete();
             AddNewObject(name, object, &fMergeObjectMap);
           }
         }
