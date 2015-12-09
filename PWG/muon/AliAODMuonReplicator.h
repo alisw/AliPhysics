@@ -72,14 +72,14 @@ private:
   Int_t fMCMode; // MC filtering switch (0=none=no mc information,1=normal=simple copy,>=2=aggressive=filter out)
   TExMap fLabelMap; //! for MC label remapping (in case of aggressive filtering)
   TExMap fParticleSelected; //! List of selected MC particles
-  Bool_t fReplicateHeader; //! whether or not the replicate the AOD Header
-  Bool_t fReplicateTracklets; //! whether or not the replicate the AOD Tracklets
+  Bool_t fReplicateHeader; // whether or not the replicate the AOD Header
+  Bool_t fReplicateTracklets; // whether or not the replicate the AOD Tracklets
   
 private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,9) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,10) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
