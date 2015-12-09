@@ -1,5 +1,7 @@
 #include "zmq.h"
+#include "AliZMQhelpers.h"
 #include <iostream>
+#include "TTimeStamp.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTMessage.h"
@@ -10,7 +12,6 @@
 #include "TObjString.h"
 #include "TDirectory.h"
 #include "TList.h"
-#include "AliZMQhelpers.h"
 #include "TMessage.h"
 #include "TSystem.h"
 #include "TApplication.h"
@@ -43,8 +44,10 @@ int fZMQsocketModeIN=-1;
 TString fZMQsubscriptionIN = "";
 TString fFilter = "";
 
+TString fFileNameBase="";
 TString fFileName="";
 TFile* fFile=NULL;
+Int_t fFileNumber = 0;
 
 int fPollInterval = 0;
 int fPollTimeout = 1000; //1s
@@ -73,33 +76,10 @@ const char* fUSAGE =
     " -file : dump input to file and exit\n"
     ;
 //_______________________________________________________________________________________
-class MySignalHandler : public TSignalHandler
-{
-  public:
-	MySignalHandler(ESignals sig) : TSignalHandler(sig) {}
-	Bool_t Notify()
-	{
-    Printf("signal received, exiting");
-		fgTerminationSignaled = true;
-		return TSignalHandler::Notify();
-	}
-	static bool TerminationSignaled() { return fgTerminationSignaled; }
-	static bool fgTerminationSignaled;
-};
-bool MySignalHandler::fgTerminationSignaled = false;
-
-void sig_handler(int signo)
-{
-  if (signo == SIGINT)
-    printf("received SIGINT\n");
-  MySignalHandler::fgTerminationSignaled=true;
-}
-
-//_______________________________________________________________________________________
 void* run(void* arg)
 {
   //main loop
-  while(!MySignalHandler::TerminationSignaled())
+  while(true)
   {
     errno=0;
     //send a request if we are using REQ
@@ -170,12 +150,29 @@ void* run(void* arg)
         TObject* object;
         alizmq_msg_iter_data(i, object);
 
-        if (object && !fFileName.IsNull()) 
+        if (fVerbose) Printf("got %s %s", object->ClassName(), object->GetName());
+
+        if (object && !fFileNameBase.IsNull()) 
         {
+          Option_t* fileMode="RECREATE";
+          TTimeStamp time;
+          TString timestamp = time.AsString("s");
+          timestamp.ReplaceAll(" ","_");
+          fFileName  = fFileNameBase+"_";
+          fFileName += fFileNumber;
+          fFileName += "_"+timestamp+".root";
+          if (fVerbose) Printf("opening file: %s", fFileName.Data());
+          if (!fFile) fFile = new TFile(fFileName,fileMode);
           DumpToFile(object);
+        }
+        else
+        {
+          Printf("no object or no file");
         }
       }
       alizmq_msg_close(&message);
+      delete fFile; fFile=NULL;
+      fFileNumber++;
 
     }//socket 0
     usleep(fPollInterval);
@@ -194,6 +191,12 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  if (fFileNameBase.IsNull())
+  {
+    Printf("a filen name must be specified with -file option!");
+    return 1;
+  }
+
   int mainReturnCode=0;
 
   //init stuff
@@ -204,13 +207,8 @@ int main(int argc, char** argv)
   fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
   if (fZMQsocketModeIN < 0) return 1;
 
-  gSystem->ResetSignal(kSigPipe);
-  gSystem->ResetSignal(kSigQuit);
-  gSystem->ResetSignal(kSigInterrupt);
-  gSystem->ResetSignal(kSigTermination);
- 
-  if (signal(SIGINT, sig_handler) == SIG_ERR)
-  printf("\ncan't catch SIGINT\n");
+  //if (signal(SIGINT, sig_handler) == SIG_ERR)
+  //printf("\ncan't catch SIGINT\n");
 
   run(NULL);
 
@@ -230,11 +228,8 @@ int main(int argc, char** argv)
 //______________________________________________________________________________
 int DumpToFile(TObject* object)
 {
-  Option_t* fileMode="RECREATE";
-  if (!fFile) fFile = new TFile(fFileName,fileMode);
   if (fVerbose) Printf("writing object %s to %s",object->GetName(), fFileName.Data());
   int rc = object->Write(object->GetName(),TObject::kOverwrite);
-  MySignalHandler::fgTerminationSignaled=true;
   return rc;
 }
 
@@ -247,8 +242,8 @@ int ProcessOptionString(TString arguments)
   for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     //Printf("  %s : %s", i->first.data(), i->second.data());
-    const TString& option = i->first;
-    const TString& value = i->second;
+    TString option = i->first;
+    TString value = i->second;
     if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
     {
       fPollInterval = round(value.Atof()*1e6);
@@ -277,7 +272,7 @@ int ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("file"))
     {
-      fFileName = value;
+      fFileNameBase = value.ReplaceAll(".root","");
     }
     else
     {
