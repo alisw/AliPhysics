@@ -62,6 +62,8 @@
 
 ClassImp(AliAnalysisTaskEmcalHFCJQA)
 
+using std::cout;
+using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskEmcalHFCJQA::AliAnalysisTaskEmcalHFCJQA() : 
 AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalHFCJQA", kTRUE),
