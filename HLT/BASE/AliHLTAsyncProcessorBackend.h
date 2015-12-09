@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 #ifdef HLT_ASYNC_USE_SEM_T
 #include <semaphore.h>
 #endif
