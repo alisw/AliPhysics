@@ -701,6 +701,7 @@ void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int
 
  // TBI to be finalized, along the same lines as it was done in void AliFlowAnalysisWithMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
  order = harmonics[0]; // TBI eliminating temporarily the warnings
+ if(order>44) harmonics[0] = -44; // TBI eliminating temporarily the warnings, the implementation of this method has to be finalized one day...
 
 } // void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
 
