@@ -87,6 +87,8 @@ set (INPUT_FILES
   MonteCarlo/DIPSYpp_HepMC.in
   MonteCarlo/crmc_template.param
   MonteCarlo/pp.optns
+  MonteCarlo/pPb.optns
+  MonteCarlo/PbPb.optns
   MonteCarlo/LoadLibs.C
   MonteCarlo/rungen.C
   MonteCarlo/runTask.C
