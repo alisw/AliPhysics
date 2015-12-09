@@ -81,11 +81,8 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   task->SetCentralityRange(CentMin, CentMax);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
-  task->SetCheckV0daughterElectron(checkV0dauEle);
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
-  //MC related
-  task->SetCutInjectedSignal(CutInjectedSignals);
   //output related
   task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
   task->SetRunBins(sRuns);
@@ -98,6 +95,8 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   SetupITSSigmaEleCorrection(task);
   SetupTPCSigmaEleCorrection(task);
   
+  // Monte Carlo Signals
+  SetupMCSignals(task);
   
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, bESDANA); // main function in config file

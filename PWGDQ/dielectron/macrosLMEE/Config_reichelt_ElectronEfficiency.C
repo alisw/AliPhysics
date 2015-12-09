@@ -41,7 +41,7 @@ const TString sRuns("167915, 167920, 167985, 167987, 168069, 168076, 168105, 168
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
 const Bool_t    writeTree = kFALSE;
 // specify for which "cutInstance" the support histos should be filled!
-const Int_t     supportedCutInstance = 0;
+const Int_t     supportedCutInstance = 1;
 // activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut)
 //const Bool_t    forcePhysSelAndTrigMask = kFALSE; // default kFALSE
 //
@@ -49,17 +49,14 @@ const Int_t     supportedCutInstance = 0;
 // settings which are identical for all configs that run together
 // event cuts
 // main cuts done via 'SetupEventCuts()'
-const Double_t  CentMin     = 10.;
+const Double_t  CentMin     = 0.;
 const Double_t  CentMax     = 50.;
-// track cuts
-const Bool_t    checkV0dauEle = kFALSE;
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
 const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
 const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
-const Bool_t    CutInjectedSignals = kTRUE;
 const UInt_t    NminEleInEventForRej = 2;
 // ^^^^^^^^^^ [/end common settings] ^^^^^^^^^^
 
@@ -106,13 +103,19 @@ void SetupITSSigmaEleCorrection(AliAnalysisTaskElectronEfficiency* task)
   return;
 }
 
-
 //________________________________________________________________
 void SetupTPCSigmaEleCorrection(AliAnalysisTaskElectronEfficiency* task)
 {
   LMEECutLib* LMcutlib = new LMEECutLib();
   LMcutlib->SetTPCSigmaEleCorrectionMC(task, AliDielectronVarManager::kNacc, AliDielectronVarManager::kEta);
   return;
+}
+
+//________________________________________________________________
+void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task)
+{
+  LMEECutLib* LMcutlib = new LMEECutLib();
+  LMcutlib->AddMCSignals(task, -1);
 }
 
 

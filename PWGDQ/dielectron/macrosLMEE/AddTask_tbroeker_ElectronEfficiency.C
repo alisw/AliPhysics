@@ -42,6 +42,8 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
+  
+  SetupMCSignals(task);
   //event related
   task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
@@ -50,7 +52,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
   //MC related
-  task->SetCutInjectedSignal(CutInjectedSignals);
+  //task->SetCutInjectedSignal(CutInjectedSignals);
   // resolution calculation
   task->SetCalcResolution(CalcResolution);
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
