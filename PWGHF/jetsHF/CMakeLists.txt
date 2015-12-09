@@ -47,14 +47,15 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliHFJetsTagging.cxx
     AliHFJetTaggingIP.cxx		
+    AliAnalysisHFjetTagHFE.cxx
+    AliAnalysisTaskEmcalHFCJQA.cxx	    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
-    AliAnalysisTaskEmcalJetBtagSV.cxx        
+    AliAnalysisTaskEmcalJetBtagSV.cxx          
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
-    AliHFJetsContainerVertex.cxx
-    AliAnalysisHFjetTagHFE.cxx
+    AliHFJetsContainerVertex.cxx    
 )
 
 if(FASTJET_FOUND)
