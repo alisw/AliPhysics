@@ -32,6 +32,7 @@
 #include "TObjArray.h"
 #include "TList.h"
 #include <TLorentzVector.h>
+#include "TVectorD.h"
 
 #include "AliAnalysisManager.h"
 #include "AliRunLoader.h"
@@ -55,6 +56,8 @@
 #include "AliDielectronTrackCuts.h"
 #include "AliDielectronCutGroup.h"
 #include "AliDielectronHelper.h"
+#include "AliDielectronMC.h"
+#include "AliDielectronSignalMC.h"
 
 // todo: clean up includes...
 
@@ -78,12 +81,12 @@ fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
 fUsedVars(0x0),
+fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
-fCutInjectedSignal(kFALSE),
 fNminEleInEventForRej(2),
 fSupportedCutInstance(0),
 //fEventcount(0),
@@ -172,6 +175,7 @@ pdgT(-1),
 labelmotherT(-1),
 pdgmotherT(-1),
 labelgrandmotherT(-1),
+pdggrandmotherT(-1),
 pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
@@ -193,12 +197,12 @@ fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
 fUsedVars(0x0),
+fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
-fCutInjectedSignal(kFALSE),
 fNminEleInEventForRej(2),
 fSupportedCutInstance(0),
 //fEventcount(0),
@@ -287,6 +291,7 @@ pdgT(-1),
 labelmotherT(-1),
 pdgmotherT(-1),
 labelgrandmotherT(-1),
+pdggrandmotherT(-1),
 pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
@@ -329,8 +334,23 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 {
   /// Create histograms
   /// Called once
-	AliInfo("Create the output objects");
+	AliInfo("Create the output objects. Do other one-time tasks.");
 	Printf("Now running: CreateOutputObjects()");
+  
+  /// Check if an MC signal was attached
+  if(!fSignalsMC) {
+    AliFatal("Task needs an AliDielectronSignalMC as basis for the electron selection!"
+             "for example, define such function in your Config and call it from the AddTask:\n"
+             "void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task){\n"
+             "  AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC(\"eleFinalState\",\"eleFinalState\");\n"
+             "  eleFinalState->SetFillPureMCStep(kFALSE);\n"
+             "  eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+             "  eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);\n"
+             "  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);\n"
+             "  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();\n"
+             "  task->AddSignalMC(eleFinalState);\n}");
+  }
+  
   
   Printf("  __________________________________________________");
   Printf("  - centrality range:  %f  to  %f", fCentMin, fCentMax);
@@ -446,6 +466,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   tracksT->Branch("labelmotherT",       &labelmotherT);
   tracksT->Branch("pdgmotherT",         &pdgmotherT);
   tracksT->Branch("labelgrandmotherT",  &labelgrandmotherT);
+  tracksT->Branch("pdggrandmotherT",    &pdggrandmotherT);
   //tracksT->Branch("pMC",                &pMC);
   tracksT->Branch("pxMC",               &pxMC);
   tracksT->Branch("pyMC",               &pyMC);
@@ -579,44 +600,30 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   std::vector< std::vector<Int_t> > vecEleCand_perCut; // one vector per cut setting
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) { vecEleCand_perCut.push_back(vecTrkID); }
   
+  //cout << " fESD->GetNumberOfTracks() = " << fESD->GetNumberOfTracks() << endl;
+
   Int_t NEleSelected = 0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) 
   {
     AliESDtrack* track = fESD->GetTrack(iTracks);
     if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-    
-    Double_t trackPt(-1.),trackEta(-9.),trackPhi(-9.);
-    trackPt = track->Pt(); trackEta = track->Eta(); trackPhi = track->Phi();
-    
+
     Int_t label = track->GetLabel();
     Int_t abslabel = TMath::Abs( track->GetLabel() );
     //if(label < 0) continue; // two sets of histograms will be filled to check difference.
+
+    // New:
+    // Select electrons based on an attached AliDielectronSignalMC.
+    // Only the first leg (branch==1) of the first attached signal will be checked.
+    //
+    Bool_t truth1 = AliDielectronMC::Instance()->IsMCTruth(label, (AliDielectronSignalMC*)fSignalsMC->At(0), 1);
+    if (!truth1) continue;
+
+    Double_t trackPt(-1.),trackEta(-9.),trackPhi(-9.);
+    trackPt = track->Pt(); trackEta = track->Eta(); trackPhi = track->Phi();
+
     AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack( abslabel ));
     if (!mctrack) continue;
-    //
-    Int_t trackpdg = (Int_t) TMath::Abs(mctrack->PdgCode());
-    if (!( trackpdg==Int_t(11) ) ) continue; // do not try to include hadrons, see below.
-    //Printf(" found electron (iTracks=%i)", iTracks);
-    // _______________
-    // the following inclusion of some hadrons should NOT be used!
-    // for some reason a few of the true electrons will get lost at some point and not filled into histograms!
-    // tested at GSI with ./run user -o -l MC_PbPb/2.76ATeV/LHC12a17h_fix/169099.ana.txt -n 20 -f -c MC_PbPb
-    //if (!( trackpdg==Int_t(11) || trackpdg==Int_t(211) || trackpdg==Int_t(321) || trackpdg==Int_t(2212) ) ) {
-    //  continue; //Printf(" skip this track (trackpdg=%i) (iTracks=%i)", trackpdg, iTracks);
-    //}
-    
-    Int_t motherlabel = mctrack->Particle()->GetFirstMother();
-    if (motherlabel<0) continue; // motherlabel 0 already gives the first valid particle.
-    AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherlabel));
-    if (!mother) continue;
-    if (!mother->Particle()->IsPrimary()) continue;
-    // from Patrick:
-    // for removal of injected signals.
-    if (fCutInjectedSignal && IsInjectedSignal(mcEvent, abslabel)) {
-      //Printf(" kicked out injected signal (trackpdg=%i) (iTracks=%i)", trackpdg, iTracks);
-      continue;
-    }
-    
     Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
     mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
     selectedByCut = 0;
@@ -719,8 +726,21 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
     // get MC track information
     pdgT          = mctrack->PdgCode();
-    labelmotherT  = motherlabel;
-    pdgmotherT    = mother->PdgCode();
+    labelmotherT  = mctrack->Particle()->GetFirstMother();
+    AliMCParticle *mother = 0x0;
+    pdgmotherT            =   0;
+    labelgrandmotherT     =  -1;
+    pdggrandmotherT       =   0;
+    if (labelmotherT>=0) {
+      mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelmotherT));
+      if (mother) {
+        pdgmotherT = mother->PdgCode();
+        labelgrandmotherT = mother->Particle()->GetFirstMother();
+        if (labelgrandmotherT>=0) {
+          pdggrandmotherT = (dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelgrandmotherT)))->PdgCode();
+        }
+      }
+    }
     
     
     if (fWriteTree) {
@@ -793,6 +813,12 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(66)))->Fill(mcEta, sigmaEleITS_Raw);//hITSnSigmaEleRaw_Eta
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(67)))->Fill(mcEta, sigmaEleTPC_Raw);//hTPCnSigmaEleRaw_Eta
       
+      // PDG codes
+      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(70)))->Fill(pdgT);//hPdgCode
+      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(71)))->Fill(pdgmotherT);//hPdgCodeM
+      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(72)))->Fill(pdggrandmotherT);//hPdgCodeGM
+      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(73)))->Fill(pdgmotherT, pdggrandmotherT);//hPdgCodeM_GM
+      
     } //fSupportedCutInstance
     
   } //track loop
@@ -820,43 +846,23 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
     for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++)
     {
-      //if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
-      AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
-      if( TMath::Abs(mctrack->PdgCode()) !=  11 ) continue;
+      // New:
+      // Select electrons based on an attached AliDielectronSignalMC.
+      // Only the first leg (branch==1) of the first attached signal will be checked.
+      //
+      Bool_t truth1 = AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1);
+      if (!truth1) continue;
       
-      // from Theo:
+      //if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
+      // IsPhysicalPrimary() excludes huge number of e from gamma and from multiple scattering. also from: K+- [some of them are "IsPrimary()"], K_L0, pi0 (not prim). (nothing else seen in LHC12a17h_fix/169099.ana.txt -n 5)
+      // This should be part of the AliDielectronSignalMC signal definition used above [see also 'AliDielectronMC::CheckParticleSource()'].
+      
+      AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
+      if (!mctrack) continue;
       Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
       mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
       if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
-      
-      // check which kinematically ok tracks are skipped by "IsPhysicalPrimary".
-      // checking here will already be clean of low-pt e- from scattering and bremsstrahlung etc.
-      if(!fStack->IsPhysicalPrimary(iMCtrack)) { //Printf("track not ->IsPhysicalPrimary()"); 
-        //        TParticle* mothertemp      = fStack->Particle(mctrack->GetMother());
-        //        if (mothertemp->GetPdgCode() != 22) { // just to reduce the amount of printouts
-        //          Printf("  track: %s \t mother: %s \t mother->IsPrimary(): %d", GetParticleName(mctrack->PdgCode()), GetParticleName(mothertemp->GetPdgCode()), mothertemp->IsPrimary());
-        //        }
-        continue; // excludes huge number of e from gamma. also from: K+- [some of them are "IsPrimary()"], K_L0, pi0 (not prim). (nothing else seen in LHC12a17h_fix/169099.ana.txt -n 5)
-      }
-      
-      // from Theo:
-      Int_t motherlabel = mctrack->Particle()->GetFirstMother();
-      if(!motherlabel) { Printf("bad motherlabel"); continue; }
-      AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherlabel));
-      if(!mother) { Printf("bad mother"); continue; }
-      if(!mother->Particle()->IsPrimary()) { //Printf("mother not ->IsPrimary()"); 
-        //Printf("  mother: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(mother->PdgCode()), mcEvent->IsFromBGEvent(motherlabel), mcEvent->IsPhysicalPrimary(motherlabel));
-        continue; // kicks out e from gamma, pi0, K_L0, K+, D-, D+, (...?)
-        // when checking "fStack->IsPhysicalPrimary(i)" before, then this kicks out e from: 
-        // pi0, D+-, D0, D0_bar, B-, B0_bar, eta, tau-, D_s+ (all "fromBGEvent: 1 & isPhysPrim: 0");
-        // J/psi, Xi_c0, eta, D0 (all "fromBGEvent: 0 & isPhysPrim: 0")
-      }
-      
-      // from Patrick:
-      // for removal of injected signals.
-      if (fCutInjectedSignal && IsInjectedSignal(mcEvent, iMCtrack)) continue;
-      // this still has a strong effect after "fStack->IsPhysicalPrimary(i)" and "mother->Particle()->IsPrimary()". skips e from J/psi
       
       fNgen->Fill(mcPt,mcEta,mcPhi);
     } //track loop
@@ -986,7 +992,6 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
     if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
     AliMCParticle *mcPion = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(iMCtrack));
     if( TMath::Abs(mcPion->PdgCode()) !=  211 ) continue;
-    if (fCutInjectedSignal && IsInjectedSignal(mcEventLocal, iMCtrack)) continue;
     
     Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
     mcPt = mcPion->Pt(); mcEta = mcPion->Eta(); mcPhi = mcPion->Phi();
@@ -1213,51 +1218,6 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskElectronEfficiency::IsInjectedSignal(AliMCEvent* mcEventLocal, Int_t tracklabel) 
-{
-  /// Function to identify injected signals. (by Patrick)
-  
-  Bool_t isInjected  = kFALSE;
-  Bool_t fromBGEvent = 0;
-  Bool_t isPhysPrim  = 0;
-  TParticle* mother  = NULL;
-  AliStack *fStack   = mcEventLocal->Stack();
-  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(tracklabel));
-  
-  fromBGEvent = mcEventLocal->IsFromBGEvent(tracklabel);
-  isPhysPrim  = mcEventLocal->IsPhysicalPrimary(tracklabel);
-  // fromBGEvent:  particle comes from the generated MC event (?). true for most pi, K, p, some e.
-  // !fromBGEvent: particle could be injected or produced in Geant (from weak decay / photon conv).
-  //               weak decays and photon conv are handled by Geant -> will NOT be fromBGEvent!
-  // isPhysPrim: in a chain of decaying particles, denotes the first which is stable under strong and EM force.
-  // - injected: the physical primary will NOT be fromBGEvent! (<= that is the relevant criterion!)
-  // - Geant:    the physical primary will be fromBGEvent!
-  // 
-  // example: for injected J/psi -> ee: the e+- will be phys prim (because of EM decay), but not fromBGEvent!
-  // goal: skip injected signals (e.g. J/psi -> ee)
-  // but keep signals from Geant (e.g. photon conversions, but again not from injected J/psi)
-  //Printf(" pdg: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(pdgT), fromBGEvent, isPhysPrim);
-  //
-  // if the particle isn't already the physical primary, then iteratively go back to it:
-  labelmotherT = mctrack->GetMother();
-  while (!isPhysPrim) 
-  {
-    fromBGEvent  = mcEventLocal->IsFromBGEvent(labelmotherT);     // save property of mother
-    isPhysPrim   = mcEventLocal->IsPhysicalPrimary(labelmotherT); // save property of mother
-    mother      = fStack->Particle(labelmotherT);
-    labelmotherT = mother->GetMother(0); // prepare to get properties of grandmother
-    //
-    //Printf("  mother: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(mother->GetPdgCode()), fromBGEvent, isPhysPrim);
-  }
-  // now check if the physical primary is from background event. if not, it was injected.
-  if (!fromBGEvent) { //Printf("  physical primary is not from background event => injected! skipping. ( %s )", GetParticleName(mother->PdgCode()));
-    isInjected = kTRUE;
-  }
-  return isInjected;
-}
-
-
-//________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::Terminate(const Option_t *)
 {
   // Draw result to the screen
@@ -1275,6 +1235,8 @@ AliAnalysisTaskElectronEfficiency::~AliAnalysisTaskElectronEfficiency()
 {
   /// Destructor
   Printf(" Now running: ~Destructor");
+  
+  if (fSignalsMC) delete fSignalsMC;
   
   Printf("deleting TList");
   if (fOutputList) {
@@ -1612,9 +1574,41 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEleRaw_Eta,   66);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEleRaw_Eta,   67);
   
+  TH1F* hUseless68 = new TH1F("hUseless","hUseless",1,0,1);
+  fOutputListSupportHistos->AddAt(hUseless68, 68);
+  TH1F* hUseless69 = new TH1F("hUseless","hUseless",1,0,1);
+  fOutputListSupportHistos->AddAt(hUseless69, 69);
+  
+  
+  TH1F* hPdgCode   = new TH1F("hPdgCode",  "hPdgCode",   GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH1F* hPdgCodeM  = new TH1F("hPdgCodeM", "hPdgCodeM",  GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH1F* hPdgCodeGM = new TH1F("hPdgCodeGM","hPdgCodeGM", GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH2F* hPdgCodeM_GM = new TH2F("hPdgCodeM_GM","hPdgCodeM_GM", GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray(),
+                                GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());//AliDielectronVarManager::kPdgCodeMother, AliDielectronVarManager::kPdgCodeGrandMother);
+  fOutputListSupportHistos->AddAt(hPdgCode,     70);
+  fOutputListSupportHistos->AddAt(hPdgCodeM,    71);
+  fOutputListSupportHistos->AddAt(hPdgCodeGM,   72);
+  fOutputListSupportHistos->AddAt(hPdgCodeM_GM, 73);
+  
 }
 
 // taken from AliDielectron.cxx
+//__________________________________________________________________
+void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal) {
+  //
+  //  Add an MC signal to the signals list
+  //
+  if(!fSignalsMC) {
+    fSignalsMC = new TObjArray();
+    fSignalsMC->SetOwner();
+  }
+  fSignalsMC->Add(signal);
+  cout << "added MCsignal: " << fSignalsMC->At(fSignalsMC->GetEntriesFast()-1)->GetName() << endl;
+  if (fSignalsMC->GetEntriesFast()>1) {
+    AliWarning("WARNING: only the first MC signal will be used for the electron selection, others are ignored.");
+  }
+}
+
 //______________________________________________
 void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
@@ -1710,4 +1704,32 @@ void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TF1 *fun, UInt_t
     //    fUsedVars->SetBitNumber(vary, kTRUE);
     //    fUsedVars->SetBitNumber(varz, kTRUE);
   }
+}
+
+//______________________________________________________________________________________
+TVectorD *AliAnalysisTaskElectronEfficiency::GetPDGcodes() {
+  //
+  // array of pdgcodes stored in TDatabasePDG
+  //
+  printf("AliAnalysisTaskElectronEfficiency::GetPDGcodes()\n");
+  //TDatabasePDG *pdg = new TDatabasePDG(); // get warning: W-TDatabasePDG::TDatabasePDG: object already instantiated
+  TDatabasePDG *pdg = TDatabasePDG::Instance();
+  if (!pdg->ParticleList()) pdg->ReadPDGTable(); // it's not good to call it everytime (tries to redefine the table, many warnings).
+  TGraph *gr = new TGraph();
+  TIter next(pdg->ParticleList());
+  TParticlePDG *p;
+  Int_t i=0;
+  while ((p = (TParticlePDG *)next())) {
+    if(TMath::Abs(p->PdgCode()) < 1e+6) {
+      //      printf("%s -> %d \n",p->GetName(),p->PdgCode());
+      gr->SetPoint(i++, p->PdgCode(),1.);
+    }
+  }
+  gr->Sort();
+  TVectorD *vec = new TVectorD(gr->GetN(), gr->GetX());
+  //  vec->Print();
+  //delete pdg; // Was used in case of using "new TDatabasePDG()", but this is a singleton...
+                // Gives a seg fault in AliPID::Init(). Probably due to "#define M(PID) TDatabasePDG::Instance()->GetParticle(fgkParticleCode[(PID)])->Mass()"
+  delete gr;
+  return vec;
 }

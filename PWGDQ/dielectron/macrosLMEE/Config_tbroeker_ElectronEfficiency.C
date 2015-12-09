@@ -85,6 +85,18 @@ const UInt_t    NminEleInEventForRej = 2;
 //die->GetTrackFilter().AddCuts(noconv);
 
 //________________________________________________________________
+void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task)
+{
+  AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
+  eleFinalState->SetFillPureMCStep(kFALSE);
+  eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)
+  eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();
+  task->AddSignalMC(eleFinalState);
+}
+
+//________________________________________________________________
 AliAnalysisCuts* SetupEventCuts()
 {
   // event cuts are identical for all analysis 'cutInstance's that run together!
@@ -227,8 +239,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
 
   //global
- // fesdTrackCuts->SetPtRange( 0.2 , 100. );
- // fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
+//  fesdTrackCuts->SetPtRange( 0.2 , 100. );
+//  fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
   fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   fesdTrackCuts->SetDCAToVertex2D(kFALSE);
