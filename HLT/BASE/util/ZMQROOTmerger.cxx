@@ -487,6 +487,11 @@ Int_t Merge(TObject* object, TCollection* mergeList)
   if (hist)
   {
     rc = hist->Merge(mergeList);
+    if (rc<0)
+    {
+      return(-1);
+    }
+    mergeList->Delete();
     return rc;
   }
   else if (object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
