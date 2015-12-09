@@ -63,6 +63,7 @@ AliRDHFCuts(name),
   fProdV0MassTolLambda(0.01),
   fProdV0MassTolLambdaRough(0.01),
   fProdV0PtMin(0.5),
+  fProdV0PtMax(9999.),
   fProdV0CosPointingAngleToPrimVtxMin(0.99),
   fProdV0DcaDaughtersMax(1.5),
   fProdV0DaughterEtaRange(0.8),
@@ -136,6 +137,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdV0MassTolLambda(source.fProdV0MassTolLambda),
   fProdV0MassTolLambdaRough(source.fProdV0MassTolLambdaRough),
   fProdV0PtMin(source.fProdV0PtMin),
+  fProdV0PtMax(source.fProdV0PtMax),
   fProdV0CosPointingAngleToPrimVtxMin(source.fProdV0CosPointingAngleToPrimVtxMin),
   fProdV0DcaDaughtersMax(source.fProdV0DcaDaughtersMax),
   fProdV0DaughterEtaRange(source.fProdV0DaughterEtaRange),
@@ -196,6 +198,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdV0MassTolLambda = source.fProdV0MassTolLambda;
   fProdV0MassTolLambdaRough = source.fProdV0MassTolLambdaRough;
   fProdV0PtMin = source.fProdV0PtMin;
+  fProdV0PtMax = source.fProdV0PtMax;
   fProdV0CosPointingAngleToPrimVtxMin = source.fProdV0CosPointingAngleToPrimVtxMin;
   fProdV0DcaDaughtersMax=source.fProdV0DcaDaughtersMax;
   fProdV0DaughterEtaRange=source.fProdV0DaughterEtaRange;
@@ -635,6 +638,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
   Double_t cospav0 = v0->CosPointingAngle(posVtx); 
   if(cospav0<fProdV0CosPointingAngleToPrimVtxMin) return kFALSE;
   if(v0->Pt()<fProdV0PtMin) return kFALSE;
+  if(v0->Pt()>fProdV0PtMax) return kFALSE;
   if(fabs(cptrack->Eta())>fProdV0DaughterEtaRange) return kFALSE;
   if(fabs(cntrack->Eta())>fProdV0DaughterEtaRange) return kFALSE;
   if(cptrack->Pt()<fProdV0DaughterPtMin) return kFALSE;
@@ -681,13 +685,19 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
       Int_t isProton= -9999;
       Int_t isPion= -9999;
-			if(isparticle){
-				isProton=fPidObjProton->MakeRawPid(cptrack,4); 
-				isPion=fPidObjPion->MakeRawPid(cntrack,2); 
-			}else{
-				isProton=fPidObjProton->MakeRawPid(cntrack,4); 
-				isPion=fPidObjPion->MakeRawPid(cptrack,2); 
-			}
+      Double_t nsigmatpc_proton = fPidObjProton->GetSigma(0);
+      Double_t nsigmatpc_pion = fPidObjPion->GetSigma(0);
+      if(isparticle){
+        Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kProton);
+        Double_t nSigmaTPCpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kPion);
+        if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
+        if(fabs(nSigmaTPCpi)<nsigmatpc_pion) isPion = 1;
+      }else{
+        Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
+        Double_t nSigmaTPCpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kPion);
+        if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
+        if(fabs(nSigmaTPCpi)<nsigmatpc_pion) isPion = 1;
+      }
       if(isProton<1) return kFALSE;
       if(isPion<1) return kFALSE;
     }
