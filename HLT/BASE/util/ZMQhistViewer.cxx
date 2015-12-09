@@ -285,7 +285,7 @@ int UpdatePad(TObject* object)
   TObject* drawable = fDrawables.FindObject(name);
   int padIndex = fDrawables.IndexOf(drawable);
 
-  if (fVerbose) Printf("in: %s", name);
+  if (fVerbose) Printf("in: %s (%s)", name, object->ClassName());
   Bool_t selected = kTRUE;
   Bool_t unselected = kFALSE;
   if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
