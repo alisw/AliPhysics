@@ -607,9 +607,12 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
     histStruct hist = i->second;
     if (!hist.hist) {HLTInfo("no histo"); continue;}
 
+    bool triggerMatched = true;
     const AliHLTCTPData* ctp = CTPData();
-    if (!ctp) {HLTWarning("no CTPData!"); return 0;}
-    bool triggerMatched = ctp->MatchTriggerRE(hist.trigger.c_str());
+    if (ctp && !hist.trigger.empty())
+    {
+      triggerMatched=ctp->MatchTriggerRE(hist.trigger.c_str());
+    }
 
 
     if ( triggerMatched && 
