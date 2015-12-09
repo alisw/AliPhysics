@@ -47,7 +47,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetNBinsEmbedding(Int_t n)      { fNBins = n; }
   void           SetRejection(Float_t* rej);
   void           SetPtRangesEmb(Float_t* ptlims);
-  void           SetNevPerBin(Int_t n)           { fNevPerBin = n; }
+  void           SetNevPerBin(Int_t n)           { fNevPerBin = n;    Printf("Number of events per bin %d", fNevPerBin); }
     
  protected:
   void           Run();
