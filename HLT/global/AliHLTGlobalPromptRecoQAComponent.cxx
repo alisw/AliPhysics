@@ -513,6 +513,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
 
   axisStruct x = fAxes[xname];
   axisStruct y = fAxes[yname];
+  axisStruct* ax = &x;
   if (!x.value && !xname.empty()) 
   {
     HLTWarning("empty variable %s",xname.c_str());
@@ -532,11 +533,10 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   else
   {
     //only one axis specified (the case of both axes empty is excluded above)
-    axisStruct* ax = &x;
     if (xname.empty()) ax=&y;
     hist.hist = new TH1F(histName.c_str(), histTitle.c_str(), (*ax).bins, (*ax).low, (*ax).high);
   }
-  hist.x = x;
+  hist.x = *ax;
   hist.y = y;
   hist.trigger = trigName;
   hist.config=config;
@@ -625,7 +625,7 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
 
 int histStruct::Fill()
 {
-  if (x.value && (*x.value) && (y.value)?(*y.value):1. )
+  if (x.value && (*x.value) && ((y.value)?(*y.value):1) )
   {
     if (!hist) return 0;
     hist->Fill(*x.value, (y.value)?(*y.value):0.);
