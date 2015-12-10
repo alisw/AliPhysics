@@ -144,8 +144,8 @@ void
 AliFemtoPionLambdaCutMonitor::Event::Fill(const AliFemtoParticleCollection *coll_1,
                                           const AliFemtoParticleCollection *coll_2)
 {
-  _prev_lam_coll_size = coll_1->size();
-  _prev_pion_coll_size = coll_2->size();
+  _prev_lam_coll_size = coll_2->size();
+  _prev_pion_coll_size = coll_1->size();
 }
 
 AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
@@ -156,6 +156,7 @@ AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
   , fYPt(NULL)
   , fPtPhi(NULL)
   , fEtaPhi(NULL)
+  , fdEdX(NULL)
   , fMinv(NULL)
 {
   // Build 'standard' format for histogram titles
@@ -168,7 +169,7 @@ AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
   fYPt = new TH2F(
     "eta_Pt" + pf,
     TString::Format(title_format,
-                    "\\eta vs p_{T}",
+                    "$\\eta  vs  p_{T}$",
              /*X*/  "$\\eta$;"
              /*Y*/  "p_{T} (GeV);"
              /*Z*/  "dN/(p_{T} $\\cdot$ \\eta)"),
@@ -179,7 +180,7 @@ AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
     "PtPhi" + pf,
     TString::Format(title_format,
                     "Pt vs Phi",
-                    "Phi (rads)",
+                    "\\phi (rads);"
                     "p_{T} (GeV);"),
     144, -TMath::Pi(), TMath::Pi(),
     144,  0.0, 3.0);
@@ -188,10 +189,21 @@ AliFemtoPionLambdaCutMonitor::Pion::Pion(const bool passing,
     "EtaPhi" + pf,
     TString::Format(title_format,
                     "\\eta vs Phi",
-                    "Phi (rads)",
+                    "\\phi (rads);"
                     "\\eta;"),
     144, -TMath::Pi(), TMath::Pi(),
     144, -1.4, 1.4);
+
+  fdEdX = new TH2F(
+    "dEdX" + pf,
+    Form(title_format,
+         "dE/dx vs p",
+         "p (GeV);"
+         "dE/dx;"
+         "dN/(p_{T} $\\cdot$ dE/dx)"),
+     128, 0, 6.0,
+     128, 0, 500.0);
+
 
   if (is_mc_analysis) {
     fMinv = new TH1F(
@@ -214,6 +226,7 @@ AliFemtoPionLambdaCutMonitor::Pion::GetOutputList()
   output->Add(fYPt);
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
+  output->Add(fdEdX);
   if (fMinv) {
     output->Add(fMinv);
   }
@@ -225,6 +238,7 @@ void AliFemtoPionLambdaCutMonitor::Pion::Fill(const AliFemtoTrack* track)
 {
   const float pz = track->P().z(),
               pt = track->Pt(),
+               p = track->P().Mag(),
              phi = track->P().Phi();
 
   const double energy = ::sqrt(track->P().Mag2() + PionMass * PionMass),
@@ -238,6 +252,7 @@ void AliFemtoPionLambdaCutMonitor::Pion::Fill(const AliFemtoTrack* track)
   fYPt->Fill(eta, pt);
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
+  fdEdX->Fill(p, track->TPCsignal());
 }
 
 AliFemtoPionLambdaCutMonitor::Lambda::Lambda(const bool passing,

@@ -264,7 +264,7 @@ bool AliFemtoEventCutCentrality::PassEventPlane(const AliFemtoEvent* event) cons
 inline
 bool AliFemtoEventCutCentrality::PassTrigger(const AliFemtoEvent* event) const
 {
-  return fSelectTrigger && (event->TriggerCluster() == fSelectTrigger);
+  return (fSelectTrigger == 0) || (event->TriggerCluster() == fSelectTrigger);
 }
 
 #endif
