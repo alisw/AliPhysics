@@ -277,6 +277,17 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
       if (!patch) continue;
 
+      fEMCALTriggerQA->ProcessBkgPatch(patch);
+    }
+
+    fEMCALTriggerQA->ComputeBackground();
+
+    for (Int_t i = 0; i < nPatches; i++) {
+      AliDebug(2, Form("Processing patch %d", i));
+
+      AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
+      if (!patch) continue;
+
       fEMCALTriggerQA->ProcessPatch(patch);
     }
   }
