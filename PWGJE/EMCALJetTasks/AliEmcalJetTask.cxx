@@ -338,7 +338,7 @@ Int_t AliEmcalJetTask::FindJets()
           c->GetMomentum(nP, fVertex);
         }
         cEta = nP.Eta();
-        cPhi = nP.Phi();
+        cPhi = TVector2::Phi_0_2pi(nP.Phi());
         cPt  = nP.Pt();
         cPx  = nP.Px();
         cPy  = nP.Py();
