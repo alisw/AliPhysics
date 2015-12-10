@@ -95,6 +95,7 @@ public:
     TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
+    TH2F *fdEdX;
     TH1F *fMinv;
   };
 

@@ -478,8 +478,9 @@ void AliFemtoAnalysisPionLambda::AddStanardCutMonitors()
 
 }
 
-TObjArray* GetPassFailOutputList(const TString &name,
-                                 AliFemtoCutMonitorHandler *handler)
+static TObjArray* GetPassFailOutputList(
+  const TString &name,
+  AliFemtoCutMonitorHandler *handler)
 {
   AliFemtoCutMonitorCollection *p_coll = handler->PassMonitorColl(),
                                *f_coll = handler->FailMonitorColl();

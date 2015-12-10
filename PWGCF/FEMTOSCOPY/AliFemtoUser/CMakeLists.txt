@@ -33,6 +33,7 @@ set(SRCS
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
+  AliFemtoKtBinnedCorrFunc.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
   AliFemtoModelCorrFctnSource.cxx
@@ -76,6 +77,8 @@ set(SRCS
   AliFemtoCutMonitorParticlePtPDGV0.cxx
   AliFemtoAnalysisAzimuthalPbPb.cxx
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
+  AliFemtoAnalysisPionLambda.cxx
+  AliFemtoAnalysisPionPion.cxx
   AliFemtoPairCutRadialDistanceLM.cxx
   AliFemtoPicoEventRP.cxx
   AliFemtoPairCutRadialDistanceKK.cxx
@@ -95,7 +98,6 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
-  AliFemtoAnalysisPionLambda.cxx
 )
 
 # Headers from sources
