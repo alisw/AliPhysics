@@ -161,6 +161,16 @@ void AliJetContainer::SetEMCALGeometry()
 }
 
 //________________________________________________________________________
+void AliJetContainer::SetJetPhiLimits(Float_t min, Float_t max, Float_t offset)
+{
+  fJetMinPhi = TVector2::Phi_0_2pi(min);
+  fJetMaxPhi = TVector2::Phi_0_2pi(max);
+  fPhiOffset = offset;
+
+  AliInfo(Form("Setting phi limits = (%.3f, %.3f)", fJetMinPhi, fJetMaxPhi));
+}
+
+//________________________________________________________________________
 void AliJetContainer::LoadRho(AliVEvent *event)
 {
   // Load rho
@@ -382,16 +392,11 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   }
 
   Double_t jetEta = jet->Eta();
-  Double_t jetPhi = jet->Phi() + fPhiOffset;
-  Double_t tpi = TMath::TwoPi();
-  if(jetPhi<0.)  jetPhi+=tpi;
-  if(jetPhi>tpi) jetPhi-=tpi;
-
-  // if limits are given in (-pi, pi) range
-  if (fJetMinPhi < -1e-6) jetPhi -= TMath::Pi() * 2;
+  Double_t jetPhi = TVector2::Phi_0_2pi(jet->Phi() + fPhiOffset);
 
   if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
     AliDebug(11,"Cut rejecting jet: Acceptance");
+
     fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
@@ -589,7 +594,7 @@ void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
       SetJetPhiLimits(1.405 + r,3.135 - r);
     }
     else {
-      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetArm1PhiMax() * TMath::DegToRad() - r);
+      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r);
     }
   }
   else {
@@ -709,7 +714,6 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
   Double_t jetPt2 = jet2->Pt();
   Int_t bgeom = kTRUE;
   if(!cont2) bgeom = kFALSE;
-  //Printf("ptJetMatched %f", jetPt2);
   if(jetPt2>0) {
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
@@ -721,30 +725,24 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
       if(bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
       else p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, fParticleContainer->GetArray()));
       iFound = 0;
-      //Printf("Track j2 number %d", icc);
       for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
         if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
-          //Printf("Mode ID, id = %d", idx);
           iFound=1;
           vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
           if(vpf) sumPt += vpf->Pt();
           continue;
         }
         if(bgeom){
-          //Printf("Track j1 number %d", icf);
           vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
           if(!vpf) continue;
           if(!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
-          //else Printf("Same track!!!");
           sumPt += vpf->Pt();
         }
-        //Printf("Sum %d+%d tracks = %f", icc, icf, sumPt);
       }
     }
     fraction = sumPt/jetPt2;
   } else 
     fraction = -1;
-  //Printf("Fraction = %f", fraction);
   return fraction;
 }
 
@@ -758,9 +756,6 @@ Bool_t AliJetContainer::SamePart(const AliVParticle* part1, const AliVParticle* 
   Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
   Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
   dPhi = TVector2::Phi_mpi_pi(dPhi);
-  //Printf("phi: %f - %f = %f", part1->Phi(), part2->Phi(), dPhi);
-  //Printf("eta: %f - %f = %f", part1->Eta(), part2->Eta(), dEta);
-  //Printf("pT: %f - %f = %f", part1->Pt(), part2->Pt(), dpT);
   if (dPhi > dist) return kFALSE;
   if (dEta > dist) return kFALSE;
   if (dpT  > dist) return kFALSE;
