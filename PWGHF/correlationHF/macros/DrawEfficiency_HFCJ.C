@@ -1,0 +1,224 @@
+//
+// Macro to extract 1D or 2D D-meson efficiency maps from D2H CF output file
+// It is possible to set the variables to be used on the axes and a cut-off value for the y-axis
+// 
+// Usage:
+// gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ROOTSYS/include");
+// .L DrawEfficiency_HFCJ.C++
+// and then call the needed methods
+//
+// Author: F.Colamaria (fabiocolamaria@cern.ch)
+//
+
+#include <iostream>
+#include "TSystem.h"
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TDirectoryFile.h"
+#include "TAxis.h"
+#include "TH1D.h"
+#include "TH2D.h"
+
+#include "AliCFContainer.h"
+
+using namespace std;
+
+/* 
+LIST OF VARIABLES FROM CF (in Cheetah mode) - Always cross-check with master!
+ ipTFast = 0; 
+ iyFast = 1;
+ icTFast = 2;
+ iphiFast = 3;
+ izvtxFast = 4;
+ icentFast = 5;
+ ifakeFast = 6;
+ imultFast = 7;
+
+LIST OF STEPS FROM CF - Always cross-check with master!
+ kStepGeneratedLimAcc = 0;
+ kStepGenerated = 1;
+ kStepAcceptance = 2;
+ kStepVertex = 3;
+ kStepRefit = 4;
+ kStepReconstructed = 5;
+ kStepRecoAcceptance = 6;
+ kStepRecoITSClusters = 7;
+ kStepRecoPPR = 8;
+ kStepRecoPID = 9;
+*/
+
+/*
+INFOS: 
+mesonSuffix = simply a suffix for the output .root file;
+numStep/denStep = CF steps for which the numerator/denominator shall be extracted;
+xVar/yVar = Cf variables to plot on the x and y axis (x axis only for 1D maps);
+lastVal_y = cutoff value for the y-axis (to remove low-stat fluctuating bins). After that value the maps are flattened
+*/
+
+void DrawEfficiency_2D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString mesonSuffix="Dzero_c", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0, Int_t yVar=7, Double_t lastVal_y=-1);
+void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString mesonSuffix="Dzero_c", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
+void PlotEfficiency_2D(TString fileName="EfficiencyMap_2D_Dzero_c.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_Plot.root", Double_t xMin=0, Double_t xMax=24, Double_t yMin=0, Double_t yMax=90);
+void PlotEfficiency_1D(TString fileName="EfficiencyMap_1D_Dzero_c.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_Plot.root", Double_t xMin=0, Double_t xMax=24);
+
+void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, TString mesonSuffix, Int_t numStep, Int_t denStep, Int_t xVar, Int_t yVar, Double_t lastVal_y) {
+
+  gROOT->SetStyle("Plain");
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(1);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetOptTitle(0);
+
+  // Get the container
+  TFile* f = new TFile(fileName.Data());
+  TDirectoryFile* d = (TDirectoryFile*)f->Get(dirFileName.Data());
+  AliCFContainer *data = (AliCFContainer*) (d->Get(contName.Data()));
+
+  // Extract numerator and denominator
+  TH2D *hNum = data->ShowProjection(xVar, yVar, numStep);
+  hNum->Sumw2();
+  TH2D *hDen = data->ShowProjection(xVar, yVar, denStep);
+  hDen->Sumw2();
+
+  // Rebin of multiplicity axis
+  if(xVar==7) {
+    hNum->RebinX(4);
+    hDen->RebinX(4);
+  } else if (yVar==7) {
+    hNum->RebinY(4);
+    hDen->RebinY(4);
+  }
+  
+  //Evaluate the efficiency
+  TH2D* hEff = (TH2D*)hNum->Clone("h_Eff");  
+  hEff->Divide(hNum,hDen,1,1,"b"); //"b2 = apply binomial error
+
+  for(Int_t i = 1; i <= hEff->GetNbinsX(); i++) {
+    for(Int_t j = 1; j <= hEff->GetNbinsY(); j++) {
+      if(hDen->GetBinContent(i,j) == 0) {
+        if (hDen->GetBinContent(i,j) != 0) printf("Warning! Den. set at 1 with non-0 num, in (%d,%d) bin! Values: num = %1.3f, den = %1.3f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
+        hDen->SetBinContent(i,j,1);  //if you have some Inf/NaN propagated...
+      }
+      printf("Num, den %d,%d = %1.2f, %1.2f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
+      printf("hEff %d,%d = %1.2f +- %1.2f\n",i,j,hEff->GetBinContent(i,j),hEff->GetBinError(i,j));
+    }
+  }
+
+  if(lastVal_y>0) {
+    Int_t binLim = hEff->GetYaxis()->FindBin(lastVal_y);
+    printf("Flattening the efficiency on y axis from %f (bin %d) onwards\n",lastVal_y,binLim);
+    for(Int_t i = 1; i <= hEff->GetNbinsX(); i++) {
+      for(Int_t j = binLim+1; j <= hEff->GetNbinsY(); j++) { //from the bin following the one containing 'lastVal_y', onwards: flatten the eff values
+        hEff->SetBinContent(i,j,hEff->GetBinContent(i,binLim));
+        hEff->SetBinError(i,j,hEff->GetBinError(i,binLim));
+      }
+    }
+  } //end if
+
+  // Save the map
+  TFile* effMapFile = new TFile(Form("EfficiencyMap_2D_%s.root",mesonSuffix.Data()),"RECREATE");
+  hEff->SetDrawOption("lego2");
+  hEff->Write("h_Eff");
+  effMapFile->Close();
+
+  return;
+}
+
+
+void DrawEfficiency_1D(TString fileName, TString dirFileName, TString contName, TString mesonSuffix, Int_t numStep, Int_t denStep, Int_t xVar) {
+
+  gROOT->SetStyle("Plain");
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(1);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetOptTitle(0);
+
+  // Get the container
+  TFile* f = new TFile(fileName.Data());
+  TDirectoryFile* d = (TDirectoryFile*)f->Get(dirFileName.Data());
+  AliCFContainer *data = (AliCFContainer*) (d->Get(contName.Data()));
+
+  // Extract numerator and denominator
+  TH1D *hNum = data->ShowProjection(xVar, numStep);
+  hNum->Sumw2();
+  TH1D *hDen = data->ShowProjection(xVar, denStep);
+  hDen->Sumw2();
+
+  // Rebin of multiplicity axis
+  if(xVar==7) {
+    hNum->RebinX(4);
+    hDen->RebinX(4);
+  } 
+  
+  //Evaluate the efficiency
+  TH1D* hEff = (TH1D*)hNum->Clone("h_Eff");  
+  hEff->Divide(hNum,hDen,1,1,"b"); //"b2 = apply binomial error
+
+  for(Int_t i = 1; i <= hEff->GetNbinsX(); i++) {
+    if(hDen->GetBinContent(i) == 0) {
+      if (hDen->GetBinContent(i) != 0) printf("Warning! Den. set at 1 with non-0 num, in %d bin! Values: num = %1.3f, den = %1.3f\n",i,hNum->GetBinContent(i),hDen->GetBinContent(i));
+      hDen->SetBinContent(i,1);  //if you have some Inf/NaN propagated...
+    }
+    printf("Num, den %d = %1.2f, %1.2f\n",i,hNum->GetBinContent(i),hDen->GetBinContent(i));
+    printf("hEff %d = %1.2f +- %1.2f\n",i,hEff->GetBinContent(i),hEff->GetBinError(i));
+  }
+
+  // Save the map
+  TFile* effMapFile = new TFile(Form("EfficiencyMap_1D_%s.root",mesonSuffix.Data()),"RECREATE");
+  hEff->SetDrawOption("lego2");
+  hEff->Write("h_Eff");
+  effMapFile->Close();
+
+  return;
+}
+
+
+void PlotEfficiency_2D(TString fileName, TString fileNameOut, Double_t xMin, Double_t xMax, Double_t yMin, Double_t yMax) {
+
+  TFile* effMapFile = new TFile(fileName.Data(),"READ");  
+  TH2D *effMap = (TH2D*)effMapFile->Get("h_Eff");
+
+  TCanvas *c = new TCanvas("c","2D Efficiency map",150,150,900,600);
+  c->cd();
+  effMap->GetXaxis()->SetRangeUser(xMin,xMax);
+  effMap->GetYaxis()->SetRangeUser(yMin,yMax);
+  effMap->GetXaxis()->SetTitleOffset(1.5);
+  effMap->GetYaxis()->SetTitleOffset(1.5);
+  effMap->DrawCopy("lego2");
+
+  c->SaveAs(Form("%s.png",fileNameOut.Data()));
+  c->SaveAs(Form("%s.root",fileNameOut.Data()));
+  effMapFile->Close();
+
+  return;
+}
+
+
+void PlotEfficiency_1D(TString fileName, TString fileNameOut, Double_t xMin, Double_t xMax) {
+
+  TFile* effMapFile = new TFile(fileName.Data(),"READ");  
+  TH1D *effMap = (TH1D*)effMapFile->Get("h_Eff");
+
+  TCanvas *c = new TCanvas("c","1D Efficiency map",150,150,900,600);
+  c->cd();
+  effMap->GetXaxis()->SetRangeUser(xMin,xMax);
+  effMap->GetXaxis()->SetTitleOffset(1.5);
+  effMap->SetLineColor(kBlack);
+  effMap->SetLineWidth(2);
+  effMap->SetMarkerColor(kBlue);
+  effMap->SetMarkerStyle(21);
+  effMap->SetMarkerSize(0.9);
+  effMap->DrawCopy();
+
+  c->SaveAs(Form("%s.png",fileNameOut.Data()));
+  c->SaveAs(Form("%s.root",fileNameOut.Data()));
+  effMapFile->Close();
+
+  return;
+
+}
