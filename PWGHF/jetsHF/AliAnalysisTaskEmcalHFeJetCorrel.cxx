@@ -61,7 +61,7 @@
 #include "AliVCluster.h"
 #include <TArrayI.h>
 
-#include "AliCalorimeterUtils.h"
+
 
 ClassImp(AliAnalysisTaskEmcalHFeJetCorrel)
 
@@ -837,8 +837,8 @@ if(fdebug>1) cout<<"DDG Run 12.3"<<endl;
 
     AliVCaloCells* cells = InputEvent()->GetEMCALCells();
 if(fdebug>1) cout<<"DDG Run 12.4"<<endl;
-    AliCalorimeterUtils* fCaloUtils = new AliCalorimeterUtils();
-if(fdebug>1) cout<<"DDG Run 12.5"<<endl;
+//    AliCalorimeterUtils* fCaloUtils = new AliCalorimeterUtils();
+//if(fdebug>1) cout<<"DDG Run 12.5"<<endl;
 //    if(cells && fCaloUtils) NLM = fCaloUtils->GetNumberOfLocalMaxima(cluster, cells);
 if(fdebug>1) cout<<"DDG Run 12.6"<<endl;
 
