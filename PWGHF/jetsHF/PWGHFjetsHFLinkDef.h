@@ -17,5 +17,6 @@
 #pragma link C++ class AliHFJetsContainerVertex+;
 #pragma link C++ class AliAnalysisHFjetTagHFE+;
 #pragma link C++ class AliAnalysisTaskEmcalHFCJQA+;
+#pragma link C++ class AliAnalysisTaskEmcalHFeJetCorrel+;
 
 #endif

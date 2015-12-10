@@ -49,6 +49,7 @@ set(SRCS
     AliHFJetTaggingIP.cxx		
     AliAnalysisHFjetTagHFE.cxx
     AliAnalysisTaskEmcalHFCJQA.cxx	    
+    AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
     AliAnalysisTaskEmcalJetBtagSV.cxx          
     AliRDHFJetsCuts.cxx
