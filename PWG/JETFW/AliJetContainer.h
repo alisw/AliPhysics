@@ -49,7 +49,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetEtaPhiTPC(Double_t r=0.)   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
-  void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.) { fJetMinPhi = min, fJetMaxPhi = max ; fPhiOffset = offset;}
+  void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.);
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
   void                        SetJetPtCutMax(Float_t cut)                          { fJetPtCutMax    = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
