@@ -164,7 +164,13 @@ void AliJetEmbeddingTask::Run()
     for (Int_t i = 0; i < fNTracks; ++i) {
 
        Short_t charge = 1;
-       
+       if(fNeutralFraction>0.) {
+       	  Double_t rnd = gRandom->Rndm();
+       	  if(rnd<fNeutralFraction) {
+       	     charge = 0;
+       	     //mass = fNeutralMass;
+       	  }
+       }
        // Add track from tree of 4-vectors (jet reco) and save the particle level somewhere
        if(fFromTree){
        	  if(!fTreeJet4Vect || fBranchJDetName.IsNull()) {
@@ -231,7 +237,7 @@ void AliJetEmbeddingTask::Run()
        	  }
 
        	  // Add the track that complies with the settings 
-       	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, jetDet->M());
+       	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
        	  
        	  fCount++; // count the number of track embedded in the current pT range
        	  fCurrentEntry++; //increase for next iteration
