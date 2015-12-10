@@ -315,6 +315,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoLambdaPtvsDlSide; //!<! Lambda proper life time distribution (sideband)
 	TH2F *fHistoLambdaPtvsDlMCS; //!<! Lambda proper life time distribution (mc)
 
+	TH2F *fHistoEleXiPtvsRapidityRS; //!<! e-Xi pT vs y
+	TH2F *fHistoEleXiPtvsRapidityWS; //!<! e-Xi pT vs y
+	TH2F *fHistoEleXiPtvsRapidityMCS; //!<! e-Xi pT vs y
+
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
 
@@ -342,7 +346,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,16); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,17); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
