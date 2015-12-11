@@ -65,6 +65,9 @@
 
 ClassImp(AliAnalysisTaskEmcalHFeJetCorrel)
 
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 AliAnalysisTaskEmcalHFeJetCorrel::AliAnalysisTaskEmcalHFeJetCorrel() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalHFeJetCorrel", kTRUE),
@@ -939,7 +942,7 @@ if(fdebug>1) cout<<"DDG Run 14.5"<<endl;
 //Correlate electrons with jets
 if(kAnalysis)
 {
-    double PointHFTrigger[16] = {track->Pt(),EoP,TPCNcls,TPCPID,nsigma,ITSNcls,PhiMatch, EtaMatch,M20, M02, NLM};
+  double PointHFTrigger[16] = {track->Pt(),EoP,(double)TPCNcls,(double)TPCPID,nsigma,(double)ITSNcls,PhiMatch, EtaMatch,M20, M02, (double)NLM};
     fSparseHFTriggers->Fill(PointHFTrigger);
     
     for(int ithJet = 0; ithJet < fJetsCont->GetNAcceptedJets(); ithJet++)
@@ -958,7 +961,7 @@ if(kAnalysis)
         double R = RPhiEta(phijet, etajet, phiele, etaele);
         double InJet = -0.5;//= IsInsideJet(track, Jet);
         
-        double PointHF[16] = {track->Pt(),EoP,TPCNcls,TPCPID,nsigma,ITSNcls,PhiMatch, EtaMatch,M20, M02, NLM,Emcaljet->PtSub(), deltaphi, deltaeta, R, InJet};
+        double PointHF[16] = {track->Pt(),EoP,(double)TPCNcls,(double)TPCPID,nsigma,(double)ITSNcls,PhiMatch, EtaMatch,M20, M02, (double)NLM,Emcaljet->PtSub(), deltaphi, deltaeta, R, InJet};
         fSparseHFSpectrum->Fill(PointHF);
         
         //======================================================================
@@ -1018,7 +1021,7 @@ if(kAnalysis)
             if( (mass<fMassPhotonicCut) )
             {
                 if(fdebug>3) cout<<"DDG Run 14.4"<<endl;
-                double Point[22] = {track->Pt(),EoP,TPCNcls,TPCPID,nsigma,ITSNcls,PhiMatch, EtaMatch,M20, M02, NLM,Emcaljet->PtSub(), deltaphi, deltaeta, R, InJet, PtPartner, TPCNclsPartner, nsigmaPartner, mass, ThetaOpen, Sign};
+                double Point[22] = {track->Pt(),EoP,(double)TPCNcls,(double)TPCPID,nsigma,(double)ITSNcls,PhiMatch, EtaMatch,M20, M02, (double)NLM,Emcaljet->PtSub(), deltaphi, deltaeta, R, InJet, PtPartner, (double)TPCNclsPartner, nsigmaPartner, mass, ThetaOpen, Sign};
                 fhPhotonicEle->Fill(Point);
 
             }
@@ -1557,7 +1560,7 @@ if(fdebug>1) cout<<"DDG RandomCones 2"<<endl;
     ConePhi = PhiInterval(ConePhi,0,2*TMath::Pi());
     ConeEta = ConeEta/ConepT;
     if(fdebug>1) cout<<"DDG RandomCones 3"<<endl;
-    Double_t point[6]={Constituents, RandomEta, RandomPhi, ConepT, ConeEta, ConePhi};
+    Double_t point[6]={(double)Constituents, RandomEta, RandomPhi, ConepT, ConeEta, ConePhi};
     fRandomCones->Fill(point);
 }
     
