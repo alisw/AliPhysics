@@ -35,6 +35,7 @@ public:
 
   AliEmcalTriggerQAAP();
   AliEmcalTriggerQAAP(const char* name);
+  AliEmcalTriggerQAAP(const AliEmcalTriggerQAAP& triggerQA);
   virtual ~AliEmcalTriggerQAAP();
 
   void   SetDebugLevel(Int_t l)       { fDebugLevel        = l; }
@@ -60,10 +61,10 @@ public:
 
   THashList* GetListOfHistograms()  { return fHistos; }
 
-protected:
-
   static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
   static const TString    fgkPatchTypes[3];             ///< Patch type names
+
+protected:
 
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
@@ -98,7 +99,6 @@ private:
   TObject *FindObject(const char *name) const;
   virtual TObject *FindObject(const TObject *obj) const;
 
-  AliEmcalTriggerQAAP(const AliEmcalTriggerQAAP &);
   AliEmcalTriggerQAAP &operator=(const AliEmcalTriggerQAAP &);
 
   /// \cond CLASSIMP

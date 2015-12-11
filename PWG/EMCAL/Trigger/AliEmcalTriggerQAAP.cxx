@@ -101,6 +101,34 @@ AliEmcalTriggerQAAP::AliEmcalTriggerQAAP(const char* name):
 }
 
 /**
+ * Copy Constructor
+ */
+AliEmcalTriggerQAAP::AliEmcalTriggerQAAP(const AliEmcalTriggerQAAP& triggerQA) :
+  TNamed(triggerQA),
+  fFastorL0Th(triggerQA.fFastorL0Th),
+  fFastorL1Th(triggerQA.fFastorL1Th),
+  fBkgPatchType(triggerQA.fBkgPatchType),
+  fADCperBin(triggerQA.fADCperBin),
+  fDebugLevel(triggerQA.fDebugLevel),
+  fHistos(0)
+{
+  for (Int_t i = 0; i < 3; i++) {
+    fBkgADCAmpEMCal[i].Set(100);
+    fBkgADCAmpDCal[i].Set(100);
+    fNBkgPatchesEMCal[i] = 0;
+    fNBkgPatchesDCal[i] = 0;
+    fEnabledPatchTypes[i] = kTRUE;
+
+    for (Int_t itype = 0; itype < 6; itype++) {
+      fMaxPatchEMCal[itype][i] = 0;
+      fMaxPatchDCal[itype][i] = 0;
+    }
+  }
+
+  memset(fPatchAreas, 0, sizeof(Int_t)*6);
+}
+
+/**
  * Destructor
  */
 AliEmcalTriggerQAAP::~AliEmcalTriggerQAAP()
@@ -124,7 +152,7 @@ void AliEmcalTriggerQAAP::Init()
   TString htitle;
 
   fHistos = new THashList();
-  fHistos->SetName(Form("histos%s", GetName()));
+  fHistos->SetName(Form("%s_histos", GetName()));
   fHistos->SetOwner(kTRUE);
 
   hname = Form("EMCTRQA_histFastORL0");
