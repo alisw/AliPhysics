@@ -330,13 +330,20 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
     // check that we have a recalculated (OFFLINE) trigger patch of type fTriggerCategory
     if(fTriggerCategory == kTriggerRecalcGamma) { 
       if(!patch->IsRecalcGamma()) continue;
+      //if(doComments) cout<<Form("#Patch = %i, PatchE = %f", iPatch, patch->GetPatchE())<<endl;
     } else if (fTriggerCategory == kTriggerRecalcJet) {
-      if(!patch->IsRecalcGamma()) continue;
+      if(!patch->IsRecalcJet()) continue;
     }
 
     // method for filling collection output array of 'saved' recalculated patches
     (*fRecalcTriggerPatches)[patchacc] = patch;
     ++patchacc;
+
+    if(doComments) {
+      cout<<"Have a recalculated patch: "<<endl;
+      cout<<Form("Cent = %f, #Patch = %i, #Acc = %i, PatchE = %f, PhiCM = %f, EtaCM = %f", fCent, iPatch, patchacc, patch->GetPatchE(), patch->GetPhiCM(), patch->GetEtaCM())<<endl;
+
+    }
 
     // fill QA counter histo for Recalculated 'trig class' patches
     FillTriggerPatchQA(fhQAinfoCounter, trig, patch);
@@ -388,12 +395,14 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
     double maxPatchADC = fMaxPatch->GetADCAmpGeVRough();
 
     // patch summary (meeting energy cut requirement)
+/*
     if(doComments) {
       cout<<endl<<"Patch summary: "<<endl;
       cout<<Form("Number of patches = %d, Max Patch Energy = %f GeV, MAXClusterE = %f, Phi = %f, Eta = %f", nPatch, fMaxPatch->GetPatchE(), leadclus->E(), leadclusPhi, leadclusEta)<<endl;
       cout<<Form("CM in Phi = %f, in Eta = %f, Geo Center in Phi = %f, in Eta = %f, TriggerBits = %d", fMaxPatchPhiCM, fMaxPatchEtaCM, fMaxPatchPhiGeo, fMaxPatchEtaGeo, nTrigBit)<<endl;
       cout<<Form("phi min = %f, phi max = %f, eta min = %f, eta max = %f", fMaxPatchPhiMin, fMaxPatchPhiMax, fMaxPatchEtaMin, fMaxPatchEtaMax)<<endl;
     }
+*/
 
     Double_t fill[7] = {dEtaGeo, dEtaCM, dPhiGeo, dPhiCM, maxPatchADC, maxPatchE, leadclusE};
     fhnPatchMaxClus->Fill(fill);
@@ -880,7 +889,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
           if(ClusterEta > etamin && ClusterEta < etamax && ClusterPhi > phimin && ClusterPhi < phimax){
             if(doComments) {
               cout<<"*********************************************"<<endl;
-              cout<<"Proper match (cluster to fired max patch): ";
+              cout<<"Proper match (cluster to fired max patch): "<<endl;
               cout<<Form("MaxClusterE = %f, Phi = %f, Eta = %f", ClusterE, ClusterPhi, ClusterEta)<<endl;
               cout<<"*********************************************"<<endl;
             } // do comments
@@ -933,16 +942,19 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
             // fill sparse array before and after match
             Double_t fillarr[6] = {fCent, ClusterE, dPhiPatchCl, dEtaPatchCl, kEnergyOffline, kAmplitudeOnline};
             fhnPatchMatch->Fill(fillarr);
+            // matched successfully
             if(ClusterEta > etamin && ClusterEta < etamax && ClusterPhi > phimin && ClusterPhi < phimax) fhnPatchMatch2->Fill(fillarr);
 
             // patch meeting offline energy cut
-            if(fMaxPatch->GetPatchE() > fPatchECut) {
+            if(patch->GetPatchE() > fPatchECut) {
               // look to geometrically match patch to leading cluster of jet
               if(ClusterEta > etamin && ClusterEta < etamax && ClusterPhi > phimin && ClusterPhi < phimax){
                 if(doComments) {
                   cout<<"*********************************************"<<endl;
                   cout<<"Proper match (cluster to fired max patch): ";
-                  cout<<Form("MaxClusterE = %f, Phi = %f, Eta = %f", ClusterE, ClusterPhi, ClusterEta)<<endl;
+                  cout<<Form("Centrality = %f", fCent)<<endl;
+                  cout<<Form("PatchE = %f, PhiMin = %f, PhiMax = %f, EtaMin = %f, EtaMax = %f, Patch# = %i", kEnergyOffline, phimin, phimax, etamin, etamax, iPatch)<<endl; 
+                  cout<<Form("ClusterE = %f, Phi = %f, Eta = %f", ClusterE, ClusterPhi, ClusterEta)<<endl;
                   cout<<"*********************************************"<<endl;
                 } // do comments
 
