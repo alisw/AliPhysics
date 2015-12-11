@@ -1620,23 +1620,30 @@ Bool_t AliTRDgtuParam::CalculatePrefactors(Int_t trackletMask)
   fPki[4] =  2;
   fPki[5] = -4;
   Int_t firstHitLayer = 0;
-  Int_t lastHitLayer = 5;
-  for (Int_t layer = 0; layer < GetNLayers(); layer++) {
+  Int_t lastHitLayer = GetNLayers()-1;
+  for (Int_t layer = 0; layer <= lastHitLayer; ++layer) {
       if ( (trackletMask & (1 << layer)) == 0) {
         fPki[layer] = 0;
         if (layer == firstHitLayer){
-          fPki[GetNLayers()-1]++;
-          fPki[layer+1] = fPki[GetNLayers()-1];
+          fPki[lastHitLayer]++;
+          fPki[layer+1] = fPki[lastHitLayer];
           firstHitLayer++;
         }
         else if (layer == lastHitLayer){
           fPki[firstHitLayer]++;
-          if (fPki[layer-1] != 0) fPki[layer-1] = fPki[firstHitLayer];
+          if (fPki[layer-1] != 0) {
+            fPki[layer-1] = fPki[firstHitLayer];
+            if (fPki[firstHitLayer+1] == 0) {
+              --fPki[layer-1];
+            }
+          }
           if (fPki[layer-1] == 0){
             fPki[firstHitLayer]++; 
             fPki[layer-2] = fPki[firstHitLayer];
           }
-          if (fPki[layer-2] == 0) fPki[layer-1]++;
+          if (fPki[layer-2] == 0) {
+            fPki[layer-1]++;
+          }
         }
         else if (fPki[layer-1] == 0){
           fPki[layer-2]++;
@@ -1960,4 +1967,5 @@ void AliTRDgtuParam::GetYAlignmentDataOCDB(Int_t chamber, Double_t *shiftCorrFac
   *shiftCorrFactor=alignYShiftCorr[sm][det];
   *rotationCorrFactor=alignRotationCorr[sm][det];
 }
+
 
