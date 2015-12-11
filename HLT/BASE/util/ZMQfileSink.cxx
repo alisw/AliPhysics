@@ -70,12 +70,13 @@ const char* fUSAGE =
     "ZMQfileSink: dump contents of a multipart message into a file\n"
     "options: \n"
     " -in : data in\n"
-    " -sleep : how long to sleep in between requests for data in s (if applicable)\n"
+    " -sleep : how long to sleep in between requests for data in s (if applicable) (-1 means dump just once)\n"
+    " -once : write one file and exit (same as -sleep=-1)"
     " -timeout : how long to wait for the server to reply (s)\n"
     " -Verbose : be verbose\n"
     " -select : select objects (by regexp)\n"
     " -unselect : as select, only inverted\n"
-    " -file : dump input to file and exit\n"
+    " -file : file name\n"
     ;
 
 //_______________________________________________________________________________________
@@ -209,6 +210,7 @@ void* run(void* arg)
       fFileNumber++;
 
     }//socket 0
+    if (fPollInterval<0) break;
     usleep(fPollInterval);
   }//main loop
   return NULL;
@@ -284,7 +286,11 @@ int ProcessOptionString(TString arguments)
     //Printf("  %s : %s", i->first.data(), i->second.data());
     TString option = i->first;
     TString value = i->second;
-    if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
+    if (option.EqualTo("once"))
+    {
+      fPollInterval = -1;
+    }
+    else if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
     {
       fPollInterval = round(value.Atof()*1e6);
     }
