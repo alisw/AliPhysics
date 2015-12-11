@@ -16,9 +16,11 @@
  * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
+class TObjArray;
 class THistManager;
 class TString;
 class AliEmcalTriggerQAAP;
+class THnSparse;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcal.h"
@@ -99,8 +101,11 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   virtual ~AliEmcalTriggerQATask();
 
   void SetTriggerPatchesName(const char *name)      { fTriggerPatchesName      = name; }
+  void SetBkgPatchType(Int_t t);
+  void SetADCperBin(Int_t n);
+  void SetNCentBins(Int_t n);
 
-  AliEmcalTriggerQAAP* GetTriggerQA()               { return fEMCALTriggerQA         ; }
+  AliEmcalTriggerQAAP* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fNcentBins ? static_cast<AliEmcalTriggerQAAP*>(fEMCALTriggerQA->At(i)) : 0; }
 
   void Set2015CaloTriggerNames();
 
@@ -109,17 +114,21 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   void                                      ExecOnce();
   Bool_t                                    Run();
   Bool_t                                    FillHistograms();
+  void                                      FillEventQA();
   
   UInt_t                                    SteerFiredTriggers(const TString& firedTriggersStr) const;
 
   TString                                   fCaloTriggerNames[kLastCaloTrigger]; ///< names of the calo trigger classes
 
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
-  AliEmcalTriggerQAAP                      *fEMCALTriggerQA;             ///< produces the QA histograms
+  TObjArray                                *fEMCALTriggerQA;             ///< produces the QA histograms
+  Int_t                                     fADCperBin;                  ///< ADC counts per bin
+  Int_t                                     fBkgPatchType;               ///< Background patch type
   AliEmcalTriggerChannelContainerAP         fBadChannels;                ///< Container of bad channels
 
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
   TH1                                      *fHistEMCalTriggers;          //!<! EMCal triggers
+  THnSparse                                *fHistEventQA;                //!<! Event QA
 
  private:
   AliEmcalTriggerQATask(const AliEmcalTriggerQATask&);            // not implemented
