@@ -475,9 +475,21 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   //
   //
   // 
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    if (point[iDim]< fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin();
+    if (point[iDim]> fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax();
+  }
+
   Int_t ibin = fHistPoints->GetBin(point);
-  if (ibin>=fLocalFitParam->GetEntriesFast()) return 0;
-  if (fLocalFitParam->UncheckedAt(ibin)==NULL) return 0;
+  Bool_t rangeOK=kTRUE;
+  if (ibin>=fLocalFitParam->GetEntriesFast() ){
+    rangeOK=kFALSE;
+  }else{
+    if (fLocalFitParam->UncheckedAt(ibin)==NULL) {
+      rangeOK=kFALSE; 
+    }
+  }
+  if (!rangeOK) return 0;
 
   fHistPoints->GetBinContent(ibin,fBinIndex); 
   for (Int_t idim=0; idim<fNParameters; idim++){
@@ -486,6 +498,7 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   } 
   TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
   Double_t value=vecParam[0];
+  if (!rangeOK) return value;
   if (fUseBinNorm){
     for (Int_t ipar=0; ipar<fNParameters; ipar++){
       Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
@@ -504,6 +517,11 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   //
   //
   // 
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    if (point[iDim]< fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin();
+    if (point[iDim]> fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax();
+  }
+
   Int_t ibin = fHistPoints->GetBin(point); 
   if (fLocalFitParam->At(ibin)==NULL) return 0;
   fHistPoints->GetBinContent(ibin,fBinIndex); 
@@ -943,7 +961,8 @@ void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
 	Double_t derivative=nDiv*(value-value2)/fBinDelta[iDim];
 	stream<<
 	  "pos.="<<&binLocal<<          // position vector
-	  "iDim="<<iDim<<               // scan bin index
+	  "iBin="<<iBin<<               // bin index
+	  "iDim="<<iDim<<               // scan bin index	 
 	  "binIndexF.="<<&binIndexF<<   // bin index
 	  "value="<<value<<             // value at 
 	  "derivative="<<derivative<<   // numerical derivative
