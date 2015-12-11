@@ -156,7 +156,7 @@ void CorrectSpectraMultiMCBG(const char* flNameData, const char* flNameMC, const
     uniqueName = uniqueNm;
     listDt = LoadList(flNameData,"dt_", nameL);
     if (!listDt) return;
-    if (forceMCMB) { // R+HACK
+    if (forceMCMB && 0) { // R+HACK FIXME: MF is skipping this, as roberto what this meams
       TString str = nameL;
       if (str.EndsWith("_L")) str = "clist_MB_L";
       else if (str.EndsWith("_LL")) str = "clist_MB_LL";
@@ -374,6 +374,7 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
                 h1mBetaMC->SetBinContent(ib0,ib1, 1.- h1mBetaMC->GetBinContent(ib0,ib1));
             }
         //
+
         res->AddAtAndExpand(h1mBetaMC, k1MBetaMC+shift);
         res->AddAtAndExpand(h1mBetaMCscl, k1MBetaMCscl+shift);
         hSignalEstMC->Multiply(h1mBetaMC);
@@ -616,7 +617,6 @@ Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
         hBgEst = hBMCLB;
         res->AddAtAndExpand(hBgEst,kBgEst +shift);
     }
-
     
     //
     // 1-beta for "data" = (Data_cut - Bg_cut) / Data_cut
@@ -654,6 +654,7 @@ Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
                 h1mBetaMC->SetBinContent(ib0,ib1, 1.- h1mBetaMC->GetBinContent(ib0,ib1));
             }
         //
+
         res->AddAtAndExpand(h1mBetaMC, k1MBetaMC+shift);
         res->AddAtAndExpand(h1mBetaMCscl, k1MBetaMCscl+shift);
         hSignalEstMC->Multiply(h1mBetaMC);
@@ -720,6 +721,7 @@ Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
     //  hDstBg->Scale(1./nrmDst);
     //
     // finalize estimated bg and signal matrices
+    
     hBgEst->Scale(scl);
     //
     if (useMCLB==2) {
@@ -748,6 +750,7 @@ Bool_t PrepareHistosHack(int bin, TList* lst, Bool_t isMC, Bool_t forceMCMB)
             //
         }
     }
+
     //
     if (isMC) {
         // Zv nonuniformity histo: MCGen before cuts
@@ -920,7 +923,9 @@ void PlotResults(Bool_t forceMCMB)
     grp->GetYaxis()->SetTitle("dN/d#eta_{|#eta|<0.5}");
     grp->GetYaxis()->SetTitleOffset(1.8);
     gPad->SetGrid(1,1);
+    //    resArr->AddAtAndExpand
     //
+    grp->SaveAs("result.C");
     canvFin->cd(2);
     gPad->SetLeftMargin(0.15);
     hbins->Draw();

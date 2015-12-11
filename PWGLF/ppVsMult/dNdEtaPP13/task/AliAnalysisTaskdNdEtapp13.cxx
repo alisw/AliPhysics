@@ -190,7 +190,6 @@ const int AliAnalysisTaskdNdEtapp13::fgkPDGCodes[] = {
   // unknown
 };
 
-TH1 *hMCcalib = NULL; // R+TEMP
 
 //________________________________________________________________________
 /*//Default constructor
@@ -576,7 +575,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Int_t trg = handler->IsEventSelected();
   // FIXME: add event selection histo, can probably adapt hstat
   Bool_t pileup = esd->IsPileupFromSPDInMultBins();
-  fIsSelected = trg & fTrigSel; //AliVEvent::kINT7;
+  fIsSelected = trg & fTrigSel; 
   if(fIsSelected) hstat->Fill(kEvAfterPhysSel, fWeight);
   fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);  
   fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
@@ -618,90 +617,17 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
   const AliESDVertex* vtxESD_ = esd->GetPrimaryVertex();
   const AliMultiplicity* multESD = esd->GetMultiplicity();
-  // FIXME: old PbPb?
-  // AliCentrality *centrality = esd->GetCentrality();  
-  // Double_t centPercentile = centrality->GetCentralityPercentileUnchecked(fUseCentralityVar.Data());
 
   // MF: mult classes using new framework
   AliMultSelection *MultSelection = (AliMultSelection*) esd -> FindListObject("MultSelection");
-  Double_t centPercentile = MultSelection->GetMultiplicityPercentile(fUseCentralityVar);// FIXME: think how to include MB
-  
-  // // R+
-  // // MULTIPLICITY CLASSES IN PP
-  // TString centstr = fUseCentralityVar;
-  // AliDebug(AliLog::kWarning, "Overriding centrality with pp multiplicity"); // R+
-  // if (centstr.Contains("MB"))
-  //   centPercentile = 0.;
-  // if (centstr.Contains("V0M")) {
-  //   centPercentile = fPPVsMultUtils->GetMultiplicityPercentile(esd); // R+
-  //   if (1 && fUseMC) {
-  //     // temporarily recompute percentile using Perugia2011 V0M signal
-  //     // this is a very rough approach, waiting for better one
-  //     if (!hMCcalib) {
-  //       TFile *mcCalib = NULL;
-  //       if (hPythia) {
-  //         TString str = handler->GetTree()->GetCurrentFile()->GetName();
-  //         if (str.Contains("LHC10f6a")) {
-  //           printf("loading PYTHIA6 Perugia-0 V0M calibration (LHC10f6a)\n");
-  //           mcCalib = TFile::Open("126432.LHC10f6a.percentileme.root");
-  //         }
-  //         else if (str.Contains("LHC14j4d")) {
-  //           printf("loading PYTHIA6 Perugia-2011 V0M calibration (LHC14j4d)\n");
-  //           mcCalib = TFile::Open("126432.LHC14j4d.percentileme.root");
-  //         }
-  //       }
-  //       else if (hDpmJet) {
-  //         printf("loading PHOJET V0M calibration\n");
-  //         mcCalib = TFile::Open("126432.LHC10f6.percentileme.root");
-  //       }
-  //       hMCcalib = (TH1 *)mcCalib->Get("V0Mpercentile");
-  //     }
-  //     Float_t multV0=0;
-  //     AliESDVZERO* esdV0 = esd->GetVZEROData();
-  //     if (esdV0) {
-  //       multV0 = esdV0->GetMTotV0A()+esdV0->GetMTotV0C();
-  //       if (fUseMC) multV0 *= fMCV0Scale;
-  //     }
-  //     centPercentile = 100. * hMCcalib->Interpolate(multV0);
-  //   }
-  // }
-  // if (centstr.Contains("V0av")) {
-  //   Double_t centPercentileA = fPPVsMultUtils->GetMultiplicityPercentile(esd, "V0A"); // R+
-  //   Double_t centPercentileC = fPPVsMultUtils->GetMultiplicityPercentile(esd, "V0C"); // R+
-  //   centPercentile = 0.5 * (centPercentileA + centPercentileC);
-  //   if (0 && fUseMC) {
-  //     // temporarily recompute percentile using Perugia2011 V0M signal
-  //     // this is a very rough approach, waiting for better one
-  //     if (!hMCcalib) {
-  //       TFile *mcCalib = TFile::Open("126432.LHC10f6a.percentileme.root");
-  //       hMCcalib = (TH1 *)mcCalib->Get("V0Mpercentile");
-  //     }
-  //     Float_t multV0=0;
-  //     AliESDVZERO* esdV0 = esd->GetVZEROData();
-  //     if (esdV0) {
-  //       multV0 = esdV0->GetMTotV0A()+esdV0->GetMTotV0C();
-  //       if (fUseMC) multV0 *= fMCV0Scale;
-  //     }
-  //     centPercentile = 100. * hMCcalib->Interpolate(multV0);
-  //   }
-  // }
-  // if (centstr.Contains("Ref"))
-  //   centPercentile = (Float_t)AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC, 0.8) + 0.5;
-
-  // /* R+
-  //    if (fUseMC && centPercentile==0&&multESD->GetNumberOfITSClusters(0)<1 &&
-  //    multESD->GetNumberOfITSClusters(1)<1)  {
-  //    centPercentile = 100;
-  //    printf("Overriding centrality 0 to 100:\n"
-  //    "Cent%s:%.2f Sel:%d Ntrk:%d SPD1:%d SPD2:%d V0A:%f V0C:%f CentV0A:%.2f CentV0M:%.2f CentCl1:%.2f\n",
-  //    fUseCentralityVar.Data(),centPercentile,fIsSelected,multESD->GetNumberOfTracklets(),
-  //    multESD->GetNumberOfITSClusters(0),multESD->GetNumberOfITSClusters(1),
-  //    esd->GetVZEROData()->GetMTotV0A(),esd->GetVZEROData()->GetMTotV0C(),
-  //    centrality->GetCentralityPercentileUnchecked("V0A"),
-  //    centrality->GetCentralityPercentileUnchecked("V0M"),
-  //    centrality->GetCentralityPercentileUnchecked("CL1"));
-  //    }
-  // */
+  static Bool_t skipCentrality = (fUseCentralityVar == "MB"); // If the centrality var is MB, the centrality selection is skept
+  Double_t centPercentile = -1;
+  if(!skipCentrality) {
+    centPercentile = MultSelection->GetMultiplicityPercentile(fUseCentralityVar);
+    fCurrCentBin = GetCentralityBin(centPercentile);
+  } else {
+    fCurrCentBin = 0;
+  }
 
   ((TH1*)fHistosCustom->UncheckedAt(kHCentDistNoSel))->Fill(centPercentile, fWeight);
   if (fIsSelected)
@@ -728,7 +654,6 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   */
 
   //
-  fCurrCentBin = GetCentralityBin(centPercentile);
   //
   // ==================== STORE SOME GLOBAL INFO FOR ALL EVENTS ==============>>>
   Float_t multV0=0;
