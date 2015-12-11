@@ -109,11 +109,12 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
   TH1F 	        *fhNJetsSelEv;                                      //!<! number of selected signal jets per event
   TH2F          *fhRjetTrvspTj;                                     //!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-  TH2F          *fhJetEtaPhi;                                       //!<! eta-phi distribution of the selected signal jets
+  TH2F          *fhJetEtaPhiOvl;                                       //!<! eta-phi distribution of the selected signal jets
   TH1F 	        *fhpTTracksJet1;                                   //!<!
   TH1F 	        *fhpTTracksJetO;                                   //!<!
   TH1F 	        *fhpTTracksCont;                                   //!<!
   TH1F 	        *fhptjetSMinusSingleTrack;                         //!<! pT distribution of jets subtracting the pT of the embedded track
+  TH3F          *fhJetSubMatchEtaPhiPt;                             //!<! eta, phi, pt distribution of jet subtracted and matched
   TTree         *fTreeEmb;                                         //!<! tree with the TLorentzVector of the jet detector and particle level
   Bool_t        fFromTree;                                         ///< Input embedding from tree
   TString       fPathTreeinputFile;                                ///< path to the file where the external input Tree is (can be from alien)
