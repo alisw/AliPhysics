@@ -163,7 +163,7 @@ void* AliHLTRootObjectMergerComponent::MergeObjects(void* input)
 	{
 		AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buf = (AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer*) input;
 		objects = new MergeObjectStruct;
-		objects->fObject = NULL;
+		objects->fObject = fObj;
 		objects->fList = new TList;
 		for (int i = 0;i < buf->fNumberOfEntries;i++)
 		{
