@@ -494,7 +494,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   if (!IsDataEvent(&eventType)) {
     if (fDataEventsOnly)
     {
-      if (eventType == gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogImportant);
+      if (eventType == gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogInfo);
       IgnoreEvent();  // dont generate any trigger decision.
       return 0;
     }
@@ -614,11 +614,11 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   if (time.Get()-lastTime>60)
   {
     lastTime=time.Get();
-    PrintStatistics(fTrigger, kHLTLogImportant);
+    PrintStatistics(fTrigger, kHLTLogInfo);
   }
   else if (eventType==gkAliEventTypeEndOfRun)
   {
-    PrintStatistics(fTrigger, kHLTLogImportant);
+    PrintStatistics(fTrigger, kHLTLogInfo);
   }
   
   // add readout filter to event done data
