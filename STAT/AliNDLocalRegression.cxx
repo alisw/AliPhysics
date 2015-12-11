@@ -475,9 +475,10 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   //
   //
   // 
+  const Double_t almost0=0.00000001;
   for (Int_t iDim=0; iDim<fNParameters; iDim++){
-    if (point[iDim]< fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin();
-    if (point[iDim]> fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax();
+    if (point[iDim]<= fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin()+almost0*fHistPoints->GetAxis(iDim)->GetBinWidth(0);
+    if (point[iDim]>= fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax()-almost0*fHistPoints->GetAxis(iDim)->GetBinWidth(0);
   }
 
   Int_t ibin = fHistPoints->GetBin(point);
