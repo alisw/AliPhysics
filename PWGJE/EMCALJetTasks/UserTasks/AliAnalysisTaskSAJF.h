@@ -18,7 +18,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
-  void                        SetHistoType(Int_t t) { fHistoType = t; }
+  void                        SetHistoType(Int_t t)               { fHistoType             = t; }
+  void                        SetDefaultClusterEnergy(Int_t d)    { fDefaultClusterEnergy  = d; }
 
  protected:
   void                        AllocateTHX();
@@ -29,6 +30,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 					   Double_t NEF, Double_t z, Int_t n, Double_t leadingpt);
 
   Int_t                       fHistoType;                   // histogram type (0=TH2, 1=THnSparse)
+  Int_t                       fDefaultClusterEnergy;        // default cluster energy
 
   TH2                       **fHistRejectionReason;         //!Rejection reason vs. jet pt
   TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt

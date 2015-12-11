@@ -25,6 +25,7 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
+  fDefaultClusterEnergy(-1),
   fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
@@ -59,6 +60,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
+  fDefaultClusterEnergy(-1),
   fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
@@ -150,8 +152,10 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
   }
 
+  // area resolution is about 0.01 (ghost area 0.005)
+  // for fNbins = 250 use bin width 0.01
   title[dim] = "A_{jet}";
-  nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi()/0.006);
+  nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
   min[dim] = 0;
   max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
   dim++;
@@ -515,7 +519,12 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
         if (cluster) {
           TLorentzVector nPart;
-          cluster->GetMomentum(nPart, fVertex);
+          if (fDefaultClusterEnergy >=0 && fDefaultClusterEnergy < AliVCluster::kLastUserDefEnergy) {
+            cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+          }
+          else {
+            cluster->GetMomentum(nPart, fVertex);
+          }
 
           Double_t dphi = TVector2::Phi_0_2pi(nPart.Phi() - jet->Phi());
           Double_t deta = nPart.Eta() - jet->Eta();
