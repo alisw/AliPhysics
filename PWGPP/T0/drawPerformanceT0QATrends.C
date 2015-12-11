@@ -7,7 +7,7 @@ TGraphErrors * MakeGraphSparse(TTree * tree, const Char_t * expr="mean-fdelta:ru
   //
 
   const Int_t entries =  tree->Draw(expr,cut,"goff");
-  
+  if (entries<=0) return;
   Double_t *graphX, *graphY, *graphError;
 
   //check whether error argument exists in expr
@@ -222,6 +222,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
     sprintf(name,"amplPMT%d:run",ipmt);
     TString cutamp = Form("amplPMT%i>0",ipmt);
     gr = MakeGraphSparse(tree,name,cutamp.Data());
+    //gr = MakeGraphSparse(tree,name,"");
     gr->SetMarkerStyle(20);
     gr->SetMarkerSize(1.0);
     gr->SetMarkerColor(6);
