@@ -4115,7 +4115,8 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsSignal->Add(hMassTrueTGHCsignPM);
   flistTghCutsSignal->Add(hMassTGHCsignPM);
   flistTghCutsSignal->Add(hMassTrueTGHCsignSB);
-  flistTghCutsSignal->Add(hMassTGHCsignSB);
+  
+flistTghCutsSignal->Add(hMassTGHCsignSB);
 
 
 
@@ -7162,7 +7163,6 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     else if(okD0bar)point[4]=2.5;
     if(fReadMC&&aodDMC!=0x0&&namehist.Contains("fromB")){     
       point[3]=aodDMC->ImpParXY()*10000.;
-      ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
 
       if(fFillTree){
 	imppar[0]=0.;
@@ -7194,6 +7194,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	}
       }
     }
+    ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
     if(fFillTree){
       for(Int_t i=0; i<5; i++){
 	fVariablesTreeNCsign[i]=point[i];
