@@ -262,7 +262,7 @@ void AliJetEmbeddingTask::Run()
        	     	mass = fMass;
        	     }
        	  }
-       	  AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
+       	  AddTrack(-999,-999,-999,0,0,0,0,kFALSE,0,charge,mass);
        }
     }
   }

@@ -339,7 +339,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     if(fSingleTrackEmb) {
        vpe = GetEmbeddedConstituent(jet1);
        if(vpe) {
-       	  Bool_t reject = kFALSE; 	     
+       	  Bool_t reject = kFALSE;
        	  if(fPartialExclusion) {
        	     
        	     TRandom3 rnd;
@@ -370,7 +370,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 
        	     	Double_t deltaR = jetO->DeltaR(vpe);
        	     	fhRjetTrvspTj->Fill(deltaR, jetO->Pt());
-       	     	fhJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
+       	     	fhJetEtaPhiOvl->Fill(jetO->Eta(), jetO->Phi());
        	     	if( deltaR < fRadius) {
        	     	   reject = kTRUE;
        	     	   break;
@@ -405,6 +405,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     //Fill histograms for matched jets
     fh2MSubMatch[fCentBin]->Fill(var,fMatch);
     if(fMatch==1) {
+       fhJetSubMatchEtaPhiPt->Fill(jet1->Eta(), jet1->Phi(), ptjet1);
       Double_t drToLJ = -1.;
       if(jetL) drToLJ = jet1->DeltaR(jetL);
       if(fSingleTrackEmb && vpe)

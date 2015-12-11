@@ -200,7 +200,7 @@ void AliJetModelBaseTask::UserCreateOutputObjects()
   fhEtaEmb->Sumw2();
   fOutput->Add(fhEtaEmb);
   
-  fhPhiEmb = new TH1F("fhPhiEmb","#varphi distribution; #varphi", 100, 0, 2*TMath::Pi());
+  fhPhiEmb = new TH1F("fhPhiEmb","#varphi distribution; #varphi", 100, (-1)*TMath::Pi(), TMath::Pi());
   fhPhiEmb->Sumw2();
   fOutput->Add(fhPhiEmb);
   
@@ -725,15 +725,15 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 {
   // Add a track to the event.
   
-  if (pt < 0 && eta < -100 && phi < 0) {
+  if (pt < 0 && eta < -100 && phi < -100) {
     GetRandomParticle(pt,eta,phi);
   }
   else {
-    if (pt < 0) 
+    if (pt < -100) 
       pt = GetRandomPt();
     if (eta < -100) 
       eta = GetRandomEta();
-    if (phi < 0) 
+    if (phi < -100) 
       phi = GetRandomPhi(pt);
   }
 //Printf("Adding LABEL %d", label);

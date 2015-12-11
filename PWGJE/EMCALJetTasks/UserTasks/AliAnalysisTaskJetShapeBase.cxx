@@ -72,10 +72,12 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
-  fhJetEtaPhi(0x0),
+  fhJetEtaPhiOvl(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
+  fhptjetSMinusSingleTrack(0x0),
+  fhJetSubMatchEtaPhiPt(0x0),
   fTreeEmb(0),
   fFromTree(0),
   fPathTreeinputFile(""),
@@ -155,10 +157,12 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
-  fhJetEtaPhi(0x0),
+  fhJetEtaPhiOvl(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
+  fhptjetSMinusSingleTrack(0x0),
+  fhJetSubMatchEtaPhiPt(0x0),
   fTreeEmb(0),
   fFromTree(0),
   fPathTreeinputFile(""),
@@ -345,18 +349,22 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
      fhNJetsSelEv = new TH1F("fhNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
      fOutput->Add(fhNJetsSelEv);
      
-     fhJetEtaPhi = new TH2F("fhJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
-     fOutput->Add(fhJetEtaPhi);
+     fhJetEtaPhiOvl = new TH2F("fhJetEtaPhiOvl", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, (-1)*TMath::Pi(), TMath::Pi());
+     fOutput->Add(fhJetEtaPhiOvl);
      
      fhpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
      fOutput->Add(fhpTTracksJetO);
 
   }
+  
+  fhJetSubMatchEtaPhiPt = new TH3F("fhJetSubMatchEtaPhiPt", "Bkg-subtracted matched jet;#eta ; #phi; #it{p}_{T} (GeV/#it{c})", 24., -0.6, 0.6, 50, (-1)*TMath::Pi(), TMath::Pi(), nBinsPt, minPt, maxPt); 
+  fOutput->Add(fhJetSubMatchEtaPhiPt);
+
   fhpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksJet1);
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
-  
+
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
      if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
