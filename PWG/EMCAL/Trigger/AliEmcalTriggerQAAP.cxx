@@ -161,7 +161,7 @@ void AliEmcalTriggerQAAP::Init()
 
   hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
   htitle = Form("EMCTRQA_histFastORL1AmpVsL0Amp;L0 amplitude;L1 time sum;entries");
-  CreateTH2(hname, htitle, 64, 0, 2048, 64, 0, 2048);
+  CreateTH2(hname, htitle, 256, 0, 1024, 256, 0, 1024);
 
   for (Int_t itype = 0; itype < 3; itype++) {
     if (!fEnabledPatchTypes[itype]) continue;
@@ -412,17 +412,17 @@ void AliEmcalTriggerQAAP::ProcessFastor(AliEmcalTriggerFastORAP* fastor)
     FillTH1(hname, fastor->GetAbsId());
   }
 
-  if (fastor->GetL1Amp() > fFastorL1Th) {
+  if (fastor->GetL1Amp() > 0) {
     hname = Form("EMCTRQA_histFastORL1");
     FillTH1(hname, fastor->GetAbsId());
 
     hname = Form("EMCTRQA_histFastORL1Mean");
     FillTProfile(hname, fastor->GetAbsId(), fastor->GetL1Amp());
+  }
 
-    if (fastor->GetL1Amp() > 400) {
-      hname = Form("EMCTRQA_histLargeAmpFastORL1");
-      FillTH1(hname, fastor->GetAbsId());
-    }
+  if (fastor->GetL1Amp() > fFastorL1Th) {
+    hname = Form("EMCTRQA_histLargeAmpFastORL1");
+    FillTH1(hname, fastor->GetAbsId());
   }
 
   if (fastor->GetL1Amp() > 0 && fastor->GetL0Amp() > 0) {
