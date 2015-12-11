@@ -828,6 +828,9 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   // 
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
+  Int_t cacheSize= 200000000;
+  if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
+
   //
   // 0.) Load current information file and bookd variables
   // 
@@ -895,6 +898,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta");
+      tree->SetCacheSize(cacheSize);
       tree->SetBranchStatus("*",kFALSE);
       if (!tree) continue;
       ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "Processing file \t %s\n",esdArray->At(iesd)->GetName());
