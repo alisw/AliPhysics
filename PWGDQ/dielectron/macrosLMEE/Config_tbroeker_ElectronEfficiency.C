@@ -63,7 +63,7 @@ const Double_t  CentMax = 102.;
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
 const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
-const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
+const Double_t  PtMaxGEN  =  20.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
 const Bool_t    CutInjectedSignals = kFALSE;
 const UInt_t    NminEleInEventForRej = 2;
