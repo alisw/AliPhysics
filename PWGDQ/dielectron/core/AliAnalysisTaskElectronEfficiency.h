@@ -35,6 +35,7 @@
 #include "AliAnalysisFilter.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
+#include "TObjArray.h"
 #include "TTreeStream.h"//why?
 
 class AliPIDResponse;
@@ -80,6 +81,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                    {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
+  void          SetResolution(TObjArray *arr)                 {fResArr=arr;}
+  
   
   void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
   void          SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -177,15 +180,19 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
   TH2F*                           fNgenPairs;
-  TH2F*                           fNgenPairs2;
   std::vector<TH2F*>              fvRecoPairs;
   std::vector<TH2F*>              fvRecoPairs_poslabel;
   
   Bool_t                          fCalcResolution;
-  TH2F*                           fPtResolutionAndBrems;
   TH2F*                           fPtResolution;
-  TH2F*                           fPtResolutionAndBrems_poslabel;
   TH2F*                           fPtResolution_poslabel;
+  TH2F*                           fPResolution;
+  TH2F*                           fPResolution_poslabel;
+  TH2F*                           fEtaPhiResolution;
+  TH2F*                           fEtaResolution;
+  TH2F*                           fEtaResolution_poslabel;
+  TH2F*                           fPhiResolution;
+  TH2F*                           fPhiResolution_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
   
   TList*                          fOutputList; // ! output data container
@@ -241,16 +248,18 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Float_t   pxMC;
   Float_t   pyMC;
   Float_t   pzMC;
-  UInt_t    selectedByCut; // bit mask
-  UInt_t    selectedByExtraCut; // bit mask
+  UInt_t    fSelectedByCut; // bit mask
+  UInt_t    fSelectedByExtraCut; // bit mask
   
+  TObjArray *fResArr;
+  TH3F      *fNgen_recoObs;
   //protected:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kEventStatBins};
 
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
   
-  ClassDef(AliAnalysisTaskElectronEfficiency, 3);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 4);
 };
 
 #endif
