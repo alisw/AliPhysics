@@ -66,7 +66,9 @@ private:   // here are the quantities I want to cut on...
   long fNEventsFailed;    // Number of events checked by this cut that failed
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventCutEstimators, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventCutEstimators, 1);
+  /// \endcond
 #endif
 
 };

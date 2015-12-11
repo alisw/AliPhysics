@@ -33,6 +33,7 @@ class AliESDtrack;
 class AliMCEvent;
 class AliMCParticle;
 class AliVEvent;
+class AliPIDResponse;
 
 class TObjArray;
 class TList;
@@ -199,6 +200,9 @@ class AliHFEcuts : public TNamed{
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
 
+    const AliPIDResponse *GetPIDResponse() const { return fPIDResponse; }; 
+    void SetPIDResponse(const AliPIDResponse * const pid) { fPIDResponse = pid; }
+
   private:
     enum{
       kDebugMode = BIT(14),
@@ -282,8 +286,10 @@ class AliHFEcuts : public TNamed{
     TObjArray *fCutList;	                    //! List of cut objects(Correction Framework Manager)
 
     Int_t fDebugLevel;                        // Debug Level
+
+    const AliPIDResponse *fPIDResponse;//! PID Response
     
-  ClassDef(AliHFEcuts, 6)                     // Container for HFE cuts
+  ClassDef(AliHFEcuts, 7)                     // Container for HFE cuts
 };
 
 //__________________________________________________________________

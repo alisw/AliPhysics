@@ -20,7 +20,6 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
-#include "AliJetContainer.h"
 
 ClassImp(AliAnalysisTaskEmcalJet)
 
@@ -241,6 +240,25 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType, Float_t jetRadius) {
+
+  // Add particle container
+  // will be called in AddTask macro
+
+  TString tmp = TString(n);
+  if(tmp.IsNull()) return 0;
+
+  AliJetContainer *cont = 0x0;
+  cont = new AliJetContainer();
+  cont->SetArrayName(n);
+  cont->SetJetRadius(jetRadius);
+  cont->SetJetAcceptanceType(accType);
+  fJetCollArray.Add(cont);
+
+  return cont;
+}
+
+//________________________________________________________________________
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {
 
   // Add particle container
@@ -256,16 +274,31 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString
 
   defaultCutType.ToUpper();
 
-  if(!defaultCutType.IsNull() && !defaultCutType.EqualTo("USER")) {
-    if(defaultCutType.EqualTo("TPC"))
-      cont->SetJetAcceptanceType(AliJetContainer::kTPC);
-    else if(defaultCutType.EqualTo("EMCAL"))
-      cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
-    else
-      AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),defaultCutType.Data()));
-  } else
+  if (defaultCutType.IsNull() || defaultCutType.EqualTo("USER")) {
     cont->SetJetAcceptanceType(AliJetContainer::kUser);
- 
+  }
+  else if(defaultCutType.EqualTo("TPC")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kTPC);
+  }
+  else if(defaultCutType.EqualTo("TPCFID")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+  }
+  else if(defaultCutType.EqualTo("EMCAL")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
+  }
+  else if(defaultCutType.EqualTo("EMCALFID")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kEMCALfid);
+  }
+  else if(defaultCutType.EqualTo("DCAL")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kDCAL);
+  }
+  else if(defaultCutType.EqualTo("DCALFID")) {
+    cont->SetJetAcceptanceType(AliJetContainer::kDCALfid);
+  }
+  else {
+    AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),defaultCutType.Data()));
+  }
+
   fJetCollArray.Add(cont);
 
   return cont;

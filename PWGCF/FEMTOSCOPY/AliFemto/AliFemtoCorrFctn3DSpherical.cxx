@@ -12,8 +12,10 @@
 #include <TMath.h>
 #include <cstdio>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctn3DSpherical)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctn3DSpherical);
+  /// \endcond
 #endif
 
 //____________________________
@@ -64,9 +66,9 @@ AliFemtoCorrFctn3DSpherical& AliFemtoCorrFctn3DSpherical::operator=(const AliFem
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   if (fDenominator) delete fDenominator;
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
-  
+
   //  fPairCut = aCorrFctn.fPairCut;
-  
+
   return *this;
 }
 
@@ -82,8 +84,8 @@ TList* AliFemtoCorrFctn3DSpherical::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumerator); 
-  tOutputList->Add(fDenominator);  
+  tOutputList->Add(fNumerator);
+  tOutputList->Add(fDenominator);
 
   return tOutputList;
 }
@@ -113,7 +115,7 @@ AliFemtoString AliFemtoCorrFctn3DSpherical::Report(){
     stemp += ctemp;
   }
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
@@ -155,5 +157,3 @@ void AliFemtoCorrFctn3DSpherical::AddMixedPair( AliFemtoPair* pair){
 
   fDenominator->Fill(tKR,tKP,tKC);
 }
-
-

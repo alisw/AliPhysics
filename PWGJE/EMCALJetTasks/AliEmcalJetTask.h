@@ -56,6 +56,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetLocked()                                { fLocked = kTRUE;}
   void                   SetMinJetArea(Double_t a)                  { if (IsLocked()) return; fMinJetArea       = a     ; }
   void                   SetMinJetClusPt(Double_t min)              { if (IsLocked()) return; fMinJetClusPt     = min   ; }
+  void                   SetMinJetClusE(Double_t min)               { if (IsLocked()) return; fMinJetClusE      = min   ; }
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetMinJetTrackPt(Double_t min)             { if (IsLocked()) return; fMinJetTrackPt    = min   ; }
   void                   SetMinMCLabel(Int_t s)                     { if (IsLocked()) return; fMinMCLabel       = s     ; }
@@ -67,9 +68,10 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetMCFlag(UInt_t m)                        { if (IsLocked()) return; fMCFlag           = m     ; }
   void                   SelectHIJING(Bool_t s)                     { if (IsLocked()) return; if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
-  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex     = i     ; }
-  void                   SetFilterHybridTracks(Bool_t f)            { if (IsLocked()) return; fFilterHybridTracks = f     ; }
-  void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost = b; }
+  void                   SetGeneratorIndex(Short_t i)               { if (IsLocked()) return; fGeneratorIndex     = i   ; }
+  void                   SetFilterHybridTracks(Bool_t f)            { if (IsLocked()) return; fFilterHybridTracks = f   ; }
+  void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost          = b   ; }
+  void                   SetClusterEnergyType(Int_t t)              { if (IsLocked()) return; fClusterEnergyType  = t   ; }
 
   AliEmcalJetUtility*    AddUtility(AliEmcalJetUtility* utility);
 
@@ -136,6 +138,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Double_t               fRadius;                 // jet radius
   Double_t               fMinJetTrackPt;          // min jet track momentum (applied before clustering)
   Double_t               fMinJetClusPt;           // min jet cluster momentum (applied before clustering)
+  Double_t               fMinJetClusE;            // min jet cluster energy (applied before clustering)
   Double_t               fPhiMin;                 // minimum phi for constituents (applied before clustering)
   Double_t               fPhiMax;                 // maximum phi for constituents (applied before clustering)
   Double_t               fEtaMin;                 // minimum eta for constituents (applied before clustering)
@@ -154,8 +157,9 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fFilterHybridTracks;     // filter hybrid tracks (only works with AOD tracks)
   Int_t                  fUseExchangeCont;        // use exchange containers as input
+  Int_t                  fClusterEnergyType;      // which corrections to the cluster energy are to be considered (see enum VCluUserDefEnergy_t in AliVCluster.h)
   Bool_t                 fLocked;                 // true if lock is set
- 
+
   Bool_t                 fIsInit;                 //!=true if already initialized
   Bool_t                 fIsPSelSet;              //!=true if physics selection was set
   Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
@@ -174,6 +178,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 19) // Jet producing task
+  ClassDef(AliEmcalJetTask, 20) // Jet producing task
 };
 #endif

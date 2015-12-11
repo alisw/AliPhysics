@@ -9,8 +9,8 @@ class AliRhoParameter;
 class AliLocalRhoParameter;
 class AliVCluster;
 class AliVParticle;
-class AliJetContainer;
 
+#include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
@@ -45,7 +45,8 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   virtual void                SetRhoName(const char *n, Int_t c = 0);
   virtual void                SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
   const TString&              GetRhoName(Int_t c = 0) const;
-  AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType = "", Float_t jetRadius = 0.4);
+  AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius = 0.4);
+  AliJetContainer            *AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType = AliJetContainer::kUser, Float_t jetRadius = 0.4);
   void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 
   AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
   AliJetContainer            *GetJetContainer(const char* name)                                        const;

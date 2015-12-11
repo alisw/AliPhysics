@@ -15,7 +15,9 @@ class AliUPCMuonTrack : public TObject
 public:
   AliUPCMuonTrack();
 
-  virtual ~AliUPCMuonTrack() {};
+  virtual ~AliUPCMuonTrack();
+
+  void Clear(Option_t * /*option*/ ="");
 
   //Setters
   void SetPtEtaPhi(Double_t pt, Double_t eta, Double_t phi) {fPt=pt; fEta=eta; fPhi=phi;}
@@ -27,6 +29,9 @@ public:
   void SetChi2perNDF(Double_t chi2) {fChi2perNDF=chi2;}
   void SetDCA(Double_t dca) {fDca=dca;}
   void SetPxDCA(Bool_t pdca) {fPdca=pdca;}
+
+  Int_t MakeArrayInt(Int_t size);
+  Int_t MakeArrayD(Int_t size);
 
   //Getters
   //virtual void GetPtEtaPhi(Double_t pt, Double_t eta, Double_t phi) const {pt=fPt; eta=fEta; phi=fPhi;}
@@ -43,6 +48,9 @@ public:
   Double_t GetDCA(void) const { return fDca; }
   Bool_t GetPxDCA(void) const { return fPdca; }
 
+  TArrayI *GetArrayInt(void) const { return fArrayInt; }
+  TArrayD *GetArrayD(void) const { return fArrayD; }
+
 protected:
   AliUPCMuonTrack(const AliUPCMuonTrack &o);
   AliUPCMuonTrack &operator=(const AliUPCMuonTrack &o);
@@ -56,10 +64,12 @@ protected:
   Double_t fChi2perNDF; // chi2/NDF of momentum fit
   Double_t fDca; // Distance of Closest Approach in the vertex plane
   Bool_t fPdca; // pDCA by AliMuonTrackCuts
+  TArrayI *fArrayInt; // extension of the muon track for other integer parameters
+  TArrayD *fArrayD; // extension of the muon track for other double parameters
 
   const Double_t fkMuonMass; // mass of muon
 
-  ClassDef(AliUPCMuonTrack,1)
+  ClassDef(AliUPCMuonTrack,1);
 };
 
 #endif

@@ -39,7 +39,7 @@ public:
   
   
 	static  enum LMMECutSet {
-    kPbPb2011_pidITSTPCTOFif_trkSPDfirst_TESTING,
+    kPbPb2011_pidITSTPCTOFif_trkSPDfirst_TESTING,           // test to run Effi task on data, can be removed ...
     kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_7_V0excl,          // syst 8
     kPbPb2011_pidITSTPCTOFif_trkSPDfirst_7_V0excl,          // syst 7
     kPbPb2011_V0select_2_looseNoTOF,
@@ -85,18 +85,12 @@ public:
 		kCUTSETMAX
 	};
   
-	static  enum enCutType {
-	  kInclude = 0,
-    kExclude = 1,
-		kCUTTYPEMAX
-	};
-  
 	//char* LMEECutNames[kCUTSETMAX] = { "PbPb2011TPCandTOF","PbPb2011TPCorTOF"};
   
   
 	LMEECutLib();
   
-	AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
+	AliDielectronEventCuts*     GetEventCuts(Int_t cutSet, Bool_t hasMC=kFALSE);
 	AliAnalysisCuts*            GetCentralityCuts();
 	AliDielectronTrackRotator*  GetTrackRotator();
 	AliDielectronMixingHandler* GetMixingHandler();
@@ -110,12 +104,15 @@ public:
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet=-1, Int_t doExclusion=0);
 	AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet=-1);
 	AliAnalysisCuts* GetESDTrackCutsAna();
+	AliAnalysisCuts* GetMCTrackCuts();
   
   void SetITSSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
   void SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim);
   void SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim);
   void SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim);
   
+  void AddMCSignals(AliDielectron *die, Int_t cutDefinition);
+  void SetFillPureMC(Bool_t b) { fFillPureMC=b; }
   
   Int_t selectedCentrality;
   Int_t selectedPIDAna;
@@ -125,10 +122,19 @@ public:
   Int_t selectedPairCutsPre;
   Int_t selectedPairCutsAna;
   
+private:
+  Bool_t fFillPureMC;
+  
+  static  enum enCutType {
+	  kInclude = 0,
+    kExclude = 1,
+		kCUTTYPEMAX
+	};
+  
 };
 
 
-//______________________________________________________________________________________
+//_______________________________________________________________________________________________
 LMEECutLib::LMEECutLib() :
 selectedCentrality(-1),
 selectedPIDAna(-1),
@@ -136,13 +142,14 @@ selectedPIDPre(-1),
 selectedTrackAna(-1),
 selectedTrackPre(-1),
 selectedPairCutsPre(LMEECutLib::kPairCut_OFF),
-selectedPairCutsAna(LMEECutLib::kPairCut_OFF)
+selectedPairCutsAna(LMEECutLib::kPairCut_OFF),
+fFillPureMC(kFALSE)
 {
   // Constructor
 }
 
 
-//______________________________________________________________________________________
+//_______________________________________________________________________________________________
 void LMEECutLib::SetITSSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim) {
   //
   // eta correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
@@ -161,10 +168,10 @@ void LMEECutLib::SetITSSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, In
   
   if (corrZdim==AliDielectronVarManager::kRefMultTPConly)
   {
-    fCntrdCorr = new TF2("fCntrdCorr", "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={0.}; //-0.5 for tests
-    Double_t parWdth[] ={1.};
+    fCntrdCorr = new TF2("fCntrdCorr", "[0]+0.*[1]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    fWdthCorr  = new TF2("fWdthCorr",  "[0]+0.*[1]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    Double_t parCntrd[]={0.,0.}; //-0.5 for tests
+    Double_t parWdth[] ={1.,0.};
     fCntrdCorr->SetParameters(parCntrd);
     fWdthCorr ->SetParameters(parWdth);
   }
@@ -179,7 +186,7 @@ void LMEECutLib::SetITSSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, In
 //  printf(" ITS PID eta correction loaded!\n");
 }
 
-//______________________________________________________________________________________
+//_______________________________________________________________________________________________
 void LMEECutLib::SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim) {
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
@@ -233,7 +240,7 @@ void LMEECutLib::SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, In
 }
 
 
-//______________________________________________________________________________________
+//_______________________________________________________________________________________________
 void LMEECutLib::SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim) {
   //
   // MC post-correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
@@ -248,10 +255,10 @@ void LMEECutLib::SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *t
   
   if (corrZdim==AliDielectronVarManager::kNacc)
   {
-    fCntrdCorr = new TF2("fCntrdCorr", "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={0.}; //-0.5 for tests
-    Double_t parWdth[] ={1.0};
+    fCntrdCorr = new TF2("fCntrdCorr", "[0]+0.*[1]*x*y", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    fWdthCorr  = new TF2("fWdthCorr",  "[0]+0.*[1]*x*y", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    Double_t parCntrd[]={0.,0.}; //-0.5 for tests
+    Double_t parWdth[] ={1.,0.};
     fCntrdCorr->SetParameters(parCntrd);
     fWdthCorr ->SetParameters(parWdth);
   }
@@ -266,7 +273,7 @@ void LMEECutLib::SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *t
 //  printf(" MC ITS PID eta correction loaded!\n");
 }
   
-//______________________________________________________________________________________
+//_______________________________________________________________________________________________
 void LMEECutLib::SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim) {
   //
   // MC post-correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
@@ -303,19 +310,23 @@ void LMEECutLib::SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *t
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 // the selection is hardcoded in the AddTask, currently to 'kPbPb2011_TPCTOF_Semi1'
-//______________________________________________________________________________________
-AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
+//_______________________________________________________________________________________________
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet, Bool_t hasMC) {
   AliDielectronEventCuts* eventCuts = 0x0;
   switch (cutSet) {
     case kPbPb2011_TPCTOF_Semi1:
       //Basic Event Cuts for pp and Pb-Pb, additional cuts may be in the AddTask
       eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-      eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
-      //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
-      //           eventCuts->SetCentralityRange(0.0,80.0);
       eventCuts->SetRequireVertex();
       eventCuts->SetMinVtxContributors(1);
       eventCuts->SetVertexZ(-10.,10.);
+      if (hasMC) {
+        //eventCuts->SetVertexType(.....);
+        eventCuts->SetCentralityRange(0.0,50.0);
+      } else {
+        eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
+        //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // kVtxAny // AOD
+      }
       break;
     default: cout << "No Event Cut defined" << endl;
   }
@@ -324,6 +335,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
 
 
 //Selection of relatively 'flat' centralities is a bit difficult...
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetCentralityCuts() {
   AliAnalysisCuts* centCuts = 0x0;
   
@@ -381,6 +393,7 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts() {
 
 
 //Basic track rotator settings from J/Psi, more investigation needed
+//_______________________________________________________________________________________________
 AliDielectronTrackRotator* LMEECutLib::GetTrackRotator() {
   AliDielectronTrackRotator* trackRotator = 0x0;
   Int_t cutSet=-1;
@@ -397,6 +410,7 @@ AliDielectronTrackRotator* LMEECutLib::GetTrackRotator() {
 }
 
 
+//_______________________________________________________________________________________________
 AliDielectronMixingHandler* LMEECutLib::GetMixingHandler() {
   AliDielectronMixingHandler* mixingHandler = 0x0;
   Int_t cutSet=1;
@@ -420,6 +434,7 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler() {
 
 //Pair Cuts for Analysis step - take care of logic - inverted compared to other PairCuts!!
 // cuts = SELECTION!!!
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t togglePC)  {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* pairCuts=0x0;
@@ -478,6 +493,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t togglePC)  {
 
 //Pair Cuts for PREFILTER step
 // cuts = REJECTION!!!
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetPairCutsPre()  {  
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* pairCuts=0x0;
@@ -567,6 +583,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre()  {
 
 
 
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetPIDCutsAna() {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* pidCuts=0x0;
@@ -806,6 +823,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna() {
 //**IMPORTANT**: For AODs, select FilterBit
 //the method is ignored for ESDs
 
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet, Int_t doExclusion) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* trackCuts=0x0;
@@ -1110,6 +1128,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet, Int_t doExclusion) {
 
 
 //Relaxed PID cuts for additional rejectin step, do not use blindly
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetPIDCutsPre() {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* pidCuts=0x0;
@@ -1139,6 +1158,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsPre() {
       // pt range:
       AliDielectronVarCuts *ptRangePre1 = new AliDielectronVarCuts("ptRangePre1","ptRangePre1");
       ptRangePre1->AddCut(AliDielectronVarManager::kPt, .2, 3.5); // 0.2 is realistic. turnon at ~180MeV
+      //ptRangePre1->AddCut(AliDielectronVarManager::kPtMC, .2, 3.5); // 0.2 is realistic. turnon at ~180MeV
+      
       //AliDielectronVarCuts *ptRangePre2 = new AliDielectronVarCuts("ptRangePre2","ptRangePre2");
       //ptRangePre2->AddCut(AliDielectronVarManager::kPt, .4, 3.5);
       //AliDielectronVarCuts *ptRangePre3 = new AliDielectronVarCuts("ptRangePre3","ptRangePre3");
@@ -1199,6 +1220,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsPre() {
 
 //Possibly different cut sets for Prefilter step
 //Not used at the moment
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetTrackCutsPre(Int_t cutSet) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* trackCuts=0x0;
@@ -1255,6 +1277,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsPre(Int_t cutSet) {
 //*******************************************************************************
 
 //WHEN RUNNING ON ESDs: LOAD Default Cuts for AODs
+//_______________________________________________________________________________________________
 AliAnalysisCuts* LMEECutLib::GetESDTrackCutsAna() {
   //cout << " >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> " << endl;
   cout << " >>>>>>>>>>>>>>>>>>>>>>  GetESDTrackCutsAna()  >>>>>>>>>>>>>>>>>>>>>> " << endl;
@@ -1289,4 +1312,168 @@ AliAnalysisCuts* LMEECutLib::GetESDTrackCutsAna() {
       //default: cout << "No ESD Track Cut defined " << endl;
   }
   return esdTrackCutsH;
-} 
+}
+
+
+
+//_______________________________________________________________________________________________
+AliAnalysisCuts* LMEECutLib::GetMCTrackCuts() {
+  //cout << " >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  cout << " >>>>>>>>>>>>>>>>>>>>>>  GetMCTrackCuts()  >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  //cout << " >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  AliAnalysisCuts* trackCuts=0x0;
+  switch (selectedPIDAna) {
+    default:
+      AliDielectronVarCuts* trackCutsMC =new AliDielectronVarCuts("trackCutsMC","trackCutsMC");
+      trackCutsMC->SetCutOnMCtruth(kTRUE);
+      trackCutsMC->AddCut(AliDielectronVarManager::kPdgCode      , -11.01,  11.01);
+      //trackCutsMC->AddCut(AliDielectronVarManager::kPdgCode      , -10.01,  10.01, kTRUE); //excludeRange
+      //trackCutsMC->AddCut(AliDielectronVarManager::kPdgCodeMother, 111);
+      trackCuts = trackCutsMC;
+      break;
+  }
+  return trackCuts;
+}
+
+
+
+//_______________________________________________________________________________________________
+void LMEECutLib::AddMCSignals(TNamed* task, Int_t cutDefinition){
+  //Do we have an MC handler?
+  //if (!die->GetHasMC()) return;
+  cout << " >>>>>>>>>>>>>>>>>>>>>>  AddMCSignals()  >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  
+  AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
+  eleFinalState->SetFillPureMCStep(fFillPureMC);
+  eleFinalState->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState); // for leg electrons: kFinalState = kPrimary
+  //mother
+  eleFinalState->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary); // has no effect for this leg setting (kFinalState). Still includes injected J/psi.
+  
+  AliDielectronSignalMC* eleDirect = new AliDielectronSignalMC("eleDirect","eleDirect");
+  eleDirect->SetFillPureMCStep(fFillPureMC);
+  eleDirect->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleDirect->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleDirect->SetLegSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect); // for leg electrons: kDirect is empty
+  
+  AliDielectronSignalMC* eleNoCocktail = new AliDielectronSignalMC("eleNoCocktail","eleNoCocktail");
+  eleNoCocktail->SetFillPureMCStep(fFillPureMC);
+  eleNoCocktail->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleNoCocktail->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleNoCocktail->SetLegSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail); // for leg electrons: kNoCocktail = kFinalState + kSecondary
+  
+  AliDielectronSignalMC* eleSecondary = new AliDielectronSignalMC("eleSecondary","eleSecondary");
+  eleSecondary->SetFillPureMCStep(fFillPureMC);
+  eleSecondary->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleSecondary->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleSecondary->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+
+  AliDielectronSignalMC* eleSecondaryWeak = new AliDielectronSignalMC("eleSecondaryWeak","eleSecondaryWeak");
+  eleSecondaryWeak->SetFillPureMCStep(fFillPureMC);
+  eleSecondaryWeak->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleSecondaryWeak->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleSecondaryWeak->SetLegSources(AliDielectronSignalMC::kSecondaryFromWeakDecay, AliDielectronSignalMC::kSecondaryFromWeakDecay); // for leg electrons: kSecondaryFromWeakDecay is empty
+  
+  
+  AliDielectronSignalMC* eleFromBGEvent = new AliDielectronSignalMC("eleFromBGEvent","eleFromBGEvent");
+  eleFromBGEvent->SetFillPureMCStep(fFillPureMC);
+  eleFromBGEvent->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleFromBGEvent->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFromBGEvent->SetLegSources(AliDielectronSignalMC::kFromBGEvent, AliDielectronSignalMC::kFromBGEvent);
+
+  AliDielectronSignalMC* eleFinalStateFromBGEvent = new AliDielectronSignalMC("eleFinalStateFromBGEvent","eleFinalStateFromBGEvent");
+  eleFinalStateFromBGEvent->SetFillPureMCStep(fFillPureMC);
+  eleFinalStateFromBGEvent->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleFinalStateFromBGEvent->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromBGEvent->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kFinalStateFromBGEvent);
+  
+  AliDielectronSignalMC* eleFinalStateFromBGEvent_mDir = new AliDielectronSignalMC("eleFinalStateFromBGEvent_mDir","eleFinalStateFromBGEvent_mDir");
+  eleFinalStateFromBGEvent_mDir->SetFillPureMCStep(fFillPureMC);
+  eleFinalStateFromBGEvent_mDir->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleFinalStateFromBGEvent_mDir->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromBGEvent_mDir->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kFinalStateFromBGEvent);
+  //mother
+  eleFinalStateFromBGEvent_mDir->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);
+  
+  
+  // In Pythia the mother label of primary hadrons gives the (positive) label of the mother quark,
+  //  so mother source kNoCocktail should correspond to non-injected signals.
+  // In Hijing however the mother label of primary hadrons is negative (they are not traced back to the quarks),
+  //  so mother source kNoCocktail gives hadrons which have a mother, i.e. electrons whith have a grandmother.
+  AliDielectronSignalMC* eleWithGrandmother = new AliDielectronSignalMC("eleWithGrandmother","eleWithGrandmother");
+  eleWithGrandmother->SetFillPureMCStep(fFillPureMC);
+  eleWithGrandmother->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+  eleWithGrandmother->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleWithGrandmother->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState); // for leg electrons: kFinalState = kPrimary, also in case of 'SetMotherSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail)'.
+  //mother
+  eleWithGrandmother->SetMotherSources(AliDielectronSignalMC::kNoCocktail, AliDielectronSignalMC::kNoCocktail); // excludes JPsi, includes conversions.
+  eleWithGrandmother->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons
+  
+  
+  // stuff:
+  //mother
+  //  ele->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  //  ele->SetMotherPDGs(902,902,kTRUE,kTRUE); // exclude open charm,beauty hadrons
+  //  ele->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+  //  ele->SetGrandMotherPDGs(902,902,kTRUE,kTRUE); // exclude open charm,beauty hadrons
+  //  ele->SetGrandMotherPDGs(500,500,kTRUE,kTRUE); // exclude non-prompt jpsi eletrons
+  
+  
+  AliDielectronSignalMC* gammaConversion = new AliDielectronSignalMC("gammaConversion","gammaConversion");
+  gammaConversion->SetFillPureMCStep(fFillPureMC);
+  gammaConversion->SetLegPDGs(11,-11);
+  gammaConversion->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  gammaConversion->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  //mother
+  gammaConversion->SetMotherPDGs(22,22);
+  gammaConversion->SetMothersRelation(AliDielectronSignalMC::kSame);
+  
+  // add direct di lepton resonances
+  /*
+   AliDielectronSignalMC* directP[7];
+   TParticlePDG *ap;
+   Int_t pdg[] = {111, 113, 221, 223, 331, 333, 443};
+   for(Int_t i=0; i<7; i++) {
+   ap = TDatabasePDG::Instance()->GetParticle(pdg[i]);
+   directP[i] = new AliDielectronSignalMC(Form("direct%s",ap->GetName()),Form("direct%s",ap->GetName()));
+   directP[i]->SetLegPDGs(11,-11);
+   directP[i]->SetMotherPDGs(pdg[i],pdg[i]);
+   directP[i]->SetMothersRelation(AliDielectronSignalMC::kSame);
+   directP[i]->SetFillPureMCStep(kTRUE);
+   directP[i]->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+   directP[i]->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);
+   // directP[i]->SetCheckBothChargesLegs(kTRUE,kTRUE);
+   // directP[i]->SetCheckBothChargesMothers(kTRUE,kTRUE);
+   }
+   */
+  
+  
+  if (task->IsA()==AliAnalysisTaskElectronEfficiency::Class()) {
+    // selection. only the first signal will be used.
+    (static_cast<AliAnalysisTaskElectronEfficiency*>task)->AddSignalMC(eleFinalStateFromBGEvent);
+  }
+  else if (task->IsA()==AliDielectron::Class()) {
+    if (! (static_cast<AliDielectron*>task)->GetHasMC()) return;
+    // selection. multiple signals are possible.
+    (static_cast<AliDielectron*>task)->AddSignalMC(eleFromBGEvent);
+    (static_cast<AliDielectron*>task)->AddSignalMC(eleFinalStateFromBGEvent);
+    (static_cast<AliDielectron*>task)->AddSignalMC(eleFinalStateFromBGEvent_mDir);
+    (static_cast<AliDielectron*>task)->AddSignalMC(eleWithGrandmother);
+    //die->AddSignalMC(elePrimary);
+    //die->AddSignalMC(eleFinalState);    // for leg electrons: kFinalState = kPrimary
+    //die->AddSignalMC(eleDirect);        // for leg electrons: kDirect is empty
+    //die->AddSignalMC(eleNoCocktail);    // for leg electrons: kNoCocktail = kFinalState + kSecondary
+    //die->AddSignalMC(eleSecondary);     // for leg electrons: kSecondary = number of 'gammaConversion'
+    //die->AddSignalMC(eleSecondaryWeak); // for leg electrons: kSecondaryFromWeakDecay is empty
+    //die->AddSignalMC(gammaConversion); //
+    //for(Int_t i=0; i<7; i++) die->AddSignalMC(directP[i]);
+    
+    for (Int_t i=0; i<(static_cast<AliDielectron*>task)->GetMCSignals()->GetEntriesFast(); ++i) {
+      cout << "added MCsignal: " << (static_cast<AliDielectron*>task)->GetMCSignals()->At(i)->GetName() << endl;
+    }
+  }
+  
+  
+  
+}

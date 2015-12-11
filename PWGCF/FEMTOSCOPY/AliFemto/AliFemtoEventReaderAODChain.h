@@ -45,7 +45,9 @@ class AliFemtoEventReaderAODChain : public AliFemtoEventReaderAOD
  private:
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderAODChain, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderAODChain, 1);
+  /// \endcond
 #endif
 
     };

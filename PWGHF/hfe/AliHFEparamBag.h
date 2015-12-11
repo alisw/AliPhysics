@@ -23,9 +23,13 @@
 class TCollection;
 
 class AliHFEparamBag : public TObject{ 
+
+protected:
+    TString fName;  // Variable Name
+
 public:
     AliHFEparamBag();
-    AliHFEparamBag(const Char_t *name);
+    AliHFEparamBag(const char *name);
     AliHFEparamBag(const AliHFEparamBag &ref);
     AliHFEparamBag &operator=(const AliHFEparamBag &ref);
     ~AliHFEparamBag();
@@ -33,7 +37,7 @@ public:
     Bool_t useMC;
     Bool_t isAOD;
     Bool_t isBeauty;
-    TString *appendix;
+    TString appendix;
     Int_t TPCcl;
     Int_t TPCclPID; 
     Int_t ITScl;
@@ -79,10 +83,8 @@ public:
     const char *GetName() const;
     virtual Long64_t Merge(TCollection *coll);
 
-    protected:
-    TString fName;  // Variable Name
 
 
-    ClassDef(AliHFEparamBag, 1)
+    ClassDef(AliHFEparamBag, 2)
 };
 #endif

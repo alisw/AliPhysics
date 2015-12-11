@@ -1,13 +1,11 @@
 #ifndef ALIHADCORRTASK_H
 #define ALIHADCORRTASK_H
 
-// $Id$
-
 class TClonesArray;
 class TList;
 class TH1;
 class TH2;
-class AliEmcalParticle;
+class AliVCluster;
 class TString;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -30,9 +28,9 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   void                   SetDoExact(Bool_t d)                    { fDoExact        = d    ; }
 
  protected:
-  Double_t               ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Double_t hadCorr);
-  Double_t               ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Double_t hadCorr);
-  void                   DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches);
+  Double_t               ApplyHadCorrOneTrack(Int_t icluster, Double_t hadCorr);
+  Double_t               ApplyHadCorrAllTracks(Int_t icluster, Double_t hadCorr);
+  void                   DoMatchedTracksLoop(Int_t icluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches);
   void                   DoTrackLoop();
   Double_t               GetEtaSigma(Int_t pbin)                   const;
   UInt_t                 GetMomBin(Double_t pt)                    const;

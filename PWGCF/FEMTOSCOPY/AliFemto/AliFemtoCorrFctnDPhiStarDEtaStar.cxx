@@ -9,7 +9,9 @@
 #include <TMath.h>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoCorrFctnDPhiStarDEtaStar)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnDPhiStarDEtaStar);
+  /// \endcond
 #endif
 
 //____________________________

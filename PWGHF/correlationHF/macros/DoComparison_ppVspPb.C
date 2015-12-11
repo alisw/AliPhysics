@@ -25,6 +25,8 @@ Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.1;
 Double_t topMarginCanvas=0.1;
+Color_t colpp=kBlack;
+Color_t colpPb=kRed;
 
 void SetIsReflected(Bool_t isrefl){
   isReflected=isrefl;
@@ -677,9 +679,9 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
     histo[k] = GetHistoAndSyst(k,"fhDaverage","AverageSystematicUncertainty",err[k],ltscale[k]); 
              
     if(k<3) { 
-      histo[k]->SetMarkerColor(4); 
+      histo[k]->SetMarkerColor(colpPb); 
       histo[k]->SetMarkerStyle(21); 
-      histo[k]->SetLineColor(4); 
+      histo[k]->SetLineColor(colpPb); 
 
 	 
     } // get pp
@@ -687,8 +689,8 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
     // if(k>=3) { 
     if(k>3) { //removed here case k=3 which corresponds to pPb 3-5, removed in the analysis
       //histo[k] = GetHisto(k,"cDraw","fhDaverage"); 
-      histo[k]->SetMarkerColor(2); 
-      histo[k]->SetLineColor(2); 
+      histo[k]->SetMarkerColor(colpp); 
+      histo[k]->SetLineColor(colpp); 
       histo[k]->SetMarkerStyle(20); 
     } // get p-pPb
     // 

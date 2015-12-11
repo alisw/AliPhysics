@@ -49,7 +49,9 @@ private:
   int    fUseLCMS;             // 0 - Use PRF, 1 - Use LCMS
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctn3DLCMSSym, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctn3DLCMSSym, 1);
+  /// \endcond
 #endif
 };
 

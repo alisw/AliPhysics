@@ -8,7 +8,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoV0PairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoV0PairCut);
+  /// \endcond
 #endif
 
 //__________________

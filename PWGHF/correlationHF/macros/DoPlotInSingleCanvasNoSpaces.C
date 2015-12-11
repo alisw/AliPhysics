@@ -14,8 +14,9 @@ Double_t LimitBottom =0.15; //limit from bottom margin (15% of size)
 Double_t LimitRight =0.05; //limit from right margin (5% of size)
 Double_t LimitTop =0.05; //limit from top margin (5% of size)*/
 TString inputdirectory = "";
-
-
+Color_t ppcolor=kBlack;
+Color_t pPbcolor=kRed;
+Int_t markerstyle[2]={20,21};
 //TString inputdirectory = "~/Analysis/HFCorrelations/testScript/ReflectedPlots/StdRebin/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus";
 //________________________________________________
 void SetInputDirectory(TString strdir){
@@ -496,3 +497,309 @@ void PlotComparisonspp_pPb1(){
     
     Convert3x2Matrix(c,kTRUE);
 }*/
+
+
+void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015Ago26Draft2/ReflectedPlots/StdRebin/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pp.root",TString strFilePPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015Ago26Draft2/ReflectedPlots/StdRebin/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pPb.root"){
+
+  gStyle->SetOptStat(0000);
+  TFile *fpp=(TFile*)TFile::Open(strFilePP.Data(),"READ");
+  TCanvas *cPP=(TCanvas*)fpp->Get("c_ouput");
+  //  cPP->Draw();
+  TFile *fpPb=(TFile*)TFile::Open(strFilePPb.Data(),"READ");
+  TCanvas *cpPb=(TCanvas*)fpPb->Get("c_ouput");
+  //  cpPb->Draw();
+  Double_t rangesY[3]={14.,11.,6.8};
+  TPad *pd;
+  TH1D *h;
+
+  /*TPad *pd=(TPad*)cpPb->GetPad(1);
+  TH1D *h=(TH1D*)pd->FindObject("hDraw");
+  rangesY[0]=h->GetMaximum();
+
+  pd=(TPad*)cpPb->GetPad(3);
+  h=(TH1D*)pd->FindObject("hDraw");
+  rangesY[1]=h->GetMaximum();
+
+  pd=(TPad*)cpPb->GetPad(5);
+  h=(TH1D*)pd->FindObject("hDraw");
+  rangesY[2]=h->GetMaximum();
+  */
+  
+  TH1D **hpp=new TH1D*[9];
+  TH1D **hpPb=new TH1D*[6];
+  TH1D **hDraw=new TH1D*[9];
+
+  TGraphAsymmErrors **grpp=new TGraphAsymmErrors*[9];
+  TGraphAsymmErrors **grpPb=new TGraphAsymmErrors*[6];
+  TLatex **tlscalepPb=new TLatex*[6];
+  TLatex **tlscalepp=new TLatex*[9];
+
+  TLatex **tlptD=new TLatex*[9];
+  TLatex **tlptAssoc=new TLatex*[9];
+
+  Int_t padorderingPP[9];
+
+  for(Int_t j=1;j<=9;j++){
+    TPad *pd=(TPad*)cPP->GetPad(j);
+    TList *lpd=(TList*)pd->GetListOfPrimitives();
+    Int_t binD,binass;
+    for(Int_t il=0;il<lpd->GetEntries();il++){
+      TObject* obj=lpd->At(il);
+      TString strObjName=obj->ClassName();
+      if(strObjName.Contains("TH1D")){	
+	TString strhName=obj->GetName();
+	if(strhName.EqualTo("hDraw")){
+	  hDraw[j-1]=(TH1D*)((TH1D*)obj)->Clone();;
+	  hDraw[j-1]->GetYaxis()->CenterTitle();
+	  hDraw[j-1]->GetXaxis()->CenterTitle();
+	  hDraw[j-1]->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
+	}
+	else{
+	  hpp[j-1]=(TH1D*)((TH1D*)obj)->Clone();
+	  hpp[j-1]->SetName("fhDaveragepp");
+	  hpp[j-1]->SetLineColor(ppcolor);
+	  hpp[j-1]->SetMarkerColor(ppcolor);
+	  hpp[j-1]->SetMarkerStyle(markerstyle[0]);
+	}
+      }
+      else if(strObjName.Contains("TGraphAsymmErrors")){
+	grpp[j-1]=((TGraphAsymmErrors*))((TGraphAsymmErrors*)obj)->Clone();;
+	grpp[j-1]->SetName("grDaveragepp");
+	grpp[j-1]->SetLineColor(ppcolor);
+	grpp[j-1]->SetMarkerColor(ppcolor);
+	grpp[j-1]->SetMarkerStyle(markerstyle[0]);
+      }
+      else if(strObjName.Contains("TLatex")){
+	//	Printf("found latex :D ");
+	TLatex *tl=(TLatex*)obj;// HEREEEEE 
+	TString str=tl->GetTitle();
+	if(str.Contains("<5")){
+	  binD=0;
+	  tlptD[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  TString strlatTitle=tlptD[j-1]->GetTitle();
+	  strlatTitle.ReplaceAll("3.0","3");
+	  strlatTitle.ReplaceAll("5.0","5");
+	  tlptD[j-1]->SetTitle(strlatTitle.Data());
+	}
+	else if(str.Contains("<8")){
+	  tlptD[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  TString strlatTitle=tlptD[j-1]->GetTitle();
+	  strlatTitle.ReplaceAll("5.0","5");
+	  strlatTitle.ReplaceAll("8.0","8");
+	  tlptD[j-1]->SetTitle(strlatTitle.Data());
+	  binD=1;
+	}
+	else if(str.Contains("<16")){
+	  tlptD[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  TString strlatTitle=tlptD[j-1]->GetTitle();
+	  strlatTitle.ReplaceAll("8.0","8");
+	  strlatTitle.ReplaceAll("16.0","16");
+	  tlptD[j-1]->SetTitle(strlatTitle.Data());
+	  binD=2;
+	}
+	if(str.Contains(">0.3")){
+	  tlptAssoc[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  binass=0;
+	}
+	else if(str.Contains("<1")){
+	  tlptAssoc[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  binass=1;
+	}
+	else if(str.Contains(">1")){
+	  tlptAssoc[j-1]=(TLatex*)((TLatex*)tl)->Clone();;
+	  binass=2;
+	}
+      }
+    }
+    for(Int_t il=0;il<lpd->GetEntries();il++){
+      TObject* obj=lpd->At(il);
+      TString strObjName=obj->ClassName();
+      if(strObjName.Contains("TLatex")){
+	TLatex *tl=(TLatex*)obj;// HEREEEEE 
+	TString str=tl->GetTitle();
+	if(str.Contains("scale")){
+	  str.ReplaceAll("uncertainty","uncertainty (pp)");
+	  tl->SetTitle(str.Data());
+	  tl->SetY(0.68);//y+0.05);
+	  tl->SetX(0.23);
+	  tlscalepp[binass+3*(binD)]=(TLatex*)((TLatex*)tl)->Clone();
+	}
+	else if(binD!=0){
+	  
+	  Double_t y=tl->GetY();
+	  tl->SetY(y+0.05);	  
+	}
+	
+      }
+    }
+    
+    hDraw[j-1]->GetYaxis()->SetRangeUser(0,rangesY[binass]);
+    Printf("Setting pp index: %d,%d, to %d",binass,binD,j);
+    padorderingPP[binass+3*binD]=j;
+    
+  }
+
+
+
+  for(Int_t j=1;j<=6;j++){
+    TPad *pd=(TPad*)cpPb->GetPad(j);
+    TList *lpd=(TList*)pd->GetListOfPrimitives();
+    Int_t binass=-1;
+    Int_t binD=-1;
+    TH1D *htemp;
+    TGraphAsymmErrors *grtemp;
+    TLatex *tltemp;
+    for(Int_t il=0;il<lpd->GetEntries();il++){
+      TObject* obj=lpd->At(il);
+      TString strObjName=obj->ClassName();
+
+      if(strObjName.Contains("TH1D")){	
+	TString strhName=obj->GetName();
+	if(strhName.EqualTo("hDraw")){
+	  continue;
+	  //	  TH1D *h=(TH1D*)obj;
+	  //	  h->GetYaxis()->SetRangeUser(0,rangesY[(j-1)/3]);
+	}
+	else{
+	  htemp=(TH1D*)obj;
+	  htemp->SetName("fhDaveragepPb");
+	  htemp->SetLineColor(pPbcolor);
+	  htemp->SetMarkerColor(pPbcolor);
+	  htemp->SetMarkerStyle(markerstyle[1]);
+	}
+      }
+      else if(strObjName.Contains("TGraphAsymmErrors")){
+	grtemp=(TGraphAsymmErrors*)obj;
+	grtemp->SetName("grDaveragepPb");
+	grtemp->SetLineColor(pPbcolor);
+	grtemp->SetMarkerColor(pPbcolor);
+	grtemp->SetMarkerStyle(markerstyle[1]);
+      }
+      else if(strObjName.Contains("TLatex")){
+	//	Printf("found latex :D ");
+	TLatex *tl=(TLatex*)obj;// HEREEEEE 
+	TString str=tl->GetTitle();
+	if(str.Contains("<5")){
+	  Printf("SHOULD NOT HAPPEN;");
+	  return;
+	}
+	else if(str.Contains("<8")){
+	  binD=1;
+	}
+	else if(str.Contains("<16")){
+	  binD=2;
+	}
+	if(str.Contains(">0.3")){
+	  binass=0;
+	}
+	else if(str.Contains("<1")){
+	  binass=1;
+	}
+	else if(str.Contains(">1")){
+	  binass=2;
+	}
+	else if(str.Contains("scale")){
+	  Double_t y=tl->GetY();
+	  str.ReplaceAll("uncertainty","uncertainty (p-Pb)");
+	  tl->SetTitle(str.Data());
+	  tl->SetY(0.58);
+	  tl->SetX(0.23);
+	  tltemp=tl;
+	}
+      }
+    }
+    hpPb[3*(binD-1)+binass]=htemp;
+    grpPb[3*(binD-1)+binass]=grtemp;    
+    tlscalepPb[3*(binD-1)+binass]=tltemp;
+  }
+
+  Int_t nskip=0;  
+  cPP->SetCanvasSize(900,900);
+  cPP->Draw();
+
+  //  TCanvas *cPPcp=(TCanvas*)cPP->Clone("cPPandPPb");
+  for(Int_t jD=0;jD<=2;jD++){
+    for(Int_t jass=0;jass<=2;jass++){
+          
+      cPP->cd(padorderingPP[jD*3+jass]);
+      Printf("Adding histo ptD=%d,ptAss=%d of p-Pb to canvas %d",jD,jass,padorderingPP[jass+3*jD]);
+      hDraw[padorderingPP[jD*3+jass]-1]->Draw();
+      Printf("hdraw added");
+      hpp[padorderingPP[jD*3+jass]-1]->Draw("same");
+      Printf("hpp added");
+      grpp[padorderingPP[jD*3+jass]-1]->Draw("p2");
+      Printf("grpp added");
+      if(jD==0){
+	tlscalepp[padorderingPP[jD*3+jass]-1]->SetX(0.32);
+	if(jass==0){
+	  tlscalepp[padorderingPP[jD*3+jass]-1]->SetY(0.25);
+	  TLatex *tlALICE=new TLatex(0.8,0.84,"ALICE");
+	  tlALICE->SetNDC();
+	  tlALICE->SetTextFont(43);
+	  tlALICE->SetTextSize(24);
+	  tlALICE->Draw();
+	  TLatex *tlAvD=new TLatex(0.27,0.84,"Average D^{0}, D^{+}, D^{*+}");
+	  tlAvD->SetNDC();
+	  tlAvD->SetTextFont(43);
+	  tlAvD->SetTextSize(22);
+	  tlAvD->Draw();
+	  TLegend *leg=new TLegend(0.255,0.56,0.4,0.8);
+	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}}=7 TeV,|#it{y}^{D}_{cms}|<0.5","p");
+	  leg->AddEntry(hpPb[0],"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV,","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
+	  leg->AddEntry((TObject*)0,"-0.96<#it{y}^{D}_{cms}<0.04","");
+	  leg->SetFillStyle(0);
+	  leg->SetTextFont(43);
+	  leg->SetTextSize(20);
+	  leg->Draw();
+	  TLatex *tlDEta=new TLatex(0.27,0.51,"|#Delta#eta|<1");//(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin(),0.34,"|#Delta#eta|<1");
+	  tlDEta->SetNDC();
+	  tlDEta->SetTextAlign(12);
+	  tlDEta->SetTextFont(43);
+	  tlDEta->SetTextSize(19);
+	  tlDEta->Draw();
+	}
+      }
+      //      tlptD[padorderingPP[jD*3+jass]-1]->SetTextFont(63);
+      tlptD[padorderingPP[jD*3+jass]-1]->SetTextFont(63);// do not why with 43 it appears in bold
+      tlptD[padorderingPP[jD*3+jass]-1]->SetTextSize(19);
+      tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.86);      
+      tlptD[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin());   
+      //->SetX(0.5+gPad->GetLeftMargin());      
+      tlptD[padorderingPP[jD*3+jass]-1]->SetTextAlign(22);
+      tlptD[padorderingPP[jD*3+jass]-1]->Draw();
+
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextFont(63);
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextSize(19);
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetNDC();
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.78);
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin());   
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextAlign(22);   
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->Draw();
+      if(jD==0&&jass==0){
+	//	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.51);
+	//	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.43);
+	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.34);
+	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.43);
+	tlscalepp[padorderingPP[jD*3+jass]-1]->SetY(0.12);
+      }
+      tlscalepp[padorderingPP[jD*3+jass]-1]->Draw();
+      tlscalepp[padorderingPP[jD*3+jass]-1]->SetTextFont(63);
+      tlscalepp[padorderingPP[jD*3+jass]-1]->SetTextSize(19);
+      if(jD>=1){
+	Printf("Adding histo %p",hpPb[jass+(jD-1)*3]);
+	hpPb[jass+(jD-1)*3]->Draw("same");
+	grpPb[jass+(jD-1)*3]->Draw("p2");
+	tlscalepPb[jass+(jD-1)*3]->SetTextFont(63);
+	tlscalepPb[jass+(jD-1)*3]->SetTextSize(19);
+	tlscalepPb[jass+(jD-1)*3]->Draw();
+
+      }
+    }
+  }
+  cPP->Update();
+  //  cPPcp->Draw();
+  cPP->SaveAs("CanvasNoSpaces_WeightedAverageDzeroDstarDplus_ppAndpPb.root");
+  cPP->SaveAs("CanvasNoSpaces_WeightedAverageDzeroDstarDplus_ppAndpPb.eps");
+  cPP->SaveAs("CanvasNoSpaces_WeightedAverageDzeroDstarDplus_ppAndpPb.png");
+  cPP->SaveAs("CanvasNoSpaces_WeightedAverageDzeroDstarDplus_ppAndpPb.pdf");
+}

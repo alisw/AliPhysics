@@ -92,7 +92,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoDummyPairCut, 1)
+  ClassDef(AliFemtoDummyPairCut, 1);
   /// \endcond
 #endif
 };

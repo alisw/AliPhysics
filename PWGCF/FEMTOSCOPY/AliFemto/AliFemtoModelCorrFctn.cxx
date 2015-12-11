@@ -5,7 +5,9 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-ClassImp(AliFemtoModelCorrFctn, 1)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelCorrFctn, 1);
+  /// \endcond
 #endif
 
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"

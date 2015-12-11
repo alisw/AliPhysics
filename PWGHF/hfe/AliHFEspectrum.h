@@ -144,13 +144,14 @@ class AliHFEspectrum : public TNamed{
     void EnableIPanaConversionBgSubtract() { fIPanaConversionBgSubtract = kTRUE; };
     void EnableIPanaNonHFEBgSubtract() { fIPanaNonHFEBgSubtract = kTRUE; };
     void EnableIPParameterizedEff() { fIPParameterizedEff = kTRUE; };
+    TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
+    AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
 
   protected:
        
-    AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
+    
     AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1);
     THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions,Int_t centralitylow=-1, Int_t centralityhigh=-1) const;
-    TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(const AliCFContainer * const c, Int_t step, Int_t step0);
  
     void AddTemporaryObject(TObject *cont);

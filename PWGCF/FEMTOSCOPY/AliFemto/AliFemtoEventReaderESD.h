@@ -76,7 +76,9 @@ class AliFemtoEventReaderESD : public AliFemtoEventReader
   AliESDEvent*   fEvent;            // ESD event
 		
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderESD, 11)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderESD, 11);
+  /// \endcond
 #endif
 
     };

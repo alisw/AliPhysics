@@ -6,7 +6,9 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-  ClassImp(AliFemtoModelGausLCMSFreezeOutGenerator, 1)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelGausLCMSFreezeOutGenerator, 1);
+  /// \endcond
 #endif
 
 #include "AliFemtoPair.h"
@@ -30,14 +32,14 @@ const Int_t AliFemtoModelWeightGenerator::fgkKaonPlusAntiproton = 12;
 
 //_____________________________________________
 AliFemtoModelWeightGenerator::AliFemtoModelWeightGenerator() :
-  fPairType(0), 
-  fKStarOut(0), fKStarSide(0), fKStarLong(0), fKStar(0), 
+  fPairType(0),
+  fKStarOut(0), fKStarSide(0), fKStarLong(0), fKStar(0),
   fRStarOut(0), fRStarSide(0), fRStarLong(0), fRStar(0)
 {}
 //_____________________________________________
 AliFemtoModelWeightGenerator::AliFemtoModelWeightGenerator(const AliFemtoModelWeightGenerator &aModel) :
-  fPairType(0), 
-  fKStarOut(0), fKStarSide(0), fKStarLong(0), fKStar(0), 
+  fPairType(0),
+  fKStarOut(0), fKStarSide(0), fKStarLong(0), fKStar(0),
   fRStarOut(0), fRStarSide(0), fRStarLong(0), fRStar(0)
 {
   fPairType = aModel.fPairType;

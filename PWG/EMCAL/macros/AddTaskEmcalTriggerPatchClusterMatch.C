@@ -7,7 +7,6 @@ AliAnalysisTaskEmcalTriggerPatchClusterMatch* AddTaskEmcalTriggerPatchClusterMat
   TString     kEmcalCellsName     = "",
   const char *CentEst             = "V0A",
   Int_t       pSel                = AliVEvent::kINT7,
-  Float_t     nefCut              = 10.,
   TString     kEmcalTriggers      = "",
   TString     kPeriod             = "LHC13b",
   TString     kBeamType           = "pp", //or pPb or PbPb

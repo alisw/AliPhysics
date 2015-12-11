@@ -515,6 +515,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus2; //!<! Response function e-Lambda pT <- XicPt
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
+	TH2F *fHistoEleLambdaPtvsRapidityRS; //!<! e-Lambda pT vs y
+	TH2F *fHistoEleLambdaPtvsRapidityWS; //!<! e-Lambda pT vs y
+	TH2F *fHistoEleLambdaPtvsRapidityMCS; //!<! e-Lambda pT vs y
+
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
 	TH1F *fHistonElevsRunNumber;//!<! nele vs runnumber
@@ -541,7 +545,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,17); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,18); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

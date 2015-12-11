@@ -46,7 +46,9 @@ protected:
   double fMass;
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoParticleCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoParticleCut, 0);
+  /// \endcond
 #endif
 };
 

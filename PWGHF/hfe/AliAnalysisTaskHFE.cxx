@@ -145,6 +145,7 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fTRDTrigger(kFALSE)
   , fWhichTRDTrigger(0)
   , fV0Tagger(NULL)
+  , fPIDResponse(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -218,6 +219,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fTRDTrigger(kFALSE)
   , fWhichTRDTrigger(0)
   , fV0Tagger(NULL)
+  , fPIDResponse(NULL)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -303,6 +305,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fTRDTrigger(ref.fTRDTrigger)
   , fWhichTRDTrigger(ref.fWhichTRDTrigger)
   , fV0Tagger(NULL)
+  , fPIDResponse(ref.fPIDResponse)
   , fQA(NULL)
   , fOutput(NULL)
   , fHistMCQA(NULL)
@@ -383,6 +386,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fTRDTrigger = fTRDTrigger;
   target.fWhichTRDTrigger = fWhichTRDTrigger;
   target.fV0Tagger = fV0Tagger;
+  target.fPIDResponse = fPIDResponse;
   target.fQA = fQA;
   target.fOutput = fOutput;
   target.fHistMCQA = fHistMCQA;
@@ -452,6 +456,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
   printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
+  // Initialize PIDResponse handler
+  fPIDResponse = dynamic_cast<AliInputEventHandler *>(inputHandler)->GetPIDResponse();
+
   // Enable Trigger Analysis
   fTriggerAnalysis = new AliTriggerAnalysis;
   fTriggerAnalysis->EnableHistograms();
@@ -510,6 +517,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   }
   if(IsAODanalysis()) fCuts->SetAOD();
   // Make clone for V0 tagging step
+  fCuts->SetPIDResponse(fPIDResponse);
   fCuts->Initialize(fCFM);
   if(fCuts->IsQAOn()) fQA->Add(fCuts->GetQAhistograms());
   fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
@@ -716,7 +724,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
   }
   
-  AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+  AliPIDResponse *pidResponse = fPIDResponse;
   if(!pidResponse){
     AliDebug(1, "Using default PID Response");
     pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliESDEvent::Class());

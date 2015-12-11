@@ -382,6 +382,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCetaPhi_MC_with_partner_greater(0) //new 15-09
 ,fCetaPhi_MC_with_partner_below(0) // new 15-09
 ,fCetaPhi_MC_NHFE_1partner_reco(0) // new 17-09
+,fpT_MC_with_partner_greater(0)
+,fpT_MC_with_partner_below(0)
 ,fMCEffPID_beforePID(0)
 ,fMCEffPID_afterPID(0)
 ,fpTMCGeneratedBKG(0)
@@ -505,6 +507,11 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 
 ,fBitEGA(0)
 ,fAnalysisUtils(0)
+,fCEtaPhi_Inc_PH(0)
+,fCEtaPhi_ULS_Weight_PH(0)
+,fCEtaPhi_LS_Weight_PH(0)
+,fCEtaPhi_ULS_NoP_Weight_PH(0)
+,fCEtaPhi_LS_NoP_Weight_PH(0)
 //,fEMCALRecoUtils(0)//exotic
 
 {
@@ -778,6 +785,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCetaPhi_MC_with_partner_greater(0) //new 15-09
 ,fCetaPhi_MC_with_partner_below(0) // new 15-09
 ,fCetaPhi_MC_NHFE_1partner_reco(0) // new 17-09
+,fpT_MC_with_partner_greater(0)
+,fpT_MC_with_partner_below(0)
 ,fMCEffPID_beforePID(0)
 ,fMCEffPID_afterPID(0)
 ,fpTMCGeneratedBKG(0)
@@ -900,6 +909,11 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 //,fCaloUtils(0x0)
 ,fBitEGA(0)
 ,fAnalysisUtils(0)
+,fCEtaPhi_Inc_PH(0)
+,fCEtaPhi_ULS_Weight_PH(0)
+,fCEtaPhi_LS_Weight_PH(0)
+,fCEtaPhi_ULS_NoP_Weight_PH(0)
+,fCEtaPhi_LS_NoP_Weight_PH(0)
 
 //,fEMCALRecoUtils(0)//exotic
 {
@@ -993,29 +1007,31 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //pt Distribution
     fPtElec_Inc = new TH1F("fPtElec_Inc","Inclusive Electrons; p_{T} (GeV/c); Count",300,0,30);
     
-    fPtPrim = new TH1F("fPtPrim","Primary Electrons aod track; p_{T} (GeV/c); Count",300,0,30);
-    fPtSec = new TH1F("fPtSec","Secundary Electrons aod track; p_{T} (GeV/c); Count",300,0,30);
-    fPtPrim2 = new TH1F("fPtPrim2","Primary Electrons vtrack; p_{T} (GeV/c); Count",300,0,30);
-    fPtSec2 = new TH1F("fPtSec2","Secundary Electrons vtrack; p_{T} (GeV/c); Count",300,0,30);
+
     
     
     fPtElec_ULS = new TH1F("fPtElec_ULS","ULS; p_{T} (GeV/c); Count",300,0,30);
     fPtElec_LS = new TH1F("fPtElec_LS","LS; p_{T} (GeV/c); Count",300,0,30);
     
-    fPtElec_ULS_NoPid = new TH1F("fPtElec_ULS_NoPid","ULS; p_{T} (GeV/c); Count",300,0,30);
-    fPtElec_LS_NoPid = new TH1F("fPtElec_LS_NoPid","LS; p_{T} (GeV/c); Count",300,0,30);
-    
-    fPtElec_ULS_MC = new TH1F("fPtElec_ULS_MC","ULS; p_{T} (GeV/c); Count",300,0,30);
-    fPtElec_ULS_MC_weight = new TH1F("fPtElec_ULS_MC_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
-    
-    fPtElec_ULS_weight = new TH1F("fPtElec_ULS_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
-    fPtElec_LS_weight = new TH1F("fPtElec_LS_weight","LS; p_{T} (GeV/c); Count",300,0,30);
     
     fTOF01 = new TH2F("fTOF01","",200,-20,20,200,-20,20);
     fTOF02 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
     fTOF03 = new TH2F("fTOF03","",200,-20,20,200,-20,20);
     
-    if(fFillBackground){
+    if(fIsMC){
+        
+        fPtPrim = new TH1F("fPtPrim","Primary Electrons aod track; p_{T} (GeV/c); Count",300,0,30);
+        fPtSec = new TH1F("fPtSec","Secundary Electrons aod track; p_{T} (GeV/c); Count",300,0,30);
+        fPtPrim2 = new TH1F("fPtPrim2","Primary Electrons vtrack; p_{T} (GeV/c); Count",300,0,30);
+        fPtSec2 = new TH1F("fPtSec2","Secundary Electrons vtrack; p_{T} (GeV/c); Count",300,0,30);
+        fPtElec_ULS_NoPid = new TH1F("fPtElec_ULS_NoPid","ULS; p_{T} (GeV/c); Count",300,0,30);
+        fPtElec_LS_NoPid = new TH1F("fPtElec_LS_NoPid","LS; p_{T} (GeV/c); Count",300,0,30);
+        fPtElec_ULS_MC = new TH1F("fPtElec_ULS_MC","ULS; p_{T} (GeV/c); Count",300,0,30);
+        fPtElec_ULS_MC_weight = new TH1F("fPtElec_ULS_MC_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
+        
+        fPtElec_ULS_weight = new TH1F("fPtElec_ULS_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
+        fPtElec_LS_weight = new TH1F("fPtElec_LS_weight","LS; p_{T} (GeV/c); Count",300,0,30);
+        
         fPtElec_ULS2 = new TH1F("fPtElec_ULS2","ULS; p_{T} (GeV/c); Count",300,0,30);
         fPtElec_LS2 = new TH1F("fPtElec_LS2","LS; p_{T} (GeV/c); Count",300,0,30);
         
@@ -1027,7 +1043,6 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fPtElec_LS_mc_closure = new TH1F("fPtElec_LS_mc_closure","LS; p_{T} (GeV/c); Count",300,0,30);
         fPtElec_ULS2_mc_closure = new TH1F("fPtElec_ULS2_mc_closure","ULS; p_{T} (GeV/c); Count",300,0,30);
         fPtElec_LS2_mc_closure = new TH1F("fPtElec_LS2_mc_closure","LS; p_{T} (GeV/c); Count",300,0,30);
-        
         
         
     }
@@ -1049,39 +1064,78 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fTPCnsigma_p_TPC_on_EMCal_acc = new TH2F("fTPCnsigma_p_TPC_on_EMCal_acc",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
     fTPCnsigma_p_TPC_EoverP_cut = new TH2F("fTPCnsigma_p_TPC_EoverP_cut",";p (GeV/c);TPC Electron N#sigma",3000,0,30,1000,-15,10);
     
-    
     fShowerShapeCut = new TH2F("fShowerShapeCut","Shower Shape;M02;M20",500,0,1.8,500,0,1.8);
-    fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
-    fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
-    fEtaPhi_data=new TH2F("fEtaPhi_data","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
     
-    fpt_reco_pt_MC_num=new TH2F("fpt_reco_pt_MC_num","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
-    fpt_reco_pt_MC_den=new TH2F("fpt_reco_pt_MC_den","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
-    
+    fOutputList->Add(fShowerShapeCut);
     
     fCharge_n = new TH1F("fCharge_n","Inclusive Electrons (Negative Charge); p_{t} (GeV/c); Count",200,0,30);
     fCharge_p = new TH1F("fCharge_p","Inclusive Positrons (Positive Charge); p_{t} (GeV/c); Count",200,0,30);
     
+    
+    fOutputList->Add(fCharge_n);
+    fOutputList->Add(fCharge_p);
+
+    if(fIsMC)
+    {
+        
+        fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
+        fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
+        fEtaPhi_data=new TH2F("fEtaPhi_data","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
+        
+        fOutputList->Add(fEtaPhi_num);
+        fOutputList->Add(fEtaPhi_den);
+        fOutputList->Add(fEtaPhi_data);
+        
+        fpt_reco_pt_MC_num=new TH2F("fpt_reco_pt_MC_num","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
+        fpt_reco_pt_MC_den=new TH2F("fpt_reco_pt_MC_den","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
+        
+        fOutputList->Add(fpt_reco_pt_MC_num);
+        fOutputList->Add(fpt_reco_pt_MC_den);
+        
+
+    }
+    
     fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
-    fECluster_not_exotic= new TH1F("fECluster_not_exotic", ";ECluster not exotic - function ",2000,0,100);
-    
-    fECluster_not_exotic1= new TH1F("fECluster_not_exotic1", ";ECluster not exotic Ncells > E/3+1",2000,0,100);
-    
-    fECluster_not_exotic2= new TH1F("fECluster_not_exotic2", ";ECluster not exotic 2",2000,0,100);
-    fECluster_exotic= new TH1F("fECluster_exotic", ";ECluster exotic",2000,0,100);
+    fOutputList->Add(fECluster_pure);
+
+    if(fUseEMCal)
+    {
+        
+        fECluster_not_exotic= new TH1F("fECluster_not_exotic", ";ECluster not exotic - function ",2000,0,100);
+        
+        fECluster_not_exotic1= new TH1F("fECluster_not_exotic1", ";ECluster not exotic Ncells > E/3+1",2000,0,100);
+        
+        fECluster_not_exotic2= new TH1F("fECluster_not_exotic2", ";ECluster not exotic 2",2000,0,100);
+        fECluster_exotic= new TH1F("fECluster_exotic", ";ECluster exotic",2000,0,100);
+        
+        fOutputList->Add(fECluster_not_exotic);
+        fOutputList->Add(fECluster_not_exotic1);
+        fOutputList->Add(fECluster_not_exotic2);
+        fOutputList->Add(fECluster_exotic);
+    }
     
     //not associated with tracks
     fNCluster_pure= new TH1F("fNCluster_pure", ";Number of clusters - pure",2000,-1,1999);
     fNCluster_pure_aod= new TH1F("fNCluster_pure_aod", ";Number of clusters - pure -aod",2000,-1,1999);
-    fNCluster_ECluster= new TH2F("fNCluster_ECluster", ";Number of clusters vs. Energy of Cluster",2000,-1,1999, 4000, -1, 1999);
     
-    fNcells_energy= new TH2F("fNcells_energy", "all clusters;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
-    fNcells_energy_elec_selected= new TH2F("fNcells_energy_elec_selected", "clusters for electrons on TPC;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
-    fNcells_energy_not_exotic= new TH2F("fNcells_energy_not_exotic", "not exotic cluster;Number of cells;Energy of Cluster ",100,0,100, 2000, 0, 100);
+    if(fUseEMCal)
+    {
+        fNCluster_ECluster= new TH2F("fNCluster_ECluster", ";Number of clusters vs. Energy of Cluster",2000,-1,1999, 4000, -1, 1999);
+        fNcells_energy= new TH2F("fNcells_energy", "all clusters;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
+        fNcells_energy_elec_selected= new TH2F("fNcells_energy_elec_selected", "clusters for electrons on TPC;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
+        fNcells_energy_not_exotic= new TH2F("fNcells_energy_not_exotic", "not exotic cluster;Number of cells;Energy of Cluster ",100,0,100, 2000, 0, 100);
+        fNcells_Energy_highE0= new TH2F("fNcells_Energy_highE0", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
+        fNcells_Energy_highE1= new TH2F("fNcells_Energy_highE1", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
+        
+        fOutputList->Add(fNCluster_ECluster);
+        fOutputList->Add(fNcells_energy);
+        fOutputList->Add(fNcells_energy_elec_selected);
+        fOutputList->Add(fNcells_energy_not_exotic);
+        fOutputList->Add(fNcells_Energy_highE0);
+        fOutputList->Add(fNcells_Energy_highE1);
+
+    }
     
-    
-    fNcells_Energy_highE0= new TH2F("fNcells_Energy_highE0", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
-    fNcells_Energy_highE1= new TH2F("fNcells_Energy_highE1", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
     
     if(fUseEMCal){
         
@@ -1108,39 +1162,35 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         }
         
         
+        
+        
     }
     
     fOutputList->Add(fTOF01);
     fOutputList->Add(fTOF02);
     fOutputList->Add(fTOF03);
     
-    fOutputList->Add(fEtaPhi_num);
-    fOutputList->Add(fEtaPhi_den);
-    fOutputList->Add(fEtaPhi_data);
-    
-    fOutputList->Add(fpt_reco_pt_MC_num);
-    fOutputList->Add(fpt_reco_pt_MC_den);
-    
+
     
     fOutputList->Add(fPtElec_Inc);
     fOutputList->Add(fPtElec_ULS);
     fOutputList->Add(fPtElec_LS);
-    fOutputList->Add(fPtElec_ULS_NoPid);
-    fOutputList->Add(fPtElec_LS_NoPid);
-    fOutputList->Add(fPtElec_ULS_MC);
-    fOutputList->Add(fPtElec_ULS_MC_weight);
+
     
-    fOutputList->Add(fPtPrim);
-    fOutputList->Add(fPtSec);
-    fOutputList->Add(fPtPrim2);
-    fOutputList->Add(fPtSec2);
-    
-    
-    
-    fOutputList->Add(fPtElec_ULS_weight);
-    fOutputList->Add(fPtElec_LS_weight);
-    
-    if(fFillBackground){
+    if(fIsMC)
+    {
+        fOutputList->Add(fPtElec_ULS_NoPid);
+        fOutputList->Add(fPtElec_LS_NoPid);
+        fOutputList->Add(fPtElec_ULS_MC);
+        fOutputList->Add(fPtElec_ULS_MC_weight);
+        
+        fOutputList->Add(fPtPrim);
+        fOutputList->Add(fPtSec);
+        fOutputList->Add(fPtPrim2);
+        fOutputList->Add(fPtSec2);
+        
+        fOutputList->Add(fPtElec_ULS_weight);
+        fOutputList->Add(fPtElec_LS_weight);
         fOutputList->Add(fPtElec_ULS2);
         fOutputList->Add(fPtElec_LS2);
         fOutputList->Add(fPtElec_ULS2_weight);
@@ -1169,27 +1219,12 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     
     
-    fOutputList->Add(fShowerShapeCut);
     
-    fOutputList->Add(fCharge_n);
-    fOutputList->Add(fCharge_p);
-    
-    fOutputList->Add(fECluster_pure);
-    fOutputList->Add(fECluster_not_exotic);
-    fOutputList->Add(fECluster_not_exotic1);
-    fOutputList->Add(fECluster_not_exotic2);
-    fOutputList->Add(fECluster_exotic);
+
     
     fOutputList->Add(fNCluster_pure);
     fOutputList->Add(fNCluster_pure_aod);
     
-    fOutputList->Add(fNCluster_ECluster);
-    fOutputList->Add(fNcells_energy);
-    fOutputList->Add(fNcells_energy_elec_selected);
-    fOutputList->Add(fNcells_energy_not_exotic);
-    
-    fOutputList->Add(fNcells_Energy_highE0);
-    fOutputList->Add(fNcells_Energy_highE1);
     
     
     
@@ -1265,17 +1300,20 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fTPCNcls_EoverP= new TH2F *[3];
     fTPCNcls_pid=new TH2F *[4];
     
-    fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
-    fOutputList->Add(fEoverP_pt_true_electrons);
-    
-    fEoverP_pt_true_electrons_weight = new TH2F("fEoverP_pt_true_electrons_weight",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
-    fOutputList->Add(fEoverP_pt_true_electrons_weight);
-    
-    fEoverP_pt_true_HFE = new TH2F("fEoverP_pt_true_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
-    fOutputList->Add(fEoverP_pt_true_HFE);
-    
-    fEoverP_pt_not_HFE = new TH2F("fEoverP_pt_not_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
-    fOutputList->Add(fEoverP_pt_not_HFE);
+    if(fIsMC)
+    {
+        fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+        fOutputList->Add(fEoverP_pt_true_electrons);
+        
+        fEoverP_pt_true_electrons_weight = new TH2F("fEoverP_pt_true_electrons_weight",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+        fOutputList->Add(fEoverP_pt_true_electrons_weight);
+        
+        fEoverP_pt_true_HFE = new TH2F("fEoverP_pt_true_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+        fOutputList->Add(fEoverP_pt_true_HFE);
+        
+        fEoverP_pt_not_HFE = new TH2F("fEoverP_pt_not_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+        fOutputList->Add(fEoverP_pt_not_HFE);
+    }
     
     fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched",";E/p (GeV/c);NTracksMatched ",200,0,2,10,0,10);
     fOutputList->Add(fEoverP_ntracks_matched);
@@ -1283,21 +1321,24 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fEoverP_ncells = new TH2F("fEoverP_ncells",";E/p (GeV/c);ncells ",1000,0,10,30,0,30);
     fOutputList->Add(fEoverP_ncells);
     
-    fEmc_Ereco_gamma0 = new TH2F("fEmc_Ereco_gamma0",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
-    fOutputList->Add(fEmc_Ereco_gamma0);
-    fEmc_Ereco_gamma_ratio0 = new TH2F("fEmc_Ereco_gamma_ratio0",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
-    fOutputList->Add(fEmc_Ereco_gamma_ratio0);
-    
-    fEmc_Ereco_gamma_all = new TH2F("fEmc_Ereco_gamma_all",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
-    fOutputList->Add(fEmc_Ereco_gamma_all);
-    fEmc_Ereco_gamma_ratio_all = new TH2F("fEmc_Ereco_gamma_ratio_all",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
-    fOutputList->Add(fEmc_Ereco_gamma_ratio_all);
-    
-    
-    fEmc_Ereco_gamma = new TH2F("fEmc_Ereco_gamma",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
-    fOutputList->Add(fEmc_Ereco_gamma);
-    fEmc_Ereco_gamma_ratio = new TH2F("fEmc_Ereco_gamma_ratio",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
-    fOutputList->Add(fEmc_Ereco_gamma_ratio);
+    if(fIsMC)
+    {
+        fEmc_Ereco_gamma0 = new TH2F("fEmc_Ereco_gamma0",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
+        fOutputList->Add(fEmc_Ereco_gamma0);
+        fEmc_Ereco_gamma_ratio0 = new TH2F("fEmc_Ereco_gamma_ratio0",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
+        fOutputList->Add(fEmc_Ereco_gamma_ratio0);
+        
+        fEmc_Ereco_gamma_all = new TH2F("fEmc_Ereco_gamma_all",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
+        fOutputList->Add(fEmc_Ereco_gamma_all);
+        fEmc_Ereco_gamma_ratio_all = new TH2F("fEmc_Ereco_gamma_ratio_all",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
+        fOutputList->Add(fEmc_Ereco_gamma_ratio_all);
+        
+        
+        fEmc_Ereco_gamma = new TH2F("fEmc_Ereco_gamma",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
+        fOutputList->Add(fEmc_Ereco_gamma);
+        fEmc_Ereco_gamma_ratio = new TH2F("fEmc_Ereco_gamma_ratio",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
+        fOutputList->Add(fEmc_Ereco_gamma_ratio);
+    }
     
     fEmc= new TH1F("fEmc",";E_{true}",1000,0,100);
     fOutputList->Add(fEmc);
@@ -1307,17 +1348,19 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fEmc_Ereco_ele_ratio0 = new TH2F("fEmc_Ereco_ele_ratio0",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
     fOutputList->Add(fEmc_Ereco_ele_ratio0);
     
-    fEmc_Ereco_ele_all = new TH2F("fEmc_Ereco_ele_all",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
-    fOutputList->Add(fEmc_Ereco_ele_all);
-    fEmc_Ereco_ele_ratio_all = new TH2F("fEmc_Ereco_ele_ratio_all",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
-    fOutputList->Add(fEmc_Ereco_ele_ratio_all);
+    if(fIsMC)
+    {
+        fEmc_Ereco_ele_all = new TH2F("fEmc_Ereco_ele_all",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
+        fOutputList->Add(fEmc_Ereco_ele_all);
+        fEmc_Ereco_ele_ratio_all = new TH2F("fEmc_Ereco_ele_ratio_all",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
+        fOutputList->Add(fEmc_Ereco_ele_ratio_all);
+    }
     
     
     fEmc_Ereco_ele = new TH2F("fEmc_Ereco_ele",";E_{reco} (GeV);E_{true} (GeV)",300,0,30,300,0,30);
     fOutputList->Add(fEmc_Ereco_ele);
     fEmc_Ereco_ele_ratio = new TH2F("fEmc_Ereco_ele_ratio",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
     fOutputList->Add(fEmc_Ereco_ele_ratio);
-    
     
     
     fEmc_Ereco_ratio_large_EoverP0 = new TH2F("fEmc_Ereco_ratio_large_EoverP0",";E_{reco} (GeV);E_{true}/E_{reco}",300,0,30,200,0,2);
@@ -1347,10 +1390,14 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fOutputList->Add(fEtaPhi_large_EoverP);
     fOutputList->Add(fEtaPhi_small_EoverP);
     
-    fEoverP_pt_highE0 = new TH2F("fEoverP_pt_highE0",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
-    fEoverP_pt_highE1 = new TH2F("fEoverP_pt_highE1",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
-    fOutputList->Add(fEoverP_pt_highE0);
-    fOutputList->Add(fEoverP_pt_highE1);
+    
+    if(fIsMC)
+    {
+        fEoverP_pt_highE0 = new TH2F("fEoverP_pt_highE0",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+        fEoverP_pt_highE1 = new TH2F("fEoverP_pt_highE1",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+        fOutputList->Add(fEoverP_pt_highE0);
+        fOutputList->Add(fEoverP_pt_highE1);
+    }
     
     fECluster_highpT0= new TH1F("fECluster_highpT0", ";ECluster",2000, 0,100);
     fECluster_highpT1= new TH1F("fECluster_highpT1", ";ECluster",2000, 0,100);
@@ -1418,32 +1465,36 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOutputList->Add(fTPCNcls_EoverP[i]);
     }
     
-    fEtaPhi_highE0= new TH2F("fEtaPhi_highE0","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
-    fEtaPhi_highE1= new TH2F("fEtaPhi_highE1","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
-    
-    fEta_highE0=new TH1F("fEta_highE0", ";#eta; counts",100, -0.1,0.1);
-    fPhi_highE0=new TH1F("fPhi_highE0", ";#phi; counts", 100, -0.1,0.1);
-    fR_highE0=new TH1F("fR_highE0", ";R; counts", 100, -0.1,0.1);
-    
-    fEta_highE1=new TH1F("fEta_highE1", ";#eta; counts",100, -0.1,0.1);
-    fPhi_highE1=new TH1F("fPhi_highE1", ";#phi; counts", 100, -0.1,0.1);
-    fR_highE1=new TH1F("fR_highE1", ";R; counts", 100, -0.1,0.1);
-    
-    fNCluster_highE0= new TH1F("fNCluster_highE0","fNClusters0 in high E",200, 0,100);
-    fNCluster_highE1= new TH1F("fNCluster_highE1","fNClusters1 in high E",200, 0,100);
-    
-    fOutputList->Add(fEtaPhi_highE0);
-    fOutputList->Add(fEtaPhi_highE1);
-    
-    fOutputList->Add(fEta_highE0);
-    fOutputList->Add(fEta_highE1);
-    fOutputList->Add(fPhi_highE0);
-    fOutputList->Add(fPhi_highE1);
-    fOutputList->Add(fR_highE0);
-    fOutputList->Add(fR_highE1);
-    fOutputList->Add(fNCluster_highE0);
-    fOutputList->Add(fNCluster_highE1);
-    
+    if(fIsMC)
+    {
+        fEtaPhi_highE0= new TH2F("fEtaPhi_highE0","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
+        fEtaPhi_highE1= new TH2F("fEtaPhi_highE1","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
+        fOutputList->Add(fEtaPhi_highE0);
+        fOutputList->Add(fEtaPhi_highE1);
+        
+        
+        fEta_highE0=new TH1F("fEta_highE0", ";#eta; counts",100, -0.1,0.1);
+        fPhi_highE0=new TH1F("fPhi_highE0", ";#phi; counts", 100, -0.1,0.1);
+        fR_highE0=new TH1F("fR_highE0", ";R; counts", 100, -0.1,0.1);
+        
+        fEta_highE1=new TH1F("fEta_highE1", ";#eta; counts",100, -0.1,0.1);
+        fPhi_highE1=new TH1F("fPhi_highE1", ";#phi; counts", 100, -0.1,0.1);
+        fR_highE1=new TH1F("fR_highE1", ";R; counts", 100, -0.1,0.1);
+        
+        fNCluster_highE0= new TH1F("fNCluster_highE0","fNClusters0 in high E",200, 0,100);
+        fNCluster_highE1= new TH1F("fNCluster_highE1","fNClusters1 in high E",200, 0,100);
+        
+        
+        
+        fOutputList->Add(fEta_highE0);
+        fOutputList->Add(fEta_highE1);
+        fOutputList->Add(fPhi_highE0);
+        fOutputList->Add(fPhi_highE1);
+        fOutputList->Add(fR_highE0);
+        fOutputList->Add(fR_highE1);
+        fOutputList->Add(fNCluster_highE0);
+        fOutputList->Add(fNCluster_highE1);
+    }
     
     
     fTrack_Multi= new  TH1F("fTrack_Multi","fTrack_Multi",1000, 0,1000);
@@ -1458,14 +1509,8 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     Int_t fPtBin[7] = {1,2,4,6,8,10,15};
     
     
-    Int_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
-    fEoverP_tpc_p_trigger = new TH2F *[10];
-    fEoverP_tpc_pt_trigger = new TH2F *[10];
-    
-    fInvMass_pT = new TH1F *[10];
-    fInvMassBack_pT = new TH1F *[10];
-    
-    
+
+
     fEoverP_tpc = new TH2F *[6];
     fTPC_pt = new TH1F *[6];
     fTPCnsigma_pt = new TH1F *[6];
@@ -1489,6 +1534,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     if(fCorrelationFlag)
     {
         fCEtaPhi_Inc = new TH2F *[6];
+        
         fCEtaPhi_Inc_DiHadron = new TH2F *[6];
         
         fCEtaPhi_ULS = new TH2F *[6];
@@ -1500,6 +1546,16 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fCEtaPhi_LS_Weight = new TH2F *[6];
         fCEtaPhi_ULS_NoP_Weight = new TH2F *[6];
         fCEtaPhi_LS_NoP_Weight = new TH2F *[6];
+        
+        if(fIsMC)
+        {
+            fCEtaPhi_Inc_PH = new TH2F *[6];
+            fCEtaPhi_ULS_Weight_PH= new TH2F *[6];
+            fCEtaPhi_LS_Weight_PH = new TH2F *[6];
+            fCEtaPhi_ULS_NoP_Weight_PH = new TH2F *[6];
+            fCEtaPhi_LS_NoP_Weight_PH = new TH2F *[6];
+        }
+        
         
         fCEtaPhi_Inc_EM = new TH2F *[6];
         
@@ -1517,10 +1573,17 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOpAngleBack = new TH1F("fOpAngleBack","",200,0,0.5);
         
         //15-09 Add new Histograms for MC clousure test
+        if(fIsMC)
+        {
+            fCetaPhi_MC_with_partner_greater = new TH2F *[6];
+            fCetaPhi_MC_with_partner_below = new TH2F *[6];
+            fCetaPhi_MC_NHFE_1partner_reco = new TH2F *[6];
+            fpT_MC_with_partner_greater = new TH1F("fpT_MC_with_partner_greater","Two reco; p_{T} (GeV/c); Count",300,0,30);
+            fpT_MC_with_partner_below = new TH1F("fpT_MC_with_partner_below","One reco; p_{T} (GeV/c); Count",300,0,30);
+            fOutputList->Add(fpT_MC_with_partner_greater);
+            fOutputList->Add(fpT_MC_with_partner_below);
+        }
         
-        fCetaPhi_MC_with_partner_greater = new TH2F *[6];
-        fCetaPhi_MC_with_partner_below = new TH2F *[6];
-        fCetaPhi_MC_NHFE_1partner_reco = new TH2F *[6];
         //end of new Histograms
         
         fOutputList->Add(fInvMass);
@@ -1574,20 +1637,29 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     }
     
     //new histo for trigger data
-    for(Int_t i = 0; i < 10; i++)
+    if (fUseTrigger)
     {
-        fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
-        fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%d < p < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+        Int_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
+        fEoverP_tpc_p_trigger = new TH2F *[10];
+        fEoverP_tpc_pt_trigger = new TH2F *[10];
+        fInvMass_pT = new TH1F *[10];
+        fInvMassBack_pT = new TH1F *[10];
         
-        
-        fInvMass_pT[i] = new TH1F(Form("fInvMass_pT%d",i),Form("%d < p_{t} < %d GeV/c; Mass ; Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
-        fInvMassBack_pT[i] = new TH1F(Form("fInvMassBack_pT%d",i),Form("%d < p_{t} < %d GeV/c;Mass;Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
-        
-        fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
-        fOutputList->Add(fEoverP_tpc_p_trigger[i]);
-        fOutputList->Add(fInvMass_pT[i]);
-        fOutputList->Add(fInvMassBack_pT[i]);
-        
+        for(Int_t i = 0; i < 10; i++)
+        {
+            fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+            fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%d < p < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+            
+            
+            fInvMass_pT[i] = new TH1F(Form("fInvMass_pT%d",i),Form("%d < p_{t} < %d GeV/c; Mass ; Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+            fInvMassBack_pT[i] = new TH1F(Form("fInvMassBack_pT%d",i),Form("%d < p_{t} < %d GeV/c;Mass;Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+            
+            fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
+            fOutputList->Add(fEoverP_tpc_p_trigger[i]);
+            fOutputList->Add(fInvMass_pT[i]);
+            fOutputList->Add(fInvMassBack_pT[i]);
+            
+        }
     }
     
     
@@ -1663,6 +1735,22 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
             fCEtaPhi_LS_Weight[i] = new TH2F(Form("fCEtaPhi_LS_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             fCEtaPhi_ULS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             fCEtaPhi_LS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            
+            if(fIsMC)
+            {
+                fCEtaPhi_Inc_PH[i] = new TH2F(Form("fCEtaPhi_Inc_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fOutputList->Add(fCEtaPhi_Inc_PH[i]);
+                fOutputList->Add(fCEtaPhi_ULS_Weight_PH[i]);
+                fOutputList->Add(fCEtaPhi_LS_Weight_PH[i]);
+                fOutputList->Add(fCEtaPhi_ULS_NoP_Weight_PH[i]);
+                fOutputList->Add(fCEtaPhi_LS_NoP_Weight_PH[i]);
+            }
+
+            
             
             fOutputList->Add(fCEtaPhi_Inc[i]);
             fOutputList->Add(fCEtaPhi_Inc_DiHadron[i]);
@@ -2284,10 +2372,10 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 fCentrality = fESD->GetCentrality();
             }
             
-            if(fEstimator==1) centrality = fCentrality->GetCentralityPercentile("ZDC");
+            if(fEstimator==1) centrality = fCentrality->GetCentralityPercentile("ZEMvsZDC");
             else centrality = fCentrality->GetCentralityPercentile("V0A");
             
-            //cout << "Centrality = " << centrality << " %" << endl;
+            //printf("Centrality ZDC= %f VOA= %f  ZNA = %f ZNC = %f  ZPA = %f TRK = %f \n", fCentrality->GetCentralityPercentile("ZEMvsZDC") , fCentrality->GetCentralityPercentile("V0A"),fCentrality->GetCentralityPercentile("ZNA"), fCentrality->GetCentralityPercentile("ZNC"), fCentrality->GetCentralityPercentile("ZPA"), fCentrality->GetCentralityPercentile("TRK") );
             
             fCentralityHist->Fill(centrality);
             
@@ -3563,23 +3651,25 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 
             }
         }
-        
-        if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
-            
-            //new pt bins for trigger data
-            
-            for(Int_t i = 0; i < 10; i++)
-            {
-                if(fP>=fPtBin_trigger[i] && fP<fPtBin_trigger[i+1])
-                {
-                    if(fEMCflag)fEoverP_tpc_p_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
-                    
-                }
+        if(fUseTrigger)
+        {
+            if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
                 
-                if(fPt>=fPtBin_trigger[i] && fPt<fPtBin_trigger[i+1])
+                //new pt bins for trigger data
+                
+                for(Int_t i = 0; i < 10; i++)
                 {
-                    if(fEMCflag)fEoverP_tpc_pt_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
+                    if(fP>=fPtBin_trigger[i] && fP<fPtBin_trigger[i+1])
+                    {
+                        if(fEMCflag)fEoverP_tpc_p_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
+                        
+                    }
                     
+                    if(fPt>=fPtBin_trigger[i] && fPt<fPtBin_trigger[i+1])
+                    {
+                        if(fEMCflag)fEoverP_tpc_pt_trigger[i]->Fill(fTPCnSigma,(fClus->E() / fP));
+                        
+                    }
                 }
             }
             
@@ -5421,15 +5511,23 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 AliVTrack *track_partner_ULS = dynamic_cast<AliVTrack*>(Vtrack_uls_partner);
                 if(track_partner_ULS->GetLabel()<0)
                 {
-                    printf(" \n ULS partner dos not have a valid MC label! \n ");
+                    //printf(" \n ULS partner dos not have a valid MC label! \n ");
                     continue;
                 }
                 
                 AliAODMCParticle* fMCparticle_uls_partner = (AliAODMCParticle*) fMCarray->At(track_partner_ULS->GetLabel());
                 
                 if( mother_electron_ID == fMCparticle_uls_partner->GetMother() )
+                {
                     IsFromTheSameMother = kTRUE;
+                }
+                
             }
+            
+            if(IsFromTheSameMother)
+                fpT_MC_with_partner_greater->Fill(fMCparticle->Pt());
+            else
+                fpT_MC_with_partner_below->Fill(fMCparticle->Pt());
             
             //correlate with hadrons that are primary
             for(int hadron_index = 0; hadron_index < fMCarray->GetEntries(); hadron_index++)
@@ -5630,6 +5728,27 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
             if(!fPartnerCuts->AcceptTrack(etrack2)) continue;
         }
         
+        //Systematics: test of seconday particle contamination
+        Bool_t IsPhyPrimaryHadron;
+        
+        if(fIsMC)
+        {
+            if(fIsAOD)
+            {
+                AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
+                if (track2->GetLabel()<0)
+                    IsPhyPrimaryHadron = kFALSE;
+                    else
+                    {
+                        AliAODMCParticle *hadron_MonteCarlo = (AliAODMCParticle*) fMCarray->At(track2->GetLabel());
+                        if (hadron_MonteCarlo->IsPhysicalPrimary())
+                            IsPhyPrimaryHadron = kTRUE;
+                        else
+                            IsPhyPrimaryHadron = kFALSE;
+                    }
+            }
+        }
+        
         fPhiH = track2->Phi();
         fEtaH = track2->Eta();
         fPtH = track2->Pt();
@@ -5663,29 +5782,31 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         {
             if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
             {
+                //Filling histograms
                 fCEtaPhi_Inc[i]->Fill(fDphi,fDeta);
-                
                 if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta);
                 if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta);
-                //if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-                //new September 05, 2015:
                 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-                
-                //if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-                //new September 05, 2015:
                 if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-                
                 if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
                 if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-                
-                //if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-                //new September 05, 2015:
                 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-                
-                //if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-                //new September 05, 2015:
                 if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
                 
+                if(fIsMC)
+                {
+                    if(IsPhyPrimaryHadron)
+                    {
+                        fCEtaPhi_Inc_PH[i]->Fill(fDphi,fDeta);
+                        if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_PH[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
+                        if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_PH[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+                        if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight_PH[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
+                        if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight_PH[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+
+                    }
+                        
+                }
+                        
                 
             }
         }

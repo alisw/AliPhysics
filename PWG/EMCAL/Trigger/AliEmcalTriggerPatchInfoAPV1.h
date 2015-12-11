@@ -21,7 +21,6 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include "AliEmcalTriggerBitConfigAP.h"
-#include "AliEmcalTriggerSetupInfo.h"
 #include "AliEmcalTriggerConstantsAP.h"
 
 
@@ -30,7 +29,7 @@ class TArrayI;
 
 
 /**
- * \class AliEmcalTriggerPatchInfo
+ * \class AliEmcalTriggerPatchInfoAPV1
  * \brief Main data structure storing all relevant information of EMCAL/DCAL trigger patches
  *
  * Emcal trigger patch information class
@@ -72,7 +71,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   void Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
-   * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
+   * Allocate a new AliEmcalTriggerPatchInfoAPV1 object and initialize it
    * @param col0        Start column of the patch
    * @param row0        Start row of the patch
    * @param size        Size of the patch
@@ -82,7 +81,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * @param bitmask     Trigger bit mask of the patch
    * @param vertex      Primary vertex of the event
    * @param geom        Pointer to the EMCal geometry object
-   * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
+   * @return            Pointer to a new and initialized AliEmcalTriggerPatchInfoAPV1 object (caller is responsible for releasing memory)
    */
   static AliEmcalTriggerPatchInfoAPV1* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
@@ -150,7 +149,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    */
   Int_t    GetADCOfflineAmp() const { return fADCOfflineAmp; }
   /**
-   * Get patch energy estimated from offline ADC amplitude converted into energya
+   * Get patch energy estimated from offline ADC amplitude converted into energy
    * @return Patch energy estimate
    */
   Double_t GetADCAmpGeVRough() const { return (Double_t)fADCAmp * EmcalTriggerAP::kEMCL1ADCtoGeV; }
@@ -263,6 +262,18 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
    * @return True if the patch is found by the simple offline trigger, false otherwise
    */
   Bool_t   IsOfflineSimple() const { return IsJetLowSimple() || IsJetHighSimple() || IsGammaLowSimple() || IsGammaHighSimple(); }
+
+  /**
+   * Check whether patch is found by the simple offline trigger (on offline amplitudes)
+   * @return True if the patch is found by the simple offline trigger, false otherwise
+   */
+  Bool_t   IsRecalc() const { return IsJetLowRecalc() || IsJetHighRecalc() || IsGammaLowRecalc() || IsGammaHighRecalc(); }
+
+  /**
+   * Check whether patch is found by the simple offline trigger (on offline amplitudes)
+   * @return True if the patch is found by the simple offline trigger, false otherwise
+   */
+  Bool_t   IsOnline() const { return IsJetLow() || IsJetHigh() || IsGammaLow() || IsGammaHigh(); }
 
   /**
    * Access to Lorentz Vector of the centre-of-mass of the trigger patch
@@ -448,7 +459,7 @@ class AliEmcalTriggerPatchInfoAPV1: public TObject {
   TLorentzVector    fEdge2;                         ///< min eta/ max phi edge
   Int_t             fADCAmp;                        ///< online (trigger) ADC amplitude
   Int_t             fADCOfflineAmp;                 ///< offline (FEE) ADC amplitude
-  Int_t             fTriggerBits;                   ///< trigger bit mask, see definitions in AliEmcalTriggerType and TriggerMakerBits_t (above)
+  Int_t             fTriggerBits;                   ///< trigger bit mask, see definitions in AliEMCALTriggerType and TriggerMakerBits_t (above)
   Int_t             fEdgeCell[2];                   ///< cell "bottom lower" edge (min phi, max eta)
   Int_t             fOffSet;                        ///< offset of bit (different in data and MC)
   Int_t             fCol0;                          ///< Start column

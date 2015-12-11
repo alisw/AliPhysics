@@ -36,7 +36,11 @@
 
 #include "AliPID.h"
 
-ClassImp(AliFemtoEventReaderESDChainKineKK)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderESDChainKineKK);
+  /// \cond CLASSIMP
+#endif
 
 #if !(ST_NO_NAMESPACES)
 using namespace units;
@@ -473,10 +477,10 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
 	    //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
 	    //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
 	    // collect info from ESDpid class
-    //ML 
+    //ML
     //    if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFout&AliESDtrack::kTIME))) {
     if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFout))) {
-     
+
 	      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
 
 	      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);

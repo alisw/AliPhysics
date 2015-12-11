@@ -101,7 +101,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoBPLCMS3DCorrFctn, 1)
+  ClassDef(AliFemtoBPLCMS3DCorrFctn, 1);
   /// \endcond
 #endif
 };

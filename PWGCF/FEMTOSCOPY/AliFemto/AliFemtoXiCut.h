@@ -25,7 +25,9 @@ public:
   virtual AliFemtoXiCut* Clone() { return 0;}
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoXiCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoXiCut, 0);
+  /// \endcond
 #endif
 };
 

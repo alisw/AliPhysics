@@ -106,12 +106,12 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fCentBinSize(1),
+  fCentBinSize(1), fReduceStatsCent(0),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0), doaltPIDbinning(0),
   doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(-99),
@@ -132,7 +132,6 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
   fHistLocalRhoJetpt(0),
-
   fHistJetHaddPhiIN(0), fHistJetHaddPhiOUT(0), fHistJetHaddPhiMID(0),
   fHistJetHaddPhiBias(0), fHistJetHaddPhiINBias(0), fHistJetHaddPhiOUTBias(0), fHistJetHaddPhiMIDBias(0),
   fHistMEdPHI(0),
@@ -181,17 +180,17 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
 
   // centrality dependent histo's
   for (Int_t i = 0;i<6;++i){
-    fHistJetPt[i]				= 0;
-    fHistJetPtBias[i]			= 0;
-    fHistJetPtTT[i]				= 0;
-    fHistAreavsRawPt[i]			= 0;
+    fHistJetPt[i]               = 0;
+    fHistJetPtBias[i]           = 0;
+    fHistJetPtTT[i]             = 0;
+    fHistAreavsRawPt[i]	        = 0;
     fHistJetPtvsTrackPt[i]      = 0;
     fHistTrackPt[i]             = 0;
     fHistEP0[i]                 = 0;
     fHistEP0A[i]                = 0;
     fHistEP0C[i]                = 0;
     fHistEPAvsC[i]              = 0;
-    fHistJetPtcorrGlRho[i]		= 0;
+    fHistJetPtcorrGlRho[i]      = 0;
     fHistJetPtvsdEP[i]          = 0;
     fHistJetPtvsdEPBias[i]      = 0;
     fHistRhovsdEP[i]            = 0;
@@ -227,12 +226,12 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fNAcceptedTracks(0), fLeadingJet(0), fExcludeLeadingJetsFromFit(1.),
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fCentBinSize(1),
+  fCentBinSize(1), fReduceStatsCent(0),
   fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
   fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0), doaltPIDbinning(0),
   doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(-99),
@@ -301,10 +300,10 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
 
   // centrality dependent histo's
   for (Int_t i = 0;i<6;++i){
-    fHistJetPt[i]				= 0;
-    fHistJetPtBias[i]			= 0;
-    fHistJetPtTT[i]				= 0;
-    fHistAreavsRawPt[i]			= 0;
+    fHistJetPt[i]               = 0;
+    fHistJetPtBias[i]           = 0;
+    fHistJetPtTT[i]             = 0;
+    fHistAreavsRawPt[i]         = 0;
     fHistJetPtvsTrackPt[i]      = 0;
     fHistTrackPt[i]             = 0;
     fHistEP0[i]                 = 0;
@@ -806,19 +805,19 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     if(!inputHandler) {
         AliFatal("Input handler needed");
-		return;
+        return;
     }
 
     // PID response object
     fPIDResponse = inputHandler->GetPIDResponse();
     if (!fPIDResponse) {
         AliError("PIDResponse object was not created");
-	    return;
+        return;
     }
     // *****************************************************************************************
 
     // PID counter
-    fHistPID = new TH1F("fHistPID","PID Counter", 15, 0.5, 15.5);
+    fHistPID = new TH1F("fHistPID","PID Counter", 15, 0.5, 25.5);
     SetfHistPIDcounterLabels(fHistPID);
     fOutput->Add(fHistPID);
 
@@ -943,6 +942,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   // get centrality
   Int_t centbin = GetCentBin(fCent);
+
+  // to limit filling unused entries in sparse, only fill for certain centrality ranges
+  // ranges can be different than functional cent bin setter
+  Int_t cbin = -1;
+  if (fCent>=0 && fCent<10)       cbin = 1;
+  else if (fCent>=10 && fCent<20) cbin = 2;
+  else if (fCent>=20 && fCent<30) cbin = 3;
+  else if (fCent>=30 && fCent<50) cbin = 4;
+  else if (fCent>=50 && fCent<90) cbin = 5;
+  else cbin = -99;
 
 ///// HERE!
 /*
@@ -1136,7 +1145,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   if (makeQAhistos) {
     fHistRhovsdEP[centbin]->Fill(fRhoVal,fEPV0); // Global Rho vs delta Event Plane angle
-    fHistRhovsCent->Fill(fCent,fRhoVal);        // Global Rho vs Centrality
+    fHistRhovsCent->Fill(fCent,fRhoVal);         // Global Rho vs Centrality
     fHistEP0[centbin]->Fill(fEPV0);
     fHistEP0A[centbin]->Fill(fEPV0A);
     fHistEP0C[centbin]->Fill(fEPV0C);
@@ -1194,7 +1203,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      // check our jet is in our selected trigger event
      if (!(trig && fTriggerEventType)) continue;
 
-	 // (should probably be higher..., but makes a cut on jet pT)
+     // (should probably be higher..., but makes a cut on jet pT)
      if (jet->Pt()<0.1) continue;
      // do we accept jet? apply jet cuts
      if (!AcceptMyJet(jet)) continue;
@@ -1283,10 +1292,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // set up and fill Jet-Hadron trigger jets THnSparse
         if(fcorrJetPt) { 
           Double_t CorrEntries[4] = {fCent, jetPtLocal, dEP, zVtx};
-          fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+          if(fReduceStatsCent > 0) {
+            if(cbin == fReduceStatsCent) fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+          } else fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
         } else { // don't correct jet pt
           Double_t CorrEntries[4] = {fCent, jet->Pt(), dEP, zVtx};
-          fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+          if(fReduceStatsCent > 0) {
+            if(cbin == fReduceStatsCent) fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
+          } else fhnCorr->Fill(CorrEntries);    // fill Sparse Histo with trigger Jets entries
         }
  
         if(GetBeamType() == 1) fHistLocalRhoJetpt->Fill(jetPtLocal);
@@ -1326,7 +1339,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         fHistEventQA->Fill(12); // accepted tracks in events from trigger jets
 
         // calculate and get some track parameters
-		Double_t trCharge = -99;
+        Double_t trCharge = -99;
         trCharge = track->Charge();
         Double_t tracketa=track->Eta();   // eta of track
         Double_t deta=tracketa-jeteta;    // dETA between track and jet
@@ -1339,11 +1352,11 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         Int_t ieta = -1;       // initialize deta bin
         Int_t iptjet = -1;     // initialize jet pT bin
         if (makeoldJEThadhistos)  {
-  		  ieta=GetEtaBin(deta);             // bin of eta
-	      if(ieta<0) continue;              // double check we don't have a negative array index
+          ieta=GetEtaBin(deta);             // bin of eta
+          if(ieta<0) continue;              // double check we don't have a negative array index
           iptjet=GetpTjetBin(jet->Pt());    // bin of jet pt
           if(iptjet<0) continue;            // double check we don't have a negative array index
-		}
+        }
 
         // dPHI between jet and hadron
         Double_t dphijh = RelativePhi(jet->Phi(), track->Phi()); // angle between jet and hadron
@@ -1351,7 +1364,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // fill some jet-hadron histo's
         if (makeoldJEThadhistos) fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());  // fill jet-hadron dPHI--track pT distribution
         if(makeQAhistos) fHistJetHEtaPhi->Fill(deta,dphijh);                          // fill jet-hadron  eta--phi distribution
-	    fHistJetHaddPHI->Fill(dphijh);
+        fHistJetHaddPHI->Fill(dphijh);
         if(passedTTcut){
           if (makeoldJEThadhistos) fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
         }
@@ -1361,10 +1374,18 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           // set up and fill Jet-Hadron THnSparse
           if(fcorrJetPt){
             Double_t triggerEntries[9] = {fCent, jetPtLocal, track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
-            if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+            if(fDoEventMixing) {
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+              } else fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+            }
           } else { // don't correct jet pt
             Double_t triggerEntries[9] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, leadjet};
-            if(fDoEventMixing) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+            if(fDoEventMixing) {
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+              } else fhnJH->Fill(triggerEntries, 1.0/trefficiency);    // fill Sparse Histo with trigger entries
+            }
           }
 
           // fill histo's
@@ -1385,7 +1406,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               // we are in middle of plane
               fHistJetHaddPhiMIDBias->Fill(dphijh);
             }
-		  } // BIAS histos switch
+          } // BIAS histos switch
 
         } // end of check maxtrackpt>ftrackbias or maxclusterpt>fclustbias
 
@@ -1447,7 +1468,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
           // check track has pT < 0.900 GeV  - use TPC pid
           if (pt<0.900 && dEdx>0) {
-	        //nPIDtpc = 4;
+            //nPIDtpc = 4;
             nPID = 1;
 
             // PION check - TPC
@@ -1481,7 +1502,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
             if (TMath::Abs(nSigmaPion_ITS)<2 && TMath::Abs(nSigmaKaon_ITS)>2 && TMath::Abs(nSigmaProton_ITS)>2 ){
               isPIits = kTRUE;
               //nPIDits = 1; 
-	          nPID=6;
+              nPID=6;
             }else isPIits = kFALSE;
 
             // KAON check - ITS
@@ -1495,13 +1516,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
             if (TMath::Abs(nSigmaProton_ITS)<2 && TMath::Abs(nSigmaPion_ITS)>3 && TMath::Abs(nSigmaKaon_ITS)>2 ){
               isPits = kTRUE;
               //nPIDits = 3;
-	          nPID=8;
+              nPID=8;
             }else isPits = kFALSE;
           }  // cut on track pT for ITS
 
           // check track has 0.900 GeV < pT < 2.500 GeV - use TOF pid
           if (pt>0.900 && pt<2.500 && TOFsig>0) {
-	        //nPIDtof = 4;
+            //nPIDtof = 4;
             nPID = 9;
 
             // PION check - TOF
@@ -1526,54 +1547,87 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
             }else isPtof = kFALSE;
           }  // cut on track pT for TOF
 
+          // if not tagged - unidentifed particle
           if (nPID == -99) nPID = 14;
- 	      fHistPID->Fill(nPID);
+
+          // fill PID tagged histo
+          fHistPID->Fill(nPID);
+
+          // TOF PID cuts: (needs testing)
+          // Pion ID
+          if((pt > 0.4) && (pt <=1.2) && (nSigmaPion_TOF >= -5.0) && (nSigmaPion_TOF <= 5.0)) nPID = 21;
+          if((pt > 1.2) && (pt <=1.6) && (nSigmaPion_TOF >= -4.0) && (nSigmaPion_TOF <= 4.0)) nPID = 21;
+          if((pt > 1.6) && (pt <=2.0) && (nSigmaPion_TOF >= -4.0) && (nSigmaPion_TOF <= 2.0)) nPID = 21;
+          if((pt > 2.0) && (pt <=3.6) && (nSigmaPion_TOF >= -4.0) && (nSigmaPion_TOF <= 0.0)) nPID = 21;
+          // Proton ID
+          if((pt > 0.4) && (pt <=0.9) && (nSigmaProton_TOF >= -3.0) && (nSigmaPion_TOF <= 3.0)) nPID = 22;
+          if((pt > 0.9) && (pt <=1.4) && (nSigmaProton_TOF >= -4.0) && (nSigmaPion_TOF <= 4.0)) nPID = 22;
+          if((pt > 1.4) && (pt <=2.2) && (nSigmaProton_TOF >= -5.0) && (nSigmaPion_TOF <= 5.0)) nPID = 22;
+          if((pt > 2.2) && (pt <=2.4) && (nSigmaProton_TOF >= -4.0) && (nSigmaPion_TOF <= 5.0)) nPID = 22;
+          if((pt > 2.4) && (pt <=3.0) && (nSigmaProton_TOF >= -2.0) && (nSigmaPion_TOF <= 5.0)) nPID = 22;
+          if((pt > 3.0) && (pt <=3.6) && (nSigmaProton_TOF >= 0.0) && (nSigmaPion_TOF <= 5.0)) nPID = 22;
+          // Kaon ID
+          if((pt > 0.4) && (pt <=0.8) && (nSigmaKaon_TOF >= -5.0) && (nSigmaPion_TOF <= 5.0)) nPID = 23;
+          if((pt > 0.8) && (pt <=1.2) && (nSigmaKaon_TOF >= -4.0) && (nSigmaPion_TOF <= 4.0)) nPID = 23;
+          if((pt > 1.2) && (pt <=1.7) && (nSigmaKaon_TOF >= -3.0) && (nSigmaPion_TOF <= 4.0)) nPID = 23;
+          if((pt > 1.7) && (pt <=2.3) && (nSigmaKaon_TOF >= 0.0) && (nSigmaPion_TOF <= 5.0)) nPID = 23;
+          if((pt > 2.3) && (pt <=2.6) && (nSigmaKaon_TOF >= 0.0) && (nSigmaPion_TOF <= 3.0)) nPID = 23;
+          if((pt > 2.6) && (pt <=3.6) && (nSigmaKaon_TOF >= 0.0) && (nSigmaPion_TOF <= 2.0)) nPID = 23;
+
 
           // PID sparse getting filled
-          if(fcorrJetPt){
+          if(fcorrJetPt){ // subtract background density
             if (allpidAXIS) { // FILL ALL axis
-			  Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPtLocal,
-                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  				      				  nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
- 									  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
-                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
-                                      nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
-                                      }; //array for PID sparse     
-		      fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
-		    } else {
+              Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPtLocal,
+                                             nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+                                             nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+                                             nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
+                                             nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
+                                             nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
+                                             }; //array for PID sparse     
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+              } else fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+	    } else {
               // PID sparse getting filled 
               Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPtLocal,
-                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  				      				  nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
-                                      }; //array for PID sparse                           
-              fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
-		    } // minimal pid sparse filling
-          } else { // don't correct jet pt
+                                          nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+                                          nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
+                                         }; //array for PID sparse                           
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnPID->Fill(pid_Entries, 1.0/trefficiency);
+              } else fhnPID->Fill(pid_Entries, 1.0/trefficiency); // fill Sparse histo of PID tracks
+            } // minimal pid sparse filling
+          } else { // don't correct jet pt by background density
             if (allpidAXIS) { // FILL ALL axis
-			  Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
-                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  			        				  nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
- 			    					  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
-                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
-                                      nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
-                                      }; //array for PID sparse     
-		      fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
-		    } else {
+              Double_t pid_EntriesALL[19] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                             nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+                                     	     nPID, //nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+                                             nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
+                                             nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
+                                             nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
+                                            }; //array for PID sparse  
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+              } else fhnPID->Fill(pid_EntriesALL, 1.0/trefficiency);
+            } else {
               // PID sparse getting filled 
               Double_t pid_Entries[12] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
-                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
-  				      				  nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
-                                      }; //array for PID sparse                           
-              fhnPID->Fill(pid_Entries, 1.0/trefficiency);   // fill Sparse histo of PID tracks 
-		    } // minimal pid sparse filling
+                                          nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+                                          nPID //nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
+                                         }; //array for PID sparse                           
+              if(fReduceStatsCent > 0) {
+                if(cbin == fReduceStatsCent) fhnPID->Fill(pid_Entries, 1.0/trefficiency);
+              } else fhnPID->Fill(pid_Entries, 1.0/trefficiency);
+            } // minimal pid sparse filling
           } // don't correct jet pet
        	} // end of doPID check
 
-  	    // get track pt bin
+        // get track pt bin
         Int_t itrackpt = -500;              // initialize track pT bin
         itrackpt = GetpTtrackBin(track->Pt());
 
-	    // all tracks: jet hadron correlations in hadron pt bins
+        // all tracks: jet hadron correlations in hadron pt bins
         if(makeextraCORRhistos) fHistJetHadbindPhi[itrackpt]->Fill(dphijh);
 
         // in plane and out of plane jet-hadron histo's
@@ -1676,9 +1730,9 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
         // get jet object
         AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
-	    if (!jet) continue;
+        if (!jet) continue;
 
-		// (should probably be higher..., but makes a cut on jet pT)
+        // (should probably be higher..., but makes a cut on jet pT)
      	if (jet->Pt()<0.1) continue;
     	if (!AcceptMyJet(jet)) continue;
 
@@ -1700,10 +1754,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {  // && jet->Pt() > fJetPtcut) {
           // Fill mixed-event histos here  
           for (Int_t jMix=0; jMix<nMix; jMix++) {
-			fHistEventQA->Fill(17); // event mixing nMix                 
+            fHistEventQA->Fill(17); // event mixing nMix                 
 
-		    // get jMix'th event
-			bgTracks = pool->GetEvent(jMix);
+            // get jMix'th event
+            bgTracks = pool->GetEvent(jMix);
             const Int_t Nbgtrks = bgTracks->GetEntries();
             for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
               AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));
@@ -1714,7 +1768,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               Double_t DEta = part->Eta()-jet->Eta();                // difference in eta
               Double_t DPhi = RelativePhi(jet->Phi(),part->Phi());   // difference in phi
               Double_t dEP = RelativeEPJET(jet->Phi(),fEPV0);	     // difference between jet and EP
-		      Double_t mixcharge = part->Charge();
+              Double_t mixcharge = part->Charge();
               //Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);      // difference in R
 
               // calculate single particle tracking efficiency of mixed events for correlations
@@ -1724,10 +1778,14 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
               // create / fill mixed event sparse
               if(fcorrJetPt) {
                 Double_t triggerEntries[9] = {fCent,jetPtLocalmix,part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+                if(fReduceStatsCent > 0) {
+                  if(cbin == fReduceStatsCent) fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+                } else fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
               } else { // don't correct jet pt
                 Double_t triggerEntries[9] = {fCent,jet->Pt(),part->Pt(),DEta,DPhi,dEP,zVtx, mixcharge, leadjet}; //array for ME sparse
-                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+                if(fReduceStatsCent > 0) {
+                  if(cbin == fReduceStatsCent) fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
+                } else fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));   // fill Sparse histo of mixed events
               }
 
               fHistEventQA->Fill(18); // event mixing - nbgtracks
@@ -1754,16 +1812,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
           // get jet object
           AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
-		  if (!jet) continue;
+          if (!jet) continue;
 
-		  // (should probably be higher..., but makes a cut on jet pT)
+          // (should probably be higher..., but makes a cut on jet pT)
      	  if (jet->Pt()<0.1) continue;
     	  if (!AcceptMyJet(jet)) continue;
 
           fHistEventQA->Fill(16); // event mixing jets
 
           // set cut to do event mixing only if we have a jet meeting our pt threshold (bias applied below)
-		  if (jet->Pt()<fJetPtcut) continue;
+          if (jet->Pt()<fJetPtcut) continue;
 
           // get number of current events in pool 
           Int_t nMix = poolpp->GetCurrentNEvents();  // how many particles in pool to mix
@@ -1772,10 +1830,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
           if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {  // && jet->Pt() > fJetPtcut) {
             // Fill mixed-event histos here  
             for (Int_t jMix=0; jMix<nMix; jMix++) {
-			  fHistEventQA->Fill(17); // event mixing nMix                 
+              fHistEventQA->Fill(17); // event mixing nMix                 
 
-		      // get jMix'th event
-			  bgTracks = poolpp->GetEvent(jMix);
+              // get jMix'th event
+              bgTracks = poolpp->GetEvent(jMix);
               const Int_t Nbgtrks = bgTracks->GetEntries();
               for(Int_t ibg=0; ibg<Nbgtrks; ibg++) {
                 AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));
@@ -2024,24 +2082,35 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
       break;
 
    case 1:
-      if(fcorrJetPt) {
-        label = "Jet p_{T}";
+      if(fcorrJetPt) { // correct jet pt
+        label = "Jet Corrected p_{T}";
         nbins = 50;
         xmin = -50.;
         xmax = 200.;
       } else { // don't correct jet pt
         label = "Jet p_{T}";
-        nbins = 50;
-        xmin = 0.;
-        xmax = 250.;
+        if(doaltPIDbinning) { // minimize bins (for PID)
+          nbins = 20;
+          xmin = 0.;
+          xmax = 100.;
+        } else { // don't minimize bins
+          nbins = 50;
+          xmin = 0.;
+          xmax = 250.;
+        }
       }
-      break;        
 
    case 2:
       label = "Track p_{T}";
-      nbins = 80;
-      xmin = 0.;
-      xmax = 20.;
+      if(doaltPIDbinning) { // minimize bins (for PID)
+        nbins = 100; 
+        xmin = 0.;
+        xmax = 10.; 
+      } else { // don't minimize bins
+        nbins = 80; 
+        xmin = 0.;
+        xmax = 20.;
+      } 
       break;
 
     case 3:
@@ -2081,14 +2150,16 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
 
   case 8:
       label = "leading jet";
-      nbins = 3;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 3;
       xmin = -0.5;
       xmax = 2.5;
       break;
 
   case 9: // need to update
       label = "leading track";
-      nbins = 10;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 10;
       xmin = 0;
       xmax = 50;
       break; 
@@ -2196,9 +2267,15 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 1:
       label = "Track p_{T}";
-      nbins = 80; 
-      xmin = 0.;
-      xmax = 20.; 
+      if(doaltPIDbinning) { // minimize bins
+        nbins = 100; 
+        xmin = 0.;
+        xmax = 10.; 
+      } else { // don't minmize
+        nbins = 80; 
+        xmin = 0.;
+        xmax = 20.;
+      } 
       break;
 
    case 2:
@@ -2222,9 +2299,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       xmax = 1.5*pi;
       break;
 
-   case 5:
+   case 5: // not used
       label = "leading jet";
-      nbins = 3;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 3;
       xmin = -.5;
       xmax = 2.5;
       break;
@@ -2244,38 +2322,51 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       break;
 
    case 8: 
-      if(fcorrJetPt) {
-        label = "Jet p_{T}";
+      if(fcorrJetPt) { // correct jet pt
+        label = "Jet Corrected p_{T}";
         nbins = 50;
         xmin = -50.;
         xmax = 200.;
       } else { // don't correct jet pt
         label = "Jet p_{T}";
-        nbins = 50;
-        xmin = 0.;
-        xmax = 250.;
+        if(doaltPIDbinning) { // minimize bins
+          nbins = 20;
+          xmin = 0.;
+          xmax = 100.;
+        } else { // don't minimize bins
+          nbins = 50;
+          xmin = 0.;
+          xmax = 250.;
+        }
       }
       break;
 
-   case 9:
+   case 9:  // this may be temp, only using TOF
       label = "N-Sigma of pions in TPC";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 200;
       xmin = -10.0;
       xmax = 10.0; 
       break;
 
    case 10:
       label = "N-Sigma of pions in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.; 
+      if(doaltPIDbinning) { // this may be temp, only using TOF
+        nbins = 10;
+        xmin = -5.;
+        xmax = 5.; 
+      } else {
+        nbins = 200;
+        xmin = -10.;
+        xmax = 10.; 
+      }
       break;
 
    case 11:
-      label = "TPC PID determination";
-      nbins = 15; //5;
+      label = "PID determination TPC 1-15, TOF 21-25";
+      nbins = 25; //5;
       xmin = 0.5; //0.;
-      xmax = 15.5; //5.;
+      xmax = 25.5; //5.;
       break;
 
 /*
@@ -2294,53 +2385,70 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       break;
 */
 
-   case 12:
+   case 12:  // this may be temp, only using TOF
       label = "N-Sigma of protons in TPC";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1; 
+      else nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 13:
+   case 13:  // this may be temp, only using TOF
       label = "N-Sigma of kaons in TPC";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1; 
+      else nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 14:
+   case 14:  // this may be temp, only using TOF
       label = "N-Sigma of pions in ITS";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 200;
       xmin = -10.0;
       xmax = 10.0; 
       break;
 
-   case 15:
+   case 15:  // this may be temp, only using TOF
       label = "N-Sigma of protons in ITS";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 16:
+   case 16:  // this may be temp, only using TOF
       label = "N-Sigma of kaons in ITS";
-      nbins = 200;
+      if(doaltPIDbinning) nbins = 1;
+      else nbins = 200;
       xmin = -10.;
       xmax = 10.;
       break;
 
    case 17:
       label = "N-Sigma of protons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
+      if(doaltPIDbinning) {
+        nbins = 10;
+        xmin = -5.;
+        xmax = 5.;
+      } else {
+        nbins = 200;
+        xmin = -10.;
+        xmax = 10.;
+      }
       break;
 
    case 18:
       label = "N-Sigma of kaons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
+      if(doaltPIDbinning) {
+        nbins = 10;
+        xmin = -5.;
+        xmax = 5.;
+      } else {
+        nbins = 200;
+        xmin = -10.;
+        xmax = 10.;
+      }
       break;
 
    } // end of switch
@@ -2494,16 +2602,22 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsCorr(Int_t iEntry, TString &la
       break;
 
    case 1:
-      if(fcorrJetPt) {
-        label = "Jet p_{T}";
+      if(fcorrJetPt) { // correct jet pt
+        label = "Jet Corrected p_{T}";
         nbins = 50;
         xmin = -50.;
         xmax = 200.;
       } else { // don't correct jet pt
         label = "Jet p_{T}";
-        nbins = 50;
-        xmin = 0.;
-        xmax = 250.;
+        if(doaltPIDbinning) { // minimize bins
+          nbins = 20;
+          xmin = 0.;
+          xmax = 100.;
+        } else { // don't minimize bins
+          nbins = 50;
+          xmin = 0.;
+          xmax = 250.;
+        }
       }
       break;
 
@@ -2515,25 +2629,39 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsCorr(Int_t iEntry, TString &la
       break;
 
    case 3:
-	  label = "Z-vertex";
+      label = "Z-vertex";
       nbins = 10;
       xmin = -10.;
       xmax = 10.;
-	  break;
+      break;
 
    case 4:
-	  label = "Jet p_{T} corrected with Local Rho";
-      nbins = 50; // 250
-      xmin = -50.;
-      xmax = 200.;
-	  break;
+      label = "Jet p_{T} corrected with Local Rho";
+      if(doaltPIDbinning) {
+        nbins = 30; // 250
+        xmin = -50.;
+        xmax = 100.;
+        break;
+      } else {
+        nbins = 50; // 250
+        xmin = -50.;
+        xmax = 200.;
+      }
+      break;
 
    case 5:
-	  label = "Jet p_{T} corrected with Global Rho";
-      nbins = 50; // 250
-      xmin = -50.;
-      xmax = 200.;
-	  break;
+      label = "Jet p_{T} corrected with Global Rho";
+      if(doaltPIDbinning) {
+        nbins = 30; // 250
+        xmin = -50.;
+        xmax = 100.;
+        break;
+      } else {
+        nbins = 50; // 250
+        xmin = -50.;
+        xmax = 200.;
+      }
+      break;
 
    }// end of switch
 } // end of Correction (ME) sparse
@@ -2716,7 +2844,6 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
     default :
       // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
       TRefficiency = 1.0;
-
   }
 
   //if(TRefficiency < 0.1) cout<<"pt: "<<x<<"  eta: "<<y<<"  cent: "<<fCent<<"  Eff: "<<TRefficiency<<"   Ptaxis: "<<ptaxis<<"   etaaxis: "<<etaaxis<<endl;
@@ -2783,28 +2910,28 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
 
    // first check for track object
    if(fTracks) {
-       Float_t excludeInEta = -999;
-       if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
-           if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
-       }
+     Float_t excludeInEta = -999;
+     if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
+       if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
+     }
        
-       // loop over tracks in TPC
-       for(Int_t iTPC(0); iTPC < fTracks->GetEntries(); iTPC++) {
-           AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(iTPC));
+     // loop over tracks in TPC
+     for(Int_t iTPC(0); iTPC < fTracks->GetEntries(); iTPC++) {
+       AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(iTPC));
 
-           // apply general track cuts
-           if(TMath::Abs(track->Eta())>0.9) continue;
-           if(track->Pt()<0.15) continue;
-           if(track->Pt() < fSoftTrackMinPt_ep || track->Pt() > fSoftTrackMaxPt_ep) continue; // APPLY soft cut
-           if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < fJetRad*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRad - fEtamax ) > 0 )) continue;
-           fNAcceptedTracks++;
+       // apply general track cuts
+       if(TMath::Abs(track->Eta())>0.9) continue;
+       if(track->Pt()<0.15) continue;
+       if(track->Pt() < fSoftTrackMinPt_ep || track->Pt() > fSoftTrackMaxPt_ep) continue; // APPLY soft cut
+       if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < fJetRad*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRad - fEtamax ) > 0 )) continue;
+       fNAcceptedTracks++;
 
-           // sum up q-vectors
-           qx2+= TMath::Cos(2.*track->Phi());
-           qy2+= TMath::Sin(2.*track->Phi());
-           qx3+= TMath::Cos(3.*track->Phi());
-           qy3+= TMath::Sin(3.*track->Phi());
-       }
+       // sum up q-vectors
+       qx2+= TMath::Cos(2.*track->Phi());
+       qy2+= TMath::Sin(2.*track->Phi());
+       qx3+= TMath::Cos(3.*track->Phi());
+       qy3+= TMath::Sin(3.*track->Phi());
+     }
    }
    tpc[0] = .5*TMath::ATan2(qy2, qx2);
    tpc[1] = (1./3.)*TMath::ATan2(qy3, qx3);

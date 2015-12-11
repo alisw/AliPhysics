@@ -9,7 +9,7 @@ Bool_t reflTempl=kTRUE;//***elena****
 Bool_t skip3to5=kFALSE;//***elena****
 const Int_t nbinDpt=3;
 const Int_t nbinAssocpt=3;
-const Int_t nSets=5;
+const Int_t nSets=6;
 Int_t firstDpt=0;
 Bool_t isReflectedData=kTRUE;
 Double_t canvasheight=900;
@@ -19,7 +19,10 @@ Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
 Double_t referencePadHeight=0.44; 
 TString strsyst="pp";
-TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","POWHEG"};
+TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","POWHEG","PYTHIA8"};
+const Int_t nmodels=6;
+Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kCyan,kViolet};
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16"};
 Double_t minYaxis[nbinAssocpt]={-0.6,-0.6,-0.29}; // or -0.6 for all  
@@ -462,39 +465,12 @@ void DoComparison_ppVsMCallPanels(){
 	  h=GetHisto(filenames[iset][kassoc][jmes],"hCorrDeltaPhi");
 	  if(reflTempl)histo[iset][kassoc][jmes]=AliHFCorrelationUtils::ReflectHisto(h,0.5);
 	  else histo[iset][kassoc][jmes]=h;
-	  if(iset==1){//Perugia0
-	    histo[iset][kassoc][jmes]->SetMarkerColor(kMagenta+1);
-	    histo[iset][kassoc][jmes]->SetLineColor(kMagenta+1); 
+
+	    histo[iset][kassoc][jmes]->SetMarkerColor(modelColors[iset-1]);// -1 because first iset is data
+	    histo[iset][kassoc][jmes]->SetLineColor(modelColors[iset-1]); 
 	    histo[iset][kassoc][jmes]->SetLineWidth(2); 
 	    histo[iset][kassoc][jmes]->SetMarkerStyle(kDot); 
 	    //  histo[iset][kassoc][jmes]->SetMarkerStyle(kOpenSquare); 
-	  }
-	   if(iset==2){//Perugia2010
-	    histo[iset][kassoc][jmes]->SetMarkerColor(kGreen+2);
-	    histo[iset][kassoc][jmes]->SetLineColor(kGreen+2); 
-	    histo[iset][kassoc][jmes]->SetLineWidth(2); 
-	    //	    histo[iset][kassoc][jmes]->SetMarkerStyle(kOpenCircle);
-	    histo[iset][kassoc][jmes]->SetMarkerStyle(kDot); 
-
-	  }
-	   if(iset==3){//Perugia2011
-	    histo[iset][kassoc][jmes]->SetMarkerColor(kBlue);
-	    histo[iset][kassoc][jmes]->SetLineColor(kBlue); 
-	    histo[iset][kassoc][jmes]->SetLineWidth(2); 
-	    histo[iset][kassoc][jmes]->SetMarkerStyle(kOpenDiamond);
-	    //histo[iset][kassoc][jmes]->SetMarkerSize(1.5);
-	    histo[iset][kassoc][jmes]->SetMarkerStyle(kDot); 
-
-	   }
-	   if(iset==4){//Perugia2011
-	    histo[iset][kassoc][jmes]->SetMarkerColor(kRed+2);
-	    histo[iset][kassoc][jmes]->SetLineColor(kRed+2); 
-	    histo[iset][kassoc][jmes]->SetLineWidth(2); 
-	    histo[iset][kassoc][jmes]->SetMarkerStyle(kOpenCross);
-	    //	    histo[iset][kassoc][jmes]->SetMarkerSize(1.5);
-	    histo[iset][kassoc][jmes]->SetMarkerStyle(kDot); 
-	    
-	   }
 
 	   subtractedhisto[iset][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedMC(iset,kassoc,jmes,histo[iset][kassoc][jmes],"CanvasBaselineVariationTrendPedestal");
 	   
@@ -610,6 +586,7 @@ void DoComparison_ppVsMCallPanels(){
       subtractedhisto[2][iassoc][jDpt]->Draw("hist same c");//Perugia2010
       subtractedhisto[3][iassoc][jDpt]->Draw("hist same c");//Perugia2011
       subtractedhisto[4][iassoc][jDpt]->Draw("hist same c");//POWHEG
+      subtractedhisto[5][iassoc][jDpt]->Draw("hist same c");//PYTHIA8
      // subtractedhisto[1][iassoc][jDpt]->Draw("same");//Perugia0
      //  subtractedhisto[2][iassoc][jDpt]->Draw("same");//Perugia2010
      //  subtractedhisto[3][iassoc][jDpt]->Draw("same");//Perugia2011
@@ -636,7 +613,7 @@ void DoComparison_ppVsMCallPanels(){
 	
       }
       if(jDpt==1 && iassoc==0){
-	TLegend *legendMC=GetLegendMC(subtractedhisto[1][iassoc][jDpt],subtractedhisto[2][iassoc][jDpt],subtractedhisto[3][iassoc][jDpt],subtractedhisto[4][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+	TLegend *legendMC=GetLegendMC(subtractedhisto[1][iassoc][jDpt],subtractedhisto[2][iassoc][jDpt],subtractedhisto[3][iassoc][jDpt],subtractedhisto[4][iassoc][jDpt],subtractedhisto[5][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
 	
 	legendMC->Draw();
       }
@@ -1003,7 +980,7 @@ TLegend *GetLegendData(TH1D *hpp,Int_t identifier){
     legend->SetName(Form("LegendDataPP_%d",identifier));
     return legend;
   }
-TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4,Int_t identifier){
+TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=0x0,Int_t identifier=0){
     
   // TLegend * legend = new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.1/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.13/gPad->GetHNDC()+gPad->GetBottomMargin());
    TLegend * legend = new TLegend(0.1,0.4,0.7,0.75,NULL,"brNDC");
@@ -1016,13 +993,15 @@ TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4,Int_t identifie
     legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
     legend->SetHeader("Simulations, pp #sqrt{#it{s}}=7 TeV");
-    legend->AddEntry(hMC1,"Pythia6, Perugia0","l");
-    legend->AddEntry(hMC2,"Pythia6, Perugia2010","l");
-    legend->AddEntry(hMC3,"Pythia6, Perugia2011","l");
-    legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
-    //legend->AddEntry(hMC1,"Pythia6, Perugia0","lep");
-    //legend->AddEntry(hMC2,"Pythia6, Perugia2010","lep");
-    //legend->AddEntry(hMC3,"Pythia6, Perugia2011","lep");
+    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia0","l");
+    if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","l");
+    if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia2011","l");   
+    if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
+    if(hMC5)legend->AddEntry(hMC5,"PYTHIA8, Tune C","l");
+
+    //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
+    //legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","lep");
+    //legend->AddEntry(hMC3,"PYTHIA6, Perugia2011","lep");
     //legend->AddEntry(hMC4,"POWHEG+PYTHIA6","lep");
 
     legend->SetName(Form("LegendMC_%d",identifier));

@@ -24,11 +24,11 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoXiV0PairCut, 0)
+  ClassDef(AliFemtoXiV0PairCut, 0);
   /// \endcond
 #endif
 };
- 
+
 inline AliFemtoXiV0PairCut::AliFemtoXiV0PairCut(const AliFemtoXiV0PairCut &c):
   AliFemtoPairCut(c),
   fNPairsPassed(c.fNPairsPassed),

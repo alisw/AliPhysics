@@ -231,19 +231,19 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       if(patchit->GetADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[3]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
       onlinebits &= gammaPatchMask;
-    } else if (IsJetPatch(*patchit)){
+    }
+    if (IsJetPatch(*patchit)){
       if(patchit->GetADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[0]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchit->GetADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[2]) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
       onlinebits &= jetPatchMask;
-    } else if (IsBkgPatch(*patchit)){
+    }
+    if (IsBkgPatch(*patchit)){
       if(patchit->GetADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
       if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
       onlinebits &= bkgPatchMask;
     }
-    else onlinebits = 0;
-    if(!(onlinebits || offlinebits)) continue;
     // convert
     AliEmcalTriggerPatchInfoAPV1 *fullpatch = AliEmcalTriggerPatchInfoAPV1::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EmcalTriggerAP::kEMCL1ADCtoGeV,

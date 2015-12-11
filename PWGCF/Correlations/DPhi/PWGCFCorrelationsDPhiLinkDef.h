@@ -60,4 +60,5 @@
 #pragma link C++ class AliCorrReducedTrackAA+;
 #pragma link C++ class AliAnalysisTaskPIDBFDptDpt+;
 #pragma link C++ class AliAnaTaskMomScan+;
+#pragma link C++ class AliCorrelationAnalysis+;
 #endif

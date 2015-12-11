@@ -75,10 +75,10 @@ template<class T> class AliFmLorentzVector {
 public:
     AliFmLorentzVector(T = 0, T = 0, T = 0, T = 0);
     virtual ~AliFmLorentzVector();
-    
+
 #ifndef ST_NO_MEMBER_TEMPLATES
     template<class X> AliFmLorentzVector(const AliFmThreeVector<X>&, T);
-    template<class X> AliFmLorentzVector(T, const AliFmThreeVector<X>&);   
+    template<class X> AliFmLorentzVector(T, const AliFmThreeVector<X>&);
 
     template<class X> AliFmLorentzVector(const AliFmLorentzVector<X>&);
     template<class X> AliFmLorentzVector<T>& operator=(const AliFmLorentzVector<X>&);
@@ -86,17 +86,17 @@ public:
     // AliFmLorentzVector<T>& operator=(const AliFmLorentzVector<T>&);  use default
 #else
     AliFmLorentzVector(const AliFmThreeVector<float>&, T);
-    AliFmLorentzVector(T, const AliFmThreeVector<float>&);   
+    AliFmLorentzVector(T, const AliFmThreeVector<float>&);
     AliFmLorentzVector(const AliFmLorentzVector<float>&);
-    
+
     AliFmLorentzVector(const AliFmThreeVector<double>&, T);
-    AliFmLorentzVector(T, const AliFmThreeVector<double>&);   
+    AliFmLorentzVector(T, const AliFmThreeVector<double>&);
     AliFmLorentzVector(const AliFmLorentzVector<double>&);
-        
+
     AliFmLorentzVector<T>& operator=(const AliFmLorentzVector<float>&);
     AliFmLorentzVector<T>& operator=(const AliFmLorentzVector<double>&);
 #endif
-    
+
     T x()                     const;
     T y()                     const;
     T z()                     const;
@@ -107,12 +107,12 @@ public:
     T e()                     const;
     T operator()  (size_t)    const;
     T operator[]  (size_t)    const;
-    
+
     T& operator()  (size_t);
     T& operator[]  (size_t);
 
-    const AliFmThreeVector<T>& vect() const;    
-    
+    const AliFmThreeVector<T>& vect() const;
+
     void SetX(T);
     void SetY(T);
     void SetZ(T);
@@ -121,13 +121,13 @@ public:
     void SetPz(T);
     void SetE(T);
     void SetT(T);
-    
+
 #ifndef ST_NO_MEMBER_TEMPLATES
     template <class X> void SetVect(const AliFmThreeVector<X>&);
 #else
     void SetVect(const AliFmThreeVector<float>&);
     void SetVect(const AliFmThreeVector<double>&);
-#endif   
+#endif
 
     T Perp()               const;
     T Perp2()              const;
@@ -135,23 +135,23 @@ public:
     T Phi()                const;
     T Theta()              const;
     T CosTheta()           const;
-    
+
     T Plus()               const;
     T Minus()              const;
-    
-    T m()                  const; 
-    T m2()                 const; 
+
+    T m()                  const;
+    T m2()                 const;
     T mt()                 const;
     T mt2()                const;
     T Rapidity()           const;
-    
+
 #ifndef ST_NO_MEMBER_TEMPLATES
     template<class X> AliFmLorentzVector<T> boost(const AliFmLorentzVector<X>&) const;
 #else
     AliFmLorentzVector<T> boost(const AliFmLorentzVector<float>&) const;
     AliFmLorentzVector<T> boost(const AliFmLorentzVector<double>&) const;
-#endif   
-    
+#endif
+
     AliFmLorentzVector<T>  operator- ();
     AliFmLorentzVector<T>  operator+ ();
     AliFmLorentzVector<T>& operator*= (double);
@@ -162,7 +162,7 @@ public:
     template<class X> bool operator != (const AliFmLorentzVector<X>&) const;
     template<class X> AliFmLorentzVector<T>& operator+= (const AliFmLorentzVector<X>&);
     template<class X> AliFmLorentzVector<T>& operator-= (const AliFmLorentzVector<X>&);
-#else    
+#else
     bool operator == (const AliFmLorentzVector<float>&) const;
     bool operator != (const AliFmLorentzVector<float>&) const;
     bool operator == (const AliFmLorentzVector<double>&) const;
@@ -178,9 +178,13 @@ protected:
     AliFmThreeVector<T> fThreeVector; // The spatial three-vector
     T	             fX4;             // The fourth components
 #ifdef __ROOT__
-  ClassDef(AliFmLorentzVector,3)
+  /// \cond CLASSIMP
+  ClassDef(AliFmLorentzVector, 3);
+  /// \endcond
 #endif
 };
+
+
 #ifndef __CINT__
 //
 //        Implementation of member functions
@@ -190,10 +194,10 @@ AliFmLorentzVector<T>::AliFmLorentzVector(T ax, T ay, T az, T at)
     : fThreeVector(ax, ay, az), fX4(at) { /* nop */ }
 
 template<class T>
-AliFmLorentzVector<T>::~AliFmLorentzVector() { /* nopt */ }    
+AliFmLorentzVector<T>::~AliFmLorentzVector() { /* nopt */ }
 
 template<class T>
-const AliFmThreeVector<T>& AliFmLorentzVector<T>::vect() const 
+const AliFmThreeVector<T>& AliFmLorentzVector<T>::vect() const
 {
     return fThreeVector;
 }
@@ -201,7 +205,7 @@ const AliFmThreeVector<T>& AliFmLorentzVector<T>::vect() const
 template<class T>
 T AliFmLorentzVector<T>::m2() const
 {
-    return (fX4*fX4 - fThreeVector*fThreeVector);    
+    return (fX4*fX4 - fThreeVector*fThreeVector);
 }
 
 template<class T>
@@ -314,7 +318,7 @@ T AliFmLorentzVector<T>::operator() (size_t i) const
         return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");  
+      throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");
 #else
       cerr << "AliFmLorentzVector<T>::operator(): bad index." << endl;
 #endif
@@ -331,7 +335,7 @@ T& AliFmLorentzVector<T>::operator() (size_t i)
         return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");  
+      throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");
 #else
       cerr << "AliFmLorentzVector<T>::operator(): bad index." << endl;
       return fX4;
@@ -348,7 +352,7 @@ T AliFmLorentzVector<T>::operator[] (size_t i) const
         return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
+      throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index");
 #else
       cerr << "AliFmLorentzVector<T>::operator[]: bad index." << endl;
       return 0;
@@ -365,7 +369,7 @@ T& AliFmLorentzVector<T>::operator[] (size_t i)
         return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
-      throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
+      throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index");
 #else
       cerr << "AliFmLorentzVector<T>::operator[]: bad index." << endl;
       return fX4;
@@ -491,7 +495,7 @@ AliFmLorentzVector<T>::operator-= (const AliFmLorentzVector<X>& v)
     return *this;
 }
 
-#endif 
+#endif
 #else
 
 template<class T>
@@ -513,11 +517,11 @@ AliFmLorentzVector<T>::AliFmLorentzVector(T t, const AliFmThreeVector<double> &v
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmLorentzVector<float> &vec)
 	: fThreeVector(vec.vect()), fX4(vec.t()) { /* nop */ }
-    
+
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmLorentzVector<double> &vec)
 	: fThreeVector(vec.vect()), fX4(vec.t()) { /* nop */ }
-    
+
 template<class T>
 AliFmLorentzVector<T>
 AliFmLorentzVector<T>::boost(const AliFmLorentzVector<float>& pframe) const

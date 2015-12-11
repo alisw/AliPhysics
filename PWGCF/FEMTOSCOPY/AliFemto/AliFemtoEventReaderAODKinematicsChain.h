@@ -70,7 +70,9 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderAODKinematicsChain, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderAODKinematicsChain, 1);
+  /// \endcond
 #endif
 
     };

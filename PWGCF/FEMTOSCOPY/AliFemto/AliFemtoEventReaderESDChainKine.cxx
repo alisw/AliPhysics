@@ -36,7 +36,11 @@
 
 #include "AliPID.h"
 
-ClassImp(AliFemtoEventReaderESDChainKine)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderESDChainKine);
+  /// \endcond
+#endif
 
 #if !(ST_NO_NAMESPACES)
 using namespace units;

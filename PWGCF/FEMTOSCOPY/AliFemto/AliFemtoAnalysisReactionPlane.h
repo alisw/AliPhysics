@@ -15,7 +15,7 @@ public:
 
   AliFemtoAnalysisReactionPlane(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9, unsigned short binsRP=10);
   AliFemtoAnalysisReactionPlane(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis);  // copy constructor
-  AliFemtoAnalysisReactionPlane& operator=(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis); 
+  AliFemtoAnalysisReactionPlane& operator=(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis);
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoAnalysisReactionPlane();
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
@@ -36,12 +36,13 @@ protected:
   unsigned int fUnderFlowMult;        /* number of events encountered which had too small multiplicity */
   unsigned short fRPBins;             // Number of reaction plane angle orientation bins
   double fCurrentRP;                  // Reaction plane angle of the current event
+
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoAnalysisReactionPlane, 0)
+  ClassDef(AliFemtoAnalysisReactionPlane, 0);
   /// \endcond
 #endif
-    
+
 };
 
 #endif

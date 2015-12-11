@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <vector>
 #include <iostream>
 
@@ -42,9 +41,6 @@ void AliEventClassifierMult::CalculateClassifierValue(AliMCEvent *event, AliStac
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
-    // check if the pdg is safe
-    if (find(fSafePdgCodes.begin(), fSafePdgCodes.end(), TMath::Abs(track->PdgCode())) == fSafePdgCodes.end())
-      continue;
 
     // Only calculate for primaries (Aliroot definition excluding Pi0)
     if (!stack->IsPhysicalPrimary(iTrack)) continue;

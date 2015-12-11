@@ -1,8 +1,7 @@
-// $Id$
 //
-// Container with name, TClonesArray and cuts for particles
+// Container with name, TClonesArray and cuts for calo clusters
 //
-// Author: M. Verweij
+// Author: M. Verweij, S. Aiola
 
 #include <TClonesArray.h>
 
@@ -16,33 +15,43 @@ ClassImp(AliClusterContainer)
 //________________________________________________________________________
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer("AliClusterContainer"),
-  fClusPtCut(0.15),
+  fClusPtCut(0.),
   fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0)
+  fMinMCLabel(0),
+  fExoticCut(kTRUE)
 {
   // Default constructor.
 
   fClassName = "AliVCluster";
+
+  for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
+    fUserDefEnergyCut[i] = 0.;
+  }
 }
 
 //________________________________________________________________________
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
-  fClusPtCut(0.15),
+  fClusPtCut(0.),
   fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fClusterBitMap(0),
   fMCClusterBitMap(0),
-  fMinMCLabel(0)
+  fMinMCLabel(0),
+  fExoticCut(kTRUE)
 {
   // Standard constructor.
 
   fClassName = "AliVCluster";
+
+  for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
+    fUserDefEnergyCut[i] = 0.;
+  }
 }
 
 //________________________________________________________________________
@@ -218,6 +227,18 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus)
   if (nPart.Et() < fClusPtCut) {
     fRejectionReason |= kPtCut;
     return kFALSE;
+  }
+
+  if (fExoticCut && clus->GetIsExotic()) {
+    fRejectionReason |= kExoticCut;
+    return kFALSE;
+  }
+  
+  for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
+    if (clus->GetUserDefEnergy((VCluUserDefEnergy_t)i) < fUserDefEnergyCut[i]) {
+      fRejectionReason |= kEnergyCut;
+      return kFALSE;
+    }
   }
   
   return kTRUE;
