@@ -178,8 +178,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistTOFsignal;                       //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
   TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
   TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
-  //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
-  //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
   //TH1F               *fHistTOFdeumass;                      //!<! TOF mass of deuteron identified with TPC
   //TH1F               *fHistTOFpromass;                      //!<! TOF mass of proton identified with TPC
 
@@ -219,13 +217,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistAngleCorr_ppi_dpi;               //!<! Correlation between angle_ppi vs angle_dpi
   TH1F               *fHistHyperRapidity;                   //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;                //!<! Cosine of pointing angle distribution of candidate mother particle
-  //TH1F               *fHistDecayMomCM_X;                    //!<! X momentum component of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM_Y;                    //!<! Y momentum component of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM_Z;                    //!<! Z momentum component of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_XY;                   //!<! p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_XZ;                   //!<! p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_YZ;                   //!<! p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM;                      //!<! hypertriton momentum in the center-of-mass
   TH1F               *fHistPtHypertriton;                   //!<! hypertriton transverse momentum distribution
   TH1F               *fHistMassHypertriton;                 //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassAntiHypertriton;             //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
@@ -269,13 +260,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistAngleCorr_dp_dpi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_dpi
   TH2F               *fHistAngleCorr_dp_ppi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_ppi
   TH2F               *fHistAngleCorr_ppi_dpi_MCt;  //!<! *(MC only)* Correlation between angle_ppi vs angle_dpi
-  //TH1F               *fHistDecayMomCM_X_MCt;       //!<! *(MC only)* X momentum component of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM_Y_MCt;       //!<! *(MC only)* Y momentum component of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM_Z_MCt;       //!<! *(MC only)* Z momentum component of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_XY_MCt;      //!<! *(MC only)* p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_XZ_MCt;      //!<! *(MC only)* p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
-  //TH2F               *fHistDecayMomCM_YZ_MCt;      //!<! *(MC only)* p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
-  //TH1F               *fHistDecayMomCM_MCt;         //!<! *(MC only)* hypertriton momentum in the center-of-mass
   TH1F               *fHistHypertritonMomMCt;      //!<! *(MC only)* hypertriton momentum in the lab rest frame
   TH1F               *fHistHyperRapidityMCt;       //!<! *(MC only)* Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassHypertritonMCt;     //!<! *(MC only)* Invariant mass distribution of reconstructed \f$H^{3}_{\Lambda}\f$ - daughters particles identified with PDGCode
@@ -336,20 +320,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTAngle_dpi;
   Float_t            fTAngle_ppi;
 
-  /*Float_t            fTpdeu_CM_X;
-  Float_t            fTpdeu_CM_Y;
-  Float_t            fTpdeu_CM_Z;
-  Float_t            fTppro_CM_X;
-  Float_t            fTppro_CM_Y;
-  Float_t            fTppro_CM_Z;
-  Float_t            fTppio_CM_X;
-  Float_t            fTppio_CM_Y;
-  Float_t            fTppio_CM_Z;
-  
-  Float_t            fTp3HL_CM_X;
-  Float_t            fTp3HL_CM_Y;
-  Float_t            fTp3HL_CM_Z;
-  */
   Float_t            fTpdeu_gen_X;
   Float_t            fTpdeu_gen_Y;
   Float_t            fTpdeu_gen_Z;
@@ -359,6 +329,20 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTppio_gen_X;
   Float_t            fTppio_gen_Y;
   Float_t            fTppio_gen_Z;
+    
+  Int_t              fTpdgDeu;
+  Int_t              fTpdgPro;
+  Int_t              fTpdgPion;
+  Int_t              fTmomidD;
+  Int_t              fTmomidP;
+  Int_t              fTmomidPi;
+  Float_t            fTpdgmomD;
+  Float_t            fTpdgmomP;
+  Float_t            fTpdgmomPi;
+  Int_t              fTuniqID_deu;
+  Int_t              fTuniqID_pro;
+  Int_t              fTuniqID_pion;
+
     
   Float_t            fTRapidity; 
   Float_t            fTDecayLength;
