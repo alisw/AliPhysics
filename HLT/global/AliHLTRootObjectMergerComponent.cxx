@@ -79,6 +79,12 @@ int AliHLTRootObjectMergerComponent::DoInit( int argc, const char** argv )
   return 0;
 }
 
+void* AliHLTRootObjectMergerComponent::cleanup(void*)
+{
+  if (fObj) delete fObj;
+  fObj = NULL;
+}
+
 int AliHLTRootObjectMergerComponent::DoDeinit() {
 
 	if (fAsyncProcessor.GetNumberOfAsyncTasksInQueue())
@@ -92,8 +98,7 @@ int AliHLTRootObjectMergerComponent::DoDeinit() {
 
   fAsyncProcessor.Deinitialize();
 
-  if (fObj) delete fObj;
-  fObj = NULL;
+  fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::cleanup, NULL);
   return 0;
 }
 
