@@ -46,7 +46,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   name += "_";
   name += cutType;
 
-  if (strcmp(suffix,"") != 0) {
+  if (strcmp(suffix,"")) {
     name += "_";
     name += suffix;
   }
