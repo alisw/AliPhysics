@@ -456,24 +456,24 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
-    nbins[dim] = 100;
+    nbins[dim] = 101;
     min[dim] = 0;
-    max[dim] = 100;
+    max[dim] = 101;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 100;
+      nbins[dim] = 101;
       min[dim] = 0;
-      max[dim] = 100;
+      max[dim] = 101;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 100;
+      nbins[dim] = 101;
       min[dim] = 0;
-      max[dim] = 100;
+      max[dim] = 101;
       dim++;
     }
 
