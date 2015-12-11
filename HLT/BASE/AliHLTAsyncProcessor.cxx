@@ -71,14 +71,14 @@ int AliHLTAsyncProcessor::Initialize(int depth, bool process, size_t process_buf
 		fMe->fAsyncProcess = process;
 		size_t size = sizeof(AliHLTAsyncProcessorBackend) +
 		              (sizeof(AliHLTAsyncProcessorInput) + sizeof(void*)) * fMe->fQueueDepth +
-		              process_buffer_size * (fMe->fQueueDepth + 2) +
+		              process_buffer_size * (fMe->fQueueDepth + 3) +
 		              ChildSharedProcessBufferSize() +
 		              (6 + fMe->fQueueDepth) * ALIHLTASYNCPROCESSOR_ALIGN;
 		void* tmpPtr;
 		if (fMe->fAsyncProcess) //promote to running async process instead of async thread
 		{
 			fMe->fmmapSize = sizeof(AliHLTAsyncProcessorContent) +
-			                 sizeof(bool) * (fMe->fQueueDepth + 2) +
+			                 sizeof(bool) * (fMe->fQueueDepth + 3) +
 			                 2 * ALIHLTASYNCPROCESSOR_ALIGN +
 			                 size;
 			fMe->fBasePtr = mmap(NULL, fMe->fmmapSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, 0, 0);
@@ -90,9 +90,9 @@ int AliHLTAsyncProcessor::Initialize(int depth, bool process, size_t process_buf
 			if (fMe->fBufferSize % ALIHLTASYNCPROCESSOR_ALIGN) fMe->fBufferSize += ALIHLTASYNCPROCESSOR_ALIGN - fMe->fBufferSize % ALIHLTASYNCPROCESSOR_ALIGN;
 			tmpPtr = alignPointer(fMe->fBasePtr, sizeof(AliHLTAsyncProcessorContent));
 			
-			fMe->fBufferUsed = new (tmpPtr) bool[fMe->fQueueDepth + 2];
-			memset(fMe->fBufferUsed, 0, sizeof(bool) * (fMe->fQueueDepth + 2));
-			tmpPtr = alignPointer(tmpPtr, sizeof(bool) * (fMe->fQueueDepth + 2));
+			fMe->fBufferUsed = new (tmpPtr) bool[fMe->fQueueDepth + 3];
+			memset(fMe->fBufferUsed, 0, sizeof(bool) * (fMe->fQueueDepth + 3));
+			tmpPtr = alignPointer(tmpPtr, sizeof(bool) * (fMe->fQueueDepth + 3));
 		}
 		else
 		{
@@ -392,7 +392,7 @@ void* AliHLTAsyncProcessor::AllocateBuffer()
 {
 	if (!fMe->fAsyncProcess) return NULL;
 	fMe->fBackend->LockMutex(5);
-	for (int i = 0;i < fMe->fQueueDepth + 2;i++)
+	for (int i = 0;i < fMe->fQueueDepth + 3;i++)
 	{
 		if (!fMe->fBufferUsed[i])
 		{
@@ -409,7 +409,7 @@ void AliHLTAsyncProcessor::FreeBuffer(void* ptr)
 {
 	if (fMe->fAsyncProcess)
 	{
-		for (int i = 0;i < fMe->fQueueDepth + 2;i++)
+		for (int i = 0;i < fMe->fQueueDepth + 3;i++)
 		{
 			if (((char*) fMe->fBufferPtr) + i * fMe->fBufferSize == (char*) ptr)
 			{
