@@ -31,6 +31,8 @@ RUNCORRECTION="NO"
 OADBMCMULT="OADB-LHC15g3c2_plus.root"
 GRIDMODE="full"
 
+CENTRVAR="V0M"
+
 UNIQUENAMECORR="dndeta"
 
 give_help() {
@@ -58,6 +60,7 @@ give_help() {
     echo "                       the analysis task. The root file can be obtained with the macro"
     echo "                       OADB/COMMON/MULTIPLICITY/macros/CalibratePeriodMC.C"
     echo "                       (Default: $OADBMCMULT)"
+    echo " -v centravar          Centrality variable (Default $CENTRVAR)"
     echo ""
     echo "Other GRID Options"
     echo " -b <basedir>          Set the base data dir for GRID processing (Default: $DATADIR)"
@@ -80,7 +83,7 @@ give_help() {
 
 }
 
-while getopts "hd:l:mr:gn:s:o:p:w:x:b:ca:t" opt; do
+while getopts "hd:l:mr:g:n:s:o:p:w:x:b:ca:tv:" opt; do
   case $opt in
       h) 
 	  give_help
@@ -98,6 +101,9 @@ while getopts "hd:l:mr:gn:s:o:p:w:x:b:ca:t" opt; do
 	  ;;
       m)
 	  isMC=kTRUE;
+	  ;;
+      v)
+	  CENTRVAR=$OPTARG;
 	  ;;
       n) 
 	  NEV=$OPTARG
@@ -196,7 +202,7 @@ fi
 if [ "$RUNGRID" = "YES" ]
     then   
     ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"$OUTFNAME\\\"}
-    root -b -q runGridEsd.C\(\"$DATADIR\",\"$RUNLIST\",\"$DATAPATTERN\",\"$GRIDWORKINGDIR\",$USEPHYSICSSELECTION,$isMC,$DOMULTSELTREE,\"$OADBMCMULT\",\"$GRIDMODE\",\"$ADDTASKMACRO\"\)
+    root -b -q runGridEsd.C\(\"$DATADIR\",\"$RUNLIST\",\"$DATAPATTERN\",\"$GRIDWORKINGDIR\",$USEPHYSICSSELECTION,$isMC,$DOMULTSELTREE,\"$OADBMCMULT\",\"$GRIDMODE\",\"$CENTRVAR\",\"$ADDTASKMACRO\"\)
 fi
 
 if [ "$RUNTESTDSET" = "YES" ]

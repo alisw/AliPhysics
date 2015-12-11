@@ -97,7 +97,7 @@ Float_t etaMin     =-1;          // min eta range to fill in histos
 Float_t etaMax     = 1;           // max eta range to fill in histos
 Float_t zMin       = -7;         // process events with Z vertex min
 Float_t zMax       =  7;          //                     max positions
-const char* useCentVar = "V0M";         // centrality variable to use
+
 //
 Float_t cutSigNStd  = 1.5;         // cut on weighed distance used to extract signal
 Float_t cutSigDPhiS = -1;         // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd)
@@ -120,7 +120,7 @@ float  ovlPhiCut   = 0.005;
 float  ovlZetaCut  = 0.05;
 Bool_t checkReconstructables = kFALSE;//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
 
-UInt_t trigSel = AliVEvent::kMB;
+AliVEvent::EOfflineTriggerTypes trigSel = AliVEvent::kMB;
 
 void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
                 TString strRunList = "226062",
@@ -131,6 +131,7 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
                 Bool_t doMultSelTrees = kFALSE,
                 const char * oadbMultSel = "LHC15f",
                 const char * gridMode = "full",
+                const char* useCentVar = "V0M",
                 const char * addTaskString = "AddAnalysisTaskdNdEtaPP13(\"outfile.root\",\"%s\",%f,%f,%f,%f,\"%s\",%f,%f,%d,%d,%d,%d,%f,%f,%d,%f,%f,%f,%f,%d,%f,%f,%d,%u)"
                 ){
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
@@ -173,7 +174,7 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   if(usePhysicsSelection){
     std::cout << "WARNING! Custom Physics Selection" << std::endl;
     AliOADBPhysicsSelection *customPS = new AliOADBPhysicsSelection("customPS");
-    customPS->AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel),"+CINT7-B-NOPF-ALLNOTRD","B",0);
+    customPS->AddCollisionTriggerClass(trigSel,"+CINT7-B-NOPF-ALLNOTRD","B",0);
     customPS->SetHardwareTrigger(0, "1");
     customPS->SetOfflineTrigger(0, "1");
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
@@ -192,10 +193,19 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   multSelMacro.Form("AddTaskMultSelection(%d)",doMultSelTrees);
   AliMultSelectionTask *taskMS = (AliMultSelectionTask*)gROOT->ProcessLine(multSelMacro.Data());// With the true option it saves the trees for calibration
 
-  taskMS -> SetAlternateOADBforEstimators ( oadbMultSel );
   //  alien:///Users/mfloris/Work/ALICE/ANALYSIS/current/HMTF/dNdeta/task/
+  if(fIsMC) {
+    if(TString(oadbMultSel).EndsWith(".root")){
+      // use micro-OADB calibrated on a specific MC production
+      taskMS -> SetAlternateOADBFullManualBypassMC(oadbMultSel);
+    }
+    else {
+      // Use boundaries as in data
+      taskMS -> SetAlternateOADBforEstimators ( oadbMultSel );
+    }
+  }
   //  taskMS -> SetAlternateOADBFullManualBypassMC("alien:///alice/cern.ch/user/m/mfloris/dNdeta13TeV/OADB-LHC15g3c2_plus.root");
-  taskMS->SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes(trigSel));
+  taskMS->SetSelectedTriggerClass(trigSel);
     //taskMS -> SetAlternateOADBFullManualBypassMC("LHC15f");
   //User Case FIXME??
   taskMS->SetAddInfo(kTRUE);

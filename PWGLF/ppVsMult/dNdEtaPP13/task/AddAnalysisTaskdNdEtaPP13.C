@@ -11,7 +11,7 @@
 
 const Double_t centBinsMultV0M[] = {0., 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMultRef[] = {0., 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 100., 200.};
-const Double_t centBinsMB[] = {0., 1.};
+const Double_t centBinsMB[] = {0., 100.};
 
 
 
