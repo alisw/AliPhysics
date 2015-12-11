@@ -2309,7 +2309,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 #endif
       gRandom->SetSeed(ts.tv_nsec);
       fLastPushBackTime=time.GetSec();
-      fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
+      fLastPushBackTime+=fPushbackPeriod/2-gRandom->Integer(fPushbackPeriod);
       //HLTImportant("time: %i, fLastPushBackTime: %i",(int)time.GetSec(),fLastPushBackTime);
     } else if ((int)time.GetSec()-fLastPushBackTime >= fPushbackPeriod) {
       if (outputBlockCnt) fLastPushBackTime=time.GetSec() - gRandom->Integer(fPushbackPeriod/3);
