@@ -26,6 +26,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fHistoType(1),
   fDefaultClusterEnergy(-1),
+  fJetEPaxis(kFALSE),
   fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
@@ -61,6 +62,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
   fDefaultClusterEnergy(-1),
+  fJetEPaxis(kFALSE),
   fHistRejectionReason(0),
   fHistTracksJetPt(0),
   fHistClustersJetPt(0),
@@ -111,21 +113,23 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     max[dim] = 100;
     dim++;
 
-    title[dim] = "#phi_{jet} - #psi_{RP}";
-    nbins[dim] = 100;
-    min[dim] = 0;
-    max[dim] = TMath::Pi();
-    dim++;
+    if (fJetEPaxis) {
+      title[dim] = "#phi_{jet} - #psi_{RP}";
+      nbins[dim] = fNbins/5;
+      min[dim] = 0;
+      max[dim] = TMath::Pi();
+      dim++;
+    }
   }
 
   title[dim] = "#eta_{jet}";
-  nbins[dim] = 50;
+  nbins[dim] = fNbins/10;
   min[dim] = -1;
   max[dim] = 1;
   dim++;
 
   title[dim] = "#phi_{jet} (rad)";
-  nbins[dim] = 150;
+  nbins[dim] = fNbins/10*3;
   min[dim] = 0;
   max[dim] = 2*TMath::Pi();
   dim++;
@@ -146,13 +150,13 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
 
   if (!GetRhoName().IsNull()) {
     title[dim] = "p_{T}^{corr} (GeV/c)";
-    nbins[dim] = fNbins*2;
-    min[dim] = -fMaxBinPt;
-    max[dim] = fMaxBinPt;
+    nbins[dim] = fNbins;
+    min[dim] = -fMaxBinPt/2;
+    max[dim] = fMaxBinPt/2;
     dim++;
   }
 
-  // area resolution is about 0.01 (ghost area 0.005)
+  // area resolution is about 0.01 (w/ ghost area 0.005)
   // for fNbins = 250 use bin width 0.01
   title[dim] = "A_{jet}";
   nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
@@ -160,39 +164,39 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
   dim++;
 
-  if (fCaloClusters) {
+  if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
     title[dim] = "NEF";
-    nbins[dim] = 102;
+    nbins[dim] = fNbins/5;
     min[dim] = 0;
-    max[dim] = 1.02;
+    max[dim] = 1.0;
     dim++;
   }
 
   title[dim] = "Z";
-  nbins[dim] = 102;
+  nbins[dim] = fNbins/5;
   min[dim] = 0;
-  max[dim] = 1.02;
+  max[dim] = 1.0;
   dim++;
 
   if (fForceBeamType != kpp) {
     title[dim] = "No. of constituents";
-    nbins[dim] = 250;
+    nbins[dim] = fNbins/2;
     min[dim] = -0.5;
     max[dim] = 249.5;
     dim++;
   }
   else {
     title[dim] = "No. of constituents";
-    nbins[dim] = 50;
+    nbins[dim] = fNbins/10;
     min[dim] = -0.5;
     max[dim] = 49.5;
     dim++;
   }
 
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
-  nbins[dim] = 120;
+  nbins[dim] = fNbins/10*3;
   min[dim] = 0;
-  max[dim] = 120;
+  max[dim] = 150;
   dim++;
 
   fHistJetObservables = new THnSparseD("fHistJetObservables","fHistJetObservables",dim,nbins,min,max);
