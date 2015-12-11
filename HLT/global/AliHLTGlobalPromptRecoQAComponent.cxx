@@ -335,7 +335,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
     fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
     fAxes["rawSizeZDC"].set( 100, 0., 100e3, &frawSizeZDC );
-    fAxes["nClustersTPC"].set( 100, 0., 600e3, &fnClustersTPC );
+    fAxes["nClustersTPC"].set( 100, 0., 6e6, &fnClustersTPC );
     fAxes["rawSizeTPC"].set( 100, 0., 185e6, &frawSizeTPC );
     fAxes["hwcfSizeTPC"].set( 100, 0., 185e6, &fhwcfSizeTPC );
     fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
