@@ -29,13 +29,16 @@ declare baseStartingDir="$PWD"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
 export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
+declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Oct30/Templates_pp_28Aug15"
+#/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Oct30/Templates_pPb_28Aug15"
+#"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare Nmccase=4
-declare -a templRootName=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
+declare -a Nmccase=( 5 4 )
+declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -79,7 +82,7 @@ declare -a dirpPbInput=( "$dirpPbDzero" "$dirpPbDplus" "$dirpPbDstar" )
 ## default rebin = -1 (no rebin)
 declare rebin=-1  
 declare reflect=1   #0 : do not reflect, 1 reflect
-declare averageOpt=0  #0 = weighted, 1=arithmetic
+declare averageOpt=0  #0 = weighted, 1=arithmetic (BE AWARE THAT SETTINGS FOR FINAL STYLE PLOTS MIGHT NOT BE OK FOR ARITHMETIC AVERAGE AND THEY MIGHT USE PATHS EXPECTED FOR WEIGHTING AV)
 declare -a includev2=( 0 0 ) 
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
@@ -97,9 +100,10 @@ declare doFitResultComparisonPPpPb=1
 declare dofitMC=1
 declare doFitResultComparisonPPtoMC=1
 declare doFitResultComparisonPPbtoMC=1
+declare doFitResultComparisonPPtoPPbtoMCPP=0
 declare doCompareWithMC=1
 declare doComparepppPb=1
-
+declare doOldPlots=0
 ### MODIFY THE PARAMETERS BELOW ONLY IF YOU WANT TO RUN ONLY OVER FEW KINE CASES, OTHERWISE DO NOT TOUCH THEM
 declare -i firstcollsyst=0   #default 0
 declare -i lastcollsyst=1    #default 1 
@@ -164,7 +168,17 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/CompareFitResults.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceFitPlots.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVspPballPanels.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoComparison_ppVsMCallPanelsNew.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoPlotInSingleCanvasNoSpaces.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoFitMC.sh .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/CheckDiff.sh .
+else 
+    cd ${HFCJlocalCodeDir}
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/CheckDiff.sh .
+    ${HFCJlocalCodeDir}/CheckDiff.sh &>outCodeDiff.log
 fi
+
 
 #############  CREATE BASIC DIRECTORY TREE #############
 declare baseDir=${baseStartingDir}
@@ -220,6 +234,7 @@ while [ ${collsyst} -le ${lastcollsyst} ]; do
 	    elif [ ${collsyst} = 1 ]; then
 		echo "changing dir with input pPb files for meson ${imeson} to that expected from this script after FD subtr"
 		dirpPbInput[${imeson}]="${baseDirFD}/${collsystdir[${collsyst}]}/${meson[imeson]}/Final_Plots_pPb/TotalEnvelope"
+		#dirpPbInput[${imeson}]="${baseDirFD}/${collsystdir[${collsyst}]}/${meson[imeson]}/Final_Plots_pPb/Singlev2Envelope"
 		echo "New dir will be: ${dirpPbInput[${imeson}]}"
 	    fi
 	fi
@@ -361,6 +376,20 @@ SetInputDirectory("${baseDir}/AllPlots")
 DoAllPlotInSingleCanvasStandardPaths(${averageOpt})
 .q
 EOF
+
+    cd ${baseDir}/AllPlots/NiceStylePlots
+    root -b <<EOF &> PlotNiceStyleNoSpace.log
+.L ${HFCJlocalCodeDir}/DoPlotInSingleCanvasNoSpaces.C
+DoPlotInSingleCanvasNoSpaces()
+.q
+EOF
+    
+    cd ${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/
+    root -b <<EOF &> PlotNiceStyleNoSpaceMergePPandpPb.log
+.L ${HFCJlocalCodeDir}/DoPlotInSingleCanvasNoSpaces.C
+MergePPandPPbInSingleCanvas("${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pp.root","${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pPb.root")
+EOF
+cd ${baseDir}/AllPlots/NiceStylePlots/
 fi
 
 if [ ${doCompareMesons} = 1 ];then
@@ -412,9 +441,13 @@ if [ ${dofitMC} = 1 ]; then
     mkdir -p ${templateDir[${collsyst}]}/FitResults/
     while [ ${collsyst} -le ${lastcollsyst} ]; do
 	cd ${templateDir[${collsyst}]}/FitResults/
-	for (( mccase=0; mccase<${Nmccase}; mccase++ ))
+	for (( mccase=0; mccase<${Nmccase[${collsyst}]}; mccase++ ))
 	do 
-	    $HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootName[$mccase]}
+	    if [ ${collsyst} = 0  ]; then
+		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepp[$mccase]}
+	    elif [ ${collsyst} = 1  ]; then
+		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepPb[$mccase]}
+	    fi
 	done
 	collsyst=${collsyst}+1
     done
@@ -445,6 +478,13 @@ fi
 if [ ${doFitResultComparisonPPpPb} = 1 ];then
     mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb
     cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb
+    root -b <<EOF &> CompareFitResultsUniqueCanvasPPtoPPb.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+CompareFitResultsPPtoPPbUniqueCanvas();
+EOF
+
     root -b <<EOF &> CompareFitResultsPPtoPPb.log
 .L ${HFCJlocalCodeDir}/CompareFitResults.C
 SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
@@ -463,7 +503,27 @@ SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
 CompareFitResultsPPDataToMC()
 EOF
+
+    root -b <<EOF &> CompareFitResultsPPtoMCuniqueCanvas.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
+CompareFitResultsPPtoMCUniqueCanvas()
+EOF
+
+if [ ${doFitResultComparisonPPtoPPbtoMCPP} = 1 ]; then
+ root -b <<EOF &> CompareFitResultsPPtoPPbtoPPMCuniqueCanvas.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+CompareFitResultsPPtoPpbAndMCUniqueCanvas();
+EOF
+
+fi
+
 collsyst=${firstcollsyst}
+
 fi
 
 if [ ${doFitResultComparisonPPbtoMC} = 1 ];then
@@ -477,6 +537,17 @@ SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
 IncludePowheg(kFALSE)
 CompareFitResultsPPbDataToMC()
 EOF
+
+    root -b <<EOF &> CompareFitResultsPPbtoMCuniqueCanvas.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
+IncludePowheg(kTRUE)
+IncludePythia8(kFALSE)
+CompareFitResultsPPbtoMCUniqueCanvas()
+EOF
+
+
 collsyst=${firstcollsyst}
 fi
 
@@ -487,8 +558,9 @@ if [ $doCompareWithMC = 1 ]; then
     mkdir ComparisonToModels
     cd ComparisonToModels
     ### START FROM PP ###
-    echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 0.3to1"
-    root -b <<EOF &> CompareToModelsPP03to1.log
+    if [ ${doOldPlots} = 1 ]; then
+	echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 0.3to1"
+	root -b <<EOF &> CompareToModelsPP03to1.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -503,8 +575,8 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVsMCTEST("0.3to1.0")
 EOF
-    echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 0.3to99"
-    root -b <<EOF &> CompareToModelsPP03to99.log
+	echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 0.3to99"
+	root -b <<EOF &> CompareToModelsPP03to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -519,8 +591,8 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVsMCTEST("0.3to99.0")
 EOF
-    echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 1.0to99.0"
-    root -b <<EOF &> CompareToModelsPP1to99.log
+	echo "Running DoComparison_ppVsMC_PaperProposal.C for ptassoc 1.0to99.0"
+	root -b <<EOF &> CompareToModelsPP1to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -534,10 +606,10 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_ppVsMCTEST("1.0to99.0")
 EOF
-
+	
     ### NOW PPb ###
-echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 0.3to1.0"
-root -b <<EOF &> CompareToModelsPPB03to1.log
+	echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 0.3to1.0"
+	root -b <<EOF &> CompareToModelsPPB03to1.log
 .L ${HFCJlocalCodeDir}/DoComparison_pPbVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -552,9 +624,9 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("0.3to1.0")
 EOF
-
-echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 0.3to99.0"
-    root -b <<EOF &> CompareToModelsPPB03to99.log
+	
+	echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 0.3to99.0"
+	root -b <<EOF &> CompareToModelsPPB03to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_pPbVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -569,9 +641,9 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("0.3to99.0")
 EOF
-
-echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 1.0to99.0"
-    root -b <<EOF &> CompareToModelsPPB1to99.log
+	
+	echo "Running DoComparison_pPbVsMC_PaperProposal.C for ptassoc 1.0to99.0"
+	root -b <<EOF &> CompareToModelsPPB1to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_pPbVsMC.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -586,6 +658,21 @@ Printf("READY TO GO")
 SetAverageMode($averageOpt)
 DoComparison_pPbVsMCTEST("1.0to99.0")
 EOF
+    fi    
+    
+### now make figur with all panels in same picture for pp
+    echo "Running DoComparison_ppVsMCallPanelsNew.C"
+    root -b <<EOF &> ComparePPtoMCuniqueCanvas.log
+.L ${HFCJlocalCodeDir}/DoComparison_ppVsMCallPanelsNew.C
+SetInputDataDirectory("${baseDir}/AllPlots/Averages")
+SetInputTemplateDirectory("${templateDir[0]}")
+SetFitPlotMacroPath("${HFCJlocalCodeDir}")
+SetReflectTemplate($reflect)
+SetIsDataReflected($reflect)
+SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
+SetAverageMode($averageOpt)
+DoComparison_ppVsMCallPanels()
+EOF
     
     
 fi
@@ -594,8 +681,10 @@ if [ $doComparepppPb = 1 ]; then
     cd ${baseDir}/AllPlots/Averages
     mkdir ComparisonPPtoPPB
     cd ComparisonPPtoPPB
-echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc 1to99.0"
-    root -b <<EOF &> ComparePPtoPPB1to99.log
+### NB THE FOLLOWING ARE SET TO KFALSE ON PURPOSE (THEY PRODUCE OBSOLETE PLOTS)
+    if [ $doComparepppPb = 0 ]; then
+	echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc 1to99.0"
+	root -b <<EOF &> ComparePPtoPPB1to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVspPb.C
 Printf("Macro loaded")
 SetInputDataDirectory("${baseDir}/AllPlots/Averages")
@@ -607,8 +696,8 @@ SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("1.0to99.0")
 .q
 EOF
-
-echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc0.3to1.0"
+    
+    echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc0.3to1.0"
     root -b <<EOF &> ComparePPtoPPB03to1.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVspPb.C
 Printf("Macro loaded")
@@ -621,7 +710,7 @@ SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("0.3to1.0")
 .q
 EOF
-echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc0.3to99.0"
+    echo "Running DoComparison_ppVspPb_PaperProposal.C for ptassoc0.3to99.0"
     root -b <<EOF &> ComparePPtoPPB0.3to99.log
 .L ${HFCJlocalCodeDir}/DoComparison_ppVspPb.C
 Printf("Macro loaded")
@@ -634,7 +723,25 @@ SetAverageMode($averageOpt)
 DoComparison_ppVspPbTEST("0.3to99.0")
 .q
 EOF
-
-    
+    fi
+    echo "Produce Unique CANVAS"
+    root -b <<EOF &> ProduceUniqueCanvas.log
+.L ${HFCJlocalCodeDir}/DoComparison_ppVspPballPanels.C
+Printf("Macro loaded")
+SetInputDataDirectory("${baseDir}/AllPlots/Averages")
+SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
+SetSkip3to5pPb(kTRUE)
+SetIsReflected($reflect)
+Printf("READY TO GO")
+SetAverageMode($averageOpt)
+DoComparison_ppVspPballPanels()
+.q
+EOF
 
 fi
+
+
+
+
+
+    
