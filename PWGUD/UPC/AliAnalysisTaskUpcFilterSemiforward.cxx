@@ -177,7 +177,7 @@ void AliAnalysisTaskUpcFilterSemiforward::UserCreateOutputObjects()
   fHistList->SetOwner();
   fCounter = new TH1I("fCounter", "fCounter", 100, 1, 101);
   fHistList->Add(fCounter);
-  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 44000, 154000, 198000, NTRG+1, 0, NTRG+1);
+  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 44000, 154000, 198000, AliUPCEvent::fgkNtrg+1, 0, AliUPCEvent::fgkNtrg+1);
   fHistList->Add(fTriggerCounter);
 
   //errors in counter start at 51
@@ -227,8 +227,8 @@ void AliAnalysisTaskUpcFilterSemiforward::UserExec(Option_t *)
 
   // trigger
   TString trigger = vEvent->GetFiredTriggerClasses();
-  Bool_t trgClasses[NTRG]; // array of fired trigger classes
-  for(Int_t itrg=0; itrg<NTRG; itrg++) trgClasses[itrg] = kFALSE;
+  Bool_t trgClasses[AliUPCEvent::fgkNtrg]; // array of fired trigger classes
+  for(Int_t itrg=0; itrg<AliUPCEvent::fgkNtrg; itrg++) trgClasses[itrg] = kFALSE;
 
   trgClasses[1] = trigger.Contains("CMUP6-B"); // p-Pb FW
   trgClasses[2] = trigger.Contains("CMUP3-B"); // Pb-p FW
@@ -247,7 +247,7 @@ void AliAnalysisTaskUpcFilterSemiforward::UserExec(Option_t *)
   trgClasses[11]= trigger.Contains("CMUP1-B"); // PbPb FW
 
   Bool_t isTrg = kFALSE;
-  for(Int_t itrg=1; itrg<NTRG; itrg++) {
+  for(Int_t itrg=1; itrg<AliUPCEvent::fgkNtrg; itrg++) {
     if(!trgClasses[itrg]) continue;
     //trigger at itrg is fired
     fUPCEvent->SetTriggerClass( itrg , kTRUE );
