@@ -20,6 +20,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   void                        SetHistoType(Int_t t)               { fHistoType             = t; }
   void                        SetDefaultClusterEnergy(Int_t d)    { fDefaultClusterEnergy  = d; }
+  void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
 
  protected:
   void                        AllocateTHX();
@@ -31,6 +32,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   Int_t                       fHistoType;                   // histogram type (0=TH2, 1=THnSparse)
   Int_t                       fDefaultClusterEnergy;        // default cluster energy
+  Bool_t                      fJetEPaxis;                   // whether a EP-jet axis should be included in the THnSparse
 
   TH2                       **fHistRejectionReason;         //!Rejection reason vs. jet pt
   TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt
@@ -65,6 +67,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 17) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 18) // jet analysis task
 };
 #endif
