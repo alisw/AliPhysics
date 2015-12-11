@@ -1197,27 +1197,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
               } // patch > Ecut GeV
             }// patch loop
           } // have max cluster
-
 //=======================================================
-
-
-          AliClusterContainer* testclust = GetClusterContainer();
-          for(int itest = 0; itest < testclust->GetNClusters(); itest++) {
-            AliVCluster* jclus = static_cast<AliVCluster*>(testclust->GetCluster(itest));
-            if(!jclus) continue;
-
-            TLorentzVector jcvec;
-            jclus->GetMomentum(jcvec, const_cast<Double_t*>(fVertex));    
-
-            //if(!IsJetCluster(jet, itest, kFALSE)) continue;
-            // print some info for clusters in jet
-            if(IsJetCluster(jet, itest, kFALSE)) {
-              if(jclus->E() > fClusBias) {
-                if(doComments){ cout<<Form("cluster # = %d is in jet with pt = %f, energy = %f, Phi = %f, Eta = %f", itest, jcvec.Pt(), jclus->E(), jcvec.Phi(), jcvec.Eta())<<endl; }
-              } // cluster energy cut
-            } // cluster in jet cut
-          } // cluster loop
-
         } // have cluster container
       } // jet->pt() > cut
 
