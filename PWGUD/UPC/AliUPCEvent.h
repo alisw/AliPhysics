@@ -6,7 +6,6 @@
 //    Author: Jaroslav Adam
 //_____________________________________________________________________________
 
-#define NTRG 24
 #include "TObject.h"
 
 class TBits;
@@ -19,6 +18,8 @@ class AliUPCEvent : public TObject
 public:
   AliUPCEvent();
   virtual ~AliUPCEvent();
+
+  static const Int_t fgkNtrg = 51; // number of trigger classes
 
   void ClearEvent(void);
 
@@ -51,6 +52,9 @@ public:
   void SetBBtriggerV0Cmask(UInt_t ibit);
   void SetBBFlagV0Cmask(UInt_t ibit);
 
+  void SetADADecision(Int_t decision) {fADADecision=decision;}
+  void SetADCDecision(Int_t decision) {fADCDecision=decision;}
+
   void SetZNCEnergy(Double_t energy) {fZNCEnergy = energy;}
   void SetZPCEnergy(Double_t energy) {fZPCEnergy = energy;}
   void SetZNAEnergy(Double_t energy) {fZNAEnergy = energy;}
@@ -72,6 +76,9 @@ public:
   AliUPCMuonTrack *AddMuonTrack(void);
 
   TParticle *AddMCParticle(void);
+
+  Int_t MakeArrayInt(Int_t size);
+  Int_t MakeArrayD(Int_t size);
 
   //Getters
   Bool_t GetIsESD(void) const;
@@ -107,6 +114,9 @@ public:
   Int_t GetNV0ChitsOffline(void) const;
   Int_t GetNV0ChitsOnline(void) const;
 
+  Int_t GetADADecision(void) const { return fADADecision; }
+  Int_t GetADCDecision(void) const { return fADCDecision; }
+
   Double_t GetZNCEnergy(void) const { return fZNCEnergy; }
   Double_t GetZPCEnergy(void) const { return fZPCEnergy; }
   Double_t GetZNAEnergy(void) const { return fZNAEnergy; }
@@ -133,13 +143,16 @@ public:
   Int_t GetNumberOfMCParticles(void) const { return fNmc; }
   TParticle *GetMCParticle(Int_t iMC) const;
 
+  TArrayI *GetArrayInt(void) const { return fArrayInt; }
+  TArrayD *GetArrayD(void) const { return fArrayD; }
+
 protected:
   AliUPCEvent(const AliUPCEvent &o); // not implemented
   AliUPCEvent &operator=(const AliUPCEvent &o); // not implemented
 
   UChar_t fFlags; // event flags bits: 0 = ESD, 1 = MC
   UInt_t fL0inputs; // L0 trigger inputs
-  Bool_t fTrgClasses[NTRG]; // fired trigger classes
+  Bool_t fTrgClasses[fgkNtrg]; // fired trigger classes
   Char_t fRecoPass; // reconstruction pass identifier
   TObjString *fDataFilnam; //-> input file name and path
   Long64_t fEvtNum; // event number in input file
@@ -163,6 +176,8 @@ protected:
   Int_t fV0CDecision; // V0C decision
   UInt_t fBBtriggerV0C; // offline beam-beam flags in V0C one bit per cell
   UInt_t fBBFlagV0C; // online beam-beam flags in V0C one bit per cell
+  Int_t fADADecision; // ADA decision, set by enumeration: kADInvalid = -1, kADEmpty = 0, kADBB, kADBG, kADFake
+  Int_t fADCDecision; // ADC decision
   Double_t fZNCEnergy; // reconstructed energy in the neutron ZDC, C-side
   Double_t fZPCEnergy; // reconstructed energy in the proton ZDC, C-side
   Double_t fZNAEnergy; // reconstructed energy in the neutron ZDC, A-side
@@ -183,12 +198,14 @@ protected:
   Int_t fNmuons; // number of muon upc tracks in event
   TClonesArray *fMCParticles; // array of MC particles
   Int_t fNmc; // number of mc particles in event
+  TArrayI *fArrayInt; // extension of the event for other integer parameters
+  TArrayD *fArrayD; // extension of the event for other double parameters
 
   static TClonesArray *fgUPCTracks; // array of central upc tracks
   static TClonesArray *fgUPCMuonTracks; // array of muon upc tracks
   static TClonesArray *fgMCParticles; // array of MC particles
 
-  ClassDef(AliUPCEvent,1)
+  ClassDef(AliUPCEvent,1);
 };
 
 #endif

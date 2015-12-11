@@ -44,7 +44,9 @@ protected:
   private:
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctn, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctn, 1);
+  /// \endcond
 #endif
 };
 

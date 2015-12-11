@@ -36,7 +36,6 @@ public:
   
   virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   void SetWriteMuonAOD(Bool_t enableMuonAOD){fEnableMuonAOD = enableMuonAOD;}
-  void SetWriteDimuonAOD(Bool_t enableDimuonAOD){fEnableDimuonAOD = enableDimuonAOD;}
   void SetWithSPDtracklets(Bool_t withSPDtracklets=kTRUE) { fWithSPDTracklets = withSPDtracklets; }
   void SetMCMode(Int_t mcMode) { fMCMode=mcMode; }
   
@@ -51,13 +50,12 @@ private:
   
   AliAnalysisFilter* fTrackFilter; ///<  Track Filter
   Bool_t fEnableMuonAOD; ///< flag for enabling Muon AOD production
-  Bool_t fEnableDimuonAOD; ///< flag for enabling Dimuon AOD production
   Bool_t fOnlyMuon; ///< flag for disabling branches irrelevant for (most) muon analyses
   Bool_t fKeepAllEvents; ///< keep even events where there's no muons (to get e.g. unbiased vertex distribution)
   Int_t  fMCMode; ///< whether and how we're filtering MC data
   Bool_t fWithSPDTracklets; ///< whether or not we keep SPD tracklets
   
-  ClassDef(AliAnalysisTaskESDMuonFilter, 6); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDMuonFilter, 7); // Analysis task for standard ESD filtering
 };
 
 #endif

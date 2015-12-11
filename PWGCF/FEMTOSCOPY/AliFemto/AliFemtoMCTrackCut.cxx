@@ -15,8 +15,10 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoMCTrackCut)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoMCTrackCut);
+  /// \endcond
 #endif
 
 

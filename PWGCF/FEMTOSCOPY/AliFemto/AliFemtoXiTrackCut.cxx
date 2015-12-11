@@ -2,8 +2,10 @@
 #include "AliESDtrack.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoXiTrackCut)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoXiTrackCut);
+  /// \endcond
 #endif
 
 

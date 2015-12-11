@@ -10,7 +10,7 @@ class AliVVZERO;
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
- public:
+public:
   AliAnalysisTaskSAQA();
   AliAnalysisTaskSAQA(const char *name);
   virtual ~AliAnalysisTaskSAQA();
@@ -27,7 +27,9 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   void                        SetDoLeadingObjectPosition(Int_t b)                  { fDoLeadingObjectPosition = b     ; }
   void                        SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]  = b0  ; fAODfilterBits[1] = b1  ; }
   void                        SetSeparateEMCalDCal(Bool_t b)                       { fSeparateEMCalDCal = b           ; }
- protected:
+  void                        SetDefaultClusterEnergy(Int_t d)                     { fDefaultClusterEnergy = d        ; }
+
+protected:
 
   void                        AllocateHistogramArrays()                                     ;
   void                        ExecOnce()                                                    ;
@@ -55,6 +57,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Int_t                       fMaxCellsInCluster;        // Maximum number (approx) of cells in a cluster
   UInt_t                      fAODfilterBits[2];         // AOD track filter bit map
   Bool_t                      fSeparateEMCalDCal;        // Separate EMCal from DCal in QA plots
+  Int_t                       fDefaultClusterEnergy;     // default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
   Double_t                    fCent2;                    //!Event centrality with method 2
   Double_t                    fCent3;                    //!Event centrality with method 3
   AliVVZERO                  *fVZERO;                    //!Event V0 object
@@ -92,6 +95,9 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistFcrossEnergy;           //!Fcross vs. energy of cluster
   TH2                       **fHistClusTimeEnergy;         //!Time vs. energy of cluster
   TH1                       **fHistClusMCEnergyFraction;   //!MC energy fraction (embedding)
+  TH1                       **fHistClusEnergy;             //!Energy of the cluster: clus->E()
+  TH1                       **fHistClusNonLinCorrEnergy;   //!Energy of the cluster: clus->GetNonLinCorrEnergy()
+  TH1                       **fHistClusHadCorrEnergy;      //!Energy of the cluster: clus->GetHadCorrEnergy()
 
   // EMCAL Cells
   TH2                       **fHistCellsAbsIdEnergy;  //!Energy spectrum of cells
@@ -100,10 +106,10 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistJetsPhiEta;        //!Phi-Eta distribution of jets
   TH2                       **fHistJetsPtArea;        //!Pt vs. area of jets
 
- private:
+private:
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 24) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 25) // Quality task for Emcal analysis
 };
 #endif

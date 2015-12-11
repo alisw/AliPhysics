@@ -381,7 +381,11 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,3);
+    }
     else {
       Printf("MC case not foreseen");
       return;
@@ -495,7 +499,11 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,3);
+    }
     else {
       Printf("MC case not foreseen");
       return;
@@ -606,7 +614,11 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,3);
+    }
     else {
       Printf("MC case not foreseen");
       return;

@@ -55,9 +55,9 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD_nr3(Char_t* outputFileName="LM
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_nr3");
   if (!hasMC) task->UsePhysicsSelection();
+  if (!hasMC) task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(collCands);  
-  task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1));
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1, hasMC));
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
   task->SetRandomizeDaughters(randomizeDau);//default kFALSE
   

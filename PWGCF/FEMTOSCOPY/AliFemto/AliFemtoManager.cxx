@@ -14,7 +14,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoManager)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoManager);
+  /// \endcond
 #endif
 
 

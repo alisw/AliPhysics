@@ -16,21 +16,20 @@
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoAnalysisAzimuthal)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoAnalysisAzimuthal);
+  /// \endcond
 #endif
 
-extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-			       AliFemtoEvent*               hbtEvent,
-			       AliFemtoParticleCollection*  partCollection,
-			       bool performSharedDaughterCut=kFALSE);
+extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
+                                      AliFemtoEvent* hbtEvent,
+                                      AliFemtoParticleCollection* partCollection,
+                                      bool performSharedDaughterCut=kFALSE);
 
 
 //____________________________
 AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(unsigned int binsVertex, double minVertex, double maxVertex,
-						       unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP)
-  :
+                                                     unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP):
   fFemtoParticleCut(0),
   fFlowParticleCut(0),
   fVertexZBins(binsVertex),
@@ -203,7 +202,7 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
-  if (!tmpPassEvent) 
+  if (!tmpPassEvent)
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   if (tmpPassEvent) {
     fPicoEvent = new AliFemtoPicoEvent; // this is what we will make pairs from and put in Mixing Buffer, no memory leak. we will delete picoevents when they come out of the mixing buffer

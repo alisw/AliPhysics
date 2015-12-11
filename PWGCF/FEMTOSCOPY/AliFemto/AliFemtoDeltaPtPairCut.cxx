@@ -11,9 +11,9 @@
 #include <TObjString.h>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoDeltaPtPairCut)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoDeltaPtPairCut);
+  /// \endcond
 #endif
 
 //__________________

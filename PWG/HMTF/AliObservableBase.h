@@ -5,15 +5,13 @@
 
 class AliObservableBase : public TNamed {
  public:
-  AliObservableBase();
-  AliObservableBase(const char* name, const char* title);
-  ~AliObservableBase() {};
-  virtual void Fill(AliMCEvent *event, AliStack *stack) = 0;
+  AliObservableBase()
+    : TNamed() {}
+  AliObservableBase(const char* name, const char* title)
+    : TNamed(name, title) {}
+  ~AliObservableBase() {}
 
- protected:
-  // Some generator have funky particles in the stack which break the execution down the line.
-  // Check if the particles are of a safe type (should cover like 99%) of the particles present
-  std::vector< Int_t > fSafePdgCodes;
+  virtual void Fill(AliMCEvent *event, AliStack *stack) = 0;
 
   ClassDef(AliObservableBase, 1);
 };

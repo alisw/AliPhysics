@@ -66,7 +66,9 @@ private:
   Int_t fMagSign;                    // Magnetic field sign
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctnDPhiStarKStarMergedFraction, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctnDPhiStarKStarMergedFraction, 1);
+  /// \endcond
 #endif
 };
 

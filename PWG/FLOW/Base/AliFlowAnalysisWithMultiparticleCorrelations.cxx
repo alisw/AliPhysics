@@ -47,6 +47,9 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fAnalysisTag(""),
  fDumpThePoints(kFALSE),
  fMaxNoEventsPerFile(100),
+ fSelectRandomlyRPs(kFALSE),
+ fnSelectedRandomlyRPs(-44),
+ fRandomIndicesRPs(NULL),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -145,6 +148,11 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
   this->InitializeArraysForSymmetryPlanes();
   this->InitializeArraysForNestedLoops(); 
 
+  // c) Determine seed for gRandom:
+  delete gRandom;
+  gRandom = new TRandom3(0); // since 0 is in the argument, the seed is determined uniquely in space and time via TUUID
+                             // TBI synchronize this eventually with seed set 'on-the-fly'
+
  } // end of AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCorrelations()
  
 //================================================================================================================  
@@ -206,14 +214,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  
  // a) Cross-check internal flags;
  // b) Cross-check all pointers used in this method;
- // c) Fill control histograms;
- // d) Fill Q-vector components;
- // e) Calculate multi-particle correlations from Q-vector components; 
- // f) Calculate e-b-e cumulants; 
- // g) Calculate symmetry plane correlations;
- // h) Reset Q-vector components;
- // i) Cross-check results with nested loops;
- // j) Dump the points.
+ // c) Determine random indices;
+ // d) Fill control histograms;
+ // e) Fill Q-vector components;
+ // f) Calculate multi-particle correlations from Q-vector components;
+ // g) Calculate e-b-e cumulants;
+ // h) Calculate symmetry plane correlations;
+ // j) Reset Q-vector components;
+ // k) Cross-check results with nested loops;
+ // l) Dump the points;
+ // m) Reset array holding shuffled indices for RPs.
 
  // a) Cross-check internal flags:
  if(fUseInternalFlags){if(!this->CrossCheckInternalFlags(anEvent)){return;}}
@@ -221,7 +231,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // b) Cross-check all pointers used in this method:
  this->CrossCheckPointersUsedInMake(); // TBI shall I call this method first  
 
-
+ // c) Determine random indices:
+ if(fnSelectedRandomlyRPs)
+ {
+  if(anEvent->GetNumberOfRPs() < fnSelectedRandomlyRPs){return;}
+  this->DetermineRandomIndices(anEvent);
+  if(!fRandomIndicesRPs){return;}
+ } // TBI hw RPs in flag, make it more general
 
  // TBI temp gym: Remove this code eventually
  if(fSkipSomeIntervals)
@@ -274,32 +290,36 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  }
 
 
- // c) Fill control histograms:
+
+ // d) Fill control histograms:
  if(fFillControlHistograms){this->FillControlHistograms(anEvent);}
  
- // d) Fill Q-vector components:
+ // e) Fill Q-vector components:
  if(fCalculateQvector||fCalculateDiffQvectors){this->FillQvector(anEvent);}
 
- // e) Calculate multi-particle correlations from Q-vector components:
+ // f) Calculate multi-particle correlations from Q-vector components:
  if(fCalculateCorrelations){this->CalculateCorrelations(anEvent);}
  if(fCalculateDiffCorrelations){this->CalculateDiffCorrelations(anEvent);}
 
- // f) Calculate e-b-e cumulants: 
+ // g) Calculate e-b-e cumulants:
  if(fCalculateEbECumulants){this->CalculateEbECumulants(anEvent);}
 
- // g) Calculate symmetry plane correlations:
+ // h) Calculate symmetry plane correlations:
  if(fCalculateSymmetryPlanes){this->CalculateSymmetryPlanes(anEvent);}
 
- // h) Reset Q-vector components:
+ // i) Reset Q-vector components:
  if(fCalculateQvector||fCalculateDiffQvectors){this->ResetQvector();}
 
- // i) Cross-check results with nested loops:
+ // j) Cross-check results with nested loops:
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
  if(fCrossCheckDiffWithNestedLoops){this->CrossCheckDiffWithNestedLoops(anEvent);}
 
- // j) Dump the points:
+ // k) Dump the points:
  if(fDumpThePoints){this->DumpThePoints(anEvent);}
- 
+
+ // l) Reset array holding shuffled indices for RPs:
+ if(fSelectRandomlyRPs && fRandomIndicesRPs){delete fRandomIndicesRPs;}
+
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
@@ -423,6 +443,37 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake(
  } // if(fCalculateEbECumulants)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::DetermineRandomIndices(AliFlowEventSimple *anEvent)
+{
+ // Determine random indices.
+
+ // Fisher-Yates algorithm:
+ Int_t nPrim = anEvent->NumberOfTracks();
+ if(nPrim > 0)
+ {
+  fRandomIndicesRPs = new TArrayI(nPrim);
+ }
+ else
+ {
+  return;
+ }
+
+ for(Int_t i=0;i<nPrim;i++)
+ {
+  fRandomIndicesRPs->AddAt(i,i);
+ }
+ for(Int_t i=nPrim-1;i>=1;i--)
+ {
+  Int_t j = gRandom->Integer(i+1);
+  Int_t temp = fRandomIndicesRPs->GetAt(j);
+  fRandomIndicesRPs->AddAt(fRandomIndicesRPs->GetAt(i),j);
+  fRandomIndicesRPs->AddAt(temp,i);
+ } // end of for(Int_t i=nPrim-1;i>=1;i--)
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::DetermineRandomIndices(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
@@ -660,10 +711,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
  if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'!?!? You again!!!!");}
 
  // a) Calculate all booked multi-particle correlations:
- Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+ Double_t dMultRP = fSelectRandomlyRPs ? fnSelectedRandomlyRPs : anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
  if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; }
 
- for(Int_t cs=0;cs<2;cs++) // cos/sin 
+ for(Int_t cs=0;cs<2;cs++) // cos/sin
  {
   if(fCalculateOnlyCos && 1==cs){continue;}
   else if(fCalculateOnlySin && 0==cs){continue;}
@@ -1841,9 +1892,19 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
  Double_t dPt = 0., wPt = 1.; // transverse momentum and corresponding pT weight
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
+ Int_t nCounterRPs = 0;
  for(Int_t t=0;t<nTracks;t++) // loop over all tracks
  {
-  AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+  AliFlowTrackSimple *pTrack = NULL;
+  if(!fSelectRandomlyRPs) // TBI hw RPs
+  {
+   pTrack = anEvent->GetTrack(t);
+  }
+  else
+  {
+   pTrack = anEvent->GetTrack((Int_t)fRandomIndicesRPs->GetAt(t));
+  }
+
   if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FillQvector(...) !!!!"); continue;}
 
   if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
@@ -1852,6 +1913,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillQvector(AliFlowEventSimpl
 
   if(pTrack->InRPSelection()) // fill Q-vector components only with reference particles
   {
+   nCounterRPs++;
+   if(fSelectRandomlyRPs && nCounterRPs == fnSelectedRandomlyRPs){break;} // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+
    wPhi = 1.; wPt = 1.; wEta = 1.; wToPowerP = 1.; // TBI this shall go somewhere else, for performance sake
 
    // Access kinematic variables for RP and corresponding weights:
@@ -2292,17 +2356,32 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
  // c) Fill TH2D *fMultCorrelationsHist[3].  
 
  // a) Fill TH1D *fKinematicsHist[2][3]:
+ Int_t nCounterRPs = 0;
  if(fFillKinematicsHist)
  {
   Int_t nTracks = anEvent->NumberOfTracks(); // TBI shall I promote this to data member?
   for(Int_t t=0;t<nTracks;t++) // loop over all tracks
   {
-   AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+   AliFlowTrackSimple *pTrack = NULL;
+   if(!fSelectRandomlyRPs) // TBI hw RPs
+   {
+    pTrack = anEvent->GetTrack(t);
+   }
+   else
+   {
+    pTrack = anEvent->GetTrack((Int_t)fRandomIndicesRPs->GetAt(t));
+   }
    if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::FCH() !!!!");continue;}
    if(pTrack)
    {
 
     if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
+
+    if(pTrack->InRPSelection())
+    {
+     nCounterRPs++;
+     if(fSelectRandomlyRPs && nCounterRPs == fnSelectedRandomlyRPs){break;} // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+    }
 
     Double_t dPhi = pTrack->Phi(); 
     //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
@@ -2326,8 +2405,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
  } // if(fFillKinematicsHist)
 
  // b) Fill TH1D *fMultDistributionsHist[3]:
- Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote these 3 variables into data members? 
- Double_t dMultPOI = anEvent->GetNumberOfPOIs();
+ Double_t dMultRP = fSelectRandomlyRPs ? nCounterRPs : anEvent->GetNumberOfRPs();
+ Double_t dMultPOI = anEvent->GetNumberOfPOIs(); // TBI reimplement when reshuffling is enabled, add support also for the POIs
  Double_t dMultREF = anEvent->GetReferenceMultiplicity();
 
  if(fSkipSomeIntervals) // TBI tmp gym
@@ -4040,7 +4119,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
 {
  // Book all base objects. 
 
- fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",8,0,8);
+ fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",10,0,10);
  fInternalFlagsPro->SetLabelSize(0.05);
  fInternalFlagsPro->SetStats(kFALSE);
  fInternalFlagsPro->SetFillColor(kGray);
@@ -4053,7 +4132,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
  fInternalFlagsPro->GetXaxis()->SetBinLabel(6,Form("fAnalysisTag = %s",fAnalysisTag.Data())); 
  fInternalFlagsPro->GetXaxis()->SetBinLabel(7,"fDumpThePoints"); fInternalFlagsPro->Fill(6.5,fDumpThePoints);  
  fInternalFlagsPro->GetXaxis()->SetBinLabel(8,"fMaxNoEventsPerFile"); fInternalFlagsPro->Fill(7.5,fMaxNoEventsPerFile);  
-
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(9,"fSelectRandomlyRPs"); fInternalFlagsPro->Fill(8.5,fSelectRandomlyRPs);
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(10,"fnSelectedRandomlyRPs"); fInternalFlagsPro->Fill(9.5,fnSelectedRandomlyRPs);
  fHistList->Add(fInternalFlagsPro); 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
@@ -5289,7 +5369,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFl
  // a) Insanity checks:
  TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)";
  if(!anEvent){Fatal(sMethodName.Data(),"Sorry, anEvent is NULL.");}
- Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
+ Double_t dMultRP = fSelectRandomlyRPs ? fnSelectedRandomlyRPs : anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
  if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; } // TBI tmp gym
  if(dMultRP<0.){Fatal(sMethodName.Data(),"Sorry, dMultRP is negative.");}
 

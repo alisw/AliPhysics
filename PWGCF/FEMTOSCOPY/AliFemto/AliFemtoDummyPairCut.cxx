@@ -7,7 +7,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoDummyPairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoDummyPairCut);
+  /// \endcond
 #endif
 
 //__________________

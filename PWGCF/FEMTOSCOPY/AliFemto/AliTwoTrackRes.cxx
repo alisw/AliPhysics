@@ -18,24 +18,28 @@
 #include "TNtuple.h"
 #include "TRandom2.h"
 
-ClassImp(AliTwoTrackRes)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliTwoTrackRes);
+  /// \endcond
+#endif
 
 //______________________________________________________________________________
 // Constructor(s)
 
-AliTwoTrackRes::AliTwoTrackRes(const char *name) : 
-  AliAnalysisTask(name,""), fChain(0), fESDEvent(0), 
-  fOutContainer(0), fTrackCuts(0), fNTuple1(0), 
-  fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), fQ(), fTpcEnt1(), fTpcEnt2(), 
+AliTwoTrackRes::AliTwoTrackRes(const char *name) :
+  AliAnalysisTask(name,""), fChain(0), fESDEvent(0),
+  fOutContainer(0), fTrackCuts(0), fNTuple1(0),
+  fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), fQ(), fTpcEnt1(), fTpcEnt2(),
   fTpcDist(), fOutFilename()
 {
-  DefineInput(0, TChain::Class());     // Slot input 0 reads from a TChain  
+  DefineInput(0, TChain::Class());     // Slot input 0 reads from a TChain
   DefineOutput(0, TObjArray::Class()); // Slot output 0 writes into a TObjArray
 }
 
-AliTwoTrackRes::AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes) : 
-  AliAnalysisTask(aTwoTrackRes), fChain(0), fESDEvent(0), fOutContainer(0), 
-  fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), 
+AliTwoTrackRes::AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes) :
+  AliAnalysisTask(aTwoTrackRes), fChain(0), fESDEvent(0), fOutContainer(0),
+  fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(),
   fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist(), fOutFilename()
 {
   //Copy constructor
@@ -83,7 +87,7 @@ AliTwoTrackRes& AliTwoTrackRes::operator=(const AliTwoTrackRes& aTwoTrackRes)
 
 AliTwoTrackRes::~AliTwoTrackRes() {printf("AliTwoTrackRes destroyed\n");}
 
-void AliTwoTrackRes::ConnectInputData(Option_t *) {  
+void AliTwoTrackRes::ConnectInputData(Option_t *) {
 //______________________________________________________________________________
 // Connect input data and initialize track cuts
 
@@ -96,7 +100,7 @@ void AliTwoTrackRes::ConnectInputData(Option_t *) {
   Double_t cov1, cov2, cov3, cov4, cov5; // diagonal cov. matrix elements
   Double_t nSigma;                       // max. DCA to primary vertex
   Int_t minNClustersTPC;                 // min. number of clusters per TPC tracks
-  Double_t maxChi2PerClusterTPC;         // max. chi2 per cluster per TPC track  
+  Double_t maxChi2PerClusterTPC;         // max. chi2 per cluster per TPC track
   Int_t cutMode = 1;                     // select cut mode
   if (cutMode == 1) {
   cov1 = 2; cov2 = 2; cov3 = 0.5; cov4 = 0.5; cov5 = 2;
@@ -107,13 +111,13 @@ void AliTwoTrackRes::ConnectInputData(Option_t *) {
   fTrackCuts->SetRequireTPCRefit(kTRUE);
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts->SetMinNClustersTPC(minNClustersTPC);
-  fTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);  
+  fTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
   TString tag("Global tracking");}
 }
 
 void AliTwoTrackRes::CreateOutputObjects() {
 //______________________________________________________________________________
-// Create output objects 
+// Create output objects
 
   fNTuple1 = new TNtuple("nt1","True pairs",
   "pt1:eta1:phi1:nsh1:pt2:eta2:phi2:nsh2:qinv:mindist:dist:corr:qfac");
@@ -146,7 +150,7 @@ void AliTwoTrackRes::Exec(Option_t *) {
   Int_t  ntracks = fESDEvent->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++) {
     AliESDtrack *track1 = fESDEvent->GetTrack(itrack);
-    AliExternalTrackParam *trp1 = const_cast<AliExternalTrackParam*> 
+    AliExternalTrackParam *trp1 = const_cast<AliExternalTrackParam*>
       (track1->GetTPCInnerParam());
     if (!trp1) continue;
     if (!track1->IsOn(AliESDtrack::kTPCpid)) continue;
@@ -161,7 +165,7 @@ void AliTwoTrackRes::Exec(Option_t *) {
     SetTpcEnt1(tpcEnt1[0], tpcEnt1[1], tpcEnt1[2]);
     for(Int_t jtrack = 0; jtrack < itrack; jtrack++) {
       AliESDtrack *track2 = fESDEvent->GetTrack(jtrack);
-      AliExternalTrackParam *trp2 = const_cast<AliExternalTrackParam*> 
+      AliExternalTrackParam *trp2 = const_cast<AliExternalTrackParam*>
 	(track2->GetTPCInnerParam());
       if (!trp2) continue;
       if (!track2->IsOn(AliESDtrack::kTPCpid)) continue;
@@ -174,7 +178,7 @@ void AliTwoTrackRes::Exec(Option_t *) {
       sha2 = track2->GetTPCSharedMap();
       SetTr2(track2->Pt(), track2->Eta(), track2->Phi(), mpi);
       SetTpcEnt2(tpcEnt2[0], tpcEnt2[1], tpcEnt2[2]);
-      for (Int_t i = tpcIn; i < tpcOut; i++) { // Minimum distance 
+      for (Int_t i = tpcIn; i < tpcOut; i++) { // Minimum distance
 	trp1->GetDistance(trp2, (double) i, pos1, bfield);
 	x1.SetXYZ(pos1[0], pos1[1], pos1[2]);
 	tdist[i-tpcIn] = x1.Mag();
@@ -210,7 +214,7 @@ void AliTwoTrackRes::Exec(Option_t *) {
       }
       if ((TMath::Abs(dphirot)<0.35)&&(deta<0.35)) {
 	if (rnd.Rndm() < 0.5) NoSwap();
-	else Swap(); 
+	else Swap();
 	FillNTuple2(mindistrot,distrot,corr,qfac,nsh1,nsh2);} // Mixed
     }
   }
@@ -237,7 +241,7 @@ void AliTwoTrackRes::Terminate(Option_t *) {
 //______________________________________________________________________________
 // Miscellaneous methods
 
-// Set tracks 
+// Set tracks
 void AliTwoTrackRes::SetTr1(double pt1, double eta1, double phi1, double m) {
   fP1.SetPtEtaPhiM(pt1, eta1, phi1, m);}
 void AliTwoTrackRes::SetTr2(double pt2, double eta2, double phi2, double m) {
@@ -276,7 +280,7 @@ int AliTwoTrackRes::GetNSha(TBits cl, TBits sh) {
 // Get number of shared clusters
 
   int ncl = cl.GetNbits();
-  int sum = 0; 
+  int sum = 0;
   for(int i = 0; i < ncl; i++) {
     if (!cl.TestBitNumber(i)) continue;
     int n = sh.TestBitNumber(i);
@@ -312,7 +316,7 @@ double AliTwoTrackRes::Corr(TBits cl1,  TBits cl2, TBits sh1, TBits sh2) {
   return corr;}
 
 double AliTwoTrackRes::Qfac(TBits cl1,  TBits cl2, TBits sh1, TBits sh2) {
-// Quality factor from AliFemto 
+// Quality factor from AliFemto
 
   int ncl1 = cl1.GetNbits();
   int ncl2 = cl2.GetNbits();
@@ -340,20 +344,18 @@ double AliTwoTrackRes::Qfac(TBits cl1,  TBits cl2, TBits sh1, TBits sh2) {
 // Rotate second track for mixed pairs
 double AliTwoTrackRes::RotTr2Phi() {
   double rot = TVector2::Phi_mpi_pi(fP2.Phi()+TMath::Pi());
-  fTpcEnt2.SetPhi(TVector2::Phi_mpi_pi(fTpcEnt2.Phi()+TMath::Pi())); 
+  fTpcEnt2.SetPhi(TVector2::Phi_mpi_pi(fTpcEnt2.Phi()+TMath::Pi()));
   return rot;}
 
 // Fill NTuples
-void AliTwoTrackRes::FillNTuple1(double minsep, double sep, double corr, 
+void AliTwoTrackRes::FillNTuple1(double minsep, double sep, double corr,
 				 double qf, int ns1, int ns2) {
   fNTuple1->Fill(fP1.Pt(),fP1.Eta(),fP1.Phi(),ns1,fP2.Pt(),fP2.Eta(),
 		 fP2.Phi(),ns2,Qinv(),minsep,sep,corr,qf);}
-void AliTwoTrackRes::FillNTuple2(double minsep, double sep, double corr, 
+void AliTwoTrackRes::FillNTuple2(double minsep, double sep, double corr,
 				 double qf, int ns1, int ns2) {
   fNTuple2->Fill(fPb1.Pt(),fPb1.Eta(),fPb1.Phi(),ns1,fPb2.Pt(),fPb2.Eta(),
 		 fPb2.Phi(),ns2,Qinv(),minsep,sep,corr,qf);}
 
 //______________________________________________________________________________
 // EOF
-
-

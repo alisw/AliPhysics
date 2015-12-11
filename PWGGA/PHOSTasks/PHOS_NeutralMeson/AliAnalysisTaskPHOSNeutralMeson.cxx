@@ -220,8 +220,8 @@ ClassImp(AliAnalysisTaskPHOSNeutralMeson)
 	fNTupelClusterEnergyMod1(0),
 	fNTupelClusterEnergyMod2(0),
 	fNTupelClusterEnergyMod3(0),
-	fPHOSGeo(0),
-	fPHOSCalibData(0), //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
+	fPHOSGeo(0x0),
+	fPHOSCalibData(0x0), //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
 	fUtils(0)
 {
     // Dummy constructor ALWAYS needed for I/O.
@@ -234,7 +234,6 @@ ClassImp(AliAnalysisTaskPHOSNeutralMeson)
 		fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
 	}
 
-	fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");     
 	fUtils = new AliAnalysisUtils();                             
 }
 
@@ -361,8 +360,8 @@ AliAnalysisTaskPHOSNeutralMeson::AliAnalysisTaskPHOSNeutralMeson(const Char_t *n
 	fNTupelClusterEnergyMod1(0),
 	fNTupelClusterEnergyMod2(0),
 	fNTupelClusterEnergyMod3(0),
-	fPHOSGeo(0),
-	fPHOSCalibData(0), //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
+	fPHOSGeo(0x0),
+	fPHOSCalibData(0x0), //neccesary for cell by cell calibration, before filling CellID_vs_E histos.
 	fUtils(0)
 {
     // Constructor
@@ -377,7 +376,6 @@ AliAnalysisTaskPHOSNeutralMeson::AliAnalysisTaskPHOSNeutralMeson(const Char_t *n
 		snprintf(key,55,"PHOS_BadMap_mod%d",i) ;
 		fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
     }
-    fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");    
    
 	fUtils = new AliAnalysisUtils();                             
 }
@@ -1107,17 +1105,27 @@ void AliAnalysisTaskPHOSNeutralMeson::UserExec(Option_t *) {
 
 	Int_t runNumber = 0;
 	runNumber = fAnyEv->GetRunNumber();
-	if(fEventCounter == 0) { // Only done for the first Event
-		AliOADBContainer geomContainer("phosGeo");
-		geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-		
-		TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
-		for(Int_t mod=0; mod<5; mod++) {
-			if(!matrixes->At(mod)) continue;
-			fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
-			printf("....TASK.....Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
-			((TGeoHMatrix*)matrixes->At(mod))->Print() ;
+
+	if (fPHOSGeo==0) {
+
+		fPHOSGeo = AliPHOSGeometry::GetInstance() ;
+
+		if(!fPHOSGeo){ //Geometry not yet constructed with Tender
+			fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP","");
+
+			AliOADBContainer geomContainer("phosGeo");
+			geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+			TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+			for(Int_t mod=0; mod<5; mod++) {
+				if(!matrixes->At(mod)) continue;
+				fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+				printf("....TASK.....Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+				((TGeoHMatrix*)matrixes->At(mod))->Print() ;
+			}
 		}
+	}
+
+	if(fEventCounter == 0) { // Only done for the first Event
 
 		if(fFillCellIdVsE) {
 			Int_t recoPass = -1;

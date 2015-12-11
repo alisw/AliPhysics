@@ -6,7 +6,9 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-  ClassImp(AliFemtoModelManager, 1)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelManager, 1);
+  /// \endcond
 #endif
 
 #include "AliFemtoModelManager.h"
@@ -52,7 +54,7 @@ AliFemtoModelManager& AliFemtoModelManager::operator=(const AliFemtoModelManager
   }
   else fWeightGenerator = 0;
   fCreateCopyHiddenInfo = aManager.fCreateCopyHiddenInfo;
-  
+
   return *this;
 }
 //_____________________________________________

@@ -146,8 +146,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       cout<<"Input file not found for efficiency! Exiting..."<<endl;
       return;
     }
-    TCanvas *cc = (TCanvas*)fileeffD0c->Get("c1");
-    TH2D *hEffD0c = (TH2D*)cc->FindObject("h_Eff");
+    TH2D *hEffD0c = (TH2D*)fileeffD0c->Get("h_Eff");
     if(recoD0MC) corrCuts->SetTriggerEffWeightMap(hEffD0c); //data and MC Reco
   } else cout<<"*** WARNING! No prompt trigger efficiency map set! ***"<<endl;
 
@@ -159,8 +158,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
         cout<<"Input file not found for efficiency! Exiting..."<<endl;
         return;
       }
-      TCanvas *cb = (TCanvas*)fileeffD0b->Get("c1");
-      TH2D *hEffD0b = (TH2D*)cb->FindObject("h_Eff");
+      TH2D *hEffD0b = (TH2D*)fileeffD0b->Get("h_Eff");
       if(recoD0MC && readMC) corrCuts->SetTriggerEffWeightMapB(hEffD0b); //MC Reco
     } else cout<<"*** WARNING! No feed-down trigger efficiency map set! ***"<<endl;
   }

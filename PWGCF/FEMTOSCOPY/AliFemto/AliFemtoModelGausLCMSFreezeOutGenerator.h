@@ -40,7 +40,9 @@ class AliFemtoModelGausLCMSFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   AliFemtoModelFreezeOutGenerator* GetGenerator() const;
 		
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelGausLCMSFreezeOutGenerator, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelGausLCMSFreezeOutGenerator, 1);
+  /// \endcond
 #endif
 
     };

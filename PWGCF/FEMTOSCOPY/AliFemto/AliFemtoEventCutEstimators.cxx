@@ -9,7 +9,9 @@
 //#include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoEventCutEstimators)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventCutEstimators);
+  /// \endcond
 #endif
 
 AliFemtoEventCutEstimators::AliFemtoEventCutEstimators() :

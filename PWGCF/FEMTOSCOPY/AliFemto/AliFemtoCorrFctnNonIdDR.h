@@ -47,7 +47,9 @@ private:
     TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctnNonIdDR, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctnNonIdDR, 1);
+  /// \endcond
 #endif
 };
 

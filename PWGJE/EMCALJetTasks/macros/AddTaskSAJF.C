@@ -8,7 +8,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.557,
-  const char *cutType            = "TPC",
+  const char *cutType            = "TPCfid",
   Int_t       leadhadtype        = 0,
   const char *suffix             = ""
 )
@@ -46,7 +46,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   name += "_";
   name += cutType;
 
-  if (strcmp(suffix,"") != 0) {
+  if (strcmp(suffix,"")) {
     name += "_";
     name += suffix;
   }

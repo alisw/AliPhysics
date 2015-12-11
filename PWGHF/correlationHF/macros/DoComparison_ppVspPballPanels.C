@@ -18,7 +18,9 @@ TString strDeltaEta="|#Delta#eta| < 1.0";
 Double_t minYaxis[nbinAssocpt]={-0.6,-0.6,-0.29}; // or -0.6 for all  
 Double_t maxYaxis[nbinAssocpt]={5.7,1.9,2.2};// or 4.1 for the first , 2.9 for the middle and 1.9 for the last
 Double_t mesonptcenter[nbinDpt]={4.,6.5,12.};// needed for getting the baseline
-Color_t colourSystem[ncollsyst]={kBlue,kRed}; 
+Color_t colourSystem[ncollsyst]={kBlack,kRed}; 
+Color_t colourSystemBaseUnc[ncollsyst]={kBlack,kRed-7};
+Int_t markerstyle[2]={20,21};// pp, p-Pb
 Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
 Int_t rebin =1;
@@ -171,12 +173,12 @@ TH1D * GetHistoAndSyst(TString path, Int_t collsyst,TString hname, TString hname
 
   if(collsyst==0){
     if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.46,Form("%.0f#% scale uncertainty pp",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.46,Form("{}^{+%.0f%s}_{-%.0f%s} scale uncertainty (pp)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    else tUncertainty=new TLatex(0.55,0.46,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale uncertainty (pp)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
    
   }
   if(collsyst==1){
     if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.42,Form("#bf{%.0f#% scale uncertainty p-Pb}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.55,0.42,Form("{}^{+%.0f%s}_{-%.0f%s} scale uncertainty (p-Pb)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    else tUncertainty=new TLatex(0.55,0.42,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale uncertainty (p-Pb)","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
   }
 
   tUncertainty->SetNDC();
@@ -478,13 +480,18 @@ void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,TLatex *tlpPb){
   tlpPb->SetY(0.156/gPad->GetHNDC()+gPad->GetBottomMargin());
   */
 
-  tlpp->SetX(0.13/gPad->GetWNDC()+gPad->GetLeftMargin());
-  tlpp->SetY(0.19/gPad->GetHNDC()+gPad->GetBottomMargin());
-  tlpPb->SetX(0.13/gPad->GetWNDC()+gPad->GetLeftMargin());
-  tlpPb->SetY(0.156/gPad->GetHNDC()+gPad->GetBottomMargin());
+  //  tlpp->SetX(0.13/gPad->GetWNDC()+gPad->GetLeftMargin()); //draft 1
+  //   tlpp->SetY(0.19/gPad->GetHNDC()+gPad->GetBottomMargin());
+  tlpp->SetY(0.21/gPad->GetHNDC()+gPad->GetBottomMargin());
+  tlpp->SetX(0.083/gPad->GetWNDC()+gPad->GetLeftMargin());
 
-  tlpp->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42: 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-  tlpPb->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42: 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  //  tlpPb->SetX(0.13/gPad->GetWNDC()+gPad->GetLeftMargin()); // draft 1
+  //  tlpPb->SetY(0.156/gPad->GetHNDC()+gPad->GetBottomMargin());
+  tlpPb->SetX(0.083/gPad->GetWNDC()+gPad->GetLeftMargin());
+  tlpPb->SetY(0.176/gPad->GetHNDC()+gPad->GetBottomMargin());
+
+  tlpp->SetTextSize(26*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42: 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  tlpPb->SetTextSize(26*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42: 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
   tlpp->SetTextAlign(12);
   tlpPb->SetTextAlign(12);
 
@@ -493,7 +500,8 @@ void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,TLatex *tlpPb){
 
 TLegend *GetLegendDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     
-  TLegend * legend = new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.14/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.2/gPad->GetHNDC()+gPad->GetBottomMargin());
+  TLegend * legend = new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.18/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
+    //new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.14/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.2/gPad->GetHNDC()+gPad->GetBottomMargin());
   //previous settings: (0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.16/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.22/gPad->GetHNDC()+gPad->GetBottomMargin());
     legend->SetFillColor(0);
     legend->SetFillStyle(0);
@@ -518,13 +526,16 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,TGraphAsymmErrors *gpPb,Int_t
   else if(positionOption==2){// standard
     legend= new TLegend(0.13/gPad->GetWNDC()+gPad->GetLeftMargin(),0.17/gPad->GetHNDC()+gPad->GetBottomMargin(),0.23/gPad->GetWNDC()+gPad->GetLeftMargin(),0.235/gPad->GetHNDC()+gPad->GetBottomMargin());
   }
+  else if(positionOption==3){
+    legend= new TLegend(0.035/gPad->GetWNDC()+gPad->GetLeftMargin(),0.18/gPad->GetHNDC()+gPad->GetBottomMargin(),0.155/gPad->GetWNDC()+gPad->GetLeftMargin(),0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
+  }
   else return 0x0;
   legend->SetFillColor(0);
   legend->SetFillStyle(0);
   legend->SetBorderSize(0);
   legend->SetTextFont(43);
   legend->SetTextAlign(12);
-  legend->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
   legend->AddEntry(gpp,"baseline uncertainty pp","f");
   legend->AddEntry(gpPb,"baseline uncertainty p-Pb","f");
   // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
@@ -640,10 +651,10 @@ void DoComparison_ppVspPballPanels(){
 	
 
 	if(icoll==0) { // pp style
-	  histo[icoll][kassoc][jmes]->SetMarkerColor(4); 
-	  histo[icoll][kassoc][jmes]->SetMarkerStyle(21); 
+	  histo[icoll][kassoc][jmes]->SetMarkerColor(colourSystem[icoll]); 
+	  histo[icoll][kassoc][jmes]->SetMarkerStyle(markerstyle[icoll]); 
 	  histo[icoll][kassoc][jmes]->SetMarkerSize(markersize); 
-	  histo[icoll][kassoc][jmes]->SetLineColor(4);  
+	  histo[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);  
 	  
 
 	  subtractedhisto[icoll][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedpPb(icoll,kassoc,jmes,histo[icoll][kassoc][jmes],err[icoll][kassoc][jmes],suberr[icoll][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[icoll][kassoc][jmes],grv2[icoll][kassoc][jmes]);
@@ -651,33 +662,36 @@ void DoComparison_ppVspPballPanels(){
 	  cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;	
 	  Printf("Histo subtrcated: pointer is working");
 	  grbase[icoll][kassoc][jmes]->SetFillStyle(3001);
+	  grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
+	  grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
+
 	  if(grv2[icoll][kassoc][jmes]){
 	    Printf("SHOULD NOT ENTER HERE");
 	    grv2[icoll][kassoc][jmes]->SetFillStyle(1001);
 	    grv2[icoll][kassoc][jmes]->SetFillColor(kMagenta);  
 	  }
-	  suberr[icoll][kassoc][jmes]->SetLineColor(kBlue);
+	  suberr[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);
 	  suberr[icoll][kassoc][jmes]->SetLineWidth(2);
 	}
 	
 	if(icoll==1) { // p-Pb style
-	  histo[icoll][kassoc][jmes]->SetMarkerColor(2); 
-	  histo[icoll][kassoc][jmes]->SetLineColor(2); 
-	  histo[icoll][kassoc][jmes]->SetMarkerStyle(20); 
+	  histo[icoll][kassoc][jmes]->SetMarkerColor(colourSystem[icoll]); 
+	  histo[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]); 
+	  histo[icoll][kassoc][jmes]->SetMarkerStyle(markerstyle[icoll]); 
 	  histo[icoll][kassoc][jmes]->SetMarkerSize(markersize); 
 
 	    subtractedhisto[icoll][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedpPb(icoll,kassoc,jmes,histo[icoll][kassoc][jmes],err[icoll][kassoc][jmes],suberr[icoll][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[icoll][kassoc][jmes],grv2[icoll][kassoc][jmes]);
 	    cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;
 	    subtractedhisto[icoll][kassoc][jmes]->GetYaxis()->SetRangeUser(-0.8,2*subtractedhisto[icoll][kassoc][jmes]->GetBinContent(subtractedhisto[icoll][kassoc][jmes]->GetMaximumBin()));    
 	    grbase[icoll][kassoc][jmes]->SetFillStyle(3001);
-	    grbase[icoll][kassoc][jmes]->SetFillColor(kRed-7);
-	    grbase[icoll][kassoc][jmes]->SetLineColor(kRed-7);
+	    grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
+	    grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
 	    
 	    if(grv2[icoll][kassoc][jmes]){
 	      grv2[icoll][kassoc][jmes]->SetFillStyle(3002);
 	      grv2[icoll][kassoc][jmes]->SetFillColor(kMagenta);  
 	    }
-	    suberr[icoll][kassoc][jmes]->SetLineColor(kRed);
+	    suberr[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);
 	    
 	    
 	}
@@ -714,7 +728,7 @@ void DoComparison_ppVspPballPanels(){
 
   for(Int_t iassoc=0;iassoc<nbinAssocpt;iassoc++){
     for(Int_t jDpt=firstDpt;jDpt<nbinDpt;jDpt++){
-      TPad *pd=cFinalPaperStyle->cd((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+      TPad *pd=(TPad*)cFinalPaperStyle->cd((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       SetPadStyle(pd);
       //    gPad->SetLeftMargin(0.3);
       //    gPad->SetRightMargin(0.);
@@ -790,15 +804,15 @@ void DoComparison_ppVspPballPanels(){
       SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],ltscale[1][iassoc][jDpt]);
       
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1){
-	ltscale[0][iassoc][jDpt]->SetY(0.115/gPad->GetHNDC()+gPad->GetBottomMargin());// older settings 0.135/gPad->GetHNDC()+gPad->GetBottomMargin());
-	ltscale[1][iassoc][jDpt]->SetY(0.085/gPad->GetHNDC()+gPad->GetBottomMargin());// older settings 0.105/gPad->GetHNDC()+gPad->GetBottomMargin());
-	//	ltscale[0][iassoc][jDpt]->SetX(0.15/gPad->GetWNDC()+gPad->GetLeftMargin());
-	//	ltscale[1][iassoc][jDpt]->SetX(0.15/gPad->GetWNDC()+gPad->GetLeftMargin());
+	ltscale[0][iassoc][jDpt]->SetY(0.12/gPad->GetHNDC()+gPad->GetBottomMargin());// older settings 0.135/gPad->GetHNDC()+gPad->GetBottomMargin());
+	ltscale[1][iassoc][jDpt]->SetY(0.09/gPad->GetHNDC()+gPad->GetBottomMargin());// older settings 0.105/gPad->GetHNDC()+gPad->GetBottomMargin());
+	ltscale[0][iassoc][jDpt]->SetX(0.14/gPad->GetWNDC()+gPad->GetLeftMargin());
+	ltscale[1][iassoc][jDpt]->SetX(0.14/gPad->GetWNDC()+gPad->GetLeftMargin());
       }
       // not in older settings:
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==2){
-	ltscale[0][iassoc][jDpt]->SetY(0.145/gPad->GetHNDC()+gPad->GetBottomMargin());
-	ltscale[1][iassoc][jDpt]->SetY(0.115/gPad->GetHNDC()+gPad->GetBottomMargin());	
+	ltscale[0][iassoc][jDpt]->SetY(0.15/gPad->GetHNDC()+gPad->GetBottomMargin());
+	ltscale[1][iassoc][jDpt]->SetY(0.12/gPad->GetHNDC()+gPad->GetBottomMargin());	
       }
 
 
@@ -817,7 +831,7 @@ void DoComparison_ppVspPballPanels(){
       Printf("Getting baseline unc legend");
       TLegend *legend2;
       if(style==0)legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,0);
-      else if(style==1)legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,2); // default option was 1 in older settings
+      else if(style==1)legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,3); // default option was 1 in older settings; 2 for draft 1 version;
       else legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,1);
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1)legend->Draw();
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==2)legend2->Draw();// was in pad 3 before
@@ -831,8 +845,14 @@ void DoComparison_ppVspPballPanels(){
 	Printf("Getting Pave Kine infos in bin main, aligning left");
 	pvKineInfo=GetPaveKineInfo(strPtMesonText[jDpt],strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,22);
 	//was: pvKineInfo=GetPaveKineInfo(strPtMesonText[jDpt],0x0,(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,2);		
-	pvKineInfo->SetY1(0.225/gPad->GetHNDC()+gPad->GetBottomMargin());
-	pvKineInfo->SetY2(0.24/gPad->GetHNDC()+gPad->GetBottomMargin());
+	//	pvKineInfo->SetY1(0.225/gPad->GetHNDC()+gPad->GetBottomMargin());
+	//	pvKineInfo->SetY2(0.24/gPad->GetHNDC()+gPad->GetBottomMargin());
+
+	pvKineInfo->SetY1(0.15/gPad->GetHNDC()+gPad->GetBottomMargin());
+	pvKineInfo->SetY2(0.175/gPad->GetHNDC()+gPad->GetBottomMargin());
+	pvKineInfo->SetX1(0.008/gPad->GetWNDC()+gPad->GetLeftMargin());
+	pvKineInfo->SetX2(0.23/gPad->GetWNDC()+gPad->GetLeftMargin());
+	pvKineInfo->SetTextAlign(12);	
 	pvKineInfo->Draw("same");
 	//	Printf("Getting Pave Kine infos in bin main, aligning right");
 	//	pvKineInfo=GetPaveKineInfo(0x0,strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,2);// was option 11
@@ -841,8 +861,14 @@ void DoComparison_ppVspPballPanels(){
 	//	pvKineInfo->Draw("same");	
 	Printf("Getting Pave Kine infos (DeltaEta) in bin main, aligning left");
 	pvKineInfo=GetPaveKineInfo(0x0,0x0,(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,1);// just a trick to get DeltaEta
-	pvKineInfo->SetY1(0.20/gPad->GetHNDC()+gPad->GetBottomMargin());
-	pvKineInfo->SetY2(0.215/gPad->GetHNDC()+gPad->GetBottomMargin());
+	Printf("Delta Eta pave obtained");
+	//	pvKineInfo->SetY1(0.20/gPad->GetHNDC()+gPad->GetBottomMargin());
+	//	pvKineInfo->SetY2(0.215/gPad->GetHNDC()+gPad->GetBottomMargin());
+	pvKineInfo->SetY1(0.127/gPad->GetHNDC()+gPad->GetBottomMargin());
+	pvKineInfo->SetY2(0.142/gPad->GetHNDC()+gPad->GetBottomMargin());
+	pvKineInfo->SetX1(0.008/gPad->GetWNDC()+gPad->GetLeftMargin());
+	pvKineInfo->SetX2(0.23/gPad->GetWNDC()+gPad->GetLeftMargin());
+	pvKineInfo->SetTextAlign(12);
 	pvKineInfo->Draw("same");
       }
       else{
@@ -852,6 +878,10 @@ void DoComparison_ppVspPballPanels(){
 	}
 	else if(style==1){
 	  pvKineInfo=GetPaveKineInfo(strPtMesonText[jDpt],strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,22);
+	  if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==2){
+	    pvKineInfo->SetY2(0.255/gPad->GetHNDC()+gPad->GetBottomMargin());
+	    pvKineInfo->SetY1(0.275/gPad->GetHNDC()+gPad->GetBottomMargin());
+	  }
 	}
 	else {// very old default
 	  pvKineInfo=GetPaveKineInfo(strPtMesonText[jDpt],strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,0);
@@ -862,12 +892,13 @@ void DoComparison_ppVspPballPanels(){
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1) alice->Draw("same");
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1) pvAverage->Draw("same");
 
-
+      Printf("Bin D :%d, bin assoc %d done",jDpt,iassoc);
     }
   }
   
 
   for(Int_t j=6;j>=1;j--){
+    Printf("IN THE LOOP WHERE PADS ARE DRAWN, JUST BEFORE SAVING");
     TPad *pd=(TPad*)cFinalPaperStyle->cd(j);
     pd->Draw();
   }

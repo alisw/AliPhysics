@@ -6,7 +6,6 @@
 //
 // jaroslav.adam@cern.ch
 
-#define NTRG 24
 #include "AliAnalysisTaskSE.h"
 
 class AliUPCEvent;

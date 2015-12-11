@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 
 #include "TString.h"
@@ -86,14 +85,11 @@ void AliObservableClassifierpTPID::Fill(AliMCEvent *event, AliStack *stack) {
 
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    // load track
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
-    // check if the pdg is safe
-    if (find(fSafePdgCodes.begin(), fSafePdgCodes.end(), TMath::Abs(track->PdgCode())) == fSafePdgCodes.end())
-      continue;
-
     // We only want primaries and pi0's!
     if (!(stack->IsPhysicalPrimary(iTrack) ||
 	  AliIsPi0PhysicalPrimary(iTrack, stack))) {

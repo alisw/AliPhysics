@@ -10,7 +10,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoQinvCorrFctn)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoQinvCorrFctn);
+  /// \endcond
 #endif
 
 //____________________________

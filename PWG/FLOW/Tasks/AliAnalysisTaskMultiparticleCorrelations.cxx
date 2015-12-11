@@ -46,6 +46,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fAnalysisTag(""),
  fDumpThePoints(kFALSE),
  fMaxNoEventsPerFile(100),
+ fSelectRandomlyRPs(kFALSE),
+ fnSelectedRandomlyRPs(-44),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -175,6 +177,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fAnalysisTag(""),
  fDumpThePoints(kFALSE),
  fMaxNoEventsPerFile(0),
+ fSelectRandomlyRPs(kFALSE),
+ fnSelectedRandomlyRPs(-44),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -296,6 +300,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  if(fUseInternalFlags){fMPC->SetExactNoRPs(fExactNoRPs);}
  fMPC->SetAnalysisTag(fAnalysisTag.Data());
  fMPC->SetDumpThePoints(fDumpThePoints,fMaxNoEventsPerFile);
+ if(fSelectRandomlyRPs){fMPC->SetSelectRandomlyRPs(fnSelectedRandomlyRPs);}
  fMPC->SetFillControlHistograms(fFillControlHistograms);
  if(fDontFill[0]){fMPC->SetDontFill("RP");}
  if(fDontFill[1]){fMPC->SetDontFill("POI");}
@@ -696,6 +701,7 @@ void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int
 
  // TBI to be finalized, along the same lines as it was done in void AliFlowAnalysisWithMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
  order = harmonics[0]; // TBI eliminating temporarily the warnings
+ if(order>44) harmonics[0] = -44; // TBI eliminating temporarily the warnings, the implementation of this method has to be finalized one day...
 
 } // void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
 

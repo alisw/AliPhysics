@@ -18,7 +18,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   Bool_t   makeTrigger              = kTRUE,
   Bool_t   isEmcalTrain             = kFALSE,
   Double_t trackeff                 = 1.0,
-  Bool_t   doAODTrackProp           = kTRUE,
+  Bool_t   doAODTrackProp           = kFALSE,
   Bool_t   modifyMatchObjs          = kTRUE,
   Bool_t   useOldBitConfig          = kFALSE,
   Bool_t   doTriggerQA              = kFALSE,
@@ -109,13 +109,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 								  trackeff,doAODTrackProp,
 								  0.1,modifyMatchObjs,doHistos,nCentBins);
 #endif
-  //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
   TString inputTracks = "AODFilterTracks";
   if (dType == "ESD") inputTracks = "ESDFilterTracks";
-  TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
-  TString emcclusters = Form("EmcalClusters_%s",clusterColName.Data());
-  Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
-  
   
   // Produce MC particles
   if(!particleColName.IsNull()) {
@@ -154,13 +149,13 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 #ifdef __CLING__
   std::stringstream hadcorradd;
   hadcorradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskHadCorr.C("
-      << "\"" << emctracks << "\", \"" << emcclusters << "\", \"" << outClusName << "\", " << hadcorr << ", " << minPtEt << ", "
+      << "\"" << inputTracks << "\", \"" << emcclusters << "\", \"" << outClusName << "\", " << hadcorr << ", " << minPtEt << ", "
       << phiMatch << ", " << etaMatch << ", " << Eexcl << ", " << (trackclus ? "kTRUE" : "kFALSE") << ", " << (doHistos ? "kTRUE" : "kFALSE") << ")";
   std::string hadcorraddstring = hadcorradd.str();
   AliHadCorrTask *hCorr = (AliHadCorrTask *)gROOT->ProcessLine(hadcorraddstring.c_str());
 #else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
-  AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
+  AliHadCorrTask *hCorr = AddTaskHadCorr(inputTracks,clusterColName,outClusName,hadcorr,
                                          minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
 #endif
   hCorr->SelectCollisionCandidates(pSel);

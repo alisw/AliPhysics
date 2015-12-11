@@ -71,7 +71,9 @@ class AliFemtoEventReaderKinematicsChainESD : public AliFemtoEventReader
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderKinematicsChainESD, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderKinematicsChainESD, 1);
+  /// \endcond
 #endif
 
     };

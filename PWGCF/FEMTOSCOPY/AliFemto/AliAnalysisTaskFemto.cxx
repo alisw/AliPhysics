@@ -22,9 +22,11 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskFemto)
-/// \endcond
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliAnalysisTaskFemto);
+  /// \endcond
+#endif
 
 // Default name for the setup macro of femto analysis
 // This function MUST be defined in the separate file !!!
@@ -298,7 +300,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
- 
+
   AliFemtoEventReaderAODKinematicsChain *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader);
   if (dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -647,7 +649,7 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
   }
   else if (dynamic_cast<AliFemtoEventReaderKinematicsChainESD*>(eventReader) != NULL) {
     SetFemtoReaderKinematicsESD((AliFemtoEventReaderKinematicsChainESD *) eventReader);
-  }  
+  }
   else if (dynamic_cast<AliFemtoEventReaderAODKinematicsChain*>(eventReader) != NULL) {
     SetFemtoReaderAODKinematics((AliFemtoEventReaderAODKinematicsChain *) eventReader);
   }

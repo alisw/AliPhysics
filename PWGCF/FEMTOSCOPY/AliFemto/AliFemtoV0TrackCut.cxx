@@ -3,7 +3,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoV0TrackCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoV0TrackCut);
+  /// \endcond
 #endif
 
 

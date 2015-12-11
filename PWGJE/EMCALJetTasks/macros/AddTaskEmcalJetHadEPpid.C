@@ -14,11 +14,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
    const Double_t TrkEta      = 0.9,                                               
-   Bool_t	PID               = 0, //kFALSE,
+   Bool_t   PID               = 0, //kFALSE,
    Bool_t   PIDtrackBIAS      = 0, //kFALSE,
    Bool_t   varbinTHnSparse   = 0, //kFALSE,
-   Bool_t   allpidAXIS		  = 0, //kFALSE,
-   Bool_t   QAhistos		  = 0, //kFALSE,
+   Bool_t   allpidAXIS        = 0, //kFALSE,
+   Bool_t   QAhistos          = 0, //kFALSE,
    Bool_t   BIAShistos        = 0, //kFALSE,
    Bool_t   extraCORRhistos   = 0, //kFALSE,
    Bool_t   oldJEThadhistos   = 0, //kFALSE,
@@ -28,18 +28,18 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t MixingTracks   = 50000,
    const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
-   TString cutType			  = "EMCAL",
-   Bool_t   Comments		  = 0,
+   TString cutType            = "EMCAL",
+   Bool_t   Comments          = 0,
    Bool_t   doFlavourJetAnalysis = 0,
    const Int_t flavTag        = 999,
    const Int_t esdcuts        = 10001006,
-   TString colltype			  = "",
+   TString colltype           = "",
    UInt_t trigevent           = AliVEvent::kAny,
    UInt_t mixevent            = AliVEvent::kAny,
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
-   const char *tag			  = ""
+   const char *tag            = ""
 )
 {  
   

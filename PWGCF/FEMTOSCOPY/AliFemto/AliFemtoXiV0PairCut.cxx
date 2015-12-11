@@ -4,7 +4,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoXiV0PairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoXiV0PairCut);
+  /// \endcond
 #endif
 
 //__________________
@@ -33,11 +35,11 @@ AliFemtoXiV0PairCut &AliFemtoXiV0PairCut::operator=(const AliFemtoXiV0PairCut &c
   fDataType = cut.fDataType;
 
 
-  return *this; 
+  return *this;
 }
 
 //__________________
-bool AliFemtoXiV0PairCut::Pass(const AliFemtoPair *pair) 
+bool AliFemtoXiV0PairCut::Pass(const AliFemtoPair *pair)
 {
   const AliFemtoXi *Xi = pair->Track1()->Xi();
   const AliFemtoV0 *V0 = pair->Track2()->V0();

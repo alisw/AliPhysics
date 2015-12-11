@@ -9,10 +9,10 @@
 #include "AliVTrack.h"
 
 class AliEmcalParticle: public AliVParticle {
- public:
+ public:  
   AliEmcalParticle();
   AliEmcalParticle(AliVTrack* track, Int_t id = -1);
-  AliEmcalParticle(AliVCluster* cluster, Int_t id = -1, Double_t vx=0, Double_t vy=0, Double_t vz=0);
+  AliEmcalParticle(AliVCluster* cluster, Int_t id = -1, Double_t vx=0, Double_t vy=0, Double_t vz=0, Int_t ude=-1);
   AliEmcalParticle(const AliEmcalParticle &p); 
   AliEmcalParticle &operator=(const AliEmcalParticle &p);
   virtual ~AliEmcalParticle();

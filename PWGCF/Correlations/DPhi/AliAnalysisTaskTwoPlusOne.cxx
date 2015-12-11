@@ -113,6 +113,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(fHistos);
 
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
+  fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
 
   PostData(1,fListOfHistos);
@@ -180,7 +181,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	  }
       }
   }
-  
+
   if (fMcHandler){
     fMcEvent = fMcHandler->MCEvent();
   }
@@ -236,6 +237,9 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
       else 
 	centrality = 95;
   }
+
+  if(centrality>=0)
+    ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)0, centrality);
 
   // Get MC primaries
   TObjArray* tracksMC;
@@ -304,6 +308,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
       fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kTRUE, applyEfficiency);//background estimation for the same event
 
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
+    ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)1, centrality);
     
     // event mixing
 
@@ -332,6 +337,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
       Int_t nMix = pool->GetCurrentNEvents();
 
       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)2, centrality);
       
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++){

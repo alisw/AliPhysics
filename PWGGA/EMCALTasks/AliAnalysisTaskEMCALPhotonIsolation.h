@@ -97,7 +97,7 @@ protected:
     void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
 //    Bool_t                   ClustTrackMatching(AliVCluster *cluster);
 
-    Bool_t                   ClustTrackMatching(AliEmcalParticle *emccluster);
+    Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
     Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
     Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
     Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;

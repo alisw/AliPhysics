@@ -32,6 +32,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fHistClustersPtDist(0),
   fHistTracksZJetPtJetConst(0),
   fHistClustersZJetPtJetConst(0),
+  fHistRhoVsCent(0),
   fHistJetObservables(0),
   fHistJetPtEtaPhi(0),
   fHistJetPtArea(0),
@@ -65,6 +66,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fHistClustersPtDist(0),
   fHistTracksZJetPtJetConst(0),
   fHistClustersZJetPtJetConst(0),
+  fHistRhoVsCent(0),
   fHistJetObservables(0),
   fHistJetPtEtaPhi(0),
   fHistJetPtArea(0),
@@ -374,9 +376,9 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistTracksZJetPtJetConst = new TH3*[fNcentBins];
   fHistClustersZJetPtJetConst = new TH3*[fNcentBins];
 
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    TString histname;
+  TString histname;
 
+  for (Int_t i = 0; i < fNcentBins; i++) {
     if (fParticleCollArray.GetEntriesFast() > 0) {
       histname = "fHistTracksJetPt_";
       histname += i;
@@ -439,6 +441,13 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fOutput->Add(fHistRejectionReason[i]);
   }
 
+  histname = "fHistRhoVsCent";
+  fHistRhoVsCent = new TH2F(histname, histname, 101, 0, 101, 100, 0, 500);
+  fHistRhoVsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistRhoVsCent->GetYaxis()->SetTitle("#rho (GeV/c)");
+  fHistRhoVsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistRhoVsCent);
+
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 
 }
@@ -453,6 +462,8 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   if (!jets) return kFALSE;
 
   AliEmcalJet* jet = 0;
+
+  fHistRhoVsCent->Fill(fCent, jets->GetRhoVal());
 
   jets->ResetCurrentID();
   while ((jet = jets->GetNextJet())) {

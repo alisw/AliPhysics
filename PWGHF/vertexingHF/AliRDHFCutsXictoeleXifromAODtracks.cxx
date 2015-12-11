@@ -82,6 +82,8 @@ AliRDHFCuts(name),
   fProdCascEtaMax(9999.),
   fProdCascRapMin(-9999.),
   fProdCascRapMax(9999.),
+  fProdCascPtMin(0.),
+  fProdCascPtMax(9999.),
 	fProdRoughMassTol(0.25),
 	fProdRoughPtMin(0.0),
 	fExcludePionTPC(kFALSE),
@@ -156,6 +158,8 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fProdCascEtaMax(source.fProdCascEtaMax),
   fProdCascRapMin(source.fProdCascRapMin),
   fProdCascRapMax(source.fProdCascRapMax),
+  fProdCascPtMin(source.fProdCascPtMin),
+  fProdCascPtMax(source.fProdCascPtMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin),
 	fExcludePionTPC(source.fExcludePionTPC),
@@ -217,6 +221,8 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fProdCascEtaMax = source.fProdCascEtaMax;
   fProdCascRapMin = source.fProdCascRapMin;
   fProdCascRapMax = source.fProdCascRapMax;
+  fProdCascPtMin = source.fProdCascPtMin;
+  fProdCascPtMax = source.fProdCascPtMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
 	fExcludePionTPC = source.fExcludePionTPC;
@@ -609,6 +615,10 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
   if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
   if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
 
+  Double_t pxxi = casc->MomXiX();
+  Double_t pyxi = casc->MomXiY();
+  Double_t ptxi = sqrt(pxxi*pxxi+pyxi*pyxi);
+  if(ptxi<fProdCascPtMin || ptxi>fProdCascPtMax) return kFALSE;
 
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
@@ -690,16 +700,32 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
       fPidObjCascPr->SetPidResponse(pidResp);
     }
     if(isparticle){
-      Int_t isProton=fPidObjCascPr->MakeRawPid(ptrack,4); 
-      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
-      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ntrack,2); 
+      Int_t isProton = -9999;
+      Int_t isPion1 = -9999;
+      Int_t isPion2 = -9999;
+      Double_t nsigmatpc_proton = fPidObjCascPr->GetSigma(0);
+      Double_t nsigmatpc_pion = fPidObjCascPi->GetSigma(0);
+      Double_t nSigmaTPCpr = fPidObjCascPr->GetPidResponse()->NumberOfSigmasTPC(ptrack,AliPID::kProton);
+      Double_t nSigmaTPCpi1 = fPidObjCascPi->GetPidResponse()->NumberOfSigmasTPC(ntrack,AliPID::kPion);
+      Double_t nSigmaTPCpi2 = fPidObjCascPi->GetPidResponse()->NumberOfSigmasTPC(btrack,AliPID::kPion);
+      if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
+      if(fabs(nSigmaTPCpi1)<nsigmatpc_pion) isPion1 = 1;
+      if(fabs(nSigmaTPCpi2)<nsigmatpc_pion) isPion2 = 1;
       if(isProton<1) return kFALSE;
       if(isPion1<1) return kFALSE;
       if(isPion2<1) return kFALSE;
     }else{
-      Int_t isProton=fPidObjCascPr->MakeRawPid(ntrack,4); 
-      Int_t isPion1 =fPidObjCascPi->MakeRawPid(btrack,2); 
-      Int_t isPion2 =fPidObjCascPi->MakeRawPid(ptrack,2); 
+      Int_t isProton = -9999;
+      Int_t isPion1 = -9999;
+      Int_t isPion2 = -9999;
+      Double_t nsigmatpc_proton = fPidObjCascPr->GetSigma(0);
+      Double_t nsigmatpc_pion = fPidObjCascPi->GetSigma(0);
+      Double_t nSigmaTPCpr = fPidObjCascPr->GetPidResponse()->NumberOfSigmasTPC(ntrack,AliPID::kProton);
+      Double_t nSigmaTPCpi1 = fPidObjCascPi->GetPidResponse()->NumberOfSigmasTPC(ptrack,AliPID::kPion);
+      Double_t nSigmaTPCpi2 = fPidObjCascPi->GetPidResponse()->NumberOfSigmasTPC(btrack,AliPID::kPion);
+      if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
+      if(fabs(nSigmaTPCpi1)<nsigmatpc_pion) isPion1 = 1;
+      if(fabs(nSigmaTPCpi2)<nsigmatpc_pion) isPion2 = 1;
       if(isProton<1) return kFALSE;
       if(isPion1<1) return kFALSE;
       if(isPion2<1) return kFALSE;

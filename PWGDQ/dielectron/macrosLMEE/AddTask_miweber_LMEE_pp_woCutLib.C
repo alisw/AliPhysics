@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_pp", Bool_t isNano = kFALSE){
+AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_pp", Bool_t isNano = kFALSE, Bool_t bCutQA = kTRUE){
 
 
   //get the current analysis manager
@@ -56,7 +56,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TStri
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_pp_woCutLib(cutDefinition,bESDANA);
+  AliDielectron *diel_low = Config_miweber_LMEE_pp_woCutLib(cutDefinition,bESDANA,bCutQA);
   if(diel_low){
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());

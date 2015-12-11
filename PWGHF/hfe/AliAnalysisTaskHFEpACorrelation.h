@@ -449,10 +449,20 @@ private:
     TH2F				**fCEtaPhi_LS_Weight;
     TH2F				**fCEtaPhi_ULS_NoP_Weight;
     TH2F				**fCEtaPhi_LS_NoP_Weight;
+    
+    //MC test of hadrons
+    TH2F				**fCEtaPhi_Inc_PH;
+    TH2F				**fCEtaPhi_ULS_Weight_PH;
+    TH2F				**fCEtaPhi_LS_Weight_PH;
+    TH2F				**fCEtaPhi_ULS_NoP_Weight_PH;
+    TH2F				**fCEtaPhi_LS_NoP_Weight_PH;
+
     //new Histograms 15-09
     TH2F                **fCetaPhi_MC_with_partner_greater;
     TH2F                **fCetaPhi_MC_with_partner_below;
     TH2F                ** fCetaPhi_MC_NHFE_1partner_reco;
+    TH1F                *fpT_MC_with_partner_greater;
+    TH1F                *fpT_MC_with_partner_below;
     TH1F                *fMCEffPID_beforePID;
     TH1F                *fMCEffPID_afterPID;
     TH1F                *fpTMCGeneratedBKG;
@@ -647,3 +657,4 @@ private:
 ///_________________________________________________________________________________________________
 
 #endif
+

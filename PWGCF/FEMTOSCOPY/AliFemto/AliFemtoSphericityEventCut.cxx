@@ -10,7 +10,9 @@
 //#include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoSphericityEventCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoSphericityEventCut);
+  /// \endcond
 #endif
 
 AliFemtoSphericityEventCut::AliFemtoSphericityEventCut() :

@@ -22,9 +22,12 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskFemtoMJ)
-/// \endcond
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliAnalysisTaskFemtoMJ);
+  /// \endcond
+#endif
+
 
 // Default name for the setup macro of femto analysis
 // This function MUST be defined in the separate file !!!
@@ -307,10 +310,10 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
       //return;//!!!
     }
   }
- 
+
   //cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
 
-      
+
 
   //jedna metoda
 
@@ -330,8 +333,8 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     //druga metoda
     AliMCEventHandler *mctruth = (AliMCEventHandler *)
                                     ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    
-    
+
+
     if(!mctruth)
       {
 	Printf("ERROR: Could not retrieve MC handler");//!!!
@@ -347,15 +350,15 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
 
       AliGenHijingEventHeader *hdh = 0;
 
-    
-    
+
+
 
 
 
 
     if (mctruth) {
     //fStack = mctruth->MCEvent()->Stack(); //tak bylo//!!!
-      
+
 
       AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
 
@@ -391,7 +394,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     }
     //Get MC data
 
-  
+
     // Get ESD
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
