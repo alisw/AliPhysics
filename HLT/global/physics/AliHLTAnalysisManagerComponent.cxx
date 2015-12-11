@@ -425,7 +425,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	fPushRequestOngoing = kFALSE;
 	if (pushResult)
 	{
-	  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+	  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
 	  fNumEvents = 0;
 	}
 
@@ -438,7 +438,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
            fNumEvents = 0;
         }
         delete retObj;
