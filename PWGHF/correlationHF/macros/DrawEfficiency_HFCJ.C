@@ -6,6 +6,7 @@
 // gSystem->SetIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ROOTSYS/include");
 // .L DrawEfficiency_HFCJ.C++
 // and then call the needed methods
+// Call steps 9,0 for RecoPID/LimAcc; otherwise 9,2 for RecoPID/GenAcc + Apply_GenAccLimAcc_Factor method to go to LimAcc
 //
 // Author: F.Colamaria (fabiocolamaria@cern.ch)
 //
@@ -22,6 +23,8 @@
 #include "TH2D.h"
 
 #include "AliCFContainer.h"
+
+//#include "ComputeAcceptance.C"
 
 using namespace std;
 
@@ -51,18 +54,19 @@ LIST OF STEPS FROM CF - Always cross-check with master!
 
 /*
 INFOS: 
-mesonSuffix = simply a suffix for the output .root file;
 numStep/denStep = CF steps for which the numerator/denominator shall be extracted;
 xVar/yVar = Cf variables to plot on the x and y axis (x axis only for 1D maps);
 lastVal_y = cutoff value for the y-axis (to remove low-stat fluctuating bins). After that value the maps are flattened
 */
 
-void DrawEfficiency_2D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString mesonSuffix="Dzero_c", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0, Int_t yVar=7, Double_t lastVal_y=-1);
-void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString mesonSuffix="Dzero_c", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
-void PlotEfficiency_2D(TString fileName="EfficiencyMap_2D_Dzero_c.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_Plot.root", Double_t xMin=0, Double_t xMax=24, Double_t yMin=0, Double_t yMax=90);
-void PlotEfficiency_1D(TString fileName="EfficiencyMap_1D_Dzero_c.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_Plot.root", Double_t xMin=0, Double_t xMax=24);
+void DrawEfficiency_2D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_2D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0, Int_t yVar=7, Double_t lastVal_y=-1);
+void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_2D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
+void PlotEfficiency_2D(TString fileName="EfficiencyMap_2D_Dzero_c.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24, Double_t yMin=0, Double_t yMax=90);
+void PlotEfficiency_1D(TString fileName="EfficiencyMap_1D_Dzero_c.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24);
+void Apply_GenAccLimAcc_Factor_2D(TString inputEffFile="EfficiencyMap_2D_Dzero_c.root", TString MCtoyfile="Acceptance_Toy_D0Kpi_yfidPtDep_etaDau08_ptDau300_FONLL7ptshape.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_wLimAcc.root");
+void Apply_GenAccLimAcc_Factor_1D(TString inputEffFile="EfficiencyMap_1D_Dzero_c.root", TString MCtoyfile="Acceptance_Toy_D0Kpi_yfidPtDep_etaDau08_ptDau300_FONLL7ptshape.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_wLimAcc.root");
 
-void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, TString mesonSuffix, Int_t numStep, Int_t denStep, Int_t xVar, Int_t yVar, Double_t lastVal_y) {
+void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, TString outFileName, Int_t numStep, Int_t denStep, Int_t xVar, Int_t yVar, Double_t lastVal_y) {
 
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
@@ -119,7 +123,7 @@ void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, 
   } //end if
 
   // Save the map
-  TFile* effMapFile = new TFile(Form("EfficiencyMap_2D_%s.root",mesonSuffix.Data()),"RECREATE");
+  TFile* effMapFile = new TFile(Form("%s",outFileName.Data()),"RECREATE");
   hEff->SetDrawOption("lego2");
   hEff->Write("h_Eff");
   effMapFile->Close();
@@ -128,7 +132,7 @@ void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, 
 }
 
 
-void DrawEfficiency_1D(TString fileName, TString dirFileName, TString contName, TString mesonSuffix, Int_t numStep, Int_t denStep, Int_t xVar) {
+void DrawEfficiency_1D(TString fileName, TString dirFileName, TString contName, TString outFileName, Int_t numStep, Int_t denStep, Int_t xVar) {
 
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
@@ -169,7 +173,7 @@ void DrawEfficiency_1D(TString fileName, TString dirFileName, TString contName, 
   }
 
   // Save the map
-  TFile* effMapFile = new TFile(Form("EfficiencyMap_1D_%s.root",mesonSuffix.Data()),"RECREATE");
+  TFile* effMapFile = new TFile(Form("%s",outFileName.Data()),"RECREATE");
   hEff->SetDrawOption("lego2");
   hEff->Write("h_Eff");
   effMapFile->Close();
@@ -201,7 +205,7 @@ void PlotEfficiency_2D(TString fileName, TString fileNameOut, Double_t xMin, Dou
 
 void PlotEfficiency_1D(TString fileName, TString fileNameOut, Double_t xMin, Double_t xMax) {
 
-  TFile* effMapFile = new TFile(fileName.Data(),"READ");  
+  TFile *effMapFile = new TFile(fileName.Data(),"READ");  
   TH1D *effMap = (TH1D*)effMapFile->Get("h_Eff");
 
   TCanvas *c = new TCanvas("c","1D Efficiency map",150,150,900,600);
@@ -220,5 +224,115 @@ void PlotEfficiency_1D(TString fileName, TString fileNameOut, Double_t xMin, Dou
   effMapFile->Close();
 
   return;
+}
 
+void Apply_GenAccLimAcc_Factor_2D(TString inputEffFile, TString MCtoyfile, TString fileNameOut) {
+
+/* //NOT WORKING, COMMENTED OUT	
+  // Run MC toy to generate GenAcc/LimAcc factor
+  if(runMCtoy) {
+  	printf("Running MC toy to generate GenAcc/LimAcc factor...\n");
+  	ComputeAcceptance();
+  } */
+  
+  // Load GenAcc and LimAcc plots  
+  printf("Apply GenAcc/LimAcc factor to the efficiency...\n");
+  TFile *fMap = new TFile(inputEffFile.Data(),"read");
+  TH2D *hMap2D = (TH2D*)fMap->Get("h_Eff");
+  
+  TFile *fFact = new TFile(MCtoyfile.Data(),"read");
+  TH1D *hGenAcc = (TH1D*)fFact->Get("hPtGenAcc");
+  TH1D *hLimAcc = (TH1D*)fFact->Get("hPtGenLimAcc");  
+  
+  // Rebin to map x-axis binning and produce ratio GenAcc/LimAcc
+  Int_t xBins = hMap2D->GetNbinsX();
+  Double_t xVals[xBins+1];
+  for(Int_t i=0; i<xBins; i++) xVals[i] = hMap2D->GetXaxis()->GetBinLowEdge(i+1);
+  xVals[xBins] = hMap2D->GetXaxis()->GetBinUpEdge(xBins);
+
+  TH1D *hGenAcc_Reb = (TH1D*)hGenAcc->Rebin(xBins,"hGenAcc_Reb",xVals);
+  TH1D *hLimAcc_Reb = (TH1D*)hLimAcc->Rebin(xBins,"hLimAcc_Reb",xVals);  
+  
+  TH1D* hRatio=(TH1D*)hGenAcc_Reb->Clone("hRatio");  
+  hRatio->Divide(hGenAcc_Reb,hLimAcc_Reb,1,1,"B");
+  
+  // Go 2-dimensional
+  Int_t yBins = hMap2D->GetNbinsY();
+  Double_t yVals[yBins+1];
+  for(Int_t j=0; j<yBins; j++) yVals[j] = hMap2D->GetYaxis()->GetBinLowEdge(j+1);
+  yVals[yBins] = hMap2D->GetYaxis()->GetBinUpEdge(yBins);  
+
+  TH2D *hRatio2D = new TH2D("hRatio2D","hRatio2D",xBins,xVals,yBins,yVals);
+  for(Int_t i=1; i<=xBins; i++) {
+  	for(Int_t j=1; j<=yBins; j++) {
+  	  hRatio2D->SetBinContent(i,j,hRatio->GetBinContent(i));	
+  	  hRatio2D->SetBinError(i,j,0); //treat this correction as a pure number, with no uncertainty
+	}
+  }
+  
+//for(Int_t i=0; i<=xBins; i++) printf("xaxis %i = %f\n",i,xVals[i]); //DEBUG
+//for(Int_t i=0; i<=yBins; i++) printf("yaxis %i = %f\n",i,yVals[i]);
+    
+  //Correct the efficiency maps and save it on new file
+  hMap2D->Multiply(hRatio2D);
+  
+  TFile *fOut = new TFile(fileNameOut.Data(),"recreate");
+  hMap2D->Write();
+  // hRatio->Write(); //DEBUG
+  // hRatio2D->Write(); //DEBUG 
+  
+  fMap->Close();
+  fFact->Close();
+  fOut->Close();
+
+  return;
+}
+
+void Apply_GenAccLimAcc_Factor_1D(TString inputEffFile, TString MCtoyfile, TString fileNameOut) {
+
+/* //NOT WORKING, COMMENTED OUT	
+  // Run MC toy to generate GenAcc/LimAcc factor
+  if(runMCtoy) {
+  	printf("Running MC toy to generate GenAcc/LimAcc factor...\n");
+  	ComputeAcceptance();
+  } */
+  
+  // Load GenAcc and LimAcc plots  
+  printf("Apply GenAcc/LimAcc factor to the efficiency...\n");
+  TFile *fMap = new TFile(inputEffFile.Data(),"read");
+  TH1D *hMap1D = (TH1D*)fMap->Get("h_Eff");
+  
+  TFile *fFact = new TFile(MCtoyfile.Data(),"read");
+  TH1D *hGenAcc = (TH1D*)fFact->Get("hPtGenAcc");
+  TH1D *hLimAcc = (TH1D*)fFact->Get("hPtGenLimAcc");  
+  
+  // Rebin to map x-axis binning and produce ratio GenAcc/LimAcc
+  Int_t xBins = hMap1D->GetNbinsX();
+  Double_t xVals[xBins+1];
+  for(Int_t i=0; i<xBins; i++) xVals[i] = hMap1D->GetXaxis()->GetBinLowEdge(i+1);
+  xVals[xBins] = hMap1D->GetXaxis()->GetBinUpEdge(xBins);
+
+  TH1D *hGenAcc_Reb = (TH1D*)hGenAcc->Rebin(xBins,"hGenAcc_Reb",xVals);
+  TH1D *hLimAcc_Reb = (TH1D*)hLimAcc->Rebin(xBins,"hLimAcc_Reb",xVals);  
+  
+  TH1D* hRatio=(TH1D*)hGenAcc_Reb->Clone("hRatio");  
+  hRatio->Divide(hGenAcc_Reb,hLimAcc_Reb,1,1,"B");
+  
+//for(Int_t i=0; i<=xBins; i++) printf("xaxis %i = %f\n",i,xVals[i]); //DEBUG
+    
+  //Correct the efficiency maps and save it on new file
+  for(Int_t i=1; i<=xBins; i++) {
+  	hRatio->SetBinError(i,0); //treat this correction as a pure number, with no uncertainty
+  }  
+  hMap1D->Multiply(hRatio);
+  
+  TFile *fOut = new TFile(fileNameOut.Data(),"recreate");
+  hMap1D->Write();
+  // hRatio->Write(); //DEBUG
+  
+  fMap->Close();
+  fFact->Close();
+  fOut->Close();
+
+  return;
 }
