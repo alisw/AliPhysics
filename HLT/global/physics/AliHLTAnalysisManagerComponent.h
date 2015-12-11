@@ -167,6 +167,7 @@ private:
   Int_t fPushEventModulo; //Push every n-th event
   Int_t fNEvents;		//Number of events processed
   Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
+  Int_t fNumEvents;      //Number of events used for analysis
   Int_t fQueueDepth;	//Depth of asynchronous Queue
   Int_t fAsyncProcess;	//Use an async process instead of an async thread
   Int_t fForceKillAsyncProcess; //Kill async process after n msec, -1 to disable

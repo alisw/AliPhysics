@@ -91,6 +91,7 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   fPushEventModulo(0),
   fNEvents(0),
   fMinTracks(0),
+  fNumEvents(0),
   fQueueDepth(0),
   fAsyncProcess(0),
   fForceKillAsyncProcess(-1),
@@ -389,9 +390,10 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
       {
         CleanEventData(eventData); //Could not queue this task, clean up
       }
-      else if (eventData->fRequestPush)
+      else
       {
-        fPushRequestOngoing = kTRUE;
+        fNumEvents++;
+        if (eventData->fRequestPush) fPushRequestOngoing = kTRUE;
       }
     }
     else
@@ -421,7 +423,11 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer* ret = (AliHLTAsyncProcessor::AliHLTAsyncProcessorBuffer*) retVal;
 	int pushResult = PushBack(ret->fPtr, ret->fSize, kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
 	fPushRequestOngoing = kFALSE;
-	if (pushResult)  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+	if (pushResult)
+	{
+	  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+	  fNumEvents = 0;
+	}
 
 	fAsyncProcessor.FreeBuffer(ret);
       }
@@ -432,7 +438,8 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes)", retVal, pushResult);
+           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+           fNumEvents = 0;
         }
         delete retObj;
       }
