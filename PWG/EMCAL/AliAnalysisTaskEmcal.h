@@ -87,7 +87,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; } 
+  virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
