@@ -24,6 +24,7 @@
 // #ifndef ALICFCUTBASE_H
 #include "AliCFCutBase.h"
 // #endif
+#include "AliPIDResponse.h"
 
 #ifndef ROOT_TArrayI
 #include <TArrayI.h>
@@ -38,6 +39,7 @@ class AliVVertex;
 class AliAODVertex;
 class AliAODEvent;
 class AliESDEvent;
+class AliPIDResponse;
 
 class AliHFEextraCuts: public AliCFCutBase{
   public:
@@ -118,7 +120,9 @@ class AliHFEextraCuts: public AliCFCutBase{
     void UnSetRejectKinkDaughter() { CLRBIT(fRequirements, kRejectKinkDaughter);}; 
     void UnSetRejectKinkMother() { CLRBIT(fRequirements, kRejectKinkMother);}; 
 
-    
+    const AliPIDResponse *GetPIDResponse() const { return fPIDResponse; }; 
+    void SetPIDResponse(const AliPIDResponse * const pid) { fPIDResponse = pid; }
+
   protected:
     virtual void AddQAHistograms(TList *qaList);
     Bool_t CheckRecCuts(AliVTrack *track);
@@ -208,8 +212,9 @@ class AliHFEextraCuts: public AliCFCutBase{
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
     Int_t   fDebugLevel;                // Debug Level
+    const AliPIDResponse *fPIDResponse;//! PID Response
   
-    ClassDef(AliHFEextraCuts, 5)      // Additional cuts implemented by the ALICE HFE group
+    ClassDef(AliHFEextraCuts, 6)      // Additional cuts implemented by the ALICE HFE group
 };
 
 //__________________________________________________________
