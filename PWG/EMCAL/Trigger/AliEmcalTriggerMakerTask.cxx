@@ -191,5 +191,6 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
     }
     new((*fCaloTriggersOut)[patchcounter++]) AliEmcalTriggerPatchInfoAPV1(*recpatch);
   }
+  if(patches) delete patches;
   return true;
 }
