@@ -81,6 +81,7 @@ void AliEmcalTriggerMakerKernel::Init(){
   // Allocate containers for the ADC values
   int nrows = fGeometry->GetNTotalTRU() * 2;
   std::cout << "Allocating channel grid with 48 columns in eta and " << nrows << " rows in phi" << std::endl;
+  std::cout << "Using jet patch size " << fJetPatchsize << std::endl;
   fPatchAmplitudes->Allocate(48, nrows);
   fPatchADC->Allocate(48, nrows);
   fPatchADCSimple->Allocate(48, nrows);
@@ -195,7 +196,7 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
 }
 
 TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent){
-
+  //std::cout << "Finding trigger patches" << std::endl;
   AliEmcalTriggerPatchInfoAPV1 *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
   AliEmcalTriggerPatchInfoAPV1 *triggerMainJetSimple, *triggerMainGammaSimple;
 
@@ -221,6 +222,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
 
   std::vector<AliEmcalTriggerRawPatchAP> patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
   TObjArray *result = new TObjArray(1000);
+  result->SetOwner(kTRUE);
   for(std::vector<AliEmcalTriggerRawPatchAP>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
     // Apply offline and recalc selection
     // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
@@ -270,6 +272,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     result->Add(fullpatch);
   }
+  // std::cout << "Finished finding trigger patches" << std::endl;
   return result;
 }
 
