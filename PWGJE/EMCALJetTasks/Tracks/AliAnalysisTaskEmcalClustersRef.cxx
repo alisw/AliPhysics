@@ -256,10 +256,15 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   }
   */
 
-  TClonesArray *clusterArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fClusterContainer.Data()));
+  TObjArray clusterEvent(1000);
+
+  TCollection *clusterArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fClusterContainer.Data()));
   if(!clusterArray){
     AliError(Form("Cluster array with name %s not found in the event", fClusterContainer.Data()));
-    return;
+    for(int icl = 0; icl < fInputEvent->GetNumberOfCaloClusters(); icl++){
+      clusterEvent.Add(fInputEvent->GetCaloCluster(icl));
+    }
+    clusterArray =  &clusterEvent;
   }
 
   Double_t vertexpos[3];
@@ -269,9 +274,10 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   for(TIter clustIter = TIter(clusterArray).Begin(); clustIter != TIter::End(); ++clustIter){
     AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
+    if(clust->GetIsExotic()) continue;
 
     TLorentzVector posvec;
-    energy = clust->E();
+    energy = clust->GetNonLinCorrEnergy();
     clust->GetMomentum(posvec, vertexpos);
     eta = posvec.Eta();
     phi = posvec.Phi();
