@@ -44,8 +44,8 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   
-  if(!resolutionfile.IsNull()/* && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data())))*/ ){
-    TFile *fRes = TFile::Open(Form("./%s",resolutionfile.Data()),"READ");
+  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
     TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
     task->SetResolution(arr);
   }
