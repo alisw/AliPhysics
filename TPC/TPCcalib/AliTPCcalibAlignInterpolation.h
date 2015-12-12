@@ -9,6 +9,8 @@ class THn;
 class AliExternalTrackParam;
 class AliESDfriendTrack;
 class AliTrackPointArray;
+class AliESDtrack;
+class AliTPCseed;
 
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :
@@ -25,6 +27,8 @@ public :
   virtual ~AliTPCcalibAlignInterpolation();
   void ProcessStandalone(const char * inputList);
   virtual void     Process(AliESDEvent *event);
+  virtual void     Process(AliTPCseed *track)  {AliTPCcalibBase::Process(track);}
+  virtual void     Process(AliESDtrack *track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
   virtual void     Terminate();
   void   SetStreamLevelTrack(Int_t streamLevelTrack){fStreamLevelTrack=streamLevelTrack;}
   Bool_t RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints, Int_t* sortInd=0);
