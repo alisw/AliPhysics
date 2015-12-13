@@ -78,7 +78,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "require TOF out",
  "TOF Distance cut",
  "min length in active volume TPC",
- "n-geometrical+n-crossed-row and n-clusters cut"
+ "n-geometrical+n-crossed-row and n-clusters cut",
+ "track is in distorted TPC region"
 };
 
 AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
@@ -99,6 +100,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) :
   fCutGeoNcrNclGeom1Pt(0),       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
   fCutGeoNcrNclFractionNcr(0),   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
   fCutGeoNcrNclFractionNcl(0),   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  fCutOutDistortedRegionTPC(kFALSE),  // flag if distorted TPC regions should be cut out
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -219,6 +221,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) :
   fCutGeoNcrNclGeom1Pt(0),       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
   fCutGeoNcrNclFractionNcr(0),   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
   fCutGeoNcrNclFractionNcl(0),   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  fCutOutDistortedRegionTPC(kFALSE),
   //
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
@@ -529,7 +532,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutGeoNcrNclGeom1Pt=fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
   target.fCutGeoNcrNclFractionNcr=fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
   target.fCutGeoNcrNclFractionNcl=fCutGeoNcrNclFractionNcl;   // relative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
-
+  target.fCutOutDistortedRegionTPC=fCutOutDistortedRegionTPC;
 
 
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
@@ -850,6 +853,57 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
 }
 
 //____________________________________________________________________
+AliESDtrackCuts*  AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries/*=kTRUE*/, Int_t clusterCut/*=1*/, Bool_t cutAcceptanceEdges/*=kTRUE*/, Bool_t removeDistortedRegions/*=kFALSE*/) {
+  //
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for PbPb 2015 data
+  // if clusterCut = 1, the cut on the number of clusters is replaced by
+  // a cut on the number of crossed rows and on the ration crossed
+  // rows/findable clusters
+  //
+  AliInfoClass("Creating track cuts for ITS+TPC (2015 Pb-Pb run definition).");
+  AliWarningClass("THIS TRACK-CUT SET HAS NOT YET BEEN VALIDATED AND IS NOT YET FROZEN. TO BE USED FOR TESTING PURPOSES ONLY.");
+  //
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+
+  // TPC
+  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(50);
+  else if (clusterCut == 1) {
+    esdTrackCuts->SetMinNCrossedRowsTPC(70);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }
+  else {
+    AliWarningClass(Form("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut));
+    esdTrackCuts->SetMinNClustersTPC(50);
+  }
+  //
+  if (cutAcceptanceEdges) esdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0); // only dead zone and not clusters per length
+  if (removeDistortedRegions) esdTrackCuts->SetCutOutDistortedRegionsTPC(kTRUE);
+  //
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // ITS
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  if(selPrimaries) {
+    // 7*(0.0015+0.0050/pt^1.1)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+  }
+  esdTrackCuts->SetMaxDCAToVertexZ(2);
+  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+
+  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+
+  return esdTrackCuts;
+
+
+}
+ 
+
+//____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
@@ -1007,6 +1061,37 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   return esdTrackCuts;
 }
+
+//____________________________________________________________________
+Bool_t  AliESDtrackCuts::IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrack) {
+  //
+  // Returns kTRUE if the track crosses on of the regions in the TPC 
+  // in which the field is distorted. For the time being, this is a 
+  // purely geometric cut which will be further refined in the future
+  // based on NDregression analysis.
+  // 
+  // For the time being, the cuts are hardwired, but will be probably 
+  // moved to the OADB.
+  //
+  if (!esdTrack->GetInnerParam()) return kFALSE; // non-tpc tracks are not affected
+  if (esdTrack->Eta() > 0) return kFALSE; // A-side assumed safe for the time being
+  //
+  Double_t eta = esdTrack->Eta(); 
+  Double_t phiIn = esdTrack->GetInnerParam()->Phi();
+  //
+  if (eta > 0) { // A-side
+    if (1.32 < phiIn && phiIn < 1.48) return kTRUE;
+    if (2.00 < phiIn && phiIn < 2.15) return kTRUE;
+    if (3.07 < phiIn && phiIn < 3.21) return kTRUE;
+  } else {       // C-side
+    if (0.40 < phiIn && phiIn < 0.86) return kTRUE;
+    if (2.10 < phiIn && phiIn < 2.34) return kTRUE;
+    if (3.90 < phiIn && phiIn < 4.32) return kTRUE;
+  }
+  //
+  return kFALSE;
+}
+
 
 //____________________________________________________________________
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly)
@@ -1502,12 +1587,20 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 	  if (lengthInActiveZoneTPC<cutGeoNcrNclLength) isOK=kFALSE;
 	  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) isOK=kFALSE;
 	  if (esdTrack->GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) isOK=kFALSE;
-
+	  
 	  if(!isOK) {
 	    cuts[43] = kTRUE;
 	    cut = kTRUE;
-      }
+	  }
 	}
+      }
+    }
+
+    // track in distorted TPC region
+    if (fCutOutDistortedRegionTPC) {
+      if (IsTrackInDistortedTpcRegion(esdTrack)) {
+	cuts[44] = kTRUE;
+	cut = kTRUE;
       }
     }
   }
