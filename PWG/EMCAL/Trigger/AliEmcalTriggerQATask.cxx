@@ -406,7 +406,7 @@ void AliEmcalTriggerQATask::FillEventQA()
   Double_t EMCalmedian[3] = {0};
 
   GetTriggerQA(fCentBin)->GetDCalMedian(DCalmedian);
-  GetTriggerQA(fCentBin)->GetDCalMedian(EMCalmedian);
+  GetTriggerQA(fCentBin)->GetEMCalMedian(EMCalmedian);
 
   for (Int_t i = 0; i < fHistEventQA->GetNdimensions(); i++) {
     TString title(fHistEventQA->GetAxis(i)->GetTitle());
