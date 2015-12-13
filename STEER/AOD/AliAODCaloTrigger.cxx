@@ -44,11 +44,17 @@ fL1TimeSum(0x0),
 fTriggerBits(0x0),
 fL1Threshold(),
 fL1V0(),
-fL1FrameMask(0)
+fL1FrameMask(0),
+fL1DCALThreshold(),
+fL1SubRegion(0x0),
+fL1DCALFrameMask(0),
+fMedian(),
+fTriggerBitWord(0)
 {
 	//
-	for (int i = 0; i < 4; i++) fL1Threshold[i] = 0;
-	fL1V0[0] = fL1V0[1] = 0;
+  for (int i = 0; i < 4; i++) {fL1Threshold[i] = fL1DCALThreshold[i] = 0;}
+  fL1V0[0] = fL1V0[1] = 0;
+  fMedian[0] = fMedian[1] = 0;
 }
 
 //_______________
@@ -105,13 +111,14 @@ AliAODCaloTrigger::~AliAODCaloTrigger()
 void AliAODCaloTrigger::DeAllocate()
 {
 	//
-	delete [] fColumn;      fColumn    = 0x0;
-	delete [] fRow;         fRow       = 0x0;     
-	delete [] fAmplitude;   fAmplitude = 0x0;
-	delete [] fTime;        fTime      = 0x0;   
-	delete [] fNL0Times;    fNL0Times  = 0x0;
-	delete [] fL1TimeSum;   fL1TimeSum = 0x0;
-	delete [] fTriggerBits; fTriggerBits   = 0x0;
+	delete [] fColumn;      fColumn      = 0x0;
+	delete [] fRow;         fRow         = 0x0;     
+	delete [] fAmplitude;   fAmplitude   = 0x0;
+	delete [] fTime;        fTime        = 0x0;   
+	delete [] fNL0Times;    fNL0Times    = 0x0;
+	delete [] fL1TimeSum;   fL1TimeSum   = 0x0;
+  delete [] fL1SubRegion; fL1SubRegion = 0x0;
+	delete [] fTriggerBits; fTriggerBits = 0x0;
 
 	fNEntries =  0;
 	fCurrent  = -1;
@@ -142,16 +149,20 @@ void AliAODCaloTrigger::Copy(TObject &obj) const
 	
 	for (Int_t i = 0; i < fNEntries; i++)
 	{
-		Int_t times[10];
-		for (Int_t j = 0; j < 10; j++) times[j] = fL0Times->At(10 * i + j);
-	  
-		dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fTriggerBits[i]);
+    Int_t times[10];
+    for (Int_t j = 0; j < 10; j++) times[j] = fL0Times->At(10 * i + j);
+    
+    dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fL1SubRegion[i], fTriggerBits[i]);
 	}	
 
+  for (int i = 0; i < 4; i++) dest.SetL1Threshold(i, fL1Threshold[i]);
+  for (int i = 0; i < 4; i++) dest.SetL1Threshold(1, i, fL1DCALThreshold[i]);
+  
 	dest.SetL1Threshold(0, fL1Threshold[0]);
 	dest.SetL1Threshold(1, fL1Threshold[1]);
 	dest.SetL1V0(fL1V0);
 	dest.SetL1FrameMask(fL1FrameMask);
+  dest.SetL1FrameMask(1, fL1DCALFrameMask);
 }
 
 //_______________
@@ -168,6 +179,7 @@ void AliAODCaloTrigger::Allocate(Int_t size)
 	fTime        = new Float_t[fNEntries];
 	fNL0Times    = new   Int_t[fNEntries];
 	fL1TimeSum   = new   Int_t[fNEntries];
+  fL1SubRegion = new   Int_t[fNEntries];
 	fTriggerBits = new   Int_t[fNEntries];
 
 	for (Int_t i = 0; i < fNEntries; i++) 
@@ -178,6 +190,7 @@ void AliAODCaloTrigger::Allocate(Int_t size)
 	  fTime[i]        = 0;
 	  fNL0Times[i]    = 0;
 	  fL1TimeSum[i]   = 0;
+    fL1SubRegion[i] = 0;
 	  fTriggerBits[i] = 0;
 	}
 	
@@ -207,6 +220,16 @@ Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, I
 	for (Int_t i = 0; i < fNL0Times[fCurrent]; i++) fL0Times->AddAt(trgtimes[i], 10 * fCurrent + i);
 
 	return kTRUE;
+}
+
+//_______________
+Bool_t AliAODCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t subra, Int_t trgbits)
+{
+  //
+  Add(col, row, amp, time, trgtimes, ntrgtimes, trgts, trgbits);
+  fL1SubRegion[fCurrent] = subra; 
+  
+  return kTRUE;
 }
 
 //_______________
@@ -255,6 +278,33 @@ void AliAODCaloTrigger::GetL1TimeSum(Int_t& amp) const
 	if (fCurrent == -1) return;
 
 	amp = fL1TimeSum[fCurrent];
+}
+
+//_______________
+Int_t AliAODCaloTrigger::GetL1TimeSum() const
+{
+  //      
+  if (fCurrent == -1) return -1;
+  
+  return ((fL1TimeSum)?fL1TimeSum[fCurrent]:0);
+}
+
+//_______________
+void AliAODCaloTrigger::GetL1SubRegion(Int_t& sb) const
+{
+  //      
+  if (fCurrent == -1) return;
+  
+  sb = fL1SubRegion?fL1SubRegion[fCurrent]:0;
+}
+
+//_______________
+Int_t AliAODCaloTrigger::GetL1SubRegion() const
+{
+  //      
+  if (fCurrent == -1) return -1;
+  
+  return ((fL1SubRegion)?fL1SubRegion[fCurrent]:0);
 }
 
 //_______________

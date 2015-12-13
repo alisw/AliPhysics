@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliVCaloTrigger.cxx  $ */
-
 //-----------------------------------------------------------------
 //
 //   Virtual class to access calorimeter 
