@@ -3,7 +3,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const char *nJets          = "Jets",
    const char *nTracksME      = "PicoTracks",
    const char *nClusters      = "CaloClustersCorr",
-   const char *nRho	          = "rhoCh",
+   const char *nRho           = "rhoCh",
    const char *lrho           = "lrho",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
@@ -39,6 +39,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
+   Bool_t newFramework        = 0,
    const char *tag            = ""
 )
 {  
@@ -74,6 +75,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   else if(colltype == "A-A") beam = 1;
   else if(colltype == "p-A") beam = 2;
   else beam = -1;
+
+  if(newFramework) {
+    nTracks = "tracks";
+    nTracksME = "tracks";
+  }
 
   //-------------------------------------------------------
   // Init the task and do settings

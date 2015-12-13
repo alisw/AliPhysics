@@ -20,6 +20,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
   TString     kBeamType           = "pp", //or pPb or PbPb
   Bool_t      comments            = kFALSE,
   Bool_t      UseAllRecalcPatches = kFALSE,
+  Bool_t      newFramework        = 0,
   TString     tag                 = ""
 ) {
   // The following three lines are added for backwards compatibility
@@ -65,7 +66,8 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
 
   task->SetJetContainer(0);
   AliJetContainer *jetCont0 = task->AddJetContainer(strJets1.Data(),"EMCAL",R);
-  AliClusterContainer *JETconstit = task->AddClusterContainer("EmcCaloClusters");
+//  AliClusterContainer *JETconstit = task->AddClusterContainer("EmcCaloClusters");
+  AliClusterContainer *JETconstit = task->AddClusterContainer(kClusName);
   jetCont0->ConnectClusterContainer(JETconstit);
 
   if(rhoType==1) task->SetRhoName(rhoTask->GetOutRhoScaledName(),0);
@@ -85,6 +87,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
   if(kPeriod.Contains("LHC13b4")) task->SetIsPythia(kTRUE);
   task->SetdoComments(comments);
   task->SetUseALLrecalcPatches(UseAllRecalcPatches);
+  if(newFramework) task->SetCaloClustersName("caloClusters");
 
   mgr->AddTask(task);
 
