@@ -84,7 +84,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fPatchECut(10.0), // patch E cut at 10 by default
   fTrkBias(0), fClusBias(0),
   doComments(0), fUseALLrecalcPatches(0), // defaults to max patch only
-  fJetTriggeredEventname("JETthatTriggeredEvent"),
+  fJetTriggeredEventname("JETthatTriggeredEvent"), fCaloClustersName(""),
   fMaxPatch(0), // max patch object
   fMainPatchType(kManual), // (kEmcalJet)
   fhNEvents(0),
@@ -146,7 +146,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fPatchECut(10.0), // patch E cut at 10 by default
   fTrkBias(0), fClusBias(0),
   doComments(0), fUseALLrecalcPatches(0), // defaults to max patch only
-  fJetTriggeredEventname("JETthatTriggeredEvent"),
+  fJetTriggeredEventname("JETthatTriggeredEvent"), fCaloClustersName(""),
   fMaxPatch(0),
   fMainPatchType(kManual), //kEmcalJet
   fhNEvents(0),
@@ -970,9 +970,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
   //Clusters - get cluster collection
   TClonesArray *clusters = 0x0;
-  clusters = dynamic_cast<TClonesArray*>(list->FindObject("EmcCaloClusters"));
+  clusters = dynamic_cast<TClonesArray*>(list->FindObject(fCaloClustersName));  // CHANGED
   if (!clusters) {
-    AliError(Form("Pointer to clusters %s == 0", "EmcCaloClusters"));
+    AliError(Form("Pointer to clusters %s == 0", fCaloClustersName.Data()));  // CHANGED
     return kTRUE;
   } // verify existence of clusters
 

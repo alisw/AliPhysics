@@ -74,6 +74,7 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
 
   virtual void            SetJetTriggeredEventname(const char *jcol)           { fJetTriggeredEventname = jcol; }
   TString                 GetJetTriggeredEvent() const          { return fJetTriggeredEventname; }
+  virtual void            SetCaloClustersName(const char *cn)   { fCaloClustersName=cn; }
 
   Int_t    GetLeadingCellId(const AliVCluster *clus) const;
   Double_t GetEnergyLeadingCell(const AliVCluster *clus) const;
@@ -114,6 +115,7 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   Bool_t             doComments;             // summary (debugging comments)
   Bool_t             fUseALLrecalcPatches;   // use all/ just max recalulated (offline) patches
   TString	     fJetTriggeredEventname; // name of jet that triggered event collection
+  TString            fCaloClustersName; // name of Calo Cluster collection
 
   AliEmcalTriggerPatchInfo      *fMaxPatch;//!                           main patch
   MainPatchType                 fMainPatchType;//!                       method to select main patch

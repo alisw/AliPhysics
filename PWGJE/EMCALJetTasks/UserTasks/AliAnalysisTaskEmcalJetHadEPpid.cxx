@@ -2747,7 +2747,7 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::EffCorrection(Double_t trackETA, Doubl
 
     if(fCent>=0 && fCent<10) centbin = 0;
     else if (fCent>=10 && fCent<30)	centbin = 1;
-    else if (fCent>=30 && fCent<50) centbin = 2;
+    else if (fCent>=30 && fCent<50)     centbin = 2;
     else if (fCent>=50 && fCent<90)	centbin = 3;
 
     if(runSwitchGood == 0 && centbin == 0) effSwitch = 2;
