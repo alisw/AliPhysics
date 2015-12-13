@@ -282,8 +282,10 @@ void Draw(TFile* f, const char* gname, TLegend* l, Bool_t normalized)
 }
 
 //______________________________________________________________________________
-void DrawPeriod(double run1, double run2, double ymin, double ymax, const char* label)
+void DrawPeriod(int runmin, int runmax, int run1, int run2, double ymin, double ymax, const char* label)
 {
+  if ( run1 < runmin || run1 > runmax || run2 < runmin || run2 > runmax ) return;
+  
   TBox* b = new TBox(run1,ymin,run2,ymax);
   b->SetFillColor(5);
   b->Draw();
@@ -329,78 +331,78 @@ void DrawEvolution(const char* file, bool normalized=true)
 
   gStyle->SetOptTitle(kFALSE);
 
-  DrawPeriod(115881,117222,0,ymax,"10b"); 
+  DrawPeriod(runmin,runmax,115881,117222,0,ymax,"10b");
 
-  DrawPeriod(119159,120824,0,ymax,"10c");
+  DrawPeriod(runmin,runmax,119159,120824,0,ymax,"10c");
 
-  DrawPeriod(122374,126424,0,ymax,"10d");
+  DrawPeriod(runmin,runmax,122374,126424,0,ymax,"10d");
 
-  DrawPeriod(127724,130850,0,ymax,"10e");
+  DrawPeriod(runmin,runmax,127724,130850,0,ymax,"10e");
 
-  DrawPeriod(133005,134929,0,ymax,"10f");
+  DrawPeriod(runmin,runmax,133005,134929,0,ymax,"10f");
 
-  DrawPeriod(135658,136376,0,ymax,"10g");
+  DrawPeriod(runmin,runmax,135658,136376,0,ymax,"10g");
 
-  DrawPeriod(137133,139513,0,ymax,"10h");
+  DrawPeriod(runmin,runmax,137133,139513,0,ymax,"10h");
   
-  DrawPeriod(143856,146860,0,ymax,"11a");
+  DrawPeriod(runmin,runmax,143856,146860,0,ymax,"11a");
 
-  DrawPeriod(148370,150702,0,ymax,"11b");
+  DrawPeriod(runmin,runmax,148370,150702,0,ymax,"11b");
 
-  DrawPeriod(151566,154583,0,ymax,"11c");
+  DrawPeriod(runmin,runmax,151566,154583,0,ymax,"11c");
 
-  DrawPeriod(158084,159606,0,ymax,"11d");
+  DrawPeriod(runmin,runmax,158084,159606,0,ymax,"11d");
 
-  DrawPeriod(160677,162717,0,ymax,"11e");
+  DrawPeriod(runmin,runmax,160677,162717,0,ymax,"11e");
 
-  DrawPeriod(162933,165744,0,ymax,"11f");
+  DrawPeriod(runmin,runmax,162933,165744,0,ymax,"11f");
 
-  DrawPeriod(167703,170593,0,ymax,"11h");
+  DrawPeriod(runmin,runmax,167703,170593,0,ymax,"11h");
 
   // 2012
     
-    DrawPeriod(176661,177295,0,ymax,"12a");
+    DrawPeriod(runmin,runmax,176661,177295,0,ymax,"12a");
 
-    DrawPeriod(177384,178053,0,ymax,"12b");
+    DrawPeriod(runmin,runmax,177384,178053,0,ymax,"12b");
 
-    DrawPeriod(179603,180569,0,ymax,"12c");
+    DrawPeriod(runmin,runmax,179603,180569,0,ymax,"12c");
 
-    DrawPeriod(183913,186320,0,ymax,"12d");
+    DrawPeriod(runmin,runmax,183913,186320,0,ymax,"12d");
     
-    DrawPeriod(186365,186602,0,ymax,"12e");
+    DrawPeriod(runmin,runmax,186365,186602,0,ymax,"12e");
     
-    DrawPeriod(186668,188123,0,ymax,"12f");
+    DrawPeriod(runmin,runmax,186668,188123,0,ymax,"12f");
     
-    DrawPeriod(188362,188503,0,ymax,"12g");
+    DrawPeriod(runmin,runmax,188362,188503,0,ymax,"12g");
     
-    DrawPeriod(189122,190110,0,ymax,"12h");
+    DrawPeriod(runmin,runmax,189122,190110,0,ymax,"12h");
   
   // 2013
   
-  DrawPeriod(195344,195483,0,ymax,"13b");
-  DrawPeriod(195529,195677,0,ymax,"13c");
-  DrawPeriod(195681,195873,0,ymax,"13d");
-  DrawPeriod(195949,196311,0,ymax,"13e");
-  DrawPeriod(196433,197388,0,ymax,"13f");
+  DrawPeriod(runmin,runmax,195344,195483,0,ymax,"13b");
+  DrawPeriod(runmin,runmax,195529,195677,0,ymax,"13c");
+  DrawPeriod(runmin,runmax,195681,195873,0,ymax,"13d");
+  DrawPeriod(runmin,runmax,195949,196311,0,ymax,"13e");
+  DrawPeriod(runmin,runmax,196433,197388,0,ymax,"13f");
   
   // 2015
   // periods are from the logbook, taking only PHYSICS% partitions
   // into account
-  DrawPeriod(213329,215151,0,ymax,"15a");
-  DrawPeriod(215160,215579,0,ymax,"15b");
-  DrawPeriod(215580,219968,0,ymax,"15c");
-  DrawPeriod(220050,223195,0,ymax,"15d");
-  DrawPeriod(223227,224779,0,ymax,"15e");
-  DrawPeriod(224826,226606,0,ymax,"15f");
+  DrawPeriod(runmin,runmax,213329,215151,0,ymax,"15a");
+  DrawPeriod(runmin,runmax,215160,215579,0,ymax,"15b");
+  DrawPeriod(runmin,runmax,215580,219968,0,ymax,"15c");
+  DrawPeriod(runmin,runmax,220050,223195,0,ymax,"15d");
+  DrawPeriod(runmin,runmax,223227,224779,0,ymax,"15e");
+  DrawPeriod(runmin,runmax,224826,226606,0,ymax,"15f");
 
-  DrawPeriod(228936,231321,0,ymax,"15g");
-  DrawPeriod(232914,234050,0,ymax,"15h");
-  DrawPeriod(235196,236866,0,ymax,"15i");
-  DrawPeriod(236965,238621,0,ymax,"15j");
-  DrawPeriod(238890,239025,0,ymax,"15k");
-  DrawPeriod(239319,241544,0,ymax,"15l");
-
-  DrawPeriod(244340,244628,0,ymax,"15n");
+  DrawPeriod(runmin,runmax,228936,231321,0,ymax,"15g");
+  DrawPeriod(runmin,runmax,232914,234050,0,ymax,"15h");
+  DrawPeriod(runmin,runmax,235196,236866,0,ymax,"15i");
+  DrawPeriod(runmin,runmax,236965,238621,0,ymax,"15j");
+  DrawPeriod(runmin,runmax,238890,239025,0,ymax,"15k");
+  DrawPeriod(runmin,runmax,239319,241544,0,ymax,"15l");
+  DrawPeriod(runmin,runmax,244340,244628,0,ymax,"15n");
+  DrawPeriod(runmin,runmax,244918,246994,0,ymax,"15o");
 
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
@@ -454,9 +456,9 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
 
   TString defaultOCDB;
   
-//  defaultOCDB.Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",year);
+  defaultOCDB.Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",year);
   
-  defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
+//  defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
   
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
