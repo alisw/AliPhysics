@@ -13,8 +13,8 @@
  *
  **************************************************************************/
 
-#ifndef ALIFEMTOANALYSISAZIMUTHALPBPB_FIXED_H
-#define ALIFEMTOANALYSISAZIMUTHALPBPB_FIXED_H
+#ifndef AliFemtoAnalysisAzimuthalPbPb2Order_H
+#define AliFemtoAnalysisAzimuthalPbPb2Order_H
 
 #include "AliFemtoSimpleAnalysis.h"        // base analysis class
 #include "TH1.h"
@@ -26,18 +26,18 @@
 class TVector2;
 class AliFemtoPicoEventRP;
 
-class AliFemtoAnalysisAzimuthalPbPb_fixed : public AliFemtoSimpleAnalysis {
+class AliFemtoAnalysisAzimuthalPbPb2Order : public AliFemtoSimpleAnalysis {
     
 public:
     
-    AliFemtoAnalysisAzimuthalPbPb_fixed(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9, unsigned short binsRP=10);
-    AliFemtoAnalysisAzimuthalPbPb_fixed(const AliFemtoAnalysisAzimuthalPbPb_fixed& TheOriginalAnalysis);  // copy constructor
+    AliFemtoAnalysisAzimuthalPbPb2Order(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9, unsigned short binsRP=10);
+    AliFemtoAnalysisAzimuthalPbPb2Order(const AliFemtoAnalysisAzimuthalPbPb2Order& TheOriginalAnalysis);  // copy constructor
     
-    AliFemtoAnalysisAzimuthalPbPb_fixed& operator=(const AliFemtoAnalysisAzimuthalPbPb_fixed& aAna);
+    AliFemtoAnalysisAzimuthalPbPb2Order& operator=(const AliFemtoAnalysisAzimuthalPbPb2Order& aAna);
     
     //   virtual void FillHBTParticleCollectionRP(AliFemtoParticleCut* partCut, AliFemtoEvent* hbtEvent, AliFemtoPicoEventRP* picoevent);
     virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
-    virtual ~AliFemtoAnalysisAzimuthalPbPb_fixed();
+    virtual ~AliFemtoAnalysisAzimuthalPbPb2Order();
     virtual unsigned int OverflowVertexZ() const { return fOverFlowVertexZ;}
     virtual unsigned int UnderflowVertexZ() const { return fUnderFlowVertexZ;}
     virtual unsigned int OverflowMult() const { return fOverFlowMult;}
@@ -88,7 +88,7 @@ protected:
     TH1F* fmixedpsi;			// Psi distribution for mixed pairs as control histogram
     
 #ifdef __ROOT__
-    ClassDef(AliFemtoAnalysisAzimuthalPbPb_fixed, 0)
+    ClassDef(AliFemtoAnalysisAzimuthalPbPb2Order, 0)
 #endif
     
 };
