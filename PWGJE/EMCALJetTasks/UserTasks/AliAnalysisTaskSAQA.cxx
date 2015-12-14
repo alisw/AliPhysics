@@ -3,6 +3,8 @@
 //
 // Author: S.Aiola
 
+#include <cstring>
+
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -47,11 +49,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
+  fSeparateEMCalDCal(kTRUE),
+  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
+  fNTotTracks(0),
+  fSumTracks(0),
+  fLeadingTrack(0),
   fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
@@ -72,6 +79,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistClusMCEnergyFraction(0),
+  fHistClusEnergy(0),
+  fHistClusNonLinCorrEnergy(0),
+  fHistClusHadCorrEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0)
@@ -80,6 +90,10 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 
   fAODfilterBits[0] = 0;
   fAODfilterBits[1] = 0;
+
+  memset(fNTotClusters, 0, sizeof(Int_t)*2);
+  memset(fSumClusters, 0, sizeof(Double_t)*2);
+  memset(fLeadingCluster, 0, sizeof(AliVCluster*)*2);
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -96,11 +110,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
+  fSeparateEMCalDCal(kTRUE),
+  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
+  fNTotTracks(0),
+  fSumTracks(0),
+  fLeadingTrack(0),
   fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
@@ -121,6 +140,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistClusMCEnergyFraction(0),
+  fHistClusEnergy(0),
+  fHistClusNonLinCorrEnergy(0),
+  fHistClusHadCorrEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0)
@@ -129,6 +151,10 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
 
   fAODfilterBits[0] = 0;
   fAODfilterBits[1] = 0;
+
+  memset(fNTotClusters, 0, sizeof(Int_t)*2);
+  memset(fSumClusters, 0, sizeof(Double_t)*2);
+  memset(fLeadingCluster, 0, sizeof(AliVCluster*)*2);
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -161,6 +187,9 @@ void AliAnalysisTaskSAQA::AllocateHistogramArrays()
   fHistFcrossEnergy = new TH2*[fNcentBins];
   fHistClusTimeEnergy = new TH2*[fNcentBins];
   fHistClusMCEnergyFraction = new TH1*[fNcentBins];
+  fHistClusEnergy = new TH1*[fNcentBins];
+  fHistClusNonLinCorrEnergy = new TH1*[fNcentBins];
+  fHistClusHadCorrEnergy = new TH1*[fNcentBins];
 
   fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
 
@@ -192,6 +221,9 @@ void AliAnalysisTaskSAQA::AllocateHistogramArrays()
     fHistFcrossEnergy[i] = 0;
     fHistClusTimeEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
+    fHistClusEnergy[i] = 0;
+    fHistClusNonLinCorrEnergy[i] = 0;
+    fHistClusHadCorrEnergy[i] = 0;
 
     fHistCellsAbsIdEnergy[i] = 0;
 
@@ -345,6 +377,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistClusTimeEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
       fHistClusTimeEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistClusTimeEnergy[i]->GetYaxis()->SetTitle("Time");
+      fHistClusTimeEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClusTimeEnergy[i]);
 
       Int_t nbins = fMaxCellsInCluster;
@@ -354,6 +387,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistNCellsEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
       fHistNCellsEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistNCellsEnergy[i]->GetYaxis()->SetTitle("N_{cells}");
+      fHistNCellsEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistNCellsEnergy[i]);
 
       histname = "fHistFcrossEnergy_";
@@ -361,6 +395,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistFcrossEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
       fHistFcrossEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
       fHistFcrossEnergy[i]->GetYaxis()->SetTitle("F_{cross}");
+      fHistFcrossEnergy[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistFcrossEnergy[i]); 
 
       histname = "fHistCellsAbsIdEnergy_";
@@ -370,6 +405,27 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cell} (GeV)");
       fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");    
       fOutput->Add(fHistCellsAbsIdEnergy[i]);
+
+      histname = "fHistClusEnergy_";
+      histname += i;
+      fHistClusEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusEnergy[i]);
+
+      histname = "fHistClusNonLinCorrEnergy_";
+      histname += i;
+      fHistClusNonLinCorrEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusNonLinCorrEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusNonLinCorrEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusNonLinCorrEnergy[i]);
+
+      histname = "fHistClusHadCorrEnergy_";
+      histname += i;
+      fHistClusHadCorrEnergy[i] = new TH1F(histname,histname, fNbins, fMinBinPt, fMaxBinPt);
+      fHistClusHadCorrEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusHadCorrEnergy[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistClusHadCorrEnergy[i]);
     }
   }
 
@@ -400,24 +456,24 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
-    nbins[dim] = 100;
+    nbins[dim] = 101;
     min[dim] = 0;
-    max[dim] = 100;
+    max[dim] = 101;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 100;
+      nbins[dim] = 101;
       min[dim] = 0;
-      max[dim] = 100;
+      max[dim] = 101;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       title[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 100;
+      nbins[dim] = 101;
       min[dim] = 0;
-      max[dim] = 100;
+      max[dim] = 101;
       dim++;
     }
 
@@ -501,24 +557,65 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     max[dim] = 4000-0.5;
     dim++;
 
-    title[dim] = "E_{cluster}^{leading} (GeV)";
-    nbins[dim] = fNbins;
-    min[dim] = fMinBinPt;
-    max[dim] = fMaxBinPt;
-    dim++;
-
-    if (fDoLeadingObjectPosition) {
-      title[dim] = "#eta_{cluster}^{leading}";
-      nbins[dim] = 100;
-      min[dim] = -1;
-      max[dim] = 1;
+    if (fSeparateEMCalDCal) {
+      title[dim] = "E_{EMCal cluster}^{leading} (GeV)";
+      nbins[dim] = fNbins;
+      min[dim] = fMinBinPt;
+      max[dim] = fMaxBinPt;
       dim++;
 
-      title[dim] = "#phi_{cluster}^{leading}";
-      nbins[dim] = 100;
-      min[dim] = 0;
-      max[dim] = TMath::TwoPi();
+      title[dim] = "E_{DCal cluster}^{leading} (GeV)";
+      nbins[dim] = fNbins;
+      min[dim] = fMinBinPt;
+      max[dim] = fMaxBinPt;
       dim++;
+
+      if (fDoLeadingObjectPosition) {
+        title[dim] = "#eta_{EMCal cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = -1;
+        max[dim] = 1;
+        dim++;
+
+        title[dim] = "#phi_{EMCal cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = 0;
+        max[dim] = TMath::TwoPi();
+        dim++;
+
+        title[dim] = "#eta_{DCal cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = -1;
+        max[dim] = 1;
+        dim++;
+
+        title[dim] = "#phi_{DCal cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = 0;
+        max[dim] = TMath::TwoPi();
+        dim++;
+      }
+    }
+    else {
+      title[dim] = "E_{cluster}^{leading} (GeV)";
+      nbins[dim] = fNbins;
+      min[dim] = fMinBinPt;
+      max[dim] = fMaxBinPt;
+      dim++;
+
+      if (fDoLeadingObjectPosition) {
+        title[dim] = "#eta_{cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = -1;
+        max[dim] = 1;
+        dim++;
+
+        title[dim] = "#phi_{cluster}^{leading}";
+        nbins[dim] = 100;
+        min[dim] = 0;
+        max[dim] = TMath::TwoPi();
+        dim++;
+      }
     }
   }
 
@@ -613,18 +710,14 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 {
   // Fill histograms.
 
-  Float_t trackSum = 0;
-  Float_t clusSum = 0;
   Float_t cellSum = 0;
 
-  Int_t ntracks = 0;
-  Int_t nclusters = 0;
   Int_t ncells = 0;
   Int_t njets = 0;
 
-  Float_t leadingClusE = 0;
-  Float_t leadingClusEta = 0;
-  Float_t leadingClusPhi = 0;
+  Float_t leadingClusE[2] = {0};
+  Float_t leadingClusEta[2] = {0};
+  Float_t leadingClusPhi[2] = {0};
 
   Float_t leadingTrackPt = 0;
   Float_t leadingTrackEta = 0;
@@ -635,31 +728,29 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   Float_t leadingJetPhi = 0;
 
   if (fTracks) {
-    AliVParticle *leadingTrack = 0;
+    DoTrackLoop();
+    AliDebug(2,Form("%d tracks found in the event", fNTotTracks));
 
-    ntracks = DoTrackLoop(trackSum, leadingTrack);
-    AliDebug(2,Form("%d tracks found in the event", ntracks));
-
-    if (leadingTrack) {
-      leadingTrackPt = leadingTrack->Pt();
-      leadingTrackEta = leadingTrack->Eta();
-      leadingTrackPhi = leadingTrack->Phi();
+    if (fLeadingTrack) {
+      leadingTrackPt = fLeadingTrack->Pt();
+      leadingTrackEta = fLeadingTrack->Eta();
+      leadingTrackPhi = fLeadingTrack->Phi();
     }
   } 
 
   if (fCaloClusters) {
-    AliVCluster  *leadingClus = 0;
+    DoClusterLoop();
+    AliDebug(2,Form("%d clusters found in EMCal and %d in DCal", fNTotClusters[0], fNTotClusters[1]));
 
-    nclusters = DoClusterLoop(clusSum, leadingClus);
-    AliDebug(2,Form("%d clusters found in the event", nclusters));
-
-    if (leadingClus) {
-      TLorentzVector leadingClusVect;
-      leadingClus->GetMomentum(leadingClusVect, fVertex);
-      leadingClusE = leadingClus->E();
-      leadingClusEta = leadingClusVect.Eta();
-      leadingClusPhi = leadingClusVect.Phi();
+    TLorentzVector leadingClusVect[2];
+    for (Int_t i = 0; i < 2; i++) {
+      if (!fLeadingCluster[i]) continue;
+      fLeadingCluster[i]->GetMomentum(leadingClusVect[i], fVertex);
+      leadingClusE[i] = fLeadingCluster[i]->E();
+      leadingClusEta[i] = leadingClusVect[i].Eta();
+      leadingClusPhi[i] = leadingClusVect[i].Phi();
     }
+
   }
 
   if (fCaloCells) {
@@ -681,7 +772,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   }
 
   FillEventQAHisto(fCent, fCent2, fCent3, fV0ATotMult, fV0CTotMult, fEPV0, fRhoVal, 
-      ntracks, nclusters, ncells, njets,
+      fNTotTracks, fNTotClusters, ncells, njets,
       leadingTrackPt, leadingTrackEta, leadingTrackPhi,
       leadingClusE, leadingClusEta, leadingClusPhi,
       leadingJetPt, leadingJetEta, leadingJetPhi);
@@ -691,12 +782,20 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t cent3, Float_t v0a, Float_t v0c, 
-    Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters, Int_t ncells, Int_t njets,
+    Float_t ep, Float_t rho, Int_t ntracks, Int_t nclusters[2], Int_t ncells, Int_t njets,
     Float_t maxTrackPt, Float_t maxTrackEta, Float_t maxTrackPhi,
-    Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi,
+    Float_t maxClusterE[2], Float_t maxClusterEta[2], Float_t maxClusterPhi[2],
     Float_t maxJetPt, Float_t maxJetEta, Float_t maxJetPhi)
 {
-  Double_t contents[20]={0};
+  Double_t contents[30]={0};
+
+  Int_t globalNclusters = nclusters[0] + nclusters[1];
+
+  Int_t globalMaxCluster = maxClusterE[0] > maxClusterE[1] ? 0 : 1;
+
+  Float_t globalMaxClusterE = maxClusterE[globalMaxCluster];
+  Float_t globalMaxClusterEta = maxClusterEta[globalMaxCluster];
+  Float_t globalMaxClusterPhi = maxClusterPhi[globalMaxCluster];
 
   for (Int_t i = 0; i < fHistEventQA->GetNdimensions(); i++) {
     TString title(fHistEventQA->GetAxis(i)->GetTitle());
@@ -719,7 +818,7 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
     else if (title=="No. of tracks")
       contents[i] = ntracks;
     else if (title=="No. of clusters")
-      contents[i] = nclusters;
+      contents[i] = globalNclusters;
     else if (title=="No. of cells")
       contents[i] = ncells;
     else if (title=="No. of jets")
@@ -731,11 +830,23 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
     else if (title=="#phi_{track}^{leading}")
       contents[i] = maxTrackPhi;
     else if (title=="E_{cluster}^{leading} (GeV)")
-      contents[i] = maxClusterE;
+      contents[i] = globalMaxClusterE;
     else if (title=="#eta_{cluster}^{leading}")
-      contents[i] = maxClusterEta;
+      contents[i] = globalMaxClusterEta;
     else if (title=="#phi_{cluster}^{leading}")
-      contents[i] = maxClusterPhi;
+      contents[i] = globalMaxClusterPhi;
+    else if (title=="E_{EMCal cluster}^{leading} (GeV)")
+      contents[i] = maxClusterE[0];
+    else if (title=="#eta_{EMCal cluster}^{leading}")
+      contents[i] = maxClusterEta[0];
+    else if (title=="#phi_{EMCal cluster}^{leading}")
+      contents[i] = maxClusterPhi[0];
+    else if (title=="E_{DCal cluster}^{leading} (GeV)")
+      contents[i] = maxClusterE[1];
+    else if (title=="#eta_{DCal cluster}^{leading}")
+      contents[i] = maxClusterEta[1];
+    else if (title=="#phi_{DCal cluster}^{leading}")
+      contents[i] = maxClusterPhi[1];
     else if (title=="p_{T,jet}^{leading} (GeV/c)")
       contents[i] = maxJetPt;
     else if (title=="#eta_{jet}^{leading}")
@@ -837,37 +948,50 @@ Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cel
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
+void AliAnalysisTaskSAQA::DoClusterLoop()
 {
   // Do cluster loop.
 
   AliClusterContainer* clusters = GetClusterContainer(0);
-  if (!clusters) return 0;
-
-  Int_t nAccClusters = 0;
+  if (!clusters) return;
 
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 
-  sum = 0;
-  leading = 0;
+  memset(fNTotClusters, 0, sizeof(Int_t)*2);
+  memset(fSumClusters, 0, sizeof(Double_t)*2);
+  memset(fLeadingCluster, 0, sizeof(AliVCluster*)*2);
 
   // Cluster loop
 
   AliVCluster* cluster = 0;
   clusters->ResetCurrentID();
   while ((cluster = clusters->GetNextAcceptCluster())) {
-    sum += cluster->E();
+    TLorentzVector nPart;
+    Double_t energy = 0;
+
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      energy = cluster->GetUserDefEnergy(fDefaultClusterEnergy);
+      cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      energy = cluster->E();
+      cluster->GetMomentum(nPart, fVertex);
+    }
+
+    if (energy <= 0) continue;
 
     Float_t pos[3]={0};
     cluster->GetPosition(pos);
     fHistClusPosition[fCentBin]->Fill(pos[0], pos[1], pos[2]);
 
-    if (!leading || leading->E() < cluster->E()) leading = cluster;
+    Double_t phi = TVector2::Phi_0_2pi(nPart.Phi());
 
-    TLorentzVector nPart;
-    cluster->GetMomentum(nPart, fVertex);
+    Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
 
-    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), TVector2::Phi_0_2pi(nPart.Phi()), cluster->E());
+    fHistClusPhiEtaEnergy[fCentBin]->Fill(nPart.Eta(), phi, energy);
+
+    if (!fLeadingCluster[isDcal] || fLeadingCluster[isDcal]->E() < cluster->E()) fLeadingCluster[isDcal] = cluster;
+    fSumClusters[isDcal] += energy;
 
     if (fHistClusDeltaPhiEPEnergy[fCentBin]) {
       Double_t ep = nPart.Phi() - fEPV0;
@@ -886,36 +1010,37 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
     }
 
-    nAccClusters++;
-  }
+    fHistClusEnergy[fCentBin]->Fill(cluster->E());
+    if (cluster->GetNonLinCorrEnergy() > 0.) fHistClusNonLinCorrEnergy[fCentBin]->Fill(cluster->GetNonLinCorrEnergy());
+    if (cluster->GetHadCorrEnergy() > 0.) fHistClusHadCorrEnergy[fCentBin]->Fill(cluster->GetHadCorrEnergy());
 
-  return nAccClusters;
+    fNTotClusters[isDcal]++;
+  }
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
+void AliAnalysisTaskSAQA::DoTrackLoop()
 {
   // Do track loop.
   AliParticleContainer* tracks = GetParticleContainer(0);
 
-  if (!tracks) return 0;
-
-  Int_t nAccTracks = 0;
-
-  sum = 0;
-  leading = 0;
+  if (!tracks) return;
 
   Int_t neg = 0;
   Int_t zero = 0;
 
+  fNTotTracks = 0;
+  fSumTracks = 0;
+  fLeadingTrack = 0;
+
   tracks->ResetCurrentID();
   AliVParticle* track = 0;
   while ((track = tracks->GetNextAcceptParticle())) {
-    nAccTracks++;
+    fNTotTracks++;
 
-    sum += track->P();
+    fSumTracks += track->P();
 
-    if (!leading || leading->Pt() < track->Pt()) leading = track;
+    if (!fLeadingTrack || fLeadingTrack->Pt() < track->Pt()) fLeadingTrack = track;
 
     if (fParticleLevel) {
       fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
@@ -976,14 +1101,12 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
   }
 
   if (fHistTrNegativeLabels[fCentBin]) {
-    fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / nAccTracks);
+    fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / fNTotTracks);
   }
 
   if (fHistTrZeroLabels[fCentBin]) {
-    fHistTrZeroLabels[fCentBin]->Fill(1. * zero / nAccTracks);
+    fHistTrZeroLabels[fCentBin]->Fill(1. * zero / fNTotTracks);
   }
-
-  return nAccTracks;
 }
 
 //________________________________________________________________________

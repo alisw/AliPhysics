@@ -1,6 +1,7 @@
 AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_tbroeker_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
+                                                     TString resolutionfile = "",
                                                      Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      )
 {
@@ -33,7 +34,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   Double_t PhiBins[nBinsPhi+1];
   for(Int_t i=0;i<=nBinsPhi;i++) { PhiBins[i] = PhiMin + i*(PhiMax-PhiMin)/nBinsPhi; }
 
-  const Int_t nBinsPt =  ( sizeof(PtBins) / sizeof(PtBins[0]) )-1;
+  const Int_t nBinsPt = ( sizeof(PtBins) / sizeof(PtBins[0]) )-1;
   
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
@@ -42,6 +43,14 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
+  
+  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+    TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
+    task->SetResolution(arr);
+  }
+  
+  SetupMCSignals(task);
   //event related
   task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
   task->SetCentralityRange(CentMin, CentMax);
@@ -50,7 +59,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
   //MC related
-  task->SetCutInjectedSignal(CutInjectedSignals);
+  //task->SetCutInjectedSignal(CutInjectedSignals);
   // resolution calculation
   task->SetCalcResolution(CalcResolution);
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));

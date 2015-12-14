@@ -7,30 +7,34 @@ AliAnalysisGrid* CreateAlienHandler()
   //plugin->SetRunMode("terminate"); // use to merge output when jobs are done
   plugin->SetRunMode("test"); // use to test code
   //plugin->SetRunMode("full"); // use to submit code
-  plugin->SetNtestFiles(2);
+  plugin->SetNtestFiles(1);
   
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
 
 
-  plugin->SetROOTVersion("v5-34-30-1");
-  plugin->SetAliROOTVersion("v5-06-30");
-  plugin->SetAliPhysicsVersion("vAN-20150707");
+  plugin->SetROOTVersion("v5-34-30-alice-7");
+  plugin->SetAliROOTVersion("v5-07-15-1");
+  plugin->SetAliPhysicsVersion("vAN-20151130-1");
+  //plugin->SetCheckCopy(kFALSE);
+  //plugin->EnablePackage("PWGPPevcharQnInterface.par");
 
   //plugin->SetInputFile("/hera/alice/jonderw/gridanalysis/CalibrationFiles/000137161/CalibrationHistograms.root");
   //plugin->SetMergeDirName("/hera/alice/jonderw/gridanalysis/CalibrationFiles/000137162/");
 
   plugin->SetGridDataDir("/alice/data/2010/LHC10h/");
+  //plugin->SetGridDataDir("/alice/data/2015/LHC15o/");
   //plugin->SetGridDataDir("/alice/data/2011/LHC11h_2/");
   //plugin->SetDataPattern("ESDs/pass2/AOD086/*/AliAOD.root"); // all segments for running on Grid
   //plugin->SetDataPattern("ESDs/pass2/AOD086/0001/AliAOD.root"); // single segment for testing
   //plugin->SetDataPattern("ESDs/pass2/AliESDs.root"); // single segment for testing
-  plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
+  plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // 2010|2011
+  //plugin->SetDataPattern("/pass1/*/AliESDs.root"); // 2015
   plugin->SetRunPrefix("000");
-  //plugin->AddRunNumber(170040);
-  //plugin->AddRunNumber(137161);
+  //plugin->AddRunNumber(245145); // LHC15o
+  plugin->AddRunNumber(137161);
   //plugin->AddRunNumber(137162);
-  plugin->AddRunNumber(138534);
+  //plugin->AddRunNumber(138534);
   //gROOT->ProcessLine(".L AddRunNumbers.C");
   //int added = AddRunNumbers(plugin,0,1,"lhc10h"); // adds one run number for testing
   //int added = AddRunNumbers(plugin,0,5,"lhc10h"); // adds multiple run numbers for running on grid
@@ -39,7 +43,7 @@ AliAnalysisGrid* CreateAlienHandler()
 
   
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  plugin->SetGridWorkingDir("AnalysisTesting3");
+  plugin->SetGridWorkingDir("AnalysisTesting");
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   plugin->SetOutputToRunNo(); // Write output to runnumber directory
@@ -48,7 +52,7 @@ AliAnalysisGrid* CreateAlienHandler()
   //plugin->SetAnalysisSource("AliAnalyisTaskEventPlaneCalibration.cxx");
   //plugin->SetAdditionalLibs("AliAnalyisTaskEventPlaneCalibration.h AliAnalyisTaskEventPlaneCalibration.cxx");
 
-  plugin->SetAdditionalLibs("libCore.so libTree.so libGeom.so libVMC.so libPhysics.so libSTEERBase libESD libAOD libANALYSIS libANALYSISalice libPWGPPevcharQn.so libPWGPPevcharQnInterface.so");
+  plugin->SetAdditionalLibs("libSTEERBase libESD libAOD libANALYSIS libANALYSISalice libANALYSISaliceBase libCORRFW libOADB");
 
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes.

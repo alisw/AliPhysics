@@ -60,11 +60,10 @@ class TTree;
 class TChain;
 class AliAnalysisTaskSE;
 
-
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSECharmFraction);
 /// \endcond
- 
+
 //________________________________________________________________________
 AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction() 
 : AliAnalysisTaskSE(),
@@ -115,7 +114,44 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   fselectForUpgrade(0),  
   fskipEventSelection(kFALSE),
   fZvtxUpgr(10.),
-  fWeightPt(0x0)
+  fWeightPt(0x0),
+  fFillTree(kFALSE),
+  fTreeNCsign(0),
+  fTreeNCback(0),
+  fTreeNCfromB(0),
+  fTreeRecoNCfromB(0),
+  fTreeNCfromDstar(0),
+  fTreeNCother(0),
+  fTreeLSCsign(0),
+  fTreeLSCback(0),
+  fTreeLSCfromB(0),
+  fTreeRecoLSCfromB(0),
+  fTreeLSCfromDstar(0),
+  fTreeLSCother(0),
+  fTreeTGHCsign(0),
+  fTreeTGHCback(0),
+  fTreeTGHCfromB(0),
+  fTreeRecoTGHCfromB(0),
+  fTreeTGHCfromDstar(0),
+  fTreeTGHCother(0),
+  fVariablesTreeNCsign(),
+  fVariablesTreeNCback(),
+  fVariablesTreeNCfromB(),
+  fVariablesTreeRecoNCfromB(),
+  fVariablesTreeNCfromDstar(),
+  fVariablesTreeNCother(),
+  fVariablesTreeLSCsign(),
+  fVariablesTreeLSCback(),
+  fVariablesTreeLSCfromB(),
+  fVariablesTreeRecoLSCfromB(),
+  fVariablesTreeLSCfromDstar(),
+  fVariablesTreeLSCother(),
+  fVariablesTreeTGHCsign(),
+  fVariablesTreeTGHCback(),
+  fVariablesTreeTGHCfromB(),
+  fVariablesTreeRecoTGHCfromB(),
+  fVariablesTreeTGHCfromDstar(),
+  fVariablesTreeTGHCother()
 {
   ///Default constructor
 }
@@ -169,7 +205,44 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       fselectForUpgrade(0),
       fskipEventSelection(kFALSE),
       fZvtxUpgr(10.),
-      fWeightPt(0x0)
+      fWeightPt(0x0),
+      fFillTree(kFALSE),
+      fTreeNCsign(0),
+      fTreeNCback(0),
+      fTreeNCfromB(0),
+      fTreeRecoNCfromB(0),
+      fTreeNCfromDstar(0),
+      fTreeNCother(0),
+      fTreeLSCsign(0),
+      fTreeLSCback(0),
+      fTreeLSCfromB(0),
+      fTreeRecoLSCfromB(0),
+      fTreeLSCfromDstar(0),
+      fTreeLSCother(0),
+      fTreeTGHCsign(0),
+      fTreeTGHCback(0),
+      fTreeTGHCfromB(0),
+      fTreeRecoTGHCfromB(0),
+      fTreeTGHCfromDstar(0),
+      fTreeTGHCother(0),
+      fVariablesTreeNCsign(),
+      fVariablesTreeNCback(),
+      fVariablesTreeNCfromB(),
+      fVariablesTreeRecoNCfromB(),
+      fVariablesTreeNCfromDstar(),
+      fVariablesTreeNCother(),
+      fVariablesTreeLSCsign(),
+      fVariablesTreeLSCback(),
+      fVariablesTreeLSCfromB(),
+      fVariablesTreeRecoLSCfromB(),
+      fVariablesTreeLSCfromDstar(),
+      fVariablesTreeLSCother(),
+      fVariablesTreeTGHCsign(),
+      fVariablesTreeTGHCback(),
+      fVariablesTreeTGHCfromB(),
+      fVariablesTreeRecoTGHCfromB(),
+      fVariablesTreeTGHCfromDstar(),
+      fVariablesTreeTGHCother()
   {
     /// Constructor
     
@@ -246,7 +319,44 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fselectForUpgrade(0),
     fskipEventSelection(kFALSE),
     fZvtxUpgr(10.),
-    fWeightPt(0x0)
+    fWeightPt(0x0),
+    fFillTree(kFALSE),
+    fTreeNCsign(0),
+    fTreeNCback(0),
+    fTreeNCfromB(0),
+    fTreeRecoNCfromB(0),
+    fTreeNCfromDstar(0),
+    fTreeNCother(0),
+    fTreeLSCsign(0),
+    fTreeLSCback(0),
+    fTreeLSCfromB(0),
+    fTreeRecoLSCfromB(0),
+    fTreeLSCfromDstar(0),
+    fTreeLSCother(0),
+    fTreeTGHCsign(0),
+    fTreeTGHCback(0),
+    fTreeTGHCfromB(0),
+    fTreeRecoTGHCfromB(0),
+    fTreeTGHCfromDstar(0),
+    fTreeTGHCother(0),
+    fVariablesTreeNCsign(),
+    fVariablesTreeNCback(),
+    fVariablesTreeNCfromB(),
+    fVariablesTreeRecoNCfromB(),
+    fVariablesTreeNCfromDstar(),
+    fVariablesTreeNCother(),
+    fVariablesTreeLSCsign(),
+    fVariablesTreeLSCback(),
+    fVariablesTreeLSCfromB(),
+    fVariablesTreeRecoLSCfromB(),
+    fVariablesTreeLSCfromDstar(),
+    fVariablesTreeLSCother(),
+    fVariablesTreeTGHCsign(),
+    fVariablesTreeTGHCback(),
+    fVariablesTreeTGHCfromB(),
+    fVariablesTreeRecoTGHCfromB(),
+    fVariablesTreeTGHCfromDstar(),
+    fVariablesTreeTGHCother()
 {
   /// Constructor
   if(fCutsTight){
@@ -294,7 +404,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
 
 //________________________________________________________________________
 AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
-{ ///Destructor
+{ ///Destructor 
   
   if (fCutsTight) {   
     delete fCutsTight;
@@ -475,7 +585,7 @@ void AliAnalysisTaskSECharmFraction::Init()
 void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 {
   /// Create histograms
-  /// Called once
+  
   
   // ################ NAMING SCHEME ###################################
   //            LISTS NAMING SCHEME
@@ -822,7 +932,24 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCsign->SetBinEdges(4,massHypoBins); 
   flistNoCutsSignal->Add(hSparseNCsign);
 
-
+  const Int_t nVar=10;
+  TString *candidateVariableNames = new TString[nVar];
+  candidateVariableNames[0]="massD0";
+  candidateVariableNames[1]="massD0bar";
+  candidateVariableNames[2]="pt";
+  candidateVariableNames[3]="impactpar";
+  candidateVariableNames[4]="selcase";
+  candidateVariableNames[5]="impactparxy";
+  candidateVariableNames[6]="impactparz";
+  candidateVariableNames[7]="impactparcov0";
+  candidateVariableNames[8]="impactparcov1";
+  candidateVariableNames[9]="impactparcov2";
+  fTreeNCsign = new TTree("fTreeNCsign","Candidate variables tree");
+  fVariablesTreeNCsign = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeNCsign->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeNCsign[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsSignal->Add(fTreeNCsign);
 
 
   THnSparseF *hSparseCxyLxyNCsign=new THnSparseF("hSparseCxyLxyNCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
@@ -1163,6 +1290,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCback->SetBinEdges(4,massHypoBins); 
   flistNoCutsBack->Add(hSparseNCback);
 
+  fTreeNCback = new TTree("fTreeNCback","Candidate variables tree");
+  fVariablesTreeNCback = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeNCback->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeNCback[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsBack->Add(fTreeNCback);
+
+
   TH1F *hetaNCback;
   TH1F *hCosPDPBNCback;
   TH1F *hCosPcPDNCback;
@@ -1284,7 +1419,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 
   // ####### d0 D0 histos ############
   
- TH1F *hd0D0NCbackPM = new TH1F("hd0D0NCbackPM","D^{0} impact par. plot , No Cuts ,Background,Mass Peak (All momenta)",1000,-1000.,1000.);
+  TH1F *hd0D0NCbackPM = new TH1F("hd0D0NCbackPM","D^{0} impact par. plot , No Cuts ,Background,Mass Peak (All momenta)",1000,-1000.,1000.);
   hd0D0NCbackPM->SetXTitle("Impact parameter [#mum]");
   hd0D0NCbackPM->SetYTitle("Entries");
 
@@ -1471,7 +1606,12 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCfromB->SetBinEdges(4,massHypoBins); 
   flistNoCutsFromB->Add(hSparseNCfromB);
 
-
+  fTreeNCfromB = new TTree("fTreeNCfromB","Candidate variables tree");
+  fVariablesTreeNCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeNCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeNCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsFromB->Add(fTreeNCfromB);
 
   THnSparseF *hSparseRecoNCfromB=new THnSparseF("hSparseRecoNCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseRecoNCfromB->SetBinEdges(0,massbins);
@@ -1480,6 +1620,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseRecoNCfromB->SetBinEdges(3,impparbins);
   hSparseRecoNCfromB->SetBinEdges(4,massHypoBins); 
   flistNoCutsFromB->Add(hSparseRecoNCfromB);
+
+  fTreeRecoNCfromB = new TTree("fTreeRecoNCfromB","Candidate variables tree");
+  fVariablesTreeRecoNCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeRecoNCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeRecoNCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsFromB->Add(fTreeRecoNCfromB);
 
 
   TH1F *hetaNCfromB;
@@ -1787,6 +1934,15 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCfromDstar->SetBinEdges(3,impparbins);
   hSparseNCfromDstar->SetBinEdges(4,massHypoBins); 
   flistNoCutsFromDstar->Add(hSparseNCfromDstar);
+
+  fTreeNCfromDstar = new TTree("fTreeNCfromDstar","Candidate variables tree");
+  fVariablesTreeNCfromDstar = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeNCfromDstar->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeNCfromDstar[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsFromDstar->Add(fTreeNCfromDstar);
+
+
   TH1F *hetaNCfromDstar;
   TH1F *hCosPDPBNCfromDstar;
   TH1F *hCosPcPDNCfromDstar;
@@ -2082,6 +2238,16 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCother->SetBinEdges(3,impparbins);
   hSparseNCother->SetBinEdges(4,massHypoBins); 
   flistNoCutsOther->Add(hSparseNCother);
+
+  fTreeNCother = new TTree("fTreeNCother","Candidate variables tree");
+  fVariablesTreeNCother = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeNCother->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeNCother[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistNoCutsOther->Add(fTreeNCother);
+
+
+
   TH1F *hetaNCother;
   TH1F *hCosPDPBNCother;
   TH1F *hCosPcPDNCother;
@@ -2393,6 +2559,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hCosPDPBLSCsign;
   TH1F *hCosPcPDLSCsign;
   flistLsCutsSignal->Add(hInvMassPtLSCsign);
+
+  fTreeLSCsign = new TTree("fTreeLSCsign","Candidate variables tree");
+  fVariablesTreeLSCsign = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeLSCsign->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeLSCsign[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsSignal->Add(fTreeLSCsign);
 
 
   
@@ -2723,6 +2896,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseLSCback->SetBinEdges(3,impparbins);
   hSparseLSCback->SetBinEdges(4,massHypoBins); 
   flistLsCutsBack->Add(hSparseLSCback);
+
+  fTreeLSCback = new TTree("fTreeLSCback","Candidate variables tree");
+  fVariablesTreeLSCback = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeLSCback->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeLSCback[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsBack->Add(fTreeLSCback);
+
   TH1F *hetaLSCback;
   TH1F *hCosPDPBLSCback;
   TH1F *hCosPcPDLSCback;
@@ -3031,6 +3212,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseLSCfromB->SetBinEdges(4,massHypoBins); 
   flistLsCutsFromB->Add(hSparseLSCfromB);
 
+  fTreeLSCfromB = new TTree("fTreeLSCfromB","Candidate variables tree");
+  fVariablesTreeLSCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeLSCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeLSCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsFromB->Add(fTreeLSCfromB);
+
 
   THnSparseF *hSparseRecoLSCfromB=new THnSparseF("hSparseRecoLSCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseRecoLSCfromB->SetBinEdges(0,massbins);
@@ -3039,6 +3227,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseRecoLSCfromB->SetBinEdges(3,impparbins);
   hSparseRecoLSCfromB->SetBinEdges(4,massHypoBins); 
   flistLsCutsFromB->Add(hSparseRecoLSCfromB);
+
+  fTreeRecoLSCfromB = new TTree("fTreeRecoLSCfromB","Candidate variables tree");
+  fVariablesTreeRecoLSCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeRecoLSCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeRecoLSCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsFromB->Add(fTreeRecoLSCfromB);
 
 
   TH1F *hetaLSCfromB;
@@ -3346,6 +3541,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseLSCfromDstar->SetBinEdges(3,impparbins);
   hSparseLSCfromDstar->SetBinEdges(4,massHypoBins); 
   flistLsCutsFromDstar->Add(hSparseLSCfromDstar);
+
+  fTreeLSCfromDstar = new TTree("fTreeLSCfromDstar","Candidate variables tree");
+  fVariablesTreeLSCfromDstar = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeLSCfromDstar->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeLSCfromDstar[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsFromDstar->Add(fTreeLSCfromDstar);
+
   TH1F *hetaLSCfromDstar;
   TH1F *hCosPDPBLSCfromDstar;
   TH1F *hCosPcPDLSCfromDstar;
@@ -3648,6 +3851,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hCosPDPBLSCother;
   TH1F *hCosPcPDLSCother;
   flistLsCutsOther->Add(hInvMassPtLSCother);
+
+  fTreeLSCother = new TTree("fTreeLSCother","Candidate variables tree");
+  fVariablesTreeLSCother = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeLSCother->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeLSCother[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistLsCutsOther->Add(fTreeLSCother);
+
  // %%%%%%%%%%% HERE THE ADDITIONAL HISTS %%%%%%%%%%%%%%%%%
   TH2F *hd0D0VSd0xd0LSCotherpt;
   TH2F *hangletracksVSd0xd0LSCotherpt;
@@ -3904,7 +4115,8 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   flistTghCutsSignal->Add(hMassTrueTGHCsignPM);
   flistTghCutsSignal->Add(hMassTGHCsignPM);
   flistTghCutsSignal->Add(hMassTrueTGHCsignSB);
-  flistTghCutsSignal->Add(hMassTGHCsignSB);
+  
+flistTghCutsSignal->Add(hMassTGHCsignSB);
 
 
 
@@ -3956,6 +4168,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCsign->SetBinEdges(4,massHypoBins); 
   flistTghCutsSignal->Add(hSparseTGHCsign);
 
+  fTreeTGHCsign = new TTree("fTreeTGHCsign","Candidate variables tree");
+  fVariablesTreeTGHCsign = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeTGHCsign->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeTGHCsign[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsSignal->Add(fTreeTGHCsign);
+
+
 
   THnSparseF *hSparseCxyLxyTGHCsign=new THnSparseF("hSparseCxyLxyTGHCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
   hSparseCxyLxyTGHCsign->SetBinEdges(1,ptbinlimitsCxyLxy);
@@ -3967,8 +4187,6 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseCxyLxyTGHCsign->GetAxis(2)->SetTitle("Cos#theta_{point}^{XY}");
   hSparseCxyLxyTGHCsign->GetAxis(3)->SetName("NormDecLengthXY");
   hSparseCxyLxyTGHCsign->GetAxis(3)->SetTitle("Normalized XY decay length");
-
-
   flistTghCutsSignal->Add(hSparseCxyLxyTGHCsign);
   
   
@@ -4292,6 +4510,16 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCback->SetBinEdges(3,impparbins);
   hSparseTGHCback->SetBinEdges(4,massHypoBins); 
   flistTghCutsBack->Add(hSparseTGHCback);
+
+
+  fTreeTGHCback = new TTree("fTreeTGHCback","Candidate variables tree");
+  fVariablesTreeTGHCback = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeTGHCback->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeTGHCback[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsBack->Add(fTreeTGHCback);
+
+
   TH1F *hetaTGHCback;
   TH1F *hCosPDPBTGHCback;
   TH1F *hCosPcPDTGHCback;
@@ -4597,6 +4825,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCfromB->SetBinEdges(4,massHypoBins); 
   flistTghCutsFromB->Add(hSparseTGHCfromB);
 
+
+  fTreeTGHCfromB = new TTree("fTreeTGHCfromB","Candidate variables tree");
+  fVariablesTreeTGHCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeTGHCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeTGHCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsFromB->Add(fTreeTGHCfromB);
+
   
   THnSparseF *hSparseRecoTGHCfromB=new THnSparseF("hSparseRecoTGHCfromB","Candidate Masses, pt, Imp Par;massD0;massD0bar;pt;impactpar;selcase",5,nbinsSparse);
   hSparseRecoTGHCfromB->SetBinEdges(0,massbins);
@@ -4605,6 +4841,13 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseRecoTGHCfromB->SetBinEdges(3,impparbins);
   hSparseRecoTGHCfromB->SetBinEdges(4,massHypoBins); 
   flistTghCutsFromB->Add(hSparseRecoTGHCfromB);
+
+  fTreeRecoTGHCfromB = new TTree("fTreeRecoTGHCfromB","Candidate variables tree");
+  fVariablesTreeRecoTGHCfromB = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeRecoTGHCfromB->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeRecoTGHCfromB[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsFromB->Add(fTreeRecoTGHCfromB);
 
   TH1F *hetaTGHCfromB;
   TH1F *hCosPDPBTGHCfromB;
@@ -4911,6 +5154,14 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCfromDstar->SetBinEdges(3,impparbins);
   hSparseTGHCfromDstar->SetBinEdges(4,massHypoBins); 
   flistTghCutsFromDstar->Add(hSparseTGHCfromDstar);
+
+  fTreeTGHCfromDstar = new TTree("fTreeTGHCfromDstar","Candidate variables tree");
+  fVariablesTreeTGHCfromDstar = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeTGHCfromDstar->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeTGHCfromDstar[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsFromDstar->Add(fTreeTGHCfromDstar);
+
   TH1F *hCosPDPBTGHCfromDstar;
   TH1F *hCosPcPDTGHCfromDstar;
   flistTghCutsFromDstar->Add(hInvMassPtTGHCfromDstar);
@@ -5204,6 +5455,16 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCother->SetBinEdges(3,impparbins);
   hSparseTGHCother->SetBinEdges(4,massHypoBins); 
   flistTghCutsOther->Add(hSparseTGHCother);
+
+
+  fTreeTGHCother = new TTree("fTreeTGHCother","Candidate variables tree");
+  fVariablesTreeTGHCother = new Double_t[nVar];
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fTreeTGHCother->Branch(candidateVariableNames[ivar].Data(),&fVariablesTreeTGHCother[ivar],Form("%s/d",candidateVariableNames[ivar].Data()));
+  }  
+  flistTghCutsOther->Add(fTreeTGHCother);
+
+
   TH1F *hetaTGHCother;
   TH1F *hCosPDPBTGHCother;
   TH1F *hCosPcPDTGHCother;
@@ -5456,8 +5717,8 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event:
-  /// heavy flavor candidates association to MC truth
+  /// Execute analysis for current event
+  
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!aod) {
@@ -5522,6 +5783,9 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fCutsLoose,fReadMC); 
+
+  Double_t bField=aod->GetMagneticField();
+  //printf("magneticfield=%f\t",bField);
   
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //  TString trigclass=aod->GetFiredTriggerClasses();
@@ -5710,7 +5974,9 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   if(isEventSelLOOSE)fNentries->Fill(13,nD0toKpi);
   
   //	cout<<"Number of D0->Kpi: "<<nD0toKpi<<endl;
-  
+
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+
   for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
     if(aodDMC!=0x0)delete aodDMC;
       
@@ -5734,6 +6000,9 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
     if(fcheckD0Bit&&(!d->HasSelectionBit(AliRDHFCutsD0toKpi::kD0toKpiCuts)))continue;
+    if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
+       continue;
+     }
     
     //  Bool_t unsetvtx=kFALSE;
     //     if(!d->GetOwnPrimaryVtx()) {
@@ -6069,22 +6338,22 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //            CANDIDATE VARIABLES   
 
    
-    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
-    else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
+    else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistNoCutsBack,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     
 
     
     //LOOSE CUTS Case
     if(okd0loose||okd0barloose)fNentries->Fill(14);
 
-    if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
 
     //TIGHT CUTS Case
     if(okd0tight||okd0bartight){
@@ -6092,11 +6361,11 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       nSelectedtight++; 
     }
     
-    if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
-    else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==11)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
+    else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue,isD0D0barMC,bField);
     
 
     // ######## PRINTING INFO FOR D0-like candidate
@@ -6119,7 +6388,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     
   }
 
-
+  delete vHF;
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE); 
   
@@ -6156,7 +6425,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 //_________________________________________
 Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(){
   //
-  /// creating cuts for D0 -> Kpi
+  /// creating cuts for D0 -> Kpi: OBSOLETE!
   //
 
   if(fCutsTight){
@@ -6223,8 +6492,8 @@ void AliAnalysisTaskSECharmFraction::CheckInvMassD0(AliAODRecoDecayHF2Prong *d,D
 
 //__________________________________________________________________
 AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx,Int_t &isD0D0bar){
-  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS.
-  //   IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)
+  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS. 
+  ///  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMON MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
   //
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
   //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB
@@ -6355,9 +6624,10 @@ Int_t AliAnalysisTaskSECharmFraction::CheckOrigin(const TClonesArray* arrayMC, c
 }
 
 //__________________________________________________
-AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalTypeObsolete(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx){// OBSOLETE METHOD!!!!!
-  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS.
-  ///  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
+AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalTypeObsolete(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx){
+  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS. 
+  ///  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC) 
+  /// OBSOLETE METHOD, KEPT ONLY FOR CHECKS 
   //
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
   //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB
@@ -6601,7 +6871,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const
 }
 
 //________________________________________________________
-Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue,Int_t isD0D0barMC){//FILL THE HISTOGRAMS: TAKE THE HISTOS FROM THE list NAME
+Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue,Int_t isD0D0barMC,Double_t b){///FILL THE HISTOGRAMS: TAKE THE HISTOS FROM THE list NAME
 
   
   if((!okD0)&&(!okD0bar))return kTRUE;
@@ -6631,6 +6901,76 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   Double_t pt=d->Pt();
   Double_t impparxy=d->ImpParXY()*10000.;
 
+  Double_t imppar[2]={0.,0.};
+  Double_t impparcov[3]={0.,0.,0.};
+  if(fFillTree){
+    if(d->PropagateToDCA((AliAODVertex*)d->GetPrimaryVtx(),b,10.,imppar,impparcov)){
+      for(Int_t i=0; i<2; i++){
+	imppar[i]=imppar[i]*10000.;
+	fVariablesTreeNCsign[5+i]=imppar[i];
+	fVariablesTreeNCback[5+i]=imppar[i];
+	fVariablesTreeNCfromB[5+i]=imppar[i];
+	fVariablesTreeRecoNCfromB[5+i]=imppar[i];
+	fVariablesTreeNCfromDstar[5+i]=imppar[i];
+	fVariablesTreeNCother[5+i]=imppar[i];
+	fVariablesTreeLSCsign[5+i]=imppar[i];
+	fVariablesTreeLSCback[5+i]=imppar[i];
+	fVariablesTreeLSCfromB[5+i]=imppar[i];
+	fVariablesTreeRecoLSCfromB[5+i]=imppar[i];
+	fVariablesTreeLSCfromDstar[5+i]=imppar[i];
+	fVariablesTreeLSCother[5+i]=imppar[i];
+	fVariablesTreeTGHCsign[5+i]=imppar[i];
+	fVariablesTreeTGHCback[5+i]=imppar[i];
+	fVariablesTreeTGHCfromB[5+i]=imppar[i];
+	fVariablesTreeRecoTGHCfromB[5+i]=imppar[i];
+	fVariablesTreeTGHCfromDstar[5+i]=imppar[i];
+	fVariablesTreeTGHCother[5+i]=imppar[i];
+      }
+      for(Int_t j=0; j<3; j++){
+	impparcov[j]=impparcov[j]*10000.*10000.;
+	fVariablesTreeNCsign[7+j]=impparcov[j];
+	fVariablesTreeNCback[7+j]=impparcov[j];
+	fVariablesTreeNCfromB[7+j]=impparcov[j];
+	fVariablesTreeRecoNCfromB[7+j]=impparcov[j];
+	fVariablesTreeNCfromDstar[7+j]=impparcov[j];
+	fVariablesTreeNCother[7+j]=impparcov[j];
+	fVariablesTreeLSCsign[7+j]=impparcov[j];
+	fVariablesTreeLSCback[7+j]=impparcov[j];
+	fVariablesTreeLSCfromB[7+j]=impparcov[j];
+	fVariablesTreeRecoLSCfromB[7+j]=impparcov[j];
+	fVariablesTreeLSCfromDstar[7+j]=impparcov[j];
+	fVariablesTreeLSCother[7+j]=impparcov[j];
+	fVariablesTreeTGHCsign[7+j]=impparcov[j];
+	fVariablesTreeTGHCback[7+j]=impparcov[j];
+	fVariablesTreeTGHCfromB[7+j]=impparcov[j];
+	fVariablesTreeRecoTGHCfromB[7+j]=impparcov[j];
+	fVariablesTreeTGHCfromDstar[7+j]=impparcov[j];
+	fVariablesTreeTGHCother[7+j]=impparcov[j];
+      }
+    }
+    else{
+      for(Int_t i=0; i<5; i++){
+	fVariablesTreeNCsign[5+i]=99999.;
+	fVariablesTreeNCback[5+i]=99999.;
+	fVariablesTreeNCfromB[5+i]=99999.;
+	fVariablesTreeRecoNCfromB[5+i]=99999.;
+	fVariablesTreeNCfromDstar[5+i]=99999.;
+	fVariablesTreeNCother[5+i]=99999.;
+	fVariablesTreeLSCsign[5+i]=99999.;
+	fVariablesTreeLSCback[5+i]=99999.;
+	fVariablesTreeLSCfromB[5+i]=99999.;
+	fVariablesTreeRecoLSCfromB[5+i]=99999.;
+	fVariablesTreeLSCfromDstar[5+i]=99999.;
+	fVariablesTreeLSCother[5+i]=99999.;
+	fVariablesTreeTGHCsign[5+i]=99999.;
+	fVariablesTreeTGHCback[5+i]=99999.;
+	fVariablesTreeTGHCfromB[5+i]=99999.;
+	fVariablesTreeRecoTGHCfromB[5+i]=99999.;
+	fVariablesTreeTGHCfromDstar[5+i]=99999.;
+	fVariablesTreeTGHCother[5+i]=99999.;
+      }
+    }
+  }
 
 
   // ######### Get Standard label for hist in tlist ###############
@@ -6811,11 +7151,11 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(okD0bar&&isD0D0barMC==1)((TH3F*)list->FindObject(str.Data()))->Fill(invMassD0bar,pt,sel,w);
   }
   
-
   // FILLING OF THE SPARSE HISTO
   if(fFastAnalysis<=2){ // ONLY IF NOT VERY FAST ANALYSIS
     str="hSparse";
     str.Append(namehist.Data());
+    //Printf("Case: %s", str.Data());
 
     Double_t point[5]={invMassD0,invMassD0bar,pt,impparxy,0.};
     if(okD0&&okD0bar)point[4]=3.5;
@@ -6823,15 +7163,107 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     else if(okD0bar)point[4]=2.5;
     if(fReadMC&&aodDMC!=0x0&&namehist.Contains("fromB")){     
       point[3]=aodDMC->ImpParXY()*10000.;
+
+      if(fFillTree){
+	imppar[0]=0.;
+	imppar[1]=0.;
+	impparcov[0]=0.;
+	impparcov[1]=0.;
+	impparcov[2]=0.;
+	
+	if(aodDMC->PropagateToDCA((AliAODVertex*)aodDMC->GetPrimaryVtx(),b,10.,imppar,impparcov)){
+	  for(Int_t i=0; i<2; i++){
+	    imppar[i]=imppar[i]*10000.;
+	    fVariablesTreeNCfromB[5+i]=imppar[i];
+	    fVariablesTreeLSCfromB[5+i]=imppar[i];
+	    fVariablesTreeTGHCfromB[5+i]=imppar[i];
+	  }
+	  for(Int_t j=0; j<3; j++){
+	    impparcov[j]=impparcov[j]*10000.*10000.;
+	    fVariablesTreeNCfromB[7+j]=impparcov[j];
+	    fVariablesTreeLSCfromB[7+j]=impparcov[j];
+	    fVariablesTreeTGHCfromB[7+j]=impparcov[j];
+	  }
+	}
+	else{
+	  for(Int_t i=0; i<5; i++){
+	    fVariablesTreeNCfromB[5+i]=99999.;
+	    fVariablesTreeLSCfromB[5+i]=99999.;
+	    fVariablesTreeTGHCfromB[5+i]=99999.;
+	  }
+	}
+      }
     }
     ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
+    if(fFillTree){
+      for(Int_t i=0; i<5; i++){
+	fVariablesTreeNCsign[i]=point[i];
+	fVariablesTreeNCback[i]=point[i];
+	fVariablesTreeNCfromB[i]=point[i];
+	fVariablesTreeRecoNCfromB[i]=point[i];
+	fVariablesTreeNCfromDstar[i]=point[i];
+	fVariablesTreeNCother[i]=point[i];
+	fVariablesTreeLSCsign[i]=point[i];
+	fVariablesTreeLSCback[i]=point[i];
+	fVariablesTreeLSCfromB[i]=point[i];
+	fVariablesTreeRecoLSCfromB[i]=point[i];
+	fVariablesTreeLSCfromDstar[i]=point[i];
+	fVariablesTreeLSCother[i]=point[i];
+	fVariablesTreeTGHCsign[i]=point[i];
+	fVariablesTreeTGHCback[i]=point[i];
+	fVariablesTreeTGHCfromB[i]=point[i];
+	fVariablesTreeRecoTGHCfromB[i]=point[i];
+	fVariablesTreeTGHCfromDstar[i]=point[i];
+	fVariablesTreeTGHCother[i]=point[i];
+      }   
+      str="fTree";
+      str.Append(namehist.Data());
+      ((TTree*)list->FindObject(str.Data()))->Fill();
+    }
+  
     if(fReadMC&&aodDMC!=0x0&&namehist.Contains("fromB")){     
       point[3]=impparxy;
       str="hSparseReco";
       str.Append(namehist.Data());
       ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
+      if(fFillTree){ 
+	fVariablesTreeRecoNCfromB[3]=point[3];
+	fVariablesTreeRecoLSCfromB[3]=point[3];
+	fVariablesTreeRecoTGHCfromB[3]=point[3];
+	imppar[0]=0.;
+	imppar[1]=0.;
+	impparcov[0]=0.;
+	impparcov[1]=0.;
+	impparcov[2]=0.;
+	if(d->PropagateToDCA((AliAODVertex*)d->GetPrimaryVtx(),b,10.,imppar,impparcov)){
+	  for(Int_t i=0; i<2; i++){
+	  imppar[i]=imppar[i]*10000.;
+	  fVariablesTreeRecoNCfromB[5+i]=imppar[i];
+	  fVariablesTreeRecoLSCfromB[5+i]=imppar[i];
+	  fVariablesTreeRecoTGHCfromB[5+i]=imppar[i];
+	  }
+	  for(Int_t j=0; j<3; j++){
+	    impparcov[j]=impparcov[j]*10000.*10000.;
+	    fVariablesTreeRecoNCfromB[7+j]=impparcov[j];
+	    fVariablesTreeRecoLSCfromB[7+j]=impparcov[j];
+	    fVariablesTreeRecoTGHCfromB[7+j]=impparcov[j];
+	  }
+	}
+	else{
+	  for(Int_t i=0; i<5; i++){
+	    fVariablesTreeRecoNCfromB[5+i]=99999.;
+	    fVariablesTreeRecoLSCfromB[5+i]=99999.;
+	    fVariablesTreeRecoTGHCfromB[5+i]=99999.;
+	  }
+	}
+      
+      
+	str="fTreeReco";
+	str.Append(namehist.Data());
+	((TTree*)list->FindObject(str.Data()))->Fill();
+      }
     }
-
+  
     
     str="hInvMassPt";
     str.Append(namehist.Data());

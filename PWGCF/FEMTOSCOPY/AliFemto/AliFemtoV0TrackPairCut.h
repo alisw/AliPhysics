@@ -1,23 +1,30 @@
 ///
 /// \file AliFemtoV0TrackPairCut.h
 ///
-/// \class AliFemtoV0TrackPairCut
-/// \brief A pair cut used for testing a track and a reconstructed V0 particle
-///
 
 #ifndef ALIFEMTOV0TRACKPAIRCUT_H
 #define ALIFEMTOV0TRACKPAIRCUT_H
 
 #include "AliFemtoPairCut.h"
 
+
+/// \class AliFemtoV0TrackPairCut
+/// \brief A pair cut used for testing a track and a reconstructed V0 particle
+///
 class AliFemtoV0TrackPairCut : public AliFemtoPairCut {
 public:
-  enum ParticleType {kLambda = 0, kAntiLambda = 1, kProton = 2, kAntiProton = 3};
+  enum ParticleType {
+    kLambda = 0,
+    kAntiLambda = 1,
+    kProton = 2,
+    kAntiProton = 3
+  };
   typedef enum ParticleType AliFemtoParticleType;
+
   AliFemtoV0TrackPairCut();
   AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &cut);
   virtual ~AliFemtoV0TrackPairCut();
-  AliFemtoV0TrackPairCut &operator=(const AliFemtoV0TrackPairCut &cut);
+  AliFemtoV0TrackPairCut& operator=(const AliFemtoV0TrackPairCut &cut);
 
   virtual bool Pass(const AliFemtoPair *pair);
   virtual AliFemtoString Report();
@@ -47,7 +54,7 @@ private:
   Double_t fShareQualityMax;  ///< Maximum allowed share quality
   Double_t fShareFractionMax; ///< Maximum allowed share fraction
   Bool_t fRemoveSameLabel;    ///< If 1 pairs with two tracks with the same label will be removed
-  Bool_t fTrackTPCOnly;       ///< Track ids will be converted to appropriate TPC/Global value 
+  Bool_t fTrackTPCOnly;       ///< Track ids will be converted to appropriate TPC/Global value
 
   AliFemtoDataType fDataType; ///< Use ESD / AOD / Kinematics.
   Double_t fDTPCMin;          ///< Minimum allowed pair nominal separation at the entrance to the TPC
@@ -65,34 +72,35 @@ private:
   Double_t fMinRad;  ///< Radius at which the spatial position of the track in the shifted coordinate system is calculated
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoV0TrackPairCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoV0TrackPairCut, 0);
+  /// \endcond
 #endif
 };
 
 inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &c):
-			      AliFemtoPairCut(c),
-			      fNPairsPassed(c.fNPairsPassed),
-			      fNPairsFailed(c.fNPairsFailed),
-			      fV0Max(c.fV0Max),
-			      fShareQualityMax(c.fShareQualityMax),
-			      fShareFractionMax(c.fShareFractionMax),
-			      fRemoveSameLabel(c.fRemoveSameLabel),
-			      fTrackTPCOnly(c.fTrackTPCOnly),
-			      fDataType(c.fDataType),
-			      fDTPCMin(c.fDTPCMin),
-			      fDTPCExitMin(c.fDTPCExitMin),
-			      fKstarCut(c.fKstarCut),
-			      fFirstParticleType(c.fFirstParticleType),
-			      fSecondParticleType(c.fSecondParticleType),
-			      fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
-			      fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg),
-			      fMinDEtaStarPos(c.fMinDEtaStarPos),
-			      fMinDEtaStarNeg(c.fMinDEtaStarNeg),
-			      fMinDPhiStarPos(c.fMinDPhiStarPos),
-			      fMinDPhiStarNeg(c.fMinDPhiStarNeg),
-			      fMinRad(c.fMinRad)
-{
-  /* no-op */
+  AliFemtoPairCut(c),
+  fNPairsPassed(c.fNPairsPassed),
+  fNPairsFailed(c.fNPairsFailed),
+  fV0Max(c.fV0Max),
+  fShareQualityMax(c.fShareQualityMax),
+  fShareFractionMax(c.fShareFractionMax),
+  fRemoveSameLabel(c.fRemoveSameLabel),
+  fTrackTPCOnly(c.fTrackTPCOnly),
+  fDataType(c.fDataType),
+  fDTPCMin(c.fDTPCMin),
+  fDTPCExitMin(c.fDTPCExitMin),
+  fKstarCut(c.fKstarCut),
+  fFirstParticleType(c.fFirstParticleType),
+  fSecondParticleType(c.fSecondParticleType),
+  fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
+  fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg),
+  fMinDEtaStarPos(c.fMinDEtaStarPos),
+  fMinDEtaStarNeg(c.fMinDEtaStarNeg),
+  fMinDPhiStarPos(c.fMinDPhiStarPos),
+  fMinDPhiStarNeg(c.fMinDPhiStarNeg),
+  fMinRad(c.fMinRad)
+{ /* no-op */
 }
 
 inline AliFemtoPairCut *AliFemtoV0TrackPairCut::Clone()
@@ -102,4 +110,3 @@ inline AliFemtoPairCut *AliFemtoV0TrackPairCut::Clone()
 }
 
 #endif
-

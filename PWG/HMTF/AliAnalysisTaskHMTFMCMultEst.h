@@ -15,16 +15,26 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  void SetGlobalTrigger(const char* globalTrigger) {fGlobalTriggerName = globalTrigger;};
 
+  // set the name of the global trigger in the AddTask marcro through this function
+  void SetGlobalTrigger(Int_t triggerEnum) {fGlobalTrigger = triggerEnum;};
+ private:
+  TList *fMyOut;                          // Output list
   std::vector<AliEventClassifierBase*> fClassifiers;
   std::vector<AliObservableBase*> fObservables;
 
- private:
-  TList *fMyOut;                          // Output list
-  TString fGlobalTriggerName;             // eg. INEL>0
-  Float_t fGlobalTriggerMinValue;         // Smallest value of the trigger classifier to accept an event
-  AliEventClassifierBase *fGlobalTrigger; // A classifier used to extract the value triggered on
+  Int_t fGlobalTrigger;
+  enum {kINEL, kINELGT0, kV0AND};
+
+  void SetupInelAsGlobalTrigger();
+  void SetupInelGt0AsGlobalTrigger(AliEventClassifierBase* etaLt1);
+  void SetupV0ANDAsGlobalTrigger(AliEventClassifierBase* V0A, AliEventClassifierBase* V0C);
+
+  Bool_t IsInel(AliMCEvent *event, AliStack *stack);
+  Bool_t IsInelGt0(AliMCEvent *event, AliStack *stack);
+  Bool_t IsV0AND(AliMCEvent *event, AliStack *stack);
+  // vector to save the classifiers used in the global trigger
+  std::vector<AliEventClassifierBase*> fGlobalTriggerClassifiers;
 
   // Declaring these shuts up warnings from Weffc++
   AliAnalysisTaskHMTFMCMultEst(const AliAnalysisTaskHMTFMCMultEst&); // not implemented

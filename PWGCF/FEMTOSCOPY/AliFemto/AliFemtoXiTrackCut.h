@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
-// ALICE ESD to accept or reject the track.                              //  
+// ALICE ESD to accept or reject the track.                              //
 // Enables the selection on charge, transverse momentum, rapidity,       //
 // pid probabilities, number of ITS and TPC clusters                     //
 // Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
@@ -13,7 +13,7 @@
 
 #include "AliFemtoV0TrackCut.h"
 
-class AliFemtoXiTrackCut : public AliFemtoV0TrackCut 
+class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 {
   public:
   enum XiType {kXiMinus = 0, kXiPlus=1, kAll = 99, kXiMinusMC = 101, kXiPlusMC=102};
@@ -46,15 +46,15 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetMaxDcaXiDaughters(double x);
   void SetMinCosPointingAngleXi(double max);
   void SetParticleTypeXi(short x);
- 
-  
+
+
  private:   // here are the quantities I want to cut on...
 
   double fMaxEtaXi;
   double fMinPtXi;
   double fMaxPtXi;
   int fChargeXi;
-  
+
   double fMaxEtaBac;
   double fMinPtBac;
   double fMaxPtBac;
@@ -69,14 +69,13 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fInvMassXiMin;
   double fInvMassXiMax;
   short  fParticleTypeXi;
-  
 
-#ifdef __ROOT__ 
-  ClassDef(AliFemtoXiTrackCut, 1)
+
+#ifdef __ROOT__
+  ClassDef(AliFemtoXiTrackCut, 1);
 #endif
 
 };
 
 
 #endif
-

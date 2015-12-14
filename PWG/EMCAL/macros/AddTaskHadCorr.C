@@ -1,5 +1,3 @@
-// $Id$
-
 AliHadCorrTask* AddTaskHadCorr(
   const char *nTracks        = "EmcalTracks",
   const char *nClusters      = "EmcalClusters",
@@ -35,7 +33,8 @@ AliHadCorrTask* AddTaskHadCorr(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("HadCorr_%s", outClusName));
+  TString name(Form("HadCorr_%s_%s", nTracks, nClusters));
+  if (strcmp(outClusName, "") != 0) name += Form("_%s", outClusName);
   AliHadCorrTask *hcor = new AliHadCorrTask(name, histo);
   hcor->SetOutClusName(outClusName);
   hcor->SetPhiMatch(phiMatch);
@@ -46,8 +45,8 @@ AliHadCorrTask* AddTaskHadCorr(
 
   AliParticleContainer *trackCont = hcor->AddParticleContainer(nTracks);  
   if (trackCont) trackCont->SetParticlePtCut(minPt);
-  AliParticleContainer *clusCont = hcor->AddParticleContainer(nClusters);
-  if (clusCont) clusCont->SetParticlePtCut(minPt);
+  AliClusterContainer *clusCont = hcor->AddClusterContainer(nClusters);
+  if (clusCont) clusCont->SetClusNonLinCorrEnergyCut(minPt);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

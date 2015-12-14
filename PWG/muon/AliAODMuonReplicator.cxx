@@ -32,7 +32,6 @@
 
 #include "AliAODMuonReplicator.h"
 
-#include "AliAODDimuon.h"
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
@@ -56,7 +55,6 @@ AliAODMuonReplicator::AliAODMuonReplicator(const char* name, const char* title,
 :AliAODBranchReplicator(name,title), 
 fTrackCut(trackCut), fTracks(0x0), 
 fVertexCut(vertexCut), fVertices(0x0), 
-fDimuons(0x0),
 fVZERO(0x0),
 fTZERO(0x0),
 fAD(0x0),
@@ -370,9 +368,6 @@ TList* AliAODMuonReplicator::GetList() const
     fVertices = new TClonesArray("AliAODVertex",2);
     fVertices->SetName("vertices");    
     
-    fDimuons = new TClonesArray("AliAODDimuon",20);
-    fDimuons->SetName("dimuons");
-    
     fVZERO = new AliAODVZERO;
     
     fTZERO = new AliAODTZERO;
@@ -388,7 +383,6 @@ TList* AliAODMuonReplicator::GetList() const
     fList->Add(fTracks);
     fList->Add(fVertices);
     fList->Add(fTracklets);
-    fList->Add(fDimuons);
     fList->Add(fVZERO);
     fList->Add(fTZERO);
     fList->Add(fZDC);
@@ -473,25 +467,8 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
   }
   
-  fDimuons->Clear("C");
-  
-  // as there might be a track cut (different from the one of the main filtering),
-  // we must recreate the dimuon completely from scratch to be 100% safe...
-
-  Int_t nDimuons=0;
-
-  // Dimuons built of 2 MUON tracks or 2 MUON+MFT tracks                   // AU
-  for (Int_t i=0; i<nMuons; ++i) {
-    for (Int_t j=i+1; j<nMuons; ++j) {
-      if ( (((AliAODTrack*) fTracks->At(i))->IsMuonTrack()       && ((AliAODTrack*) fTracks->At(j))->IsMuonTrack()) ||
-	   (((AliAODTrack*) fTracks->At(i))->IsMuonGlobalTrack() && ((AliAODTrack*) fTracks->At(j))->IsMuonGlobalTrack()) ) {
-	new((*fDimuons)[nDimuons++]) AliAODDimuon(fTracks->At(i), fTracks->At(j));
-      }
-    }
-  }
-
-  AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d ndimuons=%d",
-                  inputMuons,fTracks->GetEntries(),fVertices->GetEntries(),fDimuons->GetEntries()));
+  AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d",
+                  inputMuons,fTracks->GetEntries(),fVertices->GetEntries()));
 
   // Finally, deal with MC information, if needed
 

@@ -18,7 +18,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
-  void                        SetHistoType(Int_t t) { fHistoType = t; }
+  void                        SetHistoType(Int_t t)               { fHistoType             = t; }
+  void                        SetDefaultClusterEnergy(Int_t d)    { fDefaultClusterEnergy  = d; }
+  void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
 
  protected:
   void                        AllocateTHX();
@@ -28,7 +30,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
 					   Double_t NEF, Double_t z, Int_t n, Double_t leadingpt);
 
-  Int_t                       fHistoType;                      // histogram type (0=TH2, 1=THnSparse)
+  Int_t                       fHistoType;                   // histogram type (0=TH2, 1=THnSparse)
+  Int_t                       fDefaultClusterEnergy;        // default cluster energy
+  Bool_t                      fJetEPaxis;                   // whether a EP-jet axis should be included in the THnSparse
 
   TH2                       **fHistRejectionReason;         //!Rejection reason vs. jet pt
   TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt
@@ -37,7 +41,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistClustersPtDist;          //!Cluster pt vs. distance form jet axis
   TH3                       **fHistTracksZJetPtJetConst;    //!Track z vs. jet pt vs. no. of jet const
   TH3                       **fHistClustersZJetPtJetConst;  //!Cluster z vs. jet pt vs. no. of jet const
-
+  TH2                        *fHistRhoVsCent;               //!Background vs. centrality
 
   // Inclusive jets histograms
   THnSparse                  *fHistJetObservables;          //!Jet observables
@@ -63,6 +67,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 17) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 18) // jet analysis task
 };
 #endif

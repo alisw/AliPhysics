@@ -31,6 +31,7 @@ const bool default_enable_pair_monitors = kTRUE,
            default_group_output_objects = kTRUE,
                  default_is_mc_analysis = kFALSE;
 
+
 const float default_lambda_PtMin = 0.2,
             default_lambda_PtMax = 5.0,
             default_lambda_Eta = 0.8,
@@ -56,11 +57,11 @@ const float default_lambda_eta = 0.8,
             default_lambda_MinToPrimVertexProton = 0.1,
             default_lambda_MinToPrimVertexPion = 0.3;
 
-
 const int   default_lambda_StatusDaughters = AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit,
             default_lambda_NdofDaughters = 4;
 
 const bool  default_lambda_OnFlyStatus = kFALSE;
+
 
 const float default_pion_PtMin = 0.2,
             default_pion_PtMax = 2.0,
@@ -75,7 +76,6 @@ const float default_pion_PtMin = 0.2,
             default_pion_NSigmaMax = 3.0;
 
 
-
 const float default_event_EventMultMin = 0,
             default_event_EventMultMax = 100000,
 
@@ -87,6 +87,7 @@ const float default_event_EventMultMin = 0,
 
 const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
+
 
 const Bool_t  default_pair_TPCOnly = kTRUE;
 const Float_t default_pair_TPCExitSepMin = -1.0,
@@ -126,12 +127,12 @@ AliFemtoAnalysisPionLambda::_Init(const AliFemtoAnalysisPionLambda::CutParams& p
 
 AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
   AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
-                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
-  fAnalysisName("AliFemtoAnalysisPionLambda"),
-  fPionType(default_PionType),
-  fLambdaType(default_LambdaType),
-  fGroupOutputObjects(default_group_output_objects)
-, fMCAnalysis(default_is_mc_analysis)
+                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max)
+  , fAnalysisName("AliFemtoAnalysisPionLambda")
+  , fPionType(default_PionType)
+  , fLambdaType(default_LambdaType)
+  , fGroupOutputObjects(default_group_output_objects)
+  , fMCAnalysis(default_is_mc_analysis)
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
@@ -139,29 +140,33 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
 
 AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name):
   AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
-                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
-  fAnalysisName(name),
-  fPionType(default_PionType),
-  fLambdaType(default_LambdaType),
-  fGroupOutputObjects(default_group_output_objects)
-, fMCAnalysis(default_is_mc_analysis)
+                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max)
+  , fAnalysisName(name)
+  , fPionType(default_PionType)
+  , fLambdaType(default_LambdaType)
+  , fGroupOutputObjects(default_group_output_objects)
+  , fMCAnalysis(default_is_mc_analysis)
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
 }
 
 
-AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name,
-                                                       PionType pion,
-                                                       LambdaType lambda
-):
-  AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
-                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
-  fAnalysisName(name),
-  fPionType(pion),
-  fLambdaType(lambda),
-  fGroupOutputObjects(default_group_output_objects)
-, fMCAnalysis(default_is_mc_analysis)
+AliFemtoAnalysisPionLambda
+  ::AliFemtoAnalysisPionLambda(const char *name,
+                               const PionType pion,
+                               const LambdaType lambda):
+  AliFemtoVertexMultAnalysis(VertexBinning.bin_count,
+                             VertexBinning.min,
+                             VertexBinning.max,
+                             MultBinning.bin_count,
+                             MultBinning.min,
+                             MultBinning.max)
+  , fAnalysisName(name)
+  , fPionType(pion)
+  , fLambdaType(lambda)
+  , fGroupOutputObjects(default_group_output_objects)
+  , fMCAnalysis(default_is_mc_analysis)
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
@@ -172,13 +177,17 @@ AliFemtoAnalysisPionLambda
                                const PionType pion,
                                const LambdaType lambda,
                                const CutParams& params):
-  AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
-                             MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
-  fAnalysisName(name),
-  fPionType(pion),
-  fLambdaType(lambda),
-  fGroupOutputObjects(default_group_output_objects)
-, fMCAnalysis(default_is_mc_analysis)
+  AliFemtoVertexMultAnalysis(VertexBinning.bin_count,
+                             VertexBinning.min,
+                             VertexBinning.max,
+                             MultBinning.bin_count,
+                             MultBinning.min,
+                             MultBinning.max)
+  , fAnalysisName(name)
+  , fPionType(pion)
+  , fLambdaType(lambda)
+  , fGroupOutputObjects(default_group_output_objects)
+  , fMCAnalysis(default_is_mc_analysis)
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   _Init(params);
@@ -188,13 +197,17 @@ AliFemtoAnalysisPionLambda
   ::AliFemtoAnalysisPionLambda(const char *name,
                                const AnalysisParams &params,
                                const CutParams &cut_params):
-  AliFemtoVertexMultAnalysis(params.vertex_bins, params.vertex_min, params.vertex_max,
-                             params.mult_bins, params.mult_min, params.mult_max),
-  fAnalysisName(name),
-  fPionType(params.pion_type),
-  fLambdaType(params.lambda_type),
-  fGroupOutputObjects(params.group_output_objects)
-, fMCAnalysis(params.is_mc_analysis)
+  AliFemtoVertexMultAnalysis(params.vertex_bins,
+                             params.vertex_min,
+                             params.vertex_max,
+                             params.mult_bins,
+                             params.mult_min,
+                             params.mult_max)
+  , fAnalysisName(name)
+  , fPionType(params.pion_type)
+  , fLambdaType(params.lambda_type)
+  , fGroupOutputObjects(params.group_output_objects)
+  , fMCAnalysis(params.is_mc_analysis)
 {
   SetEnablePairMonitors(params.enable_pair_monitors);
 //   cout << "[AliFemtoAnalysisPionLambda] Constructed with : " <<
@@ -381,10 +394,8 @@ AliFemtoAnalysisPionLambda::BuildPionCut(const CutParams &p) const
   return cut;
 }
 
-AliFemtoBasicEventCut*
-AliFemtoAnalysisPionLambda::BuildEventCut(
-  const AliFemtoAnalysisPionLambda::CutParams& p
-) const
+AliFemtoBasicEventCut* AliFemtoAnalysisPionLambda
+  ::BuildEventCut(const AliFemtoAnalysisPionLambda::CutParams& p) const
 {
   AliFemtoBasicEventCut* cut = new AliFemtoBasicEventCut();
 
@@ -413,12 +424,6 @@ AliFemtoAnalysisPionLambda::BuildPairCut(const CutParams &p) const
 
   return cut;
 }
-
-void AliFemtoAnalysisPionLambda::AddPionLambdaCutMonitor(AliFemtoCutMonitorPionLambda *monitor)
-{
-
-}
-
 
 AliFemtoV0TrackCut* AliFemtoAnalysisPionLambda::GetLambdaCut()
 {
@@ -473,8 +478,9 @@ void AliFemtoAnalysisPionLambda::AddStanardCutMonitors()
 
 }
 
-TObjArray* GetPassFailOutputList(const TString &name,
-                                 AliFemtoCutMonitorHandler *handler)
+static TObjArray* GetPassFailOutputList(
+  const TString &name,
+  AliFemtoCutMonitorHandler *handler)
 {
   AliFemtoCutMonitorCollection *p_coll = handler->PassMonitorColl(),
                                *f_coll = handler->FailMonitorColl();
@@ -545,18 +551,18 @@ TList* AliFemtoAnalysisPionLambda::GetOutputList()
 
   // get the list of settings from each cut and correlation function
   {
-    TObjArray *settings = new TObjArray();
-    settings->SetName("settings");
+    TString settings("== settings ==\n");
+
     TList *setting_list = ListSettings();
     TIter next_setting(setting_list);
     for (TObject *setting = next_setting();
                   setting != NULL;
                   setting = next_setting()) {
-      settings->Add(setting);
+      TObjString *setting_str = (TObjString*)setting;
+      settings += setting_str->String() + "\n";
     }
     delete setting_list;
-    settings->SetOwner(kTRUE);
-    output->Add(settings);
+    output->Add(new TObjString(settings));
   }
   return outputlist;
 }
@@ -587,7 +593,7 @@ TList* AliFemtoAnalysisPionLambda::ListSettings()
   setting_list->AddAll(parent_list);
   delete parent_list;
 
-
+  setting_list->SetOwner(kTRUE);
   return setting_list;
 }
 

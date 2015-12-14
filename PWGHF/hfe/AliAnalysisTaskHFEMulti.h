@@ -32,6 +32,9 @@
 #include <TBits.h>
 #endif
 
+#include <TProfile.h>
+
+
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class AliHFEcontainer;
@@ -173,6 +176,17 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     void SetWeightHist() {SetBit(kWeightHist);};
     void SetParams(AliHFEparamBag *pars) {fParams = pars;};
 
+    void SetReferenceMultiplicity(Double_t multi){fRefMulti=multi;}
+    void SetMultiProfileLHC13b(TProfile * hprof){
+        fMultEstimatorAvg[0]=hprof;
+    }
+    void SetMultiProfileLHC13c(TProfile * hprof){
+        fMultEstimatorAvg[1]=hprof;
+    }
+
+
+
+
   private:
     enum{
       kHasMCdata = BIT(19),
@@ -194,6 +208,7 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     void ProcessAOD();
     Int_t GetITSMultiplicity(AliVEvent *ev);
     Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult); 
+    Int_t GetNcharged();
     Bool_t IsMCFakeTrack(const AliVTrack * const trk) const;
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
@@ -222,6 +237,8 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     TString fCentralityEstimator;         // Centrality Estimator
     Float_t fContributors;                // Contributors
     Int_t   fSPDtracklets;                // SPD tracklets
+    Double_t   fSPDtrackletsCorr;            // SPD tracklets after Correction
+    Int_t   fSPDtrkF;                     // SPD tracklet class 
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
     const TF1  *fkBackGroundFactorArray[12];   // Array of BackGround factors for each centrality bin, bin0 = min bias
@@ -241,6 +258,8 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     AliHFEmcQA *fMCQA;                    //! MC QA
     AliHFEextraCuts *fExtraCuts;          //! temporary implementation for IP QA
     AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
+    TProfile* fMultEstimatorAvg[2];       // multiplicity profile as function of Zvertex position
+    Double_t fRefMulti;                   // Reference multiplicity
 
 
     //-----------QA and output---------------

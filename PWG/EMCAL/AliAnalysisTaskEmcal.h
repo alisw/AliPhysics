@@ -19,6 +19,7 @@ class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEmcalTriggerPatchInfo;
+class AliAODTrack;
 
 #include "Rtypes.h"
 
@@ -86,7 +87,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; } 
+  virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
@@ -99,12 +100,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
+  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
-  void                        AddObjectToEvent(TObject *obj);
+  void                        AddObjectToEvent(TObject *obj, Bool_t attempt = kFALSE);
   AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
   AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
@@ -117,6 +119,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t		                  HasTriggerType(TriggerType triggersel);
   ULong_t 		                GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
@@ -132,11 +135,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              Run()                             { return kTRUE                 ; }
     
   // Static utilities
+  static void                 GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
+  static Byte_t               GetTrackType(const AliVTrack *t);
+  static Byte_t               GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2);
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
   static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
+
+  static Double_t             fgkEMCalDCalPhiDivide;      //  phi value used to distinguish between DCal and EMCal
 
   // Task configuration
   BeamType                    fForceBeamType;              // forced beam type
@@ -177,6 +185,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fClusterCollArray;           // cluster collection array
   ULong_t                     fTriggers;                   // list of fired triggers
   EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
+  Bool_t                      fUseNewCentralityEstimation; // Use new centrality estimation (for 2015 data)
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)

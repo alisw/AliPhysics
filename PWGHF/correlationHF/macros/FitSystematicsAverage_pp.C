@@ -369,6 +369,7 @@ void SystematicsMC_pp_highpthad(Bool_t useReflected,TString strTemplRootName){
     if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
@@ -487,6 +488,7 @@ void SystematicsMC_pp_lowpthad(Bool_t useReflected,TString strTemplRootName){
     if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";
@@ -604,6 +606,7 @@ void SystematicsMC_pp_integrpthad(Bool_t useReflected,TString strTemplRootName){
     if(strTemplRootName.Contains("Perugia2010"))mcCase="Perugia2010";
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
+    else if(strTemplRootName.Contains("PYTHIA8"))mcCase="PYTHIA8";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
     else if(strTemplRootName.Contains("POWHEG")){
       mcCase="POWHEG";

@@ -5,6 +5,7 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   const char *cellsName           = 0,
   const char *triggersName        = 0,
   const char *taskName            = "AliEmcalTriggerMaker",
+  int jetpatchsize                = 16,
   int jetLowA                     = 0,
   int jetLowB                     = 0,
   int jetLowC                     = 0,
@@ -86,6 +87,7 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloCellsName(strCellsName.Data());
   eTask->SetV0InName(v0Name);
+  eTask->SetJetPatchsize(jetpatchsize);
   eTask->SetTriggerThresholdJetLow( jetLowA, jetLowB, jetLowC );
   eTask->SetTriggerThresholdJetHigh( jetHighA, jetHighB, jetHighC );
   eTask->SetTriggerThresholdGammaLow( gammaLowA, gammaLowB, gammaLowC );

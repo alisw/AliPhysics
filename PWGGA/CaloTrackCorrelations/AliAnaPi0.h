@@ -131,6 +131,16 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
   void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
   
+  
+  //-------------------------------------------
+  // Pair 2 different inputs
+  //-------------------------------------------
+
+  void         SwitchOnPairWithOtherDetector() { fPairWithOtherDetector = kTRUE ; }    
+  void         SwitchOffPairWithOtherDetector(){ fPairWithOtherDetector = kFALSE; } 
+  void         SetOtherDetectorInputName(TString name)
+  { fOtherDetectorInputName = name ;   if(name != "") SwitchOnPairWithOtherDetector() ; }
+
   // MC analysis related methods
     
   void         SwitchOnConversionChecker()      { fCheckConversion     = kTRUE  ; }
@@ -191,6 +201,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
   
+  Bool_t   fPairWithOtherDetector;     ///<  Pair (DCal and PHOS) or (PCM and (PHOS or DCAL or EMCAL))
+  TString  fOtherDetectorInputName;    ///<  String with name of extra detector data
+  
   TLorentzVector fPhotonMom1;          //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom1Boost;     //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom2;          //!<! Photon cluster momentum, temporary array
@@ -222,6 +235,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
   TH2F **  fhReDiffPHOSMod ;           //![fNModules]
     
+  /// REAL two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhReSameSectorDCALPHOSMod ;    //![6]
+  
+  /// REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhReDiffSectorDCALPHOSMod ;    //![8]
+  
   /// MIXED two-photon invariant mass distribution for different calorimeter modules.
   TH2F **  fhMiMod ;                   //![fNModules]
     
@@ -234,6 +253,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// MIXED two-photon invariant mass distribution for different clusters in different calorimeter modules.
   TH2F **  fhMiDiffPHOSMod ;           //![fNModules-1]
   
+  /// MIXED two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhMiSameSectorDCALPHOSMod ;    //![6]
+  
+  /// MIXED  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhMiDiffSectorDCALPHOSMod ;    //![8]
+
   // Pairs with at least one cluster tagged as conversion
     
   TH2F *   fhReConv ;                  //!<! REAL  two-photon invariant mass distribution one of the pair was 2 clusters with small mass 
@@ -435,7 +460,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,29) ;
+  ClassDef(AliAnaPi0,30) ;
   /// \endcond
   
 } ;

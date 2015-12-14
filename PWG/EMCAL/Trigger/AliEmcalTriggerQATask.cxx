@@ -14,12 +14,16 @@
  **************************************************************************/
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THnSparse.h>
 
 #include "AliEmcalTriggerPatchInfoAPV1.h"
 #include "AliEmcalTriggerQAAP.h"
 #include "AliEmcalTriggerFastORAP.h"
+#include "AliEmcalTriggerConstantsAP.h"
 
 #include "AliEmcalTriggerQATask.h"
+
+using namespace EmcalTriggerAP;
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerQATask)
@@ -32,9 +36,12 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   AliAnalysisTaskEmcal("AliEmcalTriggerQATask",kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
+  fADCperBin(20),
+  fBkgPatchType(kTMEMCalBkg),
   fBadChannels(),
   fTriggerPatches(0),
-  fHistEMCalTriggers(0)
+  fHistEMCalTriggers(0),
+  fHistEventQA(0)
 {
 }
 
@@ -46,15 +53,23 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name) :
   AliAnalysisTaskEmcal(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
+  fADCperBin(20),
+  fBkgPatchType(kTMEMCalBkg),
   fBadChannels(),
   fTriggerPatches(0),
-  fHistEMCalTriggers(0)
+  fHistEMCalTriggers(0),
+  fHistEventQA(0)
 {
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
 
-  TString qaName(Form("%s_AliEmcalTriggerQAAP",name));
-  fEMCALTriggerQA = new AliEmcalTriggerQAAP(qaName);
+  fEMCALTriggerQA = new TObjArray((fNcentBins+1)*2);
+  fEMCALTriggerQA->SetOwner(kTRUE);
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    TString qaName(Form("%s_AliEmcalTriggerQAAP_Cent%d", name, i));
+    fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAAP(qaName), i);
+  }
 }
 
 /**
@@ -122,9 +137,6 @@ void AliEmcalTriggerQATask::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  fEMCALTriggerQA->SetDebugLevel(DebugLevel());
-  fEMCALTriggerQA->Init();
-
   if (fOutput) {  
     fHistEMCalTriggers = new TH1F("fHistEMCalTriggers","fHistEMCalTriggers; triggers; counts",40,0,40);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -172,9 +184,60 @@ void AliEmcalTriggerQATask::UserCreateOutputObjects()
 
     fHistEMCalTriggers->GetXaxis()->SetBinLabel(32, "MB or CALO");
 
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(33, "EMCal Any and !MB");
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(34, "DCal Any and !MB");
+    fHistEMCalTriggers->GetXaxis()->SetBinLabel(35, "EMCal/DCal Any and !MB");
+
     fOutput->Add(fHistEMCalTriggers);
 
-    fOutput->Add(fEMCALTriggerQA->GetListOfHistograms());
+    for (Int_t i = 0; i < fNcentBins; i++) {
+      GetTriggerQA(i)->SetDebugLevel(DebugLevel());
+      GetTriggerQA(i)->Init();
+      fOutput->Add(GetTriggerQA(i)->GetListOfHistograms());
+    }
+
+    Int_t dim = 0;
+    TString title[20];
+    Int_t nbins[20] = {0};
+    Double_t min[20] = {0};
+    Double_t max[20] = {0};
+
+    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+      title[dim] = "Centrality %";
+      nbins[dim] = 101;
+      min[dim] = 0;
+      max[dim] = 101;
+      dim++;
+    }
+
+    title[dim] = "DCal median (offline)";
+    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    min[dim] = 0;
+    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    dim++;
+
+    title[dim] = "EMCal median (offline)";
+    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    min[dim] = 0;
+    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    dim++;
+
+    title[dim] = "DCal median (recalc)";
+    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    min[dim] = 0;
+    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    dim++;
+
+    title[dim] = "EMCal median (recalc)";
+    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    min[dim] = 0;
+    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    dim++;
+
+    fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
+    for (Int_t i = 0; i < dim; i++)
+      fHistEventQA->GetAxis(i)->SetTitle(title[i]);
+    fOutput->Add(fHistEventQA);
 
     PostData(1, fOutput);
   }
@@ -201,7 +264,6 @@ UInt_t AliEmcalTriggerQATask::SteerFiredTriggers(const TString& firedTriggersStr
 
   return firedTriggers;
 }
-
 
 /**
  * Fill QA histograms
@@ -251,6 +313,15 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
 
   if ((firedTriggerBits & kCALOMinBias) != 0) fHistEMCalTriggers->Fill("MB or CALO", 1);
 
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kEMCalAnybit) != 0) fHistEMCalTriggers->Fill("EMCal Any and !MB", 1);
+
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kDCalAnybit) != 0) fHistEMCalTriggers->Fill("DCal Any and !MB", 1);
+
+  if ((firedTriggerBits & kMinBiasbit) == 0 &&
+      (firedTriggerBits & kEMCalDCalAnybit) != 0) fHistEMCalTriggers->Fill("EMCal/DCal Any and !MB", 1);
+
   if (fTriggerPatches) {
     Int_t nPatches = fTriggerPatches->GetEntriesFast();
 
@@ -264,7 +335,20 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
       if (!patch) continue;
 
-      fEMCALTriggerQA->ProcessPatch(patch);
+      GetTriggerQA(fCentBin)->ProcessBkgPatch(patch);
+    }
+
+    GetTriggerQA(fCentBin)->ComputeBackground();
+
+    FillEventQA();
+
+    for (Int_t i = 0; i < nPatches; i++) {
+      AliDebug(2, Form("Processing patch %d", i));
+
+      AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
+      if (!patch) continue;
+
+      GetTriggerQA(fCentBin)->ProcessPatch(patch);
     }
   }
 
@@ -287,12 +371,113 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       fCaloTriggers->GetAmplitude(L0amp);
       if (L0amp < 0) L0amp = 0;
 
-      fastor.Initialize(L0amp, L1amp, globRow, globCol, fGeom);
+      Int_t time = 0;
+      Int_t nl0times(0);
+      fCaloTriggers->GetNL0Times(nl0times);
+       if(nl0times) {
+         TArrayI l0times(nl0times);
+         fCaloTriggers->GetL0Times(l0times.GetArray());
+         for(int itime = 0; itime < nl0times; itime++){
+           if(l0times[itime] >7 && l0times[itime] < 10){
+             time = l0times[itime];
+             break;
+           }
+         }
+       }
 
-      fEMCALTriggerQA->ProcessFastor(&fastor);
+      fastor.Initialize(L0amp, L1amp, globRow, globCol, time, fGeom);
+
+      GetTriggerQA(fCentBin)->ProcessFastor(&fastor);
     }
   }
-  fEMCALTriggerQA->EventCompleted();
+  GetTriggerQA(fCentBin)->EventCompleted();
 
   return kTRUE;
+}
+
+/**
+ * Fill event QA THnSparse
+ */
+void AliEmcalTriggerQATask::FillEventQA()
+{
+  Double_t contents[20] = {0};
+
+  Double_t DCalmedian[3] = {0};
+  Double_t EMCalmedian[3] = {0};
+
+  GetTriggerQA(fCentBin)->GetDCalMedian(DCalmedian);
+  GetTriggerQA(fCentBin)->GetEMCalMedian(EMCalmedian);
+
+  for (Int_t i = 0; i < fHistEventQA->GetNdimensions(); i++) {
+    TString title(fHistEventQA->GetAxis(i)->GetTitle());
+    if (title=="Centrality %")
+      contents[i] = fCent;
+    else if (title=="DCal median (offline)")
+      contents[i] = DCalmedian[2];
+    else if (title=="EMCal median (offline)")
+      contents[i] = EMCalmedian[2];
+    else if (title=="DCal median (recalc)")
+      contents[i] = DCalmedian[1];
+    else if (title=="EMCal median (recalc)")
+      contents[i] = EMCalmedian[1];
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+
+  fHistEventQA->Fill(contents);
+}
+
+/**
+ * Set number of ADC per bin in all the trigger QA
+ * \param i number of ADC per bin.
+ */
+void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
+{
+  fADCperBin = n;
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    GetTriggerQA(i)->SetADCperBin(n);
+  }
+}
+
+/**
+ * Set background patch type in all the trigger QA
+ * \param t background patch type
+ */
+void AliEmcalTriggerQATask::SetBkgPatchType(Int_t t)
+{
+  fBkgPatchType = t;
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    GetTriggerQA(i)->SetBkgPatchType(t);
+  }
+}
+
+/**
+ * Set number of centrality bins and adjust fEMCALTriggerQA array accordingly
+ * \param n number of centrality bins
+ */
+void AliEmcalTriggerQATask::SetNCentBins(Int_t n)
+{
+  if (n <= 0)  n = 0;
+
+  // delete superflouos items in fEMCALTriggerQA
+  for (Int_t i = n; i < fNcentBins; i++) {
+    fEMCALTriggerQA->RemoveAt(i);
+  }
+
+  for (Int_t i = fNcentBins; i < n; i++) {
+    TString qaName(Form("%s_AliEmcalTriggerQAAP_Cent%d", GetName(), i));
+    if (fEMCALTriggerQA->At(0)) {
+      AliEmcalTriggerQAAP* triggerQA = new AliEmcalTriggerQAAP(*(static_cast<AliEmcalTriggerQAAP*>(fEMCALTriggerQA->At(0))));
+      triggerQA->SetName(qaName);
+      triggerQA->SetTitle(qaName);
+      fEMCALTriggerQA->AddAt(triggerQA, i);
+    }
+    else {
+      fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAAP(qaName), i);
+    }
+  }
+
+  fNcentBins = n;
 }

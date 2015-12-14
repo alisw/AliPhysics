@@ -31,7 +31,13 @@
 
 #include "AliVertexerTracks.h"
 
-ClassImp(AliFemtoEventReaderKinematicsChain)
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderKinematicsChain);
+  /// \endcond
+#endif
+
 
 #if !(ST_NO_NAMESPACES)
   using namespace units;
@@ -52,7 +58,7 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fReadOnlyPrimaries(true),
   fReadOnlyPrimariesV0(true)
 {
-  //constructor with 0 parameters , look at default settings 
+  //constructor with 0 parameters , look at default settings
 }
 
 //__________________
@@ -68,7 +74,7 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadOnlyPrimariesV0(true)  
+  fReadOnlyPrimariesV0(true)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -149,7 +155,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   string tFriendFileName;
 
   //cout << "AliFemtoEventReaderKinematlaicsChain::Starting to read event: "<<fCurEvent<<endl;
-	
+
   hbtEvent = new AliFemtoEvent;
   //setting basic things
   //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
@@ -163,27 +169,27 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   hbtEvent->SetZDCParticipants(0);
   hbtEvent->SetTriggerMask(0);
   hbtEvent->SetTriggerCluster(0);
-	
+
   //Vertex
   double fV1[3] = {0.0,0.0,0.0};
   double fVCov[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 
   AliFmThreeVectorF vertex(0,0,0);
-    
-  
+
+
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
 
   Double_t tReactionPlane = 0;
 
-  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
   if (!hdh) {
     AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
     if (cdh) {
       TList *tGenHeaders = cdh->GetHeaders();
       for (int ihead = 0; ihead<tGenHeaders->GetEntries(); ihead++) {
-	hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+	hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
 	if (hdh) break;
       }
     }
@@ -199,7 +205,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
   //starting to reading tracks
   int nofTracks=0;  //number of all tracks in MC event
-  nofTracks=fStack->GetNtrack(); 
+  nofTracks=fStack->GetNtrack();
   int realnofTracks=0;//number of track which we use in analysis
 
 
@@ -212,9 +218,9 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	  //take only primaries
 	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
 	}
-	  	  
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
-	
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
+
       	  //getting next track
       TParticle *kinetrack= fStack->Particle(i);
 
@@ -225,24 +231,24 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
         realnofTracks++;//real number of tracks (only primary particles)
 
       //setting normalized multiplicity
-      
+
 	if(kinetrack->GetPDG()->Charge()/3!=0)
-	  if (kinetrack->Pt() > 0.15 && kinetrack->Pt() < 20) 
+	  if (kinetrack->Pt() > 0.15 && kinetrack->Pt() < 20)
 	    if (kinetrack->Eta() < 0.8)
 	      tNormMult++;
-	  
+
 	//counting particles that go into direction of VZERO detector
 	if(kinetrack->Eta() > 2.8 && kinetrack->Eta() < 5.1) //VZERO-A
 	  tV0direction++;
 	if(kinetrack->Eta() > -3.7 && kinetrack->Eta() < -1.7)//VZERO-C
-	  tV0direction++;	
- 
+	  tV0direction++;
+
 	  //charge
       trackCopy->SetCharge((short)(fStack->Particle(i)->GetPDG()->Charge()/3));
 
 
-      //in aliroot we have AliPID 
-      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+      //in aliroot we have AliPID
+      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon
       //we use only 5 first
       double kinepid[5];
       for(int pid_iter=0;pid_iter<5;pid_iter++)
@@ -269,7 +275,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
 	{; }
       else {
-	delete trackCopy; 
+	delete trackCopy;
 	continue;
       }
 
@@ -278,16 +284,16 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       trackCopy->SetPidProbPion(kinepid[2]);
       trackCopy->SetPidProbKaon(kinepid[3]);
       trackCopy->SetPidProbProton(kinepid[4]);
-					
-					
+
+
 	//Momentum
       double pxyz[3];
       double rxyz[3];
-     
+
       pxyz[0]=kinetrack->Px();
       pxyz[1]=kinetrack->Py();
       pxyz[2]=kinetrack->Pz();
-      
+
       rxyz[0]=kinetrack->Vx();
       rxyz[1]=kinetrack->Vy();
       rxyz[2]=kinetrack->Vz();
@@ -306,7 +312,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
 	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
-	  
+
 	  pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
 	  pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
 	}
@@ -329,16 +335,16 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;
 
-	
-		
+
+
     }
-  
+
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
-  if (fEstEventMult == kGlobalCount) 
+  if (fEstEventMult == kGlobalCount)
     hbtEvent->SetNormalizedMult(tNormMult);
   else if(fEstEventMult == kVZERO)
     hbtEvent->SetNormalizedMult(tV0direction);
-  fCurEvent++;	
+  fCurEvent++;
 
 
   //V0 analysis code - no V0 finder for Kinematics, we can only check if it is primary and if it has at least 2 daughters.
@@ -355,12 +361,12 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //getting next track
       TParticle *kinetrack= fStack->Particle(i);
       if (!kinetrack) continue;
-      
+
       if(kinetrack->GetPDG()->Charge()!=0) continue; //charge - neutral
       //if(kinetrack->GetPDG()->Stable()==1) continue; //particle is not stable
       if(kinetrack->GetDaughter(0)<1) continue; //has 1'st daughter
       if(kinetrack->GetDaughter(1)<1) continue;  //has 2'nd daughter
- 
+
       //we want one positive, one negative particle. Or two neutral.
       // if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()>=0)
       // 	if((fStack->Particle(kinetrack->GetDaughter(1)))->GetPDG()->Charge()>0)
@@ -368,10 +374,10 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       // if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()<=0)
       // 	if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()<0)
       // 	  continue;
-      
+
       if(kinetrack->Pt()<0.00001)
 	continue;
-      
+
       AliFemtoV0* trackCopyV0 = new AliFemtoV0();
       CopyAODtoFemtoV0(kinetrack, trackCopyV0);
       hbtEvent->V0Collection()->push_back(trackCopyV0);
@@ -381,7 +387,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
   //cout<<"Number of tracks: "<<realnofTracks<<endl;
 
-  return hbtEvent; 
+  return hbtEvent;
 }
 
 //___________________
@@ -458,7 +464,7 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
 {
   tFemtoV0->SetEtaV0(tv0->Eta());
   tFemtoV0->SetEtaV0(tv0->Phi());
-  tFemtoV0->SetptV0(tv0->Pt()); 
+  tFemtoV0->SetptV0(tv0->Pt());
   tFemtoV0->SetptotV0(tv0->P());
 
   tFemtoV0->SetmomV0X(tv0->Px());
@@ -489,10 +495,10 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
 
   tFemtoV0->SetEtaPos(trackpos->Eta());
   tFemtoV0->SetEtaNeg(trackneg->Eta());
-  
+
   tFemtoV0->SetptPos(trackpos->Pt());
   tFemtoV0->SetptNeg(trackneg->Pt());
-   
+
   tFemtoV0->SetptotPos(trackpos->P());
   tFemtoV0->SetptotNeg(trackneg->P());
 
@@ -508,7 +514,7 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
   AliFemtoThreeVector momneg(trackneg->Px(),trackneg->Py(),trackneg->Pz());
   tFemtoV0->SetmomNeg(momneg);
 
-    
+
   tFemtoV0->SetmassLambda(tv0->GetMass());
   tFemtoV0->SetmassAntiLambda(tv0->GetMass());
   tFemtoV0->SetmassK0Short(tv0->GetMass());
@@ -528,7 +534,7 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
   tFemtoV0->SetStatusPos(1);
   tFemtoV0->SetStatusNeg(1);
 
-  
+
   if(trackpos->GetPdgCode()==2212) //proton
     {
       tFemtoV0->SetPosNSigmaTPCK(1000);
@@ -566,5 +572,5 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
       tFemtoV0->SetNegNSigmaTPCP(1000);
     }
 
-  
+
 }

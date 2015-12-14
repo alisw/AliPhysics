@@ -3,7 +3,8 @@
 //    Class for UPC data
 //    Author: Jaroslav Adam
 //
-//    UPC event containing trigger, VZERO, ZDC, tracks and MC
+//    UPC event containing trigger, VZERO, AD, ZDC, tracks, MC and other
+//    arbitrary data in TArrayI and TArrayD containters
 //_____________________________________________________________________________
 
 #include "TH1I.h"
@@ -33,15 +34,17 @@ AliUPCEvent::AliUPCEvent()
   fVtxSPDchi2perNDF(0), fVtxSPDnContributors(0), fVtxSPDtitle(0x0),
   fNTracklets(0), fNSPDfiredInner(0), fNSPDfiredOuter(0), fFOmap(0x0),
   fV0ADecision(0), fV0CDecision(0), fBBtriggerV0C(0), fBBFlagV0C(0),
+  fADADecision(0), fADCDecision(0),
   fZNCEnergy(0), fZPCEnergy(0), fZNAEnergy(0), fZPAEnergy(0),
   fZNCtdc(0), fZPCtdc(0), fZNAtdc(0), fZPAtdc(0),
   fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),
   fUPCTracks(0x0), fNtracks(0), fUPCMuonTracks(0x0), fNmuons(0),
-  fMCParticles(0x0), fNmc(0)
+  fMCParticles(0x0), fNmc(0),
+  fArrayInt(0x0), fArrayD(0x0)
 {
   // Default constructor
 
-  for(Int_t itrg=0; itrg<NTRG; itrg++) fTrgClasses[itrg] = kFALSE;
+  for(Int_t itrg=0; itrg<fgkNtrg; itrg++) fTrgClasses[itrg] = kFALSE;
   for(Int_t i=0; i<3; i++) {fVtxPos[i] = 0.; fVtxSPDpos[i] = 0.; fVtxMCpos[i] = 0.;}
   for(Int_t i=0; i<6; i++) {fVtxCov[i] = 0.; fVtxSPDcov[i] = 0.;}
 
@@ -55,7 +58,6 @@ AliUPCEvent::AliUPCEvent()
     fUPCMuonTracks = fgUPCMuonTracks;
     fUPCMuonTracks->SetOwner(kTRUE);
   }
-
 
   if(!fDataFilnam) {
     fDataFilnam = new TObjString();
@@ -87,6 +89,8 @@ AliUPCEvent::~AliUPCEvent()
   if(fUPCTracks) {delete fUPCTracks; fUPCTracks = 0x0;}
   if(fUPCMuonTracks) {delete fUPCMuonTracks; fUPCMuonTracks = 0x0;}
   if(fMCParticles) {delete fMCParticles; fMCParticles = 0x0;}
+  if(fArrayInt) {delete fArrayInt; fArrayInt = 0x0;}
+  if(fArrayD) {delete fArrayD; fArrayD = 0x0;}
 }
 
 //_____________________________________________________________________________
@@ -98,11 +102,13 @@ void AliUPCEvent::ClearEvent()
 
   fBBtriggerV0C = 0;
   fBBFlagV0C = 0;
-  for(Int_t itrg=0; itrg<NTRG; itrg++) fTrgClasses[itrg] = kFALSE;
+  for(Int_t itrg=0; itrg<fgkNtrg; itrg++) fTrgClasses[itrg] = kFALSE;
 
   if(fUPCTracks) {fUPCTracks->Clear("C"); fNtracks = 0;}
   if(fUPCMuonTracks) {fUPCMuonTracks->Clear("C"); fNmuons = 0;}
   if(fMCParticles) {fMCParticles->Clear("C"); fNmc = 0;}
+  if(fArrayInt) fArrayInt->Reset();
+  if(fArrayD) fArrayD->Reset();
 }
 
 //_____________________________________________________________________________
@@ -137,7 +143,7 @@ void AliUPCEvent::SetTriggerClass(Int_t idx, Bool_t fired)
 {
   // set trigger class at index idx
 
-  if(idx < 0 || idx >= NTRG) return;
+  if(idx < 0 || idx >= fgkNtrg) return;
   fTrgClasses[idx] = fired;
 }
 
@@ -294,7 +300,7 @@ Bool_t AliUPCEvent::GetTriggerClass(Int_t idx) const
 {
   // returns kTRUE if trigger class at idx was fired, otherwise kFALSE;
 
-  if(idx < 0 || idx >= NTRG) return kFALSE;
+  if(idx < 0 || idx >= fgkNtrg) return kFALSE;
   return fTrgClasses[idx];
 }
 
@@ -439,6 +445,32 @@ TParticle *AliUPCEvent::GetMCParticle(Int_t iMC) const
   if(!fMCParticles) return 0x0;
 
   return (TParticle*) fMCParticles->At(iMC);
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::MakeArrayInt(Int_t size)
+{
+  //create the object of TArrayI, skip if it has been already created
+  //the array allows the event to be extended for other integer variables
+
+  if( fArrayInt ) return 999; // already initialized
+
+  fArrayInt = new TArrayI(size);
+
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::MakeArrayD(Int_t size)
+{
+  //create the object of TArrayD, skip if it has been already created
+  //the array allows the event to be extended for other double variables
+
+  if( fArrayD ) return 999; // already initialized
+
+  fArrayD = new TArrayD(size);
+
+  return 0;
 }
 
 /*

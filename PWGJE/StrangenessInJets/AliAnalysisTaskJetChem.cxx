@@ -3002,7 +3002,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       jettracklist->Clear();
     }
     
-
+    //################OCs##########################################standard method#####################################
     if(fUseExtraTracks == 0){//standard PbPb analysis
       if((bIsInCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
 	Double_t vK0sOC[3] = {invMK0s,trackPt,fEta};
@@ -3010,12 +3010,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
     }
     
-    
+    //################OCs##########################################embedding method####################################
+   
     if(fUseExtraTracks == 1){//extra tracks (embedded+signal) for Embedding study
       
       if(!jetConeK0Emblist)continue;
       
-      Bool_t isEmbinCone=kFALSE;
+      Bool_t isEmbinCone=kFALSE;//initialise flag for v0s part/not part of the PYTHIA jet
 
       for(Int_t in=0; in<jetConeK0Emblist->GetSize(); ++in){ // loop for K0s in embedded jet cone, reject them from OCs
 	
@@ -3028,7 +3029,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 		
 	}
 
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
+	if((bIsInCone==kFALSE)&&(isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, and also not of PYTHIA jet cone, but its a jet event
 	  Double_t vK0sOC[3] = {invMK0s,trackPt,fEta};
 	  fhnK0sOC->Fill(vK0sOC);  
 
@@ -3036,7 +3037,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     }
     
 
-    
+     //#################################################################################################################
+   
     //end of outside cone K0s
    
     Double_t fV0cosPointAngle = v0->CosPointingAngle(lPrimaryVtxPosition);
@@ -3156,6 +3158,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       jettracklist->Clear();  
     }  //end jet loop  
     
+//at this point, the v0 candidate received a flag (bIsInCone) whether it belongs to any selected jet in event
+
+ //standard OCs method:
 
     if(fUseExtraTracks == 0){//standard tracks
       
@@ -3165,9 +3170,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
     } 
 
-  
+ //embedding OCs method (also rejects V0s that are part of PYTHIA jet cone) 
     if(fUseExtraTracks == 1){//extra tracks (embedded+signal) for Embedding study
-      
+
       if(!jetConeLaEmblist)continue;
 
       Bool_t isEmbinCone=kFALSE;
@@ -3183,7 +3188,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 		
 	}
 
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//La is not part of any selected jet in event, but its a jet event
+	if((bIsInCone==kFALSE)&&(isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//La is not part of any selected jet in event and also not of PYTHIA jet cone, but its a jet event
 	  Double_t vLaOC[3] = {invMLa,trackPt,fEta};
 	  fhnLaOC->Fill(vLaOC);  
 
@@ -3346,16 +3351,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 		
 	}
 
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//ALa is not part of any selected jet in event, but its a jet event
+	if((bIsInCone==kFALSE)&&(isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//ALa is not part of any selected jet in event, nor to PYTHIA jet cone, but its a jet event
 	  Double_t vALaOC[3] = {invMALa,trackPt,fEta};
 	  fhnALaOC->Fill(vALaOC);  
 
       }
     }
-
-
-
-
 
 
     //Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -3696,6 +3697,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){//Jet matching cuts (FractionPtEmbedded = 0.5, DeltaREmb = 0.75*R) are applied
+	  
+	  //filling of normalisation histo for OC method in hybrid events 
+	  Double_t dAreaExcludedPYTHIA = TMath::Pi()*dRadiusExcludeCone*dRadiusExcludeCone; // area of the cone
+	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta-jet->Eta()); // positive eta overhang
+	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta+jet->Eta()); // negative eta overhang
+	  fh1AreaExcluded->Fill(dAreaExcludedPYTHIA);//histo contains all areas that are jet related and have to be excluded concerning OC UE pt spectrum normalisation by area, also for PYTHIA jets
 	  
 	  //Float_t jetPtEmbAfterMatch = jet->Pt();//extra jet pt
 	  Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();//embedded true jet pt

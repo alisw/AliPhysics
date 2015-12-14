@@ -4,7 +4,9 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoXiPairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoXiPairCut);
+  /// \endcond
 #endif
 
 //__________________

@@ -24,7 +24,9 @@
 #include <TMath.h>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoKTPairCut)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoKTPairCut);
+  /// \endcond
 #endif
 
 //__________________

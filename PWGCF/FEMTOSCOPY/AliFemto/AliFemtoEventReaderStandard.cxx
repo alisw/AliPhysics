@@ -34,7 +34,11 @@
 #include "AliVertexerTracks.h"
 #include "assert.h"
 
-ClassImp(AliFemtoEventReaderStandard)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderStandard);
+  /// \endcond
+#endif
 
 #if !(ST_NO_NAMESPACES)
   using namespace units;
@@ -58,7 +62,7 @@ AliFemtoEventReaderStandard::AliFemtoEventReaderStandard():
   fTrackCuts(0x0),
   fUseTPCOnly(kFALSE)
 {
-  //constructor with 0 parameters , look at default settings 
+  //constructor with 0 parameters , look at default settings
 }
 
 //__________________
@@ -145,7 +149,7 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
   cout<<"starting to read event "<<fCurEvent<<endl;
   if ((fInputType == kESD) || (fInputType == kESDKine)) {
     if(fESDEvent->GetAliESDOld())fESDEvent->CopyFromOldESD();
-  
+
     if (fUsePhysicsSel) {
       hbtEvent->SetIsCollisionCandidate(fSelect->IsCollisionCandidate(fESDEvent));
       if (!(fSelect->IsCollisionCandidate(fESDEvent)))
@@ -187,13 +191,13 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     if (fESDEvent->GetPrimaryVertex()) {
       fESDEvent->GetPrimaryVertex()->GetXYZ(fV1);
       fESDEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
-      
+
       if (!fESDEvent->GetPrimaryVertex()->GetStatus()) {
 	// Get the vertex from SPD
 	fESDEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
 	fESDEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
-	
-	
+
+
 	if (!fESDEvent->GetPrimaryVertexSPD()->GetStatus())
 	  fVCov[4] = -1001.0;
 	else {
@@ -216,13 +220,13 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	fV1[2] = 10000.0;
 	fVCov[4] = -1001.0;
       }
-    
+
     AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
-    
+
     hbtEvent->SetPrimVertPos(vertex);
     hbtEvent->SetPrimVertCov(fVCov);
   }
-  
+
   if ((fInputType == kAOD) || (fInputType == kAODKine)) {
     hbtEvent->SetRunNumber(fAODEvent->GetRunNumber());
     hbtEvent->SetMagneticField(fAODEvent->GetMagneticField()*kilogauss);//to check if here is ok
@@ -237,7 +241,7 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 
     // Primary Vertex position
     fAODEvent->GetPrimaryVertex()->GetPosition(fV1);
-    
+
     AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
     hbtEvent->SetPrimVertPos(vertex);
   }
@@ -245,13 +249,13 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
   if ((fInputType == kESDKine) || (fInputType == kAODKine)) {
     Double_t tReactionPlane = 0;
 
-    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+    AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
     if (!hdh) {
       AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
       if (cdh) {
 	TList *tGenHeaders = cdh->GetHeaders();
 	for (int ihead = 0; ihead<tGenHeaders->GetEntries(); ihead++) {
-	  hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+	  hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
 	  if (hdh) break;
 	}
       }
@@ -261,7 +265,7 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	tReactionPlane = hdh->ReactionPlaneAngle();
 	cout << "Got reaction plane " << tReactionPlane << endl;
       }
-    
+
     hbtEvent->SetReactionPlaneAngle(tReactionPlane);
   }
 
@@ -284,7 +288,7 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     if (!mcH) {
       cout << "AOD MC information requested, but no header found!" << endl;
     }
-    
+
     mcP = (TClonesArray *) fAODEvent->FindListObject(AliAODMCParticle::StdBranchName());
     if (!mcP) {
       cout << "AOD MC information requested, but no particle array found!" << endl;
@@ -293,11 +297,11 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     assert(header&&"Not a standard AOD");
 
     hbtEvent->SetReactionPlaneAngle(header->GetQTheta(0)/2.0);
-    
+
     if (mcP) {
       motherids = new Int_t[((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel()];
       for (int ip=0; ip<mcP->GetEntries(); ip++) motherids[ip] = 0;
-      
+
       // Read in mother ids
       AliAODMCParticle *motherpart;
       for (int ip=0; ip<mcP->GetEntries(); ip++) {
@@ -309,7 +313,7 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
       }
     }
   }
-  
+
   if (fInputType == kESDKine) {
     motherids = new Int_t[fStack->GetNtrack()];
     for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
@@ -329,11 +333,11 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     {
       //      cout << "Reading track " << i << endl;
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
-		
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
 
       if ((fInputType == kESD) || (fInputType == kESDKine)) {
-	
+
 	AliESDtrack *esdtrack = 0x0;
 	if (fUseTPCOnly) {
 	  AliESDtrack *mcp = fESDEvent->GetTrack(i);
@@ -348,8 +352,8 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 
 	  trackCopy->SetCharge((short)esdtrack->GetSign());
 
-	  //in aliroot we have AliPID 
-	  //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+	  //in aliroot we have AliPID
+	  //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon
 	  //we use only 5 first
 	  double esdpid[5];
 	  esdtrack->GetESDpid(esdpid);
@@ -358,11 +362,11 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  trackCopy->SetPidProbPion(esdpid[2]);
 	  trackCopy->SetPidProbKaon(esdpid[3]);
 	  trackCopy->SetPidProbProton(esdpid[4]);
-	  
+
 	  double pxyz[3];
 	  double impact[2];
 	  double covimpact[3];
-      
+
 	  // 	  if (fUseTPCOnly) {
 	  // 	    if (!esdtrack->GetTPCInnerParam()) {
 	  // 	      cout << "No TPC inner param !" << endl;
@@ -374,39 +378,39 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  // 	    param->GetXYZ(rxyz);
 	  // 	    param->PropagateToDCA(fESDEvent->GetPrimaryVertexTPC(), (fESDEvent->GetMagneticField()), 10000, impact, covimpact);
 	  // 	    param->GetPxPyPz(pxyz);//reading noconstarined momentum
-	    
+
 	  // 	    if (fRotateToEventPlane) {
 	  // 	      double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
 	  // 	      double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
-	      
+
 	  // 	      pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
 	  // 	      pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
 	  // 	    }
-	    
+
 	  // 	    AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	  // 	    if (v.mag() < 0.0001) {
 	  // 	      //	  cout << "Found 0 momentum ???? " << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  // 	      delete trackCopy;
 	  // 	      continue;
 	  // 	    }
-	    
+
 	  // 	    trackCopy->SetP(v);//setting momentum
 	  // 	    trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-	    
+
 	  // 	    const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
 	  // 	    const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 	  // 	    //setting helix I do not if it is ok
-	  // 	    AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fESDEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  // 	    AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fESDEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge()));
 	  // 	    trackCopy->SetHelix(helix);
-	    
-	  // 	    //some stuff which could be useful 
+
+	  // 	    //some stuff which could be useful
 	  // 	    trackCopy->SetImpactD(impact[0]);
 	  // 	    trackCopy->SetImpactZ(impact[1]);
 	  // 	    trackCopy->SetCdd(covimpact[0]);
 	  // 	    trackCopy->SetCdz(covimpact[1]);
 	  // 	    trackCopy->SetCzz(covimpact[2]);
-	  // 	    trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
-	    
+	  // 	    trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));
+
 	  // 	    delete param;
 	  // 	  }
 	  // 	  else {
@@ -418,24 +422,24 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 
 	  AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	  if (v.Mag() < 0.0001) {
-	    
+
 	    delete trackCopy;
 	    continue;
 	  }
-	  
+
 	  trackCopy->SetP(v);//setting momentum
 	  trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
 	  const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
 	  const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 	  //setting helix I do not if it is ok
-	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fESDEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fESDEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge()));
 	  trackCopy->SetHelix(helix);
-	
-	  //some stuff which could be useful 
+
+	  //some stuff which could be useful
 	  float imp[2];
 	  float cim[3];
 	  esdtrack->GetImpactParameters(imp,cim);
-	  
+
 	  impact[0] = imp[0];
 	  impact[1] = imp[1];
 	  covimpact[0] = cim[0];
@@ -448,18 +452,18 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  trackCopy->SetCdz(covimpact[1]);
 	  trackCopy->SetCzz(covimpact[2]);
 	  trackCopy->SetSigmaToVertex(AliESDtrackCuts::GetSigmaToVertex(esdtrack));
-	    	
+
 	  trackCopy->SetTrackId(esdtrack->GetID());
 	  trackCopy->SetFlags(esdtrack->GetStatus());
 	  trackCopy->SetLabel(esdtrack->GetLabel());
-		
-	  trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
-	  trackCopy->SetITSncls(esdtrack->GetNcls(0));     
-	  trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
-	  trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
-	  trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
-	  trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
-	  trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
+
+	  trackCopy->SetITSchi2(esdtrack->GetITSchi2());
+	  trackCopy->SetITSncls(esdtrack->GetNcls(0));
+	  trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());
+	  trackCopy->SetTPCncls(esdtrack->GetTPCNcls());
+	  trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());
+	  trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class
+	  trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma());
 
 	  trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
 	  trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
@@ -485,29 +489,29 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	      TParticle *tPart = fStack->Particle(TMath::Abs(esdtrack->GetLabel()));
 
 	      // Check the mother information
-	      
+
 	      // Using the new way of storing the freeze-out information
 	      // Final state particle is stored twice on the stack
 	      // one copy (mother) is stored with original freeze-out information
 	      //   and is not tracked
 	      // the other one (daughter) is stored with primary vertex position
 	      //   and is tracked
-	      
+
 	      // Freeze-out coordinates
 	      double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
 	      fpx = tPart->Vx() - fV1[0];
 	      fpy = tPart->Vy() - fV1[1];
 	      fpz = tPart->Vz() - fV1[2];
 	      fpt = tPart->T();
-	      
+
 	      AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
 	      tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
-	      
+
 	      fpx *= 1e13;
 	      fpy *= 1e13;
 	      fpz *= 1e13;
 	      fpt *= 1e13;
-	      
+
 	      if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
 		TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
 		// Check if this is the same particle stored twice on the stack
@@ -515,25 +519,25 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 		  // It is the same particle
 		  // Read in the original freeze-out information
 		  // and convert it from to [fm]
-		  
-		  // EPOS style 
+
+		  // EPOS style
 		  fpx = mother->Vx()*1e13*0.197327;
 		  fpy = mother->Vy()*1e13*0.197327;
 		  fpz = mother->Vz()*1e13*0.197327;
 		  fpt = mother->T() *1e13*0.197327;
-		  
-		  
-		  // Therminator style 
+
+
+		  // Therminator style
 		  // 	    fpx = mother->Vx()*1e13;
 		  // 	    fpy = mother->Vy()*1e13;
 		  // 	    fpz = mother->Vz()*1e13;
 		  // 	    fpt = mother->T() *1e13*3e10;
-		  
+
 		}
 	      }
-	
+
 	      tInfo->SetPDGPid(tPart->GetPdgCode());
-	
+
 	      tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
 	      Double_t mass2 = (tPart->Energy() *tPart->Energy() -
 				tPart->Px()*tPart->Px() -
@@ -541,9 +545,9 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 				tPart->Pz()*tPart->Pz());
 	      if (mass2>0.0)
 		tInfo->SetMass(TMath::Sqrt(mass2));
-	      else 
+	      else
 		tInfo->SetMass(0.0);
-	      
+
 	      tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 	      trackCopy->SetHiddenInfo(tInfo);
 	    }
@@ -556,36 +560,36 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	      fpz = fV1[2]*1e13;
 	      fpt = 0.0;
 	      tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
-	      
+
 	      tInfo->SetTrueMomentum(pxyz[0],pxyz[1],pxyz[2]);
-	      
+
 	      trackCopy->SetHiddenInfo(tInfo);
 	    }
 	  }
-	  //      cout << "Got freeze-out " << fpx << " " << fpy << " " << fpz << " " << fpt << " " <<  mass2 << " " << tPart->GetPdgCode() << endl; 
+	  //      cout << "Got freeze-out " << fpx << " " << fpy << " " << fpz << " " << fpt << " " <<  mass2 << " " << tPart->GetPdgCode() << endl;
 	}
-	else 
+	else
 	  tGoodMomentum = false;
-	
+
 	if (fUseTPCOnly)
 	  if (esdtrack) delete esdtrack;
       }
 
       if ((fInputType == kAOD) || (fInputType == kAODKine)) {
-	// Read in the normal AliAODTracks 
+	// Read in the normal AliAODTracks
 	const AliAODTrack *aodtrack=dynamic_cast<const AliAODTrack*>(fAODEvent->GetTrack(i));
         assert(aodtrack&&"Not a standard AOD"); // getting the AODtrack directly
-	
+
 	// 	if (!aodtrack->TestFilterBit(fFilterBit))
 	// 	  continue;
-	
+
 	CopyAODtoFemtoTrack(aodtrack, trackCopy);
-	
+
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
 	  //	  Int_t pLabel = aodtrack->GetLabel();
 	  AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
-	  
+
 	  AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
 	  double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
 	  if (!tPart) {
@@ -600,27 +604,27 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  }
 	  else {
 	    // Check the mother information
-	  
+
 	    // Using the new way of storing the freeze-out information
 	    // Final state particle is stored twice on the stack
 	    // one copy (mother) is stored with original freeze-out information
 	    //   and is not tracked
 	    // the other one (daughter) is stored with primary vertex position
 	    //   and is tracked
-	    
+
 	    // Freeze-out coordinates
 	    fpx = tPart->Xv() - fV1[0];
 	    fpy = tPart->Yv() - fV1[1];
 	    fpz = tPart->Zv() - fV1[2];
 	    //	  fpt = tPart->T();
-	    
+
 	    tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
-	    
+
 	    fpx *= 1e13;
 	    fpy *= 1e13;
 	    fpz *= 1e13;
 	    //	  fpt *= 1e13;
-	    
+
 	    //      cout << "Looking for mother ids " << endl;
 	    if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
 	      //	cout << "Got mother id" << endl;
@@ -631,38 +635,38 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 		  // It is the same particle
 		  // Read in the original freeze-out information
 		  // and convert it from to [fm]
-		  
-		  // EPOS style 
+
+		  // EPOS style
 		  // 	  fpx = mother->Xv()*1e13*0.197327;
 		  // 	  fpy = mother->Yv()*1e13*0.197327;
 		  // 	  fpz = mother->Zv()*1e13*0.197327;
 		  // 	  fpt = mother->T() *1e13*0.197327*0.5;
-		  
-		  
-		  // Therminator style 
+
+
+		  // Therminator style
 		  fpx = mother->Xv()*1e13;
 		  fpy = mother->Yv()*1e13;
 		  fpz = mother->Zv()*1e13;
 		  //	      fpt = mother->T() *1e13*3e10;
-		  
+
 		}
 	      }
 	    }
-	    
+
 	    //       if (fRotateToEventPlane) {
 	    // 	double tPhi = TMath::ATan2(fpy, fpx);
 	    // 	double tRad = TMath::Hypot(fpx, fpy);
-	    
+
 	    // 	fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
 	    // 	fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
 	    //       }
-	    
+
 	    tInfo->SetPDGPid(tPart->GetPdgCode());
-	    
+
 	    // 	  if (fRotateToEventPlane) {
 	    // 	    double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
 	    // 	    double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
-	    
+
 	    // 	    tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
 	    // 				   tRad*TMath::Sin(tPhi - tReactionPlane),
 	    // 				   tPart->Pz());
@@ -675,9 +679,9 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 			      tPart->Pz()*tPart->Pz());
 	    if (mass2>0.0)
 	      tInfo->SetMass(TMath::Sqrt(mass2));
-	    else 
+	    else
 	      tInfo->SetMass(0.0);
-	    
+
 	    tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 	  }
 	  trackCopy->SetHiddenInfo(tInfo);
@@ -691,13 +695,13 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  delete trackCopy;
 	  continue;
 	}
-	
+
 
       }
-      
-	
+
+
       //decision if we want this track
-      //if we using diffrent labels we want that this label was use for first time 
+      //if we using diffrent labels we want that this label was use for first time
       //if we use hidden info we want to have match between sim data and ESD
       if (tGoodMomentum==true)
 	{
@@ -709,16 +713,16 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	{
 	  delete  trackCopy;
 	}
-      
+
     }
-  
+
   if (motherids)
     delete [] motherids;
-  
-  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
-  fCurEvent++;	
+
+  hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
+  fCurEvent++;
   //  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
-  return hbtEvent; 
+  return hbtEvent;
 }
 //___________________
 void AliFemtoEventReaderStandard::SetESDSource(AliESDEvent *aESD)
@@ -772,7 +776,7 @@ void AliFemtoEventReaderStandard::SetUseTPCOnly(const bool usetpconly)
   fUseTPCOnly = usetpconly;
 }
 
-void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack, 
+void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
 						      AliFemtoTrack *tFemtoTrack)
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
@@ -783,9 +787,9 @@ void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTra
   fAODEvent->GetPrimaryVertex()->GetPosition(fV1);
 
   tFemtoTrack->SetCharge(tAodTrack->Charge());
-  
-  //in aliroot we have AliPID 
-  //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+
+  //in aliroot we have AliPID
+  //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon
   //we use only 5 first
 
   // AOD pid has 10 components
@@ -796,24 +800,24 @@ void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTra
   tFemtoTrack->SetPidProbPion(aodpid[2]);
   tFemtoTrack->SetPidProbKaon(aodpid[3]);
   tFemtoTrack->SetPidProbProton(aodpid[4]);
-						
+
   double pxyz[3];
   tAodTrack->PxPyPz(pxyz);//reading noconstrained momentum
   AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
   tFemtoTrack->SetP(v);//setting momentum
   tFemtoTrack->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
   const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-  //setting track helix 
+  //setting track helix
   const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
-  AliFmPhysicalHelixD helix(ktP,kOrigin,(double)(fAODEvent->GetMagneticField())*kilogauss,(double)(tFemtoTrack->Charge())); 
+  AliFmPhysicalHelixD helix(ktP,kOrigin,(double)(fAODEvent->GetMagneticField())*kilogauss,(double)(tFemtoTrack->Charge()));
   tFemtoTrack->SetHelix(helix);
-	    	
+
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
   tFemtoTrack->SetFlags(1);
   tFemtoTrack->SetLabel(tAodTrack->GetLabel());
-		
-  // Track quality information 
+
+  // Track quality information
   float covmat[6];
   tAodTrack->GetCovMatrix(covmat);
   tFemtoTrack->SetImpactD(covmat[0]);
@@ -823,24 +827,24 @@ void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTra
   tFemtoTrack->SetCzz(covmat[5]);
   // This information is only available in the ESD
   // We put in fake values or reasonable estimates
-  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());    
-  tFemtoTrack->SetITSncls(1);     
-  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
-  tFemtoTrack->SetTPCncls(1);       
-  tFemtoTrack->SetTPCnclsF(1);      
-  tFemtoTrack->SetTPCsignalN(1); 
-  tFemtoTrack->SetTPCsignalS(1); 
+  tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
+  tFemtoTrack->SetITSncls(1);
+  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
+  tFemtoTrack->SetTPCncls(1);
+  tFemtoTrack->SetTPCnclsF(1);
+  tFemtoTrack->SetTPCsignalN(1);
+  tFemtoTrack->SetTPCsignalS(1);
 
   TBits tAllTrue;
   TBits tAllFalse;
   tAllTrue.ResetAllBits(kTRUE);
   tAllFalse.ResetAllBits(kFALSE);
-  
+
 
   // If not use dummy values
   tFemtoTrack->SetTPCClusterMap(tAllTrue);
   tFemtoTrack->SetTPCSharedMap(tAllFalse);
-  
+
   double xtpc[3] = {0,0,0};
   tFemtoTrack->SetNominalTPCEntrancePoint(xtpc);
   tFemtoTrack->SetNominalTPCExitPoint(xtpc);
@@ -879,6 +883,6 @@ AliAODMCParticle* AliFemtoEventReaderStandard::GetParticleWithLabel(TClonesArray
     }
     while (posstack < mcP->GetEntries());
   }
-  
+
   return 0;
 }

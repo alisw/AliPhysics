@@ -94,7 +94,7 @@ Bool_t AliTPCPerformanceSummary::GetFitInfo(TF1 * fitFunction, TVectorF &fitInfo
     fitInfo[ipar]=fitFunction->GetParameter(ipar);
     fitInfo[npar+ipar]=fitFunction->GetParError(ipar);
   }
-  fitInfo[2*npar]=fitFunction->GetChisquare()/fitFunction->GetNDF();
+  if (fitFunction->GetNDF()>0.) fitInfo[2*npar]=fitFunction->GetChisquare()/fitFunction->GetNDF();
   return kTRUE;
 }
 
@@ -2511,7 +2511,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
   TH3* dcar_neg3=0;
   TH3* dcaz_neg3=0;
   static TGraphErrors * graphEtaProfile[4]={0};
-  static TGraphErrors * graphPhiProfile[4]={0};
+  static TGraphErrors * graphPhiProfile[8]={0};
   static Double_t dcar_posA_0=0; 
   static Double_t dcar_posA_1=0; 
   static Double_t dcar_posA_2=0; 
@@ -2696,11 +2696,23 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     if (graphEtaProfile[igr]) delete graphEtaProfile[igr];
     graphEtaProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
     delete hisTemp2D;
-    //
-    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D(TString::Format("xz_%d",igr).Data())));
+  }
+
+  for (Int_t igr=0;igr<4; igr++){  
+    // A side
+    hisEtaInput[igr]->GetYaxis()->SetRangeUser(0,0.99);
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D(TString::Format("xz_%dAside",igr).Data())));
     if (graphPhiProfile[igr]) delete graphPhiProfile[igr];
     graphPhiProfile[igr]=new TGraphErrors(hisTemp2D->ProfileX());
-    delete hisTemp2D;    
+    delete hisTemp2D;
+    //
+    // C side
+    hisEtaInput[igr]->GetYaxis()->SetRangeUser(-1.00,-0.01);
+    hisTemp2D = (dynamic_cast<TH2*>(hisEtaInput[igr]->Project3D(TString::Format("xz_%dCside",igr).Data())));
+    if (graphPhiProfile[4+igr]) delete graphPhiProfile[4+igr];
+    graphPhiProfile[4+igr]=new TGraphErrors(hisTemp2D->ProfileX());
+    delete hisTemp2D;
+    //
   }
 
 
@@ -2711,10 +2723,15 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     "grdcar_neg_Eta.="<<graphEtaProfile[1]<<
     "grdcaz_pos_Eta.="<<graphEtaProfile[2]<<
     "grdcaz_neg_Eta.="<<graphEtaProfile[3]<<
-    "grdcar_pos_Phi.="<<graphPhiProfile[0]<<
-    "grdcar_neg_Phi.="<<graphPhiProfile[1]<<
-    "grdcaz_pos_Phi.="<<graphPhiProfile[2]<<
-    "grdcaz_neg_Phi.="<<graphPhiProfile[3];
+    //
+    "grdcar_pos_ASidePhi.="<<graphPhiProfile[0]<<
+    "grdcar_neg_ASidePhi.="<<graphPhiProfile[1]<<
+    "grdcaz_pos_ASidePhi.="<<graphPhiProfile[2]<<
+    "grdcaz_neg_ASidePhi.="<<graphPhiProfile[3]<<
+    "grdcar_pos_CSidePhi.="<<graphPhiProfile[4]<<
+    "grdcar_neg_CSidePhi.="<<graphPhiProfile[5]<<
+    "grdcaz_pos_CSidePhi.="<<graphPhiProfile[6]<<
+    "grdcaz_neg_CSidePhi.="<<graphPhiProfile[7];
     
     
     (*pcstream)<<"trending"<<      

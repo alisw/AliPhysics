@@ -63,6 +63,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskEPCorrAA)
 ClassImp(AliCorrReducedTrackAA)
 
+/*
 //________________________________________________________________________
 AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be initialised here
 	:AliAnalysisTaskSE(),
@@ -71,7 +72,6 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be
 	fPoolMgr(0x0),
 	fMyprimRecoTracks(0x0),
 	fTracksMixing(0x0),
-  fFilterBit(768),
 	fMinNumTrack(50000),
 	fPoolSize(100), // from 1000 (150610)
 	fMinNEventsToMix(5),
@@ -129,7 +129,7 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be
 
 
 }
-
+*/
 
 //________________________________________________________________________
 AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA(const char *name) // All data members should be initialised here
@@ -773,7 +773,7 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //		if(!fTrackCuts->AcceptTrack(aodtrack)) continue;
         if(aodtrack->GetType() != AliAODTrack::kPrimary) continue;
 //        if(!aodtrack->TestFilterBit(kHybridTrackCut)) continue;
-        if(!aodtrack->TestFilterBit(fFilterBit)) continue;
+        if(!aodtrack->TestFilterBit(kTPCOnlyTrackCut)) continue;
 
 		float trackpT = aodtrack->Pt();
 		float trackEta = aodtrack->Eta(); 
@@ -868,7 +868,7 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //			if(!fTrackCuts->AcceptTrack(aodtrack2)) continue;
             if(aodtrack2->GetType() != AliAODTrack::kPrimary) continue;
 //            if(!aodtrack2->TestFilterBit(kHybridTrackCut)) continue;
-  		    if(!aodtrack2->TestFilterBit(fFilterBit)) continue;
+  		    if(!aodtrack2->TestFilterBit(kTPCOnlyTrackCut)) continue;
 
 			float trackpT2 = aodtrack2->Pt();
 			float trackEta2 = aodtrack2->Eta(); 
@@ -925,8 +925,10 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //			cout << "dPhiStarSame = " << dPhiStarSame << endl;
 
 			// two-track efficiency cut
-			if(TMath::Abs(dPhiStarSame)<0.02) continue;
-			if(TMath::Abs(deltaEta)<0.02) continue;
+//			if(TMath::Abs(dPhiStarSame)<0.02) continue;
+//			if(TMath::Abs(deltaEta)<0.02) continue;
+            if(TMath::Abs(dPhiStarSame)<0.02 && TMath::Abs(deltaEta)<0.02 ) continue; // should apply 'AND' here! 150901
+
 //*/
 
 /*
@@ -1168,8 +1170,10 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
 //			cout << "dPhiStarMixed = " << dPhiStarMixed << endl;
 
 			// two-track efficiency cut
-			if(TMath::Abs(dPhiStarMixed)<0.02) continue;
-			if(TMath::Abs(deltaEtaMixed)<0.02) continue;
+//			if(TMath::Abs(dPhiStarMixed)<0.02) continue;
+//			if(TMath::Abs(deltaEtaMixed)<0.02) continue;
+            if(TMath::Abs(dPhiStarMixed)<0.02 && TMath::Abs(deltaEtaMixed)<0.02) continue;
+
 //*/
 
             fHistdEtadPhiMixed[cBin][zBin][pTBinT][pTBinA][0]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
@@ -1328,7 +1332,7 @@ TObjArray* AliAnalysisTaskEPCorrAA::AcceptTracksReduced(AliAODEvent *aodevent, b
         if(useCuts) {
             if(track->GetType() != AliAODTrack::kPrimary) continue;
 //            if(!track->TestFilterBit(kHybridTrackCut)) continue;
-        	if(!track->TestFilterBit(fFilterBit)) continue;
+        	if(!track->TestFilterBit(kTPCOnlyTrackCut)) continue;
 
         }
 

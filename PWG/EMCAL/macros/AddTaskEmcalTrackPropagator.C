@@ -1,11 +1,7 @@
-// $Id$
-
-AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
-  const char *nameIn       = 0,
-  const char *nameOut      = 0,
-  const Bool_t onlyifnot   = kTRUE,
-  const Double_t d         = 440
-)
+AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(const char* nTracks       = "tracks",
+                                                         const Double_t d          = 440,
+                                                         const Bool_t onlyIfNotSet = kTRUE,
+                                                         const Bool_t onlyIfEmcal  = kFALSE)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -26,14 +22,12 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  AliEmcalTrackPropagatorTask* propagator = new AliEmcalTrackPropagatorTask();
-  if (nameIn)
-    propagator->SetTracksInName(nameIn);
-  if (nameOut)
-    propagator->SetTracksOutName(nameOut);
-  if (d>0) 
-    propagator->SetDist(d);
-  propagator->SetOnlyIfNotSet(onlyifnot);
+  TString tname(Form("AliEmcalTrackPropagatorTask_%s", nTracks));
+  AliEmcalTrackPropagatorTask* propagator = new AliEmcalTrackPropagatorTask(tname);
+  AliParticleContainer *trackCont = propagator->AddParticleContainer(nTracks);
+  if (d > 0) propagator->SetDist(d);
+  propagator->SetOnlyIfNotSet(onlyIfNotSet);
+  propagator->SetOnlyIfEmcal(onlyIfEmcal);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -41,8 +35,8 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   mgr->AddTask(propagator);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  mgr->ConnectInput  (propagator, 0,  cinput1 );
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(propagator, 0, cinput1 );
   
   return propagator;
 }

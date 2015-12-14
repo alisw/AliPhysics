@@ -374,14 +374,17 @@ void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHi
 bool AliFemtoV0::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }
 AliFemtoHiddenInfo* AliFemtoV0::GetHiddenInfo() const {return fHiddenInfo;}
 
-AliFemtoThreeVector AliFemtoV0::NominalTpcPointPos(int i) {
+AliFemtoThreeVector AliFemtoV0::NominalTpcPointPos(int i) const
+{
   if (i < 0)
     return fNominalTpcPointsPos[0];
   if (i > 8)
     return fNominalTpcPointsPos[8];
   return fNominalTpcPointsPos[i];
 }
-AliFemtoThreeVector AliFemtoV0::NominalTpcPointNeg(int i) {
+
+AliFemtoThreeVector AliFemtoV0::NominalTpcPointNeg(int i) const
+{
   if (i < 0)
     return fNominalTpcPointsNeg[0];
   if (i > 8)

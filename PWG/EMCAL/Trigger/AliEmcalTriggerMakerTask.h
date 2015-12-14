@@ -107,6 +107,8 @@ public:
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaHigh(a, b, c);
   }
 
+  void SetJetPatchsize(Int_t jetpatchsize) { fJetPatchsize = jetpatchsize; }
+
 
 protected:
 
@@ -116,6 +118,7 @@ protected:
   TString                                 fCaloTriggersOutName;       ///< name of output track array
   TString                                 fV0InName;                  ///< name of output track array
   TriggerMakerBitConfig_t                 fUseTriggerBitConfig;       ///< type of trigger config
+  Int_t                                   fJetPatchsize;              ///< Size of a jet patch
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fDoQA;                      ///< Fill QA histograms

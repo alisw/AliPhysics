@@ -785,6 +785,8 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
     Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
     
+    if (aEsd->GetRunNumber()>=245726 && aEsd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    
     for(Int_t i=0;i<4;++i) {
       if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
       Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(detChZNC,i)-esdZDC->GetZDCTDCData(detChGate,i)); 
@@ -797,7 +799,10 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
           fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
           fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
         }
-        if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled)) {
+        if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA == 10) {
+          if (TMath::Power((tdcCcorr-tdcAcorr-123.1)/2.2,2.)+
+              TMath::Power((tdcCcorr+tdcAcorr+123.1)/2.2,2.) < 1.) return kTRUE;
+        } else if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA!=10) {
           if (TMath::Power((tdcCcorr-tdcAcorr-fZDCCutRefDeltaCorr)/fZDCCutSigmaDeltaCorr,2.)+
               TMath::Power((tdcCcorr+tdcAcorr-fZDCCutRefSumCorr  )/fZDCCutSigmaSumCorr,2.) < 1.) return kTRUE;
         }

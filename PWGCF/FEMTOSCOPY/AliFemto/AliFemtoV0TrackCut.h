@@ -97,7 +97,7 @@ public:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoV0TrackCut, 1)
+  ClassDef(AliFemtoV0TrackCut, 1);
   /// \endcond
 #endif
 

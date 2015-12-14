@@ -198,13 +198,18 @@ else()
 
 endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
 
-# enable testing
+# Test library loading. Best output with:
+#   ctest --output-on-failure
+# Select only "load_library" tests (which are quick) like this (in parallel too):
+#   ctest --output-on-failure -R load_library -j 8
+install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
 enable_testing()
-
-# check for usable ROOT
-add_test(ROOT root -l -b -q)
-
-# check loading of libraries
-foreach(lib ${ALILIBSTESTED})
-  add_test(${lib} root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/Tools/macros/LoadLib.C (\"lib${lib}\")" )
+string(REPLACE ";" ":" FASTJET_LIBS_DIR_FLAT "${FASTJET_LIBS_DIR}")
+foreach(TEST_LIB ${ALILIBSTESTED})
+  add_test(load_library_${TEST_LIB}
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:${FASTJET_LIBS_DIR_FLAT}:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:${FASTJET_LIBS_DIR_FLAT}:$ENV{DYLD_LIBRARY_PATH}
+    PATH=${ROOTSYS}/bin:$ENV{PATH}
+    root -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

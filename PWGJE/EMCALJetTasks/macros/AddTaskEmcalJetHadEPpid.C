@@ -3,7 +3,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const char *nJets          = "Jets",
    const char *nTracksME      = "PicoTracks",
    const char *nClusters      = "CaloClustersCorr",
-   const char *nRho	          = "rhoCh",
+   const char *nRho           = "rhoCh",
    const char *lrho           = "lrho",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
@@ -14,11 +14,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
    const Double_t TrkEta      = 0.9,                                               
-   Bool_t	PID               = 0, //kFALSE,
+   Bool_t   PID               = 0, //kFALSE,
    Bool_t   PIDtrackBIAS      = 0, //kFALSE,
    Bool_t   varbinTHnSparse   = 0, //kFALSE,
-   Bool_t   allpidAXIS		  = 0, //kFALSE,
-   Bool_t   QAhistos		  = 0, //kFALSE,
+   Bool_t   allpidAXIS        = 0, //kFALSE,
+   Bool_t   QAhistos          = 0, //kFALSE,
    Bool_t   BIAShistos        = 0, //kFALSE,
    Bool_t   extraCORRhistos   = 0, //kFALSE,
    Bool_t   oldJEThadhistos   = 0, //kFALSE,
@@ -28,18 +28,19 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t MixingTracks   = 50000,
    const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
-   TString cutType			  = "EMCAL",
-   Bool_t   Comments		  = 0,
+   TString cutType            = "EMCAL",
+   Bool_t   Comments          = 0,
    Bool_t   doFlavourJetAnalysis = 0,
    const Int_t flavTag        = 999,
    const Int_t esdcuts        = 10001006,
-   TString colltype			  = "",
+   TString colltype           = "",
    UInt_t trigevent           = AliVEvent::kAny,
    UInt_t mixevent            = AliVEvent::kAny,
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
-   const char *tag			  = ""
+   Bool_t newFramework        = 0,
+   const char *tag            = ""
 )
 {  
   
@@ -74,6 +75,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   else if(colltype == "A-A") beam = 1;
   else if(colltype == "p-A") beam = 2;
   else beam = -1;
+
+  if(newFramework) {
+    nTracks = "tracks";
+    nTracksME = "tracks";
+  }
 
   //-------------------------------------------------------
   // Init the task and do settings

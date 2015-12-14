@@ -13,7 +13,7 @@ TString kAnaPi0 = "";
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
 ///
 /// The options that can be passed to the macro are:
-/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle. Several combinations possible: "EMCAL", "PHOS","EMCAL_PHOS","EMCAL_PHOS_BothCalo". Last option enables combination of both calorimeters DCal and PHOS
 /// \param simulation : A bool identifying the data as simulation
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
@@ -35,10 +35,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
 (
  TString  calorimeter   = "EMCAL", 
  Bool_t   simulation    = kFALSE,
- Int_t    year          = 2011,
+ Int_t    year          = 2015,
  TString  col           = "pp", 
  TString  trigger       = "EMC7", 
- Int_t    rejectEMCTrig = 0, 
+ Bool_t   rejectEMCTrig = kFALSE, 
+ Bool_t   muonCaloPass  = kFALSE,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
  Bool_t   nonLinOn      = kFALSE,
@@ -94,17 +95,60 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
   // General frame setting and configuration
   maker->SetReader   ( ConfigureReader   (col,simulation,clustersArray,tender,calorimeter,nonLinOn,trigger,rejectEMCTrig,minCen,maxCen,printSettings,debug) );
   maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,clustersArray,tender,nonLinOn,year,                                           printSettings,debug) );
-                       
+        
+  if(muonCaloPass)
+  {
+    maker->GetReader()->SwitchOffPrimaryVertexSelection(); 
+    maker->GetReader()->SwitchOffRejectNoTrackEvents();
+  }
+  
+  // Remove as soon calibrations are available
+  if(year > 2014)
+  {
+    maker->GetReader()->SwitchOffUseEMCALTimeCut();
+    maker->GetReader()->SetEMCALTimeCut(-1000,1000);
+    maker->GetCaloUtils()->SwitchOffRunDepCorrection();
+  }
+  
   // Analysis tasks setting and configuration
-  Int_t n = 0;//Analysis number, order is important
+  Int_t n = 0;//Analysis number, order is important  
   
-  // Photon analysis
-  //
-  maker->AddAnalysis(ConfigurePhotonAnalysis(col, simulation, calorimeter, year, tm, shshMax, printSettings, debug), n++);
+  if(calorimeter.Contains("EMCAL"))
+  {
+    // Photon analysis
+    //
+    maker->AddAnalysis(ConfigurePhotonAnalysis(col, simulation, "EMCAL", year, tm, shshMax, printSettings, debug), n++);
+    
+    // Pi0 analysis
+    //
+    printf("AliAnaPi0: EMCal-EMCal invariant mass\n");
+    maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, "EMCAL", kFALSE, year, tm, mixOn  , printSettings, debug), n++);
+  }
+
+  if(calorimeter.Contains("PHOS"))
+  {
+    // Photon analysis
+    //
+    maker->AddAnalysis(ConfigurePhotonAnalysis(col, simulation, "PHOS", year, tm, shshMax, printSettings, debug), n++);
+    
+    // Pi0 analysis
+    //
+    printf("AliAnaPi0: PHOS-PHOS invariant mass\n");
+    maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, "PHOS", kFALSE, year, tm, mixOn  , printSettings, debug), n++);
+  }
+
+  if(calorimeter.Contains("BothCalo"))
+  {    
+    // Pi0 analysis
+    //
+    //Do it with PHOS or EMCal in the main loop and EMCal or PHOS in the mixed event, should be equivalent?
+    printf("AliAnaPi0: DCal-PHOS invariant mass\n");
+    maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, "EMCAL", kTRUE, year, tm, mixOn, printSettings, debug), n++); 
+    printf("AliAnaPi0: PHOS-DCal invariant mass\n");
+    maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, "PHOS" , kTRUE, year, tm, mixOn, printSettings, debug), n++);
+  }
   
-  // Pi0 analysis
-  //
-  maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, calorimeter, year, tm, mixOn  , printSettings, debug), n++);
+  // Maker
   
   maker->SetAnaDebug(debug)  ;
   
@@ -215,8 +259,9 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     reader->SetPtHardAndJetPtComparison(kTRUE);
     reader->SetPtHardAndJetPtFactor(4);
     
-    reader->SetPtHardAndClusterPtComparison(kTRUE);
-    reader->SetPtHardAndClusterPtFactor(1.5);
+    // Gamma-jet
+    //reader->SetPtHardAndClusterPtComparison(kTRUE);
+    //reader->SetPtHardAndClusterPtFactor(1.5);
   }
   
   //------------------------
@@ -250,7 +295,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(0,50);
   
-  reader->SwitchOnFiducialCut();
+  reader->SwitchOffFiducialCut();
   reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
 
   reader->SwitchOffUseTrackDCACut();
@@ -316,13 +361,13 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   if(nonLinOn) reader->SwitchOnClusterELinearityCorrection();
   else         reader->SwitchOffClusterELinearityCorrection();
   
-  if(calorimeter == "EMCAL") 
+  if(calorimeter.Contains("EMCAL")) 
   {
     reader->SwitchOnEMCALCells();  
     reader->SwitchOnEMCAL();
   }
   
-  if(calorimeter == "PHOS") 
+  if(calorimeter.Contains("PHOS")) 
   { // Should be on if QA is activated with correlation on
     reader->SwitchOnPHOSCells();
     reader->SwitchOnPHOS();
@@ -338,7 +383,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SwitchOffTriggerPatchMatching();
   reader->SwitchOffBadTriggerEventsRemoval();
   
-  if( rejectEMCTrig > 0 && !simulation && (trigger.Contains("EMC") || trigger.Contains("L")))
+  
+  if( rejectEMCTrig && !simulation )
   {
     printf("=== Remove bad triggers === \n");
     reader->SwitchOnTriggerPatchMatching();
@@ -416,6 +462,12 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   else if(year >  2013) cu->SetNumberOfSuperModulesUsed(20);
   else                  cu->SetNumberOfSuperModulesUsed(10);
   
+  if(kAnaPi0.Contains("_PHOS_") && !kAnaPi0.Contains("EMCAL") && !kAnaPi0.Contains("Both")) 
+  {
+     if(year <= 2013) cu->SetNumberOfSuperModulesUsed(3); 
+     else             cu->SetNumberOfSuperModulesUsed(4); 
+  }
+  
   printf("xxx Number of SM set to <%d> xxx\n",cu->GetNumberOfSuperModulesUsed());
   
   // Search of local maxima in cluster
@@ -453,7 +505,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     cu->SwitchOnRunDepCorrection();
     
     calibEner = kTRUE;
-    calibTime = kTRUE;
+    calibTime = kTRUE; 
+    if (year > 2014) calibTime = kFALSE; // Remove as soon as calib available
   }
   
   if( simulation )
@@ -474,10 +527,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
                           kTRUE,      // bad map
                           calibTime); // time calib   
   
-  if( calibTime ) recou->SetExoticCellDiffTimeCut(50);
+  if( calibTime ) recou->SetExoticCellDiffTimeCut(200);
   
   if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity();
-    
+      
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
     
@@ -511,23 +564,23 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
 
  //if(!simulation) ana->SwitchOnFillPileUpHistograms();
-  
+//  
   if(tm) ana->SwitchOnTrackMatchRejection() ;
   else   ana->SwitchOffTrackMatchRejection() ;
   
-  ana->SwitchOnTMHistoFill() ;
+  ana->SwitchOffTMHistoFill() ;
   
   if(calorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 3 cells
-    ana->SetMinPt(0.3);
+    ana->SetMinPt(0.5);
     ana->SetMinDistanceToBadChannel(2, 4, 5);
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
   else 
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+    ana->SetMinEnergy(0.5); // avoid mip peak at E = 260 MeV
     ana->SetMaxEnergy(100);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
     // restrict to less than 100 ns when time calibration is on
@@ -546,8 +599,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   // EMCAL
   
   //caloPID->SetEMCALLambda0CutMax(0.27);
-  caloPID->SetEMCALLambda0CutMax(shshMax);
-  caloPID->SetEMCALLambda0CutMin(0.10);
+  if(calorimeter=="EMCAL")
+  {
+    caloPID->SetEMCALLambda0CutMax(shshMax);
+    caloPID->SetEMCALLambda0CutMin(0.10);
+  }
   
   // Track matching
   caloPID->SetEMCALDEtaCut(0.025);
@@ -559,11 +615,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
 
   // Branch AOD settings
-  ana->SetOutputAODName(Form("Photon_%s",kAnaPi0.Data()));
+  ana->SetOutputAODName(Form("Photon_%s_%s",calorimeter.Data(), kAnaPi0.Data()));
   ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
-  ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",tm));
+  ana->AddToHistogramsName(Form("AnaPhoton_%s_TM%d_",calorimeter.Data(),tm));
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
   
@@ -581,7 +637,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 /// Configure the task doing the 2 cluster invariant mass analysis
 ///
 AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
-                                TString calorimeter,   Int_t year,
+                                TString calorimeter,   Bool_t bothCalo,   Int_t year,
                                 Int_t tm,              Bool_t mixOn,
                                 Bool_t  printSettings, Int_t   debug)
 {
@@ -590,8 +646,15 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   ana->SetDebug(debug);
   
   // Input delta AOD settings
-  ana->SetInputAODName(Form("Photon_%s",kAnaPi0.Data()));
+  ana->SetInputAODName(Form("Photon_%s_%s",calorimeter.Data(),kAnaPi0.Data()));
 
+  if(bothCalo)
+  {
+    ana->SwitchOnPairWithOtherDetector();
+    if ( calorimeter == "EMCAL" ) ana->SetOtherDetectorInputName(Form("Photon_PHOS_%s" ,kAnaPi0.Data()));
+    else                          ana->SetOtherDetectorInputName(Form("Photon_EMCAL_%s",kAnaPi0.Data()));
+  }
+  
   // Calorimeter settings
   ana->SetCalorimeter(calorimeter);
   
@@ -600,7 +663,11 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   else      ana->SwitchOffOwnMix();
     
   // Cuts
-  if (calorimeter == "EMCAL" ) ana->SetPairTimeCut(200);
+  if (calorimeter == "EMCAL" ) 
+  {
+    if(year < 2014) ana->SetPairTimeCut(50);
+    else            ana->SetPairTimeCut(200); // REMEMBER to remove this when time calib is on
+  }
   
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
@@ -613,7 +680,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(1);
     ana->SetNMaxEvMix(100);
-    ana->SetMinPt(0.5);
+    ana->SetMinPt(0.5); // 0.5
   }
   else if(col == "PbPb")
   {
@@ -632,6 +699,12 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     ana->SetMinPt(0.5);
   }
 
+  // Angle cut, avoid pairs with too large angle
+  ana->SwitchOnAngleSelection(); 
+  ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
+  ana->SetAngleCut(0.); // Minimum angle open
+  
+  //if(!bothCalo) ana->SwitchOnSMCombinations();
   ana->SwitchOnSMCombinations();
   ana->SwitchOffMultipleCutAnalysis();
   ana->SwitchOffFillAngleHisto();
@@ -639,7 +712,8 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
  
   // Set Histograms name tag, bins and ranges
     
-  ana->AddToHistogramsName(Form("AnaPi0_TM%d_",tm));
+  if(!bothCalo) ana->AddToHistogramsName(Form("AnaPi0_%s_TM%d_",calorimeter.Data(),tm));
+  else          ana->AddToHistogramsName(Form("AnaPi0_%sPlusOther_TM%d_",calorimeter.Data(),tm));
     
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
     
@@ -665,7 +739,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   AliHistogramRanges* histoRanges = ana->GetHistogramRanges();
   
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
-  
+    
   if(calorimeter=="EMCAL")
   {
     if(year==2010)
@@ -707,8 +781,8 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
   
   // check if time calibration is on
-  //histoRanges->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
-  histoRanges->SetHistoTimeRangeAndNBins(-400.,400,400);
+  histoRanges->SetHistoTimeRangeAndNBins(0.,1000,1000);
+  //histoRanges->SetHistoTimeRangeAndNBins(-400.,400,400);
   histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
   // track-cluster residuals
@@ -763,6 +837,9 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
+  
+  if(col.Contains("PbPb")) ana->SwitchOnFillHighMultiplicityHistograms();
+  else                     ana->SwitchOffFillHighMultiplicityHistograms();
   
   //Set here generator name, default pythia
   //ana->GetMCAnalysisUtils()->SetMCGenerator("");

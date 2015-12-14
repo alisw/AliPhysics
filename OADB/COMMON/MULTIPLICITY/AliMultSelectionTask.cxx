@@ -97,7 +97,9 @@ AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
+fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -176,7 +178,9 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
-fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),fAlternateOADBFullManualBypass(""),
+fkUseDefaultCalib (kTRUE), fkUseDefaultMCCalib (kTRUE),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""), 
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -300,7 +304,15 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Create input variables in AliMultInput Class
     //V0 related
     fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
+    fAmplitude_V0A1       = new AliMultVariable("fAmplitude_V0A1");
+    fAmplitude_V0A2       = new AliMultVariable("fAmplitude_V0A2");
+    fAmplitude_V0A3       = new AliMultVariable("fAmplitude_V0A3");
+    fAmplitude_V0A4       = new AliMultVariable("fAmplitude_V0A4");
     fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
+    fAmplitude_V0C1       = new AliMultVariable("fAmplitude_V0C1");
+    fAmplitude_V0C2       = new AliMultVariable("fAmplitude_V0C2");
+    fAmplitude_V0C3       = new AliMultVariable("fAmplitude_V0C3");
+    fAmplitude_V0C4       = new AliMultVariable("fAmplitude_V0C4");
     fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
     fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
     fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
@@ -345,7 +357,15 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
+    fInput->AddVariable( fAmplitude_V0A1 );
+    fInput->AddVariable( fAmplitude_V0A2 );
+    fInput->AddVariable( fAmplitude_V0A3 );
+    fInput->AddVariable( fAmplitude_V0A4 );
     fInput->AddVariable( fAmplitude_V0C );
+    fInput->AddVariable( fAmplitude_V0C1 );
+    fInput->AddVariable( fAmplitude_V0C2 );
+    fInput->AddVariable( fAmplitude_V0C3 );
+    fInput->AddVariable( fAmplitude_V0C4 );
     fInput->AddVariable( fAmplitude_V0Apartial );
     fInput->AddVariable( fAmplitude_V0Cpartial );
     fInput->AddVariable( fAmplitude_V0AEq );
@@ -382,17 +402,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //------------------------------------------------
         
         //-----------BASIC-INFO---------------------------
-        
-        // A.T. (my suggestion for V0: 1..4 replacing partial)
-        fTreeEvent->Branch("fAmplitude_V0A1",&fAmplitude_V0A1,"fAmplitude_V0A1/F");
-        fTreeEvent->Branch("fAmplitude_V0A2",&fAmplitude_V0A2,"fAmplitude_V0A2/F");
-        fTreeEvent->Branch("fAmplitude_V0A3",&fAmplitude_V0A3,"fAmplitude_V0A3/F");
-        fTreeEvent->Branch("fAmplitude_V0A4",&fAmplitude_V0A4,"fAmplitude_V0A4/F");
-        fTreeEvent->Branch("fAmplitude_V0C1",&fAmplitude_V0C1,"fAmplitude_V0C1/F");
-        fTreeEvent->Branch("fAmplitude_V0C2",&fAmplitude_V0C2,"fAmplitude_V0C2/F");
-        fTreeEvent->Branch("fAmplitude_V0C3",&fAmplitude_V0C3,"fAmplitude_V0C3/F");
-        fTreeEvent->Branch("fAmplitude_V0C4",&fAmplitude_V0C4,"fAmplitude_V0C4/F");
-        
         //Run Number
         fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
         
@@ -850,14 +859,14 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fAmplitude_V0Cpartial->SetValue(multV0Cpartial);
     
     //A.T. (vertex correction for all rings?!?)
-    fAmplitude_V0A1 = multV0A1;
-    fAmplitude_V0A2 = multV0A2;
-    fAmplitude_V0A3 = multV0A3;
-    fAmplitude_V0A4 = multV0A4;
-    fAmplitude_V0C1 = multV0C1;
-    fAmplitude_V0C2 = multV0C2;
-    fAmplitude_V0C3 = multV0C3;
-    fAmplitude_V0C4 = multV0C4;
+    fAmplitude_V0A1 -> SetValue( multV0A1 );
+    fAmplitude_V0A2 -> SetValue( multV0A2 );
+    fAmplitude_V0A3 -> SetValue( multV0A3 );
+    fAmplitude_V0A4 -> SetValue( multV0A4 );
+    fAmplitude_V0C1 -> SetValue( multV0C1 );
+    fAmplitude_V0C2 -> SetValue( multV0C2 );
+    fAmplitude_V0C3 -> SetValue( multV0C3 );
+    fAmplitude_V0C4 -> SetValue( multV0C4 );
 
     //AD scintillator Data added to Event Tree
     if (lVAD) {
@@ -1136,16 +1145,38 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else
         fCurrentRun = esd->GetRunNumber();
     AliInfoF("Detected run number: %i",fCurrentRun);
-    TString lPeriodName = GetPeriodNameByRunNumber();
     
+    TString lPathInput = CurrentFileName();
+    
+    //Autodetect Period Name
+    TString lPeriodName     = GetPeriodNameByRunNumber();
+    TString lProductionName = GetPeriodNameByPath( lPathInput );
+     
+    AliWarning("==================================================");
+    AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
+    AliWarning(Form(" Production Name (by path)......: %s", lProductionName.Data()));
+    AliWarning("==================================================");
+    if ( lPeriodName.EqualTo(lProductionName.Data()) == kTRUE ){
+        AliWarning( Form(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data() ));
+        AliWarning("==================================================");
+    }
+    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ){
+        AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
+        AliWarning(Form(" Will input it automatically for you to %s",lProductionName.Data() ));
+        fAlternateOADBForEstimators = lProductionName;
+        AliInfo("==================================================");
+    }
+
+    
+    //Determine location of file to open: default OADB 
     TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
     
     //Full Manual Bypass Mode (DEBUG ONLY)
     if ( fAlternateOADBFullManualBypass.EqualTo("")==kFALSE ){
-        AliInfo(" Extra option detected: FULL MANUAL BYPASS of OADB Location ");
-        AliInfo(" --- Warning: Use with care ---");
-        AliInfoF(" New complete path: %s", fAlternateOADBFullManualBypass.Data() );
+        AliWarning(" Extra option detected: FULL MANUAL BYPASS of DATA OADB Location ");
+        AliWarning(" --- Warning: Use with care ---");
+        AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypass.Data() ));
         fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
     }
     
@@ -1166,8 +1197,21 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     lObjAcquired = con->GetObject(fCurrentRun, "Default");
     
     if (!lObjAcquired) {
-        AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
-        lObjAcquired  = con->GetDefaultObject("oadbDefault");
+        if ( fkUseDefaultCalib ){
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            AliWarning(" This is only a 'good guess'! Use with Care! ");
+            AliWarning(" To Switch off this good guess, use SetUseDefaultCalib(kFALSE)");
+            AliWarning("======================================================================");
+            lObjAcquired  = con->GetDefaultObject("oadbDefault");
+        }else{
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
+            AliWarning("======================================================================");
+            //Create an empty OADB for us, please !
+            CreateEmptyOADB();
+            return -1;
+        }
     }
     if (!lObjAcquired) {
         // This should not happen...
@@ -1191,10 +1235,18 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     //=====================================================================
     //Option to override estimators from alternate oadb file
     if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE ){
-        AliInfo("Extra option detected: Load estimators from OADB file called: ");
-        AliInfoF(" path: %s", fAlternateOADBForEstimators.Data() );
+        AliWarning("Extra option detected: Load estimators from OADB file called: ");
+        AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
         
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        
+        //Full Manual Bypass Mode (DEBUG ONLY)
+        if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ){
+            AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
+            AliWarning(" --- Warning: Use with care ---");
+            AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
+            fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+        }
         
         AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
         Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");
@@ -1206,8 +1258,21 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         TObject *lObjAcquiredAlter = 0x0;
         lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
         if (!lObjAcquiredAlter) {
-            AliWarning(Form("Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
-            lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+            if ( fkUseDefaultMCCalib ){
+                AliWarning("======================================================================");
+                AliWarning(Form(" MC Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+                AliWarning(" This is usually only approximately OK! Use with Care! ");
+                AliWarning(" To Switch off this good guess, use SetUseDefaultMCCalib(kFALSE)");
+                AliWarning("======================================================================");
+                lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+            }else{
+                AliWarning("======================================================================");
+                AliWarning(Form(" MC Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
+                AliWarning("======================================================================");
+                //Create an empty OADB for us, please !
+                CreateEmptyOADB();
+                return -1;
+            }
         }
         if (!lObjAcquiredAlter) {
             // This should not happen...
@@ -1419,7 +1484,7 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
     return lReturnValue;
 }
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodName() const
+TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
 {
     //============================================================
     //This function is meant to get the period name.
@@ -1430,52 +1495,41 @@ TString AliMultSelectionTask::GetPeriodName() const
     
     //==================================
     // Setup initial Info
-    Bool_t lLocated = kFALSE;
-    TString lTag = "LPMProductionTag";
-    TString lProductionName = "";
-
+    TString lProductionName = lPath.Data();
     //==================================
-    // Get alirootVersion object title
-    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!handler) return lProductionName; //failed!
-    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
-    if (!prodInfoData){
-        Printf("Unable to find alirootVersion! Inspect list:");
-        handler->GetUserInfo()->ls(); 
-        lProductionName = "LHC15f";
-        
-        //exception (FIXME! temporary testing!)
-        if( fCurrentRun <= 139517 && fCurrentRun >= 136851){
-            Printf("Oh, this is Run 1 Pb-Pb! okay...");
-            lProductionName = "LHC10h";
-        }
-        return lProductionName;
-    }
-    TString lAlirootVersion(prodInfoData->GetTitle());
-    
+    AliInfoF(" Autodetecting production name from filename: %s", lProductionName.Data() );
     //==================================
     // Get Production name
-    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
-    if(lArrStr->GetEntriesFast()) {
-        TIter iString(lArrStr);
-        TObjString* os=0;
-        Int_t j=0;
-        while ((os=(TObjString*)iString())) {
-            if( os->GetString().Contains(lTag.Data()) ){
-                lProductionName = os->GetString().Data();
-                //Remove Label
-                lProductionName.ReplaceAll(lTag.Data(),"");
-                //Remove any remaining whitespace (just in case)
-                lProductionName.ReplaceAll("=","");
-                lProductionName.ReplaceAll(" ","");
-                break; //stop, found
-            }
-            j++;
-        }
-    }
-    //Memory cleanup
-    delete lArrStr;
-    //Return production name
+    Long_t iOcurrence = 0;
+    
+    // 1) Check first occurence of LHC
+    iOcurrence = lProductionName.Index("LHC");
+    
+    // 2) Remove Anything prior to this, please
+    lProductionName.Remove(0,iOcurrence);
+    
+    // 3) Check first occurrence of "/" and strip
+    iOcurrence = lProductionName.Index("/");
+    lProductionName.Remove(iOcurrence, lProductionName.Length() );
+    
+    // 4) Check first occurrence of "__" (LEGO Train Executions)
+    iOcurrence = lProductionName.Index("__");
+    lProductionName.Remove(iOcurrence, lProductionName.Length() );
+    
+    //======================================================================
+    //
+    // --> More checks to be added for generality ?
+    //
+    // --> Note: if all else fails, this can always be bypassed by explicitly
+    //     defining production name calling
+    //
+    //     --- SetAlternateOADBforEstimators ( production name )
+    //
+    //     where production name can be real data (e.g. LHC15o)
+    //     or MC (e.g. LHC15k1_plus) and all will be fine...
+    //
+    //======================================================================
+    
     return lProductionName;
 }
 //______________________________________________________________________
@@ -1513,5 +1567,19 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     
     return lProductionName;
 }
-
+//______________________________________________________________________
+void AliMultSelectionTask::CreateEmptyOADB()
+{
+    //This will completely reset the OADB, such that any attempt to use
+    //the framework will return kNoCalib everywhere: fully safe mode of operation!
+    if( fOadbMultSelection ){
+        delete fOadbMultSelection;
+    }
+    fOadbMultSelection = new AliOADBMultSelection();
+    AliMultSelectionCuts *cuts              = new AliMultSelectionCuts(); //irrelevant
+    AliMultSelection *fsels                 = new AliMultSelection    (); //is empty, will return kNoCalib always
+    
+    fOadbMultSelection->SetEventCuts        ( cuts  );
+    fOadbMultSelection->SetMultSelection    ( fsels );
+}
 

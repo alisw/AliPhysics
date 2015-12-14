@@ -6,17 +6,19 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-  ClassImp(AliFemtoModelFreezeOutGenerator, 1)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoModelFreezeOutGenerator, 1);
+  /// \endcond
 #endif
 
 #include "AliFemtoModelFreezeOutGenerator.h"
 
 //____________________________
-AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(): 
-  fRandom(0) 
+AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator():
+  fRandom(0)
 { /* no-op */ }
 //____________________________
-AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(const AliFemtoModelFreezeOutGenerator &/* aModel */): 
+AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(const AliFemtoModelFreezeOutGenerator &/* aModel */):
   fRandom(0)
 {/* no-op */}
 //____________________________
@@ -25,20 +27,17 @@ AliFemtoModelFreezeOutGenerator::~AliFemtoModelFreezeOutGenerator()
   if (fRandom) delete fRandom;
 }
 //____________________________
-AliFemtoModelFreezeOutGenerator& AliFemtoModelFreezeOutGenerator::operator=(const AliFemtoModelFreezeOutGenerator& aGen) 
-{ 
-  if (this == &aGen) return *this; 
-  if (aGen.fRandom) 
+AliFemtoModelFreezeOutGenerator& AliFemtoModelFreezeOutGenerator::operator=(const AliFemtoModelFreezeOutGenerator& aGen)
+{
+  if (this == &aGen) return *this;
+  if (aGen.fRandom)
     fRandom = new TRandom2(*aGen.fRandom);
-  else 
-    fRandom=0; 
-  return *this; 
+  else
+    fRandom=0;
+  return *this;
 }
 //____________________________
-AliFemtoModelFreezeOutGenerator* AliFemtoModelFreezeOutGenerator::Clone() const 
-{ 
-  return 0; 
+AliFemtoModelFreezeOutGenerator* AliFemtoModelFreezeOutGenerator::Clone() const
+{
+  return 0;
 }
-
-
-

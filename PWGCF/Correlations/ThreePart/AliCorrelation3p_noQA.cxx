@@ -250,7 +250,7 @@ bool AliCorrelation3p_noQA::CheckAssociated( AliVParticle* p, bool doHistogram)
 int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVParticle* p2, const double weight)
 {
   /// fill histograms from particles, fills each histogram exactly once.
-  Double_t fillweight = 1.0;
+//   Double_t fillweight = 1.0;
   if (!ptrigger || !p1 || !p2) {return 0;}
   if ((ptrigger->Pt()<=p1->Pt())||(ptrigger->Pt()<=p2->Pt())) {return 0;}
   const double Pii=TMath::Pi();
@@ -271,18 +271,18 @@ int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  Ali
   if(abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&abs(DeltaEta12)<1.0E-10)	return 0;//Track duplicate, reject.
   if(abs(p1->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
   if(abs(p2->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
-  fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
-  fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
-  fillweight *= dynamic_cast<AliFilteredTrack*>(p2)->GetEff();
-  fillweight *= weight;
-  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, fillweight);
+//   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
+//   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
+//   fillweight *= dynamic_cast<AliFilteredTrack*>(p2)->GetEff();
+//   fillweight *= weight;
+  HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, weight);
   return 0;
 }
 
-int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1)
+int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1, const double weight)
 {
   /// fill histograms from particles
-  Double_t fillweight = 1.0;  
+//   Double_t fillweight = 1.0;  
   if (!ptrigger || !p1) return -EINVAL;
   if (ptrigger->Pt()<=p1->Pt()) return 0;
   const double Pii=TMath::Pi();
@@ -294,9 +294,9 @@ int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1)
   }
   // eta difference
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
-  fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
-  fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
-  HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, fillweight);//2p correlation
+//   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
+//   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
+  HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
   return 0;
 }
 

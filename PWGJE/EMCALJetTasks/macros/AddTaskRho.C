@@ -10,7 +10,7 @@ AliAnalysisTaskRho* AddTaskRho (
    TF1           *sfunc       = 0,
    const UInt_t   exclJets    = 2,
    const Bool_t   histo       = kFALSE,
-   const char    *taskname    = "Rho"
+   const char    *suffix      = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -35,7 +35,12 @@ AliAnalysisTaskRho* AddTaskRho (
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s", taskname, nJets,cutType));
+  TString name(Form("AliAnalysisTaskRho_%s_%s", nJets,cutType));
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
+  }
+
   AliAnalysisTaskRho* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask) return mgrTask;
 
@@ -89,7 +94,7 @@ AliAnalysisTaskRho* AddTaskRho(
    const char    *sfuncName   = "LHC11h_HadCorr20_ClustersV2",
    const UInt_t   exclJets    = 2,
    const Bool_t   histo       = kFALSE,
-   const char    *taskname    = "Rho"
+   const char    *suffix      = ""
 )
 {
   TFile *file = TFile::Open(sfuncPath);
@@ -108,7 +113,7 @@ AliAnalysisTaskRho* AddTaskRho(
     return NULL;
   }
 
-  AliAnalysisTaskRho *task = AddTaskRho(nJets, nTracks, nClusters, nRho, jetradius, cutType, jetareacut, emcareacut, sfunc, exclJets, histo, taskname);
+  AliAnalysisTaskRho *task = AddTaskRho(nJets, nTracks, nClusters, nRho, jetradius, cutType, jetareacut, emcareacut, sfunc, exclJets, histo, suffix);
 
   file->Close();
   delete file;

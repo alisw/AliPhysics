@@ -7,24 +7,28 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALSE, TString outputFile = "", )
+AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALSE, TString outputFile = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  if (!mgr) 
+  {
     ::Error("AddTaskEMCALTriggerQA", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
+  if (!mgr->GetInputEventHandler()) 
+  {
     ::Error("AddTaskEMCALTriggerQA", "This task requires an input event handler");
     return NULL;
   }
   
-  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA("QAEMCALTrigger");
+  TString taskName = "QAEMCALTrigger";
+  
+  AliAnalysisTaskEMCALTriggerQA * qatrigger = new AliAnalysisTaskEMCALTriggerQA(taskName);
     
   // Configuration
   
@@ -42,15 +46,17 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(Bool_t kSimulation = kFALS
   
   // Define the input/output containers
     
+  qatrigger->GetRecoUtils()->SwitchOnBadChannelsRemoval ();
+  
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     
   if(outputFile.Length()==0) outputFile = AliAnalysisManager::GetCommonFileName();
  
-  AliAnalysisDataContainer *coutput = 0;
-  if(outputFile.Length()==0)
-    coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:EMCALQATrigger",outputFile.Data()));
-  else
-    coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
+  printf("*** Task Name %s; Output file name: %s ***\n",taskName.Data(),outputFile.Data());
+  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s",taskName.Data()), 
+                                                           TList::Class(), AliAnalysisManager::kOutputContainer,
+                                                           Form("%s",outputFile.Data()));
 
   mgr->AddTask(qatrigger);
   mgr->ConnectInput  (qatrigger, 0, cinput1);

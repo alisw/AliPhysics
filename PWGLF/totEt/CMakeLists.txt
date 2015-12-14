@@ -88,3 +88,4 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+install (DIRECTORY macros/config DESTINATION PWGLF/totEt)

@@ -869,14 +869,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	continue;
       }
 
-      Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
-
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
         fHistNEvents->Fill(12); //monitor how often this fails 
         continue;
       }
 
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+      Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
 

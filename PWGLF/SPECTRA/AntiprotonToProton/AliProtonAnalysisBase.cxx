@@ -24,13 +24,20 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TH1F.h>
-
+#include <TMinuit.h>
 #include <AliExternalTrackParam.h>
 #include <AliESDEvent.h>
 #include <AliPID.h>
 #include <AliVertexerTracks.h>
 #include <AliESDpid.h>
+#include <AliESDtrackCuts.h>
 #include <AliTPCPIDResponse.h>
+#include <AliPIDResponse.h>
+#include <AliMultiplicity.h>
+#include <AliCentrality.h>
+#include <AliAODMCParticle.h>
+#include <AliAODEvent.h>
+#include <AliAODVertex.h>
 class AliLog;
 class AliESDVertex;
 
@@ -41,22 +48,23 @@ ClassImp(AliProtonAnalysisBase)
 //____________________________________________________________________//
 AliProtonAnalysisBase::AliProtonAnalysisBase() : 
   TObject(),  fProtonAnalysisLevel("ESD"), fAnalysisMC(kFALSE),
-  fTriggerMode(kMB2), kUseOnlineTrigger(kFALSE), kUseOfflineTrigger(kFALSE), 
-  fPhysicsSelection(0),
+  kUseOfflineTrigger(kFALSE), 
+  fPhysicsSelection(0),fPIDResponse(0),
   fProtonAnalysisMode(kTPC), fProtonPIDMode(kBayesian),
   fAnalysisEtaMode(kFALSE),
   fRunQAAnalysis(kFALSE),
+  fMultFlag(kFALSE),fMultITSSAFlag(kFALSE),fMinMult(0),fMaxMult(0),
   fVxMax(100.), fVyMax(100.), fVzMax(100.), fMinNumOfContributors(0),
-  fNBinsX(0), fMinX(0.), fMaxX(0.),
-  fNBinsY(0), fMinY(0.), fMaxY(0.),
+  fNBinsX(0), fMinX(0), fMaxX(0),
+  fNBinsY(0), fMinY(0), fMaxY(0),
   fMinTPCClusters(0), fMinITSClusters(0),
-  fMaxChi2PerTPCCluster(0.), fMaxChi2PerITSCluster(0.),
-  fMaxCov11(0.), fMaxCov22(0.), fMaxCov33(0.), fMaxCov44(0.), fMaxCov55(0.),
-  fMaxSigmaToVertex(0.), fMaxSigmaToVertexTPC(0.),
-  fMaxDCAXY(0.), fMaxDCAXYTPC(0.),
-  fMaxDCAZ(0.), fMaxDCAZTPC(0.),
-  fMaxDCA3D(0.), fMaxDCA3DTPC(0.),
-  fMaxConstrainChi2(0.), fMinTPCdEdxPoints(0),
+  fMaxChi2PerTPCCluster(0), fMaxChi2PerITSCluster(0),
+  fMaxCov11(0), fMaxCov22(0), fMaxCov33(0), fMaxCov44(0), fMaxCov55(0),
+  fMaxSigmaToVertex(0), fMaxSigmaToVertexTPC(0),
+  fMaxDCAXY(0), fMaxDCAXYTPC(0),
+  fMaxDCAZ(0), fMaxDCAZTPC(0),
+  fMaxDCA3D(0), fMaxDCA3DTPC(0),
+  fMaxConstrainChi2(0), fMinTPCdEdxPoints(0),
   fMinTPCClustersFlag(kFALSE), fMinITSClustersFlag(kFALSE),
   fMaxChi2PerTPCClusterFlag(kFALSE), fMaxChi2PerITSClusterFlag(kFALSE),
   fMaxCov11Flag(kFALSE), fMaxCov22Flag(kFALSE), 
@@ -73,9 +81,9 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fMinTPCdEdxPointsFlag(kFALSE),
-  fPtDependentDcaXY(0), fPtDependentDcaXYFlag(kFALSE), fNSigmaDCAXY(0),
+  fPtDependentDcaXY(0), fPtDependentDcaXYFlag(kFALSE), fNSigmaDCAXY(0.0),
   fFunctionProbabilityFlag(kFALSE), 
-  fNSigma(0), fNRatio(0.),
+  fNSigma(0), fNRatio(0),
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
   fDebugMode(kFALSE), fListVertexQA(0) {
@@ -85,8 +93,14 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
     }*/
+}
 
-  fListVertexQA = new TList();
+//____________________________________________________________________//
+void AliProtonAnalysisBase::SetRunQA(){
+
+fRunQAAnalysis = kTRUE;
+
+fListVertexQA = new TList();
   fListVertexQA->SetName("fListVertexQA");
   TH1F *gHistVx = new TH1F("gHistVx",
 			   "Vx distribution;V_{x} [cm];Entries",
@@ -120,8 +134,6 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
 					     "Number of contributors;N_{contr.};Entries",
 					     100,0.,100.);
   fListVertexQA->Add(gHistNumberOfContributors);
-
-
 }
 
 //____________________________________________________________________//
@@ -154,6 +166,32 @@ Double_t AliProtonAnalysisBase::GetParticleFraction(Int_t i, Double_t p) {
 }
 
 //____________________________________________________________________//
+Bool_t AliProtonAnalysisBase::IsInMultiplicityWindow(AliESDEvent* const fESD){
+
+/*const AliMultiplicity *fMult = fESD->GetMultiplicity();
+if (!fMult){
+	AliError("Can't get multiplicity object");
+	//return;
+	}
+Int_t ntracklet = fMult->GetNumberOfTracklets();*/
+AliCentrality *esdCentrality = fESD->GetCentrality();
+Float_t ntracklet = esdCentrality->GetCentralityPercentile("V0M");
+//Printf("Centrality in base: %f",ntracklet);
+
+/*AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
+if(!fTrackCuts){
+	AliError("Can't get track cut object");
+	}
+Int_t ntracklet = fTrackCuts->GetReferenceMultiplicity(fESD,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+Printf("Multiplicity in base: %i",ntracklet);
+*/
+
+if(ntracklet>=fMinMult && ntracklet<fMaxMult) return kTRUE;
+
+return kFALSE;
+}
+
+//____________________________________________________________________//
 Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
   // Checks if the track is outside the analyzed y-Pt phase space
   Double_t gP = 0.0, gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
@@ -182,6 +220,45 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
     eta = track->Eta();
   }
   
+  if((gPt < fMinY) || (gPt > fMaxY)) {
+      if(fDebugMode)
+	Printf("IsInPhaseSpace: Track rejected because it has a Pt value of %lf (accepted interval: %lf - %lf)",gPt,fMinY,fMaxY);
+      return kFALSE;
+  }
+  if((gP < fMinY) || (gP > fMaxY)) {
+      if(fDebugMode)
+	Printf("IsInPhaseSpace: Track rejected because it has a P value of %lf (accepted interval: %lf - %lf)",gP,fMinY,fMaxY);
+      return kFALSE;
+  }
+  if(fAnalysisEtaMode) {
+    if((eta < fMinX) || (eta > fMaxX)) {
+      if(fDebugMode)
+	Printf("IsInPhaseSpace: Track rejected because it has an eta value of %lf (accepted interval: %lf - %lf)",eta,fMinX,fMaxX);
+      return kFALSE;
+    }
+  }
+  else {
+    if((Rapidity(gPx,gPy,gPz) < -0.5) || (Rapidity(gPx,gPy,gPz) > 0.5)) {
+      if(fDebugMode)
+	Printf("IsInPhaseSpace: Track rejected because it has a y value of %lf (accepted interval: %lf - %lf)",Rapidity(gPx,gPy,gPz),fMinX,fMaxX);
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliAODMCParticle* const track) {
+Double_t gP = 0.0, gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
+  Double_t eta = 0.0;
+
+    gP = track->P();
+    gPt = track->Pt();
+    gPx = track->Px();
+    gPy = track->Py();
+    gPz = track->Pz();
+    eta = track->Eta();
+
   if((gPt < fMinY) || (gPt > fMaxY)) {
       if(fDebugMode)
 	Printf("IsInPhaseSpace: Track rejected because it has a Pt value of %lf (accepted interval: %lf - %lf)",gPt,fMinY,fMaxY);
@@ -391,7 +468,7 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
     }
   }
   if(fTOFpidFlag) {
-    if ((track->GetStatus() & AliESDtrack::kTOFpid) == 0) {
+    if (((track->GetStatus() & AliESDtrack::kTOFout) && (track->GetStatus() & AliESDtrack::kTIME)) == 0) {
       if(fDebugMode)
 	Printf("IsAccepted: Track rejected because it has no TOF pid flag");
       return kFALSE;
@@ -399,6 +476,48 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
   }
 
   return kTRUE;
+}
+
+Bool_t AliProtonAnalysisBase::IsAccepted(AliAODTrack* track){
+Int_t nClustersITS = track->GetITSClusterMap();
+Int_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+Double_t nchi2PerClusterTPC = track->Chi2perNDF();
+
+//gProtonsTPCClusters->Fill(nCrossedRowsTPC);
+
+
+//Printf("Number of TPC Chi2perNDF: %f",nchi2PerClusterTPC);
+
+ if(nchi2PerClusterTPC > fMaxChi2PerTPCCluster) {
+      if(fDebugMode)
+	Printf("AOD IsAccepted: Track rejected because it has a chi2 per TPC cluster %lf (max. requested: %lf)",nchi2PerClusterTPC,fMaxChi2PerTPCCluster);
+      return kFALSE; 
+    } 
+
+if(nCrossedRowsTPC < fMinTPCClusters) {
+      if(fDebugMode)
+	Printf("AOD IsAccepted: Track rejected because it has %d TPC clusters (min. requested: %d)",nCrossedRowsTPC,fMinTPCClusters);
+      return kFALSE;
+    }
+
+    if(nClustersITS < fMinITSClusters) {
+      if(fDebugMode)
+	Printf("AOD IsAccepted: Track rejected because it has %d ITS points (min. requested: %d)",nClustersITS,fMinITSClusters);
+      return kFALSE;
+    }
+
+if((!track->HasPointOnITSLayer(0))&&(!track->HasPointOnITSLayer(1))) {
+      if(fDebugMode)
+	Printf("AOD IsAccepted: Track rejected because it doesn't have a point on either SPD layers");
+      return kFALSE;
+    }
+ // Printf("IsAccepted: Track accepted because it has a chi2 per TPC cluster %lf (max. requested: %lf)",nchi2PerClusterTPC,3.5);
+ // Printf("IsAccepted: Track accepted because it has %d TPC clusters (min. requested: %d)",nCrossedRowsTPC,80);
+ // Printf("IsAccepted: Track accepted because it has %d ITS points (min. requested: %d)",nClustersITS,2);
+ // Printf("IsAccepted: Track accepted because it have a point on SPD layers");
+//gProtonsChi2PerClusterTPC->Fill(nchi2PerClusterTPC);
+//Printf("Number of ITS clusters: %i",nClustersITS);
+return kTRUE;
 }
 
 //____________________________________________________________________//
@@ -456,6 +575,7 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
       gPx = tpcTrack->Px();
       gPy = tpcTrack->Py();
       gPz = tpcTrack->Pz();
+
       track->RelateToVertex(vertex,
 			    esd->GetMagneticField(),
 			    100.,&cParam);
@@ -468,9 +588,12 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
     gPx = track->Px();
     gPy = track->Py();
     gPz = track->Pz();
-    track->PropagateToDCA(vertex,
-			  esd->GetMagneticField(),
-			  100.,dca,cov);
+    AliExternalTrackParam cParam;
+    track->RelateToVertex(vertex,
+			    esd->GetMagneticField(),
+			    100.,&cParam);
+      track->GetImpactParameters(dcaXY,dcaZ);
+      dca[0] = dcaXY; dca[1] = dcaZ;
   }
   dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
 		      TMath::Power(dca[1],2));
@@ -540,9 +663,9 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
       }
   }
   if(fPtDependentDcaXYFlag) {
-    if(TMath::Abs(dca[0]) > kMicrometer2Centimeter*fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) {
+    if(TMath::Abs(dca[0]) > fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) { // kMicrometer2Centimeter*
       if(fDebugMode)
-	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf)",fNSigmaDCAXY,TMath::Abs(dca[0]),fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
+	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf) and Pt is %lf",fNSigmaDCAXY,TMath::Abs(dca[0]),fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
       return kFALSE;
     }
   }
@@ -647,11 +770,86 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
       Printf("GetVertex: Event rejected because the value of the vertex resolution in z is 0");
     return 0;
   }
+  if (fRunQAAnalysis){
+  ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetX());
+  ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetY());
+  ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZ());
+  }//run the qa
+  
+  //check position
+  if(TMath::Abs(vertex->GetX()) > gVxMax) {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because it has a Vx value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetX()),gVxMax,gVxMax);
+    return 0;
+  }
+  if(TMath::Abs(vertex->GetY()) > gVyMax)  {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because it has a Vy value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetY()),gVyMax,gVyMax);
+    return 0;
+  }
+  if(TMath::Abs(vertex->GetZ()) > gVzMax)  {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because it has a Vz value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetZ()),gVzMax,gVzMax);
+    return 0;
+  }
+  if (fRunQAAnalysis){
+  ((TH1F *)(fListVertexQA->At(1)))->Fill(vertex->GetX());
+  ((TH1F *)(fListVertexQA->At(3)))->Fill(vertex->GetY());
+  ((TH1F *)(fListVertexQA->At(5)))->Fill(vertex->GetZ());
+  ((TH1F *)(fListVertexQA->At(6)))->Fill(vertex->GetNContributors());
+  }//run the qa
+  
+  //check number of contributors
+  if(fMinNumOfContributors > 0) {
+    if(fMinNumOfContributors > vertex->GetNContributors()) {
+      if(fDebugMode)
+	Printf("GetVertex: Event rejected because it has %d number of contributors (requested minimum: %d)",vertex->GetNContributors(),fMinNumOfContributors);
+      
+      return 0;
+    }
+  }
+  
+  return vertex;
+}
+
+const AliAODVertex* AliProtonAnalysisBase::GetVertex(AliAODEvent* aod,
+						     Double_t gVxMax,
+						     Double_t gVyMax,
+						     Double_t gVzMax) {
+const AliAODVertex* vertex = 0;
+vertex = aod->GetPrimaryVertex();
+
+  if(!vertex) {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because there is no valid vertex object");
+    return 0;
+  }
+
+  // check Ncontributors
+  if(vertex->GetNContributors() <= 0) {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because the number of contributors for the vertex determination is <= 0");
+    return 0;
+  }
+
+ if(vertex->GetNContributors() <= 0) {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because the number of contributors for the vertex determination is <= 0");
+    return 0;
+  }
+  
+  // check resolution
+ /* Double_t zRes = vertex->GetZRes();
+  if(zRes == 0) {
+    if(fDebugMode)
+      Printf("GetVertex: Event rejected because the value of the vertex resolution in z is 0");
+    return 0;
+  }*/
   ((TH1F *)(fListVertexQA->At(0)))->Fill(vertex->GetX());
   ((TH1F *)(fListVertexQA->At(2)))->Fill(vertex->GetY());
   ((TH1F *)(fListVertexQA->At(4)))->Fill(vertex->GetZ());
 
-  //check position
+ //check position
   if(TMath::Abs(vertex->GetX()) > gVxMax) {
     if(fDebugMode)
       Printf("GetVertex: Event rejected because it has a Vx value of %lf cm (accepted interval: -%lf - %lf)",TMath::Abs(vertex->GetX()),gVxMax,gVxMax);
@@ -681,51 +879,8 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
       return 0;
     }
   }
-  
+
   return vertex;
-}
-
-//________________________________________________________________________
-Bool_t AliProtonAnalysisBase::IsEventTriggered(const AliESDEvent *esd, 
-					       TriggerMode trigger) {
-  // check if the event was triggered
-  ULong64_t triggerMask = esd->GetTriggerMask();
-  TString firedTriggerClass = esd->GetFiredTriggerClasses();
-
-  if(fAnalysisMC) {
-    // definitions from p-p.cfg
-    ULong64_t spdFO = (1 << 14);
-    ULong64_t v0left = (1 << 11);
-    ULong64_t v0right = (1 << 12);
-    
-    switch (trigger) {
-    case kMB1: {
-      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-	return kTRUE;
-      break;
-    }
-    case kMB2: {
-      if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
-	return kTRUE;
-      break;
-    }
-    case kSPDFASTOR: {
-      if (triggerMask & spdFO)
-	return kTRUE;
-      break;
-    }
-    }//switch
-  }
-  else {
-    if(kUseOnlineTrigger) {
-      if(firedTriggerClass.Contains("CINT1B-ABCE-NOPF-ALL"))
-	return kTRUE;
-    }
-    else if(!kUseOnlineTrigger)
-      return kTRUE;
-  }
-
-  return kFALSE;
 }
 
 //________________________________________________________________________
@@ -752,11 +907,6 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   if(fProtonAnalysisMode == kFullHybrid) listOfCuts += "Full Hybrid TPC"; 
   if(fProtonAnalysisMode == kGlobal) listOfCuts += "Global tracking"; 
   l.DrawLatex(0.1,0.74,listOfCuts.Data());
-  listOfCuts = "Trigger mode: "; 
-  if(fTriggerMode == kMB1) listOfCuts += "Minimum bias 1"; 
-  if(fTriggerMode == kMB2) listOfCuts += "Minimum bias 2"; 
-  if(fTriggerMode == kSPDFASTOR) listOfCuts += "FastOR (SPD)"; 
-  l.DrawLatex(0.1,0.66,listOfCuts.Data());
   listOfCuts = "PID mode: "; 
   if(fProtonPIDMode == kBayesian) listOfCuts += "Bayesian PID";
   if(fProtonPIDMode == kRatio) {
@@ -933,7 +1083,7 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
 //________________________________________________________________________
 Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   //Function that checks if a track is a proton
-  Double_t probability[5] = {0.,0.,0.,0.,0.};
+  Double_t probability[5];
   Double_t gPt = 0.0, gP = 0.0, gEta = 0.0;
   Long64_t fParticleType = 0;
  
@@ -946,7 +1096,6 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
 	gP = tpcTrack->P();
 	track->GetTPCpid(probability);
       }
-      else return 0;
     }//TPC standalone or Hybrid TPC
     else if(fProtonAnalysisMode == kGlobal) {
       gPt = track->Pt();
@@ -965,7 +1114,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     }
     if(fParticleType == 4)
       return kTRUE;
-  }//Bayesian pid
+  }
   //Ratio of the measured over the theoretical dE/dx a la STAR
   else if(fProtonPIDMode == kRatio) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
@@ -974,70 +1123,40 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       gP = track->GetInnerParam()->P();
       gEta = tpcTrack->Eta();
     }
-    Double_t fAlephParameters[5] = {0.,0.,0.,0.,0.};
-    if(fAnalysisMC) {
-      fAlephParameters[0] = 2.15898e+00/50.;
-      fAlephParameters[1] = 1.75295e+01;
-      fAlephParameters[2] = 3.40030e-09;
-      fAlephParameters[3] = 1.96178e+00;
-      fAlephParameters[4] = 3.91720e+00;
-    }
-    else {
-      fAlephParameters[0] = 0.0283086;
-      fAlephParameters[1] = 2.63394e+01;
-      fAlephParameters[2] = 5.04114e-11;
-      fAlephParameters[3] = 2.12543e+00;
-      fAlephParameters[4] = 4.88663e+00;
-    }
-    
-    AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
-    tpcResponse->SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+
+    AliTPCPIDResponse tpcResponse = dynamic_cast<AliTPCPIDResponse&>(fPIDResponse->GetTPCResponse());
 
     Double_t normalizeddEdx = -10.;
-    if((track->GetTPCsignal() > 0.0) && (tpcResponse->GetExpectedSignal(gP,AliPID::kProton) > 0.0))
-      normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton));
-
-    delete tpcResponse;
+    if((track->GetTPCsignal() > 0.0) && (tpcResponse.GetExpectedSignal(gP,AliPID::kProton) > 0.0))
+      normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
 
     if(normalizeddEdx >= fNRatio)
       return kTRUE;
   }//kRatio PID mode
   //Definition of an N-sigma area around the dE/dx vs P band
   else if(fProtonPIDMode == kSigma) {
-    Double_t fAlephParameters[5];
-    if(fAnalysisMC) {
-      fAlephParameters[0] = 2.15898e+00/50.;
-      fAlephParameters[1] = 1.75295e+01;
-      fAlephParameters[2] = 3.40030e-09;
-      fAlephParameters[3] = 1.96178e+00;
-      fAlephParameters[4] = 3.91720e+00;
-    }
-    else {
-      fAlephParameters[0] = 0.0283086;
-      fAlephParameters[1] = 2.63394e+01;
-      fAlephParameters[2] = 5.04114e-11;
-      fAlephParameters[3] = 2.12543e+00;
-      fAlephParameters[4] = 4.88663e+00;
-    }
 
-    Double_t nsigma = 100.0;
-    AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
-    tpcResponse->SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+
+    Double_t nsigmaTPC = 100.0;
+   // Double_t nsigmaTOF = 100.0;
     
-    Double_t mom = track->GetP();
-    const AliExternalTrackParam *in = track->GetInnerParam();
-    if (in)
-      mom = in->GetP();
+   AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    if(tpcTrack) {
+      gPt = tpcTrack->Pt();
+      gP = track->GetInnerParam()->P();
+      gEta = tpcTrack->Eta();
+    }
 
-    nsigma = TMath::Abs(tpcResponse->GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),AliPID::kProton));
-  
-    delete tpcResponse;
-    if(nsigma <= fNSigma) 
-      return kTRUE;
+    nsigmaTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+    //nsigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton));
+    if(nsigmaTPC <= fNSigma){     
+return kTRUE;
+}
+
   }//kSigma PID method
-
   return kFALSE;
 }
+
 
 
 

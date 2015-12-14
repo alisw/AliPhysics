@@ -63,7 +63,7 @@ const Double_t  CentMax = 102.;
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
 const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
-const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
+const Double_t  PtMaxGEN  =  20.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
 const Bool_t    CutInjectedSignals = kFALSE;
 const UInt_t    NminEleInEventForRej = 2;
@@ -83,6 +83,18 @@ const UInt_t    NminEleInEventForRej = 2;
 //AliDielectronTrackCuts *noconv=new AliDielectronTrackCuts("noConv","conversion tagging");
 //noconv->SetV0DaughterCut(AliPID::kElectron,kTRUE);
 //die->GetTrackFilter().AddCuts(noconv);
+
+//________________________________________________________________
+void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task)
+{
+  AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
+  eleFinalState->SetFillPureMCStep(kFALSE);
+  eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)
+  eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();
+  task->AddSignalMC(eleFinalState);
+}
 
 //________________________________________________________________
 AliAnalysisCuts* SetupEventCuts()
@@ -227,8 +239,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts();
 
   //global
- // fesdTrackCuts->SetPtRange( 0.2 , 100. );
- // fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
+//  fesdTrackCuts->SetPtRange( 0.2 , 100. );
+//  fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
   fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   fesdTrackCuts->SetDCAToVertex2D(kFALSE);

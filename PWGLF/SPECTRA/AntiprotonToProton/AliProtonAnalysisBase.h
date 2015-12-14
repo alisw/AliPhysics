@@ -22,15 +22,21 @@ class TList;
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
 #include "AliPID.h"
+#include "AliAODMCParticle.h"
 class AliESDEvent;
 class AliESDtrack;
 class AliESDVertex;
+class AliAODVertex;
+class AliAODEvent;
+class AliAODTrack;
+class AliPIDResponse;
 
 class AliProtonAnalysisBase : public TObject {
  public:
-  enum TriggerMode { kMB1 = 0, kMB2, kSPDFASTOR };
+ 
   enum AnalysisMode { kInvalid = -1, kTPC = 0, kHybrid, kFullHybrid, kGlobal };
   enum PIDMode { kBayesian = 0, kRatio, kSigma};
+  enum CollidingSystem {pp = 0, pA, AA};
 
   AliProtonAnalysisBase();
   virtual ~AliProtonAnalysisBase();
@@ -38,22 +44,30 @@ class AliProtonAnalysisBase : public TObject {
   void SetAnalysisLevel(const char* type) {fProtonAnalysisLevel = type;}
   void SetAnalysisMode(AnalysisMode analysismode) {fProtonAnalysisMode = analysismode;}
   void SetEtaMode() {fAnalysisEtaMode = kTRUE;}
-  void SetTriggerMode(TriggerMode triggermode) {
-    fAnalysisMC = kTRUE; fTriggerMode = triggermode;}
+  
   void SetPIDMode(PIDMode pidmode) {fProtonPIDMode = pidmode;}
+
+  void SetCollidingSystem(CollidingSystem system) {fSystem = system;}
+  CollidingSystem GetCollidingSystem() {return fSystem;}
 
   const char *GetAnalysisLevel() {return fProtonAnalysisLevel.Data();}
   AnalysisMode GetAnalysisMode() const {return fProtonAnalysisMode;}
   Bool_t GetEtaMode() const {return fAnalysisEtaMode;}
-  TriggerMode GetTriggerMode() const {return fTriggerMode;}
   PIDMode GetPIDMode() const {return fProtonPIDMode;}
   Bool_t GetMCAnalysisMode() {return fAnalysisMC;}
+  void SetMCAnalysisMode(Bool_t mode) {fAnalysisMC = mode;}
 
   const  AliESDVertex *GetVertex(AliESDEvent *esd,
 				 AnalysisMode mode,
 				 Double_t gVx = 100.,
 				 Double_t gVy = 100.,
 				 Double_t gVz = 100.);
+
+  const  AliAODVertex *GetVertex(AliAODEvent *aod,
+				 Double_t gVx = 100.,
+				 Double_t gVy = 100.,
+				 Double_t gVz = 100.);
+
   void SetAcceptedVertexDiamond(Double_t gVx, Double_t gVy, Double_t gVz) {
     fVxMax = gVx; fVyMax = gVy; fVzMax = gVz;}
   Double_t GetVxMax() const {return fVxMax;}
@@ -75,31 +89,46 @@ class AliProtonAnalysisBase : public TObject {
   Double_t GetMaxX() const {return fMaxX;}
   Double_t GetMaxY() const {return fMaxY;}
 
-  //Trigger
-  Bool_t IsOnlineTriggerUsed() {return kUseOnlineTrigger;}
-  void UseOnlineTrigger() {kUseOnlineTrigger = kTRUE;}
-  Bool_t IsEventTriggered(const AliESDEvent *esd,
-			  TriggerMode trigger = kMB2);
+  TF1 *GetPtDependentDcaXY () const {return fPtDependentDcaXY;}
+
+  //Physics Selection
   void OfflineTriggerInit() {
     kUseOfflineTrigger = kTRUE;
     fPhysicsSelection = new AliPhysicsSelection();
-    fPhysicsSelection->AddBackgroundIdentification(new AliBackgroundSelection());
-    fPhysicsSelection->SetAnalyzeMC(fAnalysisMC);
+    if(fAnalysisMC)fPhysicsSelection->SetAnalyzeMC();
   }
   Bool_t IsOfflineTriggerUsed() {return kUseOfflineTrigger;}
   AliPhysicsSelection *GetPhysicsSelectionObject() {return fPhysicsSelection;}
+//PID object
+  void SetPIDResponse(AliPIDResponse *response) {fPIDResponse = response;}
+  AliPIDResponse *GetPIDResponse() {return fPIDResponse;}
 
   Bool_t IsPrimary(AliESDEvent *esd,
 		   const AliESDVertex *vertex, 
 		   AliESDtrack *track);
   Bool_t IsAccepted(AliESDtrack *track);
   Bool_t IsInPhaseSpace(AliESDtrack *track);
+  Bool_t IsAccepted(AliAODTrack *track);
+  Bool_t IsInPhaseSpace(AliAODMCParticle *track);
 
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const; 
   Double_t Rapidity(Double_t Px, Double_t Py, Double_t Pz) const;
   
   //Cut functions
+  void	SetITSSAMultiplicity(){
+	fMultITSSAFlag = kTRUE;
+	}
+  void    SetMultiplicityMode(){
+	fMultFlag = kTRUE;
+	}
+  void    SetMultiplicityRange(Float_t min,Float_t max){
+	fMinMult = min;
+	fMaxMult = max;
+	}
+  Bool_t  IsUsedMultiplicitySelection() {return fMultFlag;}
+  Bool_t  IsUsedITSSAMultiplicitySelection() {return fMultITSSAFlag;}
   void    SetPointOnSPDLayers() {fPointOnSPDLayersFlag = kTRUE;}
+  void    UnSetPointOnSPDLayers() {fPointOnSPDLayersFlag = kFALSE;}
   void    SetPointOnSDDLayers() {fPointOnSDDLayersFlag = kTRUE;}
   void    SetPointOnSSDLayers() {fPointOnSSDLayersFlag = kTRUE;}
   void    SetPointOnITSLayer1() {fPointOnITSLayer1Flag = kTRUE;}
@@ -183,6 +212,7 @@ class AliProtonAnalysisBase : public TObject {
   void    SetMaxDCAXY(Double_t maxDCAXY) {
     fMaxDCAXY = maxDCAXY;
     fMaxDCAXYFlag = kTRUE;
+    //fPtDependentDcaXYFlag = kFALSE;
   }
   Bool_t  IsUsedMaxDCAXY() const {return fMaxDCAXYFlag;}
   Double_t   GetMaxDCAXY() const {return fMaxDCAXY;}
@@ -190,6 +220,7 @@ class AliProtonAnalysisBase : public TObject {
   void    SetMaxDCAXYTPC(Double_t maxDCAXY) {
     fMaxDCAXYTPC = maxDCAXY;
     fMaxDCAXYTPCFlag = kTRUE;
+    
   }
   Bool_t  IsUsedMaxDCAXYTPC() const {return fMaxDCAXYTPCFlag;}
   Double_t   GetMaxDCAXYTPC() const {return fMaxDCAXYTPC;}
@@ -252,7 +283,7 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t  IsUsedTOFpid() const {return fTOFpidFlag;}
 
   TCanvas *GetListOfCuts();
-
+  Bool_t IsInMultiplicityWindow(AliESDEvent* const fESD);
   //PID related functions
   Bool_t IsProton(AliESDtrack *track);
   void SetNSigma(Int_t nsigma) {fNSigma = nsigma;}  
@@ -260,7 +291,7 @@ class AliProtonAnalysisBase : public TObject {
   void SetRatio(Double_t ratio) {fNRatio = ratio;}
   Double_t GetRatio() {return fNRatio;}
   void SetPriorProbabilities(Double_t * const partFrac) {
-    for(Int_t i = 0; i < AliPID::kSPECIESCN; i++) fPartFrac[i] = partFrac[i];}
+    for(Int_t i = 0; i < AliPID::kSPECIESC; i++) fPartFrac[i] = partFrac[i];} 
   void SetPriorProbabilityFunctions(TF1 *const felectron, 
 				    TF1 *const fmuon, 
 				    TF1 *const fpion, 
@@ -277,7 +308,7 @@ class AliProtonAnalysisBase : public TObject {
   void SetDebugMode() {fDebugMode = kTRUE;}
   Bool_t GetDebugMode() const {return fDebugMode;}
 
-  void SetRunQA() {fRunQAAnalysis = kTRUE;}
+  void SetRunQA();
   Bool_t IsQARun() {return fRunQAAnalysis;}
   TList *GetVertexQAList() {return fListVertexQA;}
 
@@ -285,15 +316,16 @@ class AliProtonAnalysisBase : public TObject {
   AliProtonAnalysisBase(const AliProtonAnalysisBase&); // Not implemented
   AliProtonAnalysisBase& operator=(const AliProtonAnalysisBase&); // Not implemented
 
+  AliPIDResponse *fPIDResponse; // PID response Handler
+  
   TString fProtonAnalysisLevel;//"ESD", "AOD" or "MC"
   Bool_t fAnalysisMC; //kTRUE if MC analysis while reading the ESDs
-  TriggerMode fTriggerMode; //Trigger mode
-  Bool_t kUseOnlineTrigger; //use the online trigger or not
   Bool_t kUseOfflineTrigger; //use the offline trigger or not
   AliPhysicsSelection *fPhysicsSelection; //Trigger selection: offline
   AnalysisMode fProtonAnalysisMode; //Analysis mode: TPC-Hybrid-Global
   PIDMode fProtonPIDMode; //PID mode: Bayesian-dE/dx ratio-Nsigma areas
   Bool_t fAnalysisEtaMode; //run the analysis in eta or y
+  CollidingSystem fSystem; //
 
   Bool_t fRunQAAnalysis; //boolnean to indicate to run the QA or not
   Double_t fVxMax, fVyMax, fVzMax; //vertex diamond constrain 
@@ -305,6 +337,9 @@ class AliProtonAnalysisBase : public TObject {
   Double_t fMinY, fMaxY; //min & max value of pT
   
   //cuts
+  Bool_t fMultFlag;
+  Bool_t fMultITSSAFlag;
+  Float_t fMinMult, fMaxMult;
   Int_t fMinTPCClusters, fMinITSClusters; //min TPC & ITS clusters
   Double_t fMaxChi2PerTPCCluster, fMaxChi2PerITSCluster; //max chi2 per TPC & ITS cluster
   Double_t fMaxCov11, fMaxCov22, fMaxCov33, fMaxCov44, fMaxCov55; //max values of cov. matrix

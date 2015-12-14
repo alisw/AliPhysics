@@ -268,6 +268,9 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
 
     AliHFEV0taginfo *fV0Tagger;           // Tags v0 tracks per Event 
 
+    AliPIDResponse *fPIDResponse;         //! PID response object
+
+
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output

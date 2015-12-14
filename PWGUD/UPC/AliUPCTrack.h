@@ -15,7 +15,7 @@ class AliUPCTrack : public TObject
 public:
   AliUPCTrack();
 
-  virtual ~AliUPCTrack() {};
+  virtual ~AliUPCTrack();
 
   void Clear(Option_t * /*option*/ ="");
 
@@ -45,6 +45,9 @@ public:
   void SetImpactParameters(Float_t *p, Float_t *cov);
   void SetImpactParametersSPD(Float_t *p, Float_t *cov);
   void SetImpactParametersIP(Float_t *p, Float_t *cov);
+
+  Int_t MakeArrayInt(Int_t size);
+  Int_t MakeArrayD(Int_t size);
 
   //Getters
   void GetPxPyPz(Double_t p[3]) const {p[0]=fP[0]; p[1]=fP[1]; p[2]=fP[2];}
@@ -80,6 +83,9 @@ public:
   void GetImpactParametersIP(Double_t &xy, Double_t &z) const {xy = (Double_t) fdzIP[0]; z = (Double_t) fdzIP[1];}
   void GetImpactParametersIP(Double_t *p, Double_t *cov) const;
 
+  TArrayI *GetArrayInt(void) const { return fArrayInt; }
+  TArrayD *GetArrayD(void) const { return fArrayD; }
+
 protected:
   AliUPCTrack(const AliUPCTrack &o);
   AliUPCTrack &operator=(const AliUPCTrack &o);
@@ -106,8 +112,10 @@ protected:
   Float_t fCovIP[3]; // Covariance matrix of the impact parameters to nominal interaction point
   Float_t fNSigmasTPC[5]; // TPC PID per species, kElectron = 0,  kMuon = 1,  kPion = 2,  kKaon = 3,  kProton = 4
   Float_t fNSigmasTOF[5]; // TOF PID
+  TArrayI *fArrayInt; // extension of the central track for other integer parameters
+  TArrayD *fArrayD; // extension of the central track for other double parameters
 
-  ClassDef(AliUPCTrack,1)
+  ClassDef(AliUPCTrack,1);
 };
 
 #endif

@@ -143,6 +143,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
   for(int icls = 0; icls < fInputEvent->GetNumberOfCaloClusters(); icls++){
     clust = fInputEvent->GetCaloCluster(icls);
     if(!clust->IsEMCAL()) continue;
+    if(clust->GetIsExotic()) continue;
     for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit != triggerclassesSelected.end(); ++trgit){
       ProcessCluster(*trgit, clust, false);
     }
@@ -154,6 +155,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
       clust = dynamic_cast<AliVCluster *>(*clustit);
       if(!clust) continue;
       if(!clust->IsEMCAL()) continue;
+      if(clust->GetIsExotic()) continue;
       for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit != triggerclassesSelected.end(); ++trgit){
         ProcessCluster(*trgit, clust, true);
       }
@@ -183,16 +185,17 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
 
 void AliAnalysisTaskEMCALDCALTrigger2015::ProcessCluster(const TString &triggerclass, const AliVCluster * const clust, bool isCalib){
   if(!clust->IsEMCAL()) return;
-  fHistos->FillTH1(Form("hClusterEnergy%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), clust->E());
+  double energy = clust->GetNonLinCorrEnergy();
+  fHistos->FillTH1(Form("hClusterEnergy%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), energy);
   Double_t vertex[3];
   fInputEvent->GetPrimaryVertexSPD()->GetXYZ(vertex);
   TLorentzVector clustervec;
   clust->GetMomentum(clustervec, vertex);
-  fHistos->FillTH2(Form("hClusterEnergyEta%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), clustervec.Eta(), clust->E());
+  fHistos->FillTH2(Form("hClusterEnergyEta%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), clustervec.Eta(), energy);
   Int_t supermoduleID(-1);
   if(fGeometry->SuperModuleNumberFromEtaPhi(clustervec.Eta(), clustervec.Phi(), supermoduleID)){
-    fHistos->FillTH1(Form("hClusterEnergySupermodule%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), supermoduleID, clust->E());
-    fHistos->FillTH2(Form("hClusterEnergyEtaSupermodule%d%s%s", supermoduleID,  isCalib ? "Calib" : "Uncalib", triggerclass.Data()), clustervec.Eta(), clust->E());
+    fHistos->FillTH1(Form("hClusterEnergySupermodule%s%s", isCalib ? "Calib" : "Uncalib", triggerclass.Data()), supermoduleID, energy);
+    fHistos->FillTH2(Form("hClusterEnergyEtaSupermodule%d%s%s", supermoduleID,  isCalib ? "Calib" : "Uncalib", triggerclass.Data()), clustervec.Eta(), energy);
   }
 }
 

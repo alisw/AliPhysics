@@ -31,7 +31,7 @@ void RunReducedEventAnalysis(AliReducedAnalysisTaskSE* analysis, const Char_t* o
   //if(gkFriendFilename[0]!='\0') friendChain = new TChain("DstFriendTree");
   TChain* chain = AliReducedVarManager::GetChain(inputfilename, howMany, offset, entries, friendChain, gkFriendFilename);
   if(!chain) return;
-  //entries=500;
+  //entries=3;
   //if(kTRUE){  // For merging dstTrees
   //  saveFile->cd();
   //  chain->CloneTree(-1,"fast");

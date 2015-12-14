@@ -104,7 +104,9 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   Bool_t fOnlyPrimaries; // switch to analyze only primaries
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderESDChainKine, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderESDChainKine, 1);
+  /// \endcond
 #endif
 
     };

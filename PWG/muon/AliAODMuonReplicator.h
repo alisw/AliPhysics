@@ -16,7 +16,7 @@
 
 //
 // Implementation of a branch replicator 
-// to produce slim muon and dimuon aods.
+// to produce slim muon aods.
 //
 // Author: L. Aphecetche (Subatech)
 
@@ -59,7 +59,6 @@ private:
   mutable TClonesArray* fTracks; //! internal array of muon tracks
   AliAnalysisCuts* fVertexCut; // decides which vertices to keep
   mutable TClonesArray* fVertices; //! internal array of vertices
-  mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable AliAODVZERO* fVZERO; //! internal vzero object
   mutable AliAODTZERO* fTZERO; //! internal tzero object
   mutable AliAODAD* fAD; //!internal ad object
@@ -73,14 +72,14 @@ private:
   Int_t fMCMode; // MC filtering switch (0=none=no mc information,1=normal=simple copy,>=2=aggressive=filter out)
   TExMap fLabelMap; //! for MC label remapping (in case of aggressive filtering)
   TExMap fParticleSelected; //! List of selected MC particles
-  Bool_t fReplicateHeader; //! whether or not the replicate the AOD Header
-  Bool_t fReplicateTracklets; //! whether or not the replicate the AOD Tracklets
+  Bool_t fReplicateHeader; // whether or not the replicate the AOD Header
+  Bool_t fReplicateTracklets; // whether or not the replicate the AOD Tracklets
   
 private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,8) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,10) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

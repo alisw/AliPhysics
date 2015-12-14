@@ -384,10 +384,14 @@ void ConfigOCDB(Int_t run){
   tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
-  // in CPass1 use a default setting
-//   tpcRecoParam->SetUseGainCorrectionTime(0);
-//   tpcRecoParam->SetUseRPHICorrection(kFALSE); 
-//   tpcRecoParam->SetUseTOFCorrection(kFALSE);
+
+  // enabling the Gain correction in CPass1, same settings as in CPass0 are used
+  tpcRecoParam->SetUseGainCorrectionTime(0);
+  tpcRecoParam->SetUseRPHICorrection(kFALSE); 
+  tpcRecoParam->SetUseTOFCorrection(kFALSE);
+  tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+
+  // for the rest, in CPass1 use a default setting
 //   //
 //   tpcRecoParam->SetUseDriftCorrectionTime(0);
 //   tpcRecoParam->SetUseDriftCorrectionGY(0);
@@ -399,7 +403,6 @@ void ConfigOCDB(Int_t run){
 //   tpcRecoParam->SetUseFieldCorrection(kFALSE);
 //   tpcRecoParam->SetUseExBCorrection(kFALSE);
 //   //
-//   tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
 //   tpcRecoParam->SetUseAlignmentTime(kFALSE);
 //   tpcRecoParam->SetUseComposedCorrection(kTRUE);
 

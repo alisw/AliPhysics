@@ -23,7 +23,8 @@ AliEmcalTriggerFastORAP::AliEmcalTriggerFastORAP() :
   fCol(0),
   fRow(0),
   fL0Amp(0),
-  fL1Amp(0)
+  fL1Amp(0),
+  fL0Time(0)
 {
 
 }
@@ -36,7 +37,8 @@ AliEmcalTriggerFastORAP::AliEmcalTriggerFastORAP(UInt_t L0amp, UInt_t L1amp, Int
   fCol(0),
   fRow(0),
   fL0Amp(L0amp),
-  fL1Amp(L1amp)
+  fL1Amp(L1amp),
+  fL0Time(0)
 {
   Initialize(absId, geom);
 }
@@ -49,7 +51,8 @@ AliEmcalTriggerFastORAP::AliEmcalTriggerFastORAP(UInt_t L0amp, UInt_t L1amp, Int
   fCol(0),
   fRow(0),
   fL0Amp(L0amp),
-  fL1Amp(L1amp)
+  fL1Amp(L1amp),
+  fL0Time(0)
 {
   Initialize(globalRow, glocalCol, geom);
 }
@@ -82,10 +85,11 @@ void AliEmcalTriggerFastORAP::Initialize(Int_t absId, const AliEMCALGeometry* ge
   fAbsId = absId;
 }
 
-void AliEmcalTriggerFastORAP::Initialize(UInt_t L0amp, UInt_t L1amp, Int_t globalRow, Int_t glocalCol, const AliEMCALGeometry* geom)
+void AliEmcalTriggerFastORAP::Initialize(UInt_t L0amp, UInt_t L1amp, Int_t globalRow, Int_t glocalCol, Int_t L0time, const AliEMCALGeometry* geom)
 {
   fL0Amp = L0amp;
   fL1Amp = L1amp;
+  fL0Time = L0time;
 
   Initialize(globalRow, glocalCol, geom);
 }

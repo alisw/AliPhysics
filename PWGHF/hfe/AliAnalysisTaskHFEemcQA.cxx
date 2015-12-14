@@ -56,6 +56,8 @@
 //#include "AliCFContainer.h"
 //#include "AliCFManager.h"
 
+#include "AliCentrality.h"
+
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliEmcalTriggerPatchInfoAP.h"
@@ -88,14 +90,18 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fFlagClsTypeDCAL(kTRUE),
   fOutputList(0),
   fNevents(0),
+  fCent(0),
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
   fTrigMulti(0),
   fHistClustE(0),
+  fHistClustEcent(0),
   fEMCClsEtaPhi(0),
   fHistClustEEG1(0),
+  fHistClustEEG1cent(0),
   fHistClustEEG2(0),
+  fHistClustEEG2cent(0),
   fEMCClsEtaPhiEG1(0),
   fEMCClsEtaPhiEG2(0),
   fHistoNCls(0),
@@ -179,14 +185,18 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fFlagClsTypeDCAL(kTRUE),
   fOutputList(0),
   fNevents(0),
+  fCent(0), 
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
   fTrigMulti(0),
   fHistClustE(0),
+  fHistClustEcent(0),
   fEMCClsEtaPhi(0),
   fHistClustEEG1(0),
+  fHistClustEEG1cent(0),
   fHistClustEEG2(0),
+  fHistClustEEG2cent(0),
   fEMCClsEtaPhiEG1(0),
   fEMCClsEtaPhiEG2(0),
   fHistoNCls(0),
@@ -240,7 +250,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
 {
   //Default constructor
 
-  fvalueElectron = new Double_t[9];
+  fvalueElectron = new Double_t[10];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -291,6 +301,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fNevents->GetXaxis()->SetBinLabel(2,"With >2 Trks");
   fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
 
+  fCent = new TH1F("fCent","Centrality",100,0,100);
+  fOutputList->Add(fCent);
+
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
   fOutputList->Add(fVtxZ);
 
@@ -306,14 +319,23 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
 
+  fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fOutputList->Add(fHistClustEcent);
+
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
 
   fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG1);
 
+  fHistClustEEG1cent = new TH2F("fHistClustEEG1cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fOutputList->Add(fHistClustEEG1cent);
+
   fHistClustEEG2 = new TH1F("fHistClustEEG2", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG2);
+
+  fHistClustEEG2cent = new TH2F("fHistClustEEG2cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fOutputList->Add(fHistClustEEG2cent);
 
   fEMCClsEtaPhiEG1 = new TH2F("fEMCClsEtaPhiEG1","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhiEG1);
@@ -466,10 +488,10 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
   //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
   //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
-  Int_t bins[9]={8,500,200,400,400,400,400,3,200}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  Double_t xmin[9]={-0.5,0,-10,0,0,0,0,-0.5,-10};
-  Double_t xmax[9]={7.5,25,10,2,2,2,2,2.5,10};
-  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;",9,bins,xmin,xmax);
+  Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  Double_t xmin[10]={-0.5,0,-10,0,0,0,0,-0.5,-10,0};
+  Double_t xmax[10]={7.5,25,10,2,2,2,2,2.5,10,100};
+  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
   PostData(1,fOutputList);
@@ -532,6 +554,22 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   //PID initialised//
   ///////////////////
   fpidResponse = fInputHandler->GetPIDResponse();
+
+  ///////////////////
+  // centrality
+ /////////////////////
+
+  Double_t centrality = -1;
+  AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality(); 
+  centrality = fCentrality->GetCentralityPercentile("V0M");
+
+  printf("mim cent selection %d\n",fcentMim);
+  printf("max cent selection %d\n",fcentMax);
+
+  if(fcentMim>-0.5)
+    {
+     if(centrality < fcentMim || centrality > fcentMax)return;
+    }
 
   ////////////////
   //Event vertex//
@@ -607,6 +645,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ////////////////////
   if(TMath::Abs(Zvertex)>10.0)return;
   fNevents->Fill(2); //events after z vtx cut
+  fCent->Fill(centrality); //centrality dist.
 
   /////////////////////////////
   //EMCAL cluster information//
@@ -655,6 +694,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
       Double_t clustE = clust->E();
       fHistClustE->Fill(clustE);
+      if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       fHistoNCells->Fill(clustE,clust->GetNCells());
 
@@ -664,10 +704,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       FindPatches(hasfiredEG1,hasfiredEG2,emceta,emcphi);
       if(hasfiredEG1){
         fHistClustEEG1->Fill(clustE);
+        if(centrality>-1)fHistClustEEG1cent->Fill(centrality,clustE);
         fEMCClsEtaPhiEG1->Fill(emceta,emcphi);
       }
       if(hasfiredEG2){
         fHistClustEEG2->Fill(clustE);
+        if(centrality>-1)fHistClustEEG2cent->Fill(centrality,clustE);
         fEMCClsEtaPhiEG2->Fill(emceta,emcphi);
       }
 
@@ -910,11 +952,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fvalueElectron[3] = eop;
       fvalueElectron[4] = clustMatch->GetM20();
       fvalueElectron[5] = clustMatch->GetM02();
-      //fvalueElectron[6] = sqm20;
-      //fvalueElectron[7] = sqm02;
       fvalueElectron[6] = sqm02m20;
       fvalueElectron[7] = pid_ele;
       fvalueElectron[8] = fTPCnSigma_Pi;
+      fvalueElectron[9] = centrality;
 
       if(fFlagSparse){
         fSparseElectron->Fill(fvalueElectron);

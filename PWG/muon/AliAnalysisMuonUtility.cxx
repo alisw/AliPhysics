@@ -31,6 +31,7 @@
 #include "TMath.h"
 #include "TLorentzVector.h"
 #include "TFile.h"
+#include "TRegexp.h"
 
 // STEER includes
 #include "AliAODEvent.h"
@@ -451,6 +452,30 @@ Int_t AliAnalysisMuonUtility::GetPassNumber ( const char* str )
   
   AliWarningClass(Form("Cannot find pass number in: %s", str));
   return -1;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisMuonUtility::GetRunNumber ( const char* str )
+{
+  /// Get run number string
+  TString runNumber = GetRunNumberAsString(str);
+  if ( runNumber.IsNull() ) return -1;
+  return runNumber.Atoi();
+}
+
+//________________________________________________________________________
+TString AliAnalysisMuonUtility::GetRunNumberAsString ( const char* str )
+{
+  /// Get run number in string (as string)
+  TString found = "";
+  TString queryString(str);
+  for ( Int_t ndigits=9; ndigits>=6; ndigits-- ) {
+    TString sre = "";
+    for ( Int_t idigit=0;idigit<ndigits; idigit++ ) sre += "[0-9]";
+    found = queryString(TRegexp(sre.Data()));
+    if ( ! found.IsNull() ) break;
+  }
+  return found;
 }
 
 //________________________________________________________________________

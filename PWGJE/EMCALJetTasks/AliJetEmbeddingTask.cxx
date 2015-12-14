@@ -32,7 +32,15 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0), 
-  fInput(0)
+  fInput(0),
+  fRandomEntry(0),
+  fNBins(10),
+  fDownscale(0),
+  fPtRanges(0),
+  fNevPerBin(0),
+  fCount(0),
+  fCurrentBin(0),
+  fGoBack(0)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -58,7 +66,15 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fBranchJDetName("fJetDet"),
   fTreeJet4Vect(0),
   fCurrentEntry(0),
-  fInput(0)
+  fInput(0),
+  fRandomEntry(0),
+  fNBins(10),
+  fDownscale(0),
+  fPtRanges(0),
+  fNevPerBin(0),
+  fCount(0),
+  fCurrentBin(0),
+  fGoBack(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -69,6 +85,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
 AliJetEmbeddingTask::~AliJetEmbeddingTask()
 {
   // Destructor
+  delete[] fDownscale; fDownscale = 0;
+  delete[] fPtRanges; fPtRanges = 0;
 }
 
 //________________________________________________________________________
@@ -85,8 +103,22 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
       Printf("Emb task");
+      TLorentzVector *detjet = 0;
+      fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
-     fTreeJet4Vect->Show();
+      fTreeJet4Vect->Show();
+      if(!fRandomEntry && fPtMin != 0 && fPtMax != 0){
+      	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
+      	 for(Int_t i = 0; i<fTreeJet4Vect->GetEntries(); i++){
+      	    fTreeJet4Vect->GetEntry(i);
+      	    if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
+      	       fCurrentEntry = i;
+      	       AliInfo(Form("Setting fCurrentEntry to %d: will loop from there", fCurrentEntry));
+      	       
+      	       break;
+      	    }
+      	 }
+      }
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -132,7 +164,13 @@ void AliJetEmbeddingTask::Run()
     for (Int_t i = 0; i < fNTracks; ++i) {
 
        Short_t charge = 1;
-       
+       if(fNeutralFraction>0.) {
+       	  Double_t rnd = gRandom->Rndm();
+       	  if(rnd<fNeutralFraction) {
+       	     charge = 0;
+       	     //mass = fNeutralMass;
+       	  }
+       }
        // Add track from tree of 4-vectors (jet reco) and save the particle level somewhere
        if(fFromTree){
        	  if(!fTreeJet4Vect || fBranchJDetName.IsNull()) {
@@ -143,8 +181,7 @@ void AliJetEmbeddingTask::Run()
        	  fTreeJet4Vect->ResetBranchAddresses();
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
-       	  Double_t pTemb = 0;
-       	  while(pTemb < fMinPtEmb){
+       	  Double_t pTemb = -1;
        	  if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
@@ -152,11 +189,60 @@ void AliJetEmbeddingTask::Run()
        	     bDet->GetEntry(fCurrentEntry);
        	  }
        	  pTemb = jetDet->Pt();
-       	  //Printf("Embedding entry %d -> Det Lev %.2f, %.2f, %.2f, %.2f", fCurrentEntry, jetDet->Pt(), jetDet->Phi(), jetDet->Eta(), jetDet->M());
-       	  fCurrentEntry++;
-       	  if (pTemb >= fMinPtEmb) AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(), 0,0,0,0, kFALSE, 0, charge, jetDet->M());
+       	  
+       	  // selected pT range 
+       	  if((fPtMin != 0 && fPtMax != 0) && !fRandomEntry) {
+       	     while(!(pTemb > fPtMin && pTemb < fPtMax)){
+       	     	fCurrentEntry++;
+       	     	if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     	else {
+       	     	   fCurrentEntry = 0;
+       	     	   AliWarning("Starting from first entry again");
+       	     	   bDet->GetEntry(fCurrentEntry);
+       	     	}
+       	     	pTemb = jetDet->Pt();
+       	     }
        	  }
-       } else {
+       	  // exclude a fraction of the entries -- doesn't work very well
+       	  if(fRandomEntry){
+  
+     	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     else {
+       	     	fCurrentEntry = 0;
+       	     	AliWarning("Starting from first entry again");
+       	     	bDet->GetEntry(fCurrentEntry);
+       	     }
+       	     pTemb = jetDet->Pt();
+       	     
+       	     Float_t downscl = GetDownscalinigFactor();
+       	     Float_t random = gRandom->Rndm();
+       	     
+       	     while (random > downscl){
+       	     	fCurrentEntry++;
+       	     	random = gRandom->Rndm();
+       	     	if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     	else {
+       	     	   fCurrentEntry = 0;
+       	     	   AliWarning("Starting from first entry again");
+       	     	   bDet->GetEntry(fCurrentEntry);
+       	     	}
+       	     	pTemb = jetDet->Pt();
+       	     	if(pTemb < fPtRanges[fCurrentBin]) {
+       	     	   random = gRandom->Rndm();
+       	     	   continue;
+       	     	}
+       	     	   
+       	     }
+       	     
+       	  }
+
+       	  // Add the track that complies with the settings 
+       	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
+       	  
+       	  fCount++; // count the number of track embedded in the current pT range
+       	  fCurrentEntry++; //increase for next iteration
+       	  
+       } else { //other inputs
        	  
        	  Double_t mass = fMass;
        	  Short_t charge = 1;
@@ -176,7 +262,7 @@ void AliJetEmbeddingTask::Run()
        	     	mass = fMass;
        	     }
        	  }
-       	  AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
+       	  AddTrack(-999,-999,-999,0,0,0,0,kFALSE,0,charge,mass);
        }
     }
   }
@@ -184,6 +270,25 @@ void AliJetEmbeddingTask::Run()
   AliJetModelBaseTask::FillHistograms();
 }
 
+//________________________________________________________________________
+
+Float_t AliJetEmbeddingTask::GetDownscalinigFactor(){
+   
+   if(fCount > fNevPerBin) {
+      //Printf("%d = fCount, Increasing fCurrentBin %d -> %d", fCount, fCurrentBin, fCurrentBin+1);
+      fCurrentBin++;
+      fCount = 0;
+      
+   }
+
+   if (fCurrentBin >= fNBins) {
+      AliError(Form("Bin %d out of bound %d, set to fNBins - 1 = %d", fCurrentBin, fNBins, fNBins - 1));
+      fCurrentBin = fNBins - fGoBack;
+      if (fCurrentBin < 0) fCurrentBin = fNBins - 1;
+      fGoBack++;
+   }
+   return fDownscale[fCurrentBin];
+}
 //________________________________________________________________________
 
 void AliJetEmbeddingTask::SetMassDistribution(TH1F *hM)  {
@@ -296,5 +401,47 @@ void AliJetEmbeddingTask::SetTreeFromFile(TString filename, TString treename){
    //delete f;
 
    return;
+}
+
+//________________________________________________________________________
+  
+void AliJetEmbeddingTask::SetRejection(Float_t* rej) {
+   
+   if(fNBins == 0){
+      AliError("Set number of bins first! SetNBinsEmbedding(nbins);");
+      return;
+   }
+   Printf("Creating array of factors with size %d", fNBins);
+   fDownscale = new Float_t[fNBins];
+   for(Int_t i = 0; i<fNBins; i++) {
+      fDownscale[i] = rej[i];
+      Printf("Bin %d -> Factor = %e", i, fDownscale[i]);
+   }
+   return;
+}
+
+//________________________________________________________________________
+
+void AliJetEmbeddingTask::SetPtRangesEmb(Float_t* ptlims) {
+   
+   if(fNBins == 0){
+      AliError("Set number of bins first! SetNBinsEmbedding(nbins);");
+      return;
+   }
+   Printf("Creating array of pt limits with size %d", fNBins);
+   fPtRanges = new Float_t[fNBins];
+   for(Int_t i = 0; i<fNBins; i++){
+      fPtRanges[i] = ptlims[i];
+      if(fPtRanges[i] < fMinPtEmb){
+      	 fPtRanges[i] = fMinPtEmb;
+      	 AliError(Form("Minimum pT set to %.2f", fMinPtEmb));
+      }
+      Printf("Bin %d -> PtRange = %e", i, fPtRanges[i]);
+   }
+   return;
+ }
+ 
+void AliJetEmbeddingTask::Terminate(){
+   Printf("fGoBack = %d", fGoBack);
 }
 

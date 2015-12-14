@@ -16,7 +16,8 @@ ClassImp(AliReducedBaseTrack)
 AliReducedBaseTrack::AliReducedBaseTrack() :
   fIsCartesian(kFALSE),
   fCharge(0),
-  fFlags(0) 
+  fFlags(0),
+  fQualityFlags(0)
 {
   //
   // Constructor
@@ -29,7 +30,8 @@ AliReducedBaseTrack::AliReducedBaseTrack(const AliReducedBaseTrack &c) :
   TObject(c),
   fIsCartesian(c.IsCartesian()),
   fCharge(c.Charge()),
-  fFlags(c.GetFlags())
+  fFlags(c.GetFlags()),
+  fQualityFlags(c.GetQualityFlags())
 {
   //
   // Copy constructor

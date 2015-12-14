@@ -72,17 +72,22 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
-  fhJetEtaPhi(0x0),
+  fhJetEtaPhiOvl(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
+  fhptjetSMinusSingleTrack(0x0),
+  fhJetSubMatchEtaPhiPt(0x0),
   fTreeEmb(0),
   fFromTree(0),
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
   fBranchJParName("fJetPar"),
-  fThisEntry(0)
+  fThisEntry(0),
+  fMaxTreeEntries(0),
+  fVecD(0x0),
+  fVecP(0x0)
 {
   // Default constructor.
 
@@ -152,17 +157,22 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
-  fhJetEtaPhi(0x0),
+  fhJetEtaPhiOvl(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
+  fhptjetSMinusSingleTrack(0x0),
+  fhJetSubMatchEtaPhiPt(0x0),
   fTreeEmb(0),
   fFromTree(0),
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
   fBranchJDetName("fJetDet"),
   fBranchJParName("fJetPar"),
-  fThisEntry(0)
+  fThisEntry(0),
+  fMaxTreeEntries(0),
+  fVecD(0x0),
+  fVecP(0x0)
 {
   // Standard constructor.
 
@@ -196,6 +206,9 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
 AliAnalysisTaskJetShapeBase::~AliAnalysisTaskJetShapeBase()
 {
   // Destructor.
+  delete fTreeEmb;
+  delete fVecD;
+  delete fVecP;
 }
 
 //________________________________________________________________________
@@ -336,36 +349,34 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
      fhNJetsSelEv = new TH1F("fhNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
      fOutput->Add(fhNJetsSelEv);
      
-     fhJetEtaPhi = new TH2F("fhJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
-     fOutput->Add(fhJetEtaPhi);
+     fhJetEtaPhiOvl = new TH2F("fhJetEtaPhiOvl", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, (-1)*TMath::Pi(), TMath::Pi());
+     fOutput->Add(fhJetEtaPhiOvl);
      
      fhpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
      fOutput->Add(fhpTTracksJetO);
 
   }
+  
+  fhJetSubMatchEtaPhiPt = new TH3F("fhJetSubMatchEtaPhiPt", "Bkg-subtracted matched jet;#eta ; #phi; #it{p}_{T} (GeV/#it{c})", 24., -0.6, 0.6, 50, (-1)*TMath::Pi(), TMath::Pi(), nBinsPt, minPt, maxPt); 
+  fOutput->Add(fhJetSubMatchEtaPhiPt);
+
   fhpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksJet1);
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
 
-  //fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; #it{p}_{T, jet} - #it{p}_{T, Emb Track};Entries", 500,-10.,110.);
-  //fOutput->Add(fhptjetSMinusSingleTrack);
-  
-  //fhJet1vsJetTag = new TH2F("fhJet1vsJetTag", "Number of jets vs tagged jets; #it{N}_{jet,Tot}; #it{N}_{jet,Tag}", 30, 1., 30., 30, 1., 30.);
-  //fOutput->Add(fhJet1vsJetTag);
-  
-  //fhNconstit = new TH1F("fhNconstit", "Number of constituents (matched jets); #it{N}_{constituents}", 21, 0., 20.);
-  //fOutput->Add(fhNconstit);
-  
-  //fhAreaJet = new TH1F("fhAreaJet", "Area (matched jets); Area", 400., 0., 4);
-  //fOutput->Add(fhAreaJet);
-  
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
      if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
-     //fOutput->Add(fTreeEmb);
+     
+     fTreeEmb->SetBranchAddress(fBranchJDetName, &fVecD);
+     fTreeEmb->SetBranchAddress(fBranchJParName, &fVecP);
+
+     fMaxTreeEntries = fTreeEmb->GetEntries();
+     
      fTreeEmb->GetEntry(0);
      fTreeEmb->Show();
+     
   }
 
   if(fUseSumw2) {
@@ -422,10 +433,12 @@ AliVParticle* AliAnalysisTaskJetShapeBase::GetEmbeddedConstituent(AliEmcalJet *j
       	 continue;
       }
       Int_t lab = TMath::Abs(vp->GetLabel());
-      if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
+      if (lab < fMinLabelEmb || lab > fMaxLabelEmb + fMaxTreeEntries)
       	 continue;
       if(!vpe) vpe = vp;
       else if(vp->Pt()>vpe->Pt()) vpe =vp;
+      fThisEntry = lab - fMinLabelEmb;
+      //Printf("Label of embedded track %d - %d = %d", lab, fMinLabelEmb, fThisEntry);
   }
   
   Double_t deltaR = 99;
@@ -441,88 +454,15 @@ TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticl
    
    if(!vpe) return 0x0;
    
-   TLorentzVector *vEmbP = new TLorentzVector();
-   vEmbP->SetPtEtaPhiM(vpe->Pt(), vpe->Eta(), vpe->Phi(), vpe->M());
+   TLorentzVector vEmbP;
+   vEmbP.SetPtEtaPhiM(vpe->Pt(), vpe->Eta(), vpe->Phi(), vpe->M());
    
+   fTreeEmb->GetEntry(fThisEntry);
    
-   TLorentzVector *vecsP = 0; // 1 particle
-   
-   //Printf("Inizio entry %d", fThisEntry);
-   while(!vecsP){
-      vecsP = GetParticleLevel(fThisEntry, vEmbP);
-      //Printf("Return %p", vecsP);
-      if(vecsP) {
-      	 //Printf("COOL, found with the quick check");
-      	 
-      	 return vecsP;
-      } else {
-      	 fThisEntry++;
-      	 //Printf("Shade, I need to loop %d", fThisEntry);
-      	 
-      }
-      if(fThisEntry > 50) break;
-   }
-   
-   return 0x0;
-   for(Int_t ip = 0 ; ip < fTreeEmb->GetEntries(); ip++){
-      vecsP = GetParticleLevel(ip, vEmbP);
-      if(vecsP){
-      	 Printf("I had to loop up to %d",ip );
-      	 fThisEntry = ip;
-      	 return vecsP;
-      }
-   }
-   
-   return 0x0;
+   return fVecP;
+ 
 }
 
-//__________________________________________________________________________________________________
-
-TLorentzVector* AliAnalysisTaskJetShapeBase::GetParticleLevel(Int_t entry, TLorentzVector *vEmbP){
-   
-   TBranch *bJD = 0;
-   
-   TLorentzVector *vecsD = 0; // 0 reco
-   TLorentzVector *vecsP = 0; // 1 particle
-   
-   Int_t addretD = fTreeEmb->SetBranchAddress(fBranchJDetName, &vecsD, &bJD);
-   if(!bJD) AliFatal(Form("Branch %s not found", fBranchJDetName.Data()));
-   fTreeEmb->GetEntry(entry);
-   //Printf("Entry %d", entry);
-   //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", vecsD->Pt(), vecsD->Phi(), vecsD->Eta(), vecsD->M());
-   if (SamePart(vecsD, vEmbP)) {
-      //AliDebug(10, Form("Det Lev %.2f, %.2f, %.2f, %.2f ", vecsD->Pt(), vecsD->Phi(), vecsD->Eta(), vecsD->M()));
-      
-      TBranch *bJP = 0;
-      Int_t addretP = fTreeEmb->SetBranchAddress(fBranchJParName, &vecsP, &bJP);
-      if(!bJP) AliFatal(Form("Branch %s not found", fBranchJParName.Data()));
-      bJP->GetEntry(entry);
-      AliDebug(10, Form("-> Part Level %.2f, %.2f, %.2f, %.2f ", vecsP->Pt(), vecsP->Phi(), vecsP->Eta(), vecsP->M()));
-      fThisEntry = entry;
-      return vecsP;
-   }
-   return 0x0;
-}
-//__________________________________________________________________________________________________
-Bool_t AliAnalysisTaskJetShapeBase::SamePart(const TLorentzVector* part1, const TLorentzVector* part2, Double_t dist) const
-{
-  // Helper function to calculate the distance between two TLorentzVector
-  if(!part1) return kFALSE;
-  if(!part2) return kFALSE;
-  //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", part1->Pt(), part1->Phi(), part1->Eta(), part1->M());
-  //Printf("Det Lev %.2f, %.2f, %.2f, %.2f ", part2->Pt(), part2->Phi(), part2->Eta(), part2->M());
-  Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
-  Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
-  Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
-  dPhi = TVector2::Phi_mpi_pi(dPhi);
-  //Printf("phi: %f - %f = %f", part1->Phi(), part2->Phi(), dPhi);
-  //Printf("eta: %f - %f = %f", part1->Eta(), part2->Eta(), dEta);
-  //Printf("pT: %f - %f = %f", part1->Pt(), part2->Pt(), dpT);
-  if (dPhi > dist) return kFALSE;
-  if (dEta > dist) return kFALSE;
-  if (dpT  > dist) return kFALSE;
-  return kTRUE;
-}
 
 //________________________________________________________________________
 void AliAnalysisTaskJetShapeBase::SetTree(TTree *tree) {

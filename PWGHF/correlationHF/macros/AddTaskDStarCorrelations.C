@@ -26,7 +26,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            Float_t minDStarPt, // set minimum pt for Dstar
                                                            TString DStarCutsFile, // path of Dmeson cut object
                                                            TString TrackCutsFile, // path of associated cut object
-                                                           TString suffix = "" // suffix for output
+                                                           TString suffix = "", // suffix for output
+                                                           TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
+							   TString cutsTrkname = "AssociatedCuts" // name of track cut container	
                                                            )
 {
 
@@ -106,15 +108,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     }
     
     AliRDHFCutsDStartoKpipi* RDHFDStartoKpipi=new AliRDHFCutsDStartoKpipi();
-    RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
-    RDHFDStartoKpipi->SetName("DStartoKpipiCuts");
-    
+    RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsDstarname.Data());
     // mm let's see if everything is ok
-	if(!RDHFDStartoKpipi){
-		cout<<"Specific AliRDHFCuts not found"<<endl;
-		return;
-	}
-    
+    if(!RDHFDStartoKpipi){
+	cout<<"Specific AliRDHFCuts not found"<<endl;
+	return;
+    }
+    RDHFDStartoKpipi->SetName("DStartoKpipiCuts");    
         
        // RDHFDStartoKpipi->SetTriggerClass("");
        // RDHFDStartoKpipi->SetTriggerMask(AliVEvent::kCentral);
@@ -132,13 +132,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 		  return;
     }
  	AliHFAssociatedTrackCuts* corrCuts=new AliHFAssociatedTrackCuts();
-	corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get("AssociatedCuts");
-	corrCuts->SetName("AssociatedCuts");
-	corrCuts->PrintAll();
+	corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get(cutsTrkname.Data());
 	if(!corrCuts){
 		cout<<"Specific associated track cuts not found"<<endl;
 		return;
 	}
+	corrCuts->SetName("AssociatedCuts");
+	corrCuts->PrintAll();
 	
     if(UseEffic && !corrCuts->IsTrackEffMap()){
         cout << "You are trying to use the single track efficiency, but there is no map loaded in the cut object " << endl;

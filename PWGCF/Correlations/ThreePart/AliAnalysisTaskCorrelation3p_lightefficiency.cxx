@@ -41,6 +41,8 @@
 #include "AliAODMCParticle.h"
 #include "TCanvas.h"
 #include "TObjectTable.h"
+#include "AliFilteredEvent.h"
+#include "AliFilteredTrack.h"
 ClassImp(AliAnalysisTaskCorrelation3p_lightefficiency)
 //
 //Task to create three particle correlations.
@@ -63,6 +65,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fRemoveSignals(kFALSE)
+  , fisTree(kFALSE)
   , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
@@ -110,6 +113,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fRemoveSignals(kFALSE)
+  , fisTree(kFALSE)
   , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
@@ -188,24 +192,23 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/
   if (!pInput) {AliError("failed to get input");return;}
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
   if(!pEvent){AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));return;}
-
- //Get the Array.
-  GetMCArray();
-
-  //if it is not found, return without doing anything:
-  if(!fMcArray) return;
-
-  //Find out if it is AOD or ESD.  
-  fisESD=pEvent->IsA()==AliESDEvent::Class();
-  fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  if(!fisTree){
+  //Get the Array.
+    GetMCArray();
+    //if it is not found, return without doing anything:
+    if(!fMcArray) return;
+    //Find out if it is AOD or ESD.  
+    fisESD=pEvent->IsA()==AliESDEvent::Class();
+    fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  }
   fRun = pEvent->GetRunNumber();
   TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
   if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
-  
-  //Get the runnumber and find which bin and fill value this corresponds to.
-  GetCentralityAndVertex();
-  if(!SelectEvent()) return;//events are rejected.
 
+  //Get the runnumber and find which bin and fill value this corresponds to.
+  if(!fisTree)GetCentralityAndVertex();
+  if(fisTree)GetCentralityAndVertex(pEvent);
+  if(!SelectEvent()) return;//events are rejected.
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
   FillHistogram("EventsperRun", fRunFillValue);
@@ -239,7 +242,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::Terminate(Option_t *)
 Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrelevantParticles, AliVEvent *pEvent)
 {
   Int_t nofTracks = 0;
-  nofTracks=pEvent->GetNumberOfTracks();
+  nofTracks = pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
   for (int i=0; i<nofTracks; i++) {
     AliVParticle* t=pEvent->GetTrack(i);
@@ -249,34 +252,30 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
     FillHistogram("trackUnselectedPhi",t->Phi());
     FillHistogram("trackUnselectedTheta",t->Theta());
     if (!IsSelected(t)) continue;
-//     if(fRemoveSignals){
-// 
-//       if(IsAddedSignal(t)){ 	FillHistogram("ptrejected",t->Pt()); continue;}
-//       else{			FillHistogram("ptaccepted",t->Pt());}
-//     }
-
-    allrelevantParticles->Add(t);
-    if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){
-      FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
-      if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    if(!IsMCFilteredTrack(t)){
+      if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){
+	FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
+      }
+      if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){
+	FillHistogram("selectedTracksperRun",fRunFillValue);
+	FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
+	FillHistogram("NTracksCent",fRunFillValue,fCentralityPercentile);      
+	FillHistogram("NTracksPhi",fRunFillValue,t->Phi());
+	FillHistogram("NTrackspT",fRunFillValue,t->Pt());
+	FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
+      }
+      FillHistogram("trackPt",t->Pt());
+      FillHistogram("trackPhi",t->Phi());
+      FillHistogram("trackTheta",t->Theta());
     }
-    if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){
-      FillHistogram("selectedTracksperRun",fRunFillValue);
-      FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
-      FillHistogram("NTracksCent",fRunFillValue,fCentralityPercentile);      
-      FillHistogram("NTracksPhi",fRunFillValue,t->Phi());
-      FillHistogram("NTrackspT",fRunFillValue,t->Pt());
-      FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
-      if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+    else{
+      if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){FillHistogram("hnTracksinBinsMC",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
+      if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){FillHistogram("hnTracksinBinsMC",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
     }
-    
-    FillHistogram("trackPt",t->Pt());
-    FillHistogram("trackPhi",t->Phi());
-    FillHistogram("trackTheta",t->Theta());
   }
   
 
-  if(fMcArray){
+  if(fMcArray&&!fisTree){
     int nofMCParticles = fMcArray->GetEntriesFast();
     for (int i=0;i<nofMCParticles;i++){
       AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
@@ -345,6 +344,7 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelected(AliVParticle* p)
   if (p->IsA()==AliESDtrack::Class() && IsSelectedTrackESD(p)) return IsSelectedTrack(p);
   if (p->IsA()==AliAODTrack::Class() && IsSelectedTrackAOD(p)) return IsSelectedTrack(p);
   if (p->IsA()==AliAODMCParticle::Class() && dynamic_cast<AliAODMCParticle*>(p)->IsPhysicalPrimary()) return IsSelectedTrack(p);
+  if (p->IsA()==AliFilteredTrack::Class()&& IsSelectedTrackFiltered(p)){dynamic_cast<AliFilteredTrack*>(p)->Calculate();return IsSelectedTrack(p);}
   return kFALSE;
 }
 
@@ -398,6 +398,27 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackESD(AliVPart
   if(t)return kFALSE;//ESD is currently not supported
   else return kFALSE;
 }
+
+Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(AliVParticle* t)
+{
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>5))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()&&(fCutMask==3))return kTRUE;
+  if((dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==4))return kTRUE;
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&!(dynamic_cast<AliFilteredTrack*>(t)->IsBIT6()|dynamic_cast<AliFilteredTrack*>(t)->IsBIT5())&&(fCutMask==5))return kTRUE;
+  return kFALSE;
+}
+
+Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsMCFilteredTrack(AliVParticle* p)
+{
+  if(dynamic_cast<AliFilteredTrack*>(p)){
+    if(dynamic_cast<AliFilteredTrack*>(p)->IsMC()) cout << "mc"<<endl;
+    return dynamic_cast<AliFilteredTrack*>(p)->IsMC();    
+  }
+  return kFALSE;
+}
+
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::GeneratorStat(AliVParticle* p)
 {
@@ -598,20 +619,46 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::GetCentralityAndVertex()
     fVertex[2] = fVertexobj->GetZ();}
   else return;
 }
+
+void AliAnalysisTaskCorrelation3p_lightefficiency::GetCentralityAndVertex(AliVEvent* pEvent)
+{
+  //for DstTree:
+  if(fCollisionType == pp){fMultiplicity = dynamic_cast<AliFilteredEvent*>(pEvent)->GetCentralityP();}
+  if(fCollisionType == PbPb){fCentralityPercentile = dynamic_cast<AliFilteredEvent*>(pEvent)->GetCentralityP();}
+
+  //Get the primary Vertex
+  fVertex[0] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexX();
+  fVertex[1] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexY();
+  fVertex[2] = dynamic_cast<AliFilteredEvent*>(pEvent)->GetfVertexZ();
+}
+
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::SelectEvent()
 {//This function provides the event cuts for this class.
-  if(fCollisionType==pp){//With pp, the following cuts are applied:
-    FillHistogram("Eventbeforeselection",fVertex[2],fMultiplicity,0);
+  if(fisTree){
+    if(fCollisionType == pp){
+    FillHistogram("multiplicity",fMultiplicity,0.75);
+    }
+    if(fCollisionType == PbPb){
+//       FillHistogram("centrality",fCentralityPercentile,0.75);
+    }
+//     FillHistogram("vertex",fVertex[2],0.75);
+  if(fCentralityPercentile>fMaxMult) return kFALSE;//Out of centrality bounds in PbPb, will not fill any histogram.
+  }
+  if(fCollisionType==pp&&!fisTree){//With pp, the following cuts are applied:
+    FillHistogram("multiplicity",fMultiplicity,0.25);
+    FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
     if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(fMultiplicity>fMaxNumberOfTracksInPPConsidered) return kFALSE;//Out of multiplicity bounds in pp, no histograms will be filled.
     if(InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.))return kFALSE;  //reject for pileup.
-    FillHistogram("Eventafterselection",fVertex[2],fMultiplicity,0);
-    
+    FillHistogram("multiplicity",fMultiplicity,0.75);
+    FillHistogram("vertex",fVertex[2],0.75);    
   }
-  if(fCollisionType==PbPb){
-    FillHistogram("Eventbeforeselection",fVertex[2],fMultiplicity,fCentralityPercentile);
+  if(fCollisionType==PbPb&&!fisTree){
+    FillHistogram("centrality",fCentralityPercentile,0.25);
+    FillHistogram("multiplicity",fMultiplicity,0.25);
+    FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
     if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
@@ -619,9 +666,11 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::SelectEvent()
     if(fCentrality->GetQuality()!=0)return kFALSE;//bad centrality.
     if(fCentralityPercentile<0) return kFALSE;//centrality is not defined
     if(fCentralityPercentile>fMaxMult) return kFALSE;//Out of centrality bounds in PbPb, will not fill any histogram.
-    FillHistogram("Eventafterselection",fVertex[2],fMultiplicity,fCentralityPercentile);
-
+    FillHistogram("centrality",fCentralityPercentile,0.75);
+    FillHistogram("multiplicity",fMultiplicity,0.75);
+    FillHistogram("vertex",fVertex[2],0.75);
   }
+  
   return kTRUE;
 }
 
@@ -794,10 +843,6 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeEffHistograms()
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(0)->Set(nofMBins,Mbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(1)->Set(nofZBins,Zbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(4)->Set(npT+nextra,pTbins);
-  fOutput->Add(new THnF("hnTracksinBinsRecPP","Tracks in different bins from reconstruction that originate from a PhysicalPrimary MC particle.",5,bins,xmin,xmax));
-  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(0)->Set(nofMBins,Mbins);
-  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(1)->Set(nofZBins,Zbins);
-  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(4)->Set(npT+nextra,pTbins);
   fOutput->Add(new THnF("hnTracksinBinsMC","Tracks in different bins, MC truth for charged particles.",5,bins,xmin,xmax));
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsMC"))->GetAxis(0)->Set(nofMBins,Mbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsMC"))->GetAxis(1)->Set(nofZBins,Zbins);

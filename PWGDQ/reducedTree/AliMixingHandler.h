@@ -4,8 +4,6 @@
 //
 // Event mixing handler
 //
-
-
 #ifndef ALIMIXINGHANDLER_H
 #define ALIMIXINGHANDLER_H
 

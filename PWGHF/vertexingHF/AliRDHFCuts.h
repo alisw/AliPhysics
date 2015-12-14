@@ -241,6 +241,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t GetMaxVtxZ() const {return fMaxVtxZ;}  
   Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFCuts::ECentrality)fUseCentrality);}
   Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator);
+  Float_t GetCentralityOldFramework(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator);
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}

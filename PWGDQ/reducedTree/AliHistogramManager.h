@@ -16,8 +16,6 @@
 
 class TAxis;
 class TArrayD;
-//class TList;
-//class THashList;
 class TObjArray;
 class TDirectoryFile;
 class TFile;
@@ -83,6 +81,8 @@ class AliHistogramManager : public TObject {
   void Print(Option_t*) const;
   
  private: 
+   AliHistogramManager(const AliHistogramManager& histMan);             
+   AliHistogramManager& operator=(const AliHistogramManager& histMan);      
    
   TObjArray* fMainList;          // master histogram list
   TString fName;                 // master histogram list name

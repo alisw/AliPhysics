@@ -18,6 +18,7 @@
 #pragma link C++ class AliReducedCaloClusterInfo+;
 #pragma link C++ class AliReducedEventCut+;
 #pragma link C++ class AliReducedEventInfo+;
+#pragma link C++ class AliReducedEventInputHandler+;
 #pragma link C++ class AliReducedEventPlaneInfo+;
 #pragma link C++ class AliReducedFMDInfo+;
 #pragma link C++ class AliReducedInfoCut+;

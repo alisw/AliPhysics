@@ -27,6 +27,8 @@ public:
   AliEmcalTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
   virtual ~AliEmcalTriggerAlgorithmAP();
 
+  ULong_t GetBitMask() const { return fBitMask; }
+
   void SetRowMin(Int_t rowmin) { fRowMin = rowmin; }
   void SetRowMax(Int_t rowmax) { fRowMax = rowmax; }
   void SetThresholds(Float_t th, Float_t offTh) { fThreshold = th; fOfflineThreshold = offTh; }
@@ -49,60 +51,5 @@ protected:
   ClassDef(AliEmcalTriggerAlgorithmAP, 1);
   /// \endcond
 };
-
-/**
- * @class AliEmcalJetTriggerAlgorithmAP
- * @brief Implementation of the EMCAL jet trigger algorithm
- *
- * A jet
- */
-template<typename T>
-class AliEmcalJetTriggerAlgorithmAP : public AliEmcalTriggerAlgorithmAP<T> {
-public:
-  /**
-   * Constructor
-   */
-  AliEmcalJetTriggerAlgorithmAP();
-  /**
-   * Constructor, setting also range limits and bit mask
-   * @param rowmin Min. row used for patch finding
-   * @param rowmax Max. row used for patch finding
-   * @param bitmask Bitmask stored in the raw patches
-   */
-  AliEmcalJetTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t bitmask);
-  /**
-   * Destructor
-   */
-  virtual ~AliEmcalJetTriggerAlgorithmAP();
-
-  /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTriggerAlgorithmAP, 1);
-  /// \endcond
-};
-
-template<typename T>
-class AliEmcalGammaTriggerAlgorithmAP : public AliEmcalTriggerAlgorithmAP<T> {
-public:
-  AliEmcalGammaTriggerAlgorithmAP();
-  AliEmcalGammaTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
-  virtual ~AliEmcalGammaTriggerAlgorithmAP();
-
-  /// \cond CLASSIMP
-  ClassDef(AliEmcalGammaTriggerAlgorithmAP, 1);
-  /// \endcond
-};
-
-template<typename T>
-class AliEmcalBkgTriggerAlgorithmAP : public AliEmcalTriggerAlgorithmAP<T> {
-public:
-  AliEmcalBkgTriggerAlgorithmAP();
-  AliEmcalBkgTriggerAlgorithmAP(Int_t rowmin, Int_t rowmax, ULong_t Bitmask);
-  virtual ~AliEmcalBkgTriggerAlgorithmAP();
-
-  /// \cond CLASSIMP
-  ClassDef(AliEmcalBkgTriggerAlgorithmAP, 1);
-  /// \endcond
-};
-
 
 #endif

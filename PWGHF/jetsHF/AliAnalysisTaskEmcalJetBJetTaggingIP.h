@@ -5,7 +5,7 @@
 class TF1;
 class TH1;
 class TH2;
-class THnSparse;
+
 
 class AliJetContainer;
 class AliParticleContainer;
@@ -27,6 +27,8 @@ class TRandom3;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliHFJetsTagging.h"
+#include <TTree.h>
+
 class AliAnalysisTaskEmcalJetBJetTaggingIP : public AliAnalysisTaskEmcalJet
 {
 public:
@@ -39,7 +41,7 @@ public:
 	//Constructors and standard function definitions
 	AliAnalysisTaskEmcalJetBJetTaggingIP();
 	AliAnalysisTaskEmcalJetBJetTaggingIP(const char* name);
-	virtual ~AliAnalysisTaskEmcalJetBJetTaggingIP();
+	virtual ~AliAnalysisTaskEmcalJetBJetTaggingIP(){;}
 	void UserCreateOutputObjects();
 	virtual Bool_t Run();
 
@@ -55,10 +57,6 @@ public:
 	//Standard getters
 	virtual AliRDHFJetsCuts* GetJetCutsHF();
 	virtual AliHFJetTaggingIP* GetTaggerIP(){return fTrackCountingTagger;}
-
-
-
-
 	virtual Bool_t RunQATracksEvent();
 	virtual Bool_t RunQATracksJet(const AliEmcalJet* jet);
 	void SetDoTrackQA(Bool_t val = kTRUE){	fIsTrackQA = val;};
@@ -70,6 +68,7 @@ public:
 	void SetUseSignificance(Bool_t val = kTRUE){fUseSignificance = kTRUE;}
 	void SetUse3DsIP(Bool_t val = kTRUE){fUse3DsIP = kTRUE;};
 	void SetUseConversions(Bool_t val = kTRUE){fUseConversions = kTRUE;};
+
 
 	Double_t                    fMatchingPar1;                           // matching parameter for jet1-jet2 matching
 	Double_t                    fMatchingPar2;                           // matching parameter for jet2-jet1 matching
@@ -119,6 +118,10 @@ protected:
 	virtual void DoJetLoop();
 	virtual void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
 	virtual void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
+	//
+	virtual void FillTCTree(Double_t  sIP[3], Bool_t  isTagged[3],AliEmcalJet * jet,AliEmcalJet * jetMC,int flavour, int qtyclass );
+
+
 	MatchingType                fMatching;                               // matching type
 
 	// Calls for special purpose analysis
@@ -191,8 +194,6 @@ private:
 	Double_t fTrials;//
 
 	TList* fCurrentTrackContainerSecVtx; //!
-
-
 	TList * flist_module_eventselection;//!
 	TList * flist_module_jets;//!
 	TList * flist_module_trackcounting;//!
@@ -202,11 +203,45 @@ private:
 	TList * flist_module_mc;//!
 
 
+
+	TTree * fTCTree; //!
+	Float_t fCorrVariable_JetPT;
+	Float_t fCorrVariable_sIP1;
+	Float_t fCorrVariable_sIP2;
+	Float_t fCorrVariable_sIP3;
+	Float_t fCorrVariable_tPt1;
+	Float_t fCorrVariable_tPt2;
+	Float_t fCorrVariable_tPt3;
+
+
+	Float_t fCorrVariable_JetPTMC;
+	Float_t fCorrVariableMC_tPt1MC;
+	Float_t fCorrVariableMC_tPt2MC;
+	Float_t fCorrVariableMC_tPt3MC;
+
+	Float_t fCorrVariableMC_tPt1MotherMC;
+	Float_t fCorrVariableMC_tPt2MotherMC;
+	Float_t fCorrVariableMC_tPt3MotherMC;
+	Float_t fCorrVariableMC_tPt1MothersMotherMC;
+	Float_t fCorrVariableMC_tPt2MothersMotherMC;
+	Float_t fCorrVariableMC_tPt3MothersMotherMC;
+
+
+	Int_t fCorrVariableMC_Pdg1;
+	Int_t fCorrVariableMC_Pdg2;
+	Int_t fCorrVariableMC_Pdg3;
+
+	Int_t fCorrVariableMC_PdgMothersMother1;
+	Int_t fCorrVariableMC_PdgMothersMother2;
+	Int_t fCorrVariableMC_PdgMothersMother3;
+
+	Int_t fCorrVariableMC_PdgMother1;
+	Int_t fCorrVariableMC_PdgMother2;
+	Int_t fCorrVariableMC_PdgMother3;
+	Int_t 	fCorrVariable_flv;//[2]
+	Int_t 	fCorrVariable_qty;//[2]
+
 	// Histograms
-
-
-
-
 
 	TH1* fhist_Events;                                             //! Event selection statistics
 	TH2* fhist_Jets;                                               //!   Jet selection statistics

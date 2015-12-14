@@ -78,6 +78,7 @@ Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbS
   ULong64_t class_l2a[NMAXCLASSES]         = {0};
   Double_t  class_lifetime[NMAXCLASSES]    = {0};
   Double_t  class_lumi[NMAXCLASSES]        = {0};
+  Double_t  class_ds[NMAXCLASSES]          = {0};
   ULong64_t alias_recorded[NBITS]          = {0};
   ULong64_t alias_reconstructed[NBITS]     = {0};
   ULong64_t alias_accepted[NBITS]          = {0};
@@ -110,6 +111,7 @@ Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbS
   t->Branch("class_l2a",&class_l2a,Form("class_l2a[%i]/l",NMAXCLASSES));
   t->Branch("class_lifetime",&class_lifetime,Form("class_lifetime[%i]/D",NMAXCLASSES));
   t->Branch("class_lumi",&class_lumi,Form("class_lumi[%i]/D",NMAXCLASSES));
+  t->Branch("class_ds",&class_ds,Form("class_ds[%i]/D",NMAXCLASSES));
   t->Branch("alias_recorded",&alias_recorded,Form("alias_recorded[%i]/l",NBITS));
   t->Branch("alias_reconstructed",&alias_reconstructed,Form("alias_reconstructed[%i]/l",NBITS));
   t->Branch("alias_accepted",&alias_accepted,Form("alias_accepted[%i]/l",NBITS));
@@ -192,8 +194,8 @@ Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbS
   else if (run>=240152 && run<=243373) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=243374 && run<=243398) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=243399 && run<=243984) { refSigma=6700.; refEff = 0.90; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=243985               ) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  
+  else if (run>=243985 && run<=244912) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=244913               ) { refSigma=4600.; refEff = 0.60; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
@@ -236,7 +238,32 @@ Int_t runLevelEventStatQA(TString qafilename="", Int_t run=231321, TString ocdbS
     class_lifetime[i]*= class_l1b[i]>0 ? Double_t(class_l1a[i])/class_l1b[i]: 0;
     class_lifetime[i]*= class_l2b[i]>0 ? Double_t(class_l2a[i])/class_l2b[i]: 0;
     class_lumi[i] = lumi_seen*class_lifetime[i];
+    AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+    cl->GetDownscaleFactor(class_ds[i]);
   }
+
+  if (run>=244917) {
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
+      TString cluster = tokens->At(3)->GetName();
+      TString lifetimeClassName = Form("C0VHM-B-NOPF-%s",cluster.Data());
+      if (run<245256) lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
+      TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
+      if (lifetimeClass) {
+        Int_t index = classes.IndexOf(lifetimeClass);
+        if (class_ds[index]>0) {
+          printf("%s %f %f\n",lifetimeClassName.Data(),class_ds[i],class_ds[index]);
+          Float_t ds_ratio = class_ds[i]/class_ds[index];
+          class_lifetime[i]=class_lifetime[index]*ds_ratio;
+          class_lumi[i]=class_lumi[index]*ds_ratio;
+        }
+      }
+      tokens->Delete();
+      delete tokens;
+    }
+  }
+  
   
   
   TFile* fin = new TFile(qafilename);

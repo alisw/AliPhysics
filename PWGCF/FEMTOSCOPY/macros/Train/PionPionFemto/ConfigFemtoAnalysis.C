@@ -7,7 +7,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT_)
 
-#include "AliFemtoAnalysisPionLambda.h"
+#include "AliFemtoAnalysisPionPion.h"
 
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
@@ -16,7 +16,6 @@
 
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorParticleYPt.h"
-#include "AliFemtoCutMonitorV0.h"
 
 #include "AliFemtoCorrFctnKStar.h"
 
@@ -24,37 +23,42 @@
 
 #endif
 
-#include <vector>
+typedef AliFemtoAnalysisPionPion AFAPP;
 
-// typedef std::pair<float, float> pair_of_floats;
+bool DEFAULT_DO_KT = kFALSE;
 
+struct MacroParams {
+  std::vector<int> centrality_ranges;
+  std::vector<unsigned char> pair_codes;
+  bool do_kt_q3d;
+  bool do_kt_qinv;
+};
 
-struct AnalysisParams;
-struct CutParams;
-struct MacroParams;
-
-
-void BuildConfiguration(const TString&, AnalysisParams&, CutParams&, MacroParams&);
+void
+BuildConfiguration(
+  const TString&,
+  AliFemtoAnalysisPionPion::AnalysisParams&,
+  AliFemtoAnalysisPionPion::CutParams&,
+  MacroParams&
+);
 
 
 AliFemtoManager*
 ConfigFemtoAnalysis(const TString& param_str = "")
 {
+  std::cout << "[ConfigFemtoAnalysis (PionPion)]\n";
+
   const double PionMass = 0.13956995;
 
   // Get the default configurations
-  AnalysisParams analysis_config;
-  CutParams cut_config;
+  AFAPP::AnalysisParams analysis_config = AFAPP::DefaultConfig();
+  AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
   MacroParams macro_config;
+
+  macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
-
-  if (analysis_config.mult_ranges.empty()) {
-    // analysis_config.mult_ranges.push_back(std::pair<float, float> (0.0, 300));
-    analysis_config.mult_ranges.push_back(0.0);
-    analysis_config.mult_ranges.push_back(300.0);
-  }
 
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
@@ -69,54 +73,129 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   // rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
-  int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
+  if (macro_config.centrality_ranges.empty()) {
+    // macro_config.centrality_ranges.push_back(std::pair<int, int>(0.0, 300));
+    macro_config.centrality_ranges.push_back(0);
+    macro_config.centrality_ranges.push_back(300.0);
+  }
 
-  const char* chrgs[] = { "_pip_", "_pim_", "_pimpip_" };
-  int runtype = 1;
-  int runshlcms = 1;
-  int runqinv = 1;
-  int runktdep = 0;
-  int aniter = -1;
+  // default to identical pi+ and pi- analyses
+  if (macro_config.pair_codes.empty()) {
+    macro_config.pair_codes.push_back(1);
+    macro_config.pair_codes.push_back(0);
+  }
 
-  double shqmax = 1.2;
-  int nbinssh = 100;
-  int imult = 0;
 
-  double ktrng[3] = {0.01, 0.7, 100.0};
-  int numOfkTbins = 2;
+  AFAPP::PionType PI_PLUS = AliFemtoAnalysisPionPion::kPiPlus,
+                 PI_MINUS = AliFemtoAnalysisPionPion::kPiMinus,
+                     NOPI = AliFemtoAnalysisPionPion::kNone;
 
- //  for (std::vector<std::pair<float, float>>::iterator mult_range = analysis_config.mult_ranges.begin();
-//        mult_range != analysis_config.mult_ranges.end();
-//        ++mult_range) {
 
-  for (int mult_it = 0; mult_it + 1 < analysis_config.mult_ranges.size(); mult_it += 2) {
 
-    int ichg = 0;
-    aniter++;
-//     const double mult_low = mult_range->first,
-//                 mult_high = mult_range->second;
+  for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
-    const double mult_low = analysis_config.mult_ranges[mult_it],
-                mult_high = analysis_config.mult_ranges[mult_it + 1];
+    const int mult_low = macro_config.centrality_ranges[cent_it],
+             mult_high = macro_config.centrality_ranges[cent_it + 1];
 
-    AliFemtoSimpleAnalysis *analysis = new AliFemtoVertexMultAnalysis(
-      analysis_config.vertex_bins,
-      analysis_config.vertex_min,
-      analysis_config.vertex_max,
+    const TString mult_low_str = TString::Format("%0.2i", mult_low),
+                 mult_high_str = TString::Format("%0.2i", mult_high);
 
-      analysis_config.mult_bins,
-      mult_low,
-      mult_high
-    );
-    analysis->SetVerboseMode(kFALSE);
 
-    analysis->SetNumEventsToMix(10 /*analysis_config.num_events_to_mix*/);
-    analysis->SetMinSizePartCollection(1 /*analysis_config.min_coll_size*/);
+    // loop over pair types
+    for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
 
-    AliFemtoBasicEventCut *ev_cut = new AliFemtoBasicEventCut();
-    ev_cut->SetEventMult(0.001, 100000);
-    ev_cut->SetVertZPos(-8, 8);
+      const int pair_code = macro_config.pair_codes[pair_it];
+
+      AFAPP::PionType type_1 = (pair_code & 0x1) ? PI_PLUS : PI_MINUS,
+                      type_2 = NOPI;
+
+      switch (pair_code & 0x6) {
+      case 0:
+        break;
+      case 2:
+        type_2 = PI_PLUS;
+        break;
+      case 4:
+        type_2 = PI_MINUS;
+        break;
+      default:
+        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        continue;
+      }
+
+      const TString pair_type_str =
+        TString(type_1 == AliFemtoAnalysisPionPion::kPiPlus ? "pip" : "pim")
+        + (type_2 == AliFemtoAnalysisPionPion::kNone ? "" : type_2 == AliFemtoAnalysisPionPion::kPiPlus ? "_pip" : "_pim");
+
+      // loop over centrality
+      //  for (std::vector<std::pair<float, float>>::iterator mult_range = analysis_config.centrality_ranges.begin();
+      //        mult_range != analysis_config.centrality_ranges.end();
+      //        ++mult_range) {
+      //     const double mult_low = mult_range->first,
+      //                 mult_high = mult_range->second;
+
+      const TString analysis_name = TString::Format(
+        "PiPiAnalysis_%0.2i_%0.2i_%s", mult_low, mult_high, pair_type_str.Data()
+      );
+
+      analysis_config.pion_type_1 = type_1;
+      analysis_config.pion_type_2 = type_2;
+
+      cut_config.event_CentralityMin = mult_low;
+      cut_config.event_CentralityMax = mult_high;
+
+      AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
+      analysis->SetMinSizePartCollection(50);
+      analysis->SetVerboseMode(kFALSE);
+
+      analysis->AddStanardCutMonitors();
+
+      AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(Form("c_qinv_%s", pair_type_str.Data()),
+                                                      100, 0.0, 1.2);
+      analysis->AddCorrFctn(cf);
+
+
+      analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(Form("_q3D_%s", pair_type_str.Data()), 72, 1.1));
+
+      if (macro_config.do_kt_qinv) {
+        AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
+        binned->AddKtRange(0.2, 0.4);
+        binned->AddKtRange(0.4, 0.6);
+        binned->AddKtRange(0.6, 1.0);
+        analysis->AddCorrFctn(binned);
+      }
+
+      if (macro_config.do_kt_q3d) {
+        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(Form("q3D_%s", pair_type_str.Data()), 72, 1.1));
+        kt_q3d->AddKtRange(0.2, 0.4);
+        kt_q3d->AddKtRange(0.4, 0.6);
+        kt_q3d->AddKtRange(0.6, 1.0);
+        analysis->AddCorrFctn(kt_q3d);
+      }
+
+      // analysis->AddCorrFctn(
+      //   new AliFemtoCorrFctnDirectYlm(
+      //     Form("cylm%stpcM%i", chrgs[ichg], imult),
+      //     3,
+      //     nbinssh,
+      //     0.0,
+      //     shqmax,
+      //     runshlcms
+      //   )
+      // );
+      //
+
+      manager->AddAnalysis(analysis);
+
+
+      continue;
+
+      // analysis->SetNumEventsToMix(10 /*analysis_config.num_events_to_mix*/);
+      // analysis->SetMinSizePartCollection(1 /*analysis_config.min_coll_size*/);
+
+      // AliFemtoBasicEventCut *ev_cut = new AliFemtoBasicEventCut();
+      // ev_cut->SetEventMult(0.001, 100000);
+      // ev_cut->SetVertZPos(-8, 8);
 
     // if (!analysis_config.is_mc_analysis) {
     //   ev_cut->SetAcceptOnlyPhysics(kTRUE);
@@ -166,11 +245,10 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     track_cut1->SetDCA(0.5, 4.0);
 //     track_cut1->SetMostProbablePion();
 
-  track_cut1->AddCutMonitor(
-    new AliFemtoCutMonitorParticleYPt("PionPass", PionMass),
-    new AliFemtoCutMonitorParticleYPt("PionFail", PionMass)
-  );
-    
+    track_cut1->AddCutMonitor(
+      new AliFemtoCutMonitorParticleYPt("PionPass", PionMass),
+      new AliFemtoCutMonitorParticleYPt("PionFail", PionMass)
+    );
 
     // Track quality cuts
 /*
@@ -252,6 +330,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
                              Form("cqinv%stpcM%i", chrgs[ichg], imult),
                              nbinssh, 0.0, shqmax);
 */
+
+    // KtRange()
     AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(
                              Form("cqinv%stpcM%i", chrgs[ichg], imult),
                              nbinssh, 0.0, shqmax);
@@ -298,53 +378,17 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       }
     }
 
-    manager->AddAnalysis(analysis);
-
+    }
   }
 
   return manager;
 }
 
-struct AnalysisParams {
-
-  Bool_t is_mc_analysis;
-
-  UInt_t vertex_bins;
-  Float_t vertex_min,
-          vertex_max;
-
-  UInt_t mult_bins;
-//   std::vector< std::pair<float, float> > mult_ranges;
-  std::vector<float> mult_ranges;
-
-  UInt_t num_events_to_mix;
-  UInt_t min_coll_size;
-
-  AnalysisParams():
-    is_mc_analysis(kFALSE)
-  , vertex_bins(8)
-  , vertex_min(-8)
-  , vertex_max(8)
-  , mult_bins(4)
-  , mult_ranges()
-  {}
-
-};
-
-struct CutParams {
-
-
-};
-
-struct MacroParams {
-
-};
-
 
 void
 BuildConfiguration(const TString &text,
-                   AnalysisParams &a,
-                   CutParams &cut,
+                   AliFemtoAnalysisPionPion::AnalysisParams &a,
+                   AliFemtoAnalysisPionPion::CutParams &cut,
                    MacroParams &mac
                    )
 {
@@ -363,9 +407,9 @@ BuildConfiguration(const TString &text,
 
   while (line_obj = next_line()) {
 
-    const TString line = ((TObjString*)line_obj)->String().ReplaceAll(".", "_")
-                                                          .Strip(TString::kBoth, ' ');
-
+    const TString line = ((TObjString*)line_obj)->String()
+                            .ReplaceAll(".", "_")
+                            .Strip(TString::kBoth, ' ');
 
     TString cmd("");
 
@@ -378,26 +422,64 @@ BuildConfiguration(const TString &text,
       cmd = analysis_varname + "." + line(1, line.Length() - 1);
       break;
 
-    case '+':
+    case '~':
+      cmd = macro_varname + "." + line(1, line.Length() - 1);
+      break;
+
+    case '{':
     {
-      const bool plus = line.Contains('p'),
-                minus = line.Contains('m'),
-               lambda = line.Contains('l'),
-           antilambda = line.Contains('a');
-      // one or the other of each
-      if ((plus ^ minus) && (lambda ^ antilambda)) {
-        // Code : 0b00 : minus,antilambda
-        //          01 : minus,lambda
-        //          10 : plus,antilambda
-        //          11 : plus,lambda
-//         const short code = (short(plus) << 1) + short(lambda);
-//         mac.analysis_configurations.insert(code);
-//         mac.analysis_configurations |= (1 << code);
-      } else {
-        std::cout << "W-BuildConfiguration: WARNING: Bad analysis_configuration '" << line << "'\n";
+      UInt_t rangeend = text.Index("}");
+      if (rangeend == -1) {
+        rangeend = line.Length();
+      }
+      TString centrality_ranges = line(1, rangeend - 1);
+      TObjArray *range_groups = centrality_ranges.Tokenize(",");
+
+      TIter next_range_group(range_groups);
+      TObjString *range_group = NULL;
+
+      while (range_group = (TObjString*)next_range_group()) {
+        TObjArray *subrange = range_group->String().Tokenize(":");
+        TIter next_subrange(subrange);
+        TObjString *subrange_it = (TObjString *)next_subrange();
+        TString prev = TString::Format("%0.2d", subrange_it->String().Atoi());
+        while (subrange_it = (TObjString *)next_subrange()) {
+          TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
+
+          cmd = macro_varname + ".centrality_ranges.push_back(" + prev + ");";
+          gROOT->ProcessLineFast(cmd);
+
+          cmd = macro_varname + ".centrality_ranges.push_back(" + next + ");";
+          gROOT->ProcessLineFast(cmd);
+          prev = next;
+        }
       }
     }
-      continue;
+    continue;
+
+    case '+':
+      if (line == "+p") {
+        cmd = macro_varname + ".pair_codes.push_back(1)";
+      }
+      else if (line == "+m") {
+        cmd = macro_varname + ".pair_codes.push_back(0)";
+      }
+      else if (line == "+pp") {
+        cmd = macro_varname + ".pair_codes.push_back(3)";
+      }
+      else if (line == "+mm") {
+        cmd = macro_varname + ".pair_codes.push_back(4)";
+      }
+      else if (line == "+pm") {
+        cmd = macro_varname + ".pair_codes.push_back(2)";
+      }
+      else if (line == "+mp") {
+        cmd = macro_varname + ".pair_codes.push_back(5)";
+      }
+      else {
+        continue;
+      }
+      break;
 
     default:
       continue;
@@ -406,7 +488,6 @@ BuildConfiguration(const TString &text,
     cmd += ";";
 
     cout << "I-BuildConfiguration: `" << cmd << "`\n";
-
     gROOT->ProcessLineFast(cmd);
   }
 }

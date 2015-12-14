@@ -71,8 +71,9 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodName()             const; //no input required, will have all info in globals...
+    TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    void CreateEmptyOADB(); //In case we really didn't get anything ...
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
     Bool_t IsNotPileupMV           (AliVEvent *event);
@@ -90,8 +91,16 @@ public:
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
-    void SetAlternateOADBforEstimators    ( TString lFile ){ fAlternateOADBForEstimators    = lFile.Data(); }
-    void SetAlternateOADBFullManualBypass ( TString lFile ){ fAlternateOADBFullManualBypass = lFile.Data(); }
+    void SetAlternateOADBforEstimators      ( TString lFile ){ fAlternateOADBForEstimators      = lFile.Data(); }
+    void SetAlternateOADBFullManualBypass   ( TString lFile ){ fAlternateOADBFullManualBypass   = lFile.Data(); }
+    void SetAlternateOADBFullManualBypassMC ( TString lFile ){ fAlternateOADBFullManualBypassMC = lFile.Data(); }
+    
+    //Default Setters
+    void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
+    Bool_t GetUseDefaultCalib () const { return fkUseDefaultCalib; }
+    
+    void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
+    Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -118,11 +127,16 @@ private:
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
     
+    //Default options
+    Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
+    Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
+    
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
     
     TString fAlternateOADBForEstimators;
     TString fAlternateOADBFullManualBypass;
+    TString fAlternateOADBFullManualBypassMC;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
@@ -134,7 +148,15 @@ private:
     //   Variables for Multiplicity Determination
     //===========================================================================
     AliMultVariable *fAmplitude_V0A;
+    AliMultVariable *fAmplitude_V0A1;
+    AliMultVariable *fAmplitude_V0A2;
+    AliMultVariable *fAmplitude_V0A3;
+    AliMultVariable *fAmplitude_V0A4;
     AliMultVariable *fAmplitude_V0C;
+    AliMultVariable *fAmplitude_V0C1;
+    AliMultVariable *fAmplitude_V0C2;
+    AliMultVariable *fAmplitude_V0C3;
+    AliMultVariable *fAmplitude_V0C4;
     AliMultVariable *fAmplitude_V0Apartial;
     AliMultVariable *fAmplitude_V0Cpartial;
     AliMultVariable *fAmplitude_V0AEq;
@@ -169,16 +191,6 @@ private:
     
     //Event selection snippet for VtxZ as AliMultVariable
     AliMultVariable *fEvSel_VtxZ;
-    
-    // A.T.
-    Float_t fAmplitude_V0A1;   //!
-    Float_t fAmplitude_V0A2;   //!
-    Float_t fAmplitude_V0A3;   //!
-    Float_t fAmplitude_V0A4;   //!
-    Float_t fAmplitude_V0C1;   //!
-    Float_t fAmplitude_V0C2;   //!
-    Float_t fAmplitude_V0C3;   //!
-    Float_t fAmplitude_V0C4;   //!
 
     Int_t fRunNumber;                    
 

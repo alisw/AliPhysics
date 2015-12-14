@@ -62,7 +62,8 @@ class AliFilteredTrack : public AliVTrack {
     kGlobalHybrid  	= BIT(15),   // set -> selected by GlobalHybrid
     kBIT4 		= BIT(16),   // set -> selected by FilterBit4
     kBIT5 		= BIT(17),   // set -> selected by FilterBit5
-    kBIT6 		= BIT(18)    // set -> selected by FilterBit6
+    kBIT6 		= BIT(18),    // set -> selected by FilterBit6
+    kMC			= BIT(19)    //set -> is MCparticle
   };
 
   // kinematics
@@ -126,10 +127,19 @@ class AliFilteredTrack : public AliVTrack {
   bool  IsBIT4(){return TestBit(kBIT4);}
   bool  IsBIT5(){return TestBit(kBIT5);}
   bool  IsBIT6(){return TestBit(kBIT6);}
+  bool 	IsMC(){return TestBit(kMC);}
   void  SetGlobal(){SetBit(kGlobalHybrid);}
   void  SetBIT4(){SetBit(kBIT4);}
   void  SetBIT5(){SetBit(kBIT5);}
   void  SetBIT6(){SetBit(kBIT6);}
+  void 	SetMC(bool isset){
+    if(isset){
+      SetBit(kMC);
+    }
+    else{
+      ResetBit(kMC);
+    }
+  }
   void  SetAODFilterBits(const AliAODTrack * t);
   void  Calculate(bool bCalculateMommentumComponents=true);
 

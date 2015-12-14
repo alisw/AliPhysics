@@ -55,6 +55,9 @@ public:
   AliReducedBaseEvent* GetEvent() const {return fEvent;}
   
 protected:
+  AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
+  AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
+   
   AliHistogramManager* fHistosManager;   // Histogram manager
   AliMixingHandler* fMixingHandler;      // Mixed event handler
   

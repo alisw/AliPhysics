@@ -185,7 +185,8 @@ fJetBranchName("clustersAOD_ANTIKT04_B1_Filter00768_Cut00150_Skip00"),
 fTrackEtaMax(.9),
 fJetEtaMax(.9),
 fJetPtMin(5.),
-fJetConstMin(0)
+fJetConstMin(0),
+fExclusionRadius(-1.)
 {
   // Default constructor
   // Define input and output slots here
@@ -1786,62 +1787,71 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
   else if (idet == 5)
     {
       if(!fAOD)
-	AliFatal("Cannot access jets without AOD");
+        AliFatal("Cannot access jets without AOD");
 
       // retrieve jet array
       TClonesArray *jetArray = 0x0;
       if (fJetBranchName.Length() > 0) {
-	jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
-	if (!jetArray) {
-	  fAOD->Print();
-	  AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
-	}
+        jetArray = dynamic_cast<TClonesArray*> (fAOD->FindListObject(fJetBranchName));
+        if (!jetArray) {
+          fAOD->Print();
+          AliFatal(Form("Cannot access jet branch <%s>", fJetBranchName.Data()));
+        }
       }
 
       const Int_t nJets = jetArray ? jetArray->GetEntries() : 0;
-
       const Int_t nTracks = fAOD->GetNumberOfTracks();
+
       for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
-	AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
+        AliAODTrack *track = dynamic_cast<AliAODTrack*> (fAOD->GetTrack(iTrack));
 
-	if (!track)
-	  AliFatal("Not a standard AOD");
+        if (!track)
+          AliFatal("Not a standard AOD");
 
-	// track cuts
-	if (!track->IsHybridGlobalConstrainedGlobal() ||
-	    (TMath::Abs(track->Eta()) > fTrackEtaMax))
-	  continue;
+        // track cuts
+        if (!track->IsHybridGlobalConstrainedGlobal() ||
+            (TMath::Abs(track->Eta()) > fTrackEtaMax))
+          continue;
 
-	// check if track is part of a jet
-	Bool_t trackInJet = kFALSE;
-	for (Int_t iJet = 0; iJet < nJets; ++iJet) {
-	  AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
+        // check if track is part of a jet
+        Bool_t rejectTrack = kFALSE;
+        for (Int_t iJet = 0; iJet < nJets; ++iJet) {
+          AliEmcalJet *jet = dynamic_cast<AliEmcalJet*> (jetArray->At(iJet));
 
-	  // skip jets outside of acceptance and too low pt
-	  if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
-	      (jet->Pt() < fJetPtMin) ||
-	      (jet->GetNumberOfConstituents() < fJetConstMin))
-	    continue;
+          // skip jets outside of acceptance and too low pt
+          if ((TMath::Abs(jet->Eta()) > fJetEtaMax) ||
+              (jet->Pt() < fJetPtMin) ||
+              (jet->GetNumberOfConstituents() < fJetConstMin))
+            continue;
 
-	  // exclude track if part of a jet
-	  if (jet->ContainsTrack(track->GetID())) {
-	    trackInJet = kTRUE;
-	    break;
-	  }
-	}
+          Float_t dEta = track->Eta() - jet->Eta();
+          Float_t dPhi = TVector2::Phi_mpi_pi(track->Phi() - jet->Phi());
+          Bool_t trackInCone = (TMath::Power(dPhi, 2.) + TMath::Power(dEta, 2.)) < TMath::Power(fExclusionRadius, 2.);
+          Bool_t trackInJet  = jet->ContainsTrack(track, fAOD->GetTracks()) >= 0;
 
-	// skip track if it is in a selected jet
-	if (trackInJet)
-	  continue;
+          if (trackInJet != trackInCone)
+            AliDebug(2, Form("track %15s - %15s",
+                             trackInJet ? "in jet" : "not in jet",
+                             trackInCone ? "in cone" : "not in cone"));
 
-	// add particle to array
-	AliDPhiBasicParticle* particle =
-	  new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
-	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
-	obj->Add(particle);
+          // exclude track if in cone around jet or assigned to jet
+          rejectTrack = fExclusionRadius > 0. ? trackInCone : trackInJet;
+
+          if (rejectTrack)
+            break;
+        }
+
+        // skip track if it is associated to a selected jet
+        // (either by jet finder or by cone radius)
+        if (rejectTrack)
+          continue;
+
+        // add particle to array
+        AliDPhiBasicParticle* particle =
+          new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
+        particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+        obj->Add(particle);
       }
-
-      // printf("accepted %i/%i tracks\n", obj->GetEntriesFast(), nTracks);
     }
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));

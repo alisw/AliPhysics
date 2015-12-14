@@ -45,18 +45,24 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
             kPID = 1
         };
 
-    
-		AliAnalysisTaskEPCorrAA();
-		AliAnalysisTaskEPCorrAA(const char *name);
+        enum{
+            kTPCOnlyTrackCut = 128,
+            kHybridTrackCut = 768
+        };
+
+//		AliAnalysisTaskEPCorrAA();
+		AliAnalysisTaskEPCorrAA(const char *name="AliAnalysisTaskEPCorrAA");
 		virtual ~AliAnalysisTaskEPCorrAA();
 
 		virtual void     UserCreateOutputObjects();
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
-		void SetFilterBit(Int_t bit) {fFilterBit = bit;}
 		
 	private:
+        AliAnalysisTaskEPCorrAA(const AliAnalysisTaskEPCorrAA &det);
+        AliAnalysisTaskEPCorrAA& operator=(const AliAnalysisTaskEPCorrAA &det);
+
 		TList           *fOutput;        // Output list
 //		AliESDtrackCuts *fTrackCuts;     // Track cuts
 		AliEventPoolManager*  fPoolMgr; //!
@@ -73,7 +79,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 //	    double DeltaPhi(double phi1, double phi2);
         int GetParticleID(AliAODTrack* track);
 
-	Int_t fFilterBit;//
+
 		Int_t         fMinNumTrack; // AliEventPoolManager(), Size of track buffer for event mixing (number of tracks to fill the pool)
 		Int_t         fPoolSize; // AliEventPoolManager(), max number of event to mix
 		Int_t         fMinNEventsToMix; //
@@ -163,9 +169,11 @@ ClassDef(AliAnalysisTaskEPCorrAA, 1);
 class AliCorrReducedTrackAA : public AliVParticle // TObject
 {
 	public:
-		AliCorrReducedTrackAA() {}
-		AliCorrReducedTrackAA(Int_t partID, Double_t eta, Double_t phi, Double_t pt, Double_t zv, Short_t charge)
-			: fParticleIDReduced(partID), fEtaReduced(eta), fPhiReduced(phi), fPtReduced(pt), fZvReduced(zv), fChargeReduced(charge) {}
+		AliCorrReducedTrackAA() : fParticleIDReduced(-99), fEtaReduced(-99), fPhiReduced(-99), fPtReduced(-99), fZvReduced(-99), fChargeReduced(-99) {}
+		AliCorrReducedTrackAA(Int_t partID, Double_t eta, Double_t phi, Double_t pt, Double_t zv, Short_t charge) 
+		  : fParticleIDReduced(partID), fEtaReduced(eta), fPhiReduced(phi), fPtReduced(pt), fZvReduced(zv), fChargeReduced(charge)
+		{
+		}
 		~AliCorrReducedTrackAA() {}
 
 		// AliVParticle functions
@@ -199,7 +207,6 @@ class AliCorrReducedTrackAA : public AliVParticle // TObject
 		virtual const Double_t*   PID() const { AliFatal("Not implemented"); return 0; }
 
 	private:
-
 		Int_t     fParticleIDReduced; // particle ID 
 		Double_t  fEtaReduced;            // eta
 		Double_t  fPhiReduced;        // phi

@@ -60,6 +60,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdV0MassTolLambda(Double_t a){fProdV0MassTolLambda=a;}
   void SetProdV0MassTolLambdaRough(Double_t a){fProdV0MassTolLambdaRough=a;}
   void SetProdV0PtMin(Double_t a){fProdV0PtMin=a;}
+  void SetProdV0PtMax(Double_t a){fProdV0PtMax=a;}
   void SetProdV0CosPointingAngleToPrimVtxMin(Double_t a){fProdV0CosPointingAngleToPrimVtxMin=a;}
   void SetProdV0DcaDaughtersMax(Double_t a){fProdV0DcaDaughtersMax=a;}
   void SetProdV0DaughterEtaRange(Double_t a){fProdV0DaughterEtaRange=a;}
@@ -85,6 +86,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t GetProdV0MassTolLambda(){return fProdV0MassTolLambda;}
   Double_t GetProdV0MassTolLambdaRough(){return fProdV0MassTolLambdaRough;}
   Double_t GetProdV0PtMin(){return fProdV0PtMin;}
+  Double_t GetProdV0PtMax(){return fProdV0PtMax;}
   Double_t GetProdV0CosPointingAngleToPrimVtxMin(){return fProdV0CosPointingAngleToPrimVtxMin;}
   Double_t GetProdV0DcaDaughtersMax(){return fProdV0DcaDaughtersMax;}
   Double_t GetProdV0DaughterEtaRange(){return fProdV0DaughterEtaRange;}
@@ -153,6 +155,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t fProdV0MassTolLambda;       /// Lambda mass selection  used before object creation
   Double_t fProdV0MassTolLambdaRough;       /// Lambda mass selection  used before object creation
   Double_t fProdV0PtMin;            /// Minimum Lambda pT used before object creation
+  Double_t fProdV0PtMax;            /// Max Lambda pT used before object creation
   Double_t fProdV0CosPointingAngleToPrimVtxMin;/// V0 pointing angle used before object creation
   Double_t fProdV0DcaDaughtersMax;  /// Max DCA between V0 daughters used before object creation
   Double_t fProdV0DaughterEtaRange; /// V0Daughter eta range used before object creation
@@ -188,7 +191,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,4);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,5);
   /// \endcond
 };
 

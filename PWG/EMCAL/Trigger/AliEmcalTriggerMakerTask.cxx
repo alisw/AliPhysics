@@ -38,6 +38,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
+  fJetPatchsize(16),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -52,6 +53,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0InName("AliAODVZERO"),
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
+  fJetPatchsize(16),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -120,6 +122,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       break;
     }
   }
+  fTriggerMaker->SetJetPatchsize(fJetPatchsize);
   fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
 
   if (!fCaloTriggersOutName.IsNull()) {
@@ -188,5 +191,6 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
     }
     new((*fCaloTriggersOut)[patchcounter++]) AliEmcalTriggerPatchInfoAPV1(*recpatch);
   }
+  if(patches) delete patches;
   return true;
 }

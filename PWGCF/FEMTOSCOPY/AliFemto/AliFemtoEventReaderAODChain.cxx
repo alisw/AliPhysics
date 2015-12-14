@@ -23,8 +23,11 @@
 #include "AliFemtoModelHiddenInfo.h"
 
 
-
-ClassImp(AliFemtoEventReaderAODChain)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderAODChain);
+  /// \endcond
+#endif
 
 #if !(ST_NO_NAMESPACES)
   using namespace units;
@@ -32,7 +35,7 @@ ClassImp(AliFemtoEventReaderAODChain)
 
 using namespace std;
 //____________________________
-//constructor with 0 parameters , look at default settings 
+//constructor with 0 parameters , look at default settings
 AliFemtoEventReaderAODChain::AliFemtoEventReaderAODChain():
   AliFemtoEventReaderAOD()
 {
@@ -103,7 +106,3 @@ void AliFemtoEventReaderAODChain::SetAODSource(AliAODEvent *aAOD)
   // You must provide the address where it can be found
   fEvent = aAOD;
 }
-
-
-
-

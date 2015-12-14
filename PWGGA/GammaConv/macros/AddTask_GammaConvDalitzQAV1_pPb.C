@@ -1,6 +1,6 @@
 void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
                                        Bool_t   isMC                      = kFALSE, //run MC 
-                                       Bool_t   enableQAMesonTask         = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+                                       Int_t   enableQAMesonTask          = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t   enableDoMesonChic         = kFALSE, // enable additional Chic analysis
                                        Bool_t   enableSetProdVtxVGamma    = kTRUE,
                                        TString  fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -318,8 +318,11 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
     eventCutArray[0]="80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "20405400233202223710"; MesonCutarray[0] = "0263103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
   } else if( trainConfig  == 68 ) {
     eventCutArray[0]="80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "20405400233002223710"; MesonCutarray[0] = "0263103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
+  } else if( trainConfig  == 69 ) {
+    eventCutArray[0]="80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "20405400233202223010"; MesonCutarray[0] = "0263103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	New standard
   }
-  
+
+    
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *MesonCutList = new TList();
@@ -346,7 +349,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
     if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
         trainConfig == 28 || trainConfig == 29 || trainConfig == 30 ||  trainConfig == 31  || trainConfig == 32 || trainConfig == 33 || trainConfig == 37 || trainConfig == 38 || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 || trainConfig == 41 || trainConfig == 43 || trainConfig == 44 ||
         trainConfig == 45 || trainConfig == 46 || trainConfig == 47 ||  trainConfig == 48  || trainConfig == 49 || trainConfig == 50 || trainConfig == 51 || trainConfig == 52 || trainConfig == 54 || trainConfig == 55 || trainConfig == 56 || trainConfig == 57 || trainConfig == 58 || trainConfig == 59 || 
-        trainConfig == 60 || trainConfig == 61 || trainConfig == 63 ||  trainConfig == 64  || trainConfig == 65 || trainConfig == 66 || trainConfig == 67 || trainConfig == 68 ) {
+        trainConfig == 60 || trainConfig == 61 || trainConfig == 63 ||  trainConfig == 64  || trainConfig == 65 || trainConfig == 66 || trainConfig == 67 || trainConfig == 68 || trainConfig == 69 ) {
       
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
@@ -395,6 +398,8 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
 
     //TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(), photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
     analysisElecCuts[i] = new AliDalitzElectronCuts();
+    analysisElecCuts[i]->SetUseCrossedRows(kTRUE);
+   
     if( !analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data())) {
       cout<< "ERROR:  analysisElecCuts [ " <<i<<" ] "<<endl;
       return 0;
@@ -411,7 +416,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
   task->SetMoveParticleAccordingToVertex(kTRUE);
   
   if(enableSetProdVtxVGamma) task->SetProductionVertextoVGamma(kTRUE);
-  if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
+  task->SetDoMesonQA(enableQAMesonTask);
   if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
 
   //connect containers

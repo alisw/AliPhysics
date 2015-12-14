@@ -1,5 +1,5 @@
 /**
- * \file AliEmcalTriggerBitConfigAPAP.h
+ * \file AliEmcalTriggerBitConfigAP.h
  * \brief Definition of EMCAL trigger bit configurations
  *
  * Two configuation are defined:
@@ -17,7 +17,7 @@
 #include <TNamed.h>
 
 /**
- * \class AliEmcalTriggerBitConfigAPAP
+ * \class AliEmcalTriggerBitConfigAP
  * \brief Definition of trigger bit configurations
  *
  * Trigger bit configuration used in the trigger patch maker and by the trigger patches

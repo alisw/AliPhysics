@@ -33,6 +33,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h" // available from November 2015
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliMCEvent.h"
@@ -411,6 +412,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
   }
   if (fCutCentralityPercentile&&esdevent)
   {
+   if(!fUseNewCentralityFramework)
+   {
     AliCentrality* centr = esdevent->GetCentrality();
     if (fUseCentralityUnchecked)
     {
@@ -430,6 +433,16 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
         pass=kFALSE;
       }
     }
+   } // if(!fUseNewCentralityFramework)
+   else
+   {
+    AliMultSelection *MultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
+    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
+    {
+      pass=kFALSE;
+    }
+   } // else
   }
   if (fCutSPDvertexerAnomaly&&esdevent)
   {
@@ -544,6 +557,8 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
 
   Float_t centrality=-1.;
 
+  if(!fUseNewCentralityFramework)
+  {
   AliCentrality* centr = NULL;
   if (esdEvent)
     centr = esdEvent->GetCentrality();
@@ -556,6 +571,21 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
     centrality=centr->GetCentralityPercentileUnchecked(CentrMethName(fCentralityPercentileMethod));
   else 
     centrality=centr->GetCentralityPercentile(CentrMethName(fCentralityPercentileMethod));
+  }
+  else // if(!fUseNewCentralityFramework)
+  {
+   if (esdEvent)
+   {
+    AliMultSelection *MultSelection = (AliMultSelection *) esdEvent->FindListObject("MultSelection");
+    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    centrality = lPercentile;
+   }
+   else if (aodEvent)
+   {
+    cout<<"New centrality framework not tested yet for AODs..."<<endl;
+    exit(0);
+   } // else if (aodEvent)
+  } // else // if(!fUseNewCentralityFramework)
 
   return centrality;
 }

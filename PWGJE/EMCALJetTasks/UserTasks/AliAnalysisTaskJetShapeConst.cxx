@@ -210,7 +210,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
        	     	  }
       	       	  Double_t deltaR = jetO->DeltaR(vpe);
       	       	  fhRjetTrvspTj->Fill(deltaR, jetO->Pt());
-      	       	  fhJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
+      	       	  fhJetEtaPhiOvl->Fill(jetO->Eta(), jetO->Phi());
       	       	  if(deltaR < fRadius) {
       	       	     reject = kTRUE;
       	       	     break;
@@ -245,7 +245,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       
       //Fill histograms for matched jets
       fh2MSubMatch[fCentBin]->Fill(var,fMatch);
+      
       if(fMatch==1) {
+      	 fhJetSubMatchEtaPhiPt->Fill(jetS->Eta(), jetS->Phi(), ptjetS);
       	 Double_t drToLJ = -1.;
       	 if(jetL) drToLJ = jet1->DeltaR(jetL);
       	 if(fSingleTrackEmb && vpe)
@@ -270,10 +272,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	       mJetR  = vecpe->M();
       	       var2   = vecpe->M();
       	       ptJetR = vecpe->Pt();
-      	       
       	    }
       	 }
-      	 
+	 
       	 if(fJetMassVarType==kRatMPt) {
       	    if(ptJetR>0. || ptJetR<0.) var2 /= ptJetR;
       	 }

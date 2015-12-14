@@ -150,13 +150,18 @@ AliHFEcuts::AliHFEcuts():
   fRejectKinkMothers(kTRUE),
   fHistQA(0x0),
   fCutList(0x0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fPIDResponse(NULL)
 {
   //
   // Dummy Constructor
   //
-  memset(fProdVtx, 0, sizeof(Double_t) * 4);
-  memset(fProdVtxZ, 0, sizeof(Double_t) * 2);
+  fProdVtx[0] =  -1.e+09;
+  fProdVtx[1] =   1.e+09;
+  fProdVtx[2] =  -1.e+09;
+  fProdVtx[3] =   1.e+09;
+  fProdVtxZ[0] = -1.e+09;
+  fProdVtxZ[1] =  1.e+09;
   memset(fDCAtoVtx, 0, sizeof(Double_t) * 2);
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
@@ -207,13 +212,18 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fRejectKinkMothers(kTRUE),
   fHistQA(0x0),
   fCutList(0x0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fPIDResponse(NULL)
 {
   //
   // Default Constructor
   //
-  memset(fProdVtx, 0, sizeof(Double_t) * 4);
-  memset(fProdVtxZ, 0, sizeof(Double_t) * 2);
+  fProdVtx[0] =  -1.e+09;
+  fProdVtx[1] =   1.e+09;
+  fProdVtx[2] =  -1.e+09;
+  fProdVtx[3] =   1.e+09;
+  fProdVtxZ[0] = -1.e+09;
+  fProdVtxZ[1] =  1.e+09;
   memset(fDCAtoVtx, 0, sizeof(Double_t) * 2);
   memset(fPtRange, 0, sizeof(Double_t) * 2);
   memset(fIPCutParams, 0, sizeof(Float_t) * 4);
@@ -264,7 +274,8 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fRejectKinkMothers(c.fRejectKinkMothers),
   fHistQA(0x0),
   fCutList(0x0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fPIDResponse(c.fPIDResponse)
 {
   //
   // Copy Constructor
@@ -325,6 +336,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fRejectKinkDaughters = fRejectKinkDaughters;
   target.fRejectKinkMothers = fRejectKinkMothers;
   target.fDebugLevel = 0;
+  target.fPIDResponse = fPIDResponse;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
   memcpy(target.fProdVtxZ, fProdVtxZ, sizeof(Double_t) * 2);
@@ -756,6 +768,7 @@ void AliHFEcuts::SetHFElectronTOFCuts(){
   //
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTOF","Extra cuts from the HFE group on TOF PID");
+  if(fPIDResponse) hfecuts->SetPIDResponse(fPIDResponse);
   if(fTOFPIDStep) hfecuts->SetTOFPID(kTRUE);
   if(fTOFMISMATCHStep) hfecuts->SetTOFMISMATCH(kTRUE);
   if(fMatchTOFLabel) hfecuts->SetMatchTOFLabel(kTRUE);

@@ -7,16 +7,17 @@
 #include "AliFemtoV0Collection.h"
 
 class AliFemtoV0SharedDaughterCut {
+public:
 
- public:
-  
-  AliFemtoV0SharedDaughterCut(); //default constructor, does nothing
+  AliFemtoV0SharedDaughterCut(); ///< default constructor, does nothing
   virtual AliFemtoV0Collection AliFemtoV0SharedDaughterCutCollection(AliFemtoV0Collection*, AliFemtoV0Cut*);
   virtual ~AliFemtoV0SharedDaughterCut();
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoV0SharedDaughterCut, 0)
-#endif 
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoV0SharedDaughterCut, 0);
+  /// \endcond
+#endif
+};
 
-    };	
 #endif

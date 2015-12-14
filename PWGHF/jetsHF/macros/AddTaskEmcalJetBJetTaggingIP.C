@@ -99,9 +99,13 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							      TList::Class(),AliAnalysisManager::kOutputContainer,
 							      Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%s_trees",contname.Data()),
+    							      TTree::Class(),AliAnalysisManager::kOutputContainer,
+    							      "AnalysisResults.TCTree.root");
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
-  
+    mgr->ConnectOutput (jetTask, 2, coutput2 );
+
     return jetTask;
 }
 

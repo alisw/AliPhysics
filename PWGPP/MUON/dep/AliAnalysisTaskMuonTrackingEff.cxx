@@ -48,7 +48,7 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisTaskMuonTrackingEff.h"
 
 //MUON includes
@@ -374,8 +374,9 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
   if (!esd) return;
   
   // get the centrality
-  Double_t cent = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
-  if (cent <= fCentMin || cent > fCentMax) return;
+  AliMultSelection *multSelection = static_cast<AliMultSelection*>(esd->FindListObject("MultSelection"));
+  Double_t cent = multSelection ? multSelection->GetMultiplicityPercentile("V0M") : -1.;
+  if (cent < fCentMin || cent > fCentMax) return;
   static_cast<TH1F*>(fExtraHistList->At(0))->Fill(cent);
   
   // total number of events analyzed
