@@ -1699,36 +1699,77 @@ struct FastSim : public TSelector
     
     return true;
   }
-  virtual void PbPbCent(Double_t b, Double_t& c, Float_t& np, Float_t& nc) const
+  virtual void PbPbCent(UShort_t sNN, Double_t b,
+			Double_t& c, Float_t& np, Float_t& nc) const
   {
+    c  = -1;
+    np = -1;
+    nc = -1;
     // PbPb @ 2.76TeV only 
     // Updated 4th of November 2014 from 
     // cern.ch/twiki/bin/view/ALICE/CentStudies
     //        #Tables_with_centrality_bins_AN1
-    if      (0.00 >= b  && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
-    else if (1.57 >= b  && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
-    else if (2.22 >= b  && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
-    else if (2.71 >= b  && b < 3.13)  { c=3.5;  np=372;   nc=1597; }  
-    else if (3.13 >= b  && b < 3.50)  { c=4.5;  np=361.1; nc=1520; } 
-    else if (3.50 >= b  && b < 4.94)  { c=7.5;  np=329.4; nc=1316; } 
-    else if (4.94 >= b  && b < 6.05)  { c=12.5; np=281.2; nc=1032; } 
-    else if (6.05 >= b  && b < 6.98)  { c=17.5; np=239;   nc=809.8; }
-    else if (6.98 >= b  && b < 7.81)  { c=22.5; np=202.1; nc=629.6; }
-    else if (7.81 >= b  && b < 8.55)  { c=27.5; np=169.5; nc=483.7; }
-    else if (8.55 >= b  && b < 9.23)  { c=32.5; np=141;   nc=366.7; }
-    else if (9.23 >= b  && b < 9.88)  { c=37.5; np=116;   nc=273.4; }
-    else if (9.88 >= b  && b < 10.47) { c=42.5; np=94.11; nc=199.4; } 
-    else if (10.47 >= b && b < 11.04) { c=47.5; np=75.3;  nc=143.1; } 
-    else if (11.04 >= b && b < 11.58) { c=52.5; np=59.24; nc=100.1; }
-    else if (11.58 >= b && b < 12.09) { c=57.5; np=45.58; nc=68.46; }
-    else if (12.09 >= b && b < 12.58) { c=62.5; np=34.33; nc=45.79; }
-    else if (12.58 >= b && b < 13.05) { c=67.5; np=25.21; nc=29.92; }
-    else if (13.05 >= b && b < 13.52) { c=72.5; np=17.96; nc=19.08; }
-    else if (13.52 >= b && b < 13.97) { c=77.5; np=12.58; nc=12.07; }
-    else if (13.97 >= b && b < 14.43) { c=82.5; np=8.812; nc=7.682; }
-    else if (14.43 >= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
-    else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
-    else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
+    if (sNN == 2760) {
+      if      (0.00  <= b && b < 1.57)  { c=0.5;  np=403.8; nc=1861; } 
+      else if (1.57  <= b && b < 2.22)  { c=1.5;  np=393.6; nc=1766; } 
+      else if (2.22  <= b && b < 2.71)  { c=2.5;  np=382.9; nc=1678; } 
+      else if (2.71  <= b && b < 3.13)  { c=3.5;  np=372;   nc=1597; }  
+      else if (3.13  <= b && b < 3.50)  { c=4.5;  np=361.1; nc=1520; } 
+      else if (3.50  <= b && b < 4.94)  { c=7.5;  np=329.4; nc=1316; } 
+      else if (4.94  <= b && b < 6.05)  { c=12.5; np=281.2; nc=1032; } 
+      else if (6.05  <= b && b < 6.98)  { c=17.5; np=239;   nc=809.8; }
+      else if (6.98  <= b && b < 7.81)  { c=22.5; np=202.1; nc=629.6; }
+      else if (7.81  <= b && b < 8.55)  { c=27.5; np=169.5; nc=483.7; }
+      else if (8.55  <= b && b < 9.23)  { c=32.5; np=141;   nc=366.7; }
+      else if (9.23  <= b && b < 9.88)  { c=37.5; np=116;   nc=273.4; }
+      else if (9.88  <= b && b < 10.47) { c=42.5; np=94.11; nc=199.4; } 
+      else if (10.47 <= b && b < 11.04) { c=47.5; np=75.3;  nc=143.1; } 
+      else if (11.04 <= b && b < 11.58) { c=52.5; np=59.24; nc=100.1; }
+      else if (11.58 <= b && b < 12.09) { c=57.5; np=45.58; nc=68.46; }
+      else if (12.09 <= b && b < 12.58) { c=62.5; np=34.33; nc=45.79; }
+      else if (12.58 <= b && b < 13.05) { c=67.5; np=25.21; nc=29.92; }
+      else if (13.05 <= b && b < 13.52) { c=72.5; np=17.96; nc=19.08; }
+      else if (13.52 <= b && b < 13.97) { c=77.5; np=12.58; nc=12.07; }
+      else if (13.97 <= b && b < 14.43) { c=82.5; np=8.812; nc=7.682; }
+      else if (14.43 <= b && b < 14.96) { c=87.5; np=6.158; nc=4.904; }
+      else if (14.96 <= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
+      else if (15.67 <= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
+    }
+    else if (sNN == 5023) {
+      // PbPb @ 5.02TeV only 
+      // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+      if      (0.00 <= b && b < 1.56) { c=( 0+ 1)/2.;  np=405;  nc=2030; }
+      else if (1.56 <= b && b < 2.22) { c=( 1+ 2)/2.;  np=396;  nc=1930; }
+      else if (2.22 <= b && b < 2.71) { c=( 2+ 3)/2.;  np=386;  nc=1830; }
+      else if (2.71 <= b && b < 3.13) { c=( 3+ 4)/2.;  np=375;  nc=1740; }
+      else if (3.13 <= b && b < 3.51) { c=( 4+ 5)/2.;  np=364;  nc=1660; }
+      else if (3.51 <= b && b < 3.84) { c=( 5+ 6)/2.;  np=353;  nc=1580; }
+      else if (3.84 <= b && b < 4.15) { c=( 6+ 7)/2.;  np=343;  nc=1500; }
+      else if (4.15 <= b && b < 4.43) { c=( 7+ 8)/2.;  np=333;  nc=1430; }
+      else if (4.43 <= b && b < 4.71) { c=( 8+ 9)/2.;  np=322;  nc=1360; }
+      else if (4.71 <= b && b < 4.96) { c=( 9+ 10)/2.; np=313;  nc=1300; }
+      else if (4.96 <= b && b < 6.08) { c=(10+ 15)/2.; np=285;  nc=1120; }
+      else if (6.08 <= b && b < 7.01) { c=(15+ 20)/2.; np=242;  nc= 878; }
+      else if (7.01 <= b && b < 7.84) { c=(20+ 25)/2.; np=205;  nc= 681; }
+      else if (7.84 <= b && b < 8.59) { c=(25+ 30)/2.; np=172;  nc= 522; }
+      else if (8.59 <= b && b < 9.27) { c=(30+ 35)/2.; np=143;  nc= 395; }
+      else if (9.27 <= b && b < 9.92) { c=(35+ 40)/2.; np=118;  nc= 294; }
+      else if (9.92 <= b && b < 10.5) { c=(40+ 45)/2.; np=95.8; nc= 214; }
+      else if (10.5 <= b && b < 11.1) { c=(45+ 50)/2.; np=76.7; nc= 152; }
+      else if (11.1 <= b && b < 11.6) { c=(50+ 55)/2.; np=60.6; nc= 107; }
+      else if (11.6 <= b && b < 12.1) { c=(55+ 60)/2.; np=46.7; nc=72.7; }
+      else if (12.1 <= b && b < 12.6) { c=(60+ 65)/2.; np=35.1; nc=48.3; }
+      else if (12.6 <= b && b < 13.1) { c=(65+ 70)/2.; np=25.7; nc=31.4; }
+      else if (13.1 <= b && b < 13.6) { c=(70+ 75)/2.; np=18.3; nc=19.9; }
+      else if (13.6 <= b && b < 14.0) { c=(75+ 80)/2.; np=12.8; nc=12.5; }
+      else if (14.0 <= b && b < 14.5) { c=(80+ 85)/2.; np=8.92; nc=7.88; }
+      else if (14.5 <= b && b < 15.0) { c=(85+ 90)/2.; np=6.26; nc=5.04; }
+      else if (15.0 <= b && b < 15.7) { c=(90+ 95)/2.; np=4.42; nc=3.25; }
+      else if (15.7 <= b && b < 19.6) { c=(95+100)/2.; np=3.11; nc=2.04; }
+    }
+    else {
+      Warning("PbPbCent", "Unknown collision energy: %d", sNN);
+    }
   }
   void pPbNpartCent(Int_t nPart, Double_t& c) const
   {
@@ -1769,9 +1810,10 @@ struct FastSim : public TSelector
     Int_t n = TMath::Max(TMath::Min(32, nPart),0);
     c = cm[n] * 100;
   }
-  void pPbCent(Double_t b, Double_t& c, Float_t&, Float_t&) const
+  void pPbCent(UShort_t sNN, Double_t b, Double_t& c, Float_t&, Float_t&) const
   {
-    // pPb/Pbp @ 5.02TeV 
+    // pPb/Pbp @ 5.02TeV
+    if (sNN != 5023) { c = 200; }
 #if 1
     // From Alberica
     const Double_t cl[] = {   0,    5,   10,   20,   40,   60,   80, -1 };
@@ -1833,6 +1875,15 @@ struct FastSim : public TSelector
     fShortHead.fIpX     = ip[0];
     fShortHead.fIpY     = ip[1];
     fShortHead.fIpZ     = ip[2];
+    Float_t    fsNN     = fGenerator->GetEnergyCMS();
+    UShort_t   sNN      = (TMath::Abs(fsNN -  2760) < 10 ?  2760 :
+			   TMath::Abs(fsNN -  5023) < 10 ?  5023 :
+			   TMath::Abs(fsNN -  2360) < 10 ?  2360 :
+			   TMath::Abs(fsNN -   900) < 10 ?   900 :
+			   TMath::Abs(fsNN -  7000) < 10 ?  7000 :
+			   TMath::Abs(fsNN -  8000) < 10 ?  8000 :
+			   TMath::Abs(fsNN - 13000) < 10 ? 13000 :
+			   0);
 
     // --- Check header type -----------------------------------------
     AliGenEventHeader* genHeader = fHeader->GenEventHeader();
@@ -1877,7 +1928,7 @@ struct FastSim : public TSelector
       fShortHead.fNSpecPproj = geometry->ProjSpectatorsp();
       fShortHead.fNSpecNtgt  = geometry->TargSpectatorsn(); 
       fShortHead.fNSpecPtgt  = geometry->TargSpectatorsp();
-   }
+    }
     // --- Determine diffraction flags -------------------------------
     Bool_t sd = false;
     Bool_t dd = false;
@@ -1995,15 +2046,11 @@ struct FastSim : public TSelector
     Double_t b  = fShortHead.fB;
     Info("ProcessHeader", "b=%f isProjA=%d isTgtA=%d cms=%f",
 	 b, fIsProjA, fIsTgtA, fGenerator ? fGenerator->GetEnergyCMS() : -1);
-    if (b >= 0 && fIsProjA && fIsTgtA &&
-	TMath::Abs(fGenerator->GetEnergyCMS()-2760) < 10) {
-      PbPbCent(b, c, np, nc);
+    if (b >= 0 && fIsProjA && fIsTgtA) {
+      PbPbCent(sNN, b, c, np, nc);
     }
-    else if (b >= 0 && (fIsTgtA || fIsProjA) &&
-	     (fGenerator
-	      ? TMath::Abs(fGenerator->GetEnergyCMS()-5023) < 10
-	      : true)) {
-      pPbCent(b, c, np, nc);
+    else if (b >= 0 && (fIsTgtA || fIsProjA)) {
+      pPbCent(sNN, b, c, np, nc);
       Info("", "Getting pPb centrality b=%f -> %f%%", b, c);
     }
     if (c >= 0) fShortHead.fC = c;
@@ -2811,7 +2858,8 @@ struct EPosSim : public FastSim
       fInNSpcTN(0),
       fInNSpcPP(0),
       fInNSpcTP(0),
-      fInPhiR(0)
+      fInPhiR(0),
+      fSNN(0)
   {
   }
   Bool_t SetupBranches()
@@ -2895,7 +2943,9 @@ struct EPosSim : public FastSim
   {
     fIsTgtA  = gROOT->ProcessLine("grp->beam1.IsA()");
     fIsProjA = gROOT->ProcessLine("grp->beam2.IsA()");
+    fSNN     = gROOT->ProcessLine("grp->energy");
     return true;
+    
   }
   Bool_t SetupRun() { return true; }
   Bool_t PreEvent(Long64_t iEv)
@@ -2934,9 +2984,9 @@ struct EPosSim : public FastSim
     Double_t c = -1;
     Float_t np = -1, nc = -1;
     if (fIsProjA && fIsTgtA) 
-      PbPbCent(fShortHead.fB, c, np, nc);
+      PbPbCent(fSNN, fShortHead.fB, c, np, nc);
     else if (fIsProjA && !fIsTgtA)
-      pPbCent(fShortHead.fB, c, np, nc);
+      pPbCent(fSNN, fShortHead.fB, c, np, nc);
     
     if (c >= 0) fShortHead.fC = c;
     Double_t nb   = nc/2;
@@ -3035,6 +3085,7 @@ struct EPosSim : public FastSim
   TLeaf* fInNSpcPP; //!
   TLeaf* fInNSpcTP; //!
   TLeaf* fInPhiR;   //!
+  UInt_t fSNN;
   
   /** 
    * Run this selector as a normal process

@@ -469,6 +469,8 @@ protected:
     // Info("DrawRes", "Drawing results for %s", base.Data());
     TCollection* c = GetCollection(top, ColName(base, true));
     if (!c) return 0;
+    TCollection* s = GetCollection(top, ColName(base, false));
+    // if (!s) return 0;
 
     fBody->cd();
     Double_t y = .9;
@@ -477,10 +479,20 @@ protected:
 
     TH1* emp = GetH1(c, "empirical");
     TF1* dc  = static_cast<TF1*>(GetObject(c,"deltaCorr"));
-    if (emp || dc) {
-      fBody->Divide(2,1);
+    TF1* vw  = static_cast<TF1*>(GetObject(s,"ipZw"));
+    if (vw) vw->SetRange(-4,6);
+    if (emp || dc || vw) {
+      fBody->Divide(3,1);
       DrawInPad(fBody, 1, emp, "", 0, "Empirical");
       DrawInPad(fBody, 2, dc, "", 0, "\\hbox{IP} \\delta_{xy}");
+      DrawInPad(fBody, 3, vw, "", 0, "\\hbox{IP} \\delta_{z}");
+      if (vw) {
+	Double_t y = .95;
+	DrawParameter(y, "#mu_{Z}", Form("%5.3f", vw->GetParameter(0)));
+	DrawParameter(y, "#sigma_{Z}", Form("%5.3f", vw->GetParameter(1)));
+	DrawParameter(y, "#mu_{Z,ref}", Form("%5.3f", vw->GetParameter(2)));
+	DrawParameter(y, "#sigma_{Z,ref}", Form("%5.3f", vw->GetParameter(3)));
+      }
       PrintCanvas(Form("%s corrections", base.Data()));
     }
       
