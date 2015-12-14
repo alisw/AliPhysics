@@ -113,8 +113,25 @@ AliAnalysisTask* AddTaskMuMuMinv(const char* foldername,
     binning->AddBin("psi","pt",11.0,15.0);
     binning->AddBin("psi","pt",15.0,25.0);
   }
-  
-  binning->AddBin("centrality","pp");
+
+  if ( TString(beamYear).Contains("pbpb",TString::kIgnoreCase) )
+  {
+    binning->AddBin("centrality","V0M");
+    binning->AddBin("centrality","V0M",0,90);
+    binning->AddBin("centrality","V0M",0,10);
+    binning->AddBin("centrality","V0M",10,20);
+    binning->AddBin("centrality","V0M",20,30);
+    binning->AddBin("centrality","V0M",30,40);
+    binning->AddBin("centrality","V0M",40,50);
+    binning->AddBin("centrality","V0M",50,60);
+    binning->AddBin("centrality","V0M",60,70);
+    binning->AddBin("centrality","V0M",70,80);
+    binning->AddBin("centrality","V0M",80,90);
+  }
+  else
+  {
+    binning->AddBin("centrality","pp");
+  }
   
   // add the configured task to the analysis manager
   mgr->AddTask(task);
