@@ -1,12 +1,19 @@
-AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
-                                           UInt_t clusterizer  = AliEMCALRecParam::kClusterizerv2,
-					   const char *pass    = 0 /*should not be needed; will be recovered from path of AOD/ESD; no need to specify by user; */
-					   ) {
+AliAnalysisTaskSE *AddTaskEmcalPreparation(
+    const char *perstr  = "LHC11h",
+    UInt_t clusterizer  = AliEMCALRecParam::kClusterizerv2,
+    const char *pass    = 0 /*should not be needed; will be recovered from path of AOD/ESD; no need to specify by user; */
+) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskEmcalPreparation", "No analysis manager to connect to.");
+    Error("AddTaskEmcalPreparation","No analysis manager found.");
+    return NULL;
+  }
+
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
+    Error("AddTaskEmcalPreparation", "This task requires an input event handler");
     return NULL;
   }
 
@@ -37,8 +44,8 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   UInt_t clusterizerT   = 0;
   Bool_t trackMatch     = kFALSE;
   Bool_t updateCellOnly = kFALSE;
-  Float_t timeMin       = -50e-9;   // minimum time of physical signal in a cell/digit
-  Float_t timeMax       =  50e-9;   // maximum time of physical signal in a cell/digit
+  Float_t timeMin       = -50e-6;   // minimum time of physical signal in a cell/digit
+  Float_t timeMax       =  50e-6;   // maximum time of physical signal in a cell/digit
   Float_t timeCut       = 1e6;
   if(period.Contains("lhc11h")) {
     timeMin = -50e-9;
@@ -84,13 +91,12 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
   AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
-						 fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
-						 cellthresh, clusterizerT, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
+      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
+      cellthresh, clusterizerT, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
 #endif
 
   //----------------------- Add clusterizer -------------------------------------------------------
-  remExoticCell  = kTRUE;
-  TString tmpClusters = "tmpCaloClusters";
+  remExoticCell  = kFALSE;
 #ifdef __CLING__
   // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
   std::stringstream clusterizeradd;
@@ -114,20 +120,20 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
 #else
   // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
-  AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","",tmpClusters.Data(),clusterizer,cellthresh,seedthresh,
+  AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","","",clusterizer,cellthresh,seedthresh,
       timeMin,timeMax,timeCut,remExoticCell,distBC,
       AliAnalysisTaskEMCALClusterizeFast::kFEEData);
 #endif
-  
+
   if(isMC){
     if((period.Contains("lhc10") || period.Contains("lhc11") || period.Contains("lhc12a") 
-          || period.Contains("lhc12b") || period.Contains("lhc12c") 
-          || period.Contains("lhc12d") || period.Contains("lhc12e"))
+        || period.Contains("lhc12b") || period.Contains("lhc12c")
+        || period.Contains("lhc12d") || period.Contains("lhc12e"))
         && !(period.Contains("lhc12a15d") || period.Contains("lhc12a15f")
-          || period.Contains("lhc12a15g") || period.Contains("lhc12a15h")
-          || period.Contains("lhc12c4") || period.Contains("lhc12d1") 
-          || period.Contains("lhc12d2") || period.Contains("lhc12d3") 
-          || period.Contains("lhc12e1") || period.Contains("lhc12e2") || period.Contains("lhc12e3")))
+            || period.Contains("lhc12a15g") || period.Contains("lhc12a15h")
+            || period.Contains("lhc12c4") || period.Contains("lhc12d1")
+            || period.Contains("lhc12d2") || period.Contains("lhc12d3")
+            || period.Contains("lhc12e1") || period.Contains("lhc12e2") || period.Contains("lhc12e3")))
     {
       clusterizerTask->SetCellMCLabelFromCluster(1);
     }
@@ -159,9 +165,11 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
 #else
   // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity,
-  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,tmpClusters.Data(),"EmcCaloClusters",0.,kTRUE);
+  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,0,"EmcCaloClusters",0.,kTRUE);
 #endif
+  clusMaker->GetClusterContainer(0)->SetClusPtCut(0.);
+  clusMaker->GetClusterContainer(0)->SetClusECut(0.);
 
-  return clusterizerTask;
+  return clusMaker;
 
 }

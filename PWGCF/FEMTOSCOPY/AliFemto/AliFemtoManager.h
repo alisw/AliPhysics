@@ -53,7 +53,7 @@ public:
   AliFemtoString Report(); //!<
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoManager, 0)
+  ClassDef(AliFemtoManager, 0);
   /// \endcond
 #endif
 };

@@ -61,7 +61,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else if ((type & AliEmcalJetTask::kR040Jet) != 0)
     sprintf(radiusString,"R040");
   else
-    sprintf(radiusString,"R0%2.0f",radius*100.0);
+    sprintf(radiusString,"R%03.0f",radius*100.0);
 
   char pTString[200];
   if (minTrPt==0)

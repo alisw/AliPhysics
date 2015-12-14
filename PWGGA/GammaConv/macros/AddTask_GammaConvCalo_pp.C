@@ -106,14 +106,14 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
-  if (trainConfig == 101  || trainConfig == 131 || trainConfig == 132 || trainConfig == 120 || trainConfig == 121 ||
+  if (trainConfig == 32   || trainConfig == 101 || trainConfig == 131 || trainConfig == 132 || trainConfig == 120 || trainConfig == 121 ||
       trainConfig == 122  || trainConfig == 123 || trainConfig == 201) {
       numberOfCuts = 1;
   }
-  if (trainConfig == 113  || trainConfig == 114 || trainConfig == 115 || trainConfig == 116 || trainConfig == 129) {
+  if (trainConfig == 31   || trainConfig == 113 || trainConfig == 114 || trainConfig == 115 || trainConfig == 116 || trainConfig == 129) {
       numberOfCuts = 3;
   }
-  if (trainConfig == 8    || trainConfig == 10  || trainConfig == 12  || trainConfig == 13  ||
+  if (trainConfig == 8    || trainConfig == 10  || trainConfig == 12  || 
       trainConfig == 21   || trainConfig == 23  || trainConfig == 24  || trainConfig == 26  ||
       trainConfig == 40   || trainConfig == 41  || trainConfig == 48  || trainConfig == 50  || trainConfig == 52  ||    
       trainConfig == 53   || trainConfig == 61  || trainConfig == 63  || trainConfig == 65  ||
@@ -136,7 +136,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
       trainConfig == 107  || trainConfig == 127 || trainConfig == 202) {
       numberOfCuts = 5;  
   }
-  if (trainConfig == 4    || trainConfig == 14  || trainConfig == 17  || trainConfig == 27  || trainConfig == 44 ||
+  if (trainConfig == 4    || trainConfig == 13  || trainConfig == 14  || trainConfig == 17  || trainConfig == 27  || trainConfig == 44 ||
       trainConfig == 54   || trainConfig == 57  || trainConfig == 68  || trainConfig == 71  ||
       trainConfig == 81   || trainConfig == 84  || trainConfig == 94  || trainConfig == 301 || trainConfig == 302 ||
       trainConfig == 104  || trainConfig == 110) {
@@ -225,6 +225,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121043032230000"; mesonCutArray[1] = "0163103100000010"; // time 100ns
     eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121033032230000"; mesonCutArray[2] = "0163103100000010"; // time 200ns
     eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121023032230000"; mesonCutArray[3] = "0163103100000010"; // time 500ns
+    eventCutArray[ 4] = "00003113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111121063032230000"; mesonCutArray[4] = "0163103100000010"; // time -30ns, +35
+    eventCutArray[ 5] = "00003113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111121073032230000"; mesonCutArray[5] = "0163103100000010"; // time 30ns
   }else if (trainConfig == 14){  //LHC11a NonLinearity variations
     eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
     eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101053032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
@@ -319,6 +321,13 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111125053032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo kSDM
     eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111126053032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo kSDM
 
+  } else if (trainConfig == 31){  // LHC12 without non linearity
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // INT7
+    eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000010"; // EMC7
+    eventCutArray[ 2] = "00081113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111100063032230000"; mesonCutArray[2] = "0163103100000010"; // EMCEG1,
+  } else if (trainConfig == 32){  // LHC10 without non linearity
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100013032230000"; mesonCutArray[0] = "0163103100000010"; // MB
+    
   // LHC13g  
   } else if (trainConfig == 40){  // LHC13g without non linearity
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // INT7

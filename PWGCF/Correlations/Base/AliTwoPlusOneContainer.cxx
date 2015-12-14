@@ -176,6 +176,50 @@ void AliTwoPlusOneContainer::DeleteContainers()
 
 
 //____________________________________________________________________
+void AliTwoPlusOneContainer::FillParticleDist(Double_t centrality, Float_t zVtx, TObjArray* particleDist, Double_t weight, Bool_t applyEfficiency)
+{
+  AliCFContainer* track_hist = fTwoPlusOne->GetTrackHist(AliUEHist::kToward);
+  AliCFContainer* event_hist = fTwoPlusOne->GetEventHist();
+  AliUEHist::CFStep stepUEHist = static_cast<AliUEHist::CFStep>(AliTwoPlusOneContainer::kParticleDist);
+
+
+  for (Int_t i=0; i<particleDist->GetEntriesFast(); i++){
+
+    AliVParticle* part = (AliVParticle*) particleDist->UncheckedAt(i);
+    
+    Double_t part_pt = part->Pt();
+
+    if(part_pt<fPtAssocMin||part_pt>fPtAssocMax)
+      continue;
+
+    Double_t part_eta = part->Eta();
+    Double_t part_phi = part->Phi();
+
+    //have to bring the phi angle on the same range as the Delta phi, because it is saved in the delta phi axis
+    if(part_phi>1.5*TMath::Pi())  part_phi-= TMath::TwoPi();
+    else if(part_phi<-0.5*TMath::Pi())  part_phi+= TMath::TwoPi();
+
+    Double_t vars[7];
+    vars[0] = part_eta;
+    vars[1] = part_pt;//the particle pT is saved in the associated pT in the histograms because the axis has the correct range
+    vars[2] = (fTriggerPt1Max+fTriggerPt1Min)/2;;
+    vars[3] = centrality;
+    vars[4] = part_phi;
+    vars[5] = zVtx;
+    vars[6] = (fTriggerPt2Max+fTriggerPt2Min)/2;
+    
+    Double_t efficiency = 1.0;
+    if(applyEfficiency)
+      efficiency = getEfficiency(part_pt, part_eta, centrality, zVtx);
+
+    track_hist->Fill(vars, stepUEHist, weight*efficiency);
+
+  }
+
+}
+
+
+//____________________________________________________________________
 void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency)
 {
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation

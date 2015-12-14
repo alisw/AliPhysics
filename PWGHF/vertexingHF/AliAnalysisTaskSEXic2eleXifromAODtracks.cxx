@@ -265,6 +265,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
 	fHistoLambdaPtvsDlMCS(0),
+	fHistoEleXiPtvsRapidityRS(0),
+	fHistoEleXiPtvsRapidityWS(0),
+	fHistoEleXiPtvsRapidityMCS(0),
 	fHistoResponseElePt(0),
 	fHistoResponseEleXiPt(0),
 	fCounter(0),
@@ -482,6 +485,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
 	fHistoLambdaPtvsDlMCS(0),
+	fHistoEleXiPtvsRapidityRS(0),
+	fHistoEleXiPtvsRapidityWS(0),
+	fHistoEleXiPtvsRapidityMCS(0),
 	fHistoResponseElePt(0),
 	fHistoResponseEleXiPt(0),
 	fCounter(0),
@@ -1363,6 +1369,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 	cont_eleptvsd0[1] = exobj->Getd0Prong(0)*trk->Charge();
 	cont_eleptvsd0[2] = fCentrality;
 
+	Double_t exobj_mass = exobj->InvMass(2,pdgdg);
+	Double_t exobj_px = exobj->Px();
+	Double_t exobj_py = exobj->Py();
+	Double_t exobj_pz = exobj->Pz();
+	Double_t exobj_E = sqrt(exobj_mass*exobj_mass+exobj_px*exobj_px+exobj_py*exobj_py+exobj_pz*exobj_pz);
+	Double_t exobj_rap = 0.5*log((exobj_E+exobj_pz)/(exobj_E-exobj_pz));
+
 	if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc))
 	{
 		if(trk->Charge()*casc->ChargeXi()<0){
@@ -1373,6 +1386,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 			if(trk->Charge()>0) fHistoEleXiMassvsElePtRS1->Fill(cont2);
 			else  fHistoEleXiMassvsElePtRS2->Fill(cont2);
 			if(cont[0]<2.5){
+				fHistoEleXiPtvsRapidityRS->Fill(exobj->Pt(),exobj_rap);
 				fHistoElePtRS->Fill(trk->Pt(),fCentrality);
 				fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
 				fHistoElePtvsXiPtRS->Fill(cont_eleptvsxipt);
@@ -1458,107 +1472,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 					fHistoElePtvsCutVarsRS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
-		}else{
-			fHistoEleXiMassWS->Fill(cont);
-			if(trk->Charge()>0) fHistoEleXiMassWS1->Fill(cont);
-			else  fHistoEleXiMassWS2->Fill(cont);
-			fHistoEleXiMassvsElePtWS->Fill(cont2);
-			if(trk->Charge()>0) fHistoEleXiMassvsElePtWS1->Fill(cont2);
-			else  fHistoEleXiMassvsElePtWS2->Fill(cont2);
-			if(cont[0]<2.5){
-				fHistoElePtWS->Fill(trk->Pt(),fCentrality);
-				fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
-				fHistoElePtvsXiPtWS->Fill(cont_eleptvsxipt);
-				fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
-
-				for(Int_t ih=0;ih<23;ih++){
-					Double_t cont_eleptvscutvars[3];
-					cont_eleptvscutvars[0] = exobj->Pt();
-					cont_eleptvscutvars[2] = fCentrality;
-
-					if(ih==0){
-						cont_eleptvscutvars[1] = trk->GetTPCNcls();
-					}else if(ih==1){
-						cont_eleptvscutvars[1] = trk->GetTPCsignalN();
-					}else if(ih==2){
-						cont_eleptvscutvars[1] = nSigmaTPCele;
-					}else if(ih==3){
-						cont_eleptvscutvars[1] = nSigmaTOFele;
-					}else if(ih==4){
-						cont_eleptvscutvars[1] = trk->Eta();
-					}else if(ih==5){
-						cont_eleptvscutvars[1] = trk->GetITSNcls();
-					}else if(ih==6){
-						if(casc->ChargeXi()<0)
-							cont_eleptvscutvars[1] = casc->MassLambda();
-						else
-							cont_eleptvscutvars[1] = casc->MassAntiLambda();
-					}else if(ih==7){
-						cont_eleptvscutvars[1] = casc->MassXi();
-					}else if(ih==8){
-						Double_t lPosV0[3];
-						lPosV0[0] = casc->DecayVertexV0X();
-						lPosV0[1] = casc->DecayVertexV0Y();
-						lPosV0[2] = casc->DecayVertexV0Z();
-						cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
-					}else if(ih==9){
-						Double_t lPosXi[3];
-						lPosXi[0] = casc->DecayVertexXiX();
-						lPosXi[1] = casc->DecayVertexXiY();
-						lPosXi[2] = casc->DecayVertexXiZ();
-						cont_eleptvscutvars[1] = TMath::Sqrt(lPosXi[0]*lPosXi[0]+lPosXi[1]*lPosXi[1]);
-					}else if(ih==10){
-						cont_eleptvscutvars[1] = casc->DcaV0Daughters();
-					}else if(ih==11){
-						cont_eleptvscutvars[1] = casc->DcaXiDaughters();
-					}else if(ih==12){
-						cont_eleptvscutvars[1] = casc->DcaBachToPrimVertex();
-					}else if(ih==13){
-						if(casc->ChargeXi()<0.)
-							cont_eleptvscutvars[1] = casc->DcaPosToPrimVertex();
-						else
-							cont_eleptvscutvars[1] = casc->DcaNegToPrimVertex();
-					}else if(ih==14){
-						if(casc->ChargeXi()>0.)
-							cont_eleptvscutvars[1] = casc->DcaPosToPrimVertex();
-						else
-							cont_eleptvscutvars[1] = casc->DcaNegToPrimVertex();
-					}else if(ih==15){
-						cont_eleptvscutvars[1] =  casc->CosPointingAngle(casc->GetDecayVertexXi());
-					}else if(ih==16){
-						cont_eleptvscutvars[1] =  casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
-					}else if(ih==17){
-						cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
-					}else if(ih==18){
-						cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
-					}else if(ih==19){
-						cont_eleptvscutvars[1] =  nSigmaTPCbachpi;
-					}else if(ih==20){
-						cont_eleptvscutvars[1] =  casc->Eta();
-					}else if(ih==21){
-						cont_eleptvscutvars[1] =  0.5*TMath::Log((sqrt(casc->Ptot2Xi())+casc->MomXiZ())/(sqrt(casc->Ptot2Xi())-casc->MomXiZ()));
-					}else if(ih==22){
-						Double_t xipx = exobj->PxProng(1);
-						Double_t xipy = exobj->PyProng(1);
-						Double_t xipz = exobj->PzProng(1);
-						Double_t epx = exobj->PxProng(0);
-						Double_t epy = exobj->PyProng(0);
-						Double_t epz = exobj->PzProng(0);
-						cont_eleptvscutvars[1] = acos((xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz));
-					}else{
-						cont_eleptvscutvars[1] = -9999.;
-					}
-
-					fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
-				}
-			}
-		}
-
-		if(fUseMCInfo){
-			if(mcxic){
-				Int_t pdgcode = mcxic->GetPdgCode();
-				cont2[1] = mcele->Pt();
-				if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
+			if(fUseMCInfo){
+				if(mcxic){
+					Int_t pdgcode = mcxic->GetPdgCode();
+					cont2[1] = mcele->Pt();
+					if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
 						Int_t labmotherxic = mcxic->GetMother();
 						Bool_t isbottomfd = kFALSE;
 						if(labmotherxic>=0)
@@ -1588,6 +1506,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 						if(trk->Charge()>0) fHistoEleXiMassvsElePtMCS1->Fill(cont2);
 						else fHistoEleXiMassvsElePtMCS2->Fill(cont2);
 						if(cont[0]<2.5){
+							fHistoEleXiPtvsRapidityMCS->Fill(exobj->Pt(),exobj_rap);
 							fHistoElePtMCS->Fill(mcele->Pt(),fCentrality);
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
 							fHistoElePtvsXiPtMCS->Fill(cont_eleptvsxipt);
@@ -1706,9 +1625,106 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 								fHistoElePtvsCutVarsMCS[ih]->Fill(cont_eleptvscutvars);
 							}
 						}
+					}
+				}
+			}
+		}else{
+			fHistoEleXiMassWS->Fill(cont);
+			if(trk->Charge()>0) fHistoEleXiMassWS1->Fill(cont);
+			else  fHistoEleXiMassWS2->Fill(cont);
+			fHistoEleXiMassvsElePtWS->Fill(cont2);
+			if(trk->Charge()>0) fHistoEleXiMassvsElePtWS1->Fill(cont2);
+			else  fHistoEleXiMassvsElePtWS2->Fill(cont2);
+			if(cont[0]<2.5){
+				fHistoEleXiPtvsRapidityWS->Fill(exobj->Pt(),exobj_rap);
+				fHistoElePtWS->Fill(trk->Pt(),fCentrality);
+				fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
+				fHistoElePtvsXiPtWS->Fill(cont_eleptvsxipt);
+				fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
+
+				for(Int_t ih=0;ih<23;ih++){
+					Double_t cont_eleptvscutvars[3];
+					cont_eleptvscutvars[0] = exobj->Pt();
+					cont_eleptvscutvars[2] = fCentrality;
+
+					if(ih==0){
+						cont_eleptvscutvars[1] = trk->GetTPCNcls();
+					}else if(ih==1){
+						cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+					}else if(ih==2){
+						cont_eleptvscutvars[1] = nSigmaTPCele;
+					}else if(ih==3){
+						cont_eleptvscutvars[1] = nSigmaTOFele;
+					}else if(ih==4){
+						cont_eleptvscutvars[1] = trk->Eta();
+					}else if(ih==5){
+						cont_eleptvscutvars[1] = trk->GetITSNcls();
+					}else if(ih==6){
+						if(casc->ChargeXi()<0)
+							cont_eleptvscutvars[1] = casc->MassLambda();
+						else
+							cont_eleptvscutvars[1] = casc->MassAntiLambda();
+					}else if(ih==7){
+						cont_eleptvscutvars[1] = casc->MassXi();
+					}else if(ih==8){
+						Double_t lPosV0[3];
+						lPosV0[0] = casc->DecayVertexV0X();
+						lPosV0[1] = casc->DecayVertexV0Y();
+						lPosV0[2] = casc->DecayVertexV0Z();
+						cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+					}else if(ih==9){
+						Double_t lPosXi[3];
+						lPosXi[0] = casc->DecayVertexXiX();
+						lPosXi[1] = casc->DecayVertexXiY();
+						lPosXi[2] = casc->DecayVertexXiZ();
+						cont_eleptvscutvars[1] = TMath::Sqrt(lPosXi[0]*lPosXi[0]+lPosXi[1]*lPosXi[1]);
+					}else if(ih==10){
+						cont_eleptvscutvars[1] = casc->DcaV0Daughters();
+					}else if(ih==11){
+						cont_eleptvscutvars[1] = casc->DcaXiDaughters();
+					}else if(ih==12){
+						cont_eleptvscutvars[1] = casc->DcaBachToPrimVertex();
+					}else if(ih==13){
+						if(casc->ChargeXi()<0.)
+							cont_eleptvscutvars[1] = casc->DcaPosToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = casc->DcaNegToPrimVertex();
+					}else if(ih==14){
+						if(casc->ChargeXi()>0.)
+							cont_eleptvscutvars[1] = casc->DcaPosToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = casc->DcaNegToPrimVertex();
+					}else if(ih==15){
+						cont_eleptvscutvars[1] =  casc->CosPointingAngle(casc->GetDecayVertexXi());
+					}else if(ih==16){
+						cont_eleptvscutvars[1] =  casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
+					}else if(ih==17){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+					}else if(ih==18){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+					}else if(ih==19){
+						cont_eleptvscutvars[1] =  nSigmaTPCbachpi;
+					}else if(ih==20){
+						cont_eleptvscutvars[1] =  casc->Eta();
+					}else if(ih==21){
+						cont_eleptvscutvars[1] =  0.5*TMath::Log((sqrt(casc->Ptot2Xi())+casc->MomXiZ())/(sqrt(casc->Ptot2Xi())-casc->MomXiZ()));
+					}else if(ih==22){
+						Double_t xipx = exobj->PxProng(1);
+						Double_t xipy = exobj->PyProng(1);
+						Double_t xipz = exobj->PzProng(1);
+						Double_t epx = exobj->PxProng(0);
+						Double_t epy = exobj->PyProng(0);
+						Double_t epz = exobj->PzProng(0);
+						cont_eleptvscutvars[1] = acos((xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz));
+					}else{
+						cont_eleptvscutvars[1] = -9999.;
+					}
+
+					fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
 		}
+
 	}
 
 	//if( exobj->InvMass(2,pdgdg)<10. && cosoa < 0. && fAnalCuts->IsPeakRegion(casc))
@@ -2923,6 +2939,12 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLambdaPtvsDlSide);
   fHistoLambdaPtvsDlMCS=new TH2F("fHistoLambdaPtvsDlMCS","Lambda pt vs dl",20,0.,10.,20,0.,40.);
   fOutputAll->Add(fHistoLambdaPtvsDlMCS);
+  fHistoEleXiPtvsRapidityRS=new TH2F("fHistoEleXiPtvsRapidityRS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);
+  fOutputAll->Add(fHistoEleXiPtvsRapidityRS);
+  fHistoEleXiPtvsRapidityWS=new TH2F("fHistoEleXiPtvsRapidityWS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);
+  fOutputAll->Add(fHistoEleXiPtvsRapidityWS);
+  fHistoEleXiPtvsRapidityMCS=new TH2F("fHistoEleXiPtvsRapidityMCS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);
+  fOutputAll->Add(fHistoEleXiPtvsRapidityMCS);
 
   fHistoResponseElePt = new TH2D("fHistoResponseElePt","",100,0.,10.,100,0.,10.);
   fOutputAll->Add(fHistoResponseElePt);

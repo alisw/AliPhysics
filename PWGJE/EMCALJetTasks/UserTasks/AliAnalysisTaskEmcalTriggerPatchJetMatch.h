@@ -68,11 +68,13 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   virtual void            SetTrkBias(Double_t b)                { fTrkBias    = b; }  //require a track with pt > b in jet
   virtual void            SetClusBias(Double_t b)               { fClusBias   = b; }  //require a cluster with pt > b in jet
 
-  // give comments setter
-  void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
+  // give comments setter and various switches
+  void                    SetdoComments(Bool_t comm)               { doComments = comm; } // give comment switch
+  void                    SetUseALLrecalcPatches(Bool_t useall)    { fUseALLrecalcPatches = useall; } // use all firing (offline) patches
 
   virtual void            SetJetTriggeredEventname(const char *jcol)           { fJetTriggeredEventname = jcol; }
   TString                 GetJetTriggeredEvent() const          { return fJetTriggeredEventname; }
+  virtual void            SetCaloClustersName(const char *cn)   { fCaloClustersName=cn; }
 
   Int_t    GetLeadingCellId(const AliVCluster *clus) const;
   Double_t GetEnergyLeadingCell(const AliVCluster *clus) const;
@@ -92,7 +94,7 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   void                        ExtractMainPatch();//!
   TH1*                        FillTriggerPatchQA(TH1* h, UInt_t t, AliEmcalTriggerPatchInfo* fPatch); // filled trigger patch QA
   TH1*                        FillEventTriggerQA(TH1* h, UInt_t t); // fill event trigger QA
-  Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
+  Bool_t                      CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
  private:
   Bool_t             fDebug;                 // debug level
@@ -104,13 +106,16 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   Int_t              fTriggerType;           // trigger type
   Int_t              fNFastOR;               // size of trigger patch fNFastORxfNFastOR
   TriggerCategory    fMainTrigCat;           // trigger category for main trigger
+  TriggerCategory    fTriggerCategory;       // trigger category
   Bool_t             fMainTrigSimple;        // use offline trigger instead of online from AliAnalysisTaskEmcal::GetMainTriggerPatch
-  Double_t	         fJetPtCut;	             // jet pt to cut on for correlations
+  Double_t	     fJetPtCut;	             // jet pt to cut on for correlations
   Double_t           fPatchECut;             // patch energy cut
   Double_t           fTrkBias;               // track bias
   Double_t           fClusBias;              // cluster bias
   Bool_t             doComments;             // summary (debugging comments)
-  TString		     fJetTriggeredEventname; // name of jet that triggered event collection
+  Bool_t             fUseALLrecalcPatches;   // use all/ just max recalulated (offline) patches
+  TString	     fJetTriggeredEventname; // name of jet that triggered event collection
+  TString            fCaloClustersName; // name of Calo Cluster collection
 
   AliEmcalTriggerPatchInfo      *fMaxPatch;//!                           main patch
   MainPatchType                 fMainPatchType;//!                       method to select main patch
@@ -161,17 +166,24 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH3F     *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F     *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
 
+  TH1F     *fHistClusEnergy;                   //!
+  TH1F     *fHistClusofJetEnergy;              //!
   TH1F     *fHistEventSelectionQA;             //! trigger event class QA
+  TH1F     *fhQAinfoAllPatchesCounter;         //!
   TH1F     *fhQAinfoCounter;                   //!
   TH1F     *fhQAmaxinfoCounter;                //!
   TH1F     *fhRecalcGammaPatchEnergy;          //! Recalculated Gamma Patch Energy distribution
+  TH1F     *fhGammaLowPatchEnergy;             //! Gamma Low Patch Energy distribution
+  TH1F     *fhGammaLowSimplePatchEnergy;       //! Gamma Low Simple Patch Energy distribution
   TH1F     *fhRecalcJetPatchEnergy;            //! Recalculated Jet Patch Energy distribution
+  TH1F     *fhJetLowPatchEnergy;               //! Jet Low patch energy distribution
+  TH1F     *fhJetLowSimplePatchEnergy;         //! Jet Low Simple patch energy distribution
+  TH1F     *fhMainTriggerPatchEnergy;          //! Main Trigger patch energy distribution
 
-  TH1F     *fHistClusEnergy;                   //!
-  TH1F     *fHistClusofJetEnergy;              //!
   TH2F     *fHistdPhidEtaPatchJetCluster[16];  //!
 
   TClonesArray               *fJetTriggeredEvent;                    //!jets
+  TClonesArray               *fRecalcTriggerPatches;                    //!recalculated patches
 
   THnSparse                  *fhnPatchMaxClus;//!                    // patch-maxclus distributions sparse matrix
   THnSparse                  *fhnPatchMatch;//!                      // QA before matching patch sparse matrix

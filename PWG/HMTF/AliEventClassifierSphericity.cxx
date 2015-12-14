@@ -36,13 +36,14 @@ void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, A
   Int_t ntracks = event->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
     AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
-    if (!track) {
-      Printf("ERROR: Could not receive track %d", iTrack);
+    if (!track)
       continue;
-    }
-
     // Only calculate for primaries (Aliroot definition excluding Pi0)
-    if (!stack->IsPhysicalPrimary(iTrack)) continue;
+    if (!stack->IsPhysicalPrimary(iTrack))
+      continue;
+    // Dipsy produces primary particles (mainly protons) with Pt() == 0; calling Eta() still works (~1e30)
+    if (track->Pt() == 0)
+      continue;
     
     Float_t px = track->Pt() * TMath::Cos( track->Phi() );
     Float_t py = track->Pt() * TMath::Sin( track->Phi() );
@@ -51,6 +52,12 @@ void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, A
     s11 += (py * py) / track->Pt();
     totalpt += track->Pt();
   }
+  // did we have valid tracks or did we never reach the bottome of the for loop?
+  if (!(totalpt > 0)) {
+    fClassifierValue = -1;
+    return;
+  }
+
   Double_t S00=s00/totalpt;
   Double_t S01=s01/totalpt;
   Double_t S11=s11/totalpt;

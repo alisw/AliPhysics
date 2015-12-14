@@ -49,6 +49,7 @@ class AliAnalysisTaskBuildCorrTree : public AliAnalysisTaskSE {
   void SetAcceptanceCut(float Acceptance){fAcceptancecut=Acceptance;}
   void SetMinPt(Double_t MinTriggerPt){fMinPt = MinTriggerPt;}
   void SetMaxPt(Double_t MaxTriggerPt){fMaxPt = MaxTriggerPt;}
+
   enum CollisionType{pp,PbPb,pPb};
   enum Period {P10b,P10c,P10d,P10e,P10h,P11a,P11h, Nperiods = P11h};
   void SetPeriod(Period period){fperiod = period;}
@@ -99,6 +100,7 @@ protected:
   Period 	    fperiod;
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
+  TClonesArray*     fMcArray;
   //Objects that contain needed/used objects for the task:
   TArrayD 	    fMBinEdges; //Contains bin edges in centrality.
   TArrayD 	    fZBinEdges; //Edges for vZ binning.

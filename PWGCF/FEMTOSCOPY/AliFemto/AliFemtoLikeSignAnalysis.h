@@ -11,7 +11,7 @@
 
 #include "AliFemtoAnalysis.h"        // base analysis class
 #include "AliFemtoTypes.h"
-//#include "AliFemtoEventCut.h"             // base class 
+//#include "AliFemtoEventCut.h"             // base class
 //#include "AliFemtoParticleCut.h"          // base class
 //#include "AliFemtoPairCut.h"              // base class
 #include "AliFemtoLikeSignCorrFctn.h"    // base class
@@ -24,11 +24,11 @@ class AliFemtoPairCut;
 
 class AliFemtoLikeSignAnalysis : public AliFemtoSimpleAnalysis {
 
-public: 
+public:
 
   AliFemtoLikeSignAnalysis(unsigned int bins=20, double min=-100., double max=100.);
   AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysis& OriginalAnalysis);  // copy constructor
-  AliFemtoLikeSignAnalysis& operator=(const AliFemtoLikeSignAnalysis& OriginalAnalysis);  
+  AliFemtoLikeSignAnalysis& operator=(const AliFemtoLikeSignAnalysis& OriginalAnalysis);
   virtual ~AliFemtoLikeSignAnalysis();
 
   virtual void ProcessEvent(const AliFemtoEvent* TheEventToBeProcessed);
@@ -44,7 +44,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoLikeSignAnalysis, 0)
+  ClassDef(AliFemtoLikeSignAnalysis, 0);
   /// \endcond
 #endif
 

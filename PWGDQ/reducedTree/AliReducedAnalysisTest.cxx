@@ -12,6 +12,7 @@ using std::endl;
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
+#include "AliReducedBaseEvent.h"
 #include "AliReducedTrackInfo.h"
 #include "AliReducedCaloClusterInfo.h"
 #include "AliReducedPairInfo.h"
@@ -109,82 +110,99 @@ void AliReducedAnalysisTest::Process() {
   //
   // process the current event
   //  
-  if(fEvent->IsA()!=AliReducedEventInfo::Class()) return;
+  if(!fEvent) return;
   
-  AliReducedEventInfo* event = (AliReducedEventInfo*)fEvent;
-  AliReducedVarManager::SetEvent(event);
+  AliReducedVarManager::SetEvent(fEvent);
   
-  AliReducedVarManager::FillEventInfo(event, fValues);
+  AliReducedVarManager::FillEventInfo(fEvent, fValues);
   fHistosManager->FillHistClass("Event_NoCuts", fValues);
-  for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventOnlineTriggers(ibit, fValues);
-    fHistosManager->FillHistClass("OnlineTriggers_NoCuts", fValues);
+  if(fEvent->IsA()==AliReducedEventInfo::Class()) {
+    for(UShort_t ibit=0; ibit<64; ++ibit) {
+      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+      fHistosManager->FillHistClass("OnlineTriggers_NoCuts", fValues);
+    }
   }
-  if(!IsEventSelected(event)) return;
+  if(!IsEventSelected(fEvent)) return;
   
-  for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventOnlineTriggers(ibit, fValues);
-    fHistosManager->FillHistClass("OnlineTriggers_AfterCuts", fValues);
-    for(UShort_t i=0; i<32; ++i) {
-      AliReducedVarManager::FillL0TriggerInputs(event, i, fValues);
-      fHistosManager->FillHistClass("OnlineTriggers_vs_L0TrigInputs", fValues);
-    }
-    for(UShort_t i=0; i<32; ++i) {
-      AliReducedVarManager::FillL1TriggerInputs(event, i, fValues);
-      fHistosManager->FillHistClass("OnlineTriggers_vs_L1TrigInputs", fValues);
-    }
-    for(UShort_t i=0; i<16; ++i) {
-      AliReducedVarManager::FillL2TriggerInputs(event, i, fValues);
-      fHistosManager->FillHistClass("OnlineTriggers_vs_L2TrigInputs", fValues);
+  AliReducedEventInfo* eventInfo = NULL;
+  if(fEvent->IsA()==AliReducedEventInfo::Class()) eventInfo = (AliReducedEventInfo*)fEvent;
+  
+  if(eventInfo) {
+    for(UShort_t ibit=0; ibit<64; ++ibit) {
+      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+      fHistosManager->FillHistClass("OnlineTriggers_AfterCuts", fValues);
+      for(UShort_t i=0; i<32; ++i) {
+        AliReducedVarManager::FillL0TriggerInputs(eventInfo, i, fValues);
+        fHistosManager->FillHistClass("OnlineTriggers_vs_L0TrigInputs", fValues);
+      }
+      for(UShort_t i=0; i<32; ++i) {
+        AliReducedVarManager::FillL1TriggerInputs(eventInfo, i, fValues);
+        fHistosManager->FillHistClass("OnlineTriggers_vs_L1TrigInputs", fValues);
+      }
+      for(UShort_t i=0; i<16; ++i) {
+        AliReducedVarManager::FillL2TriggerInputs(eventInfo, i, fValues);
+        fHistosManager->FillHistClass("OnlineTriggers_vs_L2TrigInputs", fValues);
+      }
     }
   }
     
   for(UShort_t ibit=0; ibit<64; ++ibit) {
-    AliReducedVarManager::FillEventTagInput(event, ibit, fValues);
+    AliReducedVarManager::FillEventTagInput(fEvent, ibit, fValues);
     fHistosManager->FillHistClass("EvtTags", fValues);
   }
-  for(UShort_t ibit=0; ibit<32; ++ibit) {
-    AliReducedVarManager::FillL0TriggerInputs(event, ibit, fValues);
-    fHistosManager->FillHistClass("L0TriggerInput", fValues);
-  }
-  for(UShort_t ibit=0; ibit<32; ++ibit) {
-    AliReducedVarManager::FillL1TriggerInputs(event, ibit, fValues);
-    fHistosManager->FillHistClass("L1TriggerInput", fValues);
-  }
-  for(UShort_t ibit=0; ibit<16; ++ibit) {
-    AliReducedVarManager::FillL2TriggerInputs(event, ibit, fValues);
-    fHistosManager->FillHistClass("L2TriggerInput", fValues);
-  }
+  
+  if(eventInfo) {
+    for(UShort_t ibit=0; ibit<32; ++ibit) {
+      AliReducedVarManager::FillL0TriggerInputs(eventInfo, ibit, fValues);
+      fHistosManager->FillHistClass("L0TriggerInput", fValues);
+    }
+    for(UShort_t ibit=0; ibit<32; ++ibit) {
+      AliReducedVarManager::FillL1TriggerInputs(eventInfo, ibit, fValues);
+      fHistosManager->FillHistClass("L1TriggerInput", fValues);
+    }
+    for(UShort_t ibit=0; ibit<16; ++ibit) {
+      AliReducedVarManager::FillL2TriggerInputs(eventInfo, ibit, fValues);
+      fHistosManager->FillHistClass("L2TriggerInput", fValues);
+    }
     
-  for(Int_t icl=0; icl<event->GetNCaloClusters(); ++icl) {
-    AliReducedVarManager::FillCaloClusterInfo(event->GetCaloCluster(icl), fValues);
-    fHistosManager->FillHistClass("CaloClusters", fValues);
+    for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
+      AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
+      fHistosManager->FillHistClass("CaloClusters", fValues);
+    }
   }
      
-  AliReducedTrackInfo* track = 0x0;
-  TClonesArray* trackList = event->GetTracks();
+  AliReducedBaseTrack* track = 0x0;
+  TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  for(Int_t it=0; it<event->NTracks(); ++it) {
-    track = (AliReducedTrackInfo*)nextTrack();
+  for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+    track = (AliReducedBaseTrack*)nextTrack();
     
     if(!IsTrackSelected(track)) continue;
     AliReducedVarManager::FillTrackInfo(track,fValues);
     fHistosManager->FillHistClass("TrackQA_AllTracks_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    for(UShort_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-      AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
-      fHistosManager->FillHistClass("TrackingFlags", fValues);
+    
+    AliReducedTrackInfo* trackInfo = NULL;
+    if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
+    
+    if(trackInfo) {
+      for(UShort_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+        AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
+        fHistosManager->FillHistClass("TrackingFlags", fValues);
+      }
     }
     for(UShort_t iflag=0; iflag<64; ++iflag) {
       AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
       fHistosManager->FillHistClass("TrackQualityFlags", fValues);
     }
-    for(Int_t iLayer=0; iLayer<6; ++iLayer) {
-      AliReducedVarManager::FillITSlayerFlag(track, iLayer, fValues);
-      fHistosManager->FillHistClass("ITSclusterMap", fValues);
-    }
-    for(Int_t iLayer=0; iLayer<8; ++iLayer) {
-      AliReducedVarManager::FillTPCclusterBitFlag(track, iLayer, fValues);
-      fHistosManager->FillHistClass("TPCclusterMap", fValues);
+    if(trackInfo) {
+      for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+        AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
+        fHistosManager->FillHistClass("ITSclusterMap", fValues);
+      }
+      for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+        AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
+        fHistosManager->FillHistClass("TPCclusterMap", fValues);
+      }
     }
     if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
     if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
@@ -208,7 +226,7 @@ void AliReducedAnalysisTest::Process() {
     }  
   }  // end loop over tracks
     
-  TClonesArray* pairList = event->GetPairs();
+  TClonesArray* pairList = fEvent->GetPairs();
   TIter nextPair(pairList);
   AliReducedPairInfo* pair = 0x0;
   fValues[AliReducedVarManager::kNpairsSelected] = 0.;

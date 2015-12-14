@@ -1,4 +1,11 @@
-AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=kFALSE, Bool_t ispPb=kFALSE, Int_t thEG1ADC=140, Int_t thEG2ADC=89, Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE){
+AliAnalysisTask *AddTaskHFEemcQA(
+     Bool_t UseTender=kTRUE,
+     Bool_t FillElecSparse=kFALSE,
+     Bool_t ispPb=kFALSE,
+     Int_t thEG1ADC=140, Int_t thEG2ADC=89,
+     Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
+     Int_t MimCent = -1, Int_t MaxCent = -1)
+     {
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -40,7 +47,10 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     hfecalqa->SetThresholdEG2(thEG2ADC);
     hfecalqa->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqa->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqa->SetCentralityMim(MimCent);
+    hfecalqa->SetCentralityMax(MaxCent);
     
+
     TString containerName = mgr->GetCommonFileName();
     containerName += ":PWGHF_hfeHFEemcQAINT8";
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
@@ -58,6 +68,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     hfecalqa7->SetThresholdEG2(thEG2ADC);
     hfecalqa7->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqa7->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqa7->SetCentralityMim(MimCent);
+    hfecalqa7->SetCentralityMax(MaxCent);
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_hfeHFEemcQAINT7";
@@ -77,6 +89,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     hfecalqaL07->SetThresholdEG2(thEG2ADC);
     hfecalqaL07->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqaL07->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqaL07->SetCentralityMim(MimCent);
+    hfecalqaL07->SetCentralityMax(MaxCent);
     
     TString containerNameL07 = mgr->GetCommonFileName();
     containerNameL07 += ":PWGHF_hfeHFEemcQAEMC7";
@@ -95,6 +109,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     hfecalqaL08->SetThresholdEG2(thEG2ADC);
     hfecalqaL08->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqaL08->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqaL08->SetCentralityMim(MimCent);
+    hfecalqaL08->SetCentralityMax(MaxCent);
     
     TString containerNameL08 = mgr->GetCommonFileName();
     containerNameL08 += ":PWGHF_hfeHFEemcQAEMC8";
@@ -118,6 +134,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
         hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
         hfecalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaTrig01->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfecalqaTrig01->SetCentralityMim(MimCent);
+        hfecalqaTrig01->SetCentralityMax(MaxCent);
         
         TString containerName01 = mgr->GetCommonFileName();
         containerName01 += ":PWGHF_hfeHFEemcQATrigGAEG1";
@@ -137,6 +155,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
         hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
         hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfecalqaTrig02->SetCentralityMim(MimCent);
+        hfecalqaTrig02->SetCentralityMax(MaxCent);
         
         TString containerName02 = mgr->GetCommonFileName();
         containerName02 += ":PWGHF_hfeHFEemcQATrigGAEG2";
@@ -157,6 +177,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
         hfecalqaTrig0->SetThresholdEG2(thEG2ADC);
         hfecalqaTrig0->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaTrig0->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfecalqaTrig0->SetCentralityMim(MimCent);
+        hfecalqaTrig0->SetCentralityMax(MaxCent);
         
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
@@ -176,6 +198,8 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
     hfecalqaTrig1->SetThresholdEG2(thEG2ADC);
     hfecalqaTrig1->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqaTrig1->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqaTrig1->SetCentralityMim(MimCent);
+    hfecalqaTrig1->SetCentralityMax(MaxCent);
     
     TString containerName2 = mgr->GetCommonFileName();
     containerName2 += ":PWGHF_hfeHFEemcQATrigJE";

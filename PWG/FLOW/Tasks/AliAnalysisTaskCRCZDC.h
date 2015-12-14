@@ -114,6 +114,7 @@ public:
  void SetMassMax( Double_t i ) { fMassMax = i; }
  void SetHistWeightvsPhiMin( Double_t i ) {fHistWeightvsPhiMin=i;}
  void SetHistWeightvsPhiMax( Double_t i ) {fHistWeightvsPhiMax=i;}
+ void SetCutTPC(Bool_t cut) {fCutTPC = cut;}
  // end setters common constants
  
  // setters for adding by hand flow values (afterburner)
@@ -289,6 +290,10 @@ private:
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
+ AliStack* fStack; //!
+ TH1F *fPtSpecGen[10];		//! PtSpecGen
+ TH1F *fPtSpecRec[10];		//! PtSpecRec
+ Bool_t fCutTPC;
  
  ClassDef(AliAnalysisTaskCRCZDC,3);
  

@@ -15,7 +15,7 @@ class AliESDtrack;
 class AliESDv0Cuts;
 class AliESDv0KineCuts;
 class AliKFVertex;
-class AliReducedEventInfo;
+class AliReducedBaseEvent;
 class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
@@ -24,9 +24,17 @@ class AliFlowBayesianPID;
 //_________________________________________________________________________
 class AliAnalysisTaskReducedTreeMaker : public AliAnalysisTaskSE {
   
+public:   
+   enum ETreeWritingOptions {
+      kBaseEventsWithBaseTracks=0,    // write basic event info and basic track info
+      kBaseEventsWithFullTracks,           // write basic event info and full track info
+      kFullEventsWithBaseTracks,           // write full event info and base track info
+      kFullEventsWithFullTracks              // write full event info and full track info
+   };
+   
 public:
   AliAnalysisTaskReducedTreeMaker();
-  AliAnalysisTaskReducedTreeMaker(const char *name);
+  AliAnalysisTaskReducedTreeMaker(const char *name, Bool_t writeTree=kTRUE);
   virtual ~AliAnalysisTaskReducedTreeMaker(){  }
 
   virtual void UserExec(Option_t *option);
@@ -63,6 +71,12 @@ public:
   void SetLambdaMassRange(Double_t min=1.08, Double_t max=1.15) {fLambdaMassRange[0]=min; fLambdaMassRange[1]=max;}
   void SetGammaConvMassRange(Double_t min=0.0, Double_t max=0.1) {fGammaMassRange[0]=min; fGammaMassRange[1]=max;}
   
+  // Select the type of information to be written
+  void SetTreeWritingOption(Int_t option)         {fTreeWritingOption = option;}
+  // Suppress writing the tree to disk
+  void SetWriteTree(Bool_t option=kTRUE)  {fWriteTree = option;}
+  Bool_t WriteTree() const {return fWriteTree;}
+  
   // Toggle on/off information branches
   void SetFillTrackInfo(Bool_t flag=kTRUE)        {fFillTrackInfo = flag;}
   void SetFillV0Info(Bool_t flag=kTRUE)           {fFillV0Info = flag;}
@@ -72,6 +86,7 @@ public:
   void SetFillALambda(Bool_t flag=kTRUE)          {fFillALambda = flag;}
   void SetFillCaloClusterInfo(Bool_t flag=kTRUE)  {fFillCaloClusterInfo = flag;}
   void SetFillFMDInfo(Bool_t flag=kTRUE)          {fFillFMDInfo = flag;}
+  void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   
  private:
 
@@ -87,6 +102,9 @@ public:
   Bool_t fSelectPhysics;             // Whether to use physics selection
   UInt_t fTriggerMask;               // Event trigger mask
   Bool_t fRejectPileup;              // pileup rejection wanted
+  
+  Int_t    fTreeWritingOption;     // one of the options described by ETreeWritingOptions
+  Bool_t fWriteTree;                   // if kFALSE don't write the tree, use task only to produce on the fly reduced events
 
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillV0Info;                // fill the V0 information
@@ -96,6 +114,7 @@ public:
   Bool_t fFillALambda;               // fill the anti-lambda V0s
   Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters  
   Bool_t fFillFMDInfo;               // fill the FMD info
+  Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
 
   AliAnalysisCuts *fEventFilter;     // event filter
   AliAnalysisCuts *fTrackFilter;     // filter for the hadrons to be correlated with the dielectrons
@@ -125,9 +144,8 @@ public:
   
   Int_t fNevents;
 
-  AliReducedEventInfo *fReducedEvent;     //! reduced event wise information
+  AliReducedBaseEvent *fReducedEvent;     //! reduced event wise information
 
-    
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
   void FillV0PairInfo();                    // fill V0 reduced pair information
@@ -141,6 +159,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 1); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 2); //Analysis Task for creating a reduced event information tree 
 };
 #endif

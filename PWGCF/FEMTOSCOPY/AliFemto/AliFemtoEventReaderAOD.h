@@ -144,7 +144,9 @@ private:
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderAOD, 12)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReaderAOD, 12);
+  /// \endcond
 #endif
 
 };

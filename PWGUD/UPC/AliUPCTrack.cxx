@@ -7,6 +7,8 @@
 //_____________________________________________________________________________
 
 #include "TLorentzVector.h"
+#include "TArrayI.h"
+#include "TArrayD.h"
 
 #include "AliUPCTrack.h"
 
@@ -18,7 +20,8 @@ AliUPCTrack::AliUPCTrack()
   fCharge(0), fMaskMan(0), fFilterMap(0), fChi2perNDF(0),
   fTPCmomentum(0), fTPCsignal(0), fTPCncls(0),
   fTPCrows(0), fTPCnclsF(0), fTPCnclsS(0),
-  fITSchi2perNDF(0), fITSClusterMap(0), fTOFsignal(0.)
+  fITSchi2perNDF(0), fITSClusterMap(0), fTOFsignal(0.),
+  fArrayInt(0x0), fArrayD(0x0)
 {
 
   // Default constructor
@@ -29,6 +32,15 @@ AliUPCTrack::AliUPCTrack()
 }
 
 //_____________________________________________________________________________
+AliUPCTrack::~AliUPCTrack()
+{
+  //destructor
+
+  if(fArrayInt) {delete fArrayInt; fArrayInt = 0x0;}
+  if(fArrayD) {delete fArrayD; fArrayD = 0x0;}
+}
+
+//_____________________________________________________________________________
 void AliUPCTrack::Clear(Option_t *)
 {
   // clear track flags
@@ -36,6 +48,8 @@ void AliUPCTrack::Clear(Option_t *)
   fMaskMan = 0;
   fFilterMap = 0;
   for(Int_t i=0; i<5; i++) {fNSigmasTPC[i] = -9999.; fNSigmasTOF[i] = -9999.;}
+  if(fArrayInt) fArrayInt->Reset();
+  if(fArrayD) fArrayD->Reset();
 }
 
 //_____________________________________________________________________________
@@ -128,7 +142,31 @@ void AliUPCTrack::GetImpactParametersIP(Double_t *p, Double_t *cov) const
   cov[2] = (Double_t) fCovIP[2];
 }
 
+//_____________________________________________________________________________
+Int_t AliUPCTrack::MakeArrayInt(Int_t size)
+{
+  //create the object of TArrayI, skip if it has been already created
+  //the array allows the event to be extended for other integer variables
 
+  if( fArrayInt ) return 999; // already initialized
+
+  fArrayInt = new TArrayI(size);
+
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCTrack::MakeArrayD(Int_t size)
+{
+  //create the object of TArrayD, skip if it has been already created
+  //the array allows the event to be extended for other double variables
+
+  if( fArrayD ) return 999; // already initialized
+
+  fArrayD = new TArrayD(size);
+
+  return 0;
+}
 
 
 

@@ -40,3 +40,9 @@ install(DIRECTORY CRMC
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.param"
   )
+
+# install EPOS configurations
+install(DIRECTORY EPOS
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.optns"
+  )

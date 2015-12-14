@@ -2,25 +2,27 @@ enum AlgoType {kKT, kANTIKT};
 enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
 
 AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
-                               TString     strJets1            = "jets1",
-                               TString     strJets2            = "jets2",
-                               TString     kTracksName         = "PicoTracks", 
-							   TString     kClusName           = "caloClustersCorr",
-							   Double_t    R                   = 0.4, 
-							   Double_t    ptminTrack          = 0.15, 
-							   Double_t    etminClus           = 0.3, 
-							   Int_t       rhoType             = 0,
-							   TString     trigClass           = "",
-							   TString     kEmcalCellsName     = "",
-							   const char *CentEst             = "V0A",
-							   Int_t       pSel                = AliVEvent::kINT7,
-							   Float_t     nefCut              = 10.,
-							   TString     kEmcalTriggers      = "",
-							   TString     kPeriod             = "LHC13b",
-                               TString     kBeamType           = "pp", //or pPb or PbPb
-                               Bool_t      comments            = kFALSE,
-                               TString     tag                 = ""
-							   ) {
+  TString     strJets1            = "jets1",
+  TString     strJets2            = "jets2",
+  TString     kTracksName         = "PicoTracks",
+  TString     kClusName           = "caloClustersCorr",
+  Double_t    R                   = 0.4,
+  Double_t    ptminTrack          = 0.15,
+  Double_t    etminClus           = 0.3,
+  Int_t       rhoType             = 0,
+  TString     trigClass           = "",
+  TString     kEmcalCellsName     = "",
+  const char *CentEst             = "V0A",
+  Int_t       pSel                = AliVEvent::kINT7,
+  Float_t     nefCut              = 10.,
+  TString     kEmcalTriggers      = "",
+  TString     kPeriod             = "LHC13b",
+  TString     kBeamType           = "pp", //or pPb or PbPb
+  Bool_t      comments            = kFALSE,
+  Bool_t      UseAllRecalcPatches = kFALSE,
+  Bool_t      newFramework        = 0,
+  TString     tag                 = ""
+) {
   // The following three lines are added for backwards compatibility
   kPeriod.ToLower();
   if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h")) kBeamType = "PbPb";
@@ -64,7 +66,8 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
 
   task->SetJetContainer(0);
   AliJetContainer *jetCont0 = task->AddJetContainer(strJets1.Data(),"EMCAL",R);
-  AliClusterContainer *JETconstit = task->AddClusterContainer("EmcCaloClusters");
+//  AliClusterContainer *JETconstit = task->AddClusterContainer("EmcCaloClusters");
+  AliClusterContainer *JETconstit = task->AddClusterContainer(kClusName);
   jetCont0->ConnectClusterContainer(JETconstit);
 
   if(rhoType==1) task->SetRhoName(rhoTask->GetOutRhoScaledName(),0);
@@ -83,6 +86,8 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
   task->SetVzRange(-10.,10.);
   if(kPeriod.Contains("LHC13b4")) task->SetIsPythia(kTRUE);
   task->SetdoComments(comments);
+  task->SetUseALLrecalcPatches(UseAllRecalcPatches);
+  if(newFramework) task->SetCaloClustersName("caloClusters");
 
   mgr->AddTask(task);
 

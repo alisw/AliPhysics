@@ -1,4 +1,7 @@
-AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = kFALSE){
+AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 = 0, 
+                                                  Bool_t isMC                   = kFALSE, 
+                                                  TString periodNameV0Reader    = ""
+                                                ){
 
 	// Before doing anything, we load the needed library
 	gSystem->Load("libPWGGAGammaConv");
@@ -25,7 +28,7 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 
 	if(dataset == 1){
 		analysiscutEvent = "10000003";
-		analysiscut= "06000008400000001000000000";
+        analysiscut= "06000008400000001000000000";
 		analysiscutB="16000008400000001000000000";
 	} else if (dataset == 2){
 		analysiscutEvent = "80000003";
@@ -40,12 +43,14 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	//========= Add V0 Reader to  ANALYSIS manager =====
 
 	AliV0ReaderV1 *fV0Reader=new AliV0ReaderV1("ConvGammaAODProduction");
-	fV0Reader->SetCreateAODs(kTRUE);
+	if (periodNameV0Reader.CompareTo("") != 0) fV0Reader->SetPeriodName(periodNameV0Reader);
+    fV0Reader->SetCreateAODs(kTRUE);
 	fV0Reader->SetUseOwnXYZCalculation(kTRUE);
 	fV0Reader->SetUseAODConversionPhoton(kTRUE);
 //     fV0Reader->CheckAODConsistency();
 
 	AliV0ReaderV1 *fV0ReaderB=new AliV0ReaderV1("ConvGammaAODProductionB");
+    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderB->SetPeriodName(periodNameV0Reader);
 	fV0ReaderB->SetCreateAODs(kTRUE);
 	fV0ReaderB->SetUseOwnXYZCalculation(kTRUE);
 	fV0ReaderB->SetUseAODConversionPhoton(kTRUE);

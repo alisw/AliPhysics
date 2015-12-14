@@ -51,7 +51,7 @@ class AliCorrelation3p : public TNamed {
   bool CheckAssociated( AliVParticle* p, bool doHistogram=false);
   /// fill histograms from particles
   int Fill( AliVParticle* trigger		, AliVParticle* p1	, AliVParticle* p2	, const double weight=1.0);
-  int Fill( AliVParticle* trigger		, AliVParticle* p1				);
+  int Fill( AliVParticle* trigger		, AliVParticle* p1				, const double weight=1.0);
   int FillTrigger( AliVParticle*ptrigger);
   int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
   /// overloaded from TObject: cleanup
@@ -122,6 +122,7 @@ class AliCorrelation3p : public TNamed {
 
   TH2D * DetaDphiAss(TH3F * hist,const char * name = "detadphiAss");
   TH2D * DeltaEtaCut(TH3F* hist, const char* option, const char* name="deltaetacut", Bool_t baverage = kFALSE) const ;
+  TH2D * AveragePhi(TH3F* hist,const char* name = "averagephi",bool sameside = false);
   TCanvas * Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats);
   TCanvas * Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* histbotl, TH2D* histbotr,const char* name, Bool_t Stats);
   TCanvas * Makecanvas(TH2D* hist,const char* name, Bool_t Stats);
@@ -141,6 +142,8 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
 
+  
+  
   AliCorrelation3p* fMixedEvent; // mixed event analysis
   TArrayD 	fMBinEdges; //Contains bin edges in centrality.
   TArrayD 	fZBinEdges; //Edges for vZ binning.

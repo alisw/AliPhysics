@@ -15,7 +15,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
 const Int_t nPF = 0; // use prefiltering for cuts lower than nPF
 
-AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t isRandomRej=kFALSE)
+AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t isRandomRej=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -33,6 +33,9 @@ AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bES
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
 
+  if(bCutQA){
+    die->SetCutQA(bCutQA);
+  }
   
   if(kRot){
     AliDielectronTrackRotator *rot = new AliDielectronTrackRotator;
@@ -141,6 +144,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
   
   AliDielectronPID *pid = new AliDielectronPID();
+  pid->SetTitle("PID cuts");
 
   if(cutDefinition == 0){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
@@ -162,6 +166,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
 AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition){
 
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts;
+  fesdTrackCuts->SetTitle("ESD track cuts");
 
   //global
   fesdTrackCuts->SetPtRange( 0.2 , 100. );
@@ -209,6 +214,7 @@ AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition){
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition){
 
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts;
+  fesdTrackCuts->SetTitle("ESD track cuts (pre)");
 
   //global
   fesdTrackCuts->SetPtRange( 0.08 , 100. );
@@ -233,7 +239,7 @@ AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
 
   // so far only one cut definition 
 
-  AliDielectronCutGroup* faodTrackCuts=0x0;
+  AliAnalysisCuts* faodTrackCuts=0x0;
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -250,11 +256,13 @@ AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
   trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   
-  cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+  AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
-  trackCuts = cgTrackCutsAnaSPDfirst;
-  
+
+  faodTrackCuts = cgTrackCutsAnaSPDfirst;
+  faodTrackCuts->SetTitle("AOD track cuts");
+
   return faodTrackCuts;
 }
 
@@ -263,7 +271,7 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
 
   // so far only one cut definition 
 
-  AliDielectronCutGroup* faodTrackCuts=0x0;
+  AliAnalysisCuts* faodTrackCuts=0x0;
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -272,14 +280,16 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
   trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -1.1,1.1);
 
 
-  AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+  AliDielectronTrackCuts* trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(1<<1); // TPC only cuts (to be checked)
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   
-  cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+  AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
-  trackCuts = cgTrackCutsAnaSPDfirst;
+
+  faodTrackCuts = cgTrackCutsAnaSPDfirst;
+  faodTrackCuts->SetTitle("AOD track cuts (pre)");
   
   return faodTrackCuts;
 }
@@ -437,7 +447,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 const AliDielectronEventCuts *GetEventCuts(){
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
-  //eventCuts->SetRequireVertex();
+  eventCuts->SetRequireVertex();
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 

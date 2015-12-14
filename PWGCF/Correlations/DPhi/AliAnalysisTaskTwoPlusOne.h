@@ -73,6 +73,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetUseBackgroundSameOneSide(Bool_t flag) { fUseBackgroundSameOneSide = flag; }
   void   SetUseBackgroundSameFromMixedComb(Bool_t flag) { fUseBackgroundSameFromMixedComb  = flag; }
   void   SetUseSmallerPtAssoc(Bool_t flag) { fUseSmallerPtAssoc = flag; }
+  void   SetRunCorrelations(Bool_t flag) { fRunCorrelations = flag; }
 
   void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
 
@@ -131,6 +132,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t fUseBackgroundSameOneSide;            //decides if background Same is searched on one side or on both with half the alpha
     Bool_t fUseBackgroundSameFromMixedComb; //decides if the background same method is filled with the same event or with the mixed combinatorics events
     Bool_t fUseSmallerPtAssoc;                  //uses only pT which is smaller than the trigger pT
+    Bool_t fRunCorrelations;                    //run correlation analysis, otherwise only the particle distribution is analyzed
     
     THnF* fEfficiencyCorrection;     // if non-0 this efficiency correction is applied on the fly to the filling for all particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
 

@@ -5,7 +5,6 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
-#include <THnSparse.h>
 #include <TVector2.h>
 #include "TClonesArray.h"
 #include <TList.h>
@@ -61,11 +60,13 @@
 
 // Changelog  MC Jet Container retrieval fixed
 ClassImp(AliAnalysisTaskEmcalJetBJetTaggingIP)
-////////////////////////////////////////////////////////////////////////////////
-/// \brief AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP
-///
+
 AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP()
 : AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetBJetTaggingIP", kTRUE)
+, fMatchingPar1(0.)
+, fMatchingPar2(0.)
+, fMinJetMCPt(0.)
+, fMatching(kGeometrical)
 , fJetsCont(NULL)
 , fJetsContMC(NULL)
 , fTracksCont(NULL)
@@ -93,7 +94,9 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP()
 , fUseAtlasSignTCCalculation(kFALSE)
 , fUseSignificance(kFALSE)
 , fUse3DsIP(kFALSE)
+, fUseFunctionalBunchCut(kFALSE)
 , fFunctionalBunchCut(0x0)
+,fCalculateSoftElectronVtxInvariantMass(kFALSE)
 , fUseMVRejectionTools(kFALSE)
 , fUseConversions(kFALSE)
 , fUseEventSelection(0)
@@ -119,6 +122,35 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP()
 ,  flist_module_trackqajet(0x0)
 ,  flist_module_trackqa(0x0)
 ,  flist_module_mc(0x0)
+,fTCTree(0x0)
+,fCorrVariable_JetPT(0.)
+, fCorrVariable_sIP1(0.)
+, fCorrVariable_sIP2(0.)
+, fCorrVariable_sIP3(0.)
+, fCorrVariable_tPt1(0.)
+, fCorrVariable_tPt2(0.)
+, fCorrVariable_tPt3(0.)
+, fCorrVariable_JetPTMC(0.)
+, fCorrVariableMC_tPt1MC(0.)
+, fCorrVariableMC_tPt2MC(0.)
+, fCorrVariableMC_tPt3MC(0.)
+, fCorrVariableMC_tPt1MotherMC(0.)
+, fCorrVariableMC_tPt2MotherMC(0.)
+, fCorrVariableMC_tPt3MotherMC(0.)
+, fCorrVariableMC_tPt1MothersMotherMC(0.)
+, fCorrVariableMC_tPt2MothersMotherMC(0.)
+, fCorrVariableMC_tPt3MothersMotherMC(0.)
+, fCorrVariableMC_Pdg1(0)
+, fCorrVariableMC_Pdg2(0)
+, fCorrVariableMC_Pdg3(0)
+, fCorrVariableMC_PdgMothersMother1(0)
+, fCorrVariableMC_PdgMothersMother2(0)
+, fCorrVariableMC_PdgMothersMother3(0)
+, fCorrVariableMC_PdgMother1(0)
+, fCorrVariableMC_PdgMother2(0)
+, fCorrVariableMC_PdgMother3(0)
+, 	fCorrVariable_flv(0)
+, 	fCorrVariable_qty(0)
 , fhist_Events(NULL)
 , fhist_Jets(NULL)
 , fhists_SPD_cluster_vs_tracklet_correlation(NULL)
@@ -143,14 +175,20 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP()
 {
 	fTrackCountingTagger->InitTrackSelectionParams(0x0);
 	SetMakeGeneralHistograms(kTRUE);
+	DefineOutput(2, TTree::Class());
+
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// \brief AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP
-/// \param name
-///
+/**
+ *
+ * @param name
+ */
 AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const char* name)
 : AliAnalysisTaskEmcalJet(name, kTRUE)
+, fMatchingPar1(0.)
+, fMatchingPar2(0.)
+, fMinJetMCPt(0.)
+, fMatching(kGeometrical)
 , fJetsCont(NULL)
 , fJetsContMC(NULL)
 , fTracksCont(NULL)
@@ -178,9 +216,11 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
 , fUseAtlasSignTCCalculation(kFALSE)
 , fUseSignificance(kFALSE)
 , fUse3DsIP(kFALSE)
+, fUseFunctionalBunchCut(kFALSE)
 , fUseMVRejectionTools(kFALSE)
 , fUseConversions(kFALSE)
 , fFunctionalBunchCut(0x0)
+, fCalculateSoftElectronVtxInvariantMass(kFALSE)
 , fUseEventSelection(0)
 , fUseJetSelection(0)
 , fUseMCTagger(0)
@@ -203,6 +243,35 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
 , flist_module_trackqajet(0x0)
 , flist_module_trackqa(0x0)
 , flist_module_mc(0x0)
+,fTCTree(0x0)
+,	fCorrVariable_JetPT(0.)
+, fCorrVariable_sIP1(0.)
+, fCorrVariable_sIP2(0.)
+, fCorrVariable_sIP3(0.)
+, fCorrVariable_tPt1(0.)
+, fCorrVariable_tPt2(0.)
+, fCorrVariable_tPt3(0.)
+, fCorrVariable_JetPTMC(0.)
+, fCorrVariableMC_tPt1MC(0.)
+, fCorrVariableMC_tPt2MC(0.)
+, fCorrVariableMC_tPt3MC(0.)
+, fCorrVariableMC_tPt1MotherMC(0.)
+, fCorrVariableMC_tPt2MotherMC(0.)
+, fCorrVariableMC_tPt3MotherMC(0.)
+, fCorrVariableMC_tPt1MothersMotherMC(0.)
+, fCorrVariableMC_tPt2MothersMotherMC(0.)
+, fCorrVariableMC_tPt3MothersMotherMC(0.)
+, fCorrVariableMC_Pdg1(0)
+, fCorrVariableMC_Pdg2(0)
+, fCorrVariableMC_Pdg3(0)
+, fCorrVariableMC_PdgMothersMother1(0)
+, fCorrVariableMC_PdgMothersMother2(0)
+, fCorrVariableMC_PdgMothersMother3(0)
+, fCorrVariableMC_PdgMother1(0)
+, fCorrVariableMC_PdgMother2(0)
+, fCorrVariableMC_PdgMother3(0)
+, fCorrVariable_flv(0)
+, fCorrVariable_qty(0)
 , fhist_Events(NULL)
 , fhist_Jets(NULL)
 , fhists_SPD_cluster_vs_tracklet_correlation(NULL)
@@ -226,8 +295,9 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
 , fHistTPCnSigmaPion(NULL)
 {
 	// Standard constructor.
-	fTrackCountingTagger->InitTrackSelectionParams(0x0	);
+	fTrackCountingTagger->InitTrackSelectionParams(0x0);
 	SetMakeGeneralHistograms(kTRUE);
+	DefineOutput(2, TTree::Class());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,33 +342,27 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 		this->fMatchingPar1 = 0.25;
 		this->fMatchingPar2 = 0.25;
 		this->fMinJetMCPt = 1.;
-		if(!this->DoJetMatching()){
-		//	Printf("Matching failed at some point!!");
-		}}
-
+		this->DoJetMatching();
+	}
 	// Loop over all available jets
 	for(Int_t ijet = 0; ijet < fJetsCont->GetNJets(); ++ijet) {
-		memset(tagvalue, 0, sizeof tagvalue);
-		memset(istagged, 0, sizeof istagged);
+		for(int j=0;j<3;++j){
+			tagvalue[j] =0.;
+			istagged[j]=kFALSE;
+		}
 		curjet = NULL;
 		curjetMatched = NULL;
 		flavourtag = 0;
-
 		fCurrentNProngs = 0;
 		curjet = fJetsCont->GetJet(ijet);
-		if(!IsJetSelected(curjet))
-			continue;
+		if(!IsJetSelected(curjet))continue;
 		Double_t jetPt = 0.;
 		fUseCorrectedJetPt ? jetPt = GetPtCorrected(curjet) : jetPt = curjet->Pt();
-
 		if(fIsMC) {
-			// fill mc jet plots
 			AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 			jets2->ResetCurrentID();
-
 			AliEmcalJet* jet2 = 0;
 			while ((jet2 = jets2->GetNextJet())){
-
 				fhist_jet_pt_mc->Fill( jet2->Pt() - fJetsContMC->GetRhoVal() * jet2->Area(),fCurrentWeight);
 			}
 
@@ -326,21 +390,25 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 		}
 
 		// Standard track counting algorithm
-
 		fhist_Jet_Pt->Fill(jetPt,fCurrentWeight);
 		fhist_Jet_Eta_Phi->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 		fhist_Jet_Nconst_Pt->Fill(jetPt, curjet->GetNumberOfTracks(),fCurrentWeight);
 		Double_t n3value = -9999.;
 		Bool_t isFromConversion = kFALSE;
-		//Printf("HERE0");
 		if(fTrackCountingTagger->GetJetDiscriminator(curjet, tagvalue, istagged)) {
+			//Added for track composition studies
+			FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,0); //for inclusive
+			if(fIsMC && flavourtag >0 )FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,0	); // for flavoured	//Added for track composition studies
+			//Added for correlation analysis
+
+			//Added for correlation analysis
+
 			if(istagged[0]) {
 				if(fUseConversions){isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);}
 				fhist_Jets->Fill("TaggingN1", jetPt, fCurrentWeight);
 				fhist_TC_sIP_Pt[0][0][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
 				fhist_TC_zIP_Pt[0][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
 				fhist_TC_sIP_zIP[0][0][0]->Fill(tagvalue[0], fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-
 				fhist_TC_Eta_Phi[0][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 				if(fUseConversions&&isFromConversion) {
 					fhist_TC_sIP_Pt_Conversions[0][0][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
@@ -351,9 +419,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 						fhist_TC_sIP_Pt[0][flavourtag][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
 						fhist_TC_Eta_Phi[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 						fhist_TC_zIP_Pt[0][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[0][flavourtag][0]->Fill(tagvalue[0],
-								fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-
+						fhist_TC_sIP_zIP[0][flavourtag][0]->Fill(tagvalue[0],fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
 						if(fUseConversions&&isFromConversion) {
 							fhist_TC_sIP_Pt_Conversions[0][flavourtag][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
 							fhist_TC_Eta_Phi_Conversions[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
@@ -378,9 +444,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 						fhist_TC_Eta_Phi[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 						fhist_TC_sIP_Pt[1][flavourtag][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
 						fhist_TC_zIP_Pt[1][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[1][flavourtag][0]->Fill(tagvalue[1],
-								fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-
+						fhist_TC_sIP_zIP[1][flavourtag][0]->Fill(tagvalue[1],fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
 						if(fUseConversions&&isFromConversion) {
 							fhist_TC_sIP_Pt_Conversions[1][flavourtag][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
 							fhist_TC_Eta_Phi_Conversions[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
@@ -396,7 +460,6 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 				fhist_TC_Eta_Phi[2][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 				fhist_TC_zIP_Pt[2][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
 				fhist_TC_sIP_zIP[2][0][0]->Fill(tagvalue[2], fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-
 				if(fUseConversions&&isFromConversion) {
 					fhist_TC_sIP_Pt_Conversions[2][0][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
 					fhist_TC_Eta_Phi_Conversions[2][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
@@ -405,8 +468,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 					if(flavourtag > 0) {
 						fhist_TC_sIP_Pt[2][flavourtag][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
 						fhist_TC_zIP_Pt[2][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[2][flavourtag][0]->Fill(tagvalue[2],
-								fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
+						fhist_TC_sIP_zIP[2][flavourtag][0]->Fill(tagvalue[2],fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
 						fhist_TC_Eta_Phi[2][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 						if(fUseConversions &&isFromConversion) {
 							fhist_TC_sIP_Pt_Conversions[2][flavourtag][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
@@ -424,10 +486,19 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 
 		// Track quality track counting
 		for(int i = 1; i < 5; ++i) {
-			memset(tagvalue, 0, sizeof tagvalue);
-			memset(istagged, 0, sizeof istagged);
+			for(int j=0;j<3;++j){
+				tagvalue[j] =0.;
+				istagged[j]=kFALSE;
+			}
 			isFromConversion = kFALSE;
+
 			if(fTrackCountingTagger->GetJetDiscriminatorQualityClass(i, curjet, tagvalue, istagged)) {
+
+				//Added for track composition studies
+
+				FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,i); //for inclusive
+				if(fIsMC && flavourtag >0 )FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,i); // for flavoured
+				//Added for track composition studies
 				if(istagged[0]) {
 					if(fUseConversions){isFromConversion =
 							this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);
@@ -438,15 +509,13 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 					fhist_TC_sIP_Pt[0][0][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
 					fhist_TC_zIP_Pt[0][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
 					fhist_TC_sIP_zIP[0][0][i]->Fill(tagvalue[0], fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-
 					fhist_TC_Eta_Phi[0][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 					if(fIsMC)
 						if(flavourtag > 0) {
 							fhist_TC_sIP_Pt[0][flavourtag][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
 							fhist_TC_zIP_Pt[0][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0),
 									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[0][flavourtag][i]->Fill(tagvalue[0],
-									fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
+							fhist_TC_sIP_zIP[0][flavourtag][i]->Fill(tagvalue[0],fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
 							fhist_TC_Eta_Phi[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 							if(fUseConversions && isFromConversion) {
 								fhist_TC_sIP_Pt_Conversions[0][flavourtag][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
@@ -465,16 +534,13 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 					fhist_TC_sIP_Pt[1][0][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
 					fhist_TC_zIP_Pt[1][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1), jetPt,fCurrentWeight);
 					fhist_TC_sIP_zIP[1][0][i]->Fill(tagvalue[1], fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-
 					fhist_TC_Eta_Phi[1][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-
 					if(fIsMC)
 						if(flavourtag > 0) {
 							fhist_TC_sIP_Pt[1][flavourtag][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
 							fhist_TC_zIP_Pt[1][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1),
 									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[1][flavourtag][i]->Fill(tagvalue[1],
-									fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
+							fhist_TC_sIP_zIP[1][flavourtag][i]->Fill(tagvalue[1],fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
 							fhist_TC_Eta_Phi[1][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 							if(fUseConversions&& isFromConversion) {
 								fhist_TC_sIP_Pt_Conversions[1][flavourtag][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
@@ -495,7 +561,6 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 					fhist_TC_sIP_Pt[2][0][i]->Fill(tagvalue[2], jetPt,fCurrentWeight);
 					fhist_TC_zIP_Pt[2][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
 					fhist_TC_sIP_zIP[2][0][i]->Fill(tagvalue[2], fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-
 					fhist_TC_Eta_Phi[2][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 					if(fIsMC)
 						if(flavourtag > 0) {
@@ -504,8 +569,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 									jetPt,fCurrentWeight);
 							fhist_TC_zIP_Pt[2][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2),
 									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[2][flavourtag][i]->Fill(tagvalue[2],
-									fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
+							fhist_TC_sIP_zIP[2][flavourtag][i]->Fill(tagvalue[2],fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
 							if(fUseConversions&& isFromConversion) {
 								fhist_TC_sIP_Pt_Conversions[2][flavourtag][i]->Fill(tagvalue[2], jetPt,fCurrentWeight);
 								fhist_TC_Eta_Phi_Conversions[2][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
@@ -547,8 +611,13 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::RunQATracksJet(const AliEmcalJet* j
 
 	for(Int_t itrack = 0; itrack < ntracks; ++itrack) {
 
-		memset(dv, 0, sizeof dv);
-		memset(covv, 0, sizeof covv);
+		for(int j=0;j<3;++j){
+			covv[j] =0.;
+		}
+		for(int j=0;j<2;++j){
+			dv[j] =0.;
+		}
+
 		sip = 0.;
 
 		track = (AliAODTrack*)(((AliPicoTrack*)(fTracksCont->GetParticle(jet->TrackAt(itrack))))->GetTrack());
@@ -1057,13 +1126,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsV0DaughterRadius(const AliAODTrac
 	}
 	return kFALSE;
 }
-////////////////////////////////////////////////////////////////////////////////
-/// \brief AliAnalysisTaskEmcalJetBJetTaggingIP::~AliAnalysisTaskEmcalJetBJetTaggingIP
-///
-AliAnalysisTaskEmcalJetBJetTaggingIP::~AliAnalysisTaskEmcalJetBJetTaggingIP()
-{
-	// Destructor.
-}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects
 ///
@@ -1535,8 +1598,62 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		fTracksCont->SetClassName("AliVTrack");
 	fTrackCountingTagger->SetParticleContainer(fTracksCont);
 	fTrackCountingTagger->SetAnalysisTypeAOD(kTRUE);
+
+
+	//Containers composition study
+
+	//Containers correlation study
+	OpenFile(2);
+	fTCTree = new TTree("fTCTree","Tree for sIP track correlation  and background composition study");
+
+	fTCTree->Branch("Flavour",&fCorrVariable_flv,"Flavour/I");
+	fTCTree->Branch("QualityClass",&fCorrVariable_qty,"QualityClass/I");
+	fTCTree->Branch("PtJet",&fCorrVariable_JetPT,"PtJet/F");
+	fTCTree->Branch("N1",&fCorrVariable_sIP1,"N1/F");
+	fTCTree->Branch("N2",&fCorrVariable_sIP2,"N2/F");
+	fTCTree->Branch("N3",&fCorrVariable_sIP3,"N3/F");
+	fTCTree->Branch("Pt1",&fCorrVariable_tPt1,"Pt1/F");
+	fTCTree->Branch("Pt2",&fCorrVariable_tPt2,"Pt2/F");
+	fTCTree->Branch("Pt3",&fCorrVariable_tPt3,"Pt3/F");
+	if(fIsMC){
+		fTCTree->Branch("PtJetMC",&fCorrVariable_JetPTMC,"PtJetMC/F");
+		fTCTree->Branch("Pt1MC",&fCorrVariableMC_tPt1MC,"Pt3MC/F");
+		fTCTree->Branch("Pt2MC",&fCorrVariableMC_tPt2MC,"Pt3MC/F");
+		fTCTree->Branch("Pt3MC",&fCorrVariableMC_tPt3MC,"Pt3MC/F");
+		fTCTree->Branch("Pt1MotherMC",&fCorrVariableMC_tPt1MotherMC,"Pt3MotherMC/F");
+		fTCTree->Branch("Pt2MotherMC",&fCorrVariableMC_tPt2MotherMC,"Pt3MotherMC/F");
+		fTCTree->Branch("Pt3MotherMC",&fCorrVariableMC_tPt3MotherMC,"Pt3MotherMC/F");
+		fTCTree->Branch("Pt1MothersMotherMC",&fCorrVariableMC_tPt1MothersMotherMC,"Pt3MothersMotherMC/F");
+		fTCTree->Branch("Pt2MothersMotherMC",&fCorrVariableMC_tPt2MothersMotherMC,"Pt3MothersMotherMC/F");
+		fTCTree->Branch("Pt3MothersMotherMC",&fCorrVariableMC_tPt3MothersMotherMC,"Pt3MothersMotherMC/F");
+		fTCTree->Branch("Pdg1",&fCorrVariableMC_Pdg1,"Pdg1/I");
+		fTCTree->Branch("Pdg2",&fCorrVariableMC_Pdg1,"Pdg2/I");
+		fTCTree->Branch("Pdg3",&fCorrVariableMC_Pdg1,"Pdg3/I");
+		fTCTree->Branch("PdgMother1",&fCorrVariableMC_PdgMother1,"PdgMother1/I");
+		fTCTree->Branch("PdgMother2",&fCorrVariableMC_PdgMother2,"PdgMother2/I");
+		fTCTree->Branch("PdgMother3",&fCorrVariableMC_PdgMother3,"PdgMother3/I");
+		fTCTree->Branch("PdgMothersMotherMC1",&fCorrVariableMC_PdgMothersMother1,"PdgMothersMotherMC1/I");
+		fTCTree->Branch("PdgMothersMotherMC2",&fCorrVariableMC_PdgMothersMother2,"PdgMothersMotherMC2/I");
+		fTCTree->Branch("PdgMothersMotherMC3",&fCorrVariableMC_PdgMothersMother3,"PdgMothersMotherMC3/I");
+	}
+
+	//	const Int_t ndimsCorr = 9;
+	//	Int_t    binsEV[ndimsCorr] = {500, 1000,1000,1000,4,5,500,500,500};
+	//	Double_t xminEV[ndimsCorr] = {0. , -0.4,-0.4,-0.4,0,0,0,0,0};
+	//	Double_t xmaxEV[ndimsCorr] = { 250. ,0.4, 0.4,0.4,4,5,250,250,250};
+	//
+	//
+	//	TString bintitles[ndimsCorr] = {"jet pT","sIP n=1","sIP n=2","sIP n=3","flavour_id","qtyclass id","sIP track pT n=1","sIP track pT n=2","sIP track pT n=3"};
+	//	fCorrelationStudy= new THnSparseD("fCorrelationStudy", "fCorrelationStudy", ndimsCorr, binsEV, xminEV, xmaxEV);
+	//	for(int i=0; i<9;++i){
+	//		fCorrelationStudy->GetAxis(i)->SetTitle(bintitles[i].Data());
+	//	}
+	//fOutput->Add(fCorrelationStudy);
+
 	TH1::AddDirectory(oldStatus);
 	PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+	PostData(2, fTCTree); // Post data for ALL output slots > 0 here.
+
 	return;
 }
 // Helper functions
@@ -1566,6 +1683,7 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::AddHistTH1(TH1** hist,
 	container->Add(*hist);
 	return;
 }
+
 void AliAnalysisTaskEmcalJetBJetTaggingIP::AddHistTH2(TH2** hist,
 		const char* histname,
 		const char* title,
@@ -1645,8 +1763,7 @@ Double_t AliAnalysisTaskEmcalJetBJetTaggingIP::GetPtCorrected(const AliEmcalJet*
 /// \param nProng
 /// \return
 ///
-Bool_t
-AliAnalysisTaskEmcalJetBJetTaggingIP::FindVertexNProngSimple(const AliEmcalJet* jet, AliAODVertex*& vtx, Int_t& nProng)
+Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::FindVertexNProngSimple(const AliEmcalJet* jet, AliAODVertex*& vtx, Int_t& nProng)
 {
 	// populate array from tracks within jet
 	AliVTrack* bTrack = 0x0;
@@ -2156,5 +2273,135 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::GetGeometricalMatchingLevel(AliEmcalJ
 	Double_t deta = jet2->Eta() - jet1->Eta();
 	Double_t dphi = jet2->Phi() - jet1->Phi();
 	d = TMath::Sqrt(deta * deta + dphi * dphi);
+}
+
+
+
+
+//________________________________________________________________________
+//_________________________sIP correlation study________________________
+//________________________________________________________________________
+
+void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  isTagged[3],AliEmcalJet * jet,AliEmcalJet * jetMC,int flavour, int qtyclass )
+{
+	fCorrVariable_JetPT=-99.;
+	fCorrVariable_sIP1=-99.;
+	fCorrVariable_sIP2=-99.;
+	fCorrVariable_sIP3=-99.;
+	fCorrVariable_tPt1=-99.;
+	fCorrVariable_tPt2=-99.;
+	fCorrVariable_tPt3=-99.;
+	fCorrVariable_flv=-99.;
+	fCorrVariable_qty=-99.;
+	if(fIsMC){
+		fCorrVariable_JetPTMC =-99.;
+		fCorrVariableMC_Pdg1 =-99;
+		fCorrVariableMC_Pdg2 =-99;
+		fCorrVariableMC_Pdg3 =-99;
+		fCorrVariableMC_PdgMother1 =-99;
+		fCorrVariableMC_PdgMother2 = -99;
+		fCorrVariableMC_PdgMother3 = -99;
+		fCorrVariableMC_tPt1MC =-99.;
+		fCorrVariableMC_tPt2MC =-99.;
+		fCorrVariableMC_tPt3MC =-99.;
+		fCorrVariableMC_tPt1MotherMC =-99.;
+		fCorrVariableMC_tPt2MotherMC =-99.;
+		fCorrVariableMC_tPt3MotherMC =-99.;
+	}
+	fCorrVariable_flv = flavour;
+	fCorrVariable_qty= qtyclass;
+
+
+	if(fIsMC && jetMC)fCorrVariable_JetPTMC =jetMC->Pt();
+	fCorrVariable_JetPT = jet->Pt();
+
+
+	AliAODMCParticle * MCPart =0x0;
+	AliAODMCParticle * MCPartMother =0x0;
+	AliAODMCParticle * MCPartMothersMother =0x0;
+	AliVTrack * track[3] = {0x0,0x0,0x0};
+
+	if (isTagged[0]) {
+		fCorrVariable_sIP1  = sIP[0];
+		track[0]= fTrackCountingTagger->GetCurrentTrack(0);
+		if(track[0]){
+			fCorrVariable_tPt1 = track[0]->Pt();
+			if(fIsMC){
+				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[0]->GetLabel())));
+				if(MCPart){
+					fCorrVariableMC_Pdg1 =MCPart->PdgCode();
+					fCorrVariableMC_tPt1MC =MCPart->Pt();
+					MCPartMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPart->GetMother())));
+					if(MCPartMother){
+						fCorrVariableMC_PdgMother1=MCPartMother->PdgCode();
+						fCorrVariableMC_tPt1MotherMC =MCPartMother->Pt();
+						MCPartMothersMother= dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPartMother->GetMother())));
+						if(MCPartMothersMother){
+							fCorrVariableMC_PdgMothersMother1=MCPartMothersMother->PdgCode();
+							fCorrVariableMC_tPt1MothersMotherMC =MCPartMothersMother->Pt();
+						}
+					}
+				}
+
+			}
+
+		}
+	}
+	MCPartMother =0x0;
+	MCPart =0x0;
+	if (isTagged[1]) {
+		fCorrVariable_sIP2 = sIP[1];
+		track[1]= fTrackCountingTagger->GetCurrentTrack(1);
+		if(track[1]){
+			fCorrVariable_tPt2 = track[1]->Pt();
+			if(fIsMC){
+				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[1]->GetLabel())));
+				if(MCPart){
+					fCorrVariableMC_Pdg2 =MCPart->PdgCode();
+					fCorrVariableMC_tPt2MC =MCPart->Pt();
+					MCPartMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPart->GetMother())));
+					if(MCPartMother){
+						fCorrVariableMC_PdgMother2=MCPartMother->PdgCode();
+						fCorrVariableMC_tPt2MotherMC =MCPartMother->Pt();
+						MCPartMothersMother= dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPartMother->GetMother())));
+						if(MCPartMothersMother){
+							fCorrVariableMC_PdgMothersMother2=MCPartMothersMother->PdgCode();
+							fCorrVariableMC_tPt2MothersMotherMC =MCPartMothersMother->Pt();
+						}
+					}
+				}
+
+			}
+		}
+	}
+	MCPartMother =0x0;
+	MCPart =0x0;
+	if (isTagged[2]) {
+		fCorrVariable_sIP3= sIP[2];
+		track[2]= fTrackCountingTagger->GetCurrentTrack(2);
+		if(track[2]){
+			fCorrVariable_tPt3 = track[2]->Pt();
+			if(fIsMC){
+				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[2]->GetLabel())));
+				if(MCPart){
+					fCorrVariableMC_Pdg3 =MCPart->PdgCode();
+					fCorrVariableMC_tPt3MC =MCPart->Pt();
+					MCPartMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPart->GetMother())));
+					if(MCPartMother){
+						fCorrVariableMC_PdgMother3=MCPartMother->PdgCode();
+						fCorrVariableMC_tPt3MotherMC =MCPartMother->Pt();
+						MCPartMothersMother= dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPartMother->GetMother())));
+						if(MCPartMothersMother){
+							fCorrVariableMC_PdgMothersMother3=MCPartMothersMother->PdgCode();
+							fCorrVariableMC_tPt3MothersMotherMC =MCPartMothersMother->Pt();
+						}
+					}
+				}
+
+			}
+		}
+	}
+	fTCTree->Fill();
+	return;
 }
 

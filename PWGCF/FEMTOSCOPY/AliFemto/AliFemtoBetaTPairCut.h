@@ -44,7 +44,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoBetaTPairCut, 0)
+  ClassDef(AliFemtoBetaTPairCut, 0);
   /// \endcond
 #endif
 };

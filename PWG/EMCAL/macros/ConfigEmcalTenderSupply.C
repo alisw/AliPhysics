@@ -68,7 +68,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOnUpdateCell();
   } else {
     EMCALSupply->SwitchOffReCalibrateCluster();
-    EMCALSupply->SwitchOffUpdateCell();
+    //EMCALSupply->SwitchOffUpdateCell();
   }
   
   if (recalcClusPos)

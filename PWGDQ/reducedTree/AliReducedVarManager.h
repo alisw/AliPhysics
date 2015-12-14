@@ -12,6 +12,7 @@
 #include <TString.h>
 #include <TChain.h>
 
+class AliReducedBaseEvent;
 class AliReducedEventInfo;
 class AliReducedEventPlaneInfo;
 class AliReducedBaseTrack;
@@ -44,6 +45,104 @@ class AliReducedVarManager : public TObject {
     kFMD
   };
 
+  // offline triggers as defined in AliVEvent.h
+  // NOTE: Check consistency with updates in aliroot!!!
+  enum EOfflineTriggerTypes { 
+    kMB                = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
+    kINT7              = BIT(1), // V0AND trigger, offline V0 selection
+    kMUON              = BIT(2), // Muon trigger, offline SPD or V0 selection
+    kHighMult          = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
+    kEMC1              = BIT(4), // EMCAL trigger
+    kCINT5             = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
+    kCMUS5             = BIT(6), // Muon trigger, offline V0 selection
+    kMUSPB             = BIT(6), // idem for PbPb
+    kMUSH7             = BIT(7), // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
+    kMUSHPB            = BIT(7), // idem for PbPb
+    kMUL7              = BIT(8), // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
+    kMuonLikePB        = BIT(8), // idem for PbPb
+    kMUU7              = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
+    kMuonUnlikePB      = BIT(9), // idem for PbPb
+    kEMC7              = BIT(10), // EMCAL trigger, CINT7 suite
+    kMUS7              = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
+    kPHI1              = BIT(12), // PHOS trigger, CINT1 suite
+    kPHI7              = BIT(13), // PHOS trigger, CINT7 suite
+    kPHOSPb            = BIT(13), // idem for PbPb
+    kEMCEJE            = BIT(14), // EMCAL jet patch trigger
+    kEMCEGA            = BIT(15), // EMCAL gamma trigger
+    kCentral           = BIT(16), // PbPb central collision trigger
+    kSemiCentral       = BIT(17), // PbPb semicentral collision trigger
+    kDG5               = BIT(18), // Double gap diffractive
+    kZED               = BIT(19), // ZDC electromagnetic dissociation
+    kSPI7              = BIT(20), // Power interaction trigger
+    kINT8              = BIT(21), // CINT8 trigger: 0TVX (T0 vertex) triger
+    kMuonSingleLowPt8  = BIT(22), // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
+    kMuonSingleHighPt8 = BIT(23), // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
+    kMuonLikeLowPt8    = BIT(24), // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
+    kMuonUnlikeLowPt8  = BIT(25), // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
+    kINT6              = BIT(26),
+    kUserDefined       = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
+    // Bits 28 and above are reserved for FLAGS
+    kFastOnly          = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
+    kAny               = 0xffffffff, // to accept any trigger
+    kAnyINT            = kMB | kINT7 | kCINT5, // to accept any interaction (aka minimum bias) trigger
+    kNTriggers         = 47
+  };
+  
+  // tracking flags as in AliESDtrack.h (or AliVTrack?)
+  // NOTE: when in doubt check consistency with aliroot
+  enum TrackingStatus {
+    kITSin=0, 
+    kITSout,
+    kITSrefit,
+    kITSpid,
+    kTPCin,
+    kTPCout,
+    kTPCrefit,
+    kTPCpid,
+    kTRDin,
+    kTRDout, 
+    kTRDrefit,
+    kTRDpid,
+    kTOFin,
+    kTOFout,
+    kTOFrefit,
+    kTOFpid,
+    kTOFmismatch,
+    kHMPIDout,
+    kHMPIDpid,
+    kEMCALmatch,
+    kPHOSmatch,
+    kTRDbackup,
+    kTRDStop,
+    kESDpid,
+    kTIME,
+    kGlobalMerge,
+    kITSpureSA,
+    kMultInV0,
+    kMultSec,
+    kTRDnPlanes,
+    kEMCALNoMatch,
+    kNTrackingStatus
+  };
+
+
+  // to be moved to AliReducedTrackInfo
+  enum TrackingFlags {
+    kTpcEP=0,
+    kGammaConv,
+    kK0s,
+    kLambda,
+    kALambda,
+    kKink0,
+    kKink1,
+    kKink3,
+    kPureGammaConv,
+    kPureK0s,
+    kPureLambda,
+    kPureALambda,
+    kNTrackingFlags
+  };
+
   
   static const Float_t fgkParticleMass[kNSpecies];
   
@@ -68,7 +167,8 @@ class AliReducedVarManager : public TObject {
     kTimeStamp,         // time stamp of the event
     kEventType,         // event type
     kTriggerMask,       // trigger mask       
-    kOnlineTrigger,     // online trigger    
+    kOnlineTriggersFired,// 1 if fired, 0 if not fired, for each trigger
+    kOnlineTrigger=kOnlineTriggersFired+kNTriggers,  // online trigger    
     kOnlineTriggerFired,  // online trigger fired
     kOnlineTriggerFired2,  // online trigger if fired, -1 if not fired
     kIsPhysicsSelection,    // physics selection 
@@ -89,8 +189,8 @@ class AliReducedVarManager : public TObject {
     kVtxYtpc,           // vtx Y from tpc
     kVtxZtpc,           // vtx Z from tpc
     kDeltaVtxZ,         // vtxZ - vtxZtpc
-    kNTracksPerTrackingFlag,  // number of tracks with a given tracking flag
-    kNTracksTPCoutVsITSout=kNTracksPerTrackingFlag+32,   //  TPCout/ITSout
+    kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
+    kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
     kNTracksTOFoutVsITSout,                              //  TOFout/ITSout
     kNTracksTRDoutVsTPCout,                              //  TRDout/TPCout
@@ -221,6 +321,7 @@ class AliReducedVarManager : public TObject {
     kPtSquared = kSinNPhi+6,
     kMass,
     kRap,
+    kCharge,
     kVZEROFlowVn,                     // v_n using VZERO RP
     kTPCFlowVn=kVZEROFlowVn+6*3,      // v_n using TPC RP
     kVZEROFlowSine=kTPCFlowVn+6,      // sin(n*(phi-Psi)) using VZERO RP
@@ -301,92 +402,16 @@ class AliReducedVarManager : public TObject {
     kDeltaPhi,          
     kDeltaTheta,        
     kDeltaEta,          
-    kNVars     
+    kTrackingFlags,
+    kTrackingStatus=kTrackingFlags+kNTrackingFlags,
+    kNVars=kTrackingStatus+kNTrackingStatus,     
   };
   
   static TString fgVariableNames[kNVars];         // variable names
   static TString fgVariableUnits[kNVars];         // variable units  
-  
-  // tracking flags as in AliESDtrack.h
-  // NOTE: when in doubt check consistency with aliroot
-  enum TrackingFlags {
-    kITSin=0, 
-    kITSout,
-    kITSrefit,
-    kITSpid,
-    kTPCin,
-    kTPCout,
-    kTPCrefit,
-    kTPCpid,
-    kTRDin,
-    kTRDout, 
-    kTRDrefit,
-    kTRDpid,
-    kTOFin,
-    kTOFout,
-    kTOFrefit,
-    kTOFpid,
-    kTOFmismatch,
-    kHMPIDout,
-    kHMPIDpid,
-    kEMCALmatch,
-    kPHOSmatch,
-    kTRDbackup,
-    kTRDStop,
-    kESDpid,
-    kTIME,
-    kGlobalMerge,
-    kITSpureSA,
-    kMultInV0,
-    kMultSec,
-    kTRDnPlanes,
-    kEMCALNoMatch,
-    kNTrackingFlags
-  };
-  static const Char_t* fgkTrackingFlagNames[kNTrackingFlags];  // tracking flags name
+  static const Char_t* fgkTrackingStatusNames[kNTrackingStatus];  // tracking flags name
   
   
-  // offline triggers as defined in AliVEvent.h
-  // NOTE: Check consistency with updates in aliroot!!!
-  enum EOfflineTriggerTypes { 
-    kMB                = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
-    kINT7              = BIT(1), // V0AND trigger, offline V0 selection
-    kMUON              = BIT(2), // Muon trigger, offline SPD or V0 selection
-    kHighMult          = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
-    kEMC1              = BIT(4), // EMCAL trigger
-    kCINT5             = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
-    kCMUS5             = BIT(6), // Muon trigger, offline V0 selection
-    kMUSPB             = BIT(6), // idem for PbPb
-    kMUSH7             = BIT(7), // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
-    kMUSHPB            = BIT(7), // idem for PbPb
-    kMUL7              = BIT(8), // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
-    kMuonLikePB        = BIT(8), // idem for PbPb
-    kMUU7              = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
-    kMuonUnlikePB      = BIT(9), // idem for PbPb
-    kEMC7              = BIT(10), // EMCAL trigger, CINT7 suite
-    kMUS7              = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
-    kPHI1              = BIT(12), // PHOS trigger, CINT1 suite
-    kPHI7              = BIT(13), // PHOS trigger, CINT7 suite
-    kPHOSPb            = BIT(13), // idem for PbPb
-    kEMCEJE            = BIT(14), // EMCAL jet patch trigger
-    kEMCEGA            = BIT(15), // EMCAL gamma trigger
-    kCentral           = BIT(16), // PbPb central collision trigger
-    kSemiCentral       = BIT(17), // PbPb semicentral collision trigger
-    kDG5               = BIT(18), // Double gap diffractive
-    kZED               = BIT(19), // ZDC electromagnetic dissociation
-    kSPI7              = BIT(20), // Power interaction trigger
-    kINT8              = BIT(21), // CINT8 trigger: 0TVX (T0 vertex) triger
-    kMuonSingleLowPt8  = BIT(22), // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
-    kMuonSingleHighPt8 = BIT(23), // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
-    kMuonLikeLowPt8    = BIT(24), // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
-    kMuonUnlikeLowPt8  = BIT(25), // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
-    kINT6              = BIT(26),
-    kUserDefined       = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
-    // Bits 28 and above are reserved for FLAGS
-    kFastOnly          = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
-    kAny               = 0xffffffff, // to accept any trigger
-    kAnyINT            = kMB | kINT7 | kCINT5 // to accept any interaction (aka minimum bias) trigger
-  };
   static const Char_t* fgkOfflineTriggerNames[64];
   
   enum ITSLayerMap {
@@ -411,7 +436,7 @@ class AliReducedVarManager : public TObject {
   static void SetBeamMomentum(Float_t beamMom) {fgBeamMomentum = beamMom;}
   static Float_t GetBeamMomentum() {return fgBeamMomentum;}
   
-  static void SetEvent(AliReducedEventInfo* const ev) {fgEvent = ev;};
+  static void SetEvent(AliReducedBaseEvent* const ev) {fgEvent = ev;};
   static void SetEventPlane(AliReducedEventPlaneInfo* const ev) {fgEventPlane = ev;};
   static void SetUseVariable(Variables var) {fgUsedVars[var] = kTRUE; SetVariableDependencies();}
   static void SetUseVars(Bool_t* usedVars) {
@@ -422,25 +447,27 @@ class AliReducedVarManager : public TObject {
   static Bool_t GetUsedVar(Variables var) {return fgUsedVars[var];}
   
   static void FillEventInfo(Float_t* values);
-  static void FillEventInfo(AliReducedEventInfo* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
-  static void FillEventOnlineTriggers(UShort_t triggerBit, Float_t* values);
-  static void FillEventTagInput(AliReducedEventInfo* event, Int_t input, Float_t* values);
+  static void FillEventInfo(AliReducedBaseEvent* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
+  static void FillEventOnlineTriggers(AliReducedEventInfo* event, Float_t* values);
+  static void FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values);
+  static void FillEventTagInput(AliReducedBaseEvent* event, Int_t input, Float_t* values);
   static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UShort_t flag, Float_t* values);
-  static void FillTrackQualityFlag(AliReducedTrackInfo* track, UShort_t flag, Float_t* values);
+  static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values);
-  static void FillBaseTrackInfo(AliReducedBaseTrack* p, Float_t* values);
-  static void FillTrackInfo(AliReducedTrackInfo* p, Float_t* values);
+  static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* p, Float_t* values);
-  static void FillPairInfo(AliReducedTrackInfo* t1, AliReducedTrackInfo* t2, Int_t type, Float_t* values);
-  static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedTrackInfo* leg2, Int_t type, Float_t* values);
+  static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
+  static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
-  static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedTrackInfo* t, Float_t* values);
+  static void FillCorrelationInfo(AliReducedPairInfo* p, AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
+  static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
+  static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
 
   static void PrintTrackFlags(AliReducedTrackInfo* track);
   static void PrintBits(ULong_t mask, Int_t maxBit=64);
@@ -459,7 +486,7 @@ class AliReducedVarManager : public TObject {
   
  private:
   static Float_t fgBeamMomentum;                  // beam energy (needed when calculating polarization angles) 
-  static AliReducedEventInfo* fgEvent;            // pointer to the current event
+  static AliReducedBaseEvent* fgEvent;            // pointer to the current event
   static AliReducedEventPlaneInfo* fgEventPlane;  // pointer to the current event plane
   static Bool_t fgUsedVars[kNVars];              // array of flags toggled in the histogram manager 
                                                  //   when a variable is used

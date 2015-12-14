@@ -25,8 +25,16 @@ class AliFlowEventSimpleCuts : public TNamed {
                                                                fCentralityPercentileMax=max;
                                                                fCutCentralityPercentile=kTRUE; }
 
+  virtual void SetCentralityPercentileRange(Float_t min, Float_t max, Bool_t useNewCentralityFramework){ fCentralityPercentileMin=min;
+                                                               fCentralityPercentileMax=max;
+                                                               fCutCentralityPercentile=kTRUE;
+                                                               fUseNewCentralityFramework=useNewCentralityFramework; }
+
+  Bool_t GetUseNewCentralityFramework() const {return fUseNewCentralityFramework;}
+
  protected:
   Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
+  Bool_t fUseNewCentralityFramework; //available from November 2015
   Float_t fCentralityPercentileMax; // max centr. perc
   Float_t fCentralityPercentileMin; // min centr. perc
 

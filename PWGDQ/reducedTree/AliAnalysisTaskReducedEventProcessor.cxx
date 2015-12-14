@@ -9,7 +9,6 @@ Instructions in AddTask_EPcorrectionsExample.C
 
 #include <AliAnalysisTaskReducedEventProcessor.h>
 
-//#include "AliSysInfo.h"
 #include <iostream>
 
 #include <TROOT.h>
@@ -18,12 +17,17 @@ Instructions in AddTask_EPcorrectionsExample.C
 #include <TChain.h>
 #include <THashList.h>
 #include <AliInputEventHandler.h>
+#include <AliMultiInputEventHandler.h>
+#include <AliESDInputHandler.h>
+#include <AliAODInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>
 #include <AliESDEvent.h>
+#include "AliReducedBaseEvent.h"
 #include "AliReducedEventInfo.h"
 #include "AliHistogramManager.h"
 #include "AliReducedAnalysisTaskSE.h"
+#include "AliReducedEventInputHandler.h"
 
 using std::cout;
 using std::endl;
@@ -38,7 +42,9 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
   fReducedTask(0x0),
   fOutputSlot(),
   fContainerType(),
-  fNoutputSlots()
+  fNoutputSlots(),
+  fRunningMode(kUseEventsFromTree),
+  fReducedEvent()
 {
   //
   // Default constructor
@@ -46,21 +52,50 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
 }
 
 //_________________________________________________________________________________
-AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name) :
+AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name, Int_t runningMode) :
   AliAnalysisTaskSE(name),
   fReducedTask(0x0),
   fOutputSlot(),
   fContainerType(),
-  fNoutputSlots(0)
+  fNoutputSlots(0),
+  fRunningMode(runningMode),
+  fReducedEvent()
 {
   //
   // Constructor
   //
-  //DefineInput(0,TChain::Class());
-  DefineInput(0,AliReducedEventInfo::Class());
+   if(fRunningMode==kUseOnTheFlyReducedEvents)
+      DefineInput(0,AliReducedBaseEvent::Class());
+   if(fRunningMode==kUseEventsFromTree)
+      DefineInput(0,TChain::Class());
+   
   DefineOutput(1,THashList::Class());
+}
 
 
+//______________________________________________________________________________
+void AliAnalysisTaskReducedEventProcessor::ConnectInputData(Option_t* /*option*/)
+{
+   //
+   // Special implementation for ConnectInputData() in order to allow using non AliVEvent events
+   //
+
+   // Connect input handlers (multi input handler is handled)
+   ConnectMultiHandler();
+   
+   if (fInputHandler && fInputHandler->GetTree()) {
+      if(fInputHandler->IsA()==AliESDInputHandler::Class() || fInputHandler->IsA()==AliAODInputHandler::Class()) {
+         fInputEvent = fInputHandler->GetEvent();
+      }
+      if(fInputHandler->IsA()==AliReducedEventInputHandler::Class()) {
+        fReducedEvent = ((AliReducedEventInputHandler*)fInputHandler)->GetReducedEvent();
+      }
+   } else {
+      AliError("No Input Event Handler connected") ; 
+      return ; 
+   }
+   // Disconnect multi handler
+   DisconnectMultiHandler();
 }
 
 
@@ -70,37 +105,39 @@ void AliAnalysisTaskReducedEventProcessor::UserCreateOutputObjects()
   //
   // Add all histogram manager histogram lists to the output TList
   //
-
-
-  //DefineInput(0,TChain::Class());
-
   fReducedTask->GetHistogramManager()->AddHistogramsToOutputList();
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
                                           
   //for(Int_t i=0; i<fNoutputSlots; i++)   DefineOutput(1, fOutputSlot[i]->Class());
-  //fReducedTask->Init();
-  //PostData(1,*(fReducedTask->GetHistogramManager()->GetOutputHistogramList()));
-
   return;
 }
-
 
 
 //________________________________________________________________________________________________________
 void AliAnalysisTaskReducedEventProcessor::UserExec(Option_t *){
   //
   // Main loop. Called for every event
-  //
-
-  //((TH1F*)fReducedTask->GetHistogramManager()->GetHistogram("Event_NoCuts","VtxX"))->Fill(0.);
-  AliReducedEventInfo* event = dynamic_cast<AliReducedEventInfo*>(GetInputData(0)); 
+  //   
+  AliReducedBaseEvent* event = NULL;
+  if(fRunningMode=kUseOnTheFlyReducedEvents) 
+     event = dynamic_cast<AliReducedBaseEvent*>(GetInputData(0)); 
+  
+  if(fRunningMode=kUseEventsFromTree) {
+     fInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+     fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
+     if (fMultiInputHandler)
+        fInputHandler = dynamic_cast<AliInputEventHandler *>(fMultiInputHandler->GetFirstInputEventHandler());
+     
+     AliReducedEventInputHandler* handler = dynamic_cast<AliReducedEventInputHandler *>(fInputHandler);
+     if(handler)
+       event = handler->GetReducedEvent();
+  }
+  
   if(!event) return;
+  
   fReducedTask->SetEvent(event);
   fReducedTask->Process();
-
-  //PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==1) PostData(i, fOutputSlot[i]);
-
 } 
 
 
@@ -112,10 +149,6 @@ void AliAnalysisTaskReducedEventProcessor::FinishTaskOutput()
     //
   fReducedTask->Finish();
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==0) PostData(i, fOutputSlot[i]);
-
-
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
-
   return;
 }
-

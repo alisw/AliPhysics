@@ -1220,7 +1220,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 //________________________________________________________________________
 //************** Find number of local maxima in cluster ******************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event){
 
@@ -1249,18 +1249,20 @@ Int_t AliCaloPhotonCuts::FindSecondLargestCellInCluster(AliVCluster* cluster, Al
   Float_t eMax            = 0.;
   Int_t idMax             = -1;
   Int_t idMax2            = -1;
+  Int_t iCellMax          = -1;
   
   if (nCells < 2) return idMax;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
     if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
       eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
       idMax               = cluster->GetCellAbsId(iCell);
+      iCellMax            = iCell;
     }  
   }  
   
   eMax                    = 0.;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
-    if (iCell == idMax) continue;
+    if (iCell == iCellMax) continue;
     if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
       eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
       idMax2              = cluster->GetCellAbsId(iCell);
@@ -1300,7 +1302,7 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
 
 //________________________________________________________________________
 //************** Find number of local maxima in cluster ******************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event, Int_t *absCellIdList, Float_t* maxEList){
 
@@ -1394,7 +1396,7 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
 
 //________________________________________________________________________
 //************** Function to determine neighbours of cells ***************
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
   Bool_t areNeighbours = kFALSE ;
@@ -1430,7 +1432,7 @@ Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
 
 //________________________________________________________________________
 //************** Function to obtain module number, row and column ********
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow){
   if( fClusterType == 1 ){ //EMCAL
@@ -1458,7 +1460,7 @@ Int_t AliCaloPhotonCuts::GetModuleNumberAndCellPosition(Int_t absCellId, Int_t &
 //___________________________________________________________________________
 // Split energy of cluster between the 2 local maxima, sum energy on 3x3, and if the 2 
 // maxima are too close and have common cells, split the energy between the 2.
-//* derived from G. C. Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
 //___________________________________________________________________________
 void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
                   AliVCluster* cluster,
@@ -1486,10 +1488,10 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
     eCluster+=ec;
   }
 
-  UShort_t absCellIdList1  [12];
-  Double_t fracList1     [12];
-  UShort_t absCellIdList2  [12];
-  Double_t fracList2     [12];
+  UShort_t absCellIdList1 [12];
+  Double_t fracList1      [12];
+  UShort_t absCellIdList2 [12];
+  Double_t fracList2      [12];
 
   // Init counters and variables
   Int_t ncells1         = 1 ;
@@ -3435,10 +3437,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 81:
       label_case_81:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.982252, -3.49763, -0.969196);//v3
           //energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729);v0
           //energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501);v1
-        if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.9936*0.972984, -3.4499, -0.363516);//v0
+          //energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
+
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.9936*0.972984, -3.4499, -0.363516);//v0
+
         else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -3447,10 +3452,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 82:
       label_case_82:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.973302, -2.41453, -1.88838);//v3
           //energy /= FunctionNL_kSDM(2.0*energy, 0.975467, -1.9989, -1.23208);v0
           //energy /= FunctionNL_kSDM(2.0*energy, 0.974716, -2.56403, -0.85898);v1
-        if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.975679, -3.10412, -0.606205);//v0
+          //energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
+
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.975679, -3.10412, -0.606205);//v0
+
         else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -3465,6 +3473,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 84:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_82;// goto previous case for shifting MC
+      break;
+
+    // NonLinearity LHC13 pPb Calo - excluding the two lowest pT points
+    case 89:
+      if(isMC>0){
+        if( fCurrentMC==k13b2_efix || fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.973302, -3.12524, -1.13546);
+
+        else fPeriodNameAvailable = kFALSE;
+      }
       break;
 
 //----------------------------------------------------------------------------------------------------------

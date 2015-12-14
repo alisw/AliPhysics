@@ -91,16 +91,11 @@
 #pragma link C++ class AliMESppColTask::AliMESppColMixEvent+; 
 
 // AntiprotonToProton
-#pragma link C++ class AliProtonAnalysisBase+;
 #pragma link C++ class AliProtonAnalysis+;
-#pragma link C++ class AliProtonQAAnalysis+;
-#pragma link C++ class AliAnalysisTaskProtons+;
-#pragma link C++ class AliAnalysisTaskProtonsQA+;
-#pragma link C++ class AliProtonFeedDownAnalysisTask+;
-#pragma link C++ class AliProtonFeedDownAnalysis+;
-#pragma link C++ class AliProtonAbsorptionCorrection+;
-#pragma link C++ class AliProtonSpectraCorrection+;
-#pragma link C++ class AliProtonCorrectionAnalysisTask+;
+#pragma link C++ class AliProtonAnalysisBase+;
+#pragma link C++ class AliAnalysisTaskProton+;
+#pragma link C++ class AliAnalysisTaskProtonQA+;
+#pragma link C++ class AliAnalysisTaskProtonAbsorbtion+;
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
 #endif

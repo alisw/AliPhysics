@@ -132,9 +132,8 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   TString physSel = fPhysSelKeys->At(kPhysSelPass)->GetName();
   TString trigClass = "ANY";
   TString centrality = "-100_200";
-  TString histoPattern = fAnalysisOutput->GetHistoName(-1,-1,-1,AliTrigChEffOutput::kSelectTrack,AliTrigChEffOutput::kMatchApt,AliTrigChEffOutput::kEffFromTrack);
   
-  TList* outList = fAnalysisOutput->GetEffHistoList(physSel, trigClass, centrality, histoPattern);
+  TList* outList = fAnalysisOutput->GetEffHistoList(physSel, trigClass, centrality, AliTrigChEffOutput::kSelectTrack,AliTrigChEffOutput::kMatchApt,AliTrigChEffOutput::kEffFromTrack);
   outList->SetOwner(kFALSE);
   TIter next(outList);
   TObject* obj;
@@ -512,7 +511,14 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
   if ( ! outFileOpt.IsNull() ) {
     TObjArray* outFileOptList = outFileOpt.Tokenize("?");
     AliInfo(Form("Creating file %s", outFileOptList->At(0)->GetName()));
-    TList* effList = fAnalysisOutput->GetEffHistoList(outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName());
+    TString histoPattern = outFileOptList->At(4)->GetName();
+    Int_t itrackSel = histoPattern.Contains("NoSel") ? AliTrigChEffOutput::kNoSelectTrack : AliTrigChEffOutput::kSelectTrack;
+    Int_t imatch = AliTrigChEffOutput::kNoMatch;
+    if ( histoPattern.Contains("MatchApt") ) imatch = AliTrigChEffOutput::kMatchApt;
+    else if ( histoPattern.Contains("MatchLpt") ) imatch = AliTrigChEffOutput::kMatchLpt;
+    else if ( histoPattern.Contains("MatchHpt") ) imatch = AliTrigChEffOutput::kMatchHpt;
+    Int_t imethod = histoPattern.Contains("FromTrg") ? AliTrigChEffOutput::kEffFromTrig : AliTrigChEffOutput::kEffFromTrack;
+    TList* effList = fAnalysisOutput->GetEffHistoList(outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), itrackSel, imatch, imethod);
     effList->SetName(GetOutputSlot(2)->GetContainer()->GetName());
     if ( effList ->GetEntries() == 0 ) {
       printf("\nWarning: no histograms satisfying the requested conditions.\n(%s %s %s %s).\nOutput %s not created.\n", outFileOptList->At(1)->GetName(), outFileOptList->At(2)->GetName(), outFileOptList->At(3)->GetName(), outFileOptList->At(4)->GetName(),outFileOptList->At(0)->GetName());

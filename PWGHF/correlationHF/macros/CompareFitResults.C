@@ -1,9 +1,10 @@
 TString strPtAss[3]={"0.3to1.0","1.0to99.0","0.3to99.0"};
 TString strPtAssCanvas[3]={"0.3<#it{p}_{T}^{assoc}<1 GeV/#it{c}","#it{p}_{T}^{assoc}>1 GeV/#it{c}","#it{p}_{T}^{assoc}>0.3 GeV/#it{c}"};
 TString strSystem[2]={"pp","pPb"};
-Color_t colSystem[2]={kBlue,kRed};
-TString strFitResultPP="";//"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
-TString strFitResultPPb="";//"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
+Color_t colSystem[2]={kBlack,kRed};
+Int_t markerStyle[2]={20,21};
+TString strFitResultPP=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
+TString strFitResultPPb=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 Double_t canvasheight=801;
 Double_t resizeTextFactor=1.;//1.*canvasheight/1200.; // size was tuned for canvasheight =1800. 
 Double_t referencePadHeight=0.48; // Do not touch unless the canvas division is changed from 2x3, change canvasheight and resizeTextFactor instead
@@ -48,11 +49,13 @@ Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
-const Int_t nmodels=6;
-Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE};
-TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","POWHEG","PYTHIA8","HERWIG"};
-Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kViolet,kCyan};
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,kOpenDiamond,26,28};
+const Int_t nmodels=7;
+Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kFALSE,kTRUE};
+TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","POWHEG","PYTHIA8","HERWIG","POWHEG"};
+TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia0","PYTHIA6, Perugia2010","PYTHIA6, Perugia2011","POWHEG+PYTHIA6","PYTHIA8, Tune C","HERWIG","POWHEG+PYTHIA6 EPS09"};
+Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kCyan,kViolet,kRed+2};
+Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kFALSE,kTRUE};// this is also used to split the legend in 2!!
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,3};
 TH1D **hMC;
 TGraphAsymmErrors **grMC;
 
@@ -61,21 +64,27 @@ void SetSkip3to5(Bool_t skip){
 }
 void IncludePerugia0(Bool_t incl){
   includemodel[0]=incl;
+  includeinlegend[0]=incl;
 }
 void IncludePerugia2010(Bool_t incl){
   includemodel[1]=incl;
+  includeinlegend[1]=incl;
 }
 void IncludePerugia2011(Bool_t incl){
   includemodel[2]=incl;
+  includeinlegend[2]=incl;
 }
 void IncludePythia8(Bool_t incl){
   includemodel[4]=incl;
+  includeinlegend[4]=incl;
 }
 void IncludePowheg(Bool_t incl){
   includemodel[3]=incl;
+  includeinlegend[3]=incl;
 }
 void IncludeHerwig(Bool_t incl){
   includemodel[5]=incl;
+  includeinlegend[5]=incl;
 }
 
 Int_t GetNPythia6Tunes(){
@@ -90,6 +99,15 @@ Int_t CountNmodels(){
   Int_t ncount=0;
   for(Int_t j=0;j<nmodels;j++){
     if(includemodel[j])ncount++;
+  }
+  return ncount;
+}
+
+Int_t CountNmodelsInLegend(){
+  Int_t ncount=0;
+  for(Int_t j=0;j<nmodels;j++){
+    if(includeinlegend[j])ncount++;
+    if(j==6&&includeinlegend[j])ncount++;
   }
   return ncount;
 }
@@ -514,9 +532,11 @@ Double_t x=0.21,y=0.390;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.25;
+    x=0.20;// draft 2 was not present -> above value 0.21
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.390;
+    y=0.378;// draft 2 was 0.39
+    x=0.20;// draft 2 was not present -> above value 0.21
   }
 
   if(style==-1){
@@ -530,7 +550,7 @@ Double_t x=0.21,y=0.390;
     alice= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    alice->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -553,7 +573,7 @@ TLatex* GetAssocPtText(Int_t binassoc,Int_t identifier,Int_t addDEta=1){
     x=0.15;
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.350;
+    y=0.34;// was 0.35 in draft 2
     x=0.15;
   }
 
@@ -589,7 +609,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
     y=0.250;
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.390;
+    y=0.378;// draft 2 was 0.39
   }
   
   if(variable==2)return 0x0;
@@ -607,7 +627,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
 	tlSide->SetNDC();
 	tlSide->SetTextAlign(11);
 	tlSide->SetTextFont(43);
-	tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+	tlSide->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -639,12 +659,17 @@ TLegend *GetLegendMCDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     xl=0.002;
     xr=0.3;
   }
-  if(nrows==3){// these are hard coded number from an optimization
-    yl=0.11;
+ 
+ if(nrows==3){// these are hard coded number from an optimization
+   Int_t neffmod=CountNmodelsInLegend();
+   //    yl=0.11;
     yh=0.19;
+    yl=0.11+(3-neffmod)*0.08/3.;// for neffmod>3 an optimization might be needed
   }
   if(nrows==2){// these are hard coded number from an optimization
-    yl=0.2;
+   Int_t neffmod=CountNmodelsInLegend();   
+   //    yl=0.2;
+    yl=0.2+(3-neffmod)*0.1/3.;// for neffmod>3 an optimization might be needed
     yh=0.3;
   }
 
@@ -691,36 +716,158 @@ TLegend *GetLegendDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     legend->SetTextSize(0.035);
   }
   else{
-    legend = new TLegend(0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin());
+    legend = new TLegend(0.03/gPad->GetWNDC()+gPad->GetLeftMargin(),0.185/gPad->GetHNDC()+gPad->GetBottomMargin(),0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.312/gPad->GetHNDC()+gPad->GetBottomMargin());// draft 2 (2 lines only, rapidity on the same line also for p-Pb): 0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin()
     legend->SetTextFont(43);
     legend->SetTextAlign(12);
-    legend->SetTextSize(20*innerPadHeight/referencePadHeight*resizeTextFactor);//if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor); but see the notes on top
+    legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 20*... //if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor); but see the notes on top
   }
   legend->SetFillColor(0);
   legend->SetFillStyle(0);
   legend->SetBorderSize(0);
   
   if(hpp)legend->AddEntry(hpp,"pp, #sqrt{#it{s}}=7 TeV, |#it{y}^{D}_{cms}|<0.5","lep");
-  if(hpPb)legend->AddEntry(hpPb,"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04","lep");
+  if(hpPb){// draft 2 was only:  legend->AddEntry(hpPb,"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04","lep");
+    legend->AddEntry(hpPb,"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV,","lep");
+    legend->AddEntry((TObject*)0,"-0.96<#it{y}^{D}_{cms}<0.04","");
+  }
   legend->SetName(Form("LegendDataAndMCPPandpPb_%d",identifier));
   return legend;
 }
 
-TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0){
+TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
   Printf("Opening file: %s", Form("%s/Trends_pp/CanvasFinalTrend%s_pthad%s.root",strFitResultPP.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()));
   TFile *f=TFile::Open(Form("%s/Trends_pp/CanvasFinalTrend%s_pthad%s.root",strFitResultPP.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
   TCanvas *c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
-  TGraphAsymmErrors *grPP=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
-  grPP->SetName(Form("%sPP",grPP->GetName()));
+  gr=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  gr->SetName(Form("%sPP",gr->GetName()));
   TH1D *hPP=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPP->SetName(Form("%sPP",hPP->GetName()));
+
+
+  hPP->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
+  hPP->SetYTitle(yaxisTitle[quantity].Data());
+  if(style==-1){
+    hPP->GetYaxis()->SetTitleSize(0.04);
+    hPP->GetYaxis()->SetTitleOffset(1.2);
+    hPP->GetYaxis()->SetLabelSize(0.04);
+    hPP->GetXaxis()->SetTitleSize(0.04);
+    hPP->GetXaxis()->SetLabelSize(0.04);
+  }
+  else {
+    hPP->GetYaxis()->SetTitle("");      
+
+    hPP->GetXaxis()->SetRangeUser(0,16.9);
+    hPP->GetYaxis()->SetTitleFont(43);
+    hPP->GetYaxis()->SetLabelFont(43);
+    hPP->GetXaxis()->SetTitleFont(43);
+    hPP->GetXaxis()->CenterTitle();
+    hPP->GetYaxis()->CenterTitle();
+    hPP->GetXaxis()->SetLabelFont(43);
+    hPP->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPP->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPP->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPP->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPP->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPP->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+  }
+  if(style<=0){
+    hPP->GetYaxis()->SetRangeUser(0,TMath::Max(maxRangePP[binass][quantity],maxRangePPb[binass][quantity]));
+  }
+
+
+  hPP->SetLineColor(colSystem[0]);
+  hPP->SetLineWidth(2);
+  hPP->SetMarkerColor(colSystem[0]);
+  hPP->SetMarkerStyle(markerStyle[0]);
+  hPP->SetMarkerSize(markersize);
+
+  gr->SetMarkerColor(colSystem[0]);
+  gr->SetLineColor(colSystem[0]);
+  gr->SetLineWidth(2);
+  gr->SetMarkerStyle(markerStyle[0]);
+  gr->SetMarkerSize(markersize);
+
   
-  f=TFile::Open(Form("%s/Trends_pPb/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
-  c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
-  TGraphAsymmErrors *grPPb=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
-  grPPb->SetName(Form("%sPPb",grPPb->GetName()));
+  return hPP;
+}
+
+
+TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
+
+
+  TFile *f=TFile::Open(Form("%s/Trends_pPb/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
+  TCanvas *c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+  gr=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  gr->SetName(Form("%sPPb",gr->GetName()));
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
+
+  hPPb->SetLineColor(colSystem[1]);
+  hPPb->SetLineWidth(2);
+  hPPb->SetMarkerColor(colSystem[1]);
+  hPPb->SetMarkerStyle(markerStyle[1]);
+  hPPb->SetMarkerSize(markersize);
+  gr->SetMarkerColor(colSystem[1]);
+  gr->SetLineColor(colSystem[1]);
+  gr->SetLineWidth(2);
+  gr->SetMarkerStyle(markerStyle[1]);
+  gr->SetMarkerSize(markersize);
+
+  hPPb->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
+  hPPb->SetYTitle(yaxisTitle[quantity].Data());
+  if(style==-1){
+    hPPb->GetYaxis()->SetTitleSize(0.04);
+    hPPb->GetYaxis()->SetTitleOffset(1.2);
+    hPPb->GetYaxis()->SetLabelSize(0.04);
+    hPPb->GetXaxis()->SetTitleSize(0.04);
+    hPPb->GetXaxis()->SetLabelSize(0.04);
+  }
+  else {
+    hPPb->GetYaxis()->SetTitle("");      
+
+    hPPb->GetXaxis()->SetRangeUser(0,16.9);
+    hPPb->GetYaxis()->SetTitleFont(43);
+    hPPb->GetYaxis()->SetLabelFont(43);
+    hPPb->GetXaxis()->SetTitleFont(43);
+    hPPb->GetXaxis()->CenterTitle();
+    hPPb->GetYaxis()->CenterTitle();
+    hPPb->GetXaxis()->SetLabelFont(43);
+    hPPb->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+  }
+  if(style<=0){
+    hPPb->GetYaxis()->SetRangeUser(0,TMath::Max(maxRangePP[binass][quantity],maxRangePPb[binass][quantity]));
+  }
+
+  return hPPb;
+}
+
+
+TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0){
+//   Printf("Opening file: %s", Form("%s/Trends_pp/CanvasFinalTrend%s_pthad%s.root",strFitResultPP.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()));
+//   TFile *f=TFile::Open(Form("%s/Trends_pp/CanvasFinalTrend%s_pthad%s.root",strFitResultPP.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
+//   TCanvas *c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+//   TGraphAsymmErrors *grPP=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+//   grPP->SetName(Form("%sPP",grPP->GetName()));
+//   TH1D *hPP=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+//   hPP->SetName(Form("%sPP",hPP->GetName()));
+  TGraphAsymmErrors *grPP;
+  TH1D *hPP=GetAndPreparePP(binass,quantity,grPP);
+
+//     f=TFile::Open(Form("%s/Trends_pPb/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
+//   c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+//   TGraphAsymmErrors *grPPb=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+//   grPPb->SetName(Form("%sPPb",grPPb->GetName()));
+//   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+//   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
+  TGraphAsymmErrors *grPPb;
+  TH1D *hPPb=GetAndPreparePPb(binass,quantity,grPPb);
+
+
   TCanvas *cout=0x0;
   if(!pd){
     cout=CreateCanvasWithDefaultStyle(Form("%sComparisonPPtoPPbBinAss%d",strquantityFile[quantity].Data(),binass));
@@ -732,20 +879,20 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
   //new TCanvas(Form("NSyieldComparisonBinAss%d",binass),Form("NSyieldComparisonBinAss%d",binass),800,800);
 
   TH2D *hDraw;
-  hPP->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
-  hPP->SetYTitle(yaxisTitle[quantity].Data());
+  //  hPP->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
+  //  hPP->SetYTitle(yaxisTitle[quantity].Data());
   if(style==-1){
-    hPP->GetYaxis()->SetTitleSize(0.04);
-    hPP->GetYaxis()->SetTitleOffset(1.2);
-    hPP->GetYaxis()->SetLabelSize(0.04);
-    hPP->GetXaxis()->SetTitleSize(0.04);
-    hPP->GetXaxis()->SetLabelSize(0.04);
+//     hPP->GetYaxis()->SetTitleSize(0.04);
+//     hPP->GetYaxis()->SetTitleOffset(1.2);
+//     hPP->GetYaxis()->SetLabelSize(0.04);
+//     hPP->GetXaxis()->SetTitleSize(0.04);
+//     hPP->GetXaxis()->SetLabelSize(0.04);
     hPP->Draw();
   }
   else {
     hDraw=new TH2D(Form("hDraw%d",10*quantity+binass),"",100,0,25,200,0,10);
     hDraw->GetYaxis()->SetTitle("");      
-    hPP->GetYaxis()->SetTitle("");      
+    //    hPP->GetYaxis()->SetTitle("");      
 
     hDraw->GetXaxis()->SetRangeUser(0,17.5);
     hDraw->GetYaxis()->SetTitleFont(43);
@@ -775,19 +922,19 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
     }
 
     // Set same drawing settings also to hPP: not needed, just to have it also in that histo
-    hPP->GetXaxis()->SetRangeUser(0,16.9);
-    hPP->GetYaxis()->SetTitleFont(43);
-    hPP->GetYaxis()->SetLabelFont(43);
-    hPP->GetXaxis()->SetTitleFont(43);
-    hPP->GetXaxis()->CenterTitle();
-    hPP->GetYaxis()->CenterTitle();
-    hPP->GetXaxis()->SetLabelFont(43);
-    hPP->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-    hPP->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
-    hPP->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
-    hPP->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-    hPP->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-    hPP->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+//     hPP->GetXaxis()->SetRangeUser(0,16.9);
+//     hPP->GetYaxis()->SetTitleFont(43);
+//     hPP->GetYaxis()->SetLabelFont(43);
+//     hPP->GetXaxis()->SetTitleFont(43);
+//     hPP->GetXaxis()->CenterTitle();
+//     hPP->GetYaxis()->CenterTitle();
+//     hPP->GetXaxis()->SetLabelFont(43);
+//     hPP->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+//     hPP->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+//     hPP->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+//     hPP->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+//     hPP->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+//     hPP->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     
     hDraw->Draw();
     hPP->Draw("same");
@@ -801,33 +948,33 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
     hPP->GetYaxis()->SetRangeUser(0,TMath::Max(maxRangePP[binass][quantity],maxRangePPb[binass][quantity]));
   }
  
-  hPP->SetLineColor(colSystem[0]);
-  hPP->SetLineWidth(2);
-  hPP->SetMarkerColor(colSystem[0]);
-  hPP->SetMarkerStyle(20);
-  hPP->SetMarkerSize(markersize);
+//   hPP->SetLineColor(colSystem[0]);
+//   hPP->SetLineWidth(2);
+//   hPP->SetMarkerColor(colSystem[0]);
+//   hPP->SetMarkerStyle(20);
+//   hPP->SetMarkerSize(markersize);
 
-  grPP->SetMarkerColor(colSystem[0]);
-  grPP->SetLineColor(colSystem[0]);
-  grPP->SetLineWidth(2);
-  grPP->SetMarkerStyle(20);
-  grPP->SetMarkerSize(markersize);
+//   grPP->SetMarkerColor(colSystem[0]);
+//   grPP->SetLineColor(colSystem[0]);
+//   grPP->SetLineWidth(2);
+//   grPP->SetMarkerStyle(20);
+//   grPP->SetMarkerSize(markersize);
   grPP->Draw("E2");
   
   
 
   hPPb->Draw("same");
-  hPPb->SetLineColor(colSystem[1]);
-  hPPb->SetLineWidth(2);
-  hPPb->SetMarkerColor(colSystem[1]);
-  hPPb->SetMarkerStyle(21);
-  hPPb->SetMarkerSize(markersize);
-  grPPb->SetMarkerColor(colSystem[1]);
-  grPPb->SetLineColor(colSystem[1]);
-  grPPb->SetLineWidth(2);
-  grPPb->SetMarkerStyle(21);
+//   hPPb->SetLineColor(colSystem[1]);
+//   hPPb->SetLineWidth(2);
+//   hPPb->SetMarkerColor(colSystem[1]);
+//   hPPb->SetMarkerStyle(21);
+//   hPPb->SetMarkerSize(markersize);
+//   grPPb->SetMarkerColor(colSystem[1]);
+//   grPPb->SetLineColor(colSystem[1]);
+//   grPPb->SetLineWidth(2);
+//   grPPb->SetMarkerStyle(21);
   grPPb->Draw("E2");
-  grPPb->SetMarkerSize(markersize);
+//   grPPb->SetMarkerSize(markersize);
 
   if(style==-1){
     TLegend *legend=GetLegendDataPoints(hPP,hPPb,10*quantity+binass);
@@ -879,7 +1026,7 @@ void InitMCobjects(){
 }
 
 
-TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0){
+TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegendOptions=0,Int_t drawMCasLines=0){
   Int_t system=collsystem;
   if(system==0){
     Printf("Opening file: %s", Form("%s/Trends_%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPP.Data(),strSystem[system].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()));
@@ -906,10 +1053,11 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       pd->cd();
     }
   }
-  Int_t neffmod=CountNmodels();
+  Int_t neffmod=CountNmodels();//InLegend();
   TLegend * legend;
   if(style==-1){
     legend= new TLegend(0.61,0.54,0.95,0.54+neffmod*0.05);
+    //    legend= new TLegend(0.61,0.54,0.95,0.54+neffmod*0.08);
     legend->SetFillColor(0);
     legend->SetFillStyle(0);
     legend->SetBorderSize(0);
@@ -971,11 +1119,11 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     //  hData[0]->Draw("E0X0");// to avoid plotting the error along x
     if(system==0)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePP[binass][quantity]);
     if(system==1)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePPb[binass][quantity]);
-
-    hData[0]->SetLineColor(kBlack);
+    
+    hData[0]->SetLineColor(colSystem[system]);
     hData[0]->SetLineWidth(2);
-    hData[0]->SetMarkerColor(kBlack);
-    hData[0]->SetMarkerStyle(20);
+    hData[0]->SetMarkerColor(colSystem[system]);
+    hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
     
   }
@@ -1025,10 +1173,13 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     hData[0]->Draw("same");
   }
   hData[0]->SetMarkerSize(markersize);
-    grData[0]->SetMarkerColor(kBlack);
-    grData[0]->SetLineColor(kBlack);
+  hData[0]->SetMarkerStyle(markerStyle[system]);
+  hData[0]->SetLineColor(colSystem[system]);
+  hData[0]->SetMarkerColor(colSystem[system]);
+    grData[0]->SetMarkerColor(colSystem[system]);
+    grData[0]->SetLineColor(colSystem[system]);
     grData[0]->SetLineWidth(2);
-    grData[0]->SetMarkerStyle(20);
+    grData[0]->SetMarkerStyle(markerStyle[system]);
     grData[0]->SetMarkerSize(markersize);
     grData[0]->Draw("E2");
     
@@ -1036,15 +1187,15 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     
     if(collsystem==-1){    
       hData[1]->Draw("same");
-      hData[1]->SetLineColor(kRed);
+      hData[1]->SetLineColor(colSystem[1]);
       hData[1]->SetLineWidth(2);
-      hData[1]->SetMarkerColor(kRed);
-      hData[1]->SetMarkerStyle(21);
+      hData[1]->SetMarkerColor(colSystem[1]);
+      hData[1]->SetMarkerStyle(markerStyle[1]);
       hData[1]->SetMarkerSize(markersize);
-      grData[1]->SetMarkerColor(kRed);
-      grData[1]->SetLineColor(kRed);
+      grData[1]->SetMarkerColor(colSystem[1]);
+      grData[1]->SetLineColor(colSystem[1]);
       grData[1]->SetLineWidth(2);
-      grData[1]->SetMarkerStyle(21);
+      grData[1]->SetMarkerStyle(markerStyle[1]);
       grData[1]->SetMarkerSize(markersize);
       grData[1]->Draw("E2");
     }
@@ -1076,9 +1227,17 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       hMC[kmc]->SetName(Form("%s%s",hMC[kmc]->GetName(),strModelDir[kmc].Data()));
       
       pd->cd();
-      hMC[kmc]->Draw("same");
+      if(drawMCasLines==2){
+	hMC[kmc]->Draw("C X0 same");
+      }
+      else{
+	hMC[kmc]->Draw("same");
+      }
       hMC[kmc]->SetLineColor(modelColors[kmc]);
       hMC[kmc]->SetLineWidth(2);
+      if(drawMCasLines==1){
+	hMC[kmc]->SetLineStyle(2);
+      }
       hMC[kmc]->SetMarkerColor(modelColors[kmc]);
       hMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
       hMC[kmc]->SetMarkerSize(markersizeMC);
@@ -1089,9 +1248,26 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       grMC[kmc]->SetFillStyle(3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
       grMC[kmc]->SetMarkerSize(markersizeMC);
-      grMC[kmc]->Draw("E5");
+      if(drawMCasLines==2){
+	grMC[kmc]->Draw("C0");
+      }
+      else {
+	grMC[kmc]->Draw("E5");
+      }
       
-      if(legend)legend->AddEntry(hMC[kmc],Form("%s",strModelDir[kmc].Data()),"lep");  
+      //      if(legend)legend->AddEntry(hMC[kmc],Form("%s",strModelDir[kmc].Data()),"lep");  
+      if(legend&&includeinlegend[kmc]){
+	if(kmc==6){
+	  strModelDirLeg[6].ReplaceAll(" EPS09","");
+	  legend->AddEntry(hMC[kmc],Form("%s",strModelDirLeg[kmc].Data()),"lep");  
+	  legend->AddEntry((TObject*)0,"with EPS09 nPDF","");  
+	}
+	else {
+	  legend->AddEntry(hMC[kmc],Form("%s",strModelDirLeg[kmc].Data()),"lep");  
+	}
+      }
+      
+
     }
     
     if(legend)legend->Draw();
@@ -1181,8 +1357,8 @@ void CompareFitResultsPPtoPPbUniqueCanvas(){
     return;
   }  
 
-  Int_t orderAssoc[3]={2,1,0};  
-  for(Int_t jp=0;jp<=2;jp++){
+  Int_t orderAssoc[3]={2,0,1};  
+  for(Int_t jp=0;jp<=2;jp++){// First loop for NS yield
     Int_t needTitle=0;
     if(jp==0)needTitle=2;
     gStyle->SetOptStat(0000);
@@ -1204,11 +1380,25 @@ void CompareFitResultsPPtoPPbUniqueCanvas(){
     }
     TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp]);
     tlAssYieldPt->Draw();
+    if(jp==2){
+      TLatex *tlPythiaStatement=new TLatex(0.13*gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"<7% variation expected from different");
+      TLatex *tlPythiaStatementTwo=new TLatex(0.1*gPad->GetWNDC()+gPad->GetLeftMargin(),0.25/gPad->GetHNDC()+gPad->GetBottomMargin(),"energy and rapidity (Pythia, Perugia 2011)");//"#frac{Assoc. yield (#sqrt{#it{s}}=7 TeV, |#it{y}^{D}_{cms}|<0.5)}{Assoc. yield(#sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04)}~1.07");
+      tlPythiaStatement->SetTextAlign(11);
+      tlPythiaStatement->SetTextFont(43);
+      tlPythiaStatement->SetNDC();
+      tlPythiaStatement->SetTextSize(20*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlPythiaStatement->Draw();
+      tlPythiaStatementTwo->SetTextAlign(11);
+      tlPythiaStatementTwo->SetTextFont(43);
+      tlPythiaStatementTwo->SetNDC();
+      tlPythiaStatementTwo->SetTextSize(20*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlPythiaStatementTwo->Draw();
+    }
  
     gStyle->SetOptStat(0000);   
   }
-  
-  for(Int_t jp=0;jp<=2;jp++){
+
+  for(Int_t jp=0;jp<=2;jp++){// second loop --> sigma
     Int_t needTitle=0;
     if(jp==0)needTitle=3;
     else needTitle=1;
@@ -1463,7 +1653,7 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     return;
   }  
 
-  Int_t orderAssoc[3]={2,1,0};  
+  Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
     Int_t needTitle=0;
     if(jp==0)needTitle=2;
@@ -1472,7 +1662,9 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     SetPadStyle(pd);
     pd->cd();    
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
-      CompareDatatoModels(0,orderAssoc[jp],0,pd,100000+needTitle);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
+      includeinlegend[3]=kFALSE;
+      includeinlegend[4]=kFALSE;
+      CompareDatatoModels(0,orderAssoc[jp],0,pd,100000+needTitle+100);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle);//+1000000);    
@@ -1482,6 +1674,11 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
       tlSide->Draw();
     }
     else if(jp==2){
+      includeinlegend[0]=kFALSE;
+      includeinlegend[1]=kFALSE;
+      includeinlegend[2]=kFALSE;
+      includeinlegend[3]=kTRUE;
+      includeinlegend[4]=kTRUE;
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle+100);    
     }
     else{
@@ -1557,6 +1754,155 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
 
 
 
+void CompareFitResultsPPtoPpbAndMCUniqueCanvas(){
+  gStyle->SetOptStat(0000);
+  Init3x3Settings();
+  TCanvas *cFinalPaperStyle;
+  if(skip3to5){
+    cFinalPaperStyle=new TCanvas("cPPvsMCFitResultsFinalPaperStyle","pp vs. MC fit results ",canvasheight,canvasheight);
+    //SetPadStyle(cFinalPaperStyle);
+    //    cFinalPaperStyle->SetBottomMargin(0);
+    //    cFinalPaperStyle->SetTopMargin(0);
+    cFinalPaperStyle->Divide(3,3,0.0,0.0,0);
+    cFinalPaperStyle->SetTicky();
+    cFinalPaperStyle->SetTickx();
+    cFinalPaperStyle->SetFrameBorderMode(0);
+
+    Set3x3PadPositions(cFinalPaperStyle);
+    cFinalPaperStyle->Modified();
+    cFinalPaperStyle->Update();
+    //    Convert3x2Matrix(cFinalPaperStyle,kTRUE);
+  }
+  else{
+    Printf("NOT READY YET");
+    return;
+  }  
+
+  Int_t orderAssoc[3]={2,0,1};  
+  for(Int_t jp=0;jp<=2;jp++){// first loop -> assoc yield
+    Int_t needTitle=0;
+    if(jp==0)needTitle=2;
+    gStyle->SetOptStat(0000);
+    TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+1);
+    SetPadStyle(pd);
+    pd->cd();    
+    if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
+      includeinlegend[3]=kFALSE;
+      includeinlegend[4]=kFALSE;
+      CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle,1+100);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
+    }
+    else if(jp==0){// identifier set as: 10*quantity+binass; NS:
+      CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle,1);//+1000000);          
+      TLatex *tlALICE=GetALICEtext(orderAssoc[jp]);
+      tlALICE->Draw();
+      TLatex *tlSide=GetTextSide(0,orderAssoc[jp]);
+      tlSide->Draw();
+    }
+    else if(jp==2){
+      includeinlegend[0]=kFALSE;
+      includeinlegend[1]=kFALSE;
+      includeinlegend[2]=kFALSE;
+      includeinlegend[3]=kTRUE;
+      includeinlegend[4]=kFALSE;
+      CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle+100,1);    
+    }
+    else{
+      CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle,1);    
+    }
+
+    TGraphAsymmErrors *grPPb;
+    TH1D *hPPb=GetAndPreparePPb(orderAssoc[jp],0,grPPb);
+    Printf("PPb histo and graph: %p, %p",hPPb,grPPb);
+    pd->cd();
+    hPPb->Draw("same");
+    grPPb->Draw("E2");
+
+    if(jp==1){
+      TH1D *hPP=(TH1D*)pd->FindObject("FinalTrendNSYieldPP");
+      TLegend *legend=GetLegendDataPoints(hPP,hPPb,orderAssoc[jp]);
+      legend->SetX1(0.02/gPad->GetWNDC()+gPad->GetLeftMargin());
+      legend->SetX2(0.16/gPad->GetWNDC()+gPad->GetLeftMargin());
+      legend->SetY1(0.11/gPad->GetHNDC()+gPad->GetBottomMargin());
+      legend->SetY2(0.2/gPad->GetHNDC()+gPad->GetBottomMargin());
+      legend->Draw();
+    }
+    TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp],0);
+    tlAssYieldPt->Draw();
+ 
+    if(jp==2){
+      TLatex *tlDeta=GetDRapForSystem(0,orderAssoc[jp],1);
+      tlDeta->Draw();
+    }
+      gStyle->SetOptStat(0000);   
+  }
+  
+  for(Int_t jp=0;jp<=2;jp++){// second loop -> sigma
+    Int_t needTitle=0;
+    gStyle->SetOptStat(0000);
+    TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+4);
+    SetPadStyle(pd);
+    pd->cd();
+    if(jp==0)needTitle=2;
+    gStyle->SetOptStat(0000);
+    CompareDatatoModels(0,orderAssoc[jp],1,pd,needTitle,1);    
+
+  
+    TGraphAsymmErrors *grsigmaPPb;
+    TH1D *hPPbsigma=GetAndPreparePPb(orderAssoc[jp],1,grsigmaPPb);
+    pd->cd();
+    hPPbsigma->Draw("same");
+    grsigmaPPb->Draw("E2");
+
+    /* NOTHING NEEDS TO BE WRITTEN IN BOTTOM ROW
+       if(jp==1){// identifier set as: 10*quantity+binass; Sigma --> 1 ; binass == orderAssoc[jp]
+      TLegend *legend=GetLegendDataPoints(hPP,hPPb,10+orderAssoc[jp]);
+      legend->Draw();
+    }
+    if(jp==0){// identifier set as: 10*quantity+binass; NS:
+      TLatex *tlALICE=GetALICEtext(10+orderAssoc[jp]);
+      tlALICE->Draw();
+      TLatex *tlSide=GetTextSide(0,10+orderAssoc[jp]);
+      tlSide->Draw();
+
+    }
+    TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],10+orderAssoc[jp]);
+    tlAssYieldPt->Draw();
+    */
+
+    gStyle->SetOptStat(0000);   
+  }
+
+  for(Int_t jp=0;jp<=2;jp++){ // third loop -> baseline
+    Int_t needTitle=0;
+    if(jp==0)needTitle=3;
+    else needTitle=1;
+    gStyle->SetOptStat(0000);
+    TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+7);
+    SetPadStyle(pd);
+    pd->cd();
+    gStyle->SetOptStat(0000);
+    CompareDatatoModels(0,orderAssoc[jp],2,pd,needTitle,1);    
+    gStyle->SetOptStat(0000);   
+  }
+  for(Int_t j=9;j>=1;j--){
+    TPad *pd=(TPad*)cFinalPaperStyle->cd(j);
+    pd->Draw();
+  }
+
+  cFinalPaperStyle->Modified();
+  cFinalPaperStyle->Update();
+  cFinalPaperStyle->SaveAs("ComparePPtoPPbandPPMCFitResults.root");
+  cFinalPaperStyle->SaveAs("ComparePPtoPPbandPPMCFitResults.eps");
+  cFinalPaperStyle->SaveAs("ComparePPtoPPbandPPMCFitResults.png");
+  cFinalPaperStyle->SaveAs("ComparePPtoPPbandPPMCFitResults.pdf");
+
+  return;
+
+}
+
+
+
+
 
 
 
@@ -1584,7 +1930,7 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
     return;
   }  
 
-  Int_t orderAssoc[3]={2,1,0};  
+  Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
     Int_t needTitle=0;
     if(jp==0)needTitle=2;
@@ -1593,7 +1939,10 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
     SetPadStyle(pd);
     pd->cd();    
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
-      CompareDatatoModels(1,orderAssoc[jp],0,pd,100000+needTitle);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
+      includeinlegend[3]=kFALSE;
+      includeinlegend[4]=kFALSE;
+      includeinlegend[6]=kFALSE;
+      CompareDatatoModels(1,orderAssoc[jp],0,pd,100000+needTitle+100);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
       CompareDatatoModels(1,orderAssoc[jp],0,pd,needTitle);    
@@ -1603,6 +1952,12 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
       tlSide->Draw();
     }
     else if(jp==2){
+      includeinlegend[0]=kFALSE;
+      includeinlegend[1]=kFALSE;
+      includeinlegend[2]=kFALSE;
+      includeinlegend[3]=kFALSE;
+      includeinlegend[4]=kFALSE;
+      includeinlegend[6]=kTRUE;
       CompareDatatoModels(1,orderAssoc[jp],0,pd,needTitle+100);    
       TLatex *tlDeta=GetDRapForSystem(0,orderAssoc[jp],1);
       tlDeta->Draw();

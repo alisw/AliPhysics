@@ -11,8 +11,10 @@
 //#include "AliFemtoHisto.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctnNonIdDR)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnNonIdDR);
+  /// \endcond
 #endif
 
 //____________________________

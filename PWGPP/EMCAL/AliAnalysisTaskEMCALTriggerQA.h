@@ -29,6 +29,8 @@ class AliEMCALRecoUtils;
 class AliAnalysisTaskEMCALTriggerQA : public AliAnalysisTaskSE 
 {
 public:
+
+  AliAnalysisTaskEMCALTriggerQA();                   // default constructor
   
   AliAnalysisTaskEMCALTriggerQA(const char *name);   // named constructor
   
@@ -42,7 +44,7 @@ public:
   
   void   FillClusterHistograms(Int_t triggerNumber, Bool_t maxCluster,
                                Float_t e,Float_t eta,Float_t phi,
-                               Float_t ietamax,Float_t iphimax,
+                               Float_t ietamax,Float_t iphimax, Int_t sm,
                                Float_t centrality, Float_t v0AC);
   
   void   FillCorrelationHistograms();
@@ -95,11 +97,18 @@ public:
 
   void   SwitchOnV0SignalHistograms()    { fFillV0SigHisto    = kTRUE   ; }
   void   SwitchOffV0SignalHistograms()   { fFillV0SigHisto    = kFALSE  ; }
+
+  void   SwitchOnCentralityHistograms()  { fFillCenHisto      = kTRUE   ; }
+  void   SwitchOffCentralityHistograms() { fFillCenHisto      = kFALSE  ; }
   
   void   SwitchOnClusterAcceptanceHistograms()  { fFillClusAcceptHisto = kTRUE   ; }
   void   SwitchOffClusterAcceptanceHistograms() { fFillClusAcceptHisto = kFALSE  ; }
   
-  void   SetOADBFilePath(TString path)   { fOADBFilePath      = path    ; }
+  void   SetSuperModulesRange(Int_t min, Int_t max) { fFirstSM = min ; if(max < 20) fLastSM = max ; else fLastSM = 19 ; }
+  
+  void   SetCentralityEstimator(TString est) { fCentEstimator  = est    ; }
+  
+  void   SetOADBFilePath(TString path)       { fOADBFilePath   = path   ; }
   
   // Histogram setters
 
@@ -139,16 +148,27 @@ private:
   Float_t           fV0C;             ///<  V0 C signal
   
   Bool_t            fFillV0SigHisto;  ///<  V0 signal creation and fill
+  Bool_t            fFillCenHisto;    ///<  Centrality histograms creation and fill
   Bool_t            fFillClusAcceptHisto; ///<  Fill eta/phi distributions
   Bool_t            fMCData;          ///<   Simulation On/Off
-
+  Int_t             fFirstSM;         ///<  Fill SM histograms for SM >= fFirstSM
+  Int_t             fLastSM;          ///<  Fill SM histograms for SM <= fLastSM
+  
+  TString           fCentEstimator;   ///< Centrality estimator string: V0M, TKL, FMD, ZEMvsZDC, ...
+  
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      ///<  Bit for MB events
   Bool_t            fEventL0   ;      ///<  Bit for L0 events
+  Bool_t            fEventL0D  ;      ///<  Bit for L0 events, DCal
   Bool_t            fEventL1G  ;      ///<  Bit for L1 Gamma 1 events
+  Bool_t            fEventL1GD  ;     ///<  Bit for L1 Gamma 1 events, DCal
   Bool_t            fEventL1G2 ;      ///<  Bit for L1 Gamma 2 events
+  Bool_t            fEventL1G2D ;     ///<  Bit for L1 Gamma 2 events, DCal
   Bool_t            fEventL1J  ;      ///<  Bit for L1 Jet 1 events
+  Bool_t            fEventL1JD  ;     ///<  Bit for L1 Jet 1 events, DCal
   Bool_t            fEventL1J2 ;      ///<  Bit for L1 JEt 2 events
+  Bool_t            fEventL1J2D ;     ///<  Bit for L1 JEt 2 events, DCal
+
   Bool_t            fEventCen  ;      ///<  Bit for Central events
   Bool_t            fEventSem  ;      ///<  Bit for Semi Central events
   
@@ -207,17 +227,25 @@ private:
   TH2F             *fhL1J2PatchMax;           //!<! FOR of max. amplitude patch with L1 Jet patch associated
   
   ///< Cluster vs trigger histograms enum with trigger types.
-  enum triggerType{ kMBTrig                = 0,  kL0Trig            = 1,
-                    kL1GammaTrig           = 2,  kL1GammaTrig2      = 3,
-                    kL1JetTrig             = 4,  kL1JetTrig2        = 5,
-                    kL1GammaOnlyTrig       = 6,  kL1JetOnlyTrig     = 7,
-                    kL1Gamma2OnlyGammaTrig = 8,  kL1Jet2OnlyJetTrig = 9,
-                    kCentralTrig           = 10, kSemiCentralTrig   = 11 };
+  enum triggerType{ kMBTrig                = 0,  
+                    kL0Trig                = 1,  kL0TrigD                = 2,
+                    kL1GammaTrig           = 3,  kL1GammaTrigD           = 4, 
+                    kL1GammaTrig2          = 5,  kL1GammaTrig2D          = 6,
+                    kL1JetTrig             = 7,  kL1JetTrigD             = 8,
+                    kL1JetTrig2            = 9,  kL1JetTrig2D            = 10,
+                    kL1GammaOnlyTrig       = 11, kL1GammaOnlyTrigD       = 12,  
+                    kL1JetOnlyTrig         = 13, kL1JetOnlyTrigD         = 14,
+                    kL1Gamma2OnlyGammaTrig = 15, kL1Gamma2OnlyGammaTrigD = 16,  
+                    kL1Jet2OnlyJetTrig     = 17, kL1Jet2OnlyJetTrigD     = 18,
+                    kL0TrigPureEMC         = 19, kL0TrigPureDMC          = 20,
+                    kL1GTrigPureEMC        = 21, kL1GTrigPureDMC         = 22,
+                    kL1JTrigPureEMC        = 23, kL1JTrigPureDMC         = 24,
+                    kCentralTrig           = 25, kSemiCentralTrig        = 26 };
   
   TH1F             *fhClusMBPure[3];                                 //!<! Clusters E distribution for pure MB trigger
   TH1F             *fhClusMaxMBPure[3];                              //!<! Maximum E Cluster per event distribution for pure MB trigger
   
-  static const int  fgkTriggerCombi = 12;                            ///<  Total number of trigger combinations defined above
+  static const int  fgkTriggerCombi = 27;                            ///<  Total number of trigger combinations defined above
   
   TH1F             *fhClus   [fgkTriggerCombi];                      //!<! Clusters E distribution for a trigger
   TH1F             *fhClusMax[fgkTriggerCombi];                      //!<! Maximum E Cluster per event distribution for MB trigger
@@ -228,6 +256,10 @@ private:
   TH2F             *fhClusV0   [fgkTriggerCombi];                    //!<! Clusters V0 vs E distribution for a trigger
   TH2F             *fhClusV0Max[fgkTriggerCombi];                    //!<! Maximum E Cluster  vs Centrality per event distribution for a trigger
 
+  TH1F             *fhClusSM   [fgkTriggerCombi][20];                //!<! Clusters E distribution for a trigger, per SM
+  TH2F             *fhClusCenSM[fgkTriggerCombi][20];                //!<! Clusters Centrality vs E distribution for a trigger, per SM
+  TH2F             *fhClusV0SM [fgkTriggerCombi][20];                //!<! Clusters V0 vs E distribution for a trigger, per SM
+  
   TH2F             *fhClusEta   [fgkTriggerCombi];                   //!<! Clusters eta vs E distribution for a trigger
   TH2F             *fhClusEtaMax[fgkTriggerCombi];                   //!<! Maximum E Cluster  vs Eta per event distribution for a trigger
 
@@ -246,7 +278,8 @@ private:
   TH2F             *fhClusEtaPhiLowCellMax      [fgkTriggerCombi];   //!<! Clusters maximum energy cell index eta vs phi distribution for a trigger, energy below fEtaPhiEnMin GeV
   TH2F             *fhClusEtaPhiLowCellMaxCluMax[fgkTriggerCombi];   //!<! Maximum E Cluster, maximum energy cell index Phi vs Eta per event distribution for MB trigger, energy below fEtaPhiEnMin GeV
 
-  TH1F             *fhV0[fgkTriggerCombi];//! V0 distribution for a triggered event
+  TH1F             *fhV0[fgkTriggerCombi];                           //!<! V0 distribution for a triggered event
+  TH1F             *fhCentrality[fgkTriggerCombi];                   //!<! Centrality distribution for a triggered event
 
   // Histograms bins
   
@@ -271,7 +304,7 @@ private:
   //static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2;   // total number
     
   /// Total number of fake altro rows in EMCAL, temporary, not considers DCal yet (ALTRO channels in one SM times 5 SM divided by 2 per FALTRO)
-  static const int  fgkFALTRORows = 60; //AliEMCALGeoParams::fgkEMCALSTURows-4;
+  static const int  fgkFALTRORows = 104; // 60 //AliEMCALGeoParams::fgkEMCALSTURows-4;
   
   /// Total number of fake altro collumns in EMCAL,  (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALSTUCols;
@@ -298,7 +331,7 @@ private:
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 14) ;
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 17) ;
   /// \endcond
 
 };

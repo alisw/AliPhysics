@@ -75,6 +75,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void Make(AliFlowEventSimple *anEvent);
    virtual Bool_t CrossCheckInternalFlags(AliFlowEventSimple *anEvent);
    virtual void CrossCheckPointersUsedInMake(); 
+   virtual void DetermineRandomIndices(AliFlowEventSimple *anEvent);
    virtual void FillControlHistograms(AliFlowEventSimple *anEvent);
    virtual void FillQvector(AliFlowEventSimple *anEvent);
    virtual void CalculateCorrelations(AliFlowEventSimple *anEvent);
@@ -117,6 +118,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetAnalysisTag(const char *at) {this->fAnalysisTag = TString(at);};
   TString GetAnalysisTag() const {return this->fAnalysisTag;};
   void SetDumpThePoints(Bool_t dtp, Int_t max) {this->fDumpThePoints = dtp; this->fMaxNoEventsPerFile = max;};
+  void SetSelectRandomlyRPs(Int_t nSelectedRandomlyRPs) {this->fSelectRandomlyRPs = kTRUE; this->fnSelectedRandomlyRPs = nSelectedRandomlyRPs;};
 
   //  5.1.) Control histograms:  
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -144,6 +146,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetnBinsMult(const char *type, Int_t nBinsMult); // .cxx
   void SetMinMult(const char *type, Double_t minMult); // .cxx
   void SetMaxMult(const char *type, Double_t maxMult); // .cxx
+  void SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries); // .cxx
 
   //  5.2.) Q-vectors:
   void SetQvectorList(TList* const qvl) {this->fQvectorList = qvl;};
@@ -304,6 +307,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
   TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
   virtual Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k=0);
+  Bool_t TrackIsInSpecifiedIntervals(AliFlowTrackSimple *);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -332,6 +336,9 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   TString fAnalysisTag;        // tag internally this analysis
   Bool_t fDumpThePoints;       // dump the data points into the external file 
   Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
+  Bool_t fSelectRandomlyRPs;   // enable random shuffling to estimate 'fake flow'
+  Int_t fnSelectedRandomlyRPs; // how many RPs will be taken for the analysis after random shuffling?
+  TArrayI *fRandomIndicesRPs;  // well, these are random indices...
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
@@ -350,6 +357,10 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fnBinsMult[3];                  // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMinMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMaxMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Bool_t fSkipSomeIntervals;            // skip intervals in phi, pt and eta
+  Int_t fNumberOfSkippedRPParticles;    // TBI temp gym
+  Double_t fSkip[3][10];                // determine intervals in phi, pt and eta to be skipped. TBI hardwired is max 5 intervals. TBI promote this eventually to AFTC class
+
 
   // 2.) Q-vectors:
   TList *fQvectorList;           // list to hold all Q-vector objects       
@@ -442,7 +453,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   //Int_t fnHighestHarmonicSPC;       // highest harmonic for evaluation of generic correlators TBI implement this more differentially
   //Int_t fnHighestOptimizerSPC;      // highest optimizer TBI implement this more differentially
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,3);
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,5);
 
 };
 

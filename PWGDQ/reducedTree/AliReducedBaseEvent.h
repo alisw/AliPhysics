@@ -9,15 +9,23 @@
 #include <TClonesArray.h>
 
 class AliReducedBaseTrack;
+class AliReducedPairInfo;
 
 //_________________________________________________________________________
 class AliReducedBaseEvent : public TObject {
 
   friend class AliAnalysisTaskReducedTreeMaker;     // friend analysis task which fills the object
-
+  
+ public:
+  enum ETrackOption {
+     kNoInit=0,
+     kUseBaseTracks,            // use AliReducedBaseTrack for the track array
+     kUseReducedTracks            // use AliReducedTrackInfo for the track array
+  };
+  
  public:
   AliReducedBaseEvent();
-  AliReducedBaseEvent(const Char_t* name);
+  AliReducedBaseEvent(const Char_t* name, Int_t trackOption=kNoInit);
   virtual ~AliReducedBaseEvent();
 
   // getters
@@ -25,6 +33,7 @@ class AliReducedBaseEvent : public TObject {
   Bool_t    EventTag(UShort_t bit)            const {return (bit<8*sizeof(ULong64_t) ? (fEventTag&(ULong64_t(1)<<bit)) : kFALSE);}
   Int_t     RunNo()                           const {return fRunNo;}
   Float_t   Vertex(Int_t axis)                const {return (axis>=0 && axis<=2 ? fVtx[axis] : 0);}
+  Int_t     VertexNContributors()             const {return fNVtxContributors;}
   Float_t   CentralityVZERO()                 const {return fCentrality[0];}
   Float_t   CentralitySPD()                   const {return fCentrality[1];}
   Float_t   CentralityTPC()                   const {return fCentrality[2];}
@@ -35,29 +44,41 @@ class AliReducedBaseEvent : public TObject {
   Int_t     CentralityQuality()               const {return fCentQuality;}
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
+  Int_t     NV0CandidatesTotal()              const {return fNV0candidates[0];}
+  Int_t     NV0Candidates()                   const {return fNV0candidates[1];}
   
   AliReducedBaseTrack* GetTrack(Int_t i) const {return (i<fNtracks[1] ? (AliReducedBaseTrack*)fTracks->At(i) : 0x0);}
   TClonesArray* GetTracks()          const {return fTracks;}
   
+  AliReducedPairInfo* GetV0Pair(Int_t i)         const 
+  {return (i>=0 && i<fNV0candidates[1] ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
+  TClonesArray* GetPairs()                       const {return fCandidates;}
+  
   Bool_t    TestEventTag(UShort_t iflag) const {return (iflag<8*sizeof(ULong64_t) ? fEventTag&(ULong64_t(1)<<iflag) : kFALSE);}
   Bool_t    SetEventTag(UShort_t iflag)        {if (iflag>=8*sizeof(ULong64_t)) return kFALSE; fEventTag|=(ULong64_t(1)<<iflag); return kTRUE;}
+  
+  virtual void ClearEvent();
   
  protected:
   ULong64_t fEventTag;              // Event tags to be used either during analysis or to filter events
   Int_t     fRunNo;                 // run number
   Float_t   fVtx[3];                // global event vertex vector in cm
+  Int_t     fNVtxContributors;      // global event vertex contributors
   Float_t   fCentrality[7];         // centrality; 0-V0M, 1-CL1, 2-TRK, 3-ZEMvsZDC, 4-V0A, 5-V0C, 6-ZNA
   Int_t     fCentQuality;           // quality flag for the centrality 
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
+  Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
     
   TClonesArray* fTracks;            //->   array containing particles
   static TClonesArray* fgTracks;    //       global tracks
   
-  void ClearEvent();
+  TClonesArray* fCandidates;        //->   array containing pair candidates
+  static TClonesArray* fgCandidates;  // pair candidates
+  
   AliReducedBaseEvent(const AliReducedBaseEvent &c);
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
 
-  ClassDef(AliReducedBaseEvent, 1);
+  ClassDef(AliReducedBaseEvent, 2);
 };
 
 #endif

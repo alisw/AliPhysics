@@ -168,16 +168,20 @@ void AliQnCorrectionsVarManager::SetDefaultVarNames() {
   fVariableNames[kNtracksSubEvLeft][0]            = "No.tracks sub-event left";        fVariableNames[kNtracksSubEvLeft][1] = "";  
   fVariableNames[kNtracksSubEvRight][0]           = "No.tracks sub-event right";       fVariableNames[kNtracksSubEvRight][1] = "";  
   fVariableNames[kNtracksEventPlane][0]           = "No.tracks";                       fVariableNames[kNtracksEventPlane][1] = "";  
+  fVariableNames[kSPDnSingleClusters][0]          = "No.SPD single clusters";          fVariableNames[kSPDnSingleClusters][1] = "";  
   fVariableNames[kSPDntracklets][0]               = "No.SPD tracklets";                fVariableNames[kSPDntracklets][1] = "";  
   fVariableNames[kSPDntrackletsCorr][0]           = "No.corrected SPD tracklets";      fVariableNames[kSPDntrackletsCorr][1] = "";
   for(Int_t ieta=0;ieta<16;++ieta) {
     fVariableNames[kSPDntrackletsEta+ieta][0] = Form("No.SPD tracklets in %.1f<#eta<%.1f", -1.6+0.2*ieta, -1.6+0.2*(ieta+1));
     fVariableNames[kSPDntrackletsEta+ieta][1] = "";
   }  
+  fVariableNames[kSPDtrackletEta][0]      = "SPD tracklet #eta";                fVariableNames[kSPDtrackletEta][1] = "";  
+  fVariableNames[kSPDtrackletPhi][0]      = "SPD tracklet #phi";                fVariableNames[kSPDtrackletPhi][1] = "";  
   fVariableNames[kEventMixingId][0]       = "Event mixing id";        fVariableNames[kEventMixingId][1] = "";  
   fVariableNames[kVZEROATotalMult][0]     = "Multiplicity VZERO-A";   fVariableNames[kVZEROATotalMult][1] = "";
   fVariableNames[kVZEROCTotalMult][0]     = "Multiplicity VZERO-C";   fVariableNames[kVZEROCTotalMult][1] = "";
   fVariableNames[kVZEROTotalMult][0]      = "Multiplicity VZERO";     fVariableNames[kVZEROTotalMult][1] = "";
+  fVariableNames[kVZEROMultPercentile][0] = "Multiplicity % VZERO";   fVariableNames[kVZEROMultPercentile][1] = "";
   fVariableNames[kTZEROATotalMult][0]     = "Multiplicity TZERO-A";   fVariableNames[kTZEROATotalMult][1] = "";
   fVariableNames[kTZEROCTotalMult][0]     = "Multiplicity TZERO-C";   fVariableNames[kTZEROCTotalMult][1] = "";
   fVariableNames[kTZEROTotalMult][0]      = "Multiplicity TZERO";     fVariableNames[kTZEROTotalMult][1] = "";

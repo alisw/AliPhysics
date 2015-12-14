@@ -665,8 +665,8 @@ AliJHistManager::AliJHistManager(TString name, TString dirname):
     if( dirname.Length() > 0 ) {
         fDirectory = (TDirectory*)gDirectory->Get(dirname);
         if( fDirectory ){
-            std::cout<<"JERROR : "<<Form("Hist directory %s is exists", dirname.Data() )<<std::endl;
-            gSystem->Exit(1);
+            std::cout<<"JWARNING : "<<Form("Hist directory %s exists", dirname.Data() )<<std::endl;
+            // gSystem->Exit(1);  // We might actually want the directory to exist, so no exit
         }
         if( !fDirectory ){
             fDirectory = gDirectory->mkdir( dirname );

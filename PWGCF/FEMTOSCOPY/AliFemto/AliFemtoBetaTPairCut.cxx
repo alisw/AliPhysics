@@ -8,9 +8,9 @@
 #include <TMath.h>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoBetaTPairCut)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoBetaTPairCut);
+  /// \endcond
 #endif
 
 //__________________

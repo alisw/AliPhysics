@@ -146,7 +146,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
         includeNoITS = kTRUE;
       }
       else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
-        aodfilterAna->SetAODFilterBits(256,512);
+        aodfilterAna->SetAODfilterBits(256,512);
         includeNoITS=kFALSE;
       }
       else {
@@ -202,10 +202,12 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
 
 
-
-  AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
-  AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
- // if (clusterCont) clusterCont->SetParticlePtCut(minPtCutCluster);
+ TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
+ cout<<"name des containers  "<<name.Data()<<endl;
+    AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+ //  AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
+  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
+ // if (clusterCont) clusterCont->SetClusPtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");

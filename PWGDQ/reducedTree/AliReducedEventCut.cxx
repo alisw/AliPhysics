@@ -62,15 +62,17 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj) {
   //
   // apply cuts
   //
-  if(obj->IsA()!=AliReducedEventInfo::Class()) return kFALSE;
-  
-  AliReducedEventInfo* ev = (AliReducedEventInfo*)obj;
-  
-  if(fCutOnEventTag && !(fEventTagMask&ev->EventTag())) return kFALSE;
-  if(fCutOnTriggerMask && !(fTriggerMask&ev->TriggerMask())) return kFALSE;
-  if(fCutOnVertexZ && (ev->Vertex(2)<fVertexZRange[0] || ev->Vertex(2)>fVertexZRange[1])) return kFALSE;
-  if(fCutOnCentralityVZERO && (ev->CentralityVZERO()<fCentVZERORange[0] || ev->CentralityVZERO()>fCentVZERORange[1])) return kFALSE;
-  if(fCutOnPhysicsSelection && !ev->IsPhysicsSelection()) return kFALSE;
+   if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE; 
+   AliReducedBaseEvent* baseEv = (AliReducedBaseEvent*)obj;
+   
+  AliReducedEventInfo* ev = NULL;
+  if(obj->IsA()==AliReducedEventInfo::Class()) ev = (AliReducedEventInfo*)obj;
+    
+  if(fCutOnEventTag && !(fEventTagMask&baseEv->EventTag())) return kFALSE;
+  if(fCutOnVertexZ && (baseEv->Vertex(2)<fVertexZRange[0] || baseEv->Vertex(2)>fVertexZRange[1])) return kFALSE;
+  if(fCutOnCentralityVZERO && (baseEv->CentralityVZERO()<fCentVZERORange[0] || baseEv->CentralityVZERO()>fCentVZERORange[1])) return kFALSE;
+  if(ev && fCutOnTriggerMask && !(fTriggerMask&ev->TriggerMask())) return kFALSE;
+  if(ev && fCutOnPhysicsSelection && !ev->IsPhysicsSelection()) return kFALSE;
   
   return kTRUE;
 }

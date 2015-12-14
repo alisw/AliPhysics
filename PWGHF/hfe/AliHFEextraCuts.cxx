@@ -80,7 +80,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fNumberKinkMothers(0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fPIDResponse(NULL)
 {
   //
   // Default Constructor
@@ -117,7 +118,8 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fNumberKinkMothers(c.fNumberKinkMothers),
   fCheck(c.fCheck),
   fQAlist(0x0),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fPIDResponse(c.fPIDResponse)
 {
   //
   // Copy constructor
@@ -163,6 +165,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fNumberKinkMothers = c.fNumberKinkMothers;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
+    fPIDResponse = c.fPIDResponse;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
     memcpy(fIPcutParam, c.fIPcutParam, sizeof(Float_t) * 4);
     if(IsQAOn()){
@@ -455,7 +458,11 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
 
   if(TESTBIT(fRequirements, kTOFPID)){
     // cut on TOF pid
-    if(track->GetStatus() & AliESDtrack::kTOFpid) SETBIT(survivedCut, kTOFPID);
+    //if(track->GetStatus() & AliESDtrack::kTOFpid) SETBIT(survivedCut, kTOFPID);
+    if(fPIDResponse){
+      AliPIDResponse::EDetPidStatus statuspidtof = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
+      if(statuspidtof==AliPIDResponse::kDetPidOk) SETBIT(survivedCut, kTOFPID);
+    }
   }
 
   if(TESTBIT(fRequirements, kTOFmismatch)){

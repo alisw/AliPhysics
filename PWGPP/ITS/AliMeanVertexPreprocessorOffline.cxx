@@ -504,8 +504,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 
     if(highMultEnvironment==kTRUE){
     
-      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 150, 300);
-      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 150, 300);
+      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 15, 300);
+      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 15, 300);
       
       nEntriesMultX = projXvsMult->GetEffectiveEntries();
       nEntriesMultY = projYvsMult->GetEffectiveEntries();

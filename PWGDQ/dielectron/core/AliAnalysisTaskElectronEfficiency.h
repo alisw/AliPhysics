@@ -35,6 +35,7 @@
 #include "AliAnalysisFilter.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
+#include "TObjArray.h"
 #include "TTreeStream.h"//why?
 
 class AliPIDResponse;
@@ -44,6 +45,7 @@ class TH3F;
 class TList;
 class AliESDEvent;
 class AliMCEvent;
+class AliDielectronSignalMC;
 
 
 class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
@@ -71,7 +73,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
   void          SetCentralityRange(Double_t min, Double_t max){fCentMin=min; fCentMax=max;}
-  void          SetCutInjectedSignal(Bool_t bCutInj)          {fCutInjectedSignal=bCutInj;}
+  void          SetCutInjectedSignal(Bool_t bCutInj)          { return; } //obsolete.
   void          SetNminEleInEventForRej(UInt_t nEle)          {fNminEleInEventForRej=nEle;}
   void          SetEtaRangeGEN(Double_t min, Double_t max)    {fEtaMinGEN=min; fEtaMaxGEN=max;}
   void          SetPtRangeGEN(Double_t min, Double_t max)     {fPtMinGEN=min; fPtMaxGEN=max;}
@@ -79,7 +81,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                    {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
+  void          SetResolution(TObjArray *arr)                 {fResArr=arr;}
   
+  
+  void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
   void          SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -105,7 +110,6 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //AliPIDResponse* GetPIDResponse() { return fPIDResponse; }
   
  private:
-  Bool_t        IsInjectedSignal(AliMCEvent* mcEventLocal, Int_t tracklabel);
   void          CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra);
   Double_t      PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
   const char*   GetParticleName(Int_t pdg) {
@@ -113,6 +117,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
     /**/          if(p1) return p1->GetName();
     /**/          return Form("%d", pdg);
     /**/        }
+  TVectorD*     GetPDGcodes();
   
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
@@ -122,13 +127,13 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH1*              fPostPIDCntrdCorrITS;     // post pid correction object for centroids in ITS
   TH1*              fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
   TBits*            fUsedVars;                // used variables by AliDielectronVarManager
-  
+  TObjArray*        fSignalsMC;               // array of AliDielectronSignalMC
+
   Bool_t            fDoPairing;
   Bool_t            fSelectPhysics;           // Whether to use physics selection
   UInt_t            fTriggerMask;             // Event trigger mask
   AliAnalysisCuts*  fEventFilter;             // event filter
   Bool_t            fRequireVtx;
-  Bool_t            fCutInjectedSignal;       // this flag is needed because the function IsInjectedSignal() doesnt behave properly when there are no injected signals. (e.g. in p-Pb MC)
   UInt_t            fNminEleInEventForRej;    // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
   Int_t             fSupportedCutInstance;    // for debugging
   //Int_t             fEventcount;
@@ -172,18 +177,22 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   Int_t                           fNmeeBins;
   Int_t                           fNpteeBins;
-  Double_t*                       fMeeBins;
-  Double_t*                       fPteeBins;
+  Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
+  Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
   TH2F*                           fNgenPairs;
-  TH2F*                           fNgenPairs2;
   std::vector<TH2F*>              fvRecoPairs;
   std::vector<TH2F*>              fvRecoPairs_poslabel;
   
   Bool_t                          fCalcResolution;
-  TH2F*                           fPtResolutionAndBrems;
   TH2F*                           fPtResolution;
-  TH2F*                           fPtResolutionAndBrems_poslabel;
   TH2F*                           fPtResolution_poslabel;
+  TH2F*                           fPResolution;
+  TH2F*                           fPResolution_poslabel;
+  TH2F*                           fEtaPhiResolution;
+  TH2F*                           fEtaResolution;
+  TH2F*                           fEtaResolution_poslabel;
+  TH2F*                           fPhiResolution;
+  TH2F*                           fPhiResolution_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
   
   TList*                          fOutputList; // ! output data container
@@ -234,20 +243,23 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Int_t     labelmotherT;
   Int_t     pdgmotherT;
   Int_t     labelgrandmotherT;
+  Int_t     pdggrandmotherT;
   //Float_t   pMC = 0;
   Float_t   pxMC;
   Float_t   pyMC;
   Float_t   pzMC;
-  UInt_t    selectedByCut; // bit mask
-  UInt_t    selectedByExtraCut; // bit mask
+  UInt_t    fSelectedByCut; // bit mask
+  UInt_t    fSelectedByExtraCut; // bit mask
   
+  TObjArray *fResArr;
+  TH3F      *fNgen_recoObs;
   //protected:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kEventStatBins};
 
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
   
-  ClassDef(AliAnalysisTaskElectronEfficiency, 2);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 4);
 };
 
 #endif

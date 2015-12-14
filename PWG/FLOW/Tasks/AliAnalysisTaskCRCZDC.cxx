@@ -193,7 +193,9 @@ fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
-fDataSet("2010")
+fDataSet("2010"),
+fStack(0x0),
+fCutTPC(kFALSE)
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -223,6 +225,10 @@ fDataSet("2010")
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(1);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
+ for(Int_t c=0; c<10; c++) {
+  fPtSpecGen[c] = NULL;
+  fPtSpecRec[c] = NULL;
+ }
 }
 
 //________________________________________________________________________
@@ -321,14 +327,16 @@ fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
-fDataSet(DataSet),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
+fDataSet(DataSet),
 fGenHeader(NULL),
 fPythiaGenHeader(NULL),
 fHijingGenHeader(NULL),
 fFlowTrack(NULL),
-fAnalysisUtil(NULL)
+fAnalysisUtil(NULL),
+fStack(0x0),
+fCutTPC(kFALSE)
 {
  
  for(int i=0; i<5; i++){
@@ -366,6 +374,11 @@ fAnalysisUtil(NULL)
  DefineOutput(1, AliFlowEventSimple::Class());
  DefineOutput(2, TList::Class());
  
+ for(Int_t c=0; c<10; c++) {
+  fPtSpecGen[c] = NULL;
+  fPtSpecRec[c] = NULL;
+ }
+
 }
 
 //________________________________________________________________________
@@ -379,10 +392,10 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fFlowEvent;
  delete fFlowTrack;
  delete fCutsEvent;
- if(fAnalysisUtil) delete fAnalysisUtil;
+ if (fAnalysisUtil) delete fAnalysisUtil;
  if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
- 
+ if (fStack) delete fStack;
 }
 
 //________________________________________________________________________
@@ -401,9 +414,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
  // Create the output containers
  
- if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC"))
+ if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC" || fAnalysisType == "MCESD"))
  {
-  AliError("WRONG ANALYSIS TYPE! only MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
+  AliError("WRONG ANALYSIS TYPE! only MCESD, MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
   exit(1);
  }
  
@@ -448,6 +461,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fQAList);
  }
  
+ Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
+ for(Int_t c=0; c<10; c++) {
+  fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
+  fOutput->Add(fPtSpecGen[c]);
+  fPtSpecRec[c] = new TH1F(Form("fPtSpecRec[%d]",c), Form("fPtSpecRec[%d]",c), 24, xmin);
+  fOutput->Add(fPtSpecRec[c]);
+ }
+
  fAnalysisUtil = new AliAnalysisUtils;
  
  for(int i=0; i<5; i++){
@@ -661,8 +682,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 {
  // Execute analysis for current event:
- AliMCEvent*  McEvent = MCEvent();
- AliAODEvent *aod =  dynamic_cast<AliAODEvent*>(InputEvent());
+ AliMCEvent* McEvent = MCEvent();
+ AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
+ AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
 // AliMultiplicity* myTracklets = NULL;
 // AliESDPmdTrack* pmdtracks = NULL;
 // int availableINslot=1;
@@ -761,6 +783,143 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
  }
  
+ if(fAnalysisType ==  "MCESD") {
+
+  fFlowEvent->ClearFast();
+
+  if(!esd) {
+   AliError("ERROR: Could not retrieve ESDEvent");
+   return;
+  }
+  if(!McEvent) {
+   AliError("ERROR: Could not retrieve MCEvent");
+   return;
+  }
+  AliStack* fStack = fMCEvent->Stack();
+  if(!fStack) {
+   AliError("ERROR: Could not retrieve MCStack");
+   return;
+  }
+
+  AliESDVertex *vertex = (AliESDVertex*) esd->GetPrimaryVertex();
+  if (!vertex) return;
+  if (TMath::Abs(vertex->GetZ()) > 10. ) return;
+  if (vertex->GetNContributors() < 1 ) return;
+  AliCentrality *centrality = esd->GetCentrality();
+  if (!centrality) return;
+  Double_t centr = centrality->GetCentralityPercentile("V0M");
+  if (centr<fCentrLowLim || centr>=fCentrUpLim ) return;
+  Int_t CenBin = -1;
+  if (centr>0. && centr<5.) CenBin=0;
+  if (centr>5. && centr<10.) CenBin=1;
+  if (centr>10. && centr<20.) CenBin=2;
+  if (centr>20. && centr<30.) CenBin=3;
+  if (centr>30. && centr<40.) CenBin=4;
+  if (centr>40. && centr<50.) CenBin=5;
+  if (centr>50. && centr<60.) CenBin=6;
+  if (centr>60. && centr<70.) CenBin=7;
+  if (centr>70. && centr<80.) CenBin=8;
+  if (centr>80. && centr<90.) CenBin=9;
+  if(CenBin==-1) return;
+
+  //Generated
+  Int_t MCPrims = 0;
+  for ( Int_t i=0 ; i<fStack->GetNtrack() ; i++ )  {
+
+   //Primaries Selection
+   TParticle *particle = (TParticle*)fStack->Particle(i);
+   if (!particle) continue;
+   if (!fStack->IsPhysicalPrimary(i)) continue;
+   if ( particle->GetPDG()->Charge() == 0.) continue;
+
+   //Kinematic Cuts
+   if ( particle->Pt()<0.2 || particle->Pt()>10. ) continue;
+   if ( TMath::Abs(particle->Eta())>0.8 ) continue;
+
+   fFlowTrack->SetPhi(particle->Phi());
+   fFlowTrack->SetEta(particle->Eta());
+   fFlowTrack->SetPt(particle->Pt());
+   fFlowTrack->SetSource(AliFlowTrack::kFromMC);
+   fFlowTrack->SetForRPSelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(0);
+   fFlowTrack->SetForPOISelection(kFALSE);
+   fFlowEvent->InsertTrack(fFlowTrack);
+   MCPrims++;
+
+   fPtSpecGen[CenBin]->Fill(particle->Pt());
+
+  }
+
+  //Reconstructed
+  Int_t ESDPrims = 0;
+  for (Int_t i=0 ; i<esd->GetNumberOfTracks() ; i++)  {
+
+   //Get reconstructed track
+   AliVTrack *vtrack = static_cast<AliVTrack*>(esd->GetTrack(i));
+   AliESDtrack *track = dynamic_cast<AliESDtrack*>(vtrack);
+   if (!track) continue;
+
+   //Primaries selection
+   Int_t lp = TMath::Abs(track->GetLabel());
+   if (!fStack->IsPhysicalPrimary(lp)) continue;
+   TParticle *particle = (TParticle*)fStack->Particle(lp);
+   if (!particle) continue;
+   if (particle->GetPDG()->Charge() == 0.) continue;
+
+//   if(!fCutsPOI->PassesESDcuts(track)) continue;
+
+   Bool_t pass = kTRUE;
+
+   if(fCutTPC) {
+//    printf("******* cutting TPC ******** \n");
+    UShort_t ntpccls = track->GetTPCNcls();
+    Double_t tpcchi2 = track->GetTPCchi2();
+    if (tpcchi2<0.2 || tpcchi2 >=4.) {
+//     printf("TPCchi2 : %e %e ",tpcchi2,track->GetTPCchi2Iter1());
+     pass=kFALSE;
+    }
+    if (ntpccls < 70) {
+//     printf("#TPCcluster : %u %u %u %u ",ntpccls,track->GetTPCNclsF(),track->GetTPCNclsFIter1(),track->GetTPCNclsIter1());
+     pass=kFALSE;
+    }
+   }
+
+   Float_t dcaxy=0.0;
+   Float_t dcaz=0.0;
+   track->GetImpactParameters(dcaxy,dcaz);
+   if (dcaxy > 0.3 || dcaz > 0.3) {
+//    printf("DCA : %e %e ",dcaxy,dcaz);
+    pass=kFALSE;
+   }
+   if(!pass) continue;
+
+   //Kinematic Cuts
+   if ( track->Pt()<0.2 || track->Pt()>10. ) continue;
+   if ( TMath::Abs(track->Eta())>0.8 ) continue;
+
+   fFlowTrack->SetPhi(track->Phi());
+   fFlowTrack->SetEta(track->Eta());
+   fFlowTrack->SetPt(track->Pt());
+   fFlowTrack->SetSource(AliFlowTrack::kFromESD);
+   fFlowTrack->SetForRPSelection(kFALSE);
+   fFlowTrack->SetForPOISelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(1);
+   fFlowEvent->InsertTrack(fFlowTrack);
+   ESDPrims++;
+
+   fPtSpecRec[CenBin]->Fill(track->Pt());
+
+  }
+
+//  printf("#reconstructed : %d , #MC primaries : %d \n",ESDPrims,MCPrims);
+  fFlowEvent->SetReferenceMultiplicity(esd->GetNumberOfTracks());
+  fFlowEvent->SetCentrality(centr);
+  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+  fFlowEvent->SetRun(esd->GetRunNumber());
+//  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
+
+ } // end of if(fAnalysisType ==  "MCESD")
+
  if(fAnalysisType ==  "MCkine") {
   
   fFlowEvent->ClearFast();

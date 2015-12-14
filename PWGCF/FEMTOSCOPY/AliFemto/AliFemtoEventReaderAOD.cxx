@@ -31,7 +31,12 @@
 #include <cassert>
 #include <map>
 
-ClassImp(AliFemtoEventReaderAOD)
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoEventReaderAOD);
+  /// \cond CLASSIMP
+#endif
 
 #if !(ST_NO_NAMESPACES)
 using namespace units;
@@ -1576,12 +1581,10 @@ void AliFemtoEventReaderAOD::SetUseMultiplicity(EstEventMult aType)
 AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel)
 {
   if (aLabel < 0) return NULL;
-  AliAODMCParticle *aodP;
-  Int_t posstack = (aLabel > mcP->GetEntries())
-                   ? mcP->GetEntries()
-                   : aLabel;
 
-  aodP = (AliAODMCParticle *) mcP->At(posstack);
+  Int_t posstack = TMath::Min(aLabel, mcP->GetEntries());
+  AliAODMCParticle *aodP = (AliAODMCParticle *) mcP->At(posstack);
+
   if (aodP->GetLabel() > posstack) {
     do {
       aodP = (AliAODMCParticle *) mcP->At(posstack);
@@ -1606,9 +1609,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
     // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
     const AliAODVertex *vertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
-    float vertexX  = -999.;
-    float vertexY  = -999.;
-    float vertexZ  = -999.;
+    float vertexX = -999.;
+    float vertexY = -999.;
+    float vertexZ = -999.;
 
     if (vertex) {
       Double32_t fCov[6];

@@ -32,6 +32,7 @@
 #include "TObjArray.h"
 #include "TList.h"
 #include <TLorentzVector.h>
+#include "TVectorD.h"
 
 #include "AliAnalysisManager.h"
 #include "AliRunLoader.h"
@@ -55,6 +56,8 @@
 #include "AliDielectronTrackCuts.h"
 #include "AliDielectronCutGroup.h"
 #include "AliDielectronHelper.h"
+#include "AliDielectronMC.h"
+#include "AliDielectronSignalMC.h"
 
 // todo: clean up includes...
 
@@ -78,12 +81,12 @@ fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
 fUsedVars(0x0),
+fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
-fCutInjectedSignal(kFALSE),
 fNminEleInEventForRej(2),
 fSupportedCutInstance(0),
 //fEventcount(0),
@@ -119,14 +122,18 @@ fNpteeBins(0),
 fMeeBins(0x0),
 fPteeBins(0x0),
 fNgenPairs(0x0),
-fNgenPairs2(0x0),
 fvRecoPairs(),
 fvRecoPairs_poslabel(),
 fCalcResolution(kFALSE),
-fPtResolutionAndBrems(0x0),
 fPtResolution(0x0),
-fPtResolutionAndBrems_poslabel(0x0),
 fPtResolution_poslabel(0x0),
+fPResolution(0x0),
+fPResolution_poslabel(0x0),
+fEtaPhiResolution(0x0),
+fEtaResolution(0x0),
+fEtaResolution_poslabel(0x0),
+fPhiResolution(0x0),
+fPhiResolution_poslabel(0x0),
 fResolutionCuts(0x0),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
@@ -172,11 +179,14 @@ pdgT(-1),
 labelmotherT(-1),
 pdgmotherT(-1),
 labelgrandmotherT(-1),
+pdggrandmotherT(-1),
 pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
-selectedByCut(0),
-selectedByExtraCut(0)
+fSelectedByCut(0),
+fSelectedByExtraCut(0),
+fResArr(0x0),
+fNgen_recoObs(0x0)
 {
   /// Default Constructor
 }
@@ -193,12 +203,12 @@ fPostPIDWdthCorrTPC(0x0),
 fPostPIDCntrdCorrITS(0x0),
 fPostPIDWdthCorrITS(0x0),
 fUsedVars(0x0),
+fSignalsMC(0x0),
 fDoPairing(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
-fCutInjectedSignal(kFALSE),
 fNminEleInEventForRej(2),
 fSupportedCutInstance(0),
 //fEventcount(0),
@@ -234,14 +244,18 @@ fNpteeBins(0),
 fMeeBins(0x0),
 fPteeBins(0x0),
 fNgenPairs(0x0),
-fNgenPairs2(0x0),
 fvRecoPairs(),
 fvRecoPairs_poslabel(),
 fCalcResolution(kFALSE),
-fPtResolutionAndBrems(0x0),
 fPtResolution(0x0),
-fPtResolutionAndBrems_poslabel(0x0),
 fPtResolution_poslabel(0x0),
+fPResolution(0x0),
+fPResolution_poslabel(0x0),
+fEtaPhiResolution(0x0),
+fEtaResolution(0x0),
+fEtaResolution_poslabel(0x0),
+fPhiResolution(0x0),
+fPhiResolution_poslabel(0x0),
 fResolutionCuts(0x0),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
@@ -287,11 +301,14 @@ pdgT(-1),
 labelmotherT(-1),
 pdgmotherT(-1),
 labelgrandmotherT(-1),
+pdggrandmotherT(-1),
 pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
-selectedByCut(0),
-selectedByExtraCut(0)
+fSelectedByCut(0),
+fSelectedByExtraCut(0),
+fResArr(0x0),
+fNgen_recoObs(0x0)
 {
   /// Constructor
   
@@ -329,8 +346,23 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 {
   /// Create histograms
   /// Called once
-	AliInfo("Create the output objects");
+	AliInfo("Create the output objects. Do other one-time tasks.");
 	Printf("Now running: CreateOutputObjects()");
+  
+  /// Check if an MC signal was attached
+  if(!fSignalsMC) {
+    AliFatal("Task needs an AliDielectronSignalMC as basis for the electron selection!"
+             "for example, define such function in your Config and call it from the AddTask:\n"
+             "void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task){\n"
+             "  AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC(\"eleFinalState\",\"eleFinalState\");\n"
+             "  eleFinalState->SetFillPureMCStep(kFALSE);\n"
+             "  eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+             "  eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);\n"
+             "  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);\n"
+             "  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();\n"
+             "  task->AddSignalMC(eleFinalState);\n}");
+  }
+  
   
   Printf("  __________________________________________________");
   Printf("  - centrality range:  %f  to  %f", fCentMin, fCentMax);
@@ -344,7 +376,6 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     pairEffList->SetName("pairEfficiency");
     pairEffList->SetOwner();
     pairEffList->Add(fNgenPairs);
-    pairEffList->Add(fNgenPairs2);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       pairEffList->Add(fvRecoPairs.at(iCut));
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
@@ -353,22 +384,34 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   TList *resolutionList(0x0);
   if(fCalcResolution){
     resolutionList = new TList();
-    resolutionList->SetName("ptResolution");
+    resolutionList->SetName("resolution");
     resolutionList->SetOwner();
-    fPtResolutionAndBrems          = new TH2F("fPtResolutionAndBrems",         "",1000,0.,10.,200,0.,2.);
-    fPtResolution                  = new TH2F("fPtResolution",                 "",1000,0.,10.,200,0.,2.);
-    fPtResolutionAndBrems_poslabel = new TH2F("fPtResolutionAndBrems_poslabel","",1000,0.,10.,200,0.,2.);
-    fPtResolution_poslabel         = new TH2F("fPtResolution_poslabel",        "",1000,0.,10.,200,0.,2.);
-    resolutionList->Add(fPtResolutionAndBrems);
+    fPtResolution          = new TH2F("ptRes_pt",         "",1000,0.,10.,200,0.,2.);
+    fPtResolution_poslabel = new TH2F("ptRes_pt_poslabel","",1000,0.,10.,200,0.,2.);
+    fPResolution           = new TH2F("pRes_p",           "",1000,0.,10.,200,0.,2.);
+    fPResolution_poslabel  = new TH2F("pRes_p_poslabel",  "",1000,0.,10.,200,0.,2.);
     resolutionList->Add(fPtResolution);
-    resolutionList->Add(fPtResolutionAndBrems_poslabel);
     resolutionList->Add(fPtResolution_poslabel);
+    resolutionList->Add(fPResolution);
+    resolutionList->Add(fPResolution_poslabel);
+    fEtaPhiResolution       = new TH2F("EtaPhiResolution",      "",200,0.,2.,200,0.,2.);
+    fEtaResolution          = new TH2F("EtaResolution",         "",200,-1.,1.,200,0.,2.);
+    fEtaResolution_poslabel = new TH2F("EtaResolution_poslabel","",200,-1.,1.,200,0.,2.);
+    fPhiResolution          = new TH2F("PhiResolution",         "",600,0.,2.*TMath::Pi(),200,0.,2.);
+    fPhiResolution_poslabel = new TH2F("PhiResolution_poslabel","",600,0.,2.*TMath::Pi(),200,0.,2.);
+    resolutionList->Add(fEtaPhiResolution);
+    resolutionList->Add(fEtaResolution);
+    resolutionList->Add(fEtaResolution_poslabel);
+    resolutionList->Add(fPhiResolution);
+    resolutionList->Add(fPhiResolution_poslabel);
   }
   
   TList *singleEffList = new TList();
   singleEffList->SetName("electronEfficiency");
   singleEffList->SetOwner();
   singleEffList->Add(fNgen);
+  if(fResArr) singleEffList->Add(fNgen_recoObs);
+  
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffList->Add(fvReco_Ele.at(iCut));
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
@@ -446,12 +489,13 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   tracksT->Branch("labelmotherT",       &labelmotherT);
   tracksT->Branch("pdgmotherT",         &pdgmotherT);
   tracksT->Branch("labelgrandmotherT",  &labelgrandmotherT);
+  tracksT->Branch("pdggrandmotherT",    &pdggrandmotherT);
   //tracksT->Branch("pMC",                &pMC);
   tracksT->Branch("pxMC",               &pxMC);
   tracksT->Branch("pyMC",               &pyMC);
   tracksT->Branch("pzMC",               &pzMC);
-  tracksT->Branch("selectedByCut",      &selectedByCut);
-  tracksT->Branch("selectedByExtraCut", &selectedByExtraCut);
+  tracksT->Branch("selectedByCut",      &fSelectedByCut);
+  tracksT->Branch("selectedByExtraCut", &fSelectedByExtraCut);
   PostData(3, tracksT);
   
   OpenFile(4, "RECREATE");
@@ -579,287 +623,217 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   std::vector< std::vector<Int_t> > vecEleCand_perCut; // one vector per cut setting
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) { vecEleCand_perCut.push_back(vecTrkID); }
   
+  
   Int_t NEleSelected = 0;
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) 
-  {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
-    if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-    
-    Double_t trackPt(-1.),trackEta(-9.),trackPhi(-9.);
-    trackPt = track->Pt(); trackEta = track->Eta(); trackPhi = track->Phi();
-    
-    Int_t label = track->GetLabel();
-    Int_t abslabel = TMath::Abs( track->GetLabel() );
-    //if(label < 0) continue; // two sets of histograms will be filled to check difference.
-    AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack( abslabel ));
-    if (!mctrack) continue;
-    //
-    Int_t trackpdg = (Int_t) TMath::Abs(mctrack->PdgCode());
-    if (!( trackpdg==Int_t(11) ) ) continue; // do not try to include hadrons, see below.
-    //Printf(" found electron (iTracks=%i)", iTracks);
-    // _______________
-    // the following inclusion of some hadrons should NOT be used!
-    // for some reason a few of the true electrons will get lost at some point and not filled into histograms!
-    // tested at GSI with ./run user -o -l MC_PbPb/2.76ATeV/LHC12a17h_fix/169099.ana.txt -n 20 -f -c MC_PbPb
-    //if (!( trackpdg==Int_t(11) || trackpdg==Int_t(211) || trackpdg==Int_t(321) || trackpdg==Int_t(2212) ) ) {
-    //  continue; //Printf(" skip this track (trackpdg=%i) (iTracks=%i)", trackpdg, iTracks);
-    //}
-    
-    Int_t motherlabel = mctrack->Particle()->GetFirstMother();
-    if (motherlabel<0) continue; // motherlabel 0 already gives the first valid particle.
-    AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherlabel));
-    if (!mother) continue;
-    if (!mother->Particle()->IsPrimary()) continue;
-    // from Patrick:
-    // for removal of injected signals.
-    if (fCutInjectedSignal && IsInjectedSignal(mcEvent, abslabel)) {
-      //Printf(" kicked out injected signal (trackpdg=%i) (iTracks=%i)", trackpdg, iTracks);
-      continue;
-    }
-    
-    Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
-    mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
-    selectedByCut = 0;
-    selectedByExtraCut = 0;
-    
-    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) // loop over all specified cutInstances
-    {
-      //cutting logic taken from AliDielectron::FillTrackArrays()
-      UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
-      //apply track cuts
-      UInt_t cutmask=fvTrackCuts.at(iCut)->IsSelected(track);
-      //cout << "   cutmask = " << cutmask << "   selectedMask = " << selectedMask << endl;
-      if (cutmask!=selectedMask) continue;
-      //cout << "   PDG code " << trackpdg << endl;
-      //cout << "   cutmask = " << cutmask << "   selectedMask = " << selectedMask << endl;
-      
-      // for later pairing to get random rejection probability
-      //cout << "adding ele for cut " << iCut << ": " << endl;
-      vecEleCand_perCut.at(iCut).push_back(iTracks);
-      //cout << "new ele in array: " << vecEleCand_perCut.at(iCut).at( vecEleCand_perCut.at(iCut).size()-1 ) << endl;
-      
-//      if (trackpdg==Int_t(11)) { //Electron
-        fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
-        fvReco_Ele_recoObs.at(iCut)->Fill(trackPt,trackEta,trackPhi);
-        if(label > 0) {
-          fvReco_Ele_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
-          fvReco_Ele_recoObs_poslabel.at(iCut)->Fill(trackPt,trackEta,trackPhi);
-        }
-//      }
-      // be really careful if you need to implement this (see comments in UserExec):
-//      else if (trackpdg==Int_t(211)) { //PiPlus
-//        fvReco_Pio.at(i)->Fill(mcPt,mcEta,mcPhi);
-//      }
-//      else if (trackpdg==Int_t(321)) { //KPlus
-//        fvReco_Kao.at(i)->Fill(mcPt,mcEta,mcPhi);
-//      }
-//      else if (trackpdg==Int_t(2212)) { //Proton
-//        fvReco_Pro.at(i)->Fill(mcPt,mcEta,mcPhi);
-//      }
-//      else continue;
-      
-      selectedByCut|=1<<(iCut); // store bitwise which cut settings the track survived.
-      
-      // store infos related to prefilter efficiency
-      if (fvDoPrefilterEff.at(iCut) == kTRUE) {
-        // check if one of the prefilter electrons also survives the analysis cuts of this cutset.
-        //cout << "fvExtraTrackCuts.at("<<iCut<<") --- .size() = "<<fvExtraTrackCuts.size() << endl;
-        UInt_t selectedMaskExtra = (1<<fvExtraTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
-        UInt_t cutmaskExtra      = fvExtraTrackCuts.at(iCut)->IsSelected(track);
-        if (cutmaskExtra==selectedMaskExtra) {
-          selectedByExtraCut|=1<<(iCut); // this is just for the tree.
-          atleastOneEleExtraSelected = kTRUE;
-          fvAtleastOneEleExtra_perCut.at(iCut) = kTRUE;
-        }
-      }
-      
-    } //loop over cutInstances
-    //cout << "selectedByCut = " << selectedByCut << endl;
-    
-    //________________________________________________________________
-    if (selectedByCut==0) continue;
-    // only go on if the track survived at least 1 of the cut settings!
-    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-    // get track information
-    // feel free to add more information to the tree, some more variables are already defined as branches...
-    pxESD = track->Px();
-    pyESD = track->Py();
-    pzESD = track->Pz();
-    chargeT   = track->Charge();
-    signalITS = track->GetITSsignal();
-    signalTPC = track->GetTPCsignal();
-    //
-    kNclsTPC  = track->GetTPCNcls();
-    kTPCchi2Cl  = track->GetTPCchi2() / kNclsTPC; // only for ESD! // AOD like this: particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls
-    kNclsTPCdEdx = track->GetTPCsignalN(); // ("fTPCsignalN") number of points used for dEdx - maybe not in AOD...?
-    kNFclsTPCr = track->GetTPCClusterInfo(2,1); // number of findable clusters(crossed rows) in the TPC with more robust definition //ESD & AOD!
-    Float_t kNFclsTPC = track->GetTPCNclsF(); //tpcClusFindable // number of findable clusters in the TPC //ESD & AOD!
-    kNFclsTPCfCross = (kNFclsTPC>0)?(kNFclsTPCr/kNFclsTPC):0; // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts  //ESD & AOD!
-    //kNtrkltsTRD = 0; // only exists for ESD, see below
-    kNtrkltsTRDPID = track->GetTRDntrackletsPID();
-    //
-    // fill the AliDielectronVarManager to get some specific variables, e.g. which were used for track selection.
-    Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
-    AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
-    AliDielectronVarManager::Fill(track, values);
-    //
-    sigmaEleITS_Raw = values[AliDielectronVarManager::kITSnSigmaEleRaw];
-    sigmaEleTPC_Raw = values[AliDielectronVarManager::kTPCnSigmaEleRaw];
-    sigmaEleITS = values[AliDielectronVarManager::kITSnSigmaEle];
-    sigmaEleTPC = values[AliDielectronVarManager::kTPCnSigmaEle];
-    sigmaEleTOF = values[AliDielectronVarManager::kTOFnSigmaEle];
-    //
-    // TODO: which momentum is better?
-    //pTPC        = values[AliDielectronVarManager::kPIn]; // uses GetInnerParam()->P() //Track parameters estimated at the inner wall of TPC
-    pTPC        = ((AliESDtrack*)track)->GetTPCInnerParam()->P(); //Track parameters estimated at the inner wall of TPC using the TPC stand-alone
-    kchi2ITS    = ((AliESDtrack*)track)->GetITSchi2();
-    kNclsITS    = ((AliESDtrack*)track)->GetNcls(0);
-    kITSchi2Cl  = kchi2ITS / kNclsITS;
-    
-    // get MC track information
-    pdgT          = mctrack->PdgCode();
-    labelmotherT  = motherlabel;
-    pdgmotherT    = mother->PdgCode();
-    
-    
-    if (fWriteTree) {
-      // variable 'selectedByCut' is stored in the Tree to distinguish the cut settings...
-      tracksT->Fill(); //Fill Track Tree
-    } // if fWriteTree
-    
-    
-    if (selectedByCut & 1<<fSupportedCutInstance) // only go on if the track survived in the cut setting for which you want to fill the support histograms.
-    { 
-      NEleSelected++;
-      Float_t pESD = track->P();
-      
-      // for selected tracks, fill some histos:
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(6)))->Fill(values[AliDielectronVarManager::kPIn], pTPC);//hPInVarMgr_PInStandAlone
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(7)))->Fill(track->Pt());//hPt (reco)
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(8)))->Fill(pESD, pTPC);//hP_PIn
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(9)))->Fill(pESD, mctrack->P());//hP_Pgen
-      // ITS
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(10)))->Fill(pESD, signalITS);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(11)))->Fill(pESD, sigmaEleITS);
-      //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(12)))->Fill(pESD, );
-      //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(13)))->Fill(pESD, );
-      // TPC
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(14)))->Fill(pTPC, signalTPC);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(15)))->Fill(pTPC, sigmaEleTPC);
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(16)))->Fill(pTPC, sigmaEleTPC, signalTPC);
-      // run dependency
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(22)))->Fill(pTPC, signalTPC, kRunNumber);//hTPC_dEdx_P_run
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(23)))->Fill(pTPC, sigmaEleTPC, kRunNumber);//hTPCnSigmaEle_P_run
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(24)))->Fill(pESD, sigmaEleITS, kRunNumber);//hITSnSigmaEle_P_run
-      // TOF
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(25)))->Fill(pTPC, sigmaEleTOF);//hTOFnSigmaEle_P
-      //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(26)))->Fill(pTPC, );
-      // Eta and Phi
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(27)))->Fill(mcEta);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(28)))->Fill(mcPhi);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(29)))->Fill(mcEta, mcPhi);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(30)))->Fill(mcEta, signalTPC);
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(31)))->Fill(mcEta, signalTPC, pTPC);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(32)))->Fill(mcEta, sigmaEleTPC);//hTPCnSigmaEle_Eta
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(33)))->Fill(mcEta, sigmaEleTPC, pTPC);//hTPCnSigmaEle_Eta_P
-      //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(34)))->Fill(mcEta, sigmaEleTPC, );//hTPCnSigmaEle_Eta_RefMultTPConly
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(35)))->Fill(mcEta, sigmaEleTPC, Nacc);//hTPCnSigmaEle_Eta_Nacc
-      // DCA
-      //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(36)))->Fill();
-      //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(37)))->Fill();
-      //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(38)))->Fill();
-      // Quality
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(40)))->Fill(kNFclsTPCfCross);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(41)))->Fill(kNFclsTPCr);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(42)))->Fill(kNclsTPC);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(43)))->Fill(kNclsITS);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(44)))->Fill(kTPCchi2Cl);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(45)))->Fill(kITSchi2Cl);
-      //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(46)))->Fill(kNclsSFracTPC);
-      //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(47)))->Fill(kTPCclsDiff);
-      (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(48)))->Fill(kNclsTPCdEdx);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(49)))->Fill(kNclsTPC, kNFclsTPCr);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(50)))->Fill(track->Pt(), kNFclsTPCr);
-      
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(60)))->Fill(mcEta, sigmaEleITS);//hITSnSigmaEle_Eta
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(61)))->Fill(mcEta, sigmaEleITS, pESD);//hITSnSigmaEle_Eta_P
-      //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(62)))->Fill(mcEta, sigmaEleITS, );//hITSnSigmaEle_Eta_RefMultTPConly
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(63)))->Fill(mcEta, sigmaEleITS, Nacc);//hITSnSigmaEle_Eta_Nacc
-      
-      // check of post PID correction. raw values from AliDielectronVarManager
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(64)))->Fill(pESD, sigmaEleITS_Raw);//hITSnSigmaEleRaw_P
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(65)))->Fill(pTPC, sigmaEleTPC_Raw);//hTPCnSigmaEleRaw_P
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(66)))->Fill(mcEta, sigmaEleITS_Raw);//hITSnSigmaEleRaw_Eta
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(67)))->Fill(mcEta, sigmaEleTPC_Raw);//hTPCnSigmaEleRaw_Eta
-      
-    } //fSupportedCutInstance
-    
-  } //track loop
-  
-  //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(2)))->Fill(centralityF,0);//hNTrksEvent_cent
-  (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(3)))->Fill(centralityF,NEleSelected);//hNEleEvent_cent
-  
-//  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) {
-//    cout << " iCut=" << iCut << ", ele candidate IDs: " << flush;
-//    for (UInt_t iele=1; iele<vecEleCand_perCut.at(iCut).size(); iele++) { // iele=0 is the default entry which is filled evertime, but not used (see init of 'vecEleCand_perCut').
-//      cout << "  " << vecEleCand_perCut.at(iCut).at(iele) << flush;
-//    }
-//  } //cout << " " << endl;
-  
-  //
-  // call the Prefilter efficiency calculation
-  // please see comments above the function declaration for further info.
-  //
-  if (atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
-  
   
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
     //AliStack *fStack = mcEvent->Stack();
     
-    for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++)
-    {
-      //if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
-      AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
-      if( TMath::Abs(mctrack->PdgCode()) !=  11 ) continue;
+    for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
+      // New:
+      // Select electrons based on an attached AliDielectronSignalMC.
+      // Only the first leg (branch==1) of the first attached signal will be checked.
+      //
+      Bool_t truth1 = AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1);
+      if (!truth1) continue;
       
-      // from Theo:
-      Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
-      mcPt = mctrack->Pt(); mcEta = mctrack->Eta(); mcPhi = mctrack->Phi();
+      AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
+      if (!mctrack) continue;
+      Double_t mcPt  = mctrack->Pt(); 
+      Double_t mcEta = mctrack->Eta(); 
+      Double_t mcPhi = mctrack->Phi();
       if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
-      
-      // check which kinematically ok tracks are skipped by "IsPhysicalPrimary".
-      // checking here will already be clean of low-pt e- from scattering and bremsstrahlung etc.
-      if(!fStack->IsPhysicalPrimary(iMCtrack)) { //Printf("track not ->IsPhysicalPrimary()"); 
-        //        TParticle* mothertemp      = fStack->Particle(mctrack->GetMother());
-        //        if (mothertemp->GetPdgCode() != 22) { // just to reduce the amount of printouts
-        //          Printf("  track: %s \t mother: %s \t mother->IsPrimary(): %d", GetParticleName(mctrack->PdgCode()), GetParticleName(mothertemp->GetPdgCode()), mothertemp->IsPrimary());
-        //        }
-        continue; // excludes huge number of e from gamma. also from: K+- [some of them are "IsPrimary()"], K_L0, pi0 (not prim). (nothing else seen in LHC12a17h_fix/169099.ana.txt -n 5)
-      }
-      
-      // from Theo:
-      Int_t motherlabel = mctrack->Particle()->GetFirstMother();
-      if(!motherlabel) { Printf("bad motherlabel"); continue; }
-      AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherlabel));
-      if(!mother) { Printf("bad mother"); continue; }
-      if(!mother->Particle()->IsPrimary()) { //Printf("mother not ->IsPrimary()"); 
-        //Printf("  mother: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(mother->PdgCode()), mcEvent->IsFromBGEvent(motherlabel), mcEvent->IsPhysicalPrimary(motherlabel));
-        continue; // kicks out e from gamma, pi0, K_L0, K+, D-, D+, (...?)
-        // when checking "fStack->IsPhysicalPrimary(i)" before, then this kicks out e from: 
-        // pi0, D+-, D0, D0_bar, B-, B0_bar, eta, tau-, D_s+ (all "fromBGEvent: 1 & isPhysPrim: 0");
-        // J/psi, Xi_c0, eta, D0 (all "fromBGEvent: 0 & isPhysPrim: 0")
-      }
-      
-      // from Patrick:
-      // for removal of injected signals.
-      if (fCutInjectedSignal && IsInjectedSignal(mcEvent, iMCtrack)) continue;
-      // this still has a strong effect after "fStack->IsPhysicalPrimary(i)" and "mother->Particle()->IsPrimary()". skips e from J/psi
-      
       fNgen->Fill(mcPt,mcEta,mcPhi);
-    } //track loop
+      Bool_t filled(kFALSE),reconstructed(kFALSE);
+      for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
+        fSelectedByCut = 0;
+        fSelectedByExtraCut = 0;
+        reconstructed = kFALSE;
+        AliESDtrack* track = fESD->GetTrack(iTracks);
+        if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
+        Int_t label = track->GetLabel();
+        Int_t abslabel = TMath::Abs( track->GetLabel() );
+        if(abslabel != iMCtrack) continue;
+        reconstructed = kTRUE;
+        
+        Double_t trackPt  = track->Pt();
+        Double_t trackEta = track->Eta();
+        Double_t trackPhi = track->Phi();
+        for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
+          //cutting logic taken from AliDielectron::FillTrackArrays()
+
+          UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+         //apply track cuts
+          UInt_t cutmask=fvTrackCuts.at(iCut)->IsSelected(track);
+          if (cutmask!=selectedMask) continue;
+          vecEleCand_perCut.at(iCut).push_back(iTracks);
+      
+          fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+          fvReco_Ele_recoObs.at(iCut)->Fill(trackPt,mcEta,mcPhi);
+          if(label > 0) {
+            fvReco_Ele_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+            fvReco_Ele_recoObs_poslabel.at(iCut)->Fill(trackPt,mcEta,mcPhi);
+          }
+          fSelectedByCut|=1<<(iCut); // store bitwise which cut settings the track survived.
+          // store infos related to prefilter efficiency
+          if(fvDoPrefilterEff.at(iCut) == kTRUE){
+            // check if one of the prefilter electrons also survives the analysis cuts of this cutset.
+            UInt_t selectedMaskExtra = (1<<fvExtraTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+            UInt_t cutmaskExtra      = fvExtraTrackCuts.at(iCut)->IsSelected(track);
+            if(cutmaskExtra==selectedMaskExtra){
+              fSelectedByExtraCut|=1<<(iCut); // this is just for the tree.
+              atleastOneEleExtraSelected = kTRUE;
+              fvAtleastOneEleExtra_perCut.at(iCut) = kTRUE;
+            }
+          }
+        } // cut loop
+        if(fSelectedByCut==0) continue;// only go on if the track survived at least 1 of the cut settings!
+        if(fNgen_recoObs && !filled){ 
+          //fNgen_recoObs->Fill(trackPt,trackEta,trackPhi); 
+          fNgen_recoObs->Fill(trackPt,mcEta,mcPhi); 
+          filled = kTRUE;
+        }
+        
+        // get track information
+        // feel free to add more information to the tree, some more variables are already defined as branches...
+        pxESD = track->Px();
+        pyESD = track->Py();
+        pzESD = track->Pz();
+        chargeT   = track->Charge();
+        signalITS = track->GetITSsignal();
+        signalTPC = track->GetTPCsignal();
+        kNclsTPC  = track->GetTPCNcls();
+        kTPCchi2Cl  = track->GetTPCchi2() / kNclsTPC; // only for ESD! // AOD like this: particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls
+        kNclsTPCdEdx = track->GetTPCsignalN(); // ("fTPCsignalN") number of points used for dEdx - maybe not in AOD...?
+        kNFclsTPCr = track->GetTPCClusterInfo(2,1); // number of findable clusters(crossed rows) in the TPC with more robust definition //ESD & AOD!
+        Float_t kNFclsTPC = track->GetTPCNclsF(); //tpcClusFindable // number of findable clusters in the TPC //ESD & AOD!
+        kNFclsTPCfCross = (kNFclsTPC>0)?(kNFclsTPCr/kNFclsTPC):0; // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts  //ESD & AOD!
+        //kNtrkltsTRD = 0; // only exists for ESD, see below
+        kNtrkltsTRDPID = track->GetTRDntrackletsPID();
+        // fill the AliDielectronVarManager to get some specific variables, e.g. which were used for track selection.
+        Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+        AliDielectronVarManager::SetFillMap(fUsedVars); // currently filled manually in the constructor of this task.
+        AliDielectronVarManager::Fill(track, values);
+        //
+        sigmaEleITS_Raw = values[AliDielectronVarManager::kITSnSigmaEleRaw];
+        sigmaEleTPC_Raw = values[AliDielectronVarManager::kTPCnSigmaEleRaw];
+        sigmaEleITS = values[AliDielectronVarManager::kITSnSigmaEle];
+        sigmaEleTPC = values[AliDielectronVarManager::kTPCnSigmaEle];
+        sigmaEleTOF = values[AliDielectronVarManager::kTOFnSigmaEle];
+        // TODO: which momentum is better?
+        const AliExternalTrackParam *innerParam = track->GetTPCInnerParam();
+        pTPC        = (innerParam) ? innerParam->P() : -1.; //Track parameters estimated at the inner wall of TPC using the TPC stand-alone
+        //kchi2ITS    = ((AliESDtrack*)track)->GetITSchi2();
+        kNclsITS    = track->GetITSNcls();
+        //kITSchi2Cl  = kchi2ITS / kNclsITS;
+        // get MC track information
+        pdgT          = mctrack->PdgCode();
+        labelmotherT  = mctrack->Particle()->GetFirstMother();
+        AliMCParticle *mother = 0x0;
+        AliMCParticle *grandmother = 0x0;
+        pdgmotherT            =   0;
+        labelgrandmotherT     =  -1;
+        pdggrandmotherT       =   0;
+        if(labelmotherT>=0)
+          mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelmotherT));
+        if(mother){
+          pdgmotherT = mother->PdgCode();
+          labelgrandmotherT = mother->Particle()->GetFirstMother();
+        }  
+        if(labelgrandmotherT>=0)
+          grandmother = (dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelgrandmotherT)));
+        if(grandmother) 
+          pdggrandmotherT = grandmother->PdgCode();
+    
+        if(fWriteTree) // variable 'fSelectedByCut' is stored in the Tree to distinguish the cut settings...
+          tracksT->Fill(); //Fill Track Tree
+    
+        if(fSelectedByCut & 1<<fSupportedCutInstance){ // only go on if the track survived in the cut setting for which you want to fill the support histograms. 
+          NEleSelected++;
+          Float_t pESD = track->P();
+          // for selected tracks, fill some histos:
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(6)))->Fill(values[AliDielectronVarManager::kPIn], pTPC);//hPInVarMgr_PInStandAlone
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(7)))->Fill(track->Pt());//hPt (reco)
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(8)))->Fill(pESD, pTPC);//hP_PIn
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(9)))->Fill(pESD, mctrack->P());//hP_Pgen
+          // ITS
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(10)))->Fill(pESD, signalITS);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(11)))->Fill(pESD, sigmaEleITS);
+          //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(12)))->Fill(pESD, );
+          //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(13)))->Fill(pESD, );
+          // TPC
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(14)))->Fill(pTPC, signalTPC);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(15)))->Fill(pTPC, sigmaEleTPC);
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(16)))->Fill(pTPC, sigmaEleTPC, signalTPC);
+          // run dependency
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(22)))->Fill(pTPC, signalTPC, kRunNumber);//hTPC_dEdx_P_run
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(23)))->Fill(pTPC, sigmaEleTPC, kRunNumber);//hTPCnSigmaEle_P_run
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(24)))->Fill(pESD, sigmaEleITS, kRunNumber);//hITSnSigmaEle_P_run
+          // TOF
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(25)))->Fill(pTPC, sigmaEleTOF);//hTOFnSigmaEle_P
+          //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(26)))->Fill(pTPC, );
+          // Eta and Phi
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(27)))->Fill(mcEta);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(28)))->Fill(mcPhi);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(29)))->Fill(mcEta, mcPhi);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(30)))->Fill(mcEta, signalTPC);
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(31)))->Fill(mcEta, signalTPC, pTPC);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(32)))->Fill(mcEta, sigmaEleTPC);//hTPCnSigmaEle_Eta
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(33)))->Fill(mcEta, sigmaEleTPC, pTPC);//hTPCnSigmaEle_Eta_P
+          //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(34)))->Fill(mcEta, sigmaEleTPC, );//hTPCnSigmaEle_Eta_RefMultTPConly
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(35)))->Fill(mcEta, sigmaEleTPC, Nacc);//hTPCnSigmaEle_Eta_Nacc
+          // DCA
+          //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(36)))->Fill();
+          //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(37)))->Fill();
+          //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(38)))->Fill();
+          // Quality
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(40)))->Fill(kNFclsTPCfCross);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(41)))->Fill(kNFclsTPCr);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(42)))->Fill(kNclsTPC);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(43)))->Fill(kNclsITS);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(44)))->Fill(kTPCchi2Cl);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(45)))->Fill(kITSchi2Cl);
+          //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(46)))->Fill(kNclsSFracTPC);
+          //(dynamic_cast<TH1F *>(fOutputListSupportHistos->At(47)))->Fill(kTPCclsDiff);
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(48)))->Fill(kNclsTPCdEdx);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(49)))->Fill(kNclsTPC, kNFclsTPCr);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(50)))->Fill(track->Pt(), kNFclsTPCr);
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(60)))->Fill(mcEta, sigmaEleITS);//hITSnSigmaEle_Eta
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(61)))->Fill(mcEta, sigmaEleITS, pESD);//hITSnSigmaEle_Eta_P
+          //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(62)))->Fill(mcEta, sigmaEleITS, );//hITSnSigmaEle_Eta_RefMultTPConly
+          (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(63)))->Fill(mcEta, sigmaEleITS, Nacc);//hITSnSigmaEle_Eta_Nacc
+          // check of post PID correction. raw values from AliDielectronVarManager
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(64)))->Fill(pESD, sigmaEleITS_Raw);//hITSnSigmaEleRaw_P
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(65)))->Fill(pTPC, sigmaEleTPC_Raw);//hTPCnSigmaEleRaw_P
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(66)))->Fill(mcEta, sigmaEleITS_Raw);//hITSnSigmaEleRaw_Eta
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(67)))->Fill(mcEta, sigmaEleTPC_Raw);//hTPCnSigmaEleRaw_Eta
+          // PDG codes
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(70)))->Fill(pdgT);//hPdgCode
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(71)))->Fill(pdgmotherT);//hPdgCodeM
+          (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(72)))->Fill(pdggrandmotherT);//hPdgCodeGM
+          (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(73)))->Fill(pdgmotherT, pdggrandmotherT);//hPdgCodeM_GM
+        } //fSupportedCutInstance
+      } // reco track loop
+      if(fNgen_recoObs && !filled){
+        TH1D *hisSlice(0x0);
+        TH2D *hDeltaPtvsPt = static_cast<TH2D*> (fResArr->At(0));
+        // Get The pt slice histogram which also contains its langau fit (in some input file versions)
+        Int_t histIndex = TMath::Min( hDeltaPtvsPt->GetXaxis()->FindBin(mcPt), fResArr->GetLast() );
+        if (histIndex<1) histIndex=1; // lowest p-bin currently starts at 100 MeV
+        hisSlice = static_cast<TH1D*> (fResArr->At(histIndex));
+        // get smear parameter via random selection from the p slices retreived from the deltaP/P plot
+        Double_t smearing(1.);
+        smearing = (hisSlice) ? hisSlice->GetRandom() : gRandom->Gaus(1,mcPt*sqrt(0.004*0.004 + (0.012*mcPt)*(0.012*mcPt))) / mcPt;
+        mcPt = mcPt * smearing;
+        fNgen_recoObs->Fill(mcPt,mcEta,mcPhi); 
+      }
+    } // mc track loop
+    
+    //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(2)))->Fill(centralityF,0);//hNTrksEvent_cent
+    (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(3)))->Fill(centralityF,NEleSelected);//hNEleEvent_cent
+    if(atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
     
     if(fDoPairing){  // calculate pair efficiency from signal pairs
       TLorentzVector d1,d2;
@@ -879,8 +853,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(TMath::Abs(dau->PdgCode()) != 11) continue;
           Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
           mcPt = dau->Pt(); mcEta = dau->Eta(); mcPhi = dau->Phi();
-          if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
-          if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
+          if(mcPt  < 0.2  || mcPt  > 10000.)  continue;
+          if(mcEta < 0.8 || mcEta > 0.8) continue;
           //if(!fStack->IsPhysicalPrimary(iDau)) continue;
           if(dau->PdgCode() ==  11){ d1.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab1 = iDau; }
           if(dau->PdgCode() == -11){ d2.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab2 = iDau; }
@@ -898,7 +872,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(TMath::Abs(track->GetLabel()) == lab2) tracks2.push_back(track);
         }
         if(tracks1.size() == 0 || tracks2.size() == 0) continue;
-        fNgenPairs2->Fill(mee,ptee);
         std::vector<UInt_t> cutmasks1(tracks1.size(),0),cutmasks2(tracks2.size(),0);
         Bool_t sel1(kFALSE),sel2(kFALSE);
         Bool_t posLab1(kFALSE),posLab2(kFALSE);
@@ -937,31 +910,28 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
         Double_t mcPt  = part->Pt();
         Double_t ptRes = mcPt > 0 ? track->Pt()/mcPt : -1.;
-        fPtResolutionAndBrems->Fill(mcPt,ptRes);
-        if(label > 0) fPtResolutionAndBrems_poslabel->Fill(mcPt,ptRes);
-        //TLorentzVector ele,radiation;
-        //ele.SetPtEtaPhiM(mcPt,part->Eta(),part->Phi(),part->M());
-        Bool_t radiationComplete(kTRUE);
-        for(Int_t idau = part->GetFirstDaughter(); idau <= part->GetLastDaughter(); ++idau){
-          AliMCParticle *rad = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(idau));
-          if(!rad){ radiationComplete = kFALSE; break; }
-          Double_t deltaPhi = TMath::Abs(rad->Phi() - part->Phi());
-          mcPt -= rad->Pt() * TMath::Cos(deltaPhi);
-          //TLorentzVector tmp;
-          //tmp.SetPtEtaPhiM(rad->Pt(),rad->Eta(),rad->Phi(),rad->M());
-          //ele -= tmp;
-        }
-        if(!radiationComplete) continue;
-        //mcPt = ele.Pt();
-        ptRes = mcPt > 0 ? track->Pt()/mcPt : -1.;
+        Double_t mcP  = part->P();
+        Double_t pRes = mcPt > 0 ? track->P()/mcP : -1.;
         fPtResolution->Fill(mcPt,ptRes);
-        if(label > 0) fPtResolution_poslabel->Fill(mcPt,ptRes);
+        fPResolution ->Fill(mcP,pRes);
+        Double_t mcEta  = part->Eta();
+        Double_t etaRes = TMath::Abs(mcEta) > 0 ? track->Eta()/mcEta : -1.;
+        Double_t mcPhi  = part->Phi();
+        Double_t phiRes = mcPhi > 0 ? track->Phi()/mcPhi : -1.;
+        fEtaPhiResolution->Fill(etaRes,phiRes);
+        fEtaResolution->Fill(mcEta,etaRes);
+        fPhiResolution->Fill(mcPhi,phiRes);
+        if(label > 0){
+          fPtResolution_poslabel->Fill(mcPt,ptRes);
+          fPResolution_poslabel ->Fill(mcP,pRes);
+          fEtaResolution_poslabel->Fill(mcEta,etaRes);
+          fPhiResolution_poslabel->Fill(mcPhi,phiRes);          
+        }  
       }
     }
   } //MC loop
   //Printf("__________ end of Event ( %i ) __________", fEventcount);
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra) 
@@ -986,7 +956,6 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
     if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
     AliMCParticle *mcPion = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(iMCtrack));
     if( TMath::Abs(mcPion->PdgCode()) !=  211 ) continue;
-    if (fCutInjectedSignal && IsInjectedSignal(mcEventLocal, iMCtrack)) continue;
     
     Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
     mcPt = mcPion->Pt(); mcEta = mcPion->Eta(); mcPhi = mcPion->Phi();
@@ -1211,52 +1180,6 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
   return phiv;
 }
 
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskElectronEfficiency::IsInjectedSignal(AliMCEvent* mcEventLocal, Int_t tracklabel) 
-{
-  /// Function to identify injected signals. (by Patrick)
-  
-  Bool_t isInjected  = kFALSE;
-  Bool_t fromBGEvent = 0;
-  Bool_t isPhysPrim  = 0;
-  TParticle* mother  = NULL;
-  AliStack *fStack   = mcEventLocal->Stack();
-  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(tracklabel));
-  
-  fromBGEvent = mcEventLocal->IsFromBGEvent(tracklabel);
-  isPhysPrim  = mcEventLocal->IsPhysicalPrimary(tracklabel);
-  // fromBGEvent:  particle comes from the generated MC event (?). true for most pi, K, p, some e.
-  // !fromBGEvent: particle could be injected or produced in Geant (from weak decay / photon conv).
-  //               weak decays and photon conv are handled by Geant -> will NOT be fromBGEvent!
-  // isPhysPrim: in a chain of decaying particles, denotes the first which is stable under strong and EM force.
-  // - injected: the physical primary will NOT be fromBGEvent! (<= that is the relevant criterion!)
-  // - Geant:    the physical primary will be fromBGEvent!
-  // 
-  // example: for injected J/psi -> ee: the e+- will be phys prim (because of EM decay), but not fromBGEvent!
-  // goal: skip injected signals (e.g. J/psi -> ee)
-  // but keep signals from Geant (e.g. photon conversions, but again not from injected J/psi)
-  //Printf(" pdg: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(pdgT), fromBGEvent, isPhysPrim);
-  //
-  // if the particle isn't already the physical primary, then iteratively go back to it:
-  labelmotherT = mctrack->GetMother();
-  while (!isPhysPrim) 
-  {
-    fromBGEvent  = mcEventLocal->IsFromBGEvent(labelmotherT);     // save property of mother
-    isPhysPrim   = mcEventLocal->IsPhysicalPrimary(labelmotherT); // save property of mother
-    mother      = fStack->Particle(labelmotherT);
-    labelmotherT = mother->GetMother(0); // prepare to get properties of grandmother
-    //
-    //Printf("  mother: %s \t fromBGEvent: %d \t isPhysPrim: %d", GetParticleName(mother->GetPdgCode()), fromBGEvent, isPhysPrim);
-  }
-  // now check if the physical primary is from background event. if not, it was injected.
-  if (!fromBGEvent) { //Printf("  physical primary is not from background event => injected! skipping. ( %s )", GetParticleName(mother->PdgCode()));
-    isInjected = kTRUE;
-  }
-  return isInjected;
-}
-
-
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::Terminate(const Option_t *)
 {
@@ -1275,6 +1198,8 @@ AliAnalysisTaskElectronEfficiency::~AliAnalysisTaskElectronEfficiency()
 {
   /// Destructor
   Printf(" Now running: ~Destructor");
+  
+  if (fSignalsMC) delete fSignalsMC;
   
   Printf("deleting TList");
   if (fOutputList) {
@@ -1347,11 +1272,11 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
 	Printf(" Now running: CreateHistoGen()");
   
   Printf("fNptBins=%i\t fPtBins[1]=%f\t fNetaBins=%i\t fEtaBins[1]=%f\t fNphiBins=%i\t fPhiBins[1]=%f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
-  fNgen = new TH3F("fNgen","fNgen",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fNgen                     = new TH3F("fNgen","Ngen",                fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  if(fResArr) fNgen_recoObs = new TH3F("fNgen_recoObs","Ngen_recoObs",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fDoPairing){
     Printf("fNmeeBins=%i\t fMeeBins[1]=%f\t fNpteeBins=%i\t fPteeBins[1]=%f\t ",fNmeeBins,fMeeBins[1],fNpteeBins,fPteeBins[1]);
     fNgenPairs = new TH2F("NgenPairs","NgenPairs",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    fNgenPairs2= new TH2F("NgenPairsReconstructed","NgenPairsReconstructed",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
   }
 }
 
@@ -1612,9 +1537,41 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEleRaw_Eta,   66);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEleRaw_Eta,   67);
   
+  TH1F* hUseless68 = new TH1F("hUseless","hUseless",1,0,1);
+  fOutputListSupportHistos->AddAt(hUseless68, 68);
+  TH1F* hUseless69 = new TH1F("hUseless","hUseless",1,0,1);
+  fOutputListSupportHistos->AddAt(hUseless69, 69);
+  
+  
+  TH1F* hPdgCode   = new TH1F("hPdgCode",  "hPdgCode",   GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH1F* hPdgCodeM  = new TH1F("hPdgCodeM", "hPdgCodeM",  GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH1F* hPdgCodeGM = new TH1F("hPdgCodeGM","hPdgCodeGM", GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
+  TH2F* hPdgCodeM_GM = new TH2F("hPdgCodeM_GM","hPdgCodeM_GM", GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray(),
+                                GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());//AliDielectronVarManager::kPdgCodeMother, AliDielectronVarManager::kPdgCodeGrandMother);
+  fOutputListSupportHistos->AddAt(hPdgCode,     70);
+  fOutputListSupportHistos->AddAt(hPdgCodeM,    71);
+  fOutputListSupportHistos->AddAt(hPdgCodeGM,   72);
+  fOutputListSupportHistos->AddAt(hPdgCodeM_GM, 73);
+  
 }
 
 // taken from AliDielectron.cxx
+//__________________________________________________________________
+void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal) {
+  //
+  //  Add an MC signal to the signals list
+  //
+  if(!fSignalsMC) {
+    fSignalsMC = new TObjArray();
+    fSignalsMC->SetOwner();
+  }
+  fSignalsMC->Add(signal);
+  cout << "added MCsignal: " << fSignalsMC->At(fSignalsMC->GetEntriesFast()-1)->GetName() << endl;
+  if (fSignalsMC->GetEntriesFast()>1) {
+    AliWarning("WARNING: only the first MC signal will be used for the electron selection, others are ignored.");
+  }
+}
+
 //______________________________________________
 void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
@@ -1710,4 +1667,31 @@ void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TF1 *fun, UInt_t
     //    fUsedVars->SetBitNumber(vary, kTRUE);
     //    fUsedVars->SetBitNumber(varz, kTRUE);
   }
+}
+//______________________________________________________________________________________
+TVectorD *AliAnalysisTaskElectronEfficiency::GetPDGcodes() {
+  //
+  // array of pdgcodes stored in TDatabasePDG
+  //
+  printf("AliAnalysisTaskElectronEfficiency::GetPDGcodes()\n");
+  //TDatabasePDG *pdg = new TDatabasePDG(); // get warning: W-TDatabasePDG::TDatabasePDG: object already instantiated
+  TDatabasePDG *pdg = TDatabasePDG::Instance();
+  if (!pdg->ParticleList()) pdg->ReadPDGTable(); // it's not good to call it everytime (tries to redefine the table, many warnings).
+  TGraph *gr = new TGraph();
+  TIter next(pdg->ParticleList());
+  TParticlePDG *p;
+  Int_t i=0;
+  while ((p = (TParticlePDG *)next())) {
+    if(TMath::Abs(p->PdgCode()) < 1e+6) {
+      //      printf("%s -> %d \n",p->GetName(),p->PdgCode());
+      gr->SetPoint(i++, p->PdgCode(),1.);
+    }
+  }
+  gr->Sort();
+  TVectorD *vec = new TVectorD(gr->GetN(), gr->GetX());
+  //  vec->Print();
+  //delete pdg; // Was used in case of using "new TDatabasePDG()", but this is a singleton...
+                // Gives a seg fault in AliPID::Init(). Probably due to "#define M(PID) TDatabasePDG::Instance()->GetParticle(fgkParticleCode[(PID)])->Mass()"
+  delete gr;
+  return vec;
 }

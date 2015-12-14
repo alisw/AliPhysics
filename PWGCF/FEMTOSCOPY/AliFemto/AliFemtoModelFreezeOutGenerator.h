@@ -30,7 +30,9 @@ class AliFemtoModelFreezeOutGenerator
  private:
   
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelFreezeOutGenerator, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoModelFreezeOutGenerator, 1);
+  /// \endcond
 #endif
     
 };

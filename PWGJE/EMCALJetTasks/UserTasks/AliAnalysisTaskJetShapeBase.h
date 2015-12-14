@@ -68,8 +68,6 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
   TLorentzVector*MatchEmbeddedConstituentWithParticleLevel(AliVParticle *vpe);
-  Bool_t         SamePart(const TLorentzVector* part1, const TLorentzVector* part2, Double_t dist = 1e-6) const;
-  TLorentzVector*GetParticleLevel(Int_t entry, TLorentzVector *vEmbP);
   
   Int_t                               fContainerBase;              ///< jets to be analyzed
   Int_t                               fContainerSub;               ///< subtracted jets to be analyzed
@@ -111,11 +109,12 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
   TH1F 	        *fhNJetsSelEv;                                      //!<! number of selected signal jets per event
   TH2F          *fhRjetTrvspTj;                                     //!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-  TH2F          *fhJetEtaPhi;                                       //!<! eta-phi distribution of the selected signal jets
+  TH2F          *fhJetEtaPhiOvl;                                       //!<! eta-phi distribution of the selected signal jets
   TH1F 	        *fhpTTracksJet1;                                   //!<!
   TH1F 	        *fhpTTracksJetO;                                   //!<!
   TH1F 	        *fhpTTracksCont;                                   //!<!
   TH1F 	        *fhptjetSMinusSingleTrack;                         //!<! pT distribution of jets subtracting the pT of the embedded track
+  TH3F          *fhJetSubMatchEtaPhiPt;                             //!<! eta, phi, pt distribution of jet subtracted and matched
   TTree         *fTreeEmb;                                         //!<! tree with the TLorentzVector of the jet detector and particle level
   Bool_t        fFromTree;                                         ///< Input embedding from tree
   TString       fPathTreeinputFile;                                ///< path to the file where the external input Tree is (can be from alien)
@@ -123,13 +122,16 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   TString       fBranchJDetName;                                   ///< name of the detector level jet branch in the TTree
   TString       fBranchJParName;                                   ///< name of the detector level jet branch in the TTree
   Int_t         fThisEntry;                                        ///< current entry in the embedded TTree
+  Int_t         fMaxTreeEntries;                                   ///< number of entries in the TTree
+  TLorentzVector *fVecD;                                           //!<! vector with detector level jet
+  TLorentzVector *fVecP;                                           //!<! vector with particle level jet
   private:
      
      AliAnalysisTaskJetShapeBase(const AliAnalysisTaskJetShapeBase&);            // not implemented
      AliAnalysisTaskJetShapeBase &operator=(const AliAnalysisTaskJetShapeBase&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetShapeBase, 1);
+  ClassDef(AliAnalysisTaskJetShapeBase, 2);
   /// \endcond
 };
 #endif

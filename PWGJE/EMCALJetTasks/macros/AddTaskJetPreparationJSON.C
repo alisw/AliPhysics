@@ -18,7 +18,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   Bool_t   makeTrigger              = kTRUE,
   Bool_t   isEmcalTrain             = kFALSE,
   Double_t trackeff                 = 1.0,
-  Bool_t   doAODTrackProp           = kTRUE,
+  Bool_t   doAODTrackProp           = kFALSE,
   Bool_t   modifyMatchObjs          = kTRUE,
   Bool_t   doTriggerQA              = kFALSE
 )

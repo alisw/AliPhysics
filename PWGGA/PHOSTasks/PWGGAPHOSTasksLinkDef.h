@@ -34,6 +34,9 @@
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
 #pragma link C++ class AliAnalysisTaskThermalGAFlowMC+;
 
+//PHOS_NeutralMeson
+#pragma link C++ class AliAnalysisTaskPHOSNeutralMeson+;
+
 // PHOS_PbPbQA
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
 

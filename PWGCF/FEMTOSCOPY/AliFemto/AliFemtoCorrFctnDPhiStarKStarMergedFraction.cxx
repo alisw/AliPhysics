@@ -14,8 +14,10 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctnDPhiStarKStarMergedFraction)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnDPhiStarKStarMergedFraction);
+  /// \endcond
 #endif
   
 #define PIH 1.57079632679489656

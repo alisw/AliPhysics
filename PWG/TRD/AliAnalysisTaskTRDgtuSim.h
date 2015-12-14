@@ -35,6 +35,8 @@ class AliAnalysisTaskTRDgtuSim : public AliAnalysisTaskSE {
 
   TH1 *fHistStat;
   TH1 *fHistDeltaA;
+  TH1 *fHistDeltaB;
+  TH1 *fHistDeltaC;
 
   AliTRDgtuSim *fGtuSim;
 

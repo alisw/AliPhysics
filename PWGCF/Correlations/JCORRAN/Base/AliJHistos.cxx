@@ -1262,9 +1262,9 @@ void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
 	cout<<endl;
 	dir->Print();
 
-	dir->cd();
+	//dir->cd();    // Not needed in new implementation of AliJHistManager
 
-	fHmgInclusive = new AliJHistManager("hst");
+	fHmgInclusive = new AliJHistManager("hst",sep[1]);
 	fHmgInclusive->LoadConfig();
 
 	fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");

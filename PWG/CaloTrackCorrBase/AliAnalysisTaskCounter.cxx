@@ -59,7 +59,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
 }
 
 //______________________________________________
-/// Constructor.
+/// Default Constructor.
 //_______________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskCounter"),
@@ -77,7 +77,6 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fhCentrality(0), fhEventPlaneAngle(0),
     fh1Xsec(0),      fh1Trials(0)
 {
-  DefineOutput(1, TList::Class());
 }
 
 //_______________________________________________

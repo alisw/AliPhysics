@@ -96,7 +96,9 @@ private:
   TNtuple* PairReader; //PairReader for CorrFit
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoQinvCorrFctn, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoQinvCorrFctn, 1);
+  /// \endcond
 #endif
 };
 

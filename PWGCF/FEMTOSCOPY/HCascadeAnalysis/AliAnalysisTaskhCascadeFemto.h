@@ -198,7 +198,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistInvMassAntiL;                     //!
   TH2F              *fHistInvMassXiInPairs;                 //!
   TH2F              *fHistXiMultvsCent;                     //!
-  AliCFContainer    *fCFContCascadeCuts;                    //!
+//  AliCFContainer    *fCFContCascadeCuts;                    //!
 
   TH2F              *fHistpXiSignalRealKstar;               //!
   TH2F              *fHistapXiSignalRealKstar;              //!
@@ -247,7 +247,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   AliAnalysisTaskhCascadeFemto(const AliAnalysisTaskhCascadeFemto&); // not implemented
   AliAnalysisTaskhCascadeFemto& operator=(const AliAnalysisTaskhCascadeFemto&); // not implemented
   //
-  ClassDef(AliAnalysisTaskhCascadeFemto, 1);
+  ClassDef(AliAnalysisTaskhCascadeFemto, 2);
 };
 
 #endif

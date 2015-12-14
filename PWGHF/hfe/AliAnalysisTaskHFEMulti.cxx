@@ -34,7 +34,6 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TParticle.h>
-#include <TProfile.h>
 #include <TString.h>
 #include <TF1.h>
 #include <TTree.h>
@@ -88,10 +87,6 @@
 
 ClassImp(AliAnalysisTaskHFEMulti)
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
     //____________________________________________________________
     AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti():
     AliAnalysisTaskSE("PID efficiency Analysis")
@@ -119,6 +114,8 @@ using std::endl;
     , fCentralityEstimator("V0M")
     , fContributors(0.5)
     , fSPDtracklets(0)
+    , fSPDtrackletsCorr(0.0)
+    , fSPDtrkF(-1)
     , fWeightBackGround(0.)
     , fVz(0.0)
     , fContainer(NULL)
@@ -134,6 +131,7 @@ using std::endl;
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fRefMulti(-1.)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -150,6 +148,7 @@ using std::endl;
     memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
     memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
     memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
+    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *2);
 
     SetppAnalysis();
 }
@@ -181,6 +180,8 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const char * name):
     , fCentralityEstimator("V0M")
     , fContributors(0.5)
     , fSPDtracklets(0)
+    , fSPDtrackletsCorr(0.0)
+    , fSPDtrkF(-1)
     , fWeightBackGround(0.)
     , fVz(0.0)
     , fContainer(NULL)
@@ -196,6 +197,7 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const char * name):
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fRefMulti(-1.)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -221,6 +223,7 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const char * name):
     memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
     memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
     memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
+    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *2);
 
     SetppAnalysis();
 }
@@ -252,6 +255,8 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const AliAnalysisTaskHFEMulti &
     , fCentralityEstimator(ref.fCentralityEstimator)
     , fContributors(ref.fContributors)
     , fSPDtracklets(ref.fSPDtracklets)
+    , fSPDtrackletsCorr(ref.fSPDtrackletsCorr)
+    , fSPDtrkF(ref.fSPDtrkF)
     , fWeightBackGround(ref.fWeightBackGround)
     , fVz(ref.fVz)
     , fContainer(NULL)
@@ -267,6 +272,7 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const AliAnalysisTaskHFEMulti &
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fRefMulti(-1.)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -321,6 +327,8 @@ void AliAnalysisTaskHFEMulti::Copy(TObject &o) const {
     target.fCentralityEstimator = fCentralityEstimator;
     target.fContributors = fContributors;
     target.fSPDtracklets = fSPDtracklets;
+    target.fSPDtrackletsCorr = fSPDtrackletsCorr;
+    target.fSPDtrkF = fSPDtrkF;
     target.fWeightBackGround = fWeightBackGround;
     target.fVz = fVz;
     target.fContainer = fContainer;
@@ -336,6 +344,7 @@ void AliAnalysisTaskHFEMulti::Copy(TObject &o) const {
     target.fMCQA = fMCQA;
     target.fExtraCuts = fExtraCuts;
     target.fBackgroundSubtraction = fBackgroundSubtraction;
+    target.fRefMulti = fRefMulti;
     target.fQA = fQA;
     target.fOutput = fOutput;
     target.fParams = fParams;
@@ -389,11 +398,9 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     if(!fOutput) fOutput = new TList;
     fOutput->SetOwner();
     if(!fParams) {
-        cerr <<"Parameter class not set, using default" << endl;
+        AliError("Parameter class not set, using default");
         fParams = new AliHFEparamBag("default");
     }
-    cout << "Dump bag in UserCreateOutputObjects: " << endl;
-    fParams->Dump();
 
     // Automatic determination of the analysis mode
     AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -408,10 +415,13 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
     // First Part: Make QA histograms
-    //fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
+    fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
     //fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
     //fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
-    //fQA->Add(fQACollection);
+    fQACollection->CreateTH2F("NtrVsZ","Ntracklets vs Z vertex",400,-10,10,200,0,200);
+    fQACollection->CreateTH2F("NtrCorrVsZ","Ntracklets after correction vs Z vertex",400,-10,10,200,0,200);
+    fQACollection->CreateTH2F("NchCorrVsNtr","Ntracklets after correction vs Ncharged;N_{tr}^{cor};N_{ch}",200,0,200,300,0,300);
+    fQA->Add(fQACollection);
 
     // Initialize PID
     fPID->SetHasMCData(HasMCData());
@@ -643,7 +653,7 @@ void AliAnalysisTaskHFEMulti::ProcessMC(){
     else eventContainer[0] = fAODMCHeader->GetVtxZ();
     eventContainer[2] = fCentralityF;
     eventContainer[3] = fContributors;
-    eventContainer[4] = fSPDtracklets;
+    eventContainer[4] = fSPDtrkF;
     fVz = eventContainer[0];
     //printf("z position is %f\n",eventContainer[0]);
     //if(fCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) 
@@ -769,7 +779,8 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
     eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
     eventContainer[2] = fCentralityF; 
     eventContainer[3] = fContributors; 
-    eventContainer[4] = fSPDtracklets; 
+    //eventContainer[4] = fSPDtracklets; 
+    eventContainer[4] = fSPDtrkF; 
 
     //printf("value event container %f, %f, %f, %f\n",eventContainer[0],eventContainer[1],eventContainer[2],eventContainer[3]);
 
@@ -799,6 +810,13 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
     fContainer->NewEvent();
 
     fCFM->SetRecEventInfo(fAOD);
+    
+    Int_t nch = GetNcharged();
+    if(fContributors == 1.5){
+        fQACollection->Fill("NtrVsZ", eventContainer[0], static_cast<Double_t>(fSPDtracklets));
+        fQACollection->Fill("NtrCorrVsZ", eventContainer[0], fSPDtrackletsCorr);
+        fQACollection->Fill("NchCorrVsNtr",fSPDtrackletsCorr, static_cast<Double_t>(nch));
+    }
 
     if(!fExtraCuts){
         fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -831,7 +849,11 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
     //printf("Number of kink mother in the events %d\n",numberofmotherkink);
 
     // Background subtraction-------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
+    if(fRefMulti>0){
+        if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fSPDtrkF);
+    }else{
+        if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
+    }
     //------------------------------------------------------------------------------------------
 
     // Loop over tracks
@@ -871,7 +893,11 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
             if(fRejectMCFakeTracks && IsMCFakeTrack(track)) signal = kFALSE;
         }
 
-        fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
+        if(fRefMulti>0){
+            fVarManager->NewTrack(track, mctrack, fSPDtrkF, -1, signal);
+        }else{
+            fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
+        }
 
         if(fFillNoCuts) {
             if(signal || !fFillSignalOnly){
@@ -924,7 +950,11 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
         hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
         hfetrack.SetRecTrack(track);
         if(HasMCData()) hfetrack.SetMCTrack(mctrack);
-        hfetrack.SetCentrality(fCentralityF);
+        if(fRefMulti>0){
+            hfetrack.SetCentrality(fSPDtrkF);
+        }else{
+            hfetrack.SetCentrality(fCentralityF);
+        }
         hfetrack.SetMulitplicity(ncontribVtx); // for correction
         if(IsPbPb()) hfetrack.SetPbPb();
         else{
@@ -954,7 +984,10 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
                     }
                 }
             }
-            fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
+            if(fRefMulti>0)
+                fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fSPDtrkF, -1,mcsource, indexmother,mcQAsource);
+            else
+                fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
         }
         //---------------------------------------------------------------------------------------------------------------------
 
@@ -980,7 +1013,11 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
 //END TRACK LOOP
 
     // Background subtraction-------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+    if(fRefMulti>0){
+        if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fSPDtrkF);
+    }else{
+        if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+    }
     //------------------------------------------------------------------------------------------
 
     //fQACollection->Fill("nElectronTracksEvent", nElectronCandidates);
@@ -993,7 +1030,11 @@ Bool_t AliAnalysisTaskHFEMulti::ProcessMCtrack(AliVParticle *track){
     // Additionally Fill a THnSparse for Signal To Background Studies
     // Works for AOD and MC analysis Type
     //
-    fVarManager->NewTrack(track, NULL, fCentralityF, -1, kTRUE);
+    if(fRefMulti>0){
+        fVarManager->NewTrack(track, NULL, fSPDtrkF, -1, kTRUE);
+    }else{
+        fVarManager->NewTrack(track, NULL, fCentralityF, -1, kTRUE);
+    }
     //printf("Is primary %d\n",((Int_t)track->IsPrimary()));
 
 
@@ -1071,9 +1112,9 @@ void AliAnalysisTaskHFEMulti::MakeEventContainer(){
     //
 
     const Int_t kNvar = 5;  // number of variables on the grid: 
-    Int_t nBins[kNvar] =     {120,  2,   11,  2,  150};
-    Double_t binMin[kNvar] = {-30., 0.,  0., 0.,   0.};
-    Double_t binMax[kNvar] = { 30., 2., 11., 2., 150.};
+    Int_t nBins[kNvar] =     {100,  2,   11,  2,  11};
+    Double_t binMin[kNvar] = {-10., 0.,  0., 0.,   0.};
+    Double_t binMax[kNvar] = { 10., 2., 11., 2., 11.};
 
     AliCFContainer *evCont = new AliCFContainer("eventContainer", "Container for events", AliHFEcuts::kNcutStepsEvent, kNvar, nBins);
 
@@ -1294,8 +1335,32 @@ Bool_t AliAnalysisTaskHFEMulti::ReadCentrality() {
         //printf("Number of contributors %d\n",contributorstemp);
     }
 
+
+
+
     fSPDtracklets=GetITSMultiplicity(fInputEvent);
-//TODO safe corrected SPD tracklets instead of raw
+    if(IspPb() && fRefMulti>0){
+        Int_t period = (fInputEvent->GetRunNumber() < 195484)?0:1; //TODO get correct period with nicer function
+        fSPDtrackletsCorr = GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti); 
+        Int_t multiplicityLimits[8] = {0, 1, 22, 29, 35, 44, 70, 200};
+        //Int_t multiplicityLimits[11] = {1, 8, 15, 20, 25, 30, 40, 50, 70, 100, 200};
+        //Int_t multiplicityLimits[10] = {1, 8, 15, 20, 25, 31, 40, 55, 80, 200};
+
+
+        if(fSPDtrackletsCorr < multiplicityLimits[0]){
+            //store in underflow bin
+            fSPDtrkF=-1;
+            return kTRUE;
+        }
+
+        for(Int_t ibin = 0; ibin < 7; ibin++){  
+            if(fSPDtrackletsCorr >= multiplicityLimits[ibin] && fSPDtrackletsCorr < multiplicityLimits[ibin + 1]){
+                bin = ibin;
+                break;
+            }else bin = 11; //overflow
+        }
+        fSPDtrkF=bin;
+    }
 
     return kTRUE;
 }
@@ -1307,7 +1372,7 @@ Int_t AliAnalysisTaskHFEMulti::GetITSMultiplicity(AliVEvent *ev){
     //
     Int_t nTracklets = 0;
     Int_t nAcc = 0;
-    Double_t etaRange = 1.6;
+    Double_t etaRange = 1.0;
 
     if (ev->IsA() == AliAODEvent::Class()) {
         AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
@@ -1408,8 +1473,9 @@ Double_t AliAnalysisTaskHFEMulti::GetCorrectedNtracklets(TProfile* estimatorAvg,
     printf("ERROR: Missing TProfile for correction of multiplicity\n");
     return uncorrectedNacc;
   }
+  Int_t pbin = estimatorAvg->FindBin(vtxZ);
 
-  Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+  Double_t localAvg = estimatorAvg->GetBinContent(pbin);
 
   Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
 
@@ -1418,3 +1484,27 @@ Double_t AliAnalysisTaskHFEMulti::GetCorrectedNtracklets(TProfile* estimatorAvg,
   return correctedNacc;
 }
 
+//____________________________________________________________________________
+Int_t AliAnalysisTaskHFEMulti::GetNcharged(){
+    //counts all tracks in eta<1 with charge!=0
+
+    Int_t Nch = 0;
+
+    if(!HasMCData()) return Nch; // if no MC info return 0
+
+    // loop over all tracks 
+    for (Int_t igen = 0; igen < fAODArrayMCInfo->GetEntriesFast(); igen++){
+        AliAODMCParticle *mctrack=(AliAODMCParticle*)fAODArrayMCInfo->UncheckedAt(igen);
+        Int_t charge = mctrack->Charge();
+        Double_t eta = mctrack->Eta();
+        Bool_t isPhysPrim = mctrack->IsPhysicalPrimary();
+        if(charge!=0){
+            if(eta > -1.0 && eta < 1.0){
+                if(isPhysPrim){
+                    Nch++;
+                }
+            }
+        }
+    }
+    return Nch;
+}

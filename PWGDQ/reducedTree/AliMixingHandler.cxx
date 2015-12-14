@@ -157,49 +157,36 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   //
   if(!fIsInitialized) Init();
   if(leg1List->GetEntries()==0 && leg2List->GetEntries()==0) return;
-  //cout << "AliMixingHandler::FillEvent (pos/neg) :: "
-  //     << leg1List->GetEntries() << " / " << leg2List->GetEntries() << endl;
   
   // randomly accept/reject this event in case fDownscaleEvents is used
   if(fDownscaleEvents>1.0 && (gRandom->Rndm()>(1.0/fDownscaleEvents))) 
     return;
   
-  //cout << "AliMixingHandler::FillEvent :: 1" << endl;
   // find the event category
   Int_t category = FindEventCategory(values[fCentralityVariable], values[fEventVertexVariable], values[fEventPlaneVariable]);
   if(category<0) return;   // event characteristics outside the defined ranges
   
-  //cout << "AliMixingHandler::FillEvent :: 2" << endl;
   TClonesArray *leg1PoolP = static_cast<TClonesArray*>(fPoolsLeg1.At(category));
   if(!leg1PoolP) leg1PoolP = new(fPoolsLeg1[category]) TClonesArray("TList",1);
   leg1PoolP->SetOwner(kTRUE);
-  //cout << "AliMixingHandler::FillEvent :: 3" << endl;
   TClonesArray *leg2PoolP=static_cast<TClonesArray*>(fPoolsLeg2.At(category));
   if(!leg2PoolP) leg2PoolP = new(fPoolsLeg2[category]) TClonesArray("TList",1);
   leg2PoolP->SetOwner(kTRUE);
-  //cout << "AliMixingHandler::FillEvent :: 4" << endl;
   
   TClonesArray &leg1Pool=*leg1PoolP;
   TClonesArray &leg2Pool=*leg2PoolP;
   
   // add the leg lists to the appropriate pools
   TList *list1 = new(leg1Pool[leg1Pool.GetEntries()]) TList();
-  //cout << "AliMixingHandler::FillEvent :: 5" << endl;
   TList *list2 = new(leg2Pool[leg2Pool.GetEntries()]) TList();
-  //cout << "AliMixingHandler::FillEvent :: 6" << endl;
   list1->SetOwner(kTRUE); list2->SetOwner(kTRUE);
-  //cout << "AliMixingHandler::FillEvent :: 7" << endl;
   for(Int_t it=0; it<leg1List->GetEntries(); ++it) 
     list1->Add(leg1List->At(it)->Clone());
   for(Int_t it=0; it<leg2List->GetEntries(); ++it) 
     list2->Add(leg2List->At(it)->Clone());
-  //cout << "AliMixingHandler::FillEvent :: 8" << endl;
     
   // increment the size of the pools in this category
   ULong_t mixingMask = IncrementPoolSizes(leg1List,leg2List,category);
-  //cout << "AliMixingHandler::FillEvent mixingMask = " << flush;
-  //AliReducedVarManager::PrintBits(mixingMask);
-  //cout << endl;
   
   // if full pool(s) were found then run the event mixing
   if(mixingMask) {
@@ -478,14 +465,11 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   // unset the mixing flags --------------------------------------
   iterEv1Leg1Pool.Reset(); 
   iterEv1Leg2Pool.Reset();
-  cout << "AliMixingHandler::RunEventMixing(): Reset track flags" << endl;
   for(Int_t ie1=0; ie1<entries; ++ie1) {
-    cout << "Event #" << ie1 << endl;
     TList* leg1List = (TList*)iterEv1Leg1Pool();        
     TIter iterLeg1(leg1List);
     AliReducedBaseTrack* track=0x0;
     while((track=(AliReducedBaseTrack*)iterLeg1())) {
-      cout << "Leg1 track pt/flags before/flags after: " << track->Pt() << "/" << flush;
       AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
       testFlags1 = mixingMask & track->GetFlags();
       if(!testFlags1) {
@@ -502,7 +486,6 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
     TList* leg2List = (TList*)iterEv1Leg2Pool();
     TIter iterLeg2(leg2List);
     while((track=(AliReducedBaseTrack*)iterLeg2())) {
-      cout << "Leg2 track pt/flags before/flags after: " << track->Pt() << "/" << flush;
       AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
       testFlags1 = mixingMask & track->GetFlags();
       if(!testFlags1) {
@@ -518,21 +501,16 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   }  // end loop over events
   
   // clean the tracks which don't have enabled mixing flags anymore
-  cout << "AliMixingHandler::RunEventMixing() Clean tracks with no enabled flags" << endl;
   AliReducedBaseTrack* track=0x0;
   // leg1 lists
   iterEv1Leg1Pool.Reset(); TList* leg1List=0x0;
   while((leg1List=(TList*)iterEv1Leg1Pool())) {
     TIter iterLeg1(leg1List);
     while((track=(AliReducedBaseTrack*)iterLeg1())) {
-      cout << "Leg1 track pt/flags: " << track->Pt() << "/" << flush;
       AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
       if(!track->GetFlags()) {
-	cout << " ... removing" << endl;
 	leg1List->Remove(track); delete track;
       }
-      else
-        cout << " ... keep" << endl;
     }
   }  // end while
   // leg2 lists
@@ -540,32 +518,22 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   while((leg2List=(TList*)iterEv1Leg2Pool())) {  
     TIter iterLeg2(leg2List);
     while((track=(AliReducedBaseTrack*)iterLeg2())) {
-      cout << "Leg2 track pt/flags: " << track->Pt() << "/" << flush;
       AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
       if(!track->GetFlags()) {
-	cout << " ... removing" << endl;
 	leg2List->Remove(track); delete track;
       }
-      else
-	cout << " ... keep" << endl;
     }
   }  // end while
   
   // clean the events without any tracks left
-  cout << "AliMixingHandler::RunEventMixing() Clean events" << endl;
-  // TODO: reverse parsing of the array
   for(Int_t i=leg1Pool->GetEntries()-1;i>=0;--i) {
     leg1List=(TList*)leg1Pool->At(i);
     leg2List=(TList*)leg2Pool->At(i);
-    cout << "leg1/leg2 tracks : " << leg1List->GetEntries() << "/" << leg2List->GetEntries() << endl;
     if(leg1List->GetEntries()==0 && 
        leg2List->GetEntries()==0) {
-      cout << "    ... removing" << endl;
        leg1Pool->RemoveAt(i); leg1Pool->Compress(); //delete leg1List;
        leg2Pool->RemoveAt(i); leg2Pool->Compress(); //delete leg2List;
-    }    
-    else
-      cout << "    ... keep" << endl;
+    }
   }
   
   /*

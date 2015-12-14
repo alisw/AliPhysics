@@ -63,7 +63,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 			fCutMesonArray = CutArray;
 		}
 		void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
-		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+		void SetDoMesonQA(Int_t flag){ fDoMesonQA = flag; }
 		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
 		
@@ -115,11 +115,13 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TList 									*fCutElectronArray;
 		TList	 								*fCutMesonArray;
 		//TList	 								**fGammasPool;
-		AliConvEventCuts 						*fEventCuts;
-		AliConversionPhotonCuts 				*fConversionCuts;
+		AliConvEventCuts 							*fEventCuts;
+		AliConversionPhotonCuts 						*fConversionCuts;
 		TH1F 									**hESDConvGammaPt;
 		TH1F 									**hESDConvGammaEta;
-		TH2F 									**hESDConvGammaZR;
+		//TH2F 									**hESDConvGammaZR;
+		THnSparseF								**sESDConvGammaZR;
+		THnSparseF 								**sESDConvGammaXY;
 		TH1F 									**hESDDalitzElectronPt;
 		TH1F 									**hESDDalitzPositronPt;
 		TH1F 									**hESDDalitzElectronPhi;
@@ -247,6 +249,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hESDTrueSecPositronPt;
 		TH1F 									**hESDTrueSecElectronPt;
 		TH1F 									**hESDTruePi0DalitzConvGammaPt;
+		TH1F									**hESDTruePi0DalitzConvGammaR;
 		TH1F 									**hESDTruePi0DalitzPositronPt;
 		TH1F 									**hESDTruePi0DalitzPositronPtMB;
 		TH1F 									**hESDTruePi0DalitzElectronPt;
@@ -288,7 +291,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Int_t									fIsHeavyIon;
 		Bool_t 									fDoMesonAnalysis;
 		Bool_t 									fDoChicAnalysis;
-		Bool_t 									fDoMesonQA;
+		Int_t 									fDoMesonQA;
 		Bool_t 									fSetProductionVertextoVGamma;
 		Bool_t 									fIsFromMBHeader;
 		Bool_t 									fIsMC;
