@@ -98,6 +98,7 @@ void runEMCalJetAnalysisNew(
   // Setup task
   if (bDoFullJets || bDoTender || bDoHadCorr) {
     AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
+    pSetupTask->SetOcdbPath("raw://");
   }
 
   TString sTracksName;

@@ -113,6 +113,7 @@ void runEMCalJetAnalysisOld(
   // Setup task
   if (bDoEmcal) {
     AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
+    pSetupTask->SetOcdbPath("raw://");
   }
 
   if (iDataType == kEsd) {
