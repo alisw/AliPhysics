@@ -111,6 +111,7 @@ void runEMCalJetAnalysisOldJetPrep(
   // Setup task
   if (bDoEmcal) {
     AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
+    pSetupTask->SetOcdbPath("raw://");
   }
 
   if (bDoTender) {
