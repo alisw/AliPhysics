@@ -124,7 +124,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fExoticCell(0),
   fUseExoticCell(0),
   fMinEnergy(0),
-  fSeedEnergy(0.3),
+  fSeedEnergy(0.1),
+  fLocMaxCutEDiff(0.03),
   fUseMinEnergy(0),
   fMinNCells(0),
   fUseNCells(0),
@@ -258,6 +259,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseExoticCell(ref.fUseExoticCell),
   fMinEnergy(ref.fMinEnergy),
   fSeedEnergy(ref.fSeedEnergy),
+  fLocMaxCutEDiff(ref.fLocMaxCutEDiff),
   fUseMinEnergy(ref.fUseMinEnergy),
   fMinNCells(ref.fMinNCells),
   fUseNCells(ref.fUseNCells),
@@ -1253,9 +1255,9 @@ Int_t AliCaloPhotonCuts::FindSecondLargestCellInCluster(AliVCluster* cluster, Al
   
   if (nCells < 2) return idMax;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
-    if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
-      eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-      idMax               = cluster->GetCellAbsId(iCell);
+    if (cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell])> eMax){
+      eMax                = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell]);
+      idMax               = cluster->GetCellsAbsId()[iCell];
       iCellMax            = iCell;
     }  
   }  
@@ -1263,9 +1265,9 @@ Int_t AliCaloPhotonCuts::FindSecondLargestCellInCluster(AliVCluster* cluster, Al
   eMax                    = 0.;
   for (Int_t iCell = 1;iCell < nCells;iCell++){
     if (iCell == iCellMax) continue;
-    if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
-      eMax                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-      idMax2              = cluster->GetCellAbsId(iCell);
+    if (cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell])> eMax){
+      eMax                = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iCell]);
+      idMax2              = cluster->GetCellsAbsId()[iCell];
     }  
   }  
 
@@ -1289,7 +1291,7 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
   
   if (nCells < 1) return idMax;
   for (Int_t iCell = 0;iCell < nCells;iCell++){
-    Int_t cellAbsID       = cluster->GetCellAbsId(iCell);
+    Int_t cellAbsID       = cluster->GetCellsAbsId()[iCell];
     if (cells->GetCellAmplitude(cellAbsID)> eMax){
       eMax                = cells->GetCellAmplitude(cellAbsID);
       idMax               = cellAbsID;
@@ -1302,7 +1304,7 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
 
 //________________________________________________________________________
 //************** Find number of local maxima in cluster ******************
-//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils ***************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event, Int_t *absCellIdList, Float_t* maxEList){
 
@@ -1321,7 +1323,7 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
   Int_t idMax             = -1;
   
   for (Int_t iCell = 0;iCell < nCells;iCell++){
-    absCellIdList[iCell]  = cluster->GetCellAbsId(iCell);
+    absCellIdList[iCell]  = cluster->GetCellsAbsId()[iCell];
 //     Int_t imod = -1, icol = -1, irow = -1;
 //     imod = GetModuleNumberAndCellPosition(absCellIdList[iCell], icol, irow);
 //     cout << absCellIdList[iCell] <<"\t" << cells->GetCellAmplitude(absCellIdList[iCell]) << "\t"<< imod << "\t" << icol << "\t" << irow << endl;
@@ -1336,22 +1338,19 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
     // check whether valid cell number is selected
     if (absCellIdList[iCell] >= 0){
       // store current energy and cell id
-      absCellId1          = absCellIdList[iCell];
+      absCellId1          = cluster->GetCellsAbsId()[iCell];
       Float_t en1         = cells->GetCellAmplitude(absCellId1);
-      if (en1 < fSeedEnergy) {
-        absCellIdList[iCell] = -1;
-        continue;
-      }  
+      
       // loop over other cells in cluster
       for (Int_t iCellN = 0;iCellN < nCells;iCellN++){
         // jump out if array has changed in the meantime
         if (absCellIdList[iCell] == -1) continue;
-        // don't compare to yourself
-        if (iCell == iCellN) continue;
-        
         // get cell id & check whether its valid
-        absCellId2        = absCellIdList[iCellN];
+        absCellId2        = cluster->GetCellsAbsId()[iCellN];
+
+        // don't compare to yourself
         if (absCellId2 == -1) continue;
+        if (absCellId1 == absCellId2) continue;
         
         // get cell energy of second cell
         Float_t en2       = cells->GetCellAmplitude(absCellId2);
@@ -1361,11 +1360,14 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
           // determine which cell has larger energy, mask the other
 //           cout << "found neighbour: " << absCellId1 << "\t" << absCellId2 << endl;
 //           cout << "energies: " << en1 << "\t" << en2 << endl;
-          if (en1 > en2){
-            absCellIdList[iCellN] = -1;
+          if (en1 > en2 ){
+            absCellIdList[iCellN]       = -1;
+            if (en1 < en2 + fLocMaxCutEDiff)
+                absCellIdList[iCell]    = -1;
           } else {
-            absCellIdList[iCell]  = -1;
-            continue;
+            absCellIdList[iCell]        = -1;
+            if (en1 > en2 - fLocMaxCutEDiff)
+                absCellIdList[iCellN]   = -1;
           }  
         }
       }
@@ -1377,8 +1379,11 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
   for (Int_t iCell = 0;iCell < nCells;iCell++){
 //     cout << iCell << "\t" << absCellIdList[iCell] << endl;
     if (absCellIdList[iCell] > -1){
+      Float_t en          = cells->GetCellAmplitude(absCellIdList[iCell]);
+      // check whether cell energy is larger than required seed
+      if (en < fSeedEnergy) continue;
       absCellIdList[nMaximaNew]   = absCellIdList[iCell];
-      maxEList[nMaximaNew]        = cells->GetCellAmplitude(absCellIdList[iCell]);
+      maxEList[nMaximaNew]        = en;
       nMaximaNew++;
     }  
   }  
@@ -1386,7 +1391,7 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
   // check whether a local maximum was found
   // if no maximum was found use highest cell as maximum
   if (nMaximaNew == 0){
-    nMaximaNew            =  1;
+    nMaximaNew            = 1;
     maxEList[0]           = eMax;
     absCellIdList[0]      = idMax;
   }  
@@ -1396,7 +1401,7 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
 
 //________________________________________________________________________
 //************** Function to determine neighbours of cells ***************
-//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils ***************
 //************************************************************************
 Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
   Bool_t areNeighbours = kFALSE ;
@@ -1432,7 +1437,7 @@ Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
 
 //________________________________________________________________________
 //************** Function to obtain module number, row and column ********
-//* derived from G. Conesa Balbastre's AliCalorimeterUtils *******************
+//* derived from G. Conesa Balbastre's AliCalorimeterUtils ***************
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow){
   if( fClusterType == 1 ){ //EMCAL
@@ -1483,7 +1488,7 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
   Float_t eCluster        = 0;
   
   for(Int_t iCell    = 0;iCell < ncells;iCell++ ) {
-    absCellIdList[iCell]  = cluster->GetCellAbsId(iCell);
+    absCellIdList[iCell]  = cluster->GetCellsAbsId()[iCell];
     Float_t ec            = cells->GetCellAmplitude(absCellIdList[iCell]);
     eCluster+=ec;
   }

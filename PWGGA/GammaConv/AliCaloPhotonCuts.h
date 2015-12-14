@@ -120,8 +120,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     //virtual destructor
     virtual     ~AliCaloPhotonCuts();                          
 
-    virtual Bool_t  IsSelected(TObject* /*obj*/)                  {return kTRUE;}
-    virtual Bool_t  IsSelected(TList* /*list*/)                  {return kTRUE;}
+    virtual Bool_t  IsSelected(TObject* /*obj*/)               {return kTRUE;}
+    virtual Bool_t  IsSelected(TList* /*list*/)                {return kTRUE;}
 
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight=1.);
     Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
@@ -148,18 +148,18 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
 
     void        InitCutHistograms(TString name="");
-    void        SetFillCutHistograms(TString name="")              {if(!fHistograms){InitCutHistograms(name);} return;}
-    TList*      GetCutHistograms()                        {return fHistograms;}
-    TList*      GetExtQAHistograms()                      {return fHistExtQA;}
-    void        FillClusterCutIndex(Int_t photoncut)              {if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
+    void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
+    TList*      GetCutHistograms()                              {return fHistograms;}
+    TList*      GetExtQAHistograms()                            {return fHistExtQA;}
+    void        FillClusterCutIndex(Int_t photoncut)            {if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
     void        InitializeEMCAL(AliVEvent *event);
     void        InitializePHOS(AliVEvent *event);
 
-    void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA)          {fExtendedMatchAndQA = extendedMatchAndQA; return;}
-    void        SetExtendedQA(Int_t extendedQA)                  {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
+    void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
+    void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
     void        FillHistogramsExtendedQA(AliVEvent *event);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
-    Int_t       GetIsPureCaloCut()                        {return fIsPureCalo;}
+    Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -178,6 +178,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
         
+    // Set basic merging cuts
+    void        SetSeedEnergy(Double_t seed)                    {fSeedEnergy      = seed; return;}
+    void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
+    
     // Set Individual Cuts
     Bool_t      SetClusterTypeCut(Int_t);
     Bool_t      SetMinEtaCut(Int_t);
@@ -250,6 +254,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseExoticCell;                           // flag for switching on exotic cell cut
     Double_t  fMinEnergy;                               // minium energy per cluster
     Double_t  fSeedEnergy;                              // seed energy for clusters
+    Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
     Bool_t    fUseMinEnergy;                            // flag for switching on minimum energy cut
     Int_t     fMinNCells;                               // minimum number of cells 
     Bool_t    fUseNCells;                               // flag for switching on minimum N Cells cut
@@ -350,7 +355,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,17)
+    ClassDef(AliCaloPhotonCuts,18)
 };
 
 #endif
