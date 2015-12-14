@@ -91,10 +91,10 @@ void  AliZDCEnCalib::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n\n ####### Energy calibration coefficients #######	\n");
-   printf("  ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
-   printf("  ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
-   printf("  ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
-   printf("  ZP2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
+   printf("  ZNC = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
+   printf("  ZPC = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
+   printf("  ZNA = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
+   printf("  ZPA = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
    printf("  ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
    printf("  ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
 

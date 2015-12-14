@@ -60,9 +60,10 @@ class AliTRDgtuParam : public TObject {
   Int_t GetDeltaY() const { return fgDeltaY; }
   Int_t GetDeltaAlpha() const { return fgDeltaAlpha; }
   //conversion rejection stuff
-  static Int_t GetPtCut()  { return ( (Int_t) fgPtCut * fgShiftLengthNorm); }
+  static Int_t GetInvPtDevCut()  { return (Int_t) (fgInvPtDevCut * fgShiftLengthNorm); }
   static Int_t GetShiftLengthNorm()  { return fgShiftLengthNorm; }
   static Int_t GetCorrectionMode() { return fgCorrectionMode; }
+  static Bool_t GetWriteSagittaOutputToTrackWordBC() { return fgWriteSagittaOutputToTrackWordBC; }
   static Int_t GetLayerInvXpos(Int_t layer) { return fgLayerInvXpos[layer]*1e6; }
   static Int_t GetLayerXpos(Int_t layer) { return fgLayerXpos[layer]*10; }
   Int_t GetZpos(Int_t stack, Int_t layer, Int_t binZ);
@@ -83,9 +84,10 @@ class AliTRDgtuParam : public TObject {
   static void SetDeltaY(Int_t dy) { fgDeltaY = dy; }
   static void SetDeltaAlpha(Int_t da) { fgDeltaAlpha = da; }
 
-  static void SetPtCut(Float_t dPt) {fgPtCut = dPt; }
+  static void SetInvPtDevCut(Float_t dInvPt) {fgInvPtDevCut = dInvPt; }
   static void SetShiftLengthNorm(Int_t shiftLengthNorm) {fgShiftLengthNorm = shiftLengthNorm; }
   static void SetCorrectionMode(Int_t corrMode) {fgCorrectionMode = corrMode; }
+  static void SetWriteSagittaOutputToTrackWordBC(Bool_t writeSagittaOutputToTrackWordBC) { fgWriteSagittaOutputToTrackWordBC = writeSagittaOutputToTrackWordBC; }
 
   static void SetUseGTUconst(Bool_t b) { fgUseGTUconst = b; }
   static Bool_t GetUseGTUconst() { return fgUseGTUconst; }
@@ -139,9 +141,10 @@ class AliTRDgtuParam : public TObject {
   static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
   static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
 
-  static       Float_t fgPtCut;     // max deviation from straight line fit 1/pt to sagitta 1/pt
+  static       Float_t fgInvPtDevCut;     // max deviation from straight line fit 1/pt to sagitta 1/pt
   static       Int_t fgShiftLengthNorm;  // shift normalization factor for integer calculation
   static       Int_t fgCorrectionMode;  // choose between optimizations for sagitta method
+  static       Bool_t fgWriteSagittaOutputToTrackWordBC; // write result of sagitta calculation in gtu simulation to track parameters b and c
   static       Float_t fgLayerInvXpos[6]; // inverse of x position for tracklets in different layers
   static       Float_t fgLayerXpos[6]; // x position for tracklets in different layers
 
@@ -159,6 +162,7 @@ class AliTRDgtuParam : public TObject {
   static const Float_t fgkInnerPadLength[6]; // geometry constant from GTU implementation
   static const Float_t fgkOuterPadLength[6]; // geometry constant from GTU implementation
   static const Float_t fgkAcoeff[32][6]; // geometry constant from GTU implementation
+  static const Float_t fgkZposLookupTable[5][6][16]; //chamber z position used for sagitta calculation
   static const Int_t   fgkMaskID[64]; // geometry constant from GTU implementation
 
   Float_t fVertexSize;		// assumed vertex size (z-dir.) for the z-channel map

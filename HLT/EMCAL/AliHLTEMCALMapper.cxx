@@ -21,6 +21,7 @@
 #include "AliHLTEMCALMapper.h"
 #include "assert.h"
 #include "AliHLTCaloConstants.h"
+#include "AliHLTCaloCoordinate.h"
 #include "TString.h"
 #include <memory>
 
@@ -163,3 +164,31 @@ AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607
 	return rname;
 }
 
+int AliHLTEMCALMapper::GetDDLFromSpec( const AliHLTUInt32_t spec ){
+  /* New handling: specification is the DDL number in EMCAL */
+  return int(spec);
+}
+
+int AliHLTEMCALMapper::GetModuleFromSpec(UInt_t specification){
+  /* New handling: specification is the DDL number in EMCAL */
+  if(specification >= 40) return -1;
+  return int(specification / 2);
+}
+
+void AliHLTEMCALMapper::FixCoordinate(AliHLTCaloCoordinate &coord){
+  /*
+   * Port from AliEMCALGeometry::ShiftOnlineToOfflineCellIndexes,
+   * fixes mapping problem in the DCAL. See documentation in AliEMCALGeometry
+   * for more information.
+   */
+  if ( coord.fModuleId == 13 || coord.fModuleId == 15 || coord.fModuleId == 17 )
+  {
+    // DCal odd SMs
+    coord.fZ -= 16; // Same cabling mapping as for EMCal, not considered offline.
+  }
+  else if ( coord.fModuleId == 18 || coord.fModuleId == 19 )
+  {
+    // DCal 1/3 SMs
+    coord.fX -= 16; // Needed due to cabling mistake.
+  }
+}

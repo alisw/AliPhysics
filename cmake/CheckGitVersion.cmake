@@ -30,9 +30,10 @@ if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
   # Get output of git describe
-  execute_process(COMMAND git describe --tags
+  execute_process(COMMAND sh -c "git describe --tags || (echo -n none-0-g ; git rev-parse --short HEAD)"
                   WORKING_DIRECTORY ${AliRoot_SOURCE_DIR}
                   OUTPUT_VARIABLE ALIROOT_GIT_DESCRIBE
+                  ERROR_QUIET
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   if(CMAKEDEBUG)

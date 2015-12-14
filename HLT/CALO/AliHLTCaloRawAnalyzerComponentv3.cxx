@@ -29,6 +29,7 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 #include "TStopwatch.h"
 
 #include "AliCaloRawAnalyzerFactory.h"
@@ -53,8 +54,6 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det, 
     fCurrentSpec(-1),
     fDebug(false),
     fSanityInspectorPtr(0),
-    fRawReaderMemoryPtr(0),
-    fAltroRawStreamPtr(0),
     fDetector(det),
     fAlgorithm(algo),
     fOffset(0),
@@ -128,8 +127,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
   {
     fRawDataWriter  = new RawDataWriter(fCaloConstants);
   }
-  fRawReaderMemoryPtr = new AliRawReaderMemory();
-  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, fDetector);  
 
   return iResult;
 }
@@ -139,16 +136,6 @@ int
 AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
   //comment
-  if(fAltroRawStreamPtr)
-  {
-    delete fAltroRawStreamPtr;
-    fAltroRawStreamPtr = 0;
-  }
-
-  if (fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
-  fRawReaderMemoryPtr=NULL;
-  if (fAltroRawStreamPtr) delete fAltroRawStreamPtr;
-  fAltroRawStreamPtr=NULL;
   if (fRawDataWriter) delete fRawDataWriter;
   fRawDataWriter=NULL;
   if (fSanityInspectorPtr) delete fSanityInspectorPtr;
@@ -175,7 +162,7 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
       wlast =  wcurrent;
       wcurrent =  watch.RealTime();
       cout << __FILE__ << __LINE__ << "The event rate is " <<
-          1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  watch.Start(kFALSE);
+          1000/( wcurrent  -  wlast ) << "  Hz" << endl;    watch.Start(kFALSE);
     }
   }
 }
@@ -238,6 +225,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
       continue;
     }
 
+    if(!fDetector.CompareTo("EMCAL")) {
+      // don't use STU DDLs
+      if(iter->fSpecification >= AliDAQ::GetFirstSTUDDL()) continue;
+    }
+    //std::cout << "I-Raw Analyzer: Next Block: " << iter->fSpecification << std::endl;
     if(iter->fSpecification != fCurrentSpec)
     {
       fCurrentSpec = iter->fSpecification;
@@ -245,10 +237,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
     }
 
     blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
-    totSize += blockSize; //Keeping track of the used size
+    //totSize += blockSize; //Keeping track of the used size
     AliHLTComponentBlockData bdChannelData;
     FillBlockData( bdChannelData );
-    bdChannelData.fOffset = 0; //FIXME
+    bdChannelData.fOffset = totSize - blockSize; //FIXME
     bdChannelData.fSize = blockSize;
     bdChannelData.fDataType = GetOutputDataType();
     bdChannelData.fSpecification = iter->fSpecification;
@@ -277,23 +269,28 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   AliHLTCaloChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(outputPtr); 
   AliHLTCaloChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(outputPtr+sizeof(AliHLTCaloChannelDataHeaderStruct)); 
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
-  fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
-  fRawReaderMemoryPtr->Reset();
-  fRawReaderMemoryPtr->NextEvent();
+  AliRawReaderMemory rawReaderMemoryPtr;
+  rawReaderMemoryPtr.SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
+  rawReaderMemoryPtr.SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
+
+  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, fDetector);
+
+  rawReaderMemoryPtr.Reset();
+  rawReaderMemoryPtr.NextEvent();
+
 
   if( fDoPushRawData == true)
   {
     fRawDataWriter->NewEvent( );
   }
 
-  if(fAltroRawStreamPtr->NextDDL())
+  if(altroRawStreamPtr.NextDDL())
   {
     int cnt = 0;
     fOffset = 0;
-    while( fAltroRawStreamPtr->NextChannel()  )
+    while( altroRawStreamPtr.NextChannel()  )
     {
-      if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 )
+      if(  altroRawStreamPtr.GetHWAddress() < 128 || ( altroRawStreamPtr.GetHWAddress() ^ 0x800) < 128 )
       {
         continue;
       }
@@ -301,7 +298,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
       {
         ++ cnt;
         //UShort_t* firstBunchPtr = 0;
-        int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress());
+        int chId = fMapperPtr->GetChannelID(iter->fSpecification, altroRawStreamPtr.GetHWAddress());
         //patch to skip LG in EMC
         if(fDetector.CompareTo("EMCAL") == 0 && (int)((chId >> 12)&0x1) == 0) continue;
         if( fDoPushRawData == true)
@@ -310,17 +307,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
         }
 
         vector <AliCaloBunchInfo> bvctr;
-        while( fAltroRawStreamPtr->NextBunch() == true )
+        while( altroRawStreamPtr.NextBunch() == true )
         {
-          bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(),
-              fAltroRawStreamPtr->GetBunchLength(),
-              fAltroRawStreamPtr->GetSignals() ) );
+          bvctr.push_back( AliCaloBunchInfo( altroRawStreamPtr.GetStartTimeBin(),
+              altroRawStreamPtr.GetBunchLength(),
+              altroRawStreamPtr.GetSignals() ) );
 
-          nSamples = fAltroRawStreamPtr->GetBunchLength();
+          nSamples = altroRawStreamPtr.GetBunchLength();
           if( fDoPushRawData == true)
           {
-            fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(),
-                nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
+            fRawDataWriter->WriteBunchData( altroRawStreamPtr.GetSignals(),
+                nSamples,  altroRawStreamPtr.GetEndTimeBin()  );
           }
           //firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
         }
@@ -332,8 +329,9 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
           return -1;
         }
 
-        AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(),
-            fAltroRawStreamPtr->GetAltroCFG2() );
+        //fAnalyzerPtr->SetL1Phase(fAltroRawStreamPtr->GetL1Phase());
+        AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  altroRawStreamPtr.GetAltroCFG1(),
+            altroRawStreamPtr.GetAltroCFG2() );
 
         HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(),
             (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
@@ -341,7 +339,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
           channelDataPtr->fChannelID =  chId;
           channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
           channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
-          if(fDetector.CompareTo("EMCAL") == 0) channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() )*100E-9 - fAltroRawStreamPtr->GetL1Phase();
+          // Time from the raw rreader already converted - no need to multiply twice
+          // if(fDetector.CompareTo("EMCAL") == 0) channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() )*100E-9 - fAltroRawStreamPtr->GetL1Phase();
           channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
           channelCount++;
           channelDataPtr++; // Updating position of the free output.
@@ -487,4 +486,3 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::CopyBufferToSharedMemory(UShort
     return fTotalSize;
   }
 }
-

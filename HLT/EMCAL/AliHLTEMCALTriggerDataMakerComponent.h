@@ -22,21 +22,18 @@
  * @date Nov 3, 2015
  */
 
+#include <vector>
 #include "AliHLTCaloConstants.h"
 #include "AliHLTCaloProcessor.h"
-#include <vector>
+#include "AliHLTCaloTriggerRawDigitDataStruct.h"
+#include "AliHLTEMCALSTUHeaderStruct.h"
 
-class AliEMCALTriggerData;
-class AliHLTCaloMapper;
-class AliHLTEMCALTriggerRawDigitMaker;
-class AliHLTEMCALTriggerRawDigitDataStruct;
-class AliHLTEMCALTriggerFastorDataStruct;
+struct AliHLTCaloTriggerDataStruct;
 class AliHLTEMCALGeometry;
-class AliRawReaderMemory;
 
 /**
  * @class AliHTLEMCALTriggerRawDigitMaker
- * @brief Creating EMCAL Raw Digits from the raw data
+ * @brief Combining data from STU and TRU in EMCAL trigger data
  */
 class AliHLTEMCALTriggerDataMakerComponent : public AliHLTCaloProcessor, protected AliHLTCaloConstantsHandler {
 public:
@@ -112,38 +109,34 @@ protected:
           AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr,
           AliHLTUInt32_t& size, std::vector<AliHLTComponentBlockData>& outputBlocks );
 
-  /**
-   * Init EMCAL mapper
-   * @param specification Specification
-   */
-  void InitMapping( const int specification );
-
   bool CheckInputDataType(const AliHLTComponentDataType &datatype);
 
-  void ConvertRawDigit(AliHLTEMCALTriggerFastorDataStruct *target, const AliHLTEMCALTriggerRawDigitDataStruct * source, Int_t col, Int_t row);
+  void ReadSTUData(AliHLTEMCALSTUHeaderStruct *headerptr, AliHLTCaloTriggerRawDigitDataStruct *dataptr);
+  void ReadTRUData(UShort_t ndigits, AliHLTCaloTriggerRawDigitDataStruct * triggerdata);
+  Int_t MakeTriggerData(AliHLTCaloTriggerDataStruct *outputptr, AliHLTUInt32_t &availableSize);
+  void Reset();
 
-  /** EMCAL Mapper */
-  AliHLTCaloMapper                    *fMapperPtr;                      //COMMENT
-
-  /** Specification */
-  AliHLTUInt32_t                      fCurrentSpec;
+  void CombineTRUSTUDigit(AliHLTCaloTriggerRawDigitDataStruct &target, const AliHLTCaloTriggerRawDigitDataStruct &trudigit, const AliHLTCaloTriggerRawDigitDataStruct &studigit);
+  void ConvertRawDigit(AliHLTCaloTriggerDataStruct *target, const AliHLTCaloTriggerRawDigitDataStruct * source, Int_t col, Int_t row);
 
 private:
+  enum {
+    kMaxChannels = 5962
+  };
   AliHLTEMCALTriggerDataMakerComponent(const AliHLTEMCALTriggerDataMakerComponent &ref);
   AliHLTEMCALTriggerDataMakerComponent &operator=(const AliHLTEMCALTriggerDataMakerComponent &ref);
 
-  /** Pointer to the raw data reader which reads from memory */
-  AliRawReaderMemory                  *fRawReaderMemoryPtr;            //!transient
-
-  /** Calo raw stream  */
-  AliCaloRawStreamV3                  *fCaloRawStreamPtr;              //!transient
-
-  AliHLTEMCALTriggerRawDigitMaker     *fRawDigitMaker;
-
   /** Pointer to the geometry class */
-  AliHLTEMCALGeometry                 *fGeometry;
+  AliHLTEMCALGeometry                       *fGeometry;
 
-  AliEMCALTriggerData                 *fTriggerData;
+  AliHLTEMCALSTUHeaderStruct                fSTUHeader;
+  Short_t                                   fNRawDigitsTRU;
+  Short_t                                   fRawIndexesTRU[kMaxChannels];
+  Short_t                                   fNRawDigitsSTU;
+  Short_t                                   fRawIndexesSTU[kMaxChannels];
+  Short_t                                   fMaxChannel;
+  AliHLTCaloTriggerRawDigitDataStruct       fTRURawDigitBuffer[kMaxChannels];
+  AliHLTCaloTriggerRawDigitDataStruct       fSTURawDigitBuffer[kMaxChannels];
 
   ClassDef(AliHLTEMCALTriggerDataMakerComponent, 1);
 };

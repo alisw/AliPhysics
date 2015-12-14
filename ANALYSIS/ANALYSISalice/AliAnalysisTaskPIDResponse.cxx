@@ -121,10 +121,19 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
         fPIDResponse->SetCustomTPCpidResponse(resp.Data());
         AliInfo(Form("Setting custom TPC response file: '%s'",resp.Data()));
       }
+      else if (resp.BeginsWith("TPC-OADB:")){
+        resp.ReplaceAll("TPC-OADB:","");
+        fPIDResponse->SetCustomTPCpidResponseOADBFile(resp.Data());
+        AliInfo(Form("Setting custom TPC response OADB file: '%s'",resp.Data()));
+      }
       else if (resp.BeginsWith("TPC-Maps:")){
         resp.ReplaceAll("TPC-Maps:","");
         fPIDResponse->SetCustomTPCetaMaps(resp.Data());
         AliInfo(Form("Setting custom TPC eta maps file: '%s'",resp.Data()));
+      }
+      else if (resp.BeginsWith("TPC-dEdxType:")){
+        resp.ReplaceAll("TPC-dEdxType:","");
+        fPIDResponse->GetTPCResponse().SetdEdxTypeFromString(resp);
       }
     }
     delete arr;

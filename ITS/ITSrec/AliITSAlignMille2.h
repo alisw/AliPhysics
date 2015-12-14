@@ -28,6 +28,7 @@
 class TSystem;
 class TGeoManager;
 class TVirtualFitter;
+class TClonesArray;
 class AliMillePede2;
 class AliAlignObjParams;
 class AliTrackFitterRieman;

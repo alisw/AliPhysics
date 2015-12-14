@@ -37,6 +37,7 @@
 #include <TStyle.h>
 #include <TText.h>
 #include <string.h>
+#include "TBuffer.h"
 
 #include "AliH2F.h"
 #include "AliTPCPRF2D.h"

@@ -78,11 +78,11 @@ protected:
    /** Initialising geometry for the HLT Trigger maker */
    void InitialiseGeometry();
 
+   bool CheckInputDataType(const AliHLTComponentDataType &datatype);
+
 private:
-   /** Pointer to the trigger maker */
+   /** Pointer to the trigger maker from cells */
    AliHLTEMCALTriggerMaker                    *fTriggerMakerPtr;            //! Transient
-   /** Trigger patch container */
-   AliHLTCaloTriggerPatchContainerStruct      *fTriggerPatchPtr;
    /** EMCAL geometry data */
    AliHLTEMCALGeometry                        *fGeometry;                   //! Transient
 
@@ -92,7 +92,7 @@ private:
    /** Assignment operator, not implemented */
    AliHLTEMCALTriggerMakerComponent & operator = (const AliHLTEMCALTriggerMakerComponent);
 
-	ClassDef(AliHLTEMCALTriggerMakerComponent, 1);
+   ClassDef(AliHLTEMCALTriggerMakerComponent, 1);
 };
 
 #endif

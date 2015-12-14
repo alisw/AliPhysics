@@ -112,7 +112,7 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
   /// inherited from AliHLTComponent: multiple output data types of the component.
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
-  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
@@ -900,6 +900,8 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   if (fMode==kCompressionModeV1TrackModel || fMode==kCompressionModeV2TrackModel) {
     if (iResult>=0 && (iResult=InitDriftTimeTransformation())<0) return iResult;
   }
+
+  HLTInfo("TPC Cluster compression running in mode %d / deflaterMode %d", fMode, fDeflaterMode);
 
   return iResult;
 }

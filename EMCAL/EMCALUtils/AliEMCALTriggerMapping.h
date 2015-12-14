@@ -40,7 +40,16 @@ public:
   virtual Int_t  GetTRUIndexFromSTUIndex(   Int_t id, Int_t detector)                                    const = 0;
   virtual Int_t  GetTRUIndexFromOnlineIndex(Int_t id)                                                    const = 0;
   virtual Int_t  GetOnlineIndexFromTRUIndex(Int_t id)                                                    const = 0;
-  
+
+
+  virtual Bool_t  GetSTUIndexFromTRUIndex(    Int_t id, Int_t& idx                              ) const = 0 ;
+  virtual Int_t   GetSTUIndexFromTRUIndex(    Int_t id                                          ) const = 0 ;
+  virtual Bool_t  GetTRUFromSTU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC, Int_t detector) const = 0 ;
+  virtual Bool_t  GetSTUFromTRU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC                ) const = 0 ;
+  virtual Bool_t  GetTRUFromSTU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi, Int_t detector) const = 0 ;
+  virtual Bool_t  GetSTUFromTRU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi                ) const = 0 ;
+
+
   virtual void  GetNTRU(Int_t& n) { n = fNTRU    ; }
   virtual Int_t GetNTRU()         { return fNTRU ; }
   

@@ -76,13 +76,13 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
    // stores relevant tracks in another array
    Int_t nentr=(Int_t)event->GetNumberOfTracks();
-   TArrayI trk(nentr); Int_t ntr=0;
+   int trk[nentr], ntr=0;
    for (i=0; i<nentr; i++) {
-       AliESDtrack *esdtr=event->GetTrack(i);
-       ULong_t status=esdtr->GetStatus();
-
-       if ((status&AliESDtrack::kITSrefit)==0)
-	  if ((status&AliESDtrack::kTPCrefit)==0) continue;
+     AliESDtrack *esdtr=event->GetTrack(i);
+     ULong_t status=esdtr->GetStatus();
+     if (status&AliESDtrack::kITSpureSA) continue;
+     if ((status&AliESDtrack::kITSrefit)==0)
+       if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
        if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDBachMin) continue;
 
@@ -119,8 +119,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
 	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
-         if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
-         if (r2 < fRmin*fRmin) continue;
+         if (r2 > fRmax2) continue;   // condition on fiducial zone
+         if (r2 < fRmin2) continue;
 
 	 Double_t pxV0,pyV0,pzV0;
 	 pv0->GetPxPyPz(pxV0,pyV0,pzV0);
@@ -163,8 +163,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
 	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
-         if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
-         if (r2 < fRmin*fRmin) continue;
+         if (r2 > fRmax2) continue;   // condition on fiducial zone
+         if (r2 < fRmin2) continue;
 
 	 Double_t pxV0,pyV0,pzV0;
 	 pv0->GetPxPyPz(pxV0,pyV0,pzV0);
@@ -231,6 +231,7 @@ Double_t AliCascadeVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *
   Double_t az= Det(px1,py1,px2,py2);
 
   Double_t dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
+  if (dca > fDCAmax) return 1.e+33;
 
 //points of the DCA
   Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
@@ -238,12 +239,17 @@ Double_t AliCascadeVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *
   
   x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
   
+  if (x1*x1+y1*y1 > fRmaxMargin2) return 1.e+33;
 
   //propagate track to the points of DCA
 
   x1=x1*cs1 + y1*sn1;
+
   if (!t->PropagateTo(x1,b)) {
-    Error("PropagateToDCA","Propagation failed !");
+    AliError("Propagation failed");
+    //    AliErrorF("Propagation failed for X=%f | V0: %f %f %f",x1,x2,y2,z2);
+    //    t->Print();
+    //
     return 1.e+33;
   }  
 

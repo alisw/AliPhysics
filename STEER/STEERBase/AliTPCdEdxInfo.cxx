@@ -202,12 +202,13 @@ void  AliTPCdEdxInfo::SetTPCSignalsQmax(Double_t signal[4]){
 }
 
 
-Double_t AliTPCdEdxInfo::GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2){
+Double_t AliTPCdEdxInfo::GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2) const
+{
   //
   // Get weighted mean of the dEdx information
   //
-  Double_t *info = (qType==0)? fTPCsignalRegion :  fTPCsignalRegionQmax;
-  Char_t *ninfo = (wType==0)? fTPCsignalNRegion:  fTPCsignalNRowRegion;
+  const Double_t *info = (qType==0)? fTPCsignalRegion :  fTPCsignalRegionQmax;
+  const Char_t *ninfo = (wType==0)? fTPCsignalNRegion:  fTPCsignalNRowRegion;
   Double_t weight[3]={w0,w1,w2};
   Double_t sum=0;
   Double_t sumw=0;

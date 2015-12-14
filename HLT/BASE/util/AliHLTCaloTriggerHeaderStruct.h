@@ -1,7 +1,9 @@
-#ifndef ALIHLTEMCALTRIGGERHEADERSTRUCT_H
-#define ALIHLTEMCALTRIGGERHEADERSTRUCT_H
+#ifndef ALIHLTCALOTRIGGERHEADERSTRUCT_H
+#define ALIHLTCALOTRIGGERHEADERSTRUCT_H
 
-struct AliHLTEMCALTriggerHeaderStruct {
+#include "Rtypes.h"
+
+struct AliHLTCaloTriggerHeaderStruct {
   /** L1 thresholds from raw data */
   Int_t    fL1Threshold[4];
   /** L1 threshold components */

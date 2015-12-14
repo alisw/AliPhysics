@@ -414,6 +414,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   // Trigger
   header->SetFiredTriggerClasses(esd.GetFiredTriggerClasses());
   header->SetTriggerMask(esd.GetTriggerMask()); 
+  header->SetTriggerMaskNext50(esd.GetTriggerMaskNext50()); 
   header->SetTriggerCluster(esd.GetTriggerCluster());
   header->SetL0TriggerInputs(esd.GetHeader()->GetL0TriggerInputs());    
   header->SetL1TriggerInputs(esd.GetHeader()->GetL1TriggerInputs());    

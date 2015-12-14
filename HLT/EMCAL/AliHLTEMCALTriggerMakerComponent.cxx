@@ -13,7 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliHLTCaloDigitDataStruct.h"
-#include "AliHLTCaloTriggerPatchContainerStruct.h"
+#include "AliHLTCaloTriggerHeaderStruct.h"
+#include "AliHLTCaloTriggerDataStruct.h"
 #include "AliHLTCaloTriggerPatchDataStruct.h"
 
 #include "AliHLTEMCALDefinitions.h"
@@ -26,10 +27,9 @@ ClassImp(AliHLTEMCALTriggerMakerComponent)
 //AliHLTEMCALTriggerMakerComponent gAliHLTEMCALTriggerMakerComponent;
 
 AliHLTEMCALTriggerMakerComponent::AliHLTEMCALTriggerMakerComponent() :
-AliHLTCaloProcessor(),
-fTriggerMakerPtr(NULL),
-fTriggerPatchPtr(NULL),
-fGeometry(NULL)
+  AliHLTCaloProcessor(),
+  fTriggerMakerPtr(NULL),
+  fGeometry(NULL)
 {
 }
 
@@ -40,7 +40,7 @@ AliHLTEMCALTriggerMakerComponent::~AliHLTEMCALTriggerMakerComponent() {
 
 int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
                 AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-                std::vector<AliHLTComponentBlockData>& outputBlocks ){
+                std::vector<AliHLTComponentBlockData>& outputBlocks ){  
   if(!blocks) {
     return 0;
   }
@@ -62,42 +62,74 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
 
   const AliHLTComponentBlockData* iter = 0;
   AliHLTCaloDigitDataStruct *digit = NULL;
+  AliHLTCaloTriggerHeaderStruct *triggerhead = NULL;
+  AliHLTCaloTriggerDataStruct *dataptr = NULL;
 
-  Int_t nDigits = 0;
+  Int_t nDigits = 0, nDigitsGlob = 0, nfastor = 0;
   for(Int_t ndx = 0; ndx < evtData.fBlockCnt; ndx++){
     iter = blocks + ndx;
 
-    if(iter->fDataType != AliHLTEMCALDefinitions::fgkDigitDataType) {
-      HLTDebug("Invalid data type received");
+    if(!CheckInputDataType(iter->fDataType)){
       continue;
     }
 
-
-    specification |= iter->fSpecification;
-    digit = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
-    nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);
-    HLTDebug("Block %d received %d digits", ndx, nDigits);
-    for(Int_t idigit = 0; idigit < nDigits; idigit++){
-      fTriggerMakerPtr->AddDigit(digit);
-      digit++;
+    if(iter->fDataType == AliHLTEMCALDefinitions::fgkDigitDataType) {
+      digit = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
+      nDigits = iter->fSize/sizeof(AliHLTCaloDigitDataStruct);
+      HLTDebug("Block %d received %d digits\n", ndx, nDigits);
+      for(Int_t idigit = 0; idigit < nDigits; idigit++){
+        fTriggerMakerPtr->AddDigit(digit);
+        digit++;
+      }
+      nDigitsGlob += nDigits;
+    } else if(iter->fDataType == (kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL)){
+      triggerhead = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(iter->fPtr);
+      AliHLTCaloTriggerDataStruct *dataptr = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t* >(iter->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
+      HLTDebug("Block %d received %d fastor triggers", ndx, triggerhead->fNfastor);
+      for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
+        fTriggerMakerPtr->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
+        fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
+        dataptr++;
+      }
+      nfastor += triggerhead->fNfastor;
     }
   }
-
-  fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr));
-  Int_t npatches = fTriggerMakerPtr->FindPatches(size);
-  HLTDebug("Found %d patches", npatches);
-
+  
+  Int_t npatches = 0;
+  if(nfastor || nDigitsGlob){
+    fTriggerMakerPtr->SetTriggerPatchDataPtr(reinterpret_cast<AliHLTCaloTriggerPatchDataStruct *>(outputPtr), size - sizeof(AliHLTCaloTriggerHeaderStruct));
+    npatches = fTriggerMakerPtr->FindPatches();
+    HLTDebug("Found %d patches from fastors\n", npatches);
+    outputPtr += npatches;
+    mysize += sizeof(AliHLTCaloTriggerPatchDataStruct) * npatches;
+  }
+  
   if(mysize != 0){
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = offset;
     bd.fSize = mysize;
     bd.fDataType = AliHLTEMCALDefinitions::fgkTriggerPatchDataType;
-    bd.fSpecification = specification;
+    bd.fSpecification = 0;
     outputBlocks.push_back(bd);
   }
   size = mysize;
   return 0;
+}
+
+bool AliHLTEMCALTriggerMakerComponent::CheckInputDataType(const AliHLTComponentDataType &datatype) {
+  //comment
+  vector <AliHLTComponentDataType> validTypes;
+  GetInputDataTypes(validTypes);
+
+  for(UInt_t i=0; i < validTypes.size(); i++) {
+    if ( datatype  ==  validTypes.at(i) ) {
+      return true;
+    }
+  }
+
+  HLTDebug("Invalid Datatype");
+  return false;
 }
 
 const char* AliHLTEMCALTriggerMakerComponent::GetComponentID(){
@@ -108,6 +140,7 @@ const char* AliHLTEMCALTriggerMakerComponent::GetComponentID(){
 void AliHLTEMCALTriggerMakerComponent::GetInputDataTypes(std::vector<AliHLTComponentDataType>& list){
   list.clear();
   list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
+  list.push_back(kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL);
 }
 
 AliHLTComponentDataType AliHLTEMCALTriggerMakerComponent::GetOutputDataType(){
@@ -115,7 +148,7 @@ AliHLTComponentDataType AliHLTEMCALTriggerMakerComponent::GetOutputDataType(){
 }
 
 void AliHLTEMCALTriggerMakerComponent::GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier ){
-  constBase = 1000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
+  constBase = 5000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
   inputMultiplier = 0; // (float)sizeof(AliHLTCaloTriggerPatchDataStruct)/sizeof(AliHLTCaloDigitDataStruct)+1;
 }
 
@@ -126,7 +159,39 @@ AliHLTComponent* AliHLTEMCALTriggerMakerComponent::Spawn(){
 
 int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   InitialiseGeometry();
+  Float_t jetTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
+  Float_t gammaTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
+  Float_t bkgTh[2] = {0};
+  for(Int_t iarg = 0; iarg < argc; iarg++){
+    TString argstring(argv[iarg]);
+    if(argstring.Contains("-gammalowonthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kLowThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammalowoffthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kLowThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammahighonthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kHighThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-gammahighoffthresh")){
+      gammaTh[AliHLTEMCALTriggerMaker::kHighThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetlowonthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kLowThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetlowoffthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kLowThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jethighonthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kHighThreshold] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jethighoffthresh")){
+      jetTh[AliHLTEMCALTriggerMaker::kHighThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-bkgonthresh")){
+      bkgTh[0] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-bkgoffthresh")){
+      bkgTh[1] = TString(argv[++iarg]).Atof();
+    }
+  }
   fTriggerMakerPtr = new AliHLTEMCALTriggerMaker;
+  for(UInt_t ithresh = AliHLTEMCALTriggerMaker::kHighThreshold; ithresh < AliHLTEMCALTriggerMaker::kNthresholds; ithresh++){
+    fTriggerMakerPtr->SetGammaThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), gammaTh[ithresh], gammaTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
+    fTriggerMakerPtr->SetJetThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), jetTh[ithresh], jetTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
+  }
+  fTriggerMakerPtr->SetBkgThresholds(bkgTh[0], bkgTh[1]);
   fTriggerMakerPtr->Initialise(fGeometry);
   return 0;
 }

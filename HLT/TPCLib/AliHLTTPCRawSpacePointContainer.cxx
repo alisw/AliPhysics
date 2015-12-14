@@ -101,7 +101,7 @@ int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDat
   if (!pDesc) return -EINVAL;
   int iResult=0;
   int count=0;
-  if (pDesc->fDataType!=AliHLTTPCDefinitions::fgkRawClustersDataType) {
+  if (pDesc->fDataType!=AliHLTTPCDefinitions::fgkRawClustersDataType && pDesc->fDataType!=AliHLTTPCDefinitions::fgkRawClustersDataTypeNotCompressed) {
     HLTWarning("ignoring data block of type %s", AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
     return 0;
   }
@@ -801,7 +801,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   bd.fOffset        = offset;
   if (!pDeflater) {
     bd.fSize        = sizeof(AliHLTTPCRawClusterData)+blockout->fCount*sizeof(AliHLTTPCRawCluster);
-    bd.fDataType    = AliHLTTPCDefinitions::fgkRawClustersDataType;
+    bd.fDataType    = AliHLTTPCDefinitions::fgkRawClustersDataTypeNotCompressed;
   } else {
     pDeflater->Pad8Bits();
     bd.fSize        = sizeof(AliHLTTPCRawClusterData)+pDeflater->GetBitDataOutputSizeBytes();

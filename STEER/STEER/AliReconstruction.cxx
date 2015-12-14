@@ -1183,7 +1183,9 @@ Bool_t AliReconstruction::InitGRP() {
     else {
        AliInfo("Found an AliGRPObject in GRP/GRP/Data, reading it");
        fGRPData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-       entry->SetOwner(0);
+       entry->SetOwner(0); // RS don't manipulate with GRP
+       entry->SetObject(0); // others will reread the object
+       AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
     }
 
     //    FIX ME: The unloading of GRP entry is temporarily disabled
@@ -2302,7 +2304,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     UShort_t selectedIdx[ntracks];
 
     for (Int_t itrack=0; itrack<ntracks; itrack++){
-      const Double_t kMaxStep = 1;   //max step over the material
+      const Double_t kMaxStep = 5;   //max step over the material
       Bool_t ok;
 
       AliESDtrack *track = fesd->GetTrack(itrack);
@@ -3183,6 +3185,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
+      esd->SetNumberOfTPCClusters(fTracker[iDet]->GetNumberOfClusters());
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID0%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);

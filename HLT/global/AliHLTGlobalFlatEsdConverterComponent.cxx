@@ -340,7 +340,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
 
-  HLTWarning("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
+  HLTInfo("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
   
   // Set TPC MC labels to tracks
   for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
@@ -700,7 +700,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // Fill the flat ESD friend structure
   //
   
-  HLTWarning("Using approximate time-pad coordinates for clusters, see jira ATO-146");
   while( !err && fProduceFriend ){ // single loop for easy break in case of output buffer overflow
 
     // ---------- Access to clusters --------------------

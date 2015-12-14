@@ -72,6 +72,7 @@ public:
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
@@ -79,6 +80,9 @@ public:
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   // Standard cuts for daughter tracks
   static AliESDtrackCuts* GetStandardV0DaughterCuts();
+
+  // static function to determine if the track crosses a distorted region in the TPC
+  static Bool_t IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrack);
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -94,6 +98,7 @@ public:
   void SetMinRatioCrossedRowsOverFindableClustersTPC(Float_t min = -1) { fCutMinRatioCrossedRowsOverFindableClustersTPC=min;}
   void SetMinLengthActiveVolumeTPC(Float_t min = 120., Float_t width=2) {fCutMinLengthActiveVolumeTPC=min; fDeadZoneWidth=width;}
   void SetCutGeoNcrNcl(Float_t deadZoneWidth=2,Float_t cutGeoNcrNclLength=130, Float_t cutGeoNcrNclGeom1Pt=1.5, Float_t cutGeoNcrNclFractionNcr=0.9,  Float_t cutGeoNcrNclFractionNcl=0.70);
+  void SetCutOutDistortedRegionsTPC(Bool_t cutOutDistortedRegionTPC = kTRUE) {fCutOutDistortedRegionTPC=cutOutDistortedRegionTPC;}
 
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetClusterRequirementITS(ITSULayers det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
@@ -218,7 +223,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 44 }; 
+  enum { kNCuts = 45 }; 
 
   //######################################################
   // esd track quality cuts
@@ -238,6 +243,8 @@ protected:
   Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
   Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
   Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  // TPC distorted regions
+  Bool_t  fCutOutDistortedRegionTPC;  // flag if distorted regions in the TPC should be cut out
 
 
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
@@ -348,7 +355,7 @@ protected:
 
   TH2F* fhTOFdistance[2];            //-> TOF signal distance dx vs dz
 
-  ClassDef(AliESDtrackCuts, 22)
+  ClassDef(AliESDtrackCuts, 23)
 };
 
 

@@ -80,8 +80,10 @@
  *  20       Add data type for ZMQ components and for internal custom triggers
  *  21       Add AliHLTDataTopic struct for ZMQ communication (as header).
  *  22       Add kAliHLTDataOriginPTR for passing pointers between threads
+ *  23       Add Calo Trigger definitions
+ *  24       Add CONFIG,INFO and CDBEntry data block types
  */
-#define ALIHLT_DATA_TYPES_VERSION 22
+#define ALIHLT_DATA_TYPES_VERSION 23
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -354,6 +356,24 @@ const int kAliHLTComponentDataTypeTopicSize =
  * @ingroup alihlt_component_datatypes
  */
 # define kAliHLTComConfDataTypeID  {'C','O','M','_','C','O','N','F'}
+
+/** Direct ComponentConfiguration event
+ * - payload contains the configuration string
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTConfigDataTypeID  {'C','O','N','F','I','G','_','_'}
+
+/** Information string
+ * - payload contains an information string
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTInfoDataTypeID  {'I','N','F','O','_','_','_','_'}
+
+/** CDB entry
+ * - payload contains the ROOT object containing the CDB entry
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTCDBEntryDataTypeID  {'C','D','B','E','N','T','R','Y'}
 
 /** DCS value update event
  * - payload contains string of relevant detectors
@@ -790,6 +810,19 @@ extern "C" {
     AliHLTUInt32_t GetSpecification() const {return fSpecification;}
   };
 
+  /**
+   * Helper function to compare topics
+   * a topic is a string representation of AliHLTComponentDataType
+   */
+  inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
+  {
+    for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
+    {
+      if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
+    }
+    return true;
+  }
+
   //this struct is meant to be used as a universal data block descriptor ("topic" + specification)
   //for ZMQ communication
   struct AliHLTDataTopic
@@ -837,6 +870,12 @@ extern "C" {
       memcpy( fTopic+kAliHLTComponentDataTypefIDsize, blockData.fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
       fSpecification = blockData.fSpecification;
       return *this;
+    }
+
+    bool operator==( const AliHLTDataTopic& dt )
+    {
+      bool topicMatch = Topicncmp(dt.fTopic, fTopic);
+      return dt.fSpecification==fSpecification && topicMatch;
     }
 
     std::string Description() const
@@ -1214,6 +1253,21 @@ extern "C" {
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeComConf;
 
+  /** Direct configuration string block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeConfig;
+
+  /** Info string block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeInfo;
+
+  /** CDB entry block data type
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeCDBEntry;
+
   /** DCS value update event 
    * @ingroup alihlt_component_datatypes
    */
@@ -1459,6 +1513,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeCaloCluster; 
+
+  /** Container of calorimeter triggers
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeCaloTrigger;
 
   /** Container of dEdx
    * @ingroup alihlt_component_datatypes
@@ -1718,6 +1777,27 @@ inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const char id[
   return dt;
 }
 
+
+/**
+ * Helper function as above, but takes 0 terminates string input and pads with  spaces on the right
+ */
+ 
+inline AliHLTComponentDataType AliHLTComponentDataTypeInitializerWithPadding(const char* ID, const char* origin)
+{
+  char src[kAliHLTComponentDataTypefIDsize + 1];
+  char org[kAliHLTComponentDataTypefOriginSize + 1];
+  int j;
+  int max = kAliHLTComponentDataTypefIDsize < strlen(ID) ? kAliHLTComponentDataTypefIDsize : strlen(ID);
+  for (j = 0;j < max;j++) src[j] = ID[j];
+  for (;j < kAliHLTComponentDataTypefIDsize;j++) src[j] = ' ';
+  src[j] = 0;
+  max = kAliHLTComponentDataTypefOriginSize < strlen(origin) ? kAliHLTComponentDataTypefOriginSize : strlen(origin);
+  for (j = 0;j < max;j++) org[j] = origin[j];
+  for (;j < kAliHLTComponentDataTypefOriginSize;j++) org[j] = ' ';
+  org[j] = 0;
+  return AliHLTComponentDataTypeInitializer(src, org);
+}
+
 /**
  * Helper function to initialize a data type from a default data type and
  * an origin string. Basically it merges the specified origin into the data
@@ -1730,19 +1810,5 @@ inline AliHLTComponentDataType AliHLTComponentDataTypeInitializer(const AliHLTCo
 {
   return AliHLTComponentDataTypeInitializer(src.fID, origin);
 }
-
-/**
- * Helper function to compare topics
- * a topic is a string representation of AliHLTComponentDataType
- */
-inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
-{
-  for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
-  {
-    if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
-  }
-  return true;
-}
-
 
 #endif 

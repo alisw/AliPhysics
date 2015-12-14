@@ -59,7 +59,10 @@
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
+#include "AliHLTCaloTriggerDataStruct.h"
+#include "AliHLTCaloTriggerHeaderStruct.h"
 #include "AliESDCaloCluster.h"
+#include "AliESDCaloTrigger.h"
 #include "AliESDVZERO.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
@@ -174,6 +177,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeTrack);
   list.push_back(kAliHLTDataTypeTrackMC);
   list.push_back(kAliHLTDataTypeCaloCluster);
+  list.push_back(kAliHLTDataTypeCaloTrigger);
   list.push_back(kAliHLTDataTypedEdx );
   list.push_back(kAliHLTDataTypeESDVertex );
   list.push_back(kAliHLTDataTypeESDObject);
@@ -1053,6 +1057,23 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       HLTInfo("converted %d cluster(s) to AliESDCaloCluster and added to ESD", nClusters);
       iAddedDataBlocks++;
     }
+  for(const AliHLTComponentBlockData *pBlock = GetFirstInputBlock(kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL); pBlock != NULL; pBlock = GetNextInputBlock()){
+    fBenchmark.AddInput(pBlock->fSize);
+
+    AliHLTCaloTriggerHeaderStruct *caloTriggerHeaderPtr = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(pBlock->fPtr);
+    AliHLTCaloTriggerDataStruct *triggerdata = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t *>(pBlock->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
+    AliESDCaloTrigger *emcaltrigger = pESD->GetCaloTrigger("EMCAL");
+    emcaltrigger->Allocate(caloTriggerHeaderPtr->fNfastor);
+    emcaltrigger->SetL1V0(caloTriggerHeaderPtr->fL1V0);
+    emcaltrigger->SetL1FrameMask(caloTriggerHeaderPtr->fL1FrameMask);
+    for (int i = 0; i < 4; i++) emcaltrigger->SetL1Threshold(i, caloTriggerHeaderPtr->fL1Threshold[i]);
+    for(int idata = 0; idata < caloTriggerHeaderPtr->fNfastor; idata++){
+      Int_t l0times[10];
+      for(int itime = 0; itime < 10; itime++) l0times[itime] = triggerdata->fL0Times[itime];
+      emcaltrigger->Add((int)triggerdata->fCol, (int)triggerdata->fRow, triggerdata->fAmplitude, triggerdata->fTime, l0times, (int)triggerdata->fNL0Times, (int)triggerdata->fL1TimeSum, triggerdata->fTriggerBits);
+    }
+    HLTInfo("converted EMCAL trigger data with %d trigger channels and added to ESD", caloTriggerHeaderPtr->fNfastor);
+  }
   
   // 5) Add Trigger Detectors 
   //    VZERO, ZDC

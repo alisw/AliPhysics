@@ -17,6 +17,9 @@ public:
 private:
     void InitDIMListeners();
     
+    AliDIMListenerThread(const AliDIMListenerThread&);
+    AliDIMListenerThread& operator=(const AliDIMListenerThread&);
+    
     AliDimIntNotifier *fDimSORListener;//[5]; //now listening just in PHYSICS_1
     AliDimIntNotifier *fDimEORListener;//[5];
 

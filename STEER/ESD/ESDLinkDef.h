@@ -17,6 +17,16 @@
 #pragma link C++ class  AliESDInputHandlerRP+;
 #pragma link C++ class  AliESDRun+;
 #pragma link C++ class  AliESDHeader+;
+
+#pragma read \
+  sourceClass="AliESDHeader" \
+  targetClass="AliESDHeader" \
+  source="TObjArray fIRBufferArray" \
+  version="[10-13]"	\
+  target="fIRBufferArray" \
+  targetType="TObjArray" \
+  code="{fIRBufferArray=onfile.fIRBufferArray; fIRBufferArray.SetOwner(kTRUE); onfile.fIRBufferArray.SetOwner(kFALSE);onfile.fIRBufferArray.Clear();}"
+
 #pragma link C++ class  AliESDHLTDecision+;
 #pragma link C++ class  AliESDZDC+;
 #pragma link C++ class  AliESDCaloTrigger+;

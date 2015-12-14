@@ -37,8 +37,8 @@ class AliGenMUONLMR : public AliGenMC {
   virtual TF1* GetPt(Int_t iproc) { return fPt[iproc]; }
   void SetCMSEnergy(CMSEnergies energy);
   virtual void SetCMSRapidity(Double_t ycm) { fYCM = ycm; } 
-  virtual void SetThetaOptionForDalitz(process_t proc, thetaOpt_t opt) { fThetaOptForDalitz[proc] = opt; }
-  virtual thetaOpt_t GetThetaOptionForDalitz(process_t proc) { return fThetaOptForDalitz[proc]; }
+  virtual void SetThetaOption(process_t proc, thetaOpt_t opt) { fThetaOpt[proc] = opt; }
+  virtual thetaOpt_t GetThetaOption(process_t proc) { return fThetaOpt[proc]; }
  private: 
   static const Int_t fgkNpart = 7;  // number of particles to be generated 
   Int_t fNMuMin;                    // min. number of muons to accept the event for writing
@@ -58,7 +58,7 @@ class AliGenMUONLMR : public AliGenMC {
   TParticle* fMu[2];                // fMu[0] = mu+    fMu[1] = mu-
   TH1D *fHMultMu;                   // muon multiplicity 
   TH1D *fHNProc;                    // number of events generated per process
-  thetaOpt_t fThetaOptForDalitz[3]; // option for the cos(theta) distribution of the Dalitz decays
+  thetaOpt_t fThetaOpt[kNProcess];  // option for the cos(theta) distribution of each process
   ClassDef(AliGenMUONLMR, 1)        // low mass dimuons parametric generator
 }; 
 

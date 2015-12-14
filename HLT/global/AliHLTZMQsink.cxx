@@ -31,12 +31,15 @@ AliHLTZMQsink::AliHLTZMQsink() :
   AliHLTComponent()
   , fZMQcontext(NULL)
   , fZMQout(NULL)
-  , fZMQsocketType(ZMQ_PUB)
-  , fZMQendpoint("@tcp://*:60201")
+  , fZMQsocketType(-1)
+  , fZMQoutConfig("PUB")
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
   , fZMQneverBlock(kTRUE)
+  , fSendRunNumber(kTRUE)
+  , fNskippedErrorMessages(0)
+  , fZMQerrorMsgSkip(100)
 {
   //ctor
 }
@@ -97,39 +100,28 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   Int_t retCode=0;
 
   //process arguments
-  ProcessOptionString(GetComponentArgs());
+  if (ProcessOptionString(GetComponentArgs())<0) 
+  {
+    HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
+    return -1;
+  }
 
   int rc = 0;
-  //init ZMQ stuff
+  //init ZMQ context
   fZMQcontext = zmq_ctx_new();
   HLTMessage(Form("ctx create ptr %p %s",fZMQcontext,(rc<0)?zmq_strerror(errno):""));
   if (!fZMQcontext) return -1;
-  fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
+
+  //init ZMQ socket
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig.Data(), 0, 10 ); 
+  if (!fZMQout || rc<0) 
+  {
+    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.Data(),zmq_strerror(errno));
+    return -1;
+  }
+  
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  if (!fZMQout) return -1;
-
-  //set socket options
-  int lingerValue = 10;
-  rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i %s", lingerValue, rc, (rc<0)?zmq_strerror(errno):""));
-  int highWaterMarkSend = 100;
-  rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i %s",highWaterMarkSend, rc, (rc<0)?zmq_strerror(errno):""));
-  int highWaterMarkRecv = 100;
-  rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i %s",highWaterMarkRecv, rc, (rc<0)?zmq_strerror(errno):""));
-  int rcvtimeo = 0;
-  rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i %s",rcvtimeo, rc, (rc<0)?zmq_strerror(errno):""));
-  int sndtimeo = 0;
-  rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i %s",sndtimeo, rc, (rc<0)?zmq_strerror(errno):""));
-
-  //connect or bind, after setting socket options
-  HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
-  rc = alizmq_attach(fZMQout,fZMQendpoint.Data());
-  if (rc==-1) retCode=-1;
-  HLTMessage(Form("connect rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+  HLTImportant(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",fZMQoutConfig.Data(),alizmq_socket_name(fZMQsocketType),fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
   return retCode;
 }
@@ -232,6 +224,16 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       }
     }
 
+    if (fSendRunNumber && selectedBlockIdx.size()>0)
+    {
+      string runNumberString = "run=";
+      char tmp[34];
+      snprintf(tmp,34,"%i",GetRunNo()); 
+      runNumberString+=tmp;
+      zmq_send(fZMQout, "INFO", 4, ZMQ_SNDMORE);
+      zmq_send(fZMQout, runNumberString.data(), runNumberString.size(), ZMQ_SNDMORE);
+    }
+
     //send the selected blocks
     for (int iSelectedBlock = 0;
          iSelectedBlock < selectedBlockIdx.size();
@@ -249,6 +251,11 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
       if (iSelectedBlock < (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
+      if (rc<0 && (fNskippedErrorMessages++ >= fZMQerrorMsgSkip))
+      {
+        fNskippedErrorMessages=0;
+        HLTWarning("error sending data frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
+      }
       HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
     
@@ -258,8 +265,10 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
       HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+      if (rc<0) HLTWarning("error sending dummy REP topic");
       rc = zmq_send(fZMQout, 0, 0, 0);
       HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
+      if (rc<0) HLTWarning("error sending dummy REP data");
     }
   }
 
@@ -273,132 +282,55 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   //process option
   //to be implemented by the user
   
-  //if (option.EqualTo("ZMQpollIn"))
-  //{
-  //  fZMQpollIn = (value.EqualTo("0"))?kFALSE:kTRUE;
-  //}
- 
-  if (option.EqualTo("ZMQsocketMode")) 
+  if (option.EqualTo("out"))
   {
-    if (value.EqualTo("PUB"))  fZMQsocketType=ZMQ_PUB;
-    if (value.EqualTo("REP"))  fZMQsocketType=ZMQ_REP;
-    if (value.EqualTo("PUSH")) fZMQsocketType=ZMQ_PUSH;
-    
-    //always poll when REPlying
-    fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
+    fZMQoutConfig = value;
+    fZMQsocketType = alizmq_socket_type(value.Data());
+    switch (fZMQsocketType)
+    {
+      case ZMQ_REP:
+        fZMQpollIn=kTRUE;
+        break;
+      case ZMQ_PUSH:
+        fZMQpollIn=kFALSE;
+        break;
+      case ZMQ_PUB:
+        fZMQpollIn=kFALSE;
+        break;
+      default:
+        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
+        return -EINVAL;
+    }
   }
- 
-  if (option.EqualTo("ZMQendpoint"))
+  else if (option.EqualTo("SendRunNumber"))
   {
-    fZMQendpoint = value;
+    fSendRunNumber=(value.EqualTo("0") || value.EqualTo("no") || value.EqualTo("false"))?kFALSE:kTRUE;
   }
 
-  if (option.EqualTo("pushback-period"))
+  else if (option.EqualTo("pushback-period"))
   {
     HLTMessage(Form("Setting pushback delay to %i", atoi(value.Data())));
     fPushbackDelayPeriod = atoi(value.Data());
   }
 
-  if (option.EqualTo("IncludePrivateBlocks"))
+  else if (option.EqualTo("IncludePrivateBlocks"))
   {
     fIncludePrivateBlocks=kTRUE;
   }
 
-  if (option.EqualTo("ZMQneverBlock"))
+  else if (option.EqualTo("ZMQneverBlock"))
   {
     if (value.EqualTo("0") || value.EqualTo("no") || value.Contains("false",TString::kIgnoreCase))
       fZMQneverBlock = kFALSE;
     else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
       fZMQneverBlock = kTRUE;
   }
-
-  return 1; 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-//______________________________________________________________________________
-int AliHLTZMQsink::ProcessOptionString(TString arguments)
-{
-  //process passed options
-  HLTMessage("Argument string: %s\n", arguments.Data());
-  stringMap* options = TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  {
-    HLTMessage("  %s : %s", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
-  }
-  delete options; //tidy up
-
-  return 1; 
-}
-
-//______________________________________________________________________________
-AliHLTZMQsink::stringMap* AliHLTZMQsink::TokenizeOptionString(const TString str)
-{
-  //options have the form:
-  // -option value
-  // -option=value
-  // -option
-  // --option value
-  // --option=value
-  // --option
-  // option=value
-  // option value
-  // (value can also be a string like 'some string')
-  //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
-  //"-option option1=value1 --option2 value2, -option4=\'some string\'"
   
-  //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
-  //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))"
-                    "(?(1)[^, =]+(?=[= ,$])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))"
-                   "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^, =]+))");
-
-  stringMap* options = new stringMap;
-
-  TArrayI pos;
-  const TString mods="";
-  Int_t start = 0;
-  while (1) {
-    Int_t prevStart=start;
-    TString optionStr="";
-    TString valueStr="";
-    
-    //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
-    if (nOption>0)
-    {
-      optionStr = str(pos[6],pos[7]-pos[6]);
-      optionStr=optionStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-
-    //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
-    if (nValue>0)
-    {
-      valueStr = str(pos[0],pos[1]-pos[0]);
-      valueStr=valueStr.Strip(TString::kBoth,'\'');
-      start=pos[1]; //update the current character to the end of match
-    }
-    
-    //skip empty entries
-    if (nOption>0 || nValue>0)
-    {
-      (*options)[optionStr.Data()] = valueStr.Data();
-    }
-    
-    if (start>=str.Length()-1 || start==prevStart ) break;
+  else if (option.EqualTo("ZMQerrorMsgSkip"))
+  {
+    fZMQerrorMsgSkip = value.Atoi();
   }
 
-  //for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
-  //{
-  //  printf("%s : %s\n", i->first.data(), i->second.data());
-  //}
-  return options;
+  return 1; 
 }
+

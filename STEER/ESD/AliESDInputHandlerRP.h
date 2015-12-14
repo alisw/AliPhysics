@@ -33,9 +33,11 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     virtual Bool_t       Notify() { return AliESDInputHandler::Notify();}
     virtual Bool_t       Notify(const char* path);
     virtual void         ResetIO();
+    virtual void         ReadFromDirectory() {fReadDirectory = kTRUE;}
     //
     virtual TTree*       GetTreeR(const char* det);
  private:
+    enum {kReadFromArchiveBIT = BIT(14)};
     Bool_t      OpenFile(Int_t i);
     AliESDInputHandlerRP(const AliESDInputHandlerRP& handler);             
     AliESDInputHandlerRP& operator=(const AliESDInputHandlerRP& handler);  
@@ -51,6 +53,7 @@ class AliESDInputHandlerRP : public AliESDInputHandler {
     const Char_t   *fExtension;        //! File name extension
     TString        *fPathName;         //! Input file path
     Bool_t          fIsArchive;        //! True if directory is an archive
+    Bool_t          fReadDirectory;    //! read also from directory
     ClassDef(AliESDInputHandlerRP, 1);
 };
 

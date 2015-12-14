@@ -33,6 +33,7 @@
 #include <TMap.h>
 #include <TClass.h>
 #include <TFile.h>
+#include <TFileCollection.h>
 #include <TTreeCache.h>
 #include <TEnv.h>
 #include <TMath.h>
@@ -2131,6 +2132,61 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    retv = (Long_t)gROOT->ProcessLine(line);
    return retv;
 }   
+
+//______________________________________________________________________________
+Long64_t AliAnalysisManager::StartAnalysis(const char *type, TFileCollection* dataset, Long64_t nentries, Long64_t firstentry)
+{
+  // Start analysis for this manager on a given dataset. Analysis task can be:
+  // LOCAL, PROOF or GRID. Process nentries starting from firstentry.
+  
+  AliInfo("Using the new direct TFileCollection interface !!!!");
+  
+  if (!fInitOK) {
+    Error("StartAnalysis","Analysis manager was not initialized !");
+    return -1;
+  }
+  if (!dataset) {
+    Error("StartAnalysis","Can not work with a NULL TFileCollection !");
+    return -1;
+  }
+  fIsRemote = kTRUE;
+  if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
+  TString anaType = type;
+  anaType.ToLower();
+  if (!anaType.Contains("proof")) {
+    Error("StartAnalysis", "Cannot process datasets in %s mode. Try PROOF.", type);
+    return -1;
+  }
+  fMode = kProofAnalysis;
+  TString line;
+  TString proofProcessOpt;
+  SetEventLoop(kTRUE);
+  // Set the dataset flag
+  TObject::SetBit(kUseDataSet);
+  fTree = 0;
+
+  if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
+    Error("StartAnalysis", "No PROOF!!! Exiting.");
+    return -1;
+  }
+  
+  // Initialize locally all tasks
+  RunLocalInit();
+  
+  line.Form("gProof->AddInput((TObject*)%p);", this);
+  gROOT->ProcessLine(line);
+  Long_t retv;
+  line.Form("gProof->Process((TFileCollection *)%p, \"AliAnalysisSelector\", \"%s\", %lld, %lld);",
+            dataset, proofProcessOpt.Data(), nentries, firstentry);
+  char *dispDataset = new char[101];
+  strncpy(dispDataset, dataset->GetName(), 100);
+  strncpy(&dispDataset[97], "...", 3);
+  dispDataset[100] = '\0';
+  cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dispDataset << endl;
+  delete dispDataset;
+  retv = (Long_t)gROOT->ProcessLine(line);
+  return retv;
+}
 
 //______________________________________________________________________________
 TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof)

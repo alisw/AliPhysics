@@ -17,6 +17,7 @@
 #endif
 
 class TStopwatch;
+class TClonesArray;
 class AliMUONPad;
 
 class AliMUONPreClusterFinderV2 : public AliMUONVClusterFinder

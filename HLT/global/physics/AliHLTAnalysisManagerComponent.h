@@ -16,6 +16,8 @@
 #include "AliHLTProcessor.h"
 #include <map>
 #include <string>
+#include "AliHLTAsyncMemberProcessor.h"
+
 
 class TH1F;
 class TList;
@@ -74,10 +76,6 @@ public:
   int ProcessOptionString(TString arguments);
   int ProcessOption(TString option, TString value);
 
-  /**  */
-  Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
-  Int_t PushAndReset(TObject* object);
-
  protected:
 
   /*
@@ -132,6 +130,20 @@ private:
    *                              Helper
    * ---------------------------------------------------------------------------------
    */
+  
+  struct AnalysisManagerQueueData
+  {
+	  AnalysisManagerQueueData() : fEvent(NULL), fFriend(NULL), fRequestPush(false) {}
+	  AliVEvent* fEvent;
+	  AliVfriendEvent* fFriend;
+	  bool fRequestPush;
+  };
+  
+  Int_t ReadInput(AnalysisManagerQueueData* eventData);
+  void CleanEventData(AnalysisManagerQueueData* eventData);
+  void* AnalysisManagerInit(void*);
+  void* AnalysisManagerExit(void*);
+  void* AnalysisManagerDoEvent(void*);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -141,6 +153,7 @@ private:
   
   /** UID for merging */
   AliHLTUInt32_t fUID;                        // see above
+  bool fQuickEndRun;				//After end of run we should not further process async tasks but stop asap
 
   AliHLTAnalysisManager *fAnalysisManager;        // Manger
 
@@ -150,9 +163,16 @@ private:
   TString fAddTaskMacro;
   Bool_t fWriteAnalysisToFile;
   Bool_t fEnableDebug; //enable debug output - sysinfo,debug streamer, other files
-  Bool_t fResetAfterPush; //reset the calibration after pushing for merging
+  Bool_t fResetAfterPush; //reset the AnalysisManager after pushing for merging
   Int_t fPushEventModulo; //Push every n-th event
   Int_t fNEvents;		//Number of events processed
+  Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
+  Int_t fNumEvents;      //Number of events used for analysis
+  Int_t fQueueDepth;	//Depth of asynchronous Queue
+  Int_t fAsyncProcess;	//Use an async process instead of an async thread
+  Int_t fForceKillAsyncProcess; //Kill async process after n msec, -1 to disable
+  Bool_t fPushRequestOngoing; //Have we already requested a push? If so, wait until push before request again
+  AliHLTAsyncMemberProcessor<AliHLTAnalysisManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
 
   ClassDef(AliHLTAnalysisManagerComponent, 1)
 };

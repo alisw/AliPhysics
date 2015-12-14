@@ -1189,7 +1189,7 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
     trklYpos[layer] = trk->GetYbin() - ((Int_t) (1./fGtuParam->GetBinWidthY()*fGtuParam->CorrectYforAlignmentOCDB(trk->GetDetector(),
         fGtuParam->GetZpos(fGtuParam->GetGeo()->GetStack(trk->GetDetector()), layer, trk->GetZbin())))); //ocdb alignment correction
     padTiltingCorrection = zDiff * fGtuParam->GetTanOfTiltingAngle(layer);
-    padTiltingCorrection *= 6.52e-7; // *=1e-8 to  account for previous shifts and /=160e-4 for the bin width of yPos
+    padTiltingCorrection *= 6.25e-7; // *=1e-8 to  account for previous shifts and /=160e-4 for the bin width of yPos
     if ( (corrMode == 2) || (corrMode == 3) ) trklYpos[layer] = trklYpos[layer] + padTiltingCorrection;
 
 
@@ -1211,7 +1211,14 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
 
   invPtDev = a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - s;
 
-  track->SetFitParams(a << 2, b, c);
+  if (!fGtuParam->GetWriteSagittaOutputToTrackWordBC())
+    track->SetFitParams(a << 2, TMath::Nint(128. * b), TMath::Nint(256. * c));
+  else {
+    c = ((invPtDev & 0xfff) ^ 0x800) - 0x800;
+    b = (invPtDev >> 12) & 0xfff;
+    if (TMath::Abs(invPtDev) < fGtuParam->GetInvPtDevCut()) b += 1 << 12;
+    track->SetFitParams(a << 2, b, c);
+  }
   if (corrMode == 0)      track->SetInvPtDev(invPtDev);
   else if (corrMode != 0) track->SetInvPtDev( a * fGtuParam->Getc1Inv(track->GetTrackletMask()) - ((Int_t) sTmp) );
   //following lines are for debugging purposes only

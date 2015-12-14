@@ -108,7 +108,9 @@ public:
   static const AliHLTComponentDataType& ClustersDataType();
   /** raw cluster data (not transformed) */
   static const AliHLTComponentDataType fgkRawClustersDataType;          // see above
+  static const AliHLTComponentDataType fgkRawClustersDataTypeNotCompressed;          // A copy of the fgkRawClustersDataType, which is used if the DataCompressor failed to compress clusters
   static const AliHLTComponentDataType& RawClustersDataType();
+  static const AliHLTComponentDataType& RawClustersDataTypeNotCompressed();
   /** raw cluster data descriptor*/
   static const AliHLTComponentDataType fgkRawClustersDescriptorDataType;          // see above
   static const AliHLTComponentDataType& RawClustersDescriptorDataType();

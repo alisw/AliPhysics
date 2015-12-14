@@ -17,6 +17,7 @@
 #endif
 
 class TIterator;
+class TClonesArray;
 class AliMUONPad;
 
 class AliMUONPreClusterFinderV3 : public AliMUONVClusterFinder

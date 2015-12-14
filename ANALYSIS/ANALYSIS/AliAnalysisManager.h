@@ -23,6 +23,7 @@
 class TClass;
 class TTree;
 class TFile;
+class TFileCollection;
 class TStopwatch;
 class TMap;
 class AliAnalysisSelector;
@@ -86,6 +87,7 @@ enum EAliAnalysisFlags {
    void                RegisterExtraFile(const char *fname);
    Long64_t            StartAnalysis(const char *type, TTree * const tree, Long64_t nentries=1234567890, Long64_t firstentry=0);
    Long64_t            StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
+   Long64_t            StartAnalysis(const char *type, TFileCollection* dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
    Long64_t            StartAnalysis(const char *type, Long64_t nentries=1234567890, Long64_t firstentry=0);
    virtual void        SlaveBegin(TTree *tree);
    virtual void        Terminate();

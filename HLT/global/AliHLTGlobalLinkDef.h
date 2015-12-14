@@ -5,6 +5,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliHLTRootObjectMergerComponent+;
 #pragma link C++ class AliHLTGlobalEsdConverterComponent+;
 #pragma link C++ class AliHLTGlobalTrackMergerComponent+;
 #pragma link C++ class AliHLTGlobalTrackMerger+;
@@ -47,6 +48,7 @@
 #pragma link C++ class AliHLTLumiRegComponent+;
 #pragma link C++ class AliHLTGlobalPromptRecoQAComponent+;
 #ifdef ZMQ
+#pragma link C++ class AliOptionParser+;
 #pragma link C++ class AliHLTZMQsink+;
 #pragma link C++ class AliHLTZMQsource+;
 #endif

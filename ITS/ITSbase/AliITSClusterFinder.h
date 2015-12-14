@@ -82,6 +82,7 @@ class AliITSClusterFinder :public TObject{
 
     void InitGeometry(); 
     //
+    void     ResetNClusters()                                   {fNClusters = 0;}
     Int_t    GetNClusters()                               const {return fNClusters;}
     void     SetRawID2ClusID(TArrayI *arr)                      {fRawID2ClusID = arr;} 
     TArrayI* GetRawID2ClusID()                            const {return fRawID2ClusID;} 

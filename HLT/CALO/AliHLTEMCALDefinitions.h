@@ -32,7 +32,9 @@ public:
   static const AliHLTComponentDataType fgkEMCALESDDataType; // ESD data type after emcal processing
   static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration
   static const AliHLTComponentDataType fgkChannelDataType;
-  static const AliHLTComponentDataType fgkTriggerRawDigitDataType;    // EMCAL Trigger raw digits
+  static const AliHLTComponentDataType fgkTriggerRawDigitDataType;  // Trigger raw digits
+  static const AliHLTComponentDataType fgkTriggerSTUDataType; // STU Data
+  static const AliHLTComponentDataType fgkFastorDataType;    // EMCAL Trigger fastor data
   static const AliHLTComponentDataType fgkTriggerPatchDataType; // EMCAL Trigger patches
   ClassDef(AliHLTEMCALDefinitions, 0)
     

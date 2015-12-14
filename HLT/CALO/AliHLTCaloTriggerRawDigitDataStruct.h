@@ -33,7 +33,7 @@
  *
  * @ingroup alihlt_calo
  */
-struct AliHLTEMCALTriggerRawDigitDataStruct {
+struct AliHLTCaloTriggerRawDigitDataStruct {
   /**  Unique ID */
   Int_t       fID;
   /** Trigger bits */
@@ -47,22 +47,21 @@ struct AliHLTEMCALTriggerRawDigitDataStruct {
   /** Number of time samples */
   UChar_t     fNTimeSamples;
   /** Time samples */
-  Int_t       fTimeSamples[256];
-
+  Int_t       fTimeSamples[15];
 };
 
 /**
  * Initialize the raw digit
  * @param rawdigit Input digit
  */
-void InitializeRawDigit(AliHLTEMCALTriggerRawDigitDataStruct &rawdigit);
+void InitializeRawDigit(AliHLTCaloTriggerRawDigitDataStruct &rawdigit);
 
 /**
  * Set the unique ID of the trigger digit (fastor index)
  * @param digit Input digit
  * @param id ID
  */
-void SetRawDigitID(AliHLTEMCALTriggerRawDigitDataStruct &digit, Int_t id);
+void SetRawDigitID(AliHLTCaloTriggerRawDigitDataStruct &digit, Int_t id);
 
 /**
  * Set trigger bit to the digit
@@ -70,21 +69,21 @@ void SetRawDigitID(AliHLTEMCALTriggerRawDigitDataStruct &digit, Int_t id);
  * @param bit Bit to be set
  * @param mode Mode (Data or MC)
  */
-void SetTriggerBit(AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t bit, Int_t mode);
+void SetTriggerBit(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t bit, Int_t mode);
 
 /**
  * Set L0 time to the digit
  * @param dig Input digit
  * @param itime
  */
-void SetL0Time(AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t i);
+void SetL0Time(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t i);
 
 /**
  * Set L1 time sum
  * @param dig Input digit
  * @param l1timeSum
  */
-void SetL1TimeSum(AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t l1timeSum);
+void SetL1TimeSum(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t l1timeSum);
 
 /**
  * Set time samples to the digit
@@ -92,14 +91,14 @@ void SetL1TimeSum(AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t l1timeSum);
  * @param nsamples Number of time samples
  * @param samples Array with time samples
  */
-void SetTimeSamples(AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t nsamples, Int_t *samples);
+void SetTimeSamples(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t nsamples, Int_t *samples);
 
 /**
  * Get the raw digit ID
  * @param dig Input digit
  * @return ID of the digit
  */
-Int_t GetRawDigitID(const AliHLTEMCALTriggerRawDigitDataStruct &dig);
+Int_t GetRawDigitID(const AliHLTCaloTriggerRawDigitDataStruct &dig);
 
 /**
  * Get L0 times
@@ -108,14 +107,14 @@ Int_t GetRawDigitID(const AliHLTEMCALTriggerRawDigitDataStruct &dig);
  * @param time L0 time
  * @return False in case of error, true in case of success
  */
-Bool_t GetL0Time(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t i, Int_t& time);
+Bool_t GetL0Time(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t i, Int_t& time);
 
 /**
  * Get L0 times
  * @param dig Input digit
  * @param times Output buffer for the L0 times
  */
-void GetL0Times(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t times[]);
+void GetL0Times(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t times[]);
 
 /**
  * returns the time and amplitude of a given time sample and if the sample was ok
@@ -125,7 +124,7 @@ void GetL0Times(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t times[]);
  * @param amp Amp at time bin
  * @return False in case of error, true in case of success
  */
-Bool_t GetTimeSample(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t iSample, Int_t& timeBin, Int_t& amp);
+Bool_t GetTimeSample(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t iSample, Int_t& timeBin, Int_t& amp);
 
 /**
  * Get L0 time sum
@@ -133,7 +132,7 @@ Bool_t GetTimeSample(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t iSam
  * @param time Time bin
  * @return Level0 time sum
  */
-Int_t GetL0TimeSum(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t time);
+Int_t GetL0TimeSum(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t time);
 
 /**
  * Get trigger bit
@@ -142,7 +141,7 @@ Int_t GetL0TimeSum(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t time);
  * @param mode Mode (Data or MC)
  * @return Trigger bit (0 or 1)
  */
-Int_t GetTriggerBit(const AliHLTEMCALTriggerRawDigitDataStruct &dig, const TriggerType_t type, const Int_t mode);
+Int_t GetTriggerBit(const AliHLTCaloTriggerRawDigitDataStruct &dig, const TriggerType_t type, const Int_t mode);
 
 /**
  * Checks the maximum amplitude in the time sample
@@ -151,12 +150,19 @@ Int_t GetTriggerBit(const AliHLTEMCALTriggerRawDigitDataStruct &dig, const Trigg
  * @param time
  * @return
  */
-Bool_t GetRawDigitMaximumAmplitude(const AliHLTEMCALTriggerRawDigitDataStruct &dig, Int_t& amplitude, Int_t& time);
+Bool_t GetRawDigitMaximumAmplitude(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t& amplitude, Int_t& time);
 
 /**
  * Print raw digit information
  * @param dig Input digit
  */
-void PrintRawDigit(const AliHLTEMCALTriggerRawDigitDataStruct &dig);
+void PrintRawDigit(const AliHLTCaloTriggerRawDigitDataStruct &dig);
+
+/**
+ * Print raw digit information into an output buffer
+ * @param dig Input digit
+ * @param outputbuffer Buffer the string is written to
+ */
+void SPrintRawDigit(const AliHLTCaloTriggerRawDigitDataStruct &dig, char *outputbuffer);
 
 #endif

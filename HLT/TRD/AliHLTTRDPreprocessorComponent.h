@@ -24,6 +24,7 @@ class TH1F;
 class TH1I;
 class TH2I;
 class TH2F;
+class TClonesArray;
 
 /**
  * @class AliHLTTRDPreprocessorComponent

@@ -49,8 +49,8 @@ class AliAODHeader : public AliVAODHeader {
 	       Double_t n2Energy,
 	       Double_t p2Energy,
 	       Double_t *emEnergy,
-	       ULong64_t fTriggerMask,
-	       UChar_t   fTriggerCluster,
+	       ULong64_t triggerMask,ULong64_t triggerMaskNext50,
+	       UChar_t   triggerCluster,
 	       UInt_t    fEventType,
 	       const Float_t *vzeroEqFactors,
 	       const Char_t *title="",
@@ -72,6 +72,7 @@ class AliAODHeader : public AliVAODHeader {
   UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
   ULong64_t GetTriggerMask()        const { return fTriggerMask; }
+  ULong64_t GetTriggerMaskNext50()  const { return fTriggerMaskNext50; }
   UChar_t   GetTriggerCluster()     const { return fTriggerCluster; }
   TString   GetFiredTriggerClasses()const { return fFiredTriggers;}
   UInt_t    GetEventType()          const { return fEventType; }
@@ -128,6 +129,7 @@ class AliAODHeader : public AliVAODHeader {
   void SetOrbitNumber(UInt_t nOr)              { fOrbitNumber = nOr; }
   void SetPeriodNumber(UInt_t nPer)            { fPeriodNumber = nPer; }
   void SetTriggerMask(ULong64_t trigMsk)       { fTriggerMask = trigMsk; }
+  void SetTriggerMaskNext50(ULong64_t trigMsk) { fTriggerMaskNext50 = trigMsk; }
   void SetFiredTriggerClasses(TString trig)    { fFiredTriggers = trig;}
   void SetTriggerCluster(UChar_t trigClus)     { fTriggerCluster = trigClus; }
   void SetEventType(UInt_t evttype)            { fEventType = evttype; }
@@ -233,6 +235,7 @@ class AliAODHeader : public AliVAODHeader {
   Int_t       fNQTheta;             // number of QTheta elements
   Double32_t *fQTheta;              // [fNQTheta] values to store Lee-Yang-Zeros
   ULong64_t   fTriggerMask;         // Trigger Type (mask)
+  ULong64_t   fTriggerMaskNext50;   // Trigger Type (mask) for upper 50 slots
   TString     fFiredTriggers;       // String with fired triggers
   Int_t       fRunNumber;           // Run Number
   Int_t       fRefMult;             // reference multiplicity
@@ -272,7 +275,7 @@ class AliAODHeader : public AliVAODHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 27);
+  ClassDef(AliAODHeader, 28);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

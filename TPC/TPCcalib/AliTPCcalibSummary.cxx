@@ -852,6 +852,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   static TGraphErrors ggrDipAngleTotLong;
   static TGraphErrors ggrDipAngleTotAbsolute;
   //
+  static TGraphErrors ggrMultiplicityTot;
+  static TGraphErrors ggrMultiplicityMax;
+  //
   static TVectorD vFitDipAngleParMaxShort(3);
   static TVectorD vFitDipAngleParMaxMedium(3);
   static TVectorD vFitDipAngleParMaxLong(3);
@@ -925,7 +928,11 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     TGraphErrors *grPadEqualTot = (TGraphErrors * ) gainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
     if (grPadEqualMax) ggrPadEqualMax = *grPadEqualMax;
     if (grPadEqualTot) ggrPadEqualTot = *grPadEqualTot;
-
+    //
+    TGraphErrors * grMultiplicityTot  = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+    TGraphErrors * grMultiplicityMax  = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEANQMAX_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+    if (grMultiplicityTot) ggrMultiplicityTot = *grMultiplicityTot;
+    if (grMultiplicityMax) ggrMultiplicityTot = *grMultiplicityMax;
 
     if (graphGainIROC && graphGainOROCMedium && graphGainOROCLong) {
       Double_t x=0,y=0;
@@ -985,6 +992,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     "grDipAngleTotMedium.="       << &ggrDipAngleTotMedium       <<
     "grDipAngleTotLong.="         << &ggrDipAngleTotLong         <<
     "grDipAngleTotAbsolute.="     << &ggrDipAngleTotAbsolute     <<
+    //
+    "grMultiplicityTot.="         << &ggrMultiplicityTot         <<
+    "grMultiplicityMax.="         << &ggrMultiplicityMax         <<
     //
     "gainMIP="                    << gainMIP                     <<
     "attachMIP="                  << attachMIP                   <<

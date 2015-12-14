@@ -113,8 +113,8 @@ int AliHLTVZERORecoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tg
 // #################################################################################
 void AliHLTVZERORecoComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 1100;
-  inputMultiplier = 0.5;
+  constBase = 3000;
+  inputMultiplier = 0.7;
 }
 
 // #################################################################################
@@ -326,7 +326,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginVZERO);
   if (!pBlock) {
     //cout<<"No VZERO input block at event"<<endl;
-    ALIHLTERRORGUARD(1, "No VZERO input block at event %d", GetEventCount());
+    HLTInfo("No VZERO input block at event %d", GetEventCount());
     return 0;
   }
   

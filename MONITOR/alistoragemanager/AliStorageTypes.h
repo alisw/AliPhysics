@@ -88,7 +88,13 @@ struct serverRequestStruct
     serverRequestStruct():
     messageType(-1),
     eventsRunNumber(-1),
-    eventsEventNumber(-1)
+    eventsEventNumber(-1),
+    runNumber(),
+    eventNumber(),
+    marked(),
+    multiplicity(),
+    system(),
+    triggerClass()
     {};
     serverRequestStruct(const serverRequestStruct& src){
         messageType = src.messageType;

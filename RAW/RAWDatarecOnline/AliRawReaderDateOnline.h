@@ -60,7 +60,7 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
       AliRawReaderDateIntHandler& operator=(const AliRawReaderDateIntHandler& handler); // Not implemented
     };
 
-    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
+    virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL,ULong64_t triggerMask50 = 0);
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);

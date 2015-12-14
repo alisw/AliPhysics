@@ -199,7 +199,7 @@ AliRawReaderDateOnline::~AliRawReaderDateOnline()
 
 void AliRawReaderDateOnline::SelectEvents(Int_t type,
   ULong64_t triggerMask,
-  const char *triggerExpr)
+  const char *triggerExpr,ULong64_t triggerMask50)
 {
   // Select event by using DATE monitoring
   // library
@@ -221,7 +221,7 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   monitorDeclareTableExtended(const_cast<char**>(table));
   
 #endif
-  AliRawReader::SelectEvents(type,triggerMask,triggerExpr);
+  AliRawReader::SelectEvents(type,triggerMask,triggerExpr,triggerMask50);
 }
 
 //______________________________________________________________________________

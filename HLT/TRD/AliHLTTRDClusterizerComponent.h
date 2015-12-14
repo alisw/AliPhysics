@@ -21,6 +21,7 @@ class AliRawReaderMemory;
 class TFile;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
+class TClonesArray;
 
 /**
  * @class AliHLTTRDClusterizerComponent

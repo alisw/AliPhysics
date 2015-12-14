@@ -137,7 +137,7 @@ void AliAnalysisTaskT0QA::UserExec(Option_t *)
 
  
   for (Int_t i=0; i<24; i++) {
-    if(time[i]<9999 &&abs(time[i])>1e-8 && amplitude[i]<9999&&abs(amplitude[i])>1e-8 )
+    if(time[i]<9999 &&TMath::Abs(time[i])>1e-8 && amplitude[i]<9999&&TMath::Abs(amplitude[i])>1e-8 )
       {
 	//	cout<<"time "<<time[i]<<" amplitude "<<amplitude[i]<<endl;
 	fTimeVSAmplitude[i]->Fill(amplitude[i],time[i]);

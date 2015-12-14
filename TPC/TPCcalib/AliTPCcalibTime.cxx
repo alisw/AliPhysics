@@ -241,16 +241,16 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fAlignTOFTPC->SetOwner(kTRUE);
   
 
-  fCosmiMatchingHisto[0]=new TH1F("Cosmics matching","p0-all"   ,100,-10*0.5356  ,10*0.5356  );
-  fCosmiMatchingHisto[1]=new TH1F("Cosmics matching","p1-all"   ,100,-10*4.541   ,10*4.541   );
-  fCosmiMatchingHisto[2]=new TH1F("Cosmics matching","p2-all"   ,100,-10*0.01134 ,10*0.01134 );
-  fCosmiMatchingHisto[3]=new TH1F("Cosmics matching","p3-all"   ,100,-10*0.004644,10*0.004644);
-  fCosmiMatchingHisto[4]=new TH1F("Cosmics matching","p4-all"   ,100,-10*0.03773 ,10*0.03773 );
-  fCosmiMatchingHisto[5]=new TH1F("Cosmics matching","p0-isPair",100,-10*0.5356  ,10*0.5356  );
-  fCosmiMatchingHisto[6]=new TH1F("Cosmics matching","p1-isPair",100,-10*4.541   ,10*4.541   );
-  fCosmiMatchingHisto[7]=new TH1F("Cosmics matching","p2-isPair",100,-10*0.01134 ,10*0.01134 );
-  fCosmiMatchingHisto[8]=new TH1F("Cosmics matching","p3-isPair",100,-10*0.004644,10*0.004644);
-  fCosmiMatchingHisto[9]=new TH1F("Cosmics matching","p4-isPair",100,-10*0.03773 ,10*0.03773 );
+  fCosmiMatchingHisto[0]=new TH1F("Cosmics matching p0a","p0-all"   ,100,-10*0.5356  ,10*0.5356  );
+  fCosmiMatchingHisto[1]=new TH1F("Cosmics matching p1a","p1-all"   ,100,-10*4.541   ,10*4.541   );
+  fCosmiMatchingHisto[2]=new TH1F("Cosmics matching p2a","p2-all"   ,100,-10*0.01134 ,10*0.01134 );
+  fCosmiMatchingHisto[3]=new TH1F("Cosmics matching p3a","p3-all"   ,100,-10*0.004644,10*0.004644);
+  fCosmiMatchingHisto[4]=new TH1F("Cosmics matching p4a","p4-all"   ,100,-10*0.03773 ,10*0.03773 );
+  fCosmiMatchingHisto[5]=new TH1F("Cosmics matching p0p","p0-isPair",100,-10*0.5356  ,10*0.5356  );
+  fCosmiMatchingHisto[6]=new TH1F("Cosmics matching p1p","p1-isPair",100,-10*4.541   ,10*4.541   );
+  fCosmiMatchingHisto[7]=new TH1F("Cosmics matching p2p","p2-isPair",100,-10*0.01134 ,10*0.01134 );
+  fCosmiMatchingHisto[8]=new TH1F("Cosmics matching p3p","p3-isPair",100,-10*0.004644,10*0.004644);
+  fCosmiMatchingHisto[9]=new TH1F("Cosmics matching p4p","p4-isPair",100,-10*0.03773 ,10*0.03773 );
   for (Int_t i=0;i<12;i++) {
     fTPCVertex[i]=0;
   }

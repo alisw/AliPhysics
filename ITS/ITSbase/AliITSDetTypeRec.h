@@ -33,6 +33,7 @@ class AliITSNoiseSSDv2;
 class AliITSTriggerConditions;
 class AliITSFOSignalsSPD;
 class AliITSRecPointContainer;
+class AliITSReconstructor;
 
 class AliITSDetTypeRec : public TObject {
   public:

@@ -40,6 +40,8 @@ struct AliHLTCaloTriggerPatchDataStruct {
   UChar_t                   fSize;
   /** Accumulated ADC counts in the trigger patch */
   UInt_t                    fADC;
+  /** Accumulated offline ADC counts in the trigger patch */
+  UInt_t                    fOfflineADC;
   /** Bit mask of the trigger patch */
   UInt_t                    fBitMask;
 };

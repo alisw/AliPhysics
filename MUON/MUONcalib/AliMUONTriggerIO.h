@@ -23,6 +23,7 @@
 #  include <TArrayI.h>
 #endif
 
+class TClonesArray;
 class AliMUONTriggerLut;
 class AliMUONVStore;
 class AliMpExMap;

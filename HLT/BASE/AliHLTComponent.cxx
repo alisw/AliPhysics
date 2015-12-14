@@ -44,9 +44,17 @@
 #include "TRandom3.h"
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
+#include "TTimeStamp.h"
 #include <cassert>
 #include <ctime>
 #include <stdint.h>
+
+#include <time.h>
+#include <sys/time.h>
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 
 /**
  * default compression level for ROOT objects
@@ -1225,6 +1233,11 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
   return pObj;
 }
 
+const TObject* AliHLTComponent::GetInputObjectFromIndex(const int idx, const char* classname, int bforce)
+{
+  return GetInputObject(idx, classname, bforce);
+}
+
 TObject* AliHLTComponent::GetInputObject(int idx, const char* /*classname*/, int bForce)
 {
   // see header file for function documentation
@@ -1308,6 +1321,11 @@ AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
     }
   }
   return dt;
+}
+
+int AliHLTComponent::GetCurrentInputBlockIndex()
+{
+  return(fCurrentInputBlock);
 }
 
 AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
@@ -1452,18 +1470,63 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData*
   return iSpec;
 }
 
+bool AliHLTComponent::CheckPushbackPeriod()
+{
+  if (fPushbackPeriod>0) {
+    // suppress the output
+    TTimeStamp time;
+    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return false;
+  }
+  return(true);
+}
+
+int AliHLTComponent::SerializeObject(TObject* pObject, void* &buffer_tmp, size_t &size)
+{
+    //Copy from the PushBack function below to serialize into a new buffer
+    //See header file for input parameter description!!!
+    char* &buffer = (char*&) buffer_tmp;
+    AliHLTMessage msg(kMESS_OBJECT);
+    msg.SetCompressionLevel(fCompressionLevel);
+    msg.WriteObject(pObject);
+    size_t bufsize = size;
+    size = msg.Length();
+    if (size == 0)
+    {
+	buffer = NULL;
+	size = 0;
+	return 0;
+    }
+    msg.SetLength();
+    msg.Compress();
+    char *mbuf = msg.Buffer();
+    if (msg.CompBuffer())
+    {
+      msg.SetLength();
+      mbuf = msg.CompBuffer();
+      size = msg.CompLength();
+    }
+    if (buffer != NULL)
+    {
+	if (bufsize < size) return(1);
+	bufsize = 0;
+    }
+    else if (buffer == NULL)
+    {
+	buffer = (char*) malloc(size + bufsize);
+	if (buffer == NULL) return(1);
+    }
+    memcpy(buffer + bufsize, mbuf, size);
+    return 0;
+}
+
 int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec, 
 			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
+  if (!CheckPushbackPeriod()) return 0;
   int iResult=0;
   fLastObjectSize=0;
-  if (fPushbackPeriod>0) {
-    // suppress the output
-    TDatime time;
-    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
-  }
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
     msg.SetCompressionLevel(fCompressionLevel);
@@ -1519,12 +1582,7 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const AliHLTCompon
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
-  if (fPushbackPeriod>0) {
-    // suppress the output
-    TDatime time;
-    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
-  }
-
+  if (!CheckPushbackPeriod()) return(0);
   return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
@@ -1536,6 +1594,14 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const char* dtID, 
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return PushBack(pBuffer, iSize, dt, spec, pHeader, headerSize);
+}
+
+int AliHLTComponent::PushBack(const std::string& pString, const AliHLTComponentDataType& dt, 
+	                      AliHLTUInt32_t spec, void* pHeader, int headerSize)
+{
+  int rc = 0;
+  rc = InsertOutputBlock(pString.c_str(), pString.size(), dt, spec, pHeader, headerSize);
+  return rc;
 }
 
 int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
@@ -2225,15 +2291,28 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // set the time for the pushback period
   if (fPushbackPeriod>0) {
     // suppress the output
-    TDatime time;
+    TTimeStamp time;
     if (fLastPushBackTime<0) {
       // choose a random offset at beginning to equalize traffic for multiple instances
       // of the component
-      gRandom->SetSeed(fChainIdCrc);
-      fLastPushBackTime=time.Get();
-      fLastPushBackTime-=gRandom->Integer(fPushbackPeriod);
-    } else if ((int)time.Get()-fLastPushBackTime>=fPushbackPeriod) {
-      fLastPushBackTime=time.Get();
+      struct timespec ts;
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+      clock_serv_t cclock;
+      mach_timespec_t mts;
+      host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+      clock_get_time(cclock, &mts);
+      mach_port_deallocate(mach_task_self(), cclock);
+      ts.tv_sec = mts.tv_sec;
+      ts.tv_nsec = mts.tv_nsec;
+#else
+      clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+      gRandom->SetSeed(ts.tv_nsec);
+      fLastPushBackTime=time.GetSec();
+      fLastPushBackTime+=fPushbackPeriod/2-gRandom->Integer(fPushbackPeriod);
+      //HLTImportant("time: %i, fLastPushBackTime: %i",(int)time.GetSec(),fLastPushBackTime);
+    } else if ((int)time.GetSec()-fLastPushBackTime >= fPushbackPeriod) {
+      if (outputBlockCnt) fLastPushBackTime=time.GetSec() - gRandom->Integer(fPushbackPeriod/3);
     }
   }
 

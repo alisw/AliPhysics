@@ -1,7 +1,9 @@
-#ifndef ALIHLTEMCALTRIGGERFASTORDATASTRUCT_H
-#define ALIHLTEMCALTRIGGERFASTORDATASTRUCT_H
+#ifndef ALIHLTCALOTRIGGERDATASTRUCT_H
+#define ALIHLTCALOTRIGGERDATASTRUCT_H
 
-struct AliHLTEMCALTriggerFastorDataStruct {
+#include "Rtypes.h"
+
+struct AliHLTCaloTriggerDataStruct {
   UChar_t             fRow;
   UChar_t             fCol;
   Float_t             fAmplitude;

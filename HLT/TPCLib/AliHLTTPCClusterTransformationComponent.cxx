@@ -29,6 +29,9 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCFastTransformObject.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
+#include "AliDAQ.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -54,6 +57,7 @@ AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent
 fOfflineMode(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
+fTPCPresent(0),
 fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
@@ -121,6 +125,12 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+  fTPCPresent = ((mgr.GetGRPData()->GetDetectorMask() & AliDAQ::kTPC) != 0);
+
+  if (!fTPCPresent) return(iResult);
+
   fOfflineMode = 0;
 
   if (iResult>=0 && argc>0)
@@ -138,9 +148,9 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-	if ( fInitializeByObjectInDoEvent ) {
-	  HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object" );
-	}
+    if ( fInitializeByObjectInDoEvent == 1 ) {
+          HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
+    }
     else if( fOfflineMode ) {
       err = fgTransform.Init( GetBz(), GetTimeStamp() );
 	  fInitialized = true;
@@ -168,7 +178,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 	   fInitialized = true;
     }
     timer.Stop();
-    cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
+    HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
     if( err!=0 ){
       HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
       return -ENOENT;
@@ -213,9 +223,13 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       fInitializeByObjectInDoEvent = 1;
       HLTDebug("Initialize on the fly mode set.");
       iRet++;
+    } else if (argument.CompareTo("-update-object-on-the-fly")==0){
+      fInitializeByObjectInDoEvent = 2;
+      HLTDebug("Initialize object at startup and update on the fly mode set.");
+      iRet++;
     } else {
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;
@@ -233,6 +247,8 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   size = 0;
   int iResult = 0;
 
+  if (!fTPCPresent) return iResult;
+
   if (fInitializeByObjectInDoEvent)
   {
 	//Check first whether there is a new FastTransformation object
@@ -247,7 +263,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 		}
 		if (fInitialized)
 		{
-			HLTImportant("Received updated cluster transformation map");
+			HLTImportant("Received updated cluster transformation map with new calibration");
 			fgTransform.DeInit();
 		}
 		else
@@ -277,7 +293,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   fBenchmark.Start(0);
 
   // Initialise the transformation here once more for the case of off-line reprocessing
-  if( !fgTimeInitialisedFromEvent ){
+  if( fInitializeByObjectInDoEvent != 1 && fOfflineMode && !fgTimeInitialisedFromEvent ){
     Long_t currentTime = static_cast<AliHLTUInt32_t>(time(NULL));
     Long_t eventTimeStamp = GetTimeStamp();
     if( TMath::Abs( fgTransform.GetCurrentTimeStamp() - eventTimeStamp )>60 && 

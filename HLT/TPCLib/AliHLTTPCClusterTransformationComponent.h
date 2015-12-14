@@ -87,8 +87,9 @@ private:
   static AliHLTTPCClusterTransformation fgTransform; //!transient
   static Bool_t fgTimeInitialisedFromEvent; //!transient
   bool fOfflineMode; //Run in offline mode (for hlt simulation in offline)
-  bool fInitializeByObjectInDoEvent;	//Do not initialize the transformation but wait for transformation objects arriving in DoEvent loop
+  int fInitializeByObjectInDoEvent;	//Do not initialize the transformation but wait for transformation objects arriving in DoEvent loop
   bool fInitialized;	//Are we initialized?
+  bool fTPCPresent;	//Is TPC present in GRP, if not skip init
 
   Bool_t fDataId; // change output data description
 

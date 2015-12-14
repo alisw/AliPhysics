@@ -59,6 +59,7 @@
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliPID.h"
 #include "TSystem.h"
+#include "TGrid.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
 
@@ -511,7 +512,6 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       clusterArray[iPoint].SetY(x[1]);
       clusterArray[iPoint].SetZ(x[2]);
     }
-    transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(backupUseComposedCorrection);
     //
     // 4.) Propagate  ITS tracks outward
     // 
@@ -686,6 +686,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "nPrimTracks="<<nPrimTracks<<       // number of tracks pointed to primary vertes of selected event
       "timeStamp="<<timeStamp<<           // time stamp
       "itrack="<<fTrackCounter<<          // total track #
+      "gid="<<gid<<                       // global ID of the event
       "itsNCl="<<itsNCl<<
       "trdNCl="<<trdNCl<<
       "tofNCl="<<tofNCl<<
@@ -827,6 +828,9 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   // 
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
+  Int_t cacheSize= 200000000;
+  if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
+
   //
   // 0.) Load current information file and bookd variables
   // 
@@ -861,6 +865,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   TVectorF *vecDelta= 0;
   TVectorF *vecR=0;
+  TVectorF *vecSec=0;
   TVectorF *vecPhi=0;
   TVectorF *vecZ=0;
   Int_t timeStamp=0;
@@ -888,22 +893,38 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
     if (selHis>=0 && ihis!=selHis) continue;
     for (Int_t iesd=0; iesd<nesd; iesd++){
       TStopwatch timerFile;
+      TString fileNameString(esdArray->At(iesd)->GetName());
+      if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
       if (!esdFile) continue;
-      TTree *tree = (TTree*)esdFile->Get("delta"); 
+      TTree *tree = (TTree*)esdFile->Get("delta");
+      tree->SetCacheSize(cacheSize);
+      tree->SetBranchStatus("*",kFALSE);
       if (!tree) continue;
-      ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "ProcessignFile \t %s\n",esdArray->At(iesd)->GetName());
+      ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "Processing file \t %s\n",esdArray->At(iesd)->GetName());
       AliSysInfo::AddStamp(esdArray->At(iesd)->GetName(),ihis,iesd,currentTrack);
+      tree->SetBranchStatus("timeStamp",kTRUE);
       TBranch *br = tree->GetBranch("timeStamp");
+      tree->SetBranchStatus("vecR.",kTRUE);
+      tree->SetBranchStatus("vecSec.",kTRUE);
+      tree->SetBranchStatus("vecPhi.",kTRUE);
+      tree->SetBranchStatus("vecZ.",kTRUE);
+      tree->SetBranchStatus("track.*",kTRUE);      
       tree->SetBranchAddress("vecR.",&vecR);
+      tree->SetBranchAddress("vecSec.",&vecSec);
       tree->SetBranchAddress("vecPhi.",&vecPhi);
       tree->SetBranchAddress("vecZ.",&vecZ);
       tree->SetBranchAddress("track.",&param);
       br->SetAddress(&timeStamp);
-      if (tree->GetBranch("npValid")!=NULL) tree->SetBranchAddress("npValid",&npValid);
+      if (tree->GetBranch("npValid")!=NULL) {
+	tree->SetBranchStatus("npValid",kTRUE);
+	tree->SetBranchAddress("npValid",&npValid);
+      }
+      tree->SetBranchStatus(branches[ihis],kTRUE);
       tree->SetBranchAddress(branches[ihis],&vecDelta);
       
       Int_t ntracks=tree->GetEntries();
+      //
       for (Int_t itrack=0; itrack<ntracks; itrack++){
 	if (startTime>0){
 	  br->GetEntry(itrack);
@@ -911,6 +932,12 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  hisTime->Fill(timeStamp);
 	}
 	tree->GetEntry(itrack);
+	const Float_t *vSec= vecSec->GetMatrixArray();
+	const Float_t *vPhi= vecPhi->GetMatrixArray();
+	const Float_t *vR  = vecR->GetMatrixArray();
+	const Float_t *vZ  = vecZ->GetMatrixArray();
+	const Float_t *vDelta  = vecDelta->GetMatrixArray();
+	//
 	currentTrack++;
 	if (timeStamp<minTime) minTime=0;
 	if (timeStamp>maxTime) maxTime=0;
@@ -923,21 +950,22 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	if (maxStat>0 &&currentTrack>maxStat) break;
 	//for (Int_t ipoint=0; ipoint<knPoints; ipoint++){
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
-	  if ((*vecR)[ipoint]<=0 || (*vecDelta)[ipoint]<-990.) continue;
-	  Double_t sector=9.*(*vecPhi)[ipoint]/TMath::Pi();
+	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
+	  Double_t sector=9.*vPhi[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
-	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
-	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
-	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   (*vecZ)[ipoint]/localX, (*vecDelta)[ipoint]};
+	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(sector+0.5)/9.;
+	  Double_t localX = TMath::Cos(deltaPhi)*vR[ipoint];
+	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   vZ[ipoint]/localX, vDelta[ipoint]};
 	  if (xxx[4]==0) continue;
+	  Double_t side=-1.+2.*((TMath::Nint(vSec[ipoint])%36)<18);
+	  if ((vZ[ipoint]*side)<-1) xxx[3]=side*0.001; // do not mix z on A side and C side 	  
 	  hisToFill[ihis]->Fill(xxx);	  
 	}
-	vecR->Clear(); vecPhi->Clear(); vecZ->Clear(); vecDelta->Clear();
-	delete param;
-	param=0;
-	tree->SetBranchAddress("track.",&param);
       }
       timerFile.Print();
+      delete tree;
+      delete esdFile;
+      
     }    
     fout->GetFile()->cd();
     hisToFill[ihis]->Write();
@@ -1001,6 +1029,8 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
   Int_t iter=0;
   Int_t currentCl=0;
   for (Int_t iesd=0; iesd<nesd; iesd++){
+    TString fileNameString(esdArray->At(iesd)->GetName());
+    if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
     TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
     if (!esdFile) continue;
     TTree *tree = (TTree*)esdFile->Get("ErrParam"); 
@@ -1051,13 +1081,13 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   //
   TFile * fin = TFile::Open(fname);
   if (fin==NULL) {
-    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistortionTree", "file %s not readable", fname);
     return 0;
   }
   TTree * treeFriend = (TTree*) fin->Get(treeName);
   
   if (treeFriend==NULL){
-    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistortionTree", "file %s not readable", fname);
     return 0;
   }
   if (tree==NULL) {
@@ -1128,7 +1158,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
   Int_t nFiles=array->GetEntries();
   if (nFiles<=0) {
-    ::Error("GetResidualStatInfo. Wrong input list",inputList);
+    ::Error("GetResidualStatInfo", "Wrong input list %s", inputList);
     return;
   }
   TStopwatch timer;
@@ -1139,6 +1169,8 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
   for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
     timer.Start();
+    TString fileName = array->At(iFile)->GetName();
+    if (fileName.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
     printf("%d\t%s\n",iFile,array->At(iFile)->GetName());
     TFile * f = TFile::Open(array->At(iFile)->GetName());
     if (f==NULL) continue;
@@ -1279,7 +1311,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   delete hisEvent;
   delete pcstream;
 
-  printf("StatInfo.minTime\t%d\n",minTime);
-  printf("StatInfo.maxTime\t%d\n",maxTime);
+  printf("StatInfo.minTime\t%lld\n",minTime);
+  printf("StatInfo.maxTime\t%lld\n",maxTime);
   delete array;
 }

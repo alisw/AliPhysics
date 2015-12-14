@@ -226,8 +226,12 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   //
   // 2. extraction of the information
   //
-  if(ReadVdriftLinearFitGlobal(file) && fCalDetVdriftUsed && fCalDetExBUsed) AnalyzeVdriftLinearFit();
-  if(ReadVdriftT0Global(file)) AnalyzeVdriftT0();
+  if(ReadVdriftLinearFitGlobal(file) && fCalDetVdriftUsed && fCalDetExBUsed) {
+    if(!AnalyzeVdriftLinearFit()) return;
+  }
+  if(ReadVdriftT0Global(file)) {
+    if(!AnalyzeVdriftT0()) return;
+  }
   //
   // 3. Append QA plots
   //
@@ -278,7 +282,9 @@ void AliTRDPreprocessorOffline::CalibExbAlt(const Char_t* file, Int_t startRunNu
   //
   // 2. extraction of the information
   //
-  if(ReadExbAltFitGlobal(file)) AnalyzeExbAltFit();
+  if(ReadExbAltFitGlobal(file)) {
+    if(!AnalyzeExbAltFit()) return;
+  }
   //
   // 3. Append QA plots
   //
@@ -318,7 +324,7 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   //
   // 2. extraction of the information
   //
-  AnalyzeGain();
+  if(!AnalyzeGain()) return;
   if(fBackCorrectGain) CorrectFromDetGainUsed();
   //if(fBackCorrectVdrift) CorrectFromDetVdriftUsed();
   //
@@ -362,7 +368,7 @@ void AliTRDPreprocessorOffline::CalibPRF(const Char_t* file, Int_t startRunNumbe
   //
   // 2. extraction of the information
   //
-  AnalyzePRF();
+  if(!AnalyzePRF()) return;
   //
   // 3. Append QA plots
   //
@@ -683,7 +689,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   calibra->SetFitOutliersChargeLow(fOutliersFitChargeLow);
   calibra->SetFitOutliersChargeHigh(fOutliersFitChargeHigh);
   calibra->SetMinEntries(fMinStatsGain); // If there is less than 1000 entries in the histo: no fit
-  calibra->AnalyseCH(fCH2d);
+  if(!calibra->AnalyseCH(fCH2d)) {
+    return kFALSE;
+  }
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
     + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(0));
@@ -691,7 +699,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   Int_t nbE         = calibra->GetNumberEnt();
 
 
-  Bool_t ok = kFALSE;
+  //Bool_t ok = kFALSE;
   Bool_t meanother = kFALSE;
   // enough statistics
   if ((nbtg >                  0) && 
@@ -708,7 +716,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
     fCalibObjects->AddAt(calDetGain,kGain);
     fPlots->AddAt(coefGain,kGain);
     //
-    ok = kTRUE;
+    //ok = kTRUE;
   }
   else {
     fNotEnoughStatisticsForTheGain = kTRUE;
@@ -729,7 +737,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
 	fCalibObjects->AddAt(calDetGain,kGain);
 	fPlots->AddAt(coefGain,kGain);
 	// 
-	ok = kTRUE;
+	//ok = kTRUE;
 	fStatusNeg = fStatusNeg | kGainNotEnoughStatsButFill;
       }
       else {
@@ -744,7 +752,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   
   calibra->ResetVectorFit();
   
-  return ok;
+  //return ok;
+  return kTRUE;
   
 }
 //_____________________________________________________________________________________________________
@@ -758,7 +767,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   calibra->SetT0Shift1(fT0Shift1);
   calibra->SetMaxValueT0(fMaxValueT0);
   calibra->SetMinEntries(fMinStatsVdriftT0PH); // If there is less than 1000 entries in the histo: no fit
-  calibra->AnalysePH(fPH2d); 
+  if(!calibra->AnalysePH(fPH2d)) {
+    return kFALSE;
+  }
   //calibra->SetDebugLevel(2);
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
@@ -769,7 +780,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
 
   //printf("nbtg %d, nbfit %d, nbE %d, nbfitSuccess %d\n",nbtg,nbfit,nbE,nbfitSuccess);
 
-  Bool_t ok = kFALSE;
+  //Bool_t ok = kFALSE;
   if ((nbtg >                  0) && 
       (nbfit        >= 0.5*nbE) && (nbE > 30) && (nbfitSuccess > 30)) {
     //printf("nbtg %d, nbfit %d, nbE %d, nbfitSucess %d\n",nbtg,nbfit,nbE,nbfitSuccess);
@@ -800,7 +811,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
     fPlots->AddAt(coefPadVdrift,kVdriftPHPad);
     fPlots->AddAt(coefPadT0,kT0PHPad);
     //
-    ok = kTRUE;
+    //ok = kTRUE;
   }
   else {
     //printf("Not enough stats timeoffset\n");
@@ -808,7 +819,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   }
   calibra->ResetVectorFit();
  
-  return ok;
+  //return ok;
+
+  return kTRUE;
   
 }
 //____________________________________________________________________________________________________________________
@@ -834,7 +847,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   else
     fAliTRDCalibraVdriftLinearFit->FillPEArray2();
   //printf("AliTRDCalibraFit\n");
-  calibra->AnalyseLinearFitters(fAliTRDCalibraVdriftLinearFit);
+  if(!calibra->AnalyseLinearFitters(fAliTRDCalibraVdriftLinearFit)) {
+    return kFALSE;
+  }
   //printf("After\n");
 
   //Int_t nbtg        = 540;
@@ -842,7 +857,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   Int_t nbE         = calibra->GetNumberEnt();
 
   
-  Bool_t ok = kFALSE;
+  //Bool_t ok = kFALSE;
   // enough statistics
   if ((nbfit        >= 0.5*nbE) && (nbE > 30)) {
     // create the cal objects
@@ -864,7 +879,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
     fPlots->AddAt(coefDriftLinear,kVdriftLinear);
     fPlots->AddAt(coefLorentzAngle,kLorentzLinear);
     //
-    ok = kTRUE;
+    //ok = kTRUE;
   }
   else {
     fNotEnoughStatisticsForTheVdriftLinear = kTRUE;
@@ -898,7 +913,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 	fPlots->AddAt(coefDriftLinear,kVdriftLinear);
 	fPlots->AddAt(coefLorentzAngle,kLorentzLinear);
 	// 
-	ok = kTRUE;
+	//ok = kTRUE;
 	fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsButFill;
       }
       else {
@@ -915,7 +930,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   
   calibra->ResetVectorFit();
   
-  return ok;
+  //return ok;
+  return kTRUE;
   
 }
 //________________________________________________________________________________________________________________
@@ -937,7 +953,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeExbAltFit(){
   else
     fAliTRDCalibraExbAltFit->FillPEArray2();
   //printf("AliTRDCalibraFit\n");
-  calibra->AnalyseExbAltFit(fAliTRDCalibraExbAltFit);
+  if(!calibra->AnalyseExbAltFit(fAliTRDCalibraExbAltFit)) return kFALSE;
   //printf("After\n");
 
   //Int_t nbtg        = 540;
@@ -945,7 +961,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeExbAltFit(){
   Int_t nbE         = calibra->GetNumberEnt();
 
   
-  Bool_t ok = kFALSE;
+  //Bool_t ok = kFALSE;
   // enough statistics
   if ((nbfit        >= 0.5*nbE) && (nbE > 30)) {
     // create the cal objects
@@ -960,12 +976,14 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeExbAltFit(){
     fCalibObjects->AddAt(calDetLorentz,kExbAlt);
     fPlots->AddAt(coefLorentzAngle,kExbAlt);
     //
-    ok = kTRUE;
+    //ok = kTRUE;
   }
   
   calibra->ResetVectorFit();
   
-  return ok;
+  //return ok;
+
+  return kTRUE;
   
 }
 //________________________________________________________________________________________________________________
@@ -977,7 +995,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetMinEntries(fMinStatsPRF); // If there is less than 1000 entries in the histo: no fit
-  calibra->AnalysePRFMarianFit(fPRF2d);
+  if(!calibra->AnalysePRFMarianFit(fPRF2d)) return kFALSE;
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(2))
     + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(2));
@@ -985,7 +1003,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
   Int_t nbE         = calibra->GetNumberEnt();
 
   
-  Bool_t ok = kFALSE;
+  //Bool_t ok = kFALSE;
   // enough statistics
   if ((nbtg >                  0) && 
       (nbfit        >= 0.95*nbE) && (nbE > 30)) {
@@ -997,12 +1015,14 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
     fCalibObjects->AddAt(calPadPRF,kPRF);
     fPlots->AddAt(coefPRF,kPRF);
     //
-    ok = kTRUE;
+    //ok = kTRUE;
   }
   
   calibra->ResetVectorFit();
   
-  return ok;
+  //return ok;
+  return kFALSE;
+
   
 }
 
@@ -1854,7 +1874,10 @@ Bool_t AliTRDPreprocessorOffline::SetCalDetGain(Int_t runNumber, Int_t version, 
   // Set the fCalDetGainUsed
   //
 
-  if((version == 0) && (subversion == 0)) return kFALSE;
+  if(version < 1) {
+    fStatusPos = fStatusPos | kGainErrorOld;
+    return kFALSE;
+  }
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",runNumber, version, subversion);
   if(!entry) {
@@ -1883,7 +1906,11 @@ Bool_t AliTRDPreprocessorOffline::SetCalDetVdriftExB(Int_t runNumber, Int_t vers
   // Set the fCalDetVdriftUsed and fCalDetExBUsed
   //
 
-  if((versionv == 0) && (subversionv == 0)) return kFALSE;
+  if(versionv < 1) {
+    fStatusPos = fStatusPos | kVdriftErrorOld;
+    fStatusPos = fStatusPos | kExBErrorOld;  
+    return kFALSE;
+  }
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberVdrift",runNumber, versionv, subversionv);
   if(!entry) {

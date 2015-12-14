@@ -49,6 +49,7 @@
 #include <TVector2.h>
 #include <cassert>
 #include <float.h>
+#include "TBuffer.h"
 
 /// \class AliMUONTrackerData
 ///

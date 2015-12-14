@@ -1231,7 +1231,7 @@ Double_t AliTPCtracker::F3n(Double_t x1,Double_t y1,
   //
   Double_t d  =  TMath::Sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
   if (TMath::Abs(d*c*0.5)>1) return 0;
-  Double_t   angle2    = TMath::ASin(d*c*0.5);
+  Double_t   angle2    = asinf(d*c*0.5);
 
   angle2  = (z1-z2)*c/(angle2*2.);
   return angle2;
@@ -1258,7 +1258,7 @@ Bool_t   AliTPCtracker::GetProlongation(Double_t x1, Double_t x2, Double_t x[5],
   //
   Double_t delta = x[4]*dx*(c1+c2)/(c1*r2 + c2*r1);
   
-  dz = x[3]*TMath::ASin(delta)/x[4];
+  dz = x[3]*asinf(delta)/x[4];
   
   y+=dy;
   z+=dz;
@@ -1394,6 +1394,8 @@ Int_t  AliTPCtracker::LoadClusters()
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
 
+  fNClusters = 0;
+
   TTree * tree = fInput;
   TBranch * br = tree->GetBranch("Segment");
   br->SetAddress(&clrow);
@@ -1450,6 +1452,7 @@ Int_t  AliTPCtracker::LoadClusters()
       }
       tpcrow->SetN2(nClusAdd);
     }
+    fNClusters += nClusAdd;
   }
   //
   //clrow->Clear("C");
@@ -1491,6 +1494,8 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   //
   // Calculate crosstalk estimate
   //
+  TStopwatch sw;
+  sw.Start();
   const Int_t nROCs   = 72;
   const Int_t   nIterations=3;  // 
   // 0.) reset crosstalk matrix 
@@ -1612,7 +1617,9 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     }      
   }
 
-
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 
 
@@ -1903,6 +1910,7 @@ void AliTPCtracker::UnloadClusters()
       tpcrow->ResetClusters();
     }
 
+  fNClusters = 0;
   return ;
 }
 
@@ -1998,6 +2006,8 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
   // Loop over all clusters
   //      add to each cluster signal corresponding to common Xtalk mode for given time bin at given wire segment
   // cluster loop
+  TStopwatch sw;
+  sw.Start();
   for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
     for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
       AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
@@ -2042,15 +2052,13 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
                 "\n";
             }
           }// dump the results to the debug streamer if in debug mode
-
-
-
-
-
 	}
       }
     }
   }
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 
 void  AliTPCtracker::ApplyTailCancellation(){
@@ -2058,7 +2066,8 @@ void  AliTPCtracker::ApplyTailCancellation(){
   // Correct the cluster charge for the ion tail effect 
   // The TimeResponse function accessed via  AliTPCcalibDB (TPC/Calib/IonTail)
   //
-
+  TStopwatch sw;
+  sw.Start();
   // Retrieve
   TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
   if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
@@ -2222,6 +2231,9 @@ void  AliTPCtracker::ApplyTailCancellation(){
       }//end of loop over sectors
     }//end of loop over IROC/OROC
   }// end of side loop
+  sw.Stop();
+  AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
+  //
 }
 //_____________________________________________________________________________
 void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1){
@@ -4100,8 +4112,8 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
        
 	//Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
 	//Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);
-	Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
-	Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
+	Double_t dfi0   = 2.*asinf(dvertex*c0*0.5);
+	Double_t dfi1   = 2.*asinf(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
 	//
 	//
 	Double_t z0  =  kcl->GetZ();  

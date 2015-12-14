@@ -462,7 +462,8 @@ Double_t AliMagF::GetFactorDip() const
 
 //_____________________________________________________________________________
 AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention, Bool_t uniform,
-				 Float_t beamenergy, const Char_t *beamtype, const Char_t *path) 
+				 Float_t beamenergy, const Char_t *beamtype, const Char_t *path,
+				 Bool_t returnNULLOnInvalidCurrent) 
 {
   //------------------------------------------------
   // The magnetic field map, defined externally...
@@ -472,6 +473,8 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   // The polarities must match the convention (LHC or DCS2008) 
   // unless the special uniform map was used for MC
   //------------------------------------------------
+  AliLog::EType_t error_type = returnNULLOnInvalidCurrent ? AliLog::kError : AliLog::kFatal;
+
   const Float_t l3NominalCurrent1=30000.; // (A)
   const Float_t l3NominalCurrent2=12000.; // (A)
   const Float_t diNominalCurrent =6000. ; // (A)
@@ -491,7 +494,8 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   if (TMath::Abs((sclDip=diCur/diNominalCurrent)-1.) > tolerance && !uniform) {
     if (diCur <= zero) sclDip = 0.; // some small current.. -> Dipole OFF
     else {
-      AliFatalGeneral("AliMagF",Form("Wrong dipole current (%f A)!",diCur));
+      AliMessageGeneral("AliMagF",error_type,Form("Wrong dipole current (%f A)!",diCur));
+      return NULL;
     }
   }
   //
@@ -506,14 +510,16 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
     else if (TMath::Abs((sclL3=l3Cur/l3NominalCurrent2)-1.) < tolerance) map  = k2kG;
     else if (l3Cur <= zero && diCur<=zero)   { sclL3=0; sclDip=0; map  = k5kGUniform;}
     else {
-      AliFatalGeneral("AliMagF",Form("Wrong L3 current (%f A)!",l3Cur));
+      AliMessageGeneral("AliMagF",error_type,Form("Wrong L3 current (%f A)!",l3Cur));
+      return NULL;
     }
   }
   //
   if (sclDip!=0 && map!=k5kGUniform) {
     if ( (l3Cur<=zero) || ((convention==kConvLHC && l3Pol!=diPol) || (convention==kConvDCS2008 && l3Pol==diPol)) ) { 
-      AliFatalGeneral("AliMagF",Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
+      AliMessageGeneral("AliMagF",error_type,Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
 				     l3Pol>0?'+':'-',diPol>0?'+':'-',GetPolarityConvention()));
+      return NULL;
     }
   }
   //

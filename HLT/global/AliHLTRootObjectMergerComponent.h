@@ -1,13 +1,13 @@
 // -*- Mode: C++ -*-
 
-#ifndef ALIHLTTPCCLUSTERTRANSFORMATIONMERGERCOMPONENT_H
-#define ALIHLTTPCCLUSTERTRANSFORMATIONMERGERCOMPONENT_H
+#ifndef ALIHLTROOTOBJECTMERGERCOMPONENT_H
+#define ALIHLTROOTOBJECTMERGERCOMPONENT_H
 
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCClusterTransformationMergerComponent.h
+/** @file   AliHLTRootObjectMergerComponent.h
     @author Sergey Gorbunov
     @date   
     @brief
@@ -20,23 +20,24 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
+#include "AliHLTAsyncMemberProcessor.h"
 
-class AliHLTTPCClusterTransformation;
-
+class TObject;
+class TList;
 
 /**
- * @class AliHLTTPCClusterTransformationMergerComponent
+ * @class AliHLTRootObjectMergerComponent
  * @ingroup alihlt_tpc_components
  */
 
-class AliHLTTPCClusterTransformationMergerComponent : public AliHLTProcessor {
+class AliHLTRootObjectMergerComponent : public AliHLTProcessor {
     
 public:
 
   /** standard constructor */    
-  AliHLTTPCClusterTransformationMergerComponent();           
+  AliHLTRootObjectMergerComponent();           
   /** destructor */
-  virtual ~AliHLTTPCClusterTransformationMergerComponent();
+  virtual ~AliHLTRootObjectMergerComponent();
 
   // Public functions to implement AliHLTComponent's interface.
   // These functions are required for the registration process
@@ -64,6 +65,7 @@ protected:
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
   int DoDeinit();
+  void* cleanup(void*);
   
   int Reconfigure(const char* cdbEntry, const char* chainId);  
 
@@ -72,18 +74,35 @@ protected:
   using AliHLTProcessor::DoEvent;
   
 private:
+  int BuildMergeList(TObject*& returnObj, TList*& mergeList, TObject* obj);
+  void ClearBuffers(void* buffer, bool isMergeObjectStruct = false);
+	
+  struct MergeObjectStruct
+  {
+	  TObject* fObject;
+	  TList* fList;
+  };
    
   int fCumulative;
   int fTotalInputs;
   TObject* fObj;
+  int fQueueDepth;
+  int fAsyncProcess;
+  
+  bool fDataTypeSet;
+  AliHLTComponentDataType fDataType;
+  
+  void* MergeObjects(void*);
           
   /** copy constructor prohibited */
-  AliHLTTPCClusterTransformationMergerComponent(const AliHLTTPCClusterTransformationMergerComponent&);
+  AliHLTRootObjectMergerComponent(const AliHLTRootObjectMergerComponent&);
 
   /** assignment operator prohibited */
-  AliHLTTPCClusterTransformationMergerComponent& operator=(const AliHLTTPCClusterTransformationMergerComponent&);
+  AliHLTRootObjectMergerComponent& operator=(const AliHLTRootObjectMergerComponent&);
+  
+  AliHLTAsyncMemberProcessor<AliHLTRootObjectMergerComponent> fAsyncProcessor; //Processor for asynchronous processing
 
-  ClassDef(AliHLTTPCClusterTransformationMergerComponent, 0)
+  ClassDef(AliHLTRootObjectMergerComponent, 0)
 };
 
 #endif

@@ -11,18 +11,15 @@
 // 
 
 #include "AliHLTComponent.h"
+#include "AliZMQhelpers.h"
 #include <TList.h>
-#include <map>
-#include <string>
 
 class TFile;
 
-class AliHLTZMQsource : public AliHLTComponent  {
+class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
   public:
     AliHLTZMQsource();
     virtual ~AliHLTZMQsource();
-
-    typedef map<std::string,std::string> stringMap;
 
     const char* GetComponentID();
     AliHLTComponentDataType GetOutputDataType();
@@ -31,9 +28,7 @@ class AliHLTZMQsource : public AliHLTComponent  {
     TComponentType GetComponentType() { return AliHLTComponent::kSource;}
     AliHLTComponent* Spawn();
 
-    //new option parser
-    static stringMap* TokenizeOptionString(const TString str);
-    int ProcessOptionString(TString arguments);
+    //overload AliOptionParser
     int ProcessOption(TString option, TString value);
 
   protected:
@@ -59,8 +54,8 @@ class AliHLTZMQsource : public AliHLTComponent  {
     AliHLTComponentDataTypeList fOutputDataTypes;                    //! transient
     void* fZMQcontext;       //!ZMQ context pointer
     void* fZMQin;           //!the output socket
-    int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
-    TString fZMQendpoint;    //e.g. "@tcp://*:60100" ">tcp://ecs0:60100"
+    int fZMQsocketType;     //!cache the value of the socket type
+    TString fZMQinConfig;    //e.g. "PUSH@tcp://*:60100" "PULL>tcp://ecs0:60100"
     TString fMessageFilter;   //ZMQ subscription
     ULong_t fZMQrequestTimeout;  //timeout in ms
     Bool_t fZMQneverBlock;    //dont block on receive

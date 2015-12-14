@@ -50,15 +50,20 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 //#include "AliHLTEMCALModuleCalibrationProcessorComponent.h"
 //#include "AliHLTEMCALMonitorTriggerComponent.h"
 #include "AliHLTEMCALRawAnalyzerComponent.h"
-#include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
+#include "AliHLTEMCALRawAnalyzerStandardComponent.h"
 #include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
+#include "AliHLTEMCALRawAnalyzerComponentTRU.h"
+#include "AliHLTEMCALRawAnalyzerComponentSTU.h"
+#include "AliHLTEMCALTriggerDataMakerComponent.h"
 //#include "AliHLTEMCALRcuCalibrationProcessorComponent.h"
 //#include "AliHLTEMCALRcuDAComponent.h"
+#include "AliHLTEMCALRawAnalyzerCrudeComponent.h"
 #include "AliHLTEMCALRawAnalyzerLMSComponent.h"
 #include "AliHLTEMCALRawAnalyzerFastFitComponent.h"
 #include "AliHLTEMCALRawAnalyzerNNComponent.h"
 #include "AliHLTEMCALClusterizerComponentNbyN.h"
 #include "AliHLTEMCALTriggerMakerComponent.h"
+#include "AliHLTEMCALTriggerQAComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEMCALAgent)
@@ -108,64 +113,66 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         // 	    }
         // 	}
         
-        int moduleStart = 0;
-        int moduleEnd = 9;
-        
-        int rcuStart = 0;
-        int rcuEnd = 1;
-        
-        Int_t rcusPerModule = 2;
         Int_t ddlOffset = 4608; 
         
         TString mergerInput;
         TString sinkClusterInput;
         TString emInput;
+        TString tmInput;   // Input for trigger maker
+        TString tdInput;   // Input for trigger data maker
+        TString arg;
         
-        for (int module = moduleStart; module <= moduleEnd; module++) 
+        TString clInput, rps;
+
+        for (int module = 0; module <= AliDAQ::NumberOfDdls("EMCAL"); module++)
         {
-            TString clInput;
-            
-            for(int rcu = rcuStart; rcu < rcuEnd; rcu++) 
-            {
-                TString arg, publisher, ra, dm;
-                // raw data publisher components
-                publisher.Form("EMCAL-RP_%02d_%d", module, rcu);
-                arg.Form("-verbose -minid %d -datatype 'DDL_RAW ' 'EMCA'  -dataspec 0x%x ", ddlOffset + module*(rcusPerModule) + rcu, 0x1 << (module*rcusPerModule + rcu));
+           TString publisher, ra, ta, dm;
+           // raw data publisher components
+           publisher.Form("EMCAL-RP_%02d", module);
+           arg.Form("-verbose -minid %d -datatype 'DDL_RAW ' 'EMCA'  -dataspec %d ", ddlOffset + module, module);
                 
-                handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
-                
-                // Raw analyzer
-                arg = "";
-                ra.Form("EMCAL-RA_%02d_%d", module, rcu);
-                handler->CreateConfiguration(ra.Data(), "EmcalRawCrude", publisher.Data(), arg.Data());
-                
-                // digit maker components
-                dm.Form("EMCAL-DM_%02d_%d", module, rcu);
-                arg="";
-                arg.Form("-sethighgainfactor 0.0153 -setlowgainfactor 0.2448 -setdigitthresholds 0.005 0.002");
-                handler->CreateConfiguration(dm.Data(), "EmcalDigitMaker", ra.Data(), arg.Data());
-                
-                if(clInput.Length() > 0) clInput += " ";
-                clInput+=dm;
-            }
-            
-            TString arg, cl, ca;
-            
-            cl.Form("EMCAL-CF_%02d", module);
-            arg = "";
-            arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
-            handler->CreateConfiguration(cl.Data(), "EmcalClusterizer", clInput.Data(), arg.Data());
-            
-            //ca.Form("EMCAL-CA_%02d", module);
-            //arg = " ";
-            //handler->CreateConfiguration(ca.Data(), "CaloClusterAnalyser", cl.Data(), arg.Data());
-            
-            if(emInput.Length() > 0) emInput += " ";
-            emInput += ca;
+           if(rps.Length()) rps += " ";
+           rps += publisher;
+           handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
         }
+                
+       // Raw analyzer
+       arg = "";
+       handler->CreateConfiguration("EMCAL-RA", "EmcalRawCrude", rps.Data(), arg.Data());
+                
+       // Raw analyzer for TRU data
+       arg = "";
+       handler->CreateConfiguration("EMCAL-TRU", "EmcalTruAnalyzer", rps.Data(), arg.Data());
+       if(tdInput.Length() > 0) tdInput += " ";
+       tdInput += "EMCAL-TRU";
+
+       // STU raw analyser
+       handler->CreateConfiguration("EMCAL-STU", "EmcalStuAnalyzer", rps.Data(), "");
+       tdInput += " EMCAL-STU";
+
+       // digit maker components
+       arg="";
+       arg.Form("-sethighgainfactor 0.0153 -setlowgainfactor 0.2448 -setdigitthresholds 0.005 0.002");
+       handler->CreateConfiguration("EMCAL-DM", "EmcalDigitMaker", "EMCAL-RA", arg.Data());
+       if(tmInput.Length() > 0) tmInput += " ";
+       tmInput+ "EMCAL-DM";
+            
+       arg = "";
+       arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
+       handler->CreateConfiguration("EMCAL-CF", "EmcalClusterizer", clInput.Data(), arg.Data());
+            
+       //ca.Form("EMCAL-CA_%02d", module);
+       //arg = " ";
+       //handler->CreateConfiguration(ca.Data(), "CaloClusterAnalyser", cl.Data(), arg.Data());
+            
+
+        // Tigger data merger
+       handler->CreateConfiguration("EMCAL-TRG", "EmcalTriggerDataMaker", tdInput.Data(), "");
+       tmInput += " EMCAL-TRG";
+
+       handler->CreateConfiguration("EMCAL-TM", "EmcalTriggerMaker", tmInput.Data(), "");
         
-        
-        TString arg, em;
+       TString em;
         
         // tracker finder components
         
@@ -175,7 +182,6 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         //handler->CreateConfiguration(em.Data(), "EmcalEsdEntriesMaker", emInput.Data(), " ");
         
     }
-    
     return 0;
 }
 
@@ -205,18 +211,22 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     // see header file for class documentation
     if (!pHandler) return -EINVAL;
     
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerStandardComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerCrudeComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerLMSComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerPeakFinderComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerFastFitComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerNNComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerComponentTRU);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerComponentSTU);
+    pHandler->AddComponent(new AliHLTEMCALTriggerDataMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALDigitMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponent);
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponentNbyN);
     //pHandler->AddComponent(new AliHLTCaloClusterAnalyserComponent);			 
     //pHandler->AddComponent(new AliHLTEMCALESDEntriesMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALTriggerMakerComponent);
-    
+    pHandler->AddComponent(new AliHLTEMCALTriggerQAComponent);
     return 0;
 }
 

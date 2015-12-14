@@ -20,6 +20,10 @@ add_subdirectory(HOMER)
 add_subdirectory(interface)
 add_subdirectory(util)
 
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+  set(LINUX_DEPS rt)
+endif()
+
 # Module
 set(MODULE HLTbase)
 
@@ -158,7 +162,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 # Add a library to the project using the object
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:HLTbase-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${LINUX_DEPS})
 
 # Additional compilation flags
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS " ")
@@ -185,7 +189,7 @@ install(FILES ${HDRS} DESTINATION include)
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:HLTbase-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static AliHLTHOMER-static Root RootExtra)
+    target_link_libraries(${MODULE}-static STEERBase-static RAWDatabase-static AliHLTHOMER-static Root RootExtra ${LINUX_DEPS})
     set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
     
     # Installation

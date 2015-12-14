@@ -10,6 +10,7 @@ class AliExternalTrackParam;
 class AliESDfriendTrack;
 class AliTrackPointArray;
 
+
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :
   enum EStreamFlags{ // flags to store addition data/code debugging infomation - needed in case something go wrong
@@ -20,6 +21,7 @@ public :
   };
 
 public :
+  using AliTPCcalibBase::Process;
   AliTPCcalibAlignInterpolation();
   AliTPCcalibAlignInterpolation(const Text_t *name, const Text_t *title, Bool_t onTheFlyFill);
   virtual ~AliTPCcalibAlignInterpolation();

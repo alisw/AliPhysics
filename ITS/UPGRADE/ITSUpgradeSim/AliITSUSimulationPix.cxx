@@ -828,7 +828,7 @@ Int_t AliITSUSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTi
     //
     AliDebug(3,Form("Strobe readout: row%d/col%d: particle time: %e, tmin: %e, tmax %e",
                     row,col,hitTime,fReadOutCycleOffset,fReadOutCycleOffset+fReadOutCycleLength));
-    hitTime -= fReadOutCycleOffset+0.5*fReadOutCycleLength;
+    hitTime -= fReadOutCycleOffset-0.5*fReadOutCycleLength;
     return (hitTime<0 || hitTime>fReadOutCycleLength) ? kMaxROCycleAccept+1 : 0;
     //
 }

@@ -12,7 +12,7 @@ public:
   AliTPCdEdxInfo();
   AliTPCdEdxInfo(const AliTPCdEdxInfo& source);
   AliTPCdEdxInfo& operator=(const AliTPCdEdxInfo& source);
-  Double_t GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2); 
+  Double_t GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, Double_t w1, Double_t w2) const;
   Double_t GetFractionOfClusters(Int_t iregion){ return fTPCsignalNRowRegion[iregion]>0 ? Double_t(fTPCsignalNRegion[iregion])/Double_t(fTPCsignalNRowRegion[iregion]):0;}
   //
   // qTot info

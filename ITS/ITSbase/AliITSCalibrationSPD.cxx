@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "TArrayI.h"
+#include "TBuffer.h"
 #include "AliITSCalibrationSPD.h"
 
 ///////////////////////////////////////////////////////////////////////////

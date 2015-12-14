@@ -158,6 +158,7 @@ private:
   AliHLTTPCHWCFData* fpDecoder; // decoder
   AliHLTTPCHWClusterMergerV1* fpClusterMerger; //! merger instance
   Bool_t fDoMerge; // flag
+  bool fTPCPresent;
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 };

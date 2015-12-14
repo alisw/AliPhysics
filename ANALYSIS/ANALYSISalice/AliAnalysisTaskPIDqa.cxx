@@ -466,7 +466,8 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
 
   mom=track->GetTPCmomentum();
   eta=track->Eta();
-  sigStd=track->GetTPCsignal();
+//   sigStd=track->GetTPCsignal();
+  sigStd=fPIDResponse->GetTPCResponse().GetTrackdEdx(track);
 
   eleLineDist=sigStd-fPIDResponse->GetTPCResponse().GetExpectedSignal(track,AliPID::kElectron);
 
@@ -619,7 +620,8 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
 
   mom=track->GetTPCmomentum();
   eta=track->Eta();
-  sig=track->GetTPCsignal();
+//   sig=track->GetTPCsignal();
+  sig=fPIDResponse->GetTPCResponse().GetTrackdEdx(track);
 
   eleLineDist=sig-fPIDResponse->GetTPCResponse().GetExpectedSignal(track,AliPID::kElectron);
 

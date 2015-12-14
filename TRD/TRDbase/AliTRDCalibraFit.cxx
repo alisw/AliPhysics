@@ -4391,8 +4391,10 @@ Bool_t AliTRDCalibraFit::CalculChargeCoefMean(Bool_t vrai)
     }
     else {
       //Per detectors
-      fCurrentCoef[1] = (Float_t) fCalDet->GetValue(fCountDet);
-      if (vrai) fScaleFitFactor += ((Float_t) fCalDet->GetValue(fCountDet))*(fCalibraMode->GetColMax(0)-fCalibraMode->GetColMin(0))*(fCalibraMode->GetRowMax(0)-fCalibraMode->GetRowMin(0));
+      if (fCalDet) {
+	fCurrentCoef[1] = (Float_t) fCalDet->GetValue(fCountDet);
+	if (vrai) fScaleFitFactor += ((Float_t) fCalDet->GetValue(fCountDet))*(fCalibraMode->GetColMax(0)-fCalibraMode->GetColMin(0))*(fCalibraMode->GetRowMax(0)-fCalibraMode->GetRowMin(0));
+      }
     }    
   }
   return kTRUE;
@@ -4440,7 +4442,7 @@ Bool_t AliTRDCalibraFit::CalculVdriftCoefMean()
     }
     else {
       //per detectors
-      fCurrentCoef[1] = (Float_t) fCalDet->GetValue(fCountDet);
+      if(fCalDet) fCurrentCoef[1] = (Float_t) fCalDet->GetValue(fCountDet);
     }  
   }
   return kTRUE;
@@ -4452,8 +4454,8 @@ Bool_t AliTRDCalibraFit::CalculVdriftLorentzCoef()
   // For the detector fCountDet, mean drift velocity and tan lorentzangle
   //
 
-  fCurrentCoef[1]  = fCalDetVdriftUsed->GetValue(fCountDet);
-  fCurrentCoef2[1] = fCalDetExBUsed->GetValue(fCountDet); 
+  if(fCalDetVdriftUsed) fCurrentCoef[1]  = fCalDetVdriftUsed->GetValue(fCountDet);
+  if(fCalDetExBUsed) fCurrentCoef2[1] = fCalDetExBUsed->GetValue(fCountDet); 
 
   return kTRUE;
 }

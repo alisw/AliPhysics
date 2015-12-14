@@ -7,6 +7,7 @@
   3.) Check outlier handling
   .x $NOTES/aux/rootlogon.C
   gSystem->AddIncludePath("-I$ALICE_ROOT/../src/STAT/");
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include");
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+  
   AliNDLocalRegressionTest(10000,2,"cos(7*x[0]/pi)*sin(11*x[1]/pi)",0.1);
   //
@@ -212,7 +213,7 @@ void UnitTestStreamer(){
 
 
 
-void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(19*x[1]/pi)", Double_t err=1){
+void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(11*x[1]/pi)", Double_t err=0.1){
   //
   // Local regression test method
   //
@@ -381,7 +382,7 @@ Bool_t UnitTestContrain(){
   AliNDLocalRegression *regressionUpdate0 = (AliNDLocalRegression *)regression0->Clone();
   AliNDLocalRegression *regressionUpdate1 = (AliNDLocalRegression *)regression1->Clone();
  
-  for (Int_t iter=0; iter<3; iter++){
+  for (Int_t iter=0; iter<5; iter++){
     regressionUpdate0->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, pcstream);
     regressionUpdate1->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight1, pcstream);
   }

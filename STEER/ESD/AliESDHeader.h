@@ -125,7 +125,7 @@ private:
   UChar_t fTPCNoiseFilterCounter[3];  // filter counter [0]=sector, [1]-timebin/sector, [2]-padrowsector 
 
 
-  ClassDef(AliESDHeader,13)
+  ClassDef(AliESDHeader,14)
 };
 
 #endif

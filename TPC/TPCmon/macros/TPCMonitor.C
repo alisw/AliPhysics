@@ -84,7 +84,7 @@ void TPCMonitor()
   TString fglobalmap=Form("%s/TPC/mapping/MappingGlobal.txt", aliceroot.Data());
   TString frowmap=Form("%s/TPC/mapping/MappingRow.txt",    aliceroot.Data());
   TString ffecmap=Form("%s/TPC/mapping/MappingCards.txt",  aliceroot.Data());
-  TString fnameconf=Form("%s/TPC/TPCmon/AliTPCMonitorConfig.txt",   aliceroot.Data());
+  TString fnameconf=Form("%s/TPC/TPCmon/macros/AliTPCMonitorConfig.txt",   aliceroot.Data());
   fMapHand = new AliTPCMonitorMappingHandler("maphand","maphand");
   fMapHand->ReadMapping(fglobalmap.Data());
   fMapHand->ReadRowMappingGlob(frowmap.Data());

@@ -174,6 +174,9 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     
     /** Copy digits to output? */
     Bool_t fCopyDigitsToOuput; //COMMENT
+
+    /** Use input specification as output specification */
+    Bool_t fUseInputSpec;
   
     
     /** Default constructor, not implemented */

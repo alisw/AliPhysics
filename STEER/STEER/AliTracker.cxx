@@ -39,7 +39,8 @@ ClassImp(AliTracker)
 
 AliTracker::AliTracker():
   AliTrackerBase(),
-  fEventInfo(NULL)
+  fEventInfo(NULL),
+  fNClusters(0)
 {
   //--------------------------------------------------------------------
   // The default constructor.
@@ -49,7 +50,8 @@ AliTracker::AliTracker():
 //__________________________________________________________________________
 AliTracker::AliTracker(const AliTracker &atr):
   AliTrackerBase(atr),
-  fEventInfo(atr.fEventInfo)
+  fEventInfo(atr.fEventInfo),
+  fNClusters(atr.fNClusters)
 {
   //--------------------------------------------------------------------
   // The default constructor.

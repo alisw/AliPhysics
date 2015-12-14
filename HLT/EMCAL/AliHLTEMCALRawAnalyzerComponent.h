@@ -26,6 +26,8 @@
 
 
 #include "AliHLTCaloRawAnalyzerComponentv3.h"
+
+class AliHLTCaloMapper;
  
 
 class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
@@ -36,7 +38,11 @@ class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
   void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
   virtual const char* GetComponentID() = 0;
+  virtual int DoDeinit();
   virtual AliHLTComponent* Spawn() = 0; 
+
+ protected:
+  AliHLTCaloMapper               *fMapperArray[44];
   
  private:
   AliHLTEMCALRawAnalyzerComponent();

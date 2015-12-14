@@ -255,6 +255,27 @@ Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(Int_t id, Int_t detector
   return -1 ;
 }
 
+//________________________________________________________________________________________________
+Bool_t AliEMCALTriggerMappingV2::GetSTUIndexFromTRUIndex(Int_t id, Int_t& idx) const
+{
+  //Trigger mapping method, from STU index get TRU index 
+  idx = GetSTUIndexFromTRUIndex(id);
+  return (idx>0)?kTRUE:kFALSE;
+}
+//________________________________________________________________________________________________
+Int_t AliEMCALTriggerMappingV2::GetSTUIndexFromTRUIndex(Int_t id) const
+{
+  if(id < 32)return id  ;
+  else{
+    Int_t STUid = id ;
+    if(STUid >= 48 ) STUid -= 2 ;
+    if(STUid >= 42 ) STUid -= 2 ;
+    if(STUid >= 36 ) STUid -= 2 ;
+    STUid -= 32 ;
+    return STUid  ;
+  }
+  return -1 ;
+}
 
 ///
 /// \return TRU  global offline number from:
@@ -533,4 +554,48 @@ Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexB2A(Int_t idB) const
 
   return idA  ;
 }
+
+//________________________________________________________________________________________________
+Bool_t  AliEMCALTriggerMappingV2::GetTRUFromSTU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC, Int_t detector)const 
+{
+  Int_t ieta, iphi, oeta, ophi;
+  oTRU  = GetTRUIndexFromSTUIndex(iTRU,detector);
+  if (oTRU == -1) return kFALSE;
+  ieta  = iADC % fnFastORInTRUEta[oTRU] ;
+  iphi  = iADC / fnFastORInTRUEta[oTRU] ;
+  oeta  = (fTRUIsCside[oTRU])? (fnFastORInTRUEta[oTRU] - ieta - 1) : ieta;
+  ophi  = (fTRUIsCside[oTRU])? iphi : (fnFastORInTRUPhi[oTRU] - iphi - 1);
+  oADC  = oeta * fnFastORInTRUPhi[oTRU] + ophi  ;
+  return kTRUE  ;
+}
+//________________________________________________________________________________________________
+Bool_t  AliEMCALTriggerMappingV2::GetTRUFromSTU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi, Int_t detector) const
+{
+  oTRU  = GetTRUIndexFromSTUIndex(iTRU,detector);
+  if (oTRU == -1) return kFALSE;
+  oeta  = (fTRUIsCside[oTRU])? (fnFastORInTRUEta[oTRU] - ieta - 1) : ieta;
+  ophi  = (fTRUIsCside[oTRU])? iphi : (fnFastORInTRUPhi[oTRU] - iphi - 1);
+  return kTRUE  ;
+}
+//________________________________________________________________________________________________
+Bool_t  AliEMCALTriggerMappingV2::GetSTUFromTRU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC)const
+{
+  Int_t ieta, iphi, oeta, ophi;
+  ieta  = iADC % fnFastORInTRUPhi[iTRU] ;
+  iphi  = iADC / fnFastORInTRUPhi[iTRU] ;
+  oeta  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - ieta - 1) : ieta;
+  ophi  = (fTRUIsCside[iTRU])? iphi : (fnFastORInTRUPhi[iTRU] - iphi - 1);
+  oTRU  = GetSTUIndexFromTRUIndex(iTRU);
+  oADC  = ophi * fnFastORInTRUEta[iTRU] + oeta  ;
+  return kTRUE  ;
+}
+//________________________________________________________________________________________________
+Bool_t  AliEMCALTriggerMappingV2::GetSTUFromTRU(Int_t iTRU, Int_t ieta, Int_t iphi, Int_t& oTRU, Int_t& oeta, Int_t& ophi                ) const
+{
+  oTRU  = GetSTUIndexFromTRUIndex(iTRU);
+  oeta  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - ieta - 1) : ieta;
+  ophi  = (fTRUIsCside[iTRU])? iphi : (fnFastORInTRUPhi[iTRU] - iphi - 1);
+  return kTRUE  ;
+}
+
 

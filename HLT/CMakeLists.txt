@@ -60,6 +60,10 @@ add_subdirectory(rec)
 add_subdirectory(shuttle)
 add_subdirectory(sim)
 
+if (DIM_FOUND)
+    add_subdirectory(createGRP/lib)
+endif()
+
 include("CMakehltdoc.conf")
 install(DIRECTORY macros DESTINATION HLT)
 

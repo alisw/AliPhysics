@@ -1,6 +1,3 @@
-#ifndef __AliZMQhelpers__
-#define __AliZMQhelpers__
-
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 //see header file for details
 //
@@ -14,7 +11,9 @@
 
 #include "AliHLTDataTypes.h"
 #include "TString.h"
+#include "TObjString.h"
 #include "TPRegexp.h"
+#include "TObjArray.h"
 #include "AliHLTMessage.h"
 
 
@@ -23,6 +22,9 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish)
 {
     assert (self);
     if (!endpoints)
+        return 0;
+
+    if (strlen(endpoints)<2)
         return 0;
 
     //  We hold each individual endpoint here
@@ -63,6 +65,8 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
 {
     assert (self);
     if (!endpoints)
+        return 0;
+    if (strlen(endpoints)<2)
         return 0;
 
     //  We hold each individual endpoint here
@@ -124,10 +128,31 @@ int alizmq_socket_type(std::string config)
   else if (config.compare(0,6,"STREAM")==0) return ZMQ_STREAM;
   else if (config.compare(0,4,"PAIR")==0) return ZMQ_PAIR;
   else if (config.compare(0,4,"XSUB")==0) return ZMQ_XSUB;
-  else if (config.compare(0,4,"XPUB")==0) return ZMQ_XSUB;
+  else if (config.compare(0,4,"XPUB")==0) return ZMQ_XPUB;
   
-  printf("Invalid socket type %s\n", config.c_str());
+  //printf("Invalid socket type %s\n", config.c_str());
   return -1;
+}
+
+//_______________________________________________________________________________________
+const char* alizmq_socket_name(int socketType)
+{
+  switch (socketType)
+  {
+    case ZMQ_PUB: return "PUB";
+    case ZMQ_SUB: return "SUB";
+    case ZMQ_REP: return "REP";
+    case ZMQ_REQ: return "REQ";
+    case ZMQ_PUSH: return "PUSH";
+    case ZMQ_PULL: return "PULL";
+    case ZMQ_DEALER: return "DEALER";
+    case ZMQ_ROUTER: return "ROUTER";
+    case ZMQ_STREAM: return "STREAM";
+    case ZMQ_PAIR: return "PAIR";
+    case ZMQ_XPUB: return "XPUB";
+    case ZMQ_XSUB: return "XSUB";
+    default: return "INVALID";
+  }
 }
 
 //_______________________________________________________________________________________
@@ -137,15 +162,24 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   int zmqSocketMode = 0;
   std::string zmqEndpoints = "";
 
+  size_t configStartPos = config.find_first_not_of(" \t\n");
+  size_t configEndPos = config.find_last_not_of(" \t\n");
+  if (configStartPos!=std::string::npos && configEndPos!=std::string::npos)
+  { config = config.substr(configStartPos,configEndPos-configStartPos+1); }
+
   if (config.empty()) return 0;
 
   std::size_t found = config.find_first_of("@>-+");
-  if (found == std::string::npos || found == 0)
-  {printf("misformed socket config string %s\n", config.c_str()); return 1;}
+  if (found == 0)
+  {
+    //printf("misformed socket config string %s\n", config.c_str());
+    return -1;
+  }
   
   zmqSocketMode = alizmq_socket_type(config);
-  zmqEndpoints=config.substr(found,std::string::npos);
-  Printf("socket mode: %i, endpoints: %s",zmqSocketMode, zmqEndpoints.c_str());
+  
+  if (found!=std::string::npos)
+  { zmqEndpoints=config.substr(found,std::string::npos); }
 
   bool newSocket=true;
   //init the ZMQ socket
@@ -154,21 +188,33 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     newSocket=false;
     int lingerValue = 0;
     rc = zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
-    if (rc!=0) {printf("cannot set linger 0 on socket before closing\n"); return -1;}
+    if (rc!=0) 
+    {
+      //printf("cannot set linger 0 on socket before closing\n");
+      return -2;
+    }
     rc = zmq_close(socket);
-    if (rc!=0) {printf("zmq_close() says: %s\n",zmq_strerror(errno));}
+    if (rc!=0)
+    {
+      //printf("zmq_close() says: %s\n",zmq_strerror(errno));
+      return -3;
+    }
   }
 
   socket  = zmq_socket(context, zmqSocketMode);
 
   //set socket options
-  int lingerValue = 10;
+  int lingerValue = 0;
   rc += zmq_setsockopt(socket,  ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
   rc += zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeout, sizeof(timeout));
-  if (rc!=0) {printf("cannot set socket options\n"); return -1;}
+  if (rc!=0)
+  {
+    //printf("cannot set socket options\n");
+    return -4;
+  }
 
   //by default subscribe to everything if we happen to be SUB
   rc = zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
@@ -183,28 +229,79 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     if ( rc==0 || newSocket ) break;
     usleep(100000);
   }
-  if (rc!=0) {printf("cannot attach to %s\n",zmqEndpoints.c_str()); return -1;}
+  if (rc!=0) 
+  {
+    //printf("cannot attach to %s\n",zmqEndpoints.c_str());
+    return -5;
+  }
+
+  //printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
   //reset the object containers
   return zmqSocketMode;
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags)
+int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, topic.size());
+  memcpy(zmq_msg_data(topicMsg),topic.data(),topic.size());
+
+  //prepare data msg
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( dataMsg, data.size());
+  memcpy(zmq_msg_data(dataMsg),data.data(),data.size());
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
+  if (rc<0) return -1;
+  memcpy(zmq_msg_data(topicMsg), topic, sizeof(*topic));
+
+  //prepare data msg
+  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, compression);
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
+       alizmq_deleteTObject, tmessage);
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_send(aliZMQmsg* message, void* socket, int flagsUser)
 {
   int nBytes=0;
   int rc = 0;
+  int flags = flagsUser | ZMQ_SNDMORE;
+ 
   for (aliZMQmsg::iterator i=message->begin(); i!=message->end(); ++i)
   {
     zmq_msg_t* topic = i->first;
     zmq_msg_t* data = i->second;
 
-    int flags = ZMQ_SNDMORE;
     rc = zmq_msg_send(topic, socket, flags);
     if (rc<0) break;
     nBytes+=rc;
 
-    if (&*i == &*message->rbegin()) flags=0; //last frame
+    if (&*i == &*message->rbegin()) flags=flagsUser; //last frame
     rc = zmq_msg_send(data, socket, flags);
     if (rc<0) break;
     nBytes+=rc;
@@ -223,7 +320,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
   rc = zmq_msg_send(&topicMsg, socket, ZMQ_SNDMORE);
   if (rc<0) 
   {
-    printf("unable to send topic: %s\n", topic.c_str());
+    //printf("unable to send topic: %s\n", topic.c_str());
     zmq_msg_close(&topicMsg);
     return rc;
   }
@@ -234,7 +331,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
   rc = zmq_msg_send(&dataMsg, socket, flags);
   if (rc<0) 
   {
-    printf("unable to send data: %s\n", data.c_str());
+    //printf("unable to send data: %s\n", data.c_str());
     zmq_msg_close(&dataMsg);
     return rc;
   }
@@ -248,7 +345,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
   if (rc<0) 
   {
-    printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
+    //printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
     return rc;
   }
 
@@ -260,7 +357,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_msg_send(&dataMsg, socket, flags);
   if (rc<0) 
   {
-    printf("unable to send data: %s %s\n", tmessage->GetName(), zmq_strerror(errno));
+    //printf("unable to send data: %s %s\n", tmessage->GetName(), zmq_strerror(errno));
     zmq_msg_close(&dataMsg);
     return rc;
   }
@@ -271,9 +368,18 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
 void alizmq_deleteTObject(void*, void* object)
 {
   //delete the TBuffer, for use in zmq_msg_init_data(...) only.
-  //Printf("deleteObject called! ZMQ just sent and destroyed the message!");
+  //printf("deleteObject called! ZMQ just sent and destroyed the message!\n");
   TObject* tobject = static_cast<TObject*>(object);
   delete tobject;
+}
+
+//______________________________________________________________________________
+void alizmq_deleteTopic(void*, void* object)
+{
+  //delete the TBuffer, for use in zmq_msg_init_data(...) only.
+  //printf("deleteObject called! ZMQ just sent and destroyed the message!\n");
+  AliHLTDataTopic* topic = static_cast<AliHLTDataTopic*>(object);
+  delete topic;
 }
 
 
@@ -288,6 +394,40 @@ int alizmq_msg_close(aliZMQmsg* message)
     int rc2 = zmq_msg_close(i->second);
     delete (i->second); i->second=NULL;
   }
+  message->clear();
+  return 0;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic)
+{
+  AliHLTDataTopic actualTopic;
+  alizmq_msg_iter_topic(it, actualTopic);
+  if (actualTopic == topic) return 0;
+  return 1;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic)
+{
+  std::string actualTopic;
+  alizmq_msg_iter_topic(it, actualTopic);
+  return actualTopic.compare(0,topic.size(),topic);
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic)
+{
+  zmq_msg_t* message = it->first;
+  topic.assign((char*)zmq_msg_data(message),zmq_msg_size(message));
+  return 0;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data)
+{
+  zmq_msg_t* message = it->second;
+  data.assign((char*)zmq_msg_data(message),zmq_msg_size(message));
   return 0;
 }
 
@@ -450,20 +590,26 @@ TString AliOptionParser::GetFullArgString(int argc, char** argv)
 //______________________________________________________________________________
 int AliOptionParser::ProcessOptionString(TString arguments)
 {
-  //process passed options
-  stringMap* options = TokenizeOptionString(arguments);
-  for (stringMap::iterator i=options->begin(); i!=options->end(); ++i)
+  //process passed options, return number of processed valid options
+  aliStringVec* options = TokenizeOptionString(arguments);
+  int nOptions=0;
+  for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    Printf("  %s : %s", i->first.data(), i->second.data());
-    ProcessOption(i->first,i->second);
+    //printf("  %s : %s\n", i->first.data(), i->second.data());
+    if (ProcessOption(i->first,i->second)<0)
+    {
+      nOptions=-1;
+      break;
+    }
+    nOptions++;
   }
   delete options; //tidy up
 
-  return 1;
+  return nOptions;
 }
 
 //______________________________________________________________________________
-stringMap* AliOptionParser::TokenizeOptionString(const TString str)
+aliStringVec* AliOptionParser::TokenizeOptionString(const TString strIn)
 {
   //options have the form:
   // -option value
@@ -476,20 +622,28 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
   // option value
   // (value can also be a string like 'some string')
   //
-  // options can be separated by ' ' or ',' arbitrarily combined, e.g:
+  // options can be separated by ' ' arbitrarily combined, e.g:
   //"-option option1=value1 --option2 value2, -option4=\'some string\'"
 
   //optionRE by construction contains a pure option name as 3rd submatch (without --,-, =)
   //valueRE does NOT match options
-  TPRegexp optionRE("(?:(-{1,2})|((?='?[^,=]+=?)))"
-                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^, =]+))(?==?))"
-                    "(?(1)[^, =]+(?=[= ,$])))");
-  TPRegexp valueRE("(?(?!(-{1,2}|[^, =]+=))"
+  TPRegexp optionRE("(?:(-{1,2})|((?='?[^=]+=?)))"
+                    "((?(2)(?:(?(?=')'(?:[^'\\\\]++|\\.)*+'|[^ =]+))(?==?))"
+                    "(?(1)[^ =]+(?=[= $])))");
+  TPRegexp valueRE("(?(?!(-{1,2}|[^ =]+=))"
                    "(?(?=')'(?:[^'\\\\]++|\\.)*+'"
-                   "|[^, =]+))");
+                   "|[^ =]+))");
 
-  stringMap* options = new stringMap;
+  aliStringVec* options = new aliStringVec;
 
+  //first split in lines (by newline) and ignore comments
+  TObjArray* lines = strIn.Tokenize("\n\r");
+  TIter nextLine(lines);
+  while (TObjString* objString = (TObjString*)nextLine())
+  {
+  TString line = objString->String();
+  if (line.BeginsWith("#")) continue;
+  if (line.BeginsWith("//")) continue;
   TArrayI pos;
   const TString mods="";
   Int_t start = 0;
@@ -499,19 +653,22 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     TString valueStr="";
 
     //check if we have a new option in this field
-    Int_t nOption=optionRE.Match(str,mods,start,10,&pos);
+    Int_t nOption=optionRE.Match(line,mods,start,10,&pos);
     if (nOption>0)
     {
-      optionStr = str(pos[6],pos[7]-pos[6]);
+      optionStr = line(pos[6],pos[7]-pos[6]);
+      optionStr=optionStr.Strip(TString::kBoth,'\n');
       optionStr=optionStr.Strip(TString::kBoth,'\'');
+      optionStr=optionStr.Strip(TString::kLeading,'-');
       start=pos[1]; //update the current character to the end of match
     }
 
     //check if the next field is a value
-    Int_t nValue=valueRE.Match(str,mods,start,10,&pos);
+    Int_t nValue=valueRE.Match(line,mods,start,10,&pos);
     if (nValue>0)
     {
-      valueStr = str(pos[0],pos[1]-pos[0]);
+      valueStr = line(pos[0],pos[1]-pos[0]);
+      valueStr=valueStr.Strip(TString::kBoth,'\n');
       valueStr=valueStr.Strip(TString::kBoth,'\'');
       start=pos[1]; //update the current character to the end of match
     }
@@ -519,13 +676,16 @@ stringMap* AliOptionParser::TokenizeOptionString(const TString str)
     //skip empty entries
     if (nOption>0 || nValue>0)
     {
-      (*options)[optionStr.Data()] = valueStr.Data();
+      options->push_back(std::make_pair(optionStr.Data(),valueStr.Data()));
     }
 
-    if (start>=str.Length()-1 || start==prevStart ) break;
+    if (start>=line.Length()-1 || start==prevStart ) break;
   }
+
+  }//while(nextLine())
+  lines->Delete();
+  delete lines;
+
   return options;
 }
 
-
-#endif

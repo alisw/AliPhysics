@@ -126,7 +126,7 @@ fIsOwnerOfData(kTRUE)
     {
       shortName += "cvmfs";
     }
-    else if ( cdbPath.BeginsWith("alien://folder=/alice/data") )
+    else if ( cdbPath.BeginsWith("alien") && cdbPath.Contains("/alice/data") )
     {
       shortName += "alien";
     }

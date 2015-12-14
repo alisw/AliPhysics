@@ -38,6 +38,8 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include "TBuffer.h"
+
 #include <AliRawDataArray.h>
 
 #include "AliRawEquipmentHeader.h"

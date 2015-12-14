@@ -686,6 +686,14 @@ class AliHLTComponent : public AliHLTLogging {
   static void FillBlockData( AliHLTComponentBlockData& blockData );
 
   /**
+   * Serializes an object into a buffer. If buffer is NULL, this allocates memory for the pointer
+   * and returns the size of the buffer. The input-size is then used as offset of the object in the buffer,
+   * i.e. the buffer is chosen larger and [size] bytes are left at the beginning for a custom header.
+   * If buffer is not NULL, caller provides a preallocated buffer and the size of it.
+   */
+  int SerializeObject(TObject* obj, void* &buffer, size_t &size);
+  
+  /**
    * Fill AliHLTComponentShmData structure with default values.
    * @param shmData   reference to data structure
    */
@@ -1214,6 +1222,13 @@ class AliHLTComponent : public AliHLTLogging {
   const TObject* GetNextInputObject(int bForce=0);
   
   /**
+   * Get an object from an input block whose number you already know.
+   * In fact, this calls GetInputObject on that block, and returns
+   * a const pointer
+   */
+  const TObject* GetInputObjectFromIndex(const int idx, const char* classname=NULL, int bforce=0);
+  
+  /**
    * Removes a TObject from the list of objects automatically deleted
    * after the event processing function DoEvent. Objects obtained via
    * GetFirstInputObject etc. are placed there and cleaned up afterwards.
@@ -1287,6 +1302,12 @@ class AliHLTComponent : public AliHLTLogging {
    * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    */
   const AliHLTComponentBlockData* GetNextInputBlock();
+  
+  /**
+   * Returns the index of the last input block obtained via
+   * GetFirstInputBlock or GetFirstInputObject.
+   */
+  int GetCurrentInputBlockIndex();
 
   /**
    * Get data specification of an input block.
@@ -1322,6 +1343,24 @@ class AliHLTComponent : public AliHLTLogging {
   int Forward(const AliHLTComponentBlockData* pBlock=NULL);
 
   /**
+   * Insert a string in the output
+   * If header is specified, it will be inserted before the root object,
+   * default is no header.
+   * The publishing can be downscaled by means of the -pushback-period
+   * parameter. This is especially useful for histograms which do not
+   * need to be sent for every event. At EOR data is always pushed.
+   * @param pString     pointer to string
+   * @param dt          data type of the object
+   * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param headerSize  size of Header
+   * @return neg. error code if failed 
+   */
+  int PushBack(const std::string& string, const AliHLTComponentDataType& dt, 
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec, 
+	       void* pHeader=NULL, int headerSize=0);
+
+  /**
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,
    * default is no header.
@@ -1339,6 +1378,12 @@ class AliHLTComponent : public AliHLTLogging {
 	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec, 
 	       void* pHeader=NULL, int headerSize=0);
 
+  /**
+   * Checks whether the Pushback period has expired, i.e. if the
+   * compoenent will push back data.
+   */
+  bool CheckPushbackPeriod();
+  
   /**
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,

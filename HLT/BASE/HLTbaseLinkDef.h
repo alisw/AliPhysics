@@ -202,6 +202,9 @@
 #pragma link C++ global kAliHLTDataTypeEvent;
 #pragma link C++ global kAliHLTDataTypeECSParam;
 #pragma link C++ global kAliHLTDataTypeComConf;
+#pragma link C++ global kAliHLTDataTypeConfig;
+#pragma link C++ global kAliHLTDataTypeInfo;
+#pragma link C++ global kAliHLTDataTypeCDBEntry;
 #pragma link C++ global kAliHLTDataTypeUpdtDCS;
 #pragma link C++ global kAliHLTDataTypeDDLRaw;
 #pragma link C++ global kAliHLTDataTypeMCObject;

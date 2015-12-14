@@ -11,6 +11,8 @@
 #include "AliReconstructor.h"
 #include "AliESDFIT.h"
 
+class TClonesArray;
+
 class AliFITReconstructor: public AliReconstructor {
  public:
   AliFITReconstructor();

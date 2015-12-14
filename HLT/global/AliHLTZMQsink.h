@@ -11,14 +11,13 @@
 */
 
 #include "AliHLTComponent.h"
+#include "AliZMQhelpers.h"
 #include <map>
 #include <string>
 
-class AliHLTZMQsink : public AliHLTComponent {
+class AliHLTZMQsink : public AliHLTComponent, public AliOptionParser {
 public:
   
-  typedef map<std::string,std::string> stringMap;
-
   AliHLTZMQsink();
   virtual ~AliHLTZMQsink();
 
@@ -30,9 +29,7 @@ public:
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
-  //new option parser
-  static stringMap* TokenizeOptionString(const TString str);
-  int ProcessOptionString(TString arguments);
+  //overload from AliOptionParser
   int ProcessOption(TString option, TString value);
 
 protected:
@@ -55,12 +52,15 @@ private:
   void* fZMQcontext;       //!ZMQ context pointer
   void* fZMQout;           //!the output socket
   int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
-  TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
+  TString fZMQoutConfig;   //config the ZMQ socket: e.g. SUB+tcp://localhost:123123
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
   Int_t fPushbackDelayPeriod;   //how often do we send?
   Int_t fLastPushbackDelayTime; //last push back time
   Bool_t fIncludePrivateBlocks; //include private blocks?
   Bool_t fZMQneverBlock;        //never block, even with a PUSH sock.
+  Bool_t fSendRunNumber; //send the run number in each message
+  unsigned long fNskippedErrorMessages; //keep the number of pushed messages
+  Int_t fZMQerrorMsgSkip; //downscale ZMQ send warnings
   
   ClassDef(AliHLTZMQsink, 1)
 };

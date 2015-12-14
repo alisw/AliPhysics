@@ -57,6 +57,7 @@ Bool_t AliHLTTPCClusterTransformationPrepareComponent::fgTimeInitialisedFromEven
 AliHLTTPCClusterTransformationPrepareComponent::AliHLTTPCClusterTransformationPrepareComponent() :
   fMinInitSec(-1),
   fMaxInitSec(-1),
+  fNoInitialObject(false),
   fTmpFastTransformObject(NULL),
   fAsyncProcessor(),
   fAsyncProcessorQueueDepth(0),
@@ -110,21 +111,9 @@ AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::Ge
 	
 	if (fNewCalibObject)
 	{
-		AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(fNewCalibObject->GetData());
-		if (timeObj == NULL)
-		{
-			HLTError("Error obtaining AliTPCcalibTime Object from received calibration object, cannot reinitialize transformation map");
-		}
-		else
-		{
-			AliCDBManager* cdbManager = AliCDBManager::Instance();
-			
-			static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
-			preprocessor->CalibTimeVdrift(timeObj, GetRunNo(), GetRunNo());
-			preprocessor->CreateDriftCDBentryObject(GetRunNo(), GetRunNo());
-			cdbManager->PromptCacheEntry("TPC/Calib/TimeDrift", preprocessor->GetDriftCDBentry());
-			preprocessor->TakeOwnershipDriftCDBEntry();
-		}
+		AliCDBManager* cdbManager = AliCDBManager::Instance();
+		cdbManager->PromptCacheEntry("TPC/Calib/TimeDrift", fNewCalibObject);
+
 		//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
 		//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
 		fNewCalibObject = NULL;
@@ -148,8 +137,8 @@ AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::Ge
 	int err = fgTransform.Init( GetBz(), GetTimeStamp() );
 
 	timer.Stop();
-	cout<<"\n\n Creation of fast transformation map: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
-   
+	HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
+	   
 	AliHLTTPCFastTransformObject* obj = new AliHLTTPCFastTransformObject;
 	
 	fgTransform.GetFastTransformNonConst().WriteToObject(*obj);
@@ -168,9 +157,8 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
   // see header file for class documentation
   
   int iResult=0;
-  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
-  if (iResult>=0 && argc>0)
+  if (argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   
   if (fMinInitSec != -1 || fMaxInitSec != -1)
@@ -186,7 +174,15 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
 	}
   }
 
-  fTmpFastTransformObject = GenerateFastTransformObject();
+  if (fNoInitialObject)
+  {
+	HLTInfo("Skipping creation of initial transform object");
+  }
+  else
+  {
+	fTmpFastTransformObject = GenerateFastTransformObject();
+  }
+  
   if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
   return iResult;
@@ -246,9 +242,14 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
 	  fMaxInitSec = atoi(argv[i]) + 1; //If we want to process sector n, the for loop with < comparison has to go to n+1
       HLTInfo("Max Sector set to %d.", fAsyncProcessorQueueDepth);
       iRet+=2;
+	}
+    else if (argument.CompareTo("-NoInitialObject")==0){
+      fNoInitialObject = true;
+      HLTInfo("Not creating initial transform object");
+      iRet+=1;
     } else {
       iRet = -EINVAL;
-      HLTInfo("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);     
     }
   } 
   return iRet;
@@ -274,38 +275,17 @@ Int_t AliHLTTPCClusterTransformationPrepareComponent::DoEvent(const AliHLTCompon
 		{
 			for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
 			{
-				TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(iter);
-				AliAnalysisDataContainer* tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(iter);
-				if (tmpContainer)
-				{
-					RemoveInputObjectFromCleanupList(tmpContainer);
-				}
-				else if (tmpArray)
-				{
-					for (int i = 0;i <= tmpArray->GetLast();i++)
-					{
-						tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
-						if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
-						{
-							RemoveInputObjectFromCleanupList(tmpArray);
-							tmpArray->Remove(tmpContainer);
-							break;
-						}
-						else
-						{
-							tmpContainer = NULL;
-						}
-					}
-				}
+				AliCDBEntry* tmpEntry = dynamic_cast<AliCDBEntry*>((TObject*) iter);
 				
-				if (tmpContainer)
+				if (tmpEntry)
 				{
-					fNewCalibObject = tmpContainer;
+					RemoveInputObjectFromCleanupList(tmpEntry);
+					fNewCalibObject = tmpEntry;
 					break;
 				}
 				else
 				{
-					HLTImportant("Transformation Prepare component received object that is no AliAnalysisDataContainer!");
+					HLTImportant("Transformation Prepare component received object that is no CDBEntry!");
 				}
 			}
 			

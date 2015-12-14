@@ -1,5 +1,10 @@
-#ifndef ALIEMCALTRIGGERRAWPATCH_H
-#define ALIEMCALTRIGGERRAWPATCH_H
+/**
+ * @file AliEMCALTriggerRawPatch.h
+ * @since Oct 23, 2015
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ */
+#ifndef AliEMCALTriggerRawPatch_H
+#define AliEMCALTriggerRawPatch_H
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,18 +12,17 @@
 #include <TObject.h>
 
 /**
- * @class AliEmcalTriggerRawPatch
+ * @class AliEMCALTriggerRawPatch
  * @brief Raw patch information used inside the trigger maker kernel
  * for the offline trigger and trigger recalculator
  *
  * Within the EMCAL trigger maker patches can be found by the offline trigger
  * or by the trigger patch recalculator. The trigger raw patch is supposed to
  * keep a minimum information needed with trigger patch information in order
- * to calculated the more detailed AliEmcalTriggerPatchInfo from it.
+ * to calculated the more detailed AliEMCALTriggerPatchInfo from it.
  */
 class AliEMCALTriggerRawPatch : public TObject {
 public:
-
   /**
    * Dummy constructor
    */
@@ -31,7 +35,7 @@ public:
    * @param size Patch size
    * @param adc ADC value
    */
-  AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc);
+  AliEMCALTriggerRawPatch(Int_t col0, Int_t row0, Int_t size, Double_t adc, Double_t offlineADC);
 
   /**
    * Destructor
@@ -54,64 +58,18 @@ public:
    */
   bool operator<(const AliEMCALTriggerRawPatch &other) const;
 
-  /**
-   * Set the starting column of the patch
-   * @param col0 Starting column of the patch
-   */
   void SetColStart(Int_t col0) { fCol0 = col0; }
-
-  /**
-   * Set the starting row of the patch
-   * @param row0 Starting row of the patch
-   */
   void SetRowStart(Int_t row0) { fRow0 = row0; }
-
-  /**
-   * Set the patch size
-   * @param patchsize Patch size
-   */
   void SetPatchSize(Int_t patchsize) { fSize = patchsize; }
-
-  /**
-   * Set the patch ADC
-   * @param adc Patch ADC
-   */
   void SetADC(Double_t adc) { fADC = adc; }
-
-  /**
-   * Set the patch trigger bit mask
-   * @param bitmask Patch trigger bit mask
-   */
+  void SetOfflineADC(Double_t adc) { fOfflineADC = adc; }
   void SetBitmask(ULong_t bitmask) { fBitMask = bitmask; }
 
-  /**
-   * Get the starting column of the patch
-   * @return Starting column of the patch
-   */
   Int_t GetColStart() const { return fCol0; }
-
-  /**
-   * Get the starting row of the patch
-   * @return Starting row of the patch
-   */
   Int_t GetRowStart() const { return fRow0; }
-
-  /**
-   * Get the size of then patch (in number of FAST-ors per direction)
-   * @return Patch size
-   */
   Int_t GetPatchSize() const { return fSize; }
-
-  /**
-   * Get the patch ADC
-   * @return patch ADC
-   */
-  Int_t GetADC() const { return fADC; }
-
-  /**
-   * Get the patch trigger bit mask
-   * @return Patch trigger bit mask
-   */
+  Double_t GetADC() const { return fADC; }
+  Double_t GetOfflineADC() const { return fOfflineADC; }
   ULong_t GetBitmask() const { return fBitMask; }
 
   /**
@@ -126,9 +84,10 @@ protected:
   Int_t                         fRow0;            ///< Start row of the patch
   Int_t                         fSize;            ///< Patch size in number of FAST-ors
   Double_t                      fADC;             ///< Patch ADC
+  Double_t                      fOfflineADC;      ///< Patch ADC
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerRawPatch, 1);
+  ClassDef(AliEMCALTriggerRawPatch, 2);
   /// \endcond
 };
 

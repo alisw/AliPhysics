@@ -134,6 +134,15 @@ int AliHLTComponentHandler::AnnounceVersion()
 {
   // printout for version
   int iResult=0;
+  AliHLTComponentLogSeverity level;
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    level = kHLTLogInfo;
+  }
+  else
+  {
+    level = kHLTLogImportant;
+  }
 #ifdef PACKAGE_STRING
   extern void HLTbaseCompileInfo( const char*& date, const char*& time);
   const char* date="";
@@ -141,9 +150,9 @@ int AliHLTComponentHandler::AnnounceVersion()
   HLTbaseCompileInfo(date, time);
   if (!date) date="unknown";
   if (!time) time="unknown";
-  HLTImportant("%s build on %s (%s)", PACKAGE_STRING, date, time);
+  HLTLog(level, "%s build on %s (%s)", PACKAGE_STRING, date, time);
 #else
-  HLTImportant("ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
+  HLTLog(level, "ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
 #endif
   return iResult;
 }
@@ -417,7 +426,17 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 	if (!date) date="unknown";
 	if (!time) time="unknown";
       }
-      HLTImportant("using %s plugin%s%s %s (%s%s)", libraryPath, buildOn, date, time, hLib.fMode==kStatic?"persistent, ":"", loadtype);
+      AliHLTComponentLogSeverity level;
+      if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+      {
+        level = kHLTLogInfo;
+      }
+      else
+      {
+        level = kHLTLogImportant;
+      }
+ 
+      HLTLog(level, "using %s plugin%s%s %s (%s%s)", libraryPath, buildOn, date, time, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       }
 
       // static registration of components when library is loaded

@@ -54,6 +54,7 @@
 #include "AliRunLoader.h"
 #include "AliDataLoader.h"
 #include "AliITSLoader.h"
+#include "AliITSReconstructor.h"
 
 
 class AliITSDriftSpeedArraySDD;
@@ -878,9 +879,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   //                       be processed. If ="All" then all of the ITS
   //                       sub detectors are processed.
 
-  const char *all = strstr(opt,"All");
-  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
-                        strstr(opt,"SSD")};
+  Bool_t all = strstr(opt,"All")!=0;
+  Bool_t det[3] = {all||(strstr(opt,"SPD")!=0),all||(strstr(opt,"SDD")!=0),all||(strstr(opt,"SSD")!=0)};
   if(optCluFind==0){
     SetDefaultClusterFindersV2();
     AliDebug(1,"V2 cluster finder has been selected \n");
@@ -893,7 +893,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   // Reset Fast-OR fired map
   ResetFastOrFiredMap();
 
-  if (all || det[0]) { // SPD present
+  if (det[0]) { // SPD present
     // Get the FO signals for this event
     AliRunLoader* runLoader = AliRunLoader::Instance();
     AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
@@ -906,33 +906,47 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
      }
 
   }
-
-  
+  const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
   AliITSClusterFinder *rec     = 0;
-  Int_t id,module,first=0;
-  for(module=0;module<GetITSgeom()->GetIndexMax();module++){
-      id       = GetITSgeom()->GetModuleType(module);
-      if (!all && !det[id]) continue;
-      if(det[id]) first = GetITSgeom()->GetStartDet(id);
-      rec = (AliITSClusterFinder*)GetReconstructionModel(id);
-      TClonesArray *itsDigits  = DigitsAddress(id);
-      if (!rec){
-	AliFatal("The reconstruction class was not instanciated!");
-	return;
-      }
-      ResetDigits();  // MvL: Not sure we neeed this when rereading anyways
-      if (all) {
-          treeD->GetEvent(lastentry+module);
-        }
+  Int_t id,module,first=0, nSPD=0;
+  Bool_t firstCall[3] = {kTRUE,kTRUE,kTRUE};
+  for(module=0;module<GetITSgeom()->GetIndexMax();module++) {
+    id = GetITSgeom()->GetModuleType(module);
+    if (!det[id]) continue;
+    //if(det[id]) first = GetITSgeom()->GetStartDet(id); // RS the entry<->module is fixed, don't play with it
+    rec = (AliITSClusterFinder*)GetReconstructionModel(id);
+    if (firstCall[id]) { // reset clusters counter in the clusterizer
+      rec->ResetNClusters();
+      firstCall[id] = kFALSE;
+    }
+    TClonesArray *itsDigits  = DigitsAddress(id);
+    if (!rec){
+      AliFatal("The reconstruction class was not instanciated!");
+      return;
+    }
+    ResetDigits();  // MvL: Not sure we need this when rereading anyways
+    /* 
+    // RS: This is wrong, if all 3 dets are mentioned in the opt, entry 0 will be read 3 times for 3 det types
+    if (all) {
+      treeD->GetEvent(lastentry+module);
+    }
     else {
       treeD->GetEvent(lastentry+(module-first));
     }
+    */
+    treeD->GetEvent(lastentry+module);
+    //  
     Int_t ndigits = itsDigits->GetEntriesFast();
     if (ndigits>0 || id==0) { // for SPD we always want to call FindRawClusters (to process FO signals)
       rec->SetDetTypeRec(this);
       rec->SetDigits(DigitsAddress(id));
       //	rec->SetClusters(ClustersAddress(id));
       rec->FindRawClusters(module);
+      if (rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly() && (det[1]||det[2])) {
+	AliInfoF("NSPDclusters %d > threshold %d, skipping SDD,SSD clusterization",
+		rec->GetNClusters(), recoparam->GetMaxSPDClforSPDOnly());
+	det[1]=det[2]=kFALSE;
+      }
     } // end if
     treeR->Fill();
     ResetRecPoints();
@@ -965,9 +979,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   //      none.
   // Return:
   //      none.
-  const char *all = strstr(opt,"All");
-  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
-                        strstr(opt,"SSD")};
+  Bool_t all = strstr(opt,"All")!=0;
+  Bool_t det[3] = {all||(strstr(opt,"SPD")!=0),all||(strstr(opt,"SDD")!=0),all||(strstr(opt,"SSD")!=0)};
   
   Int_t id=0;
   AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
@@ -975,11 +988,10 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   TClonesArray* array = rpc->UncheckedGetClusters(0);
   TBranch *branch = treeR->Branch("ITSRecPoints",&array);
   DigitsToRecPoints(rawReader,opt); 
-
-  Int_t nClusters =0;
+  Int_t nClusters =0 ;
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
     id = GetITSgeom()->GetModuleType(iModule);
-    if (!all && !det[id]) continue;
+    if (!det[id]) continue;
     array = rpc->UncheckedGetClusters(iModule);
     if(!array){
       AliDebug(1,Form("data for module %d missing!",iModule));
@@ -1010,16 +1022,16 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   //      none.
   // Return:
   //      none.
-  const char *all = strstr(opt,"All");
-  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
-                        strstr(opt,"SSD")};
+  Bool_t all = strstr(opt,"All");
+  Bool_t det[3] = {all||(strstr(opt,"SPD")!=0),all||(strstr(opt,"SDD")!=0),all||(strstr(opt,"SSD")!=0)};
   
   // Reset Fast-OR fired map
   ResetFastOrFiredMap();
   
   AliITSClusterFinder *rec     = 0;
   Int_t id=0;
-
+  const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
+  
   for(id=0;id<3;id++){
     if (!all && !det[id]) continue;
     rec = (AliITSClusterFinder*)GetReconstructionModel(id);
@@ -1028,8 +1040,14 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
       return;
     }
     rec->SetDetTypeRec(this);
-    rec->RawdataToClusters(rawReader);    
-  } 
+    rec->RawdataToClusters(rawReader);  
+    // skip outer layers if NSPD > threshold
+    if (id==0 && rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly()) {
+      AliInfoF("NSPDclusters %d > threshold %d, skipping SDD,SSD clusterization",
+	       rec->GetNClusters(), recoparam->GetMaxSPDClforSPDOnly());
+      break;
+    }
+ } 
    
   // Remove PIT in-active chips from Fast-OR fired map
   if (all || det[0]) { // SPD present

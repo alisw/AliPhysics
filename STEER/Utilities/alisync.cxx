@@ -140,6 +140,17 @@ struct NotMatchPathSeparator
 
 static std::vector<JobInfo> gJobs;
 
+void normalizePath(std::string &str) {
+  size_t index = 0;
+  while (true) {
+    index = str.find("/./", index);
+    if (index == std::string::npos) break;
+
+    /* Make the replacement. */
+    str.erase(index, 2);
+  }
+}
+
 // Downloading of files:
 // - Connect to alien if the filename starts with "alien".
 // - Create a temporary destination file.
@@ -180,16 +191,21 @@ void downloadFile(const JobInfo &info,
   free(relDir);
   free(tmpFilename);
 
+  // Make sure /./ is not part of the destination filename.
+  std::string tmpsrc = info.filename;
+  normalizePath(tmpdest);
+  normalizePath(tmpsrc);
   // If no regexps specified, simply use TFile::Cp. If regular
   // expressions specified, copy only the tkeys that match those files.
+  
   if (regexps.empty())
   {
-    if (!TFile::Cp(info.filename.c_str(), tmpdest.c_str()))
+    if (!TFile::Cp(tmpsrc.c_str(), tmpdest.c_str()))
       exit(1);
   }
   else
   {
-    TFile *src = TFile::Open(info.filename.c_str());
+    TFile *src = TFile::Open(tmpsrc.c_str());
     TFile *dest = TFile::Open(tmpdest.c_str(), "RECREATE");
     TIter next(src->GetListOfKeys());
     TKey *key;

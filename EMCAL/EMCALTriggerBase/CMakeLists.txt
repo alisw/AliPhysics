@@ -34,10 +34,13 @@ set(SRCS
   AliEMCALTriggerPatchInfo.cxx
   AliEMCALTriggerBitConfig.cxx
   AliEMCALTriggerQA.cxx
+  AliEMCALTriggerFastOR.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set(HDRS ${HDRS}
+AliEMCALTriggerConstants.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
