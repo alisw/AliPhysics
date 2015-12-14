@@ -829,7 +829,7 @@ AliBasedNdetaTask::Finalize()
   THStack* dndetaStack        = new THStack("dndeta", "dN/d#eta");
   THStack* dndetaMCStack      = new THStack("dndetaMC", "dN_{ch}/d#eta");
   THStack* dndetaEmpStack     = new THStack("dndetaEmp", "dN_{ch}/d#eta");
-  THStack* leftRightStack     = new THStack("leftRight", "Left-right symmetry");
+  THStack* leftRightStack     = new THStack("leftRight", "#eta>0/#eta<0");
   
   TList* mclist = 0;
   TList* truthlist = 0;

@@ -144,6 +144,13 @@ struct GRPData
    * @return Return true if both beams are A
    */
   Bool_t IsAA() const { return beam1.IsA() && beam2.IsA(); }
+
+  UInt_t CMEnergy(Bool_t calc=false) const
+  {
+    if (!calc) return energy;
+    return UInt_t(TMath::Sqrt(Float_t(beam1.z*beam2.z)/beam1.a/beam2.a)
+		  * beamEnergy);
+  }    
   /** 
    * Get the year 
    *
@@ -234,7 +241,7 @@ struct GRPData
      // ent->PrintMetaData();
 
      AliGRPObject*  obj        = static_cast<AliGRPObject*>(ent->GetObject());
-     obj->Print();
+     obj->Dump();
      run                       = r;
      period                    = obj->GetLHCPeriod();
      beamEnergy                = TMath::Ceil(obj->GetBeamEnergy());
@@ -260,12 +267,26 @@ struct GRPData
        beam1.Set(beam1T);
        beam2.Set(beam2T);
      }
+     Info("", "Energy=%d",  beamEnergy);
+     if (beam1.IsA() && beam2.IsA()) {
+       // Revert calculation done in AliGRPObject - sigh
+       beamEnergy *= 208./82;
+       Info("", "Beam energy now %d", beamEnergy);
+     }
      // Massage the beam energy in case we had sqrt{s_NN} instead of
      // beam energy.
      if (TMath::Abs(beamEnergy - 1379.8) < 10 && beam1.IsA() && beam2.IsA()) 
        beamEnergy = 3500;
-     energy = TMath::Ceil(2*beamEnergy * TMath::Sqrt(Float_t(beam1.z*beam2.z)/
-						     (beam1.a*beam2.a)));
+     Float_t  sNN = 2*beamEnergy *
+       TMath::Sqrt(Float_t(beam1.z*beam2.z)/(beam1.a*beam2.a));
+     energy = (TMath::Abs(sNN -  2760) < 10 ?  2760 :
+	       TMath::Abs(sNN -  5023) < 10 ?  5023 :
+	       TMath::Abs(sNN -  2360) < 10 ?  2360 :
+	       TMath::Abs(sNN -   900) < 10 ?   900 :
+	       TMath::Abs(sNN -  7000) < 10 ?  7000 :
+	       TMath::Abs(sNN -  8000) < 10 ?  8000 :
+	       TMath::Abs(sNN - 13000) < 10 ? 13000 :
+	       0);
      
      const char* fn = FileName();
      std::ofstream* pout = new std::ofstream(fn);
