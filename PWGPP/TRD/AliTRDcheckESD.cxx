@@ -1668,7 +1668,10 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
   // eta-phi distr. for <Qtot> in layer 0
   TVirtualPad* pad;
   TProfile2D* hProf2D;
+  TH2D* hQtotMPV;
+  TH1D* tempProj1D;
   TH1D* hqtot = (TH1D*)qtotCF->Project(0, qtotCF->GetVar(fgkVarNames[kTrackletQtot]));
+  qtotCF->SetRangeUser(qtotCF->GetVar(fgkVarNames[kTrackletQtot]), 0.0, 3000.);
   for(Int_t iLayer=0; iLayer<6; ++iLayer) {
     pad = ((TVirtualPad*)l->At((iLayer<3 ? iLayer*3 : (iLayer-3)*3+1))); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
@@ -1677,20 +1680,49 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
     rangeEtaPhi->Draw();
     qtotCF->SetRangeUser(qtotCF->GetVar(fgkVarNames[kTrackletLayer]), Double_t(iLayer), Double_t(iLayer));
     TH3D* hQtotEtaPhi = (TH3D*)qtotCF->Project(0, qtotCF->GetVar(fgkVarNames[kTrackPhiTRD]), qtotCF->GetVar(fgkVarNames[kTrackEtaTRD]), qtotCF->GetVar(fgkVarNames[kTrackletQtot]));  
-    hProf2D = (hQtotEtaPhi ? hQtotEtaPhi->Project3DProfile() : 0x0);
-    if(hQtotEtaPhi) delete hQtotEtaPhi;
+    hQtotEtaPhi->Rebin3D(2,2,1);
+    //hProf2D = (hQtotEtaPhi ? hQtotEtaPhi->Project3DProfile() : 0x0);
     
+    hQtotMPV = new TH2D(Form("QtotMPV_layer%d",iLayer),"",hQtotEtaPhi->GetYaxis()->GetNbins(),
+                        hQtotEtaPhi->GetYaxis()->GetXmin(), hQtotEtaPhi->GetYaxis()->GetXmax(), 
+                        hQtotEtaPhi->GetXaxis()->GetNbins(), hQtotEtaPhi->GetXaxis()->GetXmin(), hQtotEtaPhi->GetXaxis()->GetXmax());
+    for(Int_t iphi=1; iphi<hQtotEtaPhi->GetYaxis()->GetNbins(); ++iphi) {
+       for(Int_t ieta=1; ieta<hQtotEtaPhi->GetXaxis()->GetNbins(); ++ieta) {
+          tempProj1D = hQtotEtaPhi->ProjectionZ("tempProj",ieta,ieta,iphi,iphi);
+          Int_t maxBin = tempProj1D->GetMaximumBin();
+          if(maxBin<3) continue;
+          if(maxBin>tempProj1D->GetXaxis()->GetNbins()-3) continue;
+          Double_t mpv = tempProj1D->GetBinContent(maxBin)*tempProj1D->GetBinCenter(maxBin)+
+                                      tempProj1D->GetBinContent(maxBin-1)*tempProj1D->GetBinCenter(maxBin-1)+
+                                      tempProj1D->GetBinContent(maxBin+1)*tempProj1D->GetBinCenter(maxBin+1)+
+                                      tempProj1D->GetBinContent(maxBin-2)*tempProj1D->GetBinCenter(maxBin-2)+
+                                      tempProj1D->GetBinContent(maxBin+2)*tempProj1D->GetBinCenter(maxBin+2);
+          Double_t norm = tempProj1D->GetBinContent(maxBin-2)+tempProj1D->GetBinContent(maxBin-1)+tempProj1D->GetBinContent(maxBin)+tempProj1D->GetBinContent(maxBin+1)+tempProj1D->GetBinContent(maxBin+2);
+          if(norm>0.5) mpv = mpv / (norm);
+          delete tempProj1D;
+          hQtotMPV->SetBinContent(iphi,ieta,mpv);
+       }
+   }
+   if(hQtotMPV) {
+      hQtotMPV->SetStats(kFALSE);
+      hQtotMPV->SetMinimum(500.);
+      hQtotMPV->SetMaximum((hqtot->GetMean()<10 ? 4.0 : 1500.));
+      hQtotMPV->Draw("samecolz");
+   }
+    
+    if(hQtotEtaPhi) delete hQtotEtaPhi;    
     if(hProf2D) {
       hProf2D->SetName(Form("Qtot_layer%d",iLayer));
       hProf2D->SetStats(kFALSE);
-      hProf2D->SetMinimum(0.);
-      hProf2D->SetMaximum((hqtot->GetMean()<10 ? 4.0 : 2000.));
+      hProf2D->SetMinimum(500.);
+      hProf2D->SetMaximum((hqtot->GetMean()<10 ? 4.0 : 1500.));
       hProf2D->Draw("samecolz");
     }
-    lat->DrawLatex(-0.9, 3.3, Form("TRD <Q_{tot}> Layer %d", iLayer));
+    lat->DrawLatex(-0.9, 3.3, Form("TRD Q_{tot} MPV Layer %d", iLayer));
     DrawTRDGrid();
   }
   qtotCF->SetRangeUser(qtotCF->GetVar(fgkVarNames[kTrackletLayer]), 0.0, 5.0);
+  qtotCF->SetRangeUser(qtotCF->GetVar(fgkVarNames[kTrackletQtot]), 0.0, 10000.);
   // PH versus slice number
   pad = ((TVirtualPad*)l->At(2)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
