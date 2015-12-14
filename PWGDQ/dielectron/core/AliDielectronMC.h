@@ -62,6 +62,7 @@ public:
   Int_t GetMCProcessMotherFromStack(const AliESDtrack* _track);   // return process number of the mother track
   
   Bool_t ConnectMCEvent();
+  Bool_t ConnectMCEvent(AliMCEvent* mcEvent);
   Bool_t UpdateStack();
 
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);

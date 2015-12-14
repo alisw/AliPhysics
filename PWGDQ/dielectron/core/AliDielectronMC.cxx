@@ -216,6 +216,43 @@ Bool_t AliDielectronMC::ConnectMCEvent()
 }
 
 //____________________________________________________________
+Bool_t AliDielectronMC::ConnectMCEvent(AliMCEvent* mcEvent)
+{
+  //
+  // connect stack object from the mc handler
+  //
+  if (!mcEvent){ /*AliError("Could not retrieve MC event!");*/ return kFALSE; }
+
+  fMcArray = 0x0;
+  fMCEvent = 0x0;
+  fHasHijingHeader=-1;
+  
+  if(fAnaType == kESD){
+    AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!mcHandler){ /*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
+    if (!mcHandler->InitOk() ) return kFALSE;
+    if (!mcHandler->TreeK() )  return kFALSE;
+    if (!mcHandler->TreeTR() ) return kFALSE;
+    
+    fMCEvent = mcEvent;
+    
+    if (!UpdateStack()) return kFALSE;
+  }
+  else if(fAnaType == kAOD)
+  {
+    AliAODInputHandler* aodHandler=(AliAODInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!aodHandler) return kFALSE;
+    AliAODEvent *aod=aodHandler->GetEvent();
+    if (!aod) return kFALSE;
+
+    fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
+    else fHasMC=kTRUE;
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________
 Bool_t AliDielectronMC::UpdateStack()
 {
   //
