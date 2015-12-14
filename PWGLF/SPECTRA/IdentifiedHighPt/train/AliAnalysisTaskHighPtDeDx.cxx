@@ -10,8 +10,8 @@ Comments:
   - p_track and n_track: n/p_pidCode>10 = injected
 * 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
 * 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
-
-
+* 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
+    
 Remiders:
 * For pp: remove pile up thing
 * For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
@@ -382,18 +382,18 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Always use if MC
   // Use if 2010 data
 
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit1 ){
-    fn1->Fill(1);
-    fTriggeredEventMB = 1;  //event triggered as minimum bias
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit2 ){
-    // From AliVEvent:
-    //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
-    fTriggeredEventMB += 2;  
-    fn2->Fill(1);
-  }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit1 ){
+  //   fn1->Fill(1);
+  //   fTriggeredEventMB = 1;  event triggered as minimum bias
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit2 ){
+  //   From AliVEvent:
+  //      kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
 
  
   //_____________ end nominal _______________________
@@ -403,21 +403,21 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // // Never use if MC
   // // Use if 2011 data
 
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit1 ){
-  //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1;  //event triggered as minimum bias
-  // }
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
-  //   fTriggeredEventMB += 2;  
-  //   fn2->Fill(1);
-  // }
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & AliVEvent::kMB ){
-  //   fTriggeredEventMB += 4;  
-  //   fn2->Fill(1);
-  // }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & ftrigBit1 ){
+    fn1->Fill(1);
+    fTriggeredEventMB = 1;  //event triggered as minimum bias
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kSemiCentral ){
+    fTriggeredEventMB += 2;  
+    fn2->Fill(1);
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kMB ){
+    fTriggeredEventMB += 4;  
+    fn2->Fill(1);
+  }
  
   // //_____________ end special ______________________
 
@@ -1794,7 +1794,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   //const AliAODVertex*	vertexSPD= (AliAODVertex*)AODevent->GetPrimaryVertexSPD();//GetPrimaryVertex()
   //if( vertexSPD->GetNContributors() < 1 || TMath::Abs( vertexSPD->GetZ()) > 10.0 ) return;
 
-
+  //https://twiki.cern.ch/twiki/bin/view/ALICE/AddTaskInfoAOD145
   
   if( analysisMode==kGlobalTrk ){  
  
@@ -1812,7 +1812,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       
       if (fTrackFilterGolden) {
 	
-	// "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024
+	// "Global track RAA analysis QM2011 + Chi2ITS<36"; bit 1024 
 	if(aodTrack->TestFilterBit(1024)) {
 	  filterFlag +=1;
 	}
@@ -1822,7 +1822,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       if (fTrackFilterTPC) {
 	// TPC only cuts is bit 1 according to above macro
 	// Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-	if(aodTrack->TestFilterBit(1)){
+	//Bit 7 (128)	TPC only tracks,constrained to SPD vertex in the filter
+	if(aodTrack->TestFilterBit(128)){
 	  filterFlag +=2;
 	}
       }
@@ -1843,7 +1844,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       }
       if(aodTrack->TestFilterBit(768)) {
 	filterFlag +=8; 
-	//	if(!aodTrack->IsHybridGlobalConstrainedGlobal()) filterFlag+=128; //just to test the selection, remove this line (/Martin)
+	//https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
+	//PbPb LHC10h	160	768	 
+	//PbPb LHC11h	145	768
       }
       
       
@@ -3371,7 +3374,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if (fTrackFilterTPC) {
 	// TPC only cuts is bit 1 according to above macro
 	// Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-	if(pTrack->TestFilterBit(1)){
+	if(pTrack->TestFilterBit(128)){
 	  filterFlag_p +=2;	  
 	}
       }
@@ -3410,7 +3413,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if (fTrackFilterTPC) {
 	// TPC only cuts is bit 1 according to above macro
 	// Alex always uses 128, NOTE: FILTER 128 ARE TPC TRACKS (TPC PARAMETERS) CONTRAINED TO THE SPD VERTEX, 
-	if(nTrack->TestFilterBit(1)){
+	if(nTrack->TestFilterBit(128)){
 	  filterFlag_n +=2;
 	}
       }
