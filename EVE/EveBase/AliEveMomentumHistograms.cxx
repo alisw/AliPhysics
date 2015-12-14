@@ -20,7 +20,7 @@
 AliEveMomentumHistograms::AliEveMomentumHistograms()
 {
     pi = TMath::Pi();
-    g_histo2d_v   = 0;
+    fHistoViewer   = 0;
     g_histo2d_s   = 0;
     g_histo2d_s2  = 0;
     g_histo2d_lego_overlay = 0;
@@ -39,7 +39,7 @@ AliEveMomentumHistograms::AliEveMomentumHistograms()
 
 AliEveMomentumHistograms::~AliEveMomentumHistograms()
 {
-    if(g_histo2d_v){delete g_histo2d_v; g_histo2d_v = 0;}
+    if(fHistoViewer){delete fHistoViewer; fHistoViewer = 0;}
     if(g_histo2d_s){delete g_histo2d_s; g_histo2d_s = 0;}
     if(g_histo2d_s2){delete g_histo2d_s2; g_histo2d_s2 = 0;}
     if(g_histo2d_lego_overlay){delete g_histo2d_lego_overlay; g_histo2d_lego_overlay = 0;}
@@ -67,7 +67,7 @@ TEveCaloDataHist* AliEveMomentumHistograms::Draw()
     TH2F *histopos = new TH2F("histopos","Histo 2d positive",100,-1.5,1.5,80,-pi,pi);
     TH2F *histoneg = new TH2F("histoneg","Histo 2d negative",100,-1.5,1.5,80,-pi,pi);
     
-    Info("histo2d", "Event: %d, Number of tracks: %d\n", AliEveEventManager::GetMaster()->GetEventId(), esd->GetNumberOfTracks() );
+    Info("AliEveMomentumHistograms::Draw", "Event: %d, Number of tracks: %d\n", AliEveEventManager::GetMaster()->GetEventId(), esd->GetNumberOfTracks() );
     
     // Getting current tracks, filling histograms
     for ( int n = 0; n < esd->GetNumberOfTracks(); ++n ) {
@@ -103,7 +103,9 @@ TEveCaloDataHist* AliEveMomentumHistograms::Draw()
     TEveCalo3D *calo3d = Create3DView(data);
     
     // Plotting projections RPhi and RhoZ
-    CreateProjections(data, calo3d);
+    AliEveMultiView *al = AliEveMultiView::Instance();
+    al->ImportEventRPhi(calo3d);
+    al->ImportEventRhoZ(calo3d);
     
     gEve->Redraw3D();
     
@@ -116,29 +118,31 @@ Double_t AliEveMomentumHistograms::GetPhi(Double_t phi)
     return phi;
 }
 
-TEveCaloLego* AliEveMomentumHistograms::CreateHistoLego(TEveCaloData* data)
+void AliEveMomentumHistograms::CreateHistoLego(TEveCaloData* data)
 {
     TGLViewer* glv;
     
     // Viewer initialization, tab creation
-    if ( g_histo2d_v == 0 ) {
-        TEveWindowSlot *slot    = 0;
-        TEveBrowser    *browser = gEve->GetBrowser();
-        
-        slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+    if ( fHistoViewer == 0 )
+    {
+        TEveWindowSlot *slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
         slot->MakeCurrent();
-        g_histo2d_v = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
+        
+        fHistoViewer = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
         g_histo2d_s = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
-        g_histo2d_v->AddScene(g_histo2d_s);
-        g_histo2d_v->SetElementName("2D Lego Viewer");
+        
+        fHistoViewer->AddScene(g_histo2d_s);
+        fHistoViewer->SetElementName("2D Lego Viewer");
         g_histo2d_s->SetElementName("2D Lego Scene");
         
-        glv = g_histo2d_v->GetGLViewer();
+        glv = fHistoViewer->GetGLViewer();
         g_histo2d_lego_overlay = new TEveCaloLegoOverlay();
         glv->AddOverlayElement(g_histo2d_lego_overlay);
         glv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
-    } else {
-        glv = g_histo2d_v->GetGLViewer();
+    }
+    else
+    {
+        glv = fHistoViewer->GetGLViewer();
     }
     
     //plotting histo
@@ -155,8 +159,6 @@ TEveCaloLego* AliEveMomentumHistograms::CreateHistoLego(TEveCaloData* data)
     glv->SetEventHandler(new TEveLegoEventHandler(glv->GetGLWidget(), glv, lego));
     
     g_histo2d_lego_overlay->SetCaloLego(lego);
-    
-    return lego;
 }
 
 TEveCalo3D* AliEveMomentumHistograms::Create3DView(TEveCaloData* data)
@@ -179,22 +181,13 @@ TEveCalo3D* AliEveMomentumHistograms::Create3DView(TEveCaloData* data)
     return calo3d;
 }
 
-AliEveMultiView* AliEveMomentumHistograms::CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d)
-{
-    AliEveMultiView *al = AliEveMultiView::Instance();
-    al->ImportEventRPhi(calo3d);
-    al->ImportEventRhoZ(calo3d);
-    
-    return al;
-}
-
 TEveCaloDataHist* AliEveMomentumHistograms::DrawAllEvents()
 {
     
     TEveCaloDataHist* data_t;
     
     if ( g_histo2d_all_events_slot == 0 ) {
-        Info("histo2d_all_events", "Filling histogram...");
+        Info("AliEveMomentumHistograms::DrawAllEvents", "Filling histogram...");
         
         // Access to esdTree
         AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
@@ -258,9 +251,9 @@ TEveCaloDataHist* AliEveMomentumHistograms::DrawAllEvents()
         CreateHistoLego(data_t, slotLeftBottom);
         CreateProjections(data_t, calo3d, slotRightTop, slotRightBottom);
         
-        gEve->Redraw3D(kTRUE);
+        gEve->Redraw3D();
         
-        Info("histo2d_all_events", "...Finished");
+        Info("AliEveMomentumHistograms::DrawAllEvents", "...Finished");
     }
     
     return data_t;

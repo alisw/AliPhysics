@@ -60,7 +60,7 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     // This is not supported when raw-data is the only data-source
     // as the number of events is not known.
     
-    if(!fCurrentData.fESD && !fCurrentData.fAOD)
+    if(!fCurrentData.fESD && !fCurrentData.fAOD && !fCurrentData.fRawReader)
     {
         AliWarning("No ESD event avaliable. Probably files were not opened.");
         return;

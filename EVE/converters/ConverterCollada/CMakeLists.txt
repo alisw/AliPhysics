@@ -31,7 +31,7 @@ set(MODULE_LINK_FLAGS)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
-set(LIBDEPS EVE Ged Gpad Graf Graf3d Gui Net RGL Rint RIO XMLIO)
+set(LIBDEPS EveBase Ged Gpad Graf Graf3d Gui Net RGL Rint RIO XMLIO)
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 # Additional compilation and linking flags

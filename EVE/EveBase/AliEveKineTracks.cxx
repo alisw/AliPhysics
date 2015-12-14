@@ -39,7 +39,7 @@ TEveTrackList* AliEveKineTracks::Draw(Double_t min_pt,  Double_t min_p,
     AliStack* stack = rl->Stack();
     if (!stack)
     {
-        Error("kine_tracks", "can not get kinematics.");
+        Error("AliEveKineTracks::Draw", "can not get kinematics.");
         return 0;
     }
     

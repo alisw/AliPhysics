@@ -129,7 +129,7 @@ void AliEveSaveViews::SaveForAmore()
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
+    int Nviewers = 2; // remark: 3D view is counted twice
     
     TASImage *compositeImg = new TASImage(fWidth, fHeight);
     
@@ -147,7 +147,7 @@ void AliEveSaveViews::SaveForAmore()
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
-    for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
+    for(TEveElement::List_i i = (++viewers->BeginChildren()); index < Nviewers+1; i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
         viewFilename = Form("view-%d.png", index);

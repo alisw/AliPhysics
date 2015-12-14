@@ -27,7 +27,7 @@ public:
     
 private:
     double pi;
-    TEveViewer *g_histo2d_v;
+    TEveViewer *fHistoViewer;
     TEveScene  *g_histo2d_s;
     TEveScene  *g_histo2d_s2;
     TEveCaloLegoOverlay* g_histo2d_lego_overlay;
@@ -44,13 +44,11 @@ private:
     TEveWindowSlot* g_histo2d_all_events_slot;
     
     Double_t GetPhi(Double_t phi);
-    TEveCaloLego* CreateHistoLego(TEveCaloData* data);
+    void CreateHistoLego(TEveCaloData* data);
     TEveCaloLego* CreateHistoLego(TEveCaloData* data, TEveWindowSlot* slot);
     TEveCalo3D* Create3DView(TEveCaloData* data);
     TEveCalo3D* Create3DView(TEveCaloData* data, TEveWindowSlot* slot);
     void CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* slot1, TEveWindowSlot* slot2);
-    AliEveMultiView* CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d);
-    
     
     AliEveMomentumHistograms(const AliEveMomentumHistograms&);
     AliEveMomentumHistograms& operator=(const AliEveMomentumHistograms&);

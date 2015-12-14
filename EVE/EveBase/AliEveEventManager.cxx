@@ -807,6 +807,7 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
     else
     {
         //now if we don't have a GRP we need to get one from somewhere
+        cout<<"AliEveEventManager::InitOCDB : GRP Data from prompt reco params"<<endl;
         ReceivePromptRecoParameters(runNo);
     }
     
