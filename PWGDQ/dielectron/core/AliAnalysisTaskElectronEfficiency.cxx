@@ -394,11 +394,11 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fPtResolution_poslabel);
     resolutionList->Add(fPResolution);
     resolutionList->Add(fPResolution_poslabel);
-    fEtaPhiResolution       = new TH2F("EtaPhiResolution",      "",200,0.,2.,200,0.,2.);
-    fEtaResolution          = new TH2F("EtaResolution",         "",200,-1.,1.,200,0.,2.);
-    fEtaResolution_poslabel = new TH2F("EtaResolution_poslabel","",200,-1.,1.,200,0.,2.);
-    fPhiResolution          = new TH2F("PhiResolution",         "",600,0.,2.*TMath::Pi(),200,0.,2.);
-    fPhiResolution_poslabel = new TH2F("PhiResolution_poslabel","",600,0.,2.*TMath::Pi(),200,0.,2.);
+    fEtaPhiResolution       = new TH2F("EtaPhiResolution",      "",300,0.,3.,300,0.,3.);
+    fEtaResolution          = new TH2F("EtaResolution",         "",200,-1.,1.,300,0.,3.);
+    fEtaResolution_poslabel = new TH2F("EtaResolution_poslabel","",200,-1.,1.,300,0.,3.);
+    fPhiResolution          = new TH2F("PhiResolution",         "",600,0.,2.*TMath::Pi(),300,0.,3.);
+    fPhiResolution_poslabel = new TH2F("PhiResolution_poslabel","",600,0.,2.*TMath::Pi(),300,0.,3.);
     resolutionList->Add(fEtaPhiResolution);
     resolutionList->Add(fEtaResolution);
     resolutionList->Add(fEtaResolution_poslabel);
