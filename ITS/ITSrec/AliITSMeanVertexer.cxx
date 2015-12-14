@@ -187,7 +187,7 @@ Bool_t AliITSMeanVertexer::Init() {
     alias->SetDeltaPhiCuts(0.5,0.025);
     alias->SetDCACut(0.1);
     alias->SetPileupAlgo(3);
-    alias->SetFallBack(500);
+    alias->SetFallBack(6000);
     fVertexer->SetComputeMultiplicity(kFALSE);
   }
   return kTRUE;
@@ -229,6 +229,12 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
 
   Bool_t vtxOK = kFALSE;
   UInt_t nl1=0;
+  nl1=AliITSRecPointContainer::Instance()->GetNClustersInLayerFast(1);
+  fMultH->Fill(nl1);
+  if(!(nl1>fLowSPD0 && nl1<fHighSPD0)){
+    delete clustersTree;
+    return kFALSE;
+  }
   AliESDVertex *vtx = fVertexer->FindVertexForCurrentEvent(clustersTree);
   if (!fMode) {
     if (TMath::Abs(vtx->GetChi2()) < 0.1) vtxOK = kTRUE;
@@ -327,11 +333,10 @@ Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,UInt_t mult){
   Int_t ncontr = vert->GetNContributors();
   AliDebug(1,Form("Number of contributors = %d",ncontr));
   Double_t ex = vert->GetXRes();
-  fMultH->Fill(mult);
+  //  fMultH->Fill(mult);
   fErrXH->Fill(ex*1000.);
   fContrH->Fill((Float_t)ncontr);
-  if(ncontr>fFilterOnContributors && (mult>fLowSPD0 && mult<fHighSPD0) && 
-     ((ex*1000.)<fErrXCut)) {
+  if(ncontr>fFilterOnContributors &&  ((ex*1000.)<fErrXCut)) {
     status = kTRUE;
     fMultHa->Fill(mult);
     fErrXHa->Fill(ex*1000.);
