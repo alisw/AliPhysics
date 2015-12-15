@@ -125,15 +125,14 @@ fNgenPairs(0x0),
 fvRecoPairs(),
 fvRecoPairs_poslabel(),
 fCalcResolution(kFALSE),
-fPtResolution(0x0),
-fPtResolution_poslabel(0x0),
-fPResolution(0x0),
-fPResolution_poslabel(0x0),
-fEtaPhiResolution(0x0),
-fEtaResolution(0x0),
-fEtaResolution_poslabel(0x0),
-fPhiResolution(0x0),
-fPhiResolution_poslabel(0x0),
+fPtGen_PtRec(0x0),
+fPtGen_PtRec_poslabel(0x0),
+fPgen_Prec(0x0),
+fPgen_Prec_poslabel(0x0),
+fEtaGen_EtaRec(0x0),
+fPhiGen_PhiRec(0x0),
+fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
+fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
@@ -247,15 +246,14 @@ fNgenPairs(0x0),
 fvRecoPairs(),
 fvRecoPairs_poslabel(),
 fCalcResolution(kFALSE),
-fPtResolution(0x0),
-fPtResolution_poslabel(0x0),
-fPResolution(0x0),
-fPResolution_poslabel(0x0),
-fEtaPhiResolution(0x0),
-fEtaResolution(0x0),
-fEtaResolution_poslabel(0x0),
-fPhiResolution(0x0),
-fPhiResolution_poslabel(0x0),
+fPtGen_PtRec(0x0),
+fPtGen_PtRec_poslabel(0x0),
+fPgen_Prec(0x0),
+fPgen_Prec_poslabel(0x0),
+fEtaGen_EtaRec(0x0),
+fPhiGen_PhiRec(0x0),
+fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
+fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
@@ -386,24 +384,66 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList = new TList();
     resolutionList->SetName("resolution");
     resolutionList->SetOwner();
-    fPtResolution          = new TH2F("ptRes_pt",         "",1000,0.,10.,200,0.,2.);
-    fPtResolution_poslabel = new TH2F("ptRes_pt_poslabel","",1000,0.,10.,200,0.,2.);
-    fPResolution           = new TH2F("pRes_p",           "",1000,0.,10.,200,0.,2.);
-    fPResolution_poslabel  = new TH2F("pRes_p_poslabel",  "",1000,0.,10.,200,0.,2.);
-    resolutionList->Add(fPtResolution);
-    resolutionList->Add(fPtResolution_poslabel);
-    resolutionList->Add(fPResolution);
-    resolutionList->Add(fPResolution_poslabel);
-    fEtaPhiResolution       = new TH2F("EtaPhiResolution",      "",300,0.,3.,300,0.,3.);
-    fEtaResolution          = new TH2F("EtaResolution",         "",200,-1.,1.,300,0.,3.);
-    fEtaResolution_poslabel = new TH2F("EtaResolution_poslabel","",200,-1.,1.,300,0.,3.);
-    fPhiResolution          = new TH2F("PhiResolution",         "",600,0.,2.*TMath::Pi(),300,0.,3.);
-    fPhiResolution_poslabel = new TH2F("PhiResolution_poslabel","",600,0.,2.*TMath::Pi(),300,0.,3.);
-    resolutionList->Add(fEtaPhiResolution);
-    resolutionList->Add(fEtaResolution);
-    resolutionList->Add(fEtaResolution_poslabel);
-    resolutionList->Add(fPhiResolution);
-    resolutionList->Add(fPhiResolution_poslabel);
+    fPtGen_PtRec          = new TH2F("ptGen_ptRec",         "",500,0.,10.,500,0.,10.);
+    fPtGen_PtRec_poslabel = new TH2F("ptGen_ptRec_poslabel","",500,0.,10.,500,0.,10.);
+    fPgen_Prec            = new TH2F("pGen_pRec",           "",500,0.,10.,500,0.,10.);
+    fPgen_Prec_poslabel   = new TH2F("pGen_pRec_poslabel",  "",500,0.,10.,500,0.,10.); 
+    fEtaGen_EtaRec        = new TH2F("etaGen_etaRec",       "", 30,-1.,1., 30,-1.,1.);
+    fPhiGen_PhiRec        = new TH2F("phiGen_phiRec",       "", 80,-0.2*TMath::Pi(),2.2*TMath::Pi(), 80,-0.2*TMath::Pi(),2.2*TMath::Pi());
+    
+    Int_t bins[4] = {30,30,80,80};
+    Double_t min[4] = {-1.1,-1.1,-0.2*TMath::Pi(),-0.2*TMath::Pi()};
+    Double_t max[4] = { 1.1, 1.1, 2.2*TMath::Pi(), 2.2*TMath::Pi()};
+    fEtaGen_EtaRec_PhiGen_PhiRec          = new THnF("etaGen_etaRec_phiGen_phiRec",         "",4,bins,min,max);
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel = new THnF("etaGen_etaRec_phiGen_phiRec_poslabel","",4,bins,min,max);
+    
+    resolutionList->Add(fPtGen_PtRec);
+    resolutionList->Add(fPgen_Prec);
+    resolutionList->Add(fEtaGen_EtaRec);
+    resolutionList->Add(fPhiGen_PhiRec);
+    resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec);
+    resolutionList->Add(fPtGen_PtRec_poslabel);
+    resolutionList->Add(fPgen_Prec_poslabel);
+    resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec_poslabel);
+    
+    fPtGen_PtRec                          ->Sumw2();
+    fPtGen_PtRec_poslabel                 ->Sumw2();
+    fPgen_Prec                            ->Sumw2();
+    fPgen_Prec_poslabel                   ->Sumw2();
+    fEtaGen_EtaRec                        ->Sumw2();
+    fPhiGen_PhiRec                        ->Sumw2();
+    fEtaGen_EtaRec_PhiGen_PhiRec          ->Sumw2();
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Sumw2();
+    
+    fPtGen_PtRec->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtGen_PtRec->GetYaxis()->SetTitle("p^{rec}_{T} (GeV/c)");
+    fPtGen_PtRec_poslabel->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtGen_PtRec_poslabel->GetYaxis()->SetTitle("p^{rec}_{T} (GeV/c)");
+    fPgen_Prec->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPgen_Prec->GetYaxis()->SetTitle("p^{rec} (GeV/c)");
+    fPgen_Prec_poslabel->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPgen_Prec_poslabel->GetYaxis()->SetTitle("p^{rec} (GeV/c)");
+    fEtaGen_EtaRec->GetXaxis()->SetTitle("#eta^{gen}"); 
+    fEtaGen_EtaRec->GetYaxis()->SetTitle("#eta^{rec}");                   
+    fPhiGen_PhiRec->GetXaxis()->SetTitle("#varphi^{gen} (rad)");
+    fPhiGen_PhiRec->GetYaxis()->SetTitle("#varphi^{rec} (rad)");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(0)->SetTitle("#eta^{gen}");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(1)->SetTitle("#eta^{rec}");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(2)->SetTitle("#varphi^{gen}");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(3)->SetTitle("#varphi^{rec}");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(0)->SetTitle("#eta^{gen}");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(1)->SetTitle("#eta^{rec}");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(2)->SetTitle("#varphi^{gen}");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(3)->SetTitle("#varphi^{rec}");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(0)->SetName("eta_gen");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(1)->SetName("eta_rec");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(2)->SetName("phi_gen");
+    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(3)->SetName("phi_rec");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(0)->SetName("eta_gen");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(1)->SetName("eta_rec");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(2)->SetName("phi_gen");
+    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(3)->SetName("phi_rec");
+    
   }
   
   TList *singleEffList = new TList();
@@ -854,8 +894,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(TMath::Abs(dau->PdgCode()) != 11) continue;
           Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
           mcPt = dau->Pt(); mcEta = dau->Eta(); mcPhi = dau->Phi();
-          if(mcPt  < 0.2  || mcPt  > 10000.)  continue;
-          if(mcEta < 0.8 || mcEta > 0.8) continue;
+          if(mcPt  <  0.2  || mcPt  > 10000.)  continue;
+          if(mcEta < -0.8  || mcEta > 0.8) continue;
           //if(!fStack->IsPhysicalPrimary(iDau)) continue;
           if(dau->PdgCode() ==  11){ d1.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab1 = iDau; }
           if(dau->PdgCode() == -11){ d2.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab2 = iDau; }
@@ -909,24 +949,21 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Int_t label = track->GetLabel();
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
-        Double_t mcPt  = part->Pt();
-        Double_t ptRes = mcPt > 0 ? track->Pt()/mcPt : -1.;
-        Double_t mcP  = part->P();
-        Double_t pRes = mcPt > 0 ? track->P()/mcP : -1.;
-        fPtResolution->Fill(mcPt,ptRes);
-        fPResolution ->Fill(mcP,pRes);
-        Double_t mcEta  = part->Eta();
-        Double_t etaRes = TMath::Abs(mcEta) > 0 ? track->Eta()/mcEta : -1.;
-        Double_t mcPhi  = part->Phi();
-        Double_t phiRes = mcPhi > 0 ? track->Phi()/mcPhi : -1.;
-        fEtaPhiResolution->Fill(etaRes,phiRes);
-        fEtaResolution->Fill(mcEta,etaRes);
-        fPhiResolution->Fill(mcPhi,phiRes);
+        Double_t mcPt   = part->Pt();
+        Double_t mcP    = part->P();
+        Double_t recPt  = track->Pt();
+        Double_t recP   = track->P();
+
+        Double_t vals[4] = {part->Eta(),track->Eta(),part->Phi(),track->Phi()};
+        fPtGen_PtRec                 ->Fill(mcPt,recPt);
+        fPgen_Prec                   ->Fill(mcP,recP);
+        fEtaGen_EtaRec               ->Fill(vals[0],vals[1]);
+        fPhiGen_PhiRec               ->Fill(vals[2],vals[3]);
+        fEtaGen_EtaRec_PhiGen_PhiRec ->Fill(vals);
         if(label > 0){
-          fPtResolution_poslabel->Fill(mcPt,ptRes);
-          fPResolution_poslabel ->Fill(mcP,pRes);
-          fEtaResolution_poslabel->Fill(mcEta,etaRes);
-          fPhiResolution_poslabel->Fill(mcPhi,phiRes);          
+          fPtGen_PtRec_poslabel                 ->Fill(mcPt,recPt);
+          fPgen_Prec_poslabel                   ->Fill(mcP,recP);
+          fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Fill(vals);
         }  
       }
     }
@@ -1235,10 +1272,14 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   //Printf("%i\t %f\t %i\t %f\t %i\t %f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
   TH3F *hNreco_Ele = new TH3F(Form("Nreco_Ele_%s",name.Data()),Form("Nreco_Ele_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   TH3F *hNreco_Ele_poslabel = new TH3F(Form("Nreco_Ele_poslabel_%s",name.Data()),Form("Nreco_Ele_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  hNreco_Ele->Sumw2();
+  hNreco_Ele_poslabel->Sumw2();
   fvReco_Ele.push_back(hNreco_Ele);
   fvReco_Ele_poslabel.push_back(hNreco_Ele_poslabel);
   TH3F *hNreco_recoObs_Ele = new TH3F(Form("Nreco_Ele_recoObs_%s",name.Data()),Form("Nreco_Ele_recoObs_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   TH3F *hNreco_recoObs_Ele_poslabel = new TH3F(Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  hNreco_recoObs_Ele->Sumw2();
+  hNreco_recoObs_Ele_poslabel->Sumw2();
   fvReco_Ele_recoObs.push_back(hNreco_recoObs_Ele);
   fvReco_Ele_recoObs_poslabel.push_back(hNreco_recoObs_Ele_poslabel);
   
@@ -1255,6 +1296,8 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   if(fDoPairing){
     TH2F *hNrecoPairs          = new TH2F(Form("NrecoPairs_%s",         name.Data()),Form("NrecoPairs_%s",         name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
     TH2F *hNrecoPairs_poslabel = new TH2F(Form("NrecoPairs_poslabel_%s",name.Data()),Form("NrecoPairs_poslabel_%s",name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNrecoPairs->Sumw2();
+    hNrecoPairs_poslabel->Sumw2();
     fvRecoPairs         .push_back(hNrecoPairs);
     fvRecoPairs_poslabel.push_back(hNrecoPairs_poslabel);
   }
