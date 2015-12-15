@@ -19,14 +19,23 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
     //creates the AliFlowEventCuts and AliFlowTrackCuts objects
     //Author:Panos.Christakoglou@nikhef.nl
     //Define centralities
-    
-    if(isHijing){
-        Double_t gCentrality[nCentralitiesMax] = {0,50};
-    }else{
-        static const Int_t nCentralitiesMax = 24;
-        Double_t gCentrality[nCentralitiesMax] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,30,40,50};
-    }
-    //static const Int_t nCentralitiesMax = 3;
+
+  static const Int_t nCentralitiesMax = 24;
+  Double_t gCentrality[nCentralitiesMax];
+  
+  if(isHijing) {
+    gCentrality[0] = 0;  
+    gCentrality[1] = 50;  
+  }
+  else {
+    for(Int_t i = 0; i < nCentralitiesMax-3; i++) 
+      gCentrality[i] = i;
+    gCentrality[21] = 30;
+    gCentrality[22] = 40;
+    gCentrality[23] = 50;
+  }
+  
+  //static const Int_t nCentralitiesMax = 3;
     //Double_t gCentrality[nCentralitiesMax] = {0,10,20};
     
     //======================================================================//
