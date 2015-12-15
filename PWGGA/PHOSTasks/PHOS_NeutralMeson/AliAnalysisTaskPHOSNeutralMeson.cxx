@@ -477,7 +477,7 @@ void AliAnalysisTaskPHOSNeutralMeson::UserCreateOutputObjects()
     fH1MassMixed->SetMarkerStyle(kFullCircle);
     TotalNBins+=Mbins;
 
-    Int_t ptbins = 200;
+    Int_t ptbins = 400;
     Float_t ptlow = 0.0, ptup = 40.0;
     Int_t Ebins = 1000;
     Float_t Elow = 0.0, Eup = 20.0;
@@ -1996,7 +1996,7 @@ Double_t AliAnalysisTaskPHOSNeutralMeson::RecalibratePHOSClusterEnergy(TString c
 {
 	//naming convention: first: dataset to be calibrated, second: what it should be closer to (doesn't have to be another dataset) 
 
-	Double_t E_recalib; 
+	Double_t E_recalib = E; 
 
 	if(calibOption == "lhc12d_12h") { // move the peaks of 12d closer to 12h
 		if(run >= 184964 && run <= 185031) {
@@ -2008,10 +2008,17 @@ Double_t AliAnalysisTaskPHOSNeutralMeson::RecalibratePHOSClusterEnergy(TString c
 		if(run == 185284) {
 			E_recalib = E*1.00869; 
 		}
+		return E_recalib;
 	}
 	
-	if( calibOption == "lhc12d_14e2c") { // moves the peaks of the MC-data closer to lhc12d
+	else if( calibOption == "lhc12d_14e2c") { // moves the peaks of the MC-data closer to lhc12d
 		E_recalib = ((1+0.02/(1+TMath::Power(2*E/1.5,2)))*0.985)*E; 
+		return E_recalib;
+	}
+
+	else {
+		AliError(Form("Calibration option %s not defined! No recalibraiton applied.",calibOption.Data()));
+		return E;
 	}
 
 	return E_recalib;
