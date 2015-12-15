@@ -150,9 +150,9 @@ XMLNodePointer_t AliColladaBuffer::AddVisualSceneGeometry(TString name, TString 
 
 XMLNodePointer_t AliColladaBuffer::FindNodeById(TString id)
 {
-    for(XMLNodePointer_t node : fVisualSceneNodes){
-        if(id.EqualTo(fXml->GetAttr(node,"id"))){
-            return node;
+  for(int i = 0;i < fVisualSceneNodes.size();i++){
+        if(id.EqualTo(fXml->GetAttr(fVisualSceneNodes[i],"id"))){
+            return fVisualSceneNodes[i];
         }
     }
     return 0;
