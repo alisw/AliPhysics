@@ -32,11 +32,14 @@ class TRandom3;
 class AliAnalysisTaskEmcalJetBJetTaggingIP : public AliAnalysisTaskEmcalJet
 {
 public:
-
 	// ENUM definitions
 	enum MatchingType{kNoMatching = 0,kGeometrical = 1};
 	enum ExendedEFlavourTag { kBeautyJet = 1 << 7, kCharmJet = 1 << 8, kLFgJet = 1 << 9 };
 	enum EQualityClass { kQtyStandard, kQtyVeryGood, kQtyGood, kQtyMedium, kQtyBad };
+
+	Double_t                    fMatchingPar1;                           // matching parameter for jet1-jet2 matching
+	Double_t                    fMatchingPar2;                           // matching parameter for jet2-jet1 matching
+	Double_t                    fMinJetMCPt;                             // minimum jet MC pt
 
 	//Constructors and standard function definitions
 	AliAnalysisTaskEmcalJetBJetTaggingIP();
@@ -44,11 +47,9 @@ public:
 	virtual ~AliAnalysisTaskEmcalJetBJetTaggingIP(){;}
 	void UserCreateOutputObjects();
 	virtual Bool_t Run();
-
 	//Standard setters
 	void SetMC(Bool_t val = kTRUE){fIsMC = val;};
 	void SetUseAtlasSignTC(Bool_t val = kTRUE){fUseAtlasSignTCCalculation = kTRUE; };
-
 	void SetEventSelectionMethod(int i = 0){fUseEventSelection = i;};
 	void SetJetSelectionMethod(int i = 0){fUseJetSelection = i;};
 	void SetJetTaggerMCMethod(int i = 0){fUseMCTagger = i;};
@@ -68,25 +69,14 @@ public:
 	void SetUseSignificance(Bool_t val = kTRUE){fUseSignificance = kTRUE;}
 	void SetUse3DsIP(Bool_t val = kTRUE){fUse3DsIP = kTRUE;};
 	void SetUseConversions(Bool_t val = kTRUE){fUseConversions = kTRUE;};
-
-
-	Double_t                    fMatchingPar1;                           // matching parameter for jet1-jet2 matching
-	Double_t                    fMatchingPar2;                           // matching parameter for jet2-jet1 matching
-	Double_t                    fMinJetMCPt;                             // minimum jet MC pt
-
-
-
 	virtual void SelectPtHardBin(const char* bin = "", const char* flavour = "", Bool_t val = kTRUE)
-	{
-		fSelectPtHard = val;
-		fPtHardBin = bin;
-		fPtHardFlavour = flavour;
-	};
-	virtual void SetPtRelMomentumCuts(Double_t JetPt = 5., Double_t ElectronPt = 1.)
-	{
+	{fSelectPtHard = val;
+	fPtHardBin = bin;
+	fPtHardFlavour = flavour;};
+	virtual void SetPtRelMomentumCuts(Double_t JetPt = 5., Double_t ElectronPt = 1.){
 		fpTRelSoftElectronPt = JetPt;
-		fpTRelSoftElectronPt = ElectronPt;
-	};
+		fpTRelSoftElectronPt = ElectronPt;};
+	virtual void SetMCMatchingRadius(double radius=2.0){fMCMatchingRadius = radius;};
 
 protected:
 	//Event selection methods
@@ -99,7 +89,6 @@ protected:
 	virtual Bool_t IsJetSelected(const AliEmcalJet* jet);
 	virtual Bool_t IsJetSelectedLegacy(const AliEmcalJet* jet);
 	virtual Bool_t IsJetSelectedHF(const AliEmcalJet* jet);
-
 	//Helpers
 	virtual Bool_t AddTagJet(AliEmcalJet* jet);
 	virtual Bool_t IsQuality(const AliAODTrack* track, EQualityClass qclass);
@@ -118,12 +107,8 @@ protected:
 	virtual void DoJetLoop();
 	virtual void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, MatchingType matching);
 	virtual void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
-	//
 	virtual void FillTCTree(Double_t  sIP[3], Bool_t  isTagged[3],AliEmcalJet * jet,AliEmcalJet * jetMC,int flavour, int qtyclass );
-
-
 	MatchingType                fMatching;                               // matching type
-
 	// Calls for special purpose analysis
 	virtual TList* AddHistsPtRelTemplates();
 	virtual TList* AddHistsVtxMassTemplates();
@@ -142,7 +127,6 @@ protected:
 	virtual void AddHistTH2(TH2** hist,const char* histname,const char* title,const char* titlex,const char* titley,Int_t nBinsX,
 			Double_t minX,Double_t maxX,Int_t nBinsY,Double_t minY,Double_t maxY,Bool_t setSumw2,
 			TList* container);
-
 	// Jet containers
 	AliJetContainer* fJetsCont;              //!Jets
 	AliJetContainer* fJetsContMC;            //!Jets MC
@@ -192,6 +176,7 @@ private:
 	Double_t fCurrentWeight;//
 	Double_t fXsec;//
 	Double_t fTrials;//
+	Double_t fMCMatchingRadius;//
 
 	TList* fCurrentTrackContainerSecVtx; //!
 	TList * flist_module_eventselection;//!

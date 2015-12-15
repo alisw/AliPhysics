@@ -180,18 +180,18 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminator(AliEmcalJet* jet, Double_t* discri
 	std::sort(bSignedImpactParameter.begin(), bSignedImpactParameter.end(), AliHFJetTaggingIP::mysort);
 	if(numoftracks > 2) {
 		discriminator[2] = bSignedImpactParameter.at(2).second;
-		fCurrentTrack[2] = bSignedImpactParameter.at(2).first;
+		fCurrentTrack[2] = jet->TrackAt(bSignedImpactParameter.at(2).first);
 
 		check_discr[2] = kTRUE;
 	}
 	if(numoftracks > 1) {
 		discriminator[1] = bSignedImpactParameter.at(1).second;
-		fCurrentTrack[1] = bSignedImpactParameter.at(1).first;
+		fCurrentTrack[1] = jet->TrackAt(bSignedImpactParameter.at(1).first);
 		check_discr[1] = kTRUE;
 	}
 	if(numoftracks > 0) {
 		discriminator[0] = bSignedImpactParameter.at(0).second;
-		fCurrentTrack[0] = bSignedImpactParameter.at(0).first;
+		fCurrentTrack[0] = jet->TrackAt(bSignedImpactParameter.at(0).first);
 		check_discr[0] = kTRUE;
 	}
 	SetCurrentDCAz();
@@ -223,21 +223,19 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminatorQualityClass(Int_t qtyclass,
 		Double_t bSign = 0.;
 		Double_t bIp2d = -999.;
 		Double_t bDCAZ = -999.;
-
 		bTrack = (AliVTrack*)((AliPicoTrack*)fParticles->GetParticle(jet->TrackAt((int)j)))->GetTrack();
-		if(!bTrack)
-			continue;
-		if(!GetImpactParameter(bTrack, &bSign, &bIp2d, &bDCAZ))
-			continue;
+		if(!bTrack)	continue;
+		if(!GetImpactParameter(bTrack, &bSign, &bIp2d, &bDCAZ)) continue;
 		if(this->fVertexRecalculated) {
 			delete fVertexRecalculated;
 			fVertexRecalculated = NULL;
 		}
-		if(!IsInQualityClass((AliAODTrack*)bTrack, qtyclass,bIp2d,bDCAZ))
-			continue;
+		if(!IsInQualityClass((AliAODTrack*)bTrack, qtyclass,bIp2d,bDCAZ)) continue;
 		bSignedImpactParameter.push_back(std::make_pair(j, bSign * bIp2d));
 		this->fTrackDCA.push_back(std::make_pair(j, bDCAZ));
+		//	Printf("%i , pt %f" , j,bTrack->Pt());
 	}
+	//	Printf("Done with loop\n");
 	discriminator[0] = -99.;
 	discriminator[1] = -99.;
 	discriminator[2] = -99.;
@@ -251,20 +249,28 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminatorQualityClass(Int_t qtyclass,
 	std::sort(bSignedImpactParameter.begin(), bSignedImpactParameter.end(), AliHFJetTaggingIP::mysort);
 	if(numoftracks > 2) {
 		discriminator[2] = bSignedImpactParameter.at(2).second;
-		fCurrentTrack[2] = bSignedImpactParameter.at(2).first;
+		fCurrentTrack[2] = jet->TrackAt((int)bSignedImpactParameter.at(2).first);
 		check_discr[2] = kTRUE;
+	//	Printf("--> %i , pt %f" , 2,this->GetCurrentTrack(2)->Pt());
+
 	}
 	if(numoftracks > 1) {
 		discriminator[1] = bSignedImpactParameter.at(1).second;
-		fCurrentTrack[1] = bSignedImpactParameter.at(1).first;
+		fCurrentTrack[1] = jet->TrackAt((int)bSignedImpactParameter.at(1).first);
 		check_discr[1] = kTRUE;
+		//	Printf("--> %i , pt %f" , 1,this->GetCurrentTrack(1)->Pt());
+
 	}
 	if(numoftracks > 0) {
 		discriminator[0] = bSignedImpactParameter.at(0).second;
-		fCurrentTrack[0] = bSignedImpactParameter.at(0).first;
+		fCurrentTrack[0] = jet->TrackAt((int)bSignedImpactParameter.at(0).first);
 		check_discr[0] = kTRUE;
+		//	Printf("--> %i , pt %f" , 0,this->GetCurrentTrack(0)->Pt());
+
 	}
 	SetCurrentDCAz();
+
+
 
 	return kTRUE;
 }
@@ -612,7 +618,7 @@ Double_t AliHFJetTaggingIP::GetSignAtlasDefinition(Double_t* xDCA, Double_t* pDC
 AliVTrack* AliHFJetTaggingIP::GetCurrentTrack(int i)
 {
 	AliVTrack* res = 0x0;
-	res = (AliVTrack*)((AliPicoTrack*)fParticles->GetParticle(this->fCurrentTrack[i]))->GetTrack();
+	res = (AliVTrack*)(((AliPicoTrack*)(fParticles->GetParticle(this->fCurrentTrack[i])))->GetTrack());
 	return res;
 }
 
