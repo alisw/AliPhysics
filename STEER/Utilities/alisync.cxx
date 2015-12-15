@@ -152,6 +152,31 @@ void normalizePath(std::string &str) {
   }
 }
 
+// Returns a string which contains the md5sum of the file.
+std::string calculateMD5(const std::string &filename) {
+  std::string command;
+  std::string md5sum = "";
+  std::string prefix("alien://");
+  std::string out;
+
+  if (filename.compare(0, prefix.size(), prefix) == 0) {
+    command = "gbbox md5sum ";
+    command += filename.substr(prefix.size());
+  }else {
+    command = "md5sum ";
+    command += filename;
+  }
+
+  command += " 2>/dev/null";
+  std::cout << command << std::endl;
+  out.resize(PATH_MAX*2+1);
+  FILE *of = popen(command.c_str(), "r");
+  fread((void *)out.c_str(), PATH_MAX*2, 1, of);
+
+  // Strip output
+  return out.substr(0, std::min(out.find("\t", 0), out.find(" ", 0)));
+}
+
 // Downloading of files:
 // - Connect to alien if the filename starts with "alien".
 // - Create a temporary destination file.
@@ -196,14 +221,29 @@ void downloadFile(const JobInfo &info,
   std::string tmpsrc = info.filename;
   normalizePath(tmpdest);
   normalizePath(tmpsrc);
-  // If no regexps specified, simply use TFile::Cp. If the source file was not
-  // modified after the last modification date of the destination file, we skip
-  // copying it.
+  // If no regexps specified, simply use TFile::Cp. If the checksum between
+  // source and dest exists and is the same we skip the copy.
+  // If the source file was not modified after the last modification
+  // date of the destination file, we skip copying it.
   // 
   // If regular expressions specified, copy only the tkeys that match those
   // files.
   if (regexps.empty())
   {
+    std::string srcMD5 = calculateMD5(tmpsrc);
+    log(2, "Source MD5: %s\n",srcMD5.c_str());
+    std::string destMD5 = calculateMD5(dest);
+    log(2, "Dest MD5: %s\n",destMD5.c_str());
+
+    if (!gForce
+        && !srcMD5.empty()
+        && !destMD5.empty()
+        && (srcMD5 == destMD5))
+    {
+      log(2, "Source and destination MD5 match. Not copying.\n");
+      exit(0);
+    }
+
     TFile *dest = TFile::Open(tmpdest.c_str());
     if (dest && !gForce)
     {
