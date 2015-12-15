@@ -30,6 +30,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
+#include "THn.h"
 #include <vector>
 #include "AliAnalysisCuts.h"
 #include "AliAnalysisFilter.h"
@@ -184,15 +185,14 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<TH2F*>              fvRecoPairs_poslabel;
   
   Bool_t                          fCalcResolution;
-  TH2F*                           fPtResolution;
-  TH2F*                           fPtResolution_poslabel;
-  TH2F*                           fPResolution;
-  TH2F*                           fPResolution_poslabel;
-  TH2F*                           fEtaPhiResolution;
-  TH2F*                           fEtaResolution;
-  TH2F*                           fEtaResolution_poslabel;
-  TH2F*                           fPhiResolution;
-  TH2F*                           fPhiResolution_poslabel;
+  TH2F*                           fPtGen_PtRec;
+  TH2F*                           fPtGen_PtRec_poslabel;
+  TH2F*                           fPgen_Prec;
+  TH2F*                           fPgen_Prec_poslabel;
+  TH2F*                           fEtaGen_EtaRec;
+  TH2F*                           fPhiGen_PhiRec;
+  THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;
+  THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
   
   TList*                          fOutputList; // ! output data container
