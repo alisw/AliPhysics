@@ -539,7 +539,8 @@ TChain* AliExternalInfo::GetChain(TString period, TString pass, TString anchorYe
     }
     case kTPC:
     {
-      name = "tpcQA";
+//       name = "tpcQA";
+      name = "trending";
       SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
       break;
     }
