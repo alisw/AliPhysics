@@ -151,7 +151,7 @@ void AliMultSelection::PrintInfo()
     cout<<"EvSel Code.............: "<<fEvSelCode<<endl;
     for( Long_t iEst=0; iEst<fNEsts; iEst++){
         cout<<"N: "<<GetEstimator(iEst)->GetName()<<", def: "<<GetEstimator(iEst)->GetDefinition();
-        cout<<", at: "<<GetEstimator(iEst)->GetValue()<<", Perc: "<<GetEstimator(iEst)->GetPercentile()<<", <> = "<<GetEstimator(iEst)->GetMean()<<endl;
+        cout<<", at: "<<GetEstimator(iEst)->GetValue()<<", Perc: "<<GetEstimator(iEst)->GetPercentile()<<", <> = "<<GetEstimator(iEst)->GetMean()<<", AnchPoint = "<<GetEstimator(iEst)->GetAnchorPoint()<<", AnchPerc = "<<GetEstimator(iEst)->GetAnchorPercentile()<<endl;
     }
 }
 //________________________________________________________________
