@@ -60,9 +60,10 @@ static const char *USAGE =
       "   -i <regex>\n"
       "      Include TKeys whose name matches <regex>. This option can be used multiple times.\n";
 
-const char * OPT_STRING = ":v:j:t:n:s:i:o:";
+const char * OPT_STRING = ":v:fj:t:n:s:i:o:";
 
 static int gVerbosity = 0;
+static bool gForce = false;
 
 // Helper to print out verbosity aware messages.
 void log(int level, const char *fmt, ...)
@@ -195,11 +196,28 @@ void downloadFile(const JobInfo &info,
   std::string tmpsrc = info.filename;
   normalizePath(tmpdest);
   normalizePath(tmpsrc);
-  // If no regexps specified, simply use TFile::Cp. If regular
-  // expressions specified, copy only the tkeys that match those files.
-  
+  // If no regexps specified, simply use TFile::Cp. If the source file was not
+  // modified after the last modification date of the destination file, we skip
+  // copying it.
+  // 
+  // If regular expressions specified, copy only the tkeys that match those
+  // files.
   if (regexps.empty())
   {
+    TFile *dest = TFile::Open(tmpdest.c_str());
+    if (dest && !gForce)
+    {
+      TFile *src = TFile::Open(tmpsrc.c_str());
+      if (!src)
+        exit(1);
+      bool sameSize = src->GetSize() == dest->GetSize();
+
+      if (sameSize && (src->GetModificationDate() <= dest->GetModificationDate()))
+      {
+        log(2, "Destination file with more modern modification date. Not copying.\n");
+        exit(0);
+      }
+    }
     if (!TFile::Cp(tmpsrc.c_str(), tmpdest.c_str()))
       exit(1);
   }
@@ -425,6 +443,9 @@ int main( int argc, char **argv )
         break;
       case 'i':
         gIncludeRE.push_back(new TRegexp(optarg));
+        break;
+      case 'f':
+        gForce = true;
         break;
       case ':':
         switch (optopt) {
