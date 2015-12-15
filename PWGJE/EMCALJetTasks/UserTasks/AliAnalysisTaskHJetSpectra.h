@@ -118,6 +118,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   void SetDphi(Double_t dphi){ fDphiCut = TMath::Pi() - dphi;} 
   void SetDoubleBinPrecision(Bool_t db){ fUseDoubleBinPrecision = db;} 
 
+  void SkipEventsWithSignalTT(Double_t ttlow, Double_t tthigh){ fTTLowToSkip = ttlow; fTTHighToSkip = tthigh; } //skip TT range
 
   void SetNofRandomCones(Int_t nrc){ fNofRandomCones = nrc;}
   void SetMinFractionShared(Double_t f)  { fMinFractionShared = f; }
@@ -204,6 +205,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   Double_t            fDphiCut; //minimal azimuthal angle between trigger and assoc jet 
   Bool_t              fUseDoubleBinPrecision; //use double bin precision
 
+   Double_t           fTTLowToSkip;//  skip event that contains particle in the range fTTLowToSkip to fTTHighToSkip
+   Double_t           fTTHighToSkip;// skip event that contains particle in the range fTTLowToSkip to fTTHighToSkip
+
    TH1I               *fHistEvtSelection;     //! gc event statistics
    TH1D               *fh1Ntriggers;  //! trigger counter
    TH1D               *fh1TriggerMult; //! tirgger multiplicity in event
@@ -251,6 +255,15 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhCentralityV0CTT;  //! centrality from V0C when TT is present
    TH1F     *fhCentralityZNATT;  //! centrality from ZNA when TT is present
 
+   TH1F     *fhVzeroATotMult; //! V0A multiplicity for given V0A centrality selection
+   TH1F     *fhVzeroATotMultTT;   //! V0A multiplicity 
+   TH2F     *fh2VzeroATotMultVsCent; //! V0A multiplicity versus Centrality 
+   TH2F     *fh2VzeroATotMultVsCentTT; //! V0A multiplicity versus Centrality for TT selection
+
+   TH1F     *fhZNAEnergy; //! ZDC A neutral energy for given V0A centrality selection
+   TH1F     *fhZNAEnergyTT;   //! ZDC A neutral energy 
+   TH2F     *fh2ZNAEnergyVsCent; //! ZDC A Neutral energyy versus Centrality 
+   TH2F     *fh2ZNAEnergyVsCentTT; //! ZDC A  Neutral energy versus Centrality for TT selection
 
    TH1D     *fhTrackMultiplicity; //! multiplicity of tracks
    TH1D     *fhTrackMultiplicityTT; //! multiplicity of tracks in event with TT track
@@ -292,7 +305,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 8); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 9); // Charged jet analysis for pA
 
 };
 #endif

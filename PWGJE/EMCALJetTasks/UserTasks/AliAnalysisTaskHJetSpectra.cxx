@@ -64,7 +64,9 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskHJetSpectra.h"
 #include "AliHeader.h" 
-#include "AliRunLoader.h"   
+#include "AliRunLoader.h"  
+#include "AliVVZERO.h" 
+#include "AliVZDC.h"
 using namespace std;
 
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
@@ -83,12 +85,15 @@ fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0
 fCentralityType("V0A"), fCentPercMin(0.), fCentPercMax(100.), fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0),
 fTTlow(8.0), fTThigh(9.0), fTTtype(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
+fTTLowToSkip(-1.0), fTTHighToSkip(-1.0),
 fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1TriggerMult(0x0), fh1NtriggersGen(0x0), fh1TriggerMultGen(0x0),
 fhKTAreaPt(0x0),
 fhJetPhi(0x0),  fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
  fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
+ fhVzeroATotMult(0x0), fhVzeroATotMultTT(0x0), fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+fhZNAEnergy(0x0), fhZNAEnergyTT(0x0), fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 fhSumPt(0x0), fhSumPtTT(0x0), fh2SumPtVsCent(0x0), fh2SumPtVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
@@ -133,12 +138,15 @@ fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0
 fCentralityType("V0A"), fCentPercMin(0.), fCentPercMax(100.),  fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0), 
 fTTlow(8.0), fTThigh(9.0), fTTtype(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
+fTTLowToSkip(-1.0), fTTHighToSkip(-1.0),
 fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1TriggerMult(0x0), fh1NtriggersGen(0x0), fh1TriggerMultGen(0x0),
 fhKTAreaPt(0x0), 
 fhJetPhi(0x0), fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
+fhVzeroATotMult(0x0), fhVzeroATotMultTT(0x0), fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+fhZNAEnergy(0x0), fhZNAEnergyTT(0x0), fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
 fhTrackMultiplicity(0x0),fhTrackMultiplicityTT(0x0), fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 fhSumPt(0x0), fhSumPtTT(0x0), fh2SumPtVsCent(0x0), fh2SumPtVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
@@ -552,6 +560,20 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Double_t centralityPercentileV0C = -1.0;
    Double_t centralityPercentileV0M = -1.0;
    Double_t centralityPercentileZNA = -1.0;
+   Double_t multVzero   = -1.0;
+   Double_t energyZdcNA = -1.0;
+
+   if(InputEvent()->GetVZEROData()){
+      multVzero = InputEvent()->GetVZEROData()->GetMTotV0A();
+   }
+
+   //if(InputEvent()->GetZDCData()){
+      // AliESDZDC.h :   C --> 1     A--->2
+      //Double_t GetZNAEnergy() const {return (Double_t) fZDCN2Energy;}
+      //Double_t GetZNCEnergy() const {return (Double_t) fZDCN1Energy;}
+   //   energyZdcNA =  InputEvent()->GetZDCData()->GetZNAEnergy();
+      energyZdcNA =  InputEvent()->GetZDCN2Energy(); //should be ZNA
+   //}
 
    if(fCollisionSystem != kpp){   //KINE Check MC event vertex
       AliCentrality* tmpCentrality = InputEvent()->GetCentrality();
@@ -568,6 +590,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }
       
       fhCentrality->Fill(centralityPercentile);
+      fh2VzeroATotMultVsCent->Fill(centralityPercentile, multVzero); 
+      fh2ZNAEnergyVsCent->Fill(centralityPercentile, energyZdcNA); 
       
       if((centralityPercentile < fCentPercMin) || (centralityPercentile > fCentPercMax)){ //cut on centrality
          AliWarning(Form("Centrality value not valid (c=%E)",centralityPercentile)); 
@@ -579,6 +603,10 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       fhCentralityV0C->Fill(centralityPercentileV0C); 
       fhCentralityZNA->Fill(centralityPercentileZNA);
    } 
+   fhVzeroATotMult->Fill(multVzero);
+   fhZNAEnergy->Fill(energyZdcNA);
+   //cout<<"energyZdcNA = "<<energyZdcNA<<endl;
+
    fHistEvtSelection->Fill(0); //Count Accepted input event
 
    // END EVENT SELECTION
@@ -745,8 +773,39 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       fRhoMC[kZeroRho] = 0.0;
    }
 
+   //________________________________________________________
+   //WHEN THIS IS TT REF SKIP EVENT THAT CONTAINS TT SIGNAL TRACK 
 
-         
+   Bool_t bStop = kFALSE;
+   if(fTTLowToSkip>0 &&  fTTHighToSkip>0){
+      if(fTypeOfAnal == kRec || fTypeOfAnal == kEff){
+         if(trkArrayRec){ 
+            for(Int_t j = 0; j < trkArrayRec->GetEntries(); j++){ // loop over reconstructed tracks 
+               constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
+               if(!constTrackRec) continue;
+               if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
+               if(fTTLowToSkip <= constTrackRec->Pt() && constTrackRec->Pt() < fTTHighToSkip){
+                  bStop = kTRUE;
+                  break;
+               }
+            }
+         }
+      }
+      
+      if(fTypeOfAnal == kKine || fTypeOfAnal == kEff){
+         if(trkArrayGen){
+            for(Int_t i = 0; i < trkArrayGen->GetEntries(); i++){
+               constTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
+               if(!constTrackGen) continue;
+               if(!IsTrackInAcceptance(constTrackGen, kTRUE)) continue; //gen level physical primary
+               if(fTTLowToSkip <= constTrackGen->Pt() && constTrackGen->Pt() < fTTHighToSkip){
+                  bStop = kTRUE;
+                  break;
+               }
+            }
+         }
+      }   
+   }
    //_________________________________________________________
    //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
 
@@ -860,11 +919,19 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }//rec jet container exists
    }//analyze efficiency mode (response matrix + single particle efficiency) 
 
+
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   if(bStop){
+     fHistEvtSelection->Fill(5); //Rejected events
+     return kTRUE; // SKIP EVENTS WHERE REF TT CLASS EVENT CONTAINS SIG TT TRACK 
+   }
+   fHistEvtSelection->Fill(6); //Accepted events
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    Double_t areaJet,  pTJet; 
    Double_t tmpArray[3];              
    Double_t dphi, dfi;
    Bool_t bFirstCycle = kTRUE; 
+
 
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //H-JET CORRELATIONS IN MC TRUTH
@@ -1094,6 +1161,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       if(trackTT){
          fhTrackMultiplicityTT->Fill(mult);
          fhSumPtTT->Fill(sumPt); 
+         fhVzeroATotMultTT->Fill(multVzero);
+         fhZNAEnergyTT->Fill(energyZdcNA);
       }
 
       if(centralityPercentile > -0.1){
@@ -1103,6 +1172,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          if(trackTT){
             fh2TrackMultVsCentTT->Fill(centralityPercentile,mult);
             fh2SumPtVsCentTT->Fill(centralityPercentile, sumPt);
+            fh2VzeroATotMultVsCentTT->Fill(centralityPercentile, multVzero);
+            fh2ZNAEnergyVsCentTT->Fill(centralityPercentile, energyZdcNA);
          }
       }
   
@@ -1254,12 +1325,14 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    //__________________________________________________________
    // Event statistics
-   fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 6, -0.5, 5.5);
+   fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 7, -0.5, 6.5);
    fHistEvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
    fHistEvtSelection->GetXaxis()->SetBinLabel(2,"events IN");
    fHistEvtSelection->GetXaxis()->SetBinLabel(3,"pile up (rejected)");
    fHistEvtSelection->GetXaxis()->SetBinLabel(4,"vertex cut (rejected)");
    fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
+   fHistEvtSelection->GetXaxis()->SetBinLabel(6,"sig TT (rejected)");
+   fHistEvtSelection->GetXaxis()->SetBinLabel(7,"sig TT (accepted)");
 
    fOutput->Add(fHistEvtSelection);
    //___________________________________________________________
@@ -1408,6 +1481,34 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //-------------------------
    fhCentralityZNATT = (TH1F*) fhCentralityZNA->Clone("fhCentralityZNATT");
    if(bHistRec) fOutput->Add(fhCentralityZNATT);
+   //-----------------------------------------------------
+   //  vzero multiplicity
+   fhVzeroATotMult = new TH1F("fhVzeroATotMult","hVzeroATotMult",1000,0,1000);
+   if(bHistRec) fOutput->Add(fhVzeroATotMult);
+ 
+   fhVzeroATotMultTT = (TH1F*)  fhVzeroATotMult->Clone("fhVzeroATotMultTT");  
+   if(bHistRec) fOutput->Add(fhVzeroATotMultTT);
+
+   fh2VzeroATotMultVsCent = new TH2F("fh2VzeroATotMultVsCent","h2VzeroATotMultVsCent",20,0,100,100,0,1000); 
+   if(bHistRec) fOutput->Add(fh2VzeroATotMultVsCent);
+
+   fh2VzeroATotMultVsCentTT = (TH2F*) fh2VzeroATotMultVsCent->Clone("fh2VzeroATotMultVsCentTT");
+   if(bHistRec) fOutput->Add(fh2VzeroATotMultVsCentTT);
+
+   //-----------------------------------------------------
+   //  ZDC ZNA energy 
+   fhZNAEnergy = new TH1F("fhZNAEnergy","fhZNAEnergy",1000,0,3000);
+   if(bHistRec) fOutput->Add(fhZNAEnergy);
+ 
+   fhZNAEnergyTT = (TH1F*)  fhZNAEnergy->Clone("fhZNAEnergyTT");  
+   if(bHistRec) fOutput->Add(fhZNAEnergyTT);
+
+   fh2ZNAEnergyVsCent = new TH2F("fh2ZNAEnergyVsCent","fh2ZNAEnergyVsCent",20,0,100,150,0,3000); 
+   if(bHistRec) fOutput->Add(fh2ZNAEnergyVsCent);
+
+   fh2ZNAEnergyVsCentTT = (TH2F*) fh2ZNAEnergyVsCent->Clone("fh2ZNAEnergyVsCentTT");
+   if(bHistRec) fOutput->Add(fh2ZNAEnergyVsCentTT);
+
    //-----------------------------------------------------
    //   track multiplicity
    fhTrackMultiplicity = new TH1D("fhTrackMultiplicity","fhTrackMultiplicity",1000,0,1000);
