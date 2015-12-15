@@ -372,7 +372,12 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	TH1F* alleff=GetOneHistFromPtDCAhisto("hHistPtRecPrimary","effall",managermc,dcacutxy);
 	TH1F* allrecdata=GetOneHistFromPtDCAhisto("hHistPtRec","rawalldata",managerdata,dcacutxy);
 	
-  	
+        TH1F* muons[4]; 
+	muons[0]=GetOneHistFromPtDCAhisto("hHistPtRecTrueMuonPlus","MuonPlusAll",managermc,dcacutxy);
+	muons[1]=GetOneHistFromPtDCAhisto("hHistPtRecTruePrimaryMuonPlus","MuonPlusPrmiary",managermc,dcacutxy);
+	muons[2]=GetOneHistFromPtDCAhisto("hHistPtRecTrueMuonMinus","MuonMinusAll",managermc,dcacutxy);
+	muons[3]=GetOneHistFromPtDCAhisto("hHistPtRecTruePrimaryMuonMinus","MuonMinusPrmiary",managermc,dcacutxy);
+	
 	
 	
 	TH1F* spectraall=(TH1F*)allrecdata->Clone("recNch");
@@ -424,7 +429,12 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 		contMatfit[i+6]->SetTitle(Form(tmpname.Data(),"contMatfitonMC"));
 		primaryfit[i+6]=(TH1F*)rawspectramc[i]->Clone(Form(tmpname.Data(),"primaryfitMC"));
 		primaryfit[i+6]->SetTitle(Form(tmpname.Data(),"primaryfitMC"));
-		
+		if(i==0||i==3)
+		{
+			muons[i/3]->Divide(muons[i/3],rawspectramc[i],1,1,"B");
+			muons[i/3+1]->Divide(muons[i/3+1],rawspectramc[i],1,1,"B");
+
+		}	
 	
 		
 			
@@ -548,6 +558,11 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 			lout->Add(doubleconuntsMC[i-3]);
 		}
 	}
+	lout->Add(muons[0]);
+	lout->Add(muons[1]);
+	lout->Add(muons[2]);
+	lout->Add(muons[3]);
+
 	outdate.ReplaceAll("/","_");
 	configfile.ReplaceAll(".","_");
 	TFile* fout=0x0;
