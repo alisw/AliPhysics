@@ -349,7 +349,8 @@ public:
   //Returns shift-rotational matrixes for different volumes
   const TGeoHMatrix * GetMatrixForSuperModule(Int_t smod) const ;
   const TGeoHMatrix * GetMatrixForSuperModuleFromGeoManager(Int_t smod) const ;
-	
+  const TGeoHMatrix * GetMatrixForSuperModuleFromArray(Int_t smod) const ;
+
   Bool_t GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const { 
     return fTriggerMapping->GetAbsFastORIndexFromTRU(iTRU, iADC, id);
   }

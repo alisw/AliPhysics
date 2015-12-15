@@ -1318,6 +1318,25 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
   return 0 ;
 }
 
+
+///
+/// Provides shift-rotation matrix for EMCAL from fkSModuleMatrix[smod]
+/// Unsafe method, not to be used in reconstruction, just check there is 
+/// something in the array of matrices without crashing, for EVE checks.
+///
+/// \return alignment matrix for a super module number
+/// \param smod: super module number
+///
+//______________________________________________________________________________________
+const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModuleFromArray(Int_t smod) const 
+{	
+  if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
+    AliFatal(Form("Wrong supermodule index -> %d",smod));
+  
+  return fkSModuleMatrix[smod] ;
+}
+
+
 ///
 /// Provides shift-rotation matrix for EMCAL from the TGeoManager.
 /// \return alignment matrix for a super module number
