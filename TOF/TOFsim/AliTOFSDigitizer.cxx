@@ -936,10 +936,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
 
   case 2:
-    if(z0 < 0) timeWalkZ = (AliTOFGeometry::ZPad()*0.5 + z)*fTimeWalkSlope;
-    else timeWalkZ = (AliTOFGeometry::ZPad()*0.5 - z)*fTimeWalkSlope;
+    if(z0 < 0) timeWalkZ = (AliTOFGeometry::ZPad()*0.5 + dZ)*fTimeWalkSlope;
+    else timeWalkZ = (AliTOFGeometry::ZPad()*0.5 - dZ)*fTimeWalkSlope;
 
-    timeWalkX = TMath::Abs(x)*fTimeWalkSlope;
+    timeWalkX = TMath::Abs(dX)*fTimeWalkSlope;
 
     if(z < h) {
       if(z < h2) {
@@ -987,8 +987,8 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns 
-	if(z0 < 0) timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() - z )*fTimeWalkSlope; // ns
-	else timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() + z )*fTimeWalkSlope; // ns
+	if(z0 < 0) timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() - dZ )*fTimeWalkSlope; // ns
+	else timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() + dZ )*fTimeWalkSlope; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
 	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
