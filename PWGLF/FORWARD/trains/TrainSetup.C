@@ -752,9 +752,12 @@ protected:
       gROOT->SetMacroPath(Form("%s:"
 			       "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros",
 			       gROOT->GetMacroPath()));
-      task = CoupleSECar("AddTaskMultSelection.C","false,true");
+      task = CoupleSECar("AddTaskMultSelection.C","false");
       FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
     }
+    return;
+
+    // Ignore the rest - just kept for historical reasons 
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD) return;
     

@@ -41,6 +41,8 @@ RunFast(const char* url="local:///",
   // detection.
   gSystem->AddIncludePath("-DNO_DPMJET_TYPE");
   // gDebug = 7;
+  gROOT->LoadMacro(Form("%s/sim/FastCentEstimators.C+%s",fwd.Data(),opt));
+  gROOT->LoadMacro(Form("%s/sim/FastMonitor.C+%s",fwd.Data(),opt));
   gROOT->LoadMacro(Form("%s/sim/FastSim.C+%s",fwd.Data(),opt));
 
   const char* cleanFiles[] = { "grp.dat",

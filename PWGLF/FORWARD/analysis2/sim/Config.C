@@ -350,8 +350,14 @@ void Config()
   AliGenerator* gener = egCfg->MakeGenerator(s.runType,
 					     s.minB,
 					     s.maxB);
-  if (!egCfg->IsLego()) 
+  if (!egCfg->IsLego())  {   
     gener->Init();
+    if (gener->IsA()->InheritsFrom("AliGenHijing")) {
+      Info("", "Setting Hijing debug");
+      // static_cast<AliGenHijing*>(gener->GetTHijing()->SetIHPR2(10,1));
+    }
+  }
+      
 
   // --- Go back to galice.root --------------------------------------
   rl->CdGAFile();

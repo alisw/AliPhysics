@@ -297,10 +297,11 @@ protected:
     tit.Append(Form(" %squench",    quench ? "" : "no"));
     tit.Append(Form(" %sspectator", spec   ? "" : "no"));
     tit.Append(Form(" %sshadow",    shadow ? "" : "no"));
+    UInt_t sNN = (grp->energy/10)*10;
     
     AliGenHijing *gener = new AliGenHijing(-1);
     // --- Centre of mass energy -------------------------------------
-    gener->SetEnergyCMS(grp->energy);
+    gener->SetEnergyCMS(sNN);
     // --- Impact parameter range ------------------------------------
     gener->SetImpactParameterRange(minB, maxB);	
     // --- Reference frame -------------------------------------------
@@ -326,6 +327,8 @@ protected:
     // Boosted CMS 
     gener->SetBoostLHC(grp->IsPA() || grp->IsAP());
 
+    // Debug
+    // gener->GetTHijing()->SetIHPR2(10,1);
     
     // No need for cocktail
     if (!grp->IsPA() && !grp->IsAP()) {
