@@ -460,14 +460,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     
       Int_t v0[2];
       ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1V0(v0);
-//       trgESD->SetL1V0(i,v0);        
+      trgESD->SetL1V0(i,v0);        
 
       trgESD->SetMedian(i,((AliEMCALTriggerData*)fgTriggerData->At(i))->GetMedian());
       if (!saveOnce[i] && ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1DataDecoded()) {
         int type[19] = {0};
         ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1TriggerType(type);
         
-//         esd->SetCaloTriggerType(i,type);
+        esd->SetCaloTriggerType(i,type);
         
         saveOnce[i] = 1;
       }
