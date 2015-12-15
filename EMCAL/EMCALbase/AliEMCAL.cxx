@@ -100,7 +100,7 @@ AliEMCAL::~AliEMCAL()
 {
   //dtor
   delete fgRawUtils;
-  delete fTriggerData;
+  fTriggerData->Delete();
 }
 
 //____________________________________________________________________________
@@ -349,8 +349,18 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
   sdigits->Clear("C");  
   
   //Trigger sdigits
-  if(!fTriggerData)fTriggerData = new AliEMCALTriggerData();
-  fTriggerData->SetMode(1);	
+  if (!fTriggerData) {
+    int dsize = (GetGeometry()->GetTriggerMappingVersion() == 2) ? 2 : 1;
+    fTriggerData = new TClonesArray("AliEMCALTriggerData",dsize);
+    for (int i=0;i<dsize;i++) {
+      new((*fTriggerData)[i]) AliEMCALTriggerData();
+    }
+  }
+  
+  for (int i=0;i<fTriggerData->GetEntriesFast();i++) {
+    ((AliEMCALTriggerData*)fTriggerData->At(i))->SetMode(1);   
+  }
+  
   const Int_t nTRU = GetGeometry()->GetNTotalTRU();
   TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", nTRU * 96);    
   Int_t bufsize = 32000;

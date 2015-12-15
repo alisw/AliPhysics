@@ -54,6 +54,7 @@ class AliEMCALTriggerSTURawStream: public TObject
     virtual UInt_t  GetFwVersion()      const {return fFwVersion     ;}
     virtual UInt_t  GetPatchSize()      const {return fPatchSize     ;}
     virtual Int_t   GetRawData()        const {return fGetRawData    ;}
+    virtual Int_t   GetnTRU()           const {return (fDetector==kEMCAL)?nTRU_EMCAL:(fDetector==kDCAL)?nTRU_DCAL:0;}
 
   private:
 
@@ -156,10 +157,6 @@ class AliEMCALTriggerSTURawStream: public TObject
     UInt_t    fFrameReceived  ;  // Frame Received
     UInt_t    fFwVersion      ;  // Fw Version
 
-    Int_t     GetnTRU()const{ return  (fDetector == kEMCAL)? nTRU_EMCAL :
-                                      (fDetector == kDCAL )? nTRU_DCAL  :
-                                      0 ;
-    }
     Int_t     GetnMod()const{ return  (fDetector == kEMCAL)? nMod_EMCAL :
                                       (fDetector == kDCAL )? nMod_DCAL  :
                                       0 ;

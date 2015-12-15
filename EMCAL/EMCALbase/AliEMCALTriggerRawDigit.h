@@ -38,6 +38,9 @@ public:
 	
 	void    SetL1TimeSum(Int_t ts) {if (fL1TimeSum >= 0) AliWarning("You're overwriting digit time sum! Please check"); fL1TimeSum = ts;}
 	Int_t   GetL1TimeSum(        ) const {return fL1TimeSum;}
+
+	void    SetL1SubRegion(Int_t sr) {if (fL1SubRegion >= 0) AliWarning("You're overwriting digit subregion! Please check"); fL1SubRegion = sr;}
+        Int_t   GetL1SubRegion(        ) const {return fL1SubRegion;}
 	
 	virtual void Print(const Option_t* opt) const;
 	
@@ -51,8 +54,9 @@ private:
 	Int_t   fL0Times[10]; // L0 times
 	
 	Int_t   fL1TimeSum;   // L1 time sum
+        Int_t   fL1SubRegion; // Subregion
 	
-	ClassDef(AliEMCALTriggerRawDigit,1)
+	ClassDef(AliEMCALTriggerRawDigit,2)
 };
 #endif
 

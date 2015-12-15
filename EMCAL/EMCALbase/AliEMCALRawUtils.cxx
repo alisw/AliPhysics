@@ -330,7 +330,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 /// Conversion of raw data to digits.
 ///
 void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
-                                  TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
+                                  TClonesArray *digitsTRG, TClonesArray *trgData)
 {
   if ( digitsArr) digitsArr->Clear("C");
     
