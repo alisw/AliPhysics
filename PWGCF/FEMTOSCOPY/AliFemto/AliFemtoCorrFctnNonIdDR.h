@@ -1,20 +1,26 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCorrFctnNonIdDR - correlation function for non-identical particles //
-// uses k* as a function variable. Stores the correlation function separately //
-// for positive and negative signs of k* projections into out, side and long  //
-// directions, enabling the calculations of double ratios                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCorrFctnNonIdDR.h
+///
+
+
 #ifndef ALIFEMTOCORRFCTNNONIDDR_H
 #define ALIFEMTOCORRFCTNNONIDDR_H
 
-#include "TH1D.h"
+class TH1D;
+
 #include "AliFemtoCorrFctn.h"
 
+/// \class AliFemtoCorrGctnNonIdDR
+/// \brief Correlation function for non-identical particles using k* as the
+///    function variable.
+///
+/// Stores the correlation function separately for positive and negative signs
+/// of k* projections into out, side and long directions, enabling the
+/// calculations of double ratios
+///
 class AliFemtoCorrFctnNonIdDR : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoCorrFctnNonIdDR(const char* title, const int nbins, const float QinvLo, const float QinvHi);
   AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& aCorrFctn);
   virtual ~AliFemtoCorrFctnNonIdDR();
 
@@ -29,30 +35,35 @@ public:
   virtual TList* GetOutputList();
   void Write();
 
-private:
-  TH1D *fNumOutP;     // Numerator for pair with positive k*out
-  TH1D *fNumOutN;     // Numerator for pair with negative k*out
-  TH1D *fNumSideP;    // Numerator for pair with positive k*side
-  TH1D *fNumSideN;    // Numerator for pair with negative k*side
-  TH1D *fNumLongP;    // Numerator for pair with positive k*long
-  TH1D *fNumLongN;    // Numerator for pair with negative k*long
+  virtual AliFemtoCorrFctn* Clone();
 
-  TH1D *fDenOutP;     // Denominator for pair with positive k*out
-  TH1D *fDenOutN;     // Denominator for pair with negative k*out
-  TH1D *fDenSideP;    // Denominator for pair with positive k*side
-  TH1D *fDenSideN;    // Denominator for pair with negative k*side
-  TH1D *fDenLongP;    // Denominator for pair with positive k*long
-  TH1D *fDenLongN;    // Denominator for pair with negative k*long
+protected:
+  TH1D *fNumOutP;     ///< Numerator for pair with positive k*out
+  TH1D *fNumOutN;     ///< Numerator for pair with negative k*out
+  TH1D *fNumSideP;    ///< Numerator for pair with positive k*side
+  TH1D *fNumSideN;    ///< Numerator for pair with negative k*side
+  TH1D *fNumLongP;    ///< Numerator for pair with positive k*long
+  TH1D *fNumLongN;    ///< Numerator for pair with negative k*long
 
-    TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
+  TH1D *fDenOutP;     ///< Denominator for pair with positive k*out
+  TH1D *fDenOutN;     ///< Denominator for pair with negative k*out
+  TH1D *fDenSideP;    ///< Denominator for pair with positive k*side
+  TH1D *fDenSideN;    ///< Denominator for pair with negative k*side
+  TH1D *fDenLongP;    ///< Denominator for pair with positive k*long
+  TH1D *fDenLongN;    ///< Denominator for pair with negative k*long
+
+  TH1D* fkTMonitor;   ///< Monitor the kT of pairs in the function
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoCorrFctnNonIdDR, 1);
+  ClassDef(AliFemtoCorrFctnNonIdDR, 2);
   /// \endcond
 #endif
 };
 
+inline AliFemtoCorrFctn* AliFemtoCorrFctnNonIdDR::Clone()
+{
+  return new AliFemtoCorrFctnNonIdDR(*this);
+}
 
 #endif
-

@@ -1,13 +1,10 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCorrFctnNonIdDR - correlation function for non-identical particles //
-// uses k* as a function variable. Stores the correlation function separately //
-// for positive and negative signs of k* projections into out, side and long  //
-// directions, enabling the calculations of double ratios                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCorrFctnNonIdDR.cxx
+///
+
 
 #include "AliFemtoCorrFctnNonIdDR.h"
+#include <TH1D.h>
 //#include "AliFemtoHisto.h"
 #include <cstdio>
 
@@ -18,179 +15,175 @@
 #endif
 
 //____________________________
-AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
-  fNumOutP(0), 
-  fNumOutN(0),  
-  fNumSideP(0), 
-  fNumSideN(0), 
-  fNumLongP(0), 
-  fNumLongN(0), 
-  fDenOutP(0),  
-  fDenOutN(0),  
-  fDenSideP(0), 
-  fDenSideN(0), 
-  fDenLongP(0), 
-    fDenLongN(0),
-    fkTMonitor(0)
-
+AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
+                                                 const int nbins,
+                                                 const float QinvLo,
+                                                 const float QinvHi):
+  AliFemtoCorrFctn()
+  , fNumOutP(NULL)
+  , fNumOutN(NULL)
+  , fNumSideP(NULL)
+  , fNumSideN(NULL)
+  , fNumLongP(NULL)
+  , fNumLongN(NULL)
+  , fDenOutP(NULL)
+  , fDenOutN(NULL)
+  , fDenSideP(NULL)
+  , fDenSideN(NULL)
+  , fDenLongP(NULL)
+  , fDenLongN(NULL)
+  , fkTMonitor(NULL)
 {
   // Default constructor
   // set up numerators
-  char bufname[200];
-  snprintf(bufname, 200, "NumOutP%s", title);
-  fNumOutP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "NumOutN%s", title);
-  fNumOutN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "NumSideP%s", title);
-  fNumSideP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "NumSideN%s", title);
-  fNumSideN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "NumLongP%s", title);
-  fNumLongP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "NumLongN%s", title);
-  fNumLongN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
+  fNumOutP = new TH1D(TString("NumOutP") + title, title, nbins, QinvLo, QinvHi);
+  fNumOutN = new TH1D(TString("NumOutN") + title, title, nbins, QinvLo, QinvHi);
+  fNumSideP = new TH1D(TString("NumSideP") + title, title, nbins, QinvLo, QinvHi);
+  fNumSideN = new TH1D(TString("NumSideN") + title, title, nbins, QinvLo, QinvHi);
+  fNumLongP = new TH1D(TString("NumLongP") + title, title, nbins, QinvLo, QinvHi);
+  fNumLongN = new TH1D(TString("NumLongN") + title, title, nbins, QinvLo, QinvHi);
 
   // set up denominators
-  snprintf(bufname, 200, "DenOutP%s", title);
-  fDenOutP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "DenOutN%s", title);
-  fDenOutN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "DenSideP%s", title);
-  fDenSideP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "DenSideN%s", title);
-  fDenSideN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "DenLongP%s", title);
-  fDenLongP = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
-  snprintf(bufname, 200, "DenLongN%s", title);
-  fDenLongN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
+  fDenOutP = new TH1D(TString("DenOutP") + title, title, nbins, QinvLo, QinvHi);
+  fDenOutN = new TH1D(TString("DenOutN") + title, title, nbins, QinvLo, QinvHi);
+  fDenSideP = new TH1D(TString("DenSideP") + title, title, nbins, QinvLo, QinvHi);
+  fDenSideN = new TH1D(TString("DenSideN") + title, title, nbins, QinvLo, QinvHi);
+  fDenLongP = new TH1D(TString("DenLongP") + title, title, nbins, QinvLo, QinvHi);
+  fDenLongN = new TH1D(TString("DenLongN") + title, title, nbins, QinvLo, QinvHi);
 
-    char tTitkT[101] = "kTDep";
-    strncat(tTitkT,title, 100);
-    fkTMonitor = new TH1D(tTitkT,title,250,0.0,5.0);
+  fkTMonitor = new TH1D(TString("kTDep") + title, title, 250, 0.0, 5.0);
 
   // to enable error bar calculation...
-  fNumOutP->Sumw2(); 
-  fNumOutN->Sumw2();  
-  fNumSideP->Sumw2(); 
-  fNumSideN->Sumw2(); 
-  fNumLongP->Sumw2(); 
-  fNumLongN->Sumw2(); 
-  fDenOutP->Sumw2();  
-  fDenOutN->Sumw2();  
-  fDenSideP->Sumw2(); 
-  fDenSideN->Sumw2(); 
-  fDenLongP->Sumw2(); 
+  fNumOutP->Sumw2();
+  fNumOutN->Sumw2();
+  fNumSideP->Sumw2();
+  fNumSideN->Sumw2();
+  fNumLongP->Sumw2();
+  fNumLongN->Sumw2();
+  fDenOutP->Sumw2();
+  fDenOutN->Sumw2();
+  fDenSideP->Sumw2();
+  fDenSideN->Sumw2();
+  fDenLongP->Sumw2();
   fDenLongN->Sumw2();
 
-    fkTMonitor->Sumw2();
+  fkTMonitor->Sumw2();
 }
 
 //____________________________
-AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fNumOutP(0), 
-  fNumOutN(0),  
-  fNumSideP(0), 
-  fNumSideN(0), 
-  fNumLongP(0), 
-  fNumLongN(0), 
-  fDenOutP(0),  
-  fDenOutN(0),  
-  fDenSideP(0), 
-  fDenSideN(0), 
-  fDenLongP(0), 
-    fDenLongN(0),
-    fkTMonitor(0)
+AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& aCorrFctn):
+  AliFemtoCorrFctn(aCorrFctn)
+  , fNumOutP(new TH1D(*aCorrFctn.fNumOutP))
+  , fNumOutN(new TH1D(*aCorrFctn.fNumOutN))
+  , fNumSideP(new TH1D(*aCorrFctn.fNumSideP))
+  , fNumSideN(new TH1D(*aCorrFctn.fNumSideN))
+  , fNumLongP(new TH1D(*aCorrFctn.fNumLongP))
+  , fNumLongN(new TH1D(*aCorrFctn.fNumLongN))
+  , fDenOutP(new TH1D(*aCorrFctn.fDenOutP))
+  , fDenOutN(new TH1D(*aCorrFctn.fDenOutN))
+  , fDenSideP(new TH1D(*aCorrFctn.fDenSideP))
+  , fDenSideN(new TH1D(*aCorrFctn.fDenSideN))
+  , fDenLongP(new TH1D(*aCorrFctn.fDenLongP))
+  , fDenLongN(new TH1D(*aCorrFctn.fDenLongN))
+  , fkTMonitor(new TH1D(*aCorrFctn.fkTMonitor))
 {
   // copy constructor
-  if (aCorrFctn.fNumOutP)
-    fNumOutP = new TH1D(*aCorrFctn.fNumOutP);
-  if (aCorrFctn.fNumOutN)
-    fNumOutN = new TH1D(*aCorrFctn.fNumOutN);
-  if (aCorrFctn.fNumSideP)
-    fNumSideP = new TH1D(*aCorrFctn.fNumSideP);
-  if (aCorrFctn.fNumSideN)
-    fNumSideN = new TH1D(*aCorrFctn.fNumSideN);
-  if (aCorrFctn.fNumLongP)
-    fNumLongP = new TH1D(*aCorrFctn.fNumLongP);
-  if (aCorrFctn.fNumLongN)
-    fNumLongN = new TH1D(*aCorrFctn.fNumLongN);
+  fNumOutP->Sumw2();
+  fNumOutN->Sumw2();
+  fNumSideP->Sumw2();
+  fNumSideN->Sumw2();
+  fNumLongP->Sumw2();
+  fNumLongN->Sumw2();
+  fDenOutP->Sumw2();
+  fDenOutN->Sumw2();
+  fDenSideP->Sumw2();
+  fDenSideN->Sumw2();
+  fDenLongP->Sumw2();
+  fDenLongN->Sumw2();
 
-  if (aCorrFctn.fDenOutP)
-    fDenOutP = new TH1D(*aCorrFctn.fDenOutP);
-  if (aCorrFctn.fDenOutN)
-    fDenOutN = new TH1D(*aCorrFctn.fDenOutN);
-  if (aCorrFctn.fDenSideP)
-    fDenSideP = new TH1D(*aCorrFctn.fDenSideP);
-  if (aCorrFctn.fDenSideN)
-    fDenSideN = new TH1D(*aCorrFctn.fDenSideN);
-  if (aCorrFctn.fDenLongP)
-    fDenLongP = new TH1D(*aCorrFctn.fDenLongP);
-  if (aCorrFctn.fDenLongN)
-    fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
-
-    if (aCorrFctn.fkTMonitor)
-        fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+  fkTMonitor->Sumw2();
 }
 
 //____________________________
-AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR(){
-  delete fNumOutP; 
-  delete fNumOutN;  
-  delete fNumSideP; 
-  delete fNumSideN; 
-  delete fNumLongP; 
-  delete fNumLongN; 
-  delete fDenOutP;  
-  delete fDenOutN;  
-  delete fDenSideP; 
-  delete fDenSideN; 
-  delete fDenLongP; 
+AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR()
+{
+  delete fNumOutP;
+  delete fNumOutN;
+  delete fNumSideP;
+  delete fNumSideN;
+  delete fNumLongP;
+  delete fNumLongN;
+  delete fDenOutP;
+  delete fDenOutN;
+  delete fDenSideP;
+  delete fDenSideN;
+  delete fDenLongP;
   delete fDenLongN;
-    delete fkTMonitor;
+  delete fkTMonitor;
 }
 
 //_________________________
 AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFctnNonIdDR& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
-  if (aCorrFctn.fNumOutP)
-    fNumOutP = new TH1D(*aCorrFctn.fNumOutP);
-  if (aCorrFctn.fNumOutN)
-    fNumOutN = new TH1D(*aCorrFctn.fNumOutN);
-  if (aCorrFctn.fNumSideP)
-    fNumSideP = new TH1D(*aCorrFctn.fNumSideP);
-  if (aCorrFctn.fNumSideN)
-    fNumSideN = new TH1D(*aCorrFctn.fNumSideN);
-  if (aCorrFctn.fNumLongP)
-    fNumLongP = new TH1D(*aCorrFctn.fNumLongP);
-  if (aCorrFctn.fNumLongN)
-    fNumLongN = new TH1D(*aCorrFctn.fNumLongN);
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
-  if (aCorrFctn.fDenOutP)
-    fDenOutP = new TH1D(*aCorrFctn.fDenOutP);
-  if (aCorrFctn.fDenOutN)
-    fDenOutN = new TH1D(*aCorrFctn.fDenOutN);
-  if (aCorrFctn.fDenSideP)
-    fDenSideP = new TH1D(*aCorrFctn.fDenSideP);
-  if (aCorrFctn.fDenSideN)
-    fDenSideN = new TH1D(*aCorrFctn.fDenSideN);
-  if (aCorrFctn.fDenLongP)
-    fDenLongP = new TH1D(*aCorrFctn.fDenLongP);
-  if (aCorrFctn.fDenLongN)
-    fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
+  // delete all histograms
+  delete fNumOutP;
+  delete fNumOutN;
+  delete fNumSideP;
+  delete fNumSideN;
+  delete fNumLongP;
+  delete fNumLongN;
+  delete fDenOutP;
+  delete fDenOutN;
+  delete fDenSideP;
+  delete fDenSideN;
+  delete fDenLongP;
+  delete fDenLongN;
+  delete fkTMonitor;
 
-    if (aCorrFctn.fkTMonitor)
-        fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+  fNumOutP = new TH1D(*aCorrFctn.fNumOutP);
+  fNumOutN = new TH1D(*aCorrFctn.fNumOutN);
+  fNumSideP = new TH1D(*aCorrFctn.fNumSideP);
+  fNumSideN = new TH1D(*aCorrFctn.fNumSideN);
+  fNumLongP = new TH1D(*aCorrFctn.fNumLongP);
+  fNumLongN = new TH1D(*aCorrFctn.fNumLongN);
+
+  fDenOutP = new TH1D(*aCorrFctn.fDenOutP);
+  fDenOutN = new TH1D(*aCorrFctn.fDenOutN);
+  fDenSideP = new TH1D(*aCorrFctn.fDenSideP);
+  fDenSideN = new TH1D(*aCorrFctn.fDenSideN);
+  fDenLongP = new TH1D(*aCorrFctn.fDenLongP);
+  fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
+
+  fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+
+  fNumOutP->Sumw2();
+  fNumOutN->Sumw2();
+  fNumSideP->Sumw2();
+  fNumSideN->Sumw2();
+  fNumLongP->Sumw2();
+  fNumLongN->Sumw2();
+  fDenOutP->Sumw2();
+  fDenOutN->Sumw2();
+  fDenSideP->Sumw2();
+  fDenSideN->Sumw2();
+  fDenLongP->Sumw2();
+  fDenLongN->Sumw2();
+
+  fkTMonitor->Sumw2();
 
   return *this;
 }
 
 //_________________________
-void AliFemtoCorrFctnNonIdDR::Finish(){
+void AliFemtoCorrFctnNonIdDR::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -203,24 +196,23 @@ void AliFemtoCorrFctnNonIdDR::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnNonIdDR::Report(){
+AliFemtoString AliFemtoCorrFctnNonIdDR::Report()
+{
   // construct report
-  string stemp = "Non-identical particles Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerators:\t%E\n",fNumOutP->GetEntries()+fNumOutN->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominators:\t%E\n",fDenOutP->GetEntries()+fDenOutN->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  TString report = "Non-identical particles Correlation Function Report:\n";
+  report += TString::Format("Number of entries in numerators:\t%E\n", fNumOutP->GetEntries() + fNumOutN->GetEntries());
+  report += TString::Format("Number of entries in denominators:\t%E\n", fDenOutP->GetEntries() + fDenOutN->GetEntries());
+
+  //  report += mCoulombWeight->Report();
+  return AliFemtoString(report);
 }
 //____________________________
-void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair){
-  // add true pair
+void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair)
+{ // add true pair
 
-    if (fPairCut)
-        if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double tKStar = pair->KStar();
   if (pair->KOut()>0.0)
@@ -238,47 +230,48 @@ void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair){
   else
     fNumLongN->Fill(tKStar);
 
-    fkTMonitor->Fill(pair->KT());
-
+  fkTMonitor->Fill(pair->KT());
 }
 //____________________________
-void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair){
-  // add mixed (background) pair
+void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
+{ // add mixed (background) pair
 
-    if (fPairCut)
-        if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double tKStar = pair->KStar();
-  if (pair->KOut()>0.0)
+  if (pair->KOut() > 0.0)
     fDenOutP->Fill(tKStar);
   else
     fDenOutN->Fill(tKStar);
 
-  if (pair->KSide()>0.0)
+  if (pair->KSide() > 0.0)
     fDenSideP->Fill(tKStar);
   else
     fDenSideN->Fill(tKStar);
 
-  if (pair->KLong()>0.0)
+  if (pair->KLong() > 0.0)
     fDenLongP->Fill(tKStar);
   else
     fDenLongN->Fill(tKStar);
 }
 //____________________________
-void AliFemtoCorrFctnNonIdDR::Write(){
-  fNumOutP->Write(); 
-  fNumOutN->Write();  
-  fNumSideP->Write(); 
-  fNumSideN->Write(); 
-  fNumLongP->Write(); 
-  fNumLongN->Write(); 
-  fDenOutP->Write();  
-  fDenOutN->Write();  
-  fDenSideP->Write(); 
-  fDenSideN->Write(); 
-  fDenLongP->Write(); 
+void AliFemtoCorrFctnNonIdDR::Write()
+{
+  fNumOutP->Write();
+  fNumOutN->Write();
+  fNumSideP->Write();
+  fNumSideN->Write();
+  fNumLongP->Write();
+  fNumLongN->Write();
+  fDenOutP->Write();
+  fDenOutN->Write();
+  fDenSideP->Write();
+  fDenSideN->Write();
+  fDenLongP->Write();
   fDenLongN->Write();
-    fkTMonitor->Write();
+  fkTMonitor->Write();
 }
 
 TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
@@ -286,19 +279,19 @@ TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumOutP); 
-  tOutputList->Add(fNumOutN);  
-  tOutputList->Add(fNumSideP); 
-  tOutputList->Add(fNumSideN); 
-  tOutputList->Add(fNumLongP); 
-  tOutputList->Add(fNumLongN); 
-  tOutputList->Add(fDenOutP);  
-  tOutputList->Add(fDenOutN);  
-  tOutputList->Add(fDenSideP); 
-  tOutputList->Add(fDenSideN); 
-  tOutputList->Add(fDenLongP); 
+  tOutputList->Add(fNumOutP);
+  tOutputList->Add(fNumOutN);
+  tOutputList->Add(fNumSideP);
+  tOutputList->Add(fNumSideN);
+  tOutputList->Add(fNumLongP);
+  tOutputList->Add(fNumLongN);
+  tOutputList->Add(fDenOutP);
+  tOutputList->Add(fDenOutN);
+  tOutputList->Add(fDenSideP);
+  tOutputList->Add(fDenSideN);
+  tOutputList->Add(fDenLongP);
   tOutputList->Add(fDenLongN);
-    tOutputList->Add(fkTMonitor);
+  tOutputList->Add(fkTMonitor);
 
   return tOutputList;
 }
