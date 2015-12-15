@@ -1058,14 +1058,16 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     Double_t prob[AliPID::kSPECIES]={0.0};
     // switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
     // TODO: find a solution when this is needed (maybe at fill time in histos, CFcontainer and cut selection)
-    if( Req(kTRDprobEle) || Req(kTRDprobPio) ) fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
-    values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
-    // if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) )
-    //   fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
-    values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
-    values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
-
+    if( Req(kTRDprobEle) || Req(kTRDprobPio) ){
+      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
+      values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
+      values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
+    }
+    if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) ){
+      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
+      values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
+      values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
+    }
     //restore TPC signal if it was changed
     pid->SetTPCsignal(origdEdx);
   }
