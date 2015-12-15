@@ -114,6 +114,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP()
 , fCurrentWeight(1.)
 , fXsec(0.)
 , fTrials(0.)
+, fMCMatchingRadius(0.4)
 , fCurrentTrackContainerSecVtx(0x0)
 , flist_module_eventselection(0x0)
 ,  flist_module_jets(0x0)
@@ -236,6 +237,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
 , fCurrentWeight(1.)
 , fXsec(0.)
 , fTrials(0.)
+, fMCMatchingRadius(0.4)
 , fCurrentTrackContainerSecVtx(0x0)
 , flist_module_jets(0x0)
 , flist_module_trackcounting(0x0)
@@ -306,69 +308,69 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 {
-	AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-	AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-	fPIDResponse = inputHandler->GetPIDResponse();
-	if(!fPIDResponse)
-		AliFatal("This Task needs the PID response attached to the inputHandler");
 
-	// Event selection called automatically
-
-	if(fIsMC)
-		fMCparticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
-	//AliAnalysisTaskEmcalJet::ExecOnce();
+	//Preparation
+	if(!fJetsCont)	AliFatal("FATAL:No jet container available");
 	AliEmcalJet* curjet = NULL;
 	AliEmcalJet* curjetMatched = NULL;
 	Double_t tagvalue[3] = { 0., 0., 0. };
 	Bool_t istagged[3] = { kFALSE, kFALSE, kFALSE };
 	Int_t flavourtag = 0;
-	fTrackCountingTagger->SetEvent(InputEvent());
-
-	if(!fJetsCont) {
-		AliError("Missing jet container!");
-		return kFALSE;
+	if(!fPIDResponse)
+	{
+		AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+		AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+		fPIDResponse = inputHandler->GetPIDResponse();
+		if(!fPIDResponse) AliInfo("This Task needs the PID response attached to the inputHandler");
 	}
-
-	if(fDoRandomCones) {
+	if(fIsMC)
+		fMCparticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+	fTrackCountingTagger->SetEvent(InputEvent());
+	//Fill background fluctuations plot for unfolding
+	if(fDoRandomCones)
+	{
 		Double_t randomConePt = GetDeltaPtRandomCone();
 		fhist_Jet_Background_Fluctuation->Fill(randomConePt,fCurrentWeight);
 	}
-
+	//Fill UE momentum density obtained from RhoSparse task
 	fhist_Rho->Fill(fJetsCont->GetRhoVal());
-
+	//Do  jet matching with default parameters and DeltaR method
 	if(fIsMC){
-		//Do matching
 		this->fMatching = kGeometrical;
 		this->fMatchingPar1 = 0.25;
 		this->fMatchingPar2 = 0.25;
 		this->fMinJetMCPt = 1.;
 		this->DoJetMatching();
 	}
-	// Loop over all available jets
+	// Loop over all available  reconstructed jets
 	for(Int_t ijet = 0; ijet < fJetsCont->GetNJets(); ++ijet) {
 		for(int j=0;j<3;++j){
 			tagvalue[j] =0.;
 			istagged[j]=kFALSE;
 		}
-		curjet = NULL;
-		curjetMatched = NULL;
+		curjet = 0x0;
+		curjetMatched = 0x0;
 		flavourtag = 0;
 		fCurrentNProngs = 0;
 		curjet = fJetsCont->GetJet(ijet);
+		//Decide if jet is accepted for the analysis
 		if(!IsJetSelected(curjet))continue;
 		Double_t jetPt = 0.;
+		//Calculate UE corrected momentum, if requested
 		fUseCorrectedJetPt ? jetPt = GetPtCorrected(curjet) : jetPt = curjet->Pt();
 		if(fIsMC) {
 			AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 			jets2->ResetCurrentID();
 			AliEmcalJet* jet2 = 0;
+			//Iterate over MC jets: Necessary to extract MC truth for unfolding
 			while ((jet2 = jets2->GetNextJet())){
 				fhist_jet_pt_mc->Fill( jet2->Pt() - fJetsContMC->GetRhoVal() * jet2->Area(),fCurrentWeight);
 			}
-
+			// Set matched MCjet
 			curjetMatched = curjet->MatchedJet();
 			if(curjetMatched) {
 				fhist_Jets->Fill("Matched", jetPt,fCurrentWeight);
+				//Apply jet flavour tag via the meson or parton method
 				AddTagJet(curjetMatched);
 				if(curjetMatched->TestFlavourTag(kLFgJet))
 					flavourtag = 1;
@@ -376,6 +378,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 					flavourtag = 2;
 				else if(curjetMatched->TestFlavourTag(kCharmJet))
 					flavourtag = 3;
+				//Fill MC histograms for QA
 				Double_t ptm = curjetMatched->Pt();
 				Double_t ptmcorr = ptm - fJetsContMC->GetRhoVal() * curjetMatched->Area();
 				Double_t ptr = curjet->Pt();
@@ -388,94 +391,42 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 				}
 			}
 		}
-
-		// Standard track counting algorithm
+		// Fill rec. jet plots for QA
 		fhist_Jet_Pt->Fill(jetPt,fCurrentWeight);
 		fhist_Jet_Eta_Phi->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 		fhist_Jet_Nconst_Pt->Fill(jetPt, curjet->GetNumberOfTracks(),fCurrentWeight);
 		Double_t n3value = -9999.;
 		Bool_t isFromConversion = kFALSE;
+		//Run tagging (default first then QTY classes)
 		if(fTrackCountingTagger->GetJetDiscriminator(curjet, tagvalue, istagged)) {
-			//Added for track composition studies
-			FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,0); //for inclusive
-			if(fIsMC && flavourtag >0 )FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,0	); // for flavoured	//Added for track composition studies
-			//Added for correlation analysis
+			if(fIsMC)FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,0	);
+			else  	 FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,0);
 
-			//Added for correlation analysis
-
-			if(istagged[0]) {
-				if(fUseConversions){isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);}
-				fhist_Jets->Fill("TaggingN1", jetPt, fCurrentWeight);
-				fhist_TC_sIP_Pt[0][0][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-				fhist_TC_zIP_Pt[0][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
-				fhist_TC_sIP_zIP[0][0][0]->Fill(tagvalue[0], fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-				fhist_TC_Eta_Phi[0][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-				if(fUseConversions&&isFromConversion) {
-					fhist_TC_sIP_Pt_Conversions[0][0][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-					fhist_TC_Eta_Phi_Conversions[0][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-				}
-				if(fIsMC)
-					if(flavourtag > 0) {
-						fhist_TC_sIP_Pt[0][flavourtag][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-						fhist_TC_Eta_Phi[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-						fhist_TC_zIP_Pt[0][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[0][flavourtag][0]->Fill(tagvalue[0],fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-						if(fUseConversions&&isFromConversion) {
-							fhist_TC_sIP_Pt_Conversions[0][flavourtag][0]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-							fhist_TC_Eta_Phi_Conversions[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-						}
+			for(int i_t = 0; i_t <2 ; ++i_t){
+				if(istagged[i_t]) {
+					if(fUseConversions){isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(i_t), this->fIsMC);}
+					fhist_Jets->Fill(Form("TaggingN%i",i_t+1), jetPt, fCurrentWeight);
+					fhist_TC_sIP_Pt[i_t][0][0]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+					fhist_TC_zIP_Pt[i_t][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
+					fhist_TC_sIP_zIP[i_t][0][0]->Fill(tagvalue[i_t], fTrackCountingTagger->GetCurrentTrackDCAz(i_t),fCurrentWeight);
+					fhist_TC_Eta_Phi[i_t][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+					if(fUseConversions&&isFromConversion) {
+						fhist_TC_sIP_Pt_Conversions[i_t][0][0]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+						fhist_TC_Eta_Phi_Conversions[i_t][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
 					}
-				isFromConversion = kFALSE;
-			}
-			if(istagged[1]) {
-				if(fUseConversions){isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(1), this->fIsMC);}
-				fhist_Jets->Fill("TaggingN2", jetPt, fCurrentWeight);
-				fhist_TC_sIP_Pt[1][0][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-				fhist_TC_Eta_Phi[1][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-				fhist_TC_zIP_Pt[1][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1), jetPt,fCurrentWeight);
-				fhist_TC_sIP_zIP[1][0][0]->Fill(tagvalue[1], fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-
-				if(fUseConversions&&isFromConversion) {
-					fhist_TC_sIP_Pt_Conversions[1][0][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-					fhist_TC_Eta_Phi_Conversions[1][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-				}
-				if(fIsMC)
-					if(flavourtag > 0) {
-						fhist_TC_Eta_Phi[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-						fhist_TC_sIP_Pt[1][flavourtag][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-						fhist_TC_zIP_Pt[1][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[1][flavourtag][0]->Fill(tagvalue[1],fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-						if(fUseConversions&&isFromConversion) {
-							fhist_TC_sIP_Pt_Conversions[1][flavourtag][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-							fhist_TC_Eta_Phi_Conversions[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+					if(fIsMC)
+						if(flavourtag > 0) {
+							fhist_TC_sIP_Pt[i_t][flavourtag][0]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+							fhist_TC_Eta_Phi[i_t][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+							fhist_TC_zIP_Pt[i_t][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(i_t), jetPt,fCurrentWeight);
+							fhist_TC_sIP_zIP[i_t][flavourtag][0]->Fill(tagvalue[i_t],fTrackCountingTagger->GetCurrentTrackDCAz(i_t),fCurrentWeight);
+							if(fUseConversions&&isFromConversion) {
+								fhist_TC_sIP_Pt_Conversions[i_t][flavourtag][0]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+								fhist_TC_Eta_Phi_Conversions[i_t][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+							}
 						}
-					}
-				isFromConversion = kFALSE;
-			}
-			if(istagged[2]) {
-				if(fUseConversions){isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(2), this->fIsMC);}
-				n3value = tagvalue[2];
-				fhist_Jets->Fill("TaggingN3", jetPt, 1.);
-				fhist_TC_sIP_Pt[2][0][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-				fhist_TC_Eta_Phi[2][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-				fhist_TC_zIP_Pt[2][0][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
-				fhist_TC_sIP_zIP[2][0][0]->Fill(tagvalue[2], fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-				if(fUseConversions&&isFromConversion) {
-					fhist_TC_sIP_Pt_Conversions[2][0][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-					fhist_TC_Eta_Phi_Conversions[2][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+					isFromConversion = kFALSE;
 				}
-				if(fIsMC)
-					if(flavourtag > 0) {
-						fhist_TC_sIP_Pt[2][flavourtag][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-						fhist_TC_zIP_Pt[2][flavourtag][0]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
-						fhist_TC_sIP_zIP[2][flavourtag][0]->Fill(tagvalue[2],fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-						fhist_TC_Eta_Phi[2][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-						if(fUseConversions &&isFromConversion) {
-							fhist_TC_sIP_Pt_Conversions[2][flavourtag][0]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-							fhist_TC_Eta_Phi_Conversions[2][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-						}
-					}
-				isFromConversion = kFALSE;
 			}
 		}
 
@@ -493,102 +444,44 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 			isFromConversion = kFALSE;
 
 			if(fTrackCountingTagger->GetJetDiscriminatorQualityClass(i, curjet, tagvalue, istagged)) {
-
-				//Added for track composition studies
-
-				FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,i); //for inclusive
-				if(fIsMC && flavourtag >0 )FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,i); // for flavoured
-				//Added for track composition studies
-				if(istagged[0]) {
-					if(fUseConversions){isFromConversion =
-							this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);
-					if(isFromConversion) {
-						fhist_TC_sIP_Pt_Conversions[0][0][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-						fhist_TC_Eta_Phi_Conversions[0][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					}}
-					fhist_TC_sIP_Pt[0][0][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-					fhist_TC_zIP_Pt[0][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0), jetPt,fCurrentWeight);
-					fhist_TC_sIP_zIP[0][0][i]->Fill(tagvalue[0], fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-					fhist_TC_Eta_Phi[0][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					if(fIsMC)
-						if(flavourtag > 0) {
-							fhist_TC_sIP_Pt[0][flavourtag][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-							fhist_TC_zIP_Pt[0][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(0),
-									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[0][flavourtag][i]->Fill(tagvalue[0],fTrackCountingTagger->GetCurrentTrackDCAz(0),fCurrentWeight);
-							fhist_TC_Eta_Phi[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-							if(fUseConversions && isFromConversion) {
-								fhist_TC_sIP_Pt_Conversions[0][flavourtag][i]->Fill(tagvalue[0], jetPt,fCurrentWeight);
-								fhist_TC_Eta_Phi_Conversions[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+				if(fIsMC)FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,0	);
+				else  	 FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,i);
+				for(int i_t = 0; i_t <2 ; ++i_t){
+					if(istagged[i_t]) {
+						if(fUseConversions){isFromConversion =
+								this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(i_t), this->fIsMC);
+						if(isFromConversion) {
+							fhist_TC_sIP_Pt_Conversions[i_t][0][i]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+							fhist_TC_Eta_Phi_Conversions[i_t][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+						}}
+						fhist_TC_sIP_Pt[i_t][0][i]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+						fhist_TC_zIP_Pt[i_t][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(i_t), jetPt,fCurrentWeight);
+						fhist_TC_sIP_zIP[i_t][0][i]->Fill(tagvalue[i_t], fTrackCountingTagger->GetCurrentTrackDCAz(i_t),fCurrentWeight);
+						fhist_TC_Eta_Phi[i_t][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+						if(fIsMC)
+							if(flavourtag > 0) {
+								fhist_TC_sIP_Pt[i_t][flavourtag][i]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+								fhist_TC_zIP_Pt[i_t][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(i_t),
+										jetPt,fCurrentWeight);
+								fhist_TC_sIP_zIP[i_t][flavourtag][i]->Fill(tagvalue[i_t],fTrackCountingTagger->GetCurrentTrackDCAz(i_t),fCurrentWeight);
+								fhist_TC_Eta_Phi[i_t][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+								if(fUseConversions && isFromConversion) {
+									fhist_TC_sIP_Pt_Conversions[i_t][flavourtag][i]->Fill(tagvalue[i_t], jetPt,fCurrentWeight);
+									fhist_TC_Eta_Phi_Conversions[i_t][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
+								}
 							}
-						}
-					isFromConversion = kFALSE;
-				}
-				if(istagged[1]) {
-					if(fUseConversions){isFromConversion =
-							this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(1), this->fIsMC);
-					if(isFromConversion) {
-						fhist_TC_sIP_Pt_Conversions[1][0][0]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-						fhist_TC_Eta_Phi_Conversions[1][0][0]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					}}
-					fhist_TC_sIP_Pt[1][0][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-					fhist_TC_zIP_Pt[1][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1), jetPt,fCurrentWeight);
-					fhist_TC_sIP_zIP[1][0][i]->Fill(tagvalue[1], fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-					fhist_TC_Eta_Phi[1][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					if(fIsMC)
-						if(flavourtag > 0) {
-							fhist_TC_sIP_Pt[1][flavourtag][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-							fhist_TC_zIP_Pt[1][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(1),
-									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[1][flavourtag][i]->Fill(tagvalue[1],fTrackCountingTagger->GetCurrentTrackDCAz(1),fCurrentWeight);
-							fhist_TC_Eta_Phi[1][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-							if(fUseConversions&& isFromConversion) {
-								fhist_TC_sIP_Pt_Conversions[1][flavourtag][i]->Fill(tagvalue[1], jetPt,fCurrentWeight);
-								fhist_TC_Eta_Phi_Conversions[1][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-							}
-						}
-					isFromConversion = kFALSE;
-				}
-				if(istagged[2]) {
-
-
-					if(fUseConversions){isFromConversion =
-							this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(2), this->fIsMC);
-					if(isFromConversion) {
-						fhist_TC_sIP_Pt_Conversions[2][0][i]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-						fhist_TC_Eta_Phi_Conversions[2][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					}}
-					fhist_TC_sIP_Pt[2][0][i]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-					fhist_TC_zIP_Pt[2][0][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2), jetPt,fCurrentWeight);
-					fhist_TC_sIP_zIP[2][0][i]->Fill(tagvalue[2], fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-					fhist_TC_Eta_Phi[2][0][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-					if(fIsMC)
-						if(flavourtag > 0) {
-							fhist_TC_Eta_Phi[2][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-							fhist_TC_zIP_Pt[2][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2),
-									jetPt,fCurrentWeight);
-							fhist_TC_zIP_Pt[2][flavourtag][i]->Fill(fTrackCountingTagger->GetCurrentTrackDCAz(2),
-									jetPt,fCurrentWeight);
-							fhist_TC_sIP_zIP[2][flavourtag][i]->Fill(tagvalue[2],fTrackCountingTagger->GetCurrentTrackDCAz(2),fCurrentWeight);
-							if(fUseConversions&& isFromConversion) {
-								fhist_TC_sIP_Pt_Conversions[2][flavourtag][i]->Fill(tagvalue[2], jetPt,fCurrentWeight);
-								fhist_TC_Eta_Phi_Conversions[2][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi(),fCurrentWeight);
-							}
-						}
-					isFromConversion = kFALSE;
+						isFromConversion = kFALSE;
+					}
 				}
 			}
 		}
 
 		// Constituent QA
-		if(fIsTrackQAConstituent) {
-			RunQATracksJet(curjet);
-		}
+		if(fIsTrackQAConstituent) RunQATracksJet(curjet);
 	}
 	// Run Event Track QA
-	if(fIsTrackQA) {
-		RunQATracksEvent();
-	}
+	if(fIsTrackQA) RunQATracksEvent();
+
 
 	return kTRUE;
 }
@@ -636,57 +529,26 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::RunQATracksJet(const AliEmcalJet* j
 			}
 			fTaggingHFClass->GetSignedRPhiImpactParameter(InputEvent(), track, jet, sip, dv, covv);
 		}
-
 		fhist_QualityClasses->Fill("all", 1.);
-		if(IsQuality(track, kQtyVeryGood)) {
-			fhist_QualityClasses->Fill("kQtyVeryGood", 1.);
-			if(fIsMC) {
-				if(isPrimary) {
-					fhist_QualityClasses_sIP[0][0]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[0][0]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				} else {
-					fhist_QualityClasses_sIP[0][1]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[0][1]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				}
-			}
-		}
-		if(IsQuality(track, kQtyGood)) {
-			fhist_QualityClasses->Fill("kQtyGood", 1.);
-			if(fIsMC) {
-				if(isPrimary) {
-					fhist_QualityClasses_sIP[1][0]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[1][0]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				} else {
-					fhist_QualityClasses_sIP[1][1]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[1][1]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				}
-			}
-		}
-		if(IsQuality(track, kQtyMedium)) {
-			fhist_QualityClasses->Fill("kQtyMedium", 1.);
-			if(fIsMC) {
-				if(isPrimary) {
-					fhist_QualityClasses_sIP[2][0]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[2][0]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				} else {
-					fhist_QualityClasses_sIP[2][1]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[2][1]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				}
-			}
-		}
-		if(IsQuality(track, kQtyBad)) {
-			fhist_QualityClasses->Fill("kQtyBad", 1.);
-			if(fIsMC) {
-				if(isPrimary) {
-					fhist_QualityClasses_sIP[3][0]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[3][0]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
-				} else {
-					fhist_QualityClasses_sIP[3][1]->Fill(sip, track->Pt(),fCurrentWeight);
-					fhist_QualityClasses_Eta_Phi[3][1]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
+		//	{ kQtyStandard, kQtyVeryGood, kQtyGood, kQtyMedium, kQtyBad };
+		EQualityClass aqty[4] = {kQtyVeryGood,kQtyGood,kQtyMedium,kQtyBad};
+		const char *  aqty_str[4] = {"kQtyVeryGood","kQtyGood","kQtyMedium","kQtyBad"};
+		for (int i_q = 0 ; i_q<4;++i_q){
+			if(IsQuality(track, aqty[i_q])) {
+				fhist_QualityClasses->Fill(aqty_str[i_q], 1.);
+				if(fIsMC) {
+					if(isPrimary) {
+						fhist_QualityClasses_sIP[i_q][0]->Fill(sip, track->Pt(),fCurrentWeight);
+						fhist_QualityClasses_Eta_Phi[i_q][0]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
+					} else {
+						fhist_QualityClasses_sIP[i_q][1]->Fill(sip, track->Pt(),fCurrentWeight);
+						fhist_QualityClasses_Eta_Phi[i_q][1]->Fill(track->Eta(), track->Phi(),fCurrentWeight);
+					}
 				}
 			}
 		}
 	}
+
 	return kTRUE;
 }
 
@@ -784,50 +646,30 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedLegacy(AliAODEvent* 
 	UInt_t res = 0;
 	if(aev)
 		res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
-
-	if((res & AliVEvent::kAny) == 0) {
-		return kFALSE;
-	}
+	if((res & AliVEvent::kAny) == 0) return kFALSE;
 	fhist_Events->Fill("AliVEvent::kAny", fCurrentWeight);
-	if((res & fOffTrigger) == 0) {
-		return kFALSE;
-	}
+	if((res & fOffTrigger) == 0) 	return kFALSE;
 	fhist_Events->Fill("AliVEvent::kMB", fCurrentWeight);
-
 	if(!aev->GetPrimaryVertex() || aev->GetPrimaryVertex()->GetNContributors() < 1)
 		fhist_Events->Fill("NoVertex", fCurrentWeight);
-
-	if(aev->IsPileupFromSPD(5, 0.8, 3.0, 2.0, 5.0)) {
-		return kFALSE;
-	}
-
+	if(aev->IsPileupFromSPD(5, 0.8, 3.0, 2.0, 5.0)) return kFALSE;
 	fhist_Events->Fill("!Pileup SPD", fCurrentWeight);
-	if(fabs(aev->GetPrimaryVertex()->GetZ()) > 10.) {
-		return kFALSE;
-	}
+	if(fabs(aev->GetPrimaryVertex()->GetZ()) > 10.) return kFALSE;
 	fhist_Events->Fill("Vertex  z < 10 cm", fCurrentWeight);
 	const AliVVertex* trkVtx = dynamic_cast<const AliVVertex*>(aev->GetPrimaryVertex());
 	const AliVVertex* spdVtx = dynamic_cast<const AliVVertex*>(aev->GetPrimaryVertexSPD());
 	TString vtxTtl = trkVtx->GetTitle();
-	if(!vtxTtl.Contains("VertexerTracks")) {
-		return kFALSE;
-	}
+	if(!vtxTtl.Contains("VertexerTracks")) 	return kFALSE;
 	fhist_Events->Fill("No VertexerTracks", fCurrentWeight);
 	Double_t cov[6] = { 0 };
 	spdVtx->GetCovarianceMatrix(cov);
 	Double_t zRes = TMath::Sqrt(cov[5]);
-	if(spdVtx->IsFromVertexerZ() && (zRes > 0.25)) {
-		return kFALSE;
-	}
-	if((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)) {
-		return kFALSE;
-	}
+	if(spdVtx->IsFromVertexerZ() && (zRes > 0.25)) return kFALSE;
+	if((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)) return kFALSE;
 	fhist_Events->Fill("Vertex Z Resoulution", fCurrentWeight);
-	if(trkVtx->GetNContributors() < 2)
-		return kFALSE;
+	if(trkVtx->GetNContributors() < 2)	return kFALSE;
 	fhist_Events->Fill(">1 contributors", fCurrentWeight);
-	if(spdVtx->GetNContributors() < 1)
-		return kFALSE;
+	if(spdVtx->GetNContributors() < 1) return kFALSE;
 	fhist_Events->Fill(">0 contributors SPD", fCurrentWeight);
 	return kTRUE;
 }
@@ -838,12 +680,9 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedLegacy(AliAODEvent* 
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedpA(AliAODEvent* aev)
 {
-	if(fUtils->IsFirstEventInChunk(aev))
-		return kFALSE;
-	if(!fUtils->IsVertexSelected2013pA(aev))
-		return kFALSE;
-	if(!fUtils->IsPileUpEvent(aev))
-		return kFALSE;
+	if(fUtils->IsFirstEventInChunk(aev))return kFALSE;
+	if(!fUtils->IsVertexSelected2013pA(aev))return kFALSE;
+	if(!fUtils->IsPileUpEvent(aev))	return kFALSE;
 	return kTRUE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -853,10 +692,8 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedpA(AliAODEvent* aev)
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedpp(AliAODEvent* aev)
 {
-	if(!fUtils->IsVertexSelected2013pA(aev))
-		return kFALSE;
-	if(!fUtils->IsPileUpEvent(aev))
-		return kFALSE;
+	if(!fUtils->IsVertexSelected2013pA(aev))return kFALSE;
+	if(!fUtils->IsPileUpEvent(aev))return kFALSE;
 	return kTRUE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -866,10 +703,8 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedpp(AliAODEvent* aev)
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedHF(AliAODEvent* aev)
 {
-	if(fJetCutsHF->IsEventSelected(aev))
-		return kTRUE;
-	else
-		return kFALSE;
+	if(fJetCutsHF->IsEventSelected(aev))return kTRUE;
+	else return kFALSE;
 	return kTRUE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -879,10 +714,8 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedHF(AliAODEvent* aev)
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsJetSelectedHF(const AliEmcalJet* jet)
 {
-	if(fJetCutsHF->IsJetSelected(jet))
-		return kTRUE;
-	else
-		return kFALSE;
+	if(fJetCutsHF->IsJetSelected(jet)) return kTRUE;
+	else return kFALSE;
 }
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief AliAnalysisTaskEmcalJetBJetTaggingIP::IsJetSelectedLegacy
@@ -893,22 +726,17 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsJetSelectedLegacy(const AliEmcalJ
 {
 	Double_t jetPt = 0.;
 	fUseCorrectedJetPt ? jetPt = GetPtCorrected(jet) : jetPt = jet->Pt();
-	if(!(jetPt > 0))
-		return kFALSE;
+	if(!(jetPt > 0))return kFALSE;
 	fhist_Jets->Fill("In", jetPt, fCurrentWeight);
-	if(!jet)
-		return kFALSE;
+	if(!jet)return kFALSE;
 	fhist_Jets->Fill("Pointer", jetPt, fCurrentWeight);
 	Double_t jetradius = fJetsCont->GetJetRadius();
 	jetradius *= jetradius;
-	if(jetPt < 1.0)
-		return kFALSE;
+	if(jetPt < 1.0)return kFALSE;
 	fhist_Jets->Fill("Pt", jetPt, fCurrentWeight);
-	if(fabs(jet->Eta()) > 0.5)
-		return kFALSE;
+	if(fabs(jet->Eta()) > 0.5)return kFALSE;
 	fhist_Jets->Fill("Eta", jetPt, fCurrentWeight);
-	if(jet->Area() < 0.6 * jetradius * TMath::Pi())
-		return kFALSE;
+	if(jet->Area() < 0.6 * jetradius * TMath::Pi())return kFALSE;
 	fhist_Jets->Fill("Area", jetPt, fCurrentWeight);
 	return kTRUE;
 }
@@ -944,14 +772,13 @@ AliRDHFJetsCuts* AliAnalysisTaskEmcalJetBJetTaggingIP::GetJetCutsHF()
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::AddTagJet(AliEmcalJet* jet)
 {
-	if(!jet)
-		return kFALSE;
+	if(!jet)return kFALSE;
 	Int_t partonPDG = 0;
 	Double_t jetPt = 0.;
 	jetPt = jet->Pt();
 	if(fUseMCTagger == 0) {
 		AliAODMCParticle* parton = NULL;
-		parton = fTaggingHFClass->IsMCJetParton(fMCparticles, jet, 0.7);
+		parton = fTaggingHFClass->IsMCJetParton(fMCparticles, jet, fMCMatchingRadius);
 		if(!parton)
 			return kFALSE;
 		partonPDG = abs(parton->PdgCode());
@@ -964,7 +791,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::AddTagJet(AliEmcalJet* jet)
 		fhist_parton_genjet_Phi->Fill(TVector2::Phi_mpi_pi(parton->Phi() - jet->Phi()),fCurrentWeight);
 	} else if(fUseMCTagger == 1) {
 		AliAODMCParticle* meson = NULL;
-		meson = fTaggingHFClass->IsMCJetMeson(fMCparticles, jet, 0.7);
+		meson = fTaggingHFClass->IsMCJetMeson(fMCparticles, jet, fMCMatchingRadius);
 		if(meson) {
 			Int_t mesonPDG = abs(meson->PdgCode());
 			if(mesonPDG >= 500 && mesonPDG < 600)
@@ -1019,35 +846,24 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::AddTagJet(AliEmcalJet* jet)
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsQuality(const AliAODTrack* track, EQualityClass qclass)
 {
-	if(!track)
-		return kFALSE;
-	if(track->Pt() < 1.)
-		return kFALSE;
+	if(!track)return kFALSE;
+	if(track->Pt() < 1.)return kFALSE;
 	ULong_t status = track->GetStatus();
 
-	if(!(status & AliAODTrack::kTPCrefit))
-		return kFALSE;
-	if(!(status & AliAODTrack::kITSrefit))
-		return kFALSE;
-
+	if(!(status & AliAODTrack::kTPCrefit))return kFALSE;
+	if(!(status & AliAODTrack::kITSrefit))return kFALSE;
 	int nSPDHits = 0;
-	if(track->HasPointOnITSLayer(0))
-		nSPDHits++;
-	if(track->HasPointOnITSLayer(1))
-		nSPDHits++;
+	if(track->HasPointOnITSLayer(0))nSPDHits++;
+	if(track->HasPointOnITSLayer(1))nSPDHits++;
 	int nITSHits = nSPDHits;
 	for(int j = 2; j < 6; ++j)
-		if(track->HasPointOnITSLayer(j))
-			nITSHits++;
+		if(track->HasPointOnITSLayer(j))nITSHits++;
 	int nTPCcls = 0;
 	nTPCcls = ((AliAODTrack*)track)->GetTPCNcls();
-	Float_t cRatioTPC = track->GetTPCNclsF() > 0. ?
-			static_cast<Float_t>(track->GetTPCNcls()) / static_cast<Float_t>(track->GetTPCNclsF()) :
-			1.;
+	Float_t cRatioTPC = track->GetTPCNclsF() > 0. ?	static_cast<Float_t>(track->GetTPCNcls()) / static_cast<Float_t>(track->GetTPCNclsF()) :1.;
 	Bool_t isV0Daughter = kFALSE;
 	Double_t v0Radius = 0.;
 	isV0Daughter = IsV0DaughterRadius(track, v0Radius);
-
 	switch(qclass) {
 	case kQtyVeryGood:
 		if(nSPDHits < 2)
@@ -1105,7 +921,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsQuality(const AliAODTrack* track,
 ///
 Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsV0DaughterRadius(const AliAODTrack* track, Double_t& Radius)
 {
-	AliAODv0* v0aod = NULL;
+	AliAODv0* v0aod = 0x0;
 	int posid = -1;
 	int negid = -1;
 	int trackid = -1;
@@ -1165,11 +981,9 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		AliError("No container!");
 		return;
 	}
-
 	const char* tc_track[3] = { "n_1", "n_2", "n_3" };
 	const char* tc_flavour[4] = { "inclusive", "lfg", "beauty", "charm" };
 	const char* tc_classes[5] = { "default", "verygood", "good", "medium", "bad" };
-
 	flist_module_eventselection = new TList();
 	flist_module_eventselection->SetName("module_EventSelection");
 	flist_module_eventselection->SetOwner(kTRUE);
@@ -1600,9 +1414,6 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 	fTrackCountingTagger->SetAnalysisTypeAOD(kTRUE);
 
 
-	//Containers composition study
-
-	//Containers correlation study
 	OpenFile(2);
 	fTCTree = new TTree("fTCTree","Tree for sIP track correlation  and background composition study");
 
@@ -1627,8 +1438,8 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		fTCTree->Branch("Pt2MothersMotherMC",&fCorrVariableMC_tPt2MothersMotherMC,"Pt3MothersMotherMC/F");
 		fTCTree->Branch("Pt3MothersMotherMC",&fCorrVariableMC_tPt3MothersMotherMC,"Pt3MothersMotherMC/F");
 		fTCTree->Branch("Pdg1",&fCorrVariableMC_Pdg1,"Pdg1/I");
-		fTCTree->Branch("Pdg2",&fCorrVariableMC_Pdg1,"Pdg2/I");
-		fTCTree->Branch("Pdg3",&fCorrVariableMC_Pdg1,"Pdg3/I");
+		fTCTree->Branch("Pdg2",&fCorrVariableMC_Pdg2,"Pdg2/I");
+		fTCTree->Branch("Pdg3",&fCorrVariableMC_Pdg3,"Pdg3/I");
 		fTCTree->Branch("PdgMother1",&fCorrVariableMC_PdgMother1,"PdgMother1/I");
 		fTCTree->Branch("PdgMother2",&fCorrVariableMC_PdgMother2,"PdgMother2/I");
 		fTCTree->Branch("PdgMother3",&fCorrVariableMC_PdgMother3,"PdgMother3/I");
@@ -1637,18 +1448,6 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		fTCTree->Branch("PdgMothersMotherMC3",&fCorrVariableMC_PdgMothersMother3,"PdgMothersMotherMC3/I");
 	}
 
-	//	const Int_t ndimsCorr = 9;
-	//	Int_t    binsEV[ndimsCorr] = {500, 1000,1000,1000,4,5,500,500,500};
-	//	Double_t xminEV[ndimsCorr] = {0. , -0.4,-0.4,-0.4,0,0,0,0,0};
-	//	Double_t xmaxEV[ndimsCorr] = { 250. ,0.4, 0.4,0.4,4,5,250,250,250};
-	//
-	//
-	//	TString bintitles[ndimsCorr] = {"jet pT","sIP n=1","sIP n=2","sIP n=3","flavour_id","qtyclass id","sIP track pT n=1","sIP track pT n=2","sIP track pT n=3"};
-	//	fCorrelationStudy= new THnSparseD("fCorrelationStudy", "fCorrelationStudy", ndimsCorr, binsEV, xminEV, xmaxEV);
-	//	for(int i=0; i<9;++i){
-	//		fCorrelationStudy->GetAxis(i)->SetTitle(bintitles[i].Data());
-	//	}
-	//fOutput->Add(fCorrelationStudy);
 
 	TH1::AddDirectory(oldStatus);
 	PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -1698,15 +1497,12 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::AddHistTH2(TH2** hist,
 		Bool_t setSumw2,
 		TList* container)
 {
-	if(!container)
-		return;
-
+	if(!container) return;
 	*hist = new TH2D(histname, Form("%s;%s;%s", title, titlex, titley), nBinsX, minX, maxX, nBinsY, minY, maxY);
-	if(!(*hist))
-		return;
-	if(setSumw2)
-		(*hist)->Sumw2();
-	if(container->FindObject(histname)) {
+	if(!(*hist))return;
+	if(setSumw2)(*hist)->Sumw2();
+	if(container->FindObject(histname))
+	{
 		AliError(Form("Object with name  %s already exists in %s...returning!", histname, container->GetName()));
 		return;
 	}
@@ -1777,27 +1573,21 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::FindVertexNProngSimple(const AliEmc
 	if(nprongs < 1)
 		return kFALSE;
 	// Construct Kalmann vertex
-
 	AliKFParticle::SetField(InputEvent()->GetMagneticField());
 	AliKFVertex vertexKF;
-
 	for(Int_t i = 0; i < nprongs; i++) {
 		AliVTrack* esdTrack = (AliVTrack*)lTrackInJet->At(i);
 		AliKFParticle daughterKF(*esdTrack, 211);
 		vertexKF.AddDaughter(daughterKF);
 	}
-	// Printf("nCont %i",vertexKF.GetNContributors());
 	AliESDVertex* vertexESD = new AliESDVertex(
 			vertexKF.Parameters(), vertexKF.CovarianceMatrix(), vertexKF.GetChi2(), vertexKF.GetNContributors());
-
 	Double_t pos[3], cov[6], chi2perNDF;
 	vertexESD->GetXYZ(pos);       // position
 	vertexESD->GetCovMatrix(cov); // covariance matrix
 	chi2perNDF = vertexESD->GetChi2toNDF();
 	Double_t dispersion = vertexESD->GetDispersion();
-
 	AliAODVertex* vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, nprongs);
-
 	for(Int_t i = 0; i < nprongs; i++) {
 		vertexAOD->AddDaughter((AliAODTrack*)lTrackInJet->At(i));
 	}
@@ -1805,9 +1595,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::FindVertexNProngSimple(const AliEmc
 	vertexESD = NULL;
 	vtx = vertexAOD;
 	nProng = nprongs;
-
 	delete lTrackInJet;
-
 	return kTRUE;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -2194,9 +1982,6 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::DoJetMatching()
 		// Matched jet found
 		jet1->SetMatchedToClosest(fMatching);
 		jet2->SetMatchedToClosest(fMatching);
-		//Printf("Found matching: jet1 pt = %f, eta = %f, phi = %f, jet2 pt = %f, eta = %f, phi = %f",
-		//		jet1->Pt(), jet1->Eta(), jet1->Phi(),
-		//			jet2->Pt(), jet2->Eta(), jet2->Phi());
 	}
 
 	return kTRUE;
@@ -2272,12 +2057,9 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::GetGeometricalMatchingLevel(AliEmcalJ
 {
 	Double_t deta = jet2->Eta() - jet1->Eta();
 	Double_t dphi = jet2->Phi() - jet1->Phi();
+	dphi = TVector2::Phi_mpi_pi(dphi);
 	d = TMath::Sqrt(deta * deta + dphi * dphi);
 }
-
-
-
-
 //________________________________________________________________________
 //_________________________sIP correlation study________________________
 //________________________________________________________________________
@@ -2307,6 +2089,10 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  
 		fCorrVariableMC_tPt1MotherMC =-99.;
 		fCorrVariableMC_tPt2MotherMC =-99.;
 		fCorrVariableMC_tPt3MotherMC =-99.;
+		fCorrVariableMC_PdgMothersMother1 =-99.;
+		fCorrVariableMC_PdgMothersMother2 =-99.;
+		fCorrVariableMC_PdgMothersMother3 =-99.;
+
 	}
 	fCorrVariable_flv = flavour;
 	fCorrVariable_qty= qtyclass;
@@ -2327,11 +2113,12 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  
 		if(track[0]){
 			fCorrVariable_tPt1 = track[0]->Pt();
 			if(fIsMC){
-				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[0]->GetLabel())));
+				if(track[0]->GetLabel()>-1)
+					MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(track[0]->GetLabel()));
 				if(MCPart){
 					fCorrVariableMC_Pdg1 =MCPart->PdgCode();
 					fCorrVariableMC_tPt1MC =MCPart->Pt();
-					MCPartMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(MCPart->GetMother())));
+					MCPartMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(MCPart->GetMother()));
 					if(MCPartMother){
 						fCorrVariableMC_PdgMother1=MCPartMother->PdgCode();
 						fCorrVariableMC_tPt1MotherMC =MCPartMother->Pt();
@@ -2349,13 +2136,19 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  
 	}
 	MCPartMother =0x0;
 	MCPart =0x0;
+	MCPartMothersMother =0x0;
+
 	if (isTagged[1]) {
 		fCorrVariable_sIP2 = sIP[1];
+
 		track[1]= fTrackCountingTagger->GetCurrentTrack(1);
+
 		if(track[1]){
 			fCorrVariable_tPt2 = track[1]->Pt();
 			if(fIsMC){
-				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[1]->GetLabel())));
+				if(track[1]->GetLabel()>0)
+					MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[1]->GetLabel())));
+
 				if(MCPart){
 					fCorrVariableMC_Pdg2 =MCPart->PdgCode();
 					fCorrVariableMC_tPt2MC =MCPart->Pt();
@@ -2376,13 +2169,15 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  
 	}
 	MCPartMother =0x0;
 	MCPart =0x0;
+	MCPartMothersMother =0x0;
 	if (isTagged[2]) {
 		fCorrVariable_sIP3= sIP[2];
 		track[2]= fTrackCountingTagger->GetCurrentTrack(2);
 		if(track[2]){
 			fCorrVariable_tPt3 = track[2]->Pt();
 			if(fIsMC){
-				MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[2]->GetLabel())));
+				if(track[2]->GetLabel()>0)
+					MCPart = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track[2]->GetLabel())));
 				if(MCPart){
 					fCorrVariableMC_Pdg3 =MCPart->PdgCode();
 					fCorrVariableMC_tPt3MC =MCPart->Pt();
@@ -2404,4 +2199,3 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::FillTCTree(Double_t  sIP[3], Bool_t  
 	fTCTree->Fill();
 	return;
 }
-
