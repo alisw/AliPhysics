@@ -175,7 +175,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Bool_t fEvSel_INELgtZERO                 = kFALSE ;
     Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
     Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
-    Float_t fEvSel_VtxZ                      = 10.0 ;
     Int_t fRunNumber;
     
     //FIXME/CAUTION: non-zero if using tree without that branch
@@ -188,7 +187,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fTree->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
-    fTree->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
     fTree->SetBranchAddress("fnContributors", &fnContributors);
 
@@ -300,6 +298,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
     //Compute events-per-hour performance metric
     Double_t lEventsPerSecond = 0;
+    
+    AliMultVariable *lVtxZLocalPointer = fInput -> GetVariable("fEvSel_VtxZ"); 
 
     for(Long64_t iEv = 0; iEv<fTree->GetEntries(); iEv++) {
 
@@ -322,11 +322,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         fTree->GetEntry(iEv);
         //Perform Event selection
         Bool_t lSaveThisEvent = kTRUE; //let's be optimistic
-
+        
         //Check Selections as they are in the fMultSelectionCuts Object
         if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
-        if( TMath::Abs(fEvSel_VtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
+        if( TMath::Abs( lVtxZLocalPointer->GetValue() ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?
         if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins    ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
@@ -517,6 +517,18 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     //fSelection->PrintInfo();
                     lNrawBoundaries[lB] = fSelection->GetEstimator(iEst)->GetValue();
                 }
+                //Cross-check correct rejection of anything beyond anchor point
+                if( fSelection->GetEstimator(iEst)->GetUseAnchor() && ntot != 0 ){
+                    for( Long_t lB=0; lB<lNDesiredBoundaries-1; lB++) {
+                        if (lNrawBoundaries[lB+1]>fSelection->GetEstimator(iEst)->GetAnchorPoint()){
+                            if(lNrawBoundaries[lB]<fSelection->GetEstimator(iEst)->GetAnchorPoint()){
+                                //This is the threshold, should actually be identical to anchor point please
+                                lNrawBoundaries[lB] = fSelection->GetEstimator(iEst)->GetAnchorPoint();
+                            }
+                        }
+                    }
+                }                
+                
                 cout<<" Done! Saving... "<<endl; 
                 //Should not be the source of excessive memory consumption...
                 //...but can be rearranged if needed!
@@ -527,7 +539,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     
                     //override in case anchored!
                     if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
-                        if ( lMiddleOfBins[ibin-1] > fSelection->GetEstimator(iEst)->GetAnchorPercentile() ){
+                        if ( hCalib[iRun][iEst]->GetBinCenter(ibin) < fSelection->GetEstimator(iEst)->GetAnchorPoint() ){
                             //Override, this is useless!
                             //Alberica's recommendation: outside of user range to be sure!
                             hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);

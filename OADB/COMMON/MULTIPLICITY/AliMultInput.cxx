@@ -65,6 +65,16 @@ void AliMultInput::AddVariable ( AliMultVariable *lVar )
         fVariableList = new TList;
         fNVars = 0;
     }
+    //Protect against double-declaration 
+    if ( fVariableList->FindObject( lVar->GetName() ) ){ 
+      Printf("===========================================================================" );
+      Printf("                          !!!  WARNING !!!                                 " );
+      Printf("Variable named %s already exists, you're doing a double-declaration!",lVar->GetName() );
+      Printf("AddVariable call exiting without doing anything... Please check your logic!");
+      Printf("===========================================================================" );
+      return; 
+    }
+    
     fVariableList->Add(lVar);
     fNVars++;
 }
