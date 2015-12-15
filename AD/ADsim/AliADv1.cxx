@@ -855,7 +855,8 @@ void AliADv1::CreateAD()
   // const Float_t kPosAD3 = 1700.0;
   // ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
   // ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
-  const Float_t kPosADA = 1699.7;
+  // const Float_t kPosADA = 1699.7;  // z-center of assembly (cm) Old
+  const Float_t kPosADA = 1696.67;  // z-center of assembly (cm) New, according to Survey by F. Klumb and E.Calvo 2015 Sept 4th.
   ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.23)); 
   ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.23));
   ad->AddNode(voADsupport,  1, new TGeoTranslation(0., 0., kPosADA));
