@@ -49,11 +49,13 @@ fL1DCALThreshold(),
 fL1SubRegion(0x0),
 fL1DCALFrameMask(0),
 fMedian(),
-fTriggerBitWord(0)
+fTriggerBitWord(0),
+fL1DCALV0()
 {
 	//
   for (int i = 0; i < 4; i++) {fL1Threshold[i] = fL1DCALThreshold[i] = 0;}
   fL1V0[0] = fL1V0[1] = 0;
+  fL1DCALV0[0] = fL1DCALV0[1] = 0;
   fMedian[0] = fMedian[1] = 0;
 }
 
@@ -71,11 +73,14 @@ AliAODCaloTrigger::AliAODCaloTrigger(const char* name, const char* title) : AliV
 	fTriggerBits(0x0),
 	fL1Threshold(),
 	fL1V0(),
-	fL1FrameMask(0)
+	fL1FrameMask(0),
+	fL1DCALV0()
 {
 	//
 	fL1Threshold[0] = fL1Threshold[1] = 0;
 	fL1V0[0] = fL1V0[1] = 0;	
+	fL1DCALV0[0] = fL1DCALV0[1] = 0;
+	fMedian[0] = fMedian[1] = 0;
 }
 
 //_______________
@@ -92,7 +97,8 @@ fL1TimeSum(0x0),
 fTriggerBits(0x0),
 fL1Threshold(),
 fL1V0(),
-fL1FrameMask(0)
+fL1FrameMask(0),
+fL1DCALV0()
 {
 	//
 	src.Copy(*this);
@@ -137,31 +143,30 @@ AliAODCaloTrigger& AliAODCaloTrigger::operator=(const AliAODCaloTrigger& src)
 
 //_______________
 void AliAODCaloTrigger::Copy(TObject &obj) const 
-{	
-	//
-	AliVCaloTrigger::Copy(obj);
-	
-	AliAODCaloTrigger& dest = static_cast<AliAODCaloTrigger&>(obj);
-
-	if (dest.fNEntries) dest.DeAllocate();
-	
-	dest.Allocate(fNEntries);
-	
-	for (Int_t i = 0; i < fNEntries; i++)
-	{
-    Int_t times[10];
-    for (Int_t j = 0; j < 10; j++) times[j] = fL0Times->At(10 * i + j);
+{    
+   AliVCaloTrigger::Copy(obj);
     
-    dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fL1SubRegion[i], fTriggerBits[i]);
-	}	
+   AliAODCaloTrigger& dest = static_cast<AliAODCaloTrigger&>(obj);
+
+   if (dest.fNEntries) dest.DeAllocate();
+    
+   dest.Allocate(fNEntries);
+    
+   for (Int_t i = 0; i < fNEntries; i++) {
+    Int_t times[10];
+    for (Int_t j = 0; j < 10; j++) {
+      times[j] = fL0Times->At(10 * i + j);
+    }
+    dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], 
+             fL1TimeSum[i], fL1SubRegion[i], fTriggerBits[i]);
+  }
 
   for (int i = 0; i < 4; i++) dest.SetL1Threshold(i, fL1Threshold[i]);
   for (int i = 0; i < 4; i++) dest.SetL1Threshold(1, i, fL1DCALThreshold[i]);
   
-	dest.SetL1Threshold(0, fL1Threshold[0]);
-	dest.SetL1Threshold(1, fL1Threshold[1]);
-	dest.SetL1V0(fL1V0);
-	dest.SetL1FrameMask(fL1FrameMask);
+  dest.SetL1V0(fL1V0);
+  dest.SetL1V0(1, fL1DCALV0);
+  dest.SetL1FrameMask(fL1FrameMask);
   dest.SetL1FrameMask(1, fL1DCALFrameMask);
 }
 

@@ -112,7 +112,13 @@ public:
   void       SetT0spread(Float_t *t);
 	
   void       SetCaloTriggerType(const Int_t* in) {for (int i = 0; i < 15; i++) fCaloTriggerType[i] = in[i];}
+  void       SetCaloTriggerType(int i, const Int_t* in) {
+    if (i) {for (int i = 0; i < 19; i++) fCaloTriggerTypeNew[i] = in[i];} 
+    else {for (int i = 0; i < 15; i++) fCaloTriggerType[i] = in[i];}
+  }
+  
   Int_t*     GetCaloTriggerType() {return fCaloTriggerType;}
+  Int_t*     GetCaloTriggerType(int i) {return ((i)?fCaloTriggerTypeNew:fCaloTriggerType);}
 
   void           SetVZEROEqFactors(Float_t factors[64]) {for (Int_t i = 0; i < 64; ++i) fVZEROEqFactors[i] = factors[i];}
   const Float_t* GetVZEROEqFactors() const {return fVZEROEqFactors;}
@@ -141,8 +147,9 @@ private:
   Float_t         fT0spread[kT0spreadSize];     // spread of time distributions on T0A, T0C, (T0A+T0C)/2, (T0A-T0C)/2
   Int_t           fCaloTriggerType[15]; // Calorimeter trigger type
   Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
+  Int_t           fCaloTriggerTypeNew[19]; // Calorimeter trigger type
 	
-  ClassDef(AliESDRun,15)
+  ClassDef(AliESDRun,16)
 };
 
 #endif 

@@ -35,10 +35,13 @@ public:
         Bool_t  Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t subra, Int_t trgbits);
 	
 	void    SetL1Threshold(Int_t i, Int_t thr) {fL1Threshold[i] = thr;}
-        void    SetL1Threshold(Int_t i, Int_t j, Int_t thr) {if (i) fL1DCALThreshold[i] = thr; else fL1Threshold[i] = thr;}
+        void    SetL1Threshold(Int_t i, Int_t j, Int_t thr) {if (i) fL1DCALThreshold[j] = thr; else fL1Threshold[j] = thr;}
   
 	void    SetL1V0(const Int_t* v) {for (int i = 0; i < 2; i++) fL1V0[i] = v[i];}
-  
+        void    SetL1V0(Int_t i, const Int_t* v) {
+          if (i) {for (int j = 0; j < 2; j++) fL1DCALV0[j] = v[j];} else {for (int j = 0; j < 2; j++) fL1V0[j] = v[j];}
+        }
+ 
         void    SetL1FrameMask(Int_t m) {fL1FrameMask = m;}
         void    SetL1FrameMask(Int_t i, Int_t m) {if (i) fL1DCALFrameMask = m; else fL1FrameMask = m;}
   
@@ -64,6 +67,7 @@ public:
 	Int_t   GetL1Threshold(    Int_t  i, Int_t j                ) const {return ((i)?fL1DCALThreshold[j]:fL1Threshold[j]);}
   
 	Int_t   GetL1V0(           Int_t  i                         ) const {return fL1V0[i];}
+        Int_t   GetL1V0(           Int_t  i, Int_t  j               ) const {return ((i)?fL1DCALV0[j]:fL1V0[j]);}
   
         Int_t   GetL1FrameMask(                                     ) const {return fL1FrameMask;}
         Int_t   GetL1FrameMask(    Int_t  i                         ) const {return ((i)?fL1DCALFrameMask:fL1FrameMask);}
@@ -102,8 +106,9 @@ private:
         Int_t    fL1DCALFrameMask;    // Validation flag for L1 data
         Int_t    fMedian[2];          // Background median
         Int_t    fTriggerBitWord;     // Trigger bit word
+        Int_t    fL1DCALV0[2];        // L1 threshold components
 	
-	ClassDef(AliESDCaloTrigger, 7)
+	ClassDef(AliESDCaloTrigger, 8)
 };
 #endif
 
