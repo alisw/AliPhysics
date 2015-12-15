@@ -33,7 +33,8 @@ AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit() : AliEMCALRawDigit(),
 fTriggerBits(0),
 fNL0Times(0),
 fL0Times(),
-fL1TimeSum(-1)
+fL1TimeSum(-1),
+fL1SubRegion(-1)
 {
 	// default ctor 
 	for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
@@ -44,7 +45,8 @@ AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit(Int_t id, Int_t timeSamples[], 
 fTriggerBits(0),
 fNL0Times(0),
 fL0Times(),
-fL1TimeSum(-1)
+fL1TimeSum(-1),
+fL1SubRegion(-1)
 {
 	// Ctor
 	

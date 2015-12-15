@@ -86,7 +86,7 @@ protected:
   
   //For embedding
   static AliEMCALRawUtils    * fgRawUtils;        // raw utilities class, for embedding 
-  AliEMCALTriggerData        * fTriggerData;      // Trigger parameters data container
+  TClonesArray                *fTriggerData;      // Trigger parameters data container
 
 private:
   AliEMCAL(const AliEMCAL& emcal);

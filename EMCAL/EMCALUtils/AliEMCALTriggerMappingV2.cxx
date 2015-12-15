@@ -147,6 +147,18 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInEMCAL(Int_t iEta
 }
 
 //________________________________________________________________________________________________
+Bool_t   AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPHOSSubregion( Int_t iPHOS, Int_t& id) const
+{
+  if(iPHOS > 35 || iPHOS < 0){
+    AliError(Form("Out of range! phos subregion index: %2d ", iPHOS));
+    return kFALSE;
+  }
+  Int_t iEta  = 16  + 4 * (Int_t)(iPHOS % 4) ;
+  Int_t iPhi  = 64  + 4 * (Int_t)(iPHOS / 4) ;
+  return GetAbsFastORIndexFromPositionInEMCAL(iEta,iPhi,id);
+}
+
+//________________________________________________________________________________________________
 Bool_t AliEMCALTriggerMappingV2::GetTRUFromAbsFastORIndex(Int_t id, Int_t& iTRU, Int_t& iADC) const
 {
   //Trigger mapping method, get TRU number from FastOr Index

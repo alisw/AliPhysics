@@ -23,6 +23,7 @@ public:
   Bool_t                    GetAbsFastORIndexFromPositionInTRU(Int_t iTRU, Int_t iEta, Int_t iPhi, Int_t& id) const;	
   Bool_t                    GetAbsFastORIndexFromPositionInSM( Int_t  iSM, Int_t iEta, Int_t iPhi, Int_t& id) const;	
   Bool_t                    GetAbsFastORIndexFromPositionInEMCAL(                Int_t iEta, Int_t iPhi, Int_t& id) const;
+  Bool_t                    GetAbsFastORIndexFromPHOSSubregion( Int_t iPHOS, Int_t& id) const {return kFALSE;}
   Bool_t                                GetTRUFromAbsFastORIndex(Int_t id, Int_t& iTRU, Int_t& iADC) const;
   Bool_t   GetPositionInTRUFromAbsFastORIndex(Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const;
   Bool_t    GetPositionInSMFromAbsFastORIndex(Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const;

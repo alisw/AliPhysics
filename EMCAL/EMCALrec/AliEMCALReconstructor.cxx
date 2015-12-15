@@ -76,10 +76,12 @@ AliEMCALClusterizer*        AliEMCALReconstructor::fgClusterizer      = 0;   // 
 TClonesArray*               AliEMCALReconstructor::fgDigitsArr        = 0;   // list of digits, to be used multiple times
 TObjArray*                  AliEMCALReconstructor::fgClustersArr      = 0;   // list of clusters, to be used multiple times
 TClonesArray*               AliEMCALReconstructor::fgTriggerDigits    = 0;   // list of trigger digits, to be used multiple times
-AliEMCALTriggerElectronics* AliEMCALReconstructor::fgTriggerProcessor = 0x0;
+AliEMCALTriggerElectronics *AliEMCALReconstructor::fgTriggerProcessor = 0x0;
+TClonesArray               *AliEMCALReconstructor::fgTriggerData      = 0x0;
+
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0),fTriggerData(0x0), fMatches(0x0)
+  : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0)
 {
   // ctor
 
@@ -164,8 +166,12 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   
   fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
   
-  fTriggerData = new AliEMCALTriggerData();
-  
+  int dsize = (fGeom->GetTriggerMappingVersion() == 2) ? 2 : 1;
+  fgTriggerData = new TClonesArray("AliEMCALTriggerData",dsize);
+  for (int i=0;i<dsize;i++) {
+    new((*fgTriggerData)[i]) AliEMCALTriggerData();
+  }
+
   //-----------------------------
   // Init temporary list of digits
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
@@ -325,8 +331,10 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
   rawReader->Reset() ; 
   
-  fTriggerData->SetMode(1);	
-  
+  for (int  i=0;i<fgTriggerData->GetEntriesFast();i++) {
+    ((AliEMCALTriggerData*)fgTriggerData->At(i))->SetMode(1);  
+  }
+
   if(fgDigitsArr) fgDigitsArr->Clear("C");
   
   const int kNTRU = fGeom->GetNTotalTRU();
@@ -361,7 +369,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     //  fgRawUtils->SetTimeMin(-99999 );
     //  fgRawUtils->SetTimeMax( 99999 );
     
-    fgRawUtils->Raw2Digits(rawReader,fgDigitsArr,fPedestalData,digitsTrg,fTriggerData);
+    fgRawUtils->Raw2Digits(rawReader,fgDigitsArr,fPedestalData,digitsTrg,fgTriggerData);
     
   }//skip calibration event
   else{
@@ -389,86 +397,87 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Trigger
   //########################################
   
-  static int saveOnce = 0;
+  static int saveOnce[2] = {0,0};
   
   Int_t v0M[2] = {0, 0};
   
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   
-  if (esdV0) 
-    {
-		v0M[0] = esdV0->GetTriggerChargeC();
-		v0M[1] = esdV0->GetTriggerChargeA();
-    }
-  else
-    {
-      AliWarning("No V0 ESD! Run trigger processor w/ null V0 charges");
-    }
+  if (esdV0) {
+    v0M[0] = esdV0->GetTriggerChargeC();
+    v0M[1] = esdV0->GetTriggerChargeA();
+  }
+  else {
+    AliWarning("No V0 ESD! Run trigger processor w/ null V0 charges");
+  }
   
   if (fgTriggerDigits && fgTriggerDigits->GetEntriesFast()) fgTriggerDigits->Delete();
   
   TBranch *branchtrg = digitsTree->GetBranch("EMTRG");
   
-  if (!branchtrg) 
-    { 
-      AliError("Can't get the branch with the EMCAL trigger digits!");
-      return;
-    }
+  if (!branchtrg) { 
+    AliError("Can't get the branch with the EMCAL trigger digits!");
+    return;
+  }
   
   branchtrg->SetAddress(&fgTriggerDigits);
   branchtrg->GetEntry(0);
   
   // Note: fgTriggerProcessor reset done at the end of this method
-//   fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
+  //   fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
   
-  if (trgESD)
-    {
-      trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
+  if (trgESD) {
+    trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
+    int trgBitWord=0;
+    for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++) {
+      AliEMCALTriggerRawDigit* rdig = (AliEMCALTriggerRawDigit*)fgTriggerDigits->At(i);
+      if (AliDebugLevel() > 999) rdig->Print("");
       
-      for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++)
-	{	  
-	  AliEMCALTriggerRawDigit* rdig = (AliEMCALTriggerRawDigit*)fgTriggerDigits->At(i);
-	  if (AliDebugLevel() > 999) rdig->Print("");
-		
-	  Int_t px, py;
-	  if (fGeom->GetPositionInEMCALFromAbsFastORIndex(rdig->GetId(), px, py))
-	    {
-	      Int_t a = -1, t = -1, times[10]; 
-	      
-	      rdig->GetMaximum(a, t);
-	      rdig->GetL0Times(times);
-			
-	      trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum(), rdig->GetTriggerBits());
-	    }
-	}
-      
-		for (int i = 0; i < 2; i++) {
-			trgESD->SetL1Threshold(2 * i    , fTriggerData->GetL1JetThreshold(  i));
-			trgESD->SetL1Threshold(2 * i + 1, fTriggerData->GetL1GammaThreshold(i));
-		}
-      
-      Int_t v0[2];
-      fTriggerData->GetL1V0(v0);
-      
-      trgESD->SetL1V0(v0);	
-      trgESD->SetL1FrameMask(fTriggerData->GetL1FrameMask());            
-      
-      if (!saveOnce && fTriggerData->GetL1DataDecoded()) 
-	{
-	  int type[15] = {0};
-	  fTriggerData->GetL1TriggerType(type);
-	  
-	  esd->SetCaloTriggerType(type);
-	  
-	  saveOnce = 1;
-	}
+      Int_t px, py, trgBitWord=0;
+      if (fGeom->GetPositionInEMCALFromAbsFastORIndex(rdig->GetId(), px, py)) {
+        Int_t a = -1, t = -1, times[10]; 
+        
+        rdig->GetMaximum(a, t);
+        rdig->GetL0Times(times);
+        
+        trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum(), rdig->GetL1SubRegion(), rdig->GetTriggerBits());
+        trgBitWord |= rdig->GetTriggerBits();
+        if (rdig->GetNL0Times()) trgBitWord |= 1 << 5; // Overwrite L0 id from STU payload
+      }
     }
+    
+    trgESD->SetTriggerBitWord(trgBitWord);
+    
+    for (int i=0;i<fgTriggerData->GetEntriesFast();i++) {
+      for (int j=0;j<2;j++) {
+        trgESD->SetL1Threshold(i,2 * j    , ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1JetThreshold(  j));
+        trgESD->SetL1Threshold(i,2 * j + 1, ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1GammaThreshold(j));
+      }
+      trgESD->SetL1FrameMask(i,((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1FrameMask());
+    
+      Int_t v0[2];
+      ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1V0(v0);
+//       trgESD->SetL1V0(i,v0);        
+
+      trgESD->SetMedian(i,((AliEMCALTriggerData*)fgTriggerData->At(i))->GetMedian());
+      if (!saveOnce[i] && ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1DataDecoded()) {
+        int type[19] = {0};
+        ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1TriggerType(type);
+        
+//         esd->SetCaloTriggerType(i,type);
+        
+        saveOnce[i] = 1;
+      }
+    }
+  }
   
   // Resetting
-  fTriggerData->Reset();
+  for (int i=0;i<fgTriggerData->GetEntriesFast();i++) {
+    ((AliEMCALTriggerData*)fgTriggerData->At(i))->Reset();
+  }
   
   //########################################
   //##############Fill CaloCells###############
