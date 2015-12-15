@@ -99,7 +99,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fPhimin(-10), fPhimax(10),
   fEtamin(-0.9), fEtamax(0.9),
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
-  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
+  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(3.0),
   fesdTrackCuts(0),
   fDetectorType(kVZEROComb),
   fSoftTrackMinPt_ep(0.15), fSoftTrackMaxPt_ep(5.),
@@ -114,7 +114,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0), doaltPIDbinning(0),
   doEventPlaneRes(0),
   doComments(0),
-  doFlavourJetAnalysis(0), fJetFlavTag(-99),
+  doFlavourJetAnalysis(0), fJetFlavTag(3),
   fBeam(kNA),
   fLocalRhoVal(0),
   fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
@@ -219,7 +219,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fPhimin(-10), fPhimax(10),
   fEtamin(-0.9), fEtamax(0.9),
   fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
-  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
+  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(3.0),
   fesdTrackCuts(0),
   fDetectorType(kVZEROComb),
   fSoftTrackMinPt_ep(0.15), fSoftTrackMaxPt_ep(5.), 
@@ -234,7 +234,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0), doaltPIDbinning(0),
   doEventPlaneRes(0),
   doComments(0),
-  doFlavourJetAnalysis(0), fJetFlavTag(-99),
+  doFlavourJetAnalysis(0), fJetFlavTag(3),
   fBeam(kNA),
   fLocalRhoVal(0),
   fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
@@ -2099,6 +2099,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParams(Int_t iEntry, TString &label,
           xmax = 250.;
         }
       }
+      break;
 
    case 2:
       label = "Track p_{T}";
