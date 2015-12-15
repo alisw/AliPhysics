@@ -58,7 +58,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   }
   
   //=========  Set Cutnumber for V0Reader ================================
-    TString cutnumberPhoton = "00200008400000002200000000";
+  TString cutnumberPhoton = "00200008400000002200000000";
   TString cutnumberEvent = "00000003"; 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
@@ -127,9 +127,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   if ( trainConfig == 70) numberOfCuts = 2;
   if ( trainConfig == 100) numberOfCuts = 5;
   
-  TString *eventCutArray = new TString[numberOfCuts];
-  TString *photonCutArray = new TString[numberOfCuts];
-  TString *mesonCutArray = new TString[numberOfCuts];
+  TString *eventCutArray    = new TString[numberOfCuts];
+  TString *photonCutArray   = new TString[numberOfCuts];
+  TString *mesonCutArray    = new TString[numberOfCuts];
+  TString *clusterCutArray  = new TString[numberOfCuts];
   
   if(trainConfig == 1){
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
@@ -632,7 +633,43 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     eventCutArray[ 1] = "00075013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
     eventCutArray[ 2] = "00075013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
     eventCutArray[ 3] = "00075013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
-  }	else {
+  } else if (trainConfig == 107) { //LHC11a
+    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //WSDD test with triggers INT1
+    eventCutArray[ 1] = "00005113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //WSDD test with triggers EMC1
+    eventCutArray[ 2] = "00005113"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //WSDD test with triggers EMC1 restricted wide EMC range
+    eventCutArray[ 3] = "00005113"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //WSDD test with triggers EMC1 restricted tight EMC range
+    clusterCutArray[0] = "1111121050032220000";
+    clusterCutArray[1] = "1111121050032220000";
+    clusterCutArray[2] = "1111121050032220000";
+    clusterCutArray[3] = "1111121050032220000";
+  } else if (trainConfig == 108) { //LHC13g full acceptance
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
+    eventCutArray[ 1] = "00005213"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
+    eventCutArray[ 2] = "00008513"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
+    eventCutArray[ 3] = "00008313"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    clusterCutArray[0] = "1111121060032220000";
+    clusterCutArray[1] = "1111121060032220000";
+    clusterCutArray[2] = "1111121060032220000";
+    clusterCutArray[3] = "1111121060032220000";
+  } else if (trainConfig == 109) { //LHC13g loose EMC acceptance for PCM photons
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00202209227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
+    eventCutArray[ 1] = "00005213"; photonCutArray[ 1] = "00202209227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
+    eventCutArray[ 2] = "00008513"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
+    eventCutArray[ 3] = "00008313"; photonCutArray[ 3] = "00202209227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    clusterCutArray[0] = "1111121060032220000";
+    clusterCutArray[1] = "1111121060032220000";
+    clusterCutArray[2] = "1111121060032220000";
+    clusterCutArray[3] = "1111121060032220000";    
+  } else if (trainConfig == 110) { //LHC13g tight EMC acceptance for PCM photons
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00204409227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
+    eventCutArray[ 1] = "00005213"; photonCutArray[ 1] = "00204409227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
+    eventCutArray[ 2] = "00008513"; photonCutArray[ 2] = "00204409227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
+    eventCutArray[ 3] = "00008313"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    clusterCutArray[0] = "1111121060032220000";
+    clusterCutArray[1] = "1111121060032220000";
+    clusterCutArray[2] = "1111121060032220000";
+    clusterCutArray[3] = "1111121060032220000";    
+  } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
@@ -640,6 +677,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
+  TList *ClusterCutList = new TList();
 
   TList *HeaderList = new TList();
   if (periodname.Contains("LHC12i3")){	
@@ -681,42 +719,47 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   }	
   
   EventCutList->SetOwner(kTRUE);
-  AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
+  AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
-  AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
+  AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
-  AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
-
+  AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
+  ClusterCutList->SetOwner(kTRUE);
+  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
+  Bool_t enableClustersForTrigger             = kFALSE;
+    
+  
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();
-    TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
-    TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
-    TString fAddedSignalString = eventCutArray[i];
-    fAddedSignalString = fAddedSignalString(6,1);
-    Bool_t fAddedSignal = kFALSE;
-    if (fAddedSignalString.CompareTo("2") == 0) fAddedSignal = kTRUE;
+    analysisEventCuts[i]          = new AliConvEventCuts();
+    TString fitNamePi0            = Form("Pi0_Fit_Data_%s",energy.Data());
+    TString fitNameEta            = Form("Eta_Fit_Data_%s",energy.Data());
+    TString fAddedSignalString    = eventCutArray[i];
+    fAddedSignalString            = fAddedSignalString(6,1);
+    Bool_t fAddedSignal           = kFALSE;
+    if (fAddedSignalString.CompareTo("2") == 0) 
+      fAddedSignal                = kTRUE;
 
-    TString mcInputNamePi0 = "";
-    TString mcInputNameEta = "";
+    TString mcInputNamePi0        = "";
+    TString mcInputNameEta        = "";
     if (fAddedSignal && (periodname.Contains("LHC12i3") || periodname.CompareTo("LHC14e2b")==0)){
-      mcInputNamePi0 = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-      mcInputNameEta = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+      mcInputNamePi0              = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+      mcInputNameEta              = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     } else {
-      mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
-      mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+      mcInputNamePi0              = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+      mcInputNameEta              = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     }	
     //		if (doParticleWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kFALSE, kFALSE, kFALSE, fileNameInputForPartWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
     if (doParticleWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForPartWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
-    TString dataInputMultHisto  = "";
-    TString mcInputMultHisto    = "";
-    TString triggerString   = eventCutArray[i];
-    triggerString           = triggerString(3,2);
+    TString dataInputMultHisto    = "";
+    TString mcInputMultHisto      = "";
+    TString triggerString         = eventCutArray[i];
+    triggerString                 = triggerString(3,2);
     if (triggerString.CompareTo("03")==0) 
-      triggerString         = "00";
+      triggerString               = "00";
 
-    dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
-    mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
+    dataInputMultHisto            = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
+    mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
    
     if (doMultiplicityWeighting){
       cout << "enableling mult weighting" << endl;
@@ -731,23 +774,31 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+
+    if (trainConfig == 107 ||trainConfig == 108 || trainConfig == 109 || trainConfig == 110 ){
+        enableClustersForTrigger  = kTRUE;
+        analysisClusterCuts[i]    = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+        ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetFillCutHistograms("");   
+    }  
     
-    analysisCuts[i] = new AliConversionPhotonCuts();
+    analysisCuts[i]               = new AliConversionPhotonCuts();
     analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
-      
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
-      
     }
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]          = new AliConversionMesonCuts();
     analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");		
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+    
+  
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -757,7 +808,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
-
+  if (enableClustersForTrigger){
+    task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
+    task->SetClusterCutList(numberOfCuts,ClusterCutList);
+  }  
+  
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
