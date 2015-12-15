@@ -7,16 +7,22 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
   
   Bool_t mc = false;
+  Bool_t zip = false;
   if (tree.BeginsWith("mc")) { 
     mc = true;
+    zip = true;
     tree.Remove(0,2);
+  }
+  if (tree.BeginsWith("zip")) { 
+    zip = true;
+    tree.Remove(0,3);
   }
   
   TString pat("*.root");
   if      (tree.EqualTo("esdTree",  TString::kIgnoreCase)) pat="AliESDs*";
   else if (tree.EqualTo("aodTree",  TString::kIgnoreCase)) pat="AliAOD*";
   else    Warning("", "Unknown tree: %s, pattern set to *.root", tree.Data());
-  if (mc) {
+  if (zip) {
     pat.Prepend("root_archive.zip@");
     pat.ReplaceAll("*", ".root");
   }
