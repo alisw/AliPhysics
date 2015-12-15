@@ -252,15 +252,16 @@ Bool_t AliEveEventManager::HasRawReader()
 AliRunLoader* AliEveEventManager::AssertRunLoader()
 {
     // Make sure AliRunLoader is initialized and return it.
-    // Throws exception in case run-loader is not available.
     // Static utility for macros.
     
-    static const TEveException kEH("AliEveEventManager::AssertRunLoader ");
-    
-    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE)
-        throw (kEH + "ALICE event not ready.");
-    if (fgMaster->fCurrentData->fRunLoader == 0)
-        throw (kEH + "AliRunLoader not initialised.");
+    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE){
+        cout<<"AliEveEventManager::AssertRunLoader : ALICE event not ready."<<endl;
+        return 0;
+    }
+    else if (fgMaster->fCurrentData->fRunLoader == 0){
+        cout<<"AliEveEventManager::AssertRunLoader : AliRunLoader not initialised."<<endl;
+        return 0;
+    }
     return fgMaster->fCurrentData->fRunLoader;
 }
 
@@ -595,7 +596,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         if(fDrawESDtracksByCategory)fESDTracksDrawer->ByCategory();
         if(fDrawESDtracksByType)fESDTracksDrawer->ByType();
-        
         if(settings.GetValue("kinks.show",false)){fKinksDrawer->Draw();}
         if(settings.GetValue("kinks.points.show",false)){fKinksDrawer->DrawPoints();}
         if(settings.GetValue("cascades.show",false)){fCascadesDrawer->Draw();}

@@ -140,8 +140,8 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     }
     if (event > maxEvent)
     {
-        event=0;
         AliInfo("Event number out of range. Going to event 0");
+        GotoEvent(0);
     }
 
     TString sysInfoHeader;

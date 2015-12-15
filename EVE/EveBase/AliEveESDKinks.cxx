@@ -9,19 +9,19 @@
 
 #include <AliEveESDKinks.h>
 
+#include <AliEveEventManager.h>
+#include <AliPID.h>
+#include <AliESDEvent.h>
+
 #include <TVector3.h>
 #include <TEveVector.h>
 #include <TEveTrackPropagator.h>
 #include <TEveVSDStructs.h>
 #include <TEveManager.h>
 
+#include <iostream>
 
-#include <AliPID.h>
-#include <AliESDEvent.h>
-
-
-
-#include <AliEveEventManager.h>
+using namespace std;
 
 void AliEveESDKinks::InitRecTrackDother(TEveRecTrack& rt, const AliExternalTrackParam* tp)
 {
@@ -56,25 +56,29 @@ AliEveKink* AliEveESDKinks::MakeKink(TEveTrackPropagator* rnrStyleMoth,TEveTrack
     
     const TVector3 r1(kink->GetPosition());
     rcKink.fVKink.Set(r1);
-    
     for (Int_t j=0; j<3; ++j) rcKink.fKinkAngle[j]=kink->GetAngle(j);
-    
+
     Double_t r[3], r2[3];
-    
-    moth->GetTPCInnerParam()->GetXYZ(r2);  rcKink.fVMother.Set(r2);
-    daug->GetOuterParam()->GetXYZ(r);  rcKink.fVDaughter.Set(r);
-    
-    InitRecTrackDother(rcMoth, (moth->GetTPCInnerParam()));
-    rcMoth.fIndex = moth->GetID();
-    
+    const AliExternalTrackParam *trackParam = moth->GetTPCInnerParam();
+    if(!trackParam)
+    {
+        trackParam = moth->GetInnerParam();
+    }
+    if(trackParam){
+        trackParam->GetXYZ(r2);
+        rcKink.fVMother.Set(r2);
+        daug->GetOuterParam()->GetXYZ(r);  rcKink.fVDaughter.Set(r);
+        InitRecTrackDother(rcMoth, trackParam);
+        rcMoth.fIndex = moth->GetID();
+    }
+    else{
+        cout<<"AliEveESDKinks::MakeKink : couldn't get TPC inner params"<<endl;
+    }
     InitRecTrackDaughter(rcDaug, daug->GetOuterParam(), &rcKink.fVKink, &rcKink.fPDaughter);
     rcDaug.fIndex = daug->GetID();
-    
     AliEveKink* myKink = new AliEveKink(&rcMoth, &rcDaug, &rcKink, rnrStyleMoth,rnrStyleDaugh);
-    
     myKink->SetElementName(Form("ESDkink %d  \n", i));
     myKink->SetESDKinkIndex(i);
-    
     for (Int_t j=0; j<3; ++j) myKink->SetKinkAngle(j, kink->GetAngle(j));
     Double_t daugProbability[10];
     Double_t daugP = 0.0;
@@ -101,23 +105,23 @@ AliEveKink* AliEveESDKinks::MakeKink(TEveTrackPropagator* rnrStyleMoth,TEveTrack
     }
     
     Float_t daugMaxProbPid  = daugPid.GetProbability(daugPid.GetMostProbable());
-    
     myKink->SetMaxProbPdgPid(daugMostProbPdg,daugMaxProbPid);//????????????
-    
     return myKink;
 }
 
 
 AliEveKinkList* AliEveESDKinks::Draw()
-{    
+{
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     AliEveKinkList* cont = new AliEveKinkList("ESD kink");
+
     cont->SetMainColor(3); // green
     TEveTrackPropagator* rnrStyleMoth = cont->GetPropagatorMoth();
     rnrStyleMoth->SetMagField( 0.1*esd->GetMagneticField() );
     TEveTrackPropagator* rnrStyleDaugh = cont->GetPropagatorDaugh();
     rnrStyleDaugh->SetMagField( 0.1*esd->GetMagneticField() );
     rnrStyleDaugh->SetMaxR(520);
+
     gEve->AddElement(cont);
     
     Int_t count = 0;
@@ -129,8 +133,8 @@ AliEveKinkList* AliEveESDKinks::Draw()
     for (Int_t n=0; n<esd->GetNumberOfTracks(); ++n)
     {
         AliESDtrack* mtrack = esd->GetTrack(n);
-        if(mtrack->GetKinkIndex(0)<0){
-            
+        if(mtrack->GetKinkIndex(0)<0)
+        {
             AliESDkink *kink = new AliESDkink;
             
             kink=esd->GetKink(TMath::Abs(mtrack->GetKinkIndex(0))-1);
@@ -138,12 +142,13 @@ AliEveKinkList* AliEveESDKinks::Draw()
             for (Int_t m=0; m<esd->GetNumberOfTracks(); ++m)
             {
                 AliESDtrack * dtrack = esd->GetTrack(m);
-                
-                if((dtrack->GetKinkIndex(0)>0)&&(dtrack->GetKinkIndex(0)==TMath::Abs(mtrack->GetKinkIndex(0)))) {
+
+                if((dtrack->GetKinkIndex(0)>0)&&(dtrack->GetKinkIndex(0)==TMath::Abs(mtrack->GetKinkIndex(0))))
+                {
                     AliESDtrack* mothTr = esd->GetTrack(n);
                     AliESDtrack* daugTr = esd->GetTrack(m);
-                    
                     AliEveKink* myKink = MakeKink(rnrStyleMoth, rnrStyleDaugh, mothTr, daugTr, kink, (TMath::Abs(mtrack->GetKinkIndex(0))-1));
+
                     if (myKink)
                     {
                         gEve->AddElement(myKink, cont);
@@ -152,15 +157,12 @@ AliEveKinkList* AliEveESDKinks::Draw()
                 }
             }  // inner track loop
             
-            
         }  //mother kink index <0
     } // Outer track loop
-    
     cont->SetTitle("test");
     
     cont->MakeKinks();
     gEve->Redraw3D();
-    
     return cont;
 }
 

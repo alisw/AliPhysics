@@ -271,7 +271,7 @@ void AliEveInit::AddMacros()
     GetConfig(&settings);
     
     bool showMuon         = settings.GetValue("MUON.show", true);             // show MUON's geom
-    
+    bool showEMCal        = settings.GetValue("EMCal.show", false);            // show EMCal and PHOS histograms
     bool drawClusters     = settings.GetValue("clusters.show",false);          // show clusters
     bool drawRawData      = settings.GetValue("rawData.show",false);           // show raw data
     bool drawHits         = settings.GetValue("hits.show",false);              // show hits
@@ -331,7 +331,7 @@ void AliEveInit::AddMacros()
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
     }
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
-//    exec->alieveAddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", showEMCal));
 }
 
 void AliEveInit::ImportMacros()

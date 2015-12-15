@@ -98,7 +98,7 @@ Bool_t IsBadCluster(Int_t absId, Float_t eMax);
 void SetUpEMCALGeometry(AliESDEvent * esd);
 void SetUpPHOSGeometry (AliESDEvent * esd);
 
-void SetEMCALMatrices(AliESDEvent * esd);
+void SetEMCALMatrices(AliESDEvent * esd, Bool_t &ok);
 
 void SetUpEMCALQuads();
 void SetUpPHOSQuads();
@@ -204,9 +204,11 @@ void emcal_esdclustercells()
     // in case the first event did not have them in the ESD
     // Do it once.
     // Get first EMCal/DCal SM matrix in geometry if non null skip.  
-    if ( !fGeomEM->GetMatrixForSuperModule(0) || !fGeomEM->GetMatrixForSuperModule(12) ) 
-      SetEMCALMatrices(esd);
-  
+    Bool_t ok = kFALSE;
+    if ( !fGeomEM->GetMatrixForSuperModule(0) || !fGeomEM->GetMatrixForSuperModule(12) )
+        SetEMCALMatrices(esd,ok);
+    
+    if(!ok) return;
     // Matrix debugging
     if ( debug > 9 )
     {
@@ -398,6 +400,7 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
     {
       if ( !fGeomEM->GetMatrixForSuperModule(mod) )  
         printf("emcal_esdclustercells.C::FillEMCALClusters() No geo matrix for SM %d, skip this event for EMCal!!!\n",mod);
+        return;
     }
   
     Double_t x=0., y=0., z=0.;
@@ -853,9 +856,10 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
         printf("xxx Set EMCal default geo as Run2 xxx\n");
         fGeomEM  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
     }
+    Bool_t ok = kFALSE;
+    SetEMCALMatrices(esd,ok); // Do it outside also if we could not set them here.
+    if(!ok) return;
     
-    SetEMCALMatrices(esd); // Do it outside also if we could not set them here.
-  
     //
     // EMCAL volumes
     //
@@ -910,21 +914,27 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
 /// Ideally it should be done just in first event, but it has been observed
 /// that the first event does not always contain them (???)
 ///
-void SetEMCALMatrices(AliESDEvent * esd)
-{  
-  // Set all the matrices
-  for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
-  {
-    if( debug > 1 ) printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
-    
-    if( esd->GetEMCALMatrix(mod) )
-      fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-    else // set default identity matrix
+void SetEMCALMatrices(AliESDEvent * esd, Bool_t & ok)
+{
+    // Set all the matrices
+    for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
     {
-      printf("Could not set EMCal geo matrix for SM %d",mod);
-      //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
-    }
-  } // loop over super modules
+        if( debug > 1 ) printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
+        
+        if( esd->GetEMCALMatrix(mod) )
+        {
+            fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+            ok=kTRUE;
+        }
+        else // set default identity matrix
+        {
+            printf("Could not set EMCal geo matrix for SM %d",mod);
+            ok = kFALSE;
+            //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
+        }
+    } // loop over super modules
+    
+    
 }
 
 //______________________________________________________________________________

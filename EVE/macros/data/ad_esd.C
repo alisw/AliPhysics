@@ -21,7 +21,7 @@ class AliEveADModule;
 
 void ad_esd(Int_t maxCharge = 300, Bool_t showLegend = kFALSE)
 {
-    printf("*** ESD AD ***");
+    printf("\n*** ESD AD ***\n");
     
     gStyle->SetPalette(1, 0);
     

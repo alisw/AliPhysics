@@ -35,6 +35,10 @@ TEveTrackList* AliEveKineTracks::Draw(Double_t min_pt,  Double_t min_p,
                                       Bool_t   use_track_refs)
 {
     AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
+    if(!rl){
+        Error("AliEveKineTracks::Draw","no run loader");
+        return 0;
+    }
     rl->LoadKinematics();
     AliStack* stack = rl->Stack();
     if (!stack)
