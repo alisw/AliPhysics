@@ -115,9 +115,9 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("TPC will calibrate only the Gain at CPass1, the rest will be updated in the residual storage %s", targetStorage->GetURI().Data());
     procesTPC = new AliTPCPreprocessorOffline;
     // switch on parameter validation
-    procesTPC->SetTimeGainRange(0.5,4.0);
+    procesTPC->SetTimeGainRange(0.5,5.0);
     procesTPC->SetMinTracksVdrift(100000);
-    procesTPC->SwitchOnValidation(kFALSE);
+    procesTPC->SwitchOnValidation();
     // Make timegain calibration
     if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber, runNumber, targetStorage);
     // Make vdrift calibration
