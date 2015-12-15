@@ -171,9 +171,10 @@ std::string calculateMD5(const std::string &filename) {
   std::cout << command << std::endl;
   out.resize(PATH_MAX*2+1);
   FILE *of = popen(command.c_str(), "r");
-  (void)fread((void *)out.c_str(), PATH_MAX*2, 1, of);
+  size_t t = fread((void *)out.c_str(), PATH_MAX*2, 1, of);
 
-  // Strip output
+  if (!t)
+    return "";
   return out.substr(0, std::min(out.find("\t", 0), out.find(" ", 0)));
 }
 
