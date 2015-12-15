@@ -24,7 +24,7 @@ class TGraph;
 class AliTriggerConfiguration;
 class AliTriggerRunScalers;
 class AliLHCData;
-class AliTriggerScalersRecord;
+class AliTriggerScalersRecordESD;
 
 class AliAnalysisTriggerScalers : public TObject
 {
@@ -96,17 +96,22 @@ public:
                                const char* what,
                                bool draw=kTRUE,
                                double* mean=0x0,
-                               bool removeZero=kFALSE);
+                               bool removeZero=kFALSE,
+                               std::vector<int>* runlist=0x0);
   
   TGraph* PlotTriggerRatio(const char* triggerClassName1,
                            const char* what1,
                            const char* triggerClassName2,
-                           const char* what2);
+                           const char* what2,
+                           bool draw=kTRUE,
+                           Double_t factor=1.0);
   
   TGraph* PlotTriggerRatioEvolution(const char* triggerClassName1,
                                     const char* what1,
                                     const char* triggerClassName2,
-                                    const char* what2);
+                                    const char* what2,
+                                    bool draw=kTRUE,
+                                    Double_t factor=1.0);
   
   virtual void Print(Option_t* opt="") const;
 
@@ -127,26 +132,38 @@ public:
   static void PrintIntegers(const std::vector<int>& integers, char sep = '\n',
                             std::ostream& out = std::cout);
   
+  void GetTriggerClassesForRun(Int_t runNumber, TString& classes) const;
+  
+  void PurgeRunList(std::vector<int>& purgedList, const char* triggerClassName, Bool_t verbose=kTRUE);
   
 private:
 
-  Bool_t CheckRecord(const AliTriggerScalersRecord& record,
-                                                UInt_t index,
-                                                UInt_t refa,
-                                                UInt_t refb,
+  Bool_t CheckRecord(const AliTriggerScalersRecordESD& record,
+                     UInt_t index,
+                     ULong64_t refa,
+                     ULong64_t refb,
                      UInt_t timelapse) const;
 
   Double_t Millibarn2CrossSectionUnit() const;
 
   void SetOCDBPath(const char* path);
   
+  void CorrectRunScalers(AliTriggerRunScalers* trs) const;
+
+  void CommonRunList(const std::vector<int>& runlist1,
+                     const std::vector<int>& runlist2,
+                     std::vector<int>& runlist);
+
+  TString DefaultTitle(std::vector<int>* runlist) const;
+
 private:
   std::vector<int> fRunList; // input run list
   TString fOCDBPath; // OCDB path (default raw://)
   Bool_t fShouldCorrectForPileUp; // whether or not to correct scalers by pile-up
   TString fCrossSectionUnit; // cross-section unit (UB = microbarns) by default
+  Bool_t fPurgeRunList; // make each PlotXXX call use its own runlist, purged from run w/o the requested trigger class
   
-  ClassDef(AliAnalysisTriggerScalers,3) // Utility class to play with scalers
+  ClassDef(AliAnalysisTriggerScalers,4) // Utility class to play with scalers
 };
 
 class AliAnalysisTriggerScalerItem : public TObject
