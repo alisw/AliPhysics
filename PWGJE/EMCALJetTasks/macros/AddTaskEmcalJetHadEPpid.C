@@ -13,25 +13,17 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
-   const Double_t TrkEta      = 0.9,                                               
    Bool_t   PID               = 0, //kFALSE,
-   Bool_t   PIDtrackBIAS      = 0, //kFALSE,
-   Bool_t   varbinTHnSparse   = 0, //kFALSE,
    Bool_t   allpidAXIS        = 0, //kFALSE,
    Bool_t   QAhistos          = 0, //kFALSE,
    Bool_t   BIAShistos        = 0, //kFALSE,
-   Bool_t   extraCORRhistos   = 0, //kFALSE,
-   Bool_t   oldJEThadhistos   = 0, //kFALSE,
    const Double_t JetPtcut    = 15.0,
    const Double_t JetRadius   = 0.4,
-   const Double_t constitCut  = 0.15,
    const Int_t MixingTracks   = 50000,
    const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
    TString cutType            = "EMCAL",
    Bool_t   Comments          = 0,
-   Bool_t   doFlavourJetAnalysis = 0,
-   const Int_t flavTag        = 999,
    const Int_t esdcuts        = 10001006,
    TString colltype           = "",
    UInt_t trigevent           = AliVEvent::kAny,
@@ -99,26 +91,18 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetEventMixing(EvtMix);
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
-  correlationtask->SetTrkEta(TrkEta);
   // Added on/after March20, 2014
   correlationtask->SetdoPID(PID);
-  correlationtask->SetdoPIDtrackBIAS(PIDtrackBIAS);
-  correlationtask->SetvarbinTHnSparse(varbinTHnSparse);
   correlationtask->SetallpidAXIS(allpidAXIS);
   correlationtask->SetmakeQAhistos(QAhistos);
   correlationtask->SetmakeBIAShistos(BIAShistos);  
-  correlationtask->SetmakeextraCORRhistos(extraCORRhistos);
-  correlationtask->SetoldJEThadhistos(oldJEThadhistos);
   correlationtask->SetJetPtcut(JetPtcut);
   correlationtask->SetJetRad(JetRadius);
-  correlationtask->SetConstituentCut(constitCut);
   correlationtask->SetMixingTracks(MixingTracks);
   correlationtask->SetNMixedTr(nmixingTR);
   correlationtask->SetNMixedEvt(nmixingEV);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
-  correlationtask->SetFlavourJetAnalysis(doFlavourJetAnalysis);
-  correlationtask->SetJETFlavourTag(flavTag);
   correlationtask->SetCollType(beam);
   correlationtask->SetTriggerEventType(trigevent);
   correlationtask->SetMixedEventType(mixevent);
