@@ -1,11 +1,25 @@
-void AddTaskAliAnalysisTaskPHOSNeutralMeson(
-		TString TaskName, 
-		TString ContName, 
-		TString CollisionCandidates, 
-		TString BadMapName = "defaultTenderBM", 
-		Bool_t UsePHOSTender = true, 
-		Bool_t ApplyBadMap_manually = false,
-		Float_t DistToBadCell = 0.0) 
+AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
+		TString taskName,
+		TString collisionCandidates, 
+		Bool_t usePhysicsSelection,
+		Bool_t usePHOSTender,
+		Int_t clusterMinCells, 
+		Float_t clusterMinE,
+		Float_t clusterMinM02,
+		Float_t distToBadCellOnCellLevel,
+		Float_t distToBadCell,
+		Float_t timingCutMin,
+		Float_t timingCutMax,
+		Float_t zVertexCut,
+		TString recalOption,
+		Double_t recalFactorMod1,
+		Double_t recalFactorMod2,
+		Double_t recalFactorMod3,
+		TString mPtHistoMode,
+		Bool_t applyBadMap_manually,
+		Bool_t useIsVertexSelected2013pA,
+		TString badMapName, 
+		Char_t *suffix = "") 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -15,19 +29,22 @@ void AddTaskAliAnalysisTaskPHOSNeutralMeson(
   
 	// ****************************************************** 
 	//  *****  SETTINGS ***** ***** ***** ***** ***** ***** 
-	Bool_t usePHOSTender = UsePHOSTender;
-	Bool_t applyBadMap_manually = ApplyBadMap_manually;
-	Bool_t usePhysicsSelection = false;
-	TString collisionCandidates = CollisionCandidates; //kPHI7, kINT7, kAny, kMB, kERT1
-	TString badMapName = BadMapName;    				
-															// BM13c_6_15_allMd_all_noMod2 = BM_d_13c_22_6_2015_allMod_allMod2Off.root (old name)
-															// defaultTenderBM  (switches off SetForceUsingBadMap for Tender!)
-															// BM_d_13c_22_6_2015_allMod_all.root    BM_d_13c_28_4_15
+	// for possible bad maps see alien:///alice/cern.ch/user/m/mhecker/BadMaps/:
+	// BM13c_6_15_allMd_all_noMod2 = BM_d_13c_22_6_2015_allMod_allMod2Off.root (old name)
+	// defaultTenderBM  (switches off SetForceUsingBadMap for Tender!)
+	// BM_d_13c_22_6_2015_allMod_all.root    BM_d_13c_28_4_15
+	
 	Bool_t DoDistToBadCell = false;
-	if (DistToBadCell > 0.00001) DoDistToBadCell = true;
+	if (distToBadCell > 0.00001) DoDistToBadCell = true;
+	Bool_t DoDistToBadCellOnCellLevel = false;
+	if (distToBadCellOnCellLevel > 0) DoDistToBadCellOnCellLevel = true;
 																			
 	// ***** ***** ***** ***** ***** ***** ***** ***** ***** 
 	// ****************************************************** 
+	
+	TString ContName = "contPHOSNeutralMeson";
+	TString combinedName;
+	combinedName.Form("%s%s",ContName.Data(), suffix);
 	
 	TString pathToBadMap;
 	
@@ -65,7 +82,7 @@ void AddTaskAliAnalysisTaskPHOSNeutralMeson(
 
   
 	// Initialize Task
-	AliAnalysisTaskPHOSNeutralMeson *task = new AliAnalysisTaskPHOSNeutralMeson(TaskName.Data());
+	AliAnalysisTaskPHOSNeutralMeson *task = new AliAnalysisTaskPHOSNeutralMeson(taskName.Data());
 	
 	// Set variables for Outputfile Name
 	if(usePHOSTender) { 
@@ -117,34 +134,42 @@ void AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	// ~~~~~~ Event Cuts ~~~~~~~~~~~~~
 	task->SetUseOnlyCINT1events(false);
 	task->SetDoZvertexCut(true);
-	task->SetUseIsVertexSelected2013pA(true); 
-	task->SetZvertexCut(10.0);										
+	task->SetUseIsVertexSelected2013pA(useIsVertexSelected2013pA); 
+	task->SetZvertexCut(zVertexCut);	// 10.0									
 	
 	
 	// ~~~~~~ Cluster Cuts ~~~~~~~~~~~
-	task->SetClusterMinCells(3);
-	task->SetClusterMinE(0.3); 	//GeV
-	task->SetClusterMinM02(0.2);  
+	task->SetClusterMinCells(clusterMinCells); //3
+	task->SetClusterMinE(clusterMinE); 	//0.3 GeV
+	task->SetClusterMinM02(clusterMinM02);  //0.2
 	task->SetDoTimingCut(true);	//for MC: false
-	task->SetTimingCutMinMax(-0.10e-6, 0.10e-6);
+	task->SetTimingCutMinMax(timingCutMin, timingCutMax); //-0.10e-6,0.10e-6
 
 	task->SetDoDistToBadCellCut(DoDistToBadCell);  
-	task->SetDistToBadCell(DistToBadCell);  // [cm]  
+	task->SetDistToBadCell(distToBadCell);  // [cm]  
+	
+	task->SetDoDistToBadCellCutOnCellLevel(DoDistToBadCellOnCellLevel);
+	task->SetDistToBadCellOnCellLevel(distToBadCellOnCellLevel);
 
 	// ~~~~~~~~ Filling options ~~~~~~
 	task->SetFillCellIdVsE(false);   	//Neccessary for QA (BadMap) (increases Outputfile-size)
 	task->SetFillTimingHistos(true);  	//Neccessary to determine timing cut values.
 	task->SetFillClusterHitmaps(true);	// To check the BadMaps and cluster distributions
-	task->SetFillhMassPtModules(false); 	// For module-wise pi0 analysis
-	task->SetFillhMassPtTiming(false);  	// For calculation of timing efficiency
+
+	if (mPtHistoMode != "nrmlMptHst") {
+		if (mPtHistoMode == "hMPTvsMod") task->SetFillhMassPtModules(true); 	// For module-wise pi0 analysis
+		else if (mPtHistoMode == "hMPTvsTim") task->SetFillhMassPtTiming(true);  	// For calculation of timing efficiency
+		else if (mPtHistoMode == "hMPTnewAsy") task->SetFillNewAsymmClasses(true);
+		else mPtHistoMode = "nrmlMptHst"; // if none of the implemented (above) modes is set, the string is set to default
+	}
     
 	task->SetFillNTupelClusterEnergy(false);  //Neccesary to calculate module dependent energy recal factors
   
 	// ~~~~ recalibration options ~~~~
 	//task->SetDoClusterEnergyRecalibration(false);
-	//task->SetRecalibrationOption("lhc12d_12h");
+	task->SetRecalibrationOption(recalOption); // look in .cxx for possible options
 	task->SetRecalibrateModuleWise(false);
-	task->SetModuleWiseRecalibrationFactors(1.0,1.0,1.0); 
+	task->SetModuleWiseRecalibrationFactors(recalFactorMod1,recalFactorMod2,recalFactorMod3); 
 	//task->SetModuleWiseRecalibrationFactors(0.9942,0.9822,1.0072); //pp
   
   
@@ -188,4 +213,6 @@ void AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("%s:%s", ContName.Data(),OutPutFileName.Data()), TList::Class(),  AliAnalysisManager::kOutputContainer, Form("%s:dirNeutralMeson", mgr->GetCommonFileName()));
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task,1,coutput0);
+	
+	return task;
 } 
