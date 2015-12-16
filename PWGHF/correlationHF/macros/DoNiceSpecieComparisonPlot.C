@@ -245,7 +245,7 @@ void RestylePlot(TPad * pad, Int_t pos){
   } //end of cycle on primitives
 
   pad->cd();
-  if(pos==0){
+  if(pos==0 || pos==1){ //write to both panels (IRC comment)
 	TLatex *tlAlice=new TLatex(0.82,0.875,Form("#bf{ALICE}"));
 	tlAlice->SetNDC();
 	tlAlice->Draw();
