@@ -2657,7 +2657,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             {
               Float_t m02 = ph->GetM02();
               if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0]->Fill(ptcluster,m02,GetEventWeight());
-              if      ( prodR < 275. ) fhMCConversionLambda0Rcut[1]->Fill(ptcluster,m02,GetEventWeight());
+              else if ( prodR < 275. ) fhMCConversionLambda0Rcut[1]->Fill(ptcluster,m02,GetEventWeight());
               else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2]->Fill(ptcluster,m02,GetEventWeight());
               else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3]->Fill(ptcluster,m02,GetEventWeight());
               else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4]->Fill(ptcluster,m02,GetEventWeight());

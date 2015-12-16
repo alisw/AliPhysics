@@ -4473,7 +4473,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if(fFillSSHisto)
         {
           if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0][isolated]->Fill(pt,m02,GetEventWeight());
-          if      ( prodR < 275. ) fhMCConversionLambda0Rcut[1][isolated]->Fill(pt,m02,GetEventWeight());
+          else if ( prodR < 275. ) fhMCConversionLambda0Rcut[1][isolated]->Fill(pt,m02,GetEventWeight());
           else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2][isolated]->Fill(pt,m02,GetEventWeight());
           else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3][isolated]->Fill(pt,m02,GetEventWeight());
           else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4][isolated]->Fill(pt,m02,GetEventWeight());
