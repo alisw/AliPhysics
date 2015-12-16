@@ -67,7 +67,7 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   AliVParticle*                       GetEmbeddedConstituent(AliEmcalJet *jet);
   void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
-  TLorentzVector*MatchEmbeddedConstituentWithParticleLevel(AliVParticle *vpe);
+  Int_t          MatchEmbeddedConstituentWithParticleLevel();
   
   Int_t                               fContainerBase;              ///< jets to be analyzed
   Int_t                               fContainerSub;               ///< subtracted jets to be analyzed

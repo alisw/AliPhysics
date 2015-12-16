@@ -29,7 +29,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fFromTree(0),
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
-  fBranchJDetName("fJetDet"),
+  fBranchJDetName("fJetDet."),
+  fBranchJParName("fJetPart."),
   fTreeJet4Vect(0),
   fCurrentEntry(0), 
   fInput(0),
@@ -40,7 +41,14 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fNevPerBin(0),
   fCount(0),
   fCurrentBin(0),
-  fGoBack(0)
+  fGoBack(0),
+  fhDeltapT(0),
+  fhDeltaM(0),
+  fhpTPart(0),
+  fhMPart(0),
+  fhEtaPart(0),
+  fhPhiPart(0)
+  
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -63,7 +71,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fFromTree(0),
   fPathTreeinputFile(""),
   fTreeinputName("fTreeJet"),
-  fBranchJDetName("fJetDet"),
+  fBranchJDetName("fJetDet."),
+  fBranchJParName("fJetPart."),
   fTreeJet4Vect(0),
   fCurrentEntry(0),
   fInput(0),
@@ -74,7 +83,13 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fNevPerBin(0),
   fCount(0),
   fCurrentBin(0),
-  fGoBack(0)
+  fGoBack(0),
+  fhDeltapT(0),
+  fhDeltaM(0),
+  fhpTPart(0),
+  fhMPart(0),
+  fhEtaPart(0),
+  fhPhiPart(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -143,6 +158,29 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    PostData(2, fInput);
    
    
+
+  
+  fhDeltapT = new TH1F("fhDeltapT", "Delta #it{p}_{T}; #Delta #it{p}_{T} (GeV/#it{c})", 60, -30., 30.);
+  fhDeltapT->Sumw2();
+  fOutput->Add(fhDeltapT);
+  
+  fhDeltaM = new TH1F("fhDeltaM", "Delta M; #Delta M (GeV)", 60, -30., 30.);
+  fhDeltaM->Sumw2();
+  fOutput->Add(fhDeltaM);
+
+  fhpTPart  = new TH1F("fhpTPart"  , "#it{p}_{T, part};#it{p}_{T} (GeV/#it{c})", 60, -10, 100);
+  fhpTPart->Sumw2();
+  fOutput->Add(fhpTPart);
+  fhMPart   = new TH1F("fhMPart"   , "#it{M}_{part};#it{M} (GeV)", 60, -10, 20);
+  fhMPart->Sumw2();
+  fOutput->Add(fhMPart);
+  fhEtaPart = new TH1F("fhEtaPart" , "#eta distribution part; #eta", 100, -1, 1);
+  fhEtaPart->Sumw2();
+  fOutput->Add(fhEtaPart);
+  fhPhiPart = new TH1F("fhPhiPart" , "#varphi distribution; #varphi", 100, (-1)*TMath::Pi(), TMath::Pi());
+  fhPhiPart->Sumw2();
+  fOutput->Add(fhPhiPart);
+   
 }
 
 //________________________________________________________________________
@@ -177,16 +215,19 @@ void AliJetEmbeddingTask::Run()
        	     AliFatal(Form("Tree or branch name not found"));
        	  }
        	  TLorentzVector *jetDet = 0;
+       	  TLorentzVector *jetPar = 0;
        	  TBranch *bDet = 0;
        	  fTreeJet4Vect->ResetBranchAddresses();
-       	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
+       	  //fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
+       	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);
+       	  fTreeJet4Vect->SetBranchAddress(fBranchJParName.Data(), &jetPar);
        	  Int_t nentries = fTreeJet4Vect->GetEntries();
        	  Double_t pTemb = -1;
-       	  if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	  if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
        	     AliWarning("Starting from first entry again");
-       	     bDet->GetEntry(fCurrentEntry);
+       	     fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  }
        	  pTemb = jetDet->Pt();
        	  
@@ -194,11 +235,11 @@ void AliJetEmbeddingTask::Run()
        	  if((fPtMin != 0 && fPtMax != 0) && !fRandomEntry) {
        	     while(!(pTemb > fPtMin && pTemb < fPtMax)){
        	     	fCurrentEntry++;
-       	     	if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	else {
        	     	   fCurrentEntry = 0;
        	     	   AliWarning("Starting from first entry again");
-       	     	   bDet->GetEntry(fCurrentEntry);
+       	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	}
        	     	pTemb = jetDet->Pt();
        	     }
@@ -206,11 +247,11 @@ void AliJetEmbeddingTask::Run()
        	  // exclude a fraction of the entries -- doesn't work very well
        	  if(fRandomEntry){
   
-     	     if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+     	     if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     else {
        	     	fCurrentEntry = 0;
        	     	AliWarning("Starting from first entry again");
-       	     	bDet->GetEntry(fCurrentEntry);
+       	     	fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     }
        	     pTemb = jetDet->Pt();
        	     
@@ -220,16 +261,16 @@ void AliJetEmbeddingTask::Run()
        	     while (random > downscl){
        	     	fCurrentEntry++;
        	     	random = gRandom->Rndm();
-       	     	if(fCurrentEntry < nentries) bDet->GetEntry(fCurrentEntry);
+       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	else {
        	     	   fCurrentEntry = 0;
        	     	   AliWarning("Starting from first entry again");
-       	     	   bDet->GetEntry(fCurrentEntry);
+       	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	}
        	     	pTemb = jetDet->Pt();
        	     	if(pTemb < fPtRanges[fCurrentBin]) {
        	     	   random = gRandom->Rndm();
-       	     	   continue;
+       	     	   
        	     	}
        	     	   
        	     }
@@ -238,7 +279,13 @@ void AliJetEmbeddingTask::Run()
 
        	  // Add the track that complies with the settings 
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
-       	  
+       	  //Printf("Embedded det %.2f, part %.2f", jetDet->Pt(), jetPar->Pt());
+       	  fhDeltapT->Fill(jetPar->Pt() - jetDet->Pt());
+       	  fhDeltaM ->Fill(jetPar->M() - jetDet->M());
+       	  fhpTPart ->Fill(jetPar->Pt());
+       	  fhMPart  ->Fill(jetPar->M());
+       	  fhEtaPart->Fill(jetPar->Eta());
+       	  fhPhiPart->Fill(jetPar->Phi());
        	  fCount++; // count the number of track embedded in the current pT range
        	  fCurrentEntry++; //increase for next iteration
        	  

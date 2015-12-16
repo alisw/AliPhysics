@@ -33,11 +33,12 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetMass(Double_t mass)         { fMass = mass ; }
   void           SetNeutralFraction(Double_t f) { fNeutralFraction = f ; }
   void           SetNeutralMass(Double_t m)     { fNeutralMass     = m ; }
-  void           SetNamesForTree(TString path, TString treename, TString branchname) { fPathTreeinputFile = path; fTreeinputName = treename; fBranchJDetName = branchname; }
+  void           SetNamesForTree(TString path, TString treename, TString branchname, TString branchnameP = "fJetPart.") { fPathTreeinputFile = path; fTreeinputName = treename; fBranchJDetName = branchname; fBranchJParName = branchnameP;}
   void           SetPathAndNameInputpTDistribution(TString path, TString name) { fPathpTinputFile = path; fpTinputName = name;}
   void           SetPathAndNameInputMDistribution(TString path, TString name) { fPathMinputFile = path; fMinputName = name;}
   
   void           SetTreeBranchName(TString brDet = "fJetDet.") {fBranchJDetName = brDet; }
+  void           SetTreeBranchPartName(TString brPar = "fJetPart.") {fBranchJParName = brPar; }
   void           SetMassDistributionFromFile(TString filename, TString histoname);
   void           SetpTDistributionFromFile(TString filename, TString histoname);
   void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
@@ -71,6 +72,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TString        fPathTreeinputFile;      ///< path to the file where the external input Tree is (can be from alien)
   TString        fTreeinputName;          ///< name of the external input Tree
   TString        fBranchJDetName;         ///< name of the detector level jet branch in the TTree
+  TString        fBranchJParName;         ///< name of the particle level jet branch in the TTree
   TTree*         fTreeJet4Vect;           //!<! tree containing the jet 4-vectors (input for embed.)
   Int_t          fCurrentEntry;           ///< Current TTree entry
   TList          *fInput;                 //!<! Input histograms saved in this list
@@ -85,7 +87,13 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Int_t          fCount;                  ///< counts number of embedded tracks in the current pT bin
   Int_t          fCurrentBin;             ///< the current pT bin
   Int_t          fGoBack;                 ///< how many times fCurrentBin is set back to 0
-  
+  TH1F           *fhDeltapT;              //!<! deltapT embedding from tree
+  TH1F           *fhDeltaM ;              //!<! deltaM embedding from tree
+  TH1F           *fhpTPart ;              //!<! pT particle corresponding to embedded from tree
+  TH1F           *fhMPart  ;              //!<! M  particle corresponding to embedded from tree
+  TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
+  TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
+
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
