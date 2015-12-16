@@ -568,7 +568,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
-  if(!AliDielectronMC::Instance()->ConnectMCEvent(mcEvent)) return;
+  if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
