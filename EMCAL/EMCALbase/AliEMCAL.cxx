@@ -100,7 +100,8 @@ AliEMCAL::~AliEMCAL()
 {
   //dtor
   delete fgRawUtils;
-  fTriggerData->Delete();
+  delete fTriggerData;   
+  //fTriggerData->Delete(); // RS: if TClonesArray is created, Delete will be called from ~TClonesArray
 }
 
 //____________________________________________________________________________
