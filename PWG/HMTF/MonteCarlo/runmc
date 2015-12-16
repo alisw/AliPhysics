@@ -144,12 +144,12 @@ if [[ "${LOCAL_PREPARE}" = "yes" || "${GRID_PREPARE}" = "yes" ]]; then
 	FILESTOCOPY="${FILESTOCOPY} thepeg.in"
 
 	# use DIPSY-specific downscaling factors to flatten multiplicity
-	THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650"
-	SCALING="264,2147,1377,1220,1025,753,468,250,119,44,16,5,1"
+	# THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650"
+	# SCALING="264,2147,1377,1220,1025,753,468,250,119,44,16,5,1"
 
 	# pipe DIPSY events through FIFO and read from AliRoot
 	addtorun "mkfifo ${HEPMCFILE}; ls -lthr"
-	addtorun "setupThePEG -r \${THEPEG_BASEDIR}/lib/ThePEG/ThePEGDefaults.rpo -I \${THEPEG_BASEDIR}/share/Ariadne thepeg.in"
+	addtorun "setupThePEG -r \${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I \${THEPEG_ROOT}/share/Ariadne thepeg.in"
 	addtorun "runThePEG DIPSYpp.run -N 2147483647 --tics &"
 	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kHepMC,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")'  > gen.log 2>&1"
 	addtorun "kill \$!"
