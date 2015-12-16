@@ -259,6 +259,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* jetConeK0Emblist;
   TList* jetConeLaEmblist;
   TList* jetConeALaEmblist;
+  TList* jetConeK0EmbStlist;//standard K0s candidates filled in embedding extra branch to subtract for UE V0 contribution
+  TList* jetConeLaEmbStlist;//standard Lambda candidates filled in embedding extra branch to subtract for UE V0 contribution
+  TList* jetConeALaEmbStlist;//standard Antilambda candidates filled in embedding extra branch to subtract for UE V0 contribution
   TList* jetPerpConeK0list;
   TList* jetPerpRecCutslist; 
   TList* jetPerpConeK0Emblist;
@@ -277,7 +280,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
-  AliPIDResponse *fPIDResponse;	                           // PID
+  TList* fListK0sStandard;                                 //! K0 list for standard V0s in extra embedded branch
+
+  AliPIDResponse *fPIDResponse;	                     // PID
 
   AliFragFuncQATrackHistos*  fV0QAK0;                      //! track QA: V0s in K0 inv mass range
   AliFragFuncHistos*         fFFHistosRecCutsK0Evt;        //! inclusive FF for K0 evt
@@ -288,7 +293,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Int_t fLaType;                                           // La cuts
   UInt_t fFilterMaskLa;                                    //! La legs cuts
   TList* fListLa;                                          //! La list 
-  
+  TList* fListLaStandard;                                  //! La standard list for embedding UE V0 subtraction
+    
   //AliFragFuncHistosInvMass*  fFFHistosIMLaAllEvt;          //! La pt spec for all events
   //AliFragFuncHistosInvMass*  fFFHistosIMLaJet;             //! La FF all dPhi   
   //AliFragFuncHistosInvMass*  fFFHistosIMLaCone;            //! La FF jet cone   
@@ -297,6 +303,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   UInt_t fFilterMaskALa;                                   //! ALa legs cuts
   TList* fListALa;                                         //! ALa list 
+  TList* fListALaStandard;                                 //! ALa list 
+
   TList* fListFeeddownLaCand;                              //! feeddown from Xi (-,0) 
   TList* fListFeeddownALaCand;                             //! feeddown from Xibar (+,0) 
   TList* jetConeFDLalist;                                  //! feeddown from Xi (-,0) in jet cone
@@ -381,6 +389,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   //embedding
   TH1F* fh1nEmbeddedJets;
+  TH1F* fh1nGenJets;
   TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
   TH1F* fh1PtEmbBeforeMatch;           // pt spectrum of embedded jets from extra particles before JetMatching
   TH1F* fh1PtEmbExtraOnly;             // pt spectrum of embedded jets from extraonly particles (embedded truth)
@@ -388,7 +397,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH2F* fh2PtEtaEmbReject;                // pt spectrum of embedded jets that are rejected by jet matching cuts
   TH1F* fh1PtEmbAfterMatch;           // pt spectrum of embedded jets from extra particles after JetMatching
   TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
-  TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
+  TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet detector level
+  TH1F* fh1FractionPtEmbeddedMC;       //! delta R rec - embedded jet particle level 
+  TH2F* fh2FractionPtVsEmbeddedJetPtMC; 
+  TH1F* fh1DeltaREmbeddedMC;
+  TH1F* fh1JetPtEmbGenAfterMatch;
 
   TH2F* fh2TracksPerpCone;
   TH1F* fh1PerpCone;
@@ -487,14 +500,17 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnK0sCone;
   THnSparse* fhnK0sEmbCone;
   THnSparse* fhnK0sEmbConeRef;
+  THnSparse* fhnK0sEmbConeStandard;
   THnSparse* fhnLaIncl;
   THnSparse* fhnLaCone;
   THnSparse* fhnLaEmbCone;
   THnSparse* fhnLaEmbConeRef;
+  THnSparse* fhnLaEmbConeStandard;
   THnSparse* fhnALaIncl;
   THnSparse* fhnALaCone;
   THnSparse* fhnALaEmbCone;
   THnSparse* fhnALaEmbConeRef;
+  THnSparse* fhnALaEmbConeStandard;
   THnSparse* fhnK0sPC;
   THnSparse* fhnK0sEmbPC;
   THnSparse* fhnLaPC;

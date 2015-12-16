@@ -4,6 +4,24 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   // configures it and adds it to the analysis manager.
   //for cut variations, set TString cutVar either to "noCutVar", "CPAMin", "CPAMax", "DCADMin", "DCADMax", "LifetMin" or "LifetMax"
    
+  
+  // ** Parameters **
+  // (char) recJetsBranch: branch in AOD for (reconstructed) jets
+  // (char) genJetsBranch: branch in AOD for (generated) jets
+  // (char) jetType: "AOD"   jets from recJetsBranch
+  //                 "AODMC" jets from genJetsBranch
+  //                 "KINE"  jets from PYCELL
+  //                  +"b" (e.g. "AODb") jets with acceptance cuts
+  // (char) trackType: "AOD"     reconstructed tracks from AOD filled by ESD filter (choose filter mask!)
+  //                   "AODMC"   MC tracks from AOD filled by kine filter
+  //                   "KINE"    kine particles from MC event 
+  //                   +"2" (e.g. "AOD2")  charged tracks only
+  //                   +"b" (e.g. "AOD2b") with acceptance cuts
+  // (UInt_t) filterMask: select filter bit of ESD filter task
+  
+  
+
+
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -31,9 +49,11 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(debug>=0) task->SetDebugLevel(debug);
   
   TString branchRecJets(recJetsBranch);
-  if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
+  TString branchGenJets(genJetsBranch);
 
-  task->SetBranchEmbeddedJets("");//insert something for embedding
+  task->SetBranchEmbeddedJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
+  task->SetBranchGenJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
+
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
