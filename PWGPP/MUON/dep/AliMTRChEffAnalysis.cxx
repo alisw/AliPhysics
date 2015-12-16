@@ -602,8 +602,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     if ( itype != AliTrigChEffOutput::kHchamberEff ) canName += Form("Ch%i",11+ich);
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),25*ich,25*ich,width,height);
     can->Divide(nColumns,nRows,0,0);
-//    can->SetTopMargin(0.03);
-//    can->SetBottomMargin(0.1);
+    //    can->SetTopMargin(0.03);
+    //    can->SetBottomMargin(0.1);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
       gPad->SetTicks(1,1);
@@ -621,8 +621,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
         gr->SetMarkerColor(icount+1);
         gr->SetMarkerStyle(24+2*icount);
         gr->GetYaxis()->SetRangeUser(minEff,maxEff);
-//        gr->GetYaxis()->SetLabelSize(0.025*nRows);
-//        gr->GetXaxis()->SetLabelSize(0.025*nColumns);
+        //        gr->GetYaxis()->SetLabelSize(0.025*nRows);
+        //        gr->GetXaxis()->SetLabelSize(0.025*nColumns);
         gr->SetTitle("");
         gr->Draw(icount==0?"ap":"p");
         TString legTitle = ( icount==0 ) ? "bending plane" : "non-bending plane";
@@ -641,6 +641,87 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
       leg->Draw();
     }
     if ( itype == AliTrigChEffOutput::kHchamberEff ) break;
+  }
+}
+
+//________________________________________________________________________
+void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers, Double_t minY, Double_t maxY ) const
+{
+  /// Draw statistical contribution of the element efficiency
+  if ( itype == AliTrigChEffOutput::kHchamberEff ) {
+    AliWarning("This function is valid only for itype 1 and 2");
+    return;
+  }
+
+  TString baseNames[3] = {"Chamber","RPC","Board"};
+  TString base = baseNames[itype] + "Stat";
+  if ( itype == AliTrigChEffOutput::kHboardEff ) {
+    if ( irpc < 0 ) {
+      AliWarning("Please specify RPC");
+      return;
+    }
+    base += Form("InRPC%i",irpc);
+  }
+
+  Int_t nColumns = 6;
+  Int_t nRows = 3;
+  Int_t width = 1200;
+  Int_t height = 800;
+  Int_t nDetEl = 18;
+  Int_t nCh = 4;
+
+  TArrayI boards = BoardsInRPC(irpc);
+  if ( itype == AliTrigChEffOutput::kHboardEff ) nDetEl = boards.GetSize();
+
+  for ( Int_t ich=0; ich<nCh; ich++ ) {
+    TH1* histos[nDetEl];
+    TH1* sumHistos = 0x0;
+    for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
+      Int_t detElemId = idetelem;
+      if ( itype == AliTrigChEffOutput::kHboardEff ) detElemId = boards[idetelem];
+      histos[idetelem] = GetTrend(itype, AliTrigChEffOutput::kAllTracks, ich, detElemId);
+      histos[idetelem]->SetName(Form("%s_stat",histos[idetelem]->GetName()));
+      histos[idetelem]->SetStats(0);
+      if ( sumHistos ) sumHistos->Add(histos[idetelem]);
+      else sumHistos = static_cast<TH1*>(histos[idetelem]->Clone("sumHistos"));
+    }
+
+    TString canName = Form("%sCh%i",base.Data(),11+ich);
+    TCanvas* can = new TCanvas(canName.Data(),canName.Data(),25*ich,25*ich,width,height);
+    can->Divide(nColumns,nRows,0,0);
+    for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
+      can->cd(idetelem+1);
+      gPad->SetTicks(1,1);
+      gPad->SetGridy();
+      Int_t detElemId = idetelem;
+      if ( itype == AliTrigChEffOutput::kHboardEff ) detElemId = boards[idetelem];
+      TString title = Form("%s %i",baseNames[itype].Data(),detElemId);
+      TLegend* leg = new TLegend(0.2,0.65,0.8,0.9);
+      leg->SetHeader(title.Data());
+      TGraphAsymmErrors* gr = new TGraphAsymmErrors(histos[idetelem],sumHistos,"e0");
+      gr->SetHistogram(static_cast<TH1F*>(histos[idetelem]));
+
+      gr->SetMarkerStyle(24);
+      gr->GetYaxis()->SetRangeUser(minY,maxY);
+      gr->GetYaxis()->SetTitle(Form("Tracks in %s / Sum of tracks of %ss in %s",baseNames[itype].Data(),baseNames[itype].Data(),baseNames[itype-1].Data()));
+      gr->SetTitle("");
+      gr->Draw("ap");
+      TString legTitle = "stat";
+//      leg->AddEntry(gr,legTitle.Data(),"lp");
+      if ( maxNsigmaOutliers > 0. ) {
+        TGraphAsymmErrors* outliers = GetOutliers(gr,maxNsigmaOutliers);
+        outliers->SetLineColor(6);
+        outliers->SetMarkerColor(6);
+        outliers->SetMarkerStyle(20);
+        outliers->SetLineWidth(2);
+        outliers->Draw("p");
+        legTitle = "outliers";
+        leg->AddEntry(outliers,legTitle.Data(),"lp");
+      }
+//      }
+      leg->Draw();
+    }
+    delete sumHistos;
   }
 }
 
@@ -1147,8 +1228,8 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
   for ( Int_t ipt=0; ipt<graph->GetN(); ipt++ ) {
     graph->GetPoint(ipt,xpt,ypt);
     Double_t diff = ypt - func->Eval(xpt);
-    Double_t err = ( diff > 0 ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
-    if ( err < 0. || diff/err > maxNsigmas ) continue;
+    Double_t err = ( diff > 0. ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
+    if ( err < 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
     outliers->RemovePoint(ipt-nremoved);
     nremoved++;
 //    outliers->SetPoint(iopt,xpt,ypt);

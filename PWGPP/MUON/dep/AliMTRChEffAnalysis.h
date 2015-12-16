@@ -31,6 +31,7 @@ class AliMTRChEffAnalysis : public TObject {
   TArrayI GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
 
   void DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmasOutliers = -1., Double_t minEff = 0.8, Double_t maxEff = 1.01 ) const;
+  void DrawStatContribution ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers = -1., Double_t minY = 0., Double_t maxY = 0.15 ) const;
 
   Double_t GetAverageStat ( Int_t firstRun, Int_t lastRun, Int_t itype = AliTrigChEffOutput::kHboardEff, Bool_t excludePeriphericBoards = kTRUE ) const;
 
