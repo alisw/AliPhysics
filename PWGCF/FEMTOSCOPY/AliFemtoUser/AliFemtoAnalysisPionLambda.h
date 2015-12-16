@@ -113,7 +113,7 @@ public:
   const AliFemtoTrackCut* GetPionCut() const;
 
   AliFemtoV0TrackCut* BuildLambdaCut(const CutParams&) const;
-  AliFemtoBasicTrackCut* BuildPionCut(const CutParams&) const ;
+  AliFemtoBasicTrackCut* BuildPionCut(const CutParams&) const;
   AliFemtoBasicEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 

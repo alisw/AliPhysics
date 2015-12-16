@@ -17,7 +17,7 @@ class AliFemtoEvent;
 #include "AliFemtoAnalysisPionLambda.h"
 
 
-/// \class AliFemtoCutMonitorPionLambda
+/// \namespace AliFemtoCutMonitorPionLambda
 /// \brief The cut monitor used by the pion-lambda femtoscopy analysis
 ///
 /// This cut monitor is designed to be used for ALL cuts in the
@@ -27,8 +27,7 @@ class AliFemtoEvent;
 /// is not expected to be used in any other analysis, but may be used as a
 /// model for other specializations.
 ///
-class AliFemtoPionLambdaCutMonitor {
-public:
+namespace AliFemtoPionLambdaCutMonitor {
 
   class Event : public AliFemtoCutMonitor {
   public:
@@ -92,6 +91,7 @@ public:
     virtual void Fill(const AliFemtoTrack* aEvent);
 
   protected:
+
     TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
@@ -147,7 +147,9 @@ public:
     virtual void Fill(const AliFemtoPair* aEvent);
 
   protected:
+
     TH1F *_minv;
+    TH1F *fKt;
     TH1F *fAvgSep_pion;
     TH1F *fAvgSep_proton;
 
