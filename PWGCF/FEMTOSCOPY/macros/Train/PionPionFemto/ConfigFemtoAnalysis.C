@@ -76,7 +76,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   if (macro_config.centrality_ranges.empty()) {
     // macro_config.centrality_ranges.push_back(std::pair<int, int>(0.0, 300));
     macro_config.centrality_ranges.push_back(0);
-    macro_config.centrality_ranges.push_back(300.0);
+    macro_config.centrality_ranges.push_back(10.0);
   }
 
   // default to identical pi+ and pi- analyses
@@ -90,8 +90,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
                  PI_MINUS = AliFemtoAnalysisPionPion::kPiMinus,
                      NOPI = AliFemtoAnalysisPionPion::kNone;
 
-
-
+  // loop over centrality ranges
   for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
     const int mult_low = macro_config.centrality_ranges[cent_it],
@@ -99,7 +98,6 @@ ConfigFemtoAnalysis(const TString& param_str = "")
 
     const TString mult_low_str = TString::Format("%0.2i", mult_low),
                  mult_high_str = TString::Format("%0.2i", mult_high);
-
 
     // loop over pair types
     for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
@@ -127,13 +125,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
         TString(type_1 == AliFemtoAnalysisPionPion::kPiPlus ? "pip" : "pim")
         + (type_2 == AliFemtoAnalysisPionPion::kNone ? "" : type_2 == AliFemtoAnalysisPionPion::kPiPlus ? "_pip" : "_pim");
 
-      // loop over centrality
-      //  for (std::vector<std::pair<float, float>>::iterator mult_range = analysis_config.centrality_ranges.begin();
-      //        mult_range != analysis_config.centrality_ranges.end();
-      //        ++mult_range) {
-      //     const double mult_low = mult_range->first,
-      //                 mult_high = mult_range->second;
-
+      // build unique analysis name from centrality and pair types
       const TString analysis_name = TString::Format(
         "PiPiAnalysis_%0.2i_%0.2i_%s", mult_low, mult_high, pair_type_str.Data()
       );
@@ -145,17 +137,16 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       cut_config.event_CentralityMax = mult_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
-      analysis->SetMinSizePartCollection(50);
-      analysis->SetVerboseMode(kFALSE);
+      analysis->SetVerboseMode(kTRUE);
 
       analysis->AddStanardCutMonitors();
 
-      AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(Form("c_qinv_%s", pair_type_str.Data()),
-                                                      100, 0.0, 1.2);
+      TString cf_title = TString("_qinv_") + pair_type_str;
+      AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), 100, 0.0, 1.2);
       analysis->AddCorrFctn(cf);
 
-
-      analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(Form("_q3D_%s", pair_type_str.Data()), 72, 1.1));
+      cf_title = TString("_q3D_") + pair_type_str;
+      analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, 72, 0.25));
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
@@ -166,7 +157,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       }
 
       if (macro_config.do_kt_q3d) {
-        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(Form("q3D_%s", pair_type_str.Data()), 72, 1.1));
+        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(TString("q3D_") + pair_type_str, 72, 1.1));
         kt_q3d->AddKtRange(0.2, 0.4);
         kt_q3d->AddKtRange(0.4, 0.6);
         kt_q3d->AddKtRange(0.6, 1.0);

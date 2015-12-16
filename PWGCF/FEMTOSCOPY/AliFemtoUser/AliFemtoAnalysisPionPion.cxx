@@ -4,7 +4,7 @@
 
 #include "AliFemtoAnalysisPionPion.h"
 
-#include "AliFemtoPionLambdaCutMonitor.h"
+#include "AliFemtoCutMonitorPionPion.h"
 
 #include "AliESDtrack.h"
 
@@ -46,7 +46,16 @@ const float default_pion_PtMin = 0.2,
             default_pion_DCAMax = 4.0,
 
             default_pion_NSigmaMin = -3.0,
-            default_pion_NSigmaMax = 3.0;
+            default_pion_NSigmaMax = 3.0,
+
+            default_pion_max_impact_xy = 2.4,
+            default_pion_max_impact_z = 3.0,
+
+            default_pion_max_tpc_chi_ndof = 0.032;
+
+const UInt_t default_pion_min_tpc_ncls = 80;
+const Bool_t default_pion_remove_kinks = kTRUE,
+             default_pion_set_label = kFALSE;
 
 
 const float default_event_EventMultMin = 0,
@@ -65,10 +74,14 @@ const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
 
 
-const Bool_t  default_pair_TPCOnly = kTRUE;
+const Bool_t  default_pair_TPCOnly = kTRUE,
+              default_pair_remove_same_label = kFALSE;
 const Float_t default_pair_TPCExitSepMin = -1.0,
               default_pair_MinAvgSeparationPos = 0.0,
-              default_pair_MinAvgSeparationNeg = 0.0;
+              default_pair_MinAvgSeparationNeg = 0.0,
+
+              default_pair_max_share_quality = 1.0,
+              default_pair_max_share_fraction = 0.05;
 
 
 const AliFemtoAnalysisPionPion::PionType
@@ -115,6 +128,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion():
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init();
 }
 
@@ -154,6 +168,7 @@ AliFemtoAnalysisPionPion
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init();
 }
 
@@ -176,6 +191,7 @@ AliFemtoAnalysisPionPion
 {
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init(params);
 }
 
@@ -196,13 +212,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
 {
   SetEnablePairMonitors(params.enable_pair_monitors);
   SetNumEventsToMix(params.num_events_to_mix);
-//   cout << "[AliFemtoAnalysisPionPion] Constructed with : " <<
-//     params.vertex_bins <<
-//     " " << params.vertex_min <<
-//     " " << params.vertex_max <<
-//     " " << params.mult_bins <<
-//     " " << params.mult_min <<
-//     " " << params.mult_max <<'\n';
+  SetMinSizePartCollection(params.min_coll_size);
   _Init(cut_params);
 }
 
@@ -264,6 +274,14 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_pion_NSigmaMin
   , default_pion_NSigmaMax
 
+  , default_pion_max_impact_xy
+  , default_pion_max_impact_z
+  , default_pion_max_tpc_chi_ndof
+
+  , default_pion_min_tpc_ncls
+  , default_pion_remove_kinks
+  , default_pion_set_label
+
     // Pion 2
   , default_pion_PtMin
   , default_pion_PtMax
@@ -280,6 +298,10 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_pair_TPCExitSepMin
   , default_pair_MinAvgSeparationPos
   , default_pair_MinAvgSeparationNeg
+
+  , default_pair_max_share_quality
+  , default_pair_max_share_fraction
+  , default_pair_remove_same_label
   };
 
   // sanity checks
@@ -288,6 +310,8 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   assert(params.pion_2_PtMin == default_pion_PtMin);
   assert(params.pair_TPCOnly == default_pair_TPCOnly);
   assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
+  assert(params.pair_max_share_fraction == default_pair_max_share_fraction);
+  assert(params.pair_remove_same_label == default_pair_remove_same_label);
 
   return params;
 }
@@ -309,7 +333,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
 //   cut->SetPt(p.pion_1_PtMin, p.pion_1_PtMax);
 //   cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
 //   cut->SetDCA(p.pion_1_DCAMin, p.pion_1_DCAMax);
-  
+
   AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
   cut->SetCharge(charge);
   cut->SetMass(PionMass);
@@ -320,12 +344,13 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
 
   /// Settings for TPC-Inner Runmode
   cut->SetStatus(AliESDtrack::kTPCin);
-  cut->SetminTPCncls(80);
-  cut->SetRemoveKinks(kTRUE);
-  cut->SetLabel(kFALSE);
-  cut->SetMaxTPCChiNdof(0.032);
-  cut->SetMaxImpactXY(2.4);
-  cut->SetMaxImpactZ(3.0);
+  cut->SetminTPCncls(p.pion_1_min_tpc_ncls);
+  cut->SetRemoveKinks(p.pion_1_remove_kinks);
+  cut->SetLabel(p.pion_1_set_label);
+  cut->SetMaxTPCChiNdof(p.pion_1_max_tpc_chi_ndof);
+  cut->SetMaxImpactXY(p.pion_1_max_impact_xy);
+  cut->SetMaxImpactZ(p.pion_1_max_impact_z);
+
   return cut;
 }
 
@@ -362,6 +387,16 @@ AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
   cut->SetMaxTPCChiNdof(2.0);
   cut->SetMaxImpactXY(2.4);
   cut->SetMaxImpactZ(3.0);
+
+  // uncomment these upon completion of the track-2 cut parameters
+  // cut->SetminTPCncls(p.pion_2_min_tpc_ncls);
+  // cut->SetRemoveKinks(p.pion_2_remove_kinks);
+  // cut->SetLabel(p.pion_2_set_label);
+  // cut->SetMaxTPCChiNdof(p.pion_2_max_tpc_chi_ndof);
+  // cut->SetMaxImpactXY(p.pion_2_max_impact_xy);
+  // cut->SetMaxImpactZ(p.pion_2_max_impact_z);
+
+
   return cut;
 }
 
@@ -400,9 +435,9 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
 {
   AliFemtoPairCutAntiGamma *cut = new AliFemtoPairCutAntiGamma();
 
-  cut->SetShareQualityMax(1.0);
-  cut->SetShareFractionMax(0.05);
-  cut->SetRemoveSameLabel(kFALSE);
+  cut->SetShareQualityMax(p.pair_max_share_quality);
+  cut->SetShareFractionMax(p.pair_max_share_fraction);
+  cut->SetRemoveSameLabel(p.pair_remove_same_label);
 
   // cut->SetTPCOnly(p.pair_TPCOnly);
   // cut->SetTPCExitSepMinimum(p.pair_TPCExitSepMin);
@@ -414,38 +449,41 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
 
 void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
 {
+  const bool identical = AnalyzeIdenticalParticles();
+
   if (fEventCut) {
-    fEventCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Event(true, fMCAnalysis, false),
-                             new AliFemtoPionLambdaCutMonitor::Event(false, fMCAnalysis, false));
+    fEventCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Event(true, identical, fMCAnalysis, false),
+                             new AliFemtoCutMonitorPionPion::Event(false, identical, fMCAnalysis, false));
   } else {
-    std::cout << " NO fEventCut!\n";
-    exit(1);
+    std::cout << "E-AliFemtoAnalysisPionPion::AddStanardCutMonitors: NO fEventCut!\n";
   }
 
-  const TString p1_type_str = (fPionType_1 == kPiPlus) ? "Pi+" : (fPionType_1 == kPiMinus) ? "Pi-" : "ERROR";
+  const TString p1_type_str = (fPionType_1 == kPiPlus)  ? "Pi+"
+                            : (fPionType_1 == kPiMinus) ? "Pi-"
+                                                        : "ERROR";
 
   if (fFirstParticleCut) {
-    fFirstParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pion(true, p1_type_str, fMCAnalysis),
-                                     new AliFemtoPionLambdaCutMonitor::Pion(true, p1_type_str, fMCAnalysis));
+    fFirstParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
+                                     new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis));
   }
 
-  if (!AnalyzeIdenticalParticles()) {
+  if (!identical) {
     const TString p2_type_str = (fPionType_2 == kPiPlus) ? "Pi+" : (fPionType_2 == kPiMinus) ? "Pi-" : "ERROR";
-    fSecondParticleCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pion(true, p2_type_str, fMCAnalysis),
-                                      new AliFemtoPionLambdaCutMonitor::Pion(false, p2_type_str, fMCAnalysis));
+    fSecondParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p2_type_str, fMCAnalysis),
+                                      new AliFemtoCutMonitorPionPion::Pion(false, p2_type_str, fMCAnalysis));
 
     // Non-Identical Pion Pairs
     if (fPairCut) {
       const TString pair_type_str = p1_type_str + "/" + p2_type_str;
-      fPairCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pair(true, pair_type_str, fMCAnalysis),
-                              new AliFemtoPionLambdaCutMonitor::Pair(false, pair_type_str, fMCAnalysis));
+      fPairCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pair(true, pair_type_str, fMCAnalysis),
+                              new AliFemtoCutMonitorPionPion::Pair(false, pair_type_str, fMCAnalysis));
     }
   }
   // Identical Pion Pairs
   else if (fPairCut) {
     const TString pair_type_str = "(Identical) " + p1_type_str + "/" + p1_type_str;
-    fPairCut->AddCutMonitor(new AliFemtoPionLambdaCutMonitor::Pair(true, pair_type_str, fMCAnalysis),
-                            new AliFemtoPionLambdaCutMonitor::Pair(false, pair_type_str, fMCAnalysis));
+    fPairCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pair(true, pair_type_str, fMCAnalysis),
+                            new AliFemtoCutMonitorPionPion::Pair(false, pair_type_str, fMCAnalysis));
   }
 
 }

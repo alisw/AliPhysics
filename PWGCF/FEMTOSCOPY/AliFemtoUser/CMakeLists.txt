@@ -36,6 +36,7 @@ set(SRCS
   AliFemtoKtBinnedCorrFunc.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
+  AliFemtoModelAllHiddenInfo.cxx
   AliFemtoModelCorrFctnSource.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelBPLCMSCorrFctn.cxx
@@ -46,20 +47,22 @@ set(SRCS
   AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
+  AliFemtoModelCorrFctnDirectYlm.cxx
+  AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
+  AliFemtoCutMonitorParticlePtPDG.cxx
+  AliFemtoCutMonitorParticlePtPDGV0.cxx
   AliFemtoPionLambdaCutMonitor.cxx
-  AliFemtoModelAllHiddenInfo.cxx
+  AliFemtoCutMonitorPionPion.cxx
   AliFemtoCutMonitorTrackTPCchiNdof.cxx
+  AliFemtoCutMonitorTrackTPCncls.cxx
   AliFemtoQATrackCut.cxx
   AliFemtoQAEventCut.cxx
-  AliFemtoCutMonitorTrackTPCncls.cxx
   AliFemtoShareQualityTPCEntranceSepQAPairCut.cxx
   AliFemtoShareQualityQAPairCut.cxx
   AliFemtoShareQualityCorrFctn.cxx
   AliFemtoYlm.cxx
   AliFemtoCorrFctnDirectYlm.cxx
-  AliFemtoModelCorrFctnDirectYlm.cxx
-  AliFemtoCutMonitorParticlePtPDG.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
@@ -70,11 +73,9 @@ set(SRCS
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
-  AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoPairCutRadialDistance.cxx
   AliFemtoPairCutPt.cxx
   AliFemtoAvgSepCorrFctn.cxx
-  AliFemtoCutMonitorParticlePtPDGV0.cxx
   AliFemtoAnalysisAzimuthalPbPb.cxx
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
