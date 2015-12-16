@@ -9,7 +9,6 @@
 class AliFemtoBasicTrackCut;
 class AliFemtoPairCutAntiGamma;
 class AliFemtoBasicEventCut;
-class AliFemtoCutMonitorPionPion;
 
 class TList;
 
@@ -102,8 +101,8 @@ public:
   /**
    * For each cut already set (i.e. pointer is not NULL) this function
    * creates two "standard" cut monitor (for pass/fail) and adds them to the
-   * cut. These cut monitors are defined with the AliFemtoPionLambdaCutMonitor
-   * class.
+   * cut. These cut monitors are found within the AliFemtoCutMonitorPionPion
+   * nam.
    */
   void AddStanardCutMonitors();
 
@@ -224,6 +223,14 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pion_1_NSigmaMin,
           pion_1_NSigmaMax;
 
+  Float_t pion_1_max_impact_xy,
+          pion_1_max_impact_z,
+          pion_1_max_tpc_chi_ndof;
+
+  UInt_t pion_1_min_tpc_ncls;
+  Bool_t pion_1_remove_kinks,
+         pion_1_set_label;
+
   // PION - 2
   Float_t pion_2_PtMin,
           pion_2_PtMax;
@@ -242,6 +249,10 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pair_TPCExitSepMin;
   Float_t pair_MinAvgSeparationPos;
   Float_t pair_MinAvgSeparationNeg;
+  Float_t pair_max_share_quality,
+          pair_max_share_fraction;
+  Bool_t pair_remove_same_label;
+
 };
 
 #endif
