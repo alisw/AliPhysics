@@ -339,9 +339,21 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
       
       char v0QAdirNameTrig[30]="VZERO_Performance_Trig";
       TDirectoryFile * v0QAdirTrig=(TDirectoryFile*)fin->Get(v0QAdirNameTrig);
-      TList *listTrig = (TList*)v0QAdirTrig->Get("QAVZEROHistsTrig");
-      TH2F *hadcpmtwithtimeTrig = (TH2F*)listTrig->FindObject("hadcpmtwithtime");
-
+      TH2F *hadcpmtwithtimeTrig ;
+      if(v0QAdirTrig)
+	{
+	  TList *listTrig = (TList*)v0QAdirTrig->Get("QAVZEROHistsTrig");
+	  hadcpmtwithtimeTrig = (TH2F*)listTrig->FindObject("hadcpmtwithtime");
+	}
+      else
+	{
+	  hadcpmtwithtimeTrig=new TH2F("hadcpmtwithtimeTrig","hadcpmtwithtimeTrig",64,-0.5,63.5,1,-10000,-9998);
+	  for(Int_t i=0;i<64;i++)
+	    {
+	      hadcpmtwithtimeTrig->SetBinContent(i+1,1,-9999.);
+	      hadcpmtwithtimeTrig->SetBinError(i+1,1,0);
+	    }
+	}
       double valBin=0;
       double Max=hadcpmtwithtime->GetYaxis()->GetLast(), Min=1;
       double mean=Max-Min,meanRing=0,meanV0X=0,meanV0=0;
@@ -363,6 +375,7 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 	    ChargeAllNo46+=valBin;
 
 	  PMmeanAdc[i]=MeanValue->GetMean();
+	  printf("PMmeanAdc[%d]: %.3f\n",i,PMmeanAdc[i]);
 	  meanRing+=PMmeanAdc[i];
 	  meanV0X +=PMmeanAdc[i];
 	  meanV0  +=PMmeanAdc[i];
@@ -844,7 +857,7 @@ Int_t MakeTrendingV0QA(TString qafilename,Int_t runNumber,TString ocdbStorage = 
 
       double valBin=-9999;
       TH1D*hadcXFull=hadcpmtwithtime->ProjectionX("hadcXFull",1,hadcpmtwithtime->GetYaxis()->GetLast());
-      TH1D*hadcX=hadcpmtwithtime->ProjectionX("hadcX",10,20);
+      TH1D*hadcX=hadcpmtwithtime->ProjectionX("hadcX",5,15);
       for(Int_t i=0;i<64;i++)
 	{
 	  valBin=hadcXFull->GetBinContent(i+1);
