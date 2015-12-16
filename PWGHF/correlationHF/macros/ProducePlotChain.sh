@@ -36,9 +36,9 @@ declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 5 4 )
+declare -a Nmccase=( 5 5 )
 declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -50,13 +50,13 @@ declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integr
 declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pp"
 declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
-declare -a fpromptfileDstar=( "outputkfcB6_23mb.root" "fPromptWithBeautyRpA.root" )
+declare -a fpromptfileDstar=( "outputkfc6_23mb.root" "fPromptWithBeautyRpA.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" )
 
 declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pp"
 declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_pp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" )
 
 ###### THE FOLLOWING DIRECTORIES WILL BE USED ONLY IN CASE THE FD IS NOT DONE WITH THIS SCRIPT FOR A GIVEN MESON
@@ -534,7 +534,7 @@ if [ ${doFitResultComparisonPPbtoMC} = 1 ];then
 .L ${HFCJlocalCodeDir}/CompareFitResults.C
 SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
-IncludePowheg(kFALSE)
+IncludePowheg(kTRUE)
 CompareFitResultsPPbDataToMC()
 EOF
 

@@ -94,6 +94,12 @@ void RestylePlot(TPad * pad, Int_t pos){
 
   Double_t maxY[3] = {0.,0.,0.};
 
+  TLegend *leg = new TLegend(0.35,0.48,0.92,0.72);
+  leg->SetLineColor(kWhite);
+  TString dZeroUnc = "";
+  TString dPlusUnc = "";
+  TString dStarUnc = "";    
+  
   for(Int_t jl=0;jl<entries;jl++){
     TObject *obj=(TObject*)lc->At(jl);
     TString strName=obj->ClassName();
@@ -121,8 +127,8 @@ void RestylePlot(TPad * pad, Int_t pos){
       if(str.Contains("TeV")) {
 	if(str.Contains("pp")) {
 	  syst=0;  //needed to set correctly the y range later
-	  tl->SetTitle("#bf{ALICE, pp, #sqrt{#it{s}} = 7 TeV}");
-        } else tl->SetTitle("#bf{ALICE, p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV}");
+	  tl->SetTitle("#bf{pp, #sqrt{#it{s}} = 7 TeV}");
+        } else tl->SetTitle("#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV}");
 	tl->SetX(tl->GetX()+0.04); 
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.08); 
 	tl->SetTextSize(0.045);
@@ -148,24 +154,28 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.67);
 	str.ReplaceAll("#cbar",",");
-	tl->SetTitle(str.Data());
+	tl->SetTitle("");
 	tl->SetTextSize(0.042);
+	dZeroUnc=str.Data();
+	
       }
 
       if(str.Contains("scale uncertainty") && tl->GetTextColor()==kAzure-2) {
 	tl->SetX(0.5);
 	tl->SetY(0.595); 
 	str.ReplaceAll("#cbar",","); 
-	tl->SetTitle(str.Data());
+	tl->SetTitle("");
 	tl->SetTextSize(0.042);
+	dStarUnc=str.Data();
       }
 
       if(str.Contains("scale uncertainty") && tl->GetTextColor()==kGreen+3) {
 	tl->SetX(0.5);
 	tl->SetY(0.52); 
 	str.ReplaceAll("#cbar",","); 
-	tl->SetTitle(str.Data());
+	tl->SetTitle("");
 	tl->SetTextSize(0.042);
+	dPlusUnc=str.Data();	
       }
 
     } //end of TLatex 'if'
@@ -183,8 +193,12 @@ void RestylePlot(TPad * pad, Int_t pos){
 	hist->GetYaxis()->SetTitleOffset(1.14);
 	hist->GetYaxis()->SetLabelSize(0.04);
 	hist->SetLineColor(kRed);	
-	hist->SetLineWidth(1);		
-	nextMeson=1;
+	hist->SetLineWidth(1);	
+    if(dZeroUnc.CompareTo("")) {
+      TLegendEntry* l1 = leg->AddEntry(hist,Form("#bf{%s}",dZeroUnc.Data()),"elp");
+      l1->SetTextColor(kRed);
+    } 
+    nextMeson=1;  
       }
       if(hist->GetMarkerColor()==kAzure-2) {
 	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
@@ -192,6 +206,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	hist->SetLineColor(kAzure-2);
 	hist->SetLineWidth(1);		
 	nextMeson=2;
+    TLegendEntry* l2 = leg->AddEntry(hist,Form("#bf{%s}",dStarUnc.Data()),"elp");
+    l2->SetTextColor(kAzure-2);		
       }
       if(hist->GetMarkerColor()==kGreen+3) {
 	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
@@ -199,6 +215,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	hist->SetLineColor(kGreen+3);
 	hist->SetLineWidth(1);			
 	nextMeson=3;
+    TLegendEntry* l3 = leg->AddEntry(hist,Form("#bf{%s}",dPlusUnc.Data()),"elp");
+    l3->SetTextColor(kGreen+3);		
       }
 
     } //end of TH1D 'if'
@@ -227,12 +245,12 @@ void RestylePlot(TPad * pad, Int_t pos){
   } //end of cycle on primitives
 
   pad->cd();
-   /*   if(pos==0){
-	TLatex *tlAlice=new TLatex(0.68,0.78,Form("#bf{ALICE}"));
+  if(pos==0){
+	TLatex *tlAlice=new TLatex(0.82,0.875,Form("#bf{ALICE}"));
 	tlAlice->SetNDC();
 	tlAlice->Draw();
-	tlAlice->SetTextSize(0.042);
-      }  */
+	tlAlice->SetTextSize(0.050);
+      }  
 /*
       if(syst==0) {
 	  TLatex *tly=new TLatex(0.19,0.74,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
@@ -249,6 +267,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 */
   Double_t maxFinalY = TMath::Max(maxY[0],TMath::Max(maxY[1],maxY[2])) * 1.9;
   maxFinalY = (TMath::Floor(maxFinalY*2)+1)/2.;
+
+  /*if(pos==0)*/ leg->Draw("same");
 
   TH1D *histFin = (TH1D*)pad->FindObject("hDataCorrectedTempl0CentrFpromptReflected");
   histFin->SetMaximum(maxFinalY);
