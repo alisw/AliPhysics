@@ -607,6 +607,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
       gPad->SetTicks(1,1);
+      gPad->SetGridy();
       Int_t detElemId = idetelem;
       if ( itype == AliTrigChEffOutput::kHchamberEff ) detElemId = 11+idetelem;
       else if ( itype == AliTrigChEffOutput::kHboardEff ) detElemId = boards[idetelem];
@@ -931,7 +932,7 @@ Double_t AliMTRChEffAnalysis::GetError ( Double_t errLow, Double_t errHigh ) con
 TH1* AliMTRChEffAnalysis::GetHisto ( TList* effHistoList, Int_t itype, Int_t icount, Int_t ichamber ) const
 {
   /// Get histogram
-  Int_t ihisto = ( itype == AliTrigChEffOutput::kHchamberEff ) ? itype : AliTrigChEffOutput::kNcounts + 4*AliTrigChEffOutput::kNcounts*(itype-1) + 4*icount + ichamber;
+  Int_t ihisto = ( itype == AliTrigChEffOutput::kHchamberEff ) ? icount : AliTrigChEffOutput::kNcounts + 4*AliTrigChEffOutput::kNcounts*(itype-1) + 4*icount + ichamber;
   return static_cast<TH1*>(effHistoList->At(ihisto));
 }
 
