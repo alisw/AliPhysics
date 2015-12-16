@@ -66,7 +66,7 @@ fTriggerData(0x0)
   
   if(!fGeometry)
     {
-      AliDebug(1, Form("Using default geometry"));
+//       AliDebug(1, Form("Using default geometry"));
       fGeometry =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
     }
   
@@ -110,13 +110,13 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
   
   Int_t iTRU = fGeometry->GetTriggerMapping()->GetTRUIndexFromOnlineHwAdd(hwAdd,iRCU,iSM);
       
-  if (AliDebugLevel())
-	{
-    UShort_t iBranch = ( hwAdd >> 11 ) & 0x1; // 0/1
-		printf("===\n");
-		printf("| Hw Adress: 0x%x => SM# %2d / RCU# %d / Branch# %d / TRU# %2d / ADC# %2d\n",
-			   hwAdd, fCaloRawStream->GetModule(), iRCU, iBranch, iTRU, fCaloRawStream->GetColumn());
-  }
+  // if (AliDebugLevel())
+  // 	{
+  //   UShort_t iBranch = ( hwAdd >> 11 ) & 0x1; // 0/1
+  // 		printf("===\n");
+  // 		printf("| Hw Adress: 0x%x => SM# %2d / RCU# %d / Branch# %d / TRU# %2d / ADC# %2d\n",
+  // 			   hwAdd, fCaloRawStream->GetModule(), iRCU, iBranch, iTRU, fCaloRawStream->GetColumn());
+  // }
 	
 	Int_t idx;
 	
@@ -150,10 +150,11 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 				
 				if (amp) timeSamples[nSamples++] = ((time << 16) & 0xFF0000) | (amp & 0xFFFF);
 				
-				if (AliDebugLevel())
-				{
-					printf("ADC# %2d / time: %2d amplitude: %d\n", fCaloRawStream->GetColumn(), time, amp);
-				}
+// 				if (AliDebugLevel())
+// 				{
+// 					printf("ADC# %2d / time: %2d amplitude: %d\n", fCaloRawStream->GetColumn(), time, amp);
+// 				}
+	
 			}
 		}
 	}
@@ -164,20 +165,20 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 		
 		const UShort_t* sig = bunchlist.at(iBunch).GetData();
 		
-		if (AliDebugLevel()) printf("| L0 id in F-ALTRO => bunch length is: %d\n", bunchlist.at(iBunch).GetLength());
+// 		if (AliDebugLevel()) printf("| L0 id in F-ALTRO => bunch length is: %d\n", bunchlist.at(iBunch).GetLength());
 		
 		for (Int_t i = 0; i < bunchlist.at(iBunch).GetLength(); i++) 
 		{
-			if (AliDebugLevel()) printf("| sig[%3d]: %x\n",i,sig[i]);
+// 			if (AliDebugLevel()) printf("| sig[%3d]: %x\n",i,sig[i]);
 										
 			for (Int_t j = 0; j < nBits; j++)
 			{
 				if (sig[i] & ( 1 << j ))
 				{
-					if (AliDebugLevel()) 
-					{
-						printf("| Add L0 patch index in TRU# %2d position %2d\n",iTRU,(fCaloRawStream->GetColumn() - 96) * 10 + j);
-					}
+// 					if (AliDebugLevel()) 
+// 					{
+// 						printf("| Add L0 patch index in TRU# %2d position %2d\n",iTRU,(fCaloRawStream->GetColumn() - 96) * 10 + j);
+// 					}
 					
 					if (fGeometry->GetAbsFastORIndexFromTRU(iTRU, (fCaloRawStream->GetColumn() - 96) * 10 + j, idx))
 					{
@@ -187,7 +188,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 						}
 						else
 						{
-							AliDebug(100,"L0: Trying to update trigger info of a non-existent digit!");
+// 							AliDebug(100,"L0: Trying to update trigger info of a non-existent digit!");
 							
 							fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
 							new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
@@ -226,42 +227,42 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 				dig->SetTimeSamples(timeSamples, nSamples);
 			}
 			
-			if (AliDebugLevel())
-			{
-				printf("| Add TRG digit of id# %4d from TRU# %2d ADC# %2d\n", idx, iTRU, fCaloRawStream->GetColumn());
-
-				dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
-				dig->Print("");
-
-				Int_t iSm, iTru, iEta, iPhi, iD[4], iFor;
-				if (fGeometry->GetPositionInTRUFromAbsFastORIndex(idx, iTru, iEta, iPhi))
-				{
-					printf("| Position => TRU: %2d Eta: %2d Phi: %2d\n", iTru, iEta, iPhi);
-				}
-				
-				if (fGeometry->GetPositionInSMFromAbsFastORIndex(idx, iSm, iEta, iPhi))
-				{
-					printf("| Position =>  SM: %2d Eta: %2d Phi: %2d\n", iSm, iEta, iPhi);
-				}
-								
-				if (fGeometry->GetCellIndexFromFastORIndex(idx, iD))
-				{
-					printf("| tower iDs: ");
-					for (Int_t i = 0; i < 4; i++)
-					{
-						printf("%5d ",iD[i]); 
-					}
-					printf("\n");
-					
-					for (Int_t i = 0; i < 4; i++)
-					{
-						if (fGeometry->GetFastORIndexFromCellIndex(iD[i], iFor))
-						{
-							printf("| tower %d to F-OR %d\n",iD[i],iFor);
-						}
-					}
-				}				
-			}
+// 			if (AliDebugLevel())
+// 			{
+// 				printf("| Add TRG digit of id# %4d from TRU# %2d ADC# %2d\n", idx, iTRU, fCaloRawStream->GetColumn());
+// 
+// 				dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+// 				dig->Print("");
+// 
+// 				Int_t iSm, iTru, iEta, iPhi, iD[4], iFor;
+// 				if (fGeometry->GetPositionInTRUFromAbsFastORIndex(idx, iTru, iEta, iPhi))
+// 				{
+// 					printf("| Position => TRU: %2d Eta: %2d Phi: %2d\n", iTru, iEta, iPhi);
+// 				}
+// 				
+// 				if (fGeometry->GetPositionInSMFromAbsFastORIndex(idx, iSm, iEta, iPhi))
+// 				{
+// 					printf("| Position =>  SM: %2d Eta: %2d Phi: %2d\n", iSm, iEta, iPhi);
+// 				}
+// 								
+// 				if (fGeometry->GetCellIndexFromFastORIndex(idx, iD))
+// 				{
+// 					printf("| tower iDs: ");
+// 					for (Int_t i = 0; i < 4; i++)
+// 					{
+// 						printf("%5d ",iD[i]); 
+// 					}
+// 					printf("\n");
+// 					
+// 					for (Int_t i = 0; i < 4; i++)
+// 					{
+// 						if (fGeometry->GetFastORIndexFromCellIndex(iD[i], iFor))
+// 						{
+// 							printf("| tower %d to F-OR %d\n",iD[i],iFor);
+// 						}
+// 					}
+// 				}				
+// 			}
 		}
 	}
 }
@@ -271,7 +272,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 {	
   // Post process digits
   
-  AliDebug(2,"Start post processing the raw digit maker");
+//   AliDebug(2,"Start post processing the raw digit maker");
   Int_t idx;
   const Int_t offsetEMCAL = AliDAQ::DdlIDOffset("EMCAL");
   
@@ -343,43 +344,43 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       };
       
       // Modify DCS config from STU payload content
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(0, 0, type[0]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(1, 0, type[1]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(2, 0, type[2]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(0, 0, type[3]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(1, 0, type[4]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(2, 0, type[5]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(0, 1, type[6]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(1, 1, type[7]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(2, 1, type[8]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(0, 1, type[9]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(1, 1, type[10]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(2, 1, type[11]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetRawData(type[12]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetRegion(type[13]);
-      fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetFw(type[14]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(0, 0, type[0]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(1, 0, type[1]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(2, 0, type[2]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(0, 0, type[3]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(1, 0, type[4]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(2, 0, type[5]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(0, 1, type[6]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(1, 1, type[7]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetG(2, 1, type[8]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(0, 1, type[9]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(1, 1, type[10]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJ(2, 1, type[11]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetRawData(type[12]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetRegion(type[13]);
+//       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetFw(type[14]);
             
       if (detectorID) {
         for (int i=0;i<4;i++) {
           type[15+i]=static_cast<Int_t>(fSTURawStream->GetPHOSScale(i));
-          fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetPHOSScale(i,type[15+i]);
+//           fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetPHOSScale(i,type[15+i]);
         }
         // Modify DCS config from STU payload content
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(0, 0, type[0]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(1, 0, type[1]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(2, 0, type[2]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(0, 0, type[3]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(1, 0, type[4]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(2, 0, type[5]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(0, 1, type[6]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(1, 1, type[7]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(2, 1, type[8]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(0, 1, type[9]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(1, 1, type[10]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(2, 1, type[11]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetRawData(type[12]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetRegion(type[13]);
-        fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetFw(type[14]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(0, 0, type[0]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(1, 0, type[1]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(2, 0, type[2]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(0, 0, type[3]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(1, 0, type[4]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(2, 0, type[5]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(0, 1, type[6]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(1, 1, type[7]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetG(2, 1, type[8]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(0, 1, type[9]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(1, 1, type[10]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetJ(2, 1, type[11]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetRawData(type[12]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetRegion(type[13]);
+//         fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig(kTRUE)->SetFw(type[14]);
       }
       
       trgData->SetL1FrameMask(fSTURawStream->GetFrameReceived());
@@ -395,7 +396,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       
       if (fSTURawStream->GetRawData())
       {
-        if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
+//         if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
         
         Int_t nTRU = fSTURawStream->GetnTRU();
         for (Int_t i = 0; i < nTRU; i++)
@@ -410,7 +411,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
           {
             if (adc[j] <= 0) continue;
             
-            AliDebug(10,Form("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]));
+//             AliDebug(10,Form("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]));
             
             fGeometry->GetAbsFastORIndexFromTRU(iTRU, j, idx);
             
@@ -418,11 +419,11 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
             {
               dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
               
-              if (!dig->GetNSamples()) AliDebug(10,Form("TRG digit of id: %4d found in STU but has no time sample in F-ALTRO!",idx));
+//               if (!dig->GetNSamples()) AliDebug(10,Form("TRG digit of id: %4d found in STU but has no time sample in F-ALTRO!",idx));
             }
             else
             {
-              AliDebug(10,Form("TRG digit of id: %4d found in STU but not in F-ALTRO! Create a new digit!",idx));
+//               AliDebug(10,Form("TRG digit of id: %4d found in STU but not in F-ALTRO! Create a new digit!",idx));
               
               fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
               new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
@@ -482,13 +483,12 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       for (int ithr = 0; ithr < 2; ithr++) {
         for (Int_t i = 0; i < fSTURawStream->GetNL1GammaPatch(ithr); i++) {
           if (fSTURawStream->GetL1GammaPatch(i, ithr, iTRU, x, y)) { // col (0..23), row (0..3)
-            iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
-            
-            if (AliDebugLevel()) printf("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
+//             if (AliDebugLevel()) printf("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
             
             Int_t vx, vy, lphi;
             
             if (fGeometry->GetTriggerMappingVersion() == 1) {
+              iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
               vx = 23 - x; 
               vy = y + 4 * int(iTRU / 2); // Position in EMCal frame
               if (iTRU % 2) vx += 24; // C side
@@ -504,7 +504,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
             }
             
             if (vx >= 0 && vy < lphi) {
-              if (AliDebugLevel()) printf("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
+//               if (AliDebugLevel()) printf("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
               
               if (fRawDigitIndex[idx] >= 0) {
                 dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
@@ -523,19 +523,24 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
         
         for (Int_t i = 0; i < fSTURawStream->GetNL1JetPatch(ithr); i++) {
           if (fSTURawStream->GetL1JetPatch(i, ithr, x, y)) { // col (0,15), row (0,11)
+            Int_t vx, vy;
             if (fGeometry->GetTriggerMappingVersion() == 1) {
-              x = 11 - y - int(sizeL1jpatch.X()) + 1;              
-              y = 15 - x - int(sizeL1jpatch.Y()) + 1;
+              vx = 11 - y - int(sizeL1jpatch.X()) + 1;              
+              vy = 15 - x - int(sizeL1jpatch.Y()) + 1;
+            } 
+            else {
+              vx = y;
+              vy = x;
             }
 
-            x *= int(sizeL1jsubr.X());
-            y *= int(sizeL1jsubr.Y());
+            vx *= int(sizeL1jsubr.X());
+            vy *= int(sizeL1jsubr.Y());
             
-            AliDebug(1, Form("| STU => Found L1 jet [%d] patch at (%2d , %2d)\n", ithr, x, y));
+//             AliDebug(1, Form("| STU => Found L1 jet [%d] patch at (%2d , %2d)\n", ithr, x, y));
             
             if (x >= 0 && y >= 0) {
-              if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(x, y, idx)) {
-                if (AliDebugLevel()) printf("| STU => Add L1 jet patch at (%2d , %2d)\n", x, y);
+              if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
+//                 if (AliDebugLevel()) printf("| STU => Add L1 jet patch at (%2d , %2d)\n", x, y);
                 
                 if (fRawDigitIndex[idx] >= 0) {
                   dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
