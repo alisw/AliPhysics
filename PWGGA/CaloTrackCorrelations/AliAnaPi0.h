@@ -360,6 +360,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimPi0Pt ;               //!<! Spectrum of Primary
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimPi0Y ;                //!<! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Yeta ;             //!<! PseudoRapidity distribution of primary particles  vs pT
@@ -368,6 +369,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0Phi ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccPhi;            //!<! Azimutal distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0OpeningAngle ;     //!<! Opening angle of pair versus pair energy, primaries
+  TH2F *   fhPrimPi0OpeningAnglePhotonCuts ; //!<! Opening angle of pair versus pair energy, primaries, photon pt cuts
   TH2F *   fhPrimPi0OpeningAngleAsym ; //!<! Opening angle of pair versus pair E asymmetry, pi0 primaries
   TH2F *   fhPrimPi0CosOpeningAngle ;  //!<! Cosinus of opening angle of pair version pair energy, pi0 primaries
   TH2F *   fhPrimPi0PtCentrality ;     //!<! primary pi0 reconstructed centrality  vs pT
@@ -381,6 +383,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimEtaPt ;               //!<! Spectrum of Primary
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimEtaY ;                //!<! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaYeta ;             //!<! PseudoRapidity distribution of primary particles vs pT
@@ -389,6 +392,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimEtaPhi ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimEtaAccPhi;            //!<! Azimutal distribution of primary with accepted daughters	 vs pT
   TH2F *   fhPrimEtaOpeningAngle ;     //!<! Opening angle of pair versus pair energy, eta primaries
+  TH2F *   fhPrimEtaOpeningAnglePhotonCuts ; //!<! Opening angle of pair versus pair energy, eta primaries, photon pT cuts
   TH2F *   fhPrimEtaOpeningAngleAsym ; //!<! Opening angle of pair versus pair E asymmetry, eta primaries
   TH2F *   fhPrimEtaCosOpeningAngle ;  //!<! Cosinus of opening angle of pair version pair energy, eta primaries
   TH2F *   fhPrimEtaPtCentrality ;     //!<! primary eta reconstructed centrality  vs pT
@@ -460,7 +464,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,30) ;
+  ClassDef(AliAnaPi0,31) ;
   /// \endcond
   
 } ;
