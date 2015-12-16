@@ -595,7 +595,11 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "[0]*x", 0.0, lMaxEst[iEst][iRun]);
             fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), "[0]*x", 0.0, lMaxEst[iEst][iRun]);
             
-            fitdata[iRun][iEst]->SetParameter(0,1.0);
+	    //Adjust range if needed
+	    //fitdata[iRun][iEst] -> SetRange(0,15000);
+	    //fitmc  [iRun][iEst] -> SetRange(0,15000);
+	    
+	    fitdata[iRun][iEst]->SetParameter(0,1.0);
             fitmc[iRun][iEst]->SetParameter(0,1.0);
             
             //remember to not be silly...
