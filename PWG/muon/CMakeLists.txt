@@ -64,10 +64,11 @@ set(SRCS
   AliAnalysisTaskMuonDistributions.cxx 
   AliAnalysisTaskMuonTreeBuilder.cxx 
   AliAnalysisTaskNorm.cxx
-  AliAnalysisTaskSEMuonsHF.cxx 
+  AliAnalysisTaskOnTheFlyAliAODDimuon.cxx
+  AliAnalysisTaskSEMuonsHF.cxx
   AliAnalysisTaskSingleMu.cxx 
-  AliAnalysisTaskSingleMuESD.cxx 
-  AliAODEventInfo.cxx 
+  AliAnalysisTaskSingleMuESD.cxx
+  AliAODEventInfo.cxx
   AliAODMuonReplicator.cxx
   AliCFMuonResTask1.cxx 
   AliCFMuonResUpsilon.cxx 

@@ -68,5 +68,7 @@
 
 #pragma link C++ class AliAnalysisCountTriggers+;
 
+#pragma link C++ class AliAnalysisTaskOnTheFlyAliAODDimuon+;
+
 #endif
 
