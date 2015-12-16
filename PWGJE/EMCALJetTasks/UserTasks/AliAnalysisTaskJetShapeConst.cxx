@@ -267,11 +267,12 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	    ptJetR = vpe->Pt();
       	 }
       	 if(fFromTree && vpe){
-      	    TLorentzVector *vecpe = MatchEmbeddedConstituentWithParticleLevel(vpe);
-      	    if(vecpe) {
-      	       mJetR  = vecpe->M();
-      	       var2   = vecpe->M();
-      	       ptJetR = vecpe->Pt();
+      	    Int_t exit = MatchEmbeddedConstituentWithParticleLevel();
+      	    
+      	    if(exit>0) {
+      	       mJetR  = fVecP->M();
+      	       var2   = fVecP->M();
+      	       ptJetR = fVecP->Pt();
       	    }
       	 }
 	 

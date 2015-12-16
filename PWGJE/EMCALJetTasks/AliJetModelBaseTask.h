@@ -151,7 +151,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   TH1F                  *fhEtaEmb ;               //!<! embedded tracks eta
   TH1F                  *fhPhiEmb ;               //!<! embedded tracks phi
   TH1I                  *fhEvents ;               //!<! store the number of events analysed
-
  private:
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented

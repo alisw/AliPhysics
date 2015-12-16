@@ -449,17 +449,11 @@ AliVParticle* AliAnalysisTaskJetShapeBase::GetEmbeddedConstituent(AliEmcalJet *j
 
 //__________________________________________________________________________________________________
 
-TLorentzVector* AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticleLevel(AliVParticle *vpe) {
-   if(!fTreeEmb) return 0x0;
+Int_t AliAnalysisTaskJetShapeBase::MatchEmbeddedConstituentWithParticleLevel() {
+   if(!fTreeEmb) return 0;
    
-   if(!vpe) return 0x0;
-   
-   TLorentzVector vEmbP;
-   vEmbP.SetPtEtaPhiM(vpe->Pt(), vpe->Eta(), vpe->Phi(), vpe->M());
-   
-   fTreeEmb->GetEntry(fThisEntry);
-   
-   return fVecP;
+   Int_t entry = fTreeEmb->GetEntry(fThisEntry);
+   return entry;
  
 }
 
