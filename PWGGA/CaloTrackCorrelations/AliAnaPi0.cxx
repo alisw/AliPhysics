@@ -85,19 +85,21 @@ fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0
 
 // MC histograms
 fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),
-fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),
+fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),          fhPrimPi0AccPtPhotonCuts(0x0),
 fhPrimPi0Y(0x0),             fhPrimPi0AccY(0x0),
 fhPrimPi0Yeta(0x0),          fhPrimPi0YetaYcut(0x0),       fhPrimPi0AccYeta(0x0),
 fhPrimPi0Phi(0x0),           fhPrimPi0AccPhi(0x0),
-fhPrimPi0OpeningAngle(0x0),  fhPrimPi0OpeningAngleAsym(0x0),fhPrimPi0CosOpeningAngle(0x0),
+fhPrimPi0OpeningAngle(0x0),  fhPrimPi0OpeningAnglePhotonCuts(0x0),
+fhPrimPi0OpeningAngleAsym(0x0),fhPrimPi0CosOpeningAngle(0x0),
 fhPrimPi0PtCentrality(0),    fhPrimPi0PtEventPlane(0),
 fhPrimPi0AccPtCentrality(0), fhPrimPi0AccPtEventPlane(0),
-fhPrimEtaE(0x0),             fhPrimEtaPt(0x0),
+fhPrimEtaE(0x0),             fhPrimEtaPt(0x0),             fhPrimEtaAccPtPhotonCuts(0x0),
 fhPrimEtaAccE(0x0),          fhPrimEtaAccPt(0x0),
 fhPrimEtaY(0x0),             fhPrimEtaAccY(0x0),
 fhPrimEtaYeta(0x0),          fhPrimEtaYetaYcut(0x0),       fhPrimEtaAccYeta(0x0),
 fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),
-fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
+fhPrimEtaOpeningAngle(0x0),  fhPrimEtaOpeningAnglePhotonCuts(0x0),
+fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
@@ -281,10 +283,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
     fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0AccPtPhotonCuts  = new TH1F("hPrimPi0AccPtPhotonCuts","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPrimPi0AccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Pt) ;
     outputContainer->Add(fhPrimPi0AccPt) ;
+    outputContainer->Add(fhPrimPi0AccPtPhotonCuts) ;
     
     Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
     fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
@@ -335,10 +340,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
     fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaAccPtPhotonCuts  = new TH1F("hPrimEtaAccPtPhotonCuts","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPrimEtaAccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPt) ;
     outputContainer->Add(fhPrimEtaAccPt) ;
+    outputContainer->Add(fhPrimEtaAccPtPhotonCuts) ;
     
     fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaY->SetYTitle("#it{Rapidity}");
@@ -422,13 +430,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     if(fFillAngleHisto)
     {
       fhPrimPi0OpeningAngle  = new TH2F
-      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5);
+      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
+
+      fhPrimPi0OpeningAnglePhotonCuts  = new TH2F
+      ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
+      fhPrimPi0OpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
+      fhPrimPi0OpeningAnglePhotonCuts->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhPrimPi0OpeningAnglePhotonCuts) ;
       
       fhPrimPi0OpeningAngleAsym  = new TH2F
-      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
+      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
       fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
       fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
@@ -440,13 +454,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
       
       fhPrimEtaOpeningAngle  = new TH2F
-      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,0,0.5);
+      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
+
+      fhPrimEtaOpeningAnglePhotonCuts  = new TH2F
+      ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
+      fhPrimEtaOpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
+      fhPrimEtaOpeningAnglePhotonCuts->SetXTitle("E_{#eta} (GeV)");
+      outputContainer->Add(fhPrimEtaOpeningAnglePhotonCuts) ;
       
       fhPrimEtaOpeningAngleAsym  = new TH2F
-      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,100,0,0.5);
+      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
@@ -1713,6 +1733,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
       Float_t  asym  = TMath::Abs((fPhotonMom1.E()-fPhotonMom2.E()) / (fPhotonMom1.E()+fPhotonMom2.E()));
       Double_t angle = fPhotonMom1.Angle(fPhotonMom2.Vect());
       
+      Bool_t cutAngle = kFALSE;
+      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) cutAngle = kTRUE;
+      
       AliDebug(2,Form("\t ACCEPTED pdg %d: pt %2.2f, phi %2.2f, eta %2.2f",pdg,mesonPt,mesonPhi,mesonYeta));
       
       if(pdg==111)
@@ -1735,6 +1758,14 @@ void AliAnaPi0::FillAcceptanceHistograms()
           if(mesonPt > 5)fhPrimPi0OpeningAngleAsym->Fill(asym, angle, GetEventWeight());
           fhPrimPi0CosOpeningAngle ->Fill(mesonPt, TMath::Cos(angle), GetEventWeight());
         }
+        
+        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+        {
+          fhPrimPi0AccPtPhotonCuts->Fill(mesonPt,            GetEventWeight()) ;
+          
+          if(fFillAngleHisto)
+            fhPrimPi0OpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
+        }
       }
       else if(pdg==221)
       {
@@ -1755,6 +1786,15 @@ void AliAnaPi0::FillAcceptanceHistograms()
           fhPrimEtaOpeningAngle    ->Fill(mesonPt, angle, GetEventWeight());
           if(mesonPt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym, angle, GetEventWeight());
           fhPrimEtaCosOpeningAngle ->Fill(mesonPt, TMath::Cos(angle), GetEventWeight());
+          
+          if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+          {
+            if(fUseAngleCut && angle > fAngleCut && angle < fAngleMaxCut) 
+              fhPrimEtaAccPtPhotonCuts->Fill(mesonPt,            GetEventWeight()) ;
+            
+            if(fFillAngleHisto)
+              fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
+          }
         }
       }
     } // Accepted
