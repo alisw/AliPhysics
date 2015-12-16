@@ -298,7 +298,11 @@ void  AliEMCAL::Init()
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
 
-  static AliEMCALRawUtils rawUtils;
+  //  static AliEMCALRawUtils rawUtils;
+  // RS why this should be static? This makes root to die produce "double delete"
+  // since the TF1 created in the rawUtils is garbage-collected by root before the 
+  // destructor is called during garbage collecting of the static object
+  AliEMCALRawUtils rawUtils;
   rawUtils.Digits2Raw();
 
 }
