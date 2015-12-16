@@ -76,8 +76,8 @@ fTriggerData(0x0)
 
   fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
 
-  Int_t nRawDigits = 5952; //fGeometry->GetNTotalTRU() * 96;
-  for (Int_t i=0; i<nRawDigits; i++) fRawDigitIndex[i] = -1;
+  //Int_t nRawDigits = 5952; //fGeometry->GetNTotalTRU() * 96;
+  for (Int_t i=kMaxDigitIndex;i--;) fRawDigitIndex[i] = -1;
 }	
 
 //_______________

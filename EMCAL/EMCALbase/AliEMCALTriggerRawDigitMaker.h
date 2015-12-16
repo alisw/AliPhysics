@@ -26,6 +26,7 @@ class AliEMCALTriggerRawDigitMaker : public TObject
 {
 	
 public:
+  enum {kMaxDigitIndex=5952};
 	         AliEMCALTriggerRawDigitMaker();
 	virtual ~AliEMCALTriggerRawDigitMaker();
 	
@@ -45,7 +46,7 @@ protected:
 	AliEMCALTriggerDCSConfigDB*  fDCSConfig;     // DCS config
 	TClonesArray*                fTriggerData;   // Trigger data
 	
-	Int_t                        fRawDigitIndex[4992]; // Raw digit indexes
+	Int_t                        fRawDigitIndex[kMaxDigitIndex]; // Raw digit indexes
 
 private:
 	
