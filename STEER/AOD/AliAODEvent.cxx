@@ -1123,3 +1123,41 @@ Bool_t AliAODEvent::IsIncompleteDAQ()
 
 AliVEvent::EDataLayoutType AliAODEvent::GetDataLayoutType() const {return AliVEvent::kAOD;}
 
+//______________________________________________________________________________
+TClonesArray* AliAODEvent::GetDimuons() const
+{
+  return fDimuons;
+}
+
+//______________________________________________________________________________
+Int_t AliAODEvent::GetNDimuons() const
+{
+  return fDimuons ? fDimuons->GetEntriesFast() : 0;
+}
+
+//______________________________________________________________________________
+Int_t AliAODEvent::GetNumberOfDimuons() const
+{
+  return GetNDimuons();
+}
+
+//______________________________________________________________________________
+AliAODDimuon* AliAODEvent::GetDimuon(Int_t nDimu) const
+{
+  if ( fDimuons )
+  {
+    return (AliAODDimuon*)fDimuons->UncheckedAt(nDimu);
+  }
+  return 0x0;
+}
+
+//______________________________________________________________________________
+Int_t AliAODEvent::AddDimuon(const AliAODDimuon* dimu)
+{
+  if ( fDimuons )
+  {
+    new((*fDimuons)[fDimuons->GetEntriesFast()]) AliAODDimuon(*dimu);
+    return fDimuons->GetEntriesFast()-1;
+  }
+  return -1;
+}
