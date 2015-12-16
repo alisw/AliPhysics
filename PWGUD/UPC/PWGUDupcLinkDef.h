@@ -12,6 +12,6 @@
 #pragma link C++ class AliUPCTrack+;
 #pragma link C++ class AliUPCMuonTrack+;
 #pragma link C++ class AliUPCEvent+;
-#pragma link C++ class AliAnalysisTaskUpcFilterSemiforward+;
+#pragma link C++ class AliAnalysisTaskUpcFilter+;
 
 #endif

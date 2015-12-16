@@ -21,7 +21,7 @@ AliAnalysisTaskUpcFilterSemiforward *AddTaskUpcFilter() {
   if( mgr->GetMCtruthEventHandler() ) isMC = kTRUE;
 
   // Create tasks
-  AliAnalysisTaskUpcFilterSemiforward *task = new AliAnalysisTaskUpcFilterSemiforward();
+  AliAnalysisTaskUpcFilter *task = new AliAnalysisTaskUpcFilter();
   task->SetIsESD( isESD );
   task->SetIsMC( isMC );
   mgr->AddTask(task);
