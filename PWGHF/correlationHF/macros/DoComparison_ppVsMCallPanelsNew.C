@@ -25,6 +25,7 @@ Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kCyan,kViolet};
 Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16"};
+TString strmesonMCpt[nbinDpt]={"3To5","5To8","8To16"};
 Double_t minYaxis[nbinAssocpt]={-0.6,-0.6,-0.29}; // or -0.6 for all  
 Double_t maxYaxis[nbinAssocpt]={5.7,1.9,2.2};// or 2.9 for the first and 1.9 for the last
 //Double_t maxYaxis[nbinAssocpt]={5.7,2.9,3.2};// or 2.9 for the first and 1.9 for the last  //used so far
@@ -798,9 +799,9 @@ void LoadFileNamesAll(){
 	  filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
 
 	else
-	  if (iset==4)filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
+	  if (iset==4)filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
 	  else
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//MC
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
 
 	cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
 	cout<<filenames[iset][kassoc][jmes]<<endl;
