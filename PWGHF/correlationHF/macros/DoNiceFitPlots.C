@@ -218,7 +218,7 @@ c->ls();
 
 //UNCOMMENT TO WRITE FORMULA AND BASELINE APPROACH INFO
  
-  TLatex *tl5=new TLatex(0.21,0.58,Form("#bf{Fit function: f(#Delta#varphi) = #it{b} + #frac{Y_{NS}}{#sqrt{2#pi}#sigma_{NS}} exp#left(- #frac{(#Delta#varphi)^{2}}{2#sigma_{NS}^{2}}#right)+#frac{Y_{AS}}{#sqrt{2#pi}#sigma_{AS}} exp#left(- #frac{(#Delta#varphi-#pi)^{2}}{2#sigma_{AS}^{2}}#right)}"));
+  TLatex *tl5=new TLatex(0.21,0.58,Form("#bf{Fit function: f(#Delta#varphi) = #it{b} + #frac{#it{A}_{NS}}{#sqrt{2#pi}#sigma_{NS}} exp#left(- #frac{(#Delta#varphi)^{2}}{2#sigma_{NS}^{2}}#right)+#frac{#it{A}_{AS}}{#sqrt{2#pi}#sigma_{AS}} exp#left(- #frac{(#Delta#varphi-#pi)^{2}}{2#sigma_{AS}^{2}}#right)}"));
   tl5->SetNDC();
   tl5->SetTextSize(0.0255);
   tl5->Draw("same");
