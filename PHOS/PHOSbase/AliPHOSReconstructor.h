@@ -108,10 +108,11 @@ private:
   TClonesArray             *fTmpDigLG;       //! Temporary array of LG digits
   static TClonesArray      *fgDigitsArray;   //! Array of PHOS digits
   static TObjArray         *fgEMCRecPoints;  //! Array of EMC rec.points
+  static TObjArray         *fgCPVRecPoints;  //! Array of CPV rec.points
   static AliPHOSCalibData * fgCalibData ;    //! Calibration database if aval.
   static TClonesArray      *fgTriggerDigits; //! Array of PHOS trigger digits
 
-  ClassDef(AliPHOSReconstructor,10)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,11)  // PHOS Reconstruction class
 
 }; 
 
