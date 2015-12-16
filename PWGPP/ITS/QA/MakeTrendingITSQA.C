@@ -1,11 +1,11 @@
 /*
-  rirusso@cern.ch - last update on 16/02/2014
-  Macro to run the ITS QA trending by accessing the std QA output,
-  to be mainly used with the automatic scripts to fill the QA repository.
-  Launch with 
-  aliroot -l -b -q "MakeTrendingITSQA.C(\"${fullpath}/QAresults.root\", ${run}, ...)
-  The macro produces a file containing the tree of trending variables and the main plots.
-*/
+ rirusso@cern.ch - last update on 16/02/2014
+ Macro to run the ITS QA trending by accessing the std QA output,
+ to be mainly used with the automatic scripts to fill the QA repository.
+ Launch with
+ aliroot -l -b -q "MakeTrendingITSQA.C(\"${fullpath}/QAresults.root\", ${run}, ...)
+ The macro produces a file containing the tree of trending variables and the main plots.
+ */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TH1F.h>
 #include <TH2F.h>
@@ -39,36 +39,36 @@
 Double_t LangausFun(Double_t *x, Double_t *par) ;
 
 Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path of the QA output; set IsOnGrid to prepend "alien://"
-			Int_t runNumber= 133005,          // run number
-			Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
-			Bool_t canvasE = kFALSE,  //enable display plots on canvas and save png
-			Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
-      TString ocdbStorage = "raw://") //set the default ocdb storage
-{   
-  // macro to generate tree with ITS QA trending variables
-  // access qa PWGPP output files  
-  if (!qafilename) {
-    Printf("Error - Invalid input file");
-    return 1;
-  }
+                        Int_t runNumber= 133005,          // run number
+                        Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
+                        Bool_t canvasE = kFALSE,  //enable display plots on canvas and save png
+                        Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
+                        TString ocdbStorage = "raw://") //set the default ocdb storage
+{
+    // macro to generate tree with ITS QA trending variables
+    // access qa PWGPP output files
+    if (!qafilename) {
+        Printf("Error - Invalid input file");
+        return 1;
+    }
 
 
 
-  char defaultQAoutput[30]="QAresults.root";
-  char * treePostFileName="trending.root";
-  
-  if (IsOnGrid) TGrid::Connect("alien://");
-  TFile * fin = TFile::Open(qafilename,"r");
-  if (!fin) {
-    Printf("ERROR: QA output not found. Exiting...\n");
-    return -1;
-  } else {
-    Printf("INFO: QA output file %s open. \n",fin->GetName());
-  }
+    char defaultQAoutput[30]="QAresults.root";
+    char * treePostFileName="trending.root";
+
+    if (IsOnGrid) TGrid::Connect("alien://");
+    TFile * fin = TFile::Open(qafilename,"r");
+    if (!fin) {
+        Printf("ERROR: QA output not found. Exiting...\n");
+        return -1;
+    } else {
+        Printf("INFO: QA output file %s open. \n",fin->GetName());
+    }
 
     TFile * trendFile = new TFile(treePostFileName,"recreate");
 
-  
+
     ///// SDD Variables
     
     Int_t nrun,nEvents, nEventsTriggered;
@@ -87,7 +87,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     Float_t errMinTime=0.;
     Float_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
     Float_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5;
-   
+
     
     //// Vertex Variables
     
@@ -112,8 +112,8 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
 
 
     ///// Matching Variables
-
     
+
 
     Float_t FracSPD1;
     Float_t errFracSPD1;
@@ -260,7 +260,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     ttree->Branch("MPVdEdxTB5",&MPVdEdxTB5,"MPVdEdxTB5/F"); // most probable value of dE/Fx distribution of SDD - large drift time
     ttree->Branch("errMPVdEdxTB5",&errMPVdEdxTB5,"errMPVdEdxTB5/F"); // most probable value of dE/Fx distribution of SDD - large drift time
 
-  
+
     
     
     ttree->Branch("Eff6Pt02",&Eff6Pt02,"Eff6Pt02/F"); // matching efficiency low pt 6 clusters
@@ -330,7 +330,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     ttree->Branch("errFracSPD2",&errFracSPD2,"errFracSPD2/F");
     
     
-///////////////   Vertex part
+    ///////////////   Vertex part
     nrun=runNumber;
     
     
@@ -355,13 +355,13 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
     
     Int_t iRun=runNumber;
-	
+
     TH1F *xVtxTRK = (TH1F*)VertxList->FindObject("fhTRKVertexX");
     
     
     TH1F *yVtxTRK = (TH1F*)VertxList->FindObject("fhTRKVertexY");
     
-   
+
     
     TH1F *zVtxTRK = (TH1F*)VertxList->FindObject("fhTRKVertexZ");
     
@@ -371,7 +371,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     if(xVtxSPD->GetEntries()==0){
         printf("Run %d xVtxSOD EMPTY -> Return\n",iRun);
         
-        return 0;
+
     }
     
     TH1F *yVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexY");
@@ -379,7 +379,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     if(yVtxSPD->GetEntries()==0){
         printf("Run %d yVtxSPD EMPTY -> Return\n",iRun);
         
-        return 0 ;
+
     }
     
     TH1F *zVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexZ");
@@ -387,7 +387,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     if(zVtxSPD->GetEntries()==0){
         printf("Run %d zVtxSPD EMPTY -> Return\n",iRun);
         
-        return 0;
+
     }
     
     TF1 *fxTRK = new TF1("gausx", "gaus", -1, 1);
@@ -437,7 +437,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     /////////// end of vertex part
     
     
-  ///////////////////////  SSD Part
+    ///////////////////////  SSD Part
     char SSDDirName[25]="PWGPPdEdxSSDQA";
     
     char SSDListName[25]="SSDdEdxQA";
@@ -473,85 +473,84 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
     if(QAchargeRatio->GetEntries()==0){
         printf("Run %d QAchargeRatio EMPTY -> Return\n",iRun);
-            }
+    }
     
     TH2F* QAcharge=(TH2F*)SSDList->FindObject("QACharge");
     
     if(QAcharge->GetEntries()==0){
         printf("Run %d QAcharge EMPTY -> Return\n",iRun);
         
-        return 0;
     }
     
     if((QAcharge)&&(QAchargeRatio)&&(QAcharge->GetEntries()>10)&&(QAchargeRatio->GetEntries()>10)){
-    
-    Int_t biny = QAcharge->GetXaxis()->FindBin(747);
-    Int_t maxy = QAcharge->GetXaxis()->GetXmax();
-    
-    Int_t  contEmpty=0;
-    Int_t  contFull=0;
-    
-    TH1D *hChargeL5=QAcharge->ProjectionY("hChargeL5",0,biny);
-    TH1D *hChargeL6=QAcharge->ProjectionY("hChargeL6",biny,maxy);
-    
 
-    
-    TH1D *hChargeRatioL5=QAchargeRatio->ProjectionY("hChargeRatioL5",0,biny);
-    TH1D *hChargeRatioL6=QAchargeRatio->ProjectionY("hChargeRatioL6",biny,maxy);
-    
+        Int_t biny = QAcharge->GetXaxis()->FindBin(747);
+        Int_t maxy = QAcharge->GetXaxis()->GetXmax();
 
-    if(QAcharge->GetEntries()< 45000)
-        contEmpty=1;
-    
-    else{
-        for(Int_t i =0;i<1698;i++){
-            
-            TString tmpQ("Q");
-            tmpQ+=i;
-            
-            TH1D* fHist1DQ= QAcharge->ProjectionY(tmpQ,i+1,i+1);
-            Double_t mean=fHist1DQ->GetMean();
-            
-            if(TMath::Abs(mean)<1.0 ||fHist1DQ->GetEntries()<10)
-                contEmpty++;
-            
-            else
-                contFull++;
-            
+        Int_t  contEmpty=0;
+        Int_t  contFull=0;
+
+        TH1D *hChargeL5=QAcharge->ProjectionY("hChargeL5",0,biny);
+        TH1D *hChargeL6=QAcharge->ProjectionY("hChargeL6",biny,maxy);
+
+
+
+        TH1D *hChargeRatioL5=QAchargeRatio->ProjectionY("hChargeRatioL5",0,biny);
+        TH1D *hChargeRatioL6=QAchargeRatio->ProjectionY("hChargeRatioL6",biny,maxy);
+
+
+        if(QAcharge->GetEntries()< 45000)
+            contEmpty=1;
+
+        else{
+            for(Int_t i =0;i<1698;i++){
+
+                TString tmpQ("Q");
+                tmpQ+=i;
+
+                TH1D* fHist1DQ= QAcharge->ProjectionY(tmpQ,i+1,i+1);
+                Double_t mean=fHist1DQ->GetMean();
+
+                if(TMath::Abs(mean)<1.0 ||fHist1DQ->GetEntries()<10)
+                    contEmpty++;
+
+                else
+                    contFull++;
+
+            }
         }
+        
+        TF1 *lfunLay5 = new TF1("LangausFunLay5",LangausFun,50.,300.,4);
+        lfunLay5->SetParameter(0,5.);
+        lfunLay5->SetParameter(1,80.);
+        lfunLay5->SetParameter(2,hChargeL5->GetEntries()/10.);
+        lfunLay5->SetParameter(3,10.);
+        lfunLay5->SetParLimits(3,0.,20);
+        hChargeL5->Fit(lfunLay5,"NQLR");
+        TF1 *lfunLay6 = new TF1("LangausFunLay6",LangausFun,50.,300.,4);
+        lfunLay6->SetParameter(0,5.);
+        lfunLay6->SetParameter(1,80.);
+        lfunLay6->SetParameter(2,hChargeL6->GetEntries()/10.);
+        lfunLay6->SetParameter(3,10.);
+        lfunLay6->SetParLimits(3,0.,20);
+        hChargeL6->Fit(lfunLay6,"NQLR");
+        
+
+
+
+
+
+        MPVL5=(Float_t)lfunLay5->GetParameter(1);
+        MPVErrL5=(Float_t)lfunLay5->GetParError(1);
+        MPVL6=(Float_t)lfunLay6->GetParameter(1);
+        MPVErrL6=(Float_t)lfunLay6->GetParError(1);
+        ChargeRatioL5=(Float_t)hChargeRatioL5->GetMean();
+        ChargeRatioErrL5=(Float_t)hChargeRatioL5->GetMeanError();
+        ChargeRatioL6=(Float_t)hChargeRatioL6->GetMean();
+        ChargeRatioErrL6=(Float_t)hChargeRatioL6->GetMeanError();
+        EmptyModulesSDD=(Float_t)contEmpty;
+
     }
-
-    TF1 *lfunLay5 = new TF1("LangausFunLay5",LangausFun,50.,300.,4);
-    lfunLay5->SetParameter(0,5.);
-    lfunLay5->SetParameter(1,80.);
-    lfunLay5->SetParameter(2,hChargeL5->GetEntries()/10.);
-    lfunLay5->SetParameter(3,10.);
-    lfunLay5->SetParLimits(3,0.,20);
-    hChargeL5->Fit(lfunLay5,"NQLR");
-    TF1 *lfunLay6 = new TF1("LangausFunLay6",LangausFun,50.,300.,4);
-    lfunLay6->SetParameter(0,5.);
-    lfunLay6->SetParameter(1,80.);
-    lfunLay6->SetParameter(2,hChargeL6->GetEntries()/10.);
-    lfunLay6->SetParameter(3,10.);
-    lfunLay6->SetParLimits(3,0.,20);
-    hChargeL6->Fit(lfunLay6,"NQLR");
-    
-
-
-
-        
-        
-    MPVL5=(Float_t)lfunLay5->GetParameter(1);
-    MPVErrL5=(Float_t)lfunLay5->GetParError(1);
-    MPVL6=(Float_t)lfunLay6->GetParameter(1);
-    MPVErrL6=(Float_t)lfunLay6->GetParError(1);
-    ChargeRatioL5=(Float_t)hChargeRatioL5->GetMean();
-    ChargeRatioErrL5=(Float_t)hChargeRatioL5->GetMeanError();
-    ChargeRatioL6=(Float_t)hChargeRatioL6->GetMean();
-    ChargeRatioErrL6=(Float_t)hChargeRatioL6->GetMeanError();
-    EmptyModulesSDD=(Float_t)contEmpty;
-    
-}
 
     /////////// end of SSD part
     
@@ -590,16 +589,16 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
     TH1F* hcllay=(TH1F*)SDDList->FindObject("hCluInLay");
     
-
     
-  
+
+
     if(hcllay->GetBinContent(1)>0){
         for(Int_t iLay=0; iLay<6; iLay++){
             fracT[iLay]=hcllay->GetBinContent(iLay+2)/hcllay->GetBinContent(1);
             efracT[iLay]=TMath::Sqrt(fracT[iLay]*(1-fracT[iLay])/hcllay->GetBinContent(1));
         }
     }
-  
+
     fracTrackWithClu1=fracT[0];
     errfracTrackWithClu1=efracT[0];
     fracTrackWithClu2=fracT[1];
@@ -616,32 +615,32 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     cout<<endl<<errfracTrackWithClu6<<endl;
 
     TH1F* hmodT=(TH1F*)SDDList->FindObject("hTPMod");
-  
+
     
     TH1F* hgamod=(TH1F*)SDDList->FindObject("hGAMod");
     
- 
+
 
     
     TH1F* hev=(TH1F*)SDDList->FindObject("hNEvents");
-   
-     nTotEvents=hev->GetBinContent(2);
-     nTrigEvents=hev->GetBinContent(3);
-     nEvents=nTotEvents;
-  
-  
+
+    nTotEvents=hev->GetBinContent(2);
+    nTrigEvents=hev->GetBinContent(3);
+    nEvents=nTotEvents;
+
+
     
     TH1F* htimT=(TH1F*)SDDList->FindObject("hDrTimTPAll");
-  
+
     
     TH1F* htimTe=(TH1F*)SDDList->FindObject("hDrTimTPExtra");
     
-  
+
     if(htimT->GetEntries()>0){
         fracExtra=htimTe->GetEntries()/htimT->GetEntries();
         errfracExtra=TMath::Sqrt(htimTe->GetEntries())/htimT->GetEntries();
     }
- 
+
     for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
         Float_t tim=htimT->GetBinCenter(iBin);
         if(tim>2000. && tim<4000.){
@@ -649,7 +648,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
             cntBins+=1;
         }
     }
-  
+
     if(cntBins>0){
         averPoints/=cntBins;
         for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
@@ -660,7 +659,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
             }
         }
     }
-      meanDrTime=htimT->GetMean();
+    meanDrTime=htimT->GetMean();
     errmeanDrTime=htimT->GetMeanError();
     TH2F* hdedxmod=(TH2F*)SDDList->FindObject("hdEdxVsMod");
     
@@ -672,7 +671,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
 
     
     TH1F* hSigTim5=(TH1F*)SDDList->FindObject("hSigTimeInt5");
-   
+
     //Fitting the same distributions in order to have the MPV
     TF1 *lfunLay3 = new TF1("LangausFunLay3",LangausFun,50.,300.,4);
     lfunLay3->SetParameter(0,5.);
@@ -706,8 +705,8 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
 
 
-    
-  
+
+
     MPVdEdxLay3=lfunLay3->GetParameter(1);
     errMPVdEdxLay3=lfunLay3->GetParError(1);
     MPVdEdxLay4=lfunLay4->GetParameter(1);
@@ -754,7 +753,6 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     if(hFiredChip->GetEntries()==0){
         printf("Run %d hFiredChip EMPTY -> Return\n",iRun);
         
-        return 0;
     }
     
     Int_t nHSsInner=0,nHSsOuter=0;
@@ -772,7 +770,6 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     if(fHistPtTPCInAcc->GetEntries()==0){
         check1=1;
         printf("Run %dfHistPtTPCInAcc  EMPTY -> Return\n",iRun);
-        return 0;
     }
     
     TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
@@ -783,7 +780,7 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
     
     TH1F *fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
-   
+
     TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
     
     TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
@@ -946,7 +943,6 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     errEffTOTPt1=ioErrors[24];
     EffTOTPt10=ioValues[25];
     errEffTOTPt10=ioErrors[25];
-
     
     
     
@@ -956,14 +952,15 @@ Int_t MakeTrendingITSQA(TString qafilename ="QAresults.root",       //full path 
     
     
 
-     ttree->Fill();
-  printf("==============  Saving trending quantities in tree for run %i ===============\n",runNumber);
-  trendFile->cd();
-  ttree->Write();
-  trendFile->Close();
-  
 
-  return  1;
+    ttree->Fill();
+    printf("==============  Saving trending quantities in tree for run %i ===============\n",runNumber);
+    trendFile->cd();
+    ttree->Write();
+    trendFile->Close();
+
+
+    return  1;
 }
 
 
