@@ -62,11 +62,12 @@ protected:
     // --- Task to copy header information ---------------------------
     // gROOT->Macro("AddTaskCopyHeader.C");
 
+    UInt_t mask = AliVEvent::kAny;
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskForwardMCCorr.C",Form("%d", maxStrips)); 
+    CoupleSECar("AddTaskForwardMCCorr.C",Form("%d", maxStrips), mask); 
 
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskCentralMCCorr.C", Form("%d", spdEffective));
+    CoupleSECar("AddTaskCentralMCCorr.C", Form("%d", spdEffective), mask);
   }
   //__________________________________________________________________
   /** 
