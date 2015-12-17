@@ -76,10 +76,7 @@ public:
   Bool_t CheckGEANTProcess(Int_t label, TMCProcess process) const;
   Bool_t IsSecondaryFromWeakDecay(Int_t label) const;
   Bool_t IsSecondaryFromMaterial(Int_t label) const;
-  //Bool_t IsEleFromInjectedSignal(Int_t label) const;
-  Bool_t IsFromBGEvent(Int_t label) const;
-  Bool_t CheckHijingHeader() const;
-  
+
   Bool_t HaveSameMother(const AliDielectronPair *pair) const;
   
   Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
@@ -116,7 +113,6 @@ private:
 
   AnalysisType fAnaType;    // Analysis type
   Bool_t fHasMC;            // Do we have an MC handler?
-  mutable Int_t  fHasHijingHeader;  // mutable needed to change it in a const function.
   
   static AliDielectronMC* fgInstance; //! singleton pointer
   TClonesArray* fMcArray; //mcArray for AOD MC particles 
@@ -135,7 +131,7 @@ private:
   Bool_t CheckIsRadiative(Int_t label) const;
   Bool_t CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const;
 
-  ClassDef(AliDielectronMC, 1)
+  ClassDef(AliDielectronMC, 0)
 };
 
 //
