@@ -36,9 +36,11 @@ declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 5 5 )
+declare -a Nmccase=( 5 4 )
+declare -a mccasePP=( 1 1 1 1 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, POHWEG+Perugia2011, PYTHIA8, HERWIG, POWHEG+Perugia2011 with EPS09
+declare -a mccasePPb=( 1 1 1 0 1 0 1 )
 declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -50,13 +52,13 @@ declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integr
 declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pp"
 declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
-declare -a fpromptfileDstar=( "outputkfc6_23mb.root" "fPromptWithBeautyRpA.root" )
+declare -a fpromptfileDstar=( "outputkfcB6_23mb.root" "fPromptWithBeautyRpA.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" )
 
 declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pp"
 declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_pp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" )
 
 ###### THE FOLLOWING DIRECTORIES WILL BE USED ONLY IN CASE THE FD IS NOT DONE WITH THIS SCRIPT FOR A GIVEN MESON
@@ -87,7 +89,7 @@ declare -a includev2=( 0 0 )
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
 ############  IN CASE SOME WERE ALREADY DONE WITH THIS VERY SAME SCRIPT #######
-declare -i cpCode=1 # THIS WILL MAKE THE COMMITTED MACRO TO BE COPIED AND USED IN THE HFCJlocalCodeDir DIRECTORY, WHICH IS EXPORTED. IF YOU WANT TO MODIFY CODE YOU CAN RUN WITH THIS SET TO 1 THE FIRST TIME AND THEN SET IT TO 0. 
+declare -i cpCode=0 # THIS WILL MAKE THE COMMITTED MACRO TO BE COPIED AND USED IN THE HFCJlocalCodeDir DIRECTORY, WHICH IS EXPORTED. IF YOU WANT TO MODIFY CODE YOU CAN RUN WITH THIS SET TO 1 THE FIRST TIME AND THEN SET IT TO 0. 
 declare -ai useScriptFDpaths=( 1 1 1 ) #THIS IS USEFUL IN CASE YOU DO NOT WANT TO RECOMPUTE THE FD BUT USE THE PATHS SET BY THE SCRIPT FOR THE FILES COMING FROM THE FD SUBTRACTION
 declare -i doFeedDownGlob=1
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
@@ -436,11 +438,11 @@ EOF
 fi
 
 ######## NOW FIT DISTRIBUTIONS ############
-
-if [ ${dofitMC} = 1 ]; then
-    mkdir -p ${templateDir[${collsyst}]}/FitResults/
+echo "Produce Plot Chain: fit MC distributions"
+if [ ${dofitMC} = 1 ]; then    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	cd ${templateDir[${collsyst}]}/FitResults/
+	mkdir -p ${templateDir[${collsyst}]}/FitResults/
+	cd ${templateDir[${collsyst}]}/FitResults
 	for (( mccase=0; mccase<${Nmccase[${collsyst}]}; mccase++ ))
 	do 
 	    if [ ${collsyst} = 0  ]; then
@@ -508,6 +510,13 @@ EOF
 .L ${HFCJlocalCodeDir}/CompareFitResults.C
 SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
+IncludeModel(0,${mccasePP[0]})
+IncludeModel(1,${mccasePP[1]})
+IncludeModel(2,${mccasePP[2]})
+IncludeModel(3,${mccasePP[3]})
+IncludeModel(4,${mccasePP[4]})
+IncludeModel(5,${mccasePP[5]})
+IncludeModel(6,${mccasePP[6]})
 CompareFitResultsPPtoMCUniqueCanvas()
 EOF
 
@@ -517,7 +526,15 @@ if [ ${doFitResultComparisonPPtoPPbtoMCPP} = 1 ]; then
 SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
 SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+IncludeModel(0,${mccasePP[0]}||${mccasePPb[0]})
+IncludeModel(1,${mccasePP[1]}||${mccasePPb[1]})
+IncludeModel(2,${mccasePP[2]}||${mccasePPb[2]})
+IncludeModel(3,${mccasePP[3]}||${mccasePPb[3]})
+IncludeModel(4,${mccasePP[4]}||${mccasePPb[4]})
+IncludeModel(5,${mccasePP[5]}||${mccasePPb[5]})
+IncludeModel(6,${mccasePP[6]}||${mccasePPb[6]})
 CompareFitResultsPPtoPpbAndMCUniqueCanvas();
+
 EOF
 
 fi
@@ -534,7 +551,7 @@ if [ ${doFitResultComparisonPPbtoMC} = 1 ];then
 .L ${HFCJlocalCodeDir}/CompareFitResults.C
 SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
-IncludePowheg(kTRUE)
+IncludePowheg(kFALSE)
 CompareFitResultsPPbDataToMC()
 EOF
 
@@ -542,8 +559,13 @@ EOF
 .L ${HFCJlocalCodeDir}/CompareFitResults.C
 SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
-IncludePowheg(kTRUE)
-IncludePythia8(kFALSE)
+IncludeModel(0,${mccasePPb[0]})
+IncludeModel(1,${mccasePPb[1]})
+IncludeModel(2,${mccasePPb[2]})
+IncludeModel(3,${mccasePPb[3]})
+IncludeModel(4,${mccasePPb[4]})
+IncludeModel(5,${mccasePPb[5]})
+IncludeModel(6,${mccasePPb[6]})
 CompareFitResultsPPbtoMCUniqueCanvas()
 EOF
 
