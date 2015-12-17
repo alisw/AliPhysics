@@ -24,6 +24,7 @@
 #include "AliTracker.h"
 #include "TFile.h"
 #include "TStopwatch.h"
+#include "TDatabasePDG.h"
 
 ClassImp(AliAnalysisTaskSEFT2Simulation)
 
@@ -59,6 +60,7 @@ AliAnalysisTaskSE("FT2Simulation")
 , fTpcParameterizationFile("")
 , fCrossSectionFile("")
 , fRunNumber(0)
+, fStandaloneTune(0)
 {
 	AliInfo("Default Constructor");
 	
@@ -68,31 +70,31 @@ AliAnalysisTaskSE("FT2Simulation")
 	DefineOutput(4,TH1F::Class());	// timing plot
 	DefineOutput(5,TH1F::Class());	// timing plot
 	DefineOutput(6,TTree::Class());	// Smeared AliESDEvent
-	if(fUseMonitorTree)DefineOutput(7,TTree::Class());	// FT2 performance monitor tree
+	DefineOutput(7,TTree::Class());	// FT2 performance monitor tree
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSEFT2Simulation::~AliAnalysisTaskSEFT2Simulation(){
 	
-  AliInfo("Destructor");
-  
-  if(fesd != NULL){
-    delete fesd;
-    fesd = NULL;
-  }
-  if(fESDTree != NULL){
-    delete fESDTree;
-    fESDTree = NULL;
-  }
-  if(fNentries != NULL){
-    delete fNentries;
-    fNentries = NULL;
-  }
-  if(fCpuEventWatch != NULL){
-    delete fCpuEventWatch;
+	AliInfo("Destructor");
+	
+	if(fesd != NULL){
+		delete fesd;
+		fesd = NULL;
+	}
+	if(fESDTree != NULL){
+		delete fESDTree;
+		fESDTree = NULL;
+	}
+	if(fNentries != NULL){
+		delete fNentries;
+		fNentries = NULL;
+	}
+	if(fCpuEventWatch != NULL){
+		delete fCpuEventWatch;
 		fCpuEventWatch = NULL;
-  }
-  if(fRealEventWatch != NULL){
+	}
+	if(fRealEventWatch != NULL){
 		delete fRealEventWatch;
 		fRealEventWatch = NULL;
 	}
@@ -194,6 +196,7 @@ void AliAnalysisTaskSEFT2Simulation::UserCreateOutputObjects(){
 	fFET = new FT2();
 	fFET->SetStreamLevel(fStreamLevel);
 	fFET->SetRunNumber(fRunNumber);
+	fFET->SetStandaloneTune(fStandaloneTune);
 	fFET->InitEnvLocal();
 	fFET->InitDetector();
 	fFET->SetTuneOnDataOrMC(fTuneOnDataOrMC);
@@ -209,7 +212,7 @@ void AliAnalysisTaskSEFT2Simulation::UserCreateOutputObjects(){
 	fFET->SetAllowAbsorbtion(fAllowAbsorption);
 	fFET->SetUseConversionExtension(fUseConverisons);
 	fFET->PrintLayout();
-	printf("\n\n\n###################################################\n### FT2 is now setup with:\n### TuneOnDataOrMC?        %i\n### Simulate Material?     %i\n### Use PID for tracking?  %i\n### MaxStepTGeo?           %0.2f\n### dNdY?                  %4.f\n### Use Kalman?            %i\n### Allow Decay?           %i\n### Allow Absorption       %i\n### TPC Param. from?       %s\n### X-Sections from?       %s\n### Runnumber?             %i\n### Magentic Field?        %0.5f\n### Streamer Level?        %i\n### Use conversion algo.?  %i\n###################################################\n\n\n",fTuneOnDataOrMC,fSimMat,fUsePID,fMaxStepTGeo,fdNdY,fUseKalman,fAllowDecay,fAllowAbsorption,fTpcParameterizationFile.Data(),fCrossSectionFile.Data(),fRunNumber,fFET->GetMagneticField(),fStreamLevel,fUseConverisons);
+	printf("\n\n\n###################################################\n### FT2 is now setup with:\n### TuneOnDataOrMC?        %i\n### Simulate Material?     %i\n### Use PID for tracking?  %i\n### MaxStepTGeo?           %0.2f\n### dNdY?                  %4.f\n### Use Kalman?            %i\n### Allow Decay?           %i\n### Allow Absorption       %i\n### TPC Param. from?       %s\n### X-Sections from?       %s\n### Runnumber?             %i\n### Magentic Field?        %0.5f\n### Streamer Level?        %i\n### Use conversion algo.?  %i\n### Use standlone tune?    %i\n###################################################\n\n\n",fTuneOnDataOrMC,fSimMat,fUsePID,fMaxStepTGeo,fdNdY,fUseKalman,fAllowDecay,fAllowAbsorption,fTpcParameterizationFile.Data(),fCrossSectionFile.Data(),fRunNumber,fFET->GetMagneticField(),fStreamLevel,fUseConverisons,fStandaloneTune);
 	
 	// Post the data
 	
@@ -300,7 +303,9 @@ void AliAnalysisTaskSEFT2Simulation::UserExec(Option_t */*option*/){
 	Bool_t isFromConversion=kFALSE;
 	Bool_t isFromMaterial=kFALSE;
 	Bool_t isHIJINGparticle = kTRUE;
-	
+	Bool_t isFastWeak=kFALSE;
+	Double_t deltaOrigin=0.;
+
 	for(Int_t k = 0 ; k < stack->GetNtrack(); k++) {
 		if(fDebug>2)printf("Beginning Particle Loop : %i\n",k);
 		if(stopwatchCounter==0 || stopwatchCounter==1000){
@@ -338,8 +343,16 @@ void AliAnalysisTaskSEFT2Simulation::UserExec(Option_t */*option*/){
 		isFromStrangess  = IsFromStrangeness(k,stack);
 		isFromConversion = IsFromConversion(k,stack);
 		isFromMaterial   = IsFromMaterial(k,stack);
+		isFastWeak			 = IsFastMcFromWeakDecay(k,stack);
 		Bool_t prim = stack->IsPhysicalPrimary(k);
 		
+		if(isFromMaterial) isFastWeak=kFALSE;
+
+		Double_t deltaX = part->Vx()-primaryVertex->GetX();
+		Double_t deltaY = part->Vy()-primaryVertex->GetY();
+		
+		deltaOrigin = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
+
 		//if(!isFromConversion) continue;
 		//if(!prim) continue;
 		isPrim = prim;
@@ -425,6 +438,8 @@ void AliAnalysisTaskSEFT2Simulation::UserExec(Option_t */*option*/){
 				"isFromStrangess="<<isFromStrangess<<								// is particle from strange decay?
 				"isFromConversion="<<isFromConversion<<							// is particle from conversion?
 				"isFromMaterial="<<isFromMaterial<<									// is particle from material
+				"deltaOrigin="<<deltaOrigin<<												// calculates the distance of the particle production MC vertex to the MC primary vertex in xy
+				"isFastWeak="<<isFastWeak<<
 				"isFt2Acc="<<isFT2accept<<													// track accepted by fast simulation tool
 				"isFt2TCAcc="<<isFT2TCaccept<<											// track accepted by fast simulation tool with additional track cuts
 				"isFt2Fake="<<isFt2Fake<<														// reconstructed FT2 fake track
@@ -822,4 +837,54 @@ Bool_t AliAnalysisTaskSEFT2Simulation::IsFromStrangeness(Int_t label, AliStack *
 	}
 	
 	return isFromStrangeness;
+}
+//_______________________________________________________________
+Bool_t AliAnalysisTaskSEFT2Simulation::IsFastMcFromWeakDecay(Int_t label, AliStack *const stack){
+	
+	if(stack) {
+		Int_t mcStackSize=stack->GetNtrack();
+		if (label>=mcStackSize) return kFALSE;
+		
+		TParticle* particle = stack->Particle(label);
+		if (!particle) return kFALSE;
+		Float_t codepart = (Float_t)TMath::Abs(particle->GetPdgCode());
+		Int_t motherLabel = particle->GetMother(0);
+		if(motherLabel<0) return kFALSE;
+		if (motherLabel>=mcStackSize) return kFALSE;
+		TParticle* mother = stack->Particle(motherLabel);
+		if(mother) {
+			Int_t nDgh = mother->GetNDaughters();
+			Float_t codemoth = (Float_t)TMath::Abs(mother->GetPdgCode());
+			if(codemoth>10000000) return kFALSE;
+			Int_t mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+			Double_t massMum = TDatabasePDG::Instance()->GetParticle(codemoth)->Mass();
+			if(mfl>3) {return kFALSE;}
+			//	if(mfl!=3) return kFALSE;
+			if(codemoth>=331 && codemoth<=337){return kFALSE;}
+			for(Int_t i=0;i<nDgh;i++){
+				if(mother->GetLastDaughter()>=mcStackSize){return kFALSE;}
+				TParticle* mcParticleDgh = stack->Particle(mother->GetLastDaughter()-i);
+				if(mcParticleDgh){
+					Int_t dfl = 0;
+					Float_t codedgh = (Float_t)TMath::Abs(mcParticleDgh->GetPdgCode());
+					if(codedgh>10000000 && codepart==13) return kTRUE; // muon decays --> Weak decays ala AliStack
+					if(codedgh>10000000 && codepart!=13) return kFALSE;
+					dfl = Int_t (codedgh / TMath::Power(10, Int_t(TMath::Log10(codedgh))));
+					Double_t massDgh = TDatabasePDG::Instance()->GetParticle(codedgh)->Mass();
+					if(codepart==11 && codemoth==13)return kTRUE;
+					if(codepart==211 && mfl==dfl && ((codedgh<=3334 && codedgh>=3300) || (codedgh<=4332 && codedgh>=4334) || (codemoth<=3334 && codemoth>=3300) || (codemoth<=4334 && codemoth>=4332))){
+						// double/triple strange content
+						if(((codedgh<3334 && codedgh>=3300) || (codedgh<=4332 && codedgh>=4334)) && ((codemoth<3334 && codemoth>=3300) || (codemoth<=4334 && codemoth>=4332))) return kFALSE; // double strange particles decay into double strange particles
+						if((codedgh<3334 && codedgh>=3300) && (codemoth<=3334))return kTRUE; // triple strange into double strange + weak decay
+						return kTRUE; // double strange particles decay into single strange + weak decay
+					}
+					if ((dfl>=mfl))/* && codepart!=11) || (codepart==11 && mfl!=1 && dfl>=mfl && nDgh==1))*/{return	kFALSE;}
+					if(massDgh>massMum){return kFALSE;}
+				}
+				else return kFALSE;
+			}
+			return kTRUE;
+		}
+	}
+	return kFALSE;
 }

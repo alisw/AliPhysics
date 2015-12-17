@@ -24,7 +24,7 @@ class AliVertex;
 class TF3;
 
 const float kRidiculous = 999999;
-const float kMaxZITS = 250;
+const float kMaxZ = 250.;
 const double kTrackToler = 1.e-6; // tracking tolerance
 
 class FTProbe : public AliExternalTrackParam
@@ -136,10 +136,12 @@ public:
 	void   SetTuneOnDataOrMC(Bool_t t=kFALSE) {fTuneOnDataOrMC = t;}
 	void   SetAllowDecay(Bool_t d=kTRUE) {fAllowDecay = d;}
 	void   SetAllowAbsorbtion(Bool_t f=kFALSE) {fAllowAbsorbtion = f;}
+	void   SetUseConversionExtension(Bool_t z=kFALSE) {fUseConverisons = z;}
 	void   SetMinTPCHits(int v=0)  {fMinTPCHits=v;} // 60
 	void   SetMinITSLrHit(int v=0)  {fMinITSLrHit=v;}
 	void   SetUsePIDForTracking(Bool_t usePID) {fUsePIDForTracking=usePID;}
 	void	 SetRunNumber( Int_t runnumber) {fRunNumber = runnumber;}
+	void   SetStandaloneTune( Int_t stdTune) {fStandaloneTune = stdTune;}
 	void   SetStreamLevel(Int_t level) {fStreamLevel = level;}
 	//Int_t  ProbeDecay(double* posIni);
 	Int_t		ProbeDecay(double* posIni,double *params);
@@ -191,6 +193,7 @@ public:
 	Int_t CutOnTrackToClusterChi2ITS();
 	void AddCovariance();
 	void AddCovarianceAdd();
+	Int_t FindNextLayer(Double_t radius, Bool_t insideITS); // function to check radial origin of conversions
 protected:
 	void AddTPC(Float_t scEdge=2.6);
 	void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0, Float_t pitch, Float_t pitchAng);
@@ -217,6 +220,7 @@ protected:
 	AliITSURecoDet* fITS;          // interface for ITS
 	Bool_t fUsePIDForTracking;
 	Int_t fRunNumber;
+	Bool_t fStandaloneTune;
 	Bool_t fIsTPC;                 // TPC added
 	AliPIDResponse* fPIDResponse;
 	TFile *fTPCParaFile;
@@ -245,6 +249,7 @@ protected:
 	Bool_t                fSimMat;					// simulate material effects in probe preparation
 	Bool_t								fAllowDecay;			// necessary for standlone FT2 mode
 	Bool_t								fAllowAbsorbtion; // necessary for standlone FT2 mode
+	Bool_t								fUseConverisons;  // activates some extra checks needed for handling conversions 
 	Int_t                 fCurrITSLr;				//! current ITS layer under tracking
 	Int_t                 fNClTPC;					//! N used TPC clusters
 	Int_t                 fNClITS;					//! N used ITS clusters
