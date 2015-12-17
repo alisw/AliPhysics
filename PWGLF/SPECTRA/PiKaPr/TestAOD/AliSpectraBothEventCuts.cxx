@@ -42,6 +42,7 @@
 //#include "AliSpectraBothHistoManager.h"
 #include <iostream>
 #include "TParameter.h"
+#include "AliMultSelection.h"
 
 using namespace std;
 
@@ -50,7 +51,7 @@ ClassImp(AliSpectraBothEventCuts)
 AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject), fTrackBits(0),fIsMC(0),fCentEstimator(""), fUseCentPatchAOD049(0), fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.8),fUseAliPPVsMultUtils(false),
-fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),
+fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),
 fDotheBGRejection(kTRUE),fDothePileUpRejection(kTRUE),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
@@ -179,7 +180,6 @@ void AliSpectraBothEventCuts::InitHisto()
 Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCuts* trackcuts,Bool_t isMC,Double_t mcZ,TH1F* managerhisteventcuts)
 {
   // Returns true if Event Cuts are selected and applied
-	
 	fIsSelected =kFALSE;
   	fAOD = aod;
 	if(!CheckifESDorAODEvent())
@@ -190,7 +190,7 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		managerhisteventcuts->Fill(0);
 	  fHistoRunNumbers->Fill(aod->GetRunNumber());
   	Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerSettings);//FIXME we can add the trigger mask here
-  	if(!IsPhysSel)
+	if(!IsPhysSel)
 		return IsPhysSel;
 	  if(fAnalysisUtils&&(!fDotheeventcutsinmultselection)) // we check for pile-up
 	  {	
@@ -406,35 +406,45 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 	 if ( fCentralityCutMax<0.0  &&  fCentralityCutMin<0.0 )  
 		return kTRUE;
 	  Double_t cent=0;
-	  Bool_t validcent=kFALSE;	
-	  if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+	  Bool_t validcent=kFALSE;
+	  AliMultSelection *multselection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+	  if(multselection)
 	  {
-		TString par1name("cent");
-		par1name+=fCentEstimator;
-		TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
-		if(par)
-		{
-			validcent=kTRUE;
-			cent=par->GetVal();
-		}
+ 		cent = multselection->GetMultiplicityPercentile(fCentEstimator.Data());
+	  	cout<<cent<<endl;
+		validcent=kTRUE;
+	  }
+          else
+	  {	
+	  	if(fAODEvent==AliSpectraBothTrackCuts::kESDobject)
+	  	{
+			TString par1name("cent");
+			par1name+=fCentEstimator;
+			TParameter<Double_t>* par= dynamic_cast<TParameter<Double_t>*>(fAOD->FindListObject(par1name.Data()));
+			if(par)
+			{
+				validcent=kTRUE;
+				cent=par->GetVal();
+			}
 
-  	}
-  	if(!validcent)
-  	{			
-  		if(fUseAliPPVsMultUtils)
-  		{
-			if(!fAliPPVsMultUtils)
-				fAliPPVsMultUtils=new AliPPVsMultUtils();
-			cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
-  		}	
-  		else
-  		{
-  			if(!fUseCentPatchAOD049)
-				cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
-  			else 
-				cent=ApplyCentralityPatchAOD049();
   		}
-  	}	
+  		if(!validcent)
+  		{			
+  			if(fUseAliPPVsMultUtils)
+  			{
+				if(!fAliPPVsMultUtils)
+					fAliPPVsMultUtils=new AliPPVsMultUtils();
+				cent=fAliPPVsMultUtils->GetMultiplicityPercentile(fAOD,fCentEstimator.Data());
+  			}	
+  			else
+  			{
+  				if(!fUseCentPatchAOD049)
+					cent=fAOD->GetCentrality()->GetCentralityPercentile(fCentEstimator.Data());
+  				else 
+					cent=ApplyCentralityPatchAOD049();
+  			}
+  		}
+	}	
   	fHistoCentrality->Fill(0.5,cent);	
   	if ( (cent < fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  
   	{
@@ -816,7 +826,7 @@ void AliSpectraBothEventCuts::SetRunNumberRange(Int_t min, Int_t max)
 //__________________________________________________________________________________________________________
 Bool_t AliSpectraBothEventCuts::CheckMCProcessType(AliMCEvent* mcevent)
 {
-	if(fNMCProcessType<0)
+	if(fNMCProcessType<=0)
 		return kTRUE;
 	if(!mcevent)
 		return kFALSE;

@@ -103,8 +103,8 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 	fAOD = dynamic_cast<AliVEvent*>(InputEvent());
   //	AliESDEvent* esdevent=0x0;
  // 	AliAODEvent* aodevent=0x0;
-   
-   	TString nameoftrack(fAOD->ClassName());  
+ 
+   	TString nameoftrack(fAOD->ClassName()); 
     	if(!nameoftrack.CompareTo("AliESDEvent"))
     	{
 		ifAODEvent=AliSpectraBothTrackCuts::kESDobject;
@@ -123,7 +123,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			return ;		
   	}
 
-
 	if(fdotheMCLoopAfterEventCuts)
   		if(!fEventCuts->IsSelected(fAOD,fTrackCuts,fIsMC,-100,fHistMan->GetEventStatHist()))
 			return;//event selection
@@ -131,7 +130,6 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
   	Int_t npar=0;
   	AliStack* stack=0x0;
 	 Double_t mcZ=-100;
-
  	if (fIsMC)
   	{
 		TArrayF mcVertex(3);
@@ -462,13 +460,13 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		  
 		  		if (isPrimary) 
 				{
-					if(idRec!= kSpUndefined)
+					if(idRec!= kSpUndefined) // any primary 
 						fHistMan->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),dca); 
 					//if(idGen != kSpUndefined) 
 					//{
-					 if((idGen != kSpUndefined) &&(irec == idGen))
+					 if((idGen != kSpUndefined) &&(irec == idGen)) // genereated primary but does not have to be selected
 		  				fHistMan->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),dca);
-		  			if ((idGen != kSpUndefined) &&(idRec == idGen)) 
+		  			if ((idGen != kSpUndefined) &&(idRec == idGen))  // genereated and selected correctly 
 						fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),dca); 
 					//}
 		  		}
