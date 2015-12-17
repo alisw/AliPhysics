@@ -29,6 +29,7 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliMuonTriggerCombo.h"
@@ -625,7 +626,8 @@ Double_t AliMuonEventCuts::GetCentrality ( const AliVEvent* event ) const
 {
   /// Get centrality
   AliVEvent* evt = const_cast<AliVEvent*>(event);
-  return evt->GetCentrality()->GetCentralityPercentile(GetCentralityEstimator());
+  AliMultSelection* multSelection = static_cast<AliMultSelection*>(evt->FindListObject("MultSelection"));
+  return ( multSelection ) ? multSelection->GetMultiplicityPercentile(GetCentralityEstimator()) : evt->GetCentrality()->GetCentralityPercentile(GetCentralityEstimator());
 }
 
 //________________________________________________________________________
