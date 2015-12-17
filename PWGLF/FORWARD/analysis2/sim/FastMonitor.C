@@ -1,10 +1,14 @@
+#ifndef FASTMONITOR_C
+#define FASTMONITOR_C
 #ifndef __CINT__
 # include <TQObject.h>
 # include <TObject.h>
 # include <TSelector.h>
 # include <TCanvas.h>
 # include <TROOT.h>
-# include <TProof.h>
+// # include <TProof.h>
+# include <TGraph.h>
+# include <TMath.h>
 # include <TTimer.h>
 # include <TH1.h>
 # include <TObjArray.h>
@@ -18,29 +22,74 @@ class TH1;
 class TObjArray;
 class TClass;
 class TQObject;
-class TProof;
+// class TProof;
 #endif
 
 //====================================================================
-/** 
- * Monitor output objects
- */
 struct FastMonitor : public TObject, public TQObject 
 {
+  /** 
+   * Flags to pass 
+   */
+  enum {
+    kLogx    = 0x01,
+    kLogy    = 0x02,
+    kLogz    = 0x04,
+    kScale   = 0x08,
+    kNoStats = 0x10
+  };
+  /** 
+   * Internal bits set on pads 
+   */
+  enum {
+    kBitScale   = (1<<17), // BIT(15),
+    kBitNoStats = (1<<16)  // BIT(16)
+  };
+  /** 
+   * Execute a PROOF command. Short hand convinience 
+   * 
+   * @param cmd Command, or empty string. 
+   * 
+   * @return If cmd is empty, test if gProof is defined, other wise
+   * result of command.
+   */
+  static Long_t ProofExec(const char* cmd=0)
+  {
+    Bool_t hasCmd = (cmd && cmd[0] != '\0');
+    TString lne;
+    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
+    Printf("FastMonitor::ProofExec: %s", lne.Data());
+    return gROOT->ProcessLine(lne);
+  }
+  FastMonitor()
+    : TObject(),
+      TQObject(),
+      fName("FastMonitor"),
+      fPaths(),
+      fCanvas(0),
+      fSelector(0),
+      fNPads(0),
+      fTimer(0)
+  {
+    fPaths.SetOwner();
+  }
   /** 
    * Constructor 
    * 
    * 
    * @return 
    */
-  FastMonitor(TSelector* s=0)
+  FastMonitor(TSelector* s, const TString& name)
     : TObject(),
       TQObject(),
-      fName("FastMonitor"),
+      fName(name),
+      fPaths(),
       fCanvas(0),
-      fSelector(s)
+      fSelector(s),
+      fNPads(0),
+      fTimer(0)
   {
-    Construct();
+    fPaths.SetOwner();
   }
   /** 
    * Copy constructor 
@@ -48,98 +97,114 @@ struct FastMonitor : public TObject, public TQObject
   FastMonitor(const FastMonitor& m)
     : TObject(m),
       TQObject(),
+      fPaths(),
       fCanvas(0),
-      fSelector(m.fSelector)
+      fSelector(m.fSelector),
+      fTimer(0)
   {
-    Construct();
+    fPaths.SetOwner();
+    TIter next(&m.fPaths);
+    TObject* obj = 0;
+    while ((obj = next())) Register(obj);
   }
+  /** 
+   * Desctructor 
+   */
+  virtual ~FastMonitor() { Disconnect(); }
+  /** 
+   * Assignment operator 
+   * 
+   * @param m Object to assign from 
+   * 
+   * @return Reference to this 
+   */
   FastMonitor& operator=(const FastMonitor& m)
   {
     if (&m == this) return *this;
     fSelector = m.fSelector;
     if (fCanvas) delete fCanvas;
-    Construct();
+    fPaths.Clear();
+    TIter next(&m.fPaths);
+    TObject* obj = 0;
+    while ((obj = next())) Register(obj);
     return *this;
   }
-protected:
-  void Construct()
+  /** 
+   * Connect to the source 
+   * 
+   */
+  void Connect(Int_t freq=-1)
   {
     if (gROOT->IsBatch()) {
       Warning("FastMonitor", "Batch processing, no monitoring");
       return;
     }
-    if (gProof) {
-      fName = gProof->GetSessionTag();
-      gDirectory->Add(this);
-      Bool_t ret = gProof->Connect("Feedback(TList *objs)",
-				   "FastMonitor", this, 
-				   "Feedback(TList *objs)");
+    if (freq <= 0) return;
+    if (ProofExec()) {
+      // We're on Proof
+      // Info("Construct", "Attaching to PROOF");
+      gROOT->ProcessLine(Form("((FastMontor*)%p)->SetName("
+			      "gProof->GetSessionTag())", this));
+      Long_t ret = ProofExec(Form("Connect(\"Feedback(TList *objs)\","
+				  "        \"FastMonitor\",(void*)%p,"
+				  "        \"Feedback(TList *objs)\")", this));
       if (!ret) {
 	Warning("FastMonitor", "Failed to connect to Proof");
 	return;
-      }
+      }	
+      ProofExec(Form("SetParameter(\"PROOF_FeedbackPeriod\",%d)",
+		     freq*1000));
     }
-    else if (!fSelector) return;
-
-    if (!fCanvas) {
-      fCanvas = new TCanvas(fName, Form("Monitor %s", fName.Data()), 1000, 800);
-      fCanvas->SetFillColor(0);
-      fCanvas->SetFillStyle(0);
-      fCanvas->SetTopMargin(0.01);
-      fCanvas->SetRightMargin(0.01);
-
-      fCanvas->Divide(3,2);
-      RegisterDraw(1, "histograms/type",            "", 0);
-      RegisterDraw(2, "histograms/b",               "", 0);
-      RegisterDraw(3, "histograms/cent",            "", 0);
-      RegisterDraw(4, "histograms/dNdeta",          "", 0x8);
-      RegisterDraw(5, "estimators/rawV0M",          "", 0x2);
-      RegisterDraw(6, "estimators/rawRefMult00d80", "", 0x2);
+    else {
+      fTimer = new TTimer(freq*1000);
+      fTimer->Connect("Timeout()","FastMonitor",this, "Handle()");
+      fTimer->Start(-1,false);
     }
+    // Info("Connect", "Monitor %s connected", fName.Data());
   }
-public:
   /** 
-   * Register a draw of a an object 
+   * Disconnect from the source 
    * 
-   * @param i      Pad number 
-   * @param name   Name of object 
-   * @param option Drawing option
-   * @param flags  Flags 
-   *
-   *  - 0x1   Log(x)
-   *  - 0x2   Log(y)
-   *  - 0x4   Log(z)
-   *  - 0x8   Scale to events and bin width 
    */
-  void RegisterDraw(Int_t i,
-		    const char* name,
-		    const char* option,
-		    UShort_t    flags=0)
+  void Disconnect()
   {
-    TVirtualPad* p = fCanvas->GetPad(i);
-    if (!p) {
-      Warning("RegisterDraw", "Not enough sub-pads (%d)", i);
-      return;
-    }
-    p->SetFillColor(0);
-    p->SetFillStyle(0);
-    p->SetTopMargin(0.01);
-    p->SetRightMargin(0.01);
-    p->SetName(Form("p_%s", name));
-    p->SetTitle(option);
-    if (flags & 0x1) p->SetLogx();
-    if (flags & 0x2) p->SetLogy();
-    if (flags & 0x4) p->SetLogz();
-    if (flags & 0x8) p->SetBit(BIT(15));
+    if (ProofExec())
+      ProofExec(Form("Disconnect(\"Feedback(TList *objs)\","
+		     "(void*)%p,\"Feedback(TList* objs)\"", this));
+    else if (fTimer)
+      fTimer->Stop();
   }
   /** 
-   * Desctructor 
+   * Register an object.  Note the object passed here is a descripter,
+   * that gives the name (descr->GetName()) and options
+   * (descr->GetTitle()) and the pad options (descr->GetUniqueID()) -
+   * not the actual object to draw.
+   * 
+   * @param descr 
    */
-  virtual ~FastMonitor() 
+  void Register(TObject* descr, Bool_t proof=true)
   {
-    if (!gProof) return;
-    gProof->Disconnect("Feedback(TList *objs)",this, 
-		       "Feedback(TList* objs)");
+    Register(descr->GetName(), descr->GetTitle(), descr->GetUniqueID(), proof);
+  }
+  /** 
+   * Prepare a draw 
+   * 
+   * @param c      List to add to 
+   * @param name   Name (path) of object 
+   * @param title  Drawing options  
+   * @param flags  Flags 
+   */
+  void Register(const char* name,
+		const char* title="",
+		UInt_t      flags=0,
+		Bool_t      proof=true)
+  {
+    TNamed* n = new TNamed(name, title);
+    n->SetUniqueID(flags);
+    fPaths.Add(n);
+    if (ProofExec() && proof) {
+      ProofExec(Form("AddFeedback(\"%s\")", name));
+    }    
   }
   /** 
    * Set name of this object 
@@ -153,6 +218,196 @@ public:
    * @return Name 
    */
   const char* GetName() const { return fName.Data(); }
+  /** 
+   * Called when we get notified of 
+   * 
+   * @param objs List of monitored objects
+   */
+  void Feedback(TList* objs)
+  {
+    // Info("FeedBack", "List is %p", objs);
+    // if (objs) objs->ls();
+    if (!fCanvas && !SetupCanvas()) return;
+    
+    if (!objs) {
+      Warning("Feedback", "No list");
+      return;
+    }
+    // Info("FeedBack", "Looping over %d pads", fNPads);	 
+    for (Int_t iPad = 1; iPad <= fNPads; iPad++) {
+      TVirtualPad* p = fCanvas->cd(iPad);
+      // Info("Feedback", "Drawing in sub-pad # %d: %s", iPad, p->GetName());
+      TObject* o = FindPadObject(p->GetName(), objs);
+      if (!o) {
+	Warning("Feedback", "Object correspondig to pad %s (%d) not found",
+	         p->GetName(), iPad);
+	iPad++;
+	continue; 
+      }
+      DrawObject(o,
+		 p->GetTitle(),
+		 p->TestBit(kBitScale),
+		 p->TestBit(kBitNoStats),
+		 false);
+      p->cd();
+      p->Modified();
+      // iPad++;
+    }
+    fCanvas->Modified();
+    fCanvas->Update();
+    fCanvas->cd();
+  }
+  /** 
+   * Function to handle connect signals 
+   * 
+   */
+  void Handle()
+  {
+    HandleTimer(0);
+  }
+  /**
+   * Function to handle timer events 
+   */
+  Bool_t HandleTimer(TTimer*)
+  {
+    // Info("HandleTimer", "Selector=%p", fSelector);
+    if (!fSelector) return false;
+    Feedback(fSelector->GetOutputList());
+    return true;
+  }
+protected:
+  /** 
+   * Setup canvas, and registered object
+   * 
+   * @param names Names of objects to monitor 
+   */
+  Bool_t SetupCanvas()
+  {
+    if (gROOT->IsBatch()) {
+      Warning("FastMonitor", "Batch processing, no monitoring");
+      return false;
+    }
+    if (fCanvas) return true;
+    
+    // Info("SetupCanvas", "Creating canvas");
+    fCanvas = new TCanvas(fName, Form("Monitor %s", fName.Data()), 1000, 800);
+    fCanvas->SetFillColor(0);
+    fCanvas->SetFillStyle(0);
+    fCanvas->SetTopMargin(0.01);
+    fCanvas->SetRightMargin(0.01);
+    
+    Int_t nTotal = fPaths.GetEntries();
+    Int_t nRow   = Int_t(TMath::Sqrt(nTotal)+.5);
+    Int_t nCol   = nRow;
+    if (nCol * nRow < nTotal) nCol++;
+    fNPads = nTotal;
+    fCanvas->Divide(nCol,nRow);
+    Info("FastMonitor","Create canvas with (%dx%d) [%d] pads",nCol,nRow,nTotal);
+    TIter next(&fPaths);
+    TObject* o = 0;
+    Int_t    i = 1;
+    while ((o = next()))
+      SetupDraw(i++, o->GetName(), o->GetTitle(), o->GetUniqueID());
+
+    return true;
+  }
+  /** 
+   * Register a draw of a an object 
+   * 
+   * @param i      Pad number 
+   * @param name   Name of object 
+   * @param option Drawing option
+   * @param flags  Flags 
+   *
+   *  - 0x1   Log(x)
+   *  - 0x2   Log(y)
+   *  - 0x4   Log(z)
+   *  - 0x8   Scale to events and bin width 
+   */
+  void SetupDraw(Int_t i,
+		 const char* name,
+		 const char* option,
+		 UInt_t    flags=0)
+  {
+    TVirtualPad* p = fCanvas->GetPad(i);
+    if (!p) {
+      Warning("RegisterDraw", "Not enough sub-pads (%d)", i);
+      return;
+    }
+    //Info("RegisterDraw",
+    //     "Adding draw # %d %s [%s] (0x%x)",i,name,option,flags);
+    p->SetFillColor(0);
+    p->SetFillStyle(0);
+    p->SetTopMargin(0.01);
+    p->SetRightMargin(0.01);
+    p->SetName(Form("p_%s", name));
+    p->SetTitle(option);
+    if (flags & kLogx)    p->SetLogx();
+    if (flags & kLogy)    p->SetLogy();
+    if (flags & kLogz)    p->SetLogz();
+    if (flags & kScale)   p->SetBit(kBitScale);
+    if (flags & kNoStats) p->SetBit(kBitNoStats);
+
+    fCanvas->Modified();
+  }
+  /** 
+   * Draw an object.
+   * 
+   * @param o 
+   * @param same 
+   */
+  void DrawObject(TObject*  o,
+		  Option_t* opt,
+		  Bool_t    scale,
+		  Bool_t    nostats,
+		  Bool_t    same=false)
+  {
+    // Info("DrawObject","Drawing %s '%s' with \"%s %s\" (%s with%s stats)",
+    //      o->ClassName(), o->GetName(), opt, (same ? "same" : ""),
+    //      scale ? "scaled" : "raw", nostats ? "out" : "");
+    if (o->IsA()->InheritsFrom(TH1::Class())) {
+      TH1* h = static_cast<TH1*>(o);
+      TH1* c = static_cast<TH1*>(h->Clone(Form("cpy_%s", h->GetName())));
+      c->SetDirectory(0);
+      if (scale) {
+	Int_t nEvents = c->GetBinContent(0);
+	// Info("Feedback", "Scaling %s by 1./%d and width",
+	//      c->GetName(), nEvents);	
+	if (nEvents <= 0) return;
+	c->Scale(1./nEvents, "width");
+	c->SetMinimum(0);
+      }
+      if (nostats)
+	// suppress stats
+	c->SetStats(0);
+      c->Draw(Form("%s %s",opt, (same ? "same" : "")));
+      c->SetBit(TObject::kCanDelete);
+    }
+    else if (o->IsA()->InheritsFrom(TGraph::Class())) {
+      TGraph* g = static_cast<TGraph*>(o);
+      TGraph* c = static_cast<TGraph*>(g->Clone(Form("cpy_%s",g->GetName())));
+      c->Draw(Form("%s %s",opt, (same ? "" : "a")));
+      c->SetBit(TObject::kCanDelete);
+      // Info("DrawObject","Drawing Graph '%s' with \"%s %s\"",
+      //      c->GetName(), opt, (same ? "" : "a"));
+    }
+    else if (o->IsA()->InheritsFrom(TCollection::Class())) {
+      TCollection* c = static_cast<TCollection*>(o);
+      TIter        n(c);
+      TObject*     co = 0;
+      Bool_t       first = true;
+      // Info("DrawObject","Drawing collection '%s' with \"%s\"",
+      //      c->GetName(), opt);
+      while ((co = n())) {
+	DrawObject(co, opt, scale, nostats, !first);
+	first = false;
+      }
+    }
+    else {
+      TObject* c = o->DrawClone(opt);
+      c->SetBit(TObject::kCanDelete);
+    }
+  }
   /** 
    * Find pad corresponding to an object
    * 
@@ -204,91 +459,26 @@ public:
       }
       current = static_cast<TCollection*>(o);
     }
+    // Info("FindPadObject", "pad=%s -> %p", padName, l);
     delete tokens;
-    // if (!ret) l->ls();
+    if (!ret) l->ls();
     return ret;
-  }
-    
-  /** 
-   * Called when we get notified of 
-   * 
-   * @param objs List of monitored objects
-   */
-  void Feedback(TList* objs)
-  {
-    // Info("FeedBack", "List is %p", objs);
-    // if (objs) objs->ls();
-    if (!fCanvas) return;
-
-    // objs->ls();
-    TList* l = static_cast<TList*>(objs->FindObject("list"));
-    if (!l) {
-      Warning("Feedback", "No list");
-      return;
-    }
-    TList* hs = static_cast<TList*>(l->FindObject("histograms"));
-    Int_t nEvents = 1;
-    TObject* oIpz = hs->FindObject("ipZ");
-    if (oIpz && oIpz->IsA()->InheritsFrom(TH1::Class())) 
-      nEvents = static_cast<TH1*>(oIpz)->GetEntries();
-    else 
-      Warning("Feedback", "Histogram ipZ not found");
-
-    Int_t        iPad = 1;
-    TVirtualPad* p    = 0;
-    while ((p = fCanvas->GetPad(iPad))) {
-      TObject* o = FindPadObject(p->GetName(), l);
-      if (!o) {
-	Warning("Feedback", "Object correspondig to pad %s (%d) not found",
-		p->GetName(), iPad);
-	iPad++;
-      }
-      p->cd();
-      if (o->IsA()->InheritsFrom(TH1::Class())) {
-	TH1* h = static_cast<TH1*>(o);
-	TH1* c = h->DrawCopy(p->GetTitle());
-	c->SetDirectory(0);
-	c->SetBit(TObject::kCanDelete);
-	if (p->TestBit(BIT(15))) {
-	  // Info("Feedback", "Scaling %s by 1./%d and width",
-	  //      c->GetName(), nEvents);
-	  c->Scale(1./nEvents, "width");
-	}
-      }
-      else {
-	TObject* c = o->DrawClone(p->GetTitle());
-	c->SetBit(TObject::kCanDelete);
-      }
-      p->Modified();
-      iPad++;
-    }
-    fCanvas->Modified();
-    fCanvas->Update();
-    fCanvas->cd();
-  }
-  /** 
-   * Function to handle connect signals 
-   * 
-   */
-  void Handle()
-  {
-    HandleTimer(0);
-  }
-  /**
-   * Function to handle timer events 
-   */
-  Bool_t HandleTimer(TTimer*)
-  {
-    // Info("HandleTimer", "Selector=%p", fSelector);
-    if (!fSelector) return false;
-    Feedback(fSelector->GetOutputList());
-    return true;
   }
   /** Our name */
   TString fName;
+  /** List of things to monitor */
+  TList fPaths;
   /** Our canvas */
   TCanvas* fCanvas;
   /** Possibly link to selector */
   TSelector* fSelector;
+  /** Number of pads registered */
+  Int_t fNPads;
+  /** Possible timer */
+  TTimer* fTimer;
   ClassDef(FastMonitor,1);
 };
+#endif
+//
+// EOF
+//
