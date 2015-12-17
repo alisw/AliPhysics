@@ -24,11 +24,13 @@
 # include <TApplication.h>
 # include <TStopwatch.h>
 # include <AliAnalysisManager.h>
+# include <AliVEvent.h>
 # include <AliVEventHandler.h>
 # include <AliPhysicsSelection.h>
 # include <AliPhysicsSelectionTask.h>
 # include <AliCentralitySelectionTask.h>
 # include <AliESDInputHandler.h>
+# include <AliESDInputHandlerRP.h>
 # include <AliAODInputHandler.h>
 # include <AliAODHandler.h>
 # include <AliMCEventHandler.h>
@@ -523,16 +525,25 @@ protected:
   /** 
    * Create input handler 
    * 
-   * @param type 
+   * @param type         Type of input (ESD, AOD, or user)
+   * @param esdRecPoints if type is ESD and this is true, create input
+   * handler for rec-points (clusters).
    * 
    * @return 
    */
-  virtual AliVEventHandler* CreateInputHandler(UShort_t type)
+  virtual AliVEventHandler* CreateInputHandler(UShort_t type,
+					       Bool_t   esdRecPoints=false)
   {
     AliVEventHandler* ret = 0;
     switch (type) {
     case Railway::kESD:  {
-      AliESDInputHandler* input = new AliESDInputHandler();
+      AliESDInputHandler* input = 0;
+      if (!esdRecPoints) input = new AliESDInputHandler();
+      else {
+	AliESDInputHandlerRP* esd = new AliESDInputHandlerRP();
+	esd->ReadFromDirectory();
+	input = esd;	
+      }
       input->SetReadFriends(fOptions.AsBool("friends"));
       ret = input;
     }
@@ -696,9 +707,9 @@ protected:
     }
     else {
       // --- Create and add the task ---------------------------------
-      CoupleCar("AddTaskPhysicsSelection.C", Form("%d", mc));
+      CoupleSECar("AddTaskPhysicsSelection.C", Form("%d", mc), AliVEvent::kAny);
       mgr->RegisterExtraFile("event_stat.root");
-      mgr->AddStatisticsTask(AliVEvent::kAny);
+      // mgr->AddStatisticsTask(AliVEvent::kAny);
       
       // --- Retrive object from input handler -----------------------
       ps = dynamic_cast<AliPhysicsSelection*>(input->GetEventSelection());
@@ -746,15 +757,10 @@ protected:
     // Possibly load as PAR
     LoadOADB();
     
-    Bool_t mult = true; // true;
-    AliAnalysisTaskSE* task = 0;
-    if (mult) {
-      gROOT->SetMacroPath(Form("%s:"
-			       "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros",
-			       gROOT->GetMacroPath()));
-      task = CoupleSECar("AddTaskMultSelection.C","false");
-      FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
-    }
+    gROOT->SetMacroPath(Form("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros"
+			     ":%s", gROOT->GetMacroPath()));
+    AliAnalysisTaskSE* task = CoupleSECar("AddTaskMultSelection.C","false");
+    FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
     return;
 
     // Ignore the rest - just kept for historical reasons 
@@ -826,26 +832,34 @@ protected:
    * 
    * @param macro The <b>AddTask</b> macro 
    * @param args  Arguments to pass the macro 
+   * @param mask  Possible trigger mask  (if 0, no mask is set)
    * 
    * @return The added task, if any 
    */
   virtual AliAnalysisTaskSE* CoupleSECar(const TString& macro, 
-				       const TString& args)
+					 const TString& args,
+					 UInt_t         mask=0)
   {
-    return dynamic_cast<AliAnalysisTaskSE*>(CoupleCar(macro, args));
+    AliAnalysisTaskSE* task =
+      dynamic_cast<AliAnalysisTaskSE*>(CoupleCar(macro, args));
+    // Explicitly set mask 
+    if (mask > 0) task->SelectCollisionCandidates(mask);
+    return task;
   }
   /** 
    * Add a single event task to the train with no arguments passed to
    * the script
    * 
    * @param macro The <b>AddTask</b> macro. 
-   * 
+   * @param mask  Possible trigger mask  (if 0, no mask is set)
+   *
    * @return The added task, if any
    */
-  virtual AliAnalysisTaskSE* CoupleSECar(const TString& macro)
+  virtual AliAnalysisTaskSE* CoupleSECar(const TString& macro,
+					 UInt_t         mask=0)
   {
     TString args;
-    return CoupleSECar(macro, args);
+    return CoupleSECar(macro, args, mask);
   }
   /** 
    * Find an already added task 
