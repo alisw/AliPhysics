@@ -579,6 +579,7 @@ struct GridRailway : public PluginRailway
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (nEvents == 0) return 0;
+    if (nEvents < 0)  nEvents = 123456789;
     Long64_t ret = mgr->StartAnalysis("grid", nEvents);
 
 #if 1
