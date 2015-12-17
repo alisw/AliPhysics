@@ -8,8 +8,10 @@
 # include <TParticle.h>
 # include <TError.h>
 # include "FastShortHeader.C"
+# include <TH2.h>
 #else
 class TH1;
+// class TH2;
 class TCollection;
 class TTree;
 class TParticle;
@@ -54,10 +56,11 @@ struct FastCentEstimator : public TObject
    * 
    * @param out   Output list to add stuff to 
    * @param tree  Output tree
+   * @param sNN   Collision energy in GeV
    * @param tgtA  True if target is a nucleus 
    * @param projA True if projectile is a nucleus 
    */
-  virtual void Setup(TCollection* out, TTree* tree,
+  virtual void Setup(TCollection* out, TTree* tree, UShort_t sNN,
 		     Bool_t tgtA, Bool_t projA) = 0;
   /** 
    * Called before the start of an event 
@@ -167,7 +170,9 @@ struct FastCentEstimator : public TObject
   ClassDef(FastCentEstimator,1);
 };
 
-  
+
+
+
 //____________________________________________________________________
 /** 
  * A 1-dimensional centrality estimator 
@@ -194,6 +199,7 @@ struct Fast1DCentEstimator : public FastCentEstimator
    * Destructor 
    */
   virtual ~Fast1DCentEstimator() {}
+  virtual const char* MultSpec() const { return "l"; }
   /** 
    * Set-up this object.  Defines the internal histogram and add to
    * output
@@ -203,11 +209,12 @@ struct Fast1DCentEstimator : public FastCentEstimator
    * @param tgtA  True if target is a nucleus 
    * @param projA True if projectile is a nucleus 
    */
-  void Setup(TCollection* l, TTree* tree,
+  void Setup(TCollection* l, TTree* tree, UShort_t,
 	     Bool_t, Bool_t)
   {
     if (fHistogram && l) l->Add(fHistogram);
-    if (tree) tree->Branch(GetName(), &fCache, "value/l");
+    TString leaves; leaves.Form("value/%s", MultSpec());
+    if (tree) tree->Branch(GetName(), &fCache, leaves.Data());
   }
   /** 
    * Called before each event.  Zeros the cache variable 
@@ -281,6 +288,191 @@ struct Fast1DCentEstimator : public FastCentEstimator
   ClassDef(Fast1DCentEstimator,1);
 };
 
+//____________________________________________________________________
+struct BCentEstimator : public Fast1DCentEstimator
+{
+  // TH2* fBvsC;
+  const Double_t fkFactor;
+  BCentEstimator()
+    : Fast1DCentEstimator("B"),
+      // fBvsC(0),
+      fkFactor(1000)
+  {}
+  virtual void Setup(TCollection* out, TTree* tree, UShort_t sNN,
+		     Bool_t tgtA, Bool_t projA)
+  {
+    fHistogram = MakeHistogram(sNN, tgtA, projA);
+#if 0
+    if (fHistogram &&
+	fHistogram->GetXaxis()) {
+      if (fHistogram->GetXaxis()->GetXbins() &&
+	  fHistogram->GetXaxis()->GetXbins()->GetArray()) {
+	fBvsC = new TH2D("bVsC", "Impact parameter vs Centrality",
+			 fHistogram->GetXaxis()->GetNbins(),
+			 fHistogram->GetXaxis()->GetXbins()->GetArray(),
+			 20, 0, 100);
+      }
+      else {
+	fBvsC = new TH2D("bVsC", "Impact parameter vs Centrality",
+			 fHistogram->GetXaxis()->GetNbins(),
+			 fHistogram->GetXaxis()->GetXmin(),
+			 fHistogram->GetXaxis()->GetXmax(),
+			 20, 0, 100);
+      }
+    }
+    if (fBvsC) {
+      fBvsC->SetDirectory(0);
+      fBvsC->SetXTitle("b [fm]");
+      fBvsC->SetYTitle("Centrality [%]");
+      out->Add(fBvsC);
+    }
+    else
+      Warning("BCentEstimator", "Couldn't make bVsC histogram");
+#endif
+    Fast1DCentEstimator::Setup(out, tree, sNN, tgtA, projA);
+    // if (tree) tree->Branch(GetName(), &fB, "value/D");    
+  }
+  /** 
+   * Get the histogram to accumulate the observable in.  
+   * 
+   * @return Pointer to the histogram. 
+   */
+  virtual TH1* GetHistogram(TCollection* l)
+  {
+    return static_cast<TH1*>(l->FindObject(Form("raw%s",GetName())));
+  }
+  TH1* MakeHistogram(UShort_t sNN, Bool_t tgtA, Bool_t projA)
+  {
+    TArrayD cents;
+    TArrayD bins; // In B
+    if (tgtA && projA) { // Pb-Pb
+      if (sNN == 2760) {
+	// PbPb @ 2.76TeV only 
+	// Updated 4th of November 2014 from 
+	// cern.ch/twiki/bin/view/ALICE/CentStudies
+	//        #Tables_with_centrality_bins_AN1
+	Double_t bs[] = { 0,      1.57,  2.22,  2.71,  3.13,
+			  3.50,   4.94,  6.05,  6.98,  7.81,
+			  8.55,   9.23,  9.88, 10.47, 11.04,
+			  11.58, 12.09, 12.58, 13.05, 13.52,
+			  13.97, 14.43, 14.96, 15.67, 20.00 };
+	Double_t cs[] = { 0.5,   1.5,   2.5,   3.5,   4.5,
+			  7.5,   12.5,  17.5,  22.5,  27.5,
+			  32.5,  37.5,  42.5,  47.5,  52.5,
+			  57.5,  62.5,  67.5,  72.5,  77.5,
+			  82.5,  87.5,  92.5,  97.5 };
+	cents.Set(24,cs);
+	bins.Set(25,bs);
+      }
+      else if (sNN == 5023) {
+	// PbPb @ 5.02TeV only 
+	// https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+	Double_t bs[] = { 0.00, 1.56, 2.22, 2.71, 3.13,
+			  3.51, 3.84, 4.15, 4.43, 4.71,
+			  4.96, 6.08, 7.01, 7.84, 8.59,
+			  9.27, 9.92, 10.5, 11.1, 11.6,
+			  12.1, 12.6, 13.1, 13.6, 14.0,
+			  14.5, 15.0, 15.7, 19.6  }; // 29
+	Double_t cs[] = { 0.5,   1.5,  2.5,  3.5,  4.5,
+			  5.5,   6.5,  7.5,  8.5,  9.5,
+			  12.5, 17.5, 22.5, 27.5, 32.5,
+			  37.5, 42.5, 47.5, 52.5, 57.5,
+			  62.5, 67.5, 72.5, 77.5, 82.5,
+			  87.5, 92.5, 97.5  };	  
+	cents.Set(28,cs);
+	bins.Set(29,bs);
+      }
+    }
+    else if (tgtA || projA) { // p-Pb or Pb-p
+      if (sNN == 5023) {
+	Double_t cs[] = { 2.5,     7.5,     15.,      30.,
+			  50.,     70.,     90. };
+	Double_t bs[] = { 0,       1.83675, 2.59375,  3.66875,
+			  5.18625, 6.35475, 7.40225, 13.8577 };
+	cents.Set(7, cs);
+	bins.Set(8, bs);
+      }
+    }
+    if (bins.GetSize() <= 0 || cents.GetSize() <= 0 )  // Nothing defined
+      return 0;
+    printf("b bins: ");
+    for (Int_t i = 0; i < bins.GetSize(); i++) {
+      bins[i] *= fkFactor; // Scale to 1/1000 fm
+      printf("%s%7.1f", i!=0 ? "-" : "", bins[i]);
+    }
+    Printf("");
+    TH1* h = new TH1D(Form("raw%s",GetName()), "B to Centrality",
+		      bins.GetSize()-1, bins.GetArray());
+    h->SetDirectory(0);
+    h->SetXTitle("b\\hbox{ [10^{3}fm]}");
+    h->SetYTitle("c\\hbox{ [\\%]}");
+    h->SetBinContent(0,1);
+    for (Int_t i = 1; i <= cents.GetSize(); i++) {
+      h->SetBinContent(i, cents[i-1]);
+    }
+    return h;
+  }
+  /** 
+   * Reset cache 
+   * 
+   */
+  void PreEvent() { fCache = 100*fkFactor; };
+  /** 
+   * Process header 
+   * 
+   * @param h Header
+   */
+  void ProcessHeader(FastShortHeader& h)
+  {
+    // In Ap (EPOS) we have many spec in the target, meaning they will
+    // be detected on the C side (p is the projectile, A is the target)
+    // if (!fSpectators) return;
+    fCache = h.fB * fkFactor;
+    Info("", "Cache=%ld", fCache);
+    // if (fBvsC) fBvsC->Fill(fCache, h.fC);
+  }
+  /** 
+   * Do nothing here 
+   */
+  virtual void Process(const TParticle*) {};
+  /** 
+   * Do Nothing 
+   * 
+   */
+  void PostEvent() {};
+  /** 
+   * Called at the end of the processing.  Just copy mapping to output
+   * 
+   * @param out Output list to add information to. 
+   */
+  virtual void Terminate(TCollection* out)
+  {
+    TH1* h    = GetHistogram(out);
+    TH1* cent = static_cast<TH1*>(h->Clone(GetName()));
+    cent->SetDirectory(0);
+    cent->SetYTitle("Centrality [%]");
+    cent->SetTitle(Form("%s mapping", GetName()));
+    out->Add(cent);
+    // Scale to number of workers
+    Double_t scale = cent->GetBinContent(0);
+    cent->Scale(1./scale);
+  }
+  /** 
+   * Special function for returning centrality early 
+   * 
+   * 
+   * @return Event centrality 
+   */
+  Double_t GetCentrality(Double_t b) const
+  {
+    Double_t ret = (fHistogram ?
+		    fHistogram->GetBinContent(fHistogram->FindBin(b*fkFactor)) :
+		    200);
+    // Info("", "Look-up of %f (%f) -> %5.1f%%", b*fkFactor, b, ret);
+    return ret;
+  }
+  ClassDef(BCentEstimator,2);
+};
   
 //____________________________________________________________________
 /**
@@ -385,10 +577,11 @@ struct V0CentEstimator : public FastNchCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
+   * @param sNN   Collision energy in GeV
    * @param tgtA  True if target is a nucleus 
    * @param projA True if projectile is a nucleus 
    */
-  void Setup(TCollection* l, TTree* tree,
+  void Setup(TCollection* l, TTree* tree, UShort_t sNN,
 	     Bool_t tgtA, Bool_t projA)
   {
     Bool_t  isAA  = (tgtA && projA);
@@ -408,7 +601,7 @@ struct V0CentEstimator : public FastNchCentEstimator
     fHistogram->SetMarkerStyle(20);
     fHistogram->SetFillStyle(3002);
 
-    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
+    Fast1DCentEstimator::Setup(l, tree, sNN, tgtA, projA);
   }
   /** 
    * Whether we should accept a particle.  We accept a particle if it
@@ -475,8 +668,9 @@ struct RefMultEstimator : public FastNchCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
+   * @param sNN   Collision energy in GeV
    */
-  void Setup(TCollection* l, TTree* tree,
+  void Setup(TCollection* l, TTree* tree, UShort_t sNN,
 	     Bool_t tgtA, Bool_t projA)
   {
     Bool_t  isAA  = (tgtA && projA);
@@ -496,7 +690,7 @@ struct RefMultEstimator : public FastNchCentEstimator
     fHistogram->SetMarkerStyle(20);
     fHistogram->SetFillStyle(3002);
 
-    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
+    Fast1DCentEstimator::Setup(l, tree, sNN, tgtA, projA);
   }
   /** 
    * Whether we should accept a particle.  We accept a particle if it
@@ -592,10 +786,11 @@ struct ZNCentEstimator : public Fast1DCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
+   * @param sNN   Collision energy in GeV
    * @param tgtA  True if target is a nucleus 
    * @param projA True if projectile is a nucleus 
    */
-  void Setup(TCollection* l, TTree* tree,
+  void Setup(TCollection* l, TTree* tree, UShort_t sNN,
 	     Bool_t tgtA, Bool_t projA)
   {
     Bool_t  isAA  = (tgtA && projA);
@@ -620,7 +815,7 @@ struct ZNCentEstimator : public Fast1DCentEstimator
     fHistogram->SetMarkerStyle(20);
     fHistogram->SetFillStyle(3002);
 
-    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
+    Fast1DCentEstimator::Setup(l, tree, sNN, tgtA, projA);
   }
   /** 
    * Process a single particle. 
