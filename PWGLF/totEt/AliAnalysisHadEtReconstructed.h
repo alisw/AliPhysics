@@ -17,6 +17,7 @@ class AliAnalysisHadEtCorrections;
 class TString;
 class AliESDtrack;
 
+
 class AliAnalysisHadEtReconstructed : public AliAnalysisHadEt
 {
 
@@ -69,6 +70,13 @@ public:
     Float_t GetCorrectedTotEtEMCALAcceptanceITSNoPID() const {return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPCNoPID+fCorrectedHadEtEMCALAcceptanceITSNoPID);}
     Float_t GetCorrectedTotEtPHOSAcceptanceTPCNoPID() const {return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPCNoPID;}
     Float_t GetCorrectedTotEtPHOSAcceptanceITSNoPID() const {return fCorrTotEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPCNoPID+fCorrectedHadEtPHOSAcceptanceITSNoPID);}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCNegEta() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNegEta*2.0;}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCPosEta() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCPosEta*2.0;}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCNoPIDNegEta() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPIDNegEta*2.0;}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCNoPIDPosEta() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPIDPosEta*2.0;}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCLimitedPhi() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCLimitedPhi*2.0*3.14159/(2.0*3.14159-2.25);}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCNoPIDLimitedPhi() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPIDLimitedPhi*2.0*3.14159/(2.0*3.14159-2.25);}
+
     Float_t GetRawEtFullAcceptanceTPCNoPID() const {return fRawEtFullAcceptanceTPCNoPID;}
     Float_t GetRawEtFullAcceptanceITSNoPID() const {return fRawEtFullAcceptanceITSNoPID+fRawEtFullAcceptanceTPCNoPID;}
     Float_t GetRawEtEMCALAcceptanceTPCNoPID() const {return fRawEtEMCALAcceptanceTPCNoPID;}
@@ -130,6 +138,12 @@ protected:
     Float_t fCorrectedHadEtEMCALAcceptanceITS;//analogous to above for EMCal acceptance
     Float_t fCorrectedHadEtPHOSAcceptanceTPC;//analogous to above for PHOS acceptance
     Float_t fCorrectedHadEtPHOSAcceptanceITS;//analogous to above for PHOS acceptance
+    Float_t fCorrectedHadEtFullAcceptanceTPCNegEta;//For acceptance studies
+    Float_t fCorrectedHadEtFullAcceptanceTPCNoPIDNegEta;//For acceptance studies
+    Float_t fCorrectedHadEtFullAcceptanceTPCPosEta;//For acceptance studies
+    Float_t fCorrectedHadEtFullAcceptanceTPCNoPIDPosEta;//For acceptance studies
+    Float_t fCorrectedHadEtFullAcceptanceTPCLimitedPhi;//For acceptance studies
+    Float_t fCorrectedHadEtFullAcceptanceTPCNoPIDLimitedPhi;//For acceptance studies 
     Float_t fRawEtFullAcceptanceTPC;//uncorrected Et for full acceptance, pT > 0.15 GeV/c
     Float_t fRawEtFullAcceptanceITS;//uncorrected Et for full acceptance, pT > 0.10 GeV/c
     Float_t fRawEtEMCALAcceptanceTPC;//uncorrected Et for EMCal acceptance, pT > 0.15 GeV/c
@@ -152,7 +166,7 @@ protected:
     AliAnalysisHadEtReconstructed & operator = (const AliAnalysisHadEtReconstructed & g) ;//cpy assignment
     AliAnalysisHadEtReconstructed(const AliAnalysisHadEtReconstructed & g) ; // cpy ctor
 
-    void AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL);
+    void AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL,Float_t phi, Float_t eta);
     Bool_t IsInPHOS(AliESDtrack *track);
     Bool_t IsInEMCAL(AliESDtrack *track);
 
