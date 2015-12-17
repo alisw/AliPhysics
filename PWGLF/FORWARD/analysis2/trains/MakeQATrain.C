@@ -56,8 +56,9 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    if (!CoupleCar("AddTaskForwardQA.C", 
-		   Form("%d,%d", mc, fOptions.Has("cent"))))
+    if (!CoupleSECar("AddTaskForwardQA.C", 
+		     Form("%d,%d", mc, fOptions.Has("cent")),
+		     AliVEvent::kAny))
       Fatal("CreateTasks", "Failed to add ForwardQA task");
 
     TString  cor = "";

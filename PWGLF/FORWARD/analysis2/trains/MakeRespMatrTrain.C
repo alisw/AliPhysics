@@ -60,7 +60,7 @@ protected:
     TString args;
     args.Form("\"%s\",%f,%f", trig.Data(), vzMin, vzMax);
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskCreateRespMatr.C", args);
+    CoupleSECar("AddTaskCreateRespMatr.C", args, AliVEvent::kAny);
   }
   //__________________________________________________________________
   /** 

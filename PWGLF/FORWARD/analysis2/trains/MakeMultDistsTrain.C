@@ -65,7 +65,8 @@ protected:
     args.Form("\"%s\",%f,%f,%d,%d",
 	      trig.Data(), vzMin, vzMax, phiAcc, aSymm);
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskForwardMultDists.C(%s)", args);
+    CoupleSECar("AddTaskForwardMultDists.C(%s)", args,AliVEvent::kAny);
+);
     AddMonitor("ForwardMultSums");
   }
   //__________________________________________________________________

@@ -66,7 +66,7 @@ protected:
     args.Form("\"%s\",%f,%f,%d,%d,%d",
 	      trig.Data(), vzMin, vzMax, lowCent, highCent, nBins);
     // --- Add the task ----------------------------------------------
-    CoupleCar("AddTaskMultDists.C(%s)", args);
+    CoupleSECar("AddTaskMultDists.C(%s)", args, AliVEvent::kAny);
   }
   //__________________________________________________________________
   /** 

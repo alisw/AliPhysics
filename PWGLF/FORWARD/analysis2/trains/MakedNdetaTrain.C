@@ -57,8 +57,10 @@ protected:
   Bool_t CoupledNdetaCar(const char* which,
 			 const char* cfg)
   {
+    UInt_t mask = AliVEvent::kAny;
     AliAnalysisTaskSE* tsk = CoupleSECar("AddTaskdNdeta.C",
-					 Form("\"%s\",\"%s\"", which, cfg));
+					 Form("\"%s\",\"%s\"", which, cfg),
+					 mask);
     if (!tsk) {
       Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)", cfg);
       return false;
