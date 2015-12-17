@@ -67,15 +67,6 @@ struct MakeTrackletTrain : public TrainSetup
     fOptions.Add("fill-reco",              "Fill with new reco",        true);
     fOptions.Add("create-inj",             "Create injection BG",       true);
     fOptions.Add("create-rot",             "Create rotation BG",        false);
-#if 0
-    // Mixing disabled in task  
-    fOptions.Add("create-mix",             "Create mixed BG",           false);
-    fOptions.Add("mix-t-min",     "N",     "Min Trackets to mix",       1);
-    fOptions.Add("mix-t-max",     "N",     "Max Trackets to mix",       20000);
-    fOptions.Add("mix-t-bins",    "N",     "Tracklet mixing bins",      20000);
-    fOptions.Add("mix-ipz-bins",  "N",     "IPz mixing bins",           20);
-#endif
-    
   }
   /** 
    * Create the input handler.  This is overwritten from the base
@@ -92,47 +83,9 @@ struct MakeTrackletTrain : public TrainSetup
     Bool_t   fill_reco       = fOptions.AsBool("fill-reco");;
     Bool_t   create_inj      = fOptions.AsBool("create-inj");;
     Bool_t   create_rot      = fOptions.AsBool("create-rot");;
-    Bool_t   create_mix      = fOptions.AsBool("create-mix");;
-    bool     needRec = fill_reco || create_inj || create_rot ||  create_mix;
+    bool     needRec = fill_reco || create_inj || create_rot;
 
-    AliVEventHandler* ret = 0;
-    AliESDInputHandlerRP* esd = 0;
-    if (type == Railway::kESD && needRec) 
-      ret = esd = new AliESDInputHandlerRP();
-    else
-      ret = TrainSetup::CreateInputHandler(type);
-
-    // If mixing requtest, set it up
-    if (create_mix && esd) {
-      Int_t    nMix     = 1;
-      // Int_t    ntMin    = fOptions.AsInt("mix-t-min", 1);
-      // Int_t    ntMax    = fOptions.AsInt("mix-t-max", 20000);
-      // Int_t    ntBin    = fOptions.AsInt("mix-t-bins", 20000);
-      Int_t    ipzBin   = fOptions.AsInt("mix-ipz-bins", 14);
-      Double_t ipz_min  = fOptions.AsDouble("ipz-min",-7);;
-      Double_t ipz_max  = fOptions.AsDouble("ipz-max",+7);;
-
-      Info("", "Creating mix");
-      // Execute this in a macro;
-      TMacro m;
-      m.AddLine("{");
-      m.AddLine(Form("AliMixInputEventHandler* mixer = "
-		     "new AliMixInputEventHandler(%d);", nMix));
-      m.AddLine(Form("mixer->SetInputHandlerForMixing("
-		     "(const AliInputEventHandler *const)%p);",esd));
-      m.AddLine("AliMixEventPool* pool = new AliMixEventPool(\"pool\");");
-      m.AddLine(Form("pool->AddCut(new AliMixEventCutObj("
-		     "AliMixEventCutObj::kZVertex,%f,%f,%d));",
-		     ipz_min,ipz_max, ipzBin));
-      m.AddLine("mixer->SetEventPool(evPool)");
-      m.AddLine(Form("((AliVEventHandler)%p)->SetMixingHandler(mixer);",
-		     esd));
-      m.AddLine("}");
-      m.Exec();
-    }
-
-    Info("","Input handler: %p", ret);
-    return ret;    
+    return TrainSetup::CreateInputHandler(type, needRec);
   }
   /** 
    * Create the MC input handler.  Overwritten here to allow setting
@@ -170,36 +123,6 @@ struct MakeTrackletTrain : public TrainSetup
    */
   AliAnalysisTaskSE* CreateTask(AliAnalysisManager* mgr)
   {
-    Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
-    const char*        cls = "AliTrackletTaskMulti";
-    Long_t             ret = gROOT->ProcessLine(Form("new %s(\"%s\")",cls,cls));
-    AliAnalysisTaskSE* task =reinterpret_cast<AliAnalysisTaskSE*>(ret);
-    mgr->AddTask(task);
-
-    AliAnalysisDataContainer *out =
-      mgr->CreateContainer("clist", TList::Class(),
-			   AliAnalysisManager::kOutputContainer,
-			   (mc ? "trmc.root" : "trdt.root"));
-    mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,out);
-
-    return task;
-  }
-  /** 
-   * Create our tasks.  
-   * 
-   * @param mgr 
-   */
-  void CreateTasks(AliAnalysisManager* mgr)
-  {
-    // fRailway->LoadLibrary("RubensCode",true,true);
-    Double_t sig_dphi_s      = fOptions.AsDouble("sig-dphi-s",-1);
-    Double_t sig_n_std       = fOptions.AsDouble("sig-n-std",1.5);
-    Double_t dphi            = fOptions.AsDouble("dphi",0.06);
-
-    if (sig_dphi_s<0)
-      fOptions.Set("sig-dphi-s", TMath::Sqrt(sig_n_std)*dphi);
-
     // Enable these lines to load the code from PWGUD directory.
     // These do not seem to be up-to-speed with the latest
     // developments, so for now, we use private scripts - sigh!
@@ -216,6 +139,17 @@ struct MakeTrackletTrain : public TrainSetup
     fRailway->LoadSource("AliITSMultRecBg.cxx");
     fRailway->LoadSource("AliTrackletTaskMulti.cxx");
 
+    // --- Create the task using interpreter -------------------------
+    Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
+    const char*        cls = "AliTrackletTaskMulti";
+    Long_t             ret = gROOT->ProcessLine(Form("new %s(\"%s\")",cls,cls));
+    AliAnalysisTaskSE* task =reinterpret_cast<AliAnalysisTaskSE*>(ret);
+    if (!task) return 0;
+
+    // --- Add task to train -----------------------------------------
+    mgr->AddTask(task);
+
+    // --- Figure out the trigger options ----------------------------
     TString trg = fOptions.Get("trig");
     trg.ToUpper();
     UInt_t  sel = AliVEvent::kINT7;
@@ -223,13 +157,15 @@ struct MakeTrackletTrain : public TrainSetup
     else if (trg.EqualTo("V0AND")) sel = AliVEvent::kINT7;
     else if (trg.EqualTo("V0OR"))  sel = AliVEvent::kCINT5;
     else if (trg.EqualTo("ANY"))   sel = AliVEvent::kAny;
-    
-    Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
-    AliAnalysisTaskSE* task = CreateTask(mgr);
-    if (!task) {
-      Fatal("", "Failed to create the task");
-      return;
-    }
+
+    // --- Fix up some options ---------------------------------------
+    Double_t sig_dphi_s      = fOptions.AsDouble("sig-dphi-s",-1);
+    Double_t sig_n_std       = fOptions.AsDouble("sig-n-std",1.5);
+    Double_t dphi            = fOptions.AsDouble("dphi",0.06);
+    if (sig_dphi_s<0) fOptions.Set("sig-dphi-s", TMath::Sqrt(sig_n_std)*dphi);
+
+    // --- Set various options on task -------------------------------
+    task->SelectCollisionCandidates(sel);
     SetOnTask(task, "UseMC", mc);
     SetOnTask(task, "TriggerSelection", sel);
     FromOption(task, "UseCentralityVar", 	"cent", 	"");
@@ -255,8 +191,8 @@ struct MakeTrackletTrain : public TrainSetup
     FromOption(task, "DoNormalReco",		"fill-reco",	false);
     FromOption(task, "DoInjection",		"create-inj",	false);
     FromOption(task, "DoRotation",		"create-rot",	false);
-    // FromOption(task, "DoMixing",		"create-mix",	false);
 
+    // --- Set centrality bins ---------------------------------------
     TString centBins = fOptions.AsString("cent-bins");
     TObjArray* tokens = centBins.Tokenize("-");
     TArrayD array(tokens->GetEntries());
@@ -265,9 +201,31 @@ struct MakeTrackletTrain : public TrainSetup
       TString&    str  = ostr->String();
       array[i]         = str.Atof();
     }
-    const char* cls = "AliTrackletTaskMulti";
     gROOT->ProcessLine(Form("((%s)%p)->SetCentPercentiles((Double_t*)%p,%d)",
 			    cls, task, array.GetArray(), array.GetSize()-1));
+
+    // --- Connect I/O -----------------------------------------------
+    AliAnalysisDataContainer *out =
+      mgr->CreateContainer("clist", TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   (mc ? "trmc.root" : "trdt.root"));
+    mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task,1,out);
+
+    return task;
+  }
+  /** 
+   * Create our tasks.  
+   * 
+   * @param mgr 
+   */
+  void CreateTasks(AliAnalysisManager* mgr)
+  {
+    AliAnalysisTaskSE* task = CreateTask(mgr);
+    if (!task) {
+      Fatal("", "Failed to create the task");
+      return;
+    }
 
 #if 0
     gSystem->RedirectOutput("settings.txt");
