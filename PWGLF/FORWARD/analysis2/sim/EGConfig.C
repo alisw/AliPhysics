@@ -283,21 +283,22 @@ protected:
     //  Disable shadowing
     //  Enable spectators
     // and add a slow-nucleon model afterburner 
-    Bool_t quench = opt.Contains("quench");
-    Bool_t spec   = ((grp->IsPA() || grp->IsAP() || opt.Contains("spectators"))
-		     && !opt.Contains("nospectators"));
-    Bool_t slow   = (grp->IsPA() || grp->IsAP()) && !opt.Contains("noslow");
-    Bool_t shadow = !spec && !slow && !opt.Contains("noshadow");
-
-    TString tit(Form("Hijing%s %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
-		     (slow ? "+SNM" : ""), 
-		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
-		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
-		     Int_t(grp->energy), minB, maxB));
+    Bool_t   quench = opt.Contains("quench");
+    Bool_t   spec   = ((grp->IsPA()||grp->IsAP() || opt.Contains("spectators"))
+		       && !opt.Contains("nospectators"));
+    Bool_t   slow   = (grp->IsPA() || grp->IsAP()) && !opt.Contains("noslow");
+    Bool_t   shadow = !spec && !slow && !opt.Contains("noshadow");
+    UInt_t   sNN    = (grp->energy/10)*10;
+    Double_t ptCut  = sNN < 5000 ? 2.3 : 2.8;
+    TString  tit(Form("Hijing%s %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		      (slow ? "+SNM" : ""), 
+		      grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		      grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		      Int_t(grp->energy), minB, maxB));
     tit.Append(Form(" %squench",    quench ? "" : "no"));
     tit.Append(Form(" %sspectator", spec   ? "" : "no"));
     tit.Append(Form(" %sshadow",    shadow ? "" : "no"));
-    UInt_t sNN = (grp->energy/10)*10;
+    tit.Append(Form(" ptCut=%5.2f", ptCut));
     
     AliGenHijing *gener = new AliGenHijing(-1);
     // --- Centre of mass energy -------------------------------------
@@ -319,7 +320,7 @@ protected:
     // --- Don't track spectators - off for PbPb - 1 by default ------
     gener->SetSpectators(spec);
     // --- Possibly Pt cut-off - 2.3 for PbPb ------------------------
-    gener->SetPtHardMin(2.3);
+    gener->SetPtHardMin(ptCut);
     // --- Do not disable decays -- 3 for PbPb -----------------------
     // gener->SetDecaysOff(3); 
     // --- kinematic selection - 0 by default ------------------------
