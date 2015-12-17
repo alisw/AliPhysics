@@ -74,12 +74,13 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
     // --- Add TPC eventplane task
-    if (fOptions.Has("tpc-ep")) CoupleCar("AddTaskEventplane.C","");
+    if (fOptions.Has("tpc-ep")) CoupleSECar("AddTaskEventplane.C","", mask);
 
+    UInt_t mask = AliVEvent::kAny;
     // --- Task to copy header information ---------------------------
     TString cpy = fOptions.Get("copy");
     Info("", "What to copy: %s", cpy.Data());
-    CoupleCar("AddTaskCopyHeader.C", Form("\"%s\"", cpy.Data()));
+    CoupleSECar("AddTaskCopyHeader.C", Form("\"%s\"", cpy.Data()), mask);
 
     // --- Get options -----------------------------------------------
     ULong_t  run  = fOptions.AsInt("run", 0);
@@ -96,11 +97,11 @@ protected:
     // --- Add the task ----------------------------------------------
     TString fwdConfig = fOptions.Get("forward-config");
     AliAnalysisTask* fwd =
-      CoupleCar("AddTaskForwardMult.C",
-		Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\",\"%s\"", 
-		     mc, run, sys, sNN, fld, 
-		     fwdConfig.Data(), corr.Data(),
-		     dead.Data()));
+      CoupleSECar("AddTaskForwardMult.C",
+		  Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\",\"%s\"", 
+		       mc, run, sys, sNN, fld, 
+		       fwdConfig.Data(), corr.Data(),
+		       dead.Data()), mask);
     if (!fwd)
       Fatal("CoupleCars", "Failed to add forward task");
 
@@ -125,10 +126,10 @@ protected:
     TString cenConfig = "";
     if (!noCentral) { 
       cenConfig = fOptions.Get("central-config");
-      cen = CoupleCar("AddTaskCentralMult.C",
-		      Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
-			   mc, run, sys, sNN, fld, 
-			   cenConfig.Data(), corr.Data()));
+      cen = CoupleSECar("AddTaskCentralMult.C",
+			Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+			     mc, run, sys, sNN, fld, 
+			     cenConfig.Data(), corr.Data()), mask);
       if (cen) {
 	fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
 	if (!corr.IsNull())
@@ -138,7 +139,7 @@ protected:
 
     // --- Add MC particle task --------------------------------------
     if (mc && fOptions.Has("mc-tracks")) 
-      CoupleCar("AddTaskMCParticleFilter.C","");
+      CoupleSECar("AddTaskMCParticleFilter.C","", mask);
   }
   //__________________________________________________________________
   /** 
