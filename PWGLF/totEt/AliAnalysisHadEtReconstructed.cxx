@@ -34,6 +34,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliPWG0Helper.h"
+#include "TMath.h"
 
 using namespace std;
 
@@ -76,6 +77,12 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
   ,fCorrectedHadEtEMCALAcceptanceITS(0)
   ,fCorrectedHadEtPHOSAcceptanceTPC(0)
   ,fCorrectedHadEtPHOSAcceptanceITS(0)
+  ,fCorrectedHadEtFullAcceptanceTPCNegEta(0)
+  ,fCorrectedHadEtFullAcceptanceTPCNoPIDNegEta(0)
+  ,fCorrectedHadEtFullAcceptanceTPCPosEta(0)
+  ,fCorrectedHadEtFullAcceptanceTPCNoPIDPosEta(0)
+  ,fCorrectedHadEtFullAcceptanceTPCLimitedPhi(0)
+  ,fCorrectedHadEtFullAcceptanceTPCNoPIDLimitedPhi(0)
   ,fRawEtFullAcceptanceTPC(0)
   ,fRawEtFullAcceptanceITS(0)
   ,fRawEtEMCALAcceptanceTPC(0)
@@ -350,7 +357,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	  if(!isTPC){
 	    etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
 	  }
-	  AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedPion,etpartialcorrectedProton,etpartialcorrectedKaon,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL);
+	  AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedPion,etpartialcorrectedProton,etpartialcorrectedKaon,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL,track->Phi(),track->Eta());
+	  FillHisto2D(Form("ETvsPhiAndEtaCB%i",fCentBin),track->Phi(),track->Eta(),1.0);
+
 	}
       }
     delete list;
@@ -457,6 +466,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoTotEtEMCALAcceptanceITSNoPID",GetCorrectedTotEtEMCALAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoHadEtPHOSAcceptanceITSNoPID",GetCorrectedHadEtPHOSAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtPHOSAcceptanceITSNoPID",GetCorrectedTotEtPHOSAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNegEta",GetCorrectedTotEtFullAcceptanceTPCNegEta(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCPosEta",GetCorrectedTotEtFullAcceptanceTPCPosEta(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCLimitedPhi",GetCorrectedTotEtFullAcceptanceTPCLimitedPhi(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDNegEta",GetCorrectedTotEtFullAcceptanceTPCNoPIDNegEta(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDPosEta",GetCorrectedTotEtFullAcceptanceTPCNoPIDPosEta(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDLimitedPhi",GetCorrectedTotEtFullAcceptanceTPCNoPIDLimitedPhi(),1.0);
 
     FillHisto1D("RecoRawEtFullAcceptanceTPC",GetRawEtFullAcceptanceTPC(),1.0);
     FillHisto1D("RecoRawEtEMCALAcceptanceTPC",GetRawEtEMCALAcceptanceTPC(),1.0);
@@ -477,6 +492,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
       FillHisto1D(Form("RecoTotEtFullAcceptanceITSCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceITS(),1.0);
       FillHisto1D(Form("RecoRawEtFullAcceptanceTPCCB%i",fCentBin),GetRawEtFullAcceptanceTPC(),1.0);
       FillHisto1D(Form("RecoRawEtFullAcceptanceITSCB%i",fCentBin),GetRawEtFullAcceptanceITS(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNegEta(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCPosEta(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCLimitedPhi(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDNegEta(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDPosEta(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDLimitedPhi(),1.0);
     }
   }
 //   delete pID;
@@ -486,7 +507,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   // cout<<"Reconstructed pi/k/p et "<<GetCorrectedPiKPEtFullAcceptanceTPC()<<endl;
   return 1;
 }
-void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
+void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL,Float_t phi, Float_t eta) {//Adding Et to each of the variables that tracks et event by event
   if(pt>=AliAnalysisHadEt::fgPtTPCCutOff && IsTPC){//TPC tracks
     //adding to the raw Et
     fRawEtFullAcceptanceTPC += rawEt;
@@ -505,6 +526,27 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     fCorrectedHadEtFullAcceptanceTPCNoPID += corrEtNoPID;
     if(InPHOS)fCorrectedHadEtPHOSAcceptanceTPCNoPID += corrEtNoPID;
     if(InEMCAL)fCorrectedHadEtEMCALAcceptanceTPCNoPID += corrEtNoPID;
+    if(eta<0){
+      fCorrectedHadEtFullAcceptanceTPCNegEta += corrEt;//the pi/k/p et
+      fCorrectedHadEtFullAcceptanceTPCNoPIDNegEta += corrEtNoPID;
+    }
+    else{
+      fCorrectedHadEtFullAcceptanceTPCPosEta += corrEt;//the pi/k/p et
+      fCorrectedHadEtFullAcceptanceTPCNoPIDPosEta += corrEtNoPID;
+    }
+    //exclude these regions
+    //(0.3<track->Phi()<1.15 && 2<track->Phi()<2.5 && 3.7<track->Phi()<4.6)
+    //one could write this in one line but it might be wiser to write code which is less buggy and easier to follow...
+    //cout<<"phi "<<phi<<endl;
+    if(phi<0.3 || phi>1.15 ){
+      if(phi<2 || phi >2.5){
+	if(phi<3.7 || phi > 4.6){
+	  //cout<<"phi "<<phi<<endl;
+	  fCorrectedHadEtFullAcceptanceTPCLimitedPhi += corrEt;//the pi/k/p et
+	  fCorrectedHadEtFullAcceptanceTPCNoPIDLimitedPhi += corrEtNoPID;
+	}
+      }
+    }
   }
   //if(pt<AliAnalysisHadEt::fgPtTPCCutOff &&pt>=AliAnalysisHadEt::fgPtITSCutOff && !IsTPC){//ITS tracks
   //If we use standalone tracks - not pure standalone tracks - the only tracks we get are ones that were missed by the TPC+ITS tracking.  Therefore we don't need to add a momentum cut-off
@@ -616,6 +658,12 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
   fCorrectedHadEtEMCALAcceptanceITS=0.0;
   fCorrectedHadEtPHOSAcceptanceTPC=0.0;
   fCorrectedHadEtPHOSAcceptanceITS=0.0;
+  fCorrectedHadEtFullAcceptanceTPCNegEta=0;
+  fCorrectedHadEtFullAcceptanceTPCNoPIDNegEta=0;
+  fCorrectedHadEtFullAcceptanceTPCPosEta=0;
+  fCorrectedHadEtFullAcceptanceTPCNoPIDPosEta=0;
+  fCorrectedHadEtFullAcceptanceTPCLimitedPhi=0;
+  fCorrectedHadEtFullAcceptanceTPCNoPIDLimitedPhi=0;
   fRawEtFullAcceptanceTPC=0.0;
   fRawEtFullAcceptanceITS=0.0;
   fRawEtEMCALAcceptanceTPC=0.0;
@@ -844,12 +892,10 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	    snprintf(histotitle,200,"Reconstructed singly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
 
-
-
-	  snprintf(histoname,200,"Reco%s%sAcceptance%s%s",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
-	  snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	  snprintf(xtitle,50,"Reconstructed %s",sPiKPEtString->Data());
-	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);
+	    snprintf(histoname,200,"Reco%s%sAcceptance%s%s",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    snprintf(xtitle,50,"Reconstructed %s",sPiKPEtString->Data());
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);
 
 	    snprintf(xtitle,50,"Reconstructed %s",sPiKPEt->Data());
 	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sND",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
@@ -861,9 +907,26 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sSD",sPiKPEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	    snprintf(histotitle,200,"Reconstructed singly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",sPiKPEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);//et
+	    if(tpc==1 && hadet==0){//full acceptance and TPC and tot ET
+	      snprintf(histoname,200,"Reco%s%sAcceptance%s%sNegEta",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	      snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using #eta<0",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	      snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+	      CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+
+	      snprintf(histoname,200,"Reco%s%sAcceptance%s%sPosEta",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	      snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using #eta>0",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	      snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+	      CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+
+	      snprintf(histoname,200,"Reco%s%sAcceptance%s%sLimitedPhi",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	      snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using restricted #phi",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	      snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+	      CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	    }
 
 	  }
-	  if((fDataSet==20100||fDataSet==2015||fDataSet==2011) && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
+	  //if((fDataSet==20100||fDataSet==2015||fDataSet==2011) && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
+	  if((fDataSet==20100||fDataSet==2015||fDataSet==2011) && type ==0){//If this is Pb+Pb and full acceptance
 	    Int_t width = 5;
 	    if(fNCentBins<21) width = 10;
 	    for(Int_t i=0;i<fNCentBins;i++){
@@ -871,6 +934,27 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	      snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s for centrality %i-%i",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data(),i*width,(i+1)*width);
 	      snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
 	      CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	      if(tpc==1 && hadet==0){//full acceptance and TPC and tot ET
+
+		if(pid==1){//only want to make one for each centrality bin
+		  //void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
+		  CreateHisto2D(Form("ETvsPhiAndEtaCB%i",i),"E_{T} vs #phi and #eta","#phi","#eta",200,0.0,TMath::Pi(),200,-0.7,0.7);
+		}
+
+		snprintf(histoname,200,"Reco%s%sAcceptance%s%sNegEtaCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
+		snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using #eta<0 for centrality %i-%i",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data(),i*width,(i+1)*width);
+		snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+		CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+		snprintf(histoname,200,"Reco%s%sAcceptance%s%sPosEtaCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
+		snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using #eta>0 for centrality %i-%i",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data(),i*width,(i+1)*width);
+		snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+		CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+		snprintf(histoname,200,"Reco%s%sAcceptance%s%sLimitedPhiCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
+		snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s using limited #phi for centrality %i-%i",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data(),i*width,(i+1)*width);
+		snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+		CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+
+	      }
 	    }
 	  }
 	}
