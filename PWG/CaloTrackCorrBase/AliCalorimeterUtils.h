@@ -70,7 +70,7 @@ class AliCalorimeterUtils : public TObject {
   Float_t       GetLocalMaximaCutEDiff()             const { return fLocMaxCutEDiff       ; }
   void          SetLocalMaximaCutEDiff(Float_t c)          { fLocMaxCutEDiff = c          ; }
   
-  Int_t         GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, Float_t & fraction) const ;
+  Int_t         GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & fraction) const ;
   
   void          SplitEnergy(Int_t absId1, Int_t absId2, AliVCluster *cluster, AliVCaloCells* cells,
                             //Float_t & e1, Float_t & e2,
@@ -121,6 +121,9 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOnLoadOwnPHOSGeometryMatrices()      { fLoadPHOSMatrices = kTRUE    ; }
   void          SwitchOffLoadOwnPHOSGeometryMatrices()     { fLoadPHOSMatrices = kFALSE   ; }
   void          SetPHOSGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fPHOSMatrix[i] = m   ; }
+  
+  void         GetEMCALSubregion(AliVCluster* clus, AliVCaloCells* cells, 
+                                 Int_t & regEta, Int_t & regPhi) const ;
   
   //------------------------------
   // Bad channels
@@ -287,7 +290,7 @@ class AliCalorimeterUtils : public TObject {
                   fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel((AliEMCALGeometry*)fEMCALGeo, cells, clu)   ; }
   
   void          RecalculateClusterPID(AliVCluster* clu)    { fEMCALRecoUtils->RecalculateClusterPID(clu)              ; }
-
+  
   //------------------------------
   // *** Track Matching ***
   //------------------------------
