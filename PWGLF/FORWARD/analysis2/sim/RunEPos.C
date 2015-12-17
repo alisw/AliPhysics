@@ -41,6 +41,9 @@ RunEPos(const char* url="lite://${PWD}/index.root?events=-1&run=138190#Particle"
   // detection.
   gSystem->AddIncludePath("-DNO_DPMJET_TYPE");
   // gDebug = 7;
+  gROOT->LoadMacro(Form("%s/sim/FastShortHeader.C", fwd.Data()));
+  gROOT->LoadMacro(Form("%s/sim/FastCentEstimators.C+%s",fwd.Data(),opt));
+  gROOT->LoadMacro(Form("%s/sim/FastMonitor.C+%s",fwd.Data(),opt));
   gROOT->LoadMacro(Form("%s/sim/FastSim.C+%s",fwd.Data(),opt));
 
   const char* cleanFiles[] = { "grp.dat",
