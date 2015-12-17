@@ -730,10 +730,75 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
   clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 }
 
+//_______________________________________________________________
+/// Select EMCal SM regions, depending on its location in a SM, 
+/// behind frames, close to borders, etc.
+/// Current regions are valid for EMCal, rethink for DCal and 1/3 SMs
+///
+/// \param clus: cluster, access to highest energy tower
+/// \param cells: list of cells, needed to find highest energy tower
+/// \return integer with location
+//______________________________________________________________________________
+void AliCalorimeterUtils::GetEMCALSubregion(AliVCluster   * clus, AliVCaloCells * cells,
+                                            Int_t & regEta, Int_t & regPhi) const
+{
+  regEta = regPhi = -1 ;
+
+  if(!clus->IsEMCAL()) return ;
+  
+  Int_t icol = -1, irow = -1, iRCU = -1;
+  Float_t clusterFraction = 0;
+  
+  Int_t absId = GetMaxEnergyCell(cells,clus,clusterFraction);
+  
+  Int_t sm    = GetModuleNumberCellIndexes(absId,kEMCAL,icol,irow,iRCU);
+  
+  // Shift by 48 to for impair SM
+  if( sm%2 == 1) icol+=AliEMCALGeoParams::fgkEMCALCols;
+    
+  // Avoid borders
+  if(icol < 2 || icol > 93 || irow < 2 || irow > 21) return;
+  
+  //
+  // Eta regions
+  //
+  
+  // Region 0: center of SM ~0.18<|eta|<0.55
+  if      ( icol >   9 && icol <  34 ) regEta = 0;
+  else if ( icol >  62 && icol <  87 ) regEta = 0;
+  
+  // Region 3: frames ~0.1<|eta|<~0.22 ~0.51<|eta|<0.62
+  
+  else if ( icol <=  9 && icol >=  5 )  regEta =  3;
+  else if ( icol <= 38 && icol >= 34 )  regEta =  3;
+  else if ( icol <= 62 && icol >= 58 )  regEta =  3;
+  else if ( icol <= 91 && icol >= 87 )  regEta =  3;
+
+  // Region 1: |eta| < ~0.15 
+  
+  else if ( icol <  58  && icol >  38 ) regEta =  1 ;
+  
+  // Region 2: |eta| > ~0.6
+
+  else                                  regEta =  2 ;
+  
+  //
+  // Phi regions
+  //
+    
+  if      ( irow >=  2 && irow <=  5 ) regPhi = 0; // External
+  else if ( irow >= 18 && irow <= 21 ) regPhi = 0; // External
+  else if ( irow >=  6 && irow <=  9 ) regPhi = 1; // Mid
+  else if ( irow >= 14 && irow <= 17 ) regPhi = 1; // Mid
+  else                                 regPhi = 2; //10-13 Central
+  
+}
+
 //________________________________________________________________________________________
 /// For a given CaloCluster, it gets the absId of the cell with maximum energy deposit.
 //________________________________________________________________________________________
-Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, 
+Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells * cells,
+                                             AliVCluster   * clu, 
                                              Float_t & clusterFraction) const 
 {  
   if( !clu || !cells )
