@@ -7,8 +7,8 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gROOT->LoadMacro("macros/loadLibraries.C");
-  loadLibraries();
+  gROOT->LoadMacro("macros/loadCompiledLibraries.C");
+  loadCompiledLibraries();
   TFile *corrfile = new TFile(corrfilename);
   AliAnalysisHadEtCorrections *corrections = NULL;
   if(isEMCal) corrections= (AliAnalysisHadEtCorrections *) corrfile->Get("hadCorrectionEMCAL");
@@ -78,16 +78,20 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
     etHadRecITSErr[i]=0;
     etTotRecITSErr[i]=0;
     histoHadReco[i] =  out2->FindObject(Form("RecoHadEtFullAcceptanceTPCCB%i",i));
+    ((TH1D*)histoHadReco[i])->GetXaxis()->SetRange(2, ((TH1D*)histoHadReco[i])->GetNbinsX() );
     etHadRec[i]=((TH1D*)histoHadReco[i])->GetMean();
     etHadRecErr[i]=((TH1D*)histoHadReco[i])->GetMeanError();
     histoHadRecoITS[i] =  out2->FindObject(Form("RecoHadEtFullAcceptanceITSCB%i",i));
+    ((TH1D*)histoHadRecoITS[i])->GetXaxis()->SetRange(2, ((TH1D*)histoHadRecoITS[i])->GetNbinsX() );
     etHadRecITS[i]=((TH1D*)histoHadRecoITS[i])->GetMean();
     etHadRecITSErr[i]=((TH1D*)histoHadRecoITS[i])->GetMeanError();
 
     histoTotReco[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceTPCCB%i",i));
+    ((TH1D*)histoTotReco[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotReco[i])->GetNbinsX() );
     etTotRec[i]=((TH1D*)histoTotReco[i])->GetMean();
     etTotRecErr[i]=((TH1D*)histoTotReco[i])->GetMeanError();
     histoTotRecoITS[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceITSCB%i",i));
+    ((TH1D*)histoTotRecoITS[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoITS[i])->GetNbinsX() );
     etTotRecITS[i]=((TH1D*)histoTotRecoITS[i])->GetMean();
     etTotRecITSErr[i]=((TH1D*)histoTotRecoITS[i])->GetMeanError();//had
   }
