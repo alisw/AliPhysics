@@ -67,6 +67,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
+
+  void         SwitchOnFillEMCALRegionSSHistograms()  { fFillEMCALRegionSSHistograms = kTRUE  ; }
+  void         SwitchOffFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kFALSE ; }  
   
   void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
@@ -150,6 +153,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            ///<  Remove clusters/cells with number of local maxima larger than this value
     
   Bool_t   fFillSSHistograms ;                      ///<  Fill shower shape histograms
+
+  Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
   Bool_t   fFillOnlySimpleSSHisto;                  ///<  Fill selected cluster histograms, selected SS histograms
     
@@ -187,18 +192,22 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
   TH2F * fhLam0E;                                   //!<! Cluster lambda0 vs  E
+  TH2F * fhLam0Pt;                                  //!<! Cluster lambda0 vs  pT
   TH2F * fhLam1E;                                   //!<! Cluster lambda1 vs  E
 
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
+  TH2F * fhLam0PtTRD;                               //!<! Cluster lambda0 vs  pT, SM covered by TRD
   TH2F * fhLam1ETRD;                                //!<! Cluster lambda1 vs  E, SM covered by TRD
 
   TH2F * fhDispETM;                                 //!<! Cluster dispersion vs E, cut on Track Matching residual
   TH2F * fhLam0ETM;                                 //!<! Cluster lambda0 vs  E, cut on Track Matching residual
+  TH2F * fhLam0PtTM;                                //!<! Cluster lambda0 vs  pT, cut on Track Matching residual
   TH2F * fhLam1ETM;                                 //!<! Cluster lambda1 vs  E, cut on Track Matching residual
   
   TH2F * fhDispETMTRD;                              //!<! Cluster dispersion vs E, SM covered by TRD, cut on Track Matching residual
   TH2F * fhLam0ETMTRD;                              //!<! Cluster lambda0 vs  E, SM covered by TRD, cut on Track Matching residual
+  TH2F * fhLam0PtTMTRD;                             //!<! Cluster lambda0 vs  pT, SM covered by TRD, cut on Track Matching residual
   TH2F * fhLam1ETMTRD;                              //!<! Cluster lambda1 vs  E, SM covered by TRD, cut on Track Matching residual
   
   TH2F * fhNCellsLam0LowE;                          //!<! number of cells in cluster vs lambda0
@@ -259,6 +268,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape MC
     
   TH2F * fhMCELambda0   [fgkNssTypes] ;             //!<! E vs Lambda0     from MC particle
+  TH2F * fhMCPtLambda0  [fgkNssTypes] ;             //!<! pT vs Lambda0     from MC particle
   TH2F * fhMCELambda1   [fgkNssTypes] ;             //!<! E vs Lambda1     from MC particle
   TH2F * fhMCEDispersion[fgkNssTypes] ;             //!<! E vs Dispersion  from MC particle
   
@@ -335,7 +345,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTimeNPileUpVertSPD;                      //!<! Time of cluster vs n pile-up vertices from SPD
   TH2F * fhTimeNPileUpVertTrack;                    //!<! Time of cluster vs n pile-up vertices from Tracks
 
-  TH2F * fhPtPhotonNPileUpSPDVtx;	                //!<! photon pt vs number of spd pile-up vertices
+  TH2F * fhPtPhotonNPileUpSPDVtx;	                  //!<! photon pt vs number of spd pile-up vertices
   TH2F * fhPtPhotonNPileUpTrkVtx;                   //!<! photon pt vs number of track pile-up vertices
   TH2F * fhPtPhotonNPileUpSPDVtxTimeCut;            //!<! photon pt vs number of spd pile-up vertices, time cut +-25 ns
   TH2F * fhPtPhotonNPileUpTrkVtxTimeCut;            //!<! photon pt vs number of track pile-up vertices, time cut +- 25 ns
@@ -347,9 +357,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtClusterSM;                             //!<! Cluster E distribution per SM, before any selection, after reader
   TH2F * fhPtPhotonSM ;                             //!<! photon-like cluster E distribution per SM
   
-  TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion.
+  TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. 
+  TH2F * fhMCConversionVertexTRD;                   //!<! Conversion distance for photon clusters that have at least a contributor from the conversion, SM covered by TRD.
   TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape of photon conversions, depending on conversion vertex.
+  TH2F * fhMCConversionLambda0RcutTRD[6];           //!<! Shower shape of photon conversions, depending on conversion vertex, SM covered by TRD
 
+  TH2F * fhLam0EMCALRegion   [4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
+  TH2F * fhLam0EMCALRegionTRD[4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
+  TH2F * fhLam0EMCALRegionMCConvRcut   [4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
+  TH2F * fhLam0EMCALRegionTRDMCConvRcut[4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+  
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
     
@@ -357,7 +374,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,40) ;
+  ClassDef(AliAnaPhoton,41) ;
   /// \endcond
 
 } ;
