@@ -34,6 +34,7 @@
 # include <TUrl.h>
 # include <TGraph.h>
 # include "FastShortHeader.C"
+# include "FastMonitor.C"
 // # include <TProof.h>
 #else
 class TTree;
@@ -53,294 +54,6 @@ class TUrl;
 class TVirtualPad;
 class FastShortHeader;
 #endif
-
-
-
-//====================================================================
-struct FastAnaMonitor : public TObject, public TQObject 
-{
-  /** 
-   * Execute a PROOF command. Short hand convinience 
-   * 
-   * @param cmd Command, or empty string. 
-   * 
-   * @return If cmd is empty, test if gProof is defined, other wise
-   * result of command.
-   */
-  static Long_t ProofExec(const char* cmd=0)
-  {
-    Bool_t hasCmd = (cmd && cmd[0] != '\0');
-    TString lne;
-    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
-    Printf("FastAnaMonitor::ProofExec: %s", lne.Data());
-    return gROOT->ProcessLine(lne);
-  }
-  /** 
-   * Constructor 
-   * 
-   * 
-   * @return 
-   */
-  FastAnaMonitor(TSelector* s=0,
-		 const TString& name="FastAnaMonitor",
-		 TCollection* names=0)
-    : fName(name),
-      fCanvas(0),
-      fSelector(s),
-      fNPads(0)
-  {
-    fCanvas = new TCanvas(fName, Form("Monitor %s", fName.Data()), 1000, 800);
-    fCanvas->SetFillColor(0);
-    fCanvas->SetFillStyle(0);
-    fCanvas->SetTopMargin(0.01);
-    fCanvas->SetRightMargin(0.01);
-
-    Int_t nTotal = names->GetEntries();
-    Int_t nRow   = Int_t(TMath::Sqrt(nTotal)+.5);
-    Int_t nCol   = nRow;
-    if (nCol * nRow < nTotal) nCol++;
-    fNPads = nTotal;
-    fCanvas->Divide(nCol,nRow);
-    Info("FastAnaMonitor", "Create canvas with (%dx%d) [%d] pads",
-	 nCol, nRow, nTotal);
-    TIter next(names);
-    TObject* o = 0;
-    Int_t    i = 1;
-    while ((o = next()))
-      RegisterDraw(i++, o->GetName(), o->GetTitle(), o->GetUniqueID());
-  }
-  /** 
-   * Register a draw of a an object 
-   * 
-   * @param i      Pad number 
-   * @param name   Name of object 
-   * @param option Drawing option
-   * @param flags  Flags 
-   *
-   *  - 0x1   Log(x)
-   *  - 0x2   Log(y)
-   *  - 0x4   Log(z)
-   *  - 0x8   Scale to events and bin width 
-   */
-  void RegisterDraw(Int_t i,
-		    const char* name,
-		    const char* option,
-		    UShort_t    flags=0)
-  {
-    TVirtualPad* p = fCanvas->GetPad(i);
-    if (!p) {
-      Warning("RegisterDraw", "Not enough sub-pads (%d)", i);
-      return;
-    }
-    Info("RegisterDraw", "Adding draw # %d %s [%s] (0x%x)",
-	 i, name, option, flags);
-    p->SetFillColor(0);
-    p->SetFillStyle(0);
-    p->SetTopMargin(0.01);
-    p->SetRightMargin(0.01);
-    p->SetName(Form("p_%s", name));
-    p->SetTitle(option);
-    if (flags & 0x1) p->SetLogx();
-    if (flags & 0x2) p->SetLogy();
-    if (flags & 0x4) p->SetLogz();
-    if (flags & 0x8) p->SetBit(BIT(15));
-
-    fCanvas->Modified();
-  }
-  /** 
-   * Desctructor 
-   */
-  virtual ~FastAnaMonitor() 
-  {
-    if (ProofExec() == 0) return;
-    ProofExec(Form("Disconnect(\"Feedback(TList *objs)\","
-		   "%p,\"Feedback(TList* objs)\"", this));
-  }
-  /** 
-   * Set name of this object 
-   * 
-   * @param name Name 
-   */
-  void SetName(const char* name) { fName = name; }
-  /** 
-   * Get the name of this object 
-   * 
-   * @return Name 
-   */
-  const char* GetName() const { return fName.Data(); }
-  /** 
-   * Find pad corresponding to an object
-   * 
-   * @param name Name of object 
-   * 
-   * @return Pointer to pad or null
-   */
-  TVirtualPad* FindPad(const TString& name)
-  {
-    TVirtualPad* p = 0;
-    Int_t        i = 1;
-    TString      t = Form("p_%s", name.Data());
-    while ((p = fCanvas->GetPad(i))) {
-      if (t.EqualTo(p->GetName())) return p;
-      i++;
-    }
-    return 0;
-  }
-  /** 
-   * Find an object in the list @a l which corresponds to a registered
-   * pad.
-   * 
-   * @param padName Pad's name 
-   * @param l       Input collection 
-   * 
-   * @return The found object, or null
-   */
-  TObject* FindPadObject(const Char_t* padName, TCollection* l)
-  {
-    TString path(padName);
-    path.Remove(0,2);
-    if (path.Index("/") == kNPOS)
-      return l->FindObject(path);
-    TObjArray*   tokens  = path.Tokenize("/");
-    Int_t        nTokens = tokens->GetEntriesFast();
-    TCollection* current = l;
-    TObject*     ret     = 0;
-    for (Int_t i = 0; i < nTokens; i++) {
-      TObject* o = current->FindObject(tokens->At(i)->GetName());
-      if (!o) break;
-      if (i == nTokens - 1) {
-	ret = o;
-	break;
-      }
-      if (!o->IsA()->InheritsFrom(TCollection::Class())) {
-	Warning("FindPadObject", "Path object %s of %s is not a collection "
-		"but a %s", o->GetName(), path.Data(), o->ClassName());
-	break;
-      }
-      current = static_cast<TCollection*>(o);
-    }
-    delete tokens;
-    if (!ret) l->ls();
-    return ret;
-  }
-  /** 
-   * Draw an object.
-   * 
-   * @param o 
-   * @param same 
-   */
-  void DrawObject(TObject* o, Option_t* opt, Bool_t scale, Bool_t same=false)
-  {
-    if (o->IsA()->InheritsFrom(TH1::Class())) {
-      TH1* h = static_cast<TH1*>(o);
-      TH1* c = static_cast<TH1*>(h->Clone(Form("cpy_%s", h->GetName())));
-      c->SetDirectory(0);
-      if (scale) {
-	// Info("Feedback", "Scaling %s by 1./%d and width",
-	//      c->GetName(), nEvents);	
-	Int_t nEvents = c->GetBinContent(0);
-	if (nEvents <= 0) return;
-	c->Scale(1./nEvents, "width");
-	c->SetMinimum(0);
-      }
-      c->Draw(Form("%s %s",opt, (same ? "same" : "")));
-      c->SetBit(TObject::kCanDelete);
-      // Info("DrawObject","Drawing histogram '%s' with \"%s %s\"",
-      //      c->GetName(), opt, (same ? "same" : ""));
-    }
-    else if (o->IsA()->InheritsFrom(TGraph::Class())) {
-      TGraph* g = static_cast<TGraph*>(o);
-      TGraph* c = static_cast<TGraph*>(g->Clone(Form("cpy_%s",g->GetName())));
-      c->Draw(Form("%s %s",opt, (same ? "" : "a")));
-      c->SetBit(TObject::kCanDelete);
-      // Info("DrawObject","Drawing Graph '%s' with \"%s %s\"",
-      //      c->GetName(), opt, (same ? "" : "a"));
-    }
-    else if (o->IsA()->InheritsFrom(TCollection::Class())) {
-      TCollection* c = static_cast<TCollection*>(o);
-      TIter        n(c);
-      TObject*     co = 0;
-      Bool_t       first = true;
-      // Info("DrawObject","Drawing collection '%s' with \"%s\"",
-      //      c->GetName(), opt);
-      while ((co = n())) {
-	DrawObject(co, opt, scale, !first);
-	first = false;
-      }
-    }
-    else {
-      TObject* c = o->DrawClone(opt);
-      c->SetBit(TObject::kCanDelete);
-    }
-  }
-  /** 
-   * Called when we get notified of 
-   * 
-   * @param objs List of monitored objects
-   */
-  void Feedback(TList* objs)
-  {
-    // Info("FeedBack", "List is %p", objs);
-    // if (objs) objs->ls();
-    if (!fCanvas) return;
-
-    if (!objs) {
-      Warning("Feedback", "No list");
-      return;
-    }
-    // objs->ls();
-    // fCanvas->ls();
-
-    // Int_t        iPad = 1;
-    // TVirtualPad* p    = 0;
-    // while ((p = fCanvas->GetPad(iPad))) {
-    // Info("FeedBack", "Looping over %d pads", fNPads);	 
-    for (Int_t iPad = 1; iPad <= fNPads; iPad++) {
-      TVirtualPad* p = fCanvas->cd(iPad);
-      // Info("Feedback", "Drawing in sub-pad # %d: %s", iPad, p->GetName());
-      TObject* o = FindPadObject(p->GetName(), objs);
-      if (!o) {
-	Warning("Feedback", "Object correspondig to pad %s (%d) not found",
-		p->GetName(), iPad);
-	// iPad++;
-	continue; 
-      }
-      DrawObject(o, p->GetTitle(), p->TestBit(BIT(15)), false);
-      p->cd();
-      p->Modified();
-      // iPad++;
-    }
-    fCanvas->Modified();
-    fCanvas->Update();
-    fCanvas->cd();
-  }
-  /** 
-   * Function to handle connect signals 
-   * 
-   */
-  void Handle()
-  {
-    HandleTimer(0);
-  }
-  /**
-   * Function to handle timer events 
-   */
-  Bool_t HandleTimer(TTimer*)
-  {
-    // Info("HandleTimer", "Selector=%p", fSelector);
-    if (!fSelector) return false;
-    Feedback(fSelector->GetOutputList());
-    return true;
-  }
-  /** Our name */
-  TString fName;
-  /** Our canvas */
-  TCanvas* fCanvas;
-  /** Possibly link to selector */
-  TSelector* fSelector;
-  Int_t fNPads;
-  ClassDef(FastAnaMonitor,1);
-};
 
 //====================================================================
 /** 
@@ -427,40 +140,11 @@ struct FastAnalysis : public TSelector
       return;
     }
 
-    TString name("FastAnaMonitor");
-    if (ProofExec() != 0) {
-      Long_t ret = ProofExec("GetSessionTag()");
-      name = reinterpret_cast<const char*>(ret);
-    }
-    
-    // Create our monitor 
-    FastAnaMonitor* monitor = new FastAnaMonitor(this, name, objs);
-    Info("SetupMonitor", "Created monitor %s with objects",
-	 monitor->GetName());
-    objs->Print();
-    if (ProofExec() != 0) {
-      gDirectory->Add(monitor);
-      Long_t ret = ProofExec(Form("Connect(\"Feedback(TList *objs)\","
-				  "\"FastAnaMonitor\", (void*)%p, "
-				  "\"Feedback(TList *objs)\")",monitor));
-      if (!ret) {
-	Warning("FastMonitor", "Failed to connect to Proof");
-	delete monitor;
-	return;
-      }
-      ProofExec(Form("SetParameter(\"PROOF_FeedbackPeriod\",%d)",
-		     fMonitor*1000));
-      TIter    next(objs);
-      TObject* obj = 0;
-      while ((obj = next()))
-	ProofExec(Form("AddFeedback(\"%s\")", obj->GetName()));
-    }
-    else {
-      TTimer* timer = new TTimer(fMonitor*1000);
-      timer->Connect("Timeout()","FastAnaMonitor",monitor, "Handle()");
-      // ::Info("Run", "Turning on monitoring");
-      timer->Start(-1,false);
-    }
+    FastMonitor* monitor = new FastMonitor(this, "FastMonitor");
+    TObject* obj = 0;
+    TIter    next(objs);
+    while ((obj = next())) monitor->Register(obj);
+    monitor->Connect(fMonitor);
   }
   /** 
    * @{ 
@@ -477,7 +161,7 @@ struct FastAnalysis : public TSelector
     fParticles = new TClonesArray("TParticle");
     fTree->SetBranchAddress("header",    &(fHeader->fRunNo));
     fTree->SetBranchAddress("particles", &fParticles);
-    if (!fCentMethod.IsNull() && !fCentMethod.EqualTo("B"))
+    if (!fCentMethod.IsNull())
       fTree->SetBranchAddress(fCentMethod, &fEventMult);
     return true;
    
@@ -491,7 +175,6 @@ struct FastAnalysis : public TSelector
   virtual Bool_t SetupEstimator()
   {
     if (fCentMethod.IsNull()) return true;
-    if (fCentMethod.EqualTo("B",TString::kIgnoreCase)) return true;
 
     if (!fTree) {
       Warning("SetupEstimator", "No tree defined!");
@@ -550,6 +233,10 @@ struct FastAnalysis : public TSelector
     // if (!SetupEstimator())
     //   Fatal("Init", "Failed to set-up estimator");
   }
+  /** 
+   * At beginning of job
+   * 
+   */
   virtual void Begin(TTree*)
   {
     SetupMonitor();
@@ -565,6 +252,7 @@ struct FastAnalysis : public TSelector
     Info("Notify", "processing file: (%p) %s", file,
 	 (file ? file->GetName() : ""));
     if (!file) return true;
+    CopyEgHistogram();
     if (!SetupBranches()) {
       Warning("Notify", "Failed to set-up branches");
       return false;
@@ -641,12 +329,20 @@ struct FastAnalysis : public TSelector
     if (!fCentHist) return fHeader->fC;
     Int_t nBin = fCentHist->GetNbinsX();
     Int_t bin  = fCentHist->GetXaxis()->FindBin(fEventMult);
-    if (bin <= 0)    return -1;
+    if (bin <= 0)    {
+      Warning("", "Look-up of %f failed (%d)", fEventMult, bin);
+      return -1;
+    }
     if (bin-1 == nBin && fEventMult == fCentHist->GetXaxis()->GetXmax()) {
       bin        =  nBin;
     }
-    if (bin >  nBin) return 1000;
-    return fCentHist->GetBinContent(bin);
+    if (bin >  nBin) {
+      Warning("", "Look-up of %f failed (%d > %d)", fEventMult, bin, nBin);
+      return 200;
+    }
+    Double_t cent = fCentHist->GetBinContent(bin);
+    // Info("", "Look-up of %ld -> %d -> %5.1f%%", fEventMult, bin, cent);
+    return cent;
   }
   /** 
    * Get the event count from internal counter, or if that is 0 or
@@ -686,6 +382,24 @@ struct FastAnalysis : public TSelector
       return o;
     }
     return o;
+  }
+  void CopyEgHistogram()
+  {
+    if (fOutput->FindObject("eg")) return;
+    TFile* file = (fTree ? fTree->GetCurrentFile() : 0);
+    Info("CopyEgHistogram", "Current file: (%p) %s", file,
+	 (file ? file->GetName() : ""));
+    if (!file) return;
+    TH1* egTitle = static_cast<TH1*>(file->Get("eg"));
+    if (!egTitle) {
+      Warning("CopyEgHistogram", "No EG histogram");
+      return;
+    }
+    TH1* copy = static_cast<TH1*>(egTitle->Clone());
+    copy->SetDirectory(0);
+    copy->Reset();
+    copy->Fill(0.5);
+    fOutput->Add(copy);
   }
   /* @} */
 
@@ -835,9 +549,10 @@ struct FastAnalysis : public TSelector
       delete real;
       return false;
     }
-    Long_t ret = ProofExec(Form("Load(\"%s+%s\",true)",real, opt));
+    TString cc(opt); if (cc == "-") cc = "" ; else cc.Prepend("+");
+    Long_t ret = ProofExec(Form("Load(\"%s%s\",true)",real, cc.Data()));
     if (ret != 0) {
-      ::Warning("ProofLoad", "Failed to load %s+%s", real, opt);
+      ::Warning("ProofLoad", "Failed to load %s%s", real, cc.Data());
       delete real;
       return false;
     }
@@ -894,8 +609,10 @@ struct FastAnalysis : public TSelector
     ProofExec(Form("Exec(\"gSystem->SetMakeSharedLib(\\\"%s\\\")\")",
 		   mkLib.Data()));
 
+    if (!ProofLoad("FastMonitor.C", opt)) return false;
     if (!ProofLoad("FastShortHeader.C", opt)) return false;
     if (!ProofLoad("FastAnalysis.C", opt)) return false;
+    if (!ProofLoad("FastCentHelper.C", opt)) return false;
     if (!extra || extra[0] == '\0') return true;
     if (!ProofLoad(extra, opt)) return false;
 
