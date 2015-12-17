@@ -69,7 +69,7 @@ using namespace AliSpectraNameSpaceBoth;
 class AliSpectraBothHistoManager : public TNamed
 {
 public:
-   AliSpectraBothHistoManager() :  TNamed(), fOutputList(0), fNRebin(0) {}
+   AliSpectraBothHistoManager() :  TNamed(), fOutputList(0), fNRebin(0) ,fIncludecorrectlyidentifiedinMCtemplates(kFALSE){}
   AliSpectraBothHistoManager(const char *name,Int_t nrebin,Bool_t pidqa=kTRUE);
    virtual  ~AliSpectraBothHistoManager() ;
 
@@ -111,6 +111,8 @@ public:
   TList * GetOutputList() {return fOutputList;}
   void    SetNRebin(Int_t nreb){fNRebin=nreb;}
   Int_t   GetNRebin() {return fNRebin;}
+  void SetIncludecorrectlyidentifiedinMCtemplates(Bool_t flag=kFALSE){fIncludecorrectlyidentifiedinMCtemplates=flag;}
+  Bool_t GetIncludecorrectlyidentifiedinMCtemplates() {return fIncludecorrectlyidentifiedinMCtemplates;}
 
   Long64_t Merge(TCollection* list);
 
@@ -118,10 +120,11 @@ public:
 private:
    TList     *fOutputList;  // List of Pt Histo's
    Int_t      fNRebin; //rebin of histos
+   Bool_t      fIncludecorrectlyidentifiedinMCtemplates; // if set to true secondary templates are only filed after checking MC PID	
    AliSpectraBothHistoManager(const AliSpectraBothHistoManager&);
    AliSpectraBothHistoManager& operator=(const AliSpectraBothHistoManager&);
 
-   ClassDef(AliSpectraBothHistoManager, 2);
+   ClassDef(AliSpectraBothHistoManager, 3);
 
 };
 #endif

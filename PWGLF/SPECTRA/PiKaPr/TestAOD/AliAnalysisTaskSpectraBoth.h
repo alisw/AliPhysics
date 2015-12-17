@@ -31,7 +31,7 @@ class AliAnalysisTaskSpectraBoth : public AliAnalysisTaskSE
 public:
 
    // constructors
-  AliAnalysisTaskSpectraBoth() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE)
+  AliAnalysisTaskSpectraBoth() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE),fIncludecorrectlyidentifiedinMCtemplates(kFALSE)
  {}
   AliAnalysisTaskSpectraBoth(const char *name);
    virtual ~AliAnalysisTaskSpectraBoth() {}
@@ -58,7 +58,10 @@ public:
    void SetdotheMCLoopAfterEventCuts (Bool_t flag) {fdotheMCLoopAfterEventCuts=flag;}
    Bool_t GetdotheMCLoopAfterEventCuts () const {return fdotheMCLoopAfterEventCuts;}
    void SetMakePIDQAHisto(Bool_t flag){fmakePIDQAhisto=flag;}
-   void SetMotherWDPDGCode(Int_t value){fMotherWDPDGcode=value;}		
+   void SetMotherWDPDGCode(Int_t value){fMotherWDPDGcode=value;}	
+   void SetIncludecorrectlyidentifiedinMCtemplates(Bool_t flag=kFALSE){fIncludecorrectlyidentifiedinMCtemplates=flag;}
+  Bool_t GetIncludecorrectlyidentifiedinMCtemplates() {return fIncludecorrectlyidentifiedinMCtemplates;}
+		
 private:
 
    AliVEvent           * fAOD;         //! AOD object
@@ -74,11 +77,12 @@ private:
    Bool_t fmakePIDQAhisto; // if true makes PIDQA histos
    Int_t fMotherWDPDGcode; //the abs of pdg code of the mother for WD decays , used during systematic studies  	
    Bool_t fUseEtaCut; // cut on eta in MC 	
-
+   Bool_t      fIncludecorrectlyidentifiedinMCtemplates; // if set to true secondary templates are only filed after checking MC PID
+	
    AliAnalysisTaskSpectraBoth(const AliAnalysisTaskSpectraBoth&);
    AliAnalysisTaskSpectraBoth& operator=(const AliAnalysisTaskSpectraBoth&);
 
-   ClassDef(AliAnalysisTaskSpectraBoth, 4);
+   ClassDef(AliAnalysisTaskSpectraBoth, 5);
 };
 
 #endif
