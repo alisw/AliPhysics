@@ -80,11 +80,11 @@ protected:
 
     // --- Add the task ----------------------------------------------
     AliAnalysisTask* task = 
-      CoupleCar("AddTaskFMDELoss.C", Form("%d,%d,%f,\"%s\",\"%s\",\"%s\"", 
-					  mc, onlyMB,  lowCut,
-					  config.Data(), 
-					  corrs.Data(),
-					  dead.Data()));
+      CoupleSECar("AddTaskFMDELoss.C", Form("%d,%d,%f,\"%s\",\"%s\",\"%s\"", 
+					    mc, onlyMB,  lowCut,
+					    config.Data(), 
+					    corrs.Data(),
+					    dead.Data()), AliVEvent::kAny);
     if (!task)
       Fatal("CoupleCars", "Failed to add energy loss task");
     
