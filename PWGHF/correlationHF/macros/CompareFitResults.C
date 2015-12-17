@@ -82,11 +82,18 @@ void IncludePowheg(Bool_t incl){
   includemodel[3]=incl;
   includeinlegend[3]=incl;
 }
+void IncludePowhegEPS09(Bool_t incl){
+  includemodel[6]=incl;
+  includeinlegend[6]=incl;
+}
 void IncludeHerwig(Bool_t incl){
   includemodel[5]=incl;
   includeinlegend[5]=incl;
 }
-
+void IncludeModel(Int_t imod,Bool_t incl){
+  includemodel[imod]=incl;
+  includeinlegend[imod]=incl;
+}
 Int_t GetNPythia6Tunes(){
   Int_t ncount=0;
   for(Int_t j=0;j<3;j++){
