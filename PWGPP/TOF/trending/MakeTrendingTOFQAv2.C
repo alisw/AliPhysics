@@ -8,12 +8,44 @@
   A feature that displays the plots in canvases must be enable when needed.
 */
 
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TLegend.h"
+#include "TGrid.h"
+#include "TGaxis.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "TPaveText.h"
+#include "AliTOFcalibHisto.h"
+#include "AliTOFcalib.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "TProfile.h"
+#include "AliTOFChannelOnlineStatusArray.h"
+
+///Functions with default parameters
+Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output;
+			  Int_t runNumber,          // run number
+			  Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
+			  Bool_t checkPIDqa=kTRUE, //set to kTRUE to check PIDqa output for TOF
+			  TString ocdbStorage = "raw://", //set the default ocdb storage
+			  Bool_t drawAll = kFALSE,  //enable display plots on canvas and save png
+			  Bool_t saveHisto=kTRUE,   //set to kTRUE to save histograms in root file
+			  Bool_t savePng=kTRUE );    //set to kTRUE to save histogram to png image
+
+Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE);
+
+void MakeUpHisto(TH1* histo, TString titleY, Int_t marker = 20, Color_t color = kBlue+2);
+
 
 Int_t MakeTrendingTOFQA(char * runlist,
 			Int_t year=2010, 
-			char *period="LHC10c", 
-			char* pass="cpass1_pass4", 
-			char* nameSuffix ="_barrel",
+			TString period="LHC10c", 
+			TString pass="cpass1_pass4", 
+			TString nameSuffix ="_barrel",
 			Bool_t isMC=kFALSE,
 			Int_t trainId=0, 
 			Bool_t saveHisto=kTRUE,
@@ -36,33 +68,32 @@ Int_t MakeTrendingTOFQA(char * runlist,
     
     //get QAtrain output
     if (trainId==0){
-      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/%s/QAresults%s.root",year,period,runNumber,pass,nameSuffix);
-      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults%s.root",year,period,runNumber,nameSuffix);
+      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/%s/QAresults%s.root",year,period.Data(),runNumber,pass.Data(),nameSuffix.Data());
+      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults%s.root",year,period.Data(),runNumber,nameSuffix.Data());
     } else{
-      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults%s.root",year,period,runNumber,pass,trainId,nameSuffix);
-      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults%s.root",year,period,runNumber,trainId,nameSuffix);
+      if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults%s.root",year,period.Data(),runNumber,pass.Data(),trainId,nameSuffix.Data());
+      else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults%s.root",year,period.Data(),runNumber,trainId,nameSuffix.Data());
     }
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
-    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, "raw://", IsOnGrid, drawAll, saveHisto, kTRUE)==0){
+    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, "raw://", drawAll, saveHisto, kTRUE)==0){
       filesCounter++;
     } else Printf("Post analysis not run on QA output %s", infile);
   }
   Printf(":::: Processed %i runs", filesCounter);
-  return;  
+  return 0;
 }
 
 //---------------------------------------------------------------------------------
-Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output; set IsOnGrid to prepend "alien://"
+Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output;
 			  Int_t runNumber,          // run number
-			  Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
-			  Bool_t checkPIDqa=kTRUE, //set to kTRUE to check PIDqa output for TOF 
-			  TString ocdbStorage = "raw://", //set the default ocdb storage
-			  Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
-			  Bool_t drawAll = kFALSE,  //enable display plots on canvas and save png
-			  Bool_t saveHisto=kTRUE,   //set to kTRUE to save histograms in root file
-			  Bool_t savePng=kTRUE )    //set to kTRUE to save histogram to png image
+			  Bool_t isMC,       //MC flag, to disable meaningless checks
+			  Bool_t checkPIDqa, //set to kTRUE to check PIDqa output for TOF
+			  TString ocdbStorage, //set the default ocdb storage
+			  Bool_t drawAll ,  //enable display plots on canvas and save png
+			  Bool_t saveHisto,   //set to kTRUE to save histograms in root file
+			  Bool_t savePng)    //set to kTRUE to save histogram to png image
 {
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -607,18 +638,18 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     l1->Draw("same");
     l2->Draw("same");
     if (savePng) cPidPerformance3T0->Print(Form("%s/%i_PID_sigmasStartTime.png", plotDir.Data(), runNumber));
-  }
-  if (saveHisto) {
-    trendFile->cd();
-    hSigmaPiT0->Write();
-    hSigmaKaT0->Write();
-    hSigmaProT0->Write();
-    hSigmaPiT0_1->Write();
-    hSigmaKaT0_1->Write();
-    hSigmaProT0_1->Write();
-    hSigmaPiT0_2->Write();
-    hSigmaKaT0_2->Write();
-    hSigmaProT0_2->Write();
+    if (saveHisto) {
+      trendFile->cd();
+      hSigmaPiT0->Write();
+      hSigmaKaT0->Write();
+      hSigmaProT0->Write();
+      hSigmaPiT0_1->Write();
+      hSigmaKaT0_1->Write();
+      hSigmaProT0_1->Write();
+      hSigmaPiT0_2->Write();
+      hSigmaKaT0_2->Write();
+      hSigmaProT0_2->Write();
+    }
   }
   
 
@@ -720,10 +751,10 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   fin->Close();
 
   TCanvas *cTrackProperties = 0x0;
-  TCanvas* cProfile = 0x0;
+  TCanvas *cProfile = 0x0;
   TCanvas *cMatchingPerformance = 0x0;
   TCanvas *cPidPerformance = 0x0;
-  TCanvas *cPidPerformance = 0x0;
+  TCanvas *cPidPerformance2 = 0x0;
   TCanvas *cT0detector = 0x0;
 
   if (drawAll){
@@ -826,7 +857,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
 
 
 //----------------------------------------------------------
-Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE)
+Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap , TString OCDBstorage , Bool_t inEta08)
 {
   /*
     It retrieves from OCDB the number of good (= efficient && not noisy && HW ok) TOF channels.
@@ -889,7 +920,7 @@ Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TStrin
 }
 
 //----------------------------------------------------------
-void MakeUpHisto(TH1* histo, TString titleY, Int_t marker=20, Color_t color=kBlue+2)
+void MakeUpHisto(TH1* histo, TString titleY, Int_t marker, Color_t color)
 {
   if (!histo) return;
   histo->SetMarkerStyle(marker);
