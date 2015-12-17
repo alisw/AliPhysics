@@ -48,12 +48,14 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   Int_t debug = fdebug; // debug level
   if(debug>=0) task->SetDebugLevel(debug);
   
+  char* genJetsBranch = "clustersAODMC_ANTIKT02_B0_Filter00768_Cut00150_Skip00";
+
   TString branchRecJets(recJetsBranch);
   TString branchGenJets(genJetsBranch);
 
   task->SetBranchEmbeddedJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
   task->SetBranchGenJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
-
+  task->SetMatchMode(1); //default = 1: is det.level rec. - det.level PYTHIA matching, '2' is matching from 'det.level rec. extra' jets to 'particle level PYTHIA' jets
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx

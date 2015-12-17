@@ -129,6 +129,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
   AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
+  void FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* embeddedJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist);
+
 
   AliAODJet* GetMedianCluster();
   Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const;  
@@ -187,6 +189,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
  
   //--
   TRandom3* fRandom;          // TRandom3 for background estimation 
+  Int_t fMatchMode;
   Bool_t   fAnalysisMC;
   Double_t fDeltaVertexZ;
   Double_t fCutjetEta;
@@ -246,7 +249,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetDeltaZVertexCut(Float_t deltaVtxZ){fDeltaVertexZ = deltaVtxZ;}
   virtual void SetCutFractionPtEmbedded(Float_t cut = 0) { fCutFractionPtEmbedded = cut; }
   virtual void   SetCutDeltaREmbedded(Float_t cut) { fCutDeltaREmbedded = cut; }
-
+  void SetMatchMode(Int_t mmode){ fMatchMode = mmode;}
 
  private:
 
