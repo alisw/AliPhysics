@@ -25,9 +25,15 @@ ProcessFast(const char* url,
 			       "-I%s/sim",
 			       fwd.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
+  gROOT->LoadMacro(Form("FastMonitor.C+%s",opt));
   gROOT->LoadMacro("FastShortHeader.C");
   gROOT->LoadMacro(Form("FastAnalysis.C+%s",opt));
+  // gDebug = 3; // Show compile steps
+  // gDebug = 7; // Keep generated files 
+  gROOT->LoadMacro(Form("FastCentHelper.C+%s",opt));
   gROOT->LoadMacro(Form("dNdetaAnalysis.C+%s",opt));
+  gROOT->LoadMacro(Form("dNdyAnalysis.C+%s",opt));
+  gDebug = 0;
   gROOT->LoadMacro(Form("spectraAnalysis.C+%s",opt));
   if (extra && extra[0] != '\0') gROOT->LoadMacro(Form("%s+%s",extra, opt));
     
