@@ -192,6 +192,23 @@ struct Railway
    */
   virtual void UsePar(Bool_t& use) {}
   /** 
+   * Add an include path
+   * 
+   * @param path The path to add for header search 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t AddIncludePath(const TString& path)
+  {
+    TString p(path);
+    if (!p.BeginsWith("-")) {
+      // IF the path does not begin with a -, we assume its a path
+      p.Prepend("-I");
+    }
+    gSystem->AddIncludePath(p);
+    return true;
+  }
+  /** 
    * Load a library 
    * 
    * @param name   Name of library 
@@ -213,11 +230,16 @@ struct Railway
    */
   virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
-    if (!AuxFile(name, copy)) return false;
+    if (!AuxFile(name, copy)) {
+      Warning("LoadSource", "Failed to add aux source file %s", name.Data());
+      return false;
+    }
     TString base(gSystem->BaseName(name));
-    gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"a\");");
+    Info("LoadSource", "Building %s", base.Data());
+    // gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"a\");");
     gROOT->LoadMacro(Form("%s++g", base.Data()));
-    gROOT->ProcessLine("gSystem->RedirectOutput(0);");
+    // gROOT->ProcessLine("gSystem->RedirectOutput(0);");
+    Info("LoadSource", "End of loading source");
     return true;
   }
   /** 

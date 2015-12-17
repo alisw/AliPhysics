@@ -134,7 +134,24 @@ struct PluginRailway : public Railway
     fUsePars   = use;
     use        = tmp;
   }
-    
+  /** 
+   * Add an include path
+   * 
+   * @param path The path to add for header search 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t AddIncludePath(const TString& path)
+  {
+    Railway::AddIncludePath(path); // Also do on client 
+    TString p(path);
+    if (!p.BeginsWith("-")) {
+      // IF the path does not begin with a -, we assume its a path
+      p.Prepend("-I");
+    }
+    fHandler->AddIncludePath(p);
+    return true;
+  }
   /** 
    * Load a library/PAR/script 
    * 
