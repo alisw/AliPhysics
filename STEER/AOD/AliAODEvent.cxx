@@ -561,7 +561,7 @@ void AliAODEvent::ClearStd()
   if (fHMPIDrings) 
      fHMPIDrings   ->Clear();    
   if (fDimuons)
-    fDimuons       ->Clear();
+    fDimuons       ->Clear("C");
   if (fTrdTracks)
     fTrdTracks     ->Clear();
 	
@@ -982,6 +982,7 @@ void AliAODEvent::Reset()
   // Std content + Non std content
 
   ClearStd();
+  
   if(fAODObjects->GetSize()>kAODListN){
     // we have non std content
     // this also covers aodfriends

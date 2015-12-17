@@ -70,6 +70,14 @@ AliAODDimuon::~AliAODDimuon()
 }
 
 //______________________________________________________________________________
+void AliAODDimuon::Clear(Option_t*)
+{
+  /// delete our internal memory
+  delete fP;
+  fP = 0x0;
+}
+
+//______________________________________________________________________________
 Double_t AliAODDimuon::Px() const {
   // Px of the dimuon
   if(CheckPointers())return -999999999;
