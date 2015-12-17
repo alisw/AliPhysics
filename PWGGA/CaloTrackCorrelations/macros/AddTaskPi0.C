@@ -692,7 +692,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(10);
-    ana->SetMinPt(2);
+    ana->SetMinPt(1.5);
   }
   else if(collision =="pPb")
   {
@@ -782,7 +782,7 @@ AliAnaPi0* ConfigurePi0Analysis2(TString col,           Bool_t simulation,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(10);
-    ana->SetMinPt(2);
+    ana->SetMinPt(1.5);
   }
   else if(collision =="pPb")
   {
@@ -871,7 +871,7 @@ AliAnaPi0* ConfigurePi0Analysis3(TString col,           Bool_t simulation,
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
     ana->SetNMaxEvMix(10);
-    ana->SetMinPt(2);
+    ana->SetMinPt(1.5);
   }
   else if(collision =="pPb")
   {
