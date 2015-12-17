@@ -241,7 +241,7 @@ struct GRPData
      // ent->PrintMetaData();
 
      AliGRPObject*  obj        = static_cast<AliGRPObject*>(ent->GetObject());
-     obj->Dump();
+     // obj->Dump();
      run                       = r;
      period                    = obj->GetLHCPeriod();
      beamEnergy                = TMath::Ceil(obj->GetBeamEnergy());
