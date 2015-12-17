@@ -59,7 +59,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskSpectraBoth)
 
 //________________________________________________________________________
-AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE)
+AliAnalysisTaskSpectraBoth::AliAnalysisTaskSpectraBoth(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0),fUseMinSigma(0),fCuts(0),fdotheMCLoopAfterEventCuts(0),fmakePIDQAhisto(1),fMotherWDPDGcode(-1),fUseEtaCut(kFALSE),fIncludecorrectlyidentifiedinMCtemplates(kFALSE)
 
 {
   // Default constructor
@@ -78,6 +78,7 @@ void AliAnalysisTaskSpectraBoth::UserCreateOutputObjects()
 {
   // create output objects
   fHistMan = new AliSpectraBothHistoManager("SpectraHistos",fNRebin,fmakePIDQAhisto);
+  fHistMan->SetIncludecorrectlyidentifiedinMCtemplates(fIncludecorrectlyidentifiedinMCtemplates);	
 
   if (!fTrackCuts) AliFatal("Track Cuts should be set in the steering macro");
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");
@@ -184,11 +185,11 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				  if(partMC->IsPhysicalPrimary())
 				 	 npar++;    
 				  // check for true PID + and fill P_t histos 
-				  Int_t charge = partMC->Charge() > 0 ? kChPos : kChNeg ;
+				  Int_t chargetmp = partMC->Charge() > 0 ? kChPos : kChNeg ;
 				  Int_t id = fPID->GetParticleSpecie(partMC);
 				  if(id != kSpUndefined) 
 				  {
-					fHistMan->GetHistogram2D(kHistPtGenTruePrimary,id,charge)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
+					fHistMan->GetHistogram2D(kHistPtGenTruePrimary,id,chargetmp)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 				  }
 			  }
 		  }
@@ -225,11 +226,11 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 				if(stack->IsPhysicalPrimary(iMC))
 					 npar++;    
 				  // check for true PID + and fill P_t histos 
-				Int_t charge = partMC->GetPDG(0)->Charge()/3.0 > 0 ? kChPos : kChNeg ;
+				Int_t chargetmp = partMC->GetPDG(0)->Charge()/3.0 > 0 ? kChPos : kChNeg ;
 				Int_t id = fPID->GetParticleSpecie(partMC);
 				if(id != kSpUndefined) 
 				{
-					fHistMan->GetHistogram2D(kHistPtGenTruePrimary,id,charge)->Fill(partMC->Pt(),stack->IsPhysicalPrimary(iMC));
+					fHistMan->GetHistogram2D(kHistPtGenTruePrimary,id,chargetmp)->Fill(partMC->Pt(),stack->IsPhysicalPrimary(iMC));
 				}
 			  }
 		  }
@@ -320,8 +321,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 					idRec=irec;
 			}		
    
-			Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
-		
+			Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;	
 			// Fill histograms, only if inside y and nsigma acceptance
 			if(idRec != kSpUndefined && fTrackCuts->CheckYCut ((BothParticleSpecies_t)idRec))
 			{
@@ -345,6 +345,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			 //	Int_t idGen     =kSpUndefined;
 			 	Int_t pdgcode=0;
 				Int_t motherpdg=-1;
+				Int_t chargeMC=-2;
 				if (ifAODEvent==AliSpectraBothTrackCuts::kAODobject)
 				{
 					AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
@@ -393,6 +394,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 
 				  	idGen     = fPID->GetParticleSpecie(partMC);
 				  	pdgcode=partMC->GetPdgCode(); 
+					chargeMC=partMC->Charge() > 0 ? kChPos : kChNeg ;
 				}
 				else if (ifAODEvent==AliSpectraBothTrackCuts::kESDobject)
 				{
@@ -419,6 +421,9 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 
 				   	idGen     = fPID->GetParticleSpecie(partMC);
 				   	pdgcode=partMC->GetPdgCode(); 
+					chargeMC = partMC->GetPDG(0)->Charge()/3.0 > 0 ? kChPos : kChNeg ;
+
+
 				}
 				else
 					return;
@@ -427,7 +432,12 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 			//	  cout<<" functions "<<partMC->IsPhysicalPrimary()<<" "<<partMC->IsSecondaryFromWeakDecay()<<" "<<partMC->IsSecondaryFromMaterial()<<endl;
 		  
 		  		if (isPrimary&&irec==kSpPion)
+				{
 					fHistMan->GetPtHistogram(kHistPtRecPrimaryAll)->Fill(track->Pt(),dca);  // PT histo of reconstrutsed primaries in defined eta
+					if(chargeMC!=charge)
+						fHistMan->GetPtHistogram("hHistDoubleCounts")->Fill(track->Pt(),4);
+
+				}	
 
 				if(track->Pt()>fTrackCuts->GetPtTOFMatching(irec)&&(!fTrackCuts->CheckTOFMatchingParticleType(irec)))
 					continue;
@@ -464,7 +474,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 						fHistMan->GetHistogram2D(kHistPtRecSigmaPrimary, idRec, charge)->Fill(track->Pt(),dca); 
 					//if(idGen != kSpUndefined) 
 					//{
-					 if((idGen != kSpUndefined) &&(irec == idGen)) // genereated primary but does not have to be selected
+					 if((idGen != kSpUndefined) &&(irec == idGen)) // genereated primary but does not have to be selected useless for min sigma 
 		  				fHistMan->GetHistogram2D(kHistPtRecPrimary,      idGen, charge)->Fill(track->Pt(),dca);
 		  			if ((idGen != kSpUndefined) &&(idRec == idGen))  // genereated and selected correctly 
 						fHistMan->GetHistogram2D(kHistPtRecTruePrimary,  idGen, charge)->Fill(track->Pt(),dca); 
@@ -493,16 +503,21 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 		 		 //here we can use idGen in case of fit approach
 		  
 		  		// Fill secondaries
-		  		if(isSecondaryWeak)
-				{  
-					if(fMotherWDPDGcode>0)
-					{
-						if(motherpdg==fMotherWDPDGcode)
-							fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),dca);
-					}	
-					else	
-						fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),dca);
+
+				
+				if(fMotherWDPDGcode>0) // if the Mother pdg is set we undo the Secondary flag in case it dose not match
+				{
+					if(motherpdg!=fMotherWDPDGcode)
+						isSecondaryWeak=kFALSE;
+						
 				}
+				if(fHistMan->GetIncludecorrectlyidentifiedinMCtemplates())// we have to check if genereted is the same as reconstructed  
+				{
+					if(idRec!=idGen)
+						continue;
+				}
+		  		if(isSecondaryWeak)
+					fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryWeakDecay, idRec, charge)->Fill(track->Pt(),dca);
 		  		if(isSecondaryMaterial)  
 					fHistMan->GetHistogram2D(kHistPtRecSigmaSecondaryMaterial , idRec, charge)->Fill(track->Pt(),dca);
 		  

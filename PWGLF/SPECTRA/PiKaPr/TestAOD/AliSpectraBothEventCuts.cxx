@@ -411,7 +411,6 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 	  if(multselection)
 	  {
  		cent = multselection->GetMultiplicityPercentile(fCentEstimator.Data());
-	  	cout<<cent<<endl;
 		validcent=kTRUE;
 	  }
           else
