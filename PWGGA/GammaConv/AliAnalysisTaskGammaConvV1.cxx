@@ -689,7 +689,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fCutFolder[iCut]->Add(fESDList[iCut]);
     
     if(fDoCentralityFlat > 0) 
-      hNEvents[iCut]            = new TH1F("NEventsUnweighted","NEventsUnweighted",11,-0.5,10.5);
+      hNEvents[iCut]            = new TH1F("NEventsUnweighted","NEventsUnweighted",12,-0.5,11.5);
     else 
       hNEvents[iCut]            = new TH1F("NEvents","NEvents",11,-0.5,10.5);
     hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -709,9 +709,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fESDList[iCut]->Add(hNEvents[iCut]);  
     if (fIsMC > 1){
-      hNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight","NEventsWOWeight",11,-0.5,10.5);
+      hNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight","NEventsWOWeight",12,-0.5,11.5);
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -729,6 +730,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
       hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+      hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fESDList[iCut]->Add(hNEventsWOWeight[iCut]);
     }  
     if (fIsMC == 2){  
@@ -739,7 +741,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fhJetJetNTrials[iCut]);
     }
     if(fDoCentralityFlat > 0){  
-      hNEventsWeighted[iCut]        = new TH1F("NEvents","NEvents",11,-0.5,10.5);//weighted histogram!!
+      hNEventsWeighted[iCut]        = new TH1F("NEvents","NEvents",12,-0.5,11.5);//weighted histogram!!
       hNEventsWeighted[iCut]->Sumw2();
       hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
@@ -758,6 +760,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
       hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
       hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+      hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fESDList[iCut]->Add(hNEventsWeighted[iCut]);
     }
     

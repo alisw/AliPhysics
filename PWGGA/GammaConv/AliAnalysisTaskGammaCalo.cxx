@@ -624,7 +624,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
     
-    fHistoNEvents[iCut] = new TH1F("NEvents","NEvents",11,-0.5,10.5);
+    fHistoNEvents[iCut] = new TH1F("NEvents","NEvents",12,-0.5,11.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -637,15 +637,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
-    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"SPD Pile-Up");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problems");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
     
     if (fIsMC > 2){
-      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",11,-0.5,10.5);
+      fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",12,-0.5,11.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -663,6 +664,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
     }
     if (fIsMC == 2){  

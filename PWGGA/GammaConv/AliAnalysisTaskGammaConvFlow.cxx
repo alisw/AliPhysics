@@ -362,7 +362,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 		
-		hNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
+		hNEvents[iCut] = new TH1I("NEvents","NEvents",12,-0.5,11.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
@@ -379,6 +379,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 		fESDList[iCut]->Add(hNEvents[iCut]);
 		
 		if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
