@@ -2812,7 +2812,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 
             fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight());
             
-            if(fFillSSHistograms)
+            if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
+              fhMCConversionVertexTRD->Fill(ptcluster,prodR,GetEventWeight());
+            
+            if ( fFillSSHistograms )
             {
               Float_t m02 = ph->GetM02();
               Int_t convR = -1;
@@ -2827,25 +2830,28 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
               {
                 fhMCConversionLambda0Rcut[convR]->Fill(ptcluster,m02,GetEventWeight());
                 
+                if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
+                  fhMCConversionLambda0RcutTRD[convR]->Fill(ptcluster,m02,GetEventWeight());
+
                 //
                 // EMCAL SM regions
                 //
-                if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+                if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms )
                 {
                   // Get original cluster, needed to feed the subregion selection method
                   
                   Int_t iclus = -1;
                   AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
-                  
+
                   Int_t etaRegion = -1, phiRegion = -1;
                   
-                  if(cluster) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+                  if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
                   
-                  if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
+                  if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
                   {
                     fhLam0EMCALRegionMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster,m02, GetEventWeight());
                     
-                    if(GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD()  )
+                    if ( GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD()  )
                       fhLam0EMCALRegionTRDMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster, m02, GetEventWeight());
                     
                   } // region found
