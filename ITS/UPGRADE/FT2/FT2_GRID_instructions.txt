@@ -6,11 +6,16 @@
 # Please report success and problems to jstiller@cern.ch
 ################################################
 # FT2 Status: 
-# 18-11/2015: 	Currently FT2 is tuned and parameterized on LHC13d19
+# 18/11/2015: 	Currently FT2 is tuned and parameterized on LHC13d19
 		No TPC or TOF PID available yet
 		FT2 is capable of handling primary particles and extended to work for conversion in material (to be full tested)
 		For experts - current working configuration: ITS (2.0,2.0), dNdY = 5100
 		To do: AOD on/off setter, fully propagated - naming convention of files should not be jstiller_’…’ (please keep as is for now)
+# 17/12/2015:   Current FT2 setup: ITS (2.2,2.2), dNdy = 1; close to no dependence of primary particles to fake cluster BUT strange weak decays strongly depend on them especially at high pT. Best performance with no fake cluster.
+		In case HIJING generation and decays are used, be careful: strange weak decays in HIJING and GEANT do not agree; however, GEANT algorithm (without any material interaction) still much slower because of propagation times
+		For this reason fastGen.C should not be used as default; In case you want to use it, re-enable the lines which are marked as ‚// un-comment if running with fastGen‘
+		FT2 now usable in standalone mode WITHOUT the bugs found in LHC13d19. If you want to use that, set ‚standaloneTune=kTRUE’ in the run_mcgenFT2.C script. Other FT2 features are still tuned on LHC13d19 though (i.e. ITS-TPC matching)
+# 18/12/2015:   The binary files which contain the FT2 TF1 and AliNDLocalRegression parameterizations for LHC13d19 are available on the GRID: /alice/cern.ch/user/j/jstiller/FT2_LHC13d19_parameterizations/
 ################################################
 # FT2 GRID Operation instruction
 # For running a standalone FT2 simulation on the GRID, you need the files in your GRID directory as listed below
@@ -40,7 +45,13 @@ if you don’t need the AOD filtering, insert a return statement at correct posi
 several steering setters available, i.e. turn on/off conversion, decay, material absorption 
 vector of default setters is given, please only change when you know what you are doing
 
-### fastGen.C
+### sim.C
+Simulation setup
+
+### Config.C 
+Generation setup of sqrt{s}=5.5 TeV, 0-10% central HIJING collisions
+
+### fastGen.C -> decapricated
 simplified setup of MC simulation
 to large extend similar to LHC13d19
 
