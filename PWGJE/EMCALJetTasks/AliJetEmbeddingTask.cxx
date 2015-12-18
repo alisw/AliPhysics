@@ -164,11 +164,11 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
   fhDeltapT->Sumw2();
   fOutput->Add(fhDeltapT);
   
-  fhDeltaM = new TH1F("fhDeltaM", "Delta M; #Delta M (GeV)", 60, -30., 30.);
+  fhDeltaM = new TH1F("fhDeltaM", "Delta M; #Delta M (GeV); #it{M}_{det} - #it{M}_{par}", 60, -30., 30.);
   fhDeltaM->Sumw2();
   fOutput->Add(fhDeltaM);
 
-  fhpTPart  = new TH1F("fhpTPart"  , "#it{p}_{T, part};#it{p}_{T} (GeV/#it{c})", 60, -10, 100);
+  fhpTPart  = new TH1F("fhpTPart"  , "#it{p}_{T, part};#it{p}_{T} (GeV/#it{c}); #it{p}_{T, det} - #it{T}_{T, par}", 60, -10, 100);
   fhpTPart->Sumw2();
   fOutput->Add(fhpTPart);
   fhMPart   = new TH1F("fhMPart"   , "#it{M}_{part};#it{M} (GeV)", 60, -10, 20);
@@ -279,8 +279,8 @@ void AliJetEmbeddingTask::Run()
        	  // Add the track that complies with the settings 
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
        	  //Printf("Embedded det %.2f, part %.2f", jetDet->Pt(), jetPar->Pt());
-       	  fhDeltapT->Fill(jetPar->Pt() - jetDet->Pt());
-       	  fhDeltaM ->Fill(jetPar->M() - jetDet->M());
+       	  fhDeltapT->Fill(jetDet->Pt() - jetPar->Pt());
+       	  fhDeltaM ->Fill(jetDet->M() - jetPar->M());
        	  fhpTPart ->Fill(jetPar->Pt());
        	  fhMPart  ->Fill(jetPar->M());
        	  fhEtaPart->Fill(jetPar->Eta());
