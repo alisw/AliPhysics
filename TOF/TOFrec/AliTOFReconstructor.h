@@ -62,6 +62,8 @@ private:
   AliTOFClusterFinderV1 *fClusterFinderV1;
   static Double_t fgExtraTolerance; // extra tolerance on DCut for miscalibrated TPC reco
 
+  static Int_t fgCTPtriggerLatency;
+
   ClassDef(AliTOFReconstructor, 5)   // class for the TOF reconstruction
 };
 

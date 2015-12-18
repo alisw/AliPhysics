@@ -42,12 +42,16 @@
 #include "AliTOFReconstructor.h"
 #include "AliTOFTriggerMask.h"
 #include "AliTOFTrigger.h"
+#include "AliCTPTimeParams.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 class TTree;
 
 ClassImp(AliTOFReconstructor)
 
 Double_t AliTOFReconstructor::fgExtraTolerance = 0;
+Int_t AliTOFReconstructor::fgCTPtriggerLatency = -1;
 
  //____________________________________________________________________
 AliTOFReconstructor::AliTOFReconstructor() :
@@ -123,6 +127,8 @@ AliTOFReconstructor::~AliTOFReconstructor()
 void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
                                       TTree *clustersTree) const
 {
+  AliInfo(Form("TOF Reconstruct"));
+ 
   //
   // reconstruct clusters from Raw Data
   //
@@ -171,7 +177,22 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 
     fClusterFinder->Digits2RecPoints(rawReader, clustersTree);
   }
-  AliTOFTrigger::PrepareTOFMapFromRaw(rawReader,13600); // 13600 +/- 400 is the value to select the richt bunch crossing (in future from OCDB)
+
+
+  if(fgCTPtriggerLatency < 0){ // read from OCDB
+    AliCDBManager *man = AliCDBManager::Instance();
+    Int_t run = man->GetRun();
+    if(run > 244335){
+      fgCTPtriggerLatency = 12800; // run-2 value
+    }
+    else
+      fgCTPtriggerLatency = 13600; // run-1 value
+
+    AliInfo(Form("CTP latency used for run %i to select bunch ID = %i",run,fgCTPtriggerLatency));
+  }
+
+
+  AliTOFTrigger::PrepareTOFMapFromRaw(rawReader,fgCTPtriggerLatency); // 13600 +/- 400 is the value to select the richt bunch crossing (in future from OCDB)
 }
 
 //_____________________________________________________________________________
