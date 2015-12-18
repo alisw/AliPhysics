@@ -309,11 +309,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 3] = "00051113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122053032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
     eventCutArray[ 4] = "00051113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111123053032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
     eventCutArray[ 5] = "00051113"; photonCutArray[ 5] = "00200009327000008250400000"; clusterCutArray[5] = "1111124053032230000"; mesonCutArray[5] = "0163103100000010"; // NonLinearity LHC11a Calo
+  } else if (trainConfig == 28){ //LHC11a no pileup rejection for trigger 
+    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121053032230000"; mesonCutArray[0] = "0163103100000010"; 
+    eventCutArray[ 1] = "00051013"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000010"; 
     
-  //LHC11a EMCal no non linearity internally  
-  } else if (trainConfig == 28){ 
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
-    eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100053032230000"; mesonCutArray[1] = "0163103100000010"; // 400 MeV cluster min energy
 
   }else if (trainConfig == 30){  //LHC11a additional NonLinearity variations
     eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111123053032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity kTestBeamv2 + ConvCalo
@@ -332,6 +331,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000010"; // EMC7
     eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111100063032230000"; mesonCutArray[2] = "0163103100000010"; // EMCEG1,
     eventCutArray[ 3] = "00085113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111100063032230000"; mesonCutArray[3] = "0163103100000010"; // EMCEG2,
+  //LHC11a EMCal no non linearity internally  
+  } else if (trainConfig == 34){ 
+    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
+    eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100053032230000"; mesonCutArray[1] = "0163103100000010"; // 400 MeV cluster min energy
     
   // LHC13g  
   } else if (trainConfig == 40){  // LHC13g without pileup for triggers

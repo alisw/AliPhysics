@@ -112,7 +112,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
       trainConfig == 10   || trainConfig == 42  || trainConfig == 43  ||
       trainConfig == 51   || trainConfig == 52  || trainConfig == 53  || trainConfig == 54  ||
       trainConfig == 55   || trainConfig == 56  || trainConfig == 57  || trainConfig == 58  || 
-      trainConfig == 60   || trainConfig == 61  || trainConfig == 62  || trainConfig == 69  || trainConfig == 70  ||
+      trainConfig == 60   || trainConfig == 61  || trainConfig == 62  || trainConfig == 64  || trainConfig == 69  || trainConfig == 70  ||
       trainConfig == 71   || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  || trainConfig == 75  ||
       trainConfig == 76   || trainConfig == 77  || trainConfig == 78  || trainConfig == 79  || trainConfig == 80  ||
       trainConfig == 81   || trainConfig == 102 || trainConfig == 110 || trainConfig == 8   || trainConfig == 203 )
@@ -186,11 +186,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,
   
   } else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0) without and with added signals
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000050"; // 400 MeV cluster min energy
-    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111100050032220000"; mesonCutArray[1] = "0163103100000050"; // 400 MeV cluster min energy
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111100050032220000"; mesonCutArray[1] = "0163103100000050";
   } else if (trainConfig == 13){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // 400 MeV cluster min energy
-    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[1] = "0163103100000050"; // 400 MeV cluster min energy
+    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[1] = "0163103100000050";
+  } else if (trainConfig == 14){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121053032220000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00051013"; clusterCutArray[1] = "1111121053032220000"; mesonCutArray[1] = "0163103100000050";
     
   // ************************************* PHOS cuts ****************************************************
   } else if (trainConfig == 31) { //PHOS clusters
@@ -315,7 +318,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     
   } else if (trainConfig == 63){  // EMCAL clusters, INT7 trigger
     eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 400 MeV min energy, NCells >=2, M02 default cut
+  } else if (trainConfig == 64){  // cuts all with trackMatching without pileup
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121063032220000"; mesonCutArray[0] = "0163103100000050"; // 
+    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111121063032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111121063032220000"; mesonCutArray[3] = "0163103100000050"; //
 
+    
+    
   } else if (trainConfig == 65){  // trackMatching variations
     eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121061032220000"; mesonCutArray[0] = "0163103100000050"; // INT7
     eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111121062032220000"; mesonCutArray[1] = "0163103100000050"; //
