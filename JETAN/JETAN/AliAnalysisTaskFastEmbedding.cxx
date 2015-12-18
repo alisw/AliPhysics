@@ -751,8 +751,8 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
       
    }
    
-   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 5000, -0.5, 4999.5);
-   fh2AODevent = new TH2I("fh2AODevent","selected events;file;event", 1000,-0.5,999.5,4000,-0.5,3999.5);
+   fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 250, -0.5, 24999.5);
+   fh2AODevent = new TH2I("fh2AODevent","selected events;file;event", 14000,-0.5,13999.5,4500,-0.5,4499.5);
    fHistList->Add(fh1AODfile);
    fHistList->Add(fh2AODevent);
 
@@ -1051,8 +1051,9 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
    
    if (!fPIDResponse){if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserExec(): fPIDResponse does not exist!"); return;}
  
-   // vertex selection
+   // vertex selection, get ESD (PbPb) vertex
    AliAODVertex* primVertex = fAODout->GetPrimaryVertex();
+  
    Int_t nTracksPrim = primVertex->GetNContributors();
    if ((nTracksPrim < fMinContribVtx) ||
          (primVertex->GetZ() < fVtxZMin) ||
@@ -1099,6 +1100,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
    fHistEvtSelection->Fill(0); // accepted events  
    // -- end event selection --
+
+   //std::cout<<"PbPb vertex z coordinate: "<<primVertex->GetZ()<<std::endl;
 
    // connect aod out
    TClonesArray *tracks = (TClonesArray*)(fAODout->FindListObject(fTrackBranch.Data()));
@@ -1236,6 +1239,10 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
          fh1TrialsEvtSel->Fill(fPtHardBin);
          fh2PtHardTrials->Fill(fPtHardBin,fPtHard,fAvgTrials);
 
+	 //AliAODVertex* pythiaVertex = fAODevent->GetPrimaryVertex();
+
+	 //std::cout<<" pythia vertex z coordinate: "<<pythiaVertex->GetZ()<<std::endl;
+
          // jet pt selection
          if(fEvtSelecMode==kEventsJetPt){
             Int_t nJets = fAODJets->GetEntries();
@@ -1336,7 +1343,10 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 	   Double_t rd=rndm->Uniform(0.,1.);
 	   if(rd>fExtraEffPb) continue; 
 	   Bool_t IsGoodV0 = kFALSE;
-	   IsGoodV0 = ApplyV0Cuts(tmpv0, fK0Type, kK0, primVertex, fAODevent);
+	   AliAODVertex* pythiaVertex = fAODevent->GetPrimaryVertex();
+
+
+	   IsGoodV0 = ApplyV0Cuts(tmpv0, fK0Type, kK0, pythiaVertex, fAODevent);
           
 	   if(IsGoodV0 == kFALSE)continue;
 	   new ((*extraK0s)[nAODK0s++]) AliAODv0(*tmpv0); 
@@ -1357,9 +1367,10 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 	   Double_t rd=rndm->Uniform(0.,1.);
 
 	   if(rd>fExtraEffPb) continue; 
+	   AliAODVertex* pythiaVertex = fAODevent->GetPrimaryVertex();
 
-	   Bool_t IsGoodV0 = ApplyV0Cuts(tmpv0, fLaType, kLambda, primVertex, fAODevent);
-	;
+	   Bool_t IsGoodV0 = ApplyV0Cuts(tmpv0, fLaType, kLambda, pythiaVertex, fAODevent);
+	
 	   if(!IsGoodV0)continue;
 
 	   new ((*extraLa)[nAODLa++]) AliAODv0(*tmpv0); 
@@ -1377,8 +1388,9 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
 	   Double_t rd=rndm->Uniform(0.,1.);
 	   if(rd>fExtraEffPb) continue; 
+	   AliAODVertex* pythiaVertex = fAODevent->GetPrimaryVertex();
 
-	   Bool_t IsGoodV0 = ApplyV0Cuts(tmpv0, fALaType, kAntiLambda, primVertex, fAODevent);
+	   Bool_t IsGoodV0 = ApplyV0Cuts(tmpv0, fALaType, kAntiLambda, pythiaVertex, fAODevent);
 	   if(!IsGoodV0)continue;
 
 	   new ((*extraALa)[nAODALa++]) AliAODv0(*tmpv0); 
