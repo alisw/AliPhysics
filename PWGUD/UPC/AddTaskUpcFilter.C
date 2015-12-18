@@ -24,6 +24,9 @@ AliAnalysisTaskUpcFilterSemiforward *AddTaskUpcFilter() {
   AliAnalysisTaskUpcFilter *task = new AliAnalysisTaskUpcFilter();
   task->SetIsESD( isESD );
   task->SetIsMC( isMC );
+  task->SetAllTrg(kFALSE);
+  task->SetTrgClass(15, kTRUE);
+  task->SetTrgClass(16, kTRUE);
   mgr->AddTask(task);
 
   // Create containers for input/output
