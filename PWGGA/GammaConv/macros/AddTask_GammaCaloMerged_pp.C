@@ -101,9 +101,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
       numberOfCuts = 1;
   if (trainConfig == 111  || trainConfig == 112 || trainConfig == 113 || trainConfig == 114 || trainConfig == 115 || trainConfig == 116  )
       numberOfCuts = 3;
-  if (trainConfig == 1    || trainConfig == 2   || trainConfig == 3   || trainConfig == 4   || trainConfig == 5   ||
+  if (trainConfig == 1    || trainConfig == 2   || trainConfig == 3   || trainConfig == 4   || trainConfig == 5   || trainConfig == 6   ||
       trainConfig == 11   || trainConfig == 12  || trainConfig == 13  || trainConfig == 14  || trainConfig == 15  || trainConfig == 16  ||
-      trainConfig == 17   || trainConfig == 19   || trainConfig == 20  )
+      trainConfig == 17   || trainConfig == 19  || trainConfig == 20  || trainConfig == 21  || trainConfig == 22 )
       numberOfCuts = 4;
   if (trainConfig == 70   || trainConfig == 71  || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  ||
       trainConfig == 75   || trainConfig == 76  || trainConfig == 77  ||
@@ -147,6 +147,11 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121053032200000"; clusterMergedCutArray[1] = "1111121053022110001"; mesonCutArray[1] = "0163100000000000"; // EMC1 NLM 1 no mass, no alpha
     eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121053022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
     eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121053022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+  } else if (trainConfig == 6){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) track matching to cluster without pileup for triggers
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121053032200000"; clusterMergedCutArray[0] = "1111121053022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
+    eventCutArray[ 1] = "00051013"; clusterCutArray[1] = "1111121053032200000"; clusterMergedCutArray[1] = "1111121053022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 1
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121053022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
+    eventCutArray[ 3] = "00051013"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121053022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
 
   // LHC13g
   } else if (trainConfig == 10){  // EMCAL clusters
@@ -199,6 +204,16 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121053032200000"; clusterMergedCutArray[1] = "1111121053022000002"; mesonCutArray[1] = "0163100000000000"; 
     eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121053022000002"; mesonCutArray[2] = "0163100000000000"; 
     eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121053022000002"; mesonCutArray[3] = "0163100000000000"; 
+  } else if (trainConfig == 21){  // EMCAL clusters, 2 NLM track matching to cluster without pileup for triggers
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121053032200000"; clusterMergedCutArray[0] = "1111121053022110002"; mesonCutArray[0] = "0163102200000000"; 
+    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111121053032200000"; clusterMergedCutArray[1] = "1111121053022110002"; mesonCutArray[1] = "0163102200000000"; 
+    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121053022110002"; mesonCutArray[2] = "0163102200000000"; 
+    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121053022110002"; mesonCutArray[3] = "0163102200000000"; 
+  } else if (trainConfig == 22){  // EMCAL clusters, 1 NLM mass cuts + TM, without pileup for triggers
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121053032200000"; clusterMergedCutArray[0] = "1111121053022110001"; mesonCutArray[0] = "0163101100000000"; 
+    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111121053032200000"; clusterMergedCutArray[1] = "1111121053022110001"; mesonCutArray[1] = "0163101100000000"; 
+    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111121053032200000"; clusterMergedCutArray[2] = "1111121053022110001"; mesonCutArray[2] = "0163101100000000"; 
+    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111121053032200000"; clusterMergedCutArray[3] = "1111121053022110001"; mesonCutArray[3] = "0163101100000000"; 
 
 // LHC11a variations
   } else if (trainConfig == 40){  // EMCAL clusters, variation track matching to cluster
