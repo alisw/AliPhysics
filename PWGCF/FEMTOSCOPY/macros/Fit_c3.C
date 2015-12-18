@@ -41,7 +41,7 @@ using namespace std;
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
 bool PrintData=0;
 //
-int CollisionType_def=2;// PbPb, pPb, pp
+int CollisionType_def=0;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
 bool FixNorm=1;// Fix Normalization (PbPb only)
 //
@@ -80,6 +80,7 @@ float SizeTitle=0.06;//
 float SizeSpecif=0.045;// 
 float SF1=2/3.*0.95;
 float SF2=1/2.*0.95;
+float MarkerSize=1.25;
 
 double RightMargin=0.004;// 0.002
 
@@ -231,6 +232,13 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Centspecif->SetTextFont(TextFont);
   Centspecif->SetTextSize(SizeSpecif);
 
+  TString *ChargeCombSt3 = new TString("");
+  ChargeCombSt3->Append("#pi^{-}#pi^{-}#pi^{-}");
+  float xCCT=0.77, yCCT=0.4;
+  TLatex *ChargeCombTitle3 = new TLatex(xCCT,yCCT,ChargeCombSt3->Data());// 0.7,yCCT
+  ChargeCombTitle3->SetNDC(1);
+  ChargeCombTitle3->SetTextFont(TextFont);
+  ChargeCombTitle3->SetTextSize(2*SizeSpecif);
 
   // bin centers from QS+FSI
   double BinCenterPbPbCentral[40]={0.00206385, 0.00818515, 0.0129022, 0.0177584, 0.0226881, 0.027647, 0.032622, 0.0376015, 0.042588, 0.0475767, 0.0525692, 0.0575625, 0.0625569, 0.0675511, 0.0725471, 0.0775436, 0.0825399, 0.0875364, 0.0925339, 0.0975321, 0.102529, 0.107527, 0.112525, 0.117523, 0.122522, 0.12752, 0.132519, 0.137518, 0.142516, 0.147515, 0.152514, 0.157513, 0.162513, 0.167512, 0.172511, 0.177511, 0.18251, 0.187509, 0.192509, 0.197509};
@@ -580,11 +588,12 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
  
   c3_hist->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
   c3_hist->GetYaxis()->SetTitle("Three pion correlation");
+  c3_hist->SetMarkerSize(MarkerSize);
+  c3_hist->SetMarkerStyle(24);
   c3_hist->GetYaxis()->SetTitleSize(0.045); c3_hist->GetXaxis()->SetTitleSize(0.045);
   c3_hist->GetYaxis()->SetTitleOffset(0.8);
   c3_hist->GetXaxis()->SetRangeUser(0,Q3LimitHigh);
   c3_hist->GetYaxis()->SetRangeUser(0.9,4);
-  c3_hist->SetMarkerStyle(20);
   c3_hist->SetMarkerColor(1);
   c3_hist->SetLineColor(1);
   c3_hist->SetMaximum(3);
@@ -593,6 +602,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
 
   C3_hist->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
   C3_hist->GetYaxis()->SetTitle("Three pion correlation");
+  C3_hist->SetMarkerSize(MarkerSize);
   C3_hist->GetXaxis()->SetTitleSize(SizeTitle);
   C3_hist->GetXaxis()->SetLabelSize(SizeLabel);
   C3_hist->GetYaxis()->SetTitleSize(SizeTitle);
@@ -905,7 +915,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   C3_hist->Draw();
   c3_hist->Draw("same");
   legend1->AddEntry(C3_hist,"#font[12]{C}_{3}^{QS}","p");
-  legend1->AddEntry(c3_hist,"#font[12]{#bf{c}}_{3}^{QS}","p");
+  legend1->AddEntry(c3_hist,"#font[12]{c}_{3}^{QS}","p");
  
   Unity->Draw("same");
   
@@ -938,9 +948,12 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   C3QS_Syst->Draw("same");
   C3_hist->Draw("same");
   //
-  legend1->AddEntry(gr_c3Spline[0],"Fit to #font[12]{#bf{c}}_{3}^{QS}","l");
+  legend1->AddEntry(gr_c3Spline[0],"Fit to #font[12]{c}_{3}^{QS}","l");
   legend1->AddEntry(gr_c3Spline[1],"Fit to #font[12]{C}_{3}^{QS}","l");
   legend1->Draw("same");
+
+  ChargeCombTitle3->Draw("same");
+
   //cout<<c3_hist->GetBinContent(3)<<"  "<<C3_hist->GetBinContent(3)<<endl;
   // Ratio plot
   pad1_2->cd();
@@ -991,7 +1004,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Ratio_C3->Draw();
   Ratio_c3->Draw("same");
   legend2->AddEntry(Ratio_C3,"#font[12]{C}_{3}^{QS}","p");
-  legend2->AddEntry(Ratio_c3,"#font[12]{#bf{c}}_{3}^{QS}","p");
+  legend2->AddEntry(Ratio_c3,"#font[12]{c}_{3}^{QS}","p");
   //legend2->Draw("same");
   Unity->Draw("same");
 
