@@ -31,8 +31,18 @@ public:
   /// init list of decoders
   int InitDecoders(TList* decoderlist);
 
-  /// overloaded from AliHLTDataInflater
+  /**
+   * Retrieve next value from data stream
+   * The next variable-length code is read from the stream and decoded
+   * using the initialized Huffman instance. The maximum number of input
+   * bits is always required for the Huffman decoder. Internal buffering
+   * is implemented to avoid repetitive backward seek in the input stream
+   * after decoding of a symbol when the length is known.
+   *
+   * overloaded from AliHLTDataInflater
+   */
   virtual bool NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t& length);
+
   /// switch to next parameter
   virtual int NextParameter() {
     if (fHuffmanCoders.size()==0) return -1;
@@ -41,6 +51,13 @@ public:
     if ((++fCurrentParameter)>=(int)fHuffmanCoders.size()) fCurrentParameter=0;
     return fCurrentParameter;
   }
+
+  /**
+   * Read next bit from the input.
+   * This overload of AliHLTDataInflater::InputBit handles the internal
+   * buffer and forwards to the base class method if the buffer is empty.
+   */
+  bool InputBit( AliHLTUInt8_t & value );
 
   /// Print info
   void Print(Option_t* option = "") const;
