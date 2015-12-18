@@ -216,7 +216,6 @@ void AliJetEmbeddingTask::Run()
        	  }
        	  TLorentzVector *jetDet = 0;
        	  TLorentzVector *jetPar = 0;
-       	  TBranch *bDet = 0;
        	  fTreeJet4Vect->ResetBranchAddresses();
        	  //fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);

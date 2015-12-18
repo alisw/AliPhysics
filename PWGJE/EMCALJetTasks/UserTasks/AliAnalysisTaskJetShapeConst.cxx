@@ -254,25 +254,27 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	    drToLJ = jet1->DeltaR(vpe);
       	 fh3MSubPtRawDRMatch[fCentBin]->Fill(var,ptjet1,drToLJ);
       	 Double_t var2 = 0.;
-      	 Double_t mJetR = 0.;
+      	 //Double_t mJetR = 0.;
       	 Double_t ptJetR = 0.;
       	 if(jetR) {
-      	    mJetR  = jetR->M();
+      	    //mJetR  = jetR->M();
       	    var2 = jetR->M();
       	    ptJetR = jetR->Pt();
       	 }
       	 if(fSingleTrackEmb && vpe) {
-      	    mJetR  = vpe->M();
-      	    var2   = vpe->M();
-      	    ptJetR = vpe->Pt();
-      	 }
-      	 if(fFromTree && vpe){
-      	    Int_t exit = MatchEmbeddedConstituentWithParticleLevel();
       	    
-      	    if(exit>0) {
-      	       mJetR  = fVecP->M();
-      	       var2   = fVecP->M();
-      	       ptJetR = fVecP->Pt();
+      	    if(fFromTree){
+      	       Int_t exit = MatchEmbeddedConstituentWithParticleLevel(); //here is GetEntry
+      	       
+      	       if(exit>0) {
+      	       	  //mJetR  = fVecP->M();
+      	       	  var2   = fVecP->M();
+      	       	  ptJetR = fVecP->Pt();
+      	       }
+      	    } else{
+      	       //mJetR  = vpe->M();
+      	       var2   = vpe->M();
+      	       ptJetR = vpe->Pt();
       	    }
       	 }
 	 
