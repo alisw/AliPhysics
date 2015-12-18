@@ -3,26 +3,8 @@
 //
 // 1 PbPb HIJING event 5.5 TeV with b<5 fm (0-10%)
 // +
-// N (60) PYTHIA pp 5.5 TeV Perugia0
-// 16% ccbar pair per event
-//     at least one in |y|<1.5
-//     D mesons decay hadronically
-// 16% bbbar pair per event
-//     at least one in |y|<1.5
-//     D mesons decay hadronically
-// 16% ccbar pair per event
-//     decays not forced
-//     at least one electron from charm in |y|<1.2
-// 16% bbbar pair per event
-//     decays not forced
-//     at least one electron from charm or beauty in |y|<1.2
-//  16% J/psi(|y|<1.0)->e+e-
-//  20% B(|y|<2.0)->J/psi(|y|<2.0)->e+e-
-// +
-// 10 per event per type of
-//   Ds->KKpi,D+->Kpipi,B+->D0pi,B0->D*pi,Lc->pKpi,Lb->Lc+X(or +pi), Xi_c
-// +
-// 30 per event per type of the three hypernuclei LH3, LH4, LHe4
+// 15 per event per type of
+//   B+->D0pi
 //
 // One can use the configuration macro in compiled mode by
 // root [0] gSystem->Load("libgeant321");
@@ -117,7 +99,7 @@ static PDC06Proc_t   proc     = kHijing2500HF;
 static Mag_t         mag      = k5kG;
 static Float_t       energy   = 5500.;				// energy in CMS
 static Float_t       bMin     = 0.;
-static Float_t       bMax     = 5.;					// 0-5 fm corresponds to around 0-10% (see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies#Tables_with_centrality_bins_for)
+static Float_t       bMax     = 0.;					// 0-5 fm corresponds to around 0-10% (see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies#Tables_with_centrality_bins_for)
 static PprTrigConf_t strig = kDefaultPbPbTrig;		// default pp trigger configuration
 static Double_t      JpsiPol  = 0;					// Jpsi polarisation
 static Bool_t        JpsiHarderPt = kFALSE;			// Jpsi harder pt spectrum (8.8 TeV)
@@ -246,6 +228,11 @@ void Config()
 	AliGenerator* gener = 0x0;
 	gener = Hijing2500HF(typeHF);
 	
+	// abort GEANT propagation outside of some range
+	// x,z in cm
+	gAlice->GetMCApp()->TrackingLimits(50,250);
+	
+
 	
 	//
 	//
@@ -271,7 +258,6 @@ void Config()
 	//
 	// FIELD
 	//
-	
 	TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG,
 																											 AliMagF::kBeamTypeAA, 1380.));
 	
