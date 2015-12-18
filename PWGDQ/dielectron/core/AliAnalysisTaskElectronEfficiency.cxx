@@ -556,19 +556,21 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   ///            Process optional, separate cutInstance for prefilter efficiencies: it also produces the usual tracking&PID efficiency
   ///            (but of course for the specified prefilter track sample, so mainly for convenience and curiosity),
   ///            and then computes the pair rejection efficiency, using random rejection of "testparticles" with the selected electrons. (further info in 'CalcPrefilterEff()')
+  if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
+  mcEvent = AliDielectronMC::Instance()->GetMCEvent();
+  if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
   
   AliESDInputHandler *inputHandlerESD = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!inputHandlerESD) { Printf("ERROR: Could not get ESDInputHandler\n"); }
   else fESD = inputHandlerESD->GetEvent();
   if (!fESD) { Printf("ERROR: fESD not available"); return; }
 
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-//  if (mcH) mcEvent = mcH->MCEvent();
-  if (mcH) mcEvent = MCEvent();
-  if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
+  //AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+  //if (mcH) mcEvent = MCEvent();
+  //if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
-  if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
+  
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);

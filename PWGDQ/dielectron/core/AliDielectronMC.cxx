@@ -38,6 +38,9 @@
 #include <AliAODTrack.h>
 #include <AliLog.h>
 
+#include <AliGenCocktailEventHeader.h>
+#include <AliGenHijingEventHeader.h>
+
 #include <TClonesArray.h>
 #include <TParticle.h>
 #include <TMCProcess.h>
@@ -81,6 +84,7 @@ AliDielectronMC::AliDielectronMC(AnalysisType type):
   fStack(0x0),
   fAnaType(type),
   fHasMC(kTRUE),
+  fHasHijingHeader(-1),
   fMcArray(0x0)
 {
   //
@@ -179,32 +183,35 @@ Bool_t AliDielectronMC::ConnectMCEvent()
   //
   // connect stack object from the mc handler
   //
-
+Printf("AliDielectronMC::ConnectMCEvent()");
   fMcArray = 0x0;
   fMCEvent = 0x0;
+  fHasHijingHeader=-1;
   
   if(fAnaType == kESD){
+Printf("fAnaType == kESD");
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!mcHandler){ /*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
-    if (!mcHandler->InitOk() ) return kFALSE;
-    if (!mcHandler->TreeK() )  return kFALSE;
-    if (!mcHandler->TreeTR() ) return kFALSE;
+    if (!mcHandler){ Printf("ERROR: no mcHandler");/*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
+    if (!mcHandler->InitOk() ){ Printf("ERROR: !mcHandler->InitOk()"); return kFALSE;}
+    if (!mcHandler->TreeK() ) { Printf("ERROR: !mcHandler->TreeK()");  return kFALSE;}
+    if (!mcHandler->TreeTR() ){ Printf("ERROR: !mcHandler->TreeTR()"); return kFALSE;}
     
     AliMCEvent* mcEvent = mcHandler->MCEvent();
-    if (!mcEvent){ /*AliError("Could not retrieve MC event!");*/ return kFALSE; }
+    if (!mcEvent){ Printf("ERROR: no mcEvent");/*AliError("Could not retrieve MC event!");*/ return kFALSE; }
     fMCEvent = mcEvent;
     
     if (!UpdateStack()) return kFALSE;
   }
   else if(fAnaType == kAOD)
   {
+Printf("fAnaType == kAOD");  
     AliAODInputHandler* aodHandler=(AliAODInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!aodHandler) return kFALSE;
+    if (!aodHandler){ Printf("ERROR: no mcHandler"); return kFALSE;}
     AliAODEvent *aod=aodHandler->GetEvent();
-    if (!aod) return kFALSE;
+    if (!aod){ Printf("ERROR: no aodEvent"); return kFALSE;}
 
     fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
+    if (!fMcArray){ Printf("ERROR: no MCarray");/*AliError("Could not retrieve MC array!");*/ return kFALSE; }
     else fHasMC=kTRUE;
   }
   return kTRUE;
@@ -213,12 +220,13 @@ Bool_t AliDielectronMC::ConnectMCEvent()
 //____________________________________________________________
 Bool_t AliDielectronMC::UpdateStack()
 {
+Printf("AliDielectronMC::UpdateStack()");
   //
   // update stack with new event
   //
-  if (!fMCEvent){ AliError("No fMCEvent"); return kFALSE;}
+  if (!fMCEvent){ Printf("ERROR: No fMCEvent");/*AliError("No fMCEvent");*/ return kFALSE;}
   AliStack* stack = fMCEvent->Stack();
-  if (!stack){ AliError("Could not retrive stack!"); return kFALSE; }
+  if (!stack){ Printf("ERROR: Could not retrive stack!");/*AliError("Could not retrive stack!");*/ return kFALSE; }
   fStack = stack;
   return kTRUE;
 }
@@ -1063,11 +1071,124 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // secondary particle from material
       return (IsSecondaryFromMaterial(label));
     break;
+    case AliDielectronSignalMC::kFromBGEvent :
+      // used to select electrons which are not from injected signals.
+      return (IsFromBGEvent(label));
+      break;
+    case AliDielectronSignalMC::kFinalStateFromBGEvent :
+      // used to select electrons which are not from injected signals.
+      return (IsPhysicalPrimary(label) && IsFromBGEvent(label));
+      break;
     default :
       return kFALSE;
   }
   return kFALSE;
 }
+
+/*
+// (please keep this for reference...)
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsEleFromInjectedSignal(Int_t label) const {
+  ///
+  /// Function to check if the particle with label "label" originates from an injected signal.
+  /// used criteria:
+  /// isPhysPrim:   in a chain of decaying particles, denotes the first which is stable under strong and EM force.
+  /// - injected:   the physical primary will NOT be fromBGEvent! (<= that is the relevant criterion!)
+  /// - Geant:      the physical primary will be fromBGEvent!
+  /// fromBGEvent:  particle comes from the generated MC event (?). true for most pi, K, p, some e.
+  /// !fromBGEvent: particle could be injected or produced in Geant (from weak decay / photon conv).
+  ///               weak decays and photon conv are handled by Geant -> will NOT be fromBGEvent!
+  /// examples:     for injected J/psi -> ee: the e+- will be phys prim (because of EM decay), but not fromBGEvent!
+  ///               for photon conversions: the photon will be phys prim. (not the e+-!), and will be fromBGEvent!
+  ///               the same applies for weak decays.
+  ///
+  /// The following procedure is the most correct, and works fine when looping over the MC-ESD event,
+  /// but for stack electrons coming from scattering etc (which are not physical primary) this leads to
+  /// very long loops and may crash the task.
+  /// One would have to apply at least some kinematic cuts before, to reject all/most of these cases.
+  ///
+  /// The short procedure, with the difference that electrons from conversions and weak decays are also rejected, is just:
+  /// return !(IsFromBGEvent(label));
+  ///
+  if(label<0) return kFALSE;
+  //if(label<0) label *= -1;  // not sure what is more correct
+
+  Bool_t isPhysPrim  = IsPhysicalPrimary(label);
+  Bool_t fromBGEvent = IsFromBGEvent(label);
+  // if the particle isn't already the physical primary, then iteratively go back to it:
+  Int_t labelMother = GetMCTrackFromMCEvent(label)->GetMother(); // works for AOD and ESD, no explicit cast needed.
+  Int_t counter=0;
+  while (!isPhysPrim) {
+    Printf(Form("IsInjectedSignal(): label=%d pdg=%d labelMother=%d pdgmother=%d", label, GetPdgFromLabel(label), labelMother, GetPdgFromLabel(labelMother)));
+    if (counter>10) {
+      AliWarning(Form("probably infinite loop! label=%d pdg=%d labelMother=%d pdgmother=%d", label, GetPdgFromLabel(label), labelMother, GetPdgFromLabel(labelMother)));
+      return kFALSE; // electrons coming from a long cascade of scattering particles are probably not injected...
+    } counter++;
+    if (labelMother<0) return kTRUE; // to avoid infinite loop
+    isPhysPrim  = IsPhysicalPrimary(labelMother); // save property of mother
+    fromBGEvent = IsFromBGEvent(labelMother);     // save property of mother
+     // prepare to get properties of grandmother
+    labelMother = GetMCTrackFromMCEvent(labelMother)->GetMother(); // works for AOD and ESD, no explicit cast needed.
+  }
+  // now check if the physical primary is from background event. if not, it was injected.
+  if (!fromBGEvent) return kTRUE;
+  
+  return kFALSE;
+}
+*/
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsFromBGEvent(Int_t label) const {
+  ///
+  /// Check if the particle with label "label" is from the background MC event,
+  /// which means that it is not injected.
+  ///
+  if(label<0) return kFALSE;
+  if(fAnaType==kAOD) {
+    AliWarning("IsFromBGEvent() not implemented for AOD!");
+    return kFALSE;
+//    if(!fMcArray) return kFALSE;
+//    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsFromBGEvent(); // IsFromBGEvent() does not exist for AliAODMCParticle.
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    if (CheckHijingHeader()) return fMCEvent->IsFromBGEvent(label); // Works for HIJING inside Cocktail
+    //else if (CheckSomeOtherHeader()) return ...;
+    else {
+      AliWarning("No headers to make decision! Assuming no injected signals are present.");
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::CheckHijingHeader() const {
+  
+//  if (fHasHijingHeader > -1) return Bool_t(fHasHijingHeader); // avoid many calls of the code below.
+  
+  if(fAnaType==kAOD) {
+    AliWarning("CheckHijingHeader() not implemented for AOD!");
+    return (fHasHijingHeader=0); //return kFALSE;
+    //    AliAODInputHandler* aodHandler=(AliAODInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    //    if (!aodHandler) return kFALSE;
+    //    AliAODEvent *aod=aodHandler->GetEvent();
+    //    if (!aod) return kFALSE;
+    //    AliAODHeader* header = aod->GetHeader(); // not sure if correct
+  }
+  else if(fAnaType==kESD) {
+    // taken from AliMCEvent::IsFromBGEvent()
+    if (!fMCEvent) return (fHasHijingHeader=0); //return kFALSE;
+    AliGenCocktailEventHeader* coHeader = dynamic_cast<AliGenCocktailEventHeader*> (fMCEvent->GenEventHeader());
+    if (!coHeader) return (fHasHijingHeader=0); //return kFALSE;
+    TList* list = coHeader->GetHeaders();
+    AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(list->FindObject("Hijing"));
+    if (hijingH) return (fHasHijingHeader=1); //return kTRUE;
+  }
+  return (fHasHijingHeader=0);
+}
+
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::CheckIsRadiative(Int_t label) const
@@ -1403,24 +1524,24 @@ Int_t AliDielectronMC::IsJpsiPrimary(const AliVParticle * particle)
   return 0;
 }
 
-
-Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY, Double_t &primVtxZ){
-
-     if(fAnaType == kESD){
-     const AliVVertex* mcVtx =  fMCEvent->GetPrimaryVertex();
-     if(!mcVtx) return kFALSE;
-     primVtxX = mcVtx->GetX();
-     primVtxY = mcVtx->GetY();
-     primVtxZ = mcVtx->GetZ();
-     }else if(fAnaType == kAOD){
-     AliAODEvent *aod=((AliAODInputHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetEvent();
-     if(!aod) return kFALSE;
-     AliAODMCHeader *mcHead = dynamic_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
-     if(!mcHead) return kFALSE; 
-     primVtxX = mcHead->GetVtxX();
-     primVtxY = mcHead->GetVtxY();
-     primVtxZ = mcHead->GetVtxZ();
-     }
-
-return kTRUE;
+//______________________________________________________________
+Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY, Double_t &primVtxZ)
+{
+  if(fAnaType == kESD){
+    const AliVVertex* mcVtx =  fMCEvent->GetPrimaryVertex();
+    if(!mcVtx) return kFALSE;
+    primVtxX = mcVtx->GetX();
+    primVtxY = mcVtx->GetY();
+    primVtxZ = mcVtx->GetZ();
+  }
+  else if(fAnaType == kAOD){
+    AliAODEvent *aod=((AliAODInputHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetEvent();
+    if(!aod) return kFALSE;
+    AliAODMCHeader *mcHead = dynamic_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!mcHead) return kFALSE; 
+    primVtxX = mcHead->GetVtxX();
+    primVtxY = mcHead->GetVtxY();
+    primVtxZ = mcHead->GetVtxZ();
+  }
+  return kTRUE;
 }
