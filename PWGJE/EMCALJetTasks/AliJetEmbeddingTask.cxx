@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <AliLog.h>
 #include <TGrid.h>
+#include <THnSparse.h>
 
 #include "AliJetEmbeddingTask.h"
 
@@ -42,10 +43,7 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fCount(0),
   fCurrentBin(0),
   fGoBack(0),
-  fhDeltapT(0),
-  fhDeltaM(0),
-  fhpTPart(0),
-  fhMPart(0),
+  fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0)
   
@@ -84,10 +82,7 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fCount(0),
   fCurrentBin(0),
   fGoBack(0),
-  fhDeltapT(0),
-  fhDeltaM(0),
-  fhpTPart(0),
-  fhMPart(0),
+  fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0)
 {
@@ -157,29 +152,23 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    }
    PostData(2, fInput);
    
+   const Int_t ndim = 4;
+   Int_t nbins = 60, mind = -30, maxd = 30, min = -10, max = 20;
+   const Int_t nbinshnsp[ndim] = {nbins, nbins, nbins, nbins};  
+   const Double_t minhnsp[ndim] = {mind, mind, min, min};
+   const Double_t maxhnsp[ndim] = {maxd, maxd, max, max};
+   TString title = "Check part level;#it{M}_{det} - #it{M}_{par} (GeV); #it{p}_{T, det} - #it{p}_{T, par} (GeV/#it{c}); #it{M} (GeV); #it{p}_{T} (GeV/#it{c})";
    
-
-  
-  fhDeltapT = new TH1F("fhDeltapT", "Delta #it{p}_{T}; #Delta #it{p}_{T} (GeV/#it{c})", 60, -30., 30.);
-  fhDeltapT->Sumw2();
-  fOutput->Add(fhDeltapT);
-  
-  fhDeltaM = new TH1F("fhDeltaM", "Delta M; #Delta M (GeV); #it{M}_{det} - #it{M}_{par}", 60, -30., 30.);
-  fhDeltaM->Sumw2();
-  fOutput->Add(fhDeltaM);
-
-  fhpTPart  = new TH1F("fhpTPart"  , "#it{p}_{T, part};#it{p}_{T} (GeV/#it{c}); #it{p}_{T, det} - #it{T}_{T, par}", 60, -10, 100);
-  fhpTPart->Sumw2();
-  fOutput->Add(fhpTPart);
-  fhMPart   = new TH1F("fhMPart"   , "#it{M}_{part};#it{M} (GeV)", 60, -10, 20);
-  fhMPart->Sumw2();
-  fOutput->Add(fhMPart);
-  fhEtaPart = new TH1F("fhEtaPart" , "#eta distribution part; #eta", 100, -1, 1);
-  fhEtaPart->Sumw2();
-  fOutput->Add(fhEtaPart);
-  fhPhiPart = new TH1F("fhPhiPart" , "#varphi distribution; #varphi", 100, (-1)*TMath::Pi(), TMath::Pi());
-  fhPhiPart->Sumw2();
-  fOutput->Add(fhPhiPart);
+   fhPartJet = new THnSparseF("fhPartJet", title.Data(), ndim, nbinshnsp, minhnsp, maxhnsp);
+   fhPartJet->Sumw2();
+   fOutput->Add(fhPartJet);
+   
+   fhEtaPart = new TH1F("fhEtaPart" , "#eta distribution part; #eta", 100, -1, 1);
+   fhEtaPart->Sumw2();
+   fOutput->Add(fhEtaPart);
+   fhPhiPart = new TH1F("fhPhiPart" , "#varphi distribution; #varphi", 100, (-1)*TMath::Pi(), TMath::Pi());
+   fhPhiPart->Sumw2();
+   fOutput->Add(fhPhiPart);
    
 }
 
@@ -279,10 +268,10 @@ void AliJetEmbeddingTask::Run()
        	  // Add the track that complies with the settings 
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
        	  //Printf("Embedded det %.2f, part %.2f", jetDet->Pt(), jetPar->Pt());
-       	  fhDeltapT->Fill(jetDet->Pt() - jetPar->Pt());
-       	  fhDeltaM ->Fill(jetDet->M() - jetPar->M());
-       	  fhpTPart ->Fill(jetPar->Pt());
-       	  fhMPart  ->Fill(jetPar->M());
+       	  
+       	  Double_t x[4] = {jetDet->M() - jetPar->M(), jetDet->Pt() - jetPar->Pt(), jetPar->M(), jetPar->Pt()};
+       	  fhPartJet->Fill(x);
+       	  
        	  fhEtaPart->Fill(jetPar->Eta());
        	  fhPhiPart->Fill(jetPar->Phi());
        	  fCount++; // count the number of track embedded in the current pT range
