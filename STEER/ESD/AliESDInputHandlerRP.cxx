@@ -97,14 +97,12 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     TFile* file = 0;
     while ((det = (TNamed*) next()))
     {
-      if (det->TestBit(kReadFromArchiveBIT)) {
-	file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
-      }
-      else {
-	file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
-      } 
+      TString rppath = det->TestBit(kReadFromArchiveBIT) ? 
+	Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName()) :
+	Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
+      file = TFile::Open(rppath.Data());
       if (!file) {
-	AliError(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
+	AliErrorF("AliESDInputHandlerRP: Failed to open %s",rppath.Data());
 	return kFALSE;
       }
       fRFiles->Add(file);
@@ -113,7 +111,7 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     if (file) {
 	fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
     } else {
-	AliError(Form("AliESDInputHandlerRP: No file with RecPoints found in %s ! \n", fPathName->Data()));
+	AliErrorF("AliESDInputHandlerRP: No file with RecPoints found in %s !", fPathName->Data());
 	return kFALSE;
     }
     
@@ -205,13 +203,11 @@ Bool_t AliESDInputHandlerRP::OpenFile(Int_t i)
     TFile* file;
     while ((det = (TNamed*) next()))
     {
-      if (det->TestBit(kReadFromArchiveBIT)) {
-	file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
-      }
-      else {
-	file = TFile::Open(Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName()));
-      } 
-      if (!file) AliFatal(Form("AliESDInputHandlerRP: RecPoints.root not found in %s ! \n", fPathName->Data()));
+      TString rppath = det->TestBit(kReadFromArchiveBIT) ? 
+	Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName()) :
+	Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
+      file = TFile::Open(rppath.Data());
+      if (!file) AliFatalF("AliESDInputHandlerRP: Failed to open %s !",rppath.Data());
       fRFiles->Add(file);
     }
     return ok;

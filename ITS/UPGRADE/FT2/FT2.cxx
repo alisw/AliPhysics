@@ -29,7 +29,7 @@
 #include "AliNDLocalRegression.h"
 #include "AliMathBase.h"
 #include "AliTPCReconstructor.h"
-
+#include "TLorentzVector.h"
 
 ClassImp(FTProbe)
 ClassImp(FT2)
@@ -74,13 +74,13 @@ FTProbe::FTProbe()
 {
 	// def. c-tor
 }
-
 //________________________________________________
 FT2::FT2() :
 fITSRec(0)
 ,fITS(0)
 ,fUsePIDForTracking(0)
 ,fRunNumber(0)
+,fStandaloneTune(0)
 ,fIsTPC(kFALSE)
 ,fPIDResponse(0)
 ,fTPCParaFile(0)
@@ -101,9 +101,11 @@ fITSRec(0)
 ,fKalmanOutward(0)
 ,fUseKalmanOut(kTRUE)
 ,fBz(0.5)
+,fTuneOnDataOrMC(0)
 ,fSimMat(kFALSE)
 ,fAllowDecay(kFALSE)
 ,fAllowAbsorbtion(kFALSE)
+,fUseConverisons(kFALSE)
 ,fCurrITSLr(-1)
 ,fNClTPC(0)
 ,fNClITS(0)
@@ -129,6 +131,7 @@ fITSRec(0)
 ,fItsTpcMatchingfMC(0)
 ,fItsTpcMatchingft2(0)
 ,fPionDecayGen(0)
+,fParticle(0)
 ,fDebugStreamer(0)
 ,fStreamLevel(0)
 ,fTpcClusterAcc(0)
@@ -139,6 +142,7 @@ fITSRec(0)
 ,fTPCClusterErrInnerDeepZ(0)
 ,fTPCSystematicErr(0)
 ,fTPCClusterErr(0)
+,fTPCUseSystematicCorrelation(0)
 ,fTPCParam(0)
 ,fTPCRecoParam(0)
 ,fAllocCorrelatedITSFakes(kTRUE)
@@ -155,7 +159,7 @@ fITSRec(0)
 	float c0tr2clChi2[7]	= {20,25,30,40,45,45,70};	// cut on cluster to track chi2
 	float c0gloChi2[7]		= {6,10,20,30,60,60,70};	// cut on seed global norm chi2
 	float c0missPen[7]		= {2.,2.,2.,2.,2.,2.,2.};	// missing cluster penalty
-	
+
 	for (int i=0;i<kMaxITSLr;i++) {
 		fNCorrelITSFakes[i] = accAmp[i];		// integral of accompanying hits
 		fCorrelITSFakesSigY[i] = accSigY[i];	// width in rphi
@@ -163,9 +167,12 @@ fITSRec(0)
 		fC0tr2clChi2[i] = c0tr2clChi2[i];		// cut on cluster to track chi2
 		fC0gloChi2[i]	= c0gloChi2[i];		// cut on seed global norm chi2
 		fC0missPen[i]	= c0missPen[i];		// missing cluster penalty
-		
+		fNITSHits[i] = 0;
+		fNITSSensCand[i]= 0;
+		fNITSLrHit = 0;
 	}
 	fTpcPidSignal[0]=fTpcPidSignal[1]=fTpcPidSignal[2]=fTpcPidSignal[3]=fTpcPidSignal[4] = 0;
+
 }
 
 //________________________________________________
@@ -213,10 +220,12 @@ void FT2::InitTPCParaFile(const char *TPCParaFile)
 	fItsTpcMatchingfMC = (AliNDLocalRegression*)fTPCParaFile->Get("fmcITSTPCmatching");
 	fItsTpcMatchingft2 = (AliNDLocalRegression*)fTPCParaFile->Get("ft2ITSTPCmatching");
 	
-	fTpcClusterAcc = (TF1*)fTPCParaFile->Get("tpcClusterAcc");
-	
-	//	fTpcClusterAcc = new TF1("fTpcClusterAcc","[0]+[1]/x",80,260);
-	//	fTpcClusterAcc->SetParameters(1.05,-25.1827);
+	if(fStandaloneTune){
+		fTpcClusterAcc = (TF1*)fTPCParaFile->Get("tpcClusterAccCorrect");
+	}
+	else{
+		fTpcClusterAcc = (TF1*)fTPCParaFile->Get("tpcClusterAcc");
+	}	
 }
 //________________________________________________
 void FT2::InitXSectionFile(const char *XSectionFile)
@@ -251,10 +260,11 @@ void FT2::InitDetector(Bool_t addTPC,Float_t scEdge)
 	
 	fBz = AliTrackerBase::GetBz();
 	//
-	AliGeomManager::LoadGeometry("geometry.root");
+	//	AliGeomManager::LoadGeometry("geometry.root"); // un-comment if running with fastGen
 	AliCDBEntry* ent = man->Get("ITS/Calib/RecoParam");
 	AliITSURecoParam* par = (AliITSURecoParam*)((TObjArray*)ent->GetObject())->At(1); // need just to initialize the interface
-	fITSRec = new AliITSUReconstructor();
+	if (!par) AliFatal("No ITS recoparam\n");
+		fITSRec = new AliITSUReconstructor();
 	fITSRec->SetRecoParam(par);
 	fITSRec->Init();
 	//
@@ -316,12 +326,12 @@ void FT2::InitEnvLocal()
 	AliInfo("Initializing Local Environment");
 	
 	// init with environment of local ITSU generation
-	AliCDBManager* man = AliCDBManager::Instance();
-	//	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-	man->SetDefaultStorage("raw://");
+	//	AliCDBManager* man = AliCDBManager::Instance(); // un-comment if running with fastGen
+	//	man->SetDefaultStorage("raw://"); // un-comment if running with fastGen
 	
-	man->SetSpecificStorage("GRP/*/*","alien://folder=/alice/data/2010/OCDB");
-	
+//	man->SetSpecificStorage("GRP/*/*","alien://folder=/alice/data/2010/OCDB"); // un-comment if running with fastGen
+	// un-comment lines below if running with fastGen
+	/*
 	// Loading same OCDB files as in sim.C/rec.C of LHC13d19
 	man->SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/LS1_upgrade/Ideal",1,0);
 	man->SetSpecificStorage("ITS/Calib/RecoParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal",2,0);
@@ -335,24 +345,10 @@ void FT2::InitEnvLocal()
 	man->SetSpecificStorage("TPC/Calib/AltroConfig", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",1,0);
 	man->SetSpecificStorage("TPC/Calib/TimeDrift", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",1,0);
 	man->SetSpecificStorage("TPC/Calib/Correction", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal/",2,0);
-	// Loading default OCDB
-	/*
-	 man->SetSpecificStorage("ITS/Align/Data", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
-	 man->SetSpecificStorage("ITS/Calib/RecoParam", "alien://folder=/alice/simulation/LS1_upgrade/Ideal");
-	 man->SetDefaultStorage("alien://folder=/alice/data/2010/OCDB");
-	 man->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/ClusterParam", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/RecoParam", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/TimeGain", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/AltroConfig", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/TimeDrift", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 man->SetSpecificStorage("TPC/Calib/Correction", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual/");
-	 */
-	//
 	man->SetRun((Long64_t)fRunNumber);
 	man->Print("");
-	//
+// ----
+	 */
 	if (fStreamLevel>0) {
 		cout << "CREATING STERAMER TREE" << endl;
 		fDebugStreamer = new TTreeSRedirector("ft2debug.root");
@@ -447,7 +443,6 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 	//
 	if(fTrueMCtrackMult==-1){AliFatal("True MC Multiplicity is 0. This must not happen! Set multiplicity before FT2::InitEnvLocal()!\n");}
 	
-	
 	static AliESDVertex vtx0;
 	static Bool_t first = kTRUE;
 	if (first) {
@@ -461,7 +456,11 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 		printf("Initialization failed\n");
 		part->Print();
 		fProbe.Print();
+		Double_t pos[3];
+		fProbe.GetXYZ(pos);
+		printf("Position - X: %0.2f Y: %0.2f Z: %0.2f R: %0.2f\n",pos[0],pos[1],pos[2],TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]));
 #endif
+		fProbe.fProbeReconstructionError = 7;
 		return kFALSE;
 	}
 	PrepareProbe();
@@ -473,6 +472,7 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 			   fNITSLrHit,fMinITSLrHit, fNTPCHits, fIsTPC ? fMinTPCHits:0);
 		fProbe.Print();
 #endif
+		fProbe.fProbeReconstructionError = 8;
 		return kFALSE;
 	}
 	
@@ -483,6 +483,7 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 		printf("Track reconstruction failed\n");
 		fProbe.Print();
 #endif
+		fProbe.fProbeReconstructionError = 55;
 		return kFALSE;
 	}
 	
@@ -491,36 +492,46 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 	
 	//
 	// go to innermost radius of ITS (including beam pipe)
-	if (!PropagateToR(fITS->GetRMin(),-1, kTRUE, kFALSE, kTRUE,0)) {
+	if(!fUseConverisons){
+		if (!PropagateToR(fITS->GetRMin(),-1, kTRUE, kFALSE, kTRUE,0)) {
 #if DEBUG
-		printf("Track propagatation to ITS RMin=%f failed\n",fITS->GetRMin());
-		fProbe.Print();
+			printf("Track propagatation to ITS RMin=%f failed\n",fITS->GetRMin());
+			fProbe.Print();
 #endif
-		return kFALSE; // don't exit on faile propagation, may simply not reach this point
+			return kFALSE; // don't exit on faile propagation, may simply not reach this point
+		}
 	}
+	//
 	//
 	AliVertex* vtuse = vtx ? vtx : (AliVertex*)&vtx0; // if no vertex provided, relate to 0,0,0
 	//
 	fDCACov[0] = fDCACov[1] = fDCACov[2] = 0;
-	Bool_t res = fProbe.PropagateToDCA(vtuse,fBz, fITS->GetRMin(), fDCA, fDCACov);
-	
+	Bool_t res = 0;
+	if(!fUseConverisons){
+		res = fProbe.PropagateToDCA(vtuse,fBz, fITS->GetRMin(), fDCA, fDCACov);
+	}
+	else{
+		res = fProbe.PropagateToDCA(vtuse,fBz,999999999., fDCA, fDCACov);
+	}
 #if DEBUG
 	if (!res) {
 		printf("Track propagation to vertex failed\n");
 		vtuse->Print();
 		fProbe.Print();
+		part->Print();
+		fProbe.fProbeReconstructionError = 44;
 	}
 #endif
 	
 	if(fTuneOnDataOrMC){
 #if DEBUG
-		printf("\n\n\n################################");
+		printf("\n\n\n################################\n");
 		printf("### TuneOnDataOrMC is Active ###\n# TPC min. cluster? %d < %d \n# ITS kAny? %d \n",fNClTPC,30,(fITSPattern&(0x1<<0) || (fITSPattern&(0x1<<1) && fITSPattern&(0x1<<2))));
 #endif
 		//
 		if(fNClTPC<30 || (!(fITSPattern&(0x1<<0)) && !(fITSPattern&(0x1<<1) && fITSPattern&(0x1<<2)))){
 #if DEBUG
-			printf("################################\n\n\n");
+			printf("################################\n");
 #endif
 			fProbe.fLostInItsTpcMatching=kTRUE;
 		}
@@ -583,10 +594,18 @@ Bool_t FT2::InitProbe(TParticle* part)
 {
 	// create probe (code copied from AliESDtrack::AliESDtrack(TParticle * part) :
 	//
+	//
+	//
 	Double_t xref;
 	Double_t alpha;
 	Double_t param[5];
 	Double_t covar[15] = {0};
+	//
+	//
+	for (int i=0;i<kMaxITSLr;i++) {
+		fNITSHits[i] = 0;
+		fNITSSensCand[i]= 0;
+	}
 	//
 	fNTPCHits = fNClTPC = fNClITS = fNClITSFakes = fNITSLrHit = fITSPatternFake = fITSPattern = 0;
 	fChi2TPC = fChi2ITS = 0;
@@ -665,6 +684,16 @@ Bool_t FT2::InitProbe(TParticle* part)
 	ResetCovMat(&fProbe);
 	fTPCMap.ResetAllBits();
 	fProbeIni = fProbe;
+	
+	// stop working with this probe if it is outside the ALICE central barrel
+	// line below could be meaningful for conversion, should not be a problem for primary tracks
+	if(fUseConverisons){
+		Double_t pos[3];
+		fProbe.GetXYZ(pos);
+		Double_t radius = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+		if(pos[2]>kMaxZ || radius>kMaxZ){return kFALSE;} // outside z=r range
+	}
+	//
 	return kTRUE;
 }
 //____________________________________________________
@@ -761,25 +790,40 @@ Bool_t FT2::Pion2Muon(){
 //____________________________________________________
 Bool_t FT2::PrepareProbe()
 {
-	// propagate the probe to max allowed R of the setup
-	int nlrITS = fITS->GetNLayers(); // including passive layers
-	//
-	for (int ilr=0;ilr<nlrITS;ilr++){
-		AliITSURecoLayer* lr = fITS->GetLayer(ilr);
+	Int_t ilrStart = 0;
+	Bool_t insideITS = kTRUE;
+
+	if(fUseConverisons){
+		Double_t pos[3];
+		fProbe.GetXYZ(pos);
+		Double_t radius = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+		if(radius>fITS->GetLayer(fITS->GetNLayers()-1)->GetRMax()) insideITS=kFALSE;
+		ilrStart = FindNextLayer(radius,insideITS);
+		if(ilrStart==999) {fProbe.fProbeReconstructionError = 9; return kFALSE;} // particles outside ITS and TPC
+	}
+	
+	if(insideITS){
+		// propagate the probe to max allowed R of the setup
+		int nlrITS = fITS->GetNLayers(); // including passive layers
 		//
-		if (lr->IsPassive()) { // cylindric passive layer, just go to this layer
-			if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat,1)) return kFALSE;
+		for (int ilr=ilrStart;ilr<nlrITS;ilr++){
+			AliITSURecoLayer* lr = fITS->GetLayer(ilr);
+			//
+			if (lr->IsPassive()) { // cylindric passive layer, just go to this layer
+				if (!PropagateToR(lr->GetRMax(),1,kFALSE,fSimMat,fSimMat,1)){fProbe.fProbeReconstructionError = 11; return kFALSE;}
+			}
+			else { // active layer, need to simulate the hit positions
+				if (!PassActiveITSLayer(lr)){fProbe.fProbeReconstructionError = 12; return kFALSE;}
+				fProbe.fProbeITSClusterIsCls[ilr]=1;
+				Double_t posClsITS[3];
+				fProbe.GetXYZ(posClsITS);
+				fProbe.fProbeITSClusterX[ilr] = posClsITS[0];
+				fProbe.fProbeITSClusterY[ilr] = posClsITS[1];
+				fProbe.fProbeITSClusterZ[ilr] = posClsITS[2];
+			}
+			if (TMath::Abs(fProbe.GetZ())>kMaxZ){return kFALSE;} // exit along z
 		}
-		else { // active layer, need to simulate the hit positions
-			if (!PassActiveITSLayer(lr)) return kFALSE;
-			fProbe.fProbeITSClusterIsCls[ilr]=1;
-			Double_t posClsITS[3];
-			fProbe.GetXYZ(posClsITS);
-			fProbe.fProbeITSClusterX[ilr] = posClsITS[0];
-			fProbe.fProbeITSClusterY[ilr] = posClsITS[1];
-			fProbe.fProbeITSClusterZ[ilr] = posClsITS[2];
-		}
-	 if (TMath::Abs(fProbe.GetZ())>kMaxZITS) break; // exit along z
+		ilrStart = 0;
 	}
 	//
 	fNTPCHits = 0;
@@ -787,14 +831,16 @@ Bool_t FT2::PrepareProbe()
 	if (fIsTPC) {
 		const double kTanSectH = 1.76326980708464975e-01; // tangent of  10 degree (sector half opening)
 		if (!fProbe.RotateParamOnly( fProbe.PhiPos() )) {
+			fProbe.fProbeReconstructionError = 13;
 			return kFALSE; // start in the frame with X pointing to track position
 		}
 		if (!PropagateToR(fTPCLayers[0].x-0.1,1,kFALSE,fSimMat,fSimMat,1)) {
+			fProbe.fProbeReconstructionError = 14;
 			return kFALSE; // reach inner layer
 		}
 		//
 		int sector = -1;
-		for (int ilrReset=0;ilrReset<(int)fTPCLayers.size();ilrReset++) {
+		for (int ilrReset=ilrStart;ilrReset<(int)fTPCLayers.size();ilrReset++) {
 			FT2TPCLayer_t &tpcLrReset = fTPCLayers[ilrReset];
 			tpcLrReset.hitSect = -1;
 			fTPCHitLr[ilrReset] = 0;
@@ -821,6 +867,7 @@ Bool_t FT2::PrepareProbe()
 					printf("TPC:Failed to rotate to alpha %.4f (sc %d)\n",phi,sector);
 					fProbe.Print();
 #endif
+					fProbe.fProbeReconstructionError = 15;
 					return kFALSE; // go to sector frame
 				}
 			}
@@ -839,24 +886,28 @@ Bool_t FT2::PrepareProbe()
 				AliTrackerBase::MeanMaterialBudget(xyzIni,xyzCur,params);
 				//
 				if(fAllowDecay && ProbeDecay(xyzIni,params)){
+					fProbe.fProbeReconstructionError = 16;
 					return kFALSE;
 				}
 				//
 				if(fAllowAbsorbtion && ProbeAbsorbtion(xyzIni,params)){
+					fProbe.fProbeReconstructionError = 17;
 					return kFALSE;
 				}
 			}
+			
+			//			Double_t z = fProbe.GetZ();
+			//			if(z>245.) z=245.;
 			fProbe.fProbeZAtCutOffCheck = fProbe.GetZ();
-			if(TMath::Abs(fProbe.GetZ()/fProbe.GetX())>fTpcClusterAcc->Eval(fProbe.GetX())) continue;
+			if(TMath::Abs(fProbe.GetZ()/fProbe.GetX())>fTpcClusterAcc->Eval(fProbe.GetX())){continue;}
 			
 			// cut during cluster seeding, taken from Ruben
 			Double_t kDeltaZ = 10;
-			if(TMath::Abs(fProbe.GetZ())>(1.05*fProbe.GetX()+kDeltaZ)) continue ;
+			if(TMath::Abs(fProbe.GetZ())>(1.05*fProbe.GetX()+kDeltaZ)){continue;}
 			//
 			double maxY = kTanSectH*tpcLr.x - fTPCSectorEdge; // max allowed Y in the sector
 			//
-			Double_t z = fProbe.GetZ();
-			if(z>245.) z=245.;
+			if(fProbe.fProbeZAtCutOffCheck>kMaxZ){ilr=(int)fTPCLayers.size();continue;}
 			
 			Double_t xyz[3];
 			fProbe.GetXYZ(xyz);
@@ -1009,36 +1060,52 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 	if (fNTPCHits) {
 		// TPC tracking
 #if DEBUG>5
-		AliInfo(Form("Number of clusters generated on the pad rows: %i",fNTPCHits));
+		AliInfo(Form("Number of clusters generated on the pad rows: %i\n",fNTPCHits));
 #endif
 		for (int ih=fNTPCHits;ih--;) {
 #if DEBUG>5
-			AliInfo(Form("Entering TPC cluster loop: %i",ih));
+			AliInfo(Form("Entering TPC cluster loop: %i\n",ih));
 #endif
 			if(ih==0 && fUsePIDForTracking){
-				Int_t typePID=-1;
+				//				Int_t typePID=-1;
+				AliPID::EParticleType typePID=AliPID::EParticleType(2);
 				Double_t p = fProbe.P(); fProbe.fTPCmomentum = p;
 		  if(fProbe.fAbsPdgCode==11){
-				typePID=0;
+				//				typePID=0;
+				typePID=AliPID::EParticleType(0);
 			}
 			else if(fProbe.fAbsPdgCode==13){
-				typePID=1;
+				//				typePID=1;
+				typePID=AliPID::EParticleType(1);
 			}
 			else if(fProbe.fAbsPdgCode==211){
-				typePID=2;
+				//				typePID=2;
+				typePID=AliPID::EParticleType(2);
 			}
 			else if(fProbe.fAbsPdgCode==321){
-				typePID=3;
+				//				typePID=3;
+				typePID=AliPID::EParticleType(3);
 			}
 			else if(fProbe.fAbsPdgCode==2212){
-				typePID=4;
+				//				typePID=4;
+				typePID=AliPID::EParticleType(4);
 			}
 			else {AliFatal("PDC Code cannot be treated in the code - This case should not be possible here!");}
 #if DEBUG>5
 				AliInfo(Form("PDG code of Probe: %d",fProbe.fAbsPdgCode));
 				AliInfo(Form("Momentum of Probe: %f",fProbe.fTPCmomentum));
 #endif
-				Double_t signalTPC = fTpcPidSignal[typePID]->Eval(point);
+				Double_t signalTPC = -1;
+				
+				if(fStandaloneTune){
+				 Double_t mean = fPIDResponse->GetTPCResponse().GetExpectedSignal(&fProbe,typePID,AliTPCPIDResponse::kdEdxDefault,kFALSE,kFALSE);
+				 fProbe.fTPCSignalN = (UShort_t)mean;
+				 Double_t sigma = fPIDResponse->GetTPCResponse().GetExpectedSigma(&fProbe,typePID,AliTPCPIDResponse::kdEdxDefault,kFALSE,kFALSE);
+				 signalTPC = gRandom->Gaus(mean,sigma);
+				}
+				else{
+					signalTPC = fTpcPidSignal[typePID]->Eval(point);
+				}
 				
 				fProbe.fTPCSignal = signalTPC;
 				fProbe.fTPCSignalN = (UShort_t)signalTPC;
@@ -1089,7 +1156,7 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 				if (!fProbe.Rotate( TMath::DegToRad()*(10.+20.*sect))) {fProbe.fProbeReconstructionError = 1; return kFALSE;}
 			}
 			// go to the padrow
-			if (!fProbe.PropagateTo(tpcLr.x,fBz)) {return kFALSE;}
+			if (!fProbe.PropagateTo(tpcLr.x,fBz)) {fProbe.fProbeReconstructionError = 10;return kFALSE;}
 			if (tpcLr.x2x0>0 && !fProbe.CorrectForMeanMaterial(tpcLr.x2x0,0,fProbe.fProbeMass) ) {fProbe.fProbeReconstructionError = 2; return kFALSE;}
 			//
 			//
@@ -1176,7 +1243,7 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			printf("fTPCClusterErr[1]?\t%f\n",fTPCClusterErr[1]);
 			printf("sig_y --> %f\n",tpcSigY);
 			printf("sig_z --> %f\n",tpcSigZ);
-			printf("------------------------------------------");
+			printf("------------------------------------------\n");
 #endif
 			Double_t scaler = 0.95;
 			double chi = UpdateKalman(&fProbe,tpcLr.hitY,tpcLr.hitZ,TMath::Sqrt(tpcSigY)/scaler,TMath::Sqrt(tpcSigZ)/scaler,kTRUE,scaler,scaler);
@@ -1221,6 +1288,9 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 	int nMiss = 0;
 	for (int ilr=fITS->GetNLayersActive();ilr--;) {
 		int res = ReconstructOnITSLayer(ilr);
+#if DEBUG
+		printf("Res value is: %i\n",res);
+#endif
 		if (res<1) nMiss++;
 		if (res<0) break;
 		if (nMiss>maxMiss) {fProbe.fProbeReconstructionError = 6; return kFALSE;}
@@ -1343,13 +1413,14 @@ Bool_t FT2::PropagateToX(double xTgt, int dir,
 		}
 		if (useTGeo) {
 			fProbe.GetXYZ(xyz1);
+			if (TMath::Abs(xyz1[2])>kMaxZ) return kFALSE; // exit along z
 			AliTrackerBase::MeanMaterialBudget(xyz0,xyz1,param);
 			Double_t xrho=param[0]*param[4], xx0=param[1];
 			if (dir>0) xrho = -xrho;
 			if (simMat) {
 				if (!ApplyMSEloss(xx0,xrho,param[2],param[3],dECheckptx)) {
 #if DEBUG
-					printf("Failed ApplyMSEloss(%f,%f,%f,%f,%f) in PropagateToX(%.1f,%d,%d,%d,%d)",
+					printf("Failed ApplyMSEloss(%f,%f,%f,%f) in PropagateToX(%.1f,%d,%d,%d,%d)",
 						   xx0,xrho,param[2],param[3],xTgt,dir,propErr,simMat,useTGeo);
 					fProbe.Print();
 #endif
@@ -1587,6 +1658,7 @@ Bool_t FT2::PassActiveITSLayer(AliITSURecoLayer* lr)
 	AliITSURecoSens **hitSens = &fITSSensCand[lrAID][0];
 	//
 	if (!GetRoadWidth(lr, trImpData, -1)) return kFALSE;
+
 	fNITSHits[lrAID] = 0;
 	fNITSSensCand[lrAID] = 0;
 	//
@@ -1771,7 +1843,7 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 	fCurrITSLr = ilr;
 	AliITSURecoLayer* lrA = fITS->GetLayerActive(ilr);
 #if DEBUG>5
-	AliInfoF("Entering ITS cluster loop on lr%d: %d clusters",ilr,fNITSHits[ilr]);
+	printf("Entering ITS cluster loop on lr%d: %d clusters",ilr,fNITSHits[ilr]);
 #endif
 	AliITSURecoSens* sens = 0;
 	int iht = -1;
@@ -1798,6 +1870,8 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 		return -1; //  track cannot be continued
 #endif
 	}
+	//
+	if (TMath::Abs(fProbe.GetZ())>kMaxZ){return -1;} // exit along z
 	//
 	if (!PropagateToX(sens->GetXTF(),-1,kTRUE, kFALSE, kTRUE,0,0)){
 		return -1;
@@ -1892,6 +1966,7 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 	fProbe.chiwITS[ilr]=chiw;
 #if DEBUG>5
 	AliInfoF("Updated at ITS Lr%d, chi2:%f NclITS:%d Fakes: %d",ilr,chiw,fNClITS,fNClITSFakes);
+	printf("Updated at ITS Lr%d, chi2:%f NclITS:%d Fakes: %d\n",ilr,chiw,fNClITS,fNClITSFakes);
 #endif
 	if (chiw>0) {
 		fChi2ITS += chiw;
@@ -2165,4 +2240,21 @@ void FT2::AddCovarianceAdd(){
 	covar[13]=TMath::Sqrt((covar[9]*covar[14]))*covarIn[13]/TMath::Sqrt((covarIn[9]*covarIn[14]));
 	//
 	fProbe.AddCovariance(covar);
+}
+//_________________________________________________________
+Int_t FT2::FindNextLayer(Double_t radius, Bool_t insideITS){
+	//
+	// exiting if radius smaller than given layer, so particle can be propagated to that specific layer
+	//
+	if(insideITS){
+		for(Int_t i=0;i<fITS->GetNLayers();i++){
+			if(radius<(fITS->GetLayer(i)->GetRMax())){return i;}
+		}
+	}
+	else{
+		for(Int_t j=0;j<(int)fTPCLayers.size();j++){
+			if(radius<(fTPCLayers[j].x)){return j;}
+		}
+	}
+	return 999;
 }

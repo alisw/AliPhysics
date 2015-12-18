@@ -115,13 +115,13 @@ class AliEMCALReconstructor : public AliReconstructor {
   AliCaloCalibPedestal       * fPedestalData ;    //! Tower status database if aval
   
   //Trigger specific
-  static AliEMCALTriggerElectronics* fgTriggerProcessor; // Trigger preprocessor  
-  AliEMCALTriggerData        * fTriggerData;      // Trigger parameters data container
+  static AliEMCALTriggerElectronics *fgTriggerProcessor; // Trigger preprocessor  
+  static TClonesArray               *fgTriggerData;      // Trigger parameters data container
 
   //Track matching
   TList                      * fMatches;          //! collection of matches between tracks and clusters
   
-  ClassDef(AliEMCALReconstructor,13)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,14)  // Reconstruction algorithm class (Base Class)
 }; 
 
 #endif // ALIEMCALRECONSTRUCTOR_H

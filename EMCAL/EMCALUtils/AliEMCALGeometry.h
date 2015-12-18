@@ -363,6 +363,9 @@ public:
   Bool_t GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, const Int_t iPhi, Int_t& id) const { 
     return fTriggerMapping->GetAbsFastORIndexFromPositionInEMCAL(iEta, iPhi, id);
   }
+  Bool_t GetAbsFastORIndexFromPHOSSubregion(const Int_t iPHOS, Int_t& id) const {
+    return fTriggerMapping->GetAbsFastORIndexFromPHOSSubregion(iPHOS, id);
+  }
   Bool_t GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const { 
     return fTriggerMapping->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
   }

@@ -49,7 +49,7 @@ public:
   void     Digits2Raw();
   
   void     Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
-				      TClonesArray *digitsTRG=0x0, AliEMCALTriggerData* trgData = 0x0);
+				      TClonesArray *digitsTRG=0x0, TClonesArray *trgData=0x0);
   
   void     AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
   

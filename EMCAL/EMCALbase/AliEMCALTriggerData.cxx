@@ -38,7 +38,8 @@ fL1V0(),
 fL1FrameMask(0),
 fL1TriggerType(),
 fL1DataDecoded(0),
-fL1RawData(0)
+fL1RawData(0),
+fMedian(0)
 {  
 	// Ctor
 		
@@ -46,7 +47,7 @@ fL1RawData(0)
 	fL1JetThreshold[0] = fL1JetThreshold[1] = 0;
 	
 	fL1V0[0] = fL1V0[1] = 0;
-	for (Int_t i = 0; i < 15; i++) fL1TriggerType[i] = 0;	
+	for (Int_t i = 0; i < 19; i++) fL1TriggerType[i] = 0;	
 }
 
 //_____________

@@ -158,7 +158,9 @@ public:
   void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {if(fESDRun) fESDRun->SetEMCALMatrix(matrix,i);}
   const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun?fESDRun->GetEMCALMatrix(i):0x0;}
   void     SetCaloTriggerType(const Int_t* type) {if (fESDRun) fESDRun->SetCaloTriggerType(type);}
+  void     SetCaloTriggerType(int i,const Int_t* type) {if (fESDRun) fESDRun->SetCaloTriggerType(i,type);}
   Int_t*   GetCaloTriggerType() const {return fESDRun?fESDRun->GetCaloTriggerType():0x0;}
+  Int_t*   GetCaloTriggerType(int i) const {return fESDRun?fESDRun->GetCaloTriggerType(i):0x0;}
   virtual const Float_t* GetVZEROEqFactors() const {return fESDRun?fESDRun->GetVZEROEqFactors():0x0;}
   virtual Float_t        GetVZEROEqMultiplicity(Int_t i) const;
 	
@@ -656,7 +658,7 @@ protected:
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
   Int_t  fNTPCClusters;  // number of TPC clusters
 
-  ClassDef(AliESDEvent,26)  //ESDEvent class 
+  ClassDef(AliESDEvent,27)  //ESDEvent class 
 };
 #endif 
 

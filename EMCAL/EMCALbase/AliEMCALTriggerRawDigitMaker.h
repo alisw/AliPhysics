@@ -26,10 +26,11 @@ class AliEMCALTriggerRawDigitMaker : public TObject
 {
 	
 public:
+  enum {kMaxDigitIndex=5952};
 	         AliEMCALTriggerRawDigitMaker();
 	virtual ~AliEMCALTriggerRawDigitMaker();
 	
-	virtual void SetIO(AliRawReader* reader, AliCaloRawStreamV3& in, AliEMCALTriggerSTURawStream& inSTU, TClonesArray* digits, AliEMCALTriggerData* data);
+	virtual void SetIO(AliRawReader* reader, AliCaloRawStreamV3& in, AliEMCALTriggerSTURawStream& inSTU, TClonesArray* digits, TClonesArray* data);
 	virtual void Add(const std::vector<AliCaloBunchInfo> &bunchlist);
 	virtual void PostProcess();
 	virtual void Reset();
@@ -43,16 +44,16 @@ protected:
 	TClonesArray*                fRawDigits;     // Raw digits
 	AliCaloRawAnalyzerFakeALTRO* fRawAnalyzer;   // Raw analyzer
 	AliEMCALTriggerDCSConfigDB*  fDCSConfig;     // DCS config
-	AliEMCALTriggerData*         fTriggerData;   // Trigger data
+	TClonesArray*                fTriggerData;   // Trigger data
 	
-	Int_t                        fRawDigitIndex[5952]; // Raw digit indexes
+	Int_t                        fRawDigitIndex[kMaxDigitIndex]; // Raw digit indexes
 
 private:
 	
         AliEMCALTriggerRawDigitMaker(const AliEMCALTriggerRawDigitMaker& rhs);            // NOT implemented
         AliEMCALTriggerRawDigitMaker& operator=(const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented	
 	
-	ClassDef(AliEMCALTriggerRawDigitMaker,1)
+	ClassDef(AliEMCALTriggerRawDigitMaker,2)
 };
  
 #endif

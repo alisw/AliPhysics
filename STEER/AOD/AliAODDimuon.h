@@ -36,6 +36,8 @@ public:
   AliAODDimuon(TObject *mu0, TObject *mu1);
   virtual ~AliAODDimuon();
 
+  virtual void Clear(Option_t* opt="");
+  
   // Methods to access kinematics
   virtual Double_t Px() const;
   virtual Double_t Py() const;

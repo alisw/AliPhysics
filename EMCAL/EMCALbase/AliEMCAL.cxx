@@ -100,7 +100,8 @@ AliEMCAL::~AliEMCAL()
 {
   //dtor
   delete fgRawUtils;
-  delete fTriggerData;
+  delete fTriggerData;   
+  //fTriggerData->Delete(); // RS: if TClonesArray is created, Delete will be called from ~TClonesArray
 }
 
 //____________________________________________________________________________
@@ -297,7 +298,11 @@ void  AliEMCAL::Init()
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
 
-  static AliEMCALRawUtils rawUtils;
+  //  static AliEMCALRawUtils rawUtils;
+  // RS why this should be static? This makes root to die produce "double delete"
+  // since the TF1 created in the rawUtils is garbage-collected by root before the 
+  // destructor is called during garbage collecting of the static object
+  AliEMCALRawUtils rawUtils;
   rawUtils.Digits2Raw();
 
 }
@@ -349,8 +354,18 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
   sdigits->Clear("C");  
   
   //Trigger sdigits
-  if(!fTriggerData)fTriggerData = new AliEMCALTriggerData();
-  fTriggerData->SetMode(1);	
+  if (!fTriggerData) {
+    int dsize = (GetGeometry()->GetTriggerMappingVersion() == 2) ? 2 : 1;
+    fTriggerData = new TClonesArray("AliEMCALTriggerData",dsize);
+    for (int i=0;i<dsize;i++) {
+      new((*fTriggerData)[i]) AliEMCALTriggerData();
+    }
+  }
+  
+  for (int i=0;i<fTriggerData->GetEntriesFast();i++) {
+    ((AliEMCALTriggerData*)fTriggerData->At(i))->SetMode(1);   
+  }
+  
   const Int_t nTRU = GetGeometry()->GetNTotalTRU();
   TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", nTRU * 96);    
   Int_t bufsize = 32000;
