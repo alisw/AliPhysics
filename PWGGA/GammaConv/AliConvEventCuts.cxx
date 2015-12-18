@@ -132,6 +132,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialTriggerName(""),
   fSpecialSubTriggerName(""),
   fNSpecialSubTriggerOptions(0),
+  hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   fV0ReaderName(""),
   fCaloTriggers(NULL),
@@ -229,6 +230,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialTriggerName(ref.fSpecialTriggerName),
   fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
+  hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   fV0ReaderName(ref.fV0ReaderName),
   fCaloTriggers(NULL),
@@ -331,6 +333,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hReweightMultMC);
   }
   
+  hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+  fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
   
   hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
   fHistograms->Add(hSPDClusterTrackletBackground);
@@ -524,6 +528,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   }
   cutindex++;
 
+  // SPD clusters vs tracklets to check for pileup/background
+  Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+  Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+  if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+  
   // Pile Up Rejection
   if (fIsHeavyIon == 2){
     if(fUtils->IsFirstEventInChunk(fInputEvent)){
@@ -532,18 +542,28 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
       return kFALSE;
     }
     if(fRemovePileUp){
-      if(fUtils->IsPileUpEvent(fInputEvent) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent) ){
+      if(fUtils->IsPileUpEvent(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
         fEventQuality = 6;
         return kFALSE;
       }
+      if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
+        if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+        fEventQuality = 11;
+        return kFALSE;
+      }  
     }
   }else if(fRemovePileUp){
-    if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
+    if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       fEventQuality = 6;
       return kFALSE;
     }
+    if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
+      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+      fEventQuality = 11;
+      return kFALSE;
+    }  
   }
   cutindex++;
 
@@ -564,10 +584,6 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   //                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
   //                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
-  // SPD clusters vs tracklets to check for pileup/background
-  Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
-  Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
-  Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   fEventQuality = 0;
@@ -2897,17 +2913,6 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 
   if( !(IsCentralitySelected(InputEvent,MCEvent)))
     return 1; // Check Centrality --> Not Accepted => eventQuality = 1
-    
-  if(isHeavyIon == 0 && GetIsFromPileup()){
-    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
-      return 6; // Check Pileup --> Not Accepted => eventQuality = 6
-    }
-  }
-  if(isHeavyIon == 2 && GetIsFromPileup()){
-    if(fUtils->IsPileUpEvent(InputEvent) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
-      return 6; // Check Pileup --> Not Accepted => eventQuality = 6
-    }
-  }
 
   Bool_t hasV0And = ReaderCuts->HasV0AND();
   Bool_t isSDDFired = ReaderCuts->IsSDDFired();
@@ -2965,6 +2970,31 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       }
     }
   }
+        
+  // SPD clusters vs tracklets to check for pileup/background
+  Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
+  Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
+  if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
+  
+  if( isHeavyIon == 0 && GetIsFromPileup()){
+    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){      
+      return 6; // Check Pileup --> Not Accepted => eventQuality = 6
+    }
+    if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      return 11; // Check Pileup --> Not Accepted => eventQuality = 11
+    }
+  }  
+  if(isHeavyIon == 2 && GetIsFromPileup()){
+    if(fUtils->IsPileUpEvent(InputEvent) ){
+      return 6; // Check Pileup --> Not Accepted => eventQuality = 6
+    }
+    if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      return 11; // Check Pileup --> Not Accepted => eventQuality = 11
+    }
+  }
+
     
   if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 
@@ -2974,9 +3004,6 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 //                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
 //                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
-  Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
-  Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
-  Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   return 0;

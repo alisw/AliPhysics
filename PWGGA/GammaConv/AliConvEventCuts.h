@@ -334,6 +334,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fSpecialTriggerName;                    // Name of the Special Triggers
       TString                     fSpecialSubTriggerName;                 // Name of the Special Triggers
       Int_t                       fNSpecialSubTriggerOptions;
+      TH2F*                       hSPDClusterTrackletBackgroundBefore;    // SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          // SPD tracklets vs SPD clusters for background-correction
       // trigger information
       TString                     fV0ReaderName;                          // Name of V0Reader
