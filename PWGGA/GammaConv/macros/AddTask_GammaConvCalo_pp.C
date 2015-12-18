@@ -327,13 +327,18 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 2] = "00081113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111100063032230000"; mesonCutArray[2] = "0163103100000010"; // EMCEG1,
   } else if (trainConfig == 32){  // LHC10 without non linearity
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100013032230000"; mesonCutArray[0] = "0163103100000010"; // MB
-    
-  // LHC13g  
-  } else if (trainConfig == 40){  // LHC13g without non linearity
+  } else if (trainConfig == 33){  // EMCal, all triggers without non linearity
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // INT7
     eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000010"; // EMC7
     eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111100063032230000"; mesonCutArray[2] = "0163103100000010"; // EMCEG1,
     eventCutArray[ 3] = "00085113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111100063032230000"; mesonCutArray[3] = "0163103100000010"; // EMCEG2,
+    
+  // LHC13g  
+  } else if (trainConfig == 40){  // LHC13g without pileup for triggers
+    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063032230000"; mesonCutArray[0] = "0163103100000010"; // INT7
+    eventCutArray[ 1] = "00052013"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063032230000"; mesonCutArray[1] = "0163103100000010"; // EMC7
+    eventCutArray[ 2] = "00083013"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // EMCEG1,
+    eventCutArray[ 3] = "00085013"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // EMCEG2,
     
   // LHC13g new conv calo non lienarity
   } else if (trainConfig == 41){  // EMCal, all triggers
