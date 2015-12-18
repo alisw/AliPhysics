@@ -519,7 +519,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fESDList[iCut]->SetName(nameESDList.Data());
 		fESDList[iCut]->SetOwner(kTRUE);
 
-		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",10,-0.5,9.5);
+		fHistoNEvents[iCut] = new TH1I("NEvents","NEvents",12,-0.5,11.5);
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -530,6 +530,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 
 		if(fIsHeavyIon>0) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
