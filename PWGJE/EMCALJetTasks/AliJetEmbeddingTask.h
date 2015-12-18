@@ -21,6 +21,7 @@
 #include "AliJetModelBaseTask.h"
 
 class TTree;
+class THnSparse;
 
 class AliJetEmbeddingTask : public AliJetModelBaseTask {
  public:
@@ -87,10 +88,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Int_t          fCount;                  ///< counts number of embedded tracks in the current pT bin
   Int_t          fCurrentBin;             ///< the current pT bin
   Int_t          fGoBack;                 ///< how many times fCurrentBin is set back to 0
-  TH1F           *fhDeltapT;              //!<! deltapT embedding from tree
-  TH1F           *fhDeltaM ;              //!<! deltaM embedding from tree
-  TH1F           *fhpTPart ;              //!<! pT particle corresponding to embedded from tree
-  TH1F           *fhMPart  ;              //!<! M  particle corresponding to embedded from tree
+  THnSparse      *fhPartJet;              //!<! control histogram particle level correponsding to embedded from tree
   TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
   TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
 
