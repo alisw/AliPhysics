@@ -33,15 +33,15 @@ using namespace std;
 bool SaveFiles=0;
 bool PrintData=0;
 
-const int CollisionType=0;// Pb-Pb(0), p-Pb(1), pp(2)
-const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge1, 2=MixedCharge2
+const int CollisionType=2;// Pb-Pb(0), p-Pb(1), pp(2)
+const int ChProdBOI=1;// 0=SameCharge, 1=MixedCharge1, 2=MixedCharge2
 const int EDBin=0;// KT3,4 bin. 0=low KT bin.  1=high KT bin
 const int MBOI=0;// Centrality bin: 0-9
 const int GValue = 0;// steps of 2
 bool ShortSameCharge=1;// Plot short version?
 bool FitBuild=0;
 bool ReNormBuiltBaseline=1;
-bool GfromFirstCumulant=1;
+bool GfromFirstCumulant=0;
 //
 //
 const int Q3binChi2= 2;// 2-5
@@ -62,6 +62,8 @@ float SizeSpecif=0.045;//
 float SF1=2/3.*0.95;
 float SF2=1/2.*0.95;
 float LeftMargin=0.11;
+float MarkerSize=1.25;
+float MarkerSize2=1.875;
 
 
 double RightMargin=0.004;// 0.002
@@ -148,6 +150,16 @@ void Plot_plotsFourPion(){
   ChargeCombTitle4->SetNDC(1);
   ChargeCombTitle4->SetTextFont(TextFont);
   ChargeCombTitle4->SetTextSize(2*SizeSpecif);
+
+  TString *ChargeCombSt3 = new TString("");
+  if(ChProdBOI==0) ChargeCombSt3->Append("#pi^{-}#pi^{-}#pi^{-}");
+  else ChargeCombSt3->Append("#pi^{-}#pi^{-}#pi^{+}");
+  float xCCT=0.16, yCCT=0.89;
+  if(ChProdBOI==0) {xCCT=0.7; yCCT=0.27;}
+  TLatex *ChargeCombTitle3 = new TLatex(xCCT,yCCT,ChargeCombSt3->Data());// 0.7,yCCT
+  ChargeCombTitle3->SetNDC(1);
+  ChargeCombTitle3->SetTextFont(TextFont);
+  ChargeCombTitle3->SetTextSize(2*SizeSpecif);
 
 
   TF1 *C3ratioFit = new TF1("C3ratioFit","[0] + [1]*exp(-pow(x*[2],2))",0,1);
@@ -275,7 +287,10 @@ void Plot_plotsFourPion(){
 	      C3QS[ChComb][ch][ED][mb][CT]->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
 	      c3QS[ChComb][ch][ED][mb][CT]->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
 	      C3QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("Three pion correlation");
-	      c3QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("#font[12]{#bf{c}}_{3}");
+	      c3QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("#font[12]{c}_{3}");
+	      C3QS[ChComb][ch][ED][mb][CT]->SetMarkerSize(MarkerSize);
+	      c3QS[ChComb][ch][ED][mb][CT]->SetMarkerSize(MarkerSize);
+	      c3QS[ChComb][ch][ED][mb][CT]->SetMarkerStyle(24);
 	    }
 	    C4QS[ChComb][ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("C4QS");
 	    c4QS[ChComb][ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("c4QS");
@@ -285,11 +300,18 @@ void Plot_plotsFourPion(){
 	    C4QS[ChComb][ch][ED][mb][CT]->GetXaxis()->SetTitle("#font[12]{Q}_{4} (GeV/#font[12]{c})");
 	    c4QS[ChComb][ch][ED][mb][CT]->GetXaxis()->SetTitle("#font[12]{Q}_{4} (GeV/#font[12]{c})");
 	    C4QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("Four pion correlation");
-	    c4QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("#font[12]{#bf{c}}_{4}");
-	    
+	    c4QS[ChComb][ch][ED][mb][CT]->GetYaxis()->SetTitle("#font[12]{c}_{4}");
+	    C4QS[ChComb][ch][ED][mb][CT]->SetMarkerSize(MarkerSize);
+	    c4QS[ChComb][ch][ED][mb][CT]->SetMarkerSize(MarkerSize);
+	    a4QS[ChComb][ch][ED][mb][CT]->SetMarkerSize(MarkerSize);
+	    a4QS[ChComb][ch][ED][mb][CT]->SetMarkerStyle(21);
+	    c4QS[ChComb][ch][ED][mb][CT]->SetMarkerStyle(24);
+
 	    if(ChComb==0){
 	      b4QS[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("b4QS");
 	      b4QS[ch][ED][mb][CT]->SetDirectory(0);
+	      b4QS[ch][ED][mb][CT]->SetMarkerSize(MarkerSize2);
+	      b4QS[ch][ED][mb][CT]->SetMarkerStyle(27);
 	      //if(CT==0){
 	      //cout<<ch<<"  "<<ED<<" "<<mb<<" "<<CT<<endl;
 		C3QSBuilt[ch][ED][mb][CT]=(TH1D*)files[ChComb][ch][ED][mb][CT]->Get("C3QS_built");
@@ -994,6 +1016,7 @@ void Plot_plotsFourPion(){
     C3QS_Syst->SetLineColor(kBlue-10); C3QS_Syst->SetMarkerColor(kBlue-10);
     C3QS_Syst->SetLineWidth(57);
     
+
     C3QSBuilt_Syst->SetBinContent(1,100); 
     C3QSBuilt_Syst->SetMarkerSize(0); C3QSBuilt_Syst->SetFillColor(kGray); //C3QSBuilt_Syst->SetFillStyle(3004);
     C3QSBuilt_Syst->SetLineColor(kGray); C3QSBuilt_Syst->SetLineWidth(5);
@@ -1026,7 +1049,7 @@ void Plot_plotsFourPion(){
     }
 
     legend1->AddEntry(C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{C}_{3}^{QS}","p");
-    if(!ShortSameCharge) legend1->AddEntry(c3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{3}^{QS}","p");
+    if(!ShortSameCharge) legend1->AddEntry(c3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{c}_{3}^{QS}","p");
     if(ChProdBOI==0) {
       legend1->AddEntry(C3QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{3}(2) (G=0%)","l");
       if(ShortSameCharge) legend1->AddEntry(C3QSbuilt_G,BuiltNameE32->Data(),"l");
@@ -1040,7 +1063,7 @@ void Plot_plotsFourPion(){
     ALICEspecif->Draw("same");
     KT3specif->Draw("same");
    
-    
+    ChargeCombTitle3->Draw("same");
     
     if(ChProdBOI==0){
       pad1_2->cd();
@@ -1073,7 +1096,7 @@ void Plot_plotsFourPion(){
       Ratio_3_G_Syst->SetMarkerSize(0); Ratio_3_G_Syst->SetMarkerColor(kBlue); Ratio_3_G_Syst->SetLineColor(kBlue);
       Ratio_3_Syst->SetLineWidth(5); Ratio_3_G_Syst->SetLineWidth(2);
       Ratio_3_Syst->Draw();
-      Ratio_3_G_Syst->Draw("[] same");
+      if(GValue>0) Ratio_3_G_Syst->Draw("[] same");
       Ratio_3->Draw("same");
 
       if(ShortSameCharge) Ratio_3_G->Draw("same");
@@ -1334,10 +1357,11 @@ void Plot_plotsFourPion(){
       legend2_2->SetTextFont(TextFont);
       legend2_2->SetTextSize(SizeLegend);
       
-      TH1D *GversusQ3[2];// Stat then Syst
+      TH1D *GversusQ3[3];// Stat then Syst then combined
       GversusQ3[0] = new TH1D("GversusQ3_Stat","",5,0,0.05);
       GversusQ3[1] = new TH1D("GversusQ3_Syst","",5,0,0.05);
-      
+      GversusQ3[2] = new TH1D("GversusQ3Total","",5,0,0.05);// stat+syst
+
       for(int ErrType=0; ErrType<2; ErrType++){// Stat, Syst
 	for(int binQ3=2; binQ3<=5; binQ3++){
 	  double minG = 0;
@@ -1371,6 +1395,11 @@ void Plot_plotsFourPion(){
 	}
       }// Err Type
       //
+      for(int binQ3=2; binQ3<=5; binQ3++){
+	GversusQ3[2]->SetBinContent(binQ3, GversusQ3[1]->GetBinContent(binQ3));
+	GversusQ3[2]->SetBinError(binQ3, sqrt(pow(GversusQ3[0]->GetBinError(binQ3),2)+pow(GversusQ3[1]->GetBinError(binQ3),2)));
+      }
+
       GversusQ3[0]->SetMarkerStyle(20); GversusQ3[0]->SetMarkerColor(4); GversusQ3[0]->SetLineColor(4);
       GversusQ3[1]->SetMarkerSize(0); GversusQ3[1]->SetMarkerColor(kBlue-10); GversusQ3[1]->SetLineColor(kBlue-10);
       GversusQ3[1]->SetFillStyle(0); GversusQ3[1]->SetLineWidth(5);
@@ -1378,6 +1407,7 @@ void Plot_plotsFourPion(){
       GversusQ3[0]->SetMinimum(0); GversusQ3[0]->SetMaximum(100); 
       GversusQ3[0]->GetXaxis()->SetTitle("#font[12]{Q_{3}} (GeV/#font[12]{c})"); GversusQ3[0]->GetYaxis()->SetTitle("Coherent fraction (%)");
       GversusQ3[0]->GetXaxis()->SetTitleSize(SizeTitle);  GversusQ3[0]->GetYaxis()->SetTitleSize(SizeTitle);
+      GversusQ3[0]->GetYaxis()->SetTitleOffset(1.1);
       GversusQ3[0]->GetXaxis()->SetLabelSize(SizeLabel);  GversusQ3[0]->GetYaxis()->SetLabelSize(SizeLabel);
       GversusQ3[0]->GetXaxis()->SetNdivisions(505); GversusQ3[0]->GetYaxis()->SetNdivisions(505);
       GversusQ3[0]->SetBinContent(1,200); GversusQ3[1]->SetBinContent(1,200);
@@ -1388,18 +1418,23 @@ void Plot_plotsFourPion(){
       TF1 *GaussG_3=new TF1("GaussG_3","[0]*exp(-pow([1]*x,2))",0,.2);
       GaussG_3->SetParameter(0,60); GaussG_3->SetParameter(1,10); GaussG_3->SetParLimits(1,0,100);
       GaussG_3->SetLineColor(4);
-      GversusQ3[1]->Fit(GaussG_3,"IMN","",0,.05);
+      GversusQ3[2]->Fit(GaussG_3,"IMN","",0,.05);
       GaussG_3->Draw("same");
       
       //
       
       //
-      ALICEspecif->Draw("same");
+      //ALICEspecif->Draw("same");
+      TLatex *System_3_2 = new TLatex(0.015,90,System->Data());// ALICE specifications
+      System_3_2->SetTextFont(TextFont);
+      System_3_2->SetTextSize(SizeSpecif);
+      System_3_2->Draw("same");
+    
       //
       TString *KTname_2 = new TString("");
       if(EDBin==0) KTname_2->Append("0.16<#font[12]{K}_{T3}<0.3 GeV/#font[12]{c}");
       else KTname_2->Append("0.3<#font[12]{K}_{T3}<1.0 GeV/#font[12]{c}");
-      TLatex *KT_2 = new TLatex(0.022,69,KTname_2->Data());
+      TLatex *KT_2 = new TLatex(0.015,80,KTname_2->Data());
       KT_2->SetTextFont(TextFont);
       KT_2->SetTextSize(SizeSpecif);
       KT_2->Draw("same");
@@ -1582,7 +1617,7 @@ void Plot_plotsFourPion(){
       }
       c4QS_Syst->SetBinError(bin, syst_c4);
     
-    }else{// same % systematics for MC1 and MC2
+    }else{// mostly same % systematics for MC1 and MC2
       double syst1 = 0;
       syst1 += pow(0.002,2);// cc
       syst1 += pow(0.002 - 0.002*q4/0.18,2);// 11h to 10h
@@ -1600,12 +1635,16 @@ void Plot_plotsFourPion(){
       // specific fc2 systematics
       double syst_c4=pow(c4QS_Syst->GetBinError(bin),2);
       if(ChProdBOI==0) syst_c4 += pow(0.0849*exp(-35.14*q4),2);
-      else if(ChProdBOI==1) syst_c4 += pow(0.342*exp(-63.92*q4),2);
-      else syst_c4 += pow(0.554*exp(-111.1*q4),2);
+      else if(ChProdBOI==1) syst_c4 += pow(0.342*exp(-63.92*q4),2);// default cumulant isolation
+      else syst_c4 += pow(0.554*exp(-111.1*q4),2);// default cumulant isolation
+      //else if(ChProdBOI==1) syst_c4 += pow(0.803 + 4.97*q4 - 41.73*q4*q4 + 113.6*q4*q4*q4 - 1,2);// alternate cumulant isolation
+      //else syst_c4 += pow(0.854 + 3.6*q4 - 30.3*q4*q4 + 82.9*q4*q4*q4 - 1,2);// alternate cumulant isolation
       // extra cumulant systematic (low Q4 instabilities)
       double unscaled_q4 = C4QS_Syst->GetXaxis()->GetBinCenter(bin);
       if(CollisionType==0){
-	syst_c4 += pow( (0.002+3.31*exp(-91.1*unscaled_q4))*c4QS_Syst->GetBinContent(bin) ,2);
+	if(ChProdBOI==0) syst_c4 += pow( (1.266*exp(-84.5*unscaled_q4))*c4QS_Syst->GetBinContent(bin) ,2);// from ---- vs ++++ comparison
+	else if(ChProdBOI==1) syst_c4 += pow( 5.6*exp(-120.7*unscaled_q4)*c4QS_Syst->GetBinContent(bin) ,2);// from ---- vs ++++ comparison
+	else syst_c4 += pow( 3.35*exp(-116.7*unscaled_q4)*c4QS_Syst->GetBinContent(bin) ,2);// from B- vs B+ comparison
       }else if(CollisionType==1){
 	syst_c4 += pow( (0.015+16.25*exp(-46.9*unscaled_q4))*c4QS_Syst->GetBinContent(bin) ,2);
       }else{
@@ -1737,9 +1776,9 @@ void Plot_plotsFourPion(){
   //c4QSbuilt_G[MBOI]->Draw("same");
 
   legend3->AddEntry(C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{C}_{4}^{QS}","p");
-  if(!ShortSameCharge) legend3->AddEntry(a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{a}}_{4}^{QS}","p");
-  if(ChProdBOI==0 && !ShortSameCharge) legend3->AddEntry(b4QSmerged[EDBin][MBOI][CollisionType],"#font[12]{#bf{b}}_{4}^{QS}","p");
-  if(!ShortSameCharge) legend3->AddEntry(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{4}^{QS}","p");
+  if(!ShortSameCharge) legend3->AddEntry(a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{a}_{4}^{QS}","p");
+  if(ChProdBOI==0 && !ShortSameCharge) legend3->AddEntry(b4QSmerged[EDBin][MBOI][CollisionType],"#font[12]{b}_{4}^{QS}","p");
+  if(!ShortSameCharge) legend3->AddEntry(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{c}_{4}^{QS}","p");
   if(ChProdBOI==0 && !FitBuild) {
     legend3->AddEntry(C4QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{4}(2) (G=0%)","l");
     if(ShortSameCharge) legend3->AddEntry(C4QSbuilt_G[MBOI], BuiltNameE42->Data(),"l");
@@ -1754,7 +1793,7 @@ void Plot_plotsFourPion(){
   }
   //if(ChProdBOI==0) legend3->AddEntry(C4QS_Syst,"#font[12]{C}_{4}^{QS} systematic","l");
   
-    
+  
  
   TPad *pad3_3 = new TPad("pad3_3","pad3_3",0.52,0.6,.95,.91);
   if(ChProdBOI!=0) {
@@ -1794,6 +1833,7 @@ void Plot_plotsFourPion(){
   TH1D *Ratio_4_2;
   TH1D *Ratio_4_G;
   TH1D *Ratio_4_Syst;
+  TH1D *Ratio_4_G_Syst;
   if(ChProdBOI==0){
     pad3_2->cd();
     gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
@@ -1827,17 +1867,22 @@ void Plot_plotsFourPion(){
       Ratio_4_2->Divide(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType]);
     }
     Ratio_4_Syst=(TH1D*)Ratio_4->Clone();
+    Ratio_4_G_Syst=(TH1D*)Ratio_4_G->Clone();
     Ratio_4_Syst->SetMarkerSize(0); Ratio_4_Syst->SetMarkerColor(kBlue-10); Ratio_4_Syst->SetFillColor(kBlue-10);
     Ratio_4_Syst->SetLineColor(kBlue-10);
     for(int bin=1; bin<=17; bin++){
       Ratio_4_Syst->SetBinError(bin, Syst_forRatio4[bin-1]);
+      Ratio_4_G_Syst->SetBinError(bin, Syst_forRatio4[bin-1]);
     }
+    Ratio_4_G_Syst->SetMarkerSize(0); Ratio_4_G_Syst->SetMarkerColor(kBlue); Ratio_4_G_Syst->SetLineColor(kBlue);
+    Ratio_4_G_Syst->SetLineWidth(2);
     
     Ratio_4_Syst->SetLineWidth(5);
     Ratio_4_Syst->Draw();
     if(FitBuild==0){
       Ratio_4->Draw("same");
-      if(ShortSameCharge) Ratio_4_G->Draw("same");
+      if(ShortSameCharge ) Ratio_4_G->Draw("same");
+      if(GValue>0) Ratio_4_G_Syst->Draw("[] same");
       legend3_2->AddEntry(Ratio_4,"#font[12]{C}_{4}^{QS}/#font[12]{E}_{4}(2) (G=0%)","p");
       if(ShortSameCharge) {
 	TString *name = new TString("#font[12]{C}_{4}^{QS}/"); name->Append(BuiltNameE42->Data());
@@ -1977,9 +2022,35 @@ void Plot_plotsFourPion(){
     can3->SaveAs(SaveName->Data());
   }
 
-  
-  
-  
+  // Breakdown of systematics for mixed-charge cumulants
+  /*TF1 *cc = new TF1("cc","0.002",0,0.2); 
+  TF1 *period = new TF1("period","0.002 - 0.002*x/0.18",0,0.2);
+  TF1 *fcoef = new TF1("fcoef","0.01*(1 - x/0.18)",0,0.2);
+  TF1 *mrc = new TF1("mrc","0.0417*exp(-34.1*x)",0,0.2);
+  TF1 *muon = new TF1("muon","1 - (0.9713 + 0.2648*x - 0.752*x*x)",0,0.2);
+  //TF1 *fc = new TF1("fc","0.342*exp(-63.92*x)",0,0.2);// MC1
+  TF1 *fc = new TF1("fc","0.554*exp(-111.1*x)",0,0.2);// MC2
+  //TF1 *extra = new TF1("extra","5.6*exp(-120.7*x)",0,0.2);// MC1
+  TF1 *extra = new TF1("extra","3.35*exp(-116.7*x)",0,0.2);// MC2
+  cc->SetLineColor(1); period->SetLineColor(2); fcoef->SetLineColor(4); mrc->SetLineColor(6);
+  muon->SetLineColor(7); fc->SetLineColor(8); extra->SetLineColor(9);
+  cc->GetXaxis()->SetRangeUser(0,0.15);
+  cc->SetMaximum(0.1);
+  cc->GetXaxis()->SetTitle("Q_{4} (GeV/c)"); cc->GetYaxis()->SetTitle("Systematic uncertainty factor");
+  cc->GetYaxis()->SetTitleOffset(1.3); cc->SetTitle("");
+  cc->Draw();
+  period->Draw("same"); fcoef->Draw("same"); mrc->Draw("same"); muon->Draw("same"); fc->Draw("same"); extra->Draw("same"); 
+  TLegend *legend_B = new TLegend(.15,.15, .35,.35,NULL,"brNDC");//.45 or .4 for x1
+  legend_B->SetBorderSize(0);
+  legend_B->SetFillColor(0);
+  legend_B->SetTextFont(TextFont);
+  legend_B->SetTextSize(SizeLegend);
+  legend_B->AddEntry(cc,"charge-conjugation"); legend_B->AddEntry(period,"11h vs 10h"); legend_B->AddEntry(fcoef,"f coefficients");
+  legend_B->AddEntry(muon,"muon corrections"); legend_B->AddEntry(mrc,"momenum resolution correction"); legend_B->AddEntry(fc,"f_{c} scale"); 
+  legend_B->AddEntry(extra,"extra cumulant instabilities"); 
+  legend_B->Draw("same");*/
+
+ 
   
   if(ChProdBOI==0 && CollisionType==0){// chi2
     TCanvas *can4 = new TCanvas("can4", "can4",800,700,700,600);// 11,53,700,500
@@ -2124,7 +2195,7 @@ void Plot_plotsFourPion(){
 	double value=0, err=0;
 	if(GfromFirstCumulant){
 	  value = fabs(a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinContent(Q4binChi2) - tempNum->GetBinContent(Q4binChi2));
-	  err = pow(a4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinError(Q4binChi2),2);
+	  err = pow(a4QSmerged[EDBin][ChProdBOI][MBOI][CollisionType]->GetBinError(Q4binChi2),2);
 	}else{
 	  value = fabs(C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinContent(Q4binChi2) - tempNum->GetBinContent(Q4binChi2));
 	  err = pow(C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetBinError(Q4binChi2),2);
@@ -2284,6 +2355,7 @@ void Plot_plotsFourPion(){
         
     GversusQ4[0]->SetMinimum(0); GversusQ4[0]->SetMaximum(100); 
     GversusQ4[0]->GetXaxis()->SetTitle("#font[12]{Q_{4}} (GeV/#font[12]{c})"); GversusQ4[0]->GetYaxis()->SetTitle("Coherent fraction (%)");
+    GversusQ4[0]->GetYaxis()->SetTitleOffset(1.1);
     GversusQ4[0]->GetXaxis()->SetTitleSize(SizeTitle);  GversusQ4[0]->GetYaxis()->SetTitleSize(SizeTitle);
     GversusQ4[0]->GetXaxis()->SetLabelSize(SizeLabel);  GversusQ4[0]->GetYaxis()->SetLabelSize(SizeLabel);
     GversusQ4[0]->GetXaxis()->SetNdivisions(606); GversusQ4[0]->GetYaxis()->SetNdivisions(505);
@@ -2300,24 +2372,24 @@ void Plot_plotsFourPion(){
     //
     TF1 *GaussG_4=new TF1("GaussG_4","[0]*exp(-pow([1]*x,2))",0,.2);
     GaussG_4->SetParameter(0,60); GaussG_4->SetParameter(1,10); GaussG_4->SetParLimits(1,0,100);
-    GversusQ4[1]->Fit(GaussG_4,"IMN","",0,.1);
+    GversusQ4[2]->Fit(GaussG_4,"IMN","",0,.1);
     GaussG_4->Draw("same");
     //
     //
     //
-    TLatex *System_6 = new TLatex(0.03,82,System->Data());// ALICE specifications
+    TLatex *System_6 = new TLatex(0.03,90,System->Data());// ALICE specifications
     System_6->SetTextFont(TextFont);
     System_6->SetTextSize(SizeSpecif);
     System_6->Draw("same");
     //
-    TLatex *Cent_6 = new TLatex(0.03,74,Centname->Data());
-    Cent_6->SetTextFont(TextFont);
-    Cent_6->SetTextSize(SizeSpecif);
-    if(CollisionType==0) Cent_6->Draw("same");
+    //TLatex *Cent_6 = new TLatex(0.03,74,Centname->Data());
+    //Cent_6->SetTextFont(TextFont);
+    //Cent_6->SetTextSize(SizeSpecif);
+    //if(CollisionType==0) Cent_6->Draw("same");
     TString *EDname_6 = new TString("");
     if(EDBin==0) EDname_6->Append("0.16<#font[12]{K}_{T4}<0.3 GeV/#font[12]{c}");
     else EDname_6->Append("0.3<#font[12]{K}_{T4}<1.0 GeV/#font[12]{c}");
-    TLatex *ED_6 = new TLatex(0.03,66,EDname_6->Data());
+    TLatex *ED_6 = new TLatex(0.03,80,EDname_6->Data());
     ED_6->SetTextFont(TextFont);
     ED_6->SetTextSize(SizeSpecif);
     ED_6->Draw("same");
@@ -2357,7 +2429,7 @@ void Plot_plotsFourPion(){
     TLatex *Gprint = new TLatex(0.03, 90, GprintString->Data());
     Gprint->SetTextFont(TextFont);
     Gprint->SetTextSize(SizeSpecif);
-    Gprint->Draw("same");
+    //Gprint->Draw("same");
    
     
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -2386,13 +2458,13 @@ void Plot_plotsFourPion(){
 
     // KT4 bins (K0 and K1) have to be manually selected below
     // K0
-    double G_Cent[5]={33, 29, 37, 31, 30};
-    double G_stat_Cent[5]={2, 2, 11, 3, 6};
-    double G_syst_Cent[5]={8, 13, 10, 7, 7};
+    //double G_Cent[5]={33, 29, 37, 31, 30};
+    //double G_stat_Cent[5]={2, 2, 11, 3, 6};
+    //double G_syst_Cent[5]={8, 13, 10, 7, 7};
     // K1
-    //double G_Cent[5]={20, 24, 28, 32, 33};
-    //double G_stat_Cent[5]={3, 4, 22, 5, 11};
-    //double G_syst_Cent[5]={8, 11, 15, 11, 4};
+    double G_Cent[5]={20, 24, 28, 32, 33};
+    double G_stat_Cent[5]={3, 4, 22, 5, 11};
+    double G_syst_Cent[5]={8, 11, 15, 11, 4};
     //
     double xpoints[5]={0,1,2,3,4};
     TGraph *Stat_trend=new TGraph(5,xpoints,G_stat_Cent);
@@ -2429,6 +2501,7 @@ void Plot_plotsFourPion(){
     GversusCent_Stat->GetXaxis()->SetLabelSize(SizeLabel);  GversusCent_Stat->GetYaxis()->SetLabelSize(SizeLabel);
     GversusCent_Stat->GetXaxis()->SetNdivisions(606); GversusCent_Stat->GetYaxis()->SetNdivisions(505);
     GversusCent_Stat->SetMinimum(10); GversusCent_Stat->SetMaximum(50);
+    GversusCent_Stat->SetMarkerSize(MarkerSize);
 
     GversusCent_Stat->Draw();
     GversusCent_Syst->Draw("same");

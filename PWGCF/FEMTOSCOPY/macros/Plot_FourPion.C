@@ -37,11 +37,11 @@ using namespace std;
 float TwoFrac=0.7;
 //
 bool MCcase_def=0;// MC data?
-int CollisionType_def=0;// PbPb, pPb, pp
+int CollisionType_def=1;// PbPb, pPb, pp
 //
 int Mbin_def=0;// 0-9: centrality bin in widths of 5%
-bool SameCharge_def=1;// same-charge?
-int CHARGE_def=1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
+bool SameCharge_def=0;// same-charge?
+int CHARGE_def=-1;// -1 or +1: + or - pions for same-charge case, --+ or -++,  ---+ or -+++
 int MixedCharge4pionType_def = 2;// 1(---+) or 2(--++)
 //
 int EDbin_def=0;// 0 or 1: Kt3 bin
@@ -383,6 +383,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinning_M0to1.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinningHighPtConstraint_M0to1.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_noMRCnoMuon.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_fc2_0p4_0p85.root","READ");
        	//if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_fc2_0p65andK5percentIncrease_WeightFileFSIandMRCcorrected.root","READ");
 	//if(FileSetting==0) _file0 = new TFile("Results/PDC_11h_4kappas.root","READ");
 	//if(FileSetting==5) _file0 = new TFile("Results/PDC_11h_Cubic_Linear.root","READ");
@@ -395,6 +396,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	//_file0 = new TFile("Results/PDC_11h_QinvInterp_Cubic.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_LinearInterp_6kT.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_35Gsteps.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_35Gsteps_Bfield1.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_35Gsteps_Bfield2.root","READ");
 	_file0 = new TFile("Results/PDC_11h_InterpCorrected_M0to1.root","READ");// new one
       }else{
 	//_file0 = new TFile("Results/PDC_11h_M3to10_ZvtxEM.root","READ");
@@ -499,7 +502,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	TwoParticle[c1][c2][term]->SetTitle("");
 	//
 	// 2-pion self builds
-	if(term==1 && c1==c2){
+	/*if(term==1 && c1==c2){
 	  TString *twoBuild = new TString(name2->Data());
 	  twoBuild->Append("_Build");
 	  Build_TwoParticle_2D[c1] = (TH3D*)MyList->FindObject(twoBuild->Data());
@@ -512,7 +515,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	  for(int i=0; i<Build_TwoParticle[c1]->GetNbinsX(); i++){
 	    Build_TwoParticle[c1]->SetBinError(i+1,0.000001);
 	  }
-	}
+	  }*/
 	
 	if(Mbin==0 && CollisionType==0 && !MCcase){
 	  TString *nameUM=new TString(name2->Data());
@@ -1467,10 +1470,15 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   }
   //cout<<endl;
 
-  //double Chi2_K3resolve=0;
+  double Chi2_K3resolve=0;
   //for(int bin=2; bin<=6; bin++) Chi2_K3resolve += pow((C3QSratio->GetBinContent(bin)-1) / (C3QSratio->GetBinError(bin)),2);
-  //for(int bin=2; bin<=6; bin++) Chi2_K3resolve += pow((c3QS->GetBinContent(bin)-1) / (c3QS->GetBinError(bin)),2);
-  //cout<<"Chi2/NDF from K3 resolution = "<<Chi2_K3resolve/5.<<endl;
+  for(int bin=2; bin<=4; bin++) {
+    //double TotError = sqrt(pow(C3QSratio->GetBinError(bin),2) + pow(0.002,2));
+    //double TotError = sqrt(pow(c3QS->GetBinError(bin),2) + pow(0.002,2));
+    //Chi2_K3resolve += pow((C3QSratio->GetBinContent(bin)-1) / (TotError),2);
+    //Chi2_K3resolve += pow((c3QS->GetBinContent(bin)-1) / (TotError),2);
+  }  
+  //cout<<"Chi2/NDF from K3 resolution = "<<Chi2_K3resolve/3.<<endl;
   
 
   ////////////////////////////////////////////////////////////////
@@ -1562,8 +1570,8 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   K4Test->SetLineColor(2);
   for(int ii=0; ii<=K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetNbinsX(); ii++){
     double newValue = K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(ii+1) - 1.0;
-    newValue *= 1.25;// value used to increase K4
-    newValue += 1.;
+    newValue *= .89;// value used to increase K4
+    newValue += 1;
     double q4 = K4Test->GetXaxis()->GetBinCenter(ii+1);
     K4Test->Fill(q4, newValue);
   }
@@ -1884,6 +1892,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   Unity->Draw("same");
 
  
+
   //C4_pieces[5]->Draw();
 
   //int BOI=4;
@@ -1964,11 +1973,11 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //cout<<C4QS->GetBinContent(bin)<<", ";
     //cout<<c4QS->GetBinContent(bin)<<", ";
     //cout<<Build_FourParticle[ch1_4]->GetBinContent(bin)<<", ";
-    //cout<<C4QSratio->GetBinContent(bin)<<", ";
+    cout<<C4QSratio->GetBinContent(bin)<<", ";
     //cout<<C4raw->GetBinContent(bin)<<", ";
     //cout<<K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(bin)<<", ";
   }
-  //cout<<endl;
+  cout<<endl;
   for(int bin=1; bin<=MaxPrintBins; bin++){
     //cout<<c4QS->GetBinContent(bin)<<", ";
     //cout<<C4QS->GetBinError(bin)<<", ";
@@ -1978,10 +1987,15 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   }
   //cout<<endl;
 
-  //double Chi2_K4resolve=0;
-  //for(int bin=3; bin<=7; bin++) Chi2_K4resolve += pow((C4QSratio->GetBinContent(bin)-1) / (C4QSratio->GetBinError(bin)),2);
-  //for(int bin=3; bin<=7; bin++) Chi2_K4resolve += pow((c4QS->GetBinContent(bin)-1) / (c4QS->GetBinError(bin)),2);
-  //cout<<"Chi2/NDF from K4 resolution = "<<Chi2_K4resolve/5.<<endl;
+  double Chi2_K4resolve=0;
+  for(int bin=3; bin<=5; bin++) {// was 3 to 7
+    //double TotError= sqrt(pow(C4QSratio->GetBinError(bin),2) + pow(0.001,2));//approximate addition of systematic error difference between low and high KT4 (same-charge) 
+    //double TotError= sqrt(pow(c4QS->GetBinError(bin),2) + pow(0.001,2));//approximate addition of systematic error (mixed-charge)
+    //
+    //Chi2_K4resolve += pow((C4QSratio->GetBinContent(bin)-1) / (TotError),2);
+    //Chi2_K4resolve += pow((c4QS->GetBinContent(bin)-1) / (TotError),2);
+  }
+  //cout<<"Chi2/NDF from K4 resolution = "<<Chi2_K4resolve/3.<<endl;
 
   ////////////////////////////////////////////////////////////////
   // r4
