@@ -36,6 +36,7 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "TList.h"
 #include "TFile.h"
 #include "AliLog.h"
@@ -1549,16 +1550,22 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   if(esdEvent){
-    AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
-    if(fDetectorCentrality==0){
-      if (fIsHeavyIon==2){
-        return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-      } else{
-        return fESDCentrality->GetCentralityPercentile("V0M"); // default
+    TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+    if ((periodName.CompareTo("LHC15o")==0) || periodName.Contains("LHC15k") ){
+       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+       return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);  // only V0M available so far for 5TeV
+    }else{
+      AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
+      if(fDetectorCentrality==0){
+        if (fIsHeavyIon==2){
+          return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+        } else{
+          return fESDCentrality->GetCentralityPercentile("V0M"); // default
+        }
       }
-    }
-    if(fDetectorCentrality==1){
-      return fESDCentrality->GetCentralityPercentile("CL1");
+      if(fDetectorCentrality==1){
+        return fESDCentrality->GetCentralityPercentile("CL1");
+      }
     }
   }
 
