@@ -1,4 +1,4 @@
-AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", TString cutVar = "noCutVar", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1, Bool_t useExtraOnlyTracks = 0, Bool_t useExtraTracks = 0)
+AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", TString cutVar = "noCutVar", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1, Bool_t useExtraOnlyTracks = 0, Bool_t useExtraTracks = 0, Bool_t useExtraJetPt = kFALSE)
 {
   // Creates a JetChem task,
   // configures it and adds it to the analysis manager.
@@ -103,6 +103,12 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutV0RadiusMax(100.);//in cm
   task->SetCutBetheBloch(3.);//in units of sigma
 
+  //task->UseExtraTracks();
+  //task->UseExtraonlyTracks()
+  //task->SetUseExtraJetPt();//Use smeared jet pt for MC truth reference
+
+
+
   //task->SetCutRatioTPC(0.8);//Cut on Ratio of crossed Rows over findable clusters in TPC -> not used anymore by Strangeness PAG group
    //task->SetCuttrackPosNcls(70);
   //task->SetCuttrackNegNcls(70);
@@ -175,41 +181,45 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem",AliAnalysisManager::GetCommonFileName()));
-          if(useExtraOnlyTracks){listName1 += "_exonly";} 
-	if(useExtraTracks){listName1 += "_extra";}
-     }
-
+       if(useExtraOnlyTracks){listName1 += "_exonly";} 
+       if(useExtraTracks){listName1 += "_extra";}
+       //if(useExtraTracks){listName1 += "_extra";}
+       if(useExtraJetPt){listName1 += "_extraJetPt";}
+   }
+   
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 0)){
      TString listName2(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
        AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName2, 
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									Form("%s:PWG4_zimmerma_JetChem_Armenteros",AliAnalysisManager::GetCommonFileName()));
-     if(useExtraOnlyTracks){listName2 += "_exonly";} 
-	if(useExtraTracks){listName2 += "_extra";}   
-     }
+       if(useExtraOnlyTracks){listName2 += "_exonly";} 
+       if(useExtraTracks){listName2 += "_extra";}   
+       if(useExtraJetPt){listName2 += "_extraJetPt";}
+   }
       
    
    if((IsArmenterosSelected == 0) && (IsJetPtBiasSelected == 1)) {
      TString listName3(Form("PWG4_JetChem_%s_%s_cl%d_JetPtbias_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
-       AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName3, 
-									TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									Form("%s:PWG4_zimmerma_JetChem_JetPtBias",AliAnalysisManager::GetCommonFileName()));
- if(useExtraOnlyTracks){listName3 += "_exonly";} 
-	if(useExtraTracks){listName3 += "_extra";}
-     }
+     AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName3, 
+								      TList::Class(),
+								      AliAnalysisManager::kOutputContainer,
+								      Form("%s:PWG4_zimmerma_JetChem_JetPtBias",AliAnalysisManager::GetCommonFileName()));
+     if(useExtraOnlyTracks){listName3 += "_exonly";} 
+     if(useExtraTracks){listName3 += "_extra";}
+     if(useExtraJetPt){listName3 += "_extraJetPt";}
+   }
    
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 1)) {
-       TString listName4(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_JetPtBias_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
-       AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName4, 
-									TList::Class(),
-									AliAnalysisManager::kOutputContainer,
-									Form("%s:PWG4_zimmerma_JetChem_Armenteros_JetPtBias",AliAnalysisManager::GetCommonFileName()));
- if(useExtraOnlyTracks){listName4 += "_exonly";} 
-	if(useExtraTracks){listName4 += "_extra";}
-
-     } 
+     TString listName4(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_JetPtBias_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
+     AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName4, 
+								      TList::Class(),
+								      AliAnalysisManager::kOutputContainer,
+								      Form("%s:PWG4_zimmerma_JetChem_Armenteros_JetPtBias",AliAnalysisManager::GetCommonFileName()));
+     if(useExtraOnlyTracks){listName4 += "_exonly";} 
+     if(useExtraTracks){listName4 += "_extra";}
+     if(useExtraJetPt){listName4 += "_extraJetPt";}
+   } 
    
 
 

@@ -129,7 +129,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
   AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
-  void FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* embeddedJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist);
+  void FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist);
 
 
   AliAODJet* GetMedianCluster();
@@ -148,6 +148,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetSelectArmenteros(Bool_t b) {IsArmenterosSelected = b;}
   virtual void UseExtraTracks()        { fUseExtraTracks =  1;}
   virtual void UseExtraonlyTracks()    { fUseExtraTracks = -1;}
+  virtual void SetUseExtraJetPt(Bool_t b = kTRUE) { fUseExtraJetPt = b; }
   
   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
@@ -321,6 +322,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   Bool_t IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
   Int_t   fUseExtraTracks;          // +/- 1: embedded extra/extra only tracks, default: 0 (is set in initialisation list of task, ignore extra tracks)
+  Bool_t  fUseExtraJetPt;           // for MC use jet of matching extra jet (= data + MC tracks)  
 
   //AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
   //AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
