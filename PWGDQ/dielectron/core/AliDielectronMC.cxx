@@ -183,35 +183,32 @@ Bool_t AliDielectronMC::ConnectMCEvent()
   //
   // connect stack object from the mc handler
   //
-Printf("AliDielectronMC::ConnectMCEvent()");
   fMcArray = 0x0;
   fMCEvent = 0x0;
   fHasHijingHeader=-1;
   
   if(fAnaType == kESD){
-Printf("fAnaType == kESD");
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!mcHandler){ Printf("ERROR: no mcHandler");/*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
-    if (!mcHandler->InitOk() ){ Printf("ERROR: !mcHandler->InitOk()"); return kFALSE;}
-    if (!mcHandler->TreeK() ) { Printf("ERROR: !mcHandler->TreeK()");  return kFALSE;}
-    if (!mcHandler->TreeTR() ){ Printf("ERROR: !mcHandler->TreeTR()"); return kFALSE;}
+    if (!mcHandler){ /*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
+    if (!mcHandler->InitOk() ){ return kFALSE;}
+    if (!mcHandler->TreeK() ) { return kFALSE;}
+//    if (!mcHandler->TreeTR() ){ Printf("ERROR: !mcHandler->TreeTR()"); return kFALSE;}
     
     AliMCEvent* mcEvent = mcHandler->MCEvent();
-    if (!mcEvent){ Printf("ERROR: no mcEvent");/*AliError("Could not retrieve MC event!");*/ return kFALSE; }
+    if (!mcEvent){ AliError("Could not retrieve MC event!"); return kFALSE; }
     fMCEvent = mcEvent;
     
     if (!UpdateStack()) return kFALSE;
   }
   else if(fAnaType == kAOD)
   {
-Printf("fAnaType == kAOD");  
     AliAODInputHandler* aodHandler=(AliAODInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!aodHandler){ Printf("ERROR: no mcHandler"); return kFALSE;}
+    if (!aodHandler) return kFALSE;
     AliAODEvent *aod=aodHandler->GetEvent();
-    if (!aod){ Printf("ERROR: no aodEvent"); return kFALSE;}
+    if (!aod) return kFALSE;
 
     fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!fMcArray){ Printf("ERROR: no MCarray");/*AliError("Could not retrieve MC array!");*/ return kFALSE; }
+    if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
     else fHasMC=kTRUE;
   }
   return kTRUE;
@@ -220,13 +217,12 @@ Printf("fAnaType == kAOD");
 //____________________________________________________________
 Bool_t AliDielectronMC::UpdateStack()
 {
-Printf("AliDielectronMC::UpdateStack()");
   //
   // update stack with new event
   //
-  if (!fMCEvent){ Printf("ERROR: No fMCEvent");/*AliError("No fMCEvent");*/ return kFALSE;}
+  if (!fMCEvent){ AliError("No fMCEvent"); return kFALSE;}
   AliStack* stack = fMCEvent->Stack();
-  if (!stack){ Printf("ERROR: Could not retrive stack!");/*AliError("Could not retrive stack!");*/ return kFALSE; }
+  if (!stack){ AliError("Could not retrive stack!"); return kFALSE; }
   fStack = stack;
   return kTRUE;
 }
