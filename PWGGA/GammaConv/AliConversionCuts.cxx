@@ -51,6 +51,7 @@
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "TList.h"
 #include "TFile.h"
 #include "AliLog.h"
@@ -3550,18 +3551,24 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
 
    AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
    if(esdEvent){
-      AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
+     TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+     if ((periodName.CompareTo("LHC15o")==0) || periodName.Contains("LHC15k")){
+       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+       return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);  // only V0M available so far for 5TeV
+     }else{
+       AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
 
-      if(fDetectorCentrality==0){
+       if(fDetectorCentrality==0){
          if (fIsHeavyIon==2){
             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
          } else{
             return fESDCentrality->GetCentralityPercentile("V0M"); // default
          }
-      }
-      if(fDetectorCentrality==1){
-         return fESDCentrality->GetCentralityPercentile("CL1");
-      }
+        }
+        if(fDetectorCentrality==1){
+          return fESDCentrality->GetCentralityPercentile("CL1");
+        }
+     }	
    }
 
    AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
