@@ -645,7 +645,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
     
-    if (fIsMC > 2){
+    if (fIsMC > 1){
       fHistoNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",12,-0.5,11.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
