@@ -180,6 +180,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fListMCgenALaCone(0)
    ,IsArmenterosSelected(0)
    ,fUseExtraTracks(0)
+   ,fUseExtraJetPt(0)
   // ,fFFHistosIMALaAllEvt(0)        
   // ,fFFHistosIMALaJet(0)           
   // ,fFFHistosIMALaCone(0)
@@ -497,6 +498,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fListMCgenALaCone(0)
   ,IsArmenterosSelected(0)
   ,fUseExtraTracks(0)
+  ,fUseExtraJetPt(0)
     //,fFFHistosIMALaAllEvt(0)        
     //,fFFHistosIMALaJet(0)           
     // ,fFFHistosIMALaCone(0)
@@ -816,6 +818,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fListMCgenALaCone(copy.fListMCgenALaCone)
   ,IsArmenterosSelected(copy.IsArmenterosSelected)
   ,fUseExtraTracks(copy.fUseExtraTracks)
+  ,fUseExtraJetPt(copy.fUseExtraJetPt)
     //,fFFHistosIMALaAllEvt(copy.fFFHistosIMALaAllEvt)        
     //,fFFHistosIMALaJet(copy.fFFHistosIMALaJet)           
     //,fFFHistosIMALaCone(copy.fFFHistosIMALaCone)          
@@ -1137,6 +1140,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fListMCgenALaCone               = o.fListMCgenALaCone;
     IsArmenterosSelected            = o.IsArmenterosSelected;
     fUseExtraTracks                 = o.fUseExtraTracks;
+    fUseExtraJetPt                  = o.fUseExtraJetPt;
     // fFFHistosIMALaAllEvt            = o.fFFHistosIMALaAllEvt;        
     // fFFHistosIMALaJet               = o.fFFHistosIMALaJet;           
     // fFFHistosIMALaCone              = o.fFFHistosIMALaCone;          
@@ -1925,6 +1929,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 						     fFFNBinsXi, fFFXiMin, fFFXiMax,  
 						     fFFNBinsZ , fFFZMin , fFFZMax);
   
+  fFFHistosGen   	      = new AliFragFuncHistos("Gen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
+						      fFFNBinsPt, fFFPtMin, fFFPtMax, 
+						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
+						      fFFNBinsZ , fFFZMin , fFFZMax);
+ 
+
+
   /*
   fFFHistosIMK0AllEvt        = new AliFragFuncHistosInvMass("K0AllEvt", fFFIMNBinsJetPt, fFFIMJetPtMin, fFFIMJetPtMax, 
 							    fFFIMNBinsInvM,fFFIMInvMMin,fFFIMInvMMax,
@@ -2235,6 +2246,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fV0QAK0->DefineHistos();
   fFFHistosRecCuts->DefineHistos();
   fFFHistosRecCutsK0Evt->DefineHistos();
+  fFFHistosGen->DefineHistos();
   /* fFFHistosIMK0AllEvt->DefineHistos();
   fFFHistosIMK0Jet->DefineHistos();
   fFFHistosIMK0Cone->DefineHistos();
@@ -2271,6 +2283,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1JetPhi);               
     fCommonHistList->Add(fh2JetEtaPhi);
     
+
     if(fBranchEmbeddedJets.Length()){
       fCommonHistList->Add(fh1nEmbeddedJets);
       fCommonHistList->Add(fh1IndexEmbedded);
@@ -2452,6 +2465,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fV0QAK0->AddToOutput(fCommonHistList);
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
     fFFHistosRecCutsK0Evt->AddToOutput(fCommonHistList);
+
+    if(fBranchGenJets.Length()){
+      fFFHistosGen->AddToOutput(fCommonHistList);
+    }
+
     // fFFHistosIMK0AllEvt->AddToOutput(fCommonHistList);
     // fFFHistosIMK0Jet->AddToOutput(fCommonHistList);
     // fFFHistosIMK0Cone->AddToOutput(fCommonHistList);
@@ -2773,7 +2791,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
-
+ 
   Int_t nJGen  = GetListOfJets(fJetsGen, fJetTypeGen);//fill list of embedded jets, generator level
   Int_t nGenJets = 0;
   if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
@@ -2781,7 +2799,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
   fh1nGenJets->Fill(nGenJets);
-
+  
   Int_t nEmbeddedJets =  0; 
 
   TArrayI iEmbeddedMatchIndex; 
@@ -3701,7 +3719,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Double_t ptFractionEmbedded = 0; 
 	Double_t deltaREmbedded     = 0;
 	AliAODJet* embeddedJet      = 0; 
-	
+	AliAODJet* extraJet         = 0; // jet from UE + detector levely PYTHIA tracks, only needed in extraonly branch, just dummy here
+  
 	//  std::cout<<"fBranchEmbeddedJets 2: "<<fBranchEmbeddedJets<<std::endl;
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
@@ -3748,7 +3767,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) // end: cut embedded ratio
 	  {
 	   
-	    FillEmbeddedHistos(jet, embeddedJet, nK0s, nLa, nALa, mclist);//fetch V0s for matched jets and fill embedding histos
+	    FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);//fetch V0s for matched jets and fill embedding histos
 
 	  }
 	//################################end V0 embedding part
@@ -5386,7 +5405,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     
     //########generated jets for embedding##############################################################################
     
-  if((fBranchGenJets.Length())&&(fMatchMode == 2)){
+  if((fBranchGenJets.Length())&&(fMatchMode == 2)){//match mode needed for V0 histograms, to be running as a seperate wagon for match mode 1 and match mode 2
     
     // generated jets
     for(Int_t ij=0; ij<nGenJets; ++ij)// end of generated jets for embedding loop
@@ -5481,12 +5500,37 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);
 	  
-	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching
-
+	  //charged tracks as crosscheck to Olivers results	
+	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	  
-	  FillEmbeddedHistos(jet, embeddedJet, nK0s, nLa, nALa, mclist);
-	  
+	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	    if(!trackVP)continue;
+	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
+	    
+	    Float_t jetPt = jet->Pt();
+	    if(fUseExtraJetPt){
+	      if(extraJet) jetPt = extraJet->Pt();
+	      else jetPt = 0;
+	    }
+	    
+	    Float_t trackPt = trackV->Pt();
+	    
+	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	    
+	    if (ij==0) fFFHistosGen->FillFF(trackPt, jetPt, incrementJetPt);
 
+	    fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);
+	   
+	    
+	    delete trackV;
+	  }
+	  
+	  
+	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
+	  
+	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);
+	  
+	  
 	}
 	delete jettrackList;
       }
@@ -7159,88 +7203,78 @@ Double_t AliAnalysisTaskJetChem::AreaCircSegment(Double_t dRadius, Double_t dDis
 
 
 //_____________________________________________________________________
-void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* embeddedJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist)
+void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist)
 
 {//Jet matching cuts (FractionPtEmbedded(MC) = 0.5, DeltaREmb(MC) = 0.75*R) are already applied
 	  
-  Double_t dRadiusExcludeCone = 2*GetFFRadius(); //2 times jet radius
- 
-
-	  //filling of normalisation histo for OC method in hybrid events 
-	  Double_t dAreaExcludedPYTHIA = TMath::Pi()*dRadiusExcludeCone*dRadiusExcludeCone; // area of the cone
-	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta-jet->Eta()); // positive eta overhang
-	  dAreaExcludedPYTHIA -= AreaCircSegment(dRadiusExcludeCone,fCutjetEta+jet->Eta()); // negative eta overhang
-	  fh1AreaExcluded->Fill(dAreaExcludedPYTHIA);//histo contains all areas that are jet related and have to be excluded concerning OC UE pt spectrum normalisation by area, also for PYTHIA jets
-	  Float_t jetPt = jet->Pt();//embedded true jet pt
-	   
-	  //Float_t jetPtEmbAfterMatch = jet->Pt();//extra jet pt
-	  Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();//embedded true jet pt
-	  
-	  fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatchEmb);
-	  
-	  
-	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
-	    
-	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
-	    if(!trackVP)continue;
-	    
-	    AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
-	    if(!aodtrack) continue;
-	    
-	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
-	    
-	    Float_t jetpt = jet->Pt();
-	    
-	    Float_t trackPt = trackV->Pt();
-	    
-	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
-	    
-	    fFFHistosRecCuts->FillFF(trackPt, jetpt, incrementJetPt);//fill charged tracks into RecCuts histos
-	    
-	    delete trackV;
-	  }
-
-	  //perpendicular cone method for charged particles in UE
-
-	  Double_t sumPerpPt = 0.;
-	  
-	  GetTracksInPerpCone(fTracksRecCuts,fTracksPerpCone, jet, GetFFRadius(), sumPerpPt);//get charged tracks from UE in perp. cone
-	  
-	  if(fTracksPerpCone){
-	    fh1PerpCone->Fill(1.);}
-	  
-	  for(Int_t it=0; it<fTracksPerpCone->GetSize(); ++it){
-	     
-	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(fTracksPerpCone->At(it));
-	    if(!trackVP)continue;
-	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
-	    
-	    Float_t jetPtEmb = jet->Pt();
-	    Float_t trackPt = trackV->Pt();
-	    fh2TracksPerpCone->Fill(jetPtEmb,trackPt);
-	    
-	  }//end loop perp. cone charged tracks
-	
-	  if(fTracksPerpCone->GetSize() == 0){ // no K0s in jet cone 
-	    
-	    Float_t jetPtEmb = jet->Pt();
-	    fh2TracksPerpCone->Fill(jetPtEmb,0);	    
-	  }
-	  
-
-	fTracksPerpCone->Clear();
-	
-	//###############################
-	//Charged tracks in outside cones
-
-	//Double_t dRadiusExCone = 2*GetFFRadius();//2*radius of jet cone
-
-	//Int_t nChargedTracks = fTracksRecCuts->GetEntries(); //number of all charged tracks in event
-
-	//###############################
-	jettracklist->Clear();
-
-
+  Float_t jetPt = jet->Pt();//getting smeared (extra) jet pt or true jet pt (unsmeared), to be set in AddTask macro and only for extra only branch!!
+  if(fUseExtraJetPt){
+    if(extraJet) jetPt = extraJet->Pt();
+    else jetPt = 0;
+  }
+  
+  fh1PtEmbAfterMatch->Fill(jetPt);
+  
+  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+    
+    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+    if(!trackVP)continue;
+    
+    AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
+    if(!aodtrack) continue;
+    
+    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
+     
+    Float_t trackPt = trackV->Pt();
+    
+    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+    
+    fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);//fill charged tracks into RecCuts histos
+    
+    delete trackV;
+  }
+  
+  //perpendicular cone method for charged particles in UE
+  
+  Double_t sumPerpPt = 0.;
+  
+  GetTracksInPerpCone(fTracksRecCuts,fTracksPerpCone, jet, GetFFRadius(), sumPerpPt);//get charged tracks from UE in perp. cone
+  
+  if(fTracksPerpCone){
+    fh1PerpCone->Fill(1.);}
+  
+  for(Int_t it=0; it<fTracksPerpCone->GetSize(); ++it){
+    
+    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(fTracksPerpCone->At(it));
+    if(!trackVP)continue;
+    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
+    
+    
+    Float_t trackPt = trackV->Pt();
+    fh2TracksPerpCone->Fill(jetPt,trackPt);
+    
+  }//end loop perp. cone charged tracks
+  
+  if(fTracksPerpCone->GetSize() == 0){ // no K0s in jet cone 
+    
+    
+    fh2TracksPerpCone->Fill(jetPt,0);	    
+  }
+  
+  
+  fTracksPerpCone->Clear();
+  
+  //###############################
+  //Charged tracks in outside cones
+  
+  //Double_t dRadiusExCone = 2*GetFFRadius();//2*radius of jet cone
+  
+  //Int_t nChargedTracks = fTracksRecCuts->GetEntries(); //number of all charged tracks in event
+  
+  //###############################
+  jettracklist->Clear();
+  
+  
 
 	//###############################	
 	//V0 analysis part for embedding study
@@ -7319,7 +7353,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  
 	  CalculateInvMass(v0, kK0, invMK0s, trackPt);  //function to calculate invMass with TLorentzVector class
 	  
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
+	  if(fUseExtraTracks == -1){//only for extraonly particles used, pdg code checks are done, primary particles are selected
 
 	    Int_t nnum;
 	    Int_t pnum;
