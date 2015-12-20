@@ -89,6 +89,7 @@ _eventCount    ( 0),
 _debugLevel    ( 0),
 _singlesOnly   ( 0),
 _useWeights    ( 0),
+_useRapidity   ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1),
 _rejectPairConversion ( 0),
@@ -237,6 +238,7 @@ _vertexZ ( 0),
   _msquare_p_AliHelperPID_no_Undefined (0),
   
   _etadis_pion_AliHelperPID ( 0),
+  _ydis_pion_AliHelperPID ( 0),
   _etadis_without_PID ( 0),
   _etadis_before_any_cuts ( 0),
   
@@ -404,6 +406,7 @@ _eventCount    ( 0),
 _debugLevel    ( 0),
 _singlesOnly   ( 0),
 _useWeights    ( 0),
+_useRapidity   ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1),
 _rejectPairConversion ( 0),
@@ -551,6 +554,7 @@ _Ncluster2  ( 0),
   _msquare_p_AliHelperPID_no_Undefined (0),
   
   _etadis_pion_AliHelperPID ( 0),
+  _ydis_pion_AliHelperPID ( 0),
   _etadis_without_PID ( 0),
   _etadis_before_any_cuts ( 0),
   
@@ -731,10 +735,10 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _min_vertexZ       = _vertexZMin;
     _max_vertexZ       = _vertexZMax;
     _width_vertexZ     = 0.5;
-    _nBins_vertexZ     = int(0.5+ (_max_vertexZ - _min_vertexZ)/_width_vertexZ);
-    _nBins_pt_1        = int(0.5+ (_max_pt_1 -_min_pt_1 )/_width_pt_1);
-    _nBins_eta_1       = int(0.5+ (_max_eta_1-_min_eta_1)/_width_eta_1);
-    _width_phi_1       = (_max_phi_1  - _min_phi_1)  /_nBins_phi_1;
+    _nBins_vertexZ     = int( 0.5 + ( _max_vertexZ - _min_vertexZ) / _width_vertexZ );
+    _nBins_pt_1        = int( 0.5 + ( _max_pt_1 -_min_pt_1 ) / _width_pt_1 );
+    _nBins_eta_1       = int( 0.5 + ( _max_eta_1-_min_eta_1 ) / _width_eta_1 );
+    _width_phi_1       = ( _max_phi_1  - _min_phi_1 )  / _nBins_phi_1;
     _nBins_etaPhi_1    = _nBins_phi_1    * _nBins_eta_1;
     _nBins_etaPhiPt_1  = _nBins_etaPhi_1 * _nBins_pt_1;
     _nBins_zEtaPhiPt_1 = _nBins_vertexZ  * _nBins_etaPhiPt_1;
@@ -962,6 +966,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
 
     
     name = "etadis_pion_AliHelperPID";          _etadis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
+    name = "ydis_pion_AliHelperPID";          _ydis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
     name = "etadis_without_PID";                _etadis_without_PID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
     name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
 
@@ -1003,13 +1008,13 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "inverse_beta_p_pion_AliHelperPID";   _inverse_beta_p_pion_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
     name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
     
-    if (_singlesOnly)
+    if ( _singlesOnly )
     {
-        name = n1Name+part_1_Name+vsPt;              _n1_1_vsPt              = createHisto1F(name,name, _nBins_pt_1,  _min_pt_1,  _max_pt_1,   _title_pt_1,  _title_AvgN_1);
-        name = n1Name+part_1_Name+vsZ+vsEtaPhi+vsPt; _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
+     name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
+     name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
         
-        name = n1Name+part_2_Name+vsPt;              _n1_2_vsPt              = createHisto1F(name,name, _nBins_pt_2,  _min_pt_2,  _max_pt_2,   _title_pt_2,  _title_AvgN_2);
-        name = n1Name+part_2_Name+vsZ+vsEtaPhi+vsPt; _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F(name,name, _nBins_vertexZ,_min_vertexZ,_max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);
+     name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
+     name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);
         
     }
     else
@@ -1107,7 +1112,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
     int    k1,k2;
     int    iPhi, iEta, iEtaPhi, iPt, charge;
-    float  q, phi, pt, eta, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; //jinjin put p here to make _dedx_p and _beta_p plots. 
+    float  q, phi, pt, eta, y, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; //jinjin put p here to make _dedx_p and _beta_p plots. 
     int    ij;
     int    id_1, q_1, iEtaPhi_1, iPt_1;
     float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;
@@ -1308,7 +1313,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
             //dcaZ   = t -> ZAtDCA();
 
 	    if(charge == 0) continue; //?
-
+	    
 	    _etadis_before_any_cuts -> Fill( eta );
             _phidis_before_any_cuts -> Fill( phi );
  
@@ -1418,15 +1423,27 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    _beta_p_pion_AliHelperPID -> Fill( p, beta );
 	    _inverse_beta_p_pion_AliHelperPID -> Fill( p, 1/beta );
 	    _msquare_p_pion_AliHelperPID -> Fill( p, msquare );
-            
+
+	    const float mpion = 0.1395701835; // GeV/c2
+	    const float mkaon = 0.493667; // GeV/c2
+	    const float mproton = 0.93827204621; // GeV/c2
+	    if ( particleSpecies == 0 )  mass = mpion;
+	    if ( particleSpecies == 1 )  mass = mkaon;
+	    if ( particleSpecies == 2 )  mass = mproton;
+	    cout  << " mass =  " << mass << endl;
+	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+	    
             //==== QA ===========================
             _dcaz->Fill(DCAZ);
             _dcaxy->Fill(DCAXY);
             _etadis_pion_AliHelperPID -> Fill( eta );    //Eta/phi distribution after AliHelperPID cuts
+	    _ydis_pion_AliHelperPID -> Fill( y );
             _phidis_pion_AliHelperPID -> Fill( phi );
             //===================================
             //*************************************************
-            
+
+	    if ( _useRapidity )  eta = y;  //switch from eta to y
+	    
             //Particle 1
             if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
             {

@@ -90,6 +90,7 @@ public:
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
+    virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetSameFilter(int v)                { _sameFilter   = v; }
     
     virtual     void    SetRejectPileup(int v)              { _rejectPileup         = v; }
@@ -159,6 +160,7 @@ protected:
     int      _debugLevel;
     int      _singlesOnly;
     int      _useWeights;
+    int      _useRapidity;
     int      _sameFilter;
     int      _rejectPileup;
     int      _rejectPairConversion;
@@ -328,6 +330,7 @@ protected:
     TH1F * _nsigmaTOFkaon_1d;
     
     TH1F * _etadis_pion_AliHelperPID;
+    TH1F * _ydis_pion_AliHelperPID;
     TH1F * _etadis_without_PID;
     TH1F * _etadis_before_any_cuts;  
     
