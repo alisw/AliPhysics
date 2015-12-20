@@ -67,9 +67,13 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    if(fLeadingJetOnly){
       fTreeJets->Branch("fJetDetL.", fJetDetL);
       fTreeJets->Branch("fJetPartL.",fJetPartL);
+      fTreeJets->Branch("fXsection", &fXsection, "fXsection/F");
+      fTreeJets->Branch("fNTrials",  &fNTrials, "fNTrials/I");
    } else {
       fTreeJets->Branch("fJetDet.", fJetDet);
       fTreeJets->Branch("fJetPart.",fJetPart);
+      fTreeJets->Branch("fXsection", &fXsection, "fXsection/F");
+      fTreeJets->Branch("fNTrials",  &fNTrials, "fNTrials/I");
    }
    //fOutput->Add(fTreeJets);
    PostData(2, fTreeJets);
