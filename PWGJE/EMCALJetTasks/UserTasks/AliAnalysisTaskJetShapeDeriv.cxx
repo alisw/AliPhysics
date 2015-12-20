@@ -420,18 +420,19 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
         ptJetR = jetR->Pt();
       }
       if(fSingleTrackEmb && vpe) {
-        mJetR  = vpe->M();
-        var2   = vpe->M();
-        ptJetR = vpe->Pt(); 
-      }
-      if(fFromTree && vpe){
-      	    Int_t exit = MatchEmbeddedConstituentWithParticleLevel();
-      	    if(exit>-1) {
-      	       mJetR  = fVecP->M();
+      	 if(fFromTree){
+      	    Int_t exit = MatchEmbeddedConstituentWithParticleLevel(); //here is GetEntry
+      	    
+      	    if(exit>0) {
+      	       //mJetR  = fVecP->M();
       	       var2   = fVecP->M();
       	       ptJetR = fVecP->Pt();
-      	       
       	    }
+      	 } else{
+      	    //mJetR  = vpe->M();
+      	    var2   = vpe->M();
+      	    ptJetR = vpe->Pt();
+      	 }
       }
       
       if(fJetMassVarType==kRatMPt) {
