@@ -1,5 +1,5 @@
 // Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
-// Author: Jinjin(Au-Au) Pan & Claude Pruneau, Wayne State University
+// Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
 //           system:  0: PbPb                 1: pPb
 //      singlesOnly:  0: full correlations    1: singles only
 //       useWeights:  0: no                   1: yes
@@ -9,8 +9,9 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (int    system                  = 0,
- int    singlesOnly             = 1,
+ int    singlesOnly             = 0,
  int    useWeights              = 0,
+ int    useRapidity             = 1,
  int    centralityMethod        = 4,
  int    chargeSet               = 1,
  double zMin                    = -10.,
@@ -27,7 +28,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaXYMax                =  2.4,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- int particleID                 = 0, // pion=0, kaon=1, proton=2
+ int particleID                 = 1, // pion=0, kaon=1, proton=2
  double nSigmaCut               = 3.0,
  int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
  Bool_t requestTOFPID           = 1,
@@ -239,6 +240,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetSameFilter(          sameFilter      );
       task->SetSinglesOnly(         singlesOnly     );
       task->SetUseWeights(          useWeights      );
+      task->SetUseRapidity(         useRapidity     );
       task->SetRejectPileup(        rejectPileup    );
       task->SetRejectPairConversion(rejectPairConversion);
       task->SetVertexZMin(          zMin            );
@@ -300,9 +302,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
         
       iTask++;
 
-    }
-    
-    
+    }        
     
   return task;
 }
