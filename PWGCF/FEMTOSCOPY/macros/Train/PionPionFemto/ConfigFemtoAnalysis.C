@@ -69,7 +69,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
     rdr->SetCentralityFlattening(kFALSE);
     rdr->SetReadV0(0);
-    rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+    // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+    rdr->SetDCAglobalTrack(kTRUE);
   // rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
@@ -398,9 +399,7 @@ BuildConfiguration(const TString &text,
 
   while (line_obj = next_line()) {
 
-    const TString line = ((TObjString*)line_obj)->String()
-                            .ReplaceAll(".", "_")
-                            .Strip(TString::kBoth, ' ');
+    const TString line = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
 
     TString cmd("");
 
