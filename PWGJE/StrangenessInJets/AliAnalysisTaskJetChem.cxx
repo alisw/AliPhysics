@@ -208,7 +208,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fFFIMLaNBinsPt(0)      
    ,fFFIMLaPtMin(0)        
    ,fFFIMLaPtMax(0)        
-   ,fFFIMLaNBinsXi(0)      
+   ,fFFIMLaNBinsXi(0)     
    ,fFFIMLaXiMin(0)        
    ,fFFIMLaXiMax(0)        
    ,fFFIMLaNBinsZ(0)       
@@ -1619,6 +1619,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fTracksPerpCone->SetOwner(kFALSE); 
   fJetsRecCuts = new TList();
   fJetsRecCuts->SetOwner(kFALSE);
+  fJetsGen = new TList();
+  fJetsGen->SetOwner(kFALSE);
   fJetsEmbedded = new TList();
   fJetsEmbedded->SetOwner(kFALSE);
   fBckgJetsRec = new TList();
@@ -5569,6 +5571,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   fTracksRecCuts->Clear();
   fTracksPerpCone->Clear();
   fJetsRecCuts->Clear();
+  fJetsGen->Clear();
   fJetsEmbedded->Clear();
   fBckgJetsRec->Clear();
   fListK0s->Clear();
