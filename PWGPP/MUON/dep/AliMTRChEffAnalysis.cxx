@@ -218,6 +218,10 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char*
 {
   /// Compare efficiency objects
   TString srcs(sources);
+  if ( srcs.Contains("raw://") ) {
+    AliError("The method assumes that the specified storage is a SpecificStorage. Hence, please replace raw:// with the actual path in alien, e.g.: alien://folder=/alice/data/<year>/OCDB");
+    return;
+  }
   TObjArray* sourceList = srcs.Tokenize(",");
   TObjArray effMapList;
   effMapList.SetOwner();
@@ -248,7 +252,9 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char*
       mgr->SetRun(runNumber);
       AliCDBEntry* cdbEntry = mgr->Get(trigEffCDBdir.Data());
 
-      effMap = static_cast<AliMUONTriggerEfficiencyCells*>(cdbEntry->GetObject());
+      // The CDB manager replace the current effMap with another in case two specific storage are provided
+      // To avoid double deletion, the object must be cloned
+      effMap = static_cast<AliMUONTriggerEfficiencyCells*>(cdbEntry->GetObject()->Clone());
     }
     if ( ! effMap ) continue;
     effMapList.Add(effMap);
