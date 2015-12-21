@@ -8,9 +8,10 @@
  *********************************************************************
  *    K+K- in PbPb@2.76TeV                                           *
  * Update: Konstantin.Mikhaylov@cern.ch                              *
- *         KpmHBT08  0010  23-nov-2015                               *
- *         cut on 0.45<p<0.5 GeV/c && 2sigma 0.4-0.45 GeV/c          *
+ *         KpmHBT10  0010  21-Dec-2015                               *
+ *         cut on 0.4-0.45 GeV/c &&  0.45<p<0.5 GeV/c    n-sigma=0   *
  *         phi*>0.02 eta>0.04                                        *
+ *         10 MeV/q-bin in CF                                        *
  *********************************************************************/
 
 #if !defined(__CINT__) || defined(__MAKECINT_)
@@ -97,7 +98,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double shqmax;
   double shqmaxSH;
-  int nbinssh = 100;
+  int nbinssh = 200;// 10 MeV/q-bin //orig 100, 20 MeV per bin
 
   if (runshlcms) shqmaxSH = 0.25;
   shqmax = 2.0;//K+-
@@ -231,7 +232,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
          // new cuts to remove electron (do not take into analysis if 400<p<500) 
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	 dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.);//cut on e+e- orig(2.0);
+	 dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(0.);//cut on e+e- orig(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(0.);//cut on e+e- orig(2.0);
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);  
 	 // new cuts are stronger, better separation of pion in TOF 
@@ -246,7 +247,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	 dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	 dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(2.);//cut on e+e- orig(2.0);
+	 dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(0.);//cut on e+e- orig(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(0.);//cut on e+e- orig(2.0);
 	 dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);    
 	 // new cuts are stronger, better separation of pion in TOF 
