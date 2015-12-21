@@ -155,8 +155,8 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    const Int_t ndim = 4;
    Int_t nbins = 60, mind = -30, maxd = 30, minm = -10, maxm = 20, minpt = -20, maxpt = 120;
    const Int_t nbinshnsp[ndim] = {nbins, nbins, nbins, nbins};  
-   const Double_t minhnsp[ndim] = {mind, mind, minm, minpt};
-   const Double_t maxhnsp[ndim] = {maxd, maxd, maxm, maxpt};
+   const Double_t minhnsp[ndim] = {(Double_t)mind, (Double_t)mind, (Double_t)minm, (Double_t)minpt};
+   const Double_t maxhnsp[ndim] = {(Double_t)maxd, (Double_t)maxd, (Double_t)maxm, (Double_t)maxpt};
    TString title = "Check part level;#it{M}_{det} - #it{M}_{par} (GeV); #it{p}_{T, det} - #it{p}_{T, par} (GeV/#it{c}); #it{M} (GeV); #it{p}_{T} (GeV/#it{c})";
    
    fhPartJet = new THnSparseF("fhPartJet", title.Data(), ndim, nbinshnsp, minhnsp, maxhnsp);
