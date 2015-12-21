@@ -363,7 +363,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,16)
+      ClassDef(AliConvEventCuts,17)
 };
 
 
