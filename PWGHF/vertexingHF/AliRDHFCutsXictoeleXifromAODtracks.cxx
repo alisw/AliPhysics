@@ -98,7 +98,8 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCPtDepPar2(0.),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
-	fSigmaElectronTOFMax(9999.)
+	fSigmaElectronTOFMax(9999.),
+	fConversionMassMax(-1.)
 {
   //
   // Default Constructor
@@ -174,7 +175,8 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
 	fSigmaElectronTPCPtDepPar2(source.fSigmaElectronTPCPtDepPar2),
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
-	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax)
+	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
+	fConversionMassMax(source.fConversionMassMax)
 {
   //
   // Copy constructor
@@ -238,6 +240,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+	fConversionMassMax = source.fConversionMassMax;
   
   
   return *this;
@@ -796,3 +799,79 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSideBand(TLorentzVector *casc)
 	return issideband;
 }
 
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversions(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+{
+  //
+  // Tag conversion electron tracks
+  //
+	if(fConversionMassMax<0.) return kFALSE;
+
+	Bool_t isconv = kFALSE;
+	minmass = 9999.;
+
+	Int_t trkid = etrk->GetID();
+	Double_t px1 = etrk->Px();
+	Double_t py1 = etrk->Py();
+	Double_t pz1 = etrk->Pz();
+	Double_t E1 = sqrt(px1*px1+py1*py1+pz1*pz1+0.000511*0.000511);
+
+	for(Int_t it=0;it<ntrk;it++){
+		AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
+		if(!trk2) continue;
+		Int_t trkid2 = trk2->GetID();
+		if(trkid==trkid2) continue;
+		if(etrk->Charge()*trk2->Charge()>0) continue;
+		if(!etrk->TestFilterMask(BIT(4))) continue;
+
+		Double_t px2 = trk2->Px();
+		Double_t py2 = trk2->Py();
+		Double_t pz2 = trk2->Pz();
+		Double_t E2 = sqrt(px2*px2+py2*py2+pz2*pz2+0.000511*0.000511);
+
+		Double_t mass = sqrt(pow(E1+E2,2)-pow(px1+px2,2)-pow(py1+py2,2)-pow(pz1+pz2,2));
+		if(mass<minmass) minmass = mass;
+	}
+
+	if(minmass<fConversionMassMax) isconv = kTRUE;
+
+  return isconv;
+}
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversionsSameSign(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+{
+  //
+  // Tag conversion electron tracks
+  //
+	if(fConversionMassMax<0.) return kFALSE;
+
+	Bool_t isconv = kFALSE;
+	minmass = 9999.;
+
+	Int_t trkid = etrk->GetID();
+	Double_t px1 = etrk->Px();
+	Double_t py1 = etrk->Py();
+	Double_t pz1 = etrk->Pz();
+	Double_t E1 = sqrt(px1*px1+py1*py1+pz1*pz1+0.000511*0.000511);
+
+	for(Int_t it=0;it<ntrk;it++){
+		AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
+		if(!trk2) continue;
+		Int_t trkid2 = trk2->GetID();
+		if(trkid==trkid2) continue;
+		if(etrk->Charge()*trk2->Charge()<0) continue;
+		if(!etrk->TestFilterMask(BIT(4))) continue;
+
+		Double_t px2 = trk2->Px();
+		Double_t py2 = trk2->Py();
+		Double_t pz2 = trk2->Pz();
+		Double_t E2 = sqrt(px2*px2+py2*py2+pz2*pz2+0.000511*0.000511);
+
+		Double_t mass = sqrt(pow(E1+E2,2)-pow(px1+px2,2)-pow(py1+py2,2)-pow(pz1+pz2,2));
+		if(mass<minmass) minmass = mass;
+	}
+
+	if(minmass<fConversionMassMax) isconv = kTRUE;
+
+  return isconv;
+}
