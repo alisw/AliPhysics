@@ -321,6 +321,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //!<! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
   TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
+  TH1F* fHistoMassConversionsMin; //!<! electron-any mass
+  TH1F* fHistoMassConversionsSameSignMin; //!<! electron-any mass
   THnSparse* fHistoElePtvsCutVarsRS[17];         //!<! e pt- cut variables (Right-sign)
   THnSparse* fHistoElePtvsCutVarsWS[17];         //!<! e pt- cut variables (Wrong-sign)
   THnSparse* fHistoElePtvsCutVarsMCS[17];         //!<! e pt- cut variables (MCS)
@@ -545,7 +547,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,18); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,19); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

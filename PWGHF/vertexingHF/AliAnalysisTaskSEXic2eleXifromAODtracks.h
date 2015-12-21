@@ -291,6 +291,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //!<! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
   TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //!<! TPC electron PID after TOF 3 sigma cut Eta dep
+  TH1F* fHistoMassConversionsMin; //!<! electron-any mass
+  TH1F* fHistoMassConversionsSameSignMin; //!<! electron-any mass
   THnSparse* fHistoElePtvsCutVarsRS[23];         //!<! e pt- cut variables (Right-sign)
   THnSparse* fHistoElePtvsCutVarsWS[23];         //!<! e pt- cut variables (Wrong-sign)
   THnSparse* fHistoElePtvsCutVarsMCS[23];         //!<! e pt- cut variables (MCS)
@@ -346,7 +348,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,17); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,18); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

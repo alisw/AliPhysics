@@ -30,10 +30,14 @@
 
 class THnSparse;
 class TH1F;
+class TH2F;
+class TH3F;
 class TClonesArray;
 class AliAODRecoCascadeHF;
 class AliESDVertex;
 class AliAODMCParticle;
+class AliEventPoolManager;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE 
 {
@@ -49,19 +53,53 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, Int_t mcnused);
+  void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *aod, TClonesArray *mcarray);
+  void FillWSROOTObjects(AliAODTrack *trk1, AliAODTrack *trk2);
+  void FillMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev, Double_t *tinfo);
+  void FillWSMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
+  void FillProtonROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
+  void FillKaonROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
+  void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
+  void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
+	void FillMCProtonROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
+	void FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray);
+  void SelectV0( const AliVEvent *event,Int_t nV0,Int_t &nSeleV0, Bool_t *seleV0Flags, TClonesArray *mcArray);
+  void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Int_t *seleFlags, TClonesArray *mcArray);
+	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgarray_pr, Int_t *pdgarray_v0, Int_t *labelarray_pr, Int_t *labelarray_v0,  Int_t &ngen_pr, Int_t &ngen_v0);
 
 
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
+  void SetUseCentralityV0M(Bool_t centon) {fUseCentralityV0M = centon;}
+  Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
   AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
 
+  /// mixing
+  void SetEventMixingWithPools(){fDoEventMixing=1;}
+  void SetEventMixingOff(){fDoEventMixing=0;}
+	void SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
+	void SetPoolPVzBinLimits(Int_t Nzvtxbins,const Double_t *ZvtxBins){
+		fNzVtxBins = Nzvtxbins;
+		for(int ix = 0;ix<fNzVtxBins+1;ix++){fZvtxBins[ix] = ZvtxBins[ix];}
+	}
+	void SetPoolCentBinLimits(Int_t Ncentbins,const Double_t *CentBins){
+		fNCentBins = Ncentbins;
+		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
+	}
+	void SetPoolRPBinLimits(Int_t Nrpbins,const Double_t *rpbins){
+		fNRPBins = Nrpbins;
+		for(int ix = 0;ix<fNRPBins+1;ix++){fRPBins[ix] = rpbins[ix];}
+	}
+  void DoEventMixingWithPools(Int_t index);
+  void ResetPool(Int_t poolIndex);
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
 
  private:
 
@@ -69,6 +107,11 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   AliAnalysisTaskSELc2pK0sfromAODtracks& operator=(const AliAnalysisTaskSELc2pK0sfromAODtracks& source); 
 
   void DefineTreeVariables();
+  void DefineProtonTreeVariables();
+  void DefineV0TreeVariables();
+  void DefineMCTreeVariables();
+  void DefineMCProtonTreeVariables();
+  void DefineMCV0TreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
@@ -82,10 +125,18 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //!<! Histogram to check selected events
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
+  TH1F *fHReactionPlane;                //!<! Histogram to check Reaction plane
   AliRDHFCutsLctopK0sfromAODtracks *fAnalCuts; /// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          /// flag for event selected
   Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
+  Bool_t    fWriteEachVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
+  Bool_t    fWriteMCVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fProtonVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 5
+  TTree    *fV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 6
+  TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 7
+  TTree    *fMCProtonVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 9
+  TTree    *fMCV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 10
   Bool_t fReconstructPrimVert;       /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -93,16 +144,52 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   Bool_t fIsINT7;     /// INT7 trigger event
   Bool_t fIsEMC7;     /// EMC7 trigger event
   Float_t *fCandidateVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateProtonVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateV0Variables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCProtonVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCV0Variables;   //!<! variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
+  Float_t  fVtxZ;         /// zVertex
   Double_t fBzkG;                 /// magnetic field value [kG]
   Float_t  fCentrality;           /// Centrality
+  Float_t  fReactionPlane;           /// ReactionPlane
+  Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
+  Bool_t  fUseCentralityV0M;         /// Stores trigger information
+  Int_t  fEvNumberCounter;         /// EvNumber counter
+	AliNormalizationCounter *fCounter;//!<! Counter for normalization
 
   //--------------------- My histograms ------------------
-  THnSparse* fHistoLcK0SpMass;         /// Lc mass spectra
+	TH1F *fHistonEvtvsRunNumber;     //!<! QA histogram
+	TH1F *fHistonProtonvsRunNumber;     //!<! QA histogram
+	TH1F *fHistonK0svsRunNumber;     //!<! QA histogram
 
-  TH1F* fHistoBachPt;      //!<! Bachelor pT histogram
+  THnSparse* fHistoLcMCGen;         //!<! Lc Generation
+  THnSparse* fHistoLcK0SpMass;         //!<! Lc mass spectra
+  THnSparse* fHistoLcK0SpMassMix;         //!<! Lc mass spectra
+  THnSparse* fHistoLcK0SpMassCoarse;         //!<! Lc mass spectra
+  THnSparse* fHistoLcK0SpMassMixCoarse;         //!<! Lc mass spectra
+  THnSparse* fHistoK0spCorrelation;         //!<! Lc mass spectra
+  THnSparse* fHistoK0spCorrelationMix;         //!<! Lc mass spectra
+  THnSparse* fHistoK0spCorrelationMCS;         //!<! Lc mass spectra
+  THnSparse* fHistoLcK0SpMassMCS;         //!<! Lc mass spectra
+  THnSparse* fHistoLcK0SpPi0MassMCS;         //!<! Lc mass spectra
+  THnSparse* fHistoLcKPluspMass;         //!<! Lc mass spectra
+  THnSparse* fHistoLcKMinuspMass;         //!<! Lc mass spectra
+  THnSparse* fHistoLcKPluspMassMix;         //!<! Lc mass spectra
+  THnSparse* fHistoLcKMinuspMassMix;         //!<! Lc mass spectra
+
+  TH2F* fHistoBachPt;      //!<! Bachelor pT histogram
+  TH2F* fHistoBachPtMCS;      //!<! Bachelor pT histogram (efficiency numerator)
+  TH2F* fHistoBachPtMCGen;      //!<! Bachelor pT histogram (efficiency denominator)
+  TH2F* fHistoKaonPt;      //!<! Kaon pT histogram
+  TH2F* fHistoKaonPtMCS;      //!<! Kaon pT histogram (efficiency numerator)
+  TH2F* fHistoKaonPtMCGen;      //!<! Kaon pT histogram (efficiency denominator)
+  TH3F* fHistoK0sMassvsPt;     //!<! K0s mass vs pt histogram
+  TH3F* fHistoK0sMassvsPtMCS;     //!<! K0s mass vs pt histogram
+  TH3F* fHistoK0sMassvsPtMCGen;     //!<! K0s mass vs pt histogram
   TH1F* fHistod0Bach;      //!<! Bachelor d0 histogram
   TH1F* fHistod0V0;        //!<! V0 d0 histogram
   TH1F* fHistod0d0;        //!<! Bachelor d0 * V0 d0 histogram
@@ -110,10 +197,35 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoProbProton;  //!<! Probability to be proton histogram
   TH1F* fHistoDecayLength; //!<! Decay length histogram
   TH1F* fHistoK0SMass;     //!<! K0s mass histogram
+  TH1F* fHistoMassTagV0Min; //!<! electron-any mass
+  TH1F* fHistoMassTagV0SameSignMin; //!<! electron-any mass
+
+  //Mixing
+  Int_t fDoEventMixing; /// flag for event mixing
+  Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+	Int_t fNzVtxBins;								/// number of z vrtx bins
+	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
+	Int_t fNCentBins;								/// number of centrality bins
+	Double_t fCentBins[100];						// [fNCentBinsDim]
+	Int_t fNRPBins;								/// number of rp bins
+	Double_t fRPBins[100];						// [fNRPBinsDim]
+  Int_t  fNOfPools; /// number of pools
+  TTree** fEventBuffer;   //!<! structure for event mixing
+	TObjString *fEventInfo; ///unique event id for mixed event check
+  TObjArray* fProtonTracks; /// array of electron-compatible tracks
+//  TObjArray* fKaonTracks; /// array of electron-compatible tracks
+  TObjArray* fV0Tracks; /// array of lambda-compatible tracks
+	std::vector<Double_t> fBachd0Array; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fBachDcaXArray; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fBachDcaYArray; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fBachDcaPxArray; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fBachDcaPyArray; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fPVXArray; /// array of lambda-compatible tracks' information
+	std::vector<Double_t> fPVYArray; /// array of lambda-compatible tracks' information
 
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,2); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,3); /// class for Lc->p K0
   /// \endcond
 };
 #endif

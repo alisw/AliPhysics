@@ -52,6 +52,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODVertex *vert);
   Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *vert);
   Bool_t SingleV0Cuts(AliAODv0 *v0, AliAODVertex *vert);
+	Bool_t TagConversions(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
+	Bool_t TagConversionsSameSign(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
   Bool_t SelectWithRoughCuts(AliAODv0 *v0, AliAODTrack *trk1);
 
   void SetProdTrackTPCNclsPIDMin(Int_t a){fProdTrackTPCNclsPIDMin=a;}
@@ -122,6 +124,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	void GetSigmaElectronTOFRange(Double_t &a,Double_t &b){a=fSigmaElectronTOFMin;b=fSigmaElectronTOFMax;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b,Double_t &c){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;c=fSigmaElectronTPCPtDepPar2;}
+	Double_t GetConversionMassMax(){return fConversionMassMax;}
 
 	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
 	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
@@ -133,6 +136,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
+	void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
 	Bool_t IsPeakRegion(AliAODv0 *c);
 	Bool_t IsPeakRegion(TLorentzVector *c);
 	Bool_t IsSideBand(AliAODv0 *c);
@@ -190,8 +194,10 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
 
+	Double_t fConversionMassMax; /// Conversion mass
+
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,5);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,6);
   /// \endcond
 };
 

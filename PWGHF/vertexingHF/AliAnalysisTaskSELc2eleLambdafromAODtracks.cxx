@@ -274,6 +274,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+  fHistoMassConversionsMin(0),
+  fHistoMassConversionsSameSignMin(0),
 	fHistoElectronQovPtvsPhi(0),
 	fHistoLambdaQovPtvsPhi(0),
 	fHistoLcMCGen(0),
@@ -684,6 +686,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+  fHistoMassConversionsMin(0),
+  fHistoMassConversionsSameSignMin(0),
 	fHistoElectronQovPtvsPhi(0),
 	fHistoLambdaQovPtvsPhi(0),
 	fHistoLcMCGen(0),
@@ -3659,6 +3663,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFSmallEta);
   fHistoElectronTPCPIDSelTOFLargeEta=new TH2F("fHistoElectronTPCPIDSelTOFLargeEta","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFLargeEta);
+  fHistoMassConversionsMin=new TH1F("fHistoMassConversionsMin","",500,0,0.5);
+  fOutputAll->Add(fHistoMassConversionsMin);
+  fHistoMassConversionsSameSignMin=new TH1F("fHistoMassConversionsSameSignMin","",500,0,0.5);
+  fOutputAll->Add(fHistoMassConversionsSameSignMin);
 
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i]=new TH2F(Form("fHistoElectronTPCPIDSelTOFEtaDep[%d]",i),"",10,0.,5.,500,-10.,10.);
@@ -4592,8 +4600,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
 			FillElectronROOTObjects(aodt,mcArray);
-    }
 
+			Double_t minmass;
+			Bool_t isconv = fAnalCuts->TagConversions(aodt,(AliAODEvent*)event,trkEntries,minmass);
+			fHistoMassConversionsMin->Fill(minmass);
+			if(isconv) seleFlags[i] = kFALSE;
+
+//			Double_t minmasslike;
+//			fAnalCuts->TagConversionsSameSign(aodt,(AliAODEvent*)event,trkEntries,minmasslike);
+//			fHistoMassConversionsSameSignMin->Fill(minmasslike);
+
+    }
   } // end loop on tracks
 }
 //________________________________________________________________________
