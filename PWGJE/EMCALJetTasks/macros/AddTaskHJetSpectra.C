@@ -6,8 +6,6 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Int_t               typeOfAnal              = 0,  // 0= Realdata, 1 = Eff with MC, 2 = delta pT Embedding, 3=pure kine
   const char*         containerSuffix         = "",   //tag to the name of container
   const char*         centralityType          = "V0A",   //centrality
-  Float_t             centMin                 = 0,      //lower centrality percentil 
-  Float_t             centMax                 = 100,    //upper centrality percentil 
   Double_t            trackEtaWindow          = 0.9,   //pseudorapidity range for tracks
   Bool_t              useVertexCut            = kTRUE,  // vertex cut
   Bool_t              usePileUpCut            = kTRUE, // discard pile up event
@@ -95,9 +93,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
  
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_cent%.0f_%.0f_Dphi%02d_T%d_Ptt%d_%d", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      centMin, centMax,
       TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh));
 
    //_________________________________________________________________
@@ -380,7 +377,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetNofRandomCones(1);
    task->SetAcceptanceWindows(trackEtaWindow, jetRadius);
    task->SelectCollisionCandidates(trigger);
-   task->SetCentralityType(centralityType,centMin,centMax); 
+   task->SetCentralityType(centralityType); 
    if(typeOfAnal==kEff || typeOfAnal==kEmb || typeOfAnal == kEmbSingl){
       task->SetMinFractionShared(0.5);   //min pT fraction shared by  MC truth and rec jet
    }
