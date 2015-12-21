@@ -45,7 +45,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fGoBack(0),
   fhPartJet(0),
   fhEtaPart(0),
-  fhPhiPart(0)
+  fhPhiPart(0),
+  fhTreeEntriesUsed(0)
   
 {
   // Default constructor.
@@ -84,7 +85,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fGoBack(0),
   fhPartJet(0),
   fhEtaPart(0),
-  fhPhiPart(0)
+  fhPhiPart(0),
+  fhTreeEntriesUsed(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -117,9 +119,13 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
       fTreeJet4Vect->Show();
+      Int_t nentries = fTreeJet4Vect->GetEntries();
+      fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", nentries, 0, nentries-1);
+      fOutput->Add(fhTreeEntriesUsed);
+      	 
       if(!fRandomEntry && fPtMin != 0 && fPtMax != 0){
       	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
-      	 for(Int_t i = 0; i<fTreeJet4Vect->GetEntries(); i++){
+      	 for(Int_t i = 0; i<nentries ; i++){
       	    fTreeJet4Vect->GetEntry(i);
       	    if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
       	       fCurrentEntry = i;
@@ -265,6 +271,7 @@ void AliJetEmbeddingTask::Run()
        	     
        	  }
 
+       	  fhTreeEntriesUsed->Fill(fCurrentEntry);
        	  // Add the track that complies with the settings 
        	  AddTrack(jetDet->Pt(), jetDet->Eta(), jetDet->Phi(),0,0,0,0,kFALSE,  fCurrentEntry, charge, jetDet->M());
        	  //Printf("Embedded det %.2f, part %.2f", jetDet->Pt(), jetPar->Pt());

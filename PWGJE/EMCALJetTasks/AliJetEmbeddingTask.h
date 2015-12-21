@@ -91,7 +91,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   THnSparse      *fhPartJet;              //!<! control histogram particle level correponsding to embedded from tree
   TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
   TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
-
+  TH1F           *fhTreeEntriesUsed;      //!<! Entries of the TTree used
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
