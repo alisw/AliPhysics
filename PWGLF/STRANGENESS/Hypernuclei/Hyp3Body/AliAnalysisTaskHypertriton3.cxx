@@ -137,7 +137,6 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   //fHistTOFdeumass(0x0),
   //fHistTOFpromass(0x0),
   fHistpionTPCcls(0x0),
-  fHistpTpion(0x0),
   //fHistCorrDCAdprimary(0x0),
   //fHistCorrDCApprimary(0x0),
   //fHistCorrDCApiprimary(0x0),
@@ -170,6 +169,9 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistAngleCorr_ppi_dpi(0x0),
   fHistHyperRapidity(0x0),
   fHistCosPointingAngle(0x0),
+  fHistPtPion(0x0),
+  fHistPtDeuteron(0x0),
+  fHistPtProton(0x0),
   fHistPtHypertriton(0x0),
   fHistMassHypertriton(0x0),
   fHistMassAntiHypertriton(0x0),
@@ -509,7 +511,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
 
   fHistpionTPCcls = new TH1F("fHistpionTPCcls","#pi^{-} TPC clusters; TPC clusters; entries",201,-0.5,200.5);
-  fHistpTpion = new TH1F("fHistpTpion","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
   //fHistCorrDCAdprimary = new TH2F("fHistCorrDCAdprimary","DCA_{PV,xy} vs DCA_{PV,z} - deuteron; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
   //fHistCorrDCApprimary = new TH2F("fHistCorrDCApprimary","DCA_{PV,xy} vs DCA_{PV,z} - proton; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
   //fHistCorrDCApiprimary = new TH2F("fHistCorrDCApiprimary","DCA_{PV,xy} vs DCA_{PV,z} - pion; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
@@ -551,6 +552,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistHyperRapidity = new TH1F("fHistHyperRapidity","rapidity distribution of ^{3}H_{#Lambda}; y; entries",400,-2.f,2.f);
 
   fHistCosPointingAngle= new TH1F("fHistCosPointingAngle", "Cos pointing angle distribution; cos point angle; entries", 220, -1.1, 1.1);
+  fHistPtPion = new TH1F("fHistPtPion","#pi p_{T}; p_{T} (GeV/c); entries",100.,0.,10.);
+  fHistPtDeuteron = new TH1F("fHistPtDeuteron","d p_{T}; p_{T} (GeV/c); entries",100.,0.,10.);
+  fHistPtProton = new TH1F("fHistPtProton","p p_{T}; p_{T} (GeV/c); entries",100.,0.,10.);
   fHistPtHypertriton = new TH1F("fHistPtHypertriton","candidate Hypertriton - p_{T} distribution; p_{T} (GeV/c); entries",100.,0.,10.);
   fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
   fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
@@ -649,7 +653,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   //fOutput->Add(fHistTOFdeumass);
   //fOutput->Add(fHistTOFpromass);
   fOutput->Add(fHistpionTPCcls);
-  fOutput->Add(fHistpTpion);
   //fOutput->Add(fHistCorrDCAdprimary);
   //fOutput->Add(fHistCorrDCApprimary);
   //fOutput->Add(fHistCorrDCApiprimary);
@@ -682,6 +685,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistAngleCorr_ppi_dpi);
   fOutput->Add(fHistHyperRapidity);
   fOutput->Add(fHistCosPointingAngle);
+  fOutput->Add(fHistPtPion);
+  fOutput->Add(fHistPtDeuteron);
+  fOutput->Add(fHistPtProton);
   fOutput->Add(fHistPtHypertriton);
   fOutput->Add(fHistMassHypertriton);
   fOutput->Add(fHistMassAntiHypertriton);
@@ -1216,11 +1222,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if((charge_p*charge_pi)>0) continue;
 	
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
-	fHistpTpion->Fill(trackNPi->Pt());
-
-	
-
-	
 
 	trackNPi->GetImpactParameters(piprim,piprimc);
 	
@@ -1344,6 +1345,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	
 
 	fHistPtHypertriton->Fill(Hypertriton.Pt());
+    fHistPtProton->Fill(trackP->Pt());
+    fHistPtDeuteron->Fill(trackD->Pt());
+    fHistPtPion->Fill(trackNPi->Pt());
 	
 	if(charge_d>0 && charge_p>0 && charge_pi<0)	{
 	  fHistMassHypertriton->Fill(Hypertriton.M());
