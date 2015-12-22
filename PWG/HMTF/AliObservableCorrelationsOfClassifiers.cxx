@@ -49,7 +49,9 @@ AliObservableCorrelationsOfClassifiers::AliObservableCorrelationsOfClassifiers(A
 }
 
 void AliObservableCorrelationsOfClassifiers::Fill(AliMCEvent *event, AliStack *stack) {
-  fhistogram->Fill(fclassifier0->GetClassifierValue(event, stack),
-		   fclassifier1->GetClassifierValue(event, stack),
-		   event->GenEventHeader()->EventWeight());
+  Float_t cls0 = fclassifier0->GetClassifierValue(event, stack);
+  Float_t cls1 = fclassifier1->GetClassifierValue(event, stack);
+  Float_t weight = event->GenEventHeader()->EventWeight();
+  //printf("%s: %f, %s: %f, weight %f\n", fclassifier0->GetName(), cls0, fclassifier1->GetName(), cls1, weight);
+  fhistogram->Fill(cls0, cls1, weight);
 }
