@@ -186,7 +186,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   //Candidate combination
   // Data and MC histograms
   TH1F               *fHistpionTPCcls;                      //!<! TPC clusters distribution of candidate \f$\pi\f$
-  TH1F               *fHistpTpion;                          //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
   //TH2F               *fHistCorrDCAdprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
   //TH2F               *fHistCorrDCApprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
   //TH2F               *fHistCorrDCApiprimary;                //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
@@ -219,6 +218,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistAngleCorr_ppi_dpi;               //!<! Correlation between angle_ppi vs angle_dpi
   TH1F               *fHistHyperRapidity;                   //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;                //!<! Cosine of pointing angle distribution of candidate mother particle
+  TH1F               *fHistPtPion;                          //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
+  TH1F               *fHistPtDeuteron;                      //!<! \f$\p^{T}\f$ distribution of candidate d
+  TH1F               *fHistPtProton;                        //!<! \f$\p^{T}\f$ distribution of candidate p
   TH1F               *fHistPtHypertriton;                   //!<! hypertriton transverse momentum distribution
   TH1F               *fHistMassHypertriton;                 //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassAntiHypertriton;             //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
