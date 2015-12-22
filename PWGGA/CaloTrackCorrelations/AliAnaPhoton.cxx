@@ -1874,7 +1874,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
   }
 
-  if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+  if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms && fFillSSHistograms)
   {
     for(Int_t ieta = 0; ieta < 4; ieta++) 
     {  
