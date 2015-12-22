@@ -589,7 +589,7 @@ AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCData
   // and the block size will be incremented
   AliHLTUInt32_t blocksize=sizeof(AliHLTTPCRawClusterData);
   if (filled+blocksize>(unsigned)fBufferSize || fpBuffer==NULL) {
-    new (&fIterator) iterator;
+    new (&fIterator) iterator(this);
     return fIterator;
   }
   pData=reinterpret_cast<AliHLTTPCRawClusterData*>(fpBuffer+filled);
