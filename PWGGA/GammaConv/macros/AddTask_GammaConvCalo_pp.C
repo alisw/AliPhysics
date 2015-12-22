@@ -114,7 +114,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
       numberOfCuts = 3;
   }
   if (trainConfig == 8    || trainConfig == 10  || trainConfig == 12  || 
-      trainConfig == 21   || trainConfig == 23  || trainConfig == 24  || trainConfig == 26  ||
+      trainConfig == 21   || trainConfig == 23  || trainConfig == 24  || trainConfig == 26  || trainConfig == 33  ||
       trainConfig == 40   || trainConfig == 41  || trainConfig == 48  || trainConfig == 50  || trainConfig == 52  ||    
       trainConfig == 53   || trainConfig == 61  || trainConfig == 63  || trainConfig == 65  ||
       trainConfig == 67   || trainConfig == 75  || trainConfig == 77  || trainConfig == 79  ||
