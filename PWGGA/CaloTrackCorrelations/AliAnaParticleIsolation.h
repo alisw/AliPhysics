@@ -127,6 +127,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  void         SwitchOnFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kTRUE  ; }
+  void         SwitchOffFillEMCALRegionSSHistograms(){ fFillEMCALRegionSSHistograms = kFALSE ; }  
+  
   Bool_t       IsLeadingOnlyOn()               const { return fLeadingOnly       ; }
   void         SwitchOnLeadingOnly()                 { fLeadingOnly    = kTRUE   ; }
   void         SwitchOffLeadingOnly()                { fLeadingOnly    = kFALSE  ; }
@@ -193,6 +196,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillEMCALRegionSSHistograms ;             ///<  Fill shower shape histograms in EMCal slices
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
@@ -585,7 +589,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTimePileUpMainVertexZDiamond;             //!<! Time of cluster vs difference of z diamond and pile-up vertex.
   
   TH2F *   fhMCConversionVertex[2];                    //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. Iso and not iso
+  TH2F *   fhMCConversionVertexTRD[2];                 //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. Iso and not iso, SM covered by TRD
   TH2F *   fhMCConversionLambda0Rcut[6][2];            //!<! Shower shape of photon conversions, depending on conversion vertex.
+  TH2F *   fhMCConversionLambda0RcutTRD[6][2];         //!<! Shower shape of photon conversions, depending on conversion vertex. SM covered by TRD
+  
+  TH2F *   fhLam0EMCALRegion   [2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
+  TH2F *   fhLam0EMCALRegionTRD[2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
+  TH2F *   fhLam0EMCALRegionMCConvRcut   [2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
+  TH2F *   fhLam0EMCALRegionTRDMCConvRcut[2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
@@ -594,7 +606,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,35) ;
+  ClassDef(AliAnaParticleIsolation,36) ;
   /// \endcond
 
 } ;
