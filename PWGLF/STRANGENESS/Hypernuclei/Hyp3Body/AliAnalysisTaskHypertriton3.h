@@ -61,6 +61,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
+  void SetTOFpid(bool reqTOFpid = kTRUE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
@@ -123,6 +124,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
+  Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
 

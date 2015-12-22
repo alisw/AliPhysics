@@ -90,6 +90,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCentralityPercentile(0x0),
   fTriggerConfig(1),
   fRequestTPCSigmas(3),
+  fRequestTOFPid(kFALSE),
   fRequestTOFSigmas(3),
   fSideBand(kFALSE),
   fDCAPiPVmin(0.1),
@@ -423,12 +424,13 @@ Bool_t AliAnalysisTaskHypertriton3::PassPIDSelection(AliESDtrack *trk, int speci
     if(nsigmaTPC>fRequestTPCSigmas) tpcPID = kFALSE;
     else tpcPID = kTRUE;
     //TOF-pid
-    if(isTOFin){
-        float const nsigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::EParticleType (specie)));
-        if(nsigmaTOF>fRequestTOFSigmas) tofPID = kFALSE;
-        else tofPID = kTRUE;
+    if(fRequestTOFPid){
+        if(isTOFin){
+            float const nsigmaTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trk,AliPID::EParticleType (specie)));
+            if(nsigmaTOF>fRequestTOFSigmas) tofPID = kFALSE;
+            else tofPID = kTRUE;
+        }
     }
-    
     return tpcPID && tofPID;
 }
 
@@ -495,11 +497,11 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   //TOF
   
-  fHistTOFsignal = new TH2F("fHistTOFsignal","TOF signal; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  fHistTOFsignal = new TH2F("fHistTOFsignal","TOF signal; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs TPCmom - deuteron; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs p - deuteron; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
-  fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs TPCmom - proton; p_{TPC} (GeV/c); #beta",400,0.,4.,400,0.,1.1);
+  fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs p - proton; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
   
   //fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
   
@@ -853,7 +855,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Int_t ntracks,label = 0 ;
   Int_t labelM_deu, labelM_pro, labelM_pio = 0;
   Double_t chi2PerClusterTPC, nClustersTPC=0.;
-  Double_t p, pOverZ, pT = 0.;
+  Double_t p, p_tpc, pOverZ, pT = 0.;
   Float_t beta = 0.;
   AliESDtrack *track = 0x0;
 
@@ -1045,15 +1047,17 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
         
     if(track->GetTPCsignalN()<80) continue;
     
-    p = track->GetInnerParam()->GetP(); //track->GetTPCmomentum()
-    pOverZ = p*track->GetSign();
+    p = track->P(); //track->GetTPCmomentum()
+    p_tpc = track->GetTPCmomentum();
+    pOverZ = p_tpc*track->GetSign();
     pT = track->Pt();
     //if(p<0.2) continue;
     
     fHistTPCpid->Fill(pOverZ, track->GetTPCsignal());
-    useTOF = HasTOF(track, beta);
-    if(useTOF)fHistTOFsignal->Fill(p,beta);
-
+    if(fRequestTOFPid){
+        useTOF = HasTOF(track, beta);
+        if(useTOF)fHistTOFsignal->Fill(p,beta);
+    }
     //Filling PID histo
     label = track->GetLabel();
     
