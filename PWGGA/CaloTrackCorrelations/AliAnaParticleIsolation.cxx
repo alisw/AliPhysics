@@ -54,7 +54,7 @@ AliAnaParticleIsolation::AliAnaParticleIsolation() :
 AliAnaCaloTrackCorrBaseClass(),
 fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
-fFillTMHisto(0),                  fFillSSHisto(1),
+fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionSSHistograms(0),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
 fFillOverlapHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
@@ -186,9 +186,7 @@ fhENoIsoPileUp(),                 fhPtNoIsoPileUp(),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
-fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
-fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
-
+fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
 {
   InitParameters();
   
@@ -289,9 +287,23 @@ fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
     fhELambda0LocMax2[i] = 0 ;              fhELambda1LocMax2[i] = 0 ;
     fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
     
-    fhMCConversionVertex[i] = 0 ;
-    for(Int_t iR = 0; iR < 6; iR++) fhMCConversionLambda0Rcut[iR][i] = 0;            
-
+    fhMCConversionVertex[i] = fhMCConversionVertexTRD[i] = 0 ;
+    for(Int_t iR = 0; iR < 6; iR++) fhMCConversionLambda0RcutTRD[iR][i] = 0;            
+    
+    for(Int_t ieta = 0; ieta < 4; ieta++) 
+    {  
+      for(Int_t iphi = 0; iphi < 3; iphi++) 
+      {
+        fhLam0EMCALRegion   [i][ieta][iphi] = 0;
+        fhLam0EMCALRegionTRD[i][ieta][iphi] = 0;
+        
+        for(Int_t ireg = 0; ireg < 6; ireg++) 
+        {
+          fhLam0EMCALRegionMCConvRcut   [i][ieta][iphi][ireg] = 0;
+          fhLam0EMCALRegionTRDMCConvRcut[i][ieta][iphi][ireg] = 0;
+        }
+      }
+    }
   }
   
   // Acceptance
@@ -3386,27 +3398,118 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         } // NLM
       } // SS histo
       
+      
+      if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+      {
+        for(Int_t ieta = 0; ieta < 4; ieta++) 
+        {  
+          for(Int_t iphi = 0; iphi < 3; iphi++) 
+          {
+            fhLam0EMCALRegion[iso][ieta][iphi] = 
+            new TH2F(Form("hLam0_%s_eta%d_phi%d",isoName[iso].Data(),ieta,iphi),
+                     Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d",
+                           isoTitle[iso].Data(),ieta,iphi),
+                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhLam0EMCALRegion[iso][ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+            fhLam0EMCALRegion[iso][ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
+            outputContainer->Add(fhLam0EMCALRegion[iso][ieta][iphi]) ;
+            
+            if(GetFirstSMCoveredByTRD() >= 0)
+            {
+              fhLam0EMCALRegionTRD[iso][ieta][iphi] = 
+              new TH2F(Form("hLam0TRD_%s_eta%d_phi%d",isoName[iso].Data(),ieta,iphi),
+                       Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d, SM covered by TRD",
+                             isoTitle[iso].Data(),ieta,iphi),
+                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhLam0EMCALRegionTRD[iso][ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+              fhLam0EMCALRegionTRD[iso][ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
+              outputContainer->Add(fhLam0EMCALRegionTRD[iso][ieta][iphi]) ;
+            } // TRD
+          } // iphi 
+        } // ieta
+      } // regions in EMCal
+      
       if(IsDataMC())
       {
         fhMCConversionVertex[iso] = new TH2F(Form("hMCPhotonConversionVertex%s",isoName[iso].Data()),
-                                             Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s",isoTitle[iso].Data(),parTitle.Data()),
+                                             Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s",
+                                                  isoTitle[iso].Data(),parTitle.Data()),
                                              nptbins,ptmin,ptmax,500,0,500);
         fhMCConversionVertex[iso]->SetYTitle("#it{R} (cm)");
         fhMCConversionVertex[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCConversionVertex[iso]) ;
+        
+        if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
+        {
+          fhMCConversionVertexTRD[iso] = new TH2F(Form("hMCPhotonConversionVertexTRD%s",isoName[iso].Data()),
+                                                  Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s, SM covered by TRD",
+                                                       isoTitle[iso].Data(),parTitle.Data()),
+                                                  nptbins,ptmin,ptmax,500,0,500);
+          fhMCConversionVertexTRD[iso]->SetYTitle("#it{R} (cm)");
+          fhMCConversionVertexTRD[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhMCConversionVertexTRD[iso]) ;
+        }
         
         if(fFillSSHisto)
         {
           for(Int_t iR = 0; iR < 6; iR++)
           {
             fhMCConversionLambda0Rcut[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0%s_R%d",isoName[iso].Data(),iR),
-                                                          Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",isoTitle[iso].Data(),region[iR].Data()),
+                                                          Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",
+                                                               isoTitle[iso].Data(),region[iR].Data()),
                                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
             fhMCConversionLambda0Rcut[iR][iso]->SetYTitle("#lambda_{0}^{2}");
             fhMCConversionLambda0Rcut[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
             outputContainer->Add(fhMCConversionLambda0Rcut[iR][iso]) ;
+            
+            if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
+            {
+              fhMCConversionLambda0RcutTRD[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0TRD%s_R%d",isoName[iso].Data(),iR),
+                                                               Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, SM covered by TRD",
+                                                                    isoTitle[iso].Data(),region[iR].Data()),
+                                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhMCConversionLambda0RcutTRD[iR][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhMCConversionLambda0RcutTRD[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
+              outputContainer->Add(fhMCConversionLambda0RcutTRD[iR][iso]) ;
+            }
           }
-        }
+          
+          if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+          {
+            for(Int_t ieta = 0; ieta < 4; ieta++) 
+            {  
+              for(Int_t iphi = 0; iphi < 3; iphi++) 
+              {
+                for(Int_t iReg = 0; iReg < 6; iReg++) 
+                {
+                  fhLam0EMCALRegionMCConvRcut[iso][ieta][iphi][iReg] = 
+                  new TH2F(Form("hMCPhotonConversionLambda0%s_R%d_eta%d_phi%d",isoName[iso].Data(),iReg,ieta,iphi),
+                           Form("%s,cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d",
+                                isoTitle[iso].Data(),region[iReg].Data(),ieta,iphi),
+                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+                  fhLam0EMCALRegionMCConvRcut[iso][ieta][iphi][iReg]->SetYTitle("#lambda_{0}^{2}");
+                  fhLam0EMCALRegionMCConvRcut[iso][ieta][iphi][iReg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+                  outputContainer->Add(fhLam0EMCALRegionMCConvRcut[iso][ieta][iphi][iReg]) ;
+                  
+                  if(GetFirstSMCoveredByTRD() >= 0)
+                  {
+                    fhLam0EMCALRegionTRDMCConvRcut[iso][ieta][iphi][iReg] = 
+                    new TH2F(Form("hMCPhotonConversionLambda0TRD%s_R%d_eta%d_phi%d",isoName[iso].Data(),iReg,ieta,iphi),
+                             Form("%s,cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d, SM covered by TRD",
+                                  isoTitle[iso].Data(),region[iReg].Data(),ieta,iphi),
+                             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+                    fhLam0EMCALRegionTRDMCConvRcut[iso][ieta][iphi][iReg]->SetYTitle("#lambda_{0}^{2}");
+                    fhLam0EMCALRegionTRDMCConvRcut[iso][ieta][iphi][iReg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+                    outputContainer->Add(fhLam0EMCALRegionTRDMCConvRcut[iso][ieta][iphi][iReg]) ;
+                  } // TRD
+                  
+                } // iR
+              } // iphi 
+            } // ieta
+          } // regions in EMCal
+
+          
+        } // Shower shape histograms
       }
     } // control histograms for isolated and non isolated objects
     
@@ -4441,8 +4544,35 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t phi        = aod->Phi();
     Float_t eta        = aod->Eta();
     Float_t m02        = aod->GetM02();
+    Int_t   iSM        = aod->GetSModNumber();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
+    
+    //
+    // EMCAL SM regions
+    //
+    AliVCluster *cluster = 0;
+    if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms && fFillSSHisto)
+    {
+      // Get original cluster, needed to feed the subregion selection method
+      
+      Int_t iclus = -1;
+      cluster = FindCluster(GetEMCALClusters(),aod->GetCaloLabel(0),iclus);
+
+      Int_t etaRegion = -1, phiRegion = -1;
+      
+      GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+      
+      if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
+      {
+        fhLam0EMCALRegion[isolated][etaRegion][phiRegion]->Fill(pt,m02, GetEventWeight());
+        
+        if(GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD()  )
+        {
+          fhLam0EMCALRegionTRD[isolated][etaRegion][phiRegion]->Fill(pt, m02, GetEventWeight());
+        }
+      }
+    }
     
     // Conversion radius
     if( IsDataMC()                                                                 &&        
@@ -4469,18 +4599,50 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         //       momLabel, aod->GetLabel(),daugLabel,prodR);
         
         fhMCConversionVertex[isolated]->Fill(pt,prodR,GetEventWeight());
-        
+        if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD() )
+          fhMCConversionVertexTRD[isolated]->Fill(pt,prodR,GetEventWeight());
+
         if(fFillSSHisto)
         {
-          if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 275. ) fhMCConversionLambda0Rcut[1][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4][isolated]->Fill(pt,m02,GetEventWeight());
-          else                     fhMCConversionLambda0Rcut[5][isolated]->Fill(pt,m02,GetEventWeight());
+          
+          Int_t convR = -1;
+          if      ( prodR < 75.  ) convR = 0;
+          else if ( prodR < 275. ) convR = 1;
+          else if ( prodR < 375. ) convR = 2;
+          else if ( prodR < 400. ) convR = 3;
+          else if ( prodR < 430. ) convR = 4;
+          else                     convR = 5;
+
+          if ( convR >= 0 )
+          {
+            fhMCConversionLambda0Rcut[convR][isolated]->Fill(pt,m02,GetEventWeight());
+            if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD() )
+              fhMCConversionLambda0Rcut[convR][isolated]->Fill(pt,m02,GetEventWeight());
+            
+            //
+            // EMCAL SM regions
+            //
+            if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms )
+            {              
+              Int_t etaRegion = -1, phiRegion = -1;
+              
+              if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+              
+              if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
+              {
+                fhLam0EMCALRegionMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt,m02, GetEventWeight());
+                
+                if ( GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD()  )
+                  fhLam0EMCALRegionTRDMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt, m02, GetEventWeight());
+                
+              } // region found
+            } // check region
+
+          } // convR > 0
+          
         }
-      }
-    }
+      } // ok MC daughter
+    } // ok MC conversion
     
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
