@@ -1430,7 +1430,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if ( particleSpecies == 0 )  mass = mpion;
 	    if ( particleSpecies == 1 )  mass = mkaon;
 	    if ( particleSpecies == 2 )  mass = mproton;
-	    cout  << " mass =  " << mass << endl;
+	    //cout  << " mass =  " << mass << endl;
 	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
 	    
             //==== QA ===========================
