@@ -6,6 +6,7 @@
 #include "AliStack.h"
 
 #include "AliAnalysisTaskHMTFMCMultEst.h"
+#include "AliGenEventHeader.h"
 
 // Classifiers:
 #include "AliEventClassifierMult.h"
@@ -154,6 +155,7 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
   if (((fGlobalTrigger == kINEL) && IsInel(mcEvent, stack)) ||
       ((fGlobalTrigger == kINELGT0) && IsInelGt0(mcEvent, stack)) ||
       ((fGlobalTrigger == kV0AND) && IsV0AND(mcEvent, stack))) {
+    printf("event weight: %f \n", mcEvent->GenEventHeader()->EventWeight());
     for (Int_t i = 0; i < fObservables.size(); i++) {
       fObservables[i]->Fill(mcEvent, stack);
     }
