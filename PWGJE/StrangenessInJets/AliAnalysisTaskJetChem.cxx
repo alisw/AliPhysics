@@ -2794,7 +2794,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
  
-  Int_t nJGen  = GetListOfJets(fJetsGen, fJetTypeGen);//fill list of embedded jets, generator level
+  Int_t nJGen  = GetListOfJets(fJetsGen, kJetsGenAcceptance);//fill list of embedded jets, generator level
   Int_t nGenJets = 0;
   if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
   if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
