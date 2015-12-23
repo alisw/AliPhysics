@@ -49,9 +49,11 @@ const float default_pion_PtMin = 0.2,
             default_pion_NSigmaMax = 3.0,
 
             default_pion_max_impact_xy = 2.4,
-            default_pion_max_impact_z = 3.0,
+            default_pion_max_impact_z = 3.0
 
-            default_pion_max_tpc_chi_ndof = 0.032;
+          , default_pion_max_tpc_chi_ndof = 0.032
+          , default_pion_max_its_chi_ndof = 0.032
+          ;
 
 const UInt_t default_pion_min_tpc_ncls = 80;
 const Bool_t default_pion_remove_kinks = kTRUE,
@@ -277,6 +279,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_pion_max_impact_xy
   , default_pion_max_impact_z
   , default_pion_max_tpc_chi_ndof
+  , default_pion_max_its_chi_ndof
 
   , default_pion_min_tpc_ncls
   , default_pion_remove_kinks
@@ -348,6 +351,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetRemoveKinks(p.pion_1_remove_kinks);
   cut->SetLabel(p.pion_1_set_label);
   cut->SetMaxTPCChiNdof(p.pion_1_max_tpc_chi_ndof);
+  cut->SetMaxITSChiNdof(p.pion_1_max_its_chi_ndof);
   cut->SetMaxImpactXY(p.pion_1_max_impact_xy);
   cut->SetMaxImpactZ(p.pion_1_max_impact_z);
 
