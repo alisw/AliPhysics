@@ -111,6 +111,9 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    fInput = new TList();
    fInput->SetOwner();
    
+   delete gRandom;
+   gRandom = new TRandom3(0); //random seed
+   
    if(!fPathTreeinputFile.IsNull()){
       SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
       if(!fTreeJet4Vect) AliFatal("Something went wrong in setting the tree");
@@ -122,7 +125,9 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       Int_t nentries = fTreeJet4Vect->GetEntries();
       fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", nentries, 0, nentries-1);
       fOutput->Add(fhTreeEntriesUsed);
-      	 
+      
+      fCurrentEntry = gRandom->Integer(nentries); //in each worker it starts from a different entry
+      
       if(!fRandomEntry && fPtMin != 0 && fPtMax != 0){
       	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
       	 for(Int_t i = 0; i<nentries ; i++){
