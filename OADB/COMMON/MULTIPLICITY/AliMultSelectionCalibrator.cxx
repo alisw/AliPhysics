@@ -76,7 +76,8 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const 
     fMultSelectionCuts -> SetTrackletsVsClustersCut(kTRUE);
     fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
-
+    fMultSelectionCuts -> SetNonZeroNContribs(kFALSE);
+    
     //Basic I/O for MultSelection framework
     fInput     = new AliMultInput();
   

@@ -4,10 +4,6 @@
  *   write an OADB file containing histos and
  *   Event selection criteria used
  *
- *********************************************
- *
- * --- Revised version ---
- *
  *  - David Dobrigkeit Chinellato
  *  - Alberica Toia
  *  - Tatiana Drozhzhova
@@ -72,6 +68,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fMultSelectionCuts -> SetTrackletsVsClustersCut(kTRUE);
     fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
+    fMultSelectionCuts -> SetNonZeroNContribs(kFALSE);    
 
     //Basic I/O for MultSelection framework
     fInput     = new AliMultInput();
@@ -161,6 +158,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     Bool_t fEvSel_INELgtZERO                 = kFALSE ;
     Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
     Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
+    //FIXME/CAUTION: non-zero if using tree without that branch
+    Int_t fnContributors = 1000;
     Int_t fRunNumber;
 
     //SetBranchAddresses for event Selection Variables
@@ -170,6 +169,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
+    fTree->SetBranchAddress("fnContributors", &fnContributors);
 
     fTreeMC->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
     fTreeMC->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
@@ -177,6 +177,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     fTreeMC->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTreeMC->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTreeMC->SetBranchAddress("fRunNumber",&fRunNumber);
+    fTreeMC->SetBranchAddress("fnContributors", &fnContributors);
 
     //============================================================
     // Auto-configure Input
@@ -206,6 +207,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     }
 
     //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
+    //This will shortly be replaced with a proper selection
+    //in which the OADB is queried and a run range mapping object is created 
     fTree->GetEntry ( 0 ) ;
     oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
     if(!oadbMultSelection) {
@@ -302,8 +305,6 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //Compute events-per-hour performance metric
     Double_t lEventsPerSecond = 0;
 
-
-
     //Setup Map: We want sTree and sTreeMC to share the same index <-> Run mapping...
     std::map<int, int> fRunMap;
 
@@ -361,7 +362,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins    ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
-
+	if( fMultSelectionCuts->GetNonZeroNContribs()          &&  fnContributors < 1 ) lSaveThisEvent = kFALSE;
+	
         if ( lSaveThisEvent ) {
             sTree [lThisRunIndex] -> Fill();
         }
@@ -418,7 +420,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins    ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
-
+	if( fMultSelectionCuts->GetNonZeroNContribs()          &&  fnContributors < 1 ) lSaveThisEvent = kFALSE;
+	
         //Consult map for run range equivalency
         Int_t lIndex = -1;
         if ( fRunMap.find( fRunNumber ) != fRunMap.end() ) {
