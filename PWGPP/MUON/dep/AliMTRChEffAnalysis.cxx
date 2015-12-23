@@ -674,7 +674,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
   Int_t width = 1200;
   Int_t height = 800;
   Int_t nDetEl = 18;
-  Int_t nCh = 4;
+  Int_t nCh = 1;
 
   TArrayI boards = BoardsInRPC(irpc);
   if ( itype == AliTrigChEffOutput::kHboardEff ) nDetEl = boards.GetSize();
@@ -692,7 +692,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
       else sumHistos = static_cast<TH1*>(histos[idetelem]->Clone("sumHistos"));
     }
 
-    TString canName = Form("%sCh%i",base.Data(),11+ich);
+    TString canName = base; //Form("%sCh%i",base.Data(),11+ich);
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),25*ich,25*ich,width,height);
     can->Divide(nColumns,nRows,0,0);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
@@ -708,6 +708,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
       gr->SetHistogram(static_cast<TH1F*>(histos[idetelem]));
 
       gr->SetMarkerStyle(24);
+      gr->SetMarkerSize(0.5);
       gr->GetYaxis()->SetRangeUser(minY,maxY);
       gr->GetYaxis()->SetTitle(Form("Tracks in %s / Sum of tracks of %ss in %s",baseNames[itype].Data(),baseNames[itype].Data(),baseNames[itype-1].Data()));
       gr->SetTitle("");
