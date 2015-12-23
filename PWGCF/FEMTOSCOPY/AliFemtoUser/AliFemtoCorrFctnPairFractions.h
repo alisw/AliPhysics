@@ -50,10 +50,11 @@ private:
 
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctnPairFractions, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCorrFctnPairFractions, 1);
+  /// \endcond
 #endif
 };
 
 
 #endif
-
