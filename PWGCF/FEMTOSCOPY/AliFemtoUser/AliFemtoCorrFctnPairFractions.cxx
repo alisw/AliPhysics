@@ -14,10 +14,12 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
-ClassImp(AliFemtoCorrFctnPairFractions)
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCorrFctnPairFractions);
+  /// \endcond
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
@@ -55,16 +57,14 @@ AliFemtoCorrFctn(),
   fPairFractionsDen->GetXaxis()->SetBinLabel(7,"e+, MC");
   fPairFractionsDen->GetXaxis()->SetBinLabel(8,"#mu+, MC");
   fPairFractionsDen->GetXaxis()->SetBinLabel(9,"Other, MC");
-    
+
   // to enable error bar calculation...
   fPairFractions->Sumw2();
   fPairFractionsDen->Sumw2();
-
-
 }
 
 //____________________________
-AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrFctnPairFractions& aCorrFctn) :
+AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrFctnPairFractions& aCorrFctn):
   AliFemtoCorrFctn(),
   fPairFractions(0),
   fPairFractionsDen(0),
@@ -78,7 +78,7 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
   else
     fPairFractions = 0;
 
- if (aCorrFctn.fPairFractions)
+  if (aCorrFctn.fPairFractions)
     fPairFractions = new TH1F(*aCorrFctn.fPairFractions);
   else
     fPairFractions = 0;
@@ -86,9 +86,9 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
- if(detadphi && aCorrFctn.detadphi){
+ if (detadphi && aCorrFctn.detadphi) {
 
-   for(int i=0;i<7;i++){
+   for (int i = 0; i < 7; i++) {
      if (aCorrFctn.fPairFractionsDEtaDPhi[i])
        fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
      else
@@ -103,17 +103,18 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
  }
 }
 //____________________________
-AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions(){
+AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions()
+{
   // destructor
   if(fPairFractions)
     delete fPairFractions;
   if(fPairFractionsDen)
-    delete fPairFractionsDen; 
-  if(detadphi){
-    for(int i=0;i<7;i++){
-      if(fPairFractionsDEtaDPhi[i])
+    delete fPairFractionsDen;
+  if (detadphi) {
+    for (int i = 0; i < 7; i++) {
+      if (fPairFractionsDEtaDPhi[i])
 	delete fPairFractionsDEtaDPhi[i];
-      if(fPairFractionsDenDEtaDPhi[i])
+      if (fPairFractionsDenDEtaDPhi[i])
 	delete fPairFractionsDenDEtaDPhi[i];
     }
   }
@@ -134,30 +135,31 @@ AliFemtoCorrFctnPairFractions& AliFemtoCorrFctnPairFractions::operator=(const Al
       fPairFractionsDen = new TH1F(*aCorrFctn.fPairFractionsDen);
     else
       fPairFractionsDen = 0;
- 
+
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
   detadphi = aCorrFctn.detadphi;
 
-  if(detadphi){
-    for(int i=0;i<7;i++){
-      if (aCorrFctn.fPairFractionsDEtaDPhi)
-	fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
+  if (detadphi) {
+    for (int i = 0; i < 7; i++) {
+      if (aCorrFctn.fPairFractionsDEtaDPhi[i])
+        fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
       else
-	fPairFractionsDEtaDPhi[i] = 0;
+        fPairFractionsDEtaDPhi[i] = 0;
 
-      if (aCorrFctn.fPairFractionsDenDEtaDPhi)
-	fPairFractionsDenDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDenDEtaDPhi[i]);
+      if (aCorrFctn.fPairFractionsDenDEtaDPhi[i])
+        fPairFractionsDenDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDenDEtaDPhi[i]);
       else
-	fPairFractionsDenDEtaDPhi[i] = 0;
+        fPairFractionsDenDEtaDPhi[i] = 0;
     }
   }
 
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnPairFractions::Finish(){
+void AliFemtoCorrFctnPairFractions::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -169,7 +171,8 @@ void AliFemtoCorrFctnPairFractions::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnPairFractions::Report(){
+AliFemtoString AliFemtoCorrFctnPairFractions::Report()
+{
   // create report
   string stemp = "Pair Fractions Correlation Function Report:\n";
   char ctemp[100];
@@ -182,7 +185,8 @@ AliFemtoString AliFemtoCorrFctnPairFractions::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnPairFractions::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
 
   //Applying pair cuts
@@ -235,7 +239,7 @@ void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
     while (dphi>fphiT) dphi-=PIT;
 
     double deta = eta1 - eta2;
-    
+
     if(abs(pdg1)==211 && abs(pdg2)==211) //pi pi
       fPairFractionsDEtaDPhi[0]->Fill(dphi,deta);
     else if((abs(pdg1)==211 && abs(pdg2)==321)||(abs(pdg1)==321 && abs(pdg2)==211))// pi K
@@ -250,7 +254,7 @@ void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
       fPairFractionsDEtaDPhi[5]->Fill(dphi,deta);
     else //other
 	fPairFractionsDEtaDPhi[6]->Fill(dphi,deta);
-      
+
   }
 /*
    double px1 = pair->Track1()->Track()->P().x();
@@ -263,10 +267,11 @@ void AliFemtoCorrFctnPairFractions::AddRealPair( AliFemtoPair* pair){
 
 
    double PionMass = 0.13956995;*/
- 
+
 }
 //____________________________
-void AliFemtoCorrFctnPairFractions::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnPairFractions::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
@@ -301,7 +306,7 @@ void AliFemtoCorrFctnPairFractions::AddMixedPair( AliFemtoPair* pair){
       fPairFractionsDen->Fill(8.5);
     }
 
-  if(detadphi){
+  if (detadphi) {
     // double phi1 = pair->Track1()->Track()->P().Phi();
     // double phi2 = pair->Track2()->Track()->P().Phi();
     // double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
@@ -317,7 +322,7 @@ void AliFemtoCorrFctnPairFractions::AddMixedPair( AliFemtoPair* pair){
     while (dphi>fphiT) dphi-=PIT;
 
     double deta = eta1 - eta2;
-    
+
     if(abs(pdg1)==211 && abs(pdg2)==211) //pi pi
       fPairFractionsDenDEtaDPhi[0]->Fill(dphi,deta);
     else if((abs(pdg1)==211 && abs(pdg2)==321)||(abs(pdg1)==321 && abs(pdg2)==211))// pi K
@@ -332,9 +337,7 @@ void AliFemtoCorrFctnPairFractions::AddMixedPair( AliFemtoPair* pair){
       fPairFractionsDenDEtaDPhi[5]->Fill(dphi,deta);
     else //other
       fPairFractionsDenDEtaDPhi[6]->Fill(dphi,deta);
-    
   }
-
 }
 
 
@@ -343,8 +346,8 @@ void AliFemtoCorrFctnPairFractions::WriteHistos()
   // Write out result histograms
   fPairFractions->Write();
   fPairFractionsDen->Write();
-  if(detadphi){
-    for(int i=0;i<7;i++)    {
+  if (detadphi) {
+    for (int i = 0; i < 7; i++) {
       fPairFractionsDEtaDPhi[i]->Write();
       fPairFractionsDenDEtaDPhi[i]->Write();
     }
@@ -359,28 +362,27 @@ TList* AliFemtoCorrFctnPairFractions::GetOutputList()
   tOutputList->Add(fPairFractions);
   tOutputList->Add(fPairFractionsDen);
 
-  if(detadphi){
-    for(int i=0;i<7;i++)    {
+  if (detadphi) {
+    for (int i = 0; i < 7; i++) {
       tOutputList->Add(fPairFractionsDenDEtaDPhi[i]);
       tOutputList->Add(fPairFractionsDEtaDPhi[i]);
     }
   }
   return tOutputList;
-
 }
 
 
-void AliFemtoCorrFctnPairFractions::SetDoDEtaDPhiMaps(bool dodedp){
+void AliFemtoCorrFctnPairFractions::SetDoDEtaDPhiMaps(bool dodedp)
+{
   detadphi = dodedp;
-  if(detadphi){
-
+  if (detadphi) {
     double aPhiBins = 5;
     fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
     fphiT = 2*TMath::Pi()+(-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
     const char *title = fPairFractions->GetName();
     TString particle;
-   
-    for(int i=0;i<7;i++){
+
+    for (int i = 0; i < 7; i++) {
       if(i==0) particle = "PiPi";
       else if(i==1) particle = "PiK";
       else if(i==2) particle = "PiP";
@@ -388,8 +390,8 @@ void AliFemtoCorrFctnPairFractions::SetDoDEtaDPhiMaps(bool dodedp){
       else if(i==4) particle = "KP";
       else if(i==5) particle = "PP";
       else if(i==6) particle = "Other";
-      
-     
+
+
 
       TString hname  = "NumDEtaDPhi"; hname+= title; hname+= particle;
       TString htitle = " 2D DEtaDPhi Num "; htitle+= title; htitle+= particle;
@@ -402,7 +404,5 @@ void AliFemtoCorrFctnPairFractions::SetDoDEtaDPhiMaps(bool dodedp){
       fPairFractionsDEtaDPhi[i]->Sumw2();
       fPairFractionsDenDEtaDPhi[i]->Sumw2();
     }
-
   }
-
 }
