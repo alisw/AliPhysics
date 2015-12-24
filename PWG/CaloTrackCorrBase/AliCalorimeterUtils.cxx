@@ -665,6 +665,9 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster,
     Int_t relId[4];
     Int_t irow = -1, icol = -1;
     fPHOSGeo->AbsToRelNumbering(absIdMax,relId);
+    
+    if (relId[1] != 0 ) return kFALSE; // skip CPV only PHOS
+
     irow = relId[2];
     icol = relId[3];
     //imod = relId[0]-1;
@@ -707,6 +710,8 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
       Int_t    relId[4];
       fPHOSGeo->AbsToRelNumbering(cellList[iCell],relId);
 			
+      if (relId[1] != 0 ) return kTRUE; // skip CPV only PHOS
+      
       irow = relId[2];
       icol = relId[3];
       imod = relId[0]-1;
@@ -1021,6 +1026,8 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
     Int_t    relId[4];
     fPHOSGeo->AbsToRelNumbering(absId,relId);
     
+    if (relId[1] != 0 ) return -1; // skip CPV only PHOS
+    
     AliDebug(2,Form("PHOS absid %d Module %d",absId, relId[0]-1));
     
     return relId[0]-1;
@@ -1088,6 +1095,8 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
   {
     Int_t relId[4];
     fPHOSGeo->AbsToRelNumbering(absId,relId);
+    
+    if (relId[1] != 0 ) return -1; // skip CPV only PHOS
     
     irow = relId[2];
     icol = relId[3];
