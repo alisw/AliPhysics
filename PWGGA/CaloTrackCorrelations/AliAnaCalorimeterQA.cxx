@@ -1723,7 +1723,7 @@ void AliAnaCalorimeterQA::Correlate()
   
   for(iclus = 0 ; iclus <  caloClustersPHOS ->GetEntriesFast(); iclus++) 
   {
-    cluster = (AliVCluster*)caloClustersPHOS->At(iclus);
+    cluster = (AliVCluster*) caloClustersPHOS->At(iclus);
 
     energy = cluster->E();
     
@@ -1764,8 +1764,11 @@ void AliAnaCalorimeterQA::Correlate()
   for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
   {
     Float_t amp = cellsPHOS->GetAmplitude(icell);
+    Int_t cellId = cellsPHOS->GetCellNumber(icell);
+
+    if ( cellId < 0 ) continue ; // CPV
     
-    if (amp < fPHOSCellAmpMin) continue;
+    if ( amp < fPHOSCellAmpMin ) continue;
     
     ncellsPHOS++;
     sumCellEnergyPHOS += amp;
