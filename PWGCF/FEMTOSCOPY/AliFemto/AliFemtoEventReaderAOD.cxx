@@ -1604,11 +1604,15 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
 
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack)
 {
+  // A cache which maps vertices to the number of tracks used to determine the vertex
+  // Added due to slow calculation in AliAODVertex::GetNContributors - if that changes, remove this.
+  static std::map<Short_t, Int_t> _vertex_NContributors_cache;
 
   if (fDCAglobalTrack) {
 
     // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
     const AliAODVertex *vertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
+
     float vertexX = -999.;
     float vertexY = -999.;
     float vertexZ = -999.;
@@ -1616,7 +1620,22 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     if (vertex) {
       Double32_t fCov[6];
       vertex->GetCovarianceMatrix(fCov);
-      if (vertex->GetNContributors() > 0) {
+
+      const Short_t vertex_id = vertex->GetID();
+      std::map<Short_t, Int_t>::iterator cached_vertex = _vertex_NContributors_cache.find(vertex_id);
+
+      Int_t nContributors;
+
+      // if not in cache, calculate, then store it for future use
+      if (cached_vertex == _vertex_NContributors_cache.end()) {
+        nContributors = vertex->GetNContributors();
+        _vertex_NContributors_cache[vertex_id] = nContributors;
+        // TODO: Option to enforce a max size limit on the cache - can empty here.
+      } else {
+        nContributors = cached_vertex->second;
+      }
+
+      if (nContributors > 0) {
         if (fCov[5] != 0) {
           vertexX = vertex->GetX();
           vertexY = vertex->GetY();
