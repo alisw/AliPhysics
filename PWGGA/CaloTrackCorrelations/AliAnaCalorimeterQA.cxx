@@ -426,7 +426,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
 void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 {
   Int_t ncells = cells->GetNumberOfCells();
-  if( ncells > 0 ) fhNCells->Fill(ncells, GetEventWeight()) ;
+  if( ncells > 0 ) fhNCells->Fill(ncells, GetEventWeight()) ; // Not ok for PHOS with CPV
 
   Int_t   ncellsCut = 0;
   Float_t ecellsCut = 0;
@@ -455,6 +455,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
+    if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
+    
     AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
    
     Int_t nModule = GetModuleNumberCellIndexes(cells->GetCellNumber(iCell),GetCalorimeter(), icol, irow, iRCU);
@@ -655,6 +657,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   {
     for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
     {
+      if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
+
       AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
       
       Int_t nModule = GetModuleNumberCellIndexes(cells->GetCellNumber(iCell),GetCalorimeter(), icol, irow, iRCU);
@@ -1763,7 +1767,7 @@ void AliAnaCalorimeterQA::Correlate()
   
   for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
   {
-    Float_t amp = cellsPHOS->GetAmplitude(icell);
+    Float_t  amp = cellsPHOS->GetAmplitude(icell);
     Int_t cellId = cellsPHOS->GetCellNumber(icell);
 
     if ( cellId < 0 ) continue ; // CPV
