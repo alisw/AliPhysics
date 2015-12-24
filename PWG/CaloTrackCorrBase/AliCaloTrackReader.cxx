@@ -1901,56 +1901,61 @@ void AliCaloTrackReader::FillInputPHOS()
 {  
   AliDebug(1,"Begin");
   
-  //Loop to select clusters in fiducial cut and fill container with aodClusters
+  // Loop to select clusters in fiducial cut and fill container with aodClusters
   Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
   for (Int_t iclus = 0; iclus < nclusters; iclus++)
   {
-    AliVCluster * clus = 0;
-    if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+    AliVCluster * clus = fInputEvent->GetCaloCluster(iclus) ;
+    if ( !clus ) continue ;
+    
+    if ( !clus->IsPHOS() ) continue ;
+    
+    // Skip CPV input
+    if( clus->GetType() == AliVCluster::kPHOSCharged ) continue ;
+    
+    if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
+    
+    // Check if the cluster contains any bad channel and if close to calorimeter borders    
+    if( GetCaloUtils()->ClusterContainsBadChannel(kPHOS,clus->GetCellsAbsId(), clus->GetNCells()))
+      continue;
+    
+    if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells()))
+      continue;
+    
+    if(fRecalculateClusters)
     {
-      if (clus->IsPHOS())
+      // Recalibrate the cluster energy
+      if(GetCaloUtils()->IsRecalibrationOn())
       {
-        if(fAcceptOnlyHIJINGLabels && !IsHIJINGLabel(clus->GetLabel())) continue ;
-        
-        //Check if the cluster contains any bad channel and if close to calorimeter borders
-        Int_t vindex = 0 ;
-        if (fMixedEvent)
-          vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
-        if( GetCaloUtils()->ClusterContainsBadChannel(kPHOS,clus->GetCellsAbsId(), clus->GetNCells()))
-          continue;
-        if(!GetCaloUtils()->CheckCellFiducialRegion(clus, fInputEvent->GetPHOSCells()))
-          continue;
-        
-        if(fRecalculateClusters)
-        {
-          //Recalibrate the cluster energy
-          if(GetCaloUtils()->IsRecalibrationOn())
-          {
-            Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
-            clus->SetE(energy);
-          }
-        }
-        
-        clus->GetMomentum(fMomentum, fVertex[vindex]);
-        
-        if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kPHOS)) continue;
-        
-        if(fPHOSPtMin > fMomentum.E() || fPHOSPtMax < fMomentum.E())         continue;
-        
-        //if(fDebug > 2 && fMomentum.E() > 0.1)
-        AliDebug(2,Form("Selected clusters E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
-                        fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
-        
-        if (fMixedEvent)
-        {
-          clus->SetID(iclus) ;
-        }
-        
-        fPHOSClusters->Add(clus);
-        
-      }//PHOS cluster
-    }//cluster exists
-  }//esd cluster loop
+        Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
+        clus->SetE(energy);
+      }
+    }
+    
+    // Dead code? remove?
+    Int_t vindex = 0 ;
+    if (fMixedEvent)
+      vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
+
+    clus->GetMomentum(fMomentum, fVertex[vindex]);
+    
+    if (fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kPHOS) ) 
+      continue ;
+    
+    if (fPHOSPtMin > fMomentum.E() || fPHOSPtMax < fMomentum.E() ) 
+      continue ;
+    
+    //if(fDebug > 2 && fMomentum.E() > 0.1)
+    AliDebug(2,Form("Selected clusters E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+    
+    // Dead code? remove?
+    if (fMixedEvent)
+      clus->SetID(iclus) ;
+    
+    fPHOSClusters->Add(clus);
+    
+  } // esd cluster loop
   
  AliDebug(1,Form("AOD entries %d",fPHOSClusters->GetEntriesFast()));
   
