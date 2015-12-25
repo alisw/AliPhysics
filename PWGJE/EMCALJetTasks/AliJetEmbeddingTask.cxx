@@ -128,18 +128,6 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       
       fCurrentEntry = gRandom->Integer(nentries); //in each worker it starts from a different entry
       
-      if(!fRandomEntry && fPtMin != 0 && fPtMax != 0){
-      	 AliInfo(Form("Using range %.2f - %.2f GeV/c", fPtMin, fPtMax));
-      	 for(Int_t i = 0; i<nentries ; i++){
-      	    fTreeJet4Vect->GetEntry(i);
-      	    if((detjet->Pt()> fPtMin) && (detjet->Pt()> fPtMax)) {
-      	       fCurrentEntry = i;
-      	       AliInfo(Form("Setting fCurrentEntry to %d: will loop from there", fCurrentEntry));
-      	       
-      	       break;
-      	    }
-      	 }
-      }
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
