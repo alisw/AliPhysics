@@ -1,23 +1,20 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoESDTrackCut: A basic track cut that used information from     //
-// ALICE ESD to accept or reject the track.                             ////////////////////////////////////////////////
-#include "AliESDtrackCuts.h"
+///
+/// \file AliFemtoESDTrackCut.h
+///
+
 
 #ifndef ALIFEMTOESDTRACKCUT_H
 #define ALIFEMTOESDTRACKCUT_H
-
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
 
 #include "AliESDtrackCuts.h" //for enum with ITS layers
 #include "AliFemtoTrackCut.h"
 
 
-class AliFemtoESDTrackCut : public AliFemtoTrackCut
-{
-  public:
+/// \class AliFemtoESDTrackCut
+/// \brief A basic track cut that used information from ALICE ESD to accept or reject the track.
+///
+class AliFemtoESDTrackCut : public AliFemtoTrackCut {
+public:
 
   enum PIDMethodType {knSigma=0, kContour=1};
   typedef enum PIDMethodType ReadPIDMethodType;
@@ -71,52 +68,52 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
   void SetElectronRejection(Bool_t);
 
- private:   // here are the quantities I want to cut on...
+protected:   // here are the quantities I want to cut on...
 
-  int               fCharge;             // particle charge
-  float             fPt[2];              // bounds for transverse momentum
-  float             fRapidity[2];        // bounds for rapidity
-  float             fEta[2];             // bounds for pseudorapidity
-  float             fPidProbElectron[2]; // bounds for electron probability
-  float             fPidProbPion[2];     // bounds for pion probability
-  float             fPidProbKaon[2];     // bounds for kaon probability
-  float             fPidProbProton[2];   // bounds for proton probability
-  float             fPidProbMuon[2];     // bounds for muon probability
+  int               fCharge;             ///< particle charge
+  float             fPt[2];              ///< bounds for transverse momentum
+  float             fRapidity[2];        ///< bounds for rapidity
+  float             fEta[2];             ///< bounds for pseudorapidity
+  float             fPidProbElectron[2]; ///< bounds for electron probability
+  float             fPidProbPion[2];     ///< bounds for pion probability
+  float             fPidProbKaon[2];     ///< bounds for kaon probability
+  float             fPidProbProton[2];   ///< bounds for proton probability
+  float             fPidProbMuon[2];     ///< bounds for muon probability
 
-  AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
-  bool              fLabel;              // if true label<0 will not pass throught
-  long              fStatus;             // staus flag
-  ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour
-  Bool_t            fNsigmaTPCTOF;       // true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
-  Bool_t            fNsigmaTPConly;       // true if nsigma from TPC only
-  Double_t            fNsigma;       // number of sigmas - 3 by default
+  AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  ///< detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
+  bool              fLabel;              ///< if true label<0 will not pass throught
+  long              fStatus;             ///< staus flag
+  ReadPIDMethodType fPIDMethod;          ///< which PID mehod to use. 0 - nsgima, 1 - contour
+  Bool_t            fNsigmaTPCTOF;       ///< true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
+  Bool_t            fNsigmaTPConly;      ///< true if nsigma from TPC only
+  Double_t          fNsigma;             ///< number of sigmas - 3 by default
 
-  short             fminTPCclsF;         // min number of findable clusters in the TPC
-  short             fminTPCncls;         // min number of clusters in the TPC
-  int               fminITScls;          // min number of clusters assigned in the ITS
-  float             fMaxITSchiNdof;      // maximum allowed chi2/ndof for ITS clusters
-  float             fMaxTPCchiNdof;      // maximum allowed chi2/ndof for TPC clusters
-  float             fMaxSigmaToVertex;   // maximum allowed sigma to primary vertex
-  long              fNTracksPassed;      // passed tracks count
-  long              fNTracksFailed;      // failed tracks count
-  bool              fRemoveKinks;        // if true particles with any kink label will not pass
-  bool              fRemoveITSFake;      // if true particles with ITS fake flag will not pass
-  int               fMostProbable;       // this particle type is required to be most probable
+  short             fminTPCclsF;         ///< min number of findable clusters in the TPC
+  short             fminTPCncls;         ///< min number of clusters in the TPC
+  int               fminITScls;          ///< min number of clusters assigned in the ITS
+  float             fMaxITSchiNdof;      ///< maximum allowed chi2/ndof for ITS clusters
+  float             fMaxTPCchiNdof;      ///< maximum allowed chi2/ndof for TPC clusters
+  float             fMaxSigmaToVertex;   ///< maximum allowed sigma to primary vertex
+  long              fNTracksPassed;      ///< passed tracks count
+  long              fNTracksFailed;      ///< failed tracks count
+  bool              fRemoveKinks;        ///< if true particles with any kink label will not pass
+  bool              fRemoveITSFake;      ///< if true particles with ITS fake flag will not pass
+  int               fMostProbable;       ///< this particle type is required to be most probable
 
-  float             fMaxImpactXY;        // Max XY impact parameter
-  float             fMinImpactXY;        // Max XY impact parameter
-  float             fMaxImpactZ;         // Max Z impact parameter
+  float             fMaxImpactXY;        ///< Max XY impact parameter
+  float             fMinImpactXY;        ///< Max XY impact parameter
+  float             fMaxImpactZ;         ///< Max Z impact parameter
 
-  float             fMaxImpactXYPtOff;   // Max XY DCA Pt dependent offset
-  float             fMaxImpactXYPtNrm;   // Max XY DCA Pt dependent normalization
-  float             fMaxImpactXYPtPow;   // Max XY DCA Pt dependent power
+  float             fMaxImpactXYPtOff;   ///< Max XY DCA Pt dependent offset
+  float             fMaxImpactXYPtNrm;   ///< Max XY DCA Pt dependent normalization
+  float             fMaxImpactXYPtPow;   ///< Max XY DCA Pt dependent power
 
-  float             fMinPforTOFpid;  // momentum from which TOF PID is requested
-  float             fMaxPforTOFpid;  // momentum till which TOF PID is requested
-  float             fMinPforTPCpid;  // momentum from which TPC PID is requested
-  float             fMaxPforTPCpid;  // momentum till which TPC PID is requested
-  float             fMinPforITSpid;  // momentum from which ITS PID is requested
-  float             fMaxPforITSpid;  // momentum till which ITS PID is requested
+  float             fMinPforTOFpid;  ///< momentum from which TOF PID is requested
+  float             fMaxPforTOFpid;  ///< momentum till which TOF PID is requested
+  float             fMinPforTPCpid;  ///< momentum from which TPC PID is requested
+  float             fMaxPforTPCpid;  ///< momentum till which TPC PID is requested
+  float             fMinPforITSpid;  ///< momentum from which ITS PID is requested
+  float             fMaxPforITSpid;  ///< momentum till which ITS PID is requested
   bool fElectronRejection;
 
   float PidFractionElectron(float mom) const;
@@ -143,9 +140,11 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoESDTrackCut, 1)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoESDTrackCut, 1);
+  /// \endcond
 #endif
-    };
+};
 
 
 inline void AliFemtoESDTrackCut::SetPt(const float& lo, const float& hi){fPt[0]=lo; fPt[1]=hi;}
