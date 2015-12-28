@@ -19,6 +19,7 @@
 /* $Id$ */ 
 
 #include "TROOT.h"
+#include "TVector.h"
 #include "TSystem.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -54,13 +55,10 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *aod, TClonesArray *mcarray);
-  void FillWSROOTObjects(AliAODTrack *trk1, AliAODTrack *trk2);
-  void FillMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev, Double_t *tinfo);
-  void FillWSMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev);
+  void FillMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev, TVector *tinfo, TVector *vinfo);
   Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
   void FillProtonROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
-  void FillKaonROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
 	void FillMCProtonROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
@@ -213,19 +211,13 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TTree** fEventBuffer;   //!<! structure for event mixing
 	TObjString *fEventInfo; ///unique event id for mixed event check
   TObjArray* fProtonTracks; /// array of electron-compatible tracks
-//  TObjArray* fKaonTracks; /// array of electron-compatible tracks
   TObjArray* fV0Tracks; /// array of lambda-compatible tracks
-	std::vector<Double_t> fBachd0Array; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fBachDcaXArray; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fBachDcaYArray; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fBachDcaPxArray; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fBachDcaPyArray; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fPVXArray; /// array of lambda-compatible tracks' information
-	std::vector<Double_t> fPVYArray; /// array of lambda-compatible tracks' information
+	TObjArray* fProtonCutVarsArray; /// array of RDHF cut information
+	TObjArray* fV0CutVarsArray; /// array of RDHF cut information
 
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,3); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,4); /// class for Lc->p K0
   /// \endcond
 };
 #endif

@@ -28,6 +28,7 @@
 #include <TDatabasePDG.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -89,18 +90,39 @@ AliRDHFCuts(name),
   // Default Constructor
   //
 
-  const Int_t nvars=2;
+  const Int_t nvars=9;
   SetNVars(nvars);
   TString varNames[nvars]={"Lc inv. mass [GeV/c2]",                   //  0
-			   "Lc pT [GeV/c]" //1
+			   "Opening angle [rad]",//1
+			   "n#sigma_{TPC} max",//2
+			   "n#sigma_{TOF} min",//3
+			   "Decay Length min [cm]",//4
+			   "cos #theta min",//5
+			   "cos #theta max",//6
+			   "Proton d0 max",//7
+			   "V0 d0 max"//8
   };
 
   Bool_t isUpperCut[nvars]={kTRUE,  //  0
-			    kFALSE, //1
+			    kFALSE, //1: opening angle
+			    kTRUE, //2: nsigma_tpc max
+			    kFALSE, //3: nsigma tof min
+			    kFALSE, //4: decay length min
+			    kFALSE, //5: cos the min
+			    kTRUE, //6: cos the max
+			    kTRUE, //7: 
+			    kTRUE //8:
   };
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[nvars]={kFALSE, //  0
 			kFALSE, //1
+			kTRUE, //2
+			kTRUE, //3
+			kTRUE, //4
+			kTRUE, //5
+			kTRUE, //6
+			kTRUE, //7
+			kTRUE //8
   };
   SetVarsForOpt(nvars,forOpt);
 
@@ -296,6 +318,12 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
 
+  Double_t pt=d->Pt();
+  Int_t ptbin=PtBin(pt);
+  if (ptbin==-1) {
+    return 0;
+  }
+
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
     //Performed in production stage
@@ -306,14 +334,11 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kCandidate) {
     
-    Double_t pt=d->Pt();
-    Int_t ptbin=PtBin(pt);
-    if (ptbin==-1) {
-      return 0;
-    }
     Bool_t okcand=kTRUE;
     
     Double_t mlcPDG =  TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+    Double_t mprPDG =  TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+    Double_t mk0PDG =  TDatabasePDG::Instance()->GetParticle(310)->Mass();
 		Double_t v0px = d->PxProng(1);
 		Double_t v0py = d->PyProng(1);
 		Double_t v0pz = d->PzProng(1);
@@ -322,12 +347,39 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
 		Double_t epz = d->PzProng(0);
 		Double_t cosoa = (v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz);
 
+    TLorentzVector vpr, vk0s,vlc;
+    vpr.SetXYZM(epx,epy,epz,mprPDG);
+    vk0s.SetXYZM(v0px,v0py,v0pz,mk0PDG);
+    vlc = vpr + vk0s;
+    TVector3 vboost = vlc.BoostVector();
+    vpr.Boost(-vboost);
+    Double_t bachcosthe = cos(vpr.Angle(vlc.Vect()));
     
     if(TMath::Abs(d->InvMassLctoK0sP()-mlcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)])
       {
 	okcand = kFALSE;
       }
     if(cosoa < fCutsRD[GetGlobalIndex(1,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(d->DecayLengthXY() < fCutsRD[GetGlobalIndex(4,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(bachcosthe < fCutsRD[GetGlobalIndex(5,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(bachcosthe > fCutsRD[GetGlobalIndex(6,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(7,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(8,ptbin)])
       {
 	okcand = kFALSE;
       }
@@ -340,6 +392,126 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
   if(selectionLevel==AliRDHFCuts::kAll ||
      selectionLevel==AliRDHFCuts::kCandidate|| 
      selectionLevel==AliRDHFCuts::kPID) {
+
+    AliAODTrack *part = (AliAODTrack*)d->GetSecondaryVtx()->GetDaughter(0);
+
+    Double_t nSigmaTPCpr = fPidHF->GetPidResponse()->NumberOfSigmasTPC(part,AliPID::kProton);
+    if(nSigmaTPCpr>fCutsRD[GetGlobalIndex(2,ptbin)]){
+      returnvaluePID = -1;
+    }
+
+    Double_t nSigmaTOFpr = fPidHF->GetPidResponse()->NumberOfSigmasTOF(part,AliPID::kProton);
+    if(nSigmaTOFpr<fCutsRD[GetGlobalIndex(3,ptbin)]){
+      returnvaluePID = -1;
+    }
+
+  }
+  
+  Int_t returnvalue = 0;
+  if(returnvalueCuts==1 && returnvaluePID==1) returnvalue=1;
+  
+  return returnvalue;
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TLorentzVector* vtrk, TLorentzVector *vv0, Double_t *cutvars, Int_t selectionLevel) {
+  //
+  // Apply selection on mixed event tracks
+  //
+
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
+
+  Double_t ptD=cutvars[1];
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
+  Double_t pt=cutvars[1];
+  Int_t ptbin=PtBin(pt);
+  if (ptbin==-1) {
+    return 0;
+  }
+
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      selectionLevel==AliRDHFCuts::kTracks) {
+    //Performed in production stage
+  }
+
+  Int_t returnvalueCuts=1;
+  // selection on candidate
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      selectionLevel==AliRDHFCuts::kCandidate) {
+    
+    Bool_t okcand=kTRUE;
+    
+    Double_t mlcPDG =  TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+    Double_t mprPDG =  TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+    Double_t mk0PDG =  TDatabasePDG::Instance()->GetParticle(310)->Mass();
+		Double_t v0px = vv0->Px();
+		Double_t v0py = vv0->Py();
+		Double_t v0pz = vv0->Pz();
+		Double_t epx = vtrk->Px();
+		Double_t epy = vtrk->Py();
+		Double_t epz = vtrk->Pz();
+		Double_t cosoa = (v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz);
+
+    TLorentzVector vpr, vk0s,vlc;
+    vpr.SetXYZM(epx,epy,epz,mprPDG);
+    vk0s.SetXYZM(v0px,v0py,v0pz,mk0PDG);
+    vlc = vpr + vk0s;
+    TVector3 vboost = vlc.BoostVector();
+    vpr.Boost(-vboost);
+    Double_t bachcosthe = cos(vpr.Angle(vlc.Vect()));
+    
+    if(TMath::Abs(cutvars[0]-mlcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(cosoa < fCutsRD[GetGlobalIndex(1,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(cutvars[4] < fCutsRD[GetGlobalIndex(4,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(bachcosthe < fCutsRD[GetGlobalIndex(5,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(bachcosthe > fCutsRD[GetGlobalIndex(6,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(cutvars[5] > fCutsRD[GetGlobalIndex(7,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(cutvars[6] > fCutsRD[GetGlobalIndex(8,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+
+    if(!okcand)  return 0;
+    returnvalueCuts = 1;
+  }
+  
+  Int_t returnvaluePID=1;
+  if(selectionLevel==AliRDHFCuts::kAll ||
+     selectionLevel==AliRDHFCuts::kCandidate|| 
+     selectionLevel==AliRDHFCuts::kPID) {
+
+    Double_t nSigmaTPCpr = cutvars[2];
+    if(fabs(nSigmaTPCpr)>fCutsRD[GetGlobalIndex(2,ptbin)]){
+      returnvaluePID = -1;
+    }
+
+    Double_t nSigmaTOFpr = cutvars[3];
+    if(fabs(nSigmaTOFpr)<fCutsRD[GetGlobalIndex(3,ptbin)]){
+      returnvaluePID = -1;
+    }
 
   }
   

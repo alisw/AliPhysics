@@ -35,6 +35,7 @@ class AliRDHFCutsLctopK0sfromAODtracks : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
+  Int_t IsSelected(TLorentzVector* t1, TLorentzVector *t2, Double_t *info, Int_t selectionLevel);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Double_t GetProtonProbabilityTPCTOF(AliAODTrack *trk);
   Bool_t IsSelectedProtonID(AliAODTrack* trk);
