@@ -181,15 +181,9 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks() :
 	fEventBuffer(0x0),
 	fEventInfo(0x0),
 	fProtonTracks(0x0),
-//	fKaonTracks(0x0),
 	fV0Tracks(0x0),
-	fBachd0Array(0x0),
-	fBachDcaXArray(0x0),
-	fBachDcaYArray(0x0),
-	fBachDcaPxArray(0x0),
-	fBachDcaPyArray(0x0),
-	fPVXArray(0x0),
-	fPVYArray(0x0)
+  fProtonCutVarsArray(0x0),
+  fV0CutVarsArray(0x0)
 {
   //
   // Default Constructor. 
@@ -287,15 +281,9 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks(con
 	fEventBuffer(0x0),
 	fEventInfo(0x0),
 	fProtonTracks(0x0),
-//	fKaonTracks(0x0),
 	fV0Tracks(0x0),
-	fBachd0Array(0x0),
-	fBachDcaXArray(0x0),
-	fBachDcaYArray(0x0),
-	fBachDcaPxArray(0x0),
-	fBachDcaPyArray(0x0),
-	fPVXArray(0x0),
-	fPVYArray(0x0)
+  fProtonCutVarsArray(0x0),
+  fV0CutVarsArray(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -375,10 +363,12 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::~AliAnalysisTaskSELc2pK0sfromAODtracks() 
 
 	if(fProtonTracks) fProtonTracks->Delete();
 	delete fProtonTracks;
-//	if(fKaonTracks) fKaonTracks->Delete();
-//	delete fKaonTracks;
 	if(fV0Tracks) fV0Tracks->Delete();
 	delete fV0Tracks;
+	if(fProtonCutVarsArray) fProtonCutVarsArray->Delete();
+	delete fProtonCutVarsArray;
+	if(fV0CutVarsArray) fV0CutVarsArray->Delete();
+	delete fV0CutVarsArray;
   if(fEventBuffer){
     for(Int_t i=0; i<fNOfPools; i++) delete fEventBuffer[i];
     delete fEventBuffer;
@@ -638,10 +628,12 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserCreateOutputObjects()
 	if(fDoEventMixing){
 		fProtonTracks = new TObjArray();
 		fProtonTracks->SetOwner();
-//		fKaonTracks = new TObjArray();
-//		fKaonTracks->SetOwner();
 		fV0Tracks = new TObjArray();
 		fV0Tracks->SetOwner();
+		fProtonCutVarsArray = new TObjArray();
+		fProtonCutVarsArray->SetOwner();
+		fV0CutVarsArray = new TObjArray();
+		fV0CutVarsArray->SetOwner();
 
 		fNOfPools=fNCentBins*fNzVtxBins*fNRPBins;
 		fEventBuffer = new TTree*[fNOfPools];
@@ -652,7 +644,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserCreateOutputObjects()
 			fEventBuffer[i]->Branch("reactionplane", &fReactionPlane);
 			fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
 			fEventBuffer[i]->Branch("v1array", "TObjArray", &fV0Tracks);
-//			fEventBuffer[i]->Branch("k1array", "TObjArray", &fKaonTracks);
+			fEventBuffer[i]->Branch("v1varsarray", "TObjArray", &fV0CutVarsArray);
 		}
 	}
 
@@ -671,15 +663,9 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
   //
 	if(fDoEventMixing){
 		if(fProtonTracks) fProtonTracks->Delete();
-//		if(fKaonTracks) fKaonTracks->Delete();
 		if(fV0Tracks) fV0Tracks->Delete();
-		fBachd0Array.clear();
-		fBachDcaXArray.clear();
-		fBachDcaYArray.clear();
-		fBachDcaPxArray.clear();
-		fBachDcaPyArray.clear();
-		fPVXArray.clear();
-		fPVYArray.clear();
+		if(fProtonCutVarsArray) fProtonCutVarsArray->Delete();
+		if(fV0CutVarsArray) fV0CutVarsArray->Delete();
 	}
 
   Int_t nV0s= aodEvent->GetNumberOfV0s();
@@ -736,22 +722,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
     }
   }
 
-  for (Int_t itrk1 = 0; itrk1<nTracks; itrk1++) {
-    if(seleTrkFlags[itrk1]!=1) continue;
-    AliAODTrack *trk1 = (AliAODTrack*)aodEvent->GetTrack(itrk1);
-    if(trk1->GetID()<0) continue;
-		for (Int_t itrk2 = 0; itrk2<nTracks; itrk2++) {
-			if(seleTrkFlags[itrk2]!=2) continue;
-			if(itrk1==itrk2) continue;
-			AliAODTrack *trk2 = (AliAODTrack*)aodEvent->GetTrack(itrk2);
-			if(trk2->GetID()<0) continue;
-      if(!fAnalCuts->SelectWithRoughCutsWS(trk2,trk1)) continue;
-      FillWSROOTObjects(trk1,trk2);
-		}
-	}
-
   if(fDoEventMixing){
-		//fEventInfo->SetString(Form("Ev%d_esd%d_E%d_V%d_K%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fProtonTracks->GetEntries(),fV0Tracks->GetEntries(),fKaonTracks->GetEntries()));
 		fEventInfo->SetString(Form("Ev%d_esd%d_E%d_V%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fProtonTracks->GetEntries(),fV0Tracks->GetEntries()));
     Int_t ind=GetPoolIndex(fVtxZ,fCentrality,fReactionPlane);
     if(ind>=0 && ind<fNOfPools){
@@ -780,7 +751,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   Double_t mk0sPDG =  TDatabasePDG::Instance()->GetParticle(310)->Mass();
   Double_t mlamPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-	for(Int_t i=0;i<45;i++){
+	for(Int_t i=0;i<54;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -884,7 +855,16 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
 			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==4122 && mclc->GetNDaughters()==2){
 				islambdac = kTRUE;
 			}
-			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==4122 && mclc->GetNDaughters()>2){
+			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==2214 && abs(mcpdgpr_array[2])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==4122 && mclc->GetNDaughters()==2){
+				islambdac3body = kTRUE;
+			}
+			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==3222 && abs(mcpdgpr_array[2])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==4122 && mclc->GetNDaughters()==2){
+				islambdac3body = kTRUE;
+			}
+			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==3222 && abs(mcpdgpr_array[2])==3224 && abs(mcpdgpr_array[3])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==4122 && mclc->GetNDaughters()==2){
+				islambdac3body = kTRUE;
+			}
+			if(abs(pdgcode)==4122 && abs(mcpdgpr_array[1])==4122 && abs(mcpdgv0_array[1])==311 && abs(mcpdgv0_array[2])==313 && abs(mcpdgv0_array[3])==4122 && mclc->GetNDaughters()==2){
 				islambdac3body = kTRUE;
 			}
 			genvertx_mc = mclc->Xv();
@@ -972,6 +952,15 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
 	fCandidateVariables[44] = neovertx_k0s;
 	fCandidateVariables[45] = neoverty_k0s;
 	fCandidateVariables[46] = lcobj->GetDCA();
+  if(mclc){
+    fCandidateVariables[47] = mclc->GetPdgCode();
+    fCandidateVariables[48] = mcpdgpr_array[0];
+    fCandidateVariables[49] = mcpdgpr_array[1];
+    fCandidateVariables[50] = mcpdgpr_array[2];
+    fCandidateVariables[51] = mcpdgv0_array[0];
+    fCandidateVariables[52] = mcpdgv0_array[1];
+    fCandidateVariables[53] = mcpdgv0_array[2];
+  }
 
 
   if(fWriteVariableTree)
@@ -998,7 +987,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
 	cont[2] = fCentrality;
 	if(cosoa>0.) fHistoLcK0SpMassCoarse->Fill(cont);
 
-	if(fAnalCuts->IsSelected(lcobj,AliRDHFCuts::kCandidate))
+	if(fAnalCuts->IsSelected(lcobj,AliRDHFCuts::kAll))
 	{
 	    fHistoLcK0SpMass->Fill(cont);
 
@@ -1026,35 +1015,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   return;
 }
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillWSROOTObjects(AliAODTrack *trkpr, AliAODTrack *trkka) 
-{
-  //
-  // Fill histograms or tree depending on fWriteVariableTree 
-  //
-	if(!trkpr) return;
-	if(!trkka) return;
-
-	TLorentzVector vpr, vka;
-	vpr.SetXYZM(trkpr->Px(),trkpr->Py(),trkpr->Pz(),0.938272);
-	vka.SetXYZM(trkka->Px(),trkka->Py(),trkka->Pz(),0.493677);
-
-	if(fabs((vpr+vka).M()-2.286)<0.4)
-	{
-		Double_t cont[3];
-		cont[0] = (vpr+vka).M();
-		cont[1] = (vpr+vka).Pt();
-		cont[2] = fCentrality;
-		Double_t weight = 1.;//to take into account the difference in efficiencies
-		if(trkpr->Charge()*trkka->Charge()>0){
-			fHistoLcKPluspMass->Fill(cont,weight);
-		}else{
-			fHistoLcKMinuspMass->Fill(cont,weight);
-		}
-	}
-  return;
-}
-////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *trkp, TLorentzVector *v0, Double_t *trkinfo) 
+void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *trkp, TLorentzVector *v0, TVector *prvars, TVector *v0vars) 
 {
   ///
   /// Fill histograms or tree depending on fWriteVariableTree
@@ -1062,7 +1023,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *t
 	if(!trkp) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<47;i++){
+	for(Int_t i=0;i<54;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -1101,10 +1062,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *t
 	cont_correlation[2] = trkp->Pt();
 	cont_correlation[3] = v0->Pt();
 	cont_correlation[4] = fCentrality;
-	//Double_t weight = fAnalCuts->GetMixingWeight(deltaphi,eta_assoc-eta_trig,trkp->Pt(),v0->Pt());
-	Double_t weight = 1.;
-	fHistoK0spCorrelationMix->Fill(cont_correlation,weight);
-
+	fHistoK0spCorrelationMix->Fill(cont_correlation);
 
 	fCandidateVariables[ 0] = mpk0s;
 	fCandidateVariables[ 1] = pxsum;
@@ -1123,15 +1081,15 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *t
   Double_t LcPy = pysum;
   Double_t LcPt = TMath::Sqrt(LcPx*LcPx+LcPy*LcPy);
 
-  Double_t x0 = trkinfo[5];
-  Double_t y0 = trkinfo[6];
+  Double_t x0 = (*prvars)[5];
+  Double_t y0 = (*prvars)[6];
   Double_t px0 = LcPx/LcPt;
   Double_t py0 = LcPy/LcPt;
   Double_t tx[3];
-  Double_t x1 = trkinfo[1];
-  Double_t y1 = trkinfo[2];
-  Double_t px1 = trkinfo[3];
-  Double_t py1 = trkinfo[4];
+  Double_t x1 = (*prvars)[1];
+  Double_t y1 = (*prvars)[2];
+  Double_t px1 = (*prvars)[3];
+  Double_t py1 = (*prvars)[4];
 
   Double_t dx = x0 - x1;
   Double_t dy = y0 - y1;
@@ -1151,61 +1109,23 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillMixROOTObjects(TLorentzVector *t
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
-	Double_t cont[3];
-	cont[0] = mpk0s;
-	cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
-	cont[2] = fCentrality;
-	if(cosoa>0.) fHistoLcK0SpMassMixCoarse->Fill(cont,weight);
+  Double_t rdhfcutvars[7];
+  rdhfcutvars[0] = mpk0s;
+  rdhfcutvars[1] = sqrt(pxsum*pxsum+pysum*pysum);
+  rdhfcutvars[2] = (*prvars)[7];
+  rdhfcutvars[3] = (*prvars)[8];
+  rdhfcutvars[4] = a0;
+  rdhfcutvars[5] = (*prvars)[0];
+  rdhfcutvars[6] = (*v0vars)[0];
 
-	//if(fAnalCuts->IsSelected(lcobj,AliRDHFCuts::kCandidate))
-	if(fabs(mpk0s-2.286)<0.4 && cosoa>0.)
+	if(fAnalCuts->IsSelected(trkp,v0,rdhfcutvars,AliRDHFCuts::kAll))
 	{
-		fHistoLcK0SpMassMix->Fill(cont,weight);
-	}
-
-  return;
-}
-////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillWSMixROOTObjects(TLorentzVector *trkp, TLorentzVector *trkk) 
-{
-  ///
-  /// Fill histograms or tree depending on fWriteVariableTree
-  ///
-	if(!trkp) return;
-	if(!trkk) return;
-
-	Double_t pxp = trkp->Px();
-	Double_t pyp = trkp->Py();
-	Double_t pzp = trkp->Pz();
-	Double_t momp = sqrt(pxp*pxp+pyp*pyp+pzp*pzp);
-	Double_t Ep = sqrt(momp*momp+0.938272*0.938272);
-
-	Double_t pxv = trkk->Px();
-	Double_t pyv = trkk->Py();
-	Double_t pzv = trkk->Pz();
-	Double_t momv = sqrt(pxv*pxv+pyv*pyv+pzv*pzv);
-	Double_t mv = 0.493677;
-	Double_t Ev = sqrt(momv*momv+mv*mv);
-
-	Double_t pxsum = pxp + pxv;
-	Double_t pysum = pyp + pyv;
-	Double_t pzsum = pzp + pzv;
-	Double_t Esum = Ep + Ev;
-	Double_t mpk0s = sqrt(Esum*Esum-pxsum*pxsum-pysum*pysum-pzsum*pzsum);
-
-	//if(fAnalCuts->IsSelected(lcobj,AliRDHFCuts::kCandidate))
-	if(fabs(mpk0s-2.286)<0.4)
-	{
-		Double_t cont[3];
-		cont[0] = mpk0s;
-		cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
-		cont[2] = fCentrality;
-		Double_t weight = 1.;
-		if(trkp->T()*trkk->T()>0){
-			fHistoLcKPluspMassMix->Fill(cont,weight);
-		}else{
-			fHistoLcKMinuspMassMix->Fill(cont,weight);
-		}
+    Double_t cont[3];
+    cont[0] = mpk0s;
+    cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
+    cont[2] = fCentrality;
+    fHistoLcK0SpMassMixCoarse->Fill(cont);
+		fHistoLcK0SpMassMix->Fill(cont);
 	}
 
   return;
@@ -1220,7 +1140,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 47;
+  Int_t nVar = 54;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1271,6 +1191,13 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[44]="SecVertXK0s";
   fCandidateVariableNames[45]="SecVertYK0s";
   fCandidateVariableNames[46]="DcaBachV0";
+  fCandidateVariableNames[47]="MatchedPDG";
+  fCandidateVariableNames[48]="ProtonPDG";
+  fCandidateVariableNames[49]="MotherProtonPDG";
+  fCandidateVariableNames[50]="GrMotherProtonPDG";
+  fCandidateVariableNames[51]="V0PDG";
+  fCandidateVariableNames[52]="MotherV0PDG";
+  fCandidateVariableNames[53]="GrMotherV0PDG";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1343,9 +1270,9 @@ void  AliAnalysisTaskSELc2pK0sfromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[3]=		{160			,20		,10};
-  Double_t xmin_base[3]={2.286-0.4,0		,0.00};
-  Double_t xmax_base[3]={2.286+0.4,20.	,100};
+  Int_t bins_base[3]=		{200			,20		,10};
+  Double_t xmin_base[3]={2.286-0.5,0		,0.00};
+  Double_t xmax_base[3]={2.286+0.5,20.	,100};
   fHistoLcK0SpMass = new THnSparseF("fHistoLcK0SpMass","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoLcK0SpMass);
   fHistoLcK0SpMassMix = new THnSparseF("fHistoLcK0SpMassMix","",3,bins_base,xmin_base,xmax_base);
@@ -1487,13 +1414,15 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAOD
   //------------------------------------------------
 	
   Double_t d0z0bach[2],covd0z0bach[3];
-  if(sqrt(pow(secVert->GetX(),2)+pow(secVert->GetY(),2))<1.){
-    part->PropagateToDCA(secVert,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
-    trackV0->PropagateToDCA(secVert,fBzkG,kVeryBig);
-  }else{
-    part->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
-    trackV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig);
-  }
+//  if(sqrt(pow(secVert->GetX(),2)+pow(secVert->GetY(),2))<1.){
+//    part->PropagateToDCA(secVert,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+//    trackV0->PropagateToDCA(secVert,fBzkG,kVeryBig);
+//  }else{
+//    part->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+//    trackV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig);
+//  }
+  part->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+  trackV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig);
   Double_t momv0_new[3]={-9999,-9999,-9999.};
   trackV0->GetPxPyPz(momv0_new);
 
@@ -1688,94 +1617,14 @@ AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::PrimaryVertex(const TObjArr
 }
 
 //________________________________________________________________________
-//AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::ReconstructSecondaryVertex(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod) 
-//{
-//  //
-//  // Reconstruct secondary vertex from trkArray (Copied from AliAnalysisVertexingHF)
-//  //
-//  //------------------------------------------------
-//  // PrimaryVertex
-//  //------------------------------------------------
-//  AliAODVertex *primVertexAOD;
-//  Bool_t unsetvtx = kFALSE;
-//  if(fReconstructPrimVert){
-//    primVertexAOD = CallPrimaryVertex(v0,part,aod);
-//    if(!primVertexAOD){
-//      primVertexAOD = fVtx1;
-//    }else{
-//      unsetvtx = kTRUE;
-//    }
-//  }else{
-//    primVertexAOD = fVtx1;
-//  }
-//  if(!primVertexAOD) return 0x0;
-//
-//  //------------------------------------------------
-//  // Secondary vertex
-//  //------------------------------------------------
-//
-//  Double_t LcPx = part->Px()+v0->Px();
-//  Double_t LcPy = part->Py()+v0->Py();
-//  Double_t LcPt = TMath::Sqrt(LcPx*LcPx+LcPy*LcPy);
-//
-//  Double_t d0z0[2],covd0z0[3];
-//  part->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
-//  Double_t x0 = primVertexAOD->GetX();
-//  Double_t y0 = primVertexAOD->GetY();
-//  Double_t px0 = LcPx/LcPt;
-//  Double_t py0 = LcPy/LcPt;
-//  Double_t tx[3];
-//  part->GetXYZ(tx);
-//  Double_t x1 = tx[0];
-//  Double_t y1 = tx[1];
-//  part->GetPxPyPz(tx);
-//  Double_t px1 = tx[0];
-//  Double_t py1 = tx[1];
-//  Double_t pt1 = sqrt(px1*px1+py1*py1);
-//  px1 = px1/pt1;
-//  py1 = py1/pt1;
-//
-//  Double_t dx = x0 - x1;
-//  Double_t dy = y0 - y1;
-//
-//  Double_t Delta = -px0*py1+py0*px1;
-//  Double_t a0 = -9999.;
-//  if(Delta!=0)
-//    {
-//      a0 = 1./Delta * (py1 * dx - px1 * dy);
-//    }
-//  Double_t neovertx = x0 + a0 * px0;
-//  Double_t neoverty = y0 + a0 * py0;
-//  Double_t z0 = primVertexAOD->GetZ();
-//  Double_t neovertz = z0 + TMath::Abs(a0)*part->Pz()/part->Pt();
-//
-//  if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
-//
-//  Double_t pos[3],cov[6],chi2perNDF;
-//  pos[0]=neovertx;
-//  pos[1]=neoverty;
-//  pos[2]=neovertz;
-//  cov[0]=0.0;
-//  cov[1]=0.0;
-//  cov[2]=0.0;
-//  cov[3]=0.0;
-//  cov[4]=0.0;
-//  cov[5]=0.0;
-//  chi2perNDF=0.0;
-//  AliAODVertex *secVert = new AliAODVertex(pos,cov,chi2perNDF);
-//  if(!secVert){
-//    return 0x0;
-//  }
-//  return secVert;
-//}
-//________________________________________________________________________
 AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::ReconstructSecondaryVertex(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod) 
 {
   //
   // Reconstruct secondary vertex from trkArray (Copied from AliAnalysisVertexingHF)
-	// Currently only returns Primary vertex (can we reconstruct secondary vertex from p - v0)
   //
-	
+  //------------------------------------------------
+  // PrimaryVertex
+  //------------------------------------------------
   AliAODVertex *primVertexAOD;
   Bool_t unsetvtx = kFALSE;
   if(fReconstructPrimVert){
@@ -1790,18 +1639,98 @@ AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::ReconstructSecondaryVertex(
   }
   if(!primVertexAOD) return 0x0;
 
-  AliESDVertex * vertexESD = new AliESDVertex(*fV1);
+  //------------------------------------------------
+  // Secondary vertex
+  //------------------------------------------------
+
+  Double_t LcPx = part->Px()+v0->Px();
+  Double_t LcPy = part->Py()+v0->Py();
+  Double_t LcPt = TMath::Sqrt(LcPx*LcPx+LcPy*LcPy);
+
+  Double_t d0z0[2],covd0z0[3];
+  part->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+  Double_t x0 = primVertexAOD->GetX();
+  Double_t y0 = primVertexAOD->GetY();
+  Double_t px0 = LcPx/LcPt;
+  Double_t py0 = LcPy/LcPt;
+  Double_t tx[3];
+  part->GetXYZ(tx);
+  Double_t x1 = tx[0];
+  Double_t y1 = tx[1];
+  part->GetPxPyPz(tx);
+  Double_t px1 = tx[0];
+  Double_t py1 = tx[1];
+  Double_t pt1 = sqrt(px1*px1+py1*py1);
+  px1 = px1/pt1;
+  py1 = py1/pt1;
+
+  Double_t dx = x0 - x1;
+  Double_t dy = y0 - y1;
+
+  Double_t Delta = -px0*py1+py0*px1;
+  Double_t a0 = -9999.;
+  if(Delta!=0)
+    {
+      a0 = 1./Delta * (py1 * dx - px1 * dy);
+    }
+  Double_t neovertx = x0 + a0 * px0;
+  Double_t neoverty = y0 + a0 * py0;
+  Double_t z0 = primVertexAOD->GetZ();
+  Double_t neovertz = z0 + TMath::Abs(a0)*part->Pz()/part->Pt();
+
+  if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
 
   Double_t pos[3],cov[6],chi2perNDF;
-  vertexESD->GetXYZ(pos); // position
-  vertexESD->GetCovMatrix(cov); //covariance matrix
-  chi2perNDF = vertexESD->GetChi2toNDF();
-  delete vertexESD; vertexESD=NULL;
-  
+  pos[0]=neovertx;
+  pos[1]=neoverty;
+  pos[2]=neovertz;
+  cov[0]=0.0;
+  cov[1]=0.0;
+  cov[2]=0.0;
+  cov[3]=0.0;
+  cov[4]=0.0;
+  cov[5]=0.0;
+  chi2perNDF=0.0;
   AliAODVertex *secVert = new AliAODVertex(pos,cov,chi2perNDF);
-
+  if(!secVert){
+    return 0x0;
+  }
   return secVert;
 }
+//________________________________________________________________________
+//AliAODVertex* AliAnalysisTaskSELc2pK0sfromAODtracks::ReconstructSecondaryVertex(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod) 
+//{
+//  //
+//  // Reconstruct secondary vertex from trkArray (Copied from AliAnalysisVertexingHF)
+//	// Currently only returns Primary vertex (can we reconstruct secondary vertex from p - v0)
+//  //
+//	
+//  AliAODVertex *primVertexAOD;
+//  Bool_t unsetvtx = kFALSE;
+//  if(fReconstructPrimVert){
+//    primVertexAOD = CallPrimaryVertex(v0,part,aod);
+//    if(!primVertexAOD){
+//      primVertexAOD = fVtx1;
+//    }else{
+//      unsetvtx = kTRUE;
+//    }
+//  }else{
+//    primVertexAOD = fVtx1;
+//  }
+//  if(!primVertexAOD) return 0x0;
+//
+//  AliESDVertex * vertexESD = new AliESDVertex(*fV1);
+//
+//  Double_t pos[3],cov[6],chi2perNDF;
+//  vertexESD->GetXYZ(pos); // position
+//  vertexESD->GetCovMatrix(cov); //covariance matrix
+//  chi2perNDF = vertexESD->GetChi2toNDF();
+//  delete vertexESD; vertexESD=NULL;
+//  
+//  AliAODVertex *secVert = new AliAODVertex(pos,cov,chi2perNDF);
+//
+//  return secVert;
+//}
 //________________________________________________________________________
 void AliAnalysisTaskSELc2pK0sfromAODtracks::SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Int_t *seleFlags, TClonesArray *mcArray)
 {
@@ -1838,11 +1767,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::SelectTrack( const AliVEvent *event,
 //			fAnalCuts->TagV0SameSign(aodt,(AliAODEvent*)event,trkEntries,minmasslike);
 //			fHistoMassTagV0SameSignMin->Fill(minmasslike);
     }
-//    if(fAnalCuts->SingleKaonCuts(aodt,fVtx1)){
-//      seleFlags[i]=2;
-//			FillKaonROOTObjects(aodt,mcArray);
-//    }
-
   } // end loop on tracks
 }
 //________________________________________________________________________
@@ -1918,13 +1842,18 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillProtonROOTObjects(AliAODTrack *t
 		Double_t pt1 = sqrt(px1*px1+py1*py1);
 		px1 = px1/pt1;
 		py1 = py1/pt1;
-		fBachd0Array.push_back(d0z0[0]);
-		fBachDcaXArray.push_back(x1);
-		fBachDcaYArray.push_back(y1);
-		fBachDcaPxArray.push_back(px1);
-		fBachDcaPyArray.push_back(py1);
-		fPVXArray.push_back(fVtx1->GetX());
-		fPVYArray.push_back(fVtx1->GetY());
+
+    TVector *varvec = new TVector(9);
+    (*varvec)[0] = d0z0[0];
+    (*varvec)[1] = x1;
+    (*varvec)[2] = y1;
+    (*varvec)[3] = px1;
+    (*varvec)[4] = py1;
+    (*varvec)[5] = fVtx1->GetX();
+    (*varvec)[6] = fVtx1->GetY();
+    (*varvec)[7] = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
+    (*varvec)[8] = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
+		fProtonCutVarsArray->AddLast(varvec);
 	}
 
 	Int_t pdgPr = -9999;
@@ -1937,35 +1866,6 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillProtonROOTObjects(AliAODTrack *t
 		pdgPr = mcetrk->GetPdgCode();
 		if(abs(pdgPr)!=2212) return;
 		fHistoBachPtMCS->Fill(vpr.Pt(),vpr.Rapidity());
-	}
-}
-//________________________________________________________________________
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillKaonROOTObjects(AliAODTrack *trk, TClonesArray *mcArray) 
-{
-  //
-  /// Fill histograms or tree depending on fWriteVariableTree
-  //
-
-	if(!trk) return;
-
-	TLorentzVector vka;
-	vka.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),0.493677);
-  fHistoKaonPt->Fill(vka.Pt(),vka.Rapidity());
-
-//	if(fDoEventMixing){
-//		fKaonTracks->AddLast(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
-//	}
-
-	Int_t pdgKa = -9999;
-	if(fUseMCInfo)
-	{
-		Int_t labKa = trk->GetLabel();
-		if(labKa<0) return;
-		AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labKa);
-		if(!mcetrk) return;
-		pdgKa = mcetrk->GetPdgCode();
-		if(abs(pdgKa)!=321) return;
-		fHistoKaonPtMCS->Fill(vka.Pt(),vka.Rapidity());
 	}
 }
 ////-------------------------------------------------------------------------------
@@ -2006,6 +1906,10 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillV0ROOTObjects(AliAODv0 *v0, TClo
 	if(fDoEventMixing){
 		Double_t ev0 = sqrt(v0->P2()+pow(v0->MassK0Short(),2));
 		fV0Tracks->AddLast(new TLorentzVector(v0->Px(),v0->Py(),v0->Pz(),ev0));
+
+    TVector *varvec = new TVector(1);
+    (*varvec)[0] = v0->DcaV0ToPrimVertex();
+		fV0CutVarsArray->AddLast(varvec);
 	}
 
 	Int_t v0pdgcode = -9999;
@@ -2046,7 +1950,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::ResetPool(Int_t poolIndex){
 	fEventBuffer[poolIndex]->Branch("centrality", &fCentrality);
 	fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
 	fEventBuffer[poolIndex]->Branch("v1array", "TObjArray", &fV0Tracks);
-//	fEventBuffer[poolIndex]->Branch("k1array", "TObjArray", &fKaonTracks);
+	fEventBuffer[poolIndex]->Branch("v1varsarray", "TObjArray", &fV0CutVarsArray);
 
   return;
 }
@@ -2062,26 +1966,26 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DoEventMixingWithPools(Int_t poolInd
 
 	Int_t nPro = fProtonTracks->GetEntries();
   Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-	Int_t nPro_test = fBachd0Array.size();
-
+	Int_t nPro_test = fProtonCutVarsArray->GetEntries();
 	if(nPro!=nPro_test){
 		cout<<"Something wrong in mixing machinery"<<endl;
 		exit(1);
 	}
 
   TObjArray* v1array=0x0;
-//  TObjArray* k1array=0x0;
+  TObjArray* v1varsarray=0x0;
   Float_t zVertex,cent;
   TObjString* eventInfo=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
   fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
   fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
   fEventBuffer[poolIndex]->SetBranchAddress("v1array", &v1array);
-//  fEventBuffer[poolIndex]->SetBranchAddress("k1array", &k1array);
+  fEventBuffer[poolIndex]->SetBranchAddress("v1varsarray", &v1varsarray);
   for (Int_t i=0; i<nPro; i++)
   {
 		TLorentzVector* trke=(TLorentzVector*) fProtonTracks->At(i);
     if(!trke)continue;
+    TVector *prvarsarray = (TVector*)fProtonCutVarsArray->At(i);
 
 		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
 			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
@@ -2090,24 +1994,10 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::DoEventMixingWithPools(Int_t poolInd
 				TLorentzVector* v01=(TLorentzVector*)v1array->At(iTr1);
 				if(!v01 ) continue;
 				if(!fAnalCuts->SelectWithRoughCuts(v01,trke)) continue;
-				Double_t trkinfo[7];
-				trkinfo[0] = fBachd0Array.at(i);
-				trkinfo[1] = fBachDcaXArray.at(i);
-				trkinfo[2] = fBachDcaYArray.at(i);
-				trkinfo[3] = fBachDcaPxArray.at(i);
-				trkinfo[4] = fBachDcaPyArray.at(i);
-				trkinfo[5] = fPVXArray.at(i);
-				trkinfo[6] = fPVYArray.at(i);
-				FillMixROOTObjects(trke,v01,trkinfo);
-			}//v0 loop
 
-//			Int_t nKa1=k1array->GetEntries();
-//      for(Int_t iTr1=0; iTr1<nKa1; iTr1++){
-//				TLorentzVector* ka1=(TLorentzVector*)k1array->At(iTr1);
-//				if(!ka1 ) continue;
-//				if(!fAnalCuts->SelectWithRoughCutsWS(ka1,trke)) continue;
-//				FillWSMixROOTObjects(trke,ka1);
-//			}//charged kaon loop
+        TVector *v0varsarray = (TVector*) v1varsarray->At(iTr1);
+				FillMixROOTObjects(trke,v01,prvarsarray,v0varsarray);
+			}//v0 loop
 
 		}//event loop
 	}//track loop
