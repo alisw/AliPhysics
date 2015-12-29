@@ -1,4 +1,4 @@
- /*************************************************************************
+1 /*************************************************************************
  *                                                                       *
  *                                                                       *
  *      Task for Jet Chemistry Analysis in PWG-JE Jet Task Force Train   *
@@ -1703,7 +1703,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1JetPhi                     = new TH1F("fh1JetPhi","#phi distribution of all jets",63,0.,6.3);
   fh2JetEtaPhi                  = new TH2F("fh2JetEtaPhi","#eta and #phi distribution of all jets",400,-2.,2.,63,0.,6.3);
   
-  if(fBranchEmbeddedJets.Length()){
+  std::cout<<"fBranchEmbeddedJets.Length(): "<<fBranchEmbeddedJets.Length()<<std::endl;
+  std::cout<<"fBranchGenJets.Length(): "<<fBranchGenJets.Length()<<std::endl;
+
+
+  if(!(fUseExtraTracks == 0)){
     
     //embedding
     fh1nEmbeddedJets              = new TH1F("fh1nEmbeddedJets","Number of embedded jets",10,-0.5,9.5);
@@ -2285,8 +2289,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1JetPhi);               
     fCommonHistList->Add(fh2JetEtaPhi);
     
-
-    if(fBranchEmbeddedJets.Length()){
+    if(fUseExtraTracks == 1){
       fCommonHistList->Add(fh1nEmbeddedJets);
       fCommonHistList->Add(fh1IndexEmbedded);
       fCommonHistList->Add(fh1PtEmbExtraOnly);
@@ -2461,7 +2464,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1MCEtaK0s);
     fCommonHistList->Add(fh1MCEtaLambda);
     fCommonHistList->Add(fh1MCEtaAntiLambda);         
-    if(fBranchGenJets.Length()) fCommonHistList->Add(fh1nGenJets);
+    fCommonHistList->Add(fh1nGenJets);
 
 
     fV0QAK0->AddToOutput(fCommonHistList);
@@ -2745,6 +2748,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   //test test
   //Printf("Analysis event #%5d", (Int_t) fEntry);
+  
+  //std::cout<<"Hallo 1!"<<std::endl;
 
   fh1EvtSelection->Fill(0.);
   fh1EvtCent->Fill(centPercent);
@@ -2800,8 +2805,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
   
   if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
-  fh1nGenJets->Fill(nGenJets);
+
+  //std::cout<<"Hallo!"<<std::endl;
+
+  //if(fBranchGenJets.Length()) fh1nGenJets->Fill(nGenJets);
   
+  //std::cout<<"Hallo 2!"<<std::endl;
+
+
   Int_t nEmbeddedJets =  0; 
 
   TArrayI iEmbeddedMatchIndex; 
@@ -2837,10 +2848,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
    
     //get closest jets between embedded detector level jets and reconstructed detector level in extra tracks branch
 
+
+    //std::cout<<"Hallo 3!"<<std::endl;
+
     AliAnalysisHelperJetTasks::GetClosestJets(fJetsEmbedded, nEmbeddedJets, 
 					      fJetsRecCuts, nRecJetsCuts, 
                                               iRecMatchIndex,iEmbeddedMatchIndex,
 					      0,maxDist);
+
+    //std::cout<<"Hallo 4!"<<std::endl;
 
     // embedded pt fracion
     for(Int_t i=0; i<nRecJetsCuts; i++){
@@ -3723,14 +3739,17 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	AliAODJet* embeddedJet      = 0; 
 	AliAODJet* extraJet         = 0; // jet from UE + detector levely PYTHIA tracks, only needed in extraonly branch, just dummy here
   
-	//  std::cout<<"fBranchEmbeddedJets 2: "<<fBranchEmbeddedJets<<std::endl;
+	std::cout<<"fBranchEmbeddedJets before index embedded: "<<fBranchEmbeddedJets<<std::endl;
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
 	  
 	  Int_t indexEmbedded         = iRecMatchIndex[ij];
 	  ptFractionEmbedded = fRecMatchPtFraction[ij]; 
 	  
-	  
+	  std::cout<<"index embedded: "<<indexEmbedded<<std::endl;
+	  std::cout<<"ptFractionEmbedded: "<<ptFractionEmbedded<<std::endl;
+
+  
 	  fh1IndexEmbedded->Fill(indexEmbedded);
 	  fh1FractionPtEmbedded->Fill(ptFractionEmbedded);
 	  
@@ -6070,7 +6089,16 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 	 if (fV0cosPointAngle < fCutLacosPointAngle)continue;                                       //cospointangle cut
        }
 
-       fV0Rap   = MyRapidity(v0->E(),v0->Pz());
+       if(particletype == kK0){  
+	 fV0Rap = v0->RapK0Short();
+       }
+       
+       if((particletype == kLambda)&&(particletype == kAntiLambda)){  
+	 fV0Rap = v0->RapLambda();
+       }
+
+          
+       //fV0Rap   = MyRapidity(v0->AliAODRecoDecay::E(),v0->Pz());
 
        if ((fCutRap > 0) && (TMath::Abs(fV0Rap) > fCutRap))continue;      //V0 Rapidity Cut
 
@@ -6474,7 +6502,10 @@ Int_t AliAnalysisTaskJetChem::GetListOfMCParticles(TList *outputlist, const Int_
  
       //Is close enough to primary vertex to be considered as primary-like?
       
-      fRapCurrentPart   = MyRapidity(p0->E(),p0->Pz());
+      //fRapCurrentPart   = MyRapidity(p0->E(),p0->Pz());
+
+      fRapCurrentPart = p0->Y();
+
       fEtaCurrentPart   = p0->Eta();
       //fPtCurrentPart    = p0->Pt();
             
