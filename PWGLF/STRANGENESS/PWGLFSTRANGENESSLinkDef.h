@@ -51,7 +51,6 @@
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
-#pragma link C++ class AliAnalysisTaskPythiaNuclei+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 #endif
