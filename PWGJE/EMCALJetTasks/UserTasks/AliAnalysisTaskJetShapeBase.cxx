@@ -87,7 +87,9 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fThisEntry(0),
   fMaxTreeEntries(0),
   fVecD(0x0),
-  fVecP(0x0)
+  fVecP(0x0),
+  fXsec(0),
+  fNtrls(0)
 {
   // Default constructor.
 
@@ -172,7 +174,9 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fThisEntry(0),
   fMaxTreeEntries(0),
   fVecD(0x0),
-  fVecP(0x0)
+  fVecP(0x0),
+  fXsec(0),
+  fNtrls(0)
 {
   // Standard constructor.
 
@@ -371,7 +375,9 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
      
      fTreeEmb->SetBranchAddress(fBranchJDetName, &fVecD);
      fTreeEmb->SetBranchAddress(fBranchJParName, &fVecP);
-
+     fTreeEmb->SetBranchAddress("fXsection", &fXsec);
+     fTreeEmb->SetBranchAddress("fNtrials",  &fNtrls);
+                                                
      fMaxTreeEntries = fTreeEmb->GetEntries();
      
      fTreeEmb->GetEntry(0);
