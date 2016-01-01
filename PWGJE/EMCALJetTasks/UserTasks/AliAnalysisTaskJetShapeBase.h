@@ -125,13 +125,16 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Int_t         fMaxTreeEntries;                                   ///< number of entries in the TTree
   TLorentzVector *fVecD;                                           //!<! vector with detector level jet
   TLorentzVector *fVecP;                                           //!<! vector with particle level jet
+  Float_t         fXsec;					   ///< cross section embedded event
+  Int_t           fNtrls;					   ///< number of trials embedded event
+  
   private:
      
      AliAnalysisTaskJetShapeBase(const AliAnalysisTaskJetShapeBase&);            // not implemented
      AliAnalysisTaskJetShapeBase &operator=(const AliAnalysisTaskJetShapeBase&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetShapeBase, 2);
+  ClassDef(AliAnalysisTaskJetShapeBase, 3);
   /// \endcond
 };
 #endif

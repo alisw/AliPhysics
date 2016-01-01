@@ -287,7 +287,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       	 //M sub;M true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
       	 Double_t varsp[5] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt()};
-      	 fhnMassResponse[fCentBin]->Fill(varsp);
+      	 if(fFromTree && fNtrls!=0) fhnMassResponse[fCentBin]->Fill(varsp, fXsec/fNtrls);
+      	 else fhnMassResponse[fCentBin]->Fill(varsp);
       	 
       	 Double_t varsp1[8];
       	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
@@ -300,11 +301,13 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 varsp1[6] = ptjet1;
       	 varsp1[7] = ptjet1 - ptJetR;
       	 
-      	 fhnDeltaMass[fCentBin]->Fill(varsp1);
+      	 if(fFromTree && fNtrls!=0) fhnDeltaMass[fCentBin]->Fill(varsp1, fXsec/fNtrls);
+      	 else fhnDeltaMass[fCentBin]->Fill(varsp1);
       	 
       	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
-      	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      	 if(fFromTree && fNtrls!=0) fhnDeltaMassAndBkgInfo->Fill(varsp2, fXsec/fNtrls);
+      	 else fhnDeltaMassAndBkgInfo->Fill(varsp2);
       	 
       	 fhNconstit->Fill(jet1->GetNumberOfConstituents());
       	 fhAreaJet ->Fill(jet1->Area());
