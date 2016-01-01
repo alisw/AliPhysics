@@ -47,6 +47,8 @@ private:
    TH1F         *fNumberOfJets;               //!<! histograms with number of jets selected
    TH2F         *fhFractionSharedpT;         //!<! histogram pT jet (area based), fraction shared pT with Pythia jet
    TH1F         *fNAccJets;                  //!<! number of jets per event
+   Float_t       fXsec;                      //!<! cross section for event in current pt-hard bin
+   Float_t       fNtrials;                   //!<! number of trials for event in current pt-hard bin
    
    AliAnalysisTaskPrepareInputForEmbedding(const AliAnalysisTaskPrepareInputForEmbedding&);
    AliAnalysisTaskPrepareInputForEmbedding &operator=(const AliAnalysisTaskPrepareInputForEmbedding&);

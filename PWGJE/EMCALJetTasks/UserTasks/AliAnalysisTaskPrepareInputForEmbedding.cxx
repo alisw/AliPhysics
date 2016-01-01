@@ -3,6 +3,8 @@
 
 #include <AliLog.h>
 #include <AliEmcalJet.h>
+#include <AliAnalysisManager.h>
+#include <TFile.h>
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskPrepareInputForEmbedding.h"
 
@@ -21,7 +23,9 @@ fJetDetL(0),
 fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
-fNAccJets(0)
+fNAccJets(0),
+fXsec(0),
+fNtrials(0)
 {
    /// default constructor
    
@@ -42,7 +46,9 @@ fJetDetL(0),
 fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
-fNAccJets(0)
+fNAccJets(0),
+fXsec(0),
+fNtrials(0)
 
 {
    /// standard constructor
@@ -67,13 +73,13 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    if(fLeadingJetOnly){
       fTreeJets->Branch("fJetDetL.", fJetDetL);
       fTreeJets->Branch("fJetPartL.",fJetPartL);
-      fTreeJets->Branch("fXsection", &fXsection, "fXsection/F");
-      fTreeJets->Branch("fNTrials",  &fNTrials, "fNTrials/I");
+      fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
+      fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
    } else {
       fTreeJets->Branch("fJetDet.", fJetDet);
       fTreeJets->Branch("fJetPart.",fJetPart);
-      fTreeJets->Branch("fXsection", &fXsection, "fXsection/F");
-      fTreeJets->Branch("fNTrials",  &fNTrials, "fNTrials/I");
+      fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
+      fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
    }
    //fOutput->Add(fTreeJets);
    PostData(2, fTreeJets);
@@ -102,7 +108,20 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
 //________________________________________________________________________________________________
 Bool_t AliAnalysisTaskPrepareInputForEmbedding::Run(){
    /// Run code before FillHistograms()
-      
+   
+   Int_t   pthardbin   = 0;
+   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+   if (!tree) {
+      AliError(Form("%s : No current tree!",GetName()));
+      return kFALSE;
+   }
+   TFile *curfile = tree->GetCurrentFile();
+   if (!curfile) {
+      AliError(Form("%s : No current file!",GetName()));
+      return kFALSE;
+   }
+   PythiaInfoFromFile(curfile->GetName(), fXsec, fNtrials, pthardbin);
+   
    return kTRUE;
 }
 //________________________________________________________________________________________________
