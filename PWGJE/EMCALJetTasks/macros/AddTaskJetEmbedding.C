@@ -64,8 +64,8 @@ AliJetEmbeddingTask* AddTaskJetEmbedding(
   
   contName+="Input";
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  mgr->ConnectOutput(jetEmb,2,coutput1);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  mgr->ConnectOutput(jetEmb,2,coutput2);
   
   return jetEmb;
 }
