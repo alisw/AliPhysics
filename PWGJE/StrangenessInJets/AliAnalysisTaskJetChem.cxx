@@ -2292,7 +2292,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     if(fUseExtraTracks == 1){
       fCommonHistList->Add(fh1nEmbeddedJets);
       fCommonHistList->Add(fh1IndexEmbedded);
-      fCommonHistList->Add(fh1PtEmbExtraOnly);
+      //fCommonHistList->Add(fh1PtEmbExtraOnly);
       fCommonHistList->Add(fh1PtEmbBeforeMatch);
       fCommonHistList->Add(fh1PtEmbReject);
       fCommonHistList->Add(fh2PtEtaEmbReject);
@@ -2466,12 +2466,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1MCEtaAntiLambda);         
     fCommonHistList->Add(fh1nGenJets);
 
-
     fV0QAK0->AddToOutput(fCommonHistList);
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
     fFFHistosRecCutsK0Evt->AddToOutput(fCommonHistList);
 
-    if(fBranchGenJets.Length()){
+    if(fBranchGenJets.Length() && (fMatchMode == 2)){
       fFFHistosGen->AddToOutput(fCommonHistList);
     }
 
@@ -2799,33 +2798,33 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
  
-  Int_t nJGen  = GetListOfJets(fJetsGen, kJetsGenAcceptance);//fill list of embedded jets, generator level
+  
   Int_t nGenJets = 0;
+  
+  Int_t nEmbeddedJets =  0; 
+  
+  TArrayI iEmbeddedMatchIndex; 
+  TArrayI iRecMatchIndex;
+  TArrayF fRecMatchPtFraction; 
+  
+  TArrayI iEmbeddedMatchIndexMC; 
+  TArrayI iGenMatchIndex; 
+  TArrayF fGenMatchPtFraction; 
+ 
+  //fetch all jets used for embedding mode
+  if(!(fUseExtraTracks == 0)){ 
+
+  Int_t nJGen  = GetListOfJets(fJetsGen, kJetsGenAcceptance);//fill list of embedded jets, generator level
+ 
   if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
   if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
   
   if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
-
-  //std::cout<<"Hallo!"<<std::endl;
-
-  //if(fBranchGenJets.Length()) fh1nGenJets->Fill(nGenJets);
+  fh1nGenJets->Fill(nGenJets);
   
-  //std::cout<<"Hallo 2!"<<std::endl;
-
-
-  Int_t nEmbeddedJets =  0; 
-
-  TArrayI iEmbeddedMatchIndex; 
-  TArrayI iRecMatchIndex;
-  TArrayF fRecMatchPtFraction; 
-  //TArrayF fEmbeddedPtFraction; 
-
-  TArrayI iEmbeddedMatchIndexMC; 
-  TArrayI iGenMatchIndex; 
-  TArrayF fGenMatchPtFraction; 
-  //TArrayF fEmbeddedPtFractionMC; 
-
-  //std::cout<<"fBranchEmbeddedJets 1: "<<fBranchEmbeddedJets<<std::endl;
+ 
+  
+  std::cout<<"fBranchEmbeddedJets for matching: "<<fBranchEmbeddedJets.Length()<<std::endl;
 
 
   if(fBranchEmbeddedJets.Length()){ 
@@ -2848,24 +2847,48 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
    
     //get closest jets between embedded detector level jets and reconstructed detector level in extra tracks branch
 
+    std::cout<<"GetClosestJets(): "<<std::endl;
+    std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
+    std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
 
-    //std::cout<<"Hallo 3!"<<std::endl;
 
     AliAnalysisHelperJetTasks::GetClosestJets(fJetsEmbedded, nEmbeddedJets, 
 					      fJetsRecCuts, nRecJetsCuts, 
                                               iRecMatchIndex,iEmbeddedMatchIndex,
-					      0,maxDist);
+					      2,maxDist);
 
-    //std::cout<<"Hallo 4!"<<std::endl;
+  
+    std::cout<<"Hallo!"<<std::endl;
+
+    //test:
+    //for(Int_t i=0; i<nEmbeddedJets; i++){
+    //AliAODJet* embJet = (AliAODJet*) fJetsEmbedded->At(i);
+    //if(!embJet) continue; 
+      
+    //std::cout<<" embJet pt: "<<embJet->Pt()<<" embJet eta: "<<embJet->Eta()<<std::endl;
+   
+    //}
+
+
 
     // embedded pt fracion
     for(Int_t i=0; i<nRecJetsCuts; i++){
       AliAODJet* recJet = (AliAODJet*) fJetsRecCuts->At(i);
       if(!recJet) continue; 
+
       Int_t indexEmbedded = iRecMatchIndex[i];
+      
+      // std::cout<<"indexEmbedded: "<<indexEmbedded<<" recJet pt: "<<recJet->Pt()<<" recJet eta: "<<recJet->Eta()<<std::endl;
+      
+      //std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
+      
       if(indexEmbedded>-1){
 	AliAODJet* embeddedJet = (AliAODJet*) fJetsEmbedded->At(indexEmbedded);
 	fRecMatchPtFraction[i] = AliAnalysisHelperJetTasks::GetFractionOfJet(recJet, embeddedJet, 1); // mode 1 / 2nd arg is denominator of fraction
+
+	//std::cout<<"fRecMatchPtFraction["<<i<<"]: "<<fRecMatchPtFraction[i]<<std::endl;
+
+
       }
     }
     
@@ -2901,6 +2924,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
     }
   }
+
+  }//end if embedding mode
+
 
   
 
@@ -2945,11 +2971,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fUseExtraTracks == 0)      nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard v0s of event, no embedded tracks
   
   if(fDebug>5){std::cout<<"fK0Type: "<<fK0Type<<" kK0: "<<kK0<<" myPrimaryVertex: "<<myPrimaryVertex<<" fAOD:  "<<fAOD<<std::endl;} 
+
   /*
   if(fUseExtraTracks == 1) std::cout<< "extra nK0s: "<<nK0s<<std::endl;
   if(fUseExtraTracks == -1) std::cout<< "extraonly nK0s: "<<nK0s<<std::endl;
   if(fUseExtraTracks == 0) std::cout<< "standard nK0s: "<<nK0s<<std::endl;
   */
+
   if(fDebug>2)Printf("%s:%d Selected V0s after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   if(nK0s != fListK0s->GetEntries()) Printf("%s:%d Mismatch selected K0s: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   fh1K0Mult->Fill(fListK0s->GetEntries());
@@ -3761,7 +3789,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    //std::cout<<"pointer to embeddedJet: "<<embeddedJet<<std::endl;	
     
 	    deltaREmbedded   = jet->DeltaR((AliVParticle*) (embeddedJet)); 
-	    //std::cout<<"deltaREmbedded: "<<deltaREmbedded<<std::endl;	  
+	    std::cout<<"deltaREmbedded: "<<deltaREmbedded<<std::endl;	  
   
 	    fh1DeltaREmbedded->Fill(deltaREmbedded);
 
@@ -5427,10 +5455,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     //########generated jets for embedding##############################################################################
     
   if((fBranchGenJets.Length())&&(fMatchMode == 2)){//match mode needed for V0 histograms, to be running as a seperate wagon for match mode 1 and match mode 2
+    //match mode 1 is for detector level - detector level PYTHIA matching
+    //match mode 2 is for detector level - particle level PYTHIA matching
+
     
     // generated jets
-    for(Int_t ij=0; ij<nGenJets; ++ij)// end of generated jets for embedding loop
-      { // gen jets loop
+    for(Int_t ij=0; ij<nGenJets; ++ij){ // gen jets loop
 	
 	AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsGen->At(ij));
 	if(!jet)continue;
@@ -5549,7 +5579,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);
+	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);//fill all V0 embedding histos for match mode 2 
 	  
 	  
 	}
