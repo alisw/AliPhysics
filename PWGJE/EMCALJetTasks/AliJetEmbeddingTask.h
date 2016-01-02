@@ -64,7 +64,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Double_t       fNeutralFraction;        ///< assign charge==0 to fraction of particles
   Double_t       fNeutralMass;            ///< assign this mass to neutral particles
   Double_t       fMass;                   ///< assign this mass to particle
-  TH1F*          fHMassDistrib;           //!<! shape of mass distribution of embedded tracks
+  TH1F*          fHMassDistrib;           ///< shape of mass distribution of embedded tracks
   TString        fPathMinputFile;         ///< path to the file where the external input Mass distribution is (can be from alien)
   TString        fPathpTinputFile;        ///< path to the file where the external input pT distribution is (can be from alien)
   TString        fMinputName;             ///< name of the external input Mass histogram
