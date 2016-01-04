@@ -173,7 +173,7 @@ private:
 
   // Data histograms
   TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
-  TH2F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
+  TH3F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
   TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCeLoss;             //!<! *(Data only)* TPC dE/dx for anti-matter
@@ -182,7 +182,7 @@ private:
   TH3F                 *fMDCAxyTOF;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
-  TH2F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
+  TH3F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
   TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter
