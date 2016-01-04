@@ -181,15 +181,25 @@ AliAnalysisTaskMuMu::Event() const
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::SetCountInBins( const char* binWhat, const char* binQuantity, const char* binFlavor, Bool_t disableHistoLoop )
 {
-  // fCountInBins serve to add a rubric for bins in the Event counter collection
-  // Bin to count, can be set like in AliAnalysisMuMuBinning class, and has to be the same as one of the binnings we give to the task through this class
-  // Only one kind of binning can be used in the counters, since otherwise the bin integrated counts will not be correct (events counted several times)
+  /// fCountInBins serve to add a rubric for bins in the Event counter collection
+  /// Bin to count, can be set like in AliAnalysisMuMuBinning class, and has to be the same as one of the binnings we give to the task through this class
+  /// Only one kind of binning can be used in the counters, since otherwise the bin integrated counts will not be correct (events counted several times)
+  /// ONLY FOR EVENT PROPERTIES !
+  /// 
+  ///  FIXME: make a new protection 
 
+  if ( !fCountInBins)
+  {
   fCountInBins = kTRUE;
   fbinWhat = binWhat;
   fbinQuantity = binQuantity;
   fbinFlavor = binFlavor;
   fDisableHistoLoop = disableHistoLoop;
+}
+  else
+  {
+    AliFatal("Can't be called twice");
+  }
 }
 
 
@@ -300,6 +310,7 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
   // loop on single tracks (whatever the type of tracks
   if ( !IsHistogrammingDisabled() && !fDisableHistoLoop )
   {
+    // The main part, loop over subanalysis and fill histo
     while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
     {
       analysis->DefineHistogramCollection(eventSelection,triggerClassName,centrality);
@@ -670,6 +681,8 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   
   TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;  
+
+  // Loop over each subanalysis
   while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
   {
     if ( MCEvent() ) // Set the MC flag for all analysis (prior to call anything from them
@@ -682,18 +695,21 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   }
 
 
+
   TString firedTriggerClasses(Event()->GetFiredTriggerClasses());
 
-  // first loop to count things not associated to a specific trigger
   TIter nextEventCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));
   AliAnalysisMuMuCutCombination* cutCombination;
 
+  // loop over cut combination on event level. Fill counters
   while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination())))
   {
-    if ( cutCombination->Pass(*fInputHandler) )
+    if ( cutCombination->Pass(*fInputHandler) ) // If event pass the cut
     {
+      // Fill counters
       FillCounters(cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber);
       
+      // Default counter
       if ( firedTriggerClasses == "" )
       {
         FillCounters(cutCombination->GetName(),"EMPTY","ALL",fCurrentRunNumber);
@@ -701,7 +717,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
     }
   }
 
-  // second loop to count only the triggers we're interested in
+  // loop over trigger selected list and cut combination on event level. Fill histos
   TObjArray selectedTriggerClasses;
 
   GetSelectedTrigClassesInEvent(Event(),selectedTriggerClasses);

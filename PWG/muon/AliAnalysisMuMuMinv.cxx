@@ -64,6 +64,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
 {
   /// Define the histograms this analysis will use
   
+  // Check if histo is not already here
   if ( ExistSemaphoreHistogram(eventSelection,triggerClassName,centrality) )
   {
     return;
@@ -79,22 +80,26 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   
   /// Create invariant mass histograms
   
-  Double_t minvMin = 0;
-  Double_t minvMax = 16;
+  // mass range
+  Double_t minvMin = 2;
+  Double_t minvMax = 8;
   Int_t nMinvBins = GetNbins(minvMin,minvMax,0.025);
   
   Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
   
+  // Rapidity range
   Double_t rapidityMin = -5;
   Double_t rapidityMax = -2;
   Int_t nbinsRapidity = GetNbins(rapidityMin,rapidityMax,0.05);
   
+  // eta range
   Double_t etaMin = -5;
   Double_t etaMax = -2;
   Int_t nbinsEta = GetNbins(etaMin,etaMax,0.05);
   
-  CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Pt","#mu+#mu- Pt distribution",
-                   200,0,20,-2);
+
+  // Set histo
+  CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Pt","#mu+#mu- Pt distribution",200,0,20,-2);
   
   CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Y","#mu+#mu- Y distribution",
                    nbinsRapidity,rapidityMin,rapidityMax,-2);
@@ -102,8 +107,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"Eta","#mu+#mu- Eta distribution",
                    nbinsEta,etaMin,etaMax);
   
-  
-  //___Histos for pure MC
+  // Histos for pure MC
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,"Pt","MCINPUT #mu+#mu- Pt distribution",
                     200,0,20,-2);
   
@@ -114,22 +118,19 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
                     nbinsEta,etaMin,etaMax);
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),"Pt","MCINPUT #mu+#mu- Pt distribution",
-                    200,0,20,-2);
+                    nMinvBins,minvMax,minvMax,-2);
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),"Y","MCINPUT #mu+#mu- Y distribution",
                     nbinsRapidity,rapidityMin,rapidityMax,-2);
   
   CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),"Eta","MCINPUT #mu+#mu- Eta distribution",
                     nbinsEta,etaMin,etaMax);
-  //____
-  
   //  CreatePairHistos(eventSelection,triggerClassName,centrality,"BinFlowPt","#mu+#mu- BinFlowPt distribution",
   //                  200,0,20);
   
   CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"PtRecVsSim","#mu+#mu- Pt distribution rec vs sim",
                    200,0,20,200,0,20);
   
-  //________________
   Double_t multMin = -0.5;  //Tracklets multiplicity range
   Double_t multMax = 500.5;
   Int_t nbinsMult = GetNbins(multMin,multMax,1.);
@@ -138,15 +139,15 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
                    nbinsMult,multMin,multMax);
   CreatePairHistos(kHistoForData,eventSelection,triggerClassName,centrality,"NchForPsiP","Corrected multiplicity distribution for 3.6 < m_{#mu^{+}#mu^{-}} < 3.9",
                    nbinsMult,multMin,multMax);
-  //________________
   
   TIter next(fBinsToFill);
   AliAnalysisMuMuBinning::Range* r;
   Int_t nb(0);
-  
+
+  // Create Minv Histos for each bin
   while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
   {
-    TString minvName(GetMinvHistoName(*r,kFALSE));
+    TString minvName(GetMinvHistoName(*r,kFALSE));// Histos name
     
     ++nb;
     
@@ -200,7 +201,7 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
       //        HistogramCollection()->Adopt(Form("/%s/INYRANGE",MCInputPrefix()),static_cast<TH1*>(h->Clone()));
       //      }
     }
-    
+    // Create corrected histo
     if ( ShouldCorrectDimuonForAccEff() )
     {
       minvName = GetMinvHistoName(*r,kTRUE);
@@ -353,7 +354,6 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
       pair4MomentumMC = &mcpj;
       
     }
-    
     delete mcProxy;
   }
   
@@ -432,8 +432,6 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
         }
         h->Fill(ntrcorr);
       }
-      //_________________________
-      
     }
     else if ( r->Is2D() )
     {
@@ -499,7 +497,6 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
         }
         
       }
-      
       else
       {
         AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
@@ -652,17 +649,15 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
             }
           }
         }
-        
       }
-      
-      
     }
     
-    if ( ok || okMC )
+    if ( ok || okMC ) // Pair pass all conditions, either MC or not
     {
       TString minvName = GetMinvHistoName(*r,kFALSE);
       
       if (!IsHistogramDisabled(minvName.Data()))
+
       {
         TH1* h(0x0);
         if ( ok )
@@ -702,7 +697,6 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
             {
               AliError(Form("Could not get %s",hprofName.Data()));
             }
-            
             else
             {
               //              hprof->Approximate(); //I dont think its necessary here
@@ -726,14 +720,11 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
               hprof->Fill(pair4MomentumMC->M(),pair4MomentumMC->Pt(),inputWeightMC);
             }
           }
-          
         }
-        
       }
       
       if ( ShouldCorrectDimuonForAccEff() )
       {
-        
         Double_t AccxEff(0);
         Bool_t okAccEff(kFALSE);
         if ( ok )
@@ -858,12 +849,12 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
   
   for ( Int_t i = 0; i < nMCTracks; ++i )
   {
-    AliVParticle* part = MCEvent()->GetTrack(i);
+    AliVParticle* part = MCEvent()->GetTrack(i);// Get particle
     
     if  (AliAnalysisMuonUtility::IsPrimary(part,MCEvent()) &&
          part->GetMother()==-1)
     {
-      Double_t inputWeight = WeightDistribution(part->Pt(),part->Y());
+      Double_t inputWeight = WeightDistribution(part->Pt(),part->Y());// get the default WeightDistribution
       
       mcProxy->Histo("Pt")->Fill(part->Pt(),inputWeight);
       mcProxy->Histo("Y")->Fill(part->Y(),inputWeight);
@@ -878,6 +869,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
       
       nextBin.Reset();
       
+      // Check which bins are in range
       while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) )
       {
         Bool_t ok(kFALSE);
@@ -917,6 +909,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
           }
         }
         
+        // Fill histo if bin is in range
         if ( ok )
         {
           TString hname = GetMinvHistoName(*r,kFALSE);
