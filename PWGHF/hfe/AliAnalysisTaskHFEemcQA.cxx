@@ -488,9 +488,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
   //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
   //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
-  Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  Double_t xmin[10]={-0.5,0,-10,0,0,0,0,-0.5,-10,0};
-  Double_t xmax[10]={7.5,25,10,2,2,2,2,2.5,10,100};
+  //Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  //Double_t xmin[10]={-0.5,   0,  -8,   0,   0,   0,    0, -0.5, -8,   0};
+  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 80,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5, -8,   0};
+  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  8, 100};
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
@@ -957,7 +959,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fvalueElectron[8] = fTPCnSigma_Pi;
       fvalueElectron[9] = centrality;
 
-      if(fFlagSparse){
+      if(fFlagSparse && track->Pt()>2.0){
         fSparseElectron->Fill(fvalueElectron);
       }
 
