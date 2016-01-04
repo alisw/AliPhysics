@@ -125,7 +125,13 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  // 10.) Symmetry plane correlations:
  fSymmetryPlanesList(NULL),
  fSymmetryPlanesFlagsPro(NULL),
- fCalculateSymmetryPlanes(kFALSE)
+ fCalculateSymmetryPlanes(kFALSE),
+ // 11.) Eta gaps:
+ fEtaGapsList(NULL),
+ fEtaGapsFlagsPro(NULL),
+ fCalculateEtaGaps(kFALSE),
+ fLowestHarmonicEtaGaps(1),
+ fHighestHarmonicEtaGaps(6)
  {
   // Constructor.  
   
@@ -147,11 +153,12 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
   this->InitializeArraysForDiffCorrelations();
   this->InitializeArraysForSymmetryPlanes();
   this->InitializeArraysForNestedLoops(); 
+  this->InitializeArraysForEtaGaps(); 
 
   // c) Determine seed for gRandom:
   delete gRandom;
   gRandom = new TRandom3(0); // since 0 is in the argument, the seed is determined uniquely in space and time via TUUID
-                             // TBI synchronize this eventually with seed set 'on-the-fly'
+                             // TBI synchronize this eventually with seed set 'on-the-fly'   
 
  } // end of AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCorrelations()
  
@@ -197,6 +204,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Init()
  this->BookEverythingForQcumulants();
  this->BookEverythingForDiffCorrelations(); 
  this->BookEverythingForSymmetryPlanes();
+ this->BookEverythingForEtaGaps();
 
  // d) Set all flags:
  // ... 
@@ -217,9 +225,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // c) Determine random indices;
  // d) Fill control histograms;
  // e) Fill Q-vector components;
- // f) Calculate multi-particle correlations from Q-vector components;
- // g) Calculate e-b-e cumulants;
+ // f) Calculate multi-particle correlations from Q-vector components; 
+ // g) Calculate e-b-e cumulants; 
  // h) Calculate symmetry plane correlations;
+ // i) Calculate 2-p correlations with eta gaps;
  // j) Reset Q-vector components;
  // k) Cross-check results with nested loops;
  // l) Dump the points;
@@ -235,8 +244,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  if(fnSelectedRandomlyRPs)
  {
   if(anEvent->GetNumberOfRPs() < fnSelectedRandomlyRPs){return;}
-  this->DetermineRandomIndices(anEvent);
-  if(!fRandomIndicesRPs){return;}
+  this->DetermineRandomIndices(anEvent); 
+  if(!fRandomIndicesRPs){return;} 
  } // TBI hw RPs in flag, make it more general
 
  // TBI temp gym: Remove this code eventually
@@ -251,15 +260,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
    if(!pTrack->InRPSelection()){continue;}
    if(pTrack)
    {
-    Double_t dPhi = pTrack->Phi();
+    Double_t dPhi = pTrack->Phi(); 
     //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
     //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
     Double_t dPt = pTrack->Pt();
     Double_t dEta = pTrack->Eta();
     Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
 
-    // Skip some intervals: TBI promote eventually to AFTC class
-    Bool_t bPasses = kTRUE;
+    // Skip some intervals: TBI promote eventually to AFTC class 
+    Bool_t bPasses = kTRUE; 
     Bool_t bAlreadyCounted = kFALSE;
     for(Int_t ppe=0;ppe<3;ppe++)
     {
@@ -269,7 +278,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
       if(-44==(Int_t)fSkip[ppe][b]){continue;}
       if(dPhiPtEta[ppe]>=fSkip[ppe][b] && dPhiPtEta[ppe]<fSkip[ppe][b+1])
       {
-       bPasses = kFALSE;
+       bPasses = kFALSE; 
        if(!bAlreadyCounted)
        {
         fNumberOfSkippedRPParticles++;
@@ -301,23 +310,26 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  if(fCalculateCorrelations){this->CalculateCorrelations(anEvent);}
  if(fCalculateDiffCorrelations){this->CalculateDiffCorrelations(anEvent);}
 
- // g) Calculate e-b-e cumulants:
+ // g) Calculate e-b-e cumulants: 
  if(fCalculateEbECumulants){this->CalculateEbECumulants(anEvent);}
 
  // h) Calculate symmetry plane correlations:
  if(fCalculateSymmetryPlanes){this->CalculateSymmetryPlanes(anEvent);}
 
- // i) Reset Q-vector components:
+ // i) Calculate 2-p correlations with eta gaps:
+ if(fCalculateEtaGaps){this->CalculateEtaGaps(anEvent);}
+
+ // j) Reset Q-vector components:
  if(fCalculateQvector||fCalculateDiffQvectors){this->ResetQvector();}
 
- // j) Cross-check results with nested loops:
+ // k) Cross-check results with nested loops:
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
  if(fCrossCheckDiffWithNestedLoops){this->CrossCheckDiffWithNestedLoops(anEvent);}
 
- // k) Dump the points:
+ // l) Dump the points:
  if(fDumpThePoints){this->DumpThePoints(anEvent);}
 
- // l) Reset array holding shuffled indices for RPs:
+ // m) Reset array holding shuffled indices for RPs:
  if(fSelectRandomlyRPs && fRandomIndicesRPs){delete fRandomIndicesRPs;}
 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
@@ -471,7 +483,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::DetermineRandomIndices(AliFlo
   Int_t temp = fRandomIndicesRPs->GetAt(j);
   fRandomIndicesRPs->AddAt(fRandomIndicesRPs->GetAt(i),j);
   fRandomIndicesRPs->AddAt(temp,i);
- } // end of for(Int_t i=nPrim-1;i>=1;i--)
+ } // end of for(Int_t i=nPrim-1;i>=1;i--) 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::DetermineRandomIndices(AliFlowEventSimple *anEvent)
 
@@ -699,6 +711,19 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForNestedLoop
 
 //=======================================================================================================================
 
+void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForEtaGaps()
+{
+ // Initialize all arrays for eta gaps.  
+
+ for(Int_t h=0;h<6;h++) // harmonic
+ {
+  fEtaGapsPro[h] = NULL; 
+ } 
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForEtaGaps()
+
+//=======================================================================================================================
+
 void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlowEventSimple *anEvent)
 {
  // Calculate multi-particle correlations from Q-vector components.
@@ -711,10 +736,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateCorrelations(AliFlow
  if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'!?!? You again!!!!");}
 
  // a) Calculate all booked multi-particle correlations:
- Double_t dMultRP = fSelectRandomlyRPs ? fnSelectedRandomlyRPs : anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
+ Double_t dMultRP = fSelectRandomlyRPs ? fnSelectedRandomlyRPs : anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
  if(fSkipSomeIntervals){ dMultRP = dMultRP - fNumberOfSkippedRPParticles; }
-
- for(Int_t cs=0;cs<2;cs++) // cos/sin
+ 
+ for(Int_t cs=0;cs<2;cs++) // cos/sin 
  {
   if(fCalculateOnlyCos && 1==cs){continue;}
   else if(fCalculateOnlySin && 0==cs){continue;}
@@ -817,6 +842,88 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(Ali
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateDiffCorrelations(AliFlowEventSimple *anEvent)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEventSimple *anEvent)
+{
+ // Calculate 2-p correlations with eta gaps.
+
+ TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEventSimple *anEvent)"; 
+ if(!anEvent){Fatal(sMethodName.Data(),"'anEvent'? What's wrong with you today...");}
+
+ TComplex Qa[6][11] = {{TComplex(0.,0.)}}; // -eta [harmonic][eta gap]
+ Double_t Ma[6][11] = {{0.}}; // multiplicity for -eta TBI this shall not depend on harmonic, clearly
+ TComplex Qb[6][11] = {{TComplex(0.,0.)}}; // +eta [harmonic][eta gap]
+ Double_t Mb[6][11] = {{0.}}; // multiplicity for +eta TBI this shall not depend on harmonic, clearly
+ Double_t dEtaGaps[11] = {1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.0};
+
+ Int_t nTracks = anEvent->NumberOfTracks(); // TBI shall I promote this to data member?
+ Double_t dPhi=0.,dPt=0.,dEta=0.;
+ Double_t wPhi=1.,wPt=1.,wEta=1.;
+ Double_t wToPowerP=1.;
+ for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ {
+  AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+  if(!pTrack){printf("\n pTrack is NULL in MPC::CalculateEtaGaps(AliFlowEventSimple *anEvent) !!!!"); continue;}
+  if(!(pTrack->InRPSelection() || pTrack->InPOISelection())){printf("\n pTrack is neither RP nor POI !!!!"); continue;}
+
+  if(pTrack->InRPSelection()) // fill Q-vector components only with reference particles
+  {
+   // Access kinematic variables for RP and corresponding weights:
+   dPhi = pTrack->Phi(); // azimuthal angle
+   if(fUseWeights[0][0]){wPhi = Weight(dPhi,"RP","phi");} // corresponding phi weight
+   //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
+   //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
+   dPt = pTrack->Pt();
+   if(fUseWeights[0][1]){wPt = Weight(dPt,"RP","pt");} // corresponding pT weight
+   dEta = pTrack->Eta();
+   if(fUseWeights[0][2]){wEta = Weight(dEta,"RP","eta");} // corresponding eta weight
+   if(fUseWeights[0][0]||fUseWeights[0][1]||fUseWeights[0][2]){wToPowerP = wPhi*wPt*wEta;}
+   // Calculate Qa and Qb vectors:
+   if(dEta<0.) // Qa
+   {
+    for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+    {
+     for(Int_t eg=0;eg<11;eg++) // eta gaps
+     {  
+      if(dEta<-1.*dEtaGaps[eg]/2.)  
+      {
+       Qa[h][eg] += TComplex(wToPowerP*TMath::Cos((h+1)*dPhi),wToPowerP*TMath::Sin((h+1)*dPhi));
+       Ma[h][eg]+=wToPowerP;
+      } 
+     } // for(Int_t eg=0;eg<11;eg++) // eta gaps
+    } // for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+   } // if(dEta<0.)
+   else if(dEta>0.) // Qb
+   {
+    for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+    {
+     for(Int_t eg=0;eg<11;eg++) // eta gaps
+     {  
+      if(dEta>dEtaGaps[eg]/2.)  
+      {
+       Qb[h][eg] += TComplex(wToPowerP*TMath::Cos((h+1)*dPhi),wToPowerP*TMath::Sin((h+1)*dPhi));
+       Mb[h][eg]+=wToPowerP;
+      } 
+     } // for(Int_t eg=0;eg<11;eg++) // eta gaps
+    } // for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+   }
+  } // if(pTrack->InRPSelection())
+ } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+
+ // Calculate 2-p correlations with eta gaps from Qa and Qb vectors:
+ for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+ {
+  for(Int_t eg=0;eg<11;eg++) // eta gaps
+  {
+   if(!(Qa[h][eg].Rho()>0. && Qb[h][eg].Rho()>0.)){continue;} 
+   if(!(Ma[h][eg]>0. && Mb[h][eg]>0.)){continue;} 
+   fEtaGapsPro[h]->Fill(eg+0.5,TComplex(Qa[h][eg]*TComplex::Conjugate(Qb[h][eg])).Re()/(Ma[h][eg]*Mb[h][eg]),Ma[h][eg]*Mb[h][eg]);
+  } // for(Int_t eg=0;eg<11;eg++) // eta gaps
+ } // for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++)
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateEtaGaps(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
@@ -957,7 +1064,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateProductsOfCorrelatio
       cout<<Form("binLabelX = %s",binLabelX)<<endl;
       cout<<Form("binLabelY = %s",binLabelY)<<endl;
       cout<<Form("anEvent->GetNumberOfRPs() = %d",anEvent->GetNumberOfRPs())<<endl; 
-      cout<<Form("fNumberOfSkippedRPParticles = %d",fNumberOfSkippedRPParticles)<<endl;
+      cout<<Form("fNumberOfSkippedRPParticles = %d",fNumberOfSkippedRPParticles)<<endl; 
       Fatal(sMethodName.Data(),"if(TMath::Abs(denX) > 0. && TMath::Abs(denY) > 0.)");
      } // else
   } // for(Int_t by=1;by<bx;by++)
@@ -1180,8 +1287,8 @@ Bool_t AliFlowAnalysisWithMultiparticleCorrelations::TrackIsInSpecifiedIntervals
  Double_t dEta = pTrack->Eta();
  Double_t dPhiPtEta[3] = {dPhi,dPt,dEta};
 
- // Skip some intervals: TBI promote eventually to AFTC class
- Bool_t bPasses = kTRUE;
+ // Skip some intervals: TBI promote eventually to AFTC class 
+ Bool_t bPasses = kTRUE; 
  for(Int_t ppe=0;ppe<3;ppe++)
  {
   if(!bPasses){break;} // found one kinematic window which shall be skipped
@@ -1190,13 +1297,13 @@ Bool_t AliFlowAnalysisWithMultiparticleCorrelations::TrackIsInSpecifiedIntervals
    if(-44==(Int_t)fSkip[ppe][b]){continue;}
    if(dPhiPtEta[ppe]>=fSkip[ppe][b] && dPhiPtEta[ppe]<fSkip[ppe][b+1])
    {
-    bPasses = kFALSE;
+    bPasses = kFALSE; 
     break;
    } // TBI this is a clear bug when this setter is used multiple times...
   } // for(Int_t b=0;b<10;b++)
  } // for(Int_t ppe=0;ppe<3;ppe++)
 
- return bPasses;
+ return bPasses;  
 
 } // Bool_t AliFlowAnalysisWithMultiparticleCorrelations::TrackIsInSpecifiedIntervals(AliFlowTrackSimple *pTrack)
 
@@ -1278,7 +1385,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
    if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
    dPhi1 = aftsTrack->Phi(); 
    if(fUseWeights[0][0]){wPhi1 = Weight(dPhi1,"RP","phi");}
-   // Fill:
+   // Fill: 
    fNestedLoopsResultsCosPro->Fill(0.5,TMath::Cos(h1*dPhi1),wPhi1); 
    fNestedLoopsResultsSinPro->Fill(0.5,TMath::Sin(h1*dPhi1),wPhi1); 
   } // end of for(Int_t i1=0;i1<nPrim;i1++)
@@ -1323,7 +1430,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckWithNestedLoops(Ali
    {
     if(i2==i1){continue;}
     aftsTrack=anEvent->GetTrack(i2);
-    if(!(aftsTrack->InRPSelection())){continue;}
+    if(!(aftsTrack->InRPSelection())){continue;} 
     if(fSkipSomeIntervals && !TrackIsInSpecifiedIntervals(aftsTrack)){continue;} // TBI tmp gym
     dPhi2=aftsTrack->Phi();
     if(fUseWeights[0][0]){wPhi2 = Weight(dPhi2,"RP","phi");}
@@ -2155,8 +2262,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  // g) Book and nest lists for 'standard candles';
  // h) Book and nest lists for Q-cumulants;
  // i) Book and nest lists for differential correlations;
- // j) Book and nest lists for symmetry plane correlations.
-
+ // j) Book and nest lists for symmetry plane correlations;
+ // k) Book and nest lists for correlations with eta gaps.
+ 
  // a) Book and nest lists for control histograms:
  fControlHistogramsList = new TList();
  fControlHistogramsList->SetName("Control Histograms");
@@ -2216,6 +2324,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
  fSymmetryPlanesList->SetName("Symmetry_Plane_Correlations");
  fSymmetryPlanesList->SetOwner(kTRUE);
  fHistList->Add(fSymmetryPlanesList);
+
+ // k) Book and nest lists for correlations with eta gaps:
+ fEtaGapsList = new TList();
+ fEtaGapsList->SetName("Correlations_with_eta_gaps");
+ fEtaGapsList->SetOwner(kTRUE);
+ fHistList->Add(fEtaGapsList);
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::BookAndNestAllLists()
 
@@ -2376,13 +2490,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
    {
 
     if(!TrackIsInSpecifiedIntervals(pTrack)){continue;} // TBI tmp gym
-
+    
     if(pTrack->InRPSelection())
     {
      nCounterRPs++;
      if(fSelectRandomlyRPs && nCounterRPs == fnSelectedRandomlyRPs){break;} // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
     }
-
+ 
     Double_t dPhi = pTrack->Phi(); 
     //if(dPhi > TMath::TwoPi()){dPhi -= TMath::TwoPi();} TBI
     //if(dPhi < 0.){dPhi += TMath::TwoPi();} TBI
@@ -2411,7 +2525,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
 
  if(fSkipSomeIntervals) // TBI tmp gym
  {
-  dMultRP = dMultRP - fNumberOfSkippedRPParticles;
+  dMultRP = dMultRP - fNumberOfSkippedRPParticles; 
   dMultPOI = -44;
  }
 
@@ -2513,9 +2627,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
  for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
  {
   for(Int_t i=0;i<10;i++) // interval boundaries, 10 boundaries at max
-  {
+  { 
    fSkip[ppe][i] = -44.;
-  }
+  } 
  } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHistograms()
@@ -2945,6 +3059,55 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlan
  }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlanes()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForEtaGaps()
+{
+ // Book all the stuff for correlations with eta gaps.
+
+ // a) Book the profile holding all the flags for correlations with eta gaps;  
+ // b) Book TProfile *fEtaGapsPro[6][10]
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForEtaGaps()";
+
+ // a) Book the profile holding all the flags for correlations with eta gaps:
+ fEtaGapsFlagsPro = new TProfile("fEtaGapsFlagsPro","Flags for correlations with eta gaps",1,0,1);
+ fEtaGapsFlagsPro->SetTickLength(-0.01,"Y");
+ fEtaGapsFlagsPro->SetMarkerStyle(25);
+ fEtaGapsFlagsPro->SetLabelSize(0.03);
+ fEtaGapsFlagsPro->SetLabelOffset(0.02,"Y");
+ fEtaGapsFlagsPro->SetStats(kFALSE);
+ fEtaGapsFlagsPro->SetFillColor(kGray);
+ fEtaGapsFlagsPro->SetLineColor(kBlack);
+ fEtaGapsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateEtaGaps"); fEtaGapsFlagsPro->Fill(0.5,fCalculateEtaGaps);
+ fEtaGapsFlagsPro->GetXaxis()->SetBinLabel(2,"fLowestHarmonicEtaGaps"); fEtaGapsFlagsPro->Fill(1.5,fLowestHarmonicEtaGaps);
+ fEtaGapsFlagsPro->GetXaxis()->SetBinLabel(3,"fHighestHarmonicEtaGaps"); fEtaGapsFlagsPro->Fill(2.5,fHighestHarmonicEtaGaps);
+ fEtaGapsList->Add(fEtaGapsFlagsPro);
+
+ if(!fCalculateEtaGaps){return;}
+
+ // b) Book TProfile *fEtaGapsPro[6][10]:
+ Int_t markerColor[6] = {kBlue,kRed,kGreen+2,kBlack,kBlack,kBlack};
+ TString sEtaGaps[11] = {"|#Delta#eta| > 1.0","|#Delta#eta| > 0.9","|#Delta#eta| > 0.8","|#Delta#eta| > 0.7","|#Delta#eta| > 0.6","|#Delta#eta| > 0.5","|#Delta#eta| > 0.4","|#Delta#eta| > 0.3","|#Delta#eta| > 0.2","|#Delta#eta| > 0.1","|#Delta#eta| > 0.0"};
+ for(Int_t h=fLowestHarmonicEtaGaps-1;h<=fHighestHarmonicEtaGaps-1;h++) // harmonics
+ {
+  fEtaGapsPro[h] = new TProfile(Form("EtaGaps_v%d",h+1),Form("2-p correlation for harmonic v_{%d} with eta gaps",h+1),11,0.,11.); 
+  fEtaGapsPro[h]->Sumw2();
+  fEtaGapsPro[h]->SetStats(kFALSE);
+  fEtaGapsPro[h]->SetMarkerColor(markerColor[h]);
+  fEtaGapsPro[h]->SetMarkerStyle(kFullSquare);
+  fEtaGapsPro[h]->SetLineColor(markerColor[h]);
+  fEtaGapsPro[h]->SetLabelSize(0.0544);
+  fEtaGapsPro[h]->SetMinimum(0.0);
+  for(Int_t eg=0;eg<11;eg++)
+  {
+   fEtaGapsPro[h]->GetXaxis()->SetBinLabel(eg+1,sEtaGaps[eg].Data());
+  }
+  fEtaGapsList->Add(fEtaGapsPro[h]);
+ }
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForEtaGaps()
 
 //=======================================================================================================================
 
@@ -4132,8 +4295,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
  fInternalFlagsPro->GetXaxis()->SetBinLabel(6,Form("fAnalysisTag = %s",fAnalysisTag.Data())); 
  fInternalFlagsPro->GetXaxis()->SetBinLabel(7,"fDumpThePoints"); fInternalFlagsPro->Fill(6.5,fDumpThePoints);  
  fInternalFlagsPro->GetXaxis()->SetBinLabel(8,"fMaxNoEventsPerFile"); fInternalFlagsPro->Fill(7.5,fMaxNoEventsPerFile);  
- fInternalFlagsPro->GetXaxis()->SetBinLabel(9,"fSelectRandomlyRPs"); fInternalFlagsPro->Fill(8.5,fSelectRandomlyRPs);
- fInternalFlagsPro->GetXaxis()->SetBinLabel(10,"fnSelectedRandomlyRPs"); fInternalFlagsPro->Fill(9.5,fnSelectedRandomlyRPs);
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(9,"fSelectRandomlyRPs"); fInternalFlagsPro->Fill(8.5,fSelectRandomlyRPs);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(10,"fnSelectedRandomlyRPs"); fInternalFlagsPro->Fill(9.5,fnSelectedRandomlyRPs);  
  fHistList->Add(fInternalFlagsPro); 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
@@ -5193,21 +5356,21 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, 
 
 void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t nBoundaries, Double_t *boundaries)
 {
- // Set all pt, phi and eta intervals to be skipped.
+ // Set all pt, phi and eta intervals to be skipped. 
 
  // Example usage in the steering macro (before Init()):
  //  Double_t skip[4] = {-0.1,0.2,0.8,0.9};
  //  mpc->SetIntervalsToSkip("Eta",4,skip);
-
+ 
  TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)";
-
+ 
  // Basic protection:
  if(!(TString(ppe).EqualTo("Phi") || TString(ppe).EqualTo("Pt") || TString(ppe).EqualTo("Eta")))
  {
   cout<<"Well, could you perhaps try to use only Phi, Pt or Eta here..."<<endl;
   Fatal(sMethodName.Data(),"!(TString(ppe).EqualTo... type = %s ",ppe);
  }
-
+  
  if(nBoundaries>10)
  {
   cout<<"Maximum number of boundaries is hardwired to be 10 at the moment, sorry..."<<endl;
@@ -5220,7 +5383,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetIntervalsToSkip(const char
  if(TString(ppe).EqualTo("Phi"))
  {
   index = 0;
- }
+ } 
  else if(TString(ppe).EqualTo("Pt"))
  {
   index = 1;

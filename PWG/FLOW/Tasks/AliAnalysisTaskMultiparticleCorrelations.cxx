@@ -82,7 +82,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fUseDefaultBinning(kTRUE),
  fnDiffBins(-44),
  fRangesDiffBins(NULL),
- fCalculateSymmetryPlanes(kFALSE)
+ fCalculateSymmetryPlanes(kFALSE),
+ fCalculateEtaGaps(kFALSE)
  {
   // Constructor.
  
@@ -156,9 +157,9 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
   {
    for(Int_t i=0;i<10;i++) // interval boundaries, 5 intervals, 10 boundaries TBI
-   {
+   { 
     fSkip[ppe][i] = -44.;
-   }
+   } 
   } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations(const char *name, Bool_t useParticleWeights): 
@@ -213,7 +214,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fUseDefaultBinning(kTRUE),
  fnDiffBins(-44),
  fRangesDiffBins(NULL),
- fCalculateSymmetryPlanes(kFALSE)
+ fCalculateSymmetryPlanes(kFALSE),
+ fCalculateEtaGaps(kFALSE)
  {
   // Dummy constructor.
  
@@ -275,9 +277,9 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
   {
    for(Int_t i=0;i<10;i++) // interval boundaries, 10 boundaries at max
-   {
+   { 
     fSkip[ppe][i] = -44.;
-   }
+   } 
   } // for(Int_t ppe=0;ppe<3;ppe++)
 
 } // AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelations():
@@ -338,6 +340,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC->SetnDiffBins(fnDiffBins);
  fMPC->SetRangesDiffBins(fRangesDiffBins);
  fMPC->SetCalculateSymmetryPlanes(fCalculateSymmetryPlanes);
+ fMPC->SetCalculateEtaGaps(fCalculateEtaGaps);
 
  // Weights:
  TString type[2] = {"RP","POI"};
@@ -647,21 +650,21 @@ void AliAnalysisTaskMultiparticleCorrelations::SetMaxMult(const char *type, Doub
 
 void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t nBoundaries, Double_t *boundaries)
 {
- // Set all pt, phi and eta intervals to be skipped.
+ // Set all pt, phi and eta intervals to be skipped. 
 
  // Example usage in the steering macro (before Init()):
  //  Double_t skip[4] = {-0.1,0.2,0.8,0.9};
  //  taskMPC->SetIntervalsToSkip("Eta",4,skip);
-
+ 
  TString sMethodName = "void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *ppe, Int_t n, Double_t *boundaries)";
-
+ 
  // Basic protection:
  if(!(TString(ppe).EqualTo("Phi") || TString(ppe).EqualTo("Pt") || TString(ppe).EqualTo("Eta")))
  {
   cout<<"Well, could you perhaps try to use only Phi, Pt or Eta here..."<<endl;
   Fatal(sMethodName.Data(),"!(TString(ppe).EqualTo... type = %s ",ppe);
  }
-
+  
  if(nBoundaries>10)
  {
   cout<<"Maximum number of boundaries is hardwired to be 10 at the moment, sorry..."<<endl;
@@ -674,7 +677,7 @@ void AliAnalysisTaskMultiparticleCorrelations::SetIntervalsToSkip(const char *pp
  if(TString(ppe).EqualTo("Phi"))
  {
   index = 0;
- }
+ } 
  else if(TString(ppe).EqualTo("Pt"))
  {
   index = 1;
