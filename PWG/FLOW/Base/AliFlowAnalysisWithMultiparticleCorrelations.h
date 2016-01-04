@@ -54,6 +54,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   virtual void InitializeArraysForDiffCorrelations(); 
   virtual void InitializeArraysForSymmetryPlanes();
   virtual void InitializeArraysForNestedLoops(); 
+  virtual void InitializeArraysForEtaGaps(); 
 
   // 1.) Method Init() and methods called in it (!):
   virtual void Init();
@@ -70,6 +71,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void BookEverythingForQcumulants();
    virtual void BookEverythingForDiffCorrelations();
    virtual void BookEverythingForSymmetryPlanes();
+   virtual void BookEverythingForEtaGaps();
    
   // 2.) Method Make() and methods called in it:
   virtual void Make(AliFlowEventSimple *anEvent);
@@ -82,6 +84,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
    virtual void CalculateDiffCorrelations(AliFlowEventSimple *anEvent);
    virtual void CalculateEbECumulants(AliFlowEventSimple *anEvent);
    virtual void CalculateSymmetryPlanes(AliFlowEventSimple *anEvent);
+   virtual void CalculateEtaGaps(AliFlowEventSimple *anEvent);
    virtual void ResetQvector();
    virtual void CrossCheckWithNestedLoops(AliFlowEventSimple *anEvent);
    virtual void CrossCheckDiffWithNestedLoops(AliFlowEventSimple *anEvent);
@@ -278,6 +281,18 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   void SetCalculateSymmetryPlanes(Bool_t csp) {this->fCalculateSymmetryPlanes = csp;};
   Bool_t GetCalculateSymmetryPlanes() const {return this->fCalculateSymmetryPlanes;};
 
+  //  5.11.) Eta gaps:
+  void SetEtaGapsList(TList* const egl) {this->fEtaGapsList = egl;};
+  TList* GetEtaGapsList() const {return this->fEtaGapsList;}
+  void SetEtaGapsFlagsPro(TProfile* const egfp) {this->fEtaGapsFlagsPro = egfp;};
+  TProfile* GetEtaGapsFlagsPro() const {return this->fEtaGapsFlagsPro;};
+  void SetCalculateEtaGaps(Bool_t ceg) {this->fCalculateEtaGaps = ceg;};
+  Bool_t GetCalculateEtaGaps() const {return this->fCalculateEtaGaps;};
+  void SetLowestHarmonicEtaGaps(Int_t low) {this->fLowestHarmonicEtaGaps = low;};
+  Int_t GetLowestHarmonicEtaGaps() const {return this->fLowestHarmonicEtaGaps;};
+  void SetHighestHarmonicEtaGaps(Int_t high) {this->fHighestHarmonicEtaGaps = high;};
+  Int_t GetHighestHarmonicEtaGaps() const {return this->fHighestHarmonicEtaGaps;};
+
   // 6.) The rest:
   virtual void WriteHistograms(TString outputFileName);
   virtual void WriteHistograms(TDirectoryFile *outputFileName);
@@ -323,7 +338,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   // 7.) 'Standard candles';
   // 8.) Q-cumulants;
   // 9.) Differential correlations;
-  // 10.) Symmetry plane correlations.
+  // 10.) Symmetry plane correlations;
+  // 11.) Eta gaps.
 
   // 0.) Base list and internal flags:
   TList* fHistList;            // base list to hold all output object (a.k.a. grandmother of all lists)
@@ -338,7 +354,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
   Bool_t fSelectRandomlyRPs;   // enable random shuffling to estimate 'fake flow'
   Int_t fnSelectedRandomlyRPs; // how many RPs will be taken for the analysis after random shuffling?
-  TArrayI *fRandomIndicesRPs;  // well, these are random indices...
+  TArrayI *fRandomIndicesRPs;  // well, these are random indices... 
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
@@ -360,8 +376,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t fSkipSomeIntervals;            // skip intervals in phi, pt and eta
   Int_t fNumberOfSkippedRPParticles;    // TBI temp gym
   Double_t fSkip[3][10];                // determine intervals in phi, pt and eta to be skipped. TBI hardwired is max 5 intervals. TBI promote this eventually to AFTC class
-
-
+  
   // 2.) Q-vectors:
   TList *fQvectorList;           // list to hold all Q-vector objects       
   TProfile *fQvectorFlagsPro;    // profile to hold all flags for Q-vector
@@ -453,7 +468,15 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   //Int_t fnHighestHarmonicSPC;       // highest harmonic for evaluation of generic correlators TBI implement this more differentially
   //Int_t fnHighestOptimizerSPC;      // highest optimizer TBI implement this more differentially
 
-  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,5);
+  // 11.) Eta gaps:
+  TList *fEtaGapsList;                // list to hold all correlations with eta gaps
+  TProfile *fEtaGapsFlagsPro;         // profile to hold all flags for correlations with eta gaps
+  Bool_t fCalculateEtaGaps;           // calculate correlations with eta gaps
+  Int_t fLowestHarmonicEtaGaps;       // 2-p correlations with eta gaps will be calculated for harmonics [fLowestHarmonicEtaGaps,fHighestHarmonicEtaGaps]
+  Int_t fHighestHarmonicEtaGaps;      // 2-p correlations with eta gaps will be calculated for harmonics [fLowestHarmonicEtaGaps,fHighestHarmonicEtaGaps]
+  TProfile *fEtaGapsPro[6];           // [harmonic] different eta gaps are different bins
+
+  ClassDef(AliFlowAnalysisWithMultiparticleCorrelations,6);
 
 };
 

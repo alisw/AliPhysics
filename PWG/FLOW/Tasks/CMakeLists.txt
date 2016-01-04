@@ -64,6 +64,7 @@ set(SRCS
   AliAnalysisTaskFlowEPCascade.cxx
   AliAnalysisTaskMultiparticleCorrelations.cxx
   AliAnalysisTaskPIDconfig.cxx
+  AliAnalysisTaskMultiparticleFemtoscopy.cxx
   )
 
 # Headers from sources

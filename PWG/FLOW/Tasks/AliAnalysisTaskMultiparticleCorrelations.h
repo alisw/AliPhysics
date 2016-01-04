@@ -157,6 +157,10 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetCalculateSymmetryPlanes(Bool_t csp) {this->fCalculateSymmetryPlanes = csp;};
   Bool_t GetCalculateSymmetryPlanes() const {return this->fCalculateSymmetryPlanes;};
 
+  // Eta gaps:
+  void SetCalculateEtaGaps(Bool_t ceg) {this->fCalculateEtaGaps = ceg;};
+  Bool_t GetCalculateEtaGaps() const {return this->fCalculateEtaGaps;};
+
  private:
   AliAnalysisTaskMultiparticleCorrelations(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
   AliAnalysisTaskMultiparticleCorrelations& operator=(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
@@ -167,9 +171,9 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
 
   // Internal flags:
   Bool_t fUseInternalFlags;    // use internal flags (automatically set if some internal flag is used)
-  Int_t fMinNoRPs;             // minimum number of RPs required for the analysis
-  Int_t fMaxNoRPs;             // maximum number of RPs allowed for the analysis
-  Int_t fExactNoRPs;           // exact (randomly shuffled) number of RPs selected for the analysis
+  Int_t fMinNoRPs;             // minimum number of RPs required for the analysis 
+  Int_t fMaxNoRPs;             // maximum number of RPs allowed for the analysis 
+  Int_t fExactNoRPs;           // exact (randomly shuffled) number of RPs selected for the analysis 
   TString fAnalysisTag;        // tag internally this analysis
   Bool_t fDumpThePoints;       // dump the data points into the external file
   Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
@@ -242,7 +246,10 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Symmetry plane correlations:
   Bool_t fCalculateSymmetryPlanes; // calculate correlations between symmetry planes
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,5);
+  // Eta gaps:
+  Bool_t fCalculateEtaGaps; // calculate correlations with eta gaps
+
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,6);
 
 };
 
