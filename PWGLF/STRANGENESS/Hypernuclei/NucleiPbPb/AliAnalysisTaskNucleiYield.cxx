@@ -247,12 +247,22 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     for (int i = 0; i <= nTpcBins; ++i) {
       tpcBins[i] = -4.f + i * 0.2f;
     }
+    const int nTPCptBins = 30;
+    float tpcPtBins[nTPCptBins + 1];
+    for (int i = 0; i <= nTPCptBins; ++i) {
+      tpcPtBins[i] = 0.5 + 0.05 * i;
+    }
+    const int nTPCeLossBins = 800;
+    float tpcElossBins[nTPCeLossBins + 1];
+    for (int i = 0; i <= nTPCeLossBins; ++i) {
+      tpcElossBins[i] = i * 2.f;
+    }
 
     fATOFsignal = new TH3F("fATOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fATPCcounts = new TH2F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
-                           nCentBins,centBins,nPtBins,pTbins);
+    fATPCcounts = new TH3F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); Specific energy loss (a.u)",
+                           nCentBins,centBins,nTPCptBins,tpcPtBins,nTPCeLossBins,tpcElossBins);
     fATOFphiSignal = new TH3F("fATOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                               64,0.,TMath::TwoPi(),36,0.2,2.,
@@ -272,8 +282,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     fMTOFsignal = new TH3F("fMTOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Entries",
-                           nCentBins,centBins,nPtBins,pTbins);
+    fMTPCcounts = new TH3F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Specific energy loss (a.u)",
+                           nCentBins,centBins,nTPCptBins,tpcPtBins,nTPCeLossBins,tpcElossBins);
     fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
                           800,0,3200);
     fMTOFphiSignal = new TH3F("fMTOFphiSignal",
@@ -454,11 +464,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (track->Charge() > 0) {
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
-        fMTPCcounts->Fill(centrality, pT);
+        fMTPCcounts->Fill(centrality, pT,track->GetTPCsignal());
         fMTPCphiCounts->Fill(track->Phi(),pT);
       } else {
         fATPCphiCounts->Fill(track->Phi(),pT);
-        fATPCcounts->Fill(centrality, pT);
+        fATPCcounts->Fill(centrality, pT,track->GetTPCsignal());
       }
       if (beta < 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
@@ -508,7 +518,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
   if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return kFALSE;
-  
+
   /// ITS related cuts
   dca[0] = 0.;
   dca[1] = 0.;

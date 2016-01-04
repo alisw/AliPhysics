@@ -20,20 +20,20 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
                                                AliPID::EParticleType part = AliPID::kDeuteron,
                                                Int_t pdgCode = 1000010020,
                                                TString suffix = "") {
-  
+
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskNucleiYield", "No analysis manager found.");
     return 0x0;
   }
-  
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskNucleiYield", "This task requires an input event handler");
     return 0x0;
   }
-  
+
   // Common variables
   Float_t tritonCentBins[4] = {0.,10.,30.,50.};
   Float_t deuteronPtBins[27] = {
