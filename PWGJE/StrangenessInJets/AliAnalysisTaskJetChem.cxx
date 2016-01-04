@@ -1615,6 +1615,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fTracksRecCutsRC->SetOwner(kFALSE);
   fTracksRecCuts = new TList();
   fTracksRecCuts->SetOwner(kFALSE); //objects in TList wont be deleted when TList is deleted 
+  fTracksGen = new TList();
+  fTracksGen->SetOwner(kFALSE);
   fTracksPerpCone = new TList();
   fTracksPerpCone->SetOwner(kFALSE); 
   fJetsRecCuts = new TList();
@@ -1703,8 +1705,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1JetPhi                     = new TH1F("fh1JetPhi","#phi distribution of all jets",63,0.,6.3);
   fh2JetEtaPhi                  = new TH2F("fh2JetEtaPhi","#eta and #phi distribution of all jets",400,-2.,2.,63,0.,6.3);
   
-  std::cout<<"fBranchEmbeddedJets.Length(): "<<fBranchEmbeddedJets.Length()<<std::endl;
-  std::cout<<"fBranchGenJets.Length(): "<<fBranchGenJets.Length()<<std::endl;
+  if(fDebug>2)std::cout<<"fBranchEmbeddedJets.Length(): "<<fBranchEmbeddedJets.Length()<<std::endl;
+  if(fDebug>2)std::cout<<"fBranchGenJets.Length(): "<<fBranchGenJets.Length()<<std::endl;
 
 
   if(!(fUseExtraTracks == 0)){
@@ -2797,12 +2799,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
- 
   
   Int_t nGenJets = 0;
   
   Int_t nEmbeddedJets =  0; 
-  
+  Int_t nJGen = 0; 
   TArrayI iEmbeddedMatchIndex; 
   TArrayI iRecMatchIndex;
   TArrayF fRecMatchPtFraction; 
@@ -2814,20 +2815,21 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   //fetch all jets used for embedding mode
   if(!(fUseExtraTracks == 0)){ 
 
-  Int_t nJGen  = GetListOfJets(fJetsGen, kJetsGenAcceptance);//fill list of embedded jets, generator level
- 
-  if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
-  if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
+    if(fMatchMode == 2){
+      nJGen  = GetListOfJets(fJetsGen, kJetsGenAcceptance);//fill list of embedded jets, generator level
+      
+      if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
+      if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
+      
+      if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
+      fh1nGenJets->Fill(nGenJets);
+      
+    }
   
-  if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
-  fh1nGenJets->Fill(nGenJets);
-  
- 
-  
-  std::cout<<"fBranchEmbeddedJets for matching: "<<fBranchEmbeddedJets.Length()<<std::endl;
+    if(fDebug>2)std::cout<<"fBranchEmbeddedJets for matching: "<<fBranchEmbeddedJets.Length()<<std::endl;
 
 
-  if(fBranchEmbeddedJets.Length()){ 
+    if(fBranchEmbeddedJets.Length()){ 
 
     Int_t nJEmbedded = GetListOfJets(fJetsEmbedded, kJetsEmbedded);//fill list of embedded jets, detector level
     if(nJEmbedded>=0) nEmbeddedJets = fJetsEmbedded->GetEntries();
@@ -2847,18 +2849,18 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
    
     //get closest jets between embedded detector level jets and reconstructed detector level in extra tracks branch
 
-    std::cout<<"GetClosestJets(): "<<std::endl;
-    std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
-    std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
+    if(fDebug>2)std::cout<<"GetClosestJets(): "<<std::endl;
+    if(fDebug>2)std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
+    if(fDebug>2)std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
 
 
     AliAnalysisHelperJetTasks::GetClosestJets(fJetsEmbedded, nEmbeddedJets, 
 					      fJetsRecCuts, nRecJetsCuts, 
                                               iRecMatchIndex,iEmbeddedMatchIndex,
-					      2,maxDist);
+					      0,maxDist);
 
   
-    std::cout<<"Hallo!"<<std::endl;
+    //std::cout<<"Hallo!"<<std::endl;
 
     //test:
     //for(Int_t i=0; i<nEmbeddedJets; i++){
@@ -2957,7 +2959,16 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(nTCuts>=0) fh1EvtMult->Fill(fTracksRecCuts->GetEntries());
 
-  //std::cout<<"Check fUseExtraTracks status: "<<fUseExtraTracks<<std::endl;
+  Int_t nGenPart = 0;
+  if(fMatchMode == 2){
+  Int_t nTGen = GetListOfTracks(fTracksGen,fTrackTypeGen);
+  if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+  if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+  }
+
+
+  //fetch V0 candidates
 
   Int_t nK0s = 0;
   Int_t nK0sStandard = 0;  
@@ -3774,8 +3785,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Int_t indexEmbedded         = iRecMatchIndex[ij];
 	  ptFractionEmbedded = fRecMatchPtFraction[ij]; 
 	  
-	  std::cout<<"index embedded: "<<indexEmbedded<<std::endl;
-	  std::cout<<"ptFractionEmbedded: "<<ptFractionEmbedded<<std::endl;
+	  if(fDebug>2)std::cout<<"index embedded: "<<indexEmbedded<<std::endl;
+	  if(fDebug>2)std::cout<<"ptFractionEmbedded: "<<ptFractionEmbedded<<std::endl;
 
   
 	  fh1IndexEmbedded->Fill(indexEmbedded);
@@ -5841,7 +5852,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        /////////////////////////////////////////////////////////////
        //V0 and track Cuts:
               
-       if(fDebug>7){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
+       if(fDebug>20){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
 
        if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
        
@@ -5930,7 +5941,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        //V0 and track Cuts:
        
        
-       if(fDebug>7){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
+       if(fDebug>20){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
        
        if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
        
