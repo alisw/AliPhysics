@@ -191,13 +191,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKTxx,jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,
        Form("JetAKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0,0,0);
 
-      jetFinderTask->SetFilterHybridTracks(kTRUE);
+      //jetFinderTask->SetFilterHybridTracks(kTRUE);
 
       //KT DETECTOR LEVEL
       jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,       Form("JetKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0);
       jetFinderRhoKT->SetMinJetPt(0);
 
-      jetFinderRhoKT->SetFilterHybridTracks(kTRUE);
+      //jetFinderRhoKT->SetFilterHybridTracks(kTRUE);
    }
 
    //____________________________________________________________________
@@ -209,13 +209,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //ANTIKT GENERATOR LEVEL
       jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,1,0); 
 
-      jetFinderTaskMC->SelectPhysicalPrimaries(kTRUE);
+      //jetFinderTaskMC->SelectPhysicalPrimaries(kTRUE);
 
       //KT GENERATOR LEVEL
       jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,1,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
-      jetFinderRhoKTMC->SelectPhysicalPrimaries(kTRUE);
+      //jetFinderRhoKTMC->SelectPhysicalPrimaries(kTRUE);
  
       if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl){ //EFFICIENCY OR EMBEDDING 
          //Tagger - find closest generator level and reconstructed level jets    
