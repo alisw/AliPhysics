@@ -92,6 +92,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
+  void SetMixWithoutConversionFlag(Bool_t a){fMixWithoutConversionFlag=a;}
 	void SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
 	void SetPoolPVzBinLimits(Int_t Nzvtxbins,const Double_t *ZvtxBins){
 		fNzVtxBins = Nzvtxbins;
@@ -335,6 +336,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
+  Bool_t fMixWithoutConversionFlag; /// flag for mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
 	Int_t fNzVtxBins;								/// number of z vrtx bins
 	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
@@ -348,7 +350,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,18); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,19); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
