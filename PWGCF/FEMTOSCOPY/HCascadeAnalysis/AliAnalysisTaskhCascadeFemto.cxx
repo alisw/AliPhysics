@@ -32,7 +32,6 @@
 // - first particle: pion (0), proton (1)
 // - second particle: pion (0) only when first particle pion (0), 
 //   proton (1) only when first particle proton (1), Xi (2), Omega (3), 
-//   to be fixed --> randomization, THD for pions
 // - AODs
 // - ESDs (not mantained)
 //
@@ -41,7 +40,11 @@
 //    --> Momentum resolution correction histos
 //    --> Purity p, Xi, pairs
 // November 2015
-// - first attempt of shared daughter cut with selection criterion on inv mass 
+// - first attempt of shared daughter cut with selection criterion on inv mass (few code optimizations January 2016) 
+// December 2015/January 2016
+// - TH2D to run pipi
+// - for identical particle case: _randomization_ 
+// - small bug fixes (doSkipOver for protons not initialized, doPickOne for Xi not initialized, dphis calculation with analytical method)
 /////////////////////////////////////////////////////////////////////////
 
 class AliESDVertex;
@@ -55,6 +58,7 @@ class AliAODVertex;
 #include "TH2.h"
 #include "TH3.h"
 #include "TMath.h"
+#include "TRandom.h"
 #include "TDatabasePDG.h"
 
 #include "AliAnalysisManager.h"
@@ -160,7 +164,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
 
   fHistnTPCCrossedR(0),
   fHistRationTPCCrossedRnFind(0),
-  fHistSharedFrTPCcl(0),
+  fHistSharedFrTPCcl(0), 
   fHistprimpTPCdEdx(0),
 
   fHistyptProtons(0),
@@ -215,7 +219,6 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistpaXiSignalBkgKstar(0),
   fHistapaXiSignalBkgKstar(0),
   fHistFractionOfXiWithSharedDaughters(0),
-  fHistFractionOfaXiWithSharedDaughters(0),
 
   fHistpXibacDetaSDphiS(0),
   fHistpXiposDetaSDphiS(0),
@@ -386,7 +389,6 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistpaXiSignalBkgKstar(0),
   fHistapaXiSignalBkgKstar(0),
   fHistFractionOfXiWithSharedDaughters(0),
-  fHistFractionOfaXiWithSharedDaughters(0),
 
   fHistpXibacDetaSDphiS(0),
   fHistpXiposDetaSDphiS(0),
@@ -757,77 +759,75 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
  }
 */  
 
-  fHistpXiSignalRealKstar = new TH2F("fHistpXiSignalRealKstar","",500,0.,5.,20,0.,100.);
+  fHistpXiSignalRealKstar = new TH2D("fHistpXiSignalRealKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalRealKstar);
-  fHistapXiSignalRealKstar = new TH2F("fHistapXiSignalRealKstar","",500,0.,5.,20,0.,100.);
+  fHistapXiSignalRealKstar = new TH2D("fHistapXiSignalRealKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalRealKstar);
-  fHistpaXiSignalRealKstar = new TH2F("fHistpaXiSignalRealKstar","",500,0.,5.,20,0.,100.);
+  fHistpaXiSignalRealKstar = new TH2D("fHistpaXiSignalRealKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalRealKstar);
-  fHistapaXiSignalRealKstar = new TH2F("fHistapaXiSignalRealKstar","",500,0.,5.,20,0.,100.);
+  fHistapaXiSignalRealKstar = new TH2D("fHistapaXiSignalRealKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalRealKstar);
 
-  fHistpXiSignalBkgKstar = new TH2F("fHistpXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
+  fHistpXiSignalBkgKstar = new TH2D("fHistpXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalBkgKstar);
-  fHistapXiSignalBkgKstar = new TH2F("fHistapXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
+  fHistapXiSignalBkgKstar = new TH2D("fHistapXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalBkgKstar);
-  fHistpaXiSignalBkgKstar = new TH2F("fHistpaXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
+  fHistpaXiSignalBkgKstar = new TH2D("fHistpaXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalBkgKstar);
-  fHistapaXiSignalBkgKstar = new TH2F("fHistapaXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
+  fHistapaXiSignalBkgKstar = new TH2D("fHistapaXiSignalBkgKstar","",500,0.,5.,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalBkgKstar);
 
   fHistFractionOfXiWithSharedDaughters = new TH2F("fHistFractionOfXiWithSharedDaughters","",200,0.,200.,201,0.,1.005);
   fOutputContainer->Add(fHistFractionOfXiWithSharedDaughters);
-  fHistFractionOfaXiWithSharedDaughters = new TH2F("fHistFractionOfaXiWithSharedDaughters","",200,0.,200.,201,0.,1.005);
-  fOutputContainer->Add(fHistFractionOfaXiWithSharedDaughters);
 
-  fHistpXibacDetaSDphiS = new TH2F("fHistpXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);    
+  fHistpXibacDetaSDphiS = new TH2D("fHistpXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);    
   fOutputContainer->Add(fHistpXibacDetaSDphiS);
-  fHistpXiposDetaSDphiS = new TH2F("fHistpXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistpXiposDetaSDphiS = new TH2D("fHistpXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpXiposDetaSDphiS);
-  fHistpXinegDetaSDphiS = new TH2F("fHistpXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistpXinegDetaSDphiS = new TH2D("fHistpXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpXinegDetaSDphiS);
-  fHistpaXibacDetaSDphiS = new TH2F("fHistpaXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistpaXibacDetaSDphiS = new TH2D("fHistpaXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXibacDetaSDphiS);
-  fHistpaXiposDetaSDphiS = new TH2F("fHistpaXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistpaXiposDetaSDphiS = new TH2D("fHistpaXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXiposDetaSDphiS);
-  fHistpaXinegDetaSDphiS = new TH2F("fHistpaXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistpaXinegDetaSDphiS = new TH2D("fHistpaXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXinegDetaSDphiS);
-  fHistapXibacDetaSDphiS = new TH2F("fHistapXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapXibacDetaSDphiS = new TH2D("fHistapXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXibacDetaSDphiS);
-  fHistapXiposDetaSDphiS = new TH2F("fHistapXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapXiposDetaSDphiS = new TH2D("fHistapXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXiposDetaSDphiS);
-  fHistapXinegDetaSDphiS = new TH2F("fHistapXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapXinegDetaSDphiS = new TH2D("fHistapXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXinegDetaSDphiS);
-  fHistapaXibacDetaSDphiS = new TH2F("fHistapaXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapaXibacDetaSDphiS = new TH2D("fHistapaXibacDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXibacDetaSDphiS);
-  fHistapaXiposDetaSDphiS = new TH2F("fHistapaXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapaXiposDetaSDphiS = new TH2D("fHistapaXiposDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXiposDetaSDphiS);
-  fHistapaXinegDetaSDphiS = new TH2F("fHistapaXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
+  fHistapaXinegDetaSDphiS = new TH2D("fHistapaXinegDetaSDphiS","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXinegDetaSDphiS);
 
-  fHistpXibacDetaSDphiSBkg = new TH2F("fHistpXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpXibacDetaSDphiSBkg = new TH2D("fHistpXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpXibacDetaSDphiSBkg);
-  fHistpXiposDetaSDphiSBkg = new TH2F("fHistpXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpXiposDetaSDphiSBkg = new TH2D("fHistpXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpXiposDetaSDphiSBkg);
-  fHistpXinegDetaSDphiSBkg = new TH2F("fHistpXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpXinegDetaSDphiSBkg = new TH2D("fHistpXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpXinegDetaSDphiSBkg);
-  fHistpaXibacDetaSDphiSBkg = new TH2F("fHistpaXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpaXibacDetaSDphiSBkg = new TH2D("fHistpaXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXibacDetaSDphiSBkg);
-  fHistpaXiposDetaSDphiSBkg = new TH2F("fHistpaXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpaXiposDetaSDphiSBkg = new TH2D("fHistpaXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXiposDetaSDphiSBkg);
-  fHistpaXinegDetaSDphiSBkg = new TH2F("fHistpaXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistpaXinegDetaSDphiSBkg = new TH2D("fHistpaXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistpaXinegDetaSDphiSBkg);
-  fHistapXibacDetaSDphiSBkg = new TH2F("fHistapXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapXibacDetaSDphiSBkg = new TH2D("fHistapXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXibacDetaSDphiSBkg);
-  fHistapXiposDetaSDphiSBkg = new TH2F("fHistapXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapXiposDetaSDphiSBkg = new TH2D("fHistapXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXiposDetaSDphiSBkg);
-  fHistapXinegDetaSDphiSBkg = new TH2F("fHistapXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapXinegDetaSDphiSBkg = new TH2D("fHistapXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapXinegDetaSDphiSBkg);
-  fHistapaXibacDetaSDphiSBkg = new TH2F("fHistapaXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapaXibacDetaSDphiSBkg = new TH2D("fHistapaXibacDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXibacDetaSDphiSBkg);
-  fHistapaXiposDetaSDphiSBkg = new TH2F("fHistapaXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapaXiposDetaSDphiSBkg = new TH2D("fHistapaXiposDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXiposDetaSDphiSBkg);
-  fHistapaXinegDetaSDphiSBkg = new TH2F("fHistapaXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
+  fHistapaXinegDetaSDphiSBkg = new TH2D("fHistapaXinegDetaSDphiSBkg","",1000,-1,1,200,-2.,2.);
   fOutputContainer->Add(fHistapaXinegDetaSDphiSBkg);
 
   fHistTrackBufferOverflow = new TH1F("fHistTrackBufferOverflow","",2,0,2);
@@ -938,6 +938,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
   fHistVertexDistribution->Fill(lBestPrimaryVtxPos[2]); 
 
   const Float_t bfield = (InputEvent())->GetMagneticField();
+  //cout<<"B field"<<bfield<<endl;;
   int fieldsign;
   if (bfield >=0.) fieldsign = 1;
   else fieldsign = -1;
@@ -1091,7 +1092,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 //    if(nTPCCrossedRows<70) continue;  
 
     rationCrnFind = 0.;
-    if(track->GetTPCNclsF()) rationCrnFind = nTPCCrossedRows/track->GetTPCNclsF();   
+    if (track->GetTPCNclsF()) rationCrnFind = nTPCCrossedRows/track->GetTPCNclsF();   
     if (fkApplyRatioCrRnFindCut) if(rationCrnFind< .8) continue;  
 
     nTPCclSp =  track->GetTPCnclsS();
@@ -1099,7 +1100,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     if (nTPCclp<70) continue;
 
     sharedFractionTPCcl = (Float_t) nTPCclSp/nTPCclp; // can be > 1. 
-    if (sharedFractionTPCcl>0.) continue; // for protons it is not more than 3% (without dca cuts) 
+    if (sharedFractionTPCcl>0.) continue; // for protons it is around 4% (after all cuts) 
 //    cout<<"Shared fraction ncl "<<sharedFractionTPCcl<<endl;
 
     // Get the corresponding global track to use PID --> stored only for global tracks
@@ -1135,7 +1136,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 //    cout<<"d z "<<dz[1]<<"while value is for other "<<p[1]<<endl;
 
     etp1.CopyFromVTrack(vtrackg); 
-    etp1.PropagateToDCA(vertexmain,(InputEvent())->GetMagneticField(),100.,dzg,covarg);    
+    etp1.PropagateToDCA(vertexmain,bfield,100.,dzg,covarg);    
 
     isP = kFALSE;
     isaP = kFALSE;
@@ -1184,7 +1185,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
    
     if (fFirstpart == kProton) { // For protons use TPC and TOF
 
-      statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,globaltrack); // this checks kTOFout and kTIMEi https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TOF
+      statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,globaltrack); // this checks kTOFout and kTIME https://twiki.cern.ch/twiki/bin/viewauth/ALICE/TOF
 
       tTOF = 0.0;
       beta = -1000.;
@@ -1271,6 +1272,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     fEvt->fReconstructedProton[pCount].pPhi    = track->Phi();
     fEvt->fReconstructedProton[pCount].pRap    = rapidity; 
     fEvt->fReconstructedProton[pCount].mcProtonOriginType = mcProtonOrigin;
+    fEvt->fReconstructedProton[pCount].doSkipOver = kFALSE;
 
     if (isP) {fEvt->fReconstructedProton[pCount].isP = kTRUE; fEvt->fReconstructedProton[pCount].isaP = kFALSE;}
     else if (isaP) {fEvt->fReconstructedProton[pCount].isaP = kTRUE; fEvt->fReconstructedProton[pCount].isP = kFALSE;}
@@ -1442,7 +1444,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       isaOmega = kFALSE;
 
      
-      if (fAnalysisType == "ESD") { // %| not mantained 
+      if (fAnalysisType == "ESD") { // not mantained 
 
         xi = fESDevent->GetCascade(iXi);
         if (!xi) continue;
@@ -1624,7 +1626,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       sharedFractionTPCclNeg  = (Float_t) lNegTPCClustersS/lNegTPCClusters;
       sharedFractionTPCclBach = (Float_t) lBachTPCClustersS/lBachTPCClusters;
 //      cout<<" shared pos "<<sharedFractionTPCclPos<<" shared neg "<<sharedFractionTPCclNeg<<" shared bach "<<sharedFractionTPCclBach<<endl;
-      if (sharedFractionTPCclPos>0||sharedFractionTPCclNeg>0||sharedFractionTPCclBach>0) continue; // FIXME undestand if can be made looser
+      if (sharedFractionTPCclPos>0||sharedFractionTPCclNeg>0||sharedFractionTPCclBach>0) continue; // around 5 % for all tracks
 
 
 
@@ -1837,6 +1839,8 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       fEvt->fReconstructedXi[xiCount].indexP = TMath::Abs(indexP);
       fEvt->fReconstructedXi[xiCount].indexN = TMath::Abs(indexN);
       fEvt->fReconstructedXi[xiCount].doSkipOver = kFALSE;
+      fEvt->fReconstructedXi[xiCount].doPickOne  = kFALSE; 
+
       // Store for each track the position at 1.2 radius
       SetSftPosR125( bachTrackXi, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedXi[xiCount].daughterBacShiftedGlobalPosition);
       SetSftPosR125( pTrackXi, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedXi[xiCount].daughterPosShiftedGlobalPosition);
@@ -1873,19 +1877,15 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     Int_t checkeddaughters[(fEvt->fNumberCandidateXi)*3];
 
     for (int i=0; i < fEvt->fNumberCandidateXi*3; i++) checkeddaughters[i] = -99999;
-//    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
-//      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) nXiWithXiMass++;
-//    }
 
-    for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
+    for (int i=0; i < fEvt->fNumberCandidateXi-1; i++) {
       nXiWithSharedDaughtersWithXiMass = 0;
-      //cout<<"Checking Xi: "<<i<<endl;
 
-      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE) {
-
+      if (fEvt->fReconstructedXi[i].isXiMass == kTRUE && !(fEvt->fReconstructedXi[i].doSkipOver) ) {
+        //cout<<"Checking Xi: "<<i<<endl;
         //cout<<"Checking bachelor  "<<endl;
         daughterIndex = fEvt->fReconstructedXi[i].indexB;
-        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
+        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, checkeddaughters);
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
           //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal bac "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
@@ -1897,7 +1897,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         
         //cout<<"Checking pos daughter "<<endl;
         daughterIndex = fEvt->fReconstructedXi[i].indexP;
-        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt,checkeddaughters);
+        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, checkeddaughters);
 
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
@@ -1910,7 +1910,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
         //cout<<"Checking neg daughter  "<<endl;
         daughterIndex = fEvt->fReconstructedXi[i].indexN;
-        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
+        nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, checkeddaughters);
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
           //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal n "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
@@ -1920,16 +1920,19 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         }
       }   
     }
-
+    // cout<<"number of daughters actually checked "<<ncheckeddaughters<<endl;  
     // cout<<"Fraction of xis with shared daughters "<< nXiWithSharedDaughtersWithXiMass/ (Float_t) nXiWithXiMass<<endl;
     // cout<<"Fraction of antixis with shared daughters "<< naXiWithSharedDaughtersWithXiMass/(Float_t)  naXiWithXiMass<<endl;
-    // Remove prtons anx Xi when the proton is one of the daughter of the Xi
+
+    // Remove protons anx Xi when the proton is one of the daughter of the Xi, 
+    // NB done after shared daughter flagging to avoid unflagging if the iterative procedure for shared daughter is implemented
+    //cout<<"Proton mult "<<fEvt->fNumberCandidateProton<<endl;
     for (int i=0; i < fEvt->fNumberCandidateXi; i++) {
       for (int j=0; j<fEvt->fNumberCandidateProton; j++) {
         if (fEvt->fReconstructedXi[i].indexB == fEvt->fReconstructedProton[j].index ||
             fEvt->fReconstructedXi[i].indexP == fEvt->fReconstructedProton[j].index ||
             fEvt->fReconstructedXi[i].indexN == fEvt->fReconstructedProton[j].index   ) {
-
+          //cout<<"Proton is also daughter of Xi!! Skipping proton and Xi!"<<endl;
           fEvt->fReconstructedXi[i].doSkipOver = kTRUE;
           fEvt->fReconstructedProton[j].doSkipOver = kTRUE;
 
@@ -1938,9 +1941,9 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       }
     }
 
- 
-    DoPairshCasc(fEvt, lcentrality); 
-  } else DoPairshh(fEvt, lcentrality, fieldsign);  
+
+    DoPairshCasc(lcentrality); 
+  } else DoPairshh(lcentrality, fieldsign);  
 
 // Post output data
   PostData(1, fOutputContainer);
@@ -1949,7 +1952,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 }
 
 //-----------------------------------------------------------------------------------------------
-void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const AliAnalysishCascadeEvent *event, const Float_t lcentrality) {
+void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const Float_t lcentrality) {
 
  
   bool ismassXi;
@@ -1971,42 +1974,42 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const AliAnalysishCascadeEvent 
   bool multmixedcounted = kFALSE;
   double pairKstar = 0.;
 
-  for (int i=0; i < event->fNumberCandidateXi; i++) { //Start looping over reconstructed Xis in this event 
+  for (int i=0; i < fEvt->fNumberCandidateXi; i++) { //Start looping over reconstructed Xis in this event 
 
-    ismassXi  = event->fReconstructedXi[i].isXiMass;  
+    ismassXi  = fEvt->fReconstructedXi[i].isXiMass;  
     
 
     if (!ismassXi) continue;
-    if (event->fReconstructedXi[i].doSkipOver) continue;
+    if (fEvt->fReconstructedXi[i].doSkipOver) continue;
 //    cout<<"Found Xi with correct mass"<<endl;
-    isXi = event->fReconstructedXi[i].isXi;
-    isaXi = event->fReconstructedXi[i].isaXi;    
+    isXi = fEvt->fReconstructedXi[i].isXi;
+    isaXi = fEvt->fReconstructedXi[i].isaXi;    
 
-    fHistInvMassXiInPairs->Fill(event->fReconstructedXi[i].xiMass,lcentrality);
+    fHistInvMassXiInPairs->Fill(fEvt->fReconstructedXi[i].xiMass,lcentrality);
 
     for (int eventNumber=0; eventNumber<fnEventsToMix+1; eventNumber++) { // Event buffer loop: eventNumber=0 is the current event, all other eventNumbers are past events 
                                                                           
 
       // For same event pairs
 
-      if (!multmixedcounted && eventNumber!=0 && ((event+eventNumber)->fNumberCandidateProton)!=0.) evmultmixed++; 
-      for (int j=0; j<(event+eventNumber)->fNumberCandidateProton; j++) { // Second particle loop (from past or current event)
-        if ((event+eventNumber)->fReconstructedProton[j].doSkipOver) continue; // remove also from mixing, if they were used in Xi we are not sure about the quality  
-        isP = (event+eventNumber)->fReconstructedProton[j].isP;    
-        isaP = (event+eventNumber)->fReconstructedProton[j].isaP;  
+      if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateProton)!=0.) evmultmixed++; 
+      for (int j=0; j<(fEvt+eventNumber)->fNumberCandidateProton; j++) { // Second particle loop (from past or current event)
+        if ((fEvt+eventNumber)->fReconstructedProton[j].doSkipOver) continue; // remove also from mixing, if they were used in Xi we are not sure about the quality  
+        isP = (fEvt+eventNumber)->fReconstructedProton[j].isP;    
+        isaP = (fEvt+eventNumber)->fReconstructedProton[j].isaP;  
 
         //Calculate k* for the pair
-        pairKstar = CalculateKstar(event->fReconstructedXi[i].xiMomentum, (event+eventNumber)->fReconstructedProton[j].pMomentum, fPDGsecond,fPDGfirst);
+        pairKstar = CalculateKstar(fEvt->fReconstructedXi[i].xiMomentum, (fEvt+eventNumber)->fReconstructedProton[j].pMomentum, fPDGsecond,fPDGfirst);
           
         // Pair histogramming
-        dphisbac = CalculateDphiSatR12m( (event+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , event->fReconstructedXi[i].daughterBacShiftedGlobalPosition );
-        detasbac = (event+eventNumber)->fReconstructedProton[j].pEtaS - event->fReconstructedXi[i].daughterBacEtaS;
+        dphisbac = CalculateDphiSatR12m( (fEvt+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , fEvt->fReconstructedXi[i].daughterBacShiftedGlobalPosition );
+        detasbac = (fEvt+eventNumber)->fReconstructedProton[j].pEtaS - fEvt->fReconstructedXi[i].daughterBacEtaS;
 
-        dphispos = CalculateDphiSatR12m( (event+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , event->fReconstructedXi[i].daughterPosShiftedGlobalPosition );
-        detaspos = (event+eventNumber)->fReconstructedProton[j].pEtaS - event->fReconstructedXi[i].daughterPosEtaS;
+        dphispos = CalculateDphiSatR12m( (fEvt+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , fEvt->fReconstructedXi[i].daughterPosShiftedGlobalPosition );
+        detaspos = (fEvt+eventNumber)->fReconstructedProton[j].pEtaS - fEvt->fReconstructedXi[i].daughterPosEtaS;
 
-        dphisneg = CalculateDphiSatR12m( (event+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , event->fReconstructedXi[i].daughterNegShiftedGlobalPosition );
-        detasneg = (event+eventNumber)->fReconstructedProton[j].pEtaS - event->fReconstructedXi[i].daughterNegEtaS;
+        dphisneg = CalculateDphiSatR12m( (fEvt+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , fEvt->fReconstructedXi[i].daughterNegShiftedGlobalPosition );
+        detasneg = (fEvt+eventNumber)->fReconstructedProton[j].pEtaS - fEvt->fReconstructedXi[i].daughterNegEtaS;
 
         // Apply two-track cuts
         if (fkApplyTtc) {
@@ -2136,9 +2139,8 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const AliAnalysishCascadeEvent 
 }
 
 //--------------------------------------------------------------------------
-void AliAnalysisTaskhCascadeFemto::DoPairshh (const AliAnalysishCascadeEvent *event, const Float_t lcentrality, int fieldsign) {
+void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fieldsign) {
 
-  // FIXME randomizaion to be implemented for same particle pairs
   bool isP1;
   bool isaP1;
   bool isP2;
@@ -2155,32 +2157,41 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const AliAnalysishCascadeEvent *ev
   bool multmixedcounted = kFALSE;
   double pairKstar = 0.;
 
-  for (int i=0; i<event->fNumberCandidateProton; i++) {
+  int iunsw;
+  int junsw;
+  bool kswap=kFALSE;
 
-    isP1  = event->fReconstructedProton[i].isP;
-    isaP1 = event->fReconstructedProton[i].isaP;
+  for (int i=0; i<fEvt->fNumberCandidateProton; i++) {
+
+    if (fEvt->fReconstructedProton[i].doSkipOver) continue;
+
+    isP1  = fEvt->fReconstructedProton[i].isP;
+    isaP1 = fEvt->fReconstructedProton[i].isaP;
 
     for (int eventNumber=0; eventNumber<fnEventsToMix+1; eventNumber++) { 
       // For same event pairs
-      if (!multmixedcounted && eventNumber!=0 && ((event+eventNumber)->fNumberCandidateProton)!=0.) evmultmixed++; 
+      if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateProton)!=0.) evmultmixed++; 
 
-      for (int j=0; j<(event+eventNumber)->fNumberCandidateProton; j++) {
+      for (int j=0; j<(fEvt+eventNumber)->fNumberCandidateProton; j++) {
 
+        if ((fEvt+eventNumber)->fReconstructedProton[j].doSkipOver) continue;
         //cout<<" event number "<<eventNumber<<endl;
         if ( (eventNumber == 0) && (j<=i)) continue; 
-        isP2 = (event+eventNumber)->fReconstructedProton[j].isP;
-        isaP2 = (event+eventNumber)->fReconstructedProton[j].isaP;
+        isP2 = (fEvt+eventNumber)->fReconstructedProton[j].isP;
+        isaP2 = (fEvt+eventNumber)->fReconstructedProton[j].isaP;
 
 
-
+        // Pair ramdomization 
+        if (eventNumber == 0 && gRandom->Rndm()>=0.5) { iunsw=i; junsw=j; i=junsw; j=iunsw; kswap=kTRUE; } // done even for different charge part (?) 
         //Calculate k* for the pair
-        pairKstar = CalculateKstar(event->fReconstructedProton[i].pMomentum, (event+eventNumber)->fReconstructedProton[j].pMomentum, fPDGsecond,fPDGfirst);
+        pairKstar = CalculateKstar(fEvt->fReconstructedProton[i].pMomentum, (fEvt+eventNumber)->fReconstructedProton[j].pMomentum, fPDGsecond,fPDGfirst);
 
         // Pair histogramming
-        dphis = CalculateDphiSatR12m(event->fReconstructedProton[i].pCharge, (event+eventNumber)->fReconstructedProton[j].pCharge, fieldsign,event->fReconstructedProton[i].pPt , (event+eventNumber)->fReconstructedProton[j].pPt, event->fReconstructedProton[i].pPhi, (event+eventNumber)->fReconstructedProton[j].pPhi);
+        dphis = CalculateDphiSatR12m(fEvt->fReconstructedProton[i].pCharge, (fEvt+eventNumber)->fReconstructedProton[j].pCharge, fieldsign,fEvt->fReconstructedProton[i].pPt , (fEvt+eventNumber)->fReconstructedProton[j].pPt, fEvt->fReconstructedProton[i].pPhi, (fEvt+eventNumber)->fReconstructedProton[j].pPhi);
 
-        //dphis = CalculateDphiSatR12m( (event+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition , event->fReconstructedProton[i].pShiftedGlobalPosition );
-        deta = (event+eventNumber)->fReconstructedProton[j].pEta - event->fReconstructedProton[i].pEta;
+        //if (eventNumber == 0) cout<<" Dphi with analytical method "<<dphisprop<<endl;
+        deta = (fEvt+eventNumber)->fReconstructedProton[j].pEta - fEvt->fReconstructedProton[i].pEta;
+
 
         // Apply two-track cuts
         if (fkApplyTtc) {
@@ -2195,13 +2206,13 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const AliAnalysishCascadeEvent *ev
         }
         if (eventNumber==0) {//Same event pair histogramming
            // simplest pair cut // FIXME not needed maybe
-          if ((event+eventNumber)->fReconstructedProton[j].index == event->fReconstructedProton[i].index) { //cout<<"In the same event the two particle  have the same index!"<<endl; 
+          if ((fEvt+eventNumber)->fReconstructedProton[j].index == fEvt->fReconstructedProton[i].index) { if (eventNumber==0) cout<<"In the same event the two particles have the same index!"<<endl; 
 
             continue;
           }
 
         
-/*          if (dphisbac==0.&& detasbac==0.) cout<<"Deta nad phi bac are 0!!!! Gl pos pion 0 "<<(event+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition[0]<<" Gl pos bac 0 "<<event->fReconstructedXi[i].daughterBacShiftedGlobalPosition[0]<<endl;
+/*          if (dphisbac==0.&& detasbac==0.) cout<<"Deta nad phi bac are 0!!!! Gl pos pion 0 "<<(fEvt+eventNumber)->fReconstructedProton[j].pShiftedGlobalPosition[0]<<" Gl pos bac 0 "<<fEvt->fReconstructedXi[i].daughterBacShiftedGlobalPosition[0]<<endl;
 */
           if (isP1&&isP2) {
             fHistpXiSignalRealKstar->Fill(pairKstar,lcentrality);
@@ -2233,7 +2244,8 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const AliAnalysishCascadeEvent *ev
           } 
 
         }
-
+        // Put back particle loop indeces
+        if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
       } // second part
 
     }//end event loop
@@ -2257,15 +2269,15 @@ void AliAnalysisTaskhCascadeFemto::ProtonOrigin() {
 }
 
 //-----------------------------------------------------------------------------------------------
-Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t daughterIndex, const AliAnalysishCascadeEvent *event, Int_t* checkeddaughters ) {
+Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t daughterIndex, Int_t* checkeddaughters ) {
 
    //cout<<"In check method "<<endl;
    Int_t nXiWithSharedDaughtersWithXiMass = 0;
    Bool_t kShared = kFALSE;
-   for (int j=xiIndex+1; j < event->fNumberCandidateXi; j++) { 
-     if (event->fReconstructedXi[j].isXiMass == kTRUE) {
+   for (int j=xiIndex+1; j < fEvt->fNumberCandidateXi; j++) { 
+     if (fEvt->fReconstructedXi[j].isXiMass == kTRUE && !(fEvt->fReconstructedXi[j].doSkipOver)) {
        // check if this track was already checked, if so skip this track (return)
-       for (int icd = 0; icd < (event->fNumberCandidateXi)*3; icd++) { 
+       for (int icd = 0; icd < (fEvt->fNumberCandidateXi)*3; icd++) { 
          if (daughterIndex == checkeddaughters[icd]) { 
            //cout<<"This daughter was already checked exiting with -1 and label is "<<daughterIndex<<endl; 
            return -1;
@@ -2273,20 +2285,20 @@ Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t dau
        }  
        //cout<<"in loop checking"<<endl; 
        // compare with all daughters of all the other Xi
-       Int_t indexB2 = event->fReconstructedXi[j].indexB;
-       Int_t indexP2 = event->fReconstructedXi[j].indexP;
-       Int_t indexN2 = event->fReconstructedXi[j].indexN;
+       Int_t indexB2 = fEvt->fReconstructedXi[j].indexB;
+       Int_t indexP2 = fEvt->fReconstructedXi[j].indexP;
+       Int_t indexN2 = fEvt->fReconstructedXi[j].indexN;
        if ( daughterIndex == indexB2) { //cout<<"multiple use of this now is bac ! "<<endl; 
-         event->fReconstructedXi[j].doPickOne = kTRUE; 
-         event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
+         fEvt->fReconstructedXi[j].doPickOne = kTRUE; 
+         fEvt->fReconstructedXi[xiIndex].doPickOne = kTRUE;
          kShared = kTRUE;
        } else if ( daughterIndex == indexP2) { //cout<<"multiple use of this now is pos ! "<<endl; 
-         event->fReconstructedXi[j].doPickOne = kTRUE; 
-         event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
+         fEvt->fReconstructedXi[j].doPickOne = kTRUE; 
+         fEvt->fReconstructedXi[xiIndex].doPickOne = kTRUE;
          kShared = kTRUE;
        } else if ( daughterIndex == indexN2) { //cout<<"multiple use of this now is neg! "<<endl; 
-         event->fReconstructedXi[j].doPickOne = kTRUE; 
-         event->fReconstructedXi[xiIndex].doPickOne = kTRUE;
+         fEvt->fReconstructedXi[j].doPickOne = kTRUE; 
+         fEvt->fReconstructedXi[xiIndex].doPickOne = kTRUE;
          kShared = kTRUE;
        } // cannot be equal to more than one otherwise it means there are ttracks used twice in he same Xi
    
@@ -2294,9 +2306,9 @@ Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t dau
    }
    // here one should decide for each daughter checked! choose only one that has the best parameters
 
-   if (kShared) {
-     SelectBestCandidate (event ); 
-     for (int j=0; j < event->fNumberCandidateXi; j++) {
+   if (kShared) {  // at least one Xi with one common daughter was found
+     SelectBestCandidate (); 
+     for (int j=0; j < fEvt->fNumberCandidateXi; j++) {
        if (fEvt->fReconstructedXi[j].isXiMass == kTRUE) {
          if (fEvt->fReconstructedXi[j].doPickOne == kTRUE) {
            nXiWithSharedDaughtersWithXiMass++;
@@ -2311,31 +2323,31 @@ Int_t AliAnalysisTaskhCascadeFemto::CheckDaughterTrack (Int_t xiIndex, Int_t dau
 
 }
 //-----------------------------------------------------------------------------------
-void AliAnalysisTaskhCascadeFemto::SelectBestCandidate ( const AliAnalysishCascadeEvent *event) {
+void AliAnalysisTaskhCascadeFemto::SelectBestCandidate () {
 
  // select for each track the best candidate and flag the worst cascades (doSkipOver)
  // to be improved (FIXME)
- //    - recking bad Xi with good Xi to unflag them if they do not share daughters any more with the good ones (Jai AN Notes/node/64)
+ //    - cecking bad Xi with good Xi to unflag them if they do not share daughters any more with the good ones (Jai AN Notes/node/64)
  //      (note that the same flag is used to tag Xi that have the primary proton as daughter but this is done after this check in DoPairs so should be safe)     
  //    - consider other criteria
  //    - validate criteria using MC
 
  Float_t deltamassi = 0.;
  Float_t deltamassj = 0.;
- for (int i=0; i < event->fNumberCandidateXi; i++) { 
+ for (int i=0; i < fEvt->fNumberCandidateXi; i++) { 
 
-   if (event->fReconstructedXi[i].doPickOne) {
+   if (fEvt->fReconstructedXi[i].doPickOne && !(fEvt->fReconstructedXi[i].doSkipOver)) {
    
-     deltamassi = TMath::Abs(event->fReconstructedXi[i].xiMass - fPDGsecond);
+     deltamassi = TMath::Abs(fEvt->fReconstructedXi[i].xiMass - fPDGsecond);
      //cout<<" Delta mass is for first "<<deltamassi<<endl;
-     for (int j=i+1; j < event->fNumberCandidateXi; j++) {
-       if (event->fReconstructedXi[j].doPickOne) {
-         deltamassj = TMath::Abs(event->fReconstructedXi[j].xiMass - fPDGsecond);
+     for (int j=i+1; j < fEvt->fNumberCandidateXi; j++) {
+       if (fEvt->fReconstructedXi[j].doPickOne) {
+         deltamassj = TMath::Abs(fEvt->fReconstructedXi[j].xiMass - fPDGsecond);
          //cout<<" Delta mass is for second "<<deltamassj<<endl;
          if (deltamassj > deltamassi) { 
-         event->fReconstructedXi[j].doSkipOver = kTRUE;
+         fEvt->fReconstructedXi[j].doSkipOver = kTRUE;
          //cout<<"Taking first "<<endl;
-         } else  { event->fReconstructedXi[i].doSkipOver = kTRUE; /*cout<<"Taking second "<<endl;*/ i = j;break;} // continue the check from j 
+         } else  { fEvt->fReconstructedXi[i].doSkipOver = kTRUE; /*cout<<"Taking second "<<endl;*/ i = j;break;} // continue the check from j 
        }// check which is best and set flag to skip
      } 
    }
@@ -2406,33 +2418,37 @@ double AliAnalysisTaskhCascadeFemto::CalculateKstar(double momentum1[3], double 
    return kstar;
  }
 //-----------------------------------------------------------------------------------------------
-double AliAnalysisTaskhCascadeFemto::CalculateDphiSatR12m(Short_t chg1, Short_t chg2, Int_t magSign, Double_t ptv1, Double_t ptv2, Double_t phi1, Double_t phi2) { // AliFemto framework AliFemtoUser/AliFemtoPairCutRadialDistance.cxx + Dhevan not consistent?
+double AliAnalysisTaskhCascadeFemto::CalculateDphiSatR12m(Short_t chg1, Short_t chg2, Int_t magSign, Double_t ptv1, Double_t ptv2, Double_t phi1, Double_t phi2) { 
 
-  double rad = 1.2;
-  double afsi0b = 0.07510020733*chg1*magSign*rad/ptv1; // 0.075 = 0.3=e in H-L units*0.5=B/2 calculation on notebook
+  double rad = 1.25;
+  double afsi0b = 0.07510020733*chg1*magSign*rad/ptv1; // 0.075 = - 0.3 (= e in Heaviside-Lorentz units) *0.5 (= B) /2 (see later for the -)
   double afsi1b = 0.07510020733*chg2*magSign*rad/ptv2;
 
   if (fabs(afsi0b) >=1.) return 9999.; // angle is pi/2 or not defined --> dont cut
   if (fabs(afsi1b) >=1.) return 9999.; // MN modified these two lines returning 9999 and not kTRUE
-//  Double_t dps = phi2 - phi1 -TMath::ASin(afsi1b) + TMath::ASin(afsi0b);
-//  dps = TVector2::Phi_mpi_pi(dps);
+  double dps = phi2 - phi1 -TMath::ASin(afsi1b) + TMath::ASin(afsi0b); // - sign of e is outside
+  dps = TVector2::Phi_mpi_pi(dps);
   
-  double phi1bis =0.;
+  // The following is equivalent
+/*  double phi1bis =0.;
   double phi2bis =0.;
-  phi1bis = phi1-TMath::ASin(afsi0b); 
-  if(phi1bis > 2*PI) phi1bis -= 2*PI;
+  phi1bis = phi1-TMath::ASin(afsi0b); // the minus sign is outside ASin // which procedure is now correct?
+  if(phi1bis > 2*PI) phi1bis -= 2*PI;  // alice conv is phi in 0,2 pi
   if(phi1bis < 0) phi1bis += 2*PI;
   phi2bis = phi2 - TMath::ASin(afsi1b);
   if(phi2bis > 2*PI) phi2bis -= 2*PI;
   if(phi2bis < 0) phi2bis += 2*PI;
   double deltaphi = phi2bis - phi1bis;
-  if(deltaphi > PI) deltaphi -= PI;
-  if(deltaphi < -PI) deltaphi += PI;
+  if(deltaphi > PI) deltaphi -= 2*PI;  // NB in Dhevan code on git the 2 is omitted! 
+//    cout<<"dphi dev >pi!! "<<deltaphi<<endl; 
+  if(deltaphi < -PI) deltaphi += 2*PI;
+//    cout<<"dphi dev <-pi!! "<<deltaphi<<endl;
+*/
+  // cout<<" Dphi "<<dps<<" Dhevan "<<deltaphi<<endl;
+  
 
-//  cout<<" Dphi "<<dps<<" Dhevan "<<deltaphi<<endl;
 
-
-  return deltaphi;//dps;
+  return dps; //deltaphi;
 
 }
 //-----------------------------------------------------------------------------------------------
