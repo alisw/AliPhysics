@@ -35,11 +35,11 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   void SetReadMCTruth (Bool_t readmctruth) {fReadMCTruth = readmctruth;}
   void SetUseContainer (Bool_t kusecontainer) { fUseContainer = kusecontainer;}
 
-  void DoPairshCasc (const AliAnalysishCascadeEvent *event, const Float_t centralityBin); 
-  void DoPairshh    (const AliAnalysishCascadeEvent *event, const Float_t centralityBin, int fieldsign);
+  void DoPairshCasc (const Float_t centralityBin); 
+  void DoPairshh    (const Float_t centralityBin, int fieldsign);
 
-  Int_t CheckDaughterTrack (Int_t xiIndex, Int_t daughterIndex, const AliAnalysishCascadeEvent *event, Int_t*  checkeddaughters);
-  void SelectBestCandidate ( const AliAnalysishCascadeEvent *event);
+  Int_t CheckDaughterTrack (Int_t xiIndex, Int_t daughterIndex, Int_t*  checkeddaughters);
+  void SelectBestCandidate ();
   double CalculateKstar(double momentum1[3], double momentum2[3], double mass1, double mass2); 
   void ProtonOrigin();
   void SetSftPosR125(AliVTrack *track, const Float_t bfield, Double_t priVtx[3], Double_t fXSftR125[3] ); 
@@ -200,43 +200,42 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistXiMultvsCent;                     //!
 //  AliCFContainer    *fCFContCascadeCuts;                    //!
 
-  TH2F              *fHistpXiSignalRealKstar;               //!
-  TH2F              *fHistapXiSignalRealKstar;              //!
-  TH2F              *fHistpaXiSignalRealKstar;              //!
-  TH2F              *fHistapaXiSignalRealKstar;             //!
+  TH2D              *fHistpXiSignalRealKstar;               //!
+  TH2D              *fHistapXiSignalRealKstar;              //!
+  TH2D              *fHistpaXiSignalRealKstar;              //!
+  TH2D              *fHistapaXiSignalRealKstar;             //!
 
-  TH2F              *fHistpXiSignalBkgKstar;                //!
-  TH2F              *fHistapXiSignalBkgKstar;               //!
-  TH2F              *fHistpaXiSignalBkgKstar;               //!
-  TH2F              *fHistapaXiSignalBkgKstar;              //!
+  TH2D              *fHistpXiSignalBkgKstar;                //!
+  TH2D              *fHistapXiSignalBkgKstar;               //!
+  TH2D              *fHistpaXiSignalBkgKstar;               //!
+  TH2D              *fHistapaXiSignalBkgKstar;              //!
   TH2F              *fHistFractionOfXiWithSharedDaughters;  //!
-  TH2F              *fHistFractionOfaXiWithSharedDaughters; //!
 
-  TH2F              *fHistpXibacDetaSDphiS;      //!
-  TH2F              *fHistpXiposDetaSDphiS;      //!
-  TH2F              *fHistpXinegDetaSDphiS;      //!
-  TH2F              *fHistpaXibacDetaSDphiS;     //!
-  TH2F              *fHistpaXiposDetaSDphiS;     //!
-  TH2F              *fHistpaXinegDetaSDphiS;     //!
-  TH2F              *fHistapXibacDetaSDphiS;     //! 
-  TH2F              *fHistapXiposDetaSDphiS;     //!
-  TH2F              *fHistapXinegDetaSDphiS;     //!
-  TH2F              *fHistapaXibacDetaSDphiS;    //!
-  TH2F              *fHistapaXiposDetaSDphiS;    //!
-  TH2F              *fHistapaXinegDetaSDphiS;    //!
+  TH2D              *fHistpXibacDetaSDphiS;      //!
+  TH2D              *fHistpXiposDetaSDphiS;      //!
+  TH2D              *fHistpXinegDetaSDphiS;      //!
+  TH2D              *fHistpaXibacDetaSDphiS;     //!
+  TH2D              *fHistpaXiposDetaSDphiS;     //!
+  TH2D              *fHistpaXinegDetaSDphiS;     //!
+  TH2D              *fHistapXibacDetaSDphiS;     //! 
+  TH2D              *fHistapXiposDetaSDphiS;     //!
+  TH2D              *fHistapXinegDetaSDphiS;     //!
+  TH2D              *fHistapaXibacDetaSDphiS;    //!
+  TH2D              *fHistapaXiposDetaSDphiS;    //!
+  TH2D              *fHistapaXinegDetaSDphiS;    //!
 
-  TH2F              *fHistpXibacDetaSDphiSBkg;   //!
-  TH2F              *fHistpXiposDetaSDphiSBkg;   //!
-  TH2F              *fHistpXinegDetaSDphiSBkg;   //!
-  TH2F              *fHistpaXibacDetaSDphiSBkg;  //!
-  TH2F              *fHistpaXiposDetaSDphiSBkg;  //!
-  TH2F              *fHistpaXinegDetaSDphiSBkg;  //!
-  TH2F              *fHistapXibacDetaSDphiSBkg;  //! 
-  TH2F              *fHistapXiposDetaSDphiSBkg;  //!
-  TH2F              *fHistapXinegDetaSDphiSBkg;  //!
-  TH2F              *fHistapaXibacDetaSDphiSBkg; //!
-  TH2F              *fHistapaXiposDetaSDphiSBkg; //!
-  TH2F              *fHistapaXinegDetaSDphiSBkg; //!
+  TH2D              *fHistpXibacDetaSDphiSBkg;   //!
+  TH2D              *fHistpXiposDetaSDphiSBkg;   //!
+  TH2D              *fHistpXinegDetaSDphiSBkg;   //!
+  TH2D              *fHistpaXibacDetaSDphiSBkg;  //!
+  TH2D              *fHistpaXiposDetaSDphiSBkg;  //!
+  TH2D              *fHistpaXinegDetaSDphiSBkg;  //!
+  TH2D              *fHistapXibacDetaSDphiSBkg;  //! 
+  TH2D              *fHistapXiposDetaSDphiSBkg;  //!
+  TH2D              *fHistapXinegDetaSDphiSBkg;  //!
+  TH2D              *fHistapaXibacDetaSDphiSBkg; //!
+  TH2D              *fHistapaXiposDetaSDphiSBkg; //!
+  TH2D              *fHistapaXinegDetaSDphiSBkg; //!
 
   TH1F              *fHistTrackBufferOverflow;   //! 
 
@@ -247,7 +246,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   AliAnalysisTaskhCascadeFemto(const AliAnalysisTaskhCascadeFemto&); // not implemented
   AliAnalysisTaskhCascadeFemto& operator=(const AliAnalysisTaskhCascadeFemto&); // not implemented
   //
-  ClassDef(AliAnalysisTaskhCascadeFemto, 2);
+  ClassDef(AliAnalysisTaskhCascadeFemto, 3);
 };
 
 #endif

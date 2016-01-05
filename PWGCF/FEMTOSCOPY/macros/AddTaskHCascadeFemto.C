@@ -16,7 +16,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Int_t  multsecondpart= 20,
 
                                                      Bool_t kapplyttc = kFALSE,
-                                                     Float_t dphismin = 0.06,    // 0.04 TPC 0.06 global // 0.045 for pi paper, 0.045 for protons, 0.015 for pi my cut
+                                                     Float_t dphismin = 0.06,    // 0.04 TPC 0.06 global // 0.045 for pi paper, 0.045 for protons
                                                      Float_t detasmin = 0.15,    // 0.1 TPC  0.15 global
 
                                                      short nevmixing = 5,
