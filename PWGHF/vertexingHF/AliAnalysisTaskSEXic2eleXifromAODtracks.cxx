@@ -281,6 +281,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
   fDoEventMixing(0),
+  fMixWithoutConversionFlag(kTRUE),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
 	fNCentBins					(0),
@@ -503,6 +504,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
   fDoEventMixing(0),
+  fMixWithoutConversionFlag(kTRUE),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
 	fNCentBins					(0),
@@ -3566,12 +3568,17 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
       nSeleTrks++;
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
-			FillElectronROOTObjects(aodt,mcArray);
 
 			Double_t minmass;
 			Bool_t isconv = fAnalCuts->TagConversions(aodt,(AliAODEvent*)event,trkEntries,minmass);
 			fHistoMassConversionsMin->Fill(minmass);
 			if(isconv) seleFlags[i] = kFALSE;
+
+      if(fMixWithoutConversionFlag){
+        if(seleFlags[i]) FillElectronROOTObjects(aodt,mcArray);
+      }else{
+        FillElectronROOTObjects(aodt,mcArray);
+      }
 
 //			Double_t minmasslike;
 //			fAnalCuts->TagConversionsSameSign(aodt,(AliAODEvent*)event,trkEntries,minmasslike);

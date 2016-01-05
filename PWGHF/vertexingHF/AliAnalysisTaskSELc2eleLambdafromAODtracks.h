@@ -90,6 +90,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
+  void SetMixWithoutConversionFlag(Bool_t a){fMixWithoutConversionFlag=a;}
 	void SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
 	void SetPoolPVzBinLimits(Int_t Nzvtxbins,const Double_t *ZvtxBins){
 		fNzVtxBins = Nzvtxbins;
@@ -530,6 +531,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
+  Bool_t fMixWithoutConversionFlag; /// flag for mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
 	Int_t fNzVtxBins;								/// number of z vrtx bins
 	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
@@ -547,7 +549,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,19); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,20); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
