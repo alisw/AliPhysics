@@ -40,6 +40,7 @@
 #include "AliLHCClockPhase.h"
 #include "AliT0CalibSeasonTimeShift.h"
 #include "AliESDRun.h"
+#include "AliGRPObject.h"
 
 #include <TArrayI.h>
 #include <TGraph.h>
@@ -70,7 +71,8 @@ ClassImp(AliT0Reconstructor)
                                              fIsCDFfromGRP(kFALSE), 
                                              fMeanOrA(0),
                                              fMeanOrC(0),
-                                             fMeanTVDC(0)
+                                             fMeanTVDC(0),
+                                             fLHCperiod(kFALSE)
 {
   for (Int_t i=0; i<24; i++)  { fTime0vertex[i] =0; fQT1mean[i]=0;}
 
@@ -139,7 +141,13 @@ ClassImp(AliT0Reconstructor)
   
   fCalib = new AliT0Calibrator();
   fESDTZERO  = new AliESDTZERO();
-  
+  //LHC period
+   AliCDBEntry* entry6 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry6->GetObject());
+  if (!grpData) {printf("Failed to get GRP data for run"); return;}
+  TString LHCperiod = grpData->GetLHCPeriod();
+  if(LHCperiod.Contains("LHC15")) fLHCperiod=kTRUE;
+
  
 }
 
@@ -217,9 +225,12 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
 	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
       else
-	adc[ipmt] = 0;
-      
+	adc[ipmt] = 0; 
+      // no walk correction for 2015 data
+      if(!fLHCperiod)      
       time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
+      else
+	time[ipmt] = timeCFD->At(ipmt) -  timeDelayCFD[ipmt];
       time[ipmt] =   time[ipmt] - 511;   
       Double_t sl = Double_t(timeLED->At (ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
@@ -439,13 +450,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		    timeCFD[in+12] = alldata[in+56+1][iHit] ;
 		    break;
 		  }
-	      }
-	    //   timeLED[in+12] = alldata[in+68+1][0] ;
-	    // timeLED[in] = alldata[in+12+1][0] ;
-	    //	    printf(" readed i %i cfdC %i cfdA %i ledC %i ledA%i \n",
-	    //		      in, timeCFD[in],timeCFD[in+12],timeLED[in], 
-	    //		      timeLED[in+12]);   
-	    
+	      }	    
 	  }
 	ReadNewQTC(alldata, amplitudeNew);
 	ReadOldQTC(alldata, amplitude);
@@ -698,8 +703,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     if ( time[i] != 0 && time[i]>-9999) {
       ampQTC[i] = frecpoints.GetAmp(i);
       ampnew[i] = frecpoints.AmpLED(i);
-      AliDebug(1,Form("T0: %i  time %f  ampQTC %f ampLED %f \n", i, time[i], ampQTC[i], ampnew[i]));
-    }
+      //     AliDebug(1,Form("T0: %i  time %f  ampold %f ampnew %f \n", i, time[i], ampQTC[i], ampnew[i]));
+     }
   }
   //  for ( Int_t i=0; i<24; i++)       printf("T0: %i  time %f  ampQTC %f ampNewQTC %f \n", i, time[i], ampQTC[i], ampnew[i]);
   fESDTZERO->SetT0time(time);         // best TOF on each PMT 
@@ -858,6 +863,7 @@ Bool_t  AliT0Reconstructor::SatelliteFlag() const
 void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26]) const
 {
   // QT00 -> QT11
+  printf("@@ readNewQTC");
   Float_t a[26], b[26];
   Int_t qt01mean[26], qt11mean[26];
   for(int i=0; i<26; i++) {
@@ -869,7 +875,6 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
       qt11mean[i] =qt01mean[i] =fTime0vertex[0] + 15500;
  
      amplitude[i]=0;
-     //    printf(":ReadNewQT pmt %i Qt01mean %i QT11mean %i \n",i, qt01mean[i],   qt11mean[i]); 
   }
   Int_t diff[4];
   Int_t pmt;
@@ -899,15 +904,16 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
 	}
       }
       if(diff[0] != 0)  amplitude[pmt]=diff[0];
-      if(diff[1] != 0)  amplitude[pmt] = a[pmt]*diff[1] + b[pmt];
+      if(diff[1] != 0)  {
+	amplitude[pmt] = a[pmt]*diff[1] + b[pmt];  
+	//	if (pmt==24 || pmt==25) printf(" @@@ new MPD pmt %i amp %f a %f b %f \n",pmt,  amplitude[pmt],a[pmt], b[pmt]);
+      }
       //    if(diff[0] == 0 &&diff[1]==0) amplitude[pmt]=0;
-      //  if(amplitude[pmt]>0)  printf(" out newQWTC pmt %i amplitude %i\n", pmt,  amplitude[pmt]); 
     }
 }
  //____________________________________________________________
 void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] ) const
 {
-  printf(" AliT0Reconstructor::ReadOldQTC \n");
   Int_t  chargeQT0[26], chargeQT1[26], pedestal[26];
   Float_t meanQT1[26];
   for (int i=0; i<24; i++) {
@@ -948,7 +954,7 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
 	      chargeQT0[in]=alldata[2*in+ind[in]][iHit];
 	      //	      printf(" readed Raw %i %i %i\n",
 	      //	     in, chargeQT0[in],chargeQT1[in]);
-	      break;
+ 	      break;
 	    }
 	}
       
