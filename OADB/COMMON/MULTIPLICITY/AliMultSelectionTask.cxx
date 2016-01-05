@@ -1068,13 +1068,27 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // need to re-add it.  This is particulary needed on Proof(Lite)
         AliVEvent*        input = InputEvent();
 
-        //if on-the-fly AOD generation, switch to connect to the resulting AOD
+        //=============================================================================
+        //if on-the-fly AOD generation, save AliMultSelection also there, please!
         AliVEventHandler *lhandler = 0x0;
         lhandler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
         AliAODHandler* lAodOutputHandler = dynamic_cast<AliAODHandler*> (lhandler);
         if ( lAodOutputHandler ) {
-            input = lAodOutputHandler->GetAOD();
+            //Add to output as well as input
+            AliVEvent *lOutputEv = lAodOutputHandler->GetAOD();
+            TObject*          outaodO  = lOutputEv->FindListObject("MultSelection");
+            AliMultSelection* outaodS  = 0;
+            if (!outaodO) {
+                outaodS = new AliMultSelection(*lSelection);
+                outaodS->SetName("MultSelection");
+                lOutputEv->AddObject(outaodS);
+            }
+            else {
+                outaodS = static_cast<AliMultSelection*>(outaodO);
+                outaodS->Set(lSelection);
+            }
         }
+        //=============================================================================
 
         TObject*          outO  = input->FindListObject("MultSelection");
         AliMultSelection* outS  = 0;
