@@ -2246,11 +2246,12 @@ Double_t AliAnalysisTaskHJetSpectra::GetFractionSharedPt(AliEmcalJet *jRec, AliJ
       for(Int_t ig=0; ig< jGen->GetNumberOfTracks(); ig++) {
          //idxGen = (Int_t) jGen->TrackAt(ig);
          pgen = static_cast<AliVParticle*>(jGen->TrackAt(ig, jconGen->GetParticleContainer()->GetArray()));
-
+         if(!pgen) continue;
       
          for(Int_t ir=0; ir< jRec->GetNumberOfTracks(); ir++){
             //idxRec = (Int_t) jRec->TrackAt(ir);
             prec = static_cast<AliVParticle*>(jRec->TrackAt(ir, jconRec->GetParticleContainer()->GetArray()));
+            if(!prec) continue;
 
             if(TMath::Abs(prec->GetLabel()) == TMath::Abs(pgen->GetLabel())){
 
