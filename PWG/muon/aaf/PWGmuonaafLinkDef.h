@@ -16,6 +16,7 @@
 #pragma link C++ function AAF::FILTER_AODMUONWITHTRACKLETS;
 #pragma link C++ function AAF::FILTER_AODMUONONLY_PP2015;
 #pragma link C++ function AAF::FILTER_AODMUONONLY_PBPB2015;
+#pragma link C++ function AAF::FILTER_ESD2AODMUON;
 
 #pragma link C++ function AAF::StageAndFilter;
 
