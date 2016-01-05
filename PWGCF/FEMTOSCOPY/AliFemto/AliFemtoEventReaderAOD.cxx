@@ -1618,29 +1618,12 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     float vertexZ = -999.;
 
     if (vertex) {
-      Double32_t fCov[6];
+      Double_t fCov[6] = {0.0};
       vertex->GetCovarianceMatrix(fCov);
-
-      const Short_t vertex_id = vertex->GetID();
-      std::map<Short_t, Int_t>::iterator cached_vertex = _vertex_NContributors_cache.find(vertex_id);
-
-      Int_t nContributors;
-
-      // if not in cache, calculate, then store it for future use
-      if (cached_vertex == _vertex_NContributors_cache.end()) {
-        nContributors = vertex->GetNContributors();
-        _vertex_NContributors_cache[vertex_id] = nContributors;
-        // TODO: Option to enforce a max size limit on the cache - can empty here.
-      } else {
-        nContributors = cached_vertex->second;
-      }
-
-      if (nContributors > 0) {
-        if (fCov[5] != 0) {
-          vertexX = vertex->GetX();
-          vertexY = vertex->GetY();
-          vertexZ = vertex->GetZ();
-        }
+      if (fCov[5] != 0) {
+        vertexX = vertex->GetX();
+        vertexY = vertex->GetY();
+        vertexZ = vertex->GetZ();
       }
     }
 
@@ -1717,15 +1700,10 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
   //////  TPC ////////////////////////////////////////////
 
-  float nsigmaTPCK = -1000.;
-  float nsigmaTPCPi = -1000.;
-  float nsigmaTPCP = -1000.;
-  float nsigmaTPCE = -1000.;
-
-  nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
-  nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kPion);
-  nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kProton);
-  nsigmaTPCE = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kElectron);
+  const float nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
+  const float nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kPion);
+  const float nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kProton);
+  const float nsigmaTPCE = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kElectron);
 
   tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
   tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
