@@ -18,6 +18,7 @@
 #include "TList.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliDielectronEventCuts.h"
 
 // #include "AliDielectronPID.h"
 
@@ -34,6 +35,7 @@ public:
   virtual ~AliAnalysisTaskMultiDielectron();
 
   enum ETriggerLogig {kAny, kExact};
+  
 
   virtual void UserExec(Option_t *option);
   virtual void UserCreateOutputObjects();
@@ -56,9 +58,17 @@ public:
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   void SetBeamEnergy(Double_t beamEbyHand=-1.)  { fBeamEnergy=beamEbyHand;  }
   void SetRandomizeDaughters(Bool_t random=kTRUE) { fRandomizeDaughters=random; }
+  
+  void SetRequireTRDTrigger(Bool_t requireTRDtrigger) {fRequireTRDtrigger = requireTRDtrigger;}
+  void SetTRDTriggerClass(AliDielectronEventCuts::ETRDTriggerClass trdTriggerClass) {fTRDTriggerClass = trdTriggerClass;}
+  void SetRequireMatchedTrack(Int_t requireMatchedTrack) {fRequireMatchedTrack = requireMatchedTrack;}
+  
+  Bool_t GetRequireTRDTrigger() const {return fRequireTRDtrigger;}
+  AliDielectronEventCuts::ETRDTriggerClass GetTRDTriggerClass() const {return fTRDTriggerClass;}
+  Int_t GetRequireMatchedTrack() const { return fRequireMatchedTrack;}
 
 protected:
-  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
+  enum {kAllEvents=0, kSelectedEvents, kV0andEvents,  kTrdTriggeredEvents, kTrdTriggeredEventsMatched, kFilteredEvents, kPileupEvents, kNbinsEvent};
   TObjArray *fPairArray;             //! output array
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
@@ -73,14 +83,20 @@ protected:
   Bool_t fRejectPileup;              // pileup rejection wanted
   Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
   Bool_t   fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
-
+  
   ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
   
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
+  
+  
+  Bool_t fRequireTRDtrigger;         // if to require a TRD triggers
+  Bool_t fRequireMatchedTrack;        // if to require that the triggered track can be matched to a global track
+  AliDielectronEventCuts::ETRDTriggerClass fTRDTriggerClass;     // which TRD trigger to use
 
   AliAnalysisCuts *fEventFilter;     // event filter
   
   TH1D *fEventStat;                  //! Histogram with event statistics
+  TH1D *fEventStatTRDTrigger;           //! Histogram with TRD trigger statistics
   
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);

@@ -35,6 +35,7 @@ Detailed description
 #include <AliCentrality.h>
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
+#include "AliTRDTriggerAnalysis.h"
 
 #include "AliDielectronVarManager.h"
 #include "AliDielectronEventCuts.h"
@@ -480,3 +481,92 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
 
 }
 
+
+
+
+
+Bool_t AliDielectronEventCuts::IsTRDTriggerFired( const AliVEvent* event, const ETRDTriggerClass triggerClass, Bool_t &trackMatched, Int_t &bin ) {
+
+// checks if for the given event the given TRD trigger has fired
+// in trackMatched will be stored if the triggered track could be matched to a global track (late conversion rejection)
+// in bin the bin in the eventStatTrigger histogram to be filles for this event will be stored
+  
+  
+  Bool_t ret = kFALSE;
+  
+  const UInt_t se = 1 << 0;
+  const UInt_t seMatchReq = 1 << 1;
+  const UInt_t qu = 1 << 2;
+  const UInt_t quMatchReq = 1 << 3;
+  
+  AliTRDTriggerAnalysis trdSelection;
+  trdSelection.CalcTriggers( event );
+  
+/**
+  triggerResult variable is defined in the following way:
+  
+  0: not triggered
+  1: se, match not required
+  2: se, match required
+  4: qu, match not required
+  8: qu, match required
+  
+**/
+  
+  Int_t triggerResult = trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE);
+  triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU) << 2 );
+
+
+  trdSelection.SetRequireMatch(kTRUE);  
+  trdSelection.CalcTriggers( event );
+  
+  triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE) << 1 );
+  triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU) << 3 );
+  std::cout<<"triggerResult: " << triggerResult<<std::endl;
+  // calculate return value depending on required trigger
+  switch(triggerClass) {
+    case kSE:
+      ret = triggerResult & se;
+      trackMatched = triggerResult & seMatchReq;
+      break;
+    case kQU:
+      ret = triggerResult & qu;
+      trackMatched = triggerResult & quMatchReq;
+      break;
+    case kSEorQU:
+      ret = triggerResult & (se|qu);
+      trackMatched = triggerResult & (seMatchReq|quMatchReq);
+      break;
+    case kSEandQU:
+      ret = (triggerResult & (se|qu)) == (se|qu);
+      trackMatched =(triggerResult & (seMatchReq|quMatchReq)) == (seMatchReq|quMatchReq);
+      break;
+    default:
+      ret = kFALSE;
+      trackMatched = kFALSE;
+      break;
+  }
+  switch(triggerResult){
+    case 0:   //not triggered
+      bin = 0; break;
+    case se:    // SE, not matched
+      bin = 1; break;
+    case (se + seMatchReq):   // SE, matched
+      bin = 2; break;
+    case qu:    // QU, n.m.
+      bin = 3; break;
+    case (qu + quMatchReq): // QU, m.
+      bin = 4; break;
+    case (se + qu):   // SE+QU,n.m.
+      bin = 5; break;
+    case (se + seMatchReq + qu + quMatchReq): // SE+QU, m.
+      bin = 6; break;
+    case (se  + qu + quMatchReq): // SE nm. , QU m.
+      bin = 7; break;
+    case (se + seMatchReq + qu) : // SE m.. , QU m.
+      bin = 8; break;
+    default:  //error
+      bin = 7; break;
+  }
+  return ret;
+}
