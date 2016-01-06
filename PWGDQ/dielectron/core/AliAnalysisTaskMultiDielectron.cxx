@@ -59,8 +59,12 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
+  fRequireTRDtrigger(kFALSE),
+  fRequireMatchedTrack(kFALSE),
+  fTRDTriggerClass(AliDielectronEventCuts::kSEorQU),
   fEventFilter(0x0),
-  fEventStat(0x0)
+  fEventStat(0x0),
+  fEventStatTRDTrigger(0x0)
 {
   //
   // Constructor
@@ -85,8 +89,12 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
+  fRequireTRDtrigger(kFALSE),
+  fRequireMatchedTrack(kFALSE),
+  fTRDTriggerClass(AliDielectronEventCuts::kSEorQU),
   fEventFilter(0x0),
-  fEventStat(0x0)
+  fEventStat(0x0),
+  fEventStatTRDTrigger(0x0)
 {
   //
   // Constructor
@@ -95,6 +103,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TH1D::Class());
+  DefineOutput(4, TH1D::Class());
   fListHistos.SetName("Dielectron_Histos_Multi");
   fListCF.SetName("Dielectron_CF_Multi");
   fListDielectron.SetOwner();
@@ -118,6 +127,7 @@ AliAnalysisTaskMultiDielectron::~AliAnalysisTaskMultiDielectron()
   //  if(fPairArray)       { delete fPairArray;       fPairArray=0; }
   // try to reduce memory issues
   if(fEventStat)       { delete fEventStat;       fEventStat=0; }
+  if(fEventStatTRDTrigger){ delete fEventStatTRDTrigger;fEventStatTRDTrigger=0; }
   if(fTriggerAnalysis) { delete fTriggerAnalysis; fTriggerAnalysis=0; }
 }
 //_________________________________________________________________________________
@@ -151,8 +161,25 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 
   Int_t cuts=fListDielectron.GetEntries();
   Int_t nbins=kNbinsEvent+2*cuts;
+  TString name = "hEventStat";
   if (!fEventStat){
-    fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
+    if(fRequireTRDtrigger){
+      switch(fTRDTriggerClass) {
+        case AliDielectronEventCuts::kSE:
+          name= "hEventStatSE";
+          break;
+        case AliDielectronEventCuts::kQU:
+          name= "hEventStatQU";
+          break;
+        case AliDielectronEventCuts::kSEorQU:
+          name= "hEventStatSEorQU";
+          break;
+        case AliDielectronEventCuts::kSEandQU:
+          name= "hEventStatSEandQU";
+          break;
+      }
+    }
+    fEventStat=new TH1D(name.Data(),"Event statistics",nbins,0,nbins);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
 
@@ -160,16 +187,34 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel(3,"Bin3 not used");
     fEventStat->GetXaxis()->SetBinLabel(4,"Bin4 not used");
     fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
+    fEventStat->GetXaxis()->SetBinLabel(6,"Bin6 not used");
+    fEventStat->GetXaxis()->SetBinLabel(7,"Bin7 not used");
     
     if(fTriggerOnV0AND) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
-    if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
-    if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
+    if(fRequireTRDtrigger) fEventStat->GetXaxis()->SetBinLabel(4,"TRD triggered");
+    if(fRequireMatchedTrack) fEventStat->GetXaxis()->SetBinLabel(5,"track matched");
+    if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(6,"After Event Filter");
+    if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(7,"After Pileup rejection");
     
     for (Int_t i=0; i<cuts; ++i){
       fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1)+2*i,Form("#splitline{1 candidate}{%s}",fListDielectron.At(i)->GetName()));
       fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2)+2*i,Form("#splitline{With >1 candidate}{%s}",fListDielectron.At(i)->GetName()));
     }
   }
+   if (fRequireTRDtrigger && !fEventStatTRDTrigger){
+    fEventStatTRDTrigger=new TH1D("hEventStatTRDTrigger","TRD trigger Statisitcs",10,0.,10.);
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(1,"No trigger");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(2,"only SE fired, not matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(3,"only SE fired, matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(4,"only QU fired, not matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(5,"only QU fired, matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(6,"both fired, not matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(7,"both fired, matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(8,"both fired, SE not matched, QU matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(9,"both fired, SE matched, QU not matched");
+    fEventStatTRDTrigger->GetXaxis()->SetBinLabel(10,"error");
+  }
+  
 
   if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
   fTriggerAnalysis->EnableHistograms();
@@ -178,6 +223,9 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
   PostData(3, fEventStat);
+  if(fRequireTRDtrigger){
+    PostData(4, fEventStatTRDTrigger);
+  }
 }
 
 //_________________________________________________________________________________
@@ -262,6 +310,22 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   }
   nextDie.Reset();
   
+  // TRD trigger
+  if(fRequireTRDtrigger){
+    Bool_t trackMatched;
+    Int_t bin;
+    Bool_t trdTriggered = AliDielectronEventCuts::IsTRDTriggerFired( InputEvent(), fTRDTriggerClass, trackMatched, bin ); 
+    fEventStatTRDTrigger->Fill(bin);
+    if(!trdTriggered){
+      return;
+    }
+    fEventStat->Fill( kTrdTriggeredEvents);
+    if(fRequireMatchedTrack && !trackMatched){
+        return;
+    }
+    fEventStat->Fill(kTrdTriggeredEventsMatched);
+  }
+  
   //event filter
   if (fEventFilter) {
     if (!fEventFilter->IsSelected(InputEvent())) return;
@@ -311,6 +375,10 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
   PostData(3,fEventStat);
+  if(fRequireTRDtrigger){
+    PostData(4,fEventStatTRDTrigger);
+  }
+    
 }
 
 //_________________________________________________________________________________
