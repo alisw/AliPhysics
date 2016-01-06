@@ -1081,7 +1081,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             if (!outaodO) {
                 outaodS = new AliMultSelection(*lSelection);
                 outaodS->SetName("MultSelection");
-                lOutputEv->AddObject(outaodS);
+                lAodOutputHandler->AddBranch("AliMultSelection",&outaodS);
             }
             else {
                 outaodS = static_cast<AliMultSelection*>(outaodO);
