@@ -174,6 +174,8 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
     ext->FilterBranch("AliAODVZERO",murep);
     ext->FilterBranch("AliAODTZERO",murep);
     ext->FilterBranch("AliAODZDC",murep);
+    ext->FilterBranch("AliAOAD",murep);
+    ext->FilterBranch("MultSelection",murep);
     
     if ( fWithSPDTracklets )
     {
