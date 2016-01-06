@@ -129,7 +129,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fEMCalSurfaceDistance(440),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
-  fRefitVertexTracksCuts(0)
+  fRefitVertexTracksCuts(0),
+  fIsMuonCaloPass(kFALSE)
 {
   // Default constructor
   fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -207,7 +208,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fEMCalSurfaceDistance(440),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
-  fRefitVertexTracksCuts(0)
+  fRefitVertexTracksCuts(0),
+  fIsMuonCaloPass(kFALSE)
 {
   // Constructor
 
@@ -249,7 +251,10 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
   {
     AliError("No OutputTree() for adding the track filter");
   }
-  fTPCaloneTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  if (!fIsMuonCaloPass)
+  {
+    fTPCaloneTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  }
 }
 
 //______________________________________________________________________________
@@ -312,7 +317,9 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
   cout << spaces.Data() << Form("EMCAL triggers are %s",fAreEMCALTriggerEnabled ? "ENABLED":"DISABLED") << endl;
   cout << spaces.Data() << Form("PHOS triggers  are %s",fArePHOSTriggerEnabled ? "ENABLED":"DISABLED") << endl;
   cout << spaces.Data() << Form("Tracklets      are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
-  cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl; 
+  cout << spaces.Data() << Form("HMPID          is  %s",fIsHMPIDEnabled ? "ENABLED":"DISABLED") << endl;
+  cout << spaces.Data() << Form("TRD            is  %s",fIsTRDEnabled ? "ENABLED":"DISABLED") << endl;
+  cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl;
   if (fRefitVertexTracks<0) cout << spaces.Data() << Form("RefitVerteTracks is DISABLED") << endl;
   else cout << spaces.Data() << Form("RefitVerteTracks is ENABLED to %d",fRefitVertexTracks) << endl;
 }
@@ -2529,4 +2536,19 @@ void AliAnalysisTaskESDfilter::SetRefitVertexTracks(Int_t algo, Double_t* cuts)
     for (int i=fRefitVertexTracks;i--;) fRefitVertexTracksCuts[i] = cuts[i];
     fRefitVertexTracksNCuts = fRefitVertexTracks;
   }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::SetMuonCaloPass()
+{
+  /// For a MuonCalo pass, due to the absence of TPC, TRD, TOF and PMD
+  /// a bunch of things can be disabled for sure.
+  
+  fIsMuonCaloPass = kTRUE;
+
+  DisableCascades();
+  DisableKinks();
+  DisableV0s();
+  DisablePmdClusters();
+  SetPropagateTrackToEMCal(kFALSE);
 }

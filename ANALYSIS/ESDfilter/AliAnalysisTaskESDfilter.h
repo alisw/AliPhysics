@@ -79,6 +79,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void SetEMCalSurfaceDistance(Double_t d)        {fEMCalSurfaceDistance = d;}
   void SetRefitVertexTracks(Int_t algo=6, Double_t* cuts=0);
   
+  void SetMuonCaloPass();
+  
 private:
   AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
   AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);
@@ -170,8 +172,9 @@ private:
   Int_t              fRefitVertexTracks;           // request to refit the vertex if >=0 (algoID if cuts not supplied, otherwise ncuts)
   Int_t              fRefitVertexTracksNCuts;      // number of cut parameters
   Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts] optional cuts for vertex refit
+  Bool_t fIsMuonCaloPass; /// whether or not this filtering is used on a muon_calo ESD
   
-  ClassDef(AliAnalysisTaskESDfilter, 20); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 21); // Analysis task for standard ESD filtering
 };
 
 #endif
