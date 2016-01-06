@@ -25,9 +25,9 @@ AliEventClassifierSphericity::AliEventClassifierSphericity(const char* name, con
 
 void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, AliStack *stack) {
   // This implementation is adapted from PWGLF/SPECTRA/Spherocity/AliTransverseEventShape.cxx
-  fClassifierValue = 0.0;
+  fClassifierValue = -1.0;
 
-  Float_t sphericity = -10;
+  Float_t sphericity = -1.0;
   Float_t s00=0;
   Float_t s01=0;
   Float_t s11=0;
