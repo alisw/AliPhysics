@@ -410,6 +410,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   //Fill CPV clusters
   Int_t nOfCPVclu=fgCPVRecPoints->GetEntriesFast() ;
+  Int_t nOfTS = fTSM->GetTrackSegments()->GetEntriesFast() ;
   for (Int_t recpoint = 0 ; recpoint < nOfCPVclu ; recpoint++) {
     AliPHOSCpvRecPoint  *cpvRP = static_cast<AliPHOSCpvRecPoint *>(fgCPVRecPoints->At(recpoint));
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
@@ -463,11 +464,18 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     TArrayI arrayPrim(primMult,primList);
     ec->AddLabels(arrayPrim);
     
-    //Matched ESD track
-//    TArrayI arrayTrackMatched(1);
-//    arrayTrackMatched[0]= ts->GetTrackIndex();
-//    ec->AddTracksMatched(arrayTrackMatched);
-    
+    //Matched CPV-EMC clusters
+    //CPV TrackSerments go after EMC-related TSs
+    if(recpoint+nOfRecParticles<nOfTS){
+      AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(fTSM->GetTrackSegments()
+								    ->At(recpoint+nOfRecParticles));  
+      if(ts){
+        TArrayI arrayTrackMatched(1);
+        arrayTrackMatched[0]= ts->GetEmcIndex();
+        ec->AddTracksMatched(arrayTrackMatched);
+        ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
+      }
+    }
     Int_t index = esd->AddCaloCluster(ec);
 
     //Set pointer to this cluster in ESD track
