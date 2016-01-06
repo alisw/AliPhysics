@@ -95,7 +95,7 @@ void AliMultEstimator::Set(const AliMultEstimator* e)
 //________________________________________________________________
 AliMultEstimator::~AliMultEstimator(){
   // destructor
-  
+  if (fFormula) delete fFormula;   
 }
 //________________________________________________________________
 Float_t AliMultEstimator::GetZ() const {
