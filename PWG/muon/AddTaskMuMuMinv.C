@@ -99,6 +99,8 @@ AliAnalysisTask* AddTaskMuMuMinv(const char* foldername,
   
   if ( minvAnalysis )
   {
+    minvAnalysis->DefineMinvRange(0,16,0.025);
+
     binning->AddBin("psi","integrated");
     
     binning->AddBin("psi","pt", 0.0, 1.0);
