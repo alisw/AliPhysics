@@ -2794,12 +2794,17 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);//fetch list with jets that survived all jet cuts: fJetsRecCuts, still missing is leading constituent cut
 
+  if(fDebug>2)std::cout<<" nJCuts: "<<nJCuts<<std::endl;
+
+  if(fDebug>2)std::cout<<" fBranchRecJets: "<<fBranchRecJets.Data()<<std::endl;
+  
   Int_t nRecJetsCuts = 0;                                        //number of reconstructed jets after jet cuts
   if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries(); 
   if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
   
+ 
   Int_t nGenJets = 0;
   
   Int_t nEmbeddedJets =  0; 
