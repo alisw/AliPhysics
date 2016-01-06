@@ -81,9 +81,9 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
   /// Create invariant mass histograms
   
   // mass range
-  Double_t minvMin = 2;
-  Double_t minvMax = 8;
-  Int_t nMinvBins = GetNbins(minvMin,minvMax,0.025);
+  Double_t minvMin = fMinvMin;
+  Double_t minvMax = fMinvMax;
+  Int_t nMinvBins = GetNbins(minvMin,minvMax,fMinvBinSize);
   
   Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
   
@@ -249,6 +249,16 @@ AliAnalysisMuMuMinv::DefineHistogramCollection(const char* eventSelection,
       }
     }
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuMinv::DefineMinvRange(Double_t minvMin, Double_t minvMax, Double_t minvBinSize)
+{
+  /// Define the Minv histogram range
+  
+  fMinvMin = minvMin;
+  fMinvMax = minvMax;
+  fMinvBinSize = minvBinSize;
 }
 
 //_____________________________________________________________________________

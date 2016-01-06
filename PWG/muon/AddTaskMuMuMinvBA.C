@@ -52,7 +52,7 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   AliAnalysisMuMuSingle* singleAnalysis = new AliAnalysisMuMuSingle;// Analysis dealing with single muon
   AliAnalysisMuMuMinv  * minvAnalysis = new AliAnalysisMuMuMinv;// Analysis creating invariant mass spectrum
 
-    
+  
   // Configure sub analysis
   //===========================================================================
   if ( globalAnalysis )
@@ -115,7 +115,8 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   AliAnalysisMuMuBinning* binning = task->Binning(); // Create and set the "binning manager"
   
   if (minvAnalysis)
-  {  
+  {
+    minvAnalysis->DefineMinvRange(2,8,0.025);
     // Integrated
     binning->AddBin("psi","integrated");
     // pt binning for low pt exces

@@ -37,6 +37,8 @@ public:
   
   void SetBinsToFill(const char* particle, const char* bins);
 
+  void DefineMinvRange(Double_t minvMin, Double_t minvMax, Double_t minvBinSize);
+  
 protected:
   
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
@@ -70,8 +72,11 @@ private:
   TString fMinvBinSeparator;
   Int_t fsystLevel;
   TObjArray* fBinsToFill;
+  Double_t fMinvBinSize;
+  Double_t fMinvMin;
+  Double_t fMinvMax;
   
-  ClassDef(AliAnalysisMuMuMinv,4) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuMinv,5) // implementation of AliAnalysisMuMuBase for muon pairs
 };
 
 #endif
