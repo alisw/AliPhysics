@@ -37,9 +37,12 @@ fcomputeMeanPt(computeMeanPt),
 fAccEffHisto(0x0),
 fMinvBinSeparator("+"),
 fsystLevel(systLevel),
-fBinsToFill(0x0)
+fBinsToFill(0x0),
+fMinvBinSize(0.025),
+fMinvMin(0.0),
+fMinvMax(16.0)
 {
-  // FIXME : find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")
+  // FIXME ? find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff") 
   
   if ( accEffHisto )
   {
@@ -1222,10 +1225,10 @@ Bool_t AliAnalysisMuMuMinv::IsPtInRange(const AliVParticle& t1, const AliVPartic
 {
   /// Whether the pair passes the rapidity cut
   
-  TLorentzVector p1(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
+  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
   TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
   
-  TLorentzVector total(p1+p2);
+  total += p2;
   
   Double_t pt = total.Pt();
   
@@ -1241,10 +1244,10 @@ void AliAnalysisMuMuMinv::NameOfIsPtInRange(TString& name, Double_t& ptmin, Doub
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuMinv::IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2) const
 {
-  TLorentzVector p1(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
+  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
   TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
   
-  TLorentzVector total(p1+p2);
+  total += p2;
   
   Double_t y = total.Rapidity();
   
