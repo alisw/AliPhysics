@@ -490,9 +490,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
   //Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
   //Double_t xmin[10]={-0.5,   0,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 80,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  8, 100};
+  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
+  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
