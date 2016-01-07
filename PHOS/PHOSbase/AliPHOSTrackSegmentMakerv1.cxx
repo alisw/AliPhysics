@@ -442,12 +442,13 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
      (static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
      fNTrackSegments++;    
   }
+  
 
   //Now create TSs for CPV clusters 
   Int_t nEMCrp = fEMCRecPoints->GetEntriesFast();
   TIter nextUp(fLinkUpArray) ;
   AliPHOSLink * linkUp ;
-  for(Int_t iCPV=fCpvFirst; iCPV<fCpvLast; iCPV){
+  for(Int_t iCPV=fCpvFirst; iCPV<fCpvLast; iCPV++){
    
     // Finds the smallest links and makes pairs of CPV and EMC clusters with smallest distance 
     //But after ALL emc TSs (even from other modules)

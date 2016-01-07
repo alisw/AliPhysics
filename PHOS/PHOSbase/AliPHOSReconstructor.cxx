@@ -134,7 +134,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // then it creates AliESDtracks out of them and
   // write tracks to the ESD
 
-
   // do current event; the loop over events is done by AliReconstruction::Run()
   fTSM->SetESD(esd) ; 
   fTSM->SetInput(clustersTree);
@@ -181,7 +180,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     cpvbranch->SetAddress(&fgCPVRecPoints);
     cpvbranch->GetEntry(0);
   }
-
   
   // Trigger
   
@@ -269,7 +267,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   //############# Fill CaloCells ###########
   //########################################
-
   Int_t nDigits = fgDigitsArray->GetEntries();
   Int_t idignew = 0 ;
   AliDebug(1,Form("%d digits",nDigits));
