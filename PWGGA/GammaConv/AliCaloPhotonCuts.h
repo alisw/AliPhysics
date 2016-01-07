@@ -76,6 +76,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     };
 
     enum MCSet {
+      // MC data sets
       kNoMC=0,
       k14e2a,
       k14e2b,
@@ -93,9 +94,24 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k13e7,
       k15h1,
       k15h2,
-      k14j4
+      k14j4,
+      // Data starts here
+      k10pp7TeV,
+      k10pp900GeV,
+      k10PbPb2760GeV,
+      k11pp2760GeV,
+      k11pp7TeV,
+      k11PbPb2760GeV,
+      k12pp8TeV,
+      k13pPb5023GeV,
+      k13pp2760GeV,
+      k15pp13TeV,
+      k15pp5TeV,
+      k15PbPb5TeV,
+      k16pp13TeV
     };
 
+    
     //handeling of CutString
     static const char * fgkCutNames[kNCuts];
     Bool_t      SetCutIds(TString cutString); 
@@ -130,7 +146,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
-    MCSet       FindEnumForMCSet(TString nameMC);
+    MCSet       FindEnumForMCSet(TString namePeriod);
 
     void        CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
 
