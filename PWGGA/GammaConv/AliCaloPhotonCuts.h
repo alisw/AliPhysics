@@ -371,7 +371,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,18)
+    ClassDef(AliCaloPhotonCuts,19)
 };
 
 #endif
