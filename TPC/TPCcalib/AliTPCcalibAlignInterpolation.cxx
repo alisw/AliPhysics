@@ -405,7 +405,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     vecNClTPC[isec]=esdFriend->GetNclustersTPC(isec);
     vecNClTPCused[isec]=esdFriend->GetNclustersTPCused(isec);
   }
-  Long64_t gid = esdEvent->GetHeader()->GetEventIdAsLong(); 
+  ULong64_t gid = esdEvent->GetHeader()->GetEventIdAsLong(); 
   Int_t timeStamp= esdEvent->GetTimeStamp();
   (*fStreamer)<<"eventInfo"<< // store event info - used to calculate per sector currents
     "gid="<<gid<<
@@ -1205,12 +1205,12 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   Long64_t minTime = TMath::MinElement(entries, treeSummary1->GetV1());
   entries = treeSummary1->Draw("maxTime","1","goff");
   Long64_t maxTime = TMath::MaxElement(entries, treeSummary1->GetV1());
-  minTime=timeInterval*(minTime/timeInterval);
-  maxTime=timeInterval*(1+(maxTime/timeInterval));
-  Int_t nIntervals=(maxTime-minTime)/timeInterval;
-  Int_t nIntervalsQA=(maxTime-minTime)/15;
+  Long64_t minTimeQA = timeInterval*(minTime/timeInterval);
+  Long64_t maxTimeQA = timeInterval*(1+(maxTime/timeInterval));
+  Int_t nIntervals=(maxTimeQA-minTimeQA)/timeInterval;
+  Int_t nIntervalsQA=(maxTimeQA-minTimeQA)/15;
   //
-  TH1F  * hisEvent= new TH1F("hisEvent","hisEvent",nIntervalsQA,minTime,maxTime);
+  TH1F  * hisEvent= new TH1F("hisEvent","hisEvent",nIntervalsQA,minTimeQA,maxTimeQA);
   const Int_t nSec=81; // 72 sector +5 sumarry info+ 4 medians
   TProfile * profArrayNcl[nSec]={0};
   TProfile * profArrayNclUsed[nSec]={0};
@@ -1220,11 +1220,11 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   TGraphErrors * grArrayITSNcl[3]={0};
   
   for (Int_t isec=0; isec<nSec; isec++){
-    profArrayNcl[isec]=new TProfile(TString::Format("TPCnclSec%d",isec).Data(), TString::Format("TPCnclSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
-    profArrayNclUsed[isec]=new TProfile(TString::Format("TPCnclUsedSec%d",isec).Data(), TString::Format("TPCnclUsedSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
+    profArrayNcl[isec]=new TProfile(TString::Format("TPCnclSec%d",isec).Data(), TString::Format("TPCnclSec%d",isec).Data(), nIntervalsQA,minTimeQA,maxTimeQA);
+    profArrayNclUsed[isec]=new TProfile(TString::Format("TPCnclUsedSec%d",isec).Data(), TString::Format("TPCnclUsedSec%d",isec).Data(), nIntervalsQA,minTimeQA,maxTimeQA);
   }
    for (Int_t iits=0; iits<3; iits++){
-    profArrayITSNcl[iits]=new TProfile(TString::Format("ITSnclSec%d",iits).Data(), TString::Format("ITSnclSec%d",iits).Data(), nIntervalsQA,minTime,maxTime);    
+    profArrayITSNcl[iits]=new TProfile(TString::Format("ITSnclSec%d",iits).Data(), TString::Format("ITSnclSec%d",iits).Data(), nIntervalsQA,minTimeQA,maxTimeQA);    
   }
 
   TVectorF *vecNClTPC=0;
