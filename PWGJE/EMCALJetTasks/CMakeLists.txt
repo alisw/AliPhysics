@@ -131,6 +131,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+    UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerPatchJetMatch.cxx
     UserTasks/AliAnalysisTaskSubJetFraction.cxx
