@@ -22,7 +22,7 @@
 #include "TROOT.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
-#include "TdatabasePDG.h"
+#include "TDatabasePDG.h"
 #include <TParticle.h>
 #include <TRefArray.h>
 #include <TCanvas.h>
