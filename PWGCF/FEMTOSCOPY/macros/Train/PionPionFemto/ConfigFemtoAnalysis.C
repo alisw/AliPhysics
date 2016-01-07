@@ -145,7 +145,6 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       cut_config.event_CentralityMax = mult_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
-      analysis->SetVerboseMode(kTRUE);
 
       analysis->AddStanardCutMonitors();
 

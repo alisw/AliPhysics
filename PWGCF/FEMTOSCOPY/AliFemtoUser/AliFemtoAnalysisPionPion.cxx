@@ -28,28 +28,31 @@ const struct { unsigned int bin_count; float min; float max; }
 VertexBinning = {16, -10.0, 10.0},
 MultBinning = {30, 0, 10000};
 
-const bool default_enable_pair_monitors = kTRUE,
-           default_group_output_objects = kTRUE,
-                 default_is_mc_analysis = kFALSE;
+const bool default_verbose = kFALSE
+         , default_enable_pair_monitors = kTRUE
+         , default_group_output_objects = kTRUE
+         , default_is_mc_analysis = kFALSE
+         ;
 
-const UInt_t default_num_events_to_mix = 6,
-                 default_min_coll_size = 100;
+const UInt_t default_num_events_to_mix = 6
+           , default_min_coll_size = 100
+           ;
 
 
-const float default_pion_PtMin = 0.2,
-            default_pion_PtMax = 2.0,
+const float default_pion_PtMin = 0.2
+          , default_pion_PtMax = 2.0
 
-            default_pion_EtaMin = -0.8,
-            default_pion_EtaMax = 0.8,
+          , default_pion_EtaMin = -0.8
+          , default_pion_EtaMax = 0.8
 
-            default_pion_DCAMin = 0.5,
-            default_pion_DCAMax = 4.0,
+          , default_pion_DCAMin = 0.5
+          , default_pion_DCAMax = 4.0
 
-            default_pion_NSigmaMin = -3.0,
-            default_pion_NSigmaMax = 3.0,
+          , default_pion_NSigmaMin = -3.0
+          , default_pion_NSigmaMax = 3.0
 
-            default_pion_max_impact_xy = 2.4,
-            default_pion_max_impact_z = 3.0
+          , default_pion_max_impact_xy = 2.4
+          , default_pion_max_impact_z = 3.0
 
           , default_pion_max_tpc_chi_ndof = 0.032
           , default_pion_max_its_chi_ndof = 0.032
@@ -60,30 +63,34 @@ const Bool_t default_pion_remove_kinks = kTRUE,
              default_pion_set_label = kFALSE;
 
 
-const float default_event_EventMultMin = 0,
-            default_event_EventMultMax = 100000,
+const float default_event_EventMultMin = 0
+          , default_event_EventMultMax = 100000
 
-            default_event_EventCentralityMin = 0,
-            default_event_EventCentralityMax = 90,
+          , default_event_EventCentralityMin = 0
+          , default_event_EventCentralityMax = 90
 
-            default_event_VertZPosMin = -10.0,
-            default_event_VertZPosMax = 10.0,
+          , default_event_VertZPosMin = -10.0
+          , default_event_VertZPosMax = 10.0
 
-            default_event_EPVZEROMin = -1000.0,
-            default_event_EPVZEROMax = 1000.0;
+          , default_event_EPVZEROMin = -1000.0
+          , default_event_EPVZEROMax = 1000.0
+          ;
 
 const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
 
 
-const Bool_t  default_pair_TPCOnly = kTRUE,
-              default_pair_remove_same_label = kFALSE;
-const Float_t default_pair_TPCExitSepMin = -1.0,
-              default_pair_MinAvgSeparationPos = 0.0,
-              default_pair_MinAvgSeparationNeg = 0.0,
+const Bool_t  default_pair_TPCOnly = kTRUE
+            , default_pair_remove_same_label = kFALSE
+            ;
 
-              default_pair_max_share_quality = 1.0,
-              default_pair_max_share_fraction = 0.05;
+const Float_t default_pair_TPCExitSepMin = -1.0
+            , default_pair_MinAvgSeparationPos = 0.0
+            , default_pair_MinAvgSeparationNeg = 0.0
+
+            , default_pair_max_share_quality = 1.0
+            , default_pair_max_share_fraction = 0.05
+            ;
 
 
 const AliFemtoAnalysisPionPion::PionType
@@ -128,6 +135,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion():
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
   SetMinSizePartCollection(default_min_coll_size);
@@ -147,6 +155,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name):
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
   _Init();
 }
@@ -168,6 +177,7 @@ AliFemtoAnalysisPionPion
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
   SetMinSizePartCollection(default_min_coll_size);
@@ -191,6 +201,7 @@ AliFemtoAnalysisPionPion
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
   SetNumEventsToMix(default_num_events_to_mix);
   SetMinSizePartCollection(default_min_coll_size);
@@ -212,6 +223,7 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
   , fGroupOutputObjects(params.group_output_objects)
   , fMCAnalysis(params.is_mc_analysis)
 {
+  SetVerboseMode(params.verbose);
   SetEnablePairMonitors(params.enable_pair_monitors);
   SetNumEventsToMix(params.num_events_to_mix);
   SetMinSizePartCollection(params.min_coll_size);
@@ -237,6 +249,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
   , default_num_events_to_mix
   , default_min_coll_size
 
+  , default_verbose
   , default_enable_pair_monitors
   , default_group_output_objects
   , default_is_mc_analysis
