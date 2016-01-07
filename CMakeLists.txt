@@ -239,6 +239,12 @@ else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
 
+  # Enable C++11 by default if found in ROOT
+  if(ROOT_HAS_CXX11 AND NOT DISABLE_CXX11)
+    message(STATUS "Enabling C++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  endif()
+
   # FTGL: prefer library from ROOT, look for both libFTGL and libftgl
   unset(LIB_FTGL)
   if(${ROOT_FEATURES} MATCHES "builtin_ftgl")
