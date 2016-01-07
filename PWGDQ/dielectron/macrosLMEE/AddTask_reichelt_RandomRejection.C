@@ -1,7 +1,9 @@
-AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEoutput.root", 
- Bool_t flag1=kFALSE, Bool_t configsPreloaded=kFALSE, Bool_t getFromAlien=kFALSE, 
- Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
-{
+AliAnalysisTask *AddTask_reichelt_RandomRejection(Bool_t getFromAlien=kFALSE,
+                                                  TString configFile="Config_reichelt_LMEEPbPb2011.C",
+                                                  Bool_t configsPreloaded=kFALSE, Bool_t flag1=kFALSE,
+                                                  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
+                                                  Int_t collCands=AliVEvent::kAny,
+                                                  Char_t* outputFileName="LMEEoutput.root"){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,10 +20,23 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   
   //Load updated macros from private ALIEN path
   if (getFromAlien && !configsPreloaded //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011.C ."))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
+  }
+  
+  //load dielectron configuration files
+  if (!configsPreloaded) {
+    TString configLMEECutLib("LMEECutLib_reichelt.C");
+    TString configFilePath(configBasePath+configFile);
+    TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+    Bool_t err=kFALSE;
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+    err |= gROOT->LoadMacro(configFilePath.Data());
+    if (err) { Error("AddTask_reichelt_RandomRejection","Config(s) could not be loaded!"); return 0x0; }
+  } else {
+    std::cout << "using preloaded config files." << std::endl;
   }
   
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
@@ -37,24 +52,13 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
   std::cout << "hasMC = " << hasMC << std::endl;
   
-  //load dielectron configuration files
-  if (!configsPreloaded) {
-    TString configFile("Config_reichelt_LMEEPbPb2011.C");
-    TString configLMEECutLib("LMEECutLib_reichelt.C");
-    TString configFilePath(configBasePath+configFile);
-    TString configLMEECutLibPath(configBasePath+configLMEECutLib);
-    gROOT->LoadMacro(configLMEECutLibPath.Data());
-    gROOT->LoadMacro(configFilePath.Data());
-  } else {
-    std::cout << "using preloaded config files." << std::endl;
-  }
-  
+  // configure the task
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskRandomRejection *task=new AliAnalysisTaskRandomRejection("MultiDiE_RandomRejection");
   if (!hasMC) task->UsePhysicsSelection();
+  if (!hasMC) task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(collCands);
-  task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1));
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1, hasMC));
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
   task->SetRandomizeDaughters(randomizeDau);//default kFALSE
   
@@ -67,7 +71,6 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    //MB
     AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i, hasMC, bESDANA, kTRUE); //kTRUE -> "isRandomRejTask"
     if(!diel_low)continue;
     task->AddDielectron(diel_low);

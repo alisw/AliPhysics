@@ -1,9 +1,11 @@
-AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="reichelt_ElectronEfficiency.root", 
+AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_reichelt_ElectronEfficiency.C",
+                                                     Double_t centMin=0, Double_t centMax=50,
                                                      Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
+                                                     Char_t* outputFileName="reichelt_ElectronEfficiency.root",
+                                                     Bool_t forcePhysSelAndTrigMask=kFALSE, // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
                                                      Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
-                                                     Int_t collCands=AliVEvent::kAny,
-                                                     Bool_t forcePhysSelAndTrigMask=kFALSE // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
+                                                     Int_t collCands=AliVEvent::kAny
                                                      )
 {
   //get the current analysis manager
@@ -21,20 +23,19 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_ElectronEfficiency.C ."))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   
-  TString configFile("Config_reichelt_ElectronEfficiency.C");
   TString configFilePath(configBasePath+configFile);
   if (gSystem->Exec(Form("ls %s", configFilePath.Data()))==0) {
     std::cout << "loading config: " << configFilePath.Data() << std::endl;
     gROOT->LoadMacro(configFilePath.Data());
   } else {
     std::cout << "config not found: " << configFilePath.Data() << std::endl;
-    return 0; // if return is not called, the job will fail instead of running without this task... (good for local tests, bad for train)
+    return 0x0; // if return is not called, the job will fail instead of running without this task... (good for local tests, bad for train)
   }
   TString configLMEECutLib("LMEECutLib_reichelt.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
@@ -59,7 +60,6 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
     ::Info("AddTaskElectronEfficiency","switching on ESD specific code, make sure ESD cuts are used.");
     bESDANA=kTRUE;
   }
-  
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
   std::cout << "hasMC = " << hasMC << std::endl;
@@ -78,7 +78,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   task->SelectCollisionCandidates(collCands); // didnt check its meaning and effect...!
   //---
   task->SetEventFilter(SetupEventCuts(bESDANA)); //returns eventCuts from Config.
-  task->SetCentralityRange(CentMin, CentMax);
+  task->SetCentralityRange(centMin, centMax);
   task->SetNminEleInEventForRej(NminEleInEventForRej);
   //track related
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);

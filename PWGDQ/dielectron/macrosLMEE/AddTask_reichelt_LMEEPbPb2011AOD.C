@@ -1,6 +1,9 @@
-AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", 
- Bool_t flag1=kFALSE, Bool_t flag2=kFALSE, Bool_t getFromAlien=kFALSE, 
- Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
+AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Bool_t getFromAlien=kFALSE,
+                                                  TString configFile="Config_reichelt_LMEEPbPb2011.C",
+                                                  Bool_t cutlibPreloaded=kFALSE, Bool_t flag1=kFALSE,
+                                                  Char_t* outputFileName="LMEEoutput.root",
+                                                  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
+                                                  Int_t collCands=AliVEvent::kAny)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,17 +21,24 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011.C ."))
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   
-  TString configFile("Config_reichelt_LMEEPbPb2011.C");
   TString configLMEECutLib("LMEECutLib_reichelt.C");
-  
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+  
+  //load dielectron configuration files
+  Bool_t err=kFALSE;
+  if (!cutlibPreloaded) { // should not be needed but seems to be...
+    //if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())) ///...because this check doesnt work
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+  }
+  err |= gROOT->LoadMacro(configFilePath.Data());
+  if (err) { Error("AddTaskLMEEPbPb2011AOD","Config(s) could not be loaded!"); return 0x0; }
   
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
@@ -38,30 +48,22 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
     ::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code, make sure ESD cuts are used.");
     bESDANA=kTRUE;
   }
-  
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
   std::cout << "hasMC = " << hasMC << std::endl;
   
-  //load dielectron configuration files
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
-    gROOT->LoadMacro(configLMEECutLibPath.Data());
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
-    gROOT->LoadMacro(configFilePath.Data());
-  
-  
+  // Set up the task
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
+  if (!hasMC) task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(collCands);  
-  task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1));
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1, hasMC));
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
   task->SetRandomizeDaughters(randomizeDau);//default kFALSE
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    //MB
     AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i, hasMC, bESDANA);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
