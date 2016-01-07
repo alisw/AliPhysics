@@ -300,21 +300,21 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
       //Continue extrapolation from TPC outer surface
       const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
       if (!outerParam) continue;
+
+      //RS: fast check of Z: does not depend on the alpha frame
+      Double_t z; 
+      if(!outerParam->GetZAt(rPHOS,bz,z)) continue ;
+      if (TMath::Abs(z) > kZmax) continue; // Some tracks miss the PHOS in Z
+
       AliExternalTrackParam t(*outerParam);
 
       //Direction to the current PHOS module
       Double_t phiMod=kAlpha0-kAlpha*iPHOSMod ;
-      if(!t.Rotate(phiMod))
-        continue ;
+      if(!t.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed
  
       Double_t y;                       // Some tracks do not reach the PHOS
       if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
 
-      Double_t z; 
-      if(!t.GetZAt(rPHOS,bz,z))
-        continue ;
-      if (TMath::Abs(z) > kZmax) 
-        continue; // Some tracks miss the PHOS in Z
       if(TMath::Abs(y) < kYmax){
         t.GetBxByBz(b) ;
         t.PropagateParamOnlyBxByBzTo(rPHOS,b);        // Propagate to the matching module
@@ -401,17 +401,20 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
   
   Int_t iEmcRP;
   for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
-    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ;
+    //    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ;
+    emcclu = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ; //RS dynamyc_cast is very slow
 
     //Bool_t toofar ;        
     Int_t iCpv = 0 ;    
     for(iCpv = fCpvFirst; iCpv < fCpvLast;iCpv++ ) { 
       
-      cpv = dynamic_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(iCpv)) ;
+      //      cpv = dynamic_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(iCpv)) ;
+      cpv = static_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(iCpv)) ; //RS dynamyc_cast is very slow
       Int_t track = -1 ; 
       Float_t dx,dz ;
       GetDistanceInPHOSPlane(emcclu, cpv, track,dx,dz) ;     
-      if(TMath::Sqrt(dx*dx+dz*dz) < fRcpv ){ 
+      //if(TMath::Sqrt(dx*dx+dz*dz) < fRcpv ){ // RS sqrt is slow
+      if(dx*dx+dz*dz < fRcpv*fRcpv ){ 
         new ((*fLinkUpArray)[iLinkUp++])  AliPHOSLink(dx, dz, iEmcRP, iCpv, track) ;
       }      
     }
@@ -432,7 +435,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   for(Int_t iEmcRP = fEmcFirst; iEmcRP < fEmcLast  ; iEmcRP++ ){
      Int_t track = -1 ;
      Float_t dx=999.,dz=999. ;
-     AliPHOSEmcRecPoint *emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP));
+     //     AliPHOSEmcRecPoint *emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP));
+     AliPHOSEmcRecPoint *emcclu = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)); //RS dynamyc_cast is very slow 
      //Scan all tracks
      GetDistanceInPHOSPlane(emcclu, 0, track,dx,dz);
      if(track<0)
