@@ -2101,6 +2101,7 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
     AliHeader* header = runLoader->GetHeader();
     // Event loop
     Int_t nev = 0;
+	Int_t prevEsdID = nSkip-1;
     while(kTRUE) {
 	if (!(rawReader->NextEvent())) break;
 	runLoader->SetEventNumber(nev);
@@ -2125,8 +2126,27 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
 	if (treeESD) {
-		AliInfo(Form("Selected event %d correspond to event %d in raw and to %d in esd",nev,rawReader->GetEventIndex(),nSkip+rawReader->GetEventIndex()));
-	    treeESD->GetEvent(nSkip+rawReader->GetEventIndex());
+		Int_t rawID = rawReader->GetEventIndex();
+		ULong64_t rawGID = rawReader->GetEventIdAsLong();
+		
+		Int_t esdID = nSkip+rawID;
+		if (esdID > treeESD->GetEntriesFast()) esdID = treeESD->GetEntriesFast();
+		Bool_t bFound = kFALSE;
+		while (esdID>prevEsdID) {
+			treeESD->GetEvent(esdID);
+			if (ULong64_t(esd->GetHeader()->GetEventIdAsLong()) == rawGID) {
+				bFound = kTRUE;
+				prevEsdID = esdID;
+				break; // found!
+			}
+			esdID--;
+		}
+		if (!bFound) {
+			AliInfo("Failed to find event ... skipping");
+			continue;
+		}
+
+		AliInfo(Form("Selected event %d correspond to event %d in raw and to %d in esd",nev,rawReader->GetEventIndex(),prevEsdID));
 	    const AliESDVertex* esdVertex = esd->GetPrimaryVertex();
 	    Double_t position[3];
 	    esdVertex->GetXYZ(position);
