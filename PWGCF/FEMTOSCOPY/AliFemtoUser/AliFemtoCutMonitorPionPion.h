@@ -132,10 +132,8 @@ namespace AliFemtoCutMonitorPionPion {
 
   protected:
 
-    TH1F *_minv;
+    TH1F *fMinv;
     TH1F *fKt;
-    TH1F *fAvgSep_pion;
-    TH1F *fAvgSep_proton;
 
     TH2F *fMCTrue_minv;
     TH2F *fMCTrue_kstar;
