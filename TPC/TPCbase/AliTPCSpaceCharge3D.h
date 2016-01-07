@@ -8,6 +8,8 @@
 /// \author Stefan Rossegger, Marian Ivanov
 
 #include "AliTPCCorrection.h"
+class TH2F;
+class TH2;
 class TH3F;
 class TH3;
 
