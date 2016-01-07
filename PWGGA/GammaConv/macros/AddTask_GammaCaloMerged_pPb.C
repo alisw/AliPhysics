@@ -119,30 +119,30 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; //
     eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; //
   } else if (trainConfig == 3){ // NLM 1 conv non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110001"; mesonCutArray[0] = "0163100000000000"; //
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110001"; mesonCutArray[3] = "0163100000000000"; //
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032200000"; clusterMergedCutArray[0] = "1111141050022110001"; mesonCutArray[0] = "0163100000000000"; //
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032200000"; clusterMergedCutArray[1] = "1111141050022110001"; mesonCutArray[1] = "0163100000000000"; //
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050032200000"; clusterMergedCutArray[2] = "1111141050022110001"; mesonCutArray[2] = "0163100000000000"; //
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141050032200000"; clusterMergedCutArray[3] = "1111141050022110001"; mesonCutArray[3] = "0163100000000000"; //
   } else if (trainConfig == 4){ // NLM 2 conv non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110002"; mesonCutArray[0] = "0163102200000000"; //
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110002"; mesonCutArray[3] = "0163102200000000"; //    
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032200000"; clusterMergedCutArray[0] = "1111141050022110002"; mesonCutArray[0] = "0163102200000000"; //
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032200000"; clusterMergedCutArray[1] = "1111141050022110002"; mesonCutArray[1] = "0163102200000000"; //
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050032200000"; clusterMergedCutArray[2] = "1111141050022110002"; mesonCutArray[2] = "0163102200000000"; //
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141050032200000"; clusterMergedCutArray[3] = "1111141050022110002"; mesonCutArray[3] = "0163102200000000"; //    
   } else if (trainConfig == 5){ // NLM 1 conv non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181053032200000"; clusterMergedCutArray[0] = "1111181053022110001"; mesonCutArray[0] = "0163101100000000"; //
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181053032200000"; clusterMergedCutArray[1] = "1111181053022110001"; mesonCutArray[1] = "0163101100000000"; //
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181053032200000"; clusterMergedCutArray[2] = "1111181053022110001"; mesonCutArray[2] = "0163101100000000"; //
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181053032200000"; clusterMergedCutArray[3] = "1111181053022110001"; mesonCutArray[3] = "0163101100000000"; //
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141053032200000"; clusterMergedCutArray[0] = "1111141053022110001"; mesonCutArray[0] = "0163101100000000"; //
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141053032200000"; clusterMergedCutArray[1] = "1111141053022110001"; mesonCutArray[1] = "0163101100000000"; //
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141053032200000"; clusterMergedCutArray[2] = "1111141053022110001"; mesonCutArray[2] = "0163101100000000"; //
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141053032200000"; clusterMergedCutArray[3] = "1111141053022110001"; mesonCutArray[3] = "0163101100000000"; //
   } else if (trainConfig == 6){ // NLM 2 conv non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181053032200000"; clusterMergedCutArray[0] = "1111181053022110002"; mesonCutArray[0] = "0163102200000000"; //
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181053032200000"; clusterMergedCutArray[1] = "1111181053022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181053032200000"; clusterMergedCutArray[2] = "1111181053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181053032200000"; clusterMergedCutArray[3] = "1111181053022110002"; mesonCutArray[3] = "0163102200000000"; //
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141053032200000"; clusterMergedCutArray[0] = "1111141053022110002"; mesonCutArray[0] = "0163102200000000"; //
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141053032200000"; clusterMergedCutArray[1] = "1111141053022110002"; mesonCutArray[1] = "0163102200000000"; //
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141053032200000"; clusterMergedCutArray[2] = "1111141053022110002"; mesonCutArray[2] = "0163102200000000"; //
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141053032200000"; clusterMergedCutArray[3] = "1111141053022110002"; mesonCutArray[3] = "0163102200000000"; //
   } else if (trainConfig == 7){ // NLM 1 conv non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181053032200000"; clusterMergedCutArray[0] = "1111181053022110001"; mesonCutArray[0] = "0163100000000000"; //
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181053032200000"; clusterMergedCutArray[1] = "1111181053022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181053032200000"; clusterMergedCutArray[2] = "1111181053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181053032200000"; clusterMergedCutArray[3] = "1111181053022110001"; mesonCutArray[3] = "0163100000000000"; //
+    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141053032200000"; clusterMergedCutArray[0] = "1111141053022110001"; mesonCutArray[0] = "0163100000000000"; //
+    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141053032200000"; clusterMergedCutArray[1] = "1111141053022110001"; mesonCutArray[1] = "0163100000000000"; //
+    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141053032200000"; clusterMergedCutArray[2] = "1111141053022110001"; mesonCutArray[2] = "0163100000000000"; //
+    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141053032200000"; clusterMergedCutArray[3] = "1111141053022110001"; mesonCutArray[3] = "0163100000000000"; //
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
