@@ -87,6 +87,16 @@ Bool_t AliDielectronPairLegCuts::IsSelected(TObject* track)
   AliVParticle *leg1=pair->GetFirstDaughterP();
   AliVParticle *leg2=pair->GetSecondDaughterP();
 
+  // In case of the internal train, there seems to be an issue in the event mixing (storage of track pointers?),
+  // which sometimes causes missing legs. Histograms of such pair types show much less entries compared to 
+  // running without the internal train, while same-events histograms are identical.
+  if (!leg1) { Printf("AliDielectronPairLegCuts::IsSelected(): leg 1 not found! pair type: %i", pair->GetType());
+    return kFALSE;
+  }
+  if (!leg2) { Printf("AliDielectronPairLegCuts::IsSelected(): leg 2 not found! pair type: %i", pair->GetType());
+    return kFALSE;
+  }
+  
   //mask used to require that all cuts are fulfilled
   UInt_t selectedMaskLeg1=(1<<fFilterLeg1.GetCuts()->GetEntries())-1;
   UInt_t selectedMaskLeg2=(1<<fFilterLeg2.GetCuts()->GetEntries())-1;
