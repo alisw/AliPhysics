@@ -205,8 +205,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherPi0ConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherEtaConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherInvMassECalib;          //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
-    TH2F**                  fHistoMotherInvMassECalibalpha;     //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster, alpha cut 0.1
-
+    TH2F**                  fHistoMotherBackInvMassECalib;      //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of cluster
+    
     // histograms for rec photons tagged by Calo
     TH2F**                  fHistoPhotonPairPtconv;             //! array of histo for pairs vs. pt of converted photon
     TH2F**                  fHistoPhotonPairMixedEventPtconv;   //! array of histo for pairs vs. pt of converted photon
@@ -410,7 +410,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 22);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 23);
 };
 
 #endif
