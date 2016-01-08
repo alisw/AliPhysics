@@ -36,8 +36,8 @@ AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(const Char_t * addname="", Bo
 		}
 
 	if(onDCAz) {
-	 taskname += "_DCAz_";
-       	 outname  += "_DCAz_";
+	 taskname += "_DCAz";
+       	 outname  += "_DCAz";
 	}
  taskname += "_";
  outname  += "_";
