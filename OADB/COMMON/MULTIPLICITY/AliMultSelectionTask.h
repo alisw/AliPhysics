@@ -212,10 +212,10 @@ private:
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
     
-    Bool_t   fZnaFired;
-    Bool_t   fZncFired;
-    Bool_t   fZpaFired;
-    Bool_t   fZpcFired;
+    AliMultVariable *fZnaFired;
+    AliMultVariable *fZncFired;
+    AliMultVariable *fZpaFired;
+    AliMultVariable *fZpcFired;
     
     Int_t    fNTracks;             //!  no. tracks
     Int_t fCurrentRun;

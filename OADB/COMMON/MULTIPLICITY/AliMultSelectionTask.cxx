@@ -353,6 +353,16 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fZpaTower = new AliMultVariable("fZpaTower");
     fZpcTower = new AliMultVariable("fZpcTower");
 
+    //Fired or not booleans (stored as integer for compatibility)
+    fZnaFired = new AliMultVariable("fZnaFired"); 
+    fZnaFired->SetIsInteger(kTRUE); 
+    fZncFired = new AliMultVariable("fZncFired");
+    fZncFired->SetIsInteger(kTRUE); 
+    fZpaFired = new AliMultVariable("fZpaFired");
+    fZpaFired->SetIsInteger(kTRUE);  
+    fZpcFired = new AliMultVariable("fZpcFired"); 
+    fZpcFired->SetIsInteger(kTRUE); 
+
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
 
     //Add to AliMultInput Object, will later bind to TTree object in a loop
@@ -392,6 +402,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZncTower );
     fInput->AddVariable( fZpaTower );
     fInput->AddVariable( fZpcTower );
+    fInput->AddVariable( fZnaFired ); 
+    fInput->AddVariable( fZncFired ); 
+    fInput->AddVariable( fZpaFired ); 
+    fInput->AddVariable( fZpcFired ); 
     fInput->AddVariable( fEvSel_VtxZ );
 
     if( fkCalibration ) {
@@ -429,12 +443,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
             fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
             fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
         }
-        //A.T. FIXME change into AliMultVariable
-        //ZDC info (only booleans: the rest will be done in the loop automatically)
-        fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
-        fTreeEvent->Branch("fZncFired", &fZncFired, "fZncFired/O");    //Booleans for Event Selection
-        fTreeEvent->Branch("fZpaFired", &fZpaFired, "fZpaFired/O");    //Booleans for Event Selection
-        fTreeEvent->Branch("fZpcFired", &fZpcFired, "fZpcFired/O");    //Booleans for Event Selection
 
         //Automatic Loop for linking directly to AliMultInput
         for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
@@ -911,10 +919,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fZncTower->SetValue(-1e6);
     fZpaTower->SetValue(-1e6);
     fZpcTower->SetValue(-1e6);
-    fZnaFired = kFALSE;
-    fZncFired = kFALSE;
-    fZpaFired = kFALSE;
-    fZpcFired = kFALSE;
+    fZnaFired->SetValueInteger( 0 );
+    fZncFired->SetValueInteger( 0 );
+    fZpaFired->SetValueInteger( 0 );
+    fZpcFired->SetValueInteger( 0 );
     if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
@@ -957,20 +965,20 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
 
         for (Int_t j = 0; j < 4; ++j) {
-	  if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired = kTRUE;
-	  if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired = kTRUE;
-	  if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired = kTRUE;
-	  if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired = kTRUE;
-	}
+	   if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired -> SetValueInteger(1);
+	   if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired -> SetValueInteger(1);
+	   if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired -> SetValueInteger(1);
+	   if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired -> SetValueInteger(1);
+        }
 
         const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
         const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
         const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
         const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
-        if (fZnaFired) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        if (fZncFired) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        if (fZpaFired) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        if (fZpcFired) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
 
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
@@ -1616,4 +1624,3 @@ void AliMultSelectionTask::CreateEmptyOADB()
     fOadbMultSelection->SetEventCuts        ( cuts  );
     fOadbMultSelection->SetMultSelection    ( fsels );
 }
-
