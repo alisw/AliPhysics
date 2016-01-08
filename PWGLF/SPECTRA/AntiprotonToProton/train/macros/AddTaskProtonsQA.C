@@ -36,8 +36,8 @@ AliAnalysisTaskProtonQA *AddTaskProtonsQA(const Char_t * addname="", Bool_t lCol
 		}
 
 	if(onDCAz) {
-	 taskname += "_DCAz_";
-       	 outname  += "_DCAz_";
+	 taskname += "_DCAz";
+       	 outname  += "_DCAz";
 	}
  taskname += "_";
  outname  += "_";
