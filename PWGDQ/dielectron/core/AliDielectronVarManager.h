@@ -701,7 +701,9 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   for(j=63; j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
   if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
 
-  values[kTPCActiveLength] = particle->GetLengthInActiveZone(1, 2., 220., fgEvent->GetMagneticField());
+  int mode = particle->GetInnerParam() ? 1:0;
+  
+  values[kTPCActiveLength] = particle->GetLengthInActiveZone(mode, 2., 220., fgEvent->GetMagneticField());
   values[kTPCGeomLength] = particle->GetTPCClusterInfo(2,1) / ( 130 - TMath::Power( TMath::Abs( particle->GetSigned1Pt() ),1.5 ) );
   
   
