@@ -400,10 +400,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(fInvmassLS);
 
   // jet
-  Double_t jetpTMax = 300.;
+  Int_t jetpTMax = 300;
   Int_t nBine[7] =  { 50, 50, jetpTMax, jetpTMax, jetpTMax, 100, jetpTMax};
   Double_t mimHFj[7] = {  0,   0,   0,   0,  0, 0, 0 };
-  Double_t maxHFj[7] = {50, 50, jetpTMax, jetpTMax, jetpTMax, 1, jetpTMax};
+  Double_t maxHFj[7] = {50, 50, (Double_t)jetpTMax, (Double_t)jetpTMax, (Double_t)jetpTMax, 1, (Double_t)jetpTMax};
 
   HFjetCorr0 = new THnSparseD("HFjetCorr0","HF MC Corr;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC}; jet_{particle}; R match; pThaed;", 7, nBine, mimHFj, maxHFj);
   HFjetCorr0->Sumw2();
