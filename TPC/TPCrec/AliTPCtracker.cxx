@@ -2126,16 +2126,16 @@ void  AliTPCtracker::ApplyTailCancellation(){
           AliTPCtrackerRow&  tpcrow = sector[row];     // row object   
           Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
           if (iside>0) ncl=tpcrow.GetN2();
-        
+
           // Order clusters in time for the proper correction of ion tail
-          Float_t qTotArray[ncl];                      // arrays to be filled with modified Qtot and Qmax values in order to avoid float->int conversion  
+          Float_t qTotArray[ncl];          // arrays to be filled with modified Qtot and Qmax values in order to avoid float->int conversion  
           Float_t qMaxArray[ncl];
           Int_t sortedClusterIndex[ncl];
           Float_t sortedClusterTimeBin[ncl];
           //TObjArray *rowClusterArray = new TObjArray(ncl);  // cache clusters for each row  // RS avoid trashing the heap
-	  AliTPCclusterMI* rowClusterArray[ncl]; // caches clusters for each row  // RS avoid trashing the heap 
-	  //	  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
-	  //if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
+          AliTPCclusterMI* rowClusterArray[ncl]; // caches clusters for each row  // RS avoid trashing the heap 
+          //  memset(rowClusterArray,0,sizeof(AliTPCclusterMI*)*ncl);  //.Clear();
+          //if (rowClusterArray.GetSize()<ncl) rowClusterArray.Expand(ncl);
           for (Int_t i=0;i<ncl;i++) 
           {
             qTotArray[i]=0;
@@ -2164,15 +2164,23 @@ void  AliTPCtracker::ApplyTailCancellation(){
             AliTPCclusterMI *cl0= rowClusterArray[sortedClusterIndex[icl0]]; //RS static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl0]));
             
             if (!cl0) continue;
-            Int_t nclPad=0;                       
-            for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
+            Int_t nclPad=0;
+            //for (Int_t icl1=0; icl1<ncl;icl1++){  // second loop over clusters	   
+	    // RS: time increases with index since sorted -> cl0->GetTimeBin()>cl1->GetTimeBin() means that icl0>icl1
+            for (Int_t icl1=0; icl1<icl0;icl1++){  // second loop over clusters
               AliTPCclusterMI *cl1= rowClusterArray[sortedClusterIndex[icl1]];//RS static_cast<AliTPCclusterMI*>(rowClusterArray.At(sortedClusterIndex[icl1]));
 	      if (!cl1) continue;
-	      if (TMath::Abs(cl0->GetPad()-cl1->GetPad())>4) continue;           // no contribution if far away in pad direction
-              if (cl0->GetTimeBin()<= cl1->GetTimeBin()) continue;               // no contibution to the tail if later
-              if (TMath::Abs(cl1->GetTimeBin()-cl0->GetTimeBin())>600) continue; // out of the range of response function
+	      // RS no needed with proper loop organization
+	      //if (cl0->GetTimeBin()<= cl1->GetTimeBin()) continue;               // no contibution to the tail if later
 
-              if (TMath::Abs(cl0->GetPad()-cl1->GetPad())<4) nclPad++;           // count ncl for every pad for debugging
+	      int dpad = TMath::Abs(cl0->GetPad()-cl1->GetPad());
+	      if (dpad>4) continue;           // no contribution if far away in pad direction
+
+	      // RS no point in iterating further with sorted clusters once large distance reached
+              if (cl0->GetTimeBin()-cl1->GetTimeBin()>600) continue; // out of the range of response function
+
+	      // RS: what about dpad=4?
+              if (dpad<4) nclPad++;           // count ncl for every pad for debugging
             
               // Get the correction values for Qmax and Qtot and find total correction for a given cluster
               Double_t ionTailMax=0.;  
@@ -2255,20 +2263,23 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   Int_t padcl1              =  TMath::Nint(cl1->GetPad());   // pad1
   Float_t padWidth          = (sectorPad < 36)?0.4:0.6;      // pad width in cm
   const Int_t deltaTimebin  =  TMath::Nint(TMath::Abs(cl1->GetTimeBin()-cl0->GetTimeBin()))+12;  //distance between pads of cl1 and cl0 increased by 12 bins
-  Double_t rmsPad1          = (cl1->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl1->GetSigmaY2())/padWidth);
-  Double_t rmsPad0          = (cl0->GetSigmaY2()==0)?kMinPRF:(TMath::Sqrt(cl0->GetSigmaY2())/padWidth);
+  Double_t rmsPad1I         = (cl1->GetSigmaY2()==0)?0.5/kMinPRF:(0.5*padWidth/TMath::Sqrt(cl1->GetSigmaY2()));
+  Double_t rmsPad0I         = (cl0->GetSigmaY2()==0)?0.5/kMinPRF:(0.5*padWidth/TMath::Sqrt(cl0->GetSigmaY2()));
   
-   
-  
-  Double_t sumAmp1=0.;
-  for (Int_t idelta =-2; idelta<=2;idelta++){
-    sumAmp1+=TMath::Exp(-idelta*idelta/(2*rmsPad1));
-  }
+  // RS avoid useless calculations
+  //Double_t sumAmp1=0.;
+  //for (Int_t idelta =-2; idelta<=2;idelta++){
+  //  sumAmp1+=TMath::Exp(-idelta*idelta*rmsPad1I);
+  //}
+  // Double_t sumAmp0=0.;
+  //for (Int_t idelta =-2; idelta<=2;idelta++){
+  //  sumAmp0+=TMath::Exp(-idelta*idelta*rmsPad0I));
+  //}
 
-  Double_t sumAmp0=0.;
-  for (Int_t idelta =-2; idelta<=2;idelta++){
-    sumAmp0+=TMath::Exp(-idelta*idelta/(2*rmsPad0));
-  }
+  double tmp = TMath::Exp(-rmsPad1I);
+  double sumAmp1 = 1.+2.*tmp*(1.+tmp*tmp*tmp);
+  tmp = TMath::Exp(-rmsPad0I);
+  double sumAmp0 = 1.+2.*tmp*(1.+tmp*tmp*tmp);
 
   // Apply the correction  -->   cl1 corrects cl0 (loop over cl1's pads and find which pads of cl0 are going to be corrected)
   Int_t padScan=2;      // +-2 pad-timebin window will be scanned
@@ -2276,8 +2287,8 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
     //
     //
     Float_t  deltaPad1  = TMath::Abs(cl1->GetPad()-(Float_t)ipad1);
-    Double_t amp1       = (TMath::Exp(-(deltaPad1*deltaPad1)/(2*rmsPad1)))/sumAmp1;  // normalized pad response function
-    Float_t qTotPad1    = amp1*qTot1;                                               // used as a factor to multipliy the response function
+    Double_t amp1       = TMath::Exp(-(deltaPad1*deltaPad1)*rmsPad1I)/sumAmp1;  // normalized pad response function
+    Float_t qTotPad1    = amp1*qTot1;                                           // used as a factor to multipliy the response function
       
     // find closest value of cl1 to COG (among the time response functions' amplitude array --> to select proper t.r.f.)
     Int_t ampIndex = 0;
@@ -2299,7 +2310,7 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
       if (ipad1!=ipad0) continue;                                     // check if ipad1 channel sees ipad0 channel, if not no correction to be applied.
       
       Float_t deltaPad0  = TMath::Abs(cl0->GetPad()-(Float_t)ipad0);
-      Double_t amp0      = (TMath::Exp(-(deltaPad0*deltaPad0)/(2*rmsPad0)))/sumAmp0;  // normalized pad resp function
+      Double_t amp0      = TMath::Exp(-(deltaPad0*deltaPad0)*rmsPad0I)/sumAmp0;  // normalized pad resp function
       Float_t qMaxPad0   = amp0*qTot0;
            
       // Add 5 timebin range contribution around the max peak (-+2 tb window)
