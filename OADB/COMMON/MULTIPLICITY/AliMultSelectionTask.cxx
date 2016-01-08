@@ -951,17 +951,17 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fZem1Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF );
         fZem2Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF );
 
-        Int_t detCh_ZNA = 0; //lESDZDC->GetZNATDCChannel();
-        Int_t detCh_ZNC = 0; //lESDZDC->GetZNCTDCChannel();
-        Int_t detCh_ZPA = 0; //lESDZDC->GetZPATDCChannel();
-        Int_t detCh_ZPC = 0; //lESDZDC->GetZPCTDCChannel();
+        Int_t detCh_ZNA = lESDZDC->GetZNATDCChannel();
+        Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
+        Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
+        Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
 
         for (Int_t j = 0; j < 4; ++j) {
-            if ( lESDZDC->IsZNAhit() ) 	fZnaFired = kTRUE;
-            if ( lESDZDC->IsZNChit() ) 	fZncFired = kTRUE;
-            if ( lESDZDC->IsZPAhit() ) 	fZpaFired = kTRUE;
-            if ( lESDZDC->IsZPChit() ) 	fZpcFired = kTRUE;
-        }
+	  if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired = kTRUE;
+	  if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired = kTRUE;
+	  if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired = kTRUE;
+	  if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired = kTRUE;
+	}
 
         const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
         const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
