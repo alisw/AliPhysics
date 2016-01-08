@@ -473,7 +473,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //  TH2F* fh2MCEtagenK0Cone;
   //  TH2F* fh2MCEtagenLaCone;
   //  TH2F* fh2MCEtagenALaCone;
-  TH2F* fh2CorrHijingLaProton;
+  /* TH2F* fh2CorrHijingLaProton;
   TH2F* fh2CorrInjectLaProton;
   TH2F* fh2CorrHijingALaAProton;
   TH2F* fh2CorrInjectALaAProton;
@@ -491,16 +491,16 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnrecMCInjectLaIncl;
   THnSparse* fhnrecMCInjectLaCone;
   THnSparse* fhnrecMCInjectALaIncl;
-  THnSparse* fhnrecMCInjectALaCone;
+  THnSparse* fhnrecMCInjectALaCone;*/
   THnSparse* fhnMCrecK0Cone;
   THnSparse* fhnMCrecLaCone;
   THnSparse* fhnMCrecALaCone;
-  THnSparse* fhnMCrecK0ConeSmear;
+  /*THnSparse* fhnMCrecK0ConeSmear;
   THnSparse* fhnMCrecLaConeSmear;
   THnSparse* fhnMCrecALaConeSmear;
   THnSparse* fhnK0sSecContinCone;
   THnSparse* fhnLaSecContinCone;
-  THnSparse* fhnALaSecContinCone;
+  THnSparse* fhnALaSecContinCone;*/
   THnSparse* fhnK0sIncl;
   THnSparse* fhnK0sCone;
   THnSparse* fhnK0sEmbCone;
