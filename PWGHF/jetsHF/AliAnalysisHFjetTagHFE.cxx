@@ -400,7 +400,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(fInvmassLS);
 
   // jet
-  int jetpTMax = 300;
+  Double_t jetpTMax = 300.;
   Int_t nBine[7] =  { 50, 50, jetpTMax, jetpTMax, jetpTMax, 100, jetpTMax};
   Double_t mimHFj[7] = {  0,   0,   0,   0,  0, 0, 0 };
   Double_t maxHFj[7] = {50, 50, jetpTMax, jetpTMax, jetpTMax, 1, jetpTMax};
