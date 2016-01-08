@@ -103,7 +103,7 @@ public:
    Float_t  GetFFRadius() const { return fFFRadius; }
    Bool_t DaughterTrackCheck(AliAODv0* v0, Int_t& nnum, Int_t& pnum);
    Bool_t ApplyV0Cuts(AliAODv0* v0, const Int_t type, const Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
-   void GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius, Double_t& sumPt);
+   //void GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius, Double_t& sumPt);
 
 
    //
@@ -144,10 +144,10 @@ private:
   TList* fListK0s;
   TList* fListLa;
   TList* fListALa;
-  TList* fListK0sCone;
+  /* TList* fListK0sCone;
   TList* fListLaCone;
   TList* fListALaCone;
-
+  */
 
   AliPIDResponse *fPIDResponse;
 	                           // PID AZ
@@ -242,13 +242,13 @@ private:
    //  TH1F  *fh1V0N;          //! nb. of tracks
    TH1F  *fh1K0Pt;         //! track pt
    TH2F  *fh2K0EtaPhi;     //! track eta-phi
-   TH2F  *fh2K0sPtJetPtCone;     //! K0s candidate Pt (inside cone) vs Jet Pt
+   //TH2F  *fh2K0sPtJetPtCone;     //! K0s candidate Pt (inside cone) vs Jet Pt
    TH1F  *fh1LaPt;         //! track pt
    TH2F  *fh2LaEtaPhi;     //! track eta-phi
-   TH2F  *fh2LaPtJetPtCone;     //! La candidate Pt (inside cone) vs Jet Pt
+   //TH2F  *fh2LaPtJetPtCone;     //! La candidate Pt (inside cone) vs Jet Pt
    TH1F  *fh1ALaPt;         //! track pt
    TH2F  *fh2ALaEtaPhi;     //! track eta-phi
-   TH2F  *fh2ALaPtJetPtCone;     //! ALa candidate Pt (inside cone) vs Jet Pt
+   //TH2F  *fh2ALaPtJetPtCone;     //! ALa candidate Pt (inside cone) vs Jet Pt
    //
 
    TH1F  *fh1JetPt;           //! jet pt

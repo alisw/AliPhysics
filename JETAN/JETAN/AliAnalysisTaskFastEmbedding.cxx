@@ -81,9 +81,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fListK0s(0)
   ,fListLa(0)
   ,fListALa(0)
-  ,fListK0sCone(0)
+  /*  ,fListK0sCone(0)
   ,fListLaCone(0)
-  ,fListALaCone(0)
+  ,fListALaCone(0)*/
   ,fPIDResponse(0)
   ,rndm(0)
   ,fInputEntries(0)
@@ -156,13 +156,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fh2V0EtaPhi(0)
   ,fh1K0Pt(0)
   ,fh2K0EtaPhi(0)
-  ,fh2K0sPtJetPtCone(0)
+  //,fh2K0sPtJetPtCone(0)
   ,fh1LaPt(0)
   ,fh2LaEtaPhi(0)
-  ,fh2LaPtJetPtCone(0)
+  //,fh2LaPtJetPtCone(0)
   ,fh1ALaPt(0)
   ,fh2ALaEtaPhi(0)
-  ,fh2ALaPtJetPtCone(0)
+  //,fh2ALaPtJetPtCone(0)
   ,fh1JetPt(0)
   ,fh2JetEtaPhi(0)
   ,fh1JetN(0)
@@ -197,9 +197,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fListK0s(0)
 ,fListLa(0)
 ,fListALa(0) 
-,fListK0sCone(0)
+  /*,fListK0sCone(0)
 ,fListLaCone(0)
-,fListALaCone(0) 
+,fListALaCone(0)*/ 
 ,fPIDResponse(0)
 ,rndm(0)
 ,fInputEntries(0)
@@ -272,13 +272,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fh2V0EtaPhi(0)
 ,fh1K0Pt(0)
 ,fh2K0EtaPhi(0)
-,fh2K0sPtJetPtCone(0)
+  //,fh2K0sPtJetPtCone(0)
 ,fh1LaPt(0)
 ,fh2LaEtaPhi(0)
-,fh2LaPtJetPtCone(0)
+  //,fh2LaPtJetPtCone(0)
 ,fh1ALaPt(0)
 ,fh2ALaEtaPhi(0)
-,fh2ALaPtJetPtCone(0)
+  //,fh2ALaPtJetPtCone(0)
 ,fh1JetPt(0)
 ,fh2JetEtaPhi(0)
 ,fh1JetN(0)
@@ -313,9 +313,9 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fListK0s(copy.fListK0s)
 ,fListLa(copy.fListLa)
 ,fListALa(copy.fListALa)
-,fListK0sCone(copy.fListK0sCone)
+  /*,fListK0sCone(copy.fListK0sCone)
 ,fListLaCone(copy.fListLaCone)
-,fListALaCone(copy.fListALaCone)
+,fListALaCone(copy.fListALaCone)*/
 ,fPIDResponse(copy.fPIDResponse)
 ,rndm(copy.rndm)
 ,fInputEntries(copy.fInputEntries)
@@ -389,13 +389,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
   //,fh1V0N(copy.fh1V0N)
 ,fh1K0Pt(copy.fh1K0Pt)
 ,fh2K0EtaPhi(copy.fh2K0EtaPhi)
-,fh2K0sPtJetPtCone(copy.fh2K0sPtJetPtCone)
+  //,fh2K0sPtJetPtCone(copy.fh2K0sPtJetPtCone)
 ,fh1LaPt(copy.fh1LaPt)
 ,fh2LaEtaPhi(copy.fh2LaEtaPhi)
-,fh2LaPtJetPtCone(copy.fh2LaPtJetPtCone)
+  //,fh2LaPtJetPtCone(copy.fh2LaPtJetPtCone)
 ,fh1ALaPt(copy.fh1ALaPt)
 ,fh2ALaEtaPhi(copy.fh2ALaEtaPhi)
-,fh2ALaPtJetPtCone(copy.fh2ALaPtJetPtCone)
+  //,fh2ALaPtJetPtCone(copy.fh2ALaPtJetPtCone)
 ,fh1JetPt(copy.fh1JetPt)
 ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
 ,fh1JetN(copy.fh1JetN)
@@ -435,9 +435,9 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fListK0s           = o.fListK0s;
       fListLa            = o.fListLa;
       fListALa           = o.fListALa;
-      fListK0sCone       = o.fListK0sCone;
+      /*fListK0sCone       = o.fListK0sCone;
       fListLaCone        = o.fListLaCone;
-      fListALaCone       = o.fListALaCone;
+      fListALaCone       = o.fListALaCone;*/
       fPIDResponse       = o.fPIDResponse;
       rndm               = o.rndm;
       fInputEntries      = o.fInputEntries;
@@ -510,13 +510,13 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fh2V0EtaPhi        = o.fh2V0EtaPhi;
       fh1K0Pt            = o.fh1K0Pt;
       fh2K0EtaPhi        = o.fh2K0EtaPhi;
-      fh2K0sPtJetPtCone  = o.fh2K0sPtJetPtCone;
+      //fh2K0sPtJetPtCone  = o.fh2K0sPtJetPtCone;
       fh1LaPt            = o.fh1LaPt;
       fh2LaEtaPhi        = o.fh2LaEtaPhi;
-      fh2LaPtJetPtCone   = o.fh2LaPtJetPtCone;
+      //fh2LaPtJetPtCone   = o.fh2LaPtJetPtCone;
       fh1ALaPt           = o.fh1ALaPt;
       fh2ALaEtaPhi       = o.fh2ALaEtaPhi;
-      fh2ALaPtJetPtCone  = o.fh2ALaPtJetPtCone;
+      //fh2ALaPtJetPtCone  = o.fh2ALaPtJetPtCone;
       fh1JetPt           = o.fh1JetPt;
       fh2JetEtaPhi       = o.fh2JetEtaPhi;
       fh1JetN            = o.fh1JetN;
@@ -540,9 +540,9 @@ AliAnalysisTaskFastEmbedding::~AliAnalysisTaskFastEmbedding()
   if(fListK0s) delete fListK0s;
   if(fListLa) delete fListLa;
   if(fListALa) delete fListALa;
-  if(fListK0sCone) delete fListK0sCone;
+  /* if(fListK0sCone) delete fListK0sCone;
   if(fListLaCone) delete fListLaCone;
-  if(fListALaCone) delete fListALaCone;
+  if(fListALaCone) delete fListALaCone;*/
   delete rndm;
 }
 
@@ -567,14 +567,14 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fListALa = new TList();
    fListALa->SetOwner(kFALSE);
 
-   fListK0sCone = new TList();
+   /* fListK0sCone = new TList();
    fListK0sCone->SetOwner(kFALSE);
 
    fListLaCone = new TList();
    fListLaCone->SetOwner(kFALSE);
 
    fListALaCone = new TList();
-   fListALaCone->SetOwner(kFALSE);
+   fListALaCone->SetOwner(kFALSE);*/
 
 
    // set seed
@@ -639,7 +639,7 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
       AddAODBranch("TClonesArray", &extraALa);
       }
 
-   //for the v0 particle candidates inside the jets (only in kAODJetTracks mode)
+  /*  //for the v0 particle candidates inside the jets (only in kAODJetTracks mode)
    if(!fAODout->FindListObject("aodExtraK0sCone")){
       AliInfo("Add AOD branch embedded K0s Cone candidates");
       TClonesArray *extraK0sCone = new TClonesArray("AliAODv0",0);
@@ -658,7 +658,7 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
     TClonesArray *extraALaCone = new TClonesArray("AliAODv0",0);
     extraALaCone->SetName("aodExtraALaCone");
     AddAODBranch("TClonesArray", &extraALaCone);
-   }
+    }*/
    // create new branch for extra mcparticle if available as input
    if(fAODevent && fAODevent->FindListObject("mcparticles") && strlen(fMCparticlesBranch.Data())){
      AliInfo(Form("Add AOD branch %s", fMCparticlesBranch.Data()));
@@ -703,13 +703,13 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fh2V0EtaPhi     =  new TH2F("fh2V0EtaPhi","eta-phi distribution of extra V0s;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
    fh1K0Pt         =  new TH1F("fh1K0Pt","pT of extra associated K0s;p_{T};entries", 120, 0., 12.);
    fh2K0EtaPhi     =  new TH2F("fh2K0EtaPhi","eta-phi distribution of extra V0s;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
-   fh2K0sPtJetPtCone  =  new TH2F("fh2K0sPtJetPtCone","v0-pt jet pt distribution of extra K0s;#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
+   //fh2K0sPtJetPtCone  =  new TH2F("fh2K0sPtJetPtCone","v0-pt jet pt distribution of extra K0s;#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
    fh1LaPt         =  new TH1F("fh1LaPt","pT of extra associated La;p_{T};entries", 120, 0., 12.);
    fh2LaEtaPhi     =  new TH2F("fh2LaEtaPhi","eta-phi distribution of extra associated #Lamdba;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
-   fh2LaPtJetPtCone  =  new TH2F("fh2LaPtJetPtCone","v0-pt jet pt distribution of extra associated #Lamdba;#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
+   //fh2LaPtJetPtCone  =  new TH2F("fh2LaPtJetPtCone","v0-pt jet pt distribution of extra associated #Lamdba;#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
    fh1ALaPt        =  new TH1F("fh1ALaPt","pT of extra associated #bar{#Lamdba};p_{T};entries", 120, 0., 12.);
    fh2ALaEtaPhi    =  new TH2F("fh2ALaEtaPhi","eta-phi distribution of extra associated #bar{#Lamdba};#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
-   fh2ALaPtJetPtCone  =  new TH2F("fh2ALaPtJetPtCone","v0-pt jet pt distribution of extra associated #bar{#Lamdba};#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
+   //fh2ALaPtJetPtCone  =  new TH2F("fh2ALaPtJetPtCone","v0-pt jet pt distribution of extra associated #bar{#Lamdba};#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
 
    fHistList->Add(fh1TrackPt);
    fHistList->Add(fh2TrackEtaPhi);
@@ -718,13 +718,13 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fHistList->Add(fh2V0EtaPhi);
    fHistList->Add(fh1K0Pt);
    fHistList->Add(fh2K0EtaPhi);
-   fHistList->Add(fh2K0sPtJetPtCone);
+   //fHistList->Add(fh2K0sPtJetPtCone);
    fHistList->Add(fh1LaPt);
    fHistList->Add(fh2LaEtaPhi);
-   fHistList->Add(fh2LaPtJetPtCone);
+   //fHistList->Add(fh2LaPtJetPtCone);
    fHistList->Add(fh1ALaPt);
    fHistList->Add(fh2ALaEtaPhi);
-   fHistList->Add(fh2ALaPtJetPtCone);
+   //fHistList->Add(fh2ALaPtJetPtCone);
   
   
    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
@@ -966,7 +966,7 @@ Bool_t AliAnalysisTaskFastEmbedding::ApplyV0Cuts(AliAODv0* v0, const Int_t type,
        return kTRUE;
 
 }
-	
+/*	
 //__________________________________________________________________________
 void AliAnalysisTaskFastEmbedding::GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet,const Double_t radius, Double_t& sumPt)
 {
@@ -998,7 +998,7 @@ void AliAnalysisTaskFastEmbedding::GetTracksInCone(TList* inputlist, TList* outp
 
   outputlist->Sort();
   
-}
+  }*/
 
 //__________________________________________________________________________
 Bool_t AliAnalysisTaskFastEmbedding::UserNotify()
@@ -1137,7 +1137,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
      PostData(1, fHistList);
      return;
    }
-
+   /*
   TClonesArray *extraK0sCone = (TClonesArray*)(fAODout->FindListObject("aodExtraK0sCone"));
    if(!extraK0sCone){
      AliError("Extra K0s Cone branch not found in output.");
@@ -1158,15 +1158,15 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
      PostData(1, fHistList);
      return;
    }
-
+   */
    extrav0s->Delete();
    extraK0s->Delete();
    extraLa->Delete();
    extraALa->Delete();
-   extraK0sCone->Delete();
+   /* extraK0sCone->Delete();
    extraLaCone->Delete();
    extraALaCone->Delete();
-
+   */
    Int_t nAODv0s=0;
    Int_t nAODK0s=0;
    Int_t nAODLa=0;
@@ -1418,7 +1418,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		fh1JetPt->Fill(jet->Pt());
 		fh2JetEtaPhi->Fill(jet->Eta(), jet->Phi());
 		nSelectedJets++;
-		Double_t radius = GetFFRadius();
+	
+	/*	Double_t radius = GetFFRadius();
 		Double_t sumPtK0s = 0;
 
 		if(fListK0s != 0){
@@ -1475,11 +1476,11 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		if(fListALaCone->GetSize() == 0){ 
 		  fh2ALaPtJetPtCone->Fill(-1., -1.);
 		}
-		}
+		}*/
 		
 	      }
 	      
-	      if(fListK0sCone != 0){ 
+	     /* if(fListK0sCone != 0){ 
 		fListK0sCone->Clear();
 	      }
 	      
@@ -1489,7 +1490,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 	      
 	      if(fListALaCone != 0){ 
 		fListALaCone->Clear();
-	      }
+	      }*/
             }				   
             fh1JetN->Fill(nSelectedJets);
          }
@@ -1681,10 +1682,10 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
    fListK0s->Clear();
    fListLa->Clear();
    fListALa->Clear();
-   fListK0sCone->Clear();
+   /*  fListK0sCone->Clear();
    fListLaCone->Clear();
    fListALaCone->Clear();
-   
+   */  
    
 
    PostData(1, fHistList);
