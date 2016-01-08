@@ -65,9 +65,9 @@ AliAnalysisTask *AddTask_sweber_jpsiSEm(
   configFile+=".C";
   
   // load dielectron configuration file (only once)
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi")){
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi")){
     gROOT->LoadMacro(configFile.Data());
-  }
+  //}
 
   ConfigJpsi(task);
   
