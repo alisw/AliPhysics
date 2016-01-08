@@ -48,21 +48,21 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   cr->AddCutCombination(triggerSelection);
 
   
-  AliAnalysisMuMuGlobal* globalAnalysis =  new AliAnalysisMuMuGlobal; // Basic histograms analysis;
+//  AliAnalysisMuMuGlobal* globalAnalysis =  new AliAnalysisMuMuGlobal; // Basic histograms analysis;
   AliAnalysisMuMuSingle* singleAnalysis = new AliAnalysisMuMuSingle;// Analysis dealing with single muon
   AliAnalysisMuMuMinv  * minvAnalysis = new AliAnalysisMuMuMinv;// Analysis creating invariant mass spectrum
 
   
   // Configure sub analysis
   //===========================================================================
-  if ( globalAnalysis )
-  {
-    // Cuts on trigger level
-    AliAnalysisMuMuCutElement* triggerAll = cr->AddTriggerClassCut(*globalAnalysis,"SelectAnyTriggerClass","const TString&,TString&","");
-    // Adding this cut on trigger level  
-    cr->AddCutCombination(triggerAll);
-    task->AdoptSubAnalysis(globalAnalysis);
-  }
+//  if ( globalAnalysis )
+//  {
+//    // Cuts on trigger level
+//    AliAnalysisMuMuCutElement* triggerAll = cr->AddTriggerClassCut(*globalAnalysis,"SelectAnyTriggerClass","const TString&,TString&","");
+//    // Adding this cut on trigger level  
+//    cr->AddCutCombination(triggerAll);
+//    task->AdoptSubAnalysis(globalAnalysis);
+//  }
   if ( singleAnalysis )
   {
     // Cuts on tracks
@@ -116,31 +116,31 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   
   if (minvAnalysis)
   {
-    minvAnalysis->DefineMinvRange(2,8,0.025);
+    minvAnalysis->DefineMinvRange(2,8,0.05);
     // Integrated
     binning->AddBin("psi","integrated");
     // pt binning for low pt exces
-    binning->AddBin("psi","pt", 0.0, 0.1,"BENJ");
-    binning->AddBin("psi","pt", 0.1, 0.2,"BENJ");
-    binning->AddBin("psi","pt", 0.2, 0.3,"BENJ");
-    binning->AddBin("psi","pt", 0.3, 0.4,"BENJ");
-    binning->AddBin("psi","pt", 0.4, 0.5,"BENJ");
-    binning->AddBin("psi","pt", 0.5, 0.6,"BENJ");
-    binning->AddBin("psi","pt", 0.6, 0.7,"BENJ");
-    binning->AddBin("psi","pt", 0.7, 0.8,"BENJ");
-    binning->AddBin("psi","pt", 0.8, 0.9,"BENJ");
-    binning->AddBin("psi","pt", 0.9, 1.0,"BENJ");
-    binning->AddBin("psi","pt", 1.0, 1.1,"BENJ");
-    binning->AddBin("psi","pt", 1.1, 1.2,"BENJ");
-    binning->AddBin("psi","pt", 1.2, 1.3,"BENJ");
-    binning->AddBin("psi","pt", 1.3, 1.4,"BENJ");
-    binning->AddBin("psi","pt", 1.4, 1.5,"BENJ");
-    binning->AddBin("psi","pt", 1.5, 1.6,"BENJ");
-    binning->AddBin("psi","pt", 1.6, 1.7,"BENJ");
-    binning->AddBin("psi","pt", 1.7, 1.8,"BENJ");
-    binning->AddBin("psi","pt", 0.0, 0.3,"BENJ");
-    binning->AddBin("psi","pt", 0.3, 1.0,"BENJ");
-    binning->AddBin("psi","pt", 1.0, 8.0,"BENJ");
+//    binning->AddBin("psi","pt", 0.0, 0.1,"BENJ");
+//    binning->AddBin("psi","pt", 0.1, 0.2,"BENJ");
+//    binning->AddBin("psi","pt", 0.2, 0.3,"BENJ");
+//    binning->AddBin("psi","pt", 0.3, 0.4,"BENJ");
+//    binning->AddBin("psi","pt", 0.4, 0.5,"BENJ");
+//    binning->AddBin("psi","pt", 0.5, 0.6,"BENJ");
+//    binning->AddBin("psi","pt", 0.6, 0.7,"BENJ");
+//    binning->AddBin("psi","pt", 0.7, 0.8,"BENJ");
+//    binning->AddBin("psi","pt", 0.8, 0.9,"BENJ");
+//    binning->AddBin("psi","pt", 0.9, 1.0,"BENJ");
+//    binning->AddBin("psi","pt", 1.0, 1.1,"BENJ");
+//    binning->AddBin("psi","pt", 1.1, 1.2,"BENJ");
+//    binning->AddBin("psi","pt", 1.2, 1.3,"BENJ");
+//    binning->AddBin("psi","pt", 1.3, 1.4,"BENJ");
+//    binning->AddBin("psi","pt", 1.4, 1.5,"BENJ");
+//    binning->AddBin("psi","pt", 1.5, 1.6,"BENJ");
+//    binning->AddBin("psi","pt", 1.6, 1.7,"BENJ");
+//    binning->AddBin("psi","pt", 1.7, 1.8,"BENJ");
+//    binning->AddBin("psi","pt", 0.0, 0.3,"BENJ");
+//    binning->AddBin("psi","pt", 0.3, 1.0,"BENJ");
+//    binning->AddBin("psi","pt", 1.0, 8.0,"BENJ");
     // pt binning
     binning->AddBin("psi","pt", 0.0, 1.0,"BENJ");
     binning->AddBin("psi","pt", 1.0, 2.0,"BENJ");
@@ -169,11 +169,11 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   binning->AddBin("centrality","V0M",70.,80.);
   binning->AddBin("centrality","V0M",80.,90.);
   // v0 centrality binning for low pt exces
-  binning->AddBin("centrality","V0M",0.,10.);
-  binning->AddBin("centrality","V0M",10.,30.);
-  binning->AddBin("centrality","V0M",30.,50.);
-  binning->AddBin("centrality","V0M",50.,70.);
-  binning->AddBin("centrality","V0M",70.,90.);
+//  binning->AddBin("centrality","V0M",0.,10.);
+//  binning->AddBin("centrality","V0M",10.,30.);
+//  binning->AddBin("centrality","V0M",30.,50.);
+//  binning->AddBin("centrality","V0M",50.,70.);
+//  binning->AddBin("centrality","V0M",70.,90.);
 
   // add the configured task to the analysis manager
   mgr->AddTask(task);
