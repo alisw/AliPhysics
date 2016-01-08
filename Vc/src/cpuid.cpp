@@ -20,6 +20,7 @@
 #include <Vc/cpuid.h>
 #include <Vc/global.h>
 
+#if defined __x86__ || defined __x86_64__
 namespace AliRoot {
 namespace Vc
 {
@@ -619,5 +620,7 @@ void CpuId::interpret(uchar byte, bool *checkLeaf4)
 }
 } // namespace Vc
 } // namespace AliRoot
+
+#endif  // __x86__ || __x86_64__
 
 // vim: sw=4 sts=4 et tw=100
