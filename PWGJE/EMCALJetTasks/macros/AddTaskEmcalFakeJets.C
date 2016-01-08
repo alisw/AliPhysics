@@ -1,4 +1,4 @@
-AliAnalysisTaskFakeJets* AddTaskFakeJets(const char * njetsBase,
+AliAnalysisTaskFakeJets* AddTaskEmcalFakeJets(const char * njetsBase,
                                                      const char * njetsUS,
 						     const char * njetsTrue,
                                                      const char * njetsPartLevel,
@@ -25,7 +25,7 @@ AliAnalysisTaskFakeJets* AddTaskFakeJets(const char * njetsBase,
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskFakeJets","No analysis manager found.");
+      Error("AddTaskEmcalFakeJets","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;
@@ -35,7 +35,7 @@ AliAnalysisTaskFakeJets* AddTaskFakeJets(const char * njetsBase,
   //==============================================================================
   if (!mgr->GetInputEventHandler())
     {
-      ::Error("AddTaskFakeJets", "This task requires an input event handler");
+      ::Error("AddTaskEmcalFakeJets", "This task requires an input event handler");
       return NULL;
     }
 
