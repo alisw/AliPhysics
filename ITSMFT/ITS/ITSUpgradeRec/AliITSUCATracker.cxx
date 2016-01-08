@@ -31,7 +31,7 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 // ALIROOT ITSU
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSURecoDet.h"
 #include "AliITSUReconstructor.h"

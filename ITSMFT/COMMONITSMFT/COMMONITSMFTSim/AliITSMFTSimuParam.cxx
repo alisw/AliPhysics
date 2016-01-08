@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSUSimuParam.cxx 48165 2011-03-07 17:48:57Z masera $ */
+/* $Id: AliITSMFTSimuParam.cxx 48165 2011-03-07 17:48:57Z masera $ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -21,22 +21,22 @@
 // the simulation of ITS upgrade detectors                       //
 //                                                               //
 // On the fRespFunParam array content: it holds the              //
-// AliITSUParamList type objects with data for response          //
+// AliITSMFTParamList type objects with data for response          //
 // simulation of type of                                         //
 // detector (e.g. Class/Segmentation) used in the Config.C       //
 // The convention is:                                            //
-// 1) AliITSUParamList::GetUniqueID() defines detectorID         //
-// (see header of the AliITSUGeomTGeo.h) for which these         //
+// 1) AliITSMFTParamList::GetUniqueID() defines detectorID         //
+// (see header of the AliITSMFTGeomTGeo.h) for which these         //
 // response data is defined                                      //
 //                                                               //
-// 2) AliITSUParamList::GetID() defines the charge spread        //
+// 2) AliITSMFTParamList::GetID() defines the charge spread        //
 // function served by these data, for instance in case of        //
 // Pixels these are the functions aliased to enums               //
-// kSpreadFunGauss2D... in AliITSUSimulationPix.h                //
+// kSpreadFunGauss2D... in AliITSMFTSimulationPix.h                //
 //                                                               //
 // 3) Each detector class is free to interpred the content of    //
-// AliITSUParamList. AliITSUSimulationPix, for instance requests //
-// that first AliITSUSimulationPix::kParamStart are reserved for //
+// AliITSMFTParamList. AliITSMFTSimulationPix, for instance requests //
+// that first AliITSMFTSimulationPix::kParamStart are reserved for //
 // some standard properties (like number of neighbours around the//
 // pixel with the charge is injected to consider for the charge  //
 // spread (the values may be different for different finctions)  //
@@ -50,35 +50,37 @@
 //                                                               //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
-#include "AliITSUSimuParam.h"
+#include "AliITSMFTSimuParam.h"
 #include "AliLog.h"
-#include "AliITSUParamList.h"
+#include "AliITSMFTParamList.h"
+#include "AliITSMFTAux.h"
+
 
 using namespace TMath;
+using namespace AliITSMFTAux;
 
+const Float_t  AliITSMFTSimuParam::fgkPixBiasVoltageDefault = 18.182;
+const Float_t  AliITSMFTSimuParam::fgkPixThreshDefault = 20.;
+const Float_t  AliITSMFTSimuParam::fgkPixThrSigmaDefault = 5.;
+const Float_t  AliITSMFTSimuParam::fgkPixMinElToAddDefault = 1.;
+const UInt_t    AliITSMFTSimuParam::fgkPixCouplingOptDefault = kNoCouplingPix;
+const Float_t  AliITSMFTSimuParam::fgkPixCouplColDefault = 0.;
+const Float_t  AliITSMFTSimuParam::fgkPixCouplRowDefault = 0.055;
+const Float_t  AliITSMFTSimuParam::fgkPixEccDiffDefault = 0.85;
+const Float_t  AliITSMFTSimuParam::fgkPixLorentzHoleWeightDefault = 1.0;
+const Float_t  AliITSMFTSimuParam::fgkGeVtoChargeDefault = 3.6e-9;
+const Float_t  AliITSMFTSimuParam::fgkDOverVDefault = 0.000375;
+const Float_t  AliITSMFTSimuParam::fgkTDefault = 300;
+const Float_t  AliITSMFTSimuParam::fgkPixFakeRateDefault = 1e-4;
+const Bool_t    AliITSMFTSimuParam::fgkPixNoiseInAllMod = kFALSE;        
 
-const Float_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
-const Float_t  AliITSUSimuParam::fgkPixThreshDefault = 20.;
-const Float_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 5.;
-const Float_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 1.;
-const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kNoCouplingPix;
-const Float_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;
-const Float_t  AliITSUSimuParam::fgkPixCouplRowDefault = 0.055;
-const Float_t  AliITSUSimuParam::fgkPixEccDiffDefault = 0.85;
-const Float_t  AliITSUSimuParam::fgkPixLorentzHoleWeightDefault = 1.0;
-const Float_t  AliITSUSimuParam::fgkGeVtoChargeDefault = 3.6e-9;
-const Float_t  AliITSUSimuParam::fgkDOverVDefault = 0.000375;
-const Float_t  AliITSUSimuParam::fgkTDefault = 300;
-const Float_t  AliITSUSimuParam::fgkPixFakeRateDefault = 1e-4;
-const Bool_t    AliITSUSimuParam::fgkPixNoiseInAllMod = kFALSE;        
+const Float_t  AliITSMFTSimuParam::fgkNsigmasDefault = 3.;
+const Int_t    AliITSMFTSimuParam::fgkNcompsDefault = 121;
 
-const Float_t  AliITSUSimuParam::fgkNsigmasDefault = 3.;
-const Int_t    AliITSUSimuParam::fgkNcompsDefault = 121;
-
-ClassImp(AliITSUSimuParam)
+ClassImp(AliITSMFTSimuParam)
 
 //______________________________________________________________________
-AliITSUSimuParam::AliITSUSimuParam()
+AliITSMFTSimuParam::AliITSMFTSimuParam()
 :  fGeVcharge(fgkGeVtoChargeDefault)
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
@@ -119,7 +121,7 @@ AliITSUSimuParam::AliITSUSimuParam()
 }
 
 //______________________________________________________________________
-AliITSUSimuParam::AliITSUSimuParam(UInt_t nLayer,UInt_t nPix)
+AliITSMFTSimuParam::AliITSMFTSimuParam(UInt_t nLayer,UInt_t nPix)
   :fGeVcharge(fgkGeVtoChargeDefault)
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
@@ -161,7 +163,7 @@ AliITSUSimuParam::AliITSUSimuParam(UInt_t nLayer,UInt_t nPix)
 }
 
 //______________________________________________________________________
-AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
+AliITSMFTSimuParam::AliITSMFTSimuParam(const AliITSMFTSimuParam &simpar)
   :TObject(simpar)
   ,fGeVcharge(simpar.fGeVcharge)
   ,fDOverV(simpar.fDOverV)
@@ -219,14 +221,14 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
   }
   //
   for (int i=0;i<simpar.fRespFunParam.GetEntriesFast();i++) {
-    AliITSUParamList* pr = (AliITSUParamList*)simpar.fRespFunParam[0];
-    if (pr) fRespFunParam.AddLast(new AliITSUParamList(*pr));
+    AliITSMFTParamList* pr = (AliITSMFTParamList*)simpar.fRespFunParam[0];
+    if (pr) fRespFunParam.AddLast(new AliITSMFTParamList(*pr));
   }
   fRespFunParam.SetOwner(kTRUE);
 }
 
 //______________________________________________________________________
-void AliITSUSimuParam::SetNPix(Int_t np)
+void AliITSMFTSimuParam::SetNPix(Int_t np)
 {
   if (fNPix>0) AliFatal(Form("Number of pixels is already set to %d",fNPix));
   if (np>0) {
@@ -244,7 +246,7 @@ void AliITSUSimuParam::SetNPix(Int_t np)
 }
 
 //______________________________________________________________________
-void AliITSUSimuParam::SetNLayers(Int_t nl)
+void AliITSMFTSimuParam::SetNLayers(Int_t nl)
 {
   if (fNLayers>0) AliFatal(Form("Number of layers is already set to %d",fNLayers));
   if (nl>0) {
@@ -256,18 +258,18 @@ void AliITSUSimuParam::SetNLayers(Int_t nl)
 }
 
 //______________________________________________________________________
-AliITSUSimuParam& AliITSUSimuParam::operator=(const AliITSUSimuParam& source)
+AliITSMFTSimuParam& AliITSMFTSimuParam::operator=(const AliITSMFTSimuParam& source)
 {
   // Assignment operator. 
   if (this==&source) return *this;
-  this->~AliITSUSimuParam();
-  new(this) AliITSUSimuParam(source);
+  this->~AliITSMFTSimuParam();
+  new(this) AliITSMFTSimuParam(source);
   return *this;
   //
 }
 
 //______________________________________________________________________
-AliITSUSimuParam::~AliITSUSimuParam() 
+AliITSMFTSimuParam::~AliITSMFTSimuParam() 
 {
   // destructor
   delete[] fPixBiasVoltage;
@@ -279,7 +281,7 @@ AliITSUSimuParam::~AliITSUSimuParam()
 }
 
 //________________________________________________________________________
-void AliITSUSimuParam::Print(Option_t *) const
+void AliITSMFTSimuParam::Print(Option_t *) const
 {
   // Dump all parameters
   Dump();
@@ -288,7 +290,7 @@ void AliITSUSimuParam::Print(Option_t *) const
   if (nresp) {
     printf("Individual sensor responses\n");
     for (int i=0;i<nresp;i++) {
-      AliITSUParamList* lst = (AliITSUParamList*)fRespFunParam[i];
+      AliITSMFTParamList* lst = (AliITSMFTParamList*)fRespFunParam[i];
       if (!lst) continue;
       lst->Print();
     }
@@ -296,7 +298,7 @@ void AliITSUSimuParam::Print(Option_t *) const
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::ApplyPixBaselineAndNoise(UInt_t mod) const 
+Double_t AliITSMFTSimuParam::ApplyPixBaselineAndNoise(UInt_t mod) const 
 {
   // generate random noise 
   double base,noise;
@@ -313,7 +315,7 @@ Double_t AliITSUSimuParam::ApplyPixBaselineAndNoise(UInt_t mod) const
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const 
+Double_t AliITSMFTSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const 
 {
   // calculate probability of noise exceeding the threshold
   double base,noise,thresh;
@@ -336,7 +338,7 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetLrROCycleShift(Double_t v,Int_t lr)
+void AliITSMFTSimuParam::SetLrROCycleShift(Double_t v,Int_t lr)
 {
   // set fractional offset of layer RO cycle
   if (lr<0) for (int i=fNLayers;i--;) fLrROCycleShift[i]=v;
@@ -344,7 +346,7 @@ void AliITSUSimuParam::SetLrROCycleShift(Double_t v,Int_t lr)
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixThreshold(Double_t thresh, Double_t sigma, int mod)
+void AliITSMFTSimuParam::SetPixThreshold(Double_t thresh, Double_t sigma, int mod)
 {
   // set threshold params
   if (mod<0) {
@@ -368,7 +370,7 @@ void AliITSUSimuParam::SetPixThreshold(Double_t thresh, Double_t sigma, int mod)
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::GetPixThreshold(UInt_t mod) const
+Double_t AliITSMFTSimuParam::GetPixThreshold(UInt_t mod) const
 {
   // obtain threshold
   if (mod>=fNPix) {
@@ -379,7 +381,7 @@ Double_t AliITSUSimuParam::GetPixThreshold(UInt_t mod) const
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::GetPixThreshold(UInt_t mod, Double_t &thresh, Double_t &sigma) const
+void AliITSMFTSimuParam::GetPixThreshold(UInt_t mod, Double_t &thresh, Double_t &sigma) const
 {
   // obtain thresholds
   if (mod>=fNPix) {
@@ -394,7 +396,7 @@ void AliITSUSimuParam::GetPixThreshold(UInt_t mod, Double_t &thresh, Double_t &s
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixBiasVoltage(Double_t val, int mod)
+void AliITSMFTSimuParam::SetPixBiasVoltage(Double_t val, int mod)
 {
   // set threshold params
   if (mod<0) {
@@ -410,7 +412,7 @@ void AliITSUSimuParam::SetPixBiasVoltage(Double_t val, int mod)
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::GetPixBiasVoltage(UInt_t mod) const
+Double_t AliITSMFTSimuParam::GetPixBiasVoltage(UInt_t mod) const
 {
   // obtain threshold
   if (mod>=fNPix) {
@@ -421,7 +423,7 @@ Double_t AliITSUSimuParam::GetPixBiasVoltage(UInt_t mod) const
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixNoise(Double_t noise, Double_t baseline, int mod)
+void AliITSMFTSimuParam::SetPixNoise(Double_t noise, Double_t baseline, int mod)
 {
   // set noise params
   if (mod<0) {
@@ -445,7 +447,7 @@ void AliITSUSimuParam::SetPixNoise(Double_t noise, Double_t baseline, int mod)
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::GetPixNoise(UInt_t mod, Double_t &noise, Double_t &baseline) const
+void AliITSMFTSimuParam::GetPixNoise(UInt_t mod, Double_t &noise, Double_t &baseline) const
 {
   // obtain noise
   if (mod>=fNPix) {
@@ -460,7 +462,7 @@ void AliITSUSimuParam::GetPixNoise(UInt_t mod, Double_t &noise, Double_t &baseli
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixCouplingOption(UInt_t opt)
+void AliITSMFTSimuParam::SetPixCouplingOption(UInt_t opt)
 {
   // set coupling option
   if (opt>=kMaxCouplingOptPix) AliFatal(Form("Coupling option %d should be less than %d",opt,kMaxCouplingOptPix));
@@ -469,7 +471,7 @@ void AliITSUSimuParam::SetPixCouplingOption(UInt_t opt)
 
 
 //______________________________________________________________________
-Double_t AliITSUSimuParam::LorentzAngleHole(Double_t B) const 
+Double_t AliITSMFTSimuParam::LorentzAngleHole(Double_t B) const 
 {
   // Computes the Lorentz angle for electrons in Si
   // Input: magnetic Field in KGauss
@@ -496,7 +498,7 @@ Double_t AliITSUSimuParam::LorentzAngleHole(Double_t B) const
 }
 
 //______________________________________________________________________
-Double_t AliITSUSimuParam::LorentzAngleElectron(Double_t B) const 
+Double_t AliITSMFTSimuParam::LorentzAngleElectron(Double_t B) const 
 {
   // Computes the Lorentz angle for electrons in Si
   // Input: magnetic Field in KGauss
@@ -523,24 +525,24 @@ Double_t AliITSUSimuParam::LorentzAngleElectron(Double_t B) const
 }
 
 //___________________________________________________________
-const AliITSUParamList* AliITSUSimuParam::FindRespFunParams(Int_t detId) const
+const AliITSMFTParamList* AliITSMFTSimuParam::FindRespFunParams(Int_t detId) const
 {
   // find parameters list for detID
   for (int i=fRespFunParam.GetEntriesFast();i--;) {
-    const AliITSUParamList* pr = GetRespFunParams(i);
+    const AliITSMFTParamList* pr = GetRespFunParams(i);
     if (int(pr->GetUniqueID())==detId) return pr;
   }
   return 0;
 }
 
 //___________________________________________________________
-void AliITSUSimuParam::AddRespFunParam(AliITSUParamList* pr)
+void AliITSMFTSimuParam::AddRespFunParam(AliITSMFTParamList* pr)
 {
   // add spread parameterization data
   fRespFunParam.AddLast(pr);
 }
 //______________________________________________________________________________________
-Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(double mean, double sigma, double thresh) 
+Double_t AliITSMFTSimuParam::CalcProbNoiseOverThreshold(double mean, double sigma, double thresh) 
 {
   // calculate probability of noise exceeding the threshold
   //if (mean+6*sigma<thresh) return 0;
@@ -560,7 +562,7 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(double mean, double sigma,
   //  (double x, double xi, double x0) { 
   
    // Implementation is taken from ROOT  
-//     Printf("AliITSUSimuParam::LandauCdf");
+//     Printf("AliITSMFTSimuParam::LandauCdf");
    //arguments threshold, sigma, mean
      
      double x = thresh;
@@ -635,7 +637,7 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(double mean, double sigma,
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::GenerateNoiseQFunction(double prob, double mean, double sigma) 
+Double_t AliITSMFTSimuParam::GenerateNoiseQFunction(double prob, double mean, double sigma) 
 {
   // generate random noise exceeding threshold probability prob, i.e. find a random point in the right
   // tail of the gaussian(base,noise), provided that the tail integral = prob

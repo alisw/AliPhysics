@@ -19,24 +19,28 @@
 #include <TH2.h>
 #include <TString.h>
 #include "AliITSU.h"
-#include "AliITSUDigitPix.h"
+#include "AliITSMFTDigitPix.h"
 #include "AliITSUHit.h"
 #include "AliITSUChip.h"
-#include "AliITSUSensMap.h"
-#include "AliITSUCalibrationPix.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUSimulationPix.h"
+#include "AliITSMFTSensMap.h"
+#include "AliITSMFTCalibrationPix.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliMathBase.h"
-#include "AliITSUSimuParam.h"
-#include "AliITSUSDigit.h"
-#include "AliITSUParamList.h"
+#include "AliITSMFTSimuParam.h"
+#include "AliITSMFTSDigit.h"
+#include "AliITSMFTParamList.h"
+#include "AliITSMFTAux.h"
+
+#include "AliITSUSimulationPix.h"
 
 using std::cout;
 using std::endl;
 using namespace TMath;
+
+
 
 ClassImp(AliITSUSimulationPix)
 ////////////////////////////////////////////////////////////////////////
@@ -67,11 +71,11 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 ,fROTimeFun(0)
 {
     // Default constructor.
-    SetUniqueID(AliITSUGeomTGeo::kChipTypePix);
+    SetUniqueID(AliITSMFTAux::kChipTypePix);
 }
 
 //______________________________________________________________________
-AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap* map)
+AliITSUSimulationPix::AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
 :AliITSUSimulation(sim,map)
 ,fTanLorAng(0)
 ,fGlobalChargeScale(1.0)
@@ -80,7 +84,7 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
 ,fROTimeFun(0)
 {
     // standard constructor
-    SetUniqueID(AliITSUGeomTGeo::kChipTypePix);
+    SetUniqueID(AliITSMFTAux::kChipTypePix);
     Init();
 }
 
@@ -160,7 +164,7 @@ void AliITSUSimulationPix::SDigitiseChip()
     
     AliDebug(10,Form("In event %d chip %d there are %d hits", fEvent, fChip->GetIndex(),fChip->GetNHits()));
     if (fChip->GetNHits()) {
-        if(fResponseParam->GetParameter(kDigitalSim) == 0 ) Hits2SDigitsFast(); // analogue chip response simulation
+        if(fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) == 0 ) Hits2SDigitsFast(); // analogue chip response simulation
         else Hits2SDigitsFastDigital();                                         // digital chip response
     }
     if (!fSensMap->GetEntries()) return;
@@ -178,7 +182,7 @@ void AliITSUSimulationPix::WriteSDigits()
     
     
     for (int i=0;i<nsd;i++) {
-        AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
+        AliITSMFTSDigit* sd = (AliITSMFTSDigit*)fSensMap->At(i); // ordered in index
         if (!sd->GetSumSignal()>0 || fSensMap->IsDisabled(sd)) continue;
         aliITS->AddSumDigit(*sd);
     }
@@ -201,7 +205,7 @@ void AliITSUSimulationPix::DigitiseChip()
     //  electronic noise to the digits before adding them to pList
     //  Each of the input variables is passed along to Hits2SDigits
     //
-    if(fResponseParam->GetParameter(kDigitalSim) == 0 ) Hits2SDigitsFast(); // analogue chip response simulation
+    if(fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) == 0 ) Hits2SDigitsFast(); // analogue chip response simulation
     else Hits2SDigitsFastDigital();                                         // digital chip response
     FinishSDigitiseChip();
 }
@@ -255,20 +259,20 @@ void AliITSUSimulationPix::Hits2SDigits()
     //
     // Coupling
     int nd = fSensMap->GetEntriesUnsorted(); // use unsorted access when possible, since it is faster
-    AliITSUSDigit* dg = 0;
+    AliITSMFTSDigit* dg = 0;
     switch (fSimuParam->GetPixCouplingOption()) {
-        case AliITSUSimuParam::kNoCouplingPix :
+        case AliITSMFTSimuParam::kNoCouplingPix :
             break;
-        case AliITSUSimuParam::kNewCouplingPix :
+        case AliITSMFTSimuParam::kNewCouplingPix :
             for (i=nd;i--;) {
-                dg = (AliITSUSDigit*)fSensMap->AtUnsorted(i);
+                dg = (AliITSMFTSDigit*)fSensMap->AtUnsorted(i);
                 if (fSensMap->IsDisabled(dg)) continue;
                 SetCoupling(dg);
             }
             break;
-        case AliITSUSimuParam::kOldCouplingPix:
+        case AliITSMFTSimuParam::kOldCouplingPix:
             for (i=nd;i--;) {
-                dg = (AliITSUSDigit*)fSensMap->AtUnsorted(i);
+                dg = (AliITSMFTSDigit*)fSensMap->AtUnsorted(i);
                 if (fSensMap->IsDisabled(dg)) continue;
                 SetCouplingOld(dg);
             }
@@ -305,7 +309,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
         st = Sqrt(x1*x1+y1*y1+z1*z1);
         if (st>0.0) {
             int np = int(1.5*st/minDim);  //RStmp: inject the points in such a way that there is ~1.5 point per cell
-            np = TMath::Max(1.0*np,fResponseParam->GetParameter(kSpreadFunMinSteps));
+            np = TMath::Max(1.0*np,fResponseParam->GetParameter(AliITSMFTSimuParam::kSpreadFunMinSteps));
             AliDebug(10,Form(" Number of charge injection steps is set to %d ",np));
             double dstep = 1./np;
             double dy = dstep*thick;
@@ -337,19 +341,19 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
     
     // Coupling
     int nd = fSensMap->GetEntriesUnsorted(); // use unsorted access when possible, since it is faster
-    AliITSUSDigit* dg = 0;
+    AliITSMFTSDigit* dg = 0;
     switch (fSimuParam->GetPixCouplingOption()) {
-        case AliITSUSimuParam::kNoCouplingPix :
+        case AliITSMFTSimuParam::kNoCouplingPix :
             break;
-        case AliITSUSimuParam::kNewCouplingPix :
+        case AliITSMFTSimuParam::kNewCouplingPix :
             for (i=nd;i--;) {
-                dg = (AliITSUSDigit*)fSensMap->AtUnsorted(i);
+                dg = (AliITSMFTSDigit*)fSensMap->AtUnsorted(i);
                 if (fSensMap->IsDisabled(dg)) continue;
                 SetCoupling(dg);
             }
-        case AliITSUSimuParam::kOldCouplingPix:
+        case AliITSMFTSimuParam::kOldCouplingPix:
             for (i=nd;i--;) {
-                dg = (AliITSUSDigit*)fSensMap->AtUnsorted(i);
+                dg = (AliITSMFTSDigit*)fSensMap->AtUnsorted(i);
                 if (fSensMap->IsDisabled(dg)) continue;
                 SetCouplingOld(dg);
             }
@@ -392,8 +396,8 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
     Double_t &z1 = dtIn[kCellZ1];
     Double_t &z2 = dtIn[kCellZ2];
     //
-    int nx = GetResponseParam()->GetParameter(kSpreadFunParamNXoffs);
-    int nz = GetResponseParam()->GetParameter(kSpreadFunParamNZoffs);
+    int nx = GetResponseParam()->GetParameter(AliITSMFTSimuParam::kSpreadFunParamNXoffs);
+    int nz = GetResponseParam()->GetParameter(AliITSMFTSimuParam::kSpreadFunParamNZoffs);
     //
     dtIn[kCellYDepth]  = dy;
     ixs = Max(-nx+ix0,0);
@@ -498,7 +502,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
     // Removes dead pixels on each chip (ladder)
     // This should be called before going from sdigits to digits (i.e. from FrompListToDigits)
     
-    AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibDead();
+    AliITSMFTCalibrationPix* calObj = (AliITSMFTCalibrationPix*) GetCalibDead();
     if (!calObj) return;
     //
     if (calObj->IsBad()) {ClearMap(); return;} // whole chip is masked
@@ -518,7 +522,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
     }
     int nsd = fSensMap->GetEntriesUnsorted();
     for (int isd=nsd;isd--;) {
-        AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->AtUnsorted(isd);
+        AliITSMFTSDigit* sd = (AliITSMFTSDigit*)fSensMap->AtUnsorted(isd);
         if (fSensMap->IsDisabled(sd)) continue;
         fSensMap->GetMapIndex(sd->GetUniqueID(),col,row,cycle);
         int chip = fSeg->GetChipFromChannel(0,col);
@@ -533,11 +537,11 @@ void AliITSUSimulationPix::AddNoisyPixels()
 {
     // Adds noisy pixels on each chip (ladder)
     // This should be called before going from sdigits to digits (i.e. FrompListToDigits)
-    AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibNoisy();
+    AliITSMFTCalibrationPix* calObj = (AliITSMFTCalibrationPix*) GetCalibNoisy();
     if (!calObj) { AliDebug(10,Form("  No Calib Object for Noise!!! ")); return;}
     for (Int_t i=calObj->GetNrBad(); i--;)
     {
-        if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 )
+        if ( fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) < 1.0 )
             UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i),10*fSimuParam->GetPixThreshold(fChip->GetIndex()));
         else
             UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i),kNoisyPixOCDB );
@@ -573,16 +577,16 @@ void AliITSUSimulationPix::FrompListToDigits()
     UInt_t row,col;
     Int_t iCycle,modId = fChip->GetIndex();
     Double_t sig;
-    const Int_t    knmaxtrk=AliITSUDigitPix::GetNTracks();
+    const Int_t    knmaxtrk=AliITSMFTDigitPix::GetNTracks();
     static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
-    static AliITSUDigitPix dig;
+    static AliITSMFTDigitPix dig;
     //
     for (int i=0;i<nsd;i++) {
-        AliITSUSDigit* sd = (AliITSUSDigit*)fSensMap->At(i); // ordered in index
+        AliITSMFTSDigit* sd = (AliITSMFTSDigit*)fSensMap->At(i); // ordered in index
         if (fSensMap->IsDisabled(sd)) continue;
         //
 	sig=sd->GetSumSignal();
-        if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 &&
+        if ( fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) < 1.0 &&
 	     sig<=fSimuParam->GetPixThreshold(modId)) continue;   //Threshold only applies in analogue simulation
         //
         if (Abs(sig)>2147483647.0) { //RS?
@@ -605,7 +609,7 @@ void AliITSUSimulationPix::FrompListToDigits()
             dig.SetTrack(j,-3);
             dig.SetHit(j,-1);
         }
-        aliITS->AddSimDigit(AliITSUGeomTGeo::kChipTypePix, &dig);
+        aliITS->AddSimDigit(AliITSMFTAux::kChipTypePix, &dig);
     }
     //
 }
@@ -629,15 +633,15 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
   int* ordV = ordSample.GetArray();
   int* ordI = ordSampleInd.GetArray();
   //
-  if ( fResponseParam->GetParameter(kDigitalSim) < 1.0 ) {
+  if ( fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) < 1.0 ) {
     thresh = fSimuParam->GetPixThreshold(modId);
     fSimuParam->GetPixNoise(modId, noiseSig, noiseMean);
-    probNoisy = AliITSUSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
+      probNoisy = AliITSMFTSimuParam::CalcProbNoiseOverThreshold(noiseMean,noiseSig,thresh); // prob. to have noise above threshold
     //
     for (int j=0;j<ncand;j++) {
       fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
       iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
-      UpdateMapNoise(col,row,AliITSUSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
+      UpdateMapNoise(col,row,AliITSMFTSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
     }
   }
   else {
@@ -652,7 +656,7 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
 
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old)
+void AliITSUSimulationPix::SetCoupling(AliITSMFTSDigit* old)
 {
     //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the probability of the
@@ -689,14 +693,14 @@ void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old)
+void AliITSUSimulationPix::SetCouplingOld(AliITSMFTSDigit* old)
 {
     //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the fractions of the
     //  signal in one pixel shared in the two adjacent pixels along
     //  the column and row direction, respectively.
     // Inputs:
-    // old            existing AliITSUSDigit
+    // old            existing AliITSMFTSDigit
     // ntrack         track incex number
     // idhit          hit index number
     // chip         chip number
@@ -729,12 +733,12 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
+void AliITSUSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
 {
     // attach response parameterisation data
     fResponseParam = resp;
     //
-    int spreadID = Nint(fResponseParam->GetParameter(AliITSUSimulationPix::kChargeSpreadType));
+    int spreadID = Nint(fResponseParam->GetParameter(AliITSMFTSimuParam::kChargeSpreadType));
     const char* hname = 0;
     fSpread2DHisto = 0;
     //
@@ -742,7 +746,7 @@ void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
             //
         case kSpreadFunHisto:
             fSpreadFun = &AliITSUSimulationPix::SpreadFrom2DHisto;
-            hname = fResponseParam->GetParName(AliITSUSimulationPix::kChargeSpreadType);
+            hname = fResponseParam->GetParName(AliITSMFTSimuParam::kChargeSpreadType);
             if (!(fSpread2DHisto=(TH2*)fResponseParam->GetParamObject(hname)))
                 AliFatal(Form("Did not find 2D histo %s for charge spread parameterization",hname));
             break;
@@ -758,44 +762,44 @@ void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
         default: AliFatal(Form("Did not find requested spread function id=%d",spreadID));
     }
     //
-    int readoutType = Nint(fResponseParam->GetParameter(kReadOutSchemeType));
+    int readoutType = Nint(fResponseParam->GetParameter(AliITSMFTSimuParam::kReadOutSchemeType));
     switch (readoutType) {
-        case kReadOutStrobe:
+        case AliITSMFTSimuParam::kReadOutStrobe:
             fROTimeFun = &AliITSUSimulationPix::GetReadOutCycle;
             break;
-        case kReadOutRollingShutter:
+        case AliITSMFTSimuParam::kReadOutRollingShutter:
             fROTimeFun = &AliITSUSimulationPix::GetReadOutCycleRollingShutter;
             break;
         default: AliFatal(Form("Did not find requested readout time type id=%d",readoutType));
     }
     
     //___ Set the Rolling Shutter read-out window
-    fReadOutCycleLength = fResponseParam->GetParameter(kReadOutCycleLength);
+    fReadOutCycleLength = fResponseParam->GetParameter(AliITSMFTSimuParam::kReadOutCycleLength);
     //___ Pixel discrimination threshold, and the S/N cut
-    fSimuParam->SetPixThreshold(fResponseParam->GetParameter(kPixNoiseMPV) *fResponseParam->GetParameter(kPixSNDisrcCut) , fResponseParam->GetParameter(kPixSNDisrcCut),-1); //for all chips
+    fSimuParam->SetPixThreshold(fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseMPV) *fResponseParam->GetParameter(AliITSMFTSimuParam::kPixSNDisrcCut) , fResponseParam->GetParameter(AliITSMFTSimuParam::kPixSNDisrcCut),-1); //for all chips
     //___ Minimum number of electrons to add
-    fSimuParam->SetPixMinElToAdd(fResponseParam->GetParameter(kPixMinElToAdd));
+    fSimuParam->SetPixMinElToAdd(fResponseParam->GetParameter(AliITSMFTSimuParam::kPixMinElToAdd));
     //___ Set the Pixel Noise MPV and Sigma (the noise distribution is Landau not Gauss due to RTN)
-    fSimuParam->SetPixNoise( fResponseParam->GetParameter(kPixNoiseMPV), fResponseParam->GetParameter(kPixNoiseSigma), -1); //for all chips
+    fSimuParam->SetPixNoise( fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseMPV), fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseSigma), -1); //for all chips
     //___ Pixel fake hit rate
-    fSimuParam->SetPixFakeRate( fResponseParam->GetParameter(kPixFakeRate) );
+    fSimuParam->SetPixFakeRate( fResponseParam->GetParameter(AliITSMFTSimuParam::kPixFakeRate) );
     //___ To apply the noise or not
-    if (  fResponseParam->GetParameter(kPixNoiseIsOn) > 0.01)  fSimuParam->SetPixAddNoisyFlag(kTRUE);
+    if (  fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseIsOn) > 0.01)  fSimuParam->SetPixAddNoisyFlag(kTRUE);
     else fSimuParam->SetPixAddNoisyFlag(kFALSE);
     //
-    if(fResponseParam->GetParameter(kPixNoiseInAllMod) > 0.01 ) fSimuParam->SetPixNoiseInAllMod(kTRUE);
+    if(fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseInAllMod) > 0.01 ) fSimuParam->SetPixNoiseInAllMod(kTRUE);
     else fSimuParam->SetPixNoiseInAllMod(kFALSE);
     //
     //  Double_t vGeVToQ = fSimuParam->GetGeVToCharge();
-    fGlobalChargeScale = fResponseParam->GetParameter(kSpreadFunGlobalQScale);
+    fGlobalChargeScale = fResponseParam->GetParameter(AliITSMFTSimuParam::kSpreadFunGlobalQScale);
     
     AliDebug(10,Form("=============== Setting the response start ============================"));
-    AliDebug(10,Form("=============== Digital (1) / Analogue (0) simu: %f",fResponseParam->GetParameter(kDigitalSim)));
+    AliDebug(10,Form("=============== Digital (1) / Analogue (0) simu: %f",fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim)));
     AliDebug(10,Form("=============== RO type: %d",readoutType));
     AliDebug(10,Form("=============== RO cycle lenght: %lf",fReadOutCycleLength));
-    AliDebug(10,Form("=============== Noise MPV: %lf",fResponseParam->GetParameter(kPixNoiseMPV)));
-    AliDebug(10,Form("=============== Noise Sigma: %lf",fResponseParam->GetParameter(kPixNoiseSigma)));
-    AliDebug(10,Form("=============== Fake rate: %lf",fResponseParam->GetParameter(kPixFakeRate)));
+    AliDebug(10,Form("=============== Noise MPV: %lf",fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseMPV)));
+    AliDebug(10,Form("=============== Noise Sigma: %lf",fResponseParam->GetParameter(AliITSMFTSimuParam::kPixNoiseSigma)));
+    AliDebug(10,Form("=============== Fake rate: %lf",fResponseParam->GetParameter(AliITSMFTSimuParam::kPixFakeRate)));
     AliDebug(10,Form("=============== Noise On/Off: %d",fSimuParam->GetPixAddNoisyFlag()));
     AliDebug(10,Form("=============== Noise in all mod on/off: %d",fSimuParam->GetPixNoiseInAllMod()));
     AliDebug(10,Form("=============== Global Charge scale: %lf",fGlobalChargeScale));
@@ -842,7 +846,7 @@ void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t
     // The shift can depend on the column or line or both...
     // The x and z are passed in cm
     //
-    ((AliITSUSegmentationPix*)fSeg)->GetDiodShift(xrow,zcol,x,z);
+    ((AliITSMFTSegmentationPix*)fSeg)->GetDiodShift(xrow,zcol,x,z);
     //
 }
 

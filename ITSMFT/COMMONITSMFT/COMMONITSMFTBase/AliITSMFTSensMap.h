@@ -1,5 +1,5 @@
-#ifndef ALIITSUSENSMAP_H
-#define ALIITSUSENSMAP_H
+#ifndef AliITSMFTSensMap_H
+#define AliITSMFTSensMap_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
@@ -19,17 +19,17 @@
 #include <TBtree.h>
 #define _ROWWISE_SORT_
 
-class AliITSUSensMap: public TObject 
+class AliITSMFTSensMap: public TObject 
 {
 
  public:
   enum {kDisableBit=BIT(14)};
   //
-  AliITSUSensMap();
-  AliITSUSensMap(const char* className, UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle=1);
-  virtual ~AliITSUSensMap();
-  AliITSUSensMap(const AliITSUSensMap &source);
-  AliITSUSensMap& operator=(const AliITSUSensMap &source);
+  AliITSMFTSensMap();
+  AliITSMFTSensMap(const char* className, UInt_t dimCol,UInt_t dimRow,UInt_t dimCycle=1);
+  virtual ~AliITSMFTSensMap();
+  AliITSMFTSensMap(const AliITSMFTSensMap &source);
+  AliITSMFTSensMap& operator=(const AliITSMFTSensMap &source);
   void Clear(Option_t* option = "");
   void DeleteItem(UInt_t col,UInt_t row, Int_t cycle);
   void DeleteItem(TObject* obj);
@@ -71,11 +71,11 @@ class AliITSUSensMap: public TObject
   TClonesArray*    fItems;   // pListItems array
   TBtree*          fBTree;   // tree for ordered access
   //
-  ClassDef(AliITSUSensMap,1) // list of sensor signals (should be sortable objects)
+  ClassDef(AliITSMFTSensMap,1) // list of sensor signals (should be sortable objects)
 };	
 
 //______________________________________________________________________
-inline UInt_t AliITSUSensMap::GetIndex(UInt_t col,UInt_t row, Int_t cycle) const  
+inline UInt_t AliITSMFTSensMap::GetIndex(UInt_t col,UInt_t row, Int_t cycle) const  
 {
   // linearized ID of digit
   UInt_t cyclePos = cycle+fDimCycle; // cycle may span from -fDimCycle to fDimCycle
@@ -87,7 +87,7 @@ inline UInt_t AliITSUSensMap::GetIndex(UInt_t col,UInt_t row, Int_t cycle) const
 }
 
 //______________________________________________________________________
-inline void AliITSUSensMap::GetCell(UInt_t index,UInt_t dcol,UInt_t drow,UInt_t dcycle,UInt_t &col,UInt_t &row,Int_t &cycle) 
+inline void AliITSMFTSensMap::GetCell(UInt_t index,UInt_t dcol,UInt_t drow,UInt_t dcycle,UInt_t &col,UInt_t &row,Int_t &cycle) 
 {
   // returns the i,j index numbers from the linearized index computed with GetIndex
   UInt_t dcr = dcol*drow;

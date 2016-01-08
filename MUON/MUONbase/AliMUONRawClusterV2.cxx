@@ -48,7 +48,8 @@ AliMUONRawClusterV2::AliMUONRawClusterV2()
     fChi2(0.),
     fNDigits(0),
     fDigitsId(0x0),
-    fMCLabel(-1)
+    fMCLabel(-1),
+    fIsFromMFT(kFALSE)
 {
   /// Default Constructor
 }
@@ -65,7 +66,8 @@ AliMUONRawClusterV2::AliMUONRawClusterV2(Int_t chamberId, Int_t detElemId, Int_t
     fChi2(0.),
     fNDigits(0),
     fDigitsId(0x0),
-    fMCLabel(-1)
+    fMCLabel(-1),
+    fIsFromMFT(kFALSE)
 {
   /// Constructor
 }
@@ -89,8 +91,8 @@ AliMUONRawClusterV2::AliMUONRawClusterV2(const AliMUONRawClusterV2& cluster)
     fChi2(cluster.fChi2),
     fNDigits(cluster.fNDigits),
     fDigitsId(0x0),
-    fMCLabel(cluster.fMCLabel)
-
+    fMCLabel(cluster.fMCLabel),
+    fIsFromMFT(cluster.fIsFromMFT)
 {
   /// Copy constructor
   
@@ -121,6 +123,7 @@ AliMUONRawClusterV2 & AliMUONRawClusterV2::operator=(const AliMUONRawClusterV2& 
   fChi2 = cluster.fChi2;
   SetDigitsId(cluster.fNDigits,cluster.fDigitsId);
   fMCLabel = cluster.fMCLabel;
+  fIsFromMFT = cluster.fIsFromMFT;
 
   return *this;
 }

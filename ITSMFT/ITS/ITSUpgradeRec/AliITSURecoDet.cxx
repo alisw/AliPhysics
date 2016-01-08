@@ -92,7 +92,7 @@ Bool_t AliITSURecoDet::Build()
     int lrTyp = fGeom->GetLayerChipTypeID(ilr);
     // name layer according its active id, detector type and segmentation tyoe
     AliITSURecoLayer* lra = new AliITSURecoLayer(Form("Lr%d%s%d",ilr,fGeom->GetChipTypeName(lrTyp),
-						      lrTyp%AliITSUGeomTGeo::kMaxSegmPerChipType),
+						      lrTyp%AliITSMFTAux::kMaxSegmPerChipType),
 						 ilr,fGeom);
     lra->SetPassive(kFALSE);
     AddLayer(lra);
@@ -231,9 +231,9 @@ void AliITSURecoDet::CreateClusterArrays()
   for (int ilr=0;ilr<fNLayersActive;ilr++) {
     AliITSURecoLayer*  lr = GetLayerActive(ilr);
     lr->SetOwnsClusterArray(kTRUE);
-    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
+    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSMFTAux::kMaxSegmPerChipType;
     //
-    if (tpDet == AliITSUGeomTGeo::kChipTypePix) {
+    if (tpDet == AliITSMFTAux::kChipTypePix) {
       lr->SetClusters(new TClonesArray(AliITSUClusterPix::Class()));
     }
     else {

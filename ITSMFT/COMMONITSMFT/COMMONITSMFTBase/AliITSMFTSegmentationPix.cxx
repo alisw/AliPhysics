@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSUSegmentationPix.cxx 47180 2011-02-08 09:42:29Z masera $ */
+/* $Id: AliITSMFTSegmentationPix.cxx 47180 2011-02-08 09:42:29Z masera $ */
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
@@ -21,9 +21,9 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TFile.h>
-#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTAux.h"
 #include "AliLog.h"
-#include "AliITSUSegmentationPix.h"
+#include "AliITSMFTSegmentationPix.h"
 
 using namespace TMath;
 
@@ -37,12 +37,12 @@ using namespace TMath;
 //                                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ClassImp(AliITSUSegmentationPix)
+ClassImp(AliITSMFTSegmentationPix)
 
-const char* AliITSUSegmentationPix::fgkSegmListName = "ITSUSegmentations";
+const char* AliITSMFTSegmentationPix::fgkSegmListName = "ITSUSegmentations";
 
 //_____________________________________________________________________________RS
-AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,int nrow,
+AliITSMFTSegmentationPix::AliITSMFTSegmentationPix(UInt_t id, int nchips,int ncol,int nrow,
 						   float pitchX,float pitchZ,
 						   float thickness,
 						   float pitchLftC,float pitchRgtC,
@@ -72,7 +72,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
   ,fDiodShidtMatZ(0)
 {
   // Default constructor, sizes in cm
-  if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeChipTypeID(id) );
+  if (nchips) SetUniqueID(ComposeChipTypeID(id) );
   fChipDZ = (fNColPerChip-2)*fPitchZ + fPitchZLftCol + fPitchZRgtCol;;
   fDxActive = fNRow*fPitchX;
   fDzActive = fNChips*fChipDZ;
@@ -83,7 +83,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 }
 
 //_____________________________________________________________________________RS
-AliITSUSegmentationPix::~AliITSUSegmentationPix()
+AliITSMFTSegmentationPix::~AliITSMFTSegmentationPix()
 {
   // d-tor
   delete[] fDiodShidtMatX;
@@ -92,7 +92,7 @@ AliITSUSegmentationPix::~AliITSUSegmentationPix()
 
 
 //_____________________________________________________________________________RS
-void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
+void AliITSMFTSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   //  Returns pixel coordinates (ix,iz) for given coordinates (x,z counted from corner of col/row 0:0)
   //  expects x, z in cm.
@@ -107,7 +107,7 @@ void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) 
 }
 
 //_____________________________________________________________________________RS
-void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
+void AliITSMFTSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 {
   //  local transformation of real local coordinates (x,z)
   //  expects x, z in cm (wrt corner of col/row 0:0
@@ -117,7 +117,7 @@ void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 }
 
 //_____________________________________________________________________________RS
-void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
+void AliITSMFTSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
 {
   // Transform from pixel to real local coordinates
   // returns x, z in cm. wrt corner of col/row 0:0
@@ -127,7 +127,7 @@ void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) c
 }
 
 //_____________________________________________________________________________RS
-Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const 
+Float_t AliITSMFTSegmentationPix::Z2Col(Float_t z) const 
 {
   // get column number (from 0) from local Z (wrt bottom left corner of the active matrix)
   int chip = int(z/fChipDZ);
@@ -138,7 +138,7 @@ Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const
 }
 
 //_____________________________________________________________________________RS
-Float_t AliITSUSegmentationPix::Col2Z(Int_t col) const 
+Float_t AliITSMFTSegmentationPix::Col2Z(Int_t col) const 
 {
   // convert column number (from 0) to Z coordinate wrt bottom left corner of the active matrix
   int nchip = col/fNColPerChip;
@@ -154,7 +154,7 @@ Float_t AliITSUSegmentationPix::Col2Z(Int_t col) const
 }
 
 //______________________________________________________________________RS
-AliITSUSegmentationPix& AliITSUSegmentationPix::operator=(const AliITSUSegmentationPix &src)
+AliITSMFTSegmentationPix& AliITSMFTSegmentationPix::operator=(const AliITSMFTSegmentationPix &src)
 {
   // = operator
   if(this==&src) return *this;
@@ -196,7 +196,7 @@ AliITSUSegmentationPix& AliITSUSegmentationPix::operator=(const AliITSUSegmentat
 }
 
 //____________________________________________________________________________RS
-AliITSUSegmentationPix::AliITSUSegmentationPix(const AliITSUSegmentationPix &src) :
+AliITSMFTSegmentationPix::AliITSMFTSegmentationPix(const AliITSMFTSegmentationPix &src) :
   TObject(src)
   ,fGuardLft(src.fGuardLft)
   ,fGuardRgt(src.fGuardRgt)
@@ -233,14 +233,14 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(const AliITSUSegmentationPix &src
 }
 
 //____________________________________________________________________________RS
-Float_t AliITSUSegmentationPix::Dpx(Int_t ) const 
+Float_t AliITSMFTSegmentationPix::Dpx(Int_t ) const 
 {
   //returs x pixel pitch for a give pixel
   return fPitchX;
 }
 
 //____________________________________________________________________________RS
-Float_t AliITSUSegmentationPix::Dpz(Int_t col) const 
+Float_t AliITSMFTSegmentationPix::Dpz(Int_t col) const 
 {
   // returns z pixel pitch for a given pixel (cols starts from 0)
   col %= fNColPerChip;
@@ -251,7 +251,7 @@ Float_t AliITSUSegmentationPix::Dpz(Int_t col) const
 }
 
 //------------------------------
-void AliITSUSegmentationPix::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_t xlist[8], Int_t zlist[8]) const 
+void AliITSMFTSegmentationPix::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_t xlist[8], Int_t zlist[8]) const 
 {
   // returns the neighbouring pixels for use in Cluster Finders and the like.
   //
@@ -278,7 +278,7 @@ void AliITSUSegmentationPix::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_t 
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSegmentationPix::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
+Bool_t AliITSMFTSegmentationPix::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   // Transformation from Geant detector centered local coordinates (cm) to
   // Pixel cell numbers ix and iz.
@@ -307,7 +307,7 @@ Bool_t AliITSUSegmentationPix::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &i
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
+void AliITSMFTSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
 {
 // Transformation from Detector cell coordiantes to Geant detector centered 
 // local coordinates (cm).
@@ -332,7 +332,7 @@ void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,Double_t &zl,Double_t &zu) const
+void AliITSMFTSegmentationPix::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,Double_t &zl,Double_t &zu) const
 {
   // Transformation from Detector cell coordiantes to Geant detector centerd 
   // local coordinates (cm).
@@ -368,7 +368,7 @@ void AliITSUSegmentationPix::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double
 }
 
 //______________________________________________________________________
-Int_t AliITSUSegmentationPix::GetChipFromChannel(Int_t, Int_t iz) const 
+Int_t AliITSMFTSegmentationPix::GetChipFromChannel(Int_t, Int_t iz) const 
 {
   // returns chip number (in range 0-4) starting from channel number
   if(iz>=fNCol  || iz<0 ){
@@ -379,7 +379,7 @@ Int_t AliITSUSegmentationPix::GetChipFromChannel(Int_t, Int_t iz) const
 }
 
 //______________________________________________________________________
-Int_t AliITSUSegmentationPix::GetChipFromLocal(Float_t, Float_t zloc) const 
+Int_t AliITSMFTSegmentationPix::GetChipFromLocal(Float_t, Float_t zloc) const 
 {
   // returns chip number (in range 0-4) starting from local Geant coordinates
   Int_t ix0,iz;
@@ -391,7 +391,7 @@ Int_t AliITSUSegmentationPix::GetChipFromLocal(Float_t, Float_t zloc) const
 }
 
 //______________________________________________________________________
-Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const 
+Int_t AliITSMFTSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const 
 {
   // returns the number of chips containing a road defined by given local Geant coordinate limits
   //
@@ -427,13 +427,13 @@ Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, 
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::Init()
+void AliITSMFTSegmentationPix::Init()
 {
   // init settings
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSegmentationPix::Store(const char* outf)
+Bool_t AliITSMFTSegmentationPix::Store(const char* outf)
 {
   // store in the special list under given ID
   TString fns = outf;
@@ -459,7 +459,7 @@ Bool_t AliITSUSegmentationPix::Store(const char* outf)
 }
 
 //______________________________________________________________________
-AliITSUSegmentationPix* AliITSUSegmentationPix::LoadWithID(UInt_t id, const char* inpf)
+AliITSMFTSegmentationPix* AliITSMFTSegmentationPix::LoadWithID(UInt_t id, const char* inpf)
 {
   // store in the special list under given ID
   TString fns = inpf;
@@ -472,7 +472,7 @@ AliITSUSegmentationPix* AliITSUSegmentationPix::LoadWithID(UInt_t id, const char
     AliFatalGeneral("LoadWithID",Form("Failed to find segmenation array %s in %s",fgkSegmListName,inpf)); 
     return 0;
   }
-  AliITSUSegmentationPix* segm = dynamic_cast<AliITSUSegmentationPix*>(arr->At(id));
+  AliITSMFTSegmentationPix* segm = dynamic_cast<AliITSMFTSegmentationPix*>(arr->At(id));
   if (!segm || segm->GetUniqueID()!=id) {AliFatalGeneral("LoadWithID",Form("Failed to find segmenation %d in %s",id,inpf)); return 0;}
   //
   arr->RemoveAt(id);
@@ -485,7 +485,7 @@ AliITSUSegmentationPix* AliITSUSegmentationPix::LoadWithID(UInt_t id, const char
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf)
+void AliITSMFTSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf)
 {
   // store in the special list under given ID
   if (!dest) return;
@@ -509,7 +509,7 @@ void AliITSUSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Float_t *shiftX, const Float_t *shiftZ)
+void AliITSMFTSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Float_t *shiftX, const Float_t *shiftZ)
 {
   // set matrix of periodic shifts of diod center. provided arrays must be in the format shift[nrow][ncol]
   if (fDiodShiftMatDim) {
@@ -535,7 +535,7 @@ void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Flo
   
 }
 //______________________________________________________________________
-void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ)
+void AliITSMFTSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Double_t *shiftX, const Double_t *shiftZ)
 {
   // set matrix of periodic shifts of diod center. provided arrays must be in the format shift[nrow][ncol]
   if (fDiodShiftMatDim) {
@@ -561,7 +561,7 @@ void AliITSUSegmentationPix::SetDiodShiftMatrix(Int_t nrow,Int_t ncol, const Dou
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::Print(Option_t* /*option*/) const
+void AliITSMFTSegmentationPix::Print(Option_t* /*option*/) const
 {
   // print itself
   const double kmc=1e4;
@@ -587,7 +587,7 @@ void AliITSUSegmentationPix::Print(Option_t* /*option*/) const
 }
 
 //______________________________________________________________________
-void AliITSUSegmentationPix::GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float_t &dz) const
+void AliITSMFTSegmentationPix::GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float_t &dz) const
 {
   // obtain optional diod shift
   if (!fDiodShiftMatDim) {dx=dz=0; return;}
@@ -596,3 +596,9 @@ void AliITSUSegmentationPix::GetDiodShift(Int_t row,Int_t col, Float_t &dx,Float
   dz = fDiodShidtMatZ[cnt];  
   //
 }
+//______________________________________________________________________
+ UInt_t AliITSMFTSegmentationPix::ComposeChipTypeID(UInt_t segmId)
+ {
+ if (segmId>=AliITSMFTAux::kMaxSegmPerChipType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,AliITSMFTAux::kMaxSegmPerChipType));
+ return segmId + AliITSMFTAux::kChipTypePix*AliITSMFTAux::kMaxSegmPerChipType;
+ }

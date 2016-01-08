@@ -205,7 +205,10 @@ void AliMFTClusterFinder::DigitsToClusters(const TObjArray *pDigitList) {
 	    isDigAvailableForNewCluster = kFALSE;
 	    break; 
 	  }
-	  if (fCurrentCluster->GetDistanceFromPixel(fCurrentDigit) < myCutForAvailableDigits) isDigAvailableForNewCluster=kFALSE;
+	  if (fCurrentCluster->GetDistanceFromPixel(fCurrentDigit) < myCutForAvailableDigits) {
+	    areThereSkippedDigits = kTRUE;
+	    isDigAvailableForNewCluster=kFALSE;
+	  }
 	}
 
 	if (isDigAvailableForNewCluster) {

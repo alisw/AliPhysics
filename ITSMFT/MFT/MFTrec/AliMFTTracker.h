@@ -27,6 +27,7 @@ class AliMFTSegmentation;
 class AliMuonForwardTrack;
 class AliMUONTrackParam;
 class AliMUONTrack;
+class AliMUONVCluster;
 
 //==============================================================================================
 
@@ -46,13 +47,7 @@ public:
   void SetNPlanesMFT(Int_t nPlanesMFT) { fNPlanesMFT = nPlanesMFT; }
   void SeparateFrontBackClusters();
 
-  Int_t FindClusterInPlane(Int_t planeId);
-
   void SetMinResearchRadiusAtPlane(Int_t plane, Double_t radius) { if (plane>=0 && plane<fNMaxPlanes) fMinResearchRadiusAtPlane[plane] = radius; }
-
-  Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMFTCluster *cluster);
-
-  Bool_t IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC);
 
   void GetVertexFromMC();
 
@@ -68,6 +63,7 @@ public:
   
   void LoadTracks();
   Bool_t LinearFit(AliMFTTrack * track);
+  Double_t RunKalmanFilter(AliMUONTrackParam &trackParam, AliMUONVCluster &cluster);
 
 protected:
 
@@ -108,6 +104,11 @@ protected:
   Double_t fZExtrapVertex;
   Double_t fXExtrapVertexError;
   Double_t fYExtrapVertexError;
+
+  // generator event vertex from Monte-Carlo
+  Double_t fXVertexMC;
+  Double_t fYVertexMC;
+  Double_t fZVertexMC;
 
   Bool_t fBransonCorrection;    // if TRUE, Branson Correction is applied when extrapolating the MUON tracks to the vertex region
 

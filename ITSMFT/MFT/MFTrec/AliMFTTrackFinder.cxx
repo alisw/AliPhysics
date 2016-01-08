@@ -70,7 +70,9 @@ fRealTime(0.),
 fNDifTracks(0),
 fPlanesZ(),
 fZGap(1.0),
-fNRoads(0)
+fNRoads(0),
+fErrX(0.),
+fErrY(0.)
 {
   
 #ifdef OLDGEOM
@@ -1630,6 +1632,8 @@ void AliMFTTrackFinder::FilterTracks() {
     xTrErr[i] = TMath::Sqrt(xTrErrDet*xTrErrDet+xTrErrMS*xTrErrMS);
     yTrErr[i] = TMath::Sqrt(yTrErrDet*yTrErrDet+yTrErrMS*yTrErrMS);
   }
+  fErrX = xTrErr[0];
+  fErrY = yTrErr[0];
   
   Int_t nTotalHits = 0, nCleanTotalHits = 0;
   

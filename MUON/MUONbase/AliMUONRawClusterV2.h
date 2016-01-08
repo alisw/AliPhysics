@@ -83,7 +83,10 @@ class AliMUONRawClusterV2 : public AliMUONVCluster {
            /// Return true as the function Compare() is implemented
   Bool_t       IsSortable() const {return kTRUE;}
   Int_t        Compare(const TObject *obj) const;
-  
+
+           /// Return true if this cluster is from MFT
+  virtual Bool_t IsFromMFT() const { return fIsFromMFT; }  
+  void SetFromMFT() { fIsFromMFT = kTRUE; }
   
 private:
   
@@ -104,8 +107,9 @@ private:
   
   Int_t fMCLabel;       ///< Point to the corresponding MC track
   
-  
-  ClassDef(AliMUONRawClusterV2,2)  //Cluster class for MUON
+  Bool_t fIsFromMFT;    ///< It is a cluster from MFT
+
+  ClassDef(AliMUONRawClusterV2,3)  //Cluster class for MUON
 };
 
 #endif

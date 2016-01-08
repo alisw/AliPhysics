@@ -140,6 +140,9 @@ public:
                 Double_t *ycl, Double_t *yerr,
                 Double_t &a, Double_t &ae, Double_t &b, Double_t &be,
                 Int_t skip = -1);
+  Double_t GetErrX() { return fErrX; }
+  Double_t GetErrY() { return fErrY; }
+
 private:
 
   Float_t fXCut;                   ///< Cut in x difference; RuleSelect
@@ -208,7 +211,10 @@ private:
   
   TClonesArray *fRoads;      //!<! Array of roads
   
-  ClassDef(AliMFTTrackFinder,1);
+  Double_t fErrX;            //!<! Error in X
+  Double_t fErrY;            //!<! Error in Y
+
+  ClassDef(AliMFTTrackFinder,2);
   
 };
 

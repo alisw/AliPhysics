@@ -33,8 +33,8 @@
 #include "AliITSUCATracker.h"
 
 #include "AliITSUGeomTGeo.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUDigitPix.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTDigitPix.h"
 #include "AliITSUClusterizer.h"
 #include "AliITSUClusterPix.h"
 #include "AliITSUVertexer.h"
@@ -95,14 +95,14 @@ void AliITSUReconstructor::Init()
   //
   for (int ilr=fGeom->GetNLayers();ilr--;) {
     fClusters[ilr] = 0;
-    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
-    if (tpDet == AliITSUGeomTGeo::kChipTypePix) {
+    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSMFTAux::kMaxSegmPerChipType;
+    if (tpDet == AliITSMFTAux::kChipTypePix) {
       if (!clusPIX)    clusPIX    = new AliITSUClusterizer();
       fClusterFinders.AddAtAndExpand(clusPIX, ilr);
       fClusters[ilr] = new TClonesArray(AliITSUClusterPix::Class());
       //
       // to expand the buffers to max.size
-      clusPIX->SetSegmentation((AliITSUSegmentationPix*)fGeom->GetSegmentation(ilr)); 
+      clusPIX->SetSegmentation((AliITSMFTSegmentationPix*)fGeom->GetSegmentation(ilr)); 
       continue;
     }
     else {
@@ -130,8 +130,8 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
   for (int ilr=0;ilr<fGeom->GetNLayers();ilr++) {
     lrBranch[ilr] = 0;
     if (clustersTree) { // do we write clusters tree?
-      int tp = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
-      if (tp==AliITSUGeomTGeo::kChipTypePix) {
+      int tp = fGeom->GetLayerChipTypeID(ilr)/AliITSMFTAux::kMaxSegmPerChipType;
+      if (tp==AliITSMFTAux::kChipTypePix) {
 	lrBranch[ilr] = clustersTree->Bronch(Form("ITSRecPoints%d",ilr),"TClonesArray",&fClusters[ilr]);
       }
       else {
@@ -151,7 +151,7 @@ void AliITSUReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) c
     //
     fClusters[ilr]->Clear();
     clFinder = (AliITSUClusterizer*)fClusterFinders[ilr];
-    clFinder->SetSegmentation((AliITSUSegmentationPix*)fGeom->GetSegmentation(ilr));
+    clFinder->SetSegmentation((AliITSMFTSegmentationPix*)fGeom->GetSegmentation(ilr));
     clFinder->SetLayerID(ilr);
     clFinder->SetClusters(fClusters[ilr]);
     clFinder->SetRecoParam(recPar); // RS: Do we need to set it for every event?

@@ -25,11 +25,11 @@
 #include <TRandom.h>
 #include <TStopwatch.h>
 #include <TString.h>
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliITSURecoSens.h"
 #include <Riostream.h>
 
-using AliITSUAux::BringTo02Pi;
+using AliITSMFTAux::BringTo02Pi;
 
 //_________________________________________________________________
 AliITSUCATrackingStation::AliITSUCATrackingStation()

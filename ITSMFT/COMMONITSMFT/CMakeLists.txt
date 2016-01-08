@@ -13,9 +13,22 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# Libraries
-add_subdirectory(COMMONITSMFT)
-add_subdirectory(ITS)
-add_subdirectory(MFT)
+# Additional include folders in alphabetical order except ROOT
+include_directories(${ROOT_INCLUDE_DIR}
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
+                   )
 
-message(STATUS "ITSMFT enabled")
+
+# Libraries
+add_subdirectory(COMMONITSMFTBase)
+add_subdirectory(COMMONITSMFTSim)
+
+install(DIRECTORY misc DESTINATION ITSMFT/COMMONITSMFT)
+
+message(STATUS "COMMONITSMFT from ITSMFT enabled")
+
+
+
+
+
+

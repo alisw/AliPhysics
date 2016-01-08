@@ -16,24 +16,24 @@
 
 class TString;
 class TTree;
-class AliITSUSDigit;
+class AliITSMFTSDigit;
 class AliITSUSimulation;
-class AliITSUSegmentationPix;
+class AliITSMFTSegmentationPix;
 class AliITSUChip;
 class AliITSCalibration;
-class AliITSUHit;
-class AliITSUDigitPix;
+class AliITSMFTHit;
+class AliITSMFTDigitPix;
 class AliDigitizationInput;
-class AliITSUSensMap;
-class AliITSUSimuParam;
-class AliITSUParamList;
+class AliITSMFTSensMap;
+class AliITSMFTSimuParam;
+class AliITSMFTParamList;
 
 class AliITSU : public AliDetector {
 
  public:
   //
   // number detector types
-  enum {kNChipTypes = AliITSUGeomTGeo::kNChipTypes};
+  enum {kNChipTypes = AliITSMFTAux::kNChipTypes};
   //
   //================= Standard Classes ===============================
   AliITSU();  // Default creator.
@@ -57,7 +57,7 @@ class AliITSU : public AliDetector {
   // return pointer to the array of chips
   
   AliITSUChip   * GetChip(Int_t index) {return (AliITSUChip*)fChipHits->UncheckedAt(index);}
-  AliITSUSimuParam* GetSimuParam() const {return fSimuParam;}
+  AliITSMFTSimuParam* GetSimuParam() const {return fSimuParam;}
     
   //================ Necessary general Classes =======================
   virtual void Init();
@@ -68,8 +68,8 @@ class AliITSU : public AliDetector {
   virtual void MakeBranchInTreeD(TTree* treeD, const char* file=0);
   virtual void SetTreeAddress();
   virtual AliITSUSimulation*   GetSimulationModel(Int_t lr)   {return (AliITSUSimulation*)fSimModelLr[lr];}
-  virtual AliITSUSegmentationPix*  GetSegmentation(Int_t lr)      {return (AliITSUSegmentationPix*)fSegModelLr[lr];}
-  virtual AliITSUParamList*    GetResponseParam(Int_t lr)     {return (AliITSUParamList*)fResponseLr[lr];}
+  virtual AliITSMFTSegmentationPix*  GetSegmentation(Int_t lr)      {return (AliITSMFTSegmentationPix*)fSegModelLr[lr];}
+  virtual AliITSMFTParamList*    GetResponseParam(Int_t lr)     {return (AliITSMFTParamList*)fResponseLr[lr];}
   //=================== Hits =========================================
   virtual void StepManager() {} // See Step Manager for specific geometry.
   //------------ sort hits by chip for Digitisation ----------------
@@ -92,8 +92,8 @@ class AliITSU : public AliDetector {
   virtual void ResetSDigits()       {if (fSDigits) fSDigits->Clear();}
   virtual void ResetDigits();
   virtual void ResetDigits(Int_t branch);
-  virtual void AddSumDigit(AliITSUSDigit &sdig);
-  virtual void AddSimDigit(Int_t branch, AliITSUDigitPix *d);
+  virtual void AddSumDigit(AliITSMFTSDigit &sdig);
+  virtual void AddSimDigit(Int_t branch, AliITSMFTDigitPix *d);
   virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,Int_t* tracks,Int_t *hits,Float_t* trkcharges,Int_t sigexpanded=-1000);
   TObjArray*   GetDigits()                const {return fDetDigits;}
   TClonesArray *DigitsAddress(Int_t id)  {return fDetDigits ? (TClonesArray*)fDetDigits->At(id) : 0;}
@@ -118,7 +118,7 @@ class AliITSU : public AliDetector {
 
  protected:
   void        InitArrays();
-  const char* GetDigitClassName(Int_t i) {return Form("AliITSUDigit%s",AliITSUGeomTGeo::GetChipTypeName(i));}
+  const char* GetDigitClassName(Int_t i) {return Form("AliITSMFTDigit%s",AliITSUGeomTGeo::GetChipTypeName(i));}
   const char* GetChipTypeName(Int_t i) {return AliITSUGeomTGeo::GetChipTypeName(i);}
   
  protected:
@@ -129,18 +129,18 @@ class AliITSU : public AliDetector {
   TString              *fLayerName;      //[fNLayers] layer identifier
   Bool_t                fTiming;         // flag to turn on/off timers.
   AliITSUGeomTGeo*      fGeomTGeo;       //  access to geometry details
-  AliITSUSimuParam*     fSimuParam;      //!simulation parameters
+  AliITSMFTSimuParam*     fSimuParam;      //!simulation parameters
   TClonesArray**        fModA;           //! Used by Raw2SDigits (one TC per chip)
   TClonesArray*         fpSDigits;       //! Branch address to build SD from raw data 
   TClonesArray*         fSDigits;        //! Branch address to build SD
   TClonesArray*         fDetHits;        //! array of full detector hits
   TObjArray*            fChipHits;       //! chip's hits container in (pointers on the fDetHits)
   TObjArray*            fDetDigits;      //! AliDetector has TClonesArray fDigits, avoid same name
-  AliITSUSensMap*       fSensMap;        //! sensor map for digitization
+  AliITSMFTSensMap*       fSensMap;        //! sensor map for digitization
   //
   AliITSUSimulation    **fSimModelLr;     //! simulation objects per layer
-  AliITSUSegmentationPix   **fSegModelLr;     //! segmentation objects per layar
-  AliITSUParamList     **fResponseLr;     //! response parameters for each layer
+  AliITSMFTSegmentationPix   **fSegModelLr;     //! segmentation objects per layar
+  AliITSMFTParamList     **fResponseLr;     //! response parameters for each layer
   TObjArray            *fCalibration;    //! calibration objects
   Int_t                 fRunNumber;      //! run number
   Bool_t                fSimInitDone;    //! flag initialized simulation

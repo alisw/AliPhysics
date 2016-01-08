@@ -6,15 +6,15 @@
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliMC.h"
-#include <AliITSUSegmentationPix.h>
+#include <AliITSMFTSegmentationPix.h>
 #include "AliITSUClusterizer.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSUSegmentationPix.h"
-#include "AliITSUDigitPix.h"
+#include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTDigitPix.h"
 #include "AliITSURecoParam.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 using namespace TMath;
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 
 ClassImp(AliITSUClusterizer)
 
@@ -58,7 +58,7 @@ AliITSUClusterizer::AliITSUClusterizer(Int_t initNRow)
 }
 
 //______________________________________________________________________________
-void AliITSUClusterizer::SetSegmentation(const AliITSUSegmentationPix *segm) 
+void AliITSUClusterizer::SetSegmentation(const AliITSMFTSegmentationPix *segm) 
 {
   // attach segmentation, if needed, reinitialize array
   fSegm = segm;
@@ -122,7 +122,7 @@ AliITSUClusterizer::AliITSUClusterizerClusterDigit* AliITSUClusterizer::NextDigi
 {
   // get next digit
   while (fInputDigitsReadIndex<fInputDigits->GetEntriesFast()) {
-    AliITSUDigitPix *tmp=static_cast<AliITSUDigitPix*>(fInputDigits->UncheckedAt(fInputDigitsReadIndex++));
+    AliITSMFTDigitPix *tmp=static_cast<AliITSMFTDigitPix*>(fInputDigits->UncheckedAt(fInputDigitsReadIndex++));
     if (TMath::Abs(tmp->GetROCycle())>=fRecoParam->GetMaxROCycle()) continue;
     AliITSUClusterizerClusterDigit *digit=AllocDigit();
     digit->fDigit=tmp;
@@ -166,7 +166,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
 {
   // convert set of digits to cluster data in LOCAL frame
   const double k1to12 = 1./12;
-  static int maxLbinDigit = AliITSUDigitPix::GetNTracks();
+  static int maxLbinDigit = AliITSMFTDigitPix::GetNTracks();
   //
   fNLabels = 0;
   Int_t n=0;
@@ -176,7 +176,7 @@ void AliITSUClusterizer::Transform(AliITSUClusterPix *cluster,AliITSUClusterizer
   int charge=0;
   //
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-    AliITSUDigitPix* dig = idigit->fDigit;
+    AliITSMFTDigitPix* dig = idigit->fDigit;
     fSegm->DetToLocal(dig->GetCoord2(),dig->GetCoord1(),cx,cz); // center of pixel
     //
     // account for possible diod shift

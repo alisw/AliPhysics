@@ -86,7 +86,10 @@ class AliMUONVCluster : public TObject {
   
   virtual void     Print(Option_t *option = "") const;
   
-  
+          /// Return true if this cluster is from MFT
+  virtual Bool_t IsFromMFT() const = 0;
+  virtual void SetFromMFT() = 0;  
+
   ClassDef(AliMUONVCluster, 1) // abstract base class for cluster
 };
 	

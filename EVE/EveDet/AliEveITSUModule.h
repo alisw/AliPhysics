@@ -10,7 +10,7 @@
 
 #include <TEveQuadSet.h>
 class AliITSUGeomTGeo;
-class AliITSUDigitPix;
+class AliITSMFTDigitPix;
 
 class AliEveITSUModule : public TEveQuadSet
 {
@@ -22,7 +22,7 @@ public:
 
   static void InitStatics();
 
-  void SetDigitInQuad(AliITSUDigitPix *pDig);
+  void SetDigitInQuad(AliITSMFTDigitPix *pDig);
   void SetTrans();
   void DigitSelected(Int_t idx);
 

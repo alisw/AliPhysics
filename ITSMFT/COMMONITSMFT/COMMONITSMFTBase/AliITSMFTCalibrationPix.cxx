@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "TArrayI.h"
-#include "AliITSUCalibrationPix.h"
+#include "AliITSMFTCalibrationPix.h"
 #include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////
@@ -27,10 +27,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-ClassImp(AliITSUCalibrationPix)
+ClassImp(AliITSMFTCalibrationPix)
 
 //______________________________________________________________________
-AliITSUCalibrationPix::AliITSUCalibrationPix() 
+AliITSMFTCalibrationPix::AliITSMFTCalibrationPix() 
 : fDataType(), fNChips(0)
   ,fNColPerChip(0)
   ,fNCol(0)
@@ -45,7 +45,7 @@ AliITSUCalibrationPix::AliITSUCalibrationPix()
 }
 
 //______________________________________________________________________
-AliITSUCalibrationPix::AliITSUCalibrationPix(Short_t nChips,Short_t nColPerChip,Short_t nRow) 
+AliITSMFTCalibrationPix::AliITSMFTCalibrationPix(Short_t nChips,Short_t nColPerChip,Short_t nRow) 
 : fDataType(), fNChips(0)
   ,fNColPerChip(0)
   ,fNCol(0)
@@ -61,7 +61,7 @@ AliITSUCalibrationPix::AliITSUCalibrationPix(Short_t nChips,Short_t nColPerChip,
 }
 
 //______________________________________________________________________
-AliITSUCalibrationPix::AliITSUCalibrationPix(const AliITSUCalibrationPix &src) : 
+AliITSMFTCalibrationPix::AliITSMFTCalibrationPix(const AliITSMFTCalibrationPix &src) : 
   TObject(src),fDataType()
   ,fNChips(src.fNChips)
   ,fNColPerChip(src.fNColPerChip)
@@ -74,7 +74,7 @@ AliITSUCalibrationPix::AliITSUCalibrationPix(const AliITSUCalibrationPix &src) :
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::ClearBad() 
+void AliITSMFTCalibrationPix::ClearBad() 
 {
   // clear all bad pixels (single+chips)
   fBadChannels.Reset();
@@ -84,7 +84,7 @@ void AliITSUCalibrationPix::ClearBad()
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::AddBad(Int_t col, Int_t row) 
+void AliITSMFTCalibrationPix::AddBad(Int_t col, Int_t row) 
 {
   // add single bad pixel 
   fBadChannels.Set(fNrBadSingle*2+2);
@@ -94,7 +94,7 @@ void AliITSUCalibrationPix::AddBad(Int_t col, Int_t row)
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::SetChipBad(Int_t chip) 
+void AliITSMFTCalibrationPix::SetChipBad(Int_t chip) 
 {
   // set full chip bad
   if ((int)chip>=fNChips) {AliError(Form("chip number %d exceeds allowed limit %d",chip,fNChips)); return;}
@@ -103,7 +103,7 @@ void AliITSUCalibrationPix::SetChipBad(Int_t chip)
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::UnSetChipBad(Int_t chip) 
+void AliITSMFTCalibrationPix::UnSetChipBad(Int_t chip) 
 {
   // unset full chip bad
   if (chip>=fNChips) {AliError(Form("chip number %d exceeds allowed limit %d",chip,fNChips)); return;}
@@ -112,7 +112,7 @@ void AliITSUCalibrationPix::UnSetChipBad(Int_t chip)
 }
 
 //____________________________________________________________________________
-Int_t AliITSUCalibrationPix::GetBadColAt(Int_t index) const 
+Int_t AliITSMFTCalibrationPix::GetBadColAt(Int_t index) const 
 {
   // Get column of index-th bad pixel
   int nrc = fNColPerChip*fNRow;
@@ -135,7 +135,7 @@ Int_t AliITSUCalibrationPix::GetBadColAt(Int_t index) const
 }
 
 //____________________________________________________________________________
-Int_t AliITSUCalibrationPix::GetBadRowAt(Int_t index) const 
+Int_t AliITSMFTCalibrationPix::GetBadRowAt(Int_t index) const 
 {
   // Get row of index-th bad pixel
   int nrc = fNColPerChip*fNRow;
@@ -158,7 +158,7 @@ Int_t AliITSUCalibrationPix::GetBadRowAt(Int_t index) const
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::GetBadPixel(Int_t index, Int_t &row, Int_t &col) const 
+void AliITSMFTCalibrationPix::GetBadPixel(Int_t index, Int_t &row, Int_t &col) const 
 {
   // i: is the i-th bad pixel in single bad pixel list
   // row: is the corresponding row (-1 if i is out of range)
@@ -191,7 +191,7 @@ void AliITSUCalibrationPix::GetBadPixel(Int_t index, Int_t &row, Int_t &col) con
 }
 
 //____________________________________________________________________________
-void AliITSUCalibrationPix::GetBadPixelSingle(Int_t index, UInt_t &row, UInt_t &col) const 
+void AliITSMFTCalibrationPix::GetBadPixelSingle(Int_t index, UInt_t &row, UInt_t &col) const 
 {
   // i: is the i-th bad pixel in single bad pixel list
   // row: is the corresponding row (-1 if i is out of range)
@@ -202,7 +202,7 @@ void AliITSUCalibrationPix::GetBadPixelSingle(Int_t index, UInt_t &row, UInt_t &
 }
 
 //___________________________________________________________________________
-Int_t  AliITSUCalibrationPix::GetNrBad() const 
+Int_t  AliITSMFTCalibrationPix::GetNrBad() const 
 {
   // Total number of bad pixels (including bad chips) in a given chip
   Int_t bad=0;
@@ -214,7 +214,7 @@ Int_t  AliITSUCalibrationPix::GetNrBad() const
 }
 
 //___________________________________________________________________________
-Int_t  AliITSUCalibrationPix::GetNrBadInChip(Int_t chip) const 
+Int_t  AliITSMFTCalibrationPix::GetNrBadInChip(Int_t chip) const 
 {
   // Total number of bad pixels (including bad chips) in a given chip
   if(chip<0 || chip>=fNChips) {AliError("Wrong chip number"); return -1;}
@@ -230,7 +230,7 @@ Int_t  AliITSUCalibrationPix::GetNrBadInChip(Int_t chip) const
 }
 
 //___________________________________________________________________________
-Int_t  AliITSUCalibrationPix::GetNrBadInColumn(Int_t col) const 
+Int_t  AliITSMFTCalibrationPix::GetNrBadInColumn(Int_t col) const 
 {
   // Total number of bad pixels (including bad chips) in a given column: col. range
   if(col<0 || col>=fNCol) {AliError("Wrong column number"); return -1;}
@@ -243,7 +243,7 @@ Int_t  AliITSUCalibrationPix::GetNrBadInColumn(Int_t col) const
 }
 
 //______________________________________________________________________
-Bool_t AliITSUCalibrationPix::IsBad() const 
+Bool_t AliITSMFTCalibrationPix::IsBad() const 
 {
   // Are all chips of this chip bad?
   for (Int_t chip=fNChips; chip--;) if (!IsChipMarkedBad(chip)) return kFALSE;
@@ -251,21 +251,21 @@ Bool_t AliITSUCalibrationPix::IsBad() const
 }
 
 //______________________________________________________________________
-Bool_t AliITSUCalibrationPix::IsChipBad(Int_t chip) const 
+Bool_t AliITSMFTCalibrationPix::IsChipBad(Int_t chip) const 
 {
   // Is the full chip bad?
   return (GetNrBadInChip(chip)==fNColPerChip*fNRow);
 }
 
 //______________________________________________________________________
-Bool_t AliITSUCalibrationPix::IsColumnBad(Int_t col) const 
+Bool_t AliITSMFTCalibrationPix::IsColumnBad(Int_t col) const 
 {
   // Is the full column bad?
   return (GetNrBadInColumn(col)==fNRow);
 }
 
 //____________________________________________________________________________
-Bool_t AliITSUCalibrationPix::IsPixelBad(Int_t col, Int_t row) const 
+Bool_t AliITSMFTCalibrationPix::IsPixelBad(Int_t col, Int_t row) const 
 {
   // Is this pixel bad?
   if(col<0 || col>=fNCol) {AliError("Wrong column number"); return kFALSE;}
@@ -276,7 +276,7 @@ Bool_t AliITSUCalibrationPix::IsPixelBad(Int_t col, Int_t row) const
 }
 
 //______________________________________________________________________
-Int_t AliITSUCalibrationPix::GetChipIndexFromCol(Int_t col) const 
+Int_t AliITSMFTCalibrationPix::GetChipIndexFromCol(Int_t col) const 
 {
   // returns chip index for specific column
   if(col>=fNCol) {AliWarning("Wrong column number"); return -1;}
@@ -284,14 +284,14 @@ Int_t AliITSUCalibrationPix::GetChipIndexFromCol(Int_t col) const
 }
 
 //______________________________________________________________________
-void AliITSUCalibrationPix::SetNrBad(Int_t /*nr*/) 
+void AliITSMFTCalibrationPix::SetNrBad(Int_t /*nr*/) 
 {
   // should not be used anymore !!!
   AliError("This method should not be used anymore. Use SetNrBadSingle instead!!!");
 }
 
 //____________________________________________________________________________
-void  AliITSUCalibrationPix::SetColRowData(Short_t nchip, Short_t ncolperchip, Short_t nrow) 
+void  AliITSMFTCalibrationPix::SetColRowData(Short_t nchip, Short_t ncolperchip, Short_t nrow) 
 {
   // set segmentation data
   fNChips = nchip; 

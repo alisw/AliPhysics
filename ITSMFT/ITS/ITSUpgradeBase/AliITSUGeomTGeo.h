@@ -21,7 +21,7 @@
 //  The coarse type defines chips served by different classes,         //
 //  like Pix. Each such a chip type can have kMaxSegmPerChipType       //
 //  segmentations (pitch etc.) whose parameteres are stored in the     //
-//  AliITSsegmentation derived class (like AliITSUSegmentationPix)     //
+//  AliITSsegmentation derived class (like AliITSMFTSegmentationPix)     //
 //  This allows to have in the setup chips served by the same          //
 //  classes but with different segmentations.                          //
 //  The full chip type is composed as:                                 //
@@ -37,18 +37,24 @@
 #include <TGeoMatrix.h>
 #include <TString.h>
 #include <TObjArray.h>
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
+#include "AliITSMFTSimuParam.h"
+
 
 class TGeoPNEntry;
 class TDatime;
-class AliITSUSegmentationPix;
+class AliITSMFTSegmentationPix;
+
+
 
 class AliITSUGeomTGeo : public TObject {
 
  public:
   enum {kITSVNA, kITSVUpg}; // ITS version
-  enum {kChipTypePix=0, kNChipTypes, kMaxSegmPerChipType=10}; // defined detector chip types (each one can have different segmentations)
+//  enum {kChipTypePix=0, kNChipTypes, kMaxSegmPerChipType=10}; // defined detector chip types (each one can have different segmentations)
   //
+ 
+    
   AliITSUGeomTGeo(Bool_t build = kFALSE, Bool_t loadSegmentations = kTRUE);
   virtual ~AliITSUGeomTGeo(); 
   AliITSUGeomTGeo(const AliITSUGeomTGeo &src);
@@ -120,8 +126,8 @@ class AliITSUGeomTGeo : public TObject {
   Int_t  GetLayerChipTypeID(Int_t lr)                                         const;
   Int_t  GetChipChipTypeID(Int_t id)                                        const;
   //
-  const AliITSUSegmentationPix* GetSegmentationByID(Int_t id)                    const;
-  const AliITSUSegmentationPix* GetSegmentation(Int_t lr)                        const;
+  const AliITSMFTSegmentationPix* GetSegmentationByID(Int_t id)                    const;
+  const AliITSMFTSegmentationPix* GetSegmentation(Int_t lr)                        const;
   TObjArray*          GetSegmentations()                                     const {return (TObjArray*)fSegm;}
   virtual void Print(Option_t *opt="")  const;
   //
@@ -149,7 +155,7 @@ class AliITSUGeomTGeo : public TObject {
   static void        SetITSSensorPattern(const char* nm)                {fgITSSensName = nm;}
   static void        SetChipTypeName(Int_t i,const char* nm);
   static void        SetITSsegmentationFileName(const char* nm)         {fgITSsegmFileName = nm;}
-  static UInt_t      ComposeChipTypeID(UInt_t segmId);
+  //static UInt_t      ComposeChipTypeID(UInt_t segmId);
   //
   static const char *ComposeSymNameITS();
   static const char *ComposeSymNameLayer(Int_t lr);
@@ -196,7 +202,7 @@ class AliITSUGeomTGeo : public TObject {
   //
   Int_t *fLrChipType;          //[fNLayers] Array of layer chip types
   Int_t *fLastChipIndex;       //[fNLayers] max ID of the detctor in the layer
-  Char_t fLr2Wrapper[AliITSUAux::kMaxLayers]; // layer -> wrapper correspondence
+    Char_t fLr2Wrapper[AliITSMFTAux::kMaxLayers]; // layer -> wrapper correspondence
   //
   TObjArray* fMatSens;         // Sensor's matrices pointers in the geometry
   TObjArray* fMatT2L;          // Tracking to Local matrices pointers in the geometry
@@ -211,7 +217,7 @@ class AliITSUGeomTGeo : public TObject {
   static TString  fgITSChipName;            // ITS Chip name 
   static TString  fgITSSensName;            // ITS Sensor name 
   static TString  fgITSWrapVolName;         // ITS Wrapper volume name 
-  static TString  fgITSChipTypeName[kNChipTypes]; // ITS upg detType Names
+    static TString  fgITSChipTypeName[AliITSMFTAux::kNChipTypes]; // ITS upg detType Names
   //
   static TString  fgITSsegmFileName;         // file name for segmentations
   //
@@ -349,29 +355,29 @@ inline void AliITSUGeomTGeo::GlobalToLocal(Int_t lay, Int_t sta, Int_t det,const
 //_____________________________________________________________________________________________
 inline const char* AliITSUGeomTGeo::GetChipTypeName(Int_t i)
 {
-  if (i>=kNChipTypes) i/=kMaxSegmPerChipType; // full type is provided
+    if (i>=AliITSMFTAux::kNChipTypes) i/=AliITSMFTAux::kMaxSegmPerChipType; // full type is provided
   return fgITSChipTypeName[i].Data();
 }
 
 //_____________________________________________________________________________________________
 inline void AliITSUGeomTGeo::SetChipTypeName(Int_t i, const char* nm)
 {
-  if (i>=kNChipTypes) i/=kMaxSegmPerChipType; // full type is provided
+  if (i>=AliITSMFTAux::kNChipTypes) i/=AliITSMFTAux::kMaxSegmPerChipType; // full type is provided
   fgITSChipTypeName[i] = nm;
 }
 
 //_____________________________________________________________________________________________
-inline const AliITSUSegmentationPix* AliITSUGeomTGeo::GetSegmentationByID(Int_t id) const 
+inline const AliITSMFTSegmentationPix* AliITSUGeomTGeo::GetSegmentationByID(Int_t id) const 
 {
   // get segmentation by ID
-  return fSegm ? (AliITSUSegmentationPix*)fSegm->At(id) : 0;
+  return fSegm ? (AliITSMFTSegmentationPix*)fSegm->At(id) : 0;
 }
 
 //_____________________________________________________________________________________________
-inline const AliITSUSegmentationPix* AliITSUGeomTGeo::GetSegmentation(Int_t lr) const 
+inline const AliITSMFTSegmentationPix* AliITSUGeomTGeo::GetSegmentation(Int_t lr) const 
 {
   // get segmentation of layer
-  return fSegm ? (AliITSUSegmentationPix*)fSegm->At( GetLayerChipTypeID(lr) ) : 0;
+  return fSegm ? (AliITSMFTSegmentationPix*)fSegm->At( GetLayerChipTypeID(lr) ) : 0;
 }
 
 #endif

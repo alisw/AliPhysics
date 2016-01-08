@@ -1,6 +1,5 @@
 void runSimulation(Int_t nevents=1,
                    Int_t runNumber=169099) {
-  gSystem->Exec(" rm itsSegmentations.root ");
   
   // AliLog::SetGlobalDebugLevel(1);
   
@@ -21,20 +20,28 @@ void runSimulation(Int_t nevents=1,
   
   gRandom->SetSeed(seed);
   simulator->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  //simulator->SetDefaultStorage("alien://");
-  
+  //simulator->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
+    
   // MUON Tracker
-  //  simulator->SetSpecificStorage("MUON/Align/Data",      "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
-  //  simulator->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
-  //  simulator->SetSpecificStorage("MFT/Align/Data",       "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
-  //  simulator->SetSpecificStorage("MFT/Calib/RecoParam",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  
+  simulator->SetSpecificStorage("MUON/Align/Data",      "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
+  simulator->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  simulator->SetSpecificStorage("MFT/Align/Data",       "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  simulator->SetSpecificStorage("MFT/Calib/RecoParam",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  /*
+  // copied to local
+  simulator->SetSpecificStorage("MUON/Calib/RecoParam", "local:///users/calcul/vulpescu/alice/Work/MFT/CA-test/CA-ali/feature-itsmft/OCDB");
+  simulator->SetSpecificStorage("MFT/Align/Data",       "local:///users/calcul/vulpescu/alice/Work/MFT/CA-test/CA-ali/feature-itsmft/OCDB");
+  simulator->SetSpecificStorage("MFT/Calib/RecoParam",  "local:///users/calcul/vulpescu/alice/Work/MFT/CA-test/CA-ali/feature-itsmft/OCDB");
+  */
   simulator->SetSpecificStorage("GRP/GRP/Data",
                                 Form("local://%s",gSystem->pwd()));
+  /*
   simulator->SetSpecificStorage("ITS/Align/Data",
                                 Form("local://%s",gSystem->pwd()));
   simulator->SetSpecificStorage("ITS/Calib/SimuParam",
                                 Form("local://%s",gSystem->pwd()));
-  
+  */
   //simulator->UseMagFieldFromGRP();
   
   // The rest

@@ -10,14 +10,18 @@
 class TArrayI;
 
 //______________________________________________________________________
-class AliITSUDigitPix: public TObject {
+class AliITSMFTDigitPix: public TObject {
 
  public:
-    AliITSUDigitPix(); //default creator
-    AliITSUDigitPix(const Int_t *digits);//standard creator digits only
+    AliITSMFTDigitPix(); //default creator
+    AliITSMFTDigitPix(const Int_t *digits);//standard creator digits only
     //standard creator with digits, tracks, and hits
-    AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits);
-    virtual ~AliITSUDigitPix(){/*destructor*/}
+    AliITSMFTDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits);
+    //
+    AliITSMFTDigitPix(const AliITSMFTDigitPix &h);
+    AliITSMFTDigitPix& operator=(const AliITSMFTDigitPix &h);
+    //
+    virtual ~AliITSMFTDigitPix();
 
     // returns the array size used to store Tracks and Hits
     static Int_t GetNTracks() {return fgkSize;}
@@ -60,7 +64,7 @@ class AliITSUDigitPix: public TObject {
 
     Int_t fSignalPix;   // Signal in electrons
     Int_t fROCycle;     // readout cycle
-    ClassDef(AliITSUDigitPix,2)   // Simulated digit object for Pixels
+    ClassDef(AliITSMFTDigitPix,1)   // Simulated digit object for Pixels
 
 };
 #endif

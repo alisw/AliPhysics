@@ -11,7 +11,7 @@
 #include "AliITSUSeed.h"
 #include "AliITSUTrackCond.h"
 #include "AliITSUTrackHyp.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliITSUMatLUT.h"
 #include <TArrayI.h>
 
@@ -169,7 +169,7 @@ class AliITSUTrackerGlo : public AliTracker {
   TObjArray* fCHistoArrFake; // set of histos for each tracking pass/phase: fakse
   enum {kHResY,kHResYP,kHResZ,kHResZP,kHChi2Cl,kHChi2Nrm,kHBestInBranch,kHBestInCand,kMaxHID=10};
   enum {kHChiMatch,kHChiITSSA}; // custom histos 
-  enum {kHistosPhase=kMaxHID*(AliITSUAux::kMaxLayers+1),kHistosPass=kNTrackingPhases*kHistosPhase};
+  enum {kHistosPhase=kMaxHID*(AliITSMFTAux::kMaxLayers+1),kHistosPass=kNTrackingPhases*kHistosPhase};
   //
 #endif
   //

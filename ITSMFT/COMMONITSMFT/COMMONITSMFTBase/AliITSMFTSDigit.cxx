@@ -14,8 +14,8 @@
  **************************************************************************/
 #include <TMath.h>
 #include "AliLog.h"
-#include "AliITSUSDigit.h"
-ClassImp(AliITSUSDigit)
+#include "AliITSMFTSDigit.h"
+ClassImp(AliITSMFTSDigit)
 
 using std::istream;
 using std::swap;
@@ -24,7 +24,7 @@ using namespace TMath;
 // Addapted from ITS/AliITSpListItem, ruben.shahoyan@cern.ch
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit() 
+AliITSMFTSDigit::AliITSMFTSDigit() 
 : fChip(0)
   ,fNTracks(0)
   ,fROCycle(0)
@@ -41,7 +41,7 @@ AliITSUSDigit::AliITSUSDigit()
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle) 
+AliITSMFTSDigit::AliITSMFTSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle) 
   :fChip(chip)
   ,fNTracks(0)
   ,fROCycle(roCycle)
@@ -59,7 +59,7 @@ AliITSUSDigit::AliITSUSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCyc
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle)
+AliITSMFTSDigit::AliITSMFTSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle)
   :fChip(chip)
   ,fNTracks(1)
   ,fROCycle(roCycle)
@@ -87,19 +87,19 @@ AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Doub
 }
 
 //______________________________________________________________________
-AliITSUSDigit& AliITSUSDigit::operator=(const AliITSUSDigit &source)
+AliITSMFTSDigit& AliITSMFTSDigit::operator=(const AliITSMFTSDigit &source)
 {
   // = operator
   if (&source!=this) {
-    this->~AliITSUSDigit();
-    new(this) AliITSUSDigit(source);
+    this->~AliITSMFTSDigit();
+    new(this) AliITSMFTSDigit(source);
   }
   return *this;
   //
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(const AliITSUSDigit &source) 
+AliITSMFTSDigit::AliITSMFTSDigit(const AliITSMFTSDigit &source) 
   :TObject(source)
   ,fChip(source.fChip)
   ,fNTracks(source.fNTracks)
@@ -118,7 +118,7 @@ AliITSUSDigit::AliITSUSDigit(const AliITSUSDigit &source)
 }
 
 //______________________________________________________________________
-void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
+void AliITSMFTSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
 {
   // Adds this track number and signal to the pList and orders them
   // Inputs:
@@ -189,7 +189,7 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
 }
 
 //______________________________________________________________________
-void AliITSUSDigit::Add(const AliITSUSDigit *pl)
+void AliITSMFTSDigit::Add(const AliITSMFTSDigit *pl)
 {
   // Adds the contents of pl to this
   // pl could come from different chip and index 
@@ -206,13 +206,13 @@ void AliITSUSDigit::Add(const AliITSUSDigit *pl)
 }
 
 //______________________________________________________________________
-void AliITSUSDigit::AddTo(Int_t fileIndex,const AliITSUSDigit *pl) 
+void AliITSMFTSDigit::AddTo(Int_t fileIndex,const AliITSMFTSDigit *pl) 
 {
   // Adds the contents of pl to this with track number off set given by
   // fileIndex.
   // Inputs:
   //    Int_t fileIndex      track number offset value
-  //    AliITSUSDigit *pl  an AliITSUSDigit to be added to this class.
+  //    AliITSMFTSDigit *pl  an AliITSMFTSDigit to be added to this class.
   //
   for (int i=pl->GetNTracks();i--;) AddSignal(pl->GetTrack(i)+fileIndex,pl->GetHit(i),pl->GetSignal(i));
   fSignalAfterElect += (pl->fSignalAfterElect + pl->fNoise - fNoise);
@@ -220,7 +220,7 @@ void AliITSUSDigit::AddTo(Int_t fileIndex,const AliITSUSDigit *pl)
 }
 
 //______________________________________________________________________
-void AliITSUSDigit::ShiftIndices(Int_t fileIndex)
+void AliITSMFTSDigit::ShiftIndices(Int_t fileIndex)
 {
   // Shift track numbers
   //
@@ -228,7 +228,7 @@ void AliITSUSDigit::ShiftIndices(Int_t fileIndex)
 }
 
 //______________________________________________________________________
-Int_t AliITSUSDigit::Compare(const TObject* obj) const
+Int_t AliITSMFTSDigit::Compare(const TObject* obj) const
 {
   // compare objects
   if (GetUniqueID()<obj->GetUniqueID()) return -1;
@@ -237,7 +237,7 @@ Int_t AliITSUSDigit::Compare(const TObject* obj) const
 }
 
 //______________________________________________________________________
-void AliITSUSDigit::Print(Option_t*) const 
+void AliITSMFTSDigit::Print(Option_t*) const 
 {
   // print itself
   printf("Mod: %4d Index:%7d Ntr:%2d | TotSignal:%.2e Noise:%.2e ROCycle: %d|",

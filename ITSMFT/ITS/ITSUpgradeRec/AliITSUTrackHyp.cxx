@@ -1,7 +1,7 @@
 #include "AliITSUTrackHyp.h"
 #include "AliESDtrack.h"
 #include "AliCluster.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include <TString.h>
 
 ClassImp(AliITSUTrackHyp)

@@ -16,18 +16,18 @@
  **************************************************************************/
 
 #include <TObject.h>
-#include "AliITSUSensMap.h"
-#include "AliITSUSegmentationPix.h"
+#include "AliITSMFTSensMap.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliMathBase.h"
 #include <TArrayS.h>
 
 class AliITSCalibration;
-class AliITSUSimuParam;
+class AliITSMFTSimuParam;
 class AliITSUChip;
 class TArrayI;
 class TRandom;
 class TSegCollection;
-class AliITSUParamList;
+class AliITSMFTParamList;
 
 // This is the base class for ITS detector signal simulations. Data members
 // include are a pointer to the detectors specific response and segmentation
@@ -43,7 +43,7 @@ class AliITSUSimulation : public TObject
   enum {kMaxROCycleAccept=126};             // flag for read-out cycle to discard
   //
   AliITSUSimulation();
-  AliITSUSimulation(AliITSUSimuParam* sim, AliITSUSensMap* map);
+  AliITSUSimulation(AliITSMFTSimuParam* sim, AliITSMFTSensMap* map);
   virtual ~AliITSUSimulation() {} 
   AliITSUSimulation(const AliITSUSimulation &source);
   AliITSUSimulation& operator=(const AliITSUSimulation &source);
@@ -51,7 +51,7 @@ class AliITSUSimulation : public TObject
   //
   void UpdateMapSignal(UInt_t col,UInt_t row, Int_t trk,Int_t ht,Double_t signal, Int_t roCycle=0);
   void UpdateMapNoise(UInt_t col,UInt_t row, Double_t noise, Int_t roCycle=0);
-  virtual void InitSimulationChip(AliITSUChip* mod, Int_t ev, AliITSUSegmentationPix* seg, AliITSUParamList* resp);
+  virtual void InitSimulationChip(AliITSUChip* mod, Int_t ev, AliITSMFTSegmentationPix* seg, AliITSMFTParamList* resp);
   //
   // Hits -> SDigits
   virtual void SDigitiseChip() = 0;
@@ -67,21 +67,21 @@ class AliITSUSimulation : public TObject
   //
   AliITSCalibration*  GetCalibDead()                   const {return fCalibDead;}
   AliITSCalibration*  GetCalibNoisy()                  const {return fCalibNoisy;}
-  AliITSUSegmentationPix* GetSegmentation()                const {return fSeg;}
-  AliITSUSimuParam*   GetSimuParam()                   const {return fSimuParam;}
-  AliITSUSensMap*     GetMap()                         const {return fSensMap;}
+  AliITSMFTSegmentationPix* GetSegmentation()                const {return fSeg;}
+  AliITSMFTSimuParam*   GetSimuParam()                   const {return fSimuParam;}
+  AliITSMFTSensMap*     GetMap()                         const {return fSensMap;}
   AliITSUChip*      GetChip()                      const {return fChip;}
-  AliITSUParamList*   GetResponseParam()               const {return fResponseParam;}
+  AliITSMFTParamList*   GetResponseParam()               const {return fResponseParam;}
   Int_t               GetEvent()                       const {return fEvent;}
   Bool_t              GetDebug(Int_t level=1)          const {return fDebug>=level;}
   
   //
   void SetCalibDead(AliITSCalibration *calib)              {fCalibDead = calib;}
   void SetCalibNoisy(AliITSCalibration *calib)             {fCalibNoisy = calib;}
-  void SetSegmentation(AliITSUSegmentationPix *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx(),kMaxROCycleAccept);}
-  void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
-  virtual void SetResponseParam(AliITSUParamList* resp)    {fResponseParam = resp;}
-  void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
+  void SetSegmentation(AliITSMFTSegmentationPix *seg)            {fSeg = seg; if (seg&&fSensMap) fSensMap->SetDimensions(seg->Npz(),seg->Npx(),kMaxROCycleAccept);}
+  void SetSimuParam(AliITSMFTSimuParam *sp)                  {fSimuParam = sp;}
+  virtual void SetResponseParam(AliITSMFTParamList* resp)    {fResponseParam = resp;}
+  void SetMap(AliITSMFTSensMap *p)                           {fSensMap = p;}
   void SetChip(AliITSUChip* mod)                       {fChip=mod;} 
   void SetEvent(Int_t evnt)                                {fEvent=evnt;} 
   void SetDebug(Int_t level=5)                             {fDebug=level;}
@@ -101,12 +101,12 @@ class AliITSUSimulation : public TObject
 			     Double_t sig1,Double_t a1,Double_t b1);
   //
  protected:
-  AliITSUSegmentationPix  *fSeg;            //! segmentation
+  AliITSMFTSegmentationPix  *fSeg;            //! segmentation
   AliITSCalibration   *fCalibDead;      //! dead channels
   AliITSCalibration   *fCalibNoisy;     //! noisy channels
-  AliITSUSensMap      *fSensMap;        //! sensor map for hits manipulations
-  AliITSUSimuParam    *fSimuParam;      //! simulation parameters
-  AliITSUParamList    *fResponseParam;  //! response parameterization data
+  AliITSMFTSensMap      *fSensMap;        //! sensor map for hits manipulations
+  AliITSMFTSimuParam    *fSimuParam;      //! simulation parameters
+  AliITSMFTParamList    *fResponseParam;  //! response parameterization data
   AliITSUChip       *fChip;         //! chip being processed
   Float_t              fReadOutCycleOffset; //! The phase of the RO with respect to the trigger
   Float_t              fReadOutCycleLength; //! readout cycle lenght in s

@@ -13,23 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSUChip.cxx 53509 2011-12-10 18:55:52Z masera $ */
+/* $Id: AliITSMFTChip.cxx 53509 2011-12-10 18:55:52Z masera $ */
 
 #include <TArrayI.h>
 
 #include <stdlib.h>
 
 #include "AliRun.h"
-#include "AliITSUChip.h"
-#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTChip.h"
+//#include "AliITSUGeomTGeo.h"
 
 using namespace TMath;
 
-ClassImp(AliITSUChip)
+ClassImp(AliITSMFTChip)
 
 //_______________________________________________________________________
 //
-// Impementation of class AliITSUChip
+// Impementation of class AliITSMFTChip
 //
 //_______________________________________________________________________
 //________________________________________________________________________
@@ -37,55 +37,62 @@ ClassImp(AliITSUChip)
 // Constructors and deconstructor
 //________________________________________________________________________
 //
-AliITSUChip::AliITSUChip()
-: AliITSMFTChip()
-, fHitsM(0)
+AliITSMFTChip::AliITSMFTChip()
+
+/*
+:
+ , fHitsM(0)
 , fGeomTG(0)
+*/
 {
   // constructor
 }
 
 //_________________________________________________________________________
-AliITSUChip::AliITSUChip(Int_t index, AliITSUGeomTGeo* tg)
-  : AliITSMFTChip(index)
-  , fHitsM(new TObjArray())
+AliITSMFTChip::AliITSMFTChip(Int_t index)//, AliITSUGeomTGeo* tg)
+/*
+  :
+ , fHitsM(new TObjArray())
   , fGeomTG(tg)
-{
+*/
+ {
   // constructor
   SetIndex(index);
 }
 
 //__________________________________________________________________________
-AliITSUChip::~AliITSUChip() 
+AliITSMFTChip::~AliITSMFTChip() 
 {
-  // The destructor for AliITSUChip. Before destoring AliITSUChip
+  // The destructor for AliITSMFTChip. Before destoring AliITSMFTChip
   // we must first destroy all of it's members.
-  if (fHitsM) fHitsM->Clear();
-  delete fHitsM;
+//  if (fHitsM) fHitsM->Clear();
+//  delete fHitsM;
 }
 
 //____________________________________________________________________________
-AliITSUChip::AliITSUChip(const AliITSUChip &source)
- :AliITSMFTChip(source)
+AliITSMFTChip::AliITSMFTChip(const AliITSMFTChip &source)
+ :TObject(source)
+/*
  ,fHitsM(source.fHitsM)
  ,fGeomTG(source.fGeomTG)
+*/
 {
 //     Copy Constructor 
 }
 
 //_____________________________________________________________________________
-AliITSUChip& AliITSUChip::operator=(const AliITSUChip &source)
+AliITSMFTChip& AliITSMFTChip::operator=(const AliITSMFTChip &source)
 {
   //    Assignment operator 
   if (this!=&source) {
-    this->~AliITSUChip();
-    new(this) AliITSUChip(source);
+    this->~AliITSMFTChip();
+    new(this) AliITSMFTChip(source);
   }
   return *this;
 }
-
+/*
 //___________________________________________________________________________
-Double_t AliITSUChip::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *itsHit2) 
+Double_t AliITSMFTChip::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *itsHit2) 
 {
   // path lenght
   Float_t  x1g,y1g,z1g;   
@@ -100,9 +107,9 @@ Double_t AliITSUChip::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *its
 	    ((Double_t)(z2g-z1g)*(Double_t)(z2g-z1g)) );
    return s;
 }
-
+*/
 //___________________________________________________________________________
-void AliITSUChip::PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,
+void AliITSMFTChip::PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,
 			      Float_t &dx1,Float_t &dy1,Float_t &dz1,Int_t &flag) const
 {
   // path length
@@ -130,9 +137,9 @@ void AliITSUChip::PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t &n
     z0 = z;
   } // end if
 }
-
+/*
 //___________________________________________________________________________
-Bool_t AliITSUChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
+Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
 				  Double_t &e,Double_t &f,Double_t &de)
 {
   // line segment
@@ -153,7 +160,7 @@ Bool_t AliITSUChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t
 }
 
 //___________________________________________________________________________
-Bool_t AliITSUChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
+Bool_t AliITSMFTChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
 				  Double_t &e,Double_t &f,Double_t &de)
 {
   // line segment
@@ -173,7 +180,7 @@ Bool_t AliITSUChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t
 }
 
 //___________________________________________________________________________
-Bool_t AliITSUChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
+Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
 				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segmente
@@ -198,7 +205,7 @@ Bool_t AliITSUChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t
 }
 
 //___________________________________________________________________________
-Bool_t AliITSUChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
+Bool_t AliITSMFTChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
 				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segment
@@ -222,7 +229,7 @@ Bool_t AliITSUChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double_t
 }
 
 //______________________________________________________________________
-Bool_t AliITSUChip::MedianHitG(AliITSUHit *h1,AliITSUHit *h2,Float_t &x,Float_t &y,Float_t &z)
+Bool_t AliITSMFTChip::MedianHitG(AliITSUHit *h1,AliITSUHit *h2,Float_t &x,Float_t &y,Float_t &z)
 {
   // Computes the mean hit location for a set of hits that make up a track
   // passing through a volume. Returns kFALSE untill the the track leaves
@@ -255,7 +262,7 @@ Bool_t AliITSUChip::MedianHitG(AliITSUHit *h1,AliITSUHit *h2,Float_t &x,Float_t 
 }
 
 //___________________________________________________________________________
-void AliITSUChip::MedianHitG(Int_t index,Float_t hitx1,Float_t hity1,Float_t hitz1,Float_t hitx2,Float_t hity2,Float_t hitz2,
+void AliITSMFTChip::MedianHitG(Int_t index,Float_t hitx1,Float_t hity1,Float_t hitz1,Float_t hitx2,Float_t hity2,Float_t hitz2,
 				 Float_t &xMg, Float_t &yMg, Float_t &zMg)
 {
   // median hit
@@ -298,7 +305,7 @@ void AliITSUChip::MedianHitG(Int_t index,Float_t hitx1,Float_t hity1,Float_t hit
 }
 
 //___________________________________________________________________________
-Bool_t AliITSUChip::MedianHitL( AliITSUHit *itsHit1,AliITSUHit *itsHit2, Float_t &xMl, Float_t &yMl, Float_t &zMl) const
+Bool_t AliITSMFTChip::MedianHitL( AliITSUHit *itsHit1,AliITSUHit *itsHit2, Float_t &xMl, Float_t &yMl, Float_t &zMl) const
 {
   // median hit
   Float_t x1l,y1l,z1l;
@@ -319,7 +326,7 @@ Bool_t AliITSUChip::MedianHitL( AliITSUHit *itsHit1,AliITSUHit *itsHit2, Float_t
 }
 
 //___________________________________________________________________________
-void AliITSUChip::MedianHit(Int_t index,Float_t xg,Float_t yg,Float_t zg,Int_t status,
+void AliITSMFTChip::MedianHit(Int_t index,Float_t xg,Float_t yg,Float_t zg,Int_t status,
 			     Float_t &xMg,Float_t &yMg,Float_t &zMg,Int_t &flag)
 {
   // median hit
@@ -337,4 +344,4 @@ void AliITSUChip::MedianHit(Int_t index,Float_t xg,Float_t yg,Float_t zg,Int_t s
   else  flag = 1;
 }
 
-
+*/

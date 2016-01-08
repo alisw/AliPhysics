@@ -38,7 +38,7 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliCodeTimer.h"
 #include "AliRefArray.h"
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 using namespace TMath;
 
 //----------------- tmp stuff -----------------
@@ -1478,7 +1478,7 @@ Double_t AliITSUTrackerGlo::RefitTrack(AliITSUTrackHyp* trc, Double_t rDest, Int
 #endif
   if (lrStop<0 || lrStart<0) AliFatal(Form("Failed to find start(%d) or last(%d) layers. Track from %.3f to %.3f",lrStart,lrStop,rCurr,rDest));
   //
-  Int_t clInfo[2*AliITSUAux::kMaxLayers];
+  Int_t clInfo[2*AliITSMFTAux::kMaxLayers];
   Int_t nCl = fCurrHyp->FetchClusterInfo(clInfo);
   fCurrMass = fCurrHyp->GetMass();
   AliITSUTrackHyp tmpTr(*(AliKalmanTrack*)trc);
