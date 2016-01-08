@@ -2123,7 +2123,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
       fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
       if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
-	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->IsIncompleteDAQ());
+	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->GetDAQAttributes());
 	return kTRUE;
       }
     }
