@@ -780,6 +780,8 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
       }
     }
 
+    TArrayI isEmpty(nConditions);
+
     // First get the needed graphs
     Int_t nDE = 0;
     TObjArray effGraphs[8];
@@ -793,9 +795,15 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
           Int_t iplane = 4*icount+ich;
           TH1* histoNum = GetSum(trigOut,condition,itype,icount,ich);
           TH1* histoDen = GetSum(trigOut,condition,itype,AliTrigChEffOutput::kAllTracks,ich);
-          TGraphAsymmErrors* gr = new TGraphAsymmErrors(histoNum,histoDen,"e0");
-          nDE = gr->GetN();
-          effGraphs[iplane].Add(gr);
+          if ( histoNum && histoDen ) {
+            TGraphAsymmErrors* gr = new TGraphAsymmErrors(histoNum,histoDen,"e0");
+            nDE = gr->GetN();
+            effGraphs[iplane].AddAtAndExpand(gr,icond);
+          }
+          else {
+            isEmpty[icond] = 1;
+            AliWarning(Form("No entries in count %i and ch %i for %s\n",icount,ich,condTitle.At(icond)->GetName()));
+          }
           delete histoNum;
           delete histoDen;
         }
@@ -819,8 +827,10 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
         leg->SetHeader(trigOut->GetHistoName(-1,icount,ich,-1,-1,-1));
         TH1* sumHisto = 0x0;
         for ( Int_t icond=1; icond<nConditions; icond++ ) {
+          if ( isEmpty[icond] == 1 ) continue;
           TH1* histo = new TH1D(Form("syst_%s_%s_plane%i_ch%i",trigOut->GetName(),condTitle[icond]->GetName(),icount,11+ich),"",200,-0.1,0.1);
           histo->GetXaxis()->SetTitle("Eff.-(ref.Eff.)");
+          histo->GetYaxis()->SetTitle("1/#sigma^{2}");
 //          histo->GetXaxis()->SetTitle("1/#sigma^{2}");
 
           TGraphAsymmErrors* gr = static_cast<TGraphAsymmErrors*>(effGraphs[iplane].UncheckedAt(icond));
@@ -861,6 +871,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     TH1* sumHisto = 0x0;
     TH1* histo[nConditions];
     for ( Int_t icond=0; icond<nConditions; icond++ ) {
+      if ( isEmpty[icond] == 1 ) continue;
       histo[icond] = new TH1D(Form("TriggerEff_syst_%s_%s",condTitle[icond]->GetName(),trigOut->GetName()),"Dispersion of trigger probability (3/4)",200,-0.1,0.1);
       histo[icond]->GetXaxis()->SetTitle("Trig. prob. - (ref. trig. prob)");
     }
@@ -868,6 +879,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     for ( Int_t ipt=0; ipt<nDE; ipt++ ) {
       Double_t refTrigProb = 0.; // refTrigProbErr = 0.;
       for ( Int_t icond=0; icond<nConditions; icond++ ) {
+        if ( isEmpty[icond] == 1 ) continue;
         Double_t trigProb = 1., trigProbErr2 = 0.;
         for ( Int_t icount=0; icount<2; icount++ ) {
           for ( Int_t ich=0; ich<4; ich++ ) {
@@ -895,6 +907,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     } // loop on points
 
     for ( Int_t icond=0; icond<nConditions; icond++ ) {
+      if ( isEmpty[icond] == 1 ) continue;
       TString title = ( icond == 0 ) ? "All systematics" : condTitle[icond]->GetName();
       Int_t icolor = ( icond < ncolors ) ? colors[icond] : 20+icond;
       histo[icond]->SetLineColor(icolor);
