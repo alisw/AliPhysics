@@ -1,4 +1,4 @@
-AliAnalysisTaskProton *AddTaskProtons(Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
+AliAnalysisTaskProton *AddTaskProtons(const Char_t * addname="", Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
 
 	//--- get the current analysis manager ---//
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -39,6 +39,11 @@ AliAnalysisTaskProton *AddTaskProtons(Bool_t lCollidingSystems=kTRUE,Bool_t lDel
 	 taskname += "_DCAz";
        	 outname  += "_DCAz";
 	}
+ taskname += "_";
+ outname  += "_";
+
+ taskname += addname;
+ outname  += addname;
 
 AliAnalysisTaskProton *taskcheck = new AliAnalysisTaskProton(taskname);
 
@@ -65,6 +70,9 @@ else taskcheck->SetPtDependentDCAxy(7,0.0026,0.0050,1.01);
 taskcheck->SetPIDMode(AliAnalysisTaskProton::kSigma,3,3,0.7);
 
 mgr->AddTask(taskcheck);
+
+//Char_t outFileName[256]={0};
+//sprintf(outFileName,"%s_Tree.root",taskname);
 
 	//================================================
 	//              data containers

@@ -1,4 +1,4 @@
-AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
+AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(const Char_t * addname="", Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
 
 	//--- get the current analysis manager ---//
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -36,9 +36,14 @@ AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(Bool_t lCollidingSystems=kTRU
 		}
 
 	if(onDCAz) {
-	 taskname += "_DCAz";
-       	 outname  += "_DCAz";
+	 taskname += "_DCAz_";
+       	 outname  += "_DCAz_";
 	}
+ taskname += "_";
+ outname  += "_";
+
+ taskname += addname;
+ outname  += addname;
 
 AliAnalysisTaskProtonAbsorbtion *taskcheckAbs = new AliAnalysisTaskProtonAbsorbtion(taskname);
 
