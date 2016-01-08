@@ -522,7 +522,6 @@ Bool_t AliDielectronEventCuts::IsTRDTriggerFired( const AliVEvent* event, const 
   
   triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE) << 1 );
   triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU) << 3 );
-  std::cout<<"triggerResult: " << triggerResult<<std::endl;
   // calculate return value depending on required trigger
   switch(triggerClass) {
     case kSE:
