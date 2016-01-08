@@ -15,6 +15,7 @@ class AliCFManager;
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEmcalTriggerPatchInfo;
+class AliMultSelection;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
@@ -73,7 +74,9 @@ private:
     
     AliAODMCParticle 	*fMCparticle;//! MC particle
     TClonesArray 	*fMCarray;//! MC array
-    
+ 
+    AliMultSelection *fMultSelection;
+   
     TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker
     Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
     Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches

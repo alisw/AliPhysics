@@ -43,6 +43,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
+#include "AliMultSelection.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
@@ -83,6 +84,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fCaloClusters_tender(0),
   fMCparticle(0),
   fMCarray(0),
+  fMultSelection(0),
   fTriggersInfo(0),
   fThresholdEG2(89),
   fThresholdEG1(140),
@@ -178,6 +180,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fCaloClusters_tender(0),
   fMCparticle(0),
   fMCarray(0),
+  fMultSelection(0),
   fTriggersInfo(0),
   fThresholdEG2(89),
   fThresholdEG1(140),
@@ -560,13 +563,26 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ///////////////////
   // centrality
  /////////////////////
-
+  /*
   Double_t centrality = -1;
   AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality(); 
   centrality = fCentrality->GetCentralityPercentile("V0M");
+  */
 
-  printf("mim cent selection %d\n",fcentMim);
-  printf("max cent selection %d\n",fcentMax);
+  Float_t lPercentile = 300; 
+  if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
+  if( !fMultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  }else{
+   lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+ }
+  Double_t centrality = -1;
+  centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
+  cout << "cent = " << centrality << endl; 
+  //printf("mim cent selection %d\n",fcentMim);
+  //printf("max cent selection %d\n",fcentMax);
+  //printf("cent selection %d\n",centrality);
 
   if(fcentMim>-0.5)
     {
