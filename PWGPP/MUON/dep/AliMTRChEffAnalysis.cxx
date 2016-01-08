@@ -951,14 +951,23 @@ Double_t AliMTRChEffAnalysis::FitRangesFunc ( Double_t* x, Double_t* par )
   /// [0] = number of break points dividing 2 sub ranges
   /// [1] = value of efficiency in the first (or only) subrange
   /// [2*ipar] (for ipar>=1) = position in x where efficiency value can change
-  /// [2*ipar+1] = value of efficiency in the ipar+1 subrange
+  /// [2*ipar+1] = value of efficiency in the subrange above [2*ipar]
 
   Double_t xx = x[0];
   Double_t val = par[1];
   Int_t nChanges = par[0];
+  Double_t matchDiff = 123456789.;
+  Int_t matchChange = -1;
   for ( Int_t iknot=0; iknot<nChanges; iknot++ ) {
-    if ( xx > par[2*(iknot+1)] ) val = par[2*(iknot+1)+1];
+    Int_t iparChange = 2*(iknot+1);
+    Double_t diff = xx - par[iparChange];
+    if ( diff >= 0. && diff < matchDiff ) {
+      matchDiff = diff;
+      matchChange = iparChange;
+    }
   }
+  if ( matchChange >= 0 ) val = par[matchChange+1];
+
   return val;
 }
 
@@ -1138,7 +1147,6 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
 
   TArrayI runRanges;
   TF1* func = 0x0;
-//  TString canName = "fitTestCan";
   TArrayD forcedChangesBin;
   Int_t nForced = 0;
   if ( forcedChanges ) {
@@ -1164,11 +1172,8 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
         if ( ipar%2==0 && currChange < nForced ) func->FixParameter(ipar,forcedChangesBin[currChange]);
       }
     }
-//    trendGraph->Draw("ap");
     trendGraph->Fit(func,"NQ0");
-//    func->DrawCopy("same");
     Double_t normChi2 = func->GetChisquare() / ((Double_t)func->GetNDF());
-//    printf("normChi2 %g\n",normChi2);
     if ( normChi2 < chi2Cut ) break;
     delete func;
     func = 0x0;
@@ -1176,28 +1181,41 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
 
   if ( func ) {
     trendGraph->GetListOfFunctions()->Add(func->Clone());
-    Int_t nSteps = func->GetParameter(0);
-    runRanges.Set(2*(nSteps+1));
+    Int_t nSteps = (Int_t)func->GetParameter(0);
+
+    // The runs for which the efficiency changes could be unsorted
+    // (when forced values are requires)
+    // Copy the parameters in arrays to sort them
+    Int_t nPoints = nSteps+1;
+    TArrayD parRunIdx(nPoints);
+    TArrayD parEff(nPoints);
+    for ( Int_t ipar=0; ipar<func->GetNpar(); ipar++ ) {
+      Int_t istep = ipar/2;
+      if ( ipar%2 == 0 ) parRunIdx[istep] = func->GetParameter(ipar);
+      else parEff[istep] = func->GetParameter(ipar);
+    }
+    parRunIdx[0] = 1.;
+    TArrayI sortIdx(nPoints);
+    TMath::Sort(nPoints,parRunIdx.GetArray(),sortIdx.GetArray(),kFALSE);
+
+    runRanges.Set(2*nPoints);
     Int_t irun = 0;
     runRanges[irun++] = returnIndex ? 0 : GetRunNumber(0);
-    for ( Int_t istep=0; istep<nSteps; istep++ ) {
-      Int_t ipar = 2*(istep+1);
-      Double_t deltaEff = TMath::Abs(func->GetParameter(ipar-1)-func->GetParameter(ipar+1));
+    for ( Int_t ipoint=1; ipoint<nPoints; ipoint++ ) {
+      Double_t deltaEff = TMath::Abs(parEff[sortIdx[ipoint]]-parEff[sortIdx[ipoint-1]]);
+//      if ( ipoint>=2 ) deltaEff = TMath::Max(deltaEff,TMath::Abs(parEff[sortIdx[ipoint]]-parEff[sortIdx[ipoint-2]]));
       if ( deltaEff < minEffVariation ) {
         AliWarning(Form("Efficiency variation for %s is %g => consider uniform",trendGraph->GetName(),deltaEff));
         continue;
       }
-      Int_t runChangeIdx = TMath::Nint(func->GetParameter(ipar));
-      AliDebug(1,Form("Change run: %s => %g => %i %i",trendGraph->GetName(),func->GetParameter(ipar),runChangeIdx,GetRunNumber(runChangeIdx)));
+      Int_t runChangeIdx = TMath::Nint(parRunIdx[sortIdx[ipoint]]);
+      AliDebug(1,Form("Change run: %s => %g => %i %i",trendGraph->GetName(),parRunIdx[sortIdx[ipoint]],runChangeIdx,GetRunNumber(runChangeIdx)));
       runRanges[irun++] = returnIndex ? runChangeIdx-1 : GetRunNumber(runChangeIdx-1);
       runRanges[irun++] = returnIndex ? runChangeIdx : GetRunNumber(runChangeIdx);
     }
     Int_t lastPt = trendGraph->GetN()-1;
-    runRanges[irun++] = returnIndex ? lastPt : GetRunNumber(trendGraph->GetN()-1);
+    runRanges[irun++] = returnIndex ? lastPt : GetRunNumber(lastPt);
     runRanges.Set(irun);
-//    for ( Int_t irange=0; irange<runRanges.GetSize()/2; irange++ ) {
-//      printf("%i - %i\n",runRanges[2*irange],runRanges[2*irange+1]);
-//    }
   }
   return runRanges;
 }
