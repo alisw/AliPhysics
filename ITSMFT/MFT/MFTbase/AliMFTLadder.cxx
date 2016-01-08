@@ -134,7 +134,7 @@ void AliMFTLadder::CreateSensors() {
   if(!mftGeom->GetSensorVolumeID()){
     mftGeom->SetSensorVolumeID(sensorVol->GetNumber());
   } else if (mftGeom->GetSensorVolumeID() != sensorVol->GetNumber()){
-    AliFatal(Form("Difference Sensor VOLUME ID in TGeo !!!!"));
+    AliFatal(Form("Different Sensor VOLUME ID in TGeo !!!!"));
   }
   
   // The Readout Volume

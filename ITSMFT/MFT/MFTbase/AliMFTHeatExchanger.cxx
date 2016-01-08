@@ -64,19 +64,20 @@ AliMFTHeatExchanger::AliMFTHeatExchanger(Double_t rWater,
 //====================================================================================================================================================
 
 TGeoVolumeAssembly* AliMFTHeatExchanger::Create(Int_t half, Int_t disk) {
-  
+	
+	AliInfo(Form("Creating HeatExchanger_%d_%d", disk, half));
   
   fHalfDisk = new TGeoVolumeAssembly(Form("HeatExchanger_%d_%d", disk, half));
     switch (disk) {
-      case 0: CreateHalfDisk0(kBottom);
+      case 0: CreateHalfDisk0(half);
         break;
-      case 1: CreateHalfDisk1(kBottom);
+      case 1: CreateHalfDisk1(half);
         break;
-      case 2: CreateHalfDisk2(kBottom);
+      case 2: CreateHalfDisk2(half);
         break;
-      case 3: CreateHalfDisk3(kBottom);
+      case 3: CreateHalfDisk3(half);
         break;
-      case 4: CreateHalfDisk4(kBottom);
+      case 4: CreateHalfDisk4(half);
         break;
     }
   
@@ -100,7 +101,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
-  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("cooling");
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly(Form("cooling_D0_H%d",half));
   
   Float_t lMiddle = fSupportXDimensions[disk][0] - 2.*fLWater;  // length of central part
   
@@ -112,7 +113,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *waterTube1 = gGeoManager->MakeTube("waterTube1", water, 0., fRWater, fLWater/2.);
+  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTube1_D0_H%d",half), water, 0., fRWater, fLWater/2.);
   waterTube1->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -124,7 +125,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   Double_t angle0rad = fangle0*(TMath::DegToRad());
   
-  TGeoVolume *waterTube2 = gGeoManager->MakeTube("waterTube2", water, 0., fRWater, fLpartial0/2.);
+  TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTube2_D0_H%d",half), water, 0., fRWater, fLpartial0/2.);
   waterTube2->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -144,7 +145,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // Sides torus
   
-  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus("waterTorus1", water, fradius0, 0., fRWater, 0., fangle0);
+  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorus1_D0_H%d",half), water, fradius0, 0., fRWater, 0., fangle0);
   waterTorus1->SetLineColor(kBlue);
   Double_t radius0mid = (lMiddle - 2.*(fradius0*(TMath::Sin(angle0rad)) + fLpartial0*(TMath::Cos(angle0rad))))/(2*(TMath::Sin(angle0rad)));
   
@@ -159,7 +160,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // Central Torus
   
-  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus("waterTorus2", water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
+  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorus2_D0_H%d",half), water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
   waterTorus2->SetLineColor(kBlue);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -172,7 +173,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *pipeTube1 = gGeoManager->MakeTube("pipeTube1", pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
+  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTube1_D0_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
   pipeTube1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++){
@@ -182,7 +183,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
     cooling->AddNode (pipeTube1, itube+3, translation);
   }
   
-  TGeoVolume *pipeTube2 = gGeoManager->MakeTube("pipeTube2", pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
+  TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTube2_D0_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
   waterTube2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -202,7 +203,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   // ------------------- Torus shape -------------------
   
   // Sides Torus
-  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus("pipeTorus1", pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
+  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorus1_D0_H%d",half), pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
   pipeTorus1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -215,7 +216,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   }
   
   // Central Torus
-  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus("pipeTorus2", pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
+  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorus2_D0_H%d",half), pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
   pipeTorus2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -243,17 +244,17 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // **************************************** Carbon Plates ****************************************
   
-  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly("carbonPlate");
+  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D0_H%d",half));
   
-  TGeoBBox *carbonBase0 = new TGeoBBox ("carbonBase0",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
+  TGeoBBox *carbonBase0 = new TGeoBBox (Form("carbonBase0_D0_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
   TGeoTranslation *t01= new TGeoTranslation ("t01",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   t01-> RegisterYourself();
   
-  TGeoTubeSeg *holeCarbon0 = new TGeoTubeSeg("holeCarbon0", 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeCarbon0 = new TGeoTubeSeg(Form("holeCarbon0_D0_H%d",half), 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
   TGeoTranslation *t02= new TGeoTranslation ("t02",0., - fHalfDiskGap , 0.);
   t02-> RegisterYourself();
   
-  TGeoCompositeShape *cs0 = new TGeoCompositeShape("cs0", "(carbonBase0:t01)-(holeCarbon0:t02)");
+  TGeoCompositeShape *cs0 = new TGeoCompositeShape(Form("cs0_D0_H%d",half), Form("(carbonBase0_D0_H%d:t01)-(holeCarbon0_D0_H%d:t02)",half,half));
   TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs0, carbon);
   carbonBaseWithHole->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
@@ -264,7 +265,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_%d", ipart), carbon, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
+    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_D0_H%d_%d", half,ipart), carbon, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
     partCarbon->SetLineColor(kGray+3);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
     carbonPlate -> AddNode(partCarbon, ipart, t);
@@ -288,18 +289,18 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   // **************************************** Rohacell Plate ****************************************
   
-  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly("rohacellPlate");
+  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D0_H%d",half));
   
-  TGeoBBox *rohacellBase0 = new TGeoBBox ("rohacellBase0",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
+  TGeoBBox *rohacellBase0 = new TGeoBBox (Form("rohacellBase0_D0_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
   // TGeoTranslation *t3 = new TGeoTranslation ("t3",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   // t3 -> RegisterYourself();
   
-  TGeoTubeSeg *holeRohacell0 = new TGeoTubeSeg("holeRohacell0", 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeRohacell0 = new TGeoTubeSeg(Form("holeRohacell0_D0_H%d",half), 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs0 = new TGeoCompositeShape("cs0", "(rohacellBase0:t01)-(holeRohacell0:t02)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume("rohacellBaseWithHole", cs0, rohacell);
+  cs0 = new TGeoCompositeShape("cs0", Form("(rohacellBase0_D0_H%d:t01)-(holeRohacell0_D0_H%d:t02)",half,half));
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D0_H%d",half), cs0, rohacell);
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -309,7 +310,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_%d", ipart), rohacell, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
+    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D0_H%d_%d", half,ipart), rohacell, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
     partRohacell->SetLineColor(kGray);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
     rohacellPlate -> AddNode(partRohacell, ipart, t);
@@ -324,7 +325,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
 //  if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-    fHalfDisk->AddNode(rohacellPlate, 2, transformation);
+    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
 //  }
   
 }
@@ -332,7 +333,7 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
 //====================================================================================================================================================
 
 void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
-  
+	
   Int_t disk = 1;
   
   if      (half == kTop)    printf("Creating MFT heat exchanger for disk1 top\n");
@@ -345,7 +346,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
   
-  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("cooling");
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly(Form("cooling_D1_H%d",half));
   
   Float_t lMiddle = fSupportXDimensions[disk][0] - 2.*fLWater;  // length of central part
   
@@ -358,7 +359,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *waterTube1 = gGeoManager->MakeTube("waterTube1", water, 0., fRWater, fLWater/2.);
+  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTube1_D1_H%d",half), water, 0., fRWater, fLWater/2.);
   waterTube1->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -370,7 +371,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   Double_t angle0rad = fangle0*(TMath::DegToRad());
   
-  TGeoVolume *waterTube2 = gGeoManager->MakeTube("waterTube2", water, 0., fRWater, fLpartial0/2.);
+  TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTube2_D1_H%d",half), water, 0., fRWater, fLpartial0/2.);
   waterTube2->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -390,7 +391,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   // Sides torus
   
-  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus("waterTorus1", water, fradius0, 0., fRWater, 0., fangle0);
+  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorus1_D1_H%d",half), water, fradius0, 0., fRWater, 0., fangle0);
   waterTorus1->SetLineColor(kBlue);
   Double_t radius0mid = (lMiddle - 2.*(fradius0*(TMath::Sin(angle0rad)) + fLpartial0*(TMath::Cos(angle0rad))))/(2*(TMath::Sin(angle0rad)));
   
@@ -405,7 +406,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   // Central Torus
   
-  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus("waterTorus2", water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
+  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorus2_D1_H%d",half), water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
   waterTorus2->SetLineColor(kBlue);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -418,7 +419,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *pipeTube1 = gGeoManager->MakeTube("pipeTube1", pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
+  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTube1_D1_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
   pipeTube1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++){
@@ -428,7 +429,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
     cooling->AddNode (pipeTube1, itube+3, translation);
   }
   
-  TGeoVolume *pipeTube2 = gGeoManager->MakeTube("pipeTube2", pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
+  TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTube2_D1_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
   waterTube2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -448,7 +449,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   // ------------------- Torus shape -------------------
   
   // Sides Torus
-  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus("pipeTorus1", pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
+  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorus1_D1_H%d",half), pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
   pipeTorus1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -461,7 +462,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   }
   
   // Central Torus
-  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus("pipeTorus2", pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
+  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorus2_D1_H%d",half), pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
   pipeTorus2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -482,26 +483,26 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
 //  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", -90., 90., 0.);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 3, transformation);
+    fHalfDisk->AddNode(cooling, 0, transformation);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 4, transformation);
+    fHalfDisk->AddNode(cooling, 1, transformation);
 //  }
   
   
   // **************************************** Carbon Plates ****************************************
   
-  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly("carbonPlate");
+  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D1_H%d",half));
   
-  TGeoBBox *carbonBase1 = new TGeoBBox ("carbonBase1",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
+  TGeoBBox *carbonBase1 = new TGeoBBox (Form("carbonBase1_D1_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
   TGeoTranslation *t11= new TGeoTranslation ("t11",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   t11-> RegisterYourself();
   
-  TGeoTubeSeg *holeCarbon1 = new TGeoTubeSeg("holeCarbon1", 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeCarbon1 = new TGeoTubeSeg(Form("holeCarbon1_D1_H%d",half), 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
   TGeoTranslation *t12= new TGeoTranslation ("t12",0., - fHalfDiskGap , 0.);
   t12-> RegisterYourself();
   
-  TGeoCompositeShape *cs1 = new TGeoCompositeShape("cs1", "(carbonBase1:t11)-(holeCarbon1:t12)");
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs1, carbon);
+  TGeoCompositeShape *cs1 = new TGeoCompositeShape(Form("Carbon1_D1_H%d",half), Form("(carbonBase1_D1_H%d:t11)-(holeCarbon1_D1_H%d:t12)",half,half));
+  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D1_H%d",half), cs1, carbon);
   carbonBaseWithHole->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -511,7 +512,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_%d", ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_D1_H%d_%d", half,ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
                                                   fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
     partCarbon->SetLineColor(kGray+3);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -529,14 +530,14 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
 //  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 3, transformation);
+    fHalfDisk->AddNode(carbonPlate, 0, transformation);
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 4, transformation);
+    fHalfDisk->AddNode(carbonPlate, 1, transformation);
 //  }
   
   // **************************************** Rohacell Plate ****************************************
   
-  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly("rohacellPlate");
+  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D1_H%d",half));
   
   TGeoBBox *rohacellBase1 = new TGeoBBox ("rohacellBase1",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
   // TGeoTranslation *t3 = new TGeoTranslation ("t3",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
@@ -546,8 +547,8 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs1 = new TGeoCompositeShape("cs1", "(rohacellBase1:t11)-(holeRohacell1:t12)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume("rohacellBaseWithHole", cs1, rohacell);
+  cs1 = new TGeoCompositeShape(Form("rohacell_D1_H%d",half), "(rohacellBase1:t11)-(holeRohacell1:t12)");
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D1_H%d",half), cs1, rohacell);
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -557,7 +558,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_%d", ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D1_H%d_%d",half, ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
                                                     fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
     partRohacell->SetLineColor(kGray);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -595,7 +596,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
   
-  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("cooling");
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly(Form("cooling_D2_H%d",half));
   
   Float_t lMiddle = fSupportXDimensions[disk][0] - 2.*fLWater;  // length of central part
   
@@ -607,7 +608,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *waterTube1 = gGeoManager->MakeTube("waterTube1", water, 0., fRWater, fLWater/2.);
+  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTube1_D2_H%d",half), water, 0., fRWater, fLWater/2.);
   waterTube1->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -619,7 +620,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   Double_t angle0rad = fangle0*(TMath::DegToRad());
   
-  TGeoVolume *waterTube2 = gGeoManager->MakeTube("waterTube2", water, 0., fRWater, fLpartial0/2.);
+  TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTube2_D2_H%d",half), water, 0., fRWater, fLpartial0/2.);
   waterTube2->SetLineColor(kBlue);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -639,7 +640,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   // Sides torus
   
-  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus("waterTorus1", water, fradius0, 0., fRWater, 0., fangle0);
+  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorus1_D2_H%d",half), water, fradius0, 0., fRWater, 0., fangle0);
   waterTorus1->SetLineColor(kBlue);
   Double_t radius0mid = (lMiddle - 2.*(fradius0*(TMath::Sin(angle0rad)) + fLpartial0*(TMath::Cos(angle0rad))))/(2*(TMath::Sin(angle0rad)));
   
@@ -654,7 +655,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   // Central Torus
   
-  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus("waterTorus2", water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
+  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorus2_D2_H%d",half), water, radius0mid, 0., fRWater, - fangle0 , 2.*fangle0);
   waterTorus2->SetLineColor(kBlue);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -668,7 +669,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   // ------------------- Tube shape -------------------
   
-  TGeoVolume *pipeTube1 = gGeoManager->MakeTube("pipeTube1", pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
+  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTube1_D2_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLWater/2.);
   pipeTube1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++){
@@ -678,7 +679,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
     cooling->AddNode (pipeTube1, itube+3, translation);
   }
   
-  TGeoVolume *pipeTube2 = gGeoManager->MakeTube("pipeTube2", pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
+  TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTube2_D2_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
   waterTube2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -698,7 +699,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   // ------------------- Torus shape -------------------
   
   // Sides Torus
-  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus("pipeTorus1", pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
+  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorus1_D2_H%d",half), pipe, fradius0, fRWater, fRWater + fDRPipe, 0., fangle0);
   pipeTorus1->SetLineColor(10);
   
   for (Int_t itube=0; itube<3; itube++) {
@@ -711,7 +712,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   }
   
   // Central Torus
-  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus("pipeTorus2", pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
+  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorus2_D2_H%d",half), pipe, radius0mid, fRWater, fRWater + fDRPipe, - fangle0 , 2.*fangle0);
   pipeTorus2->SetLineColor(10);
   
   for(Int_t itube=0; itube<3; itube++) {
@@ -740,18 +741,18 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   // **************************************** Carbon Plates ****************************************
   
-  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly("carbonPlate");
+  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D2_H%d",half));
   
-  TGeoBBox *carbonBase2 = new TGeoBBox ("carbonBase2",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
+  TGeoBBox *carbonBase2 = new TGeoBBox (Form("carbonBase2_D2_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
   TGeoTranslation *t21= new TGeoTranslation ("t21",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   t21-> RegisterYourself();
   
-  TGeoTubeSeg *holeCarbon2 = new TGeoTubeSeg("holeCarbon2", 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeCarbon2 = new TGeoTubeSeg(Form("holeCarbon2_D2_H%d",half), 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
   TGeoTranslation *t22= new TGeoTranslation ("t22",0., - fHalfDiskGap , 0.);
   t22-> RegisterYourself();
   
-  TGeoCompositeShape *cs2 = new TGeoCompositeShape("cs2", "(carbonBase2:t21)-(holeCarbon2:t22)");
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs2, carbon);
+  TGeoCompositeShape *cs2 = new TGeoCompositeShape(Form("carbon2_D2_H%d",half),Form("(carbonBase2_D2_H%d:t21)-(holeCarbon2_D2_H%d:t22)",half,half));
+  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D2_H%d", half), cs2, carbon);
   carbonBaseWithHole->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -761,43 +762,43 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_%d", ipart), carbon, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
+    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_D2_H%d_%d", half, ipart), carbon, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
     partCarbon->SetLineColor(kGray+3);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
     carbonPlate -> AddNode(partCarbon, ipart, t);
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 1, transformation);
-    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 2, transformation);
-  }
-  else if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 1, transformation);
+//    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 2, transformation);
+//  }
+//  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 3, transformation);
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 4, transformation);
-  }
+//  }
   
   // **************************************** Rohacell Plate ****************************************
   
-  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly("rohacellPlate");
+  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D2_H%d",half));
   
-  TGeoBBox *rohacellBase2 = new TGeoBBox ("rohacellBase2",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
+  TGeoBBox *rohacellBase2 = new TGeoBBox (Form("rohacellBase2_D2_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
   // TGeoTranslation *t3 = new TGeoTranslation ("t3",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   // t3 -> RegisterYourself();
   
-  TGeoTubeSeg *holeRohacell2 = new TGeoTubeSeg("holeRohacell2", 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeRohacell2 = new TGeoTubeSeg(Form("holeRohacell2_D2_H%d",half), 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself()
   ;
   
-  cs2 = new TGeoCompositeShape("cs2", "(rohacellBase2:t21)-(holeRohacell2:t22)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume("rohacellBaseWithHole", cs2, rohacell);
+  cs2 = new TGeoCompositeShape(Form("rohacell_D2_H%d",half), Form("(rohacellBase2_D2_H%d:t21)-(holeRohacell2_D2_H%d:t22)",half,half));
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D2_H%d",half), cs2, rohacell);
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -807,23 +808,23 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_%d", ipart), rohacell, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
+    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D2_H%d_%d", half,ipart), rohacell, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
     partRohacell->SetLineColor(kGray);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
     rohacellPlate -> AddNode(partRohacell, ipart, t);
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
-  }
-  if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
+//    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
+//  }
+//  if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., 0., rotation);
     fHalfDisk->AddNode(rohacellPlate, 2, transformation);
-  }
+//  }
   
 }
 
@@ -842,7 +843,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   TGeoMedium *rohacell = gGeoManager->GetMedium("MFT_Rohacell");
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
-  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("cooling");
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly(Form("cooling_D3_H%d",half));
   
   Double_t deltaz= fHeatExchangerThickness - fCarbonThickness*2; //distance between pair of carbon plans
   Double_t lMiddle3[3] = {fSupportXDimensions[3][0] - 2.*fLWater3[0], fSupportXDimensions[3][0] - 2.*fLWater3[0], 0.};//distance between tube part
@@ -874,17 +875,17 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     
     // -------- Tube shape --------
     
-    TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d", itube), water, 0., fRWater, fLWater3[itube]/2.);
+    TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d_D3_H%d", itube,half), water, 0., fRWater, fLWater3[itube]/2.);
     waterTube1->SetLineColor(kBlue);
     translation = new TGeoTranslation (fXPosition3[itube], 0., fLWater3[itube]/2. + lMiddle3[itube]/2.);
     cooling->AddNode (waterTube1, 1, translation);
     
-    TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo%d", itube), water, 0., fRWater, fLWater3[itube]/2.);
+    TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo%d_D3_H%d", itube,half), water, 0., fRWater, fLWater3[itube]/2.);
     waterTube2->SetLineColor(kBlue);
     translation = new TGeoTranslation (fXPosition3[itube], 0., -fLWater3[itube]/2. - lMiddle3[itube]/2.);
     cooling->AddNode (waterTube2, 2, translation);
     
-    TGeoVolume *waterTube3 = gGeoManager->MakeTube(Form("waterTubethree%d", itube), water, 0., fRWater, fLpartial3[itube]/2.);
+    TGeoVolume *waterTube3 = gGeoManager->MakeTube(Form("waterTubethree%d_D3_H%d", itube,half), water, 0., fRWater, fLpartial3[itube]/2.);
     waterTube3->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", -90., 0 - fangle3[itube], 0.);
     
@@ -902,7 +903,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     // -------- Torus shape --------
     
     //Sides torus
-    TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", itube), water, fradius3[itube], 0., fRWater, 0., fangle3[itube]);
+    TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d_D3_H%d", itube,half), water, fradius3[itube], 0., fRWater, 0., fangle3[itube]);
     waterTorus1->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., - lMiddle3[itube]/2., rotation);
@@ -912,7 +913,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     cooling->AddNode (waterTorus1, 5, transformation);
     
     //Central torus
-    TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d", itube), water, radius3mid[0], 0., fRWater, -fangle3[itube], 2.*fangle3[itube]);
+    TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d_D3_H%d", itube,half), water, radius3mid[0], 0., fRWater, -fangle3[itube], 2.*fangle3[itube]);
     waterTorus2->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", 0., 90., 0.);
     transformation = new TGeoCombiTrans(fXPosition3[itube] + fradius3[0]*(1-(TMath::Cos(beta3rad[0])))+fLpartial3[0]*TMath::Sin(beta3rad[0]) -
@@ -924,7 +925,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   // -------- Tube shape --------
   
-  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d", 2), water, 0., fRWater, fLWater3[2]/2.);
+  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone2_D3_H%d",half), water, 0., fRWater, fLWater3[2]/2.);
   waterTube1->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 90., -fangleThirdPipe3, 90.);
   transformation = new TGeoCombiTrans (fXPosition3[2] + fLWater3[2]*TMath::Sin(fangleThirdPipe3rad)/2., 0.,
@@ -938,7 +939,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   // -------- Torus shape --------
   
-  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", 2), water, fradius3[2], 0., fRWater, fangleThirdPipe3, fangle3[2]);
+  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone2_D3_H%d",half), water, fradius3[2], 0., fRWater, fangleThirdPipe3, fangle3[2]);
   waterTorus1->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXPosition3[2] + fLWater3[2]*TMath::Sin(fangleThirdPipe3rad) +
@@ -950,7 +951,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
                                       fradius3[2]*(TMath::Cos(fangleThirdPipe3rad)), 0.,  lMiddle3[2]/2. + fradius3[2]*(TMath::Sin(fangleThirdPipe3rad)), rotation);
   cooling->AddNode (waterTorus1, 5, transformation);
   
-  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d", 2), water, radius3mid[1], 0., fRWater, -(fangle3[2] + fangleThirdPipe3),
+  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo2_D3_H%d",half), water, radius3mid[1], 0., fRWater, -(fangle3[2] + fangleThirdPipe3),
                                                    2.*(fangle3[2] + fangleThirdPipe3));
   waterTorus2->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 0., 90., 0.);
@@ -1010,7 +1011,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   Double_t rotation3z[3] = {0., 180 - alpha3fourth[1]  , 0.};
   
   for (Int_t i= 0; i<3; i++) {
-    waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", i), water, radius3fourth[i], 0., fRWater, beta3fourth[i],  alpha3fourth[i]);
+    waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d_D3_H%d", i,half), water, radius3fourth[i], 0., fRWater, beta3fourth[i],  alpha3fourth[i]);
     waterTorus1->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", rotation3x[i], rotation3y[i], rotation3z[i]);
     transformation = new TGeoCombiTrans(translation3x[i], translation3y[i], translation3z[i], rotation);
@@ -1020,7 +1021,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     cooling->AddNode (waterTorus1, 8, transformation);
   }
   
-  waterTorus2 = gGeoManager->MakeTorus(Form("waterTorusone%d", 3), water, radius3fourth[3], 0., fRWater, -alpha3fourth[3], 2*alpha3fourth[3]);
+  waterTorus2 = gGeoManager->MakeTorus(Form("waterTorusone3_D3_H%d",half), water, radius3fourth[3], 0., fRWater, -alpha3fourth[3], 2*alpha3fourth[3]);
   waterTorus2->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 180., 90., 180);
   transformation = new TGeoCombiTrans(translation3x[3], 0., 0., rotation);
@@ -1034,17 +1035,17 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     
     // -------- Tube shape --------
     
-    TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d", itube), pipe, fRWater, fRWater + fDRPipe, fLWater3[itube]/2.);
+    TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d_D3_H%d", itube,half), pipe, fRWater, fRWater + fDRPipe, fLWater3[itube]/2.);
     pipeTube1->SetLineColor(10);
     translation = new TGeoTranslation (fXPosition3[itube], 0., fLWater3[itube]/2. + lMiddle3[itube]/2.);
     cooling->AddNode (pipeTube1, 1, translation);
     
-    TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo%d", itube), pipe, fRWater, fRWater + fDRPipe, fLWater3[itube]/2.);
+    TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo%d_D3_H%d", itube,half), pipe, fRWater, fRWater + fDRPipe, fLWater3[itube]/2.);
     pipeTube2->SetLineColor(10);
     translation = new TGeoTranslation (fXPosition3[itube], 0., -fLWater3[itube]/2. - lMiddle3[itube]/2.);
     cooling->AddNode (pipeTube2, 2, translation);
     
-    TGeoVolume *pipeTube3 = gGeoManager->MakeTube(Form("pipeTubethree%d", itube), pipe, fRWater, fRWater + fDRPipe, fLpartial3[itube]/2.);
+    TGeoVolume *pipeTube3 = gGeoManager->MakeTube(Form("pipeTubethree%d_D3_H%d", itube,half), pipe, fRWater, fRWater + fDRPipe, fLpartial3[itube]/2.);
     pipeTube3->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", -90., 0 - fangle3[itube], 0.);
     
@@ -1062,7 +1063,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     // -------- Torus shape --------
     
     //Sides torus
-    TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", itube), pipe, fradius3[itube], fRWater, fRWater + fDRPipe, 0., fangle3[itube]);
+    TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d_D3_H%d", itube,half), pipe, fradius3[itube], fRWater, fRWater + fDRPipe, 0., fangle3[itube]);
     pipeTorus1->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., - lMiddle3[itube]/2., rotation);
@@ -1073,7 +1074,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     
     
     //Central torus
-    TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d", itube), pipe, radius3mid[0], fRWater, fRWater + fDRPipe, -fangle3[itube], 2.*fangle3[itube]);
+    TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d_D3_H%d", itube,half), pipe, radius3mid[0], fRWater, fRWater + fDRPipe, -fangle3[itube], 2.*fangle3[itube]);
     pipeTorus2->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", 0., 90., 0.);
     transformation = new TGeoCombiTrans(fXPosition3[itube] + fradius3[0]*(1-(TMath::Cos(beta3rad[0])))+fLpartial3[0]*TMath::Sin(beta3rad[0]) - radius3mid[0]*TMath::Cos(beta3rad[0]) , 0., 0., rotation);
@@ -1084,7 +1085,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   // -------- Tube shape --------
   
-  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d", 2), pipe, fRWater, fRWater + fDRPipe, fLWater3[2]/2.);
+  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone2_D3_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLWater3[2]/2.);
   pipeTube1->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 90., -fangleThirdPipe3, 90.);
   transformation = new TGeoCombiTrans (fXPosition3[2] + fLWater3[2]*TMath::Sin(fangleThirdPipe3rad)/2., 0.,
@@ -1098,7 +1099,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   // -------- Torus shape --------
   
-  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", 2), pipe, fradius3[2], fRWater, fRWater + fDRPipe, fangleThirdPipe3, fangle3[2]);
+  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone2_D3_H%d",half), pipe, fradius3[2], fRWater, fRWater + fDRPipe, fangleThirdPipe3, fangle3[2]);
   pipeTorus1->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXPosition3[2] + fLWater3[2]*TMath::Sin(fangleThirdPipe3rad) +
@@ -1109,7 +1110,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
                                       fradius3[2]*(TMath::Cos(fangleThirdPipe3rad)), 0.,  lMiddle3[2]/2. + fradius3[2]*(TMath::Sin(fangleThirdPipe3rad)), rotation);
   cooling->AddNode (pipeTorus1, 5, transformation);
   
-  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d", 2), pipe, radius3mid[1], fRWater, fRWater + fDRPipe,
+  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo2_D3_H%d",half), pipe, radius3mid[1], fRWater, fRWater + fDRPipe,
                                                   -(fangle3[2] + fangleThirdPipe3), 2.*(fangle3[2] + fangleThirdPipe3));
   pipeTorus2->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 0., 90., 0.);
@@ -1121,7 +1122,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   // ------------------- Fourth pipe -------------------
   
   for(Int_t i= 0; i<3; i++){
-    pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", i), pipe, radius3fourth[i], fRWater, fRWater + fDRPipe, beta3fourth[i],  alpha3fourth[i]);
+    pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d_D3_H%d", i,half), pipe, radius3fourth[i], fRWater, fRWater + fDRPipe, beta3fourth[i],  alpha3fourth[i]);
     pipeTorus1->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", rotation3x[i], rotation3y[i], rotation3z[i]);
     transformation = new TGeoCombiTrans(translation3x[i], translation3y[i], translation3z[i], rotation);
@@ -1131,41 +1132,42 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     cooling->AddNode (pipeTorus1, 8, transformation);
   }
   
-  pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorusone%d", 3), pipe, radius3fourth[3], fRWater, fRWater + fDRPipe, -alpha3fourth[3], 2*alpha3fourth[3]);
+  pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorusone3_D3_H%d",half), pipe, radius3fourth[3], fRWater, fRWater + fDRPipe, -alpha3fourth[3], 2*alpha3fourth[3]);
   pipeTorus2->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 180., 90., 180);
   transformation = new TGeoCombiTrans(translation3x[3], 0., 0., rotation);
   cooling->AddNode(pipeTorus2, 9, transformation);
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 90., 90., 0.);
-    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 1, transformation);
-    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 2, transformation);
-  }
-  else if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 90., 90., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
+//    fHalfDisk->AddNode(cooling, 1, transformation);
+//    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
+//    fHalfDisk->AddNode(cooling, 2, transformation);
+//  }
+//  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", -90., 90., 0.);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
     fHalfDisk->AddNode(cooling, 3, transformation);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
     fHalfDisk->AddNode(cooling, 4, transformation);
-  }
-  
+//  }
+	
   // **************************************** Carbon Plates ****************************************
   
-  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly("carbonPlate");
+  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D3_H%d",half));
   
-  TGeoBBox *carbonBase3 = new TGeoBBox ("carbonBase3",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
+  TGeoBBox *carbonBase3 = new TGeoBBox (Form("carbonBase3_D3_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
   TGeoTranslation *t31= new TGeoTranslation ("t31",0., (fSupportYDimensions[disk][0])/2.+ fHalfDiskGap , 0.);
   t31-> RegisterYourself();
   
-  TGeoTubeSeg *holeCarbon3 = new TGeoTubeSeg("holeCarbon3", 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeCarbon3 = new TGeoTubeSeg(Form("holeCarbon3_D3_H%d",half), 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
   TGeoTranslation *t32= new TGeoTranslation ("t32",0., - fHalfDiskGap , 0.);
   t32-> RegisterYourself();
   
-  TGeoCompositeShape *cs3 = new TGeoCompositeShape("cs3", "(carbonBase3:t31)-(holeCarbon3:t32)");
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs3, carbon);
+  TGeoCompositeShape *cs3 = new TGeoCompositeShape(Form("Carbon3_D3_H%d",half),
+																									 Form("(carbonBase3_D3_H%d:t31)-(holeCarbon3_D3_H%d:t32)",half,half) );
+  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D3_H%d",half), cs3, carbon);
   carbonBaseWithHole->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1175,7 +1177,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_%d", ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_D3_H%d_%d", half,ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
                                                   fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
     partCarbon->SetLineColor(kGray+3);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -1183,35 +1185,35 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 1, transformation);
-    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 2, transformation);
-  }
-  else if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 1, transformation);
+//    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 2, transformation);
+//  }
+//  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 3, transformation);
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 4, transformation);
-  }
-  
+//  }
+	
   // **************************************** Rohacell Plate ****************************************
   
-  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly("rohacellPlate");
+  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D3_H%d",half));
   
-  TGeoBBox *rohacellBase3 = new TGeoBBox ("rohacellBase3",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
+  TGeoBBox *rohacellBase3 = new TGeoBBox (Form("rohacellBase3_D3_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
   // TGeoTranslation *t3 = new TGeoTranslation ("t3",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   // t3 -> RegisterYourself();
   
-  TGeoTubeSeg *holeRohacell3 = new TGeoTubeSeg("holeRohacell3", 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeRohacell3 = new TGeoTubeSeg(Form("holeRohacell3_D3_H%d",half), 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs3 = new TGeoCompositeShape("cs3", "(rohacellBase3:t31)-(holeRohacell3:t32)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume("rohacellBaseWithHole", cs3, rohacell);
+  cs3 = new TGeoCompositeShape(Form("rohacell_D3_H%d",half), Form("(rohacellBase3_D3_H%d:t31)-(holeRohacell3_D3_H%d:t32)",half,half));
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D3_H%d",half), cs3, rohacell);
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1221,7 +1223,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_%d", ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D3_H%d_%d", half, ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
                                                     fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
     partRohacell->SetLineColor(kGray);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -1229,17 +1231,17 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
-  }
-  if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
+//    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
+//  }
+//  if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., 0., rotation);
     fHalfDisk->AddNode(rohacellPlate, 2, transformation);
-  }
-  
+//  }
+	
   
 }
 
@@ -1260,7 +1262,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   TGeoMedium *pipe     = gGeoManager->GetMedium("MFT_Polyimide");
   
   
-  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("cooling");
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly(Form("cooling_D4_H%d",half));
   Double_t deltaz= fHeatExchangerThickness - fCarbonThickness*2; //distance between pair of carbon plans
   
   TGeoTranslation *translation    = 0;
@@ -1286,14 +1288,14 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     
     // -------- Tube shape --------
     
-    TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d", i), water, 0., fRWater, fLwater4[i]/2.);
+    TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d_D4_H%d", i,half), water, 0., fRWater, fLwater4[i]/2.);
     waterTube1->SetLineColor(kBlue);
     translation = new TGeoTranslation (fXposition4[i], 0., fLwater4[i]/2. + lMiddle4[i]/2.);
     cooling->AddNode (waterTube1, 1, translation);
     translation = new TGeoTranslation (fXposition4[i], 0., -fLwater4[i]/2. - lMiddle4[i]/2.);
     cooling->AddNode (waterTube1, 2, translation);
     
-    TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo%d", i), water, 0., fRWater, fLpartial4[i]/2.);
+    TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo%d_D4_H%d", i,half), water, 0., fRWater, fLpartial4[i]/2.);
     waterTube2->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", -90., - fangle4[i], 0.);
     transformation = new TGeoCombiTrans( fXposition4[i]+fradius4[i]*(1-(TMath::Cos(anglerad[i])))+fLpartial4[i]*TMath::Sin(anglerad[i])/2., 0.,
@@ -1308,7 +1310,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     
     // -------- Torus shape --------
     
-    TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", i), water, fradius4[i], 0., fRWater, 0., fangle4[i]);
+    TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d_D4_H%d", i,half), water, fradius4[i], 0., fRWater, 0., fangle4[i]);
     waterTorus1->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fXposition4[i] + fradius4[i], 0., -fSupportXDimensions[4][0]/2. + fLwater4[i], rotation);
@@ -1317,7 +1319,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     transformation = new TGeoCombiTrans(fXposition4[i] + fradius4[i], 0., fSupportXDimensions[4][0]/2. - fLwater4[i], rotation);
     cooling->AddNode (waterTorus1, 2, transformation);
     
-    TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d", i), water, fradius4mid[i], 0., fRWater, 180 - fangle4[i] ,2*fangle4[i]);
+    TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d_D4_H%d", i,half), water, fradius4mid[i], 0., fRWater, 180 - fangle4[i] ,2*fangle4[i]);
     waterTorus2->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fXposition4[i]  + fradius4[i]*(1-(TMath::Cos(anglerad[i])))+fLpartial4[i]*TMath::Sin(anglerad[i]) -
@@ -1330,21 +1332,21 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   // -------- Tube shape --------
   
-  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone%d", 2), water, 0., fRWater, fLwater4[2]/2.);
+  TGeoVolume *waterTube1 = gGeoManager->MakeTube(Form("waterTubeone2_D4_H%d", half), water, 0., fRWater, fLwater4[2]/2.);
   waterTube1->SetLineColor(kBlue);
   translation = new TGeoTranslation (fXposition4[2], 0., fLwater4[2]/2. + lMiddle4[2]/2.);
   cooling->AddNode (waterTube1, 1, translation);
   translation = new TGeoTranslation (fXposition4[2], 0., -fLwater4[2]/2. - lMiddle4[2]/2.);
   cooling->AddNode (waterTube1, 2, translation);
   
-  TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo%d", 2), water, 0., fRWater,  lMiddle4[2]/2. - 2.*fradius4[2]*TMath::Sin(anglerad[2]));
+  TGeoVolume *waterTube2 = gGeoManager->MakeTube(Form("waterTubetwo2_D4_H%d", half), water, 0., fRWater,  lMiddle4[2]/2. - 2.*fradius4[2]*TMath::Sin(anglerad[2]));
   waterTube2->SetLineColor(kBlue);
   translation = new TGeoTranslation (fXposition4[2] + 2.*fradius4[2]*(1-TMath::Cos(anglerad[2])), 0., 0.);
   cooling->AddNode (waterTube2, 3, translation);
   
   // -------- Torus shape --------
   
-  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", 2), water, fradius4[2], 0., fRWater, 0., fangle4[2]);
+  TGeoVolume *waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone2_D4_H%d", half), water, fradius4[2], 0., fRWater, 0., fangle4[2]);
   waterTorus1->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXposition4[2] + fradius4[2], 0., -fSupportXDimensions[4][0]/2. + fLwater4[2], rotation);
@@ -1363,13 +1365,13 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   // ------------------- Fourth pipe -------------------
   
-  waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", 3), water, fradius4[3], 0., fRWater, 0., fangle4[3]);
+  waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone3_D4_H%d", half), water, fradius4[3], 0., fRWater, 0., fangle4[3]);
   waterTorus1->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXposition4[3] + fradius4[3], 0., -fSupportXDimensions[4][0]/2., rotation);
   cooling->AddNode (waterTorus1, 1, transformation);
   
-  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo%d", 3), water,  fradius4[4] , 0., fRWater, 0., fangle4[4]);
+  TGeoVolume *waterTorus2 = gGeoManager->MakeTorus(Form("waterTorustwo3_D4_H%d", half), water,  fradius4[4] , 0., fRWater, 0., fangle4[4]);
   waterTorus2->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 180., -90., 180 - fangle4[3]);
   transformation = new TGeoCombiTrans( fXposition4[3] + fradius4[3] - fradius4[3]*TMath::Cos(anglerad[3]) -
@@ -1385,7 +1387,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
                                       fradius4[3]*TMath::Sin(anglerad[3]) - fradius4[4]*TMath::Sin(anglerad[3]), rotation);
   cooling->AddNode (waterTorus2, 2, transformation);
   
-  TGeoVolume *waterTorus3 =  gGeoManager->MakeTorus(Form("waterTorusthree%d", 3), water,  fradius4mid[2] , 0., fRWater, -fangle4[5], 2.*fangle4[5]);
+  TGeoVolume *waterTorus3 =  gGeoManager->MakeTorus(Form("waterTorusthree3_D4_H%d", half), water,  fradius4mid[2] , 0., fRWater, -fangle4[5], 2.*fangle4[5]);
   waterTorus3->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 0., 90., 0.);
   transformation = new TGeoCombiTrans( fXposition4[3] + fradius4[3] - fradius4[3]*TMath::Cos(anglerad[3]) -
@@ -1446,7 +1448,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   Double_t rotation4z[4] = {0., 180 - fangle4fifth[1]  , 0., 0.};
   
   for (Int_t i= 0; i<4; i++){
-    waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d", i), water, fradius4fifth[i], 0., fRWater, beta4fourth[i],  fangle4fifth[i]);
+    waterTorus1 = gGeoManager->MakeTorus(Form("waterTorusone%d_D4_H%d", i,half), water, fradius4fifth[i], 0., fRWater, beta4fourth[i],  fangle4fifth[i]);
     waterTorus1->SetLineColor(kBlue);
     rotation = new TGeoRotation ("rotation", rotation4x[i], rotation4y[i], rotation4z[i]);
     transformation = new TGeoCombiTrans(translation4x[i], translation4y[i], translation4z[i], rotation);
@@ -1456,7 +1458,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     cooling->AddNode (waterTorus1, 8, transformation);
   }
   
-  TGeoVolume *waterTubeFive = gGeoManager->MakeTube(Form("waterTubeFive%d", 1), water, 0., fRWater, -translation4z[3]);
+  TGeoVolume *waterTubeFive = gGeoManager->MakeTube(Form("waterTubeFive1_D4_H%d",half), water, 0., fRWater, -translation4z[3]);
   waterTubeFive->SetLineColor(kBlue);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(translation4x[3] + fradius4fifth[3], 0., 0., rotation);
@@ -1471,14 +1473,14 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     
     // -------- Tube shape --------
     
-    TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d", i), pipe, fRWater, fRWater + fDRPipe, fLwater4[i]/2.);
+    TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d_D4_H%d", i,half), pipe, fRWater, fRWater + fDRPipe, fLwater4[i]/2.);
     pipeTube1->SetLineColor(10);
     translation = new TGeoTranslation (fXposition4[i], 0., fLwater4[i]/2. + lMiddle4[i]/2.);
     cooling->AddNode (pipeTube1, 1, translation);
     translation = new TGeoTranslation (fXposition4[i], 0., -fLwater4[i]/2. - lMiddle4[i]/2.);
     cooling->AddNode (pipeTube1, 2, translation);
     
-    TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo%d", i), pipe, fRWater, fRWater + fDRPipe, fLpartial4[i]/2.);
+    TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo%d_D4_H%d", i,half), pipe, fRWater, fRWater + fDRPipe, fLpartial4[i]/2.);
     pipeTube2->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", -90., - fangle4[i], 0.);
     transformation = new TGeoCombiTrans( fXposition4[i]+fradius4[i]*(1-(TMath::Cos(anglerad[i])))+fLpartial4[i]*TMath::Sin(anglerad[i])/2., 0.,
@@ -1493,7 +1495,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     
     // -------- Torus shape --------
     
-    TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", i), pipe, fradius4[i], fRWater, fRWater + fDRPipe, 0., fangle4[i]);
+    TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d_D4_H%d", i,half), pipe, fradius4[i], fRWater, fRWater + fDRPipe, 0., fangle4[i]);
     pipeTorus1->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fXposition4[i] + fradius4[i], 0., -fSupportXDimensions[4][0]/2. + fLwater4[i], rotation);
@@ -1502,7 +1504,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     transformation = new TGeoCombiTrans(fXposition4[i] + fradius4[i], 0., fSupportXDimensions[4][0]/2. - fLwater4[i], rotation);
     cooling->AddNode (pipeTorus1, 2, transformation);
     
-    TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d", i), pipe, fradius4mid[i], fRWater, fRWater + fDRPipe, 180 - fangle4[i] ,2*fangle4[i]);
+    TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d_D4_H%d", i,half), pipe, fradius4mid[i], fRWater, fRWater + fDRPipe, 180 - fangle4[i] ,2*fangle4[i]);
     pipeTorus2->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", 180., 90., 0.);
     transformation = new TGeoCombiTrans(fXposition4[i]  + fradius4[i]*(1-(TMath::Cos(anglerad[i])))+fLpartial4[i]*TMath::Sin(anglerad[i]) -
@@ -1515,21 +1517,21 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   // -------- Tube shape --------
   
-  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone%d", 2), pipe, fRWater, fRWater + fDRPipe, fLwater4[2]/2.);
+  TGeoVolume *pipeTube1 = gGeoManager->MakeTube(Form("pipeTubeone2_D4_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLwater4[2]/2.);
   pipeTube1->SetLineColor(10);
   translation = new TGeoTranslation (fXposition4[2], 0., fLwater4[2]/2. + lMiddle4[2]/2.);
   cooling->AddNode (pipeTube1, 1, translation);
   translation = new TGeoTranslation (fXposition4[2], 0., -fLwater4[2]/2. - lMiddle4[2]/2.);
   cooling->AddNode (pipeTube1, 2, translation);
   
-  TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo%d", 2), pipe, fRWater, fRWater + fDRPipe,  lMiddle4[2]/2. - 2.*fradius4[2]*TMath::Sin(anglerad[2]));
+  TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTubetwo2_D4_H%d",half), pipe, fRWater, fRWater + fDRPipe,  lMiddle4[2]/2. - 2.*fradius4[2]*TMath::Sin(anglerad[2]));
   pipeTube2->SetLineColor(10);
   translation = new TGeoTranslation (fXposition4[2] + 2.*fradius4[2]*(1-TMath::Cos(anglerad[2])), 0., 0.);
   cooling->AddNode (pipeTube2, 3, translation);
   
   // -------- Torus shape --------
   
-  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", 2), pipe, fradius4[2], fRWater, fRWater + fDRPipe, 0., fangle4[2]);
+  TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone2_D4_H%d",half), pipe, fradius4[2], fRWater, fRWater + fDRPipe, 0., fangle4[2]);
   pipeTorus1->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXposition4[2] + fradius4[2], 0., -fSupportXDimensions[4][0]/2. + fLwater4[2], rotation);
@@ -1548,13 +1550,13 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   // ------------------- Fourth pipe -------------------
   
-  pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", 3), pipe, fradius4[3], fRWater, fRWater + fDRPipe, 0., fangle4[3]);
+  pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone3_D4_H%d",half), pipe, fradius4[3], fRWater, fRWater + fDRPipe, 0., fangle4[3]);
   pipeTorus1->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 180., 90., 0.);
   transformation = new TGeoCombiTrans(fXposition4[3] + fradius4[3], 0., -fSupportXDimensions[4][0]/2., rotation);
   cooling->AddNode (pipeTorus1, 1, transformation);
   
-  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo%d", 3), pipe,  fradius4[4] , fRWater, fRWater + fDRPipe, 0., fangle4[4]);
+  TGeoVolume *pipeTorus2 = gGeoManager->MakeTorus(Form("pipeTorustwo3_D4_H%d",half), pipe,  fradius4[4] , fRWater, fRWater + fDRPipe, 0., fangle4[4]);
   pipeTorus2->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 180., -90., 180 - fangle4[3]);
   transformation = new TGeoCombiTrans( fXposition4[3] + fradius4[3] - fradius4[3]*TMath::Cos(anglerad[3]) -
@@ -1570,7 +1572,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
                                       fradius4[3]*TMath::Sin(anglerad[3]) - fradius4[4]*TMath::Sin(anglerad[3]), rotation);
   cooling->AddNode (pipeTorus2, 2, transformation);
   
-  TGeoVolume *pipeTorus3 =  gGeoManager->MakeTorus(Form("pipeTorusthree%d", 3), pipe,  fradius4mid[2] , fRWater, fRWater + fDRPipe, -fangle4[5], 2.*fangle4[5]);
+  TGeoVolume *pipeTorus3 =  gGeoManager->MakeTorus(Form("pipeTorusthree3_D4_H%d",half), pipe,  fradius4mid[2] , fRWater, fRWater + fDRPipe, -fangle4[5], 2.*fangle4[5]);
   pipeTorus3->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 0., 90., 0.);
   transformation = new TGeoCombiTrans( fXposition4[3] + fradius4[3] - fradius4[3]*TMath::Cos(anglerad[3]) -
@@ -1580,7 +1582,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   // ------------------- Fifth pipe -------------------
   
   for(Int_t i= 0; i<4; i++){
-    pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d", i), pipe, fradius4fifth[i], fRWater, fRWater + fDRPipe, beta4fourth[i],  fangle4fifth[i]);
+    pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d_D4_H%d", i,half), pipe, fradius4fifth[i], fRWater, fRWater + fDRPipe, beta4fourth[i],  fangle4fifth[i]);
     pipeTorus1->SetLineColor(10);
     rotation = new TGeoRotation ("rotation", rotation4x[i], rotation4y[i], rotation4z[i]);
     transformation = new TGeoCombiTrans(translation4x[i], translation4y[i], translation4z[i], rotation);
@@ -1590,42 +1592,43 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     cooling->AddNode (pipeTorus1, 8, transformation);
   }
   
-  TGeoVolume *pipeTubeFive = gGeoManager->MakeTube(Form("pipeTubeFive%d", 1), pipe, fRWater, fRWater + fDRPipe, -translation4z[3]);
+  TGeoVolume *pipeTubeFive = gGeoManager->MakeTube(Form("pipeTubeFive1_D4_H%d", half), pipe, fRWater, fRWater + fDRPipe, -translation4z[3]);
   pipeTubeFive->SetLineColor(10);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(translation4x[3] + fradius4fifth[3], 0., 0., rotation);
   cooling->AddNode(pipeTubeFive, 1, transformation);
   
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 90., 90., 0.);
-    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 1, transformation);
-    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
-    fHalfDisk->AddNode(cooling, 2, transformation);
-  }
-  else if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 90., 90., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
+//    fHalfDisk->AddNode(cooling, 1, transformation);
+//    transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
+//    fHalfDisk->AddNode(cooling, 2, transformation);
+//  }
+//  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", -90., 90., 0.);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] + deltaz/2. - fCarbonThickness - fRWater - fDRPipe, rotation);
     fHalfDisk->AddNode(cooling, 3, transformation);
     transformation = new TGeoCombiTrans(0., 0., fZPlan[disk] - deltaz/2. + fCarbonThickness + fRWater + fDRPipe, rotation);
     fHalfDisk->AddNode(cooling, 4, transformation);
-  }
-  
+//  }
+	
   // **************************************** Carbon Plates ****************************************
   
-  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly("carbonPlate");
+  TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D4_H%d",half));
   
-  TGeoBBox *carbonBase4 = new TGeoBBox ("carbonBase4",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
+  TGeoBBox *carbonBase4 = new TGeoBBox (Form("carbonBase4_D4_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
   TGeoTranslation *t41= new TGeoTranslation ("t41",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap, 0.);
   t41-> RegisterYourself();
   
-  TGeoTubeSeg *holeCarbon4 = new TGeoTubeSeg("holeCarbon4", 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeCarbon4 = new TGeoTubeSeg(Form("holeCarbon4_D4_H%d",half), 0., fRMin[disk], fCarbonThickness + 0.000001, 0, 180.);
   TGeoTranslation *t42= new TGeoTranslation ("t42",0., - fHalfDiskGap , 0.);
   t42-> RegisterYourself();
   
-  TGeoCompositeShape *cs4 = new TGeoCompositeShape("cs4", "(carbonBase4:t41)-(holeCarbon4:t42)");
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs4, carbon);
+	TGeoCompositeShape *cs4 = new TGeoCompositeShape(Form("Carbon4_D4_H%d",half),
+																									 Form("(carbonBase4_D4_H%d:t41)-(holeCarbon4_D4_H%d:t42)",half,half));
+  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D4_H%d",half), cs4, carbon);
   carbonBaseWithHole->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1635,7 +1638,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_%d", ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partCarbon = gGeoManager->MakeBox(Form("partCarbon_D4_H%d_%d", half,ipart), carbon, fSupportXDimensions[disk][ipart]/2.,
                                                   fSupportYDimensions[disk][ipart]/2., fCarbonThickness);
     partCarbon->SetLineColor(kGray+3);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -1643,35 +1646,35 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 1, transformation);
-    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
-    fHalfDisk->AddNode(carbonPlate, 2, transformation);
-  }
-  else if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 1, transformation);
+//    transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
+//    fHalfDisk->AddNode(carbonPlate, 2, transformation);
+//  }
+//  else if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 3, transformation);
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 4, transformation);
-  }
-  
+//  }
+	
   // **************************************** Rohacell Plate ****************************************
   
-  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly("rohacellPlate");
+  TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D4_H%d",half));
   
-  TGeoBBox *rohacellBase4 = new TGeoBBox ("rohacellBase4",  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
+  TGeoBBox *rohacellBase4 = new TGeoBBox (Form("rohacellBase4_D4_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fRohacellThickness);
   // TGeoTranslation *t3 = new TGeoTranslation ("t3",0., (fSupportYDimensions[disk][0])/2. + fHalfDiskGap , 0.);
   // t3 -> RegisterYourself();
   
-  TGeoTubeSeg *holeRohacell4 = new TGeoTubeSeg("holeRohacell4", 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
+  TGeoTubeSeg *holeRohacell4 = new TGeoTubeSeg(Form("holeRohacell4_D4_H%d",half), 0., fRMin[disk], fRohacellThickness + 0.000001, 0, 180.);
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs4 = new TGeoCompositeShape("cs4", "(rohacellBase4:t41)-(holeRohacell4:t42)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume("rohacellBaseWithHole", cs4, rohacell);
+  cs4 = new TGeoCompositeShape(Form("rohacell_D4_H%d",half), Form("(rohacellBase4_D4_H%d:t41)-(holeRohacell4_D4_H%d:t42)",half,half));
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D4_H%d",half), cs4, rohacell);
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1681,7 +1684,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
-    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacell_%d", ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
+    TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D4_H%d_%d", half, ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
                                                     fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
     partRohacell->SetLineColor(kGray);
     TGeoTranslation *t = new TGeoTranslation ("t", 0, ty + fHalfDiskGap, fZPlan[disk]);
@@ -1689,17 +1692,17 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
   
-  if (half == kTop) {
-    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
-    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
-  }
-  if (half == kBottom) {
+//  if (half == kTop) {
+//    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
+//    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
+//    fHalfDisk->AddNode(rohacellPlate, 1, transformation);
+//  }
+//  if (half == kBottom) {
     rotation = new TGeoRotation ("rotation", 180., 0., 0.);
     transformation = new TGeoCombiTrans(0., 0., 0., rotation);
     fHalfDisk->AddNode(rohacellPlate, 2, transformation);
-  }
-  
+//  }
+	
 }
 
 //====================================================================================================================================================

@@ -56,7 +56,7 @@ fSegmentation(seg)
   
   SetUniqueID(fSegmentation->GetUniqueID());
   
-  SetName(Form("H%d",mftGeom->GetHalfMFTID(GetUniqueID())));
+  SetName(Form("MFT_H_%d",mftGeom->GetHalfMFTID(GetUniqueID())));
   
   
   AliInfo(Form("Creating : %s ",GetName()));
@@ -79,12 +79,12 @@ AliMFTHalf::~AliMFTHalf() {
 void AliMFTHalf::CreateHalfDisks(){
   AliInfo(Form("Creating  %d Half-Disk ",fSegmentation->GetNHalfDisks()));
 
-  for (Int_t iDisk = 0 ; iDisk < fSegmentation->GetNHalfDisks(); iDisk++) {
+	for (Int_t iDisk = 0 ; iDisk < fSegmentation->GetNHalfDisks(); iDisk++) {
     AliMFTHalfDiskSegmentation * halfDiskSeg = fSegmentation->GetHalfDisk(iDisk);
     
     AliMFTHalfDisk * halfDisk = new AliMFTHalfDisk(halfDiskSeg);
     Int_t halfDiskId = AliMFTGeometry::Instance()->GetHalfDiskID(halfDiskSeg->GetUniqueID());
-    fHalfVolume->AddNode(halfDisk->GetVolume(),halfDiskId,halfDiskSeg->GetTransformation());
+    fHalfVolume->AddNode(halfDisk->GetVolume(),0,halfDiskSeg->GetTransformation());
     delete halfDisk;
   }
   
