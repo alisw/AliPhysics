@@ -3784,7 +3784,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	AliAODJet* embeddedJet      = 0; 
 	AliAODJet* extraJet         = 0; // jet from UE + detector levely PYTHIA tracks, only needed in extraonly branch, just dummy here
   
-	std::cout<<"fBranchEmbeddedJets before index embedded: "<<fBranchEmbeddedJets<<std::endl;
+	if(fDebug>2)std::cout<<"fBranchEmbeddedJets before index embedded: "<<fBranchEmbeddedJets<<std::endl;
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
 	  
@@ -3806,7 +3806,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    //std::cout<<"pointer to embeddedJet: "<<embeddedJet<<std::endl;	
     
 	    deltaREmbedded   = jet->DeltaR((AliVParticle*) (embeddedJet)); 
-	    std::cout<<"deltaREmbedded: "<<deltaREmbedded<<std::endl;	  
+	    if(fDebug>2)std::cout<<"deltaREmbedded: "<<deltaREmbedded<<std::endl;	  
   
 	    fh1DeltaREmbedded->Fill(deltaREmbedded);
 
