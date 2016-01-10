@@ -1189,6 +1189,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliInfo("==================================================");
     }
 
+    if ( lPeriodName.EqualTo("Empty") ){ 
+	//This is uncalibrated data, skip all
+	AliWarning("This is uncalibrated data, will generate empty OADB!");
+	AliWarning("This means kNoCalib (=199) will be returned everywhere.");  
+	CreateEmptyOADB(); 
+	return -1;  
+    }
 
     //Determine location of file to open: default OADB
     TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
