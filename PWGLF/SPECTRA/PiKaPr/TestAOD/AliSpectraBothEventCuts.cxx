@@ -410,7 +410,7 @@ Bool_t AliSpectraBothEventCuts::CheckCentralityCut()
 	  AliMultSelection *multselection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 	  if(multselection)
 	  {
- 		cent = multselection->GetMultiplicityPercentile(fCentEstimator.Data());
+ 		cent = multselection->GetMultiplicityPercentile(fCentEstimator.Data(),fDotheeventcutsinmultselection);
 		validcent=kTRUE;
 	  }
           else
