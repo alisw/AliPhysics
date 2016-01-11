@@ -12,6 +12,8 @@ AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(const Char_t * addname="", Bo
 	AliESDInputHandler *esdH = static_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
 	if (esdH) hasESD=kTRUE; cout<<"ESD: "<<hasESD<<endl;
 	if(!hasESD) return NULL;
+	AliMCEventHandler *mc = new AliMCEventHandler();
+  	mgr->SetMCtruthEventHandler(mc);
 
 	//========= Add task to the ANALYSIS manager =====
 	TString taskname = "ProtonSysCheckAbs";
