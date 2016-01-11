@@ -12,6 +12,8 @@ AliAnalysisTaskProtonQA *AddTaskProtonsQA(const Char_t * addname="", Bool_t lCol
 	AliESDInputHandler *esdH = static_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
 	if (esdH) hasESD=kTRUE; cout<<"ESD: "<<hasESD<<endl;
 	if(!hasESD) return NULL;
+  	AliMCEventHandler *mc = new AliMCEventHandler();
+  	mgr->SetMCtruthEventHandler(mc);
 
 	//========= Add task to the ANALYSIS manager =====
 	TString taskname = "ProtonSysCheckQA";
