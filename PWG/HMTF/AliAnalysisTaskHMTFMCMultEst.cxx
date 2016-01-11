@@ -70,14 +70,15 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
   //fClassifiers.push_back(v0a);
 
   region2[0] = -3.7; region2[1] = -1.7;
-  AliEventClassifierMult* v0c = new AliEventClassifierMult("V0C", "-3.7 < #eta < -1.7", region2, 2, true, true, fMyOut);
+  AliEventClassifierMult* v0c = new AliEventClassifierMult("V0C", "-3.7 < #eta < -1.7", region2, 2, true, true, fMyOut
+);
   //fClassifiers.push_back(v0c);
 
-  region2[0] = -8.7; region2[1] = 8.7; // not inclusive region, not charged!
-  fClassifiers.push_back(new AliEventClassifierMult("ZDC", "|#eta| > 8.7", region2, 2, false, false, fMyOut));
+  //region2[0] = -8.7; region2[1] = 8.7; // not inclusive region, not charged!
+  //fClassifiers.push_back(new AliEventClassifierMult("ZDC", "|#eta| > 8.7", region2, 2, false, false, fMyOut));
 
-  Float_t region4[] = {-3.7, -1.7, 2.8, 5.1};
-  fClassifiers.push_back(new AliEventClassifierMult("V0M", "V0A + V0C", region4, 4, true, true, fMyOut));
+  //Float_t region4[] = {-3.7, -1.7, 2.8, 5.1};
+  //fClassifiers.push_back(new AliEventClassifierMult("V0M", "V0A + V0C", region4, 4, true, true, fMyOut));
   // region4[0] = -1.5;   region4[1] = -0.8;   region4[2] = 0.8;   region4[3] = 1.5; 
   // fClassifiers.push_back(new AliEventClassifierMult("Eta08_15", "0.8 < |#eta| < 1.5",
   // 						    region4, 4, true, true, fMyOut));
@@ -85,20 +86,21 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
   ////////////////////////////////////
   // nMPI and Q^2 based classifiers //
   ////////////////////////////////////
-  //AliEventClassifierMPI* refClassifierMPI = new AliEventClassifierMPI("nMPI", "nMPI", fMyOut);
-  //AliEventClassifierQ2*  refClassifierQ2  = new AliEventClassifierQ2("Q2", "Q2", fMyOut);
-  //fClassifiers.push_back(refClassifierMPI);
-  //fClassifiers.push_back(refClassifierQ2);
+  AliEventClassifierMPI* refClassifierMPI = new AliEventClassifierMPI("nMPI", "nMPI", fMyOut);
+  AliEventClassifierQ2*  refClassifierQ2  = new AliEventClassifierQ2("Q2", "Q2", fMyOut);
+  fClassifiers.push_back(refClassifierMPI);
+  fClassifiers.push_back(refClassifierQ2);
 
   ///////////////////////////////
   // Spherocity and Sphericity //
   ///////////////////////////////
   // AliEventClassifierSpherocity* refClassifierSpherocity =
   //   new AliEventClassifierSpherocity("spherocity", "spherocity", fMyOut);
-  AliEventClassifierSphericity* refClassifierSphericity =
-    new AliEventClassifierSphericity("sphericity", "sphericity", fMyOut);
   //fClassifiers.push_back(refClassifierSpherocity);
-  fClassifiers.push_back(refClassifierSphericity);
+  //AliEventClassifierSphericity* refClassifierSphericity =
+  //  new AliEventClassifierSphericity("sphericity", "sphericity", fMyOut);
+  
+  //fClassifiers.push_back(refClassifierSphericity);
 
   // Set the global trigger if one was defined for this task
   // Remember to reset the classifieres used here as well (if new ones are defined just for the trigger)
@@ -123,11 +125,16 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
   for (Int_t i=0; i < fClassifiers.size(); i++) {
      fObservables.push_back(new AliObservableEtaNch(fClassifiers.at(i)));
      fObservables.push_back(new AliObservableClassifierpTPID(fClassifiers.at(i)));
-     //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierEtaLt05));
-     //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierMPI));
-     //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierQ2));
-     //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierSpherocity));
-     fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierSphericity));
+     if (!(fClassifiers.at(i) == refClassifierEtaLt05))
+       fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierEtaLt05));
+     if (!(fClassifiers.at(i) == refClassifierMPI))
+       fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierMPI));
+     if (!(fClassifiers.at(i) == refClassifierQ2))
+       fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierQ2));
+     //if (!(fClassifiers.at(i), refClassifierSpherocity))
+       //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierSpherocity));
+     //if (!(fClassifiers.at(i), refClassifierSphericity))
+       //fObservables.push_back(new AliObservableCorrelationsOfClassifiers(fClassifiers.at(i), refClassifierSphericity));
   }
   AliLog::SetGlobalLogLevel(AliLog::kError);
   PostData(1, fMyOut);
