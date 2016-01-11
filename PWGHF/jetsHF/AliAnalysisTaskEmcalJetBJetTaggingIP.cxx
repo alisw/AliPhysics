@@ -444,7 +444,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 			isFromConversion = kFALSE;
 
 			if(fTrackCountingTagger->GetJetDiscriminatorQualityClass(i, curjet, tagvalue, istagged)) {
-				if(fIsMC)FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,0	);
+				if(fIsMC)FillTCTree(tagvalue,istagged,curjet,curjetMatched,flavourtag,i	);
 				else  	 FillTCTree(tagvalue,istagged,curjet,curjetMatched,0,i);
 				for(int i_t = 0; i_t <2 ; ++i_t){
 					if(istagged[i_t]) {
