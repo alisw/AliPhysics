@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef __CINT__
  
 #pragma link off all globals;
@@ -84,6 +82,7 @@
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
+#pragma link C++ class AliAnalysisTaskPi0Hadron+;
 #pragma link C++ namespace JETriggerRejectionAna+;
 #pragma link C++ class JETriggerRejectionAna::AliAnalysisTaskTriggerRejection+;
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
