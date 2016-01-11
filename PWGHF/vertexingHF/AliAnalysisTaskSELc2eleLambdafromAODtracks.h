@@ -232,6 +232,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
 	//Efficiency calculation
   THnSparse* fHistoEleLambdaMassMCS;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassLambdabMCS;         //!<! Lambdab shape
+  THnSparse* fHistoEleLambdaMassXibMCS;         //!<! Xib shape
   THnSparse* fHistoEleLambdaMassMCGen;         //!<! EFficiency calculation denominator
   THnSparse* fHistoEleLambdaMassvsElePtMCS;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtMCGen;         //!<! EFficiency calculation denominator
@@ -484,6 +486,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaBFeeddownMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlLambdabMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlLambdabMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlLambdabMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlXibMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlXibMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlXibMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
 
   THnSparse* fHistoEleLambdaPtvsV0dlRSAway;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlRS1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
@@ -549,7 +557,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,20); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,21); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
