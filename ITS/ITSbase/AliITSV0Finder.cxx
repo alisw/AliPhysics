@@ -355,11 +355,11 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     }
     //I.B. trackat0 = *bestLong;
     new (&trackat0) AliITStrackMI(*bestLong);
-    Double_t xx,yy,zz,alpha; 
-    if (!bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz)) continue;
-    
+    //    Double_t xx,yy,zz,alpha; 
+    //    if (!bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz)) continue;
+    //    alpha = TMath::ATan2(yy,xx);    
+    double alpha = bestLong->PhiPos(); // RS use faster method
 
-    alpha = TMath::ATan2(yy,xx);    
     //    if (!trackat0.Propagate(alpha,0)) continue;    
     //    trackat0.Propagate(alpha,0); //PH The check on the return value is temporarily disabled (bug 45751) 
     if(!trackat0.Propagate(alpha,0) && kCheckPropagate)continue;
