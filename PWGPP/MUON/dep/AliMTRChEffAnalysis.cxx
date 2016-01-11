@@ -738,10 +738,11 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
   /// Get systematic envelop for merged efficiencies
   if ( ! HasMergedResults() ) return kFALSE;
 
-  Int_t itype = ( perRPC ) ? AliTrigChEffOutput::kHslatEff : AliTrigChEffOutput::kHboardEff;
-
   Int_t colors[] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange, kGray};
   Int_t ncolors = sizeof(colors)/sizeof(colors[0]);
+
+  Int_t itype = ( perRPC ) ? AliMUONTriggerEfficiencyCells::kHslatCount : AliMUONTriggerEfficiencyCells::kHboardCount;
+  Int_t countTypes[2] = {AliMUONTriggerEfficiencyCells::kBendingEff,AliMUONTriggerEfficiencyCells::kNonBendingEff};
 
   Int_t nConditions = fConditions->GetEntriesFast();
 
@@ -763,8 +764,11 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     if ( imerged == 0 ) {
       for ( Int_t icond=0; icond<nConditions; icond++ ) {
         TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
-        if ( icond == 0 ) refCondition = condition;
         TString title = "";
+        if ( icond == 0 ) {
+          refCondition = condition;
+          title = condition->GetName();
+        }
         for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
           TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
           TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
@@ -788,14 +792,26 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     for ( Int_t iplane=0; iplane<8; iplane++ ) {
       effGraphs[iplane].SetOwner();
     }
+    TString titles = "";
+    TObjArray effMapList;
+    effMapList.SetOwner();
     for ( Int_t icond=0; icond<nConditions; icond++ ) {
       TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
-      for ( Int_t icount=0; icount<2; icount++ ) {
-        for ( Int_t ich=0; ich<4; ich++ ) {
+
+      TList* effList = GetEffHistoList(trigOut, condition);
+      AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(effList);
+      effMapList.Add(effMap);
+      titles += Form("%s,",condTitle.At(icond)->GetName());
+
+      for ( Int_t ich=0; ich<4; ich++ ) {
+        TString currName = effMap->GetHistoName(itype,AliMUONTriggerEfficiencyCells::kAllTracks,ich);
+        TH1* histoDen = static_cast<TH1*>(effMap->GetHistoList()->FindObject(currName.Data()));
+        for ( Int_t icount=0; icount<2; icount++ ) {
           Int_t iplane = 4*icount+ich;
-          TH1* histoNum = GetSum(trigOut,condition,itype,icount,ich);
-          TH1* histoDen = GetSum(trigOut,condition,itype,AliTrigChEffOutput::kAllTracks,ich);
-          if ( histoNum && histoDen ) {
+
+          if ( histoDen->GetEntries() > 0 ) {
+            currName = effMap->GetHistoName(itype,countTypes[icount],ich);
+            TH1* histoNum = static_cast<TH1*>(effMap->GetHistoList()->FindObject(currName.Data()));
             TGraphAsymmErrors* gr = new TGraphAsymmErrors(histoNum,histoDen,"e0");
             nDE = gr->GetN();
             effGraphs[iplane].AddAtAndExpand(gr,icond);
@@ -804,11 +820,12 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
             isEmpty[icond] = 1;
             AliWarning(Form("No entries in count %i and ch %i for %s\n",icount,ich,condTitle.At(icond)->GetName()));
           }
-          delete histoNum;
-          delete histoDen;
         }
       }
     }
+
+    titles.Remove(TString::kTrailing,',');
+    CompareEfficiencies(&effMapList, titles, "diff");
 
     // Draw average dispersion per plane
     TString canName = Form("EffSyst_%s",trigOut->GetName());
@@ -831,7 +848,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
           TH1* histo = new TH1D(Form("syst_%s_%s_plane%i_ch%i",trigOut->GetName(),condTitle[icond]->GetName(),icount,11+ich),"",200,-0.1,0.1);
           histo->GetXaxis()->SetTitle("Eff.-(ref.Eff.)");
           histo->GetYaxis()->SetTitle("1/#sigma^{2}");
-//          histo->GetXaxis()->SetTitle("1/#sigma^{2}");
 
           TGraphAsymmErrors* gr = static_cast<TGraphAsymmErrors*>(effGraphs[iplane].UncheckedAt(icond));
           TGraphAsymmErrors* grRef = static_cast<TGraphAsymmErrors*>(effGraphs[iplane].UncheckedAt(0));
