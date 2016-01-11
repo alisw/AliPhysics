@@ -193,6 +193,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassMCS(0),
   fHistoEleXiMassMCS1(0),
   fHistoEleXiMassMCS2(0),
+  fHistoEleXiMassXibMCS(0),
+  fHistoEleXiMassXibMCS1(0),
+  fHistoEleXiMassXibMCS2(0),
   fHistoEleXiMassPromptMCS(0),
   fHistoEleXiMassPromptMCS1(0),
   fHistoEleXiMassPromptMCS2(0),
@@ -416,6 +419,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassMCS(0),
   fHistoEleXiMassMCS1(0),
   fHistoEleXiMassMCS2(0),
+  fHistoEleXiMassXibMCS(0),
+  fHistoEleXiMassXibMCS1(0),
+  fHistoEleXiMassXibMCS2(0),
   fHistoEleXiMassPromptMCS(0),
   fHistoEleXiMassPromptMCS1(0),
   fHistoEleXiMassPromptMCS2(0),
@@ -1339,13 +1345,46 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 
   fCandidateVariables[89] = fEvNumberCounter;
 
+  //Copied from pK0s analysis
+  Double_t LcPx = exobj->Px();
+  Double_t LcPy = exobj->Py();
+  Double_t LcPt = TMath::Sqrt(LcPx*LcPx+LcPy*LcPy);
+  Double_t d0z0[2],covd0z0[3];
+  trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);
+  Double_t x0 = fVtx1->GetX();
+  Double_t y0 = fVtx1->GetY();
+  Double_t px0 = LcPx/LcPt;
+  Double_t py0 = LcPy/LcPt;
+  Double_t tx[3];
+  trk->GetXYZ(tx);
+  Double_t x1 = tx[0];
+  Double_t y1 = tx[1];
+  trk->GetPxPyPz(tx);
+  Double_t px1 = tx[0];
+  Double_t py1 = tx[1];
+  Double_t pt1 = sqrt(px1*px1+py1*py1);
+  px1 = px1/pt1;
+  py1 = py1/pt1;
+
+  Double_t dx = x0 - x1;
+  Double_t dy = y0 - y1;
+
+  Double_t Delta = -px0*py1+py0*px1;
+  Double_t a0 = -9999.;
+	if(Delta!=0)
+	{
+		a0 = 1./Delta * (py1 * dx - px1 * dy);
+	}
+  if(fabs(a0)>0.5) a0 = 0.499;
+
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
 	Double_t cont[4];
 	cont[0] = exobj->InvMass(2,pdgdg);
 	cont[1] = exobj->Pt();
-	cont[2] = exobj->Getd0Prong(0)*trk->Charge();
+	//cont[2] = exobj->Getd0Prong(0)*trk->Charge();
+	cont[2] = a0;
 	cont[3] = fCentrality;
 	fHistoEleXiMass->Fill(cont);
 
@@ -1729,6 +1768,31 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 					fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
+      if(fUseMCInfo){
+				if(mcxic){
+					Int_t pdgcode = mcxic->GetPdgCode();
+					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5132){
+						fHistoEleXiMassXibMCS->Fill(cont);
+						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
+						else  fHistoEleXiMassXibMCS2->Fill(cont);
+          }
+					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5132){
+						fHistoEleXiMassXibMCS->Fill(cont);
+						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
+						else  fHistoEleXiMassXibMCS2->Fill(cont);
+          }
+					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5232){
+						fHistoEleXiMassXibMCS->Fill(cont);
+						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
+						else  fHistoEleXiMassXibMCS2->Fill(cont);
+          }
+					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5232){
+						fHistoEleXiMassXibMCS->Fill(cont);
+						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
+						else  fHistoEleXiMassXibMCS2->Fill(cont);
+          }
+        }
+      }
 		}
 
 	}
@@ -2622,9 +2686,9 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[4]=		{10	,100	, 20   ,10};
-  Double_t xmin_base[4]={1.3,0		, -0.1 ,0.00};
-  Double_t xmax_base[4]={3.3,20.	, 0.1  ,100};
+  Int_t bins_base[4]=		{22	,100	, 100   ,10};
+  Double_t xmin_base[4]={1.3,0		, -0.5 ,0.00};
+  Double_t xmax_base[4]={5.7,20.	, 0.5  ,100};
 
   fHistoEleXiMass = new THnSparseF("fHistoEleXiMass","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMass);
@@ -2758,6 +2822,12 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleXiMassMCS1);
   fHistoEleXiMassMCS2 = new THnSparseF("fHistoEleXiMassMCS2","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCS2);
+  fHistoEleXiMassXibMCS = new THnSparseF("fHistoEleXiMassXibMCS","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassXibMCS);
+  fHistoEleXiMassXibMCS1 = new THnSparseF("fHistoEleXiMassXibMCS1","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassXibMCS1);
+  fHistoEleXiMassXibMCS2 = new THnSparseF("fHistoEleXiMassXibMCS2","",4,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassXibMCS2);
   fHistoEleXiMassPromptMCS = new THnSparseF("fHistoEleXiMassPromptMCS","",4,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassPromptMCS);
   fHistoEleXiMassPromptMCS1 = new THnSparseF("fHistoEleXiMassPromptMCS1","",4,bins_base,xmin_base,xmax_base);
