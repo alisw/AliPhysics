@@ -25,6 +25,7 @@
 #include "AliKalmanTrack.h"
 #include "AliTracker.h"
 #include "TMath.h"
+#include "math.h"
 ClassImp(AliHelix)
 
 
@@ -49,15 +50,16 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
 {
   //
   // 
-  Double_t alpha,x,cs,sn;
+  Double_t x,cs,sn;
   t.GetExternalParameters(x,fHelix); 
-  alpha=t.GetAlpha();
+  float alpha = t.GetAlpha();
   //
   //circle parameters
   //PH Sometimes fP4 and fHelix[4] are very big and the calculation
   //PH of the Sqrt cannot be done. To be investigated...
   fHelix[4]=fHelix[4]/(-1000/0.299792458/AliTracker::GetBz());    // C
-  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  //  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  cs=cosf(alpha); sn=sinf(alpha); // RS use float versions: factor 2 in CPU speed
 
   Double_t xc, yc, rc;
   rc  =  1/fHelix[4];
@@ -77,7 +79,9 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
   fHelix[5]=x*cs - fHelix[0]*sn;            // x0
   fHelix[0]=x*sn + fHelix[0]*cs;            // y0
   //fHelix[1]=                               // z0
-  fHelix[2]=TMath::ATan2(-(fHelix[5]-fHelix[6]),fHelix[0]-fHelix[7]); // phi0
+  //  fHelix[2]=TMath::ATan2(-(fHelix[5]-fHelix[6]),fHelix[0]-fHelix[7]); // phi0
+  fHelix[2]=atan2f(float(-(fHelix[5]-fHelix[6])),
+		   float(fHelix[0]-fHelix[7])); // phi0 // RS: use float version
   if (fHelix[4]>0) fHelix[2]-=TMath::Pi();
 
   //fHelix[3]=                               // tgl
@@ -92,17 +96,18 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
 {
   //
   // 
-  Double_t alpha,x,cs,sn;
+  Double_t x,cs,sn;
   const Double_t *param =t.GetParameter(); 
   for (Int_t i=0;i<5;i++) fHelix[i]=param[i]; 
   x = t.GetX();
-  alpha=t.GetAlpha();
+  float alpha=t.GetAlpha();
   //
   //circle parameters
   //PH Sometimes fP4 and fHelix[4] are very big and the calculation
   //PH of the Sqrt cannot be done. To be investigated...
   fHelix[4]=fHelix[4]/(-1000/0.299792458/AliTracker::GetBz());    // C
-  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  //  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  cs=cosf(alpha); sn=sinf(alpha); // RS use float versions: factor 2 in CPU speed
 
   Double_t xc, yc, rc;
   rc  =  1/fHelix[4];
@@ -122,7 +127,8 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   fHelix[5]=x*cs - fHelix[0]*sn;            // x0
   fHelix[0]=x*sn + fHelix[0]*cs;            // y0
   //fHelix[1]=                               // z0
-  fHelix[2]=TMath::ASin(fHelix[2]) + alpha; // phi0
+  //  fHelix[2]=TMath::ASin(fHelix[2]) + alpha; // phi0
+  fHelix[2]=asinf(fHelix[2]) + alpha; // phi0 // RS : use float version
   //fHelix[3]=                               // tgl
   //
   //
@@ -160,11 +166,13 @@ AliHelix::AliHelix(Double_t x[3], Double_t p[3], Double_t charge, Double_t conve
   fHelix[0]=yc; 
   //
   if (TMath::Abs(p[1])<TMath::Abs(p[0])){     
-    fHelix[2]=TMath::ASin(p[1]/pt);
+    //    fHelix[2]=TMath::ASin(p[1]/pt);
+    fHelix[2]=asinf(p[1]/pt);
     if (charge*yc<charge*x[1])  fHelix[2] = TMath::Pi()-fHelix[2];
   }
   else{
-    fHelix[2]=TMath::ACos(p[0]/pt);
+    //    fHelix[2]=TMath::ACos(p[0]/pt);
+    fHelix[2]=acosf(p[0]/pt);
     if (charge*xc>charge*x[0])  fHelix[2] = -fHelix[2];
   }
 
@@ -207,19 +215,19 @@ void   AliHelix::GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[
   norm2r         = TMath::Sqrt(norm2r);
   //
   angle[0]  = (g1[0]*g2[0]+g1[1]*g2[1])/(norm1r*norm2r);   // angle in phi projection
-  if (TMath::Abs(angle[0])<1.) angle[0] = TMath::ACos(angle[0]);
+  if (TMath::Abs(angle[0])<1.) angle[0] = acos(angle[0]); //TMath::ACos(angle[0]);
   else{ 
     if (angle[0]>0) angle[0] = 0;
     if (angle[0]<0) angle[0] = TMath::Pi();
   }
   //
   angle[1]  = ((norm1r*norm2r)+g1[2]*g2[2])/(norm1*norm2); // angle in rz  projection
-  if (TMath::Abs(angle[1])<1.) angle[1] = TMath::ACos(angle[1]);
+  if (TMath::Abs(angle[1])<1.) angle[1] = acos(angle[1]); //TMath::ACos(angle[1]);
   else 
     angle[1]=0;
 
   angle[2]  = (g1[0]*g2[0]+g1[1]*g2[1]+g1[2]*g2[2])/(norm1*norm2); //3D angle
-  if (TMath::Abs(angle[2])<1.) angle[2] = TMath::ACos(angle[2]);
+  if (TMath::Abs(angle[2])<1.) angle[2] = acos(angle[2]); //TMath::ACos(angle[2]);
   else 
     angle[2]=0;
 
@@ -237,8 +245,9 @@ void AliHelix::Evaluate(Double_t t,
   //--------------------------------------------------------------------
   // Calculate position of a point on a track and some derivatives at given phase
   //--------------------------------------------------------------------
-  Double_t phase=fHelix[4]*t+fHelix[2];
-  Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
+  float phase=fHelix[4]*t+fHelix[2];
+  Double_t sn=sinf(phase), cs=cosf(phase);
+  //  Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
 
   r[0] = fHelix[5] + sn/fHelix[4];
   r[1] = fHelix[0] - cs/fHelix[4];  
@@ -313,7 +322,8 @@ Double_t  AliHelix::GetPhase(Double_t x, Double_t y )
   //calculate helix param at given x,y  point
   //
   //Double_t phase2 = TMath::ATan2((y-fHelix[0]), (x-fHelix[5]))- TMath::Pi()/2.;
-  Double_t phase2 = TMath::ATan2(-(x-fHelix[5]),(y-fHelix[0]));
+  //  Double_t phase2 = TMath::ATan2(-(x-fHelix[5]),(y-fHelix[0])); 
+  Double_t phase2 = atan2f(-(x-fHelix[5]),(y-fHelix[0])); // RS use float version
   Int_t sign = (fHelix[4]>0)? 1:-1;
   if (sign>0) phase2 = phase2-TMath::Pi();
   //
