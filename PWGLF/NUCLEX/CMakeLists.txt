@@ -14,53 +14,53 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFSTRANGENESS)
+set (MODULE PWGLFnuclex)
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/RecoDecay
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/NuclexFilter
+)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${ALIROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
-                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
-# Sources - alphabetical order
 set(SRCS
-  Cascades/AliAnalysisTaskCheckCascade.cxx
-  Cascades/AliAnalysisTaskCheckCascadePbPb.cxx
-  Cascades/AliAnalysisTaskCheckPerformanceCascade.cxx
-  Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
-  LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
-  LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
-  LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
-  LambdaK0PbPb/AliAnalysisTaskLukeAOD.cxx
-  LambdaK0PbPb/AliAnalysisTaskLukeV0.cxx
-  LambdaK0PbPb/AliAnalysisTaskPerformanceStrange.cxx
-  LambdaK0PbPb/AliAnalysisTaskV0ForRAA.cxx
-  LambdaK0/AliAnalysisTaskExtractV0.cxx
-  LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
-  LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
-  LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
-  LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
-  LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
-  Cascades/AliAnalysisTaskExtractCascade.cxx
-  Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
-  Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
-  Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
-  Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
-  Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
-  Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
-  Correlations/AliAnalysisTaskV0ChCorrelations.cxx
-  Cascades/AliAnalysisTaskCheckCascadepp276.cxx
-  Cascades/AliAnalysisTaskCheckPerformanceCascadepp276.cxx
-  Cascades/lightvertexers/AliLightV0vertexer.cxx
-  Cascades/lightvertexers/AliLightCascadeVertexer.cxx
+  Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
+  Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Nuclei/DeltaMasses/AliAnalysisMCNuclMult.cxx
+  Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
+  Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
+  Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
+  Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
+  Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
+  Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
+  Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
+  Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
+  Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
+  Nuclei/Nucleipp/AliLnHistoMap.cxx
+  Nuclei/Nucleipp/AliLnID.cxx
+  Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
+  Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
+  Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
+  Utils/NuclexFilter/AliAODNuclExReplicator.cxx
+  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
+  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilterMC.cxx
+  Utils/NuclexFilter/AliAnalysisTaskReadNuclexAOD.cxx
+  Utils/RecoDecay/AliAODRecoDecayLF.cxx
+  Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   )
 
 # Headers from sources
@@ -100,8 +100,5 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
-install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
-install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
-install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
-install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
-install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
+install(DIRECTORY . DESTINATION PWGLF/NUCLEX FILES_MATCHING PATTERN "*.C")
+

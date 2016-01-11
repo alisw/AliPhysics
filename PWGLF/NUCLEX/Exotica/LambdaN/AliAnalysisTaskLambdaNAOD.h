@@ -37,6 +37,9 @@ class AliAODv0;
 
 class AliESDtrackCuts;
 
+class AliPIDResponse;
+class AliESDpid;
+
 class AliESDInputHandler;
 class AliESDEvent;
 class AliESDVertex;

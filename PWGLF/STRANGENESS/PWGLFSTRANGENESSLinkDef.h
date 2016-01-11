@@ -33,24 +33,6 @@
 #pragma link C++ class AliV0ChBasicParticle+;
 #pragma link C++ class AliAnalysisTaskCheckCascadepp276+;
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp276+;
-#pragma link C++ class AliAnalysisTaskLambdaNAOD+;
-#pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
-#pragma link C++ class AliAnalysisTaskHelium3Pi+;
-#pragma link C++ class AliAnalysisTaskHelium3PiAOD+;
-#pragma link C++ class AliAnalysisTaskHelium3PiMC+;
-#pragma link C++ class AliAODRecoDecayLF+;
-#pragma link C++ class AliAODRecoDecayLF2Prong+;
-#pragma link C++ class AliAODNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilter+;
-#pragma link C++ class AliAODMCNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
-#pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
-#pragma link C++ class AliAnalysisTaskAntiHe4+;
-#pragma link C++ class AliAnalysisTaskNucleiv2+;
-#pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
-#pragma link C++ class AliAnalysisTaskNucleiYield+;
-#pragma link C++ class AliAnalysisTaskHypertriton3+;
-#pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 #endif
