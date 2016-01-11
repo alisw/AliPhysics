@@ -29,6 +29,7 @@
 //#include "AliESDv0Cuts.h"
 
 class TH1F;
+class AliPIDResponse;
 class AliESDEvent;
 class TFile;
 class TH2F;
