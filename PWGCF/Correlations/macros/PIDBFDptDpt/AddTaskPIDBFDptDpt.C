@@ -26,7 +26,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  3,
+ int nCentrality                =  4,
  Bool_t trigger                 = kFALSE,
  int particleID                 = 1, // pion=0, kaon=1, proton=2
  double nSigmaCut               = 3.0,
@@ -53,9 +53,10 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     {
       if (centralityMethod == 4)
         {
-	  minCentrality[0] = 0.0;    maxCentrality[0]  = 5.0;
-	  minCentrality[1] = 30.0;   maxCentrality[1]  = 40.;
-	  minCentrality[2] = 70.0;   maxCentrality[2]  = 80.;
+	  minCentrality[0] = 0.0;    maxCentrality[0]  = 20.0;
+	  minCentrality[1] = 20.0;   maxCentrality[1]  = 40.;
+	  minCentrality[2] = 40.0;   maxCentrality[2]  = 60.;
+	  minCentrality[3] = 60.0;   maxCentrality[3]  = 80.;
         }
       else
         {
