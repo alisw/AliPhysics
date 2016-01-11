@@ -16,6 +16,7 @@
 # Include the libraries
 add_subdirectory(blastwave)
 add_subdirectory(CME)
+add_subdirectory(CME/TwoPwrtRP)
 
 # Install the macros
 install(DIRECTORY macros DESTINATION PWGCF/FLOW)
