@@ -842,7 +842,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 
   TFile *finfo = TFile::Open(residualInfoFile);
   TTree *treeInfo=0;
-  if (finfo) treeInfo=(TTree*)finfo->Get("sumaryTime"); 
+  if (finfo) treeInfo=(TTree*)finfo->Get("summaryTime"); 
   TGraphErrors * nclArray[nSec]={0};
   TGraphErrors * nclArrayUsed[nSec]={0};
   
@@ -1284,24 +1284,24 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   }
   timer2.Print();
   TGraphErrors grEvent(hisEvent);
-  (*pcstream)<<"sumaryTime"<<
+  (*pcstream)<<"summaryTime"<<
     "id="<<id<<
     "grEvent.="<<&grEvent;
   for (Int_t isec=0; isec<nSec; isec++){
     grArrayNcl[isec] = new TGraphErrors((profArrayNcl[isec]));
     grArrayNclUsed[isec] = new TGraphErrors((profArrayNclUsed[isec]));
-    (*pcstream)<<"sumaryTime"<<
+    (*pcstream)<<"summaryTime"<<
       TString::Format("grNcl%d.=",isec).Data()<<grArrayNcl[isec]<<
       TString::Format("grNclUsed%d.=",isec).Data()<<grArrayNclUsed[isec];
   }
   for (Int_t iits=0; iits<3; iits++){
     grArrayITSNcl[iits] = new TGraphErrors((profArrayITSNcl[iits]));
-    (*pcstream)<<"sumaryTime"<<
+    (*pcstream)<<"summaryTime"<<
       TString::Format("grITSNcl%d.=",iits).Data()<<grArrayITSNcl[iits];
   }
   
   
-  (*pcstream)<<"sumaryTime"<<"\n";
+  (*pcstream)<<"summaryTime"<<"\n";
   for (Int_t isec=0; isec<nSec; isec++){
     delete 	profArrayNcl[isec];
     delete 	profArrayNclUsed[isec];
