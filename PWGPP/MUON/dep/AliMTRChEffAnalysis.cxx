@@ -214,7 +214,7 @@ TArrayI AliMTRChEffAnalysis::BoardsInRPC ( Int_t irpc ) const
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt ) const
+void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
   TString srcs(sources);
@@ -260,11 +260,11 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char*
     effMapList.Add(effMap);
   }
 
-  CompareEfficiencies(&effMapList, titles, opt);
+  CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt ) const
+void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
 
@@ -272,6 +272,9 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
   TObjArray* titleList = sTitles.Tokenize(",");
 
   Int_t nLists = effMapList->GetEntriesFast();
+
+  TString sCanvasNameSuffix(canvasNameSuffix);
+  if ( ! sCanvasNameSuffix.IsNull() && ! sCanvasNameSuffix.BeginsWith("_") ) sCanvasNameSuffix.Prepend("_");
 
   Double_t xpt, ypt, xref, yref;
   enum {kEff, kDiff, kPull};
@@ -343,6 +346,7 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
           if ( ! can ) {
             currName = graph->GetName();
             currName.Remove(currName.Length()-currTitle.Length()-5);
+            currName += sCanvasNameSuffix;
             can = new TCanvas(currName.Data(),currName.Data(),20*ican,20*ican,600,600);
             can->Divide(2,2);
             ican++;
@@ -393,7 +397,7 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
   }
   titles.Remove(TString::kTrailing,',');
 
-  CompareEfficiencies(&effMapList, titles.Data(), opt);
+  CompareEfficiencies(&effMapList, titles.Data(), opt, "MergedComp");
 }
 
 
@@ -825,7 +829,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     }
 
     titles.Remove(TString::kTrailing,',');
-    CompareEfficiencies(&effMapList, titles, "diff");
+    CompareEfficiencies(&effMapList, titles, "diff", trigOut->GetName());
 
     // Draw average dispersion per plane
     TString canName = Form("EffSyst_%s",trigOut->GetName());
@@ -1063,7 +1067,7 @@ TH1* AliMTRChEffAnalysis::GetHisto ( TList* effHistoList, Int_t itype, Int_t ico
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
+TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t perRPC, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
 {
   /// Get run ranges with an efficiency compatible with constant
 
@@ -1076,38 +1080,73 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
     hRunChangeCount->GetXaxis()->SetBinLabel(irun+1,Form("%i",GetRunNumber(irun)));
   }
 
-  for ( Int_t ich=0; ich<4; ich++ ) {
-    TString canName = Form("testRanges_ch%i",11+ich);
-    TCanvas* can = new TCanvas(canName.Data(),canName.Data(),10*ich,10*ich,1200,800);
-    can->Divide(6,3,0,0);
-    for ( Int_t irpc=0; irpc<18; irpc++ ) {
-      Int_t icount = AliTrigChEffOutput::kBothPlanesEff;
-      can->cd(irpc+1);
-      gPad->SetTicks(1,1);
-//      for ( Int_t icount=0; icount<2; icount++ ) {
-      TGraphAsymmErrors* trendGraph = GetTrendEff(AliTrigChEffOutput::kHslatEff,icount,ich,irpc);
-      TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
-      trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
-      trendGraph->Draw("ap");
-      for ( Int_t ichange=0; ichange<range.GetSize(); ichange++ ) {
-        // Store only the run when the change applies
-        if ( ichange%2 == 1 ) continue;
-        Int_t runIdx = range[ichange];
-        if ( ichange != 0 ) {
-          TLine* line = new TLine(runIdx,minEff,runIdx,maxEff);
-          line->SetLineStyle(2);
-          line->Draw("same");
-          TLatex text;
-          text.DrawLatex((Double_t)(runIdx-3),maxEff-0.1*(maxEff-minEff)*(Double_t)(ichange/2),Form("%i",GetRunNumber(runIdx)));
-        }
-        hRunChangeCount->Fill(runIdx);
-        if ( hRunChangeCount->GetBinContent(runIdx+1) == 1 ) {
-          AliInfo(Form("Efficiency change in %i triggered by ch %i  RPC %i",GetRunNumber(runIdx),11+ich,irpc));
-        }
+  Int_t itype = perRPC ? AliTrigChEffOutput::kHslatEff : AliTrigChEffOutput::kHboardEff;
+
+  Int_t nCanvas = perRPC ? 4 : 18;
+  TObjArray canList(nCanvas);
+
+  for ( Int_t irpc=0; irpc<18; irpc++ ) {
+    Int_t icount = AliTrigChEffOutput::kBothPlanesEff;
+    TArrayI boards = BoardsInRPC(irpc);
+    Int_t firstDetEl = perRPC ? irpc : 0;
+    Int_t lastDetEl = perRPC ? irpc : boards.GetSize()-1;
+
+    for ( Int_t ich=0; ich<4; ich++ ) {
+      Int_t ican = perRPC ? ich : irpc;
+      TCanvas* can = static_cast<TCanvas*>(canList.At(ican));
+      if ( ! can ) {
+        TString canName = perRPC ? Form("testRanges_ch%i",11+ich) : Form("testRanges_RPC%i",irpc);
+        can = new TCanvas(canName.Data(),canName.Data(),10*ich,10*ich,1200,800);
+        can->Divide(6,3,0,0);
+        canList.AddAt(can,ican);
       }
+
+      for ( Int_t idetel=firstDetEl; idetel<=lastDetEl; idetel++ ) {
+        Int_t currDE = ( perRPC ) ? idetel : boards[idetel];
+//      for ( Int_t icount=0; icount<2; icount++ ) {
+        TGraphAsymmErrors* trendGraph = GetTrendEff(itype,icount,ich,currDE);
+        TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
+        trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
+
+        can->cd(idetel+1);
+        gPad->SetTicks(1,1);
+        TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
+
+        if ( ! perRPC ) {
+          Int_t icolor = ich+1;
+          trendGraph->SetLineColor(icolor);
+          trendGraph->SetMarkerColor(icolor);
+          trendGraph->SetMarkerStyle(24+ich);
+          TF1* func = static_cast<TF1*>(trendGraph->GetListOfFunctions()->At(0));
+          if ( func ) {
+            func->SetLineWidth(2);
+            func->SetLineColor(icolor);
+          }
+        }
+
+        trendGraph->Draw(drawOpt.Data());
+        for ( Int_t ichange=0; ichange<range.GetSize(); ichange++ ) {
+          // Store only the run when the change applies
+          if ( ichange%2 == 1 ) continue;
+          Int_t runIdx = range[ichange];
+          if ( ichange != 0 ) {
+            TLine* line = new TLine(runIdx,minEff,runIdx,maxEff);
+            line->SetLineStyle(2);
+            line->Draw("same");
+            TLatex text;
+            text.DrawLatex((Double_t)(runIdx-3),maxEff-0.1*(maxEff-minEff)*(Double_t)(ichange/2),Form("%i",GetRunNumber(runIdx)));
+          }
+          hRunChangeCount->Fill(runIdx);
+          if ( hRunChangeCount->GetBinContent(runIdx+1) == 1 ) {
+            TString infoMsg = Form("Efficiency change in %i triggered by ch %i  RPC %i",GetRunNumber(runIdx),11+ich,irpc);
+            if ( ! perRPC ) infoMsg += Form(" Board %i",currDE);
+            AliInfo(infoMsg.Data());
+          }
+        } // loop on change
+      } // loop on detection element
 //      }
-    }
-  }
+    } // loop on chambers
+  } // loop on RPC
 
   // Clusterize contiguous runs
   TArrayI runChangeClust(nRuns);
@@ -1174,6 +1213,9 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
     }
   }
 
+  Double_t minNormChi2 = 123456789.;
+  Int_t minNormChi2Step = -1;
+
   for ( Int_t istep=0; istep<maxNRanges; istep++ ) {
     Int_t nPars = 2*(istep+1);
     Double_t xMin = trendGraph->GetXaxis()->GetXmin();
@@ -1190,6 +1232,10 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
     }
     trendGraph->Fit(func,"NQ0");
     Double_t normChi2 = func->GetChisquare() / ((Double_t)func->GetNDF());
+    if ( normChi2 < minNormChi2 ) {
+      minNormChi2 = normChi2;
+      minNormChi2Step = istep;
+    }
     if ( normChi2 < chi2Cut ) break;
     delete func;
     func = 0x0;
@@ -1232,6 +1278,9 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
     Int_t lastPt = trendGraph->GetN()-1;
     runRanges[irun++] = returnIndex ? lastPt : GetRunNumber(lastPt);
     runRanges.Set(irun);
+  }
+  else {
+    AliWarning(Form("Fit did not converge for %s (minimum chi2 %g for step %i)",trendGraph->GetName(),minNormChi2,minNormChi2Step));
   }
   return runRanges;
 }
