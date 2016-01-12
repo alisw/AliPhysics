@@ -60,7 +60,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     kStepRecoAcceptance  = 6,
     kStepRecoITSClusters = 7,
     kStepRecoPPR         = 8,
-    kStepRecoPID         = 9
+    kStepRecoPID         = 9,
+    kStepGenLimAccNoAcc  = 10
   };
 
   enum {
@@ -258,6 +259,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   THnSparse* fCorrelation;      ///  response matrix for unfolding
   TList  *fListProfiles; //list of profile histos for z-vtx correction
   Int_t fCountMC;               ///  MC particle found
+  Int_t fCountGenLimAcc;        ///  MC particle found in limited acceptance
+  Int_t fCountGenLimAccNoAcc;   ///  MC particle found in limited acceptance that doesn't satisfy acceptance cuts
   Int_t fCountAcc;              ///  MC particle found that satisfy acceptance cuts
   Int_t fCountVertex;       ///  Reco particle found that satisfy vertex constrained
   Int_t fCountRefit;        ///  Reco particle found that satisfy kTPCrefit and kITSrefit
@@ -313,7 +316,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t fCutOnMomConservation; /// cut on momentum conservation
 
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,24); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,25); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
