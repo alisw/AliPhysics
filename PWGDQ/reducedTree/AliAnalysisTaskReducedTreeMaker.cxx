@@ -107,6 +107,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fK0sMassRange(),
   fLambdaMassRange(),
   fGammaMassRange(),
+  fActiveBranches(""),
+  fInactiveBranches(""),
   fAliFlowTrackCuts(0x0),
   fBayesianResponse(0x0),
   fTreeFile(0x0),
@@ -157,6 +159,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fK0sMassRange(),
   fLambdaMassRange(),
   fGammaMassRange(),
+  fActiveBranches(""),
+  fInactiveBranches(""),
   fAliFlowTrackCuts(0x0),
   fBayesianResponse(0x0),
   fTreeFile(0x0),
@@ -214,6 +218,19 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
  
   if(fWriteTree)
     fTree->Branch("Event",&fReducedEvent,16000,99);
+
+  // if user set active branches
+  TObjArray* aractive=fActiveBranches.Tokenize(";");
+  if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
+  for(Int_t i=0; i<aractive->GetEntries(); i++){
+    fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
+  }
+  
+  // if user set inactive branches
+  TObjArray* arinactive=fInactiveBranches.Tokenize(";");
+  for(Int_t i=0; i<arinactive->GetEntries(); i++){
+    fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
+  }
  
   if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
