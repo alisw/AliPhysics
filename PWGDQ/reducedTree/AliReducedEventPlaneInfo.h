@@ -19,6 +19,7 @@ class AliReducedEventPlaneInfo : public TObject {
     kCalibrated,
     kRecentered,
     kShifted,
+    kUnset,
     kNMaxFlowFlags
   };
   enum EventPlaneDetector {
@@ -42,7 +43,7 @@ class AliReducedEventPlaneInfo : public TObject {
   Double_t Qx(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][0] : -999.);}
   Double_t Qy(Int_t det, Int_t harmonic)  const {return (det>=0 && det<kNdetectors && harmonic>0 && harmonic<=fgkNMaxHarmonics ? fQvector[det][harmonic-1][1] : -999.);}
   Double_t EventPlane(Int_t det, Int_t h) const;
-  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h-1] : 999);} 
+  UChar_t GetEventPlaneStatus(Int_t det, Int_t h) const {return (det>=0 && det<kNdetectors && h>0 && h<=fgkNMaxHarmonics ? fEventPlaneStatus[det][h-1] : kUnset);} 
   Bool_t  CheckEventPlaneStatus(Int_t det, Int_t h, EventPlaneStatus flag) const;
   void    CopyEvent(const AliReducedEventPlaneInfo* event);
 
