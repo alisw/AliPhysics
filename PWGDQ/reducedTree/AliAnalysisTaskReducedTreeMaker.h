@@ -70,6 +70,10 @@ public:
   void SetK0sMassRange(Double_t min=0.4, Double_t max=0.6) {fK0sMassRange[0]=min; fK0sMassRange[1]=max;}
   void SetLambdaMassRange(Double_t min=1.08, Double_t max=1.15) {fLambdaMassRange[0]=min; fLambdaMassRange[1]=max;}
   void SetGammaConvMassRange(Double_t min=0.0, Double_t max=0.1) {fGammaMassRange[0]=min; fGammaMassRange[1]=max;}
+
+  // TStrings with active or inactive branches
+  void SetTreeActiveBranch(TString b)   {fActiveBranches+=b+";";}
+  void SetTreeInactiveBranch(TString b) {fInactiveBranches+=b+";";}
   
   // Select the type of information to be written
   void SetTreeWritingOption(Int_t option)         {fTreeWritingOption = option;}
@@ -135,6 +139,9 @@ public:
   Double_t fK0sMassRange[2];         // mass range for allowed K0s pairs
   Double_t fLambdaMassRange[2];      // mass range for allowed Lambda pairs
   Double_t fGammaMassRange[2];       // mass range for allowed Gamma conversion pairs
+
+  TString fActiveBranches;
+  TString fInactiveBranches;
 
   AliFlowTrackCuts* fAliFlowTrackCuts;
   AliFlowBayesianPID* fBayesianResponse;
