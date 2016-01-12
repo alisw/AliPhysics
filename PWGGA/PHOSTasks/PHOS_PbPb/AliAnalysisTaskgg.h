@@ -43,29 +43,17 @@ private:
 private:
 //  AliStack * fStack ;
   THashList *   fOutputContainer;        //final histogram container
-  AliAODEvent * fEvent ;
-  TClonesArray * fStack ;  
+  AliAODEvent * fEvent ;        //!
+//  TClonesArray * fStack ;  
   TList *       fPHOSEvents[1][10][11] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
  
   //Reaction plain for v2
-  Float_t fRP ; //!Reaction plane calculated with full TPC 
+  Float_t fRP ;       //!Reaction plane calculated with full TPC 
   Float_t fRPV0A ;    //!Reaction plain calculated with A-side TPC: eta>0.15 
   Float_t fRPV0C ;    //!Reaction plain calculated with C-side TPC: eta<-0.15
   Bool_t fHaveTPCRP ; //! Is TPC RP defined?
   
-  //V0 calibration
-
-  static const Int_t nCentrBinV0 = 9; // # cenrality bins
-
-  TProfile *fMultV0;                  // object containing VZERO calibration information
-
-  Float_t fV0Cpol,fV0Apol;            // loaded by OADB
-
-  Float_t fMeanQ[nCentrBinV0][2][2];    // and recentering
-
-  Float_t fWidthQ[nCentrBinV0][2][2];   // ...
-
 
   Int_t fRunNumber ;    //Current run number
   Float_t fCentrality ; //!Centrality of the currecnt event
@@ -73,20 +61,6 @@ private:
 
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
-  TH1D*  fTPCflatC2 ;   //HIstos with flattening parameters
-  TH1D*  fTPCflatS2 ;
-  TH1D*  fTPCflatC4 ;
-  TH1D*  fTPCflatS4 ;
-
-  TH1D*  fV0AflatC2 ;
-  TH1D*  fV0AflatS2 ;
-  TH1D*  fV0AflatC4 ;
-  TH1D*  fV0AflatS4 ;
-    
-  TH1D*  fV0CflatC2 ;
-  TH1D*  fV0CflatS2 ;
-  TH1D*  fV0CflatC4 ;
-  TH1D*  fV0CflatS4 ;
 
   ClassDef(AliAnalysisTaskgg, 1); // PHOS analysis task
 };
