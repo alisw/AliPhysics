@@ -67,7 +67,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   TList                      *fOutputList2;            //! Output list
   TList                      *fOutputList3;            //! Output list
 
-  // Histograms
+  // Histograms -
   TH1  					    *fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
   TH1					   **fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
   TH2					   **fHist_dEta_dPhi;           //! No of g-h pairs in the deta eta delta phi plane

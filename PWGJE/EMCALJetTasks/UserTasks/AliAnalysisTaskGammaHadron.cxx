@@ -262,7 +262,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHist_dEta_dPhi_high[identifier]->GetYaxis()->SetTitle(Form("#Delta #eta^{#gamma-h} %0.1d<p_{T}^{#gamma}<%0.1d",10,30));
 		fOutput->Add(fHist_dEta_dPhi_high[identifier]);
 
-		//
+		//l
 		for(Int_t i=0; i<NoOfDPhistos+1; i++)
 		{
 			//check whether the max is the
