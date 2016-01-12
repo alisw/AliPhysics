@@ -368,12 +368,18 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC10h->SetOfflineTrigger       (triggerCount,"V0A && V0C && SPDGFOL1 > 1 && !TPCLaserWarmUp && ZDCTime");
 
   triggerCount++;
-  oadbLHC10h->AddCollisionTriggerClass(AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALL","B",triggerCount);
+  oadbLHC10h->AddCollisionTriggerClass(AliVEvent::kMB,"+CMBACS2-B-NOPF-ALL[NOTRD|]","B",triggerCount);
+  oadbLHC10h->SetHardwareTrigger      (triggerCount,"V0A && V0C && SPDGFOL1 > 1");
+  oadbLHC10h->SetOfflineTrigger       (triggerCount,"V0A && V0C && SPDGFOL1 > 1 && !TPCLaserWarmUp && ZDCTime");
+  
+  triggerCount++;
+  oadbLHC10h->AddCollisionTriggerClass(AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALL[NOTRD|]","B",triggerCount);
   oadbLHC10h->SetHardwareTrigger      (triggerCount,"SPDGFO >= 100");
   oadbLHC10h->SetOfflineTrigger       (triggerCount,"SPDGFO >= 100 && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
   oadbContPS->AppendObject(oadbLHC10h,136851,139517);
 
+  
   // LHC11h
   AliOADBPhysicsSelection * oadbLHC11h = new AliOADBPhysicsSelection("oadbDefaultlhc11h");
   triggerCount=0;

@@ -16,6 +16,7 @@ class AliClusterContainer;
 class AliPIDResponse; 
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
+class AliMultSelection;
 
 #include "TObject.h"
 #include "TObjArray.h"
@@ -41,6 +42,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 
 
   AliVEvent   *fVevent;  //!event object
+  AliMultSelection *fMultSelection;
   TClonesArray  *ftrack;
   TClonesArray  *fCaloClusters;
   AliPIDResponse *fpidResponse; //!pid response
@@ -63,18 +65,21 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1                        *fHistJetOrg;
   TH1                        *fHistJetBG;
   TH1                        *fHistJetSub;
+  TH1                        *fHisteJetOrg;
+  TH1                        *fHisteJetBG;
+  TH1                        *fHisteJetSub;
   TH1                        *fHistIncEle;
+  TH1                        *fHistHfEleMC;
+  TH1                        *fHistHfEleMCreco;
+  TH1                        *fHistPhoEleMC;
+  TH1                        *fHistPhoEleMCreco;
   TH2                        *fHistIncjet;
   TH2                        *fHistIncjetFrac;
   TH2                        *fHistIncjetOrg;
   TH2                        *fHistIncjetBG;
-  TH2                        *fHistIncjetTPCOrg;
-  TH2                        *fHistIncjetTPCBG;
-  TH2                        *fHistIncjetTPCSub0;
-  TH2                        *fHistIncjetTPCSub1;
-  TH2                        *fHistIncjetTPCSub2;
-  TH2                        *fHistIncjetTPCSub3;
   TH2                        *fHistHFjet;
+  TH2                        *fHistULSjet;
+  TH2                        *fHistLSjet;
   TH2                        *fInvmassULS;
   TH2                        *fInvmassLS;
   THnSparse                  *HFjetCorr0;
@@ -91,8 +96,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsContPart;                   //!Jets particle
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
-  void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+  void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
   Bool_t isHeavyFlavour(int Mompdg);
+  Bool_t isPhotonic(int Mompdg);
+  void MakeParticleLevelJet(THnSparse *pJet);
 
  private:
 
@@ -108,6 +115,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 4) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 5) // jet sample analysis task
 };
 #endif

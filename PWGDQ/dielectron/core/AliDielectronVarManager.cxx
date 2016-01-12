@@ -61,6 +61,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
   {"TPCclsIRO",              "N_{clsIRO}^{TPC}",                                   ""},
   {"TPCclsORO",              "N_{clsORO}^{TPC}",                                   ""},
+  {"TPCactiveLength",        "active length^{TPC}",                                ""},
+  {"TPCGeomLength",          "geom. length_{pTdependent}^{TPC}",                   ""},
+  
+  
+  
   {"TrackStatus",            "TrackStatus",                                        ""},
   {"FilterBit",              "AOD filter bit",                                     ""},
     
@@ -74,8 +79,10 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidProb2D_Electrons", "P(2dim. PID_{e}^{TRD})",                             ""},
   {"TRDpidProb2D_Pions",     "P(2dim. PID_{#pi}^{TRD})",                           ""},
   {"TRDphi",                 "#phi^{TRD}",                                         ""},
-  {"TRDpidEffLeg",           "#varepsilon^{TRD legs}(PID)",                           ""},
+  {"TRDpidEffLeg",           "#varepsilon^{TRD legs}(PID)",                        ""},
   {"TRD_signal",             "TRD d#it{E}/d#it{x} + TR",                           "(a.u.)"},
+  {"TRDeta",                 "#eta^{TRD}",                                         ""},
+  {"InTRDacceptance",        "in TRD acceptance",                                  ""},
 
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},

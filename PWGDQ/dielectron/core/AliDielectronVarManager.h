@@ -75,6 +75,7 @@
 #include "AliVZEROEPSelectionTask.h"
 
 #include "AliAODMCHeader.h"
+#include "AliTRDgeometry.h"
 #include "assert.h"
 
 class AliVEvent;
@@ -120,6 +121,10 @@ public:
     kTPCclsSegments,         // TPC cluster segments
     kTPCclsIRO,             // TPC clusters inner read out
     kTPCclsORO,             // TPC clusters outer read out
+    
+    kTPCActiveLength,       // TPC length in active volume
+    kTPCGeomLength,         // TPC pT dependent geometrical length
+    
     kTrackStatus,            // track status bits
     kFilterBit,              // AOD filter bits
 
@@ -135,6 +140,8 @@ public:
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
     kTRDsignal,              // TRD signal
+    kTRDeta,                 // eta of the track at the entrance of the TRD
+    kInTRDacceptance,        // in TRD acceptance
       
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
@@ -694,6 +701,11 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   for(j=63; j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
   if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
 
+  int mode = particle->GetInnerParam() ? 1:0;
+  
+  values[kTPCActiveLength] = particle->GetLengthInActiveZone(mode, 2., 220., fgEvent->GetMagneticField());
+  values[kTPCGeomLength] = particle->GetTPCClusterInfo(2,1) / ( 130 - TMath::Power( TMath::Abs( particle->GetSigned1Pt() ),1.5 ) );
+  
   
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   values[AliDielectronVarManager::kFilterBit]     = 0;
@@ -787,6 +799,11 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
  						values[AliDielectronVarManager::kTRDphi], 
  						values[AliDielectronVarManager::kPOut], effErr);
   }
+  
+
+  
+  
+  
   values[AliDielectronVarManager::kTPCsignal]=particle->GetTPCsignal();
   
   values[AliDielectronVarManager::kTOFsignal]=particle->GetTOFsignal();
@@ -862,7 +879,22 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if(Req(kTRDonlineA)||Req(kTRDonlineLayerMask)||Req(kTRDonlinePID)||Req(kTRDonlinePt)||Req(kTRDonlineStack)||Req(kTRDonlineTrackInTime)||Req(kTRDonlineSector)||Req(kTRDonlineFlagsTiming)||Req(kTRDonlineLabel)||Req(kTRDonlineNTracklets)||Req(kTRDonlineFirstLayer))
     FillVarVTrdTrack(particle,values);
 
-
+  if(out){
+    AliExternalTrackParam out_tmp(*out);
+    out_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(),fgEvent->GetMagneticField());
+    values[AliDielectronVarManager::kTRDeta]     = out_tmp.Eta();
+  }
+  else{
+    AliESDtrack particle_tmp(*particle);
+    particle_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(),fgEvent->GetMagneticField());
+    values[AliDielectronVarManager::kTRDeta]     = particle_tmp.Eta();
+  }
+  
+  values[AliDielectronVarManager::kInTRDacceptance] = abs( values[AliDielectronVarManager::kTRDeta] )<0.85 && (  (values[AliDielectronVarManager::kCharge]<0&&(  values[AliDielectronVarManager::kPhi]<1.32 || (values[AliDielectronVarManager::kPhi]>1.98 && values[AliDielectronVarManager::kPhi]<4.10)||  ( values[AliDielectronVarManager::kPhi]>5.12  && values[AliDielectronVarManager::kPhi]<5.48  && abs( values[AliDielectronVarManager::kTRDeta] )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.48 )) ||   (values[AliDielectronVarManager::kCharge]>0&&(  values[AliDielectronVarManager::kPhi]<1.52 || (values[AliDielectronVarManager::kPhi]>2.20 && values[AliDielectronVarManager::kPhi]<4.32)||  ( values[AliDielectronVarManager::kPhi]>5.32  && values[AliDielectronVarManager::kPhi]<5.68  && abs( values[AliDielectronVarManager::kTRDeta]  )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.68 )) )  ? 1: 0;
+  
+  
+  
+  
 }
 
 inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle, Double_t * const values)

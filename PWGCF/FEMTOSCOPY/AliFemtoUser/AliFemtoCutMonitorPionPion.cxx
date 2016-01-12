@@ -5,6 +5,7 @@
 
 #include "AliFemtoCutMonitorPionPion.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoAvgSepCalculator.h"
 
 #include "AliFemtoEvent.h"
 
@@ -40,21 +41,21 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
 
   _centrality = new TH1F(
     "centrality" + pf,
-    TString::Format("Event Centrality%s", title_suffix),
+    TString::Format("Event Centrality%s; centrality; N_{ev}", title_suffix),
     100, 0, 100.0
   );
   _centrality->Sumw2();
 
   _multiplicity = new TH1F(
     "multiplicity" + pf,
-    "Event Multiplicity",
+    TString::Format("Event Multiplicity%s; N_{tracks}; N_{ev}", title_suffix),
     100, 0, 10000.0
   );
   _multiplicity->Sumw2();
 
   _vertex_z = new TH1F(
     "VertexZ" + pf,
-    TString::Format("Vertex Z Distribution%s;z (cm);dN/dz", title_suffix),
+    TString::Format("Vertex Z Distribution%s;z (cm);N_{ev}", title_suffix),
     128, -15.0f, 15.0f
   );
   _vertex_z->Sumw2();
@@ -62,8 +63,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   _vertex_xy = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
-    48, -0.3f, 0.3f,
-    48, -0.3f, 0.6f
+    48, 0.0f, 0.12f,
+    48, 0.22f, 0.32f
   );
   _vertex_xy->Sumw2();
 
@@ -223,7 +224,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
          "dE/dx vs p",
          "p (GeV);"
          "dE/dx;"
-         "dN/(p_{T} $\\cdot$ dE/dx)"),
+         "N_{tracks}"),
     128, 0, 6.0,
     128, 0, 500.0);
   fdEdX->Sumw2();
@@ -232,10 +233,10 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     "impact" + pf,
     Form(title_format,
          "Track impact parameter components",
-         "z (cm?); r (cm?); N_{tracks}"
+         "z (cm?); r (cm?); N_{#pi}"
         ),
-    256, -4.2, 4.2,
-    256, -4.2, 4.2);
+    256, -0.25, 0.25,
+    256, -0.01, 0.1);
   fImpact->Sumw2();
 
   if (is_mc_analysis) {
@@ -243,7 +244,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
       "mc_Mass" + pf,
       TString::Format(title_format, "M_{inv}",
                                     "M_{inv} (GeV);"
-                                    "dN/dM"),
+                                    "N_{#pi}"),
       144, 0.0120, 1.158);
     fMinv->Sumw2();
   }
@@ -296,10 +297,8 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
-  , _minv(NULL)
+  , fMinv(NULL)
   , fKt(NULL)
-  , fAvgSep_pion(NULL)
-  , fAvgSep_proton(NULL)
   , fMCTrue_minv(NULL)
   , fMCTrue_kstar(NULL)
 {
@@ -308,33 +307,19 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                                (passing ? "(PASS)" : "(FAIL)"));
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
-  _minv = new TH1F(
+  fMinv = new TH1F(
     "Pair_Minv" + pf,
-    TString::Format(title_format, "M_{inv}", "M_{inv} (GeV)"),
+    TString::Format(title_format, "M_{inv}", "M_{inv} (GeV); N_{pairs}"),
     288, 0.0, 8.0);
-  _minv->Sumw2();
+  fMinv->Sumw2();
 
   fKt = new TH1F(
     "kt" + pf,
     TString::Format(title_format,
                     "k_{T} Distribution",
-                    "k_{T} (GeV); dN/k_{T}"),
+                    "k_{T} (GeV); N_{pairs}"),
     144, 0.0, 4.0);
   fKt->Sumw2();
-
-  fAvgSep_pion = new TH1F(
-    "AvgSep_pi" + pf,
-    TString::Format(title_format,
-      "AvgSep Pion Daughter", "Average Separation (cm)"),
-    144, 0.0, 20.0);
-  fAvgSep_pion->Sumw2();
-
-  fAvgSep_proton = new TH1F(
-    "AvgSep_pro" + pf,
-    TString::Format(title_format,
-      "AvgSep Proton Daughter", "Average Separation (cm)"),
-    144, 0.0, 20.0);
-  fAvgSep_proton->Sumw2();
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(
@@ -365,7 +350,7 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   const float minv = pair->MInv(),
              kstar = pair->KStar();
 
-  _minv->Fill(minv);
+  fMinv->Fill(minv);
   fKt->Fill(pair->KT());
 
   if (fMCTrue_minv) {
@@ -417,7 +402,7 @@ TList* AliFemtoCutMonitorPionPion::Pair::GetOutputList()
   TList *olist = new TList();
   TCollection *output = olist;
 
-  output->Add(_minv);
+  output->Add(fMinv);
   output->Add(fKt);
 
   if (fMCTrue_kstar) {

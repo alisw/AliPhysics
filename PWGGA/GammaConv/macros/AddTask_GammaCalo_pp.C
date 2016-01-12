@@ -139,61 +139,61 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   // ************************************* EMCAL cuts ****************************************************
   // LHC11a
   if (trainConfig == 1){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // 400 MeV cluster min energy
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // 400 MeV cluster min energy
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // 700 MeV cluster min energy
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000050"; // 700 MeV cluster min energy
   } else if (trainConfig == 2){ //EMCAL minEnergy variation
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 3){ //EMCAL minNCells variation
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050031220000"; mesonCutArray[0] = "0163103100000050"; //n cells >= 1
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050033220000"; mesonCutArray[1] = "0163103100000050"; //n cells >= 3
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032000000"; mesonCutArray[2] = "0163103100000050"; //no M02 cut
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1113121050032220000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111221050032220000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053031220000"; mesonCutArray[0] = "0163103100000050"; //n cells >= 1
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053033220000"; mesonCutArray[1] = "0163103100000050"; //n cells >= 3
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032000000"; mesonCutArray[2] = "0163103100000050"; //no M02 cut
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1113111053032220000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
+    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111211053032220000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
   } else if (trainConfig == 4 ){ // EMCAL clusters 2.76 TeV NonLinearity
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111101050032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC11a ConvCalo
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111101053032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC11a ConvCalo
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
   } else if (trainConfig == 5 ){ // EMCAL clusters open angle variation
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // min open angle - 0.0202 
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01 
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152 
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404 
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // min open angle - 0.0202
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111053032220000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404
   } else if (trainConfig == 6){ // EMCAL clusters 2.76 TeV NonLinearity
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111101050032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC11a ConvCalo
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111101053032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC11a ConvCalo
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
   } else if (trainConfig == 7 ){ // EMCAL clusters open angle variation
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // min open angle - 0.0202 
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01 
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152 
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404 
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // min open angle - 0.0202
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053032220000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404
   } else if (trainConfig == 8 ){ // EMCAL clusters 2.76 TeV additional NonLinearity variations
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111123050032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kTestBeamv2 + ConvCalo
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111124050032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + Calo
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111125050032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a kSDM ConvCalo
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111126050032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity LHC11a kSDM Calo
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111113053032220000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kTestBeamv2 + ConvCalo
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111114053032220000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + Calo
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111115053032220000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a kSDM ConvCalo
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111116053032220000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity LHC11a kSDM Calo
     // LHC13g  
   } else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000050"; // EMC7
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000050"; // EMC7
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111063032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,
   
   } else if (trainConfig == 12){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0) without and with added signals
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000050";
-    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111100050032220000"; mesonCutArray[1] = "0163103100000050";
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100053032220000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111100053032220000"; mesonCutArray[1] = "0163103100000050";
   } else if (trainConfig == 13){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050";
-    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[1] = "0163103100000050";
+    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111100053032230000"; mesonCutArray[1] = "0163103100000050";
   } else if (trainConfig == 14){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121053032220000"; mesonCutArray[0] = "0163103100000050";
-    eventCutArray[ 1] = "00051013"; clusterCutArray[1] = "1111121053032220000"; mesonCutArray[1] = "0163103100000050";
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050";
+    eventCutArray[ 1] = "00051013"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000050";
     
   // ************************************* PHOS cuts ****************************************************
   } else if (trainConfig == 31) { //PHOS clusters
@@ -249,232 +249,232 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     
     // LHC13g cut studies
   } else if (trainConfig == 51){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1, 400 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111121060052220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG1, 600 MeV min energy
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121060031220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,                     NCells >=1
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121060033220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,                     NCells >=3
+    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1, 700 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111063052220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG1, 900 MeV min energy
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111063031220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,                     NCells >=1
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111063033220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,                     NCells >=3
   } else if (trainConfig == 52){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000030"; // EMCEG1,                                                               0.01 opening
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000040"; // EMCEG1,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000060"; // EMCEG1,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121060032000000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,                                 no M02 cut
+    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000030"; // EMCEG1,                                                               0.01 opening
+    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000040"; // EMCEG1,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000060"; // EMCEG1,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111063032000000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,                                 no M02 cut
   } else if (trainConfig == 53){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1,                                                   50ns timing
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG1,                standard kSDMv5
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,              NonLinearity none
+    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1,                                                   50ns timing
+    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111101063032220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG1,                standard kSDMv5
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111112063032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111100063032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG1,              NonLinearity none
   
   } else if (trainConfig == 54){  // EMCAL clusters, EMCEG2 trigger
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG2, 400 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121060052220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG2, 600 MeV min energy
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121060031220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG2,                     NCells >=1
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121060033220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,                     NCells >=3
+    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG2, 700 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111063052220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG2, 900 MeV min energy
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111063031220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG2,                     NCells >=1
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111063033220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,                     NCells >=3
   } else if (trainConfig == 55){  // EMCAL clusters, EMCEG2 trigger
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000030"; // EMCEG2,                                                               0.01 opening
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000040"; // EMCEG2,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000060"; // EMCEG2,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121060032000000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,                                 no M02 cut
+    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000030"; // EMCEG2,                                                               0.01 opening
+    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000040"; // EMCEG2,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000060"; // EMCEG2,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111063032000000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,                                 no M02 cut
   } else if (trainConfig == 56){  // EMCAL clusters, EMCEG2 trigger
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG2,                                                   50ns timing
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG2,                standard kSDMv5
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG2,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,              NonLinearity none
+    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG2,                                                   50ns timing
+    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111101063032220000"; mesonCutArray[1] = "0163103100000050"; // EMCEG2,                standard kSDMv5
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111112063032220000"; mesonCutArray[2] = "0163103100000050"; // EMCEG2,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111100063032220000"; mesonCutArray[3] = "0163103100000050"; // EMCEG2,              NonLinearity none
     
   } else if (trainConfig == 57){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 400 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111121060052220000"; mesonCutArray[1] = "0163103100000050"; // INT7, 600 MeV min energy
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121060031220000"; mesonCutArray[2] = "0163103100000050"; // INT7,                     NCells >=1
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111121060033220000"; mesonCutArray[3] = "0163103100000050"; // INT7,                     NCells >=3
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 700 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063052220000"; mesonCutArray[1] = "0163103100000050"; // INT7, 900 MeV min energy
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063031220000"; mesonCutArray[2] = "0163103100000050"; // INT7,                     NCells >=1
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111063033220000"; mesonCutArray[3] = "0163103100000050"; // INT7,                     NCells >=3
   } else if (trainConfig == 58){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000030"; // INT7,                                                               0.01 opening
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000040"; // INT7,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000060"; // INT7,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111121060032000000"; mesonCutArray[3] = "0163103100000050"; // INT7,                                 no M02 cut
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000030"; // INT7,                                                               0.01 opening
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000040"; // INT7,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000060"; // INT7,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111063032000000"; mesonCutArray[3] = "0163103100000050"; // INT7,                                 no M02 cut
   } else if (trainConfig == 59){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 50ns timing
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // INT7, standard kSDMv5
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // INT7, NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // INT7, NonLinearity none
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111123060032220000"; mesonCutArray[4] = "0163103100000050"; // INT7, NonLinearity TB+ConvCalo
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111124060032220000"; mesonCutArray[5] = "0163103100000050"; // INT7,              TB+Calo
-    eventCutArray[ 6] = "00000113"; clusterCutArray[6] = "1111125060032220000"; mesonCutArray[6] = "0163103100000050"; // INT7,              kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
-    eventCutArray[ 7] = "00000113"; clusterCutArray[7] = "1111126060032220000"; mesonCutArray[7] = "0163103100000050"; // INT7,              kPi0MC+Calo (replay of Jasons with Calo)
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 50ns timing
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111101063032220000"; mesonCutArray[1] = "0163103100000050"; // INT7, standard kSDMv5
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111112063032220000"; mesonCutArray[2] = "0163103100000050"; // INT7, NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100063032220000"; mesonCutArray[3] = "0163103100000050"; // INT7, NonLinearity none
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111113063032220000"; mesonCutArray[4] = "0163103100000050"; // INT7, NonLinearity TB+ConvCalo
+    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111114063032220000"; mesonCutArray[5] = "0163103100000050"; // INT7,              TB+Calo
+    eventCutArray[ 6] = "00000113"; clusterCutArray[6] = "1111115063032220000"; mesonCutArray[6] = "0163103100000050"; // INT7,              kPi0MC+ConvCalo (replay of Jasons with ConvCalo)
+    eventCutArray[ 7] = "00000113"; clusterCutArray[7] = "1111116063032220000"; mesonCutArray[7] = "0163103100000050"; // INT7,              kPi0MC+Calo (replay of Jasons with Calo)
     
   } else if (trainConfig == 60){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7, 400 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121060052220000"; mesonCutArray[1] = "0163103100000050"; // EMC7, 600 MeV min energy
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111121060031220000"; mesonCutArray[2] = "0163103100000050"; // EMC7,                     NCells >=1
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121060033220000"; mesonCutArray[3] = "0163103100000050"; // EMC7,                     NCells >=3
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7, 700 MeV min energy, NCells >=2, M02 default cut, 35ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063052220000"; mesonCutArray[1] = "0163103100000050"; // EMC7, 900 MeV min energy
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111063031220000"; mesonCutArray[2] = "0163103100000050"; // EMC7,                     NCells >=1
+    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111063033220000"; mesonCutArray[3] = "0163103100000050"; // EMC7,                     NCells >=3
   } else if (trainConfig == 61){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000030"; // EMC7,                                                               0.01 opening
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000040"; // EMC7,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000060"; // EMC7,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121060032000000"; mesonCutArray[3] = "0163103100000050"; // EMC7,                                 no M02 cut
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000030"; // EMC7,                                                               0.01 opening
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000040"; // EMC7,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000060"; // EMC7,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111063032000000"; mesonCutArray[3] = "0163103100000050"; // EMC7,                                 no M02 cut
   } else if (trainConfig == 62){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                                                   50ns timing
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111101060032220000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                standard kSDMv5
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111122060032220000"; mesonCutArray[2] = "0163103100000050"; // EMC7,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100060032220000"; mesonCutArray[3] = "0163103100000050"; // EMC7,              NonLinearity none
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                                                   50ns timing
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111101063032220000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                standard kSDMv5
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111112063032220000"; mesonCutArray[2] = "0163103100000050"; // EMC7,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100063032220000"; mesonCutArray[3] = "0163103100000050"; // EMC7,              NonLinearity none
     
   } else if (trainConfig == 63){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 400 MeV min energy, NCells >=2, M02 default cut
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // INT7, 700 MeV min energy, NCells >=2, M02 default cut
   } else if (trainConfig == 64){  // cuts all with trackMatching without pileup
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121063032220000"; mesonCutArray[0] = "0163103100000050"; // 
-    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111121063032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111121063032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // 
+    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111111063032220000"; mesonCutArray[3] = "0163103100000050"; //
 
     
     
   } else if (trainConfig == 65){  // trackMatching variations
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121061032220000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111121062032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111121064032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111121065032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111121066032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111061032220000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111062032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111064032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111065032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111066032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 66){  // trackMatching variations
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121061032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121062032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121064032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111121065032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111121066032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111061032220000"; mesonCutArray[0] = "0163103100000050"; // EMC7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111062032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111064032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111065032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111111066032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 67){  // trackMatching variations
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111121061032220000"; mesonCutArray[0] = "0163103100000050"; // EG2
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121062032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121064032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111121065032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00085113"; clusterCutArray[5] = "1111121066032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111061032220000"; mesonCutArray[0] = "0163103100000050"; // EG2
+    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111062032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111064032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111111065032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00085113"; clusterCutArray[5] = "1111111066032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 68){  // trackMatching variations
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121061032220000"; mesonCutArray[0] = "0163103100000050"; // EG1
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111121062032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121064032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111121065032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00083113"; clusterCutArray[5] = "1111121066032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111061032220000"; mesonCutArray[0] = "0163103100000050"; // EG1
+    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111062032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111064032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111111065032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00083113"; clusterCutArray[5] = "1111111066032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 69){  // cuts all with trackMatching
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121063032220000"; mesonCutArray[0] = "0163103100000050"; // 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121063032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121063032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121063032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // 
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111063032220000"; mesonCutArray[3] = "0163103100000050"; //
     
     // LHC11a cut studies
   } else if (trainConfig == 70){  // EMCAL clusters, MB (INT1) trigger
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // MB, 400 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050052220000"; mesonCutArray[1] = "0163103100000050"; // MB, 600 MeV min energy
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050031220000"; mesonCutArray[2] = "0163103100000050"; // MB,                     NCells >=1
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121050033220000"; mesonCutArray[3] = "0163103100000050"; // MB,                     NCells >=3
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // MB, 700 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053052220000"; mesonCutArray[1] = "0163103100000050"; // MB, 900 MeV min energy
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053031220000"; mesonCutArray[2] = "0163103100000050"; // MB,                     NCells >=1
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111053033220000"; mesonCutArray[3] = "0163103100000050"; // MB,                     NCells >=3
   } else if (trainConfig == 71){  // EMCAL clusters, MB (INT1) trigger
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000030"; // MB,                                                               0.01 opening
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000040"; // MB,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000060"; // MB,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121050032000000"; mesonCutArray[3] = "0163103100000050"; // MB,                                 no M02 cut
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000030"; // MB,                                                               0.01 opening
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000040"; // MB,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000060"; // MB,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111053032000000"; mesonCutArray[3] = "0163103100000050"; // MB,                                 no M02 cut
   } else if (trainConfig == 72){  // EMCAL clusters, MB (INT1) trigger
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // MB,                                                   35ns timing
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111101050032220000"; mesonCutArray[1] = "0163103100000050"; // MB,                standard kSDMv5
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // MB,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // MB,              NonLinearity none
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // MB,                                                   35ns timing
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111101053032220000"; mesonCutArray[1] = "0163103100000050"; // MB,                standard kSDMv5
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // MB,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // MB,              NonLinearity none
 
   } else if (trainConfig == 73){  // EMCAL clusters, EMC1 trigger
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1, 400 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050052220000"; mesonCutArray[1] = "0163103100000050"; // EMC1, 600 MeV min energy
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050031220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,                     NCells >=1
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050033220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                     NCells >=3
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1, 700 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053052220000"; mesonCutArray[1] = "0163103100000050"; // EMC1, 900 MeV min energy
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053031220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,                     NCells >=1
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053033220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                     NCells >=3
   } else if (trainConfig == 74){  // EMCAL clusters, EMC1 trigger
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000030"; // EMC1,                                                               0.01 opening
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000040"; // EMC1,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000060"; // EMC1,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032000000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                                 no M02 cut
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000030"; // EMC1,                                                               0.01 opening
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000040"; // EMC1,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000060"; // EMC1,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053032000000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                                 no M02 cut
   } else if (trainConfig == 75){  // EMCAL clusters, EMC1 trigger
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121060032330000"; mesonCutArray[0] = "0163103100000050"; // EMC1,                                                   35ns timing
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111101050032220000"; mesonCutArray[1] = "0163103100000050"; // EMC1,                standard kSDMv5
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,              NonLinearity none
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111063032330000"; mesonCutArray[0] = "0163103100000050"; // EMC1,                                                   35ns timing
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111101053032220000"; mesonCutArray[1] = "0163103100000050"; // EMC1,                standard kSDMv5
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,              NonLinearity none
     
   } else if (trainConfig == 76){  // EMCAL clusters, MB (INT1) trigger, for added signals
-    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // MB, 400 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111121050052220000"; mesonCutArray[1] = "0163103100000050"; // MB, 600 MeV min energy
-    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111121050031220000"; mesonCutArray[2] = "0163103100000050"; // MB,                     NCells >=1
-    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111121050033220000"; mesonCutArray[3] = "0163103100000050"; // MB,                     NCells >=3
+    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // MB, 700 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111111053052220000"; mesonCutArray[1] = "0163103100000050"; // MB, 900 MeV min energy
+    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111111053031220000"; mesonCutArray[2] = "0163103100000050"; // MB,                     NCells >=1
+    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111111053033220000"; mesonCutArray[3] = "0163103100000050"; // MB,                     NCells >=3
   } else if (trainConfig == 77){  // EMCAL clusters, MB (INT1) trigger, for added signals
-    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000030"; // MB,                                                               0.01 opening
-    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000040"; // MB,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000060"; // MB,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111121050032000000"; mesonCutArray[3] = "0163103100000050"; // MB,                                 no M02 cut
+    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000030"; // MB,                                                               0.01 opening
+    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000040"; // MB,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000060"; // MB,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111111053032000000"; mesonCutArray[3] = "0163103100000050"; // MB,                                 no M02 cut
   } else if (trainConfig == 78){  // EMCAL clusters, MB (INT1) trigger, for added signals
-    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // MB,                                                   35ns timing
-    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111101050032220000"; mesonCutArray[1] = "0163103100000050"; // MB,                standard kSDMv5
-    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // MB,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // MB,              NonLinearity none
+    eventCutArray[ 0] = "00003123"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // MB,                                                   35ns timing
+    eventCutArray[ 1] = "00003123"; clusterCutArray[1] = "1111101053032220000"; mesonCutArray[1] = "0163103100000050"; // MB,                standard kSDMv5
+    eventCutArray[ 2] = "00003123"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // MB,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00003123"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // MB,              NonLinearity none
     
   } else if (trainConfig == 79){  // EMCAL clusters, EMC1 trigger, for added signals
-    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1, 400 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
-    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111121050052220000"; mesonCutArray[1] = "0163103100000050"; // EMC1, 600 MeV min energy
-    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111121050031220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,                     NCells >=1
-    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111121050033220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                     NCells >=3
+    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1, 700 MeV min energy, NCells >=2, M02 default cut, 50ns timing, 1 cell diagonal
+    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111111053052220000"; mesonCutArray[1] = "0163103100000050"; // EMC1, 900 MeV min energy
+    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111111053031220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,                     NCells >=1
+    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111111053033220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                     NCells >=3
   } else if (trainConfig == 80){  // EMCAL clusters, EMC1 trigger, for added signals
-    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000030"; // EMC1,                                                               0.01 opening
-    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000040"; // EMC1,                                                               0.75 cell diagonal
-    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000060"; // EMC1,                                                               2 cell diagonals
-    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111121050032000000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                                 no M02 cut
+    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000030"; // EMC1,                                                               0.01 opening
+    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000040"; // EMC1,                                                               0.75 cell diagonal
+    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000060"; // EMC1,                                                               2 cell diagonals
+    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111111053032000000"; mesonCutArray[3] = "0163103100000050"; // EMC1,                                 no M02 cut
   } else if (trainConfig == 81){  // EMCAL clusters, EMC1 trigger, for added signals
-    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1,                                                   35ns timing
-    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111101050032220000"; mesonCutArray[1] = "0163103100000050"; // EMC1,                standard kSDMv5
-    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111122050032220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,              NonLinearity LHC11a Calo
-    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111100050032220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,              NonLinearity none
+    eventCutArray[ 0] = "00051123"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1,                                                   35ns timing
+    eventCutArray[ 1] = "00051123"; clusterCutArray[1] = "1111101053032220000"; mesonCutArray[1] = "0163103100000050"; // EMC1,                standard kSDMv5
+    eventCutArray[ 2] = "00051123"; clusterCutArray[2] = "1111112053032220000"; mesonCutArray[2] = "0163103100000050"; // EMC1,              NonLinearity LHC11a Calo
+    eventCutArray[ 3] = "00051123"; clusterCutArray[3] = "1111100053032220000"; mesonCutArray[3] = "0163103100000050"; // EMC1,              NonLinearity none
 
   } else if (trainConfig == 82){  // trackMatching variations
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121051032220000"; mesonCutArray[0] = "0163103100000050"; // MB
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121052032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121053032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121054032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111121055032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00003113"; clusterCutArray[5] = "1111121056032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111051032220000"; mesonCutArray[0] = "0163103100000050"; // MB
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111052032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111054032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111111055032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00003113"; clusterCutArray[5] = "1111111056032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 83){  // trackMatching variations
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121051032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121052032220000"; mesonCutArray[1] = "0163103100000050"; //
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121053032220000"; mesonCutArray[2] = "0163103100000050"; //
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121054032220000"; mesonCutArray[3] = "0163103100000050"; //
-    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111121055032220000"; mesonCutArray[4] = "0163103100000050"; //
-    eventCutArray[ 5] = "00051113"; clusterCutArray[5] = "1111121056032220000"; mesonCutArray[5] = "0163103100000050"; //
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111051032220000"; mesonCutArray[0] = "0163103100000050"; // EMC1
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111052032220000"; mesonCutArray[1] = "0163103100000050"; //
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111054032220000"; mesonCutArray[3] = "0163103100000050"; //
+    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111111055032220000"; mesonCutArray[4] = "0163103100000050"; //
+    eventCutArray[ 5] = "00051113"; clusterCutArray[5] = "1111111056032220000"; mesonCutArray[5] = "0163103100000050"; //
   } else if (trainConfig == 84){  // min Energy MB
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 85){  // min Energy EMC1
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 86){  // min Energy INT7
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 87){  // min Energy EMC7
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 88){  // min Energy EG2
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 89){  // min Energy EG1
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050012220000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111121050022220000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111053012220000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111053022220000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053042220000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111111053052220000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 90){  // replay Jason
     eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111101050032220000"; mesonCutArray[0] = "0163103100000050"; // my default with SDM w/o TM
     eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111101053032220000"; mesonCutArray[1] = "0163103100000050"; // my default with SDM w/ TM
@@ -483,17 +483,17 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111101021032000000"; mesonCutArray[4] = "0163103100000050"; // timing to 500ns, no M02, mild TM cut
       
   } else if (trainConfig == 98){ // MB - with multiplicity bins
-    eventCutArray[ 0] = "00103113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
-    eventCutArray[ 1] = "01203113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
-    eventCutArray[ 2] = "02303113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
-    eventCutArray[ 3] = "03403113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
-    eventCutArray[ 4] = "04503113"; clusterCutArray[4] = "1111121050032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+    eventCutArray[ 0] = "00103113"; clusterCutArray[0] = "1111111053032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
+    eventCutArray[ 1] = "01203113"; clusterCutArray[1] = "1111111053032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
+    eventCutArray[ 2] = "02303113"; clusterCutArray[2] = "1111111053032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
+    eventCutArray[ 3] = "03403113"; clusterCutArray[3] = "1111111053032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "04503113"; clusterCutArray[4] = "1111111053032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
   } else if (trainConfig == 99){ // INT7 - with multiplicity bins
-    eventCutArray[ 0] = "00100113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
-    eventCutArray[ 1] = "01200113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
-    eventCutArray[ 2] = "02300113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
-    eventCutArray[ 3] = "03400113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
-    eventCutArray[ 4] = "04500113"; clusterCutArray[4] = "1111121060032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+    eventCutArray[ 0] = "00100113"; clusterCutArray[0] = "1111111063032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
+    eventCutArray[ 1] = "01200113"; clusterCutArray[1] = "1111111063032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
+    eventCutArray[ 2] = "02300113"; clusterCutArray[2] = "1111111063032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
+    eventCutArray[ 3] = "03400113"; clusterCutArray[3] = "1111111063032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "04500113"; clusterCutArray[4] = "1111111063032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
     
     
 // 8 TeV configs
@@ -506,25 +506,25 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
     //standard cut
   } else if (trainConfig == 101){ // EMCAL clusters pp 8 TeV 
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032230000"; mesonCutArray[0] = "0163103100000050"; // 400 MeV cluster min energy
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000050"; // 700 MeV cluster min energy
     // 8 TeV variations
   } else if (trainConfig == 102){ // EMCAL clusters pp 8 TeV, timing variation
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111050032230000"; mesonCutArray[0] = "0163103100000050"; // time -50ns_50ns
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060032230000"; mesonCutArray[1] = "0163103100000050"; // time -30ns_35ns - standard
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111070032230000"; mesonCutArray[2] = "0163103100000050"; // time -30ns_30ns
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111080032230000"; mesonCutArray[3] = "0163103100000050"; // time -20ns_30ns
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032230000"; mesonCutArray[0] = "0163103100000050"; // time -50ns_50ns
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000050"; // time -30ns_35ns - standard
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111073032230000"; mesonCutArray[2] = "0163103100000050"; // time -30ns_30ns
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111083032230000"; mesonCutArray[3] = "0163103100000050"; // time -20ns_30ns
   } else if (trainConfig == 103){ //EMCAL minEnergy variation
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060012230000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060022230000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111060032230000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111060042230000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111060052230000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063012230000"; mesonCutArray[0] = "0163103100000050"; //0.5 GeV/c
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063022230000"; mesonCutArray[1] = "0163103100000050"; //0.6 GeV/c
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032230000"; mesonCutArray[2] = "0163103100000050"; //0.7 GeV/c default
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111063042230000"; mesonCutArray[3] = "0163103100000050"; //0.8 GeV/c
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111063052230000"; mesonCutArray[4] = "0163103100000050"; //0.9 GeV/c
   } else if (trainConfig == 104){ //EMCAL minNCells, M02, with/without TRD variation
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060031230000"; mesonCutArray[0] = "0163103100000050"; //n cells >= 1
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060033230000"; mesonCutArray[1] = "0163103100000050"; //n cells >= 3
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111060032000000"; mesonCutArray[2] = "0163103100000050"; //no M02 cut
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1113111060032230000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111211060032230000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063031230000"; mesonCutArray[0] = "0163103100000050"; //n cells >= 1
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063033230000"; mesonCutArray[1] = "0163103100000050"; //n cells >= 3
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032000000"; mesonCutArray[2] = "0163103100000050"; //no M02 cut
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1113111063032230000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111211063032230000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
   } else if (trainConfig == 105){  // trackMatching variations
     eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111061032230000"; mesonCutArray[0] = "0163103100000050"; //
     eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111062032230000"; mesonCutArray[1] = "0163103100000050"; //
@@ -534,66 +534,66 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111066032230000"; mesonCutArray[5] = "0163103100000050"; //
 
   } else if (trainConfig == 109){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity none
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111113060032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 ConvCalo
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111114060032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 Calo
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity none
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111113063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111114063032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 Calo
   } else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101060032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC12 ConvCalo
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111112060032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC12 Calo
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100060032230000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC12 ConvCalo
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC12 Calo
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111100063032230000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity none
 
    // LHC12fa-i and MC
     // default with three cuts
   } else if (trainConfig == 111){  // EMCAL clusters, different triggers no NonLinearity
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
+    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100063032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
     
     // all the cut variations
   } else if (trainConfig == 112){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111060032230000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA, 400 MeV min energy, NCells >=2, M02 default cut
-    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111060052230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA, 600 MeV min energy
+    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA, 400 MeV min energy, NCells >=2, M02 default cut
+    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111063052230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA, 600 MeV min energy
   } else if (trainConfig == 113){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111060031230000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA,                     NCells >=1
-    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111060033230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA,                     NCells >=3
+    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111063031230000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA,                     NCells >=1
+    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111063033230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA,                     NCells >=3
   } else if (trainConfig == 114){  // EMCAL clusters, EMCEG1 trigger
-    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111060032000000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA,                                 no M02 cut
-    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111020032230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA,                                                 500ns timing
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111040032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEGA,                                                 100ns timing
+    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111063032000000"; mesonCutArray[0] = "0163103100000050"; // EMCEGA,                                 no M02 cut
+    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111023032230000"; mesonCutArray[1] = "0163103100000050"; // EMCEGA,                                                 500ns timing
+    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111043032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEGA,                                                 100ns timing
   } else if (trainConfig == 115){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7, 400 MeV min energy, NCells >=2, M02 default cut
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060052230000"; mesonCutArray[1] = "0163103100000050"; // INT7, 600 MeV min energy
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000050"; // INT7, 700 MeV min energy, NCells >=2, M02 default cut
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063052230000"; mesonCutArray[1] = "0163103100000050"; // INT7, 900 MeV min energy
   } else if (trainConfig == 116){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060031230000"; mesonCutArray[0] = "0163103100000050"; // INT7,                       NCells >=1
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111060033230000"; mesonCutArray[1] = "0163103100000050"; // INT7,                       NCells >=3
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063031230000"; mesonCutArray[0] = "0163103100000050"; // INT7,                       NCells >=1
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063033230000"; mesonCutArray[1] = "0163103100000050"; // INT7,                       NCells >=3
   } else if (trainConfig == 117){  // EMCAL clusters, INT7 trigger
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032000000"; mesonCutArray[0] = "0163103100000050"; // INT7,                                   no M02 cut
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111020032230000"; mesonCutArray[1] = "0163103100000050"; // INT7,                                                   500ns timing
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111040032230000"; mesonCutArray[2] = "0163103100000050"; // INT7,                                                   100ns timing
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032000000"; mesonCutArray[0] = "0163103100000050"; // INT7,                                   no M02 cut
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111023032230000"; mesonCutArray[1] = "0163103100000050"; // INT7,                                                   500ns timing
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111043032230000"; mesonCutArray[2] = "0163103100000050"; // INT7,                                                   100ns timing
   } else if (trainConfig == 118){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111060032230000"; mesonCutArray[0] = "0163103100000050"; // EMC7, 400 MeV min energy, NCells >=2, M02 default cut
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060052230000"; mesonCutArray[1] = "0163103100000050"; // EMC7, 600 MeV min energy
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000050"; // EMC7, 700 MeV min energy, NCells >=2, M02 default cut
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063052230000"; mesonCutArray[1] = "0163103100000050"; // EMC7, 900 MeV min energy
   } else if (trainConfig == 119){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111060031230000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                     NCells >=1
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060033230000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                     NCells >=3
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111063031230000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                     NCells >=1
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063033230000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                     NCells >=3
   } else if (trainConfig == 120){  // EMCAL clusters, EMC7 trigger
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111060032000000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                                 no M02 cut
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111020032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                                                 500ns timing
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111040032230000"; mesonCutArray[2] = "0163103100000050"; // EMC7,                                                 100ns timing
+    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111063032000000"; mesonCutArray[0] = "0163103100000050"; // EMC7,                                 no M02 cut
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111023032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7,                                                 500ns timing
+    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111043032230000"; mesonCutArray[2] = "0163103100000050"; // EMC7,                                                 100ns timing
 
   }else if (trainConfig == 121){ // EMCAL clusters, different special triggers, different conv calo non lin
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
+    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111063032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
   }else if (trainConfig == 122){ // EMCAL clusters, different special triggers, different kSDMv5
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111101060032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111101060032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
+    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111101063032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
   }else if (trainConfig == 123){ // EMCAL clusters, different special triggers, different conv calo non lin
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111112060032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111112060032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111112060032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111112063032230000"; mesonCutArray[0] = "0163103100000050"; // INT7
+    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111112063032230000"; mesonCutArray[1] = "0163103100000050"; // EMC7
+    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000050"; // EMCEG1,
 
 
 // PHOS @ 8 TeV
@@ -605,18 +605,18 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
     // 7 TeV
   } else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111131010032230000"; mesonCutArray[0] = "0163103100000050"; // 1000ns timing cut, std NL
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111013032230000"; mesonCutArray[0] = "0163103100000050"; // 1000ns timing cut, std NL
   } else if (trainConfig == 202){ // EMCAL clusters pp 7 TeV - NL variations
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111131010032230000"; mesonCutArray[0] = "0163103100000050"; // NL ConvCalo
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111132010032230000"; mesonCutArray[1] = "0163103100000050"; // NL Calo
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111133010032230000"; mesonCutArray[2] = "0163103100000050"; // NL ConvCalo + TestBeamv3
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111134010032230000"; mesonCutArray[3] = "0163103100000050"; // NL Calo + TestBeamv3
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111100010032230000"; mesonCutArray[4] = "0163103100000050"; // NL off
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111013032230000"; mesonCutArray[0] = "0163103100000050"; // NL ConvCalo
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111112013032230000"; mesonCutArray[1] = "0163103100000050"; // NL Calo
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111113013032230000"; mesonCutArray[2] = "0163103100000050"; // NL ConvCalo + TestBeamv3
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111114013032230000"; mesonCutArray[3] = "0163103100000050"; // NL Calo + TestBeamv3
+    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111100013032230000"; mesonCutArray[4] = "0163103100000050"; // NL off
   } else if (trainConfig == 203){ // EMCAL clusters pp 7 TeV - NL variations
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101010032230000"; mesonCutArray[0] = "0163103100000050"; // NL kSDMv5
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111102010032230000"; mesonCutArray[1] = "0163103100000050"; // NL Pi0MCv3 + TestBeamv3
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111103010032230000"; mesonCutArray[2] = "0163103100000050"; // NL Pi0MCv3 + TestBeamv2
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111131010032230000"; mesonCutArray[3] = "0163103100000050"; // NL ConvCalo - std
+    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101013032230000"; mesonCutArray[0] = "0163103100000050"; // NL kSDMv5
+    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111102013032230000"; mesonCutArray[1] = "0163103100000050"; // NL Pi0MCv3 + TestBeamv3
+    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111103013032230000"; mesonCutArray[2] = "0163103100000050"; // NL Pi0MCv3 + TestBeamv2
+    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111013032230000"; mesonCutArray[3] = "0163103100000050"; // NL ConvCalo - std
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

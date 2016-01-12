@@ -42,6 +42,8 @@ public:
   void AddBitCut(AliDielectronVarManager::ValueTypes type, UInt_t bit, Bool_t excludeRange=kFALSE);
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange=kFALSE);
 
+  void InvertCuts();
+
   // setters
   void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
   void    SetCutType(CutType type)         { fCutType=type;    }

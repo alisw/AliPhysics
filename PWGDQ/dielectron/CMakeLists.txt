@@ -26,6 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/BtoJPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
@@ -84,7 +85,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Generate the ROOT map
 # Dependecies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase )
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 

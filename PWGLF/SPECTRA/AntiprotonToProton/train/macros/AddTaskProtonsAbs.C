@@ -1,4 +1,4 @@
-AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
+AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(const Char_t * addname="", Bool_t lCollidingSystems=kTRUE,Bool_t lDelegateSelection = kTRUE,Bool_t fixDCA=kTRUE,Bool_t onDCAz=kFALSE){
 
 	//--- get the current analysis manager ---//
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -12,6 +12,8 @@ AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(Bool_t lCollidingSystems=kTRU
 	AliESDInputHandler *esdH = static_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
 	if (esdH) hasESD=kTRUE; cout<<"ESD: "<<hasESD<<endl;
 	if(!hasESD) return NULL;
+	AliMCEventHandler *mc = new AliMCEventHandler();
+  	mgr->SetMCtruthEventHandler(mc);
 
 	//========= Add task to the ANALYSIS manager =====
 	TString taskname = "ProtonSysCheckAbs";
@@ -39,6 +41,11 @@ AliAnalysisTaskProtonAbsorbtion *AddTaskProtonsAbs(Bool_t lCollidingSystems=kTRU
 	 taskname += "_DCAz";
        	 outname  += "_DCAz";
 	}
+ taskname += "_";
+ outname  += "_";
+
+ taskname += addname;
+ outname  += addname;
 
 AliAnalysisTaskProtonAbsorbtion *taskcheckAbs = new AliAnalysisTaskProtonAbsorbtion(taskname);
 

@@ -30,6 +30,9 @@ bool DEFAULT_DO_KT = kFALSE;
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
+  bool do_qinv_cf;
+  bool do_q3d_cf;
+  bool do_avg_sep_cf;
   bool do_kt_q3d;
   bool do_kt_qinv;
 };
@@ -55,6 +58,10 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
   MacroParams macro_config;
 
+  // default
+  macro_config.do_qinv_cf = true;
+  macro_config.do_q3d_cf = true;
+  macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
 
   // Read parameter string and update configurations
@@ -138,16 +145,25 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       cut_config.event_CentralityMax = mult_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
-      analysis->SetVerboseMode(kTRUE);
 
       analysis->AddStanardCutMonitors();
 
-      TString cf_title = TString("_qinv_") + pair_type_str;
-      AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), 100, 0.0, 1.2);
-      analysis->AddCorrFctn(cf);
+      if (macro_config.do_avg_sep_cf) {
+        AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avg_sep", 100, 0.0, 40.0);
+        avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
+        analysis->AddCorrFctn(avgsep_cf);
+      }
 
-      cf_title = TString("_q3D_") + pair_type_str;
-      analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, 72, 0.25));
+      if (macro_config.do_qinv_cf) {
+        TString cf_title = TString("_qinv_") + pair_type_str;
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), 100, 0.0, 1.2);
+        analysis->AddCorrFctn(cf);
+      }
+
+      if (macro_config.do_q3d_cf) {
+        cf_title = TString("_q3D_") + pair_type_str;
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, 72, 0.25));
+      }
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));

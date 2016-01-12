@@ -180,7 +180,7 @@ void AliCorrelationAnalysis::PlotDeltaPhiEtaGap(const TString &fileNamePbPb, TSt
 
   TH2* refMultRaw = (TH2*) list->FindObject("referenceMultiplicity");
   if (refMultRaw) {
-    Double_t centrBins[] = { 0., 10., 20., 30., 50., 80., 100. };
+    Double_t centrBins[] = { 0., 1., 10., 20., 30., 50., 80., 100. };
     Int_t nCentrBins = sizeof(centrBins) / sizeof(Double_t);
     TH1* refMult = new TH1F("refMult", ";centrality;<Nch>", nCentrBins, centrBins);
     for (Int_t i=0; i<nCentrBins; i++) {
@@ -257,22 +257,23 @@ void AliCorrelationAnalysis::PlotDeltaPhiEtaGap(const TString &fileNamePbPb, TSt
       Bool_t scaleToPairs = kTRUE;
       Int_t histType = 1;
 
-      GetSumOfRatios(h, hMixed, &hist[0],  step,  0,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
-      GetSumOfRatios(h, hMixed, &hist[1],  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
-      GetSumOfRatios(h, hMixed, &hist[2],  step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
-      GetSumOfRatios(h, hMixed, &hist[3],  step, 30,  50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
-      GetSumOfRatios(h, hMixed, &hist[4],  step, 50,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
-      GetSumOfRatios(h, hMixed, &hist[5],  step, 80, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[0],  step,  0,   1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[1],  step,  0,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[2],  step, 10,  20, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[3],  step, 20,  30, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[4],  step, 30,  50, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[5],  step, 50,  80, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
+      GetSumOfRatios(h, hMixed, &hist[6],  step, 80, 100, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, normalizePerTrigger);
 
       if (h2)
-	GetSumOfRatios(h2, hMixed2, &hist[6],  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE);
+	GetSumOfRatios(h2, hMixed2, &hist[7],  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE);
 
 
       file = TFile::Open(outputFile, "UPDATE");
       for (Int_t iHist = 0; iHist < nHist; ++iHist) {
 	if (hist[iHist]) {
-	  hist[i]->SetName(Form("dphi_%d_%d_%d", i, j, iHist));
-	  hist[i]->Write();
+	  hist[iHist]->SetName(Form("dphi_%d_%d_%d", i, j, iHist));
+	  hist[iHist]->Write();
 	}
       }
       file->Close();
@@ -432,7 +433,7 @@ void AliCorrelationAnalysis::RemoveWing(const TString &fileName, const TString &
 
   TF1* systFunc = new TF1("func", "1.0 + (abs(x) > 0.5) * (abs(x)-0.5) * 9e-4", -2, 2);
 
-  Int_t nHists = 6;
+  Int_t nHists = 8;
   for (Int_t i=0; i<maxLeadingPt; i++) {
     TH1 *triggers = (TH1*) file->Get(Form("triggers_%d", i));
     if (triggers) {

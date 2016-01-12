@@ -35,7 +35,7 @@
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassImp(AliFemtoEventReaderAOD);
-  /// \cond CLASSIMP
+  /// \endcond
 #endif
 
 #if !(ST_NO_NAMESPACES)
@@ -1472,10 +1472,10 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
         tFemtoXi->SetBacNSigmaTOFK(-1000);
         tFemtoXi->SetPosNSigmaTOFP(-1000);
         tFemtoXi->SetNegNSigmaTOFP(-1000);
-	tFemtoXi->SetBacNSigmaTOFP(-1000);
+        tFemtoXi->SetBacNSigmaTOFP(-1000);
         tFemtoXi->SetPosNSigmaTOFPi(-1000);
         tFemtoXi->SetNegNSigmaTOFPi(-1000);
-	tFemtoXi->SetBacNSigmaTOFPi(-1000);
+        tFemtoXi->SetBacNSigmaTOFPi(-1000);
 
         tFemtoXi->SetTOFProtonTimePos(-1000);
         tFemtoXi->SetTOFPionTimePos(-1000);
@@ -1483,7 +1483,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
         tFemtoXi->SetTOFProtonTimeNeg(-1000);
         tFemtoXi->SetTOFPionTimeNeg(-1000);
         tFemtoXi->SetTOFKaonTimeNeg(-1000);
-	tFemtoXi->SetTOFProtonTimeBac(-1000);
+        tFemtoXi->SetTOFProtonTimeBac(-1000);
         tFemtoXi->SetTOFPionTimeBac(-1000);
         tFemtoXi->SetTOFKaonTimeBac(-1000);
       }
@@ -1685,7 +1685,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
   ULong_t status = tAodTrack->GetStatus();
 
-  if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout) && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)) {
+  if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout)
+      && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)) {
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
 
@@ -1798,69 +1799,50 @@ void AliFemtoEventReaderAOD::SetEPVZERO(Bool_t iepvz)
 void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3])
 {
   // Gets the global position of the track at nine different radii in the TPC
-  // track is the track you want to propagate
-  // bfield is the magnetic field of your event
-  // globalPositionsAtRadii is the array of global positions in the radii and xyz
+  // params:
+  //   track - the track to propagate
+  //   bfield - magnetic field of event
+  //   globalPositionsAtRadii - Output array of global positions in the radii and xyz
+  const Float_t DEFAULT_VALUE = -9999.0;
 
-  // Initialize the array to something indicating there was no propagation
-  for (Int_t i = 0; i < 9; i++) {
-    for (Int_t j = 0; j < 3; j++) {
-      globalPositionsAtRadii[i][j] = -9999.;
-    }
-  }
+  // The radii at which we get the global positions
+  // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
+  const Float_t Rwanted[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
 
   // Make a copy of the track to not change parameters of the track
   AliExternalTrackParam etp;
   etp.CopyFromVTrack(track);
-  //printf("\nAfter CopyFromVTrack\n");
-  //etp.Print();
 
-  // The global position of the the track
-  Double_t xyz[3] = { -9999., -9999., -9999.};
+  // index of global position we are filling
+  //  - first we use AliExternalTrackParam, then just default value
+  Int_t radius_index = 0;
 
-  // Counter for which radius we want
-  Int_t iR = 0;
-// The radii at which we get the global positions
-  // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
-  Float_t Rwanted[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
-  // The global radius we are at
-  Float_t globalRadius = 0;
+  // loop over the array of radii
+  for (; radius_index < 9; radius_index++) {
 
-  // Propagation is done in local x of the track
-  for (Float_t x = etp.GetX(); x < 247.; x += 1.) { // GetX returns local coordinates
-    // Starts at the tracks fX and goes outwards. x = 245 is the outer radial limit
-    // of the TPC when the track is straight, i.e. has inifinite pt and doesn't get bent.
-    // If the track's momentum is smaller than infinite, it will develop a y-component, which
-    // adds to the global radius
+    // extracted radius
+    const Float_t radius = Rwanted[radius_index];
+    // buffer to store position
+    Double_t pos_buffer[3] = {0};
 
-    // Stop if the propagation was not succesful. This can happen for low pt tracks
-    // that don't reach outer radii
-    if (!etp.PropagateTo(x, bfield))break;
-    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
-    globalRadius = TMath::Sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]); //Idea to speed up: compare squared radii
+    // get the global position of the track at this radial location
+    bool good = etp.GetXYZatR(radius, bfield, pos_buffer, NULL);
 
-    // Roughly reached the radius we want
-    if (globalRadius > Rwanted[iR]) {
-
-      // Bigger loop has bad precision, we're nearly one centimeter too far, go back in small steps.
-      while (globalRadius > Rwanted[iR]) {
-        x -= .1;
-        //      printf("propagating to x %5.2f\n",x);
-        if (!etp.PropagateTo(x, bfield))break;
-        etp.GetXYZ(xyz); // GetXYZ returns global coordinates
-        globalRadius = TMath::Sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]); //Idea to speed up: compare squared radii
-      }
-      //printf("At Radius:%05.2f (local x %5.2f). Setting position to x %4.1f y %4.1f z %4.1f\n",globalRadius,x,xyz[0],xyz[1],xyz[2]);
-      globalPositionsAtRadii[iR][0] = xyz[0];
-      globalPositionsAtRadii[iR][1] = xyz[1];
-      globalPositionsAtRadii[iR][2] = xyz[2];
-      // Indicate we want the next radius
-      iR += 1;
+    // if value is not good, break loading loop
+    if (!good || fabs(AliFemtoThreeVector(pos_buffer).Perp() - radius) > 0.5) {
+      radius_index--; // decrement to fill current location with default value
+      break;
     }
-    if (iR >= 9) {
-      // TPC edge reached
-      return;
-    }
+
+    // store the global position
+    globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
+    globalPositionsAtRadii[radius_index][1] = pos_buffer[1];
+    globalPositionsAtRadii[radius_index][2] = pos_buffer[2];
+  }
+
+  // Fill any remaining positions with the default value
+  for (; radius_index < 9; radius_index++) {
+    std::fill_n(globalPositionsAtRadii[radius_index], 3, DEFAULT_VALUE);
   }
 }
 

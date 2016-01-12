@@ -131,6 +131,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+    UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerPatchJetMatch.cxx
     UserTasks/AliAnalysisTaskSubJetFraction.cxx
@@ -156,6 +157,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
     UserTasks/AliAnalysisTaskGammaHadron.cxx   
+    UserTasks/AliAnalysisTaskPi0Hadron.cxx
    )
 
 if(FASTJET_FOUND)

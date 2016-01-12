@@ -164,6 +164,7 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   UInt_t num_events_to_mix;
   UInt_t min_coll_size;
 
+  Bool_t verbose;
   Bool_t enable_pair_monitors;
   Bool_t group_output_objects;
   Bool_t is_mc_analysis;

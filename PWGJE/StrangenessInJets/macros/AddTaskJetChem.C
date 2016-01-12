@@ -48,20 +48,23 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   Int_t debug = fdebug; // debug level
   if(debug>=0) task->SetDebugLevel(debug);
   
-  char* genJetsBranch = "clustersAODMC_ANTIKT02_B0_Filter00768_Cut00150_Skip00";
+  char* genJetsBranch = "";
+  //recJetsBranch = "";
 
   TString branchRecJets(recJetsBranch);
   TString branchGenJets(genJetsBranch);
 
   task->SetBranchEmbeddedJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
   task->SetBranchGenJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
-  task->SetMatchMode(1); //default = 1: is det.level rec. - det.level PYTHIA matching, '2' is matching from 'det.level rec. extra' jets to 'particle level PYTHIA' jets
+  
+  if(useExtraTracks)task->SetMatchMode(1);//default = 1: is det.level rec. - det.level PYTHIA matching, '2' is matching from 'det.level rec. extra' jets to 'particle level PYTHIA' jets
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
   task->SetCutJetEta(jetEtaCut);
   task->SetDeltaZVertexCut(DeltaVtxZCut);
   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00"); 
+
   //task->SetEventSelectionMask(AliVEvent::kMB); //for 2010 Pb-Pb data !!
   task->SetEventSelectionMask(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral); //event selection for 2011 Pb-Pb data
   task->SetEventClass(eventClass);
@@ -84,7 +87,6 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
 
   //Cuts---------------------------------
 
-  
   task->SetTrackCuts(0.15, -0.9, 0.9, 0., 2*TMath::Pi());// (pt Cut, daughtertrack rap's, phi min max cuts)
   task->SetJetCuts(5., (-1)*jetEtaCut, jetEtaCut, 0., 2*TMath::Pi());//(jet pt Cut, jet acceptance, phi min max cuts)
   task->SetCuttrackPosEta(0.8);
@@ -103,10 +105,9 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutV0RadiusMax(100.);//in cm
   task->SetCutBetheBloch(3.);//in units of sigma
 
-  //task->UseExtraTracks();
-  //task->UseExtraonlyTracks()
-  //task->SetUseExtraJetPt();//Use smeared jet pt for MC truth reference
-
+  if(useExtraTracks)task->UseExtraTracks();
+  if(useExtraOnlyTracks)task->UseExtraonlyTracks();
+  if(useExtraJetPt)task->SetUseExtraJetPt();//Use smeared jet pt for MC truth reference
 
 
   //task->SetCutRatioTPC(0.8);//Cut on Ratio of crossed Rows over findable clusters in TPC -> not used anymore by Strangeness PAG group
@@ -221,8 +222,6 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
      if(useExtraJetPt){listName4 += "_extraJetPt";}
    } 
    
-
-
 
 
    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

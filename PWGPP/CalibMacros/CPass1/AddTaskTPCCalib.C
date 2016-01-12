@@ -259,7 +259,7 @@ void AddCalibAlignInterpolation(TObject* task){
   calibAlign->SetDebugLevel(debugLevel);
   calibAlign->SetStreamLevel(streamLevel);
   calibAlign->SetStreamLevelTrack(0);
-  calibAlign->SetSyswatchStep(0);
+  calibAlign->SetSyswatchStep(10000);
   //  Uncomenting following 2 lines we can enable extendad version of infromation dump
   //  calibAlign->SetStreamLevelTrack(AliTPCcalibAlignInterpolation::kStremInterpolation);
   //  calibAlign->SetSyswatchStep(10);

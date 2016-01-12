@@ -26,20 +26,21 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		    ${AliPhysics_SOURCE_DIR}/OADB
-	            ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS		
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
-		    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                   )
+                    )
 
 
 

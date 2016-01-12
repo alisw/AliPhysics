@@ -43,6 +43,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
                    )
 
 # Sources in alphabetical order
@@ -61,6 +62,8 @@ set(SRCS
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
+    PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
+    PHOS_PbPb/AliAnalysisTaskgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx

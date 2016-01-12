@@ -583,24 +583,24 @@ void MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int
   }
   timer2.Print();
   TGraphErrors grEvent(hisEvent);
-  (*pcstream)<<"sumaryTime"<<
+  (*pcstream)<<"summaryTime"<<
     "id="<<id<<
     "grEvent.="<<&grEvent;
   for (Int_t isec=0; isec<nSec; isec++){
     grArrayNcl[isec] = new TGraphErrors((profArrayNcl[isec]));
     grArrayNclUsed[isec] = new TGraphErrors((profArrayNclUsed[isec]));
-    (*pcstream)<<"sumaryTime"<<
+    (*pcstream)<<"summaryTime"<<
       TString::Format("grNcl%d.=",isec).Data()<<grArrayNcl[isec]<<
       TString::Format("grNclUsed%d.=",isec).Data()<<grArrayNclUsed[isec];
   }
   for (Int_t iits=0; iits<3; iits++){
     grArrayITSNcl[iits] = new TGraphErrors((profArrayITSNcl[iits]));
-    (*pcstream)<<"sumaryTime"<<
+    (*pcstream)<<"summaryTime"<<
       TString::Format("grITSNcl%d.=",iits).Data()<<grArrayITSNcl[iits];
   }
   
   
-  (*pcstream)<<"sumaryTime"<<"\n";
+  (*pcstream)<<"summaryTime"<<"\n";
   for (Int_t isec=0; isec<nSec; isec++){
     delete 	profArrayNcl[isec];
     delete 	profArrayNclUsed[isec];
@@ -620,7 +620,7 @@ void makeCurrentTrend(){
   //
   //
   TCut cutFit = "refCurrent!=0&&id<=240220";
-  TChain * chain=  AliXRDPROOFtoolkit::MakeChainRandom("timeInfo.list","sumaryTime",0,1000);
+  TChain * chain=  AliXRDPROOFtoolkit::MakeChainRandom("timeInfo.list","summaryTime",0,1000);
   TStopwatch timer;
   TTree *tree = chain->CopyTree("1");
   timer.Print();

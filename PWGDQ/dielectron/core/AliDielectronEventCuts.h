@@ -64,6 +64,10 @@ public:
   Bool_t IsSelectedAOD(TObject* event);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
+  
+  enum ETRDTriggerClass{ kSE, kQU, kSEorQU, kSEandQU};
+  static Bool_t IsTRDTriggerFired( const AliVEvent* event, const ETRDTriggerClass triggerClass, Bool_t &trackMatched, Int_t &bin );
+  
   void Print(const Option_t* option = "") const;
 
 private:

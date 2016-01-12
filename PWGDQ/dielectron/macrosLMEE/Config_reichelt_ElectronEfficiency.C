@@ -1,11 +1,10 @@
 //TString names=("ITSTPCTOFif_trkSPDfirst_1_kSemi;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi;ITSTPCTOFif_trkSPD5orSDD4cls_4_kSemi;ITS2gevTPCTOFif_trkSPDorSDD_5_tight_kSemi;ITS2gevTPCTOFif_trkSPDfirst5cls_6_tight_kSemi;ITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight_kSemi");
 //TString names=("ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst_1_PrefAllm40t80;ITSTPCTOFif_trkSPDfirst_1_PrefAllp236m40");
 TString names=("ITSTPCTOFif_trkSPDfirst_2_loose;ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst5cls_4;ITS2gevTPCTOFif_trkSPDfirst_5_tight;ITSTPCTOFif_trkSPD5orSDD4cls_4;ITS2gevTPCTOFif_trkSPDorSDD_5_tight;ITS2gevTPCTOFif_trkSPDfirst5cls_6_tight;ITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight");
-
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
-Int_t       selectedCentrality=-1; // not yet implemented
-// the following settings must be initialized each time SetupTrackCutsAndSettings() is called.
+
+// the following settings must be initialized each time SetupTrackCutsAndSettings() is called. (do not give values here!)
 Int_t       selectedPairCutsPre;
 Bool_t      isPrefilterCutset;
 AliAnalysisFilter *anaFilterExtra;
@@ -47,10 +46,8 @@ const Int_t     supportedCutInstance = 1;
 //
 //________________________________________________________________
 // settings which are identical for all configs that run together
-// event cuts
-// main cuts done via 'SetupEventCuts()'
-const Double_t  CentMin     = 0.;
-const Double_t  CentMax     = 50.;
+// event cuts done via 'SetupEventCuts()'
+// centrality cuts done in AddTask
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;

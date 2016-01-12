@@ -363,7 +363,7 @@ Int_t AliRDHFCutsLctopK0sfromAODtracks::IsSelected(TObject* obj, Int_t selection
       {
 	okcand = kFALSE;
       }
-    if(d->DecayLengthXY() < fCutsRD[GetGlobalIndex(4,ptbin)])
+    if(CalculateLcCosPAXY(d)*d->DecayLengthXY() < fCutsRD[GetGlobalIndex(4,ptbin)])
       {
 	okcand = kFALSE;
       }
@@ -730,10 +730,9 @@ Double_t AliRDHFCutsLctopK0sfromAODtracks::CalculateLcCosPAXY(AliAODRecoDecayHF 
   Double_t dverty = lcobj->GetSecondaryVtx()->GetY()-lcobj->GetOwnPrimaryVtx()->GetY();
   Double_t px = lcobj->Px();
   Double_t py = lcobj->Py();
-  if(TMath::Sqrt(dvertx*dvertx+dverty*dverty)==0) return -9999.;
-  if(TMath::Sqrt(px*px+py*py)==0) return -9999.;
-  Double_t cospaxy = (dvertx*px+dverty*py)/TMath::Sqrt(dvertx*dvertx+dverty*dverty)/TMath::Sqrt(px*px+py*py);
-  return (Float_t)cospaxy;
+  Double_t inner = px*dvertx + py*dverty;
+  if(inner<0.) return  -1.;
+  return 1.;
 }
 //________________________________________________________________________
 Bool_t AliRDHFCutsLctopK0sfromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODVertex *primVert)

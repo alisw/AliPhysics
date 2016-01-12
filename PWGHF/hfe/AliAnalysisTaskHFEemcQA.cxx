@@ -43,6 +43,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
+#include "AliMultSelection.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
@@ -83,6 +84,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fCaloClusters_tender(0),
   fMCparticle(0),
   fMCarray(0),
+  fMultSelection(0),
   fTriggersInfo(0),
   fThresholdEG2(89),
   fThresholdEG1(140),
@@ -178,6 +180,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fCaloClusters_tender(0),
   fMCparticle(0),
   fMCarray(0),
+  fMultSelection(0),
   fTriggersInfo(0),
   fThresholdEG2(89),
   fThresholdEG1(140),
@@ -490,9 +493,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
   //Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
   //Double_t xmin[10]={-0.5,   0,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 80,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  8, 100};
+  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
+  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
@@ -560,13 +563,25 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ///////////////////
   // centrality
  /////////////////////
-
+  /*
   Double_t centrality = -1;
   AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality(); 
   centrality = fCentrality->GetCentralityPercentile("V0M");
+  */
 
-  printf("mim cent selection %d\n",fcentMim);
-  printf("max cent selection %d\n",fcentMax);
+  Double_t centrality = -1;
+  if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
+  if( !fMultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  }else{
+   //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+   centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
+ }
+  //cout << "cent = " << centrality << endl; 
+  //printf("mim cent selection %d\n",fcentMim);
+  //printf("max cent selection %d\n",fcentMax);
+  //printf("cent selection %d\n",centrality);
 
   if(fcentMim>-0.5)
     {

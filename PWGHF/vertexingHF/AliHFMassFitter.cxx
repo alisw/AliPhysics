@@ -1014,7 +1014,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   if(!ok) return kFALSE;
   
   //sidebands integral - first approx (from histo)
-  Double_t sideBandsInt=(Double_t)fhistoInvMass->Integral(1,fSideBandl,"width") + (Double_t)fhistoInvMass->Integral(fSideBandr,fNbin,"width");
+  Double_t sideBandsInt=(Double_t)fhistoInvMass->Integral(fminBinMass,fSideBandl,"width") + (Double_t)fhistoInvMass->Integral(fSideBandr,fmaxBinMass,"width");
   cout<<"------nbin = "<<fNbin<<"\twidth = "<<width<<"\tbinleft = "<<fSideBandl<<"\tbinright = "<<fSideBandr<<endl;
   cout<<"------sideBandsInt - first approx = "<<sideBandsInt<<endl;
   if (sideBandsInt<=0) {
