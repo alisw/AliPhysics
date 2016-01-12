@@ -1539,13 +1539,17 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
     return;
   }
 		
-  AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
-  if (aodHandler) {
-    TTree *aodTree = aodHandler->GetTree();
-    if (aodTree) {
-      Int_t *type = esd.GetCaloTriggerType();
-      for (Int_t i = 0; i < 15; i++) {
-	aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
+  static Bool_t saveOnce = kFALSE;
+  if (!saveOnce) {
+    AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
+    if (aodHandler) {
+      TTree *aodTree = aodHandler->GetTree();
+      if (aodTree) {
+	Int_t *type = esd.GetCaloTriggerType();
+	for (Int_t i = 0; i < 15; i++) {
+	  aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
+	}
+	saveOnce = kTRUE;
       }
     }
   }
