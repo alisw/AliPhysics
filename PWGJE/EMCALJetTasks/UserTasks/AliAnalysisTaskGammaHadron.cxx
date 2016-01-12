@@ -37,7 +37,8 @@
 #include "AliEventPoolManager.h"
 //#include "AliPool.h"
 
-
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskGammaHadron)
 //
