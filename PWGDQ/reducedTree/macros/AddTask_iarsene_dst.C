@@ -21,7 +21,8 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   //if(trainConfig=="pp") task->SetRejectPileup();
   
   //task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  // Events passing trigger and physics selection for analysis
-  task->UsePhysicsSelection(kTRUE);
+  
+  //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kTRUE);
   
   //task->SetFillV0Info(kFALSE);
@@ -46,12 +47,21 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
   task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
   //task->SetFillFMDInfo(); AddFMDTask();
-  
+
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kBaseEventsWithBaseTracks);
   if(reducedEventType!=-1)
     task->SetTreeWritingOption(reducedEventType);
   task->SetWriteTree(writeTree);
+
+  // You can define the active branches of the tree, all other branches will be set to inactive
+  //task->SetTreeActiveBranch("Event");
+  //task->SetTreeActiveBranch("fRunNo");
+  // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
+  //task->SetTreeInactiveBranch("fEventTag");
+  //task->SetTreeInactiveBranch("fRunNo");
+  //task->SetTreeInactiveBranch("fCandidates.*");
+  
   mgr->AddTask(task);
     
   AliAnalysisDataContainer *cReducedTree = 0x0;
