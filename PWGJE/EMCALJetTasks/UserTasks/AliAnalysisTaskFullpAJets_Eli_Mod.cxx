@@ -20,6 +20,7 @@
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
+#include "AliClusterContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisManager.h"
@@ -903,6 +904,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserCreateOutputObjects()
 
 void AliAnalysisTaskFullpAJets_Eli_Mod::UserExecOnce()
 {
+	AliAnalysisTaskEmcal::ExecOnce();
 //	cout<<"Start of ...FullpAJets_Eli_Mod::UserExecOnce()"<<endl;
 	// Get the event tracks
 	fOrgTracks = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject(fTrackName));
@@ -926,8 +928,6 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 	}
 	// Get pointer to reconstructed event
 	fEvent = InputEvent();
-	  IsEventSelected();
-
 	if (!fEvent)
 	{
 		AliError("Pointer == 0, this can not happen!");
@@ -1039,9 +1039,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 	}
 
 	InitFullJets();
-//	cout<<"--- 2"<<endl;
 //ELI check that 	GenerateEMCalRandomConesPt();
-//	cout<<"--- 3"<<endl;
 
 	if (fCalculateRhoJet>=1)
 	{
@@ -1055,7 +1053,6 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::UserExec(Option_t *)
 	DeleteJetData(3);
 	fnEvents++;
 	PostData(1,fOutput);
-
 //	cout<<"end of ...FullpAJets_Eli_Mod::UserExec(Option_t *)"<<endl;
 }
 //________________________________________________________________________
@@ -1229,9 +1226,12 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::ClusterHisto()
 	for (i=0;i<fnClusters;i++)
 	{
 		AliVCluster* vcluster = (AliVCluster*) fmyClusters->At(i);
+
+		if(!vcluster)continue;
 		vcluster->GetMomentum(*cluster_vec,fVertex);
 
-		fhClusterPt->Fill(cluster_vec->Pt());
+//orig ELI		fhClusterPt->Fill(cluster_vec->Pt());
+		fhClusterPt->Fill(cluster_vec->E());
 		fhClusterEta->Fill(cluster_vec->Eta());
 		fhClusterPhi->Fill(cluster_vec->Phi());
 		fhClusterEtaPhi->Fill(cluster_vec->Eta(),cluster_vec->Phi());
@@ -1248,6 +1248,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::ClusterHisto()
 			fpClusterPtProfile->Fill(hdummypT->GetXaxis()->GetBinCenter(i),hdummypT->GetYaxis()->GetBinCenter(j),fEMCalArea*TMath::Power(TCBins,-2)*hdummypT->GetBinContent(i,j));
 		}
 	}
+
 	delete hdummypT;
 	delete cluster_vec;
 }
@@ -1330,67 +1331,23 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::InitFullJets()
 	if(fmyKTFullJets)fnKTFullJets = fmyKTFullJets->GetEntries();
 	else fnKTFullJets=0;
 
-	//ELI commented fEMCalJet     = new AlipAJetData("fEMCalJet",kTRUE,fnAKTFullJets);
 	fEMCalFullJet = new AlipAJetData("fEMCalFullJet",kTRUE,fnAKTFullJets);
-	/*ELI commented fEMCalPartJet = new AlipAJetData("fEMCalPartJet",kTRUE,fnAKTFullJets);
-	 fEMCalPartJetUnbiased = new AlipAJetData("fEMCalPartJetUnbiased",kTRUE,fnAKTFullJets);
-
-	fEMCalJet->SetSignalCut(fEMCalJetThreshold);
-	fEMCalJet->SetAreaCutFraction(fJetAreaCutFrac);
-	fEMCalJet->SetJetR(fJetR);
-	fEMCalJet->SetNEF(fNEFSignalJetCut);
-	fEMCalJet->SetSignalTrackPtBias(fSignalTrackBias);
-	 */
 	//ELI thats the only one that should matter- whats the rest for??
-	fEMCalFullJet->SetSignalCut(fEMCalJetThreshold);
-	fEMCalFullJet->SetAreaCutFraction(fJetAreaCutFrac);
-	fEMCalFullJet->SetJetR(fJetR);
-	fEMCalFullJet->SetNEF(fNEFSignalJetCut);
-	fEMCalFullJet->SetSignalTrackPtBias(fSignalTrackBias);
+	fEMCalFullJet->SetSignalCut(fEMCalJetThreshold);       //ELI - fSignalPt = 5
+	fEMCalFullJet->SetAreaCutFraction(fJetAreaCutFrac);    //ELI -  = 0.6
+	fEMCalFullJet->SetJetR(fJetR);                         //ELI - 0.2
+	fEMCalFullJet->SetNEF(fNEFSignalJetCut);               //ELI - 1
+	fEMCalFullJet->SetSignalTrackPtBias(fSignalTrackBias); //ELI - 0
 
-	/*ELI commented
-	fEMCalPartJet->SetSignalCut(fEMCalJetThreshold);
-	fEMCalPartJet->SetAreaCutFraction(fJetAreaCutFrac);
-	fEMCalPartJet->SetJetR(fJetR);
-	fEMCalPartJet->SetNEF(fNEFSignalJetCut);
-	fEMCalPartJet->SetSignalTrackPtBias(fSignalTrackBias);
-
-	fEMCalPartJetUnbiased->SetSignalCut(fEMCalJetThreshold);
-	fEMCalPartJetUnbiased->SetAreaCutFraction(fJetAreaCutFrac);
-	fEMCalPartJetUnbiased->SetJetR(fJetR);
-	fEMCalPartJetUnbiased->SetNEF(1.0);
-	fEMCalPartJetUnbiased->SetSignalTrackPtBias(kFALSE);
-    */
 	// Initialize Jet Data
 	for (i=0;i<fnAKTFullJets;i++)
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(i);
-		//ELI commented fEMCalJet    ->SetIsJetInArray(IsInEMCal(myJet->Phi(),myJet->Eta()),i);
-		fEMCalFullJet->SetIsJetInArray(IsInEMCalFull(fJetRAccept,myJet->Phi(),myJet->Eta()),i);
-		//ELI commented fEMCalPartJet->SetIsJetInArray(IsInEMCalPart(fJetR,myJet->Phi(),myJet->Eta()),i);
-		//ELI commented fEMCalPartJetUnbiased->SetIsJetInArray(IsInEMCalPart(fJetR,myJet->Phi(),myJet->Eta()),i);
+		//fEMCalFullJet->SetIsJetInArray(IsInEMCalFull(fJetRAccept,myJet->Phi(),myJet->Eta()),i);
+		/*No acceptance cuts*/fEMCalFullJet->SetIsJetInArray(1,i);
 	}
-	//ELI commented fEMCalJet->InitializeJetData(fmyAKTFullJets,fnAKTFullJets);
 	fEMCalFullJet->InitializeJetData(fmyAKTFullJets,fnAKTFullJets);
-	//ELI commented fEMCalPartJet->InitializeJetData(fmyAKTFullJets,fnAKTFullJets);
-	//ELI commented fEMCalPartJetUnbiased->InitializeJetData(fmyAKTFullJets,fnAKTFullJets);
 
-	/* ELI commented
-	// kT Jets
-	fEMCalkTFullJet = new AlipAJetData("fEMCalkTFullJet",kTRUE,fnKTFullJets);
-	fEMCalkTFullJet->SetSignalCut(fEMCalJetThreshold);
-	fEMCalkTFullJet->SetAreaCutFraction(0.25*fJetAreaCutFrac);
-	fEMCalkTFullJet->SetJetR(fJetR);
-	fEMCalkTFullJet->SetNEF(fNEFSignalJetCut);
-	fEMCalkTFullJet->SetSignalTrackPtBias(fSignalTrackBias);
-
-	for (i=0;i<fnKTFullJets;i++)
-	{
-		AliEmcalJet *myJet =(AliEmcalJet*) fmyKTFullJets->At(i);
-		fEMCalkTFullJet->SetIsJetInArray(IsInEMCalFull(fJetR,myJet->Phi(),myJet->Eta()),i);
-	}
-	if(fmyKTFullJets)fEMCalkTFullJet->InitializeJetData(fmyKTFullJets,fnKTFullJets);
-     */
 	// Raw Full Jet Spectra
 	if (fMCPartLevel==kFALSE)
 	{
@@ -3375,6 +3332,13 @@ Double_t AliAnalysisTaskFullpAJets_Eli_Mod::MedianRhokT(Double_t *pTkTEntries, D
 }
 
 
+//
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//
+
+
 // AlipAJetData Class Member Defs
 // Constructors
 AliAnalysisTaskFullpAJets_Eli_Mod::AlipAJetData::AlipAJetData() :
@@ -3470,7 +3434,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::AlipAJetData::InitializeJetData(TClonesA
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) jetList->At(i);
 
-		if (fIsJetInArray[i]==kTRUE && myJet->Area()>AreaThreshold)
+		/*no cuts*///if (fIsJetInArray[i]==kTRUE && myJet->Area()>AreaThreshold)
 		{
 			SetJetIndex(i,k);
 			if (myJet->Pt()>fPtMax)
@@ -3654,6 +3618,12 @@ Double_t AliAnalysisTaskFullpAJets_Eli_Mod::AlipAJetData::GetNEF()
 {
 	return fNEF;
 }
+
+//
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//
 
 // AlipAJetHistos Class Member Defs
 // Constructors
@@ -4758,7 +4728,14 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::AlipAJetHistos::FillBSJS(Double_t eventC
 
 	for (i=0;i<nIndexJetList;i++)
 	{
-		AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
+		//AliEmcalJet *myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
+		AliEmcalJet *myJet;
+
+	//	Should test whether indexJetList[i]==i,
+    if(indexJetList[i]!=i)  cout<<"indexJetList[i]: "<<indexJetList[i]<<", i: "<<i<<endl;
+		myJet = (AliEmcalJet*) jetList->At(indexJetList[i]);
+		//myJet = (AliEmcalJet*) jetList->At(i);
+		if(rho!=0){cout<<"Rho in CY: "<<rho<<endl;}
 		tempPt=myJet->Pt()-rho*myJet->Area();
 		tempChargedHighPt = myJet->MaxTrackPt();
         //ELI here are the background subtracted jets filled!
