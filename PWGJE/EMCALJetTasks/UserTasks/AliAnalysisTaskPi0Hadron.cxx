@@ -36,6 +36,9 @@
 
 #include "AliAnalysisTaskPi0Hadron.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskPi0Hadron)
 
 //________________________________________________________________________
