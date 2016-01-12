@@ -280,6 +280,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D     *fh2SumPtVsCent; //! sum of track pT  versus centrality 
    TH2D     *fh2SumPtVsCentTT; //! sum of track pT  versus centrality
 
+   THnSparse  *fhZNAVzeroATrack[kCAll]; //! ZNA energy versus Vzero A mult versus track mult.
+   THnSparse  *fhZNAVzeroATrackTT[kCAll]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
+
 
    //TProfile*     fh1Xsec;   //! gc pythia cross section and trials
    //TH1F*         fh1Trials; //! gc trials are added
@@ -311,7 +314,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 10); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 11); // Charged jet analysis for pA
 
 };
 #endif

@@ -205,14 +205,16 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    AliEmcalJetTask* jetFinderTaskMC = NULL;
    AliEmcalJetTask* jetFinderRhoKTMC = NULL; 
  
-   if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){ 
+   if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){
+      Bool_t bIsPrimary = (typeOfAnal == kEff  || typeOfAnal == kKine) ? 1 : 0; //from some reason embeded tracks are not primaries 
+
       //ANTIKT GENERATOR LEVEL
-      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,1,0); 
+      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,bIsPrimary,0); 
 
       //jetFinderTaskMC->SelectPhysicalPrimaries(kTRUE);
 
       //KT GENERATOR LEVEL
-      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,1,0); 
+      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,bIsPrimary,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
       //jetFinderRhoKTMC->SelectPhysicalPrimaries(kTRUE);

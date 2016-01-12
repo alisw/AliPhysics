@@ -38,7 +38,7 @@ AliJetContainer::AliJetContainer():
   fJetMinEta(-0.9),
   fJetMaxEta(0.9),
   fJetMinPhi(0.),
-  fJetMaxPhi(10),
+  fJetMaxPhi(0.),
   fPhiOffset(0.),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
@@ -85,7 +85,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetMinEta(-0.9),
   fJetMaxEta(0.9),
   fJetMinPhi(0.),
-  fJetMaxPhi(10),
+  fJetMaxPhi(0.),
   fPhiOffset(0.),
   fMaxClusterPt(1000),
   fMaxTrackPt(100),
@@ -394,12 +394,20 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   Double_t jetEta = jet->Eta();
   Double_t jetPhi = TVector2::Phi_0_2pi(jet->Phi() + fPhiOffset);
 
-  if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
-    AliDebug(11,"Cut rejecting jet: Acceptance");
+  if (fJetMinEta < fJetMaxEta && (jetEta < fJetMinEta || jetEta > fJetMaxEta)) {
+    AliDebug(11,"Cut rejecting jet: Eta Acceptance");
 
     fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
+
+  if (fJetMinPhi < fJetMaxPhi && (jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi)) {
+    AliDebug(11,"Cut rejecting jet: Phi Acceptance");
+
+    fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
+
 
   if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
     AliDebug(11,"Cut rejecting jet: Bit map");
@@ -627,7 +635,7 @@ void AliJetContainer::SetJetEtaPhiTPC(Double_t r)
   //Set default cuts for charged jets
 
   SetJetEtaLimits(-0.9 + r, 0.9 - r);
-  SetJetPhiLimits(0, TMath::TwoPi() + 0.1);
+  SetJetPhiLimits(0, 0);  // No cut on phi
 }
 
 //________________________________________________________________________

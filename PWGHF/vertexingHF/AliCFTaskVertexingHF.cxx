@@ -88,6 +88,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
+  fCountGenLimAcc(0),
+  fCountGenLimAccNoAcc(0),
   fCountAcc(0),
   fCountVertex(0),
   fCountRefit(0),
@@ -152,6 +154,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
+  fCountGenLimAcc(0),
+  fCountGenLimAccNoAcc(0),
   fCountAcc(0),
   fCountVertex(0),
   fCountRefit(0),
@@ -248,6 +252,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fCorrelation(c.fCorrelation),
   fListProfiles(c.fListProfiles),
   fCountMC(c.fCountMC),
+  fCountGenLimAcc(c.fCountGenLimAcc),
+  fCountGenLimAccNoAcc(c.fCountGenLimAccNoAcc),
   fCountAcc(c.fCountAcc),
   fCountVertex(c.fCountVertex),
   fCountRefit(c.fCountRefit),
@@ -617,6 +623,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
   Int_t icountMC = 0;
+  Int_t icountGenLimAcc = 0;
+  Int_t icountGenLimAccNoAcc = 0;
   Int_t icountAcc = 0;
   Int_t icountReco = 0;
   Int_t icountVertex = 0;
@@ -881,7 +889,15 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       //MC Limited Acceptance
       if (TMath::Abs(containerInputMC[1]) < 0.5) {
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc, fWeight);
-        AliDebug(3,"MC Lim Acc container filled\n");
+        icountGenLimAcc++;
+	AliDebug(3,"MC Lim Acc container filled\n");
+	if (fCFManager->GetParticleContainer()->GetNStep() == kStepGenLimAccNoAcc+1) {
+	  if (!(cfVtxHF-> MCAcceptanceStep())) {
+	    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenLimAccNoAcc, fWeight);
+	    icountGenLimAccNoAcc++;
+	    AliDebug(3,"MC Lim Acc No Acc container filled\n");
+	  }
+	}
       }
 
       //MC
@@ -940,6 +956,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   // Now go to rec level
   fCountMC += icountMC;
+  fCountGenLimAcc += icountGenLimAcc;
+  fCountGenLimAccNoAcc += icountGenLimAccNoAcc;
   fCountAcc += icountAcc;
   fCountVertex+= icountVertex;
   fCountRefit+= icountRefit;
@@ -1222,6 +1240,8 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
   AliAnalysisTaskSE::Terminate();
 
   AliInfo(Form("Found %i MC particles that are %s in MC, in %d events",fCountMC,fPartName.Data(),fEvents));
+  AliInfo(Form("Found %i MC particles that are %s in MC in limited acceptance, in %d events",fCountGenLimAcc,fPartName.Data(),fEvents));
+  AliInfo(Form("Found %i MC particles that are %s in MC in limited acceptance and don't satisfy Acc cuts, in %d events",fCountGenLimAccNoAcc,fPartName.Data(),fEvents));
   AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, in %d events",fCountAcc,fPartName.Data(),fEvents));
   AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, and satisfy Vertex requirement in %d events",fCountVertex,fPartName.Data(),fEvents));
   AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, and satisfy ITS+TPC refit requirementin %d events",fCountRefit,fPartName.Data(),fEvents));

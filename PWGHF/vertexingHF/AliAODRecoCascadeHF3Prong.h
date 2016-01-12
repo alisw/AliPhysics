@@ -81,7 +81,7 @@ class AliAODRecoCascadeHF3Prong : public AliAODRecoDecayHF3Prong {
  protected:
 
   /// \cond CLASSIMP
-  ClassDef(AliAODRecoCascadeHF3Prong, 1); /// heavy-flavour cascade 3prong class
+  ClassDef(AliAODRecoCascadeHF3Prong, 2); /// heavy-flavour cascade 3prong class
   /// \endcond
 };
 

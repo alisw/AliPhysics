@@ -22,6 +22,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/CaloTrackCorrelations)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
@@ -43,6 +47,7 @@ set(SRCS
     AliAnaPhoton.cxx
     AliAnaPi0.cxx
     AliAnaPi0EbE.cxx
+    AliAnaPi0Flow.cxx
     AliAnaRandomTrigger.cxx
    )
 
@@ -55,7 +60,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics RIO)
-set(ALIROOT_DEPENDENCIES ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase ANALYSISalice CDB PWGEMCAL EMCALbase EMCALrec ESDfilter PWGGAUtils STEER)
 
 # Generate the ROOT map
 # Dependecies

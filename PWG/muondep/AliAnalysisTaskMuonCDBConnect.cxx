@@ -21,6 +21,7 @@
 
 // STEER includes
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliGeomManager.h"
 #include "AliLog.h"
 
@@ -45,6 +46,8 @@ AliAnalysisTaskMuonCDBConnect::AliAnalysisTaskMuonCDBConnect() :
 AliAnalysisTaskSE(),
 fDefaultStorage(""),
 fAlignStorage(""),
+fAlignVersion(-1),
+fAlignSubVersion(-1),
 fRecoParamStorage(""),
 fLoadMagField(kFALSE),
 fLoadGeometry(kFALSE),
@@ -60,6 +63,8 @@ AliAnalysisTaskMuonCDBConnect::AliAnalysisTaskMuonCDBConnect(const char *name) :
 AliAnalysisTaskSE(name),
 fDefaultStorage("raw://"),
 fAlignStorage(""),
+fAlignVersion(-1),
+fAlignSubVersion(-1),
 fRecoParamStorage(""),
 fLoadMagField(kFALSE),
 fLoadGeometry(kFALSE),
@@ -83,10 +88,18 @@ void AliAnalysisTaskMuonCDBConnect::NotifyRun()
   if (!cdbm->IsDefaultStorageSet()) cdbm->SetDefaultStorage(fDefaultStorage.Data());
   else printf("MuonCDBConnect: CDB default storage already set. Do not change it.\n");
   
+  // set run number
+  if (cdbm->GetRun() < 0) cdbm->SetRun(fCurrentRunNumber);
+  else printf("MuonCDBConnect: run number already set. Do not change it.\n");
+  
   // set specific storage for MUON alignment
-  if (!fAlignStorage.IsNull()) {
-    if (!AliGeomManager::GetGeometry()) cdbm->SetSpecificStorage("MUON/Align/Data",fAlignStorage.Data());
-    else printf("MuonCDBConnect: geometry already loaded. Do not change MUON align storage.\n");
+  if (!fAlignStorage.IsNull() || fAlignVersion >= 0 || fAlignSubVersion >= 0) {
+    if (!AliGeomManager::GetGeometry()) {
+      if (fAlignStorage != "none") {
+        if (fAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data", cdbm->GetDefaultStorage()->GetURI().Data(), fAlignVersion, fAlignSubVersion);
+        else cdbm->SetSpecificStorage("MUON/Align/Data", fAlignStorage.Data(), fAlignVersion, fAlignSubVersion);
+      }
+    } else printf("MuonCDBConnect: geometry already loaded. Do not change MUON align storage.\n");
   }
   
   // set specific storage for MUON recoParam
@@ -95,10 +108,6 @@ void AliAnalysisTaskMuonCDBConnect::NotifyRun()
       cdbm->SetSpecificStorage("MUON/Calib/RecoParam",fRecoParamStorage.Data());
     else printf("MuonCDBConnect: MUON recoParam already loaded. Do not change MUON recoParam storage.\n");
   }
-  
-  // set run number
-  if (cdbm->GetRun() < 0) cdbm->SetRun(fCurrentRunNumber);
-  else printf("MuonCDBConnect: run number already set. Do not change it.\n");
   
   // load magnetic field
   if (fLoadMagField) {
@@ -111,7 +120,8 @@ void AliAnalysisTaskMuonCDBConnect::NotifyRun()
     if (AliGeomManager::GetGeometry()) printf("MuonCDBConnect: geometry already loaded. Do not change it.\n");
     else {
       AliGeomManager::LoadGeometry();
-      if (!AliGeomManager::GetGeometry() || !AliGeomManager::ApplyAlignObjsFromCDB("MUON")) AliFatal("loading of geometry failed");
+      if (!AliGeomManager::GetGeometry() || (fAlignStorage != "none" && !AliGeomManager::ApplyAlignObjsFromCDB("MUON")))
+        AliFatal("loading of geometry failed");
     }
   }
   

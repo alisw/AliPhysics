@@ -16,6 +16,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   //
   // macro to run TPC calibration train 
   //
+  TStopwatch sw;
+  sw.Start();
   AliSysInfo::SetVerbose(kTRUE);
   AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
@@ -133,7 +135,11 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   
   mgr->PrintStatus();
   AliSysInfo::AddStamp("BeforeStartAnalysis");
+  sw.Stop();
+  printf("runCalibTrain: Config time: "); sw.Print();
+  sw.Start(kTRUE);
   mgr->StartAnalysis("local", chain);
-  
+  sw.Stop();
+  printf("runCalibTrain: Processing time: "); sw.Print();
   return;
 }

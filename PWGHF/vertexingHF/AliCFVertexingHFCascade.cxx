@@ -736,7 +736,7 @@ Bool_t AliCFVertexingHFCascade::CheckAdditionalCuts(AliPIDResponse* pidResponse)
 
     Bool_t cutsForTMVA = (TMath::Abs(bachelorEta) < 0.8 && TMath::Abs(v0posEta) < 0.8 && TMath::Abs(v0negEta) < 0.8) &&
       ((nSigmaTOFpr < -800) || (TMath::Abs(nSigmaTOFpr) < 3)) &&  
-      ((ptArm < 0.07) || (ptArm > 0.105)) &&
+      ((ptArm > 0.01 && ptArm < 0.07) || (ptArm > 0.105)) &&
       ((TMath::Abs(invmassK0s - mK0SPDG)) < 0.01);
 
 

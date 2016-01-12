@@ -719,7 +719,8 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
 
   // loop over trigger selected list and cut combination on event level. Fill histos
   TObjArray selectedTriggerClasses;
-
+  selectedTriggerClasses.SetOwner(kTRUE);
+  
   GetSelectedTrigClassesInEvent(Event(),selectedTriggerClasses);
 
   TIter next(&selectedTriggerClasses);

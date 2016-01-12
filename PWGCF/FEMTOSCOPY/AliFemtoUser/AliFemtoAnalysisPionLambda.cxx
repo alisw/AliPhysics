@@ -27,9 +27,15 @@ const struct { unsigned int bin_count; float min; float max; }
 VertexBinning = {16, -10.0, 10.0},
 MultBinning = {30, 0, 10000};
 
-const bool default_enable_pair_monitors = kTRUE,
-           default_group_output_objects = kTRUE,
-                 default_is_mc_analysis = kFALSE;
+const bool default_verbose = kFALSE
+         , default_enable_pair_monitors = kTRUE
+         , default_group_output_objects = kTRUE
+         , default_is_mc_analysis = kFALSE
+         ;
+
+const UInt_t default_num_events_to_mix = 6
+           , default_min_coll_size = 1
+           ;
 
 
 const float default_lambda_PtMin = 0.2,
@@ -134,7 +140,10 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
+  SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init();
 }
 
@@ -147,7 +156,10 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name):
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
+  SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init();
 }
 
@@ -168,7 +180,10 @@ AliFemtoAnalysisPionLambda
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
+  SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init();
 }
 
@@ -189,7 +204,10 @@ AliFemtoAnalysisPionLambda
   , fGroupOutputObjects(default_group_output_objects)
   , fMCAnalysis(default_is_mc_analysis)
 {
+  SetVerboseMode(default_verbose);
   SetEnablePairMonitors(default_enable_pair_monitors);
+  SetNumEventsToMix(default_num_events_to_mix);
+  SetMinSizePartCollection(default_min_coll_size);
   _Init(params);
 }
 
@@ -209,14 +227,10 @@ AliFemtoAnalysisPionLambda
   , fGroupOutputObjects(params.group_output_objects)
   , fMCAnalysis(params.is_mc_analysis)
 {
+  SetVerboseMode(params.verbose);
   SetEnablePairMonitors(params.enable_pair_monitors);
-//   cout << "[AliFemtoAnalysisPionLambda] Constructed with : " <<
-//     params.vertex_bins <<
-//     " " << params.vertex_min <<
-//     " " << params.vertex_max <<
-//     " " << params.mult_bins <<
-//     " " << params.mult_min <<
-//     " " << params.mult_max <<'\n';
+  SetNumEventsToMix(params.num_events_to_mix);
+  SetMinSizePartCollection(params.min_coll_size);
   _Init(cut_params);
 }
 
@@ -236,10 +250,17 @@ AliFemtoAnalysisPionLambda::DefaultConfig()
   , default_PionType
   , default_LambdaType
 
+  , default_num_events_to_mix
+  , default_min_coll_size
+
+  , default_verbose
   , default_enable_pair_monitors
   , default_group_output_objects
   , default_is_mc_analysis
   };
+
+  assert(params.min_coll_size == default_min_coll_size);
+  assert(params.is_mc_analysis == default_is_mc_analysis);
 
   return params;
 }

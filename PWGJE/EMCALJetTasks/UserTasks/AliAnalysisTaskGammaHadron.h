@@ -2,14 +2,17 @@
 #define ALIANALYSISTASKGAMMAHADRON_H
 
 // $Id$
+#include "AliAnalysisTaskEmcalJet.h"
+#include "AliEventPoolManager.h"
+//#include "AliPool.h"
 
 class TH1;
 class TH2;
 class TH3;
 class THnSparse;
 class AliVVZERO;
+class AliEvtPoolManager;
 
-#include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
  public:
@@ -18,59 +21,64 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
+  //Set things for the analyis
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
+  void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
   void                        SetParticleLevel(Bool_t s)                           { fParticleLevel      = s          ; }
   void                        SetMC(Bool_t m)                                      { fIsMC               = m          ; }
-  void                        SetAdditionalCentEst(const char* meth2, const char* meth3="") { fCentMethod2 = meth2; fCentMethod3 = meth3; }
-  void                        SetDoV0QA(Int_t b)                                   { fDoV0QA             = b          ; }
-  void                        SetDoEPQA(Int_t b)                                   { fDoEPQA             = b          ; }
-  void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
-  void                        SetDoLeadingObjectPosition(Int_t b)                  { fDoLeadingObjectPosition = b     ; }
+  void                        SetAdditionalCentEst(const char* meth2)              { fCentMethod_alt = meth2          ; }
   void                        SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]   = b0  ; fAODfilterBits[1] = b1  ; }
 
  protected:
 
-  void                        ExecOnce()        											  ;
+  void                        ExecOnce()         										  ;
+  void                        InitEventMixer()											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
+  TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
+  Bool_t                      Run()                                                         ;
   Bool_t                      FillHistograms()                                              ;
+  Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix)        ;
+  Bool_t                      AccClusterForAna(AliVCluster* cluster)                        ;
+  Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
+  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut);
 
-  Int_t                       DoCellLoop(Float_t &sum)                                      ;
-  Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
-  Int_t                       DoTrackLoop(Float_t &sum, AliVParticle* &leading)             ;
+  //Constants
+  Double_t                    fRtoD;                     // conversion of rad to degree
 
+  TAxis*                      fMixBCent;                 // Number of centrality bins for the mixed event
+  TAxis*                      fMixBZvtx;                 // Number of vertex bins for the mixed event
+  TString                     fCentMethod_alt;           // alternative centrality selection method
+  Double_t                    fCent_alt;                 // alternative centrality
+  AliEventPoolManager        *fPoolMgr;                 //! event mixer
+  Int_t                       fTrackDepth;               //  #tracks to fill pool
+  Int_t                       fPoolSize;                 //  Maximum number of events
+
+  // Cuts
   Float_t                     fCellEnergyCut;            // Energy cell cut
+  Int_t                       fMaxCellsInCluster;        // Maximum number (approx) of cells in a cluster
+
+  // MC stuff
   Bool_t                      fParticleLevel;            // Set particle level analysis
   Bool_t                      fIsMC;                     // Trigger, MC analysis
-  TString                     fCentMethod2;              // Centrality method 2
-  TString                     fCentMethod3;              // Centrality method 3
-  Int_t                       fDoV0QA;                   // Add V0 QA histograms
-  Int_t                       fDoEPQA;                   // Add event plane QA histograms
-  Int_t                       fDoLeadingObjectPosition;  // Add axis for leading object position (eta-phi)
-  Int_t                       fMaxCellsInCluster;        // Maximum number (approx) of cells in a cluster
   UInt_t                      fAODfilterBits[2];         // AOD track filter bit map
-  Double_t                    fCent2;                    //!Event centrality with method 2
-  Double_t                    fCent3;                    //!Event centrality with method 3
-  AliVVZERO                  *fVZERO;                    //!Event V0 object
-  Double_t                    fV0ATotMult;               //!Event V0A total multiplicity
-  Double_t                    fV0CTotMult;               //!Event V0C total multiplicity
- 
 
-  // ELIANE
-  TH1  						*fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
-  TH1  						*fHistNoClus_pt_tr;        //! No of calorimeter trigger Clusters as a function of p_T
-  TH1					    *fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_ptH_tr;       //! No of calorimeter trigger Clusters as a function of p_T with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_ptLeadH;      //! No of calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
-  TH1					    *fHistNoClus_Leadpt;       //! No of leading calorimeter Clusters as a function of p_T
-  TH1					    *fHistNoClus_LeadptH;      //! No of leading calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadptLeadH;  //! No of leading calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
+  //Other stuff
+  TList                      *fOutputList1;            //! Output list
+  TList                      *fOutputList2;            //! Output list
+  TList                      *fOutputList3;            //! Output list
 
-  TH1					    *fHistNoClus_xEH;          //! No of calorimeter Clusters as a function of x_E with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadxEH;      //! No of calorimeter Clusters as a function of x_E with a leading hadron in the second hemisphere
-  TH1					    *fHistNoClus_xELeadH;      //! No of leading calorimeter Clusters as a function of x_E with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadxELeadH;  //! No of leading calorimeter Clusters as a function of x_E with a leading hadron in the second hemisphere
-  TH1					   **fHistpt_assHadron;        //! pt distributions of the associated hadron in a certain p_t bin of the gamma
-  TH1					   **fHistpt_assHadron_tr;     //! pt distributions of the associated hadron in a certain p_t bin of the gamma that triggered the event
+  // Histograms -
+  TH1  					    *fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
+  TH1					   **fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
+  TH2					   **fHist_dEta_dPhi;           //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_low;       //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_med;       //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_high;      //! No of g-h pairs in the deta eta delta phi plane
+  TH1 					    *fHistpi0;                 //!
+
+  TH1					  **fHistpt_assHadron[3];      //! pt distributions of the associated hadron in a certain p_t bin of the gamma
+  TH1					  **fHist_DP_gh[3];            //! delta phi g-h distribution fro a given p_t gamma bin
+  TH2                	    *fHPoolReady;              //! Check how many Jobs start mixing
   //
   //
 
@@ -78,6 +86,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 3) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskGammaHadron, 5) // Class to analyse gamma hadron correlations
 };
 #endif

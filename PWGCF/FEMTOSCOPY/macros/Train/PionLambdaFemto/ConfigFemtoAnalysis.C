@@ -124,9 +124,6 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     AliFemtoAnalysisPionLambda *analysis = new AliFemtoAnalysisPionLambda(analysis_name,
                                                                           analysis_config,
                                                                           cut_config);
-    analysis->SetNumEventsToMix(10);
-    analysis->SetMinSizePartCollection(1);
-    analysis->SetVerboseMode(kFALSE);
 
     analysis->AddStanardCutMonitors();
 

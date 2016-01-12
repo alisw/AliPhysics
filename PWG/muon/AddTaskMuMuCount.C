@@ -4,10 +4,11 @@
 /// \author: L. Aphecetche (Subatech) (laurent.aphecetche - at - subatech.in2p3.fr)
 ///
 
-AliAnalysisTask* AddTaskMuMu(const char* outputname,
-                             TList* triggerClassesToConsider,
-                             const char* beamYear,
-                             Bool_t simulations)
+AliAnalysisTask* AddTaskMuMuCount(const char* foldername,
+																	const char* triggerClassesToConsider,
+																	const char* triggerInputsToUse,
+																	const char* beamYear,
+																	Bool_t simulations)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,7 +28,7 @@ AliAnalysisTask* AddTaskMuMu(const char* outputname,
   
   AliAnalysisMuMuCutRegistry* cr = task->CutRegistry();
  
-  AliAnalysisMuMuEventCutter* eventCutter = new AliAnalysisMuMuEventCutter(triggerClassesToConsider);
+  AliAnalysisMuMuEventCutter* eventCutter = new AliAnalysisMuMuEventCutter(triggerClassesToConsider,triggerInputsToUse);
   
   // to the very least we need a cut combination at the event level
   // (i.e. if we select no event, nothing will happen...)
@@ -52,23 +53,43 @@ AliAnalysisTask* AddTaskMuMu(const char* outputname,
   
   AliAnalysisMuMuBinning* binning = task->Binning();
   
-  binning->AddBin("centrality","pp");
-  
+	if ( TString(beamYear).Contains("pbpb",TString::kIgnoreCase) )
+	{
+		binning->AddBin("centrality","V0M");
+		binning->AddBin("centrality","V0M",0,90);
+		binning->AddBin("centrality","V0M",0,10);
+		binning->AddBin("centrality","V0M",10,20);
+		binning->AddBin("centrality","V0M",20,30);
+		binning->AddBin("centrality","V0M",30,40);
+		binning->AddBin("centrality","V0M",40,50);
+		binning->AddBin("centrality","V0M",50,60);
+		binning->AddBin("centrality","V0M",60,70);
+		binning->AddBin("centrality","V0M",70,80);
+		binning->AddBin("centrality","V0M",80,90);
+	}
+	else
+	{
+		binning->AddBin("centrality","pp");
+	}
+	
   // add the configured task to the analysis manager
   mgr->AddTask(task);
   
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
-  AliAnalysisDataContainer *coutputHC =
-  mgr->CreateContainer("OC",AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,outputname);
-  
-  AliAnalysisDataContainer *coutputCC =
-  mgr->CreateContainer("CC",AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,outputname);
-  
-  AliAnalysisDataContainer* cparam =
-  mgr->CreateContainer("BIN", AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,outputname);
-  
+	TString output;
+	output.Form("%s:%s",AliAnalysisManager::GetCommonFileName(),foldername);
+	
+	// Create containers for input/output
+	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+	
+	AliAnalysisDataContainer *coutputHC =
+	mgr->CreateContainer("OC",AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+	
+	AliAnalysisDataContainer *coutputCC =
+	mgr->CreateContainer("CC",AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+	
+	AliAnalysisDataContainer* cparam =
+	mgr->CreateContainer("BIN", AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,output.Data());
+	
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutputHC);
