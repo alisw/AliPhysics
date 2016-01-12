@@ -569,17 +569,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   centrality = fCentrality->GetCentralityPercentile("V0M");
   */
 
-  Float_t lPercentile = 300; 
+  Double_t centrality = -1;
   if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
   if( !fMultSelection) {
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     AliWarning("AliMultSelection object not found!");
   }else{
-   lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+   //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+   centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
  }
-  Double_t centrality = -1;
-  centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
-  cout << "cent = " << centrality << endl; 
+  //cout << "cent = " << centrality << endl; 
   //printf("mim cent selection %d\n",fcentMim);
   //printf("max cent selection %d\n",fcentMax);
   //printf("cent selection %d\n",centrality);
