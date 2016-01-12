@@ -123,6 +123,8 @@ fTrigTracks()
       fhTrackMultiplicityTT[ic]=NULL;
       fhSumPt[ic]=NULL;
       fhSumPtTT[ic]=NULL;
+      fhZNAVzeroATrack[ic]=NULL;
+      fhZNAVzeroATrackTT[ic]=NULL;
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -210,6 +212,8 @@ fTrigTracks()
       fhTrackMultiplicityTT[ic]=NULL;
       fhSumPt[ic]=NULL;
       fhSumPtTT[ic]=NULL;
+      fhZNAVzeroATrack[ic]=NULL;
+      fhZNAVzeroATrackTT[ic]=NULL; 
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -1040,7 +1044,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    fHistEvtSelection->Fill(6); //Accepted events
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    Double_t areaJet,  pTJet; 
-   Double_t tmpArray[3];              
+   Double_t tmpArray[2];              
+   Double_t tmpArrayX[3];              
    Double_t dphi, dfi;
    Bool_t bFirstCycle = kTRUE; 
 
@@ -1298,12 +1303,18 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
          fhTrackMultiplicity[icb[ic]]->Fill(mult);
          fhSumPt[icb[ic]]->Fill(sumPt);
+
+         tmpArrayX[0] = energyZdcNA;
+         tmpArrayX[1] = multVzero;
+         tmpArrayX[2] = mult;
+         fhZNAVzeroATrack[icb[ic]]->Fill(tmpArrayX);
          
          if(trackTT){
             fhTrackMultiplicityTT[icb[ic]]->Fill(mult);
             fhSumPtTT[icb[ic]]->Fill(sumPt); 
             fhVzeroATotMultTT[icb[ic]]->Fill(multVzero);
             fhZNAEnergyTT[icb[ic]]->Fill(energyZdcNA);
+            fhZNAVzeroATrackTT[icb[ic]]->Fill(tmpArrayX);
          }
       }
       if(centralityPercentile > -0.1){
@@ -1809,6 +1820,35 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fh2SumPtVsCentTT = (TH2D*) fh2SumPtVsCent->Clone("fh2SumPtVsCentTT");
    if(bNotKine)  fOutput->Add(fh2SumPtVsCentTT);
    //-----------------------------------------------------
+   // ZNA energy versus Vzero mult. versus track mult. in all events 
+   const Int_t    dimZ   = 3;
+   const Int_t    nBinsZ[dimZ]  = { 100,     100,   25 };
+   const Double_t lowBinZ[dimZ] = { 0.0,     0.0,   0.0};
+   const Double_t hiBinZ[dimZ]  = { 3000.0, 1000.0, 250};
+
+   for(Int_t ic =0; ic<kCAll; ic++){
+      name = (ic==0) ? Form("fhZNAVzeroATrackMB") : 
+                       Form("fhZNAVzeroATrack%d%d",TMath::Nint(fCentralityBins[ic-1]),
+                                                   TMath::Nint(fCentralityBins[ic])); 
+
+      fhZNAVzeroATrack[ic] = new THnSparseF(
+                      name.Data(),
+                      Form("ZNA, V0A mult, track mult"),
+                      dimZ, nBinsZ,lowBinZ,hiBinZ);
+      if(fTypeOfAnal ==  kRec)  fOutput->Add((THnSparseF*) fhZNAVzeroATrack[ic]);
+
+
+      //-------------
+      // ZNA energy versus Vzero mult. versus track mult. in events with TT
+      name = (ic==0) ? Form("fhZNAVzeroATrackTTMB") : 
+                       Form("fhZNAVzeroATrackTT%d%d",TMath::Nint(fCentralityBins[ic-1]),
+                                                   TMath::Nint(fCentralityBins[ic])); 
+
+      fhZNAVzeroATrackTT[ic] = (THnSparseF*) fhZNAVzeroATrack[ic]->Clone(name.Data()); 
+      if(fTypeOfAnal ==  kRec)  fOutput->Add((THnSparseF*) fhZNAVzeroATrackTT[ic]);
+   } 
+   //-----------------------------------------------------
+
   /*
    if(fTypeOfAnal == kKine){ 
       fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
