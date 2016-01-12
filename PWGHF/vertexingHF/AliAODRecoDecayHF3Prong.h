@@ -94,7 +94,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
 
   /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF3Prong,1);  /// base class for AOD reconstructed
+  ClassDef(AliAODRecoDecayHF3Prong,2);  /// base class for AOD reconstructed
                                        /// heavy-flavour 3-prong decays
   /// \endcond
 };

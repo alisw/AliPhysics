@@ -70,7 +70,7 @@ class AliAODRecoDecayHF2Prong : public AliAODRecoDecayHF {
  private:
 
   /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF2Prong,1);  /// base class for AOD reconstructed
+  ClassDef(AliAODRecoDecayHF2Prong,2);  /// base class for AOD reconstructed
                                        /// heavy-flavour 2-prong decays
   /// \endcond
 };
