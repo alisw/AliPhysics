@@ -27,7 +27,7 @@ class AliMTRChEffAnalysis : public TObject {
   AliMTRChEffAnalysis();
   AliMTRChEffAnalysis ( const char *localFileList, const char *outputName = "testMTRChamberEff" );
 
-  TArrayI GetHomogeneusRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
+  TArrayI GetHomogeneusRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, Bool_t perRPC = kTRUE, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
   TArrayI GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
 
   void DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmasOutliers = -1., Double_t minEff = 0.8, Double_t maxEff = 1.01 ) const;
@@ -40,7 +40,7 @@ class AliMTRChEffAnalysis : public TObject {
   TH1* GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const;
   TGraphAsymmErrors* GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const;
 
-  void CompareEfficiencies ( const char* sources, const char* titles, const char* opt ) const;
+  void CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "" ) const;
   void CompareMergedEfficiencies ( const char* opt ) const;
 
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
@@ -63,7 +63,7 @@ class AliMTRChEffAnalysis : public TObject {
   TArrayI BoardsInRPC ( Int_t irpc ) const;
   void CopyDir ( TDirectory *source ) const;
   Bool_t CopyLocally ( const char* runList, const char* path, const char* pattern, const char* localFileList, const char* outDir, const char* directory ) const;
-  void CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt ) const;
+  void CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
   Bool_t ExecCommand ( TString command, Bool_t prompt ) const;
   Double_t FitRangesFunc ( Double_t* x, Double_t* par );
   Double_t GetError ( Double_t errLow, Double_t errHigh ) const;
