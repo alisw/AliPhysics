@@ -50,30 +50,17 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
 : AliAnalysisTaskSE(name),
  // fStack(0x0),
   fOutputContainer(0x0),
+  fEvent(0x0),
   fPHOSEvent(0x0),
   fRP(0.),
   fRPV0A(0.),
   fRPV0C(0.),
   fHaveTPCRP(0),
-  fMultV0(0x0),
-  fV0Cpol(0.),fV0Apol(0.),
   fRunNumber(0),
   fCentrality(0.),
   fCenBin(0),
   fPHOSGeo(0x0),
-  fEventCounter(0),
-  fTPCflatC2(0x0),
-  fTPCflatS2(0x0),
-  fTPCflatC4(0x0),
-  fTPCflatS4(0x0),
-  fV0AflatC2(0x0),
-  fV0AflatS2(0x0),
-  fV0AflatC4(0x0),
-  fV0AflatS4(0x0),
-  fV0CflatC2(0x0),
-  fV0CflatS2(0x0),
-  fV0CflatC4(0x0),
-  fV0CflatS4(0x0)
+  fEventCounter(0)
 {
   // Constructor
   for(Int_t i=0;i<1;i++){
@@ -257,7 +244,6 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     
   FillHistogram("hTotSelEvents",0.5) ;
   
-//  fStack=0 ;  
   
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
@@ -265,9 +251,6 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return;
   }
-
-  //MC stack init
-  fStack = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
 
   fRunNumber=ConvertRunNumber(fEvent->GetRunNumber()) ;
   FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
