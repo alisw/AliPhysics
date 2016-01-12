@@ -61,6 +61,7 @@ public:
     delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
   }
   void ReleaseESDfriendTrack() { /*delete fFriendTrack;*/  fFriendTrack=0; }
+  void SetFriendTrackPointer(AliESDfriendTrack *t) { fFriendTrack=t; }
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();

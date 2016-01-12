@@ -3323,10 +3323,16 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   Int_t nV0s=esd->GetNumberOfV0s();
   AliInfo
   (Form("Number of ESD tracks and V0s before cleaning: %d %d",nTracks,nV0s));
-
+  TObjArray tracks2remove;
   Float_t cleanPars[]={fV0DCAmax,fV0CsPmin,fDmax,fZmax};
-  Bool_t rc=esd->Clean(cleanPars);
-
+  Bool_t rc=esd->Clean(cleanPars,&tracks2remove);
+  if (rc) { // physically destroy removed tracks
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      if (!fTracker[iDet]) continue;
+      if (fTracker[iDet]->OwnsESDObjects()) fTracker[iDet]->CleanESDTracksObjects(&tracks2remove);
+    }
+    tracks2remove.Delete();
+  }
   nTracks=esd->GetNumberOfTracks();
   nV0s=esd->GetNumberOfV0s();
   AliInfo

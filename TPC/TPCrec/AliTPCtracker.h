@@ -175,6 +175,7 @@ public:
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
    virtual void   CleanESDFriendsObjects(AliESDEvent* esd);
+   virtual void   CleanESDTracksObjects(TObjArray* trcList);
    //
 private:
   Bool_t IsFindable(AliTPCseed & t);

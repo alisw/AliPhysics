@@ -787,14 +787,14 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
 }
 
 //______________________________________________________________________________
-Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const 
+AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const 
 {
 // ---------------------------------------------------------
 // Remove a track and references to it from ESD,
 // if this track does not come from a reconstructed decay
 // ---------------------------------------------------------
   Int_t last=GetNumberOfTracks()-1;
-  if ((rm<0)||(rm>last)) return kFALSE;
+  if ((rm<0)||(rm>last)) return 0;
 
   Int_t used=0;
 
@@ -804,7 +804,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
      Int_t n=fTPCVertex->GetNIndices();
      while (n--) {
        Int_t idx=Int_t(primIdx[n]);
-       if (rm==idx) return kFALSE;
+       if (rm==idx) return 0;
        if (idx==last) used++; 
      }
   }
@@ -813,7 +813,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
      Int_t n=fPrimaryVertex->GetNIndices();
      while (n--) {
        Int_t idx=Int_t(primIdx[n]);
-       if (rm==idx) return kFALSE;
+       if (rm==idx) return 0;
        if (idx==last) used++; 
      }
   }
@@ -824,11 +824,11 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     AliESDv0 *v0=GetV0(n);
 
     Int_t idx=v0->GetNindex();
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
 
     idx=v0->GetPindex();
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
   }
 
@@ -837,16 +837,16 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     AliESDcascade *cs=GetCascade(n);
 
     Int_t idx=cs->GetIndex();
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
 
     AliESDv0 *v0=cs;
     idx=v0->GetNindex();
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
 
     idx=v0->GetPindex();
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
   }
 
@@ -855,11 +855,11 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     AliESDkink *kn=GetKink(n);
 
     Int_t idx=kn->GetIndex(0);
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
 
     idx=kn->GetIndex(1);
-    if (rm==idx) return kFALSE;
+    if (rm==idx) return 0;
     if (idx==last) used++;
   }
 
@@ -871,7 +871,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     Int_t s=arr->GetSize();
     while (s--) {
       Int_t idx=arr->At(s);
-      if (rm==idx) return kFALSE;
+      if (rm==idx) return 0;
       if (idx==last) used++;     
     }
   }
@@ -882,17 +882,25 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
   TClonesArray &a=*fTracks;
   AliESDtrack* trm = GetTrack(rm);
   trm->SuppressTOFMatches(); // remove reference to this track from stored TOF clusters
-  delete a.RemoveAt(rm);
+  //  delete a.RemoveAt(rm); //RS DON'T delete track here, delegate it to AliReconstruction
   //
-  if (rm==last) return kTRUE;
+  if (rm==last) return trm;
 
   AliESDtrack *t=GetTrack(last);
   if (!t) {AliFatal(Form("NULL pointer for ESD track %d",last));}
   t->SetID(rm);
-  new (a[rm]) AliESDtrack(*t);
+  //
+  // RS: we need to transfer the eventual friend track pointer, w/o creating a clone
+  AliESDfriendTrack* tfr = (AliESDfriendTrack*)t->GetFriendTrack();
+  t->ReleaseESDfriendTrack(); // nullify friend pointer
+  AliESDtrack* trMove = new (a[rm]) AliESDtrack(*t);
+  trMove->SetFriendTrackPointer(tfr);
+  trMove->SetFriendTrackID(trm->GetFriendTrackID());
+  trMove->SetFriendNotStored(tfr==0);
+  tfr->SetESDtrackID(rm);
   delete a.RemoveAt(last);
 
-  if (!used) return kTRUE;
+  if (!used) return trm;
   
 
   // Remap the indices of the tracks used for the primary vertex reconstruction
@@ -904,7 +912,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
        if (idx==last) {
           primIdx[n]=Short_t(rm); 
           used--;
-          if (!used) return kTRUE;
+          if (!used) return trm;
        }
      }
   }  
@@ -916,7 +924,7 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
        if (idx==last) {
           primIdx[n]=Short_t(rm); 
           used--;
-          if (!used) return kTRUE;
+          if (!used) return trm;
        }
      }
   }  
@@ -927,12 +935,12 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     if (v0->GetIndex(0)==last) {
        v0->SetIndex(0,rm);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
     if (v0->GetIndex(1)==last) {
        v0->SetIndex(1,rm);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
   }
 
@@ -941,18 +949,18 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     if (cs->GetIndex()==last) {
        cs->SetIndex(rm);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
     AliESDv0 *v0=cs;
     if (v0->GetIndex(0)==last) {
        v0->SetIndex(0,rm);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
     if (v0->GetIndex(1)==last) {
        v0->SetIndex(1,rm);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
   }
 
@@ -961,12 +969,12 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
     if (kn->GetIndex(0)==last) {
        kn->SetIndex(rm,0);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
     if (kn->GetIndex(1)==last) {
        kn->SetIndex(rm,1);
        used--;
-       if (!used) return kTRUE;
+       if (!used) return trm;
     }
   }
 
@@ -980,16 +988,16 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const
       if (idx==last) {
          arr->AddAt(rm,s);
          used--; 
-         if (!used) return kTRUE;
+         if (!used) return trm;
       }
     }
   }
 
-  return kTRUE;
+  return trm;
 }
 
 //______________________________________________________________________________
-Bool_t AliESDEvent::Clean(Float_t *cleanPars) 
+Bool_t AliESDEvent::Clean(Float_t *cleanPars, TObjArray* tracks2destroy) 
 {
   //
   // Remove the data which are not needed for the physics analysis.
@@ -1040,14 +1048,20 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars)
 
   const AliESDVertex *vertex=GetPrimaryVertexSPD();
   Bool_t vtxOK=vertex->GetStatus();
-  
+
+  tracks2destroy->Clear();
+
   Int_t nTracks=GetNumberOfTracks();
   for (Int_t i=nTracks-1; i>=0; i--) {
     AliESDtrack *track=GetTrack(i);
     if (!track) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     Float_t xy,z; track->GetImpactParameters(xy,z);
     if ((TMath::Abs(xy) > dmax) || (vtxOK && (TMath::Abs(z) > zmax))) {
-      if (RemoveTrack(i)) rc=kTRUE;
+      AliESDtrack *remTr = RemoveTrack(i);
+      if (remTr) {
+	rc=kTRUE;
+	tracks2destroy->Add(remTr);
+      }
     }
   }
 

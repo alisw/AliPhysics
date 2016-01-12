@@ -8706,3 +8706,23 @@ void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
   }
   //
 }
+
+//__________________________________________________________________
+void AliTPCtracker::CleanESDTracksObjects(TObjArray* trcList)
+{
+  // RS: remove seeds stored in friend's calib object contained w/o changing its ownership
+  //
+  int ntr = trcList->GetEntriesFast();
+  for (int itr=0;itr<ntr;itr++) {
+    AliESDtrack* trc = (AliESDtrack*)trcList->At(itr);
+    AliESDfriendTrack* trcF = (AliESDfriendTrack*)trc->GetFriendTrack();
+    if (!trcF) continue;
+    AliTPCseed* seed = (AliTPCseed*)trcF->GetTPCseed();
+    if (seed) {
+      trcF->RemoveCalibObject((TObject*)seed);
+      seed->SetClusterOwner(kFALSE);
+      seed->SetClustersArrayTMP(0);
+    }
+  }
+  //
+}

@@ -132,7 +132,7 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   //
   // Simple destructor
   //
-
+  printf("~AliESDfriendTrack %d\n",GetESDtrackID());
   if(fPoints)
     delete fPoints;
   fPoints=0;

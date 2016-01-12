@@ -24,6 +24,7 @@ class AliExternalTrackParam;
 class AliTrackPoint;
 class AliKalmanTrack;
 class AliEventInfo;
+class TObjArray;
 
 class AliTracker : public AliTrackerBase {
 public:
@@ -64,6 +65,7 @@ public:
   virtual Bool_t OwnsESDObjects() const {return kFALSE;} //RS query if tracker owns some objects in the ESD/Friends
   virtual void   CleanESDFriendsObjects(AliESDEvent*) {} //RS allow to tracker to clean the objects it ows in the friends
   virtual void   CleanESDObjects(AliESDEvent*) {} //RS allow to tracker to clean the objects it ows in the ESD
+  virtual void   CleanESDTracksObjects(TObjArray* trList) {} // RS removes own objects from array of tracks
   //
   Int_t GetNumberOfClusters() const {return fNClusters;}
   //
