@@ -43,6 +43,7 @@
 #include "TLine.h"
 #include "TLatex.h"
 #include "TFileMerger.h"
+#include "TFitResultPtr.h"
 
 #include "AliLog.h"
 #include "AliMergeableCollection.h"
@@ -1125,17 +1126,17 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
         }
 
         trendGraph->Draw(drawOpt.Data());
-        for ( Int_t ichange=0; ichange<range.GetSize(); ichange++ ) {
+        for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
           // Store only the run when the change applies
           if ( ichange%2 == 1 ) continue;
           Int_t runIdx = range[ichange];
-          if ( ichange != 0 ) {
+//          if ( ichange != 0 ) {
             TLine* line = new TLine(runIdx,minEff,runIdx,maxEff);
             line->SetLineStyle(2);
             line->Draw("same");
             TLatex text;
             text.DrawLatex((Double_t)(runIdx-3),maxEff-0.1*(maxEff-minEff)*(Double_t)(ichange/2),Form("%i",GetRunNumber(runIdx)));
-          }
+//          }
           hRunChangeCount->Fill(runIdx);
           if ( hRunChangeCount->GetBinContent(runIdx+1) == 1 ) {
             TString infoMsg = Form("Efficiency change in %i triggered by ch %i  RPC %i",GetRunNumber(runIdx),11+ich,irpc);
@@ -1184,9 +1185,10 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 
   Int_t ientry = 0;
   TArrayI runRanges(nRuns);
-  for ( Int_t irun=0; irun<nRuns; irun++ ) {
+  runRanges[ientry++] = GetRunNumber(0);
+  for ( Int_t irun=1; irun<nRuns; irun++ ) {
     if ( runChangeClust[irun] > 0 ) {
-      if ( irun > 0 ) runRanges[ientry++] = GetRunNumber(irun-1);
+      runRanges[ientry++] = GetRunNumber(irun-1);
       runRanges[ientry++] = GetRunNumber(irun);
     }
   }
@@ -1215,6 +1217,10 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
 
   Double_t minNormChi2 = 123456789.;
   Int_t minNormChi2Step = -1;
+  TString fitOpt = "NQ0";
+//  Double_t fakeVal = -999.;
+//  TArrayD params(2*maxNRanges);
+//  params.Reset(fakeVal);
 
   for ( Int_t istep=0; istep<maxNRanges; istep++ ) {
     Int_t nPars = 2*(istep+1);
@@ -1223,20 +1229,44 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
     func = new TF1("rangeFunc",this,&AliMTRChEffAnalysis::FitRangesFunc,xMin,xMax,nPars,"AliMTRChEffAnalysis","FitRanges");
     func->FixParameter(0,istep);
     for ( Int_t ipar=1; ipar<nPars; ipar++ ) {
+//      if ( ipar >= 2*istep ) {
+//      if ( TMath::Abs(params[ipar]-fakeVal) < 0.01 ) {
+//        if ( ipar%2 == 1 ) params[ipar] = 0.95;
+//        else params[ipar] = (xMax-xMin) * (Double_t)(ipar/2)/((Double_t)(istep+1));
+//      }
+//      func->SetParameter(ipar,params[ipar]);
       Double_t val = ( ipar%2 == 1 ) ? 0.95 : (xMax-xMin) * (Double_t)(ipar/2)/((Double_t)(istep+1));
       func->SetParameter(ipar,val);
-      if ( forcedChanges ) {
-        Int_t currChange = ipar/2 - 1;
-        if ( ipar%2==0 && currChange < nForced ) func->FixParameter(ipar,forcedChangesBin[currChange]);
-      }
+      if ( ipar%2 == 0 ) func->SetParLimits(ipar,xMin,xMax);
     }
-    trendGraph->Fit(func,"NQ0");
+
+    TFitResultPtr fitResult = trendGraph->Fit(func,fitOpt.Data());
+    // If fit converges close to a point where a break is forced
+    // fix parameters and redo the fit
+    if ( forcedChanges ) {
+      Bool_t hasFixedPars = kFALSE;
+      for ( Int_t iforced=0; iforced<nForced; iforced++ ) {
+        for ( Int_t jstep=0; jstep<istep; jstep++ ) {
+          Int_t ipar = 2*(jstep+1);
+          if ( TMath::Abs(forcedChangesBin[iforced]-func->GetParameter(ipar)) > 2. ) continue;
+          func->FixParameter(ipar,forcedChangesBin[iforced]);
+          hasFixedPars = kTRUE;
+        }
+      }
+      if ( hasFixedPars ) fitResult = trendGraph->Fit(func,fitOpt.Data());
+    }
+
+//    for ( Int_t ipar=1; ipar<nPars; ipar++ ) {
+//      params[ipar] = func->GetParameter(ipar);
+//    }
+
     Double_t normChi2 = func->GetChisquare() / ((Double_t)func->GetNDF());
     if ( normChi2 < minNormChi2 ) {
       minNormChi2 = normChi2;
       minNormChi2Step = istep;
     }
-    if ( normChi2 < chi2Cut ) break;
+//    if ( static_cast<int>(fitResult) == 0 && normChi2 < chi2Cut ) break;
+    if ( normChi2 < chi2Cut ) break; // REMEMBER TO CHECK
     delete func;
     func = 0x0;
   }
@@ -1256,7 +1286,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph
       if ( ipar%2 == 0 ) parRunIdx[istep] = func->GetParameter(ipar);
       else parEff[istep] = func->GetParameter(ipar);
     }
-    parRunIdx[0] = 1.;
+    parRunIdx[0] = 0.;
     TArrayI sortIdx(nPoints);
     TMath::Sort(nPoints,parRunIdx.GetArray(),sortIdx.GetArray(),kFALSE);
 
@@ -1344,7 +1374,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
 Int_t AliMTRChEffAnalysis::GetRunNumber ( Int_t ipt ) const
 {
   /// Get run number from graph
-  if ( ipt < 0 && ipt >= fOutputs->GetEntriesFast() ) return -1;
+  if ( ipt < 0 || ipt >= fOutputs->GetEntriesFast() ) return -1;
   return fOutputs->UncheckedAt(ipt)->GetUniqueID();
 }
 
