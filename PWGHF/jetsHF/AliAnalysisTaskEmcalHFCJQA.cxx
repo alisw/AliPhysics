@@ -93,6 +93,9 @@ fKeepTrackNegID(kTRUE),
 //Histograms
 fhEventCounter(0),
 fhTriggerCounter(0),
+fhTriggerMaskCounter(0),
+fhTriggerBitCounter(0),
+fEventsThreshold(0),
 fSparseRecoJets(0),
 fhSparseFilterMask(0),
 fhSparseFilterMaskPico(0),
@@ -149,6 +152,9 @@ fKeepTrackNegID(kTRUE),
 //Histograms
 fhEventCounter(0),
 fhTriggerCounter(0),
+fhTriggerMaskCounter(0),
+fhTriggerBitCounter(0),
+fEventsThreshold(0),
 fSparseRecoJets(0),
 fhSparseFilterMask(0),
 fhSparseFilterMaskPico(0),
@@ -187,14 +193,17 @@ AliAnalysisTaskEmcalHFCJQA::~AliAnalysisTaskEmcalHFCJQA()
   if(fpidResp)						delete fpidResp;
   if(fCuts)							delete fCuts;
   if(fhEventCounter)				delete fhEventCounter;
+  if(fhTriggerMaskCounter)			delete fhTriggerMaskCounter;
+  if(fhTriggerBitCounter)			delete fhTriggerBitCounter;
   if(fhTriggerCounter)				delete fhTriggerCounter;
+  if(fEventsThreshold)				delete fEventsThreshold;
   if(fSparseRecoJets)				delete fSparseRecoJets;
   if(fhSparseFilterMask)			delete fhSparseFilterMask;
-  if(fhSparseFilterMaskPico)			delete fhSparseFilterMaskPico;
+  if(fhSparseFilterMaskPico)		delete fhSparseFilterMaskPico;
   if(fhSparseFilterMaskTrackAcc)	delete fhSparseFilterMaskTrackAcc;
-  if(fhSparseFilterMaskTrackAccPico)	delete fhSparseFilterMaskTrackAccPico;
+  if(fhSparseFilterMaskTrackAccPico)delete fhSparseFilterMaskTrackAccPico;
   if(fhSparseFilterMaskImpPar)		delete fhSparseFilterMaskImpPar;
-  if(fhSparseFilterMaskImpParPico)		delete fhSparseFilterMaskImpParPico;
+  if(fhSparseFilterMaskImpParPico)	delete fhSparseFilterMaskImpParPico;
   if(fhImpParResolITSsel)			delete fhImpParResolITSsel;
   if(fhImpParResolITSselGoodTracks)	delete fhImpParResolITSselGoodTracks;
   if(fhnSigmaTPCTOFEle) 			delete fhnSigmaTPCTOFEle;
@@ -205,7 +214,7 @@ AliAnalysisTaskEmcalHFCJQA::~AliAnalysisTaskEmcalHFCJQA()
   if(fhSparseShowShapeEleTPC)		delete fhSparseShowShapeEleTPC;
   if(fhTrackEMCal)					delete fhTrackEMCal;
   if(fhptSpectrum)					delete fhptSpectrum;
-  if(fhptSpectrumPico)  delete fhptSpectrumPico;
+  if(fhptSpectrumPico)              delete fhptSpectrumPico;
 }
 
 //________________________________________________________________________
@@ -260,9 +269,57 @@ fOutput->Add(fhEventCounter);
     fOutput->Add(fhTriggerCounter);
 //======================================================================
     
-Int_t nbinsRecoJets[8]			= { 50, 20,20,   20,   5,   5,10, 60};
-Double_t binlowRecoJets[8]		= { 5.,-1.,pi, 0.99,  0.,-0.5, 0, 0.};
-Double_t binupRecoJets[8]		= {55., 1.,pi,20.99,4.99, 4.5,2.,60.};
+    //  ########### DEFINE THE EVENT TRIGGER MASK ############
+    fhTriggerMaskCounter=new TH1F("fhTriggerMaskCounter","Counter of Trigger Masks Events",10,-0.5,9.5);
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(1,"ALL");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(2,"kMC7");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(3,"kEMCEGA");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(4,"kEMCEJE");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(5,"MC7+EGA");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(6,"MC7+EJE");
+    fhTriggerMaskCounter->GetXaxis()->SetBinLabel(7,"EGA+EJE");
+    
+    fOutput->Add(fhTriggerMaskCounter);
+    
+    //  ########### DEFINE THE EVENT TRIGGER MASK ############
+    fhTriggerBitCounter=new TH1F("fhTriggerBitCounter","Counter of Trigger Bit Events",13,-0.5,12.5);
+    
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(1,"ALL");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(2,"L0");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(3,"EGA1");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(4,"EGA2");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(5,"EJE1");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(6,"EJE2");
+    
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(7,"EGA12");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(8,"EJE12");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(9,"EGA1EJE1");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(10,"EGA1EJE2");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(11,"EGA2EJE1");
+    fhTriggerBitCounter->GetXaxis()->SetBinLabel(12,"EGA2EJE2");
+    
+    fOutput->Add(fhTriggerBitCounter);
+    
+//======================================================================
+
+
+//======================================================================
+fEventsThreshold=new TH1F("fhTriggerThreshold","Counter of Trigger Thrseholds",10,-0.5,9.5);
+fEventsThreshold->GetXaxis()->SetBinLabel(1,"ALL");
+fEventsThreshold->GetXaxis()->SetBinLabel(2,"2GeV");
+fEventsThreshold->GetXaxis()->SetBinLabel(3,"4GeV");
+fEventsThreshold->GetXaxis()->SetBinLabel(4,"5GeV");
+fEventsThreshold->GetXaxis()->SetBinLabel(5,"6GeV");
+fEventsThreshold->GetXaxis()->SetBinLabel(6,"8GeV");
+fEventsThreshold->GetXaxis()->SetBinLabel(7,"10GeV");
+    
+fOutput->Add(fEventsThreshold);
+//======================================================================
+
+
+Int_t nbinsRecoJets[8]			= { 50, 20,     20,   20,   5,   5,10, 60};
+Double_t binlowRecoJets[8]		= { 5.,-1.,-1.0*pi, 0.99,  0.,-0.5, 0, 0.};
+Double_t binupRecoJets[8]		= {55., 1., 1.0*pi,20.99,4.99, 4.5,2.,60.};
 fSparseRecoJets = new THnSparseF("fSparseRecoJets","fSparseRecoJets;jetpt;eta;phi;ntrks;nEle;parton;partContr;ptPart;",8,nbinsRecoJets,binlowRecoJets,binupRecoJets);
 fOutput->Add(fSparseRecoJets);
 
@@ -447,7 +504,11 @@ fhEventCounter->Fill(0);
 
 //TRIGGERS
 fhTriggerCounter->Fill(0);
-TriggersHistogram(aod->GetFiredTriggerClasses());
+TriggersHistogram(InputEvent()->GetFiredTriggerClasses());
+
+fhTriggerMaskCounter->Fill(0);
+TriggersMaskHistogram(InputEvent()->GetTriggerMask());    
+TriggersBitHistogram(aod, fReadMC);
 
 //===========================
 //========================================================================================
@@ -545,7 +606,11 @@ for(Int_t itraod=0;itraod<aod->GetNumberOfTracks();itraod++){
 
   //======================================================================
 
+//======================================================================
+//Check EMCAL Clusters Energy "trigger"
+EnergyTriggers();
 
+//======================================================================
   //======================================================================
   //PID
   //Double_t nsigma=fpidResp->NumberOfSigmasTPC(atrack, AliPID::kElectron);
@@ -621,10 +686,10 @@ PrintDebug(9,"Tracks Container");
    int NTracks = fTracksCont->GetNAcceptedParticles();
    for(int itr = 0; itr < NTracks; itr++)
      {
-       AliPicoTrack *PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetAcceptParticle(itr));
-       if(!PicoTrack) continue;
+       AliPicoTrack *picoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetAcceptParticle(itr));
+       if(!picoTrack) continue;
        
-       AliVTrack* track = PicoTrack->GetTrack();      
+       AliVTrack* track = picoTrack->GetTrack();      
        if(!track)
 	 {
 	   printf("ERROR: Could not receive track %d\n", itr);
@@ -1037,5 +1102,117 @@ void AliAnalysisTaskEmcalHFCJQA::TriggersHistogram(TString TriggerClass)
     else if( TriggerClass.Contains( "EJ2" ) ) fhTriggerCounter->Fill(5);
     else if( TriggerClass.Contains( "EGA" ) ) fhTriggerCounter->Fill(6);
     else if( TriggerClass.Contains( "EJE" ) ) fhTriggerCounter->Fill(7);
+}
+//======================================================================
+
+//======================================================================
+void AliAnalysisTaskEmcalHFCJQA::TriggersMaskHistogram(int kMask)
+{
+    //printf(TriggerClass.Data());
+    if(kMask == AliVEvent::kEMC7) fhTriggerMaskCounter->Fill(1);
+    if(kMask == AliVEvent::kEMCEGA) fhTriggerMaskCounter->Fill(2);
+    if(kMask == AliVEvent::kEMCEJE) fhTriggerMaskCounter->Fill(3);
+    if( (kMask == AliVEvent::kEMC7)&&(kMask == AliVEvent::kEMCEGA) ) fhTriggerMaskCounter->Fill(4);
+    if( (kMask == AliVEvent::kEMC7)&&(kMask == AliVEvent::kEMCEJE) ) fhTriggerMaskCounter->Fill(5);
+    if( (kMask == AliVEvent::kEMCEGA)&&(kMask == AliVEvent::kEMCEJE) ) fhTriggerMaskCounter->Fill(6);
+}
+//======================================================================
+
+//======================================================================
+void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool readMC)
+{
+    fhTriggerBitCounter->Fill(0);
+    AliVCaloTrigger& trg = *(aod->GetCaloTrigger("EMCAL"));
+    
+    bool isL0;
+    bool EGA1 = kFALSE;
+    bool EGA2 = kFALSE;
+    bool EJE1 = kFALSE;
+    bool EJE2 = kFALSE;
+    
+    trg.Reset();
+    while (trg.Next())
+    {
+        Int_t nTimes = 0;
+        trg.GetNL0Times(nTimes);
+        if (nTimes) isL0 = kTRUE;
+        
+        Int_t col, row;
+        trg.GetPosition(col, row);
+        if (col > -1 && row > -1)
+        {            
+            Int_t bit = 0;
+            
+            trg.GetTriggerBits(bit);
+            if(readMC)
+            {
+                if ((bit >> 1) & 0x1) EGA1 = kTRUE;
+                if ((bit >> 2) & 0x1) EGA2 = kTRUE;
+                if ((bit >> 3) & 0x1) EJE1 = kTRUE;
+                if ((bit >> 4) & 0x1) EJE2 = kTRUE;
+            }
+            else
+            {
+                if ((bit >> 6) & 0x1) EGA1 = kTRUE;
+                if ((bit >> 7) & 0x1) EGA2 = kTRUE;
+                if ((bit >> 8) & 0x1) EJE1 = kTRUE;
+                if ((bit >> 9) & 0x1) EJE2 = kTRUE;
+            }
+            
+        }
+    }
+    
+    //Fill the histogram
+    if(isL0) fhTriggerBitCounter->Fill(1);// L0
+    
+    if(EGA1) fhTriggerBitCounter->Fill(2);// EGA1
+    if(EGA2) fhTriggerBitCounter->Fill(3);// EGA2
+    if(EJE1) fhTriggerBitCounter->Fill(4);// EJE1
+    if(EJE2) fhTriggerBitCounter->Fill(5);// EJE2
+    
+    if(EGA1 && EGA2) fhTriggerBitCounter->Fill(6);
+    if(EJE1 && EJE2) fhTriggerBitCounter->Fill(7);
+    
+    if(EGA1 && EJE1) fhTriggerBitCounter->Fill(8);
+    if(EGA1 && EJE2) fhTriggerBitCounter->Fill(9);
+    if(EGA2 && EJE1) fhTriggerBitCounter->Fill(10);
+    if(EGA2 && EJE2) fhTriggerBitCounter->Fill(11);
+    
+}
+//======================================================================
+
+//======================================================================
+//Testing the Clusters Energy Trigger per Event
+void AliAnalysisTaskEmcalHFCJQA::EnergyTriggers()
+{
+    //Energy thresholds to be tested
+    double threshold[6] = {2,4,5,6,8,10};//2, 4,5,6,8,10
+    bool kOne = kFALSE;
+    bool kTwo = kFALSE;
+    bool kThree = kFALSE;
+    bool kFour = kFALSE;
+    bool kFive = kFALSE;
+    bool kSix = kFALSE;
+
+for(int itr = 0; itr < fCaloClustersCont->GetNAcceptedClusters(); itr++)
+{
+    AliVCluster *cluster = fCaloClustersCont->GetAcceptCluster(itr);
+    if(! cluster) continue;
+    if(! cluster->IsEMCAL()) continue;
+    double energy = cluster->E();
+    if(energy > threshold[0]) kOne = kTRUE;
+    if(energy > threshold[1]) kTwo = kTRUE;
+    if(energy > threshold[2]) kThree = kTRUE;
+    if(energy > threshold[3]) kFour = kTRUE;
+    if(energy > threshold[4]) kFive = kTRUE;
+    if(energy > threshold[5]) kSix = kTRUE;
+}
+fEventsThreshold->Fill(0);
+if(kOne)fEventsThreshold->Fill(1);
+if(kTwo)fEventsThreshold->Fill(2);
+if(kThree)fEventsThreshold->Fill(3);
+if(kFour)fEventsThreshold->Fill(4);
+if(kFive)fEventsThreshold->Fill(5);
+if(kSix)fEventsThreshold->Fill(6);
 }
 //======================================================================

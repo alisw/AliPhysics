@@ -54,7 +54,9 @@ void FillJetRecoHisto(const AliEmcalJet *jet,Int_t partonnat,Double_t contributi
  Bool_t FillTrackHistosAndSelectTrack(AliAODTrack *aodtr, const AliESDVertex *primary, const Double_t magfield,const Bool_t isPico);
 void PrintDebug(int N, TString Section="DDG", TString Sub="", int LEVEL=0);
 void TriggersHistogram(TString TriggerClass);
-
+void TriggersMaskHistogram(int kMask);
+void TriggersBitHistogram(AliAODEvent* aod, bool ReadMC);
+void EnergyTriggers();
 //============================================================================================================ 
 //Containers
 //TList						 *fOutput; 			         //! output list
@@ -82,6 +84,9 @@ AliRDHFJetsCuts*		fCuts;
 //Histograms
 TH1F* 			fhEventCounter;
 TH1F* 			fhTriggerCounter;
+TH1F* 			fhTriggerMaskCounter;
+TH1F* 			fhTriggerBitCounter;
+TH1F* 			fEventsThreshold;
 THnSparseF*		fSparseRecoJets;
 THnSparseF *fhSparseFilterMask;          			//! sparse histo with track information
 THnSparseF *fhSparseFilterMaskPico;          			//! sparse histo with track information
@@ -107,6 +112,6 @@ THnSparseF *fhTrackEMCal;              //! sparse with EMCal cluster properties 
 AliAnalysisTaskEmcalHFCJQA(const AliAnalysisTaskEmcalHFCJQA&);				// copy constructo not implemented yet
 AliAnalysisTaskEmcalHFCJQA& operator=(const AliAnalysisTaskEmcalHFCJQA&); 	// assignment operator not implemented yet
 
-ClassDef(AliAnalysisTaskEmcalHFCJQA, 1) // jet sample analysis task
+ClassDef(AliAnalysisTaskEmcalHFCJQA, 2) // jet sample analysis task
 };
 #endif
