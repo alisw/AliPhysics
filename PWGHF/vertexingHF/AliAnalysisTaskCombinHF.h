@@ -208,10 +208,10 @@ private:
   Double_t fMaxMultDiffForMix; /// cut on multiplicity difference for event mixing with cuts
   Int_t fNzVertPools; /// number of pools in z vertex for event mixing
   Int_t fNzVertPoolsLimSize; /// number of pools in z vertex for event mixing +1
-  Double_t* fzVertPoolLims; ///[fNzVertPoolsLimSize] limits of the pools in zVertex
+  Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
   Int_t fNMultPools; /// number of pools in multiplicity for event mixing
   Int_t fNMultPoolsLimSize; /// number of pools in multiplicity for event mixing +1
-  Double_t* fMultPoolLims; ///[fNMultPoolsLimSize] limits of the pools in multiplicity
+  Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
   Int_t  fNOfPools; /// number of pools
   TTree** fEventBuffer;   //!<! structure for event mixing
   TObjString* fEventInfo;  /// unique event Id for event mixing checks
