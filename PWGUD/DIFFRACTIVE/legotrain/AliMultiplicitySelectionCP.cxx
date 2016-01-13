@@ -30,8 +30,8 @@ AliMultiplicitySelectionCP::AliMultiplicitySelectionCP():TObject(),
   SetTrackEtaRange();
 
   IgnoreV0s();
-for(Int_t i = 0; i< fkNtrackMax; i++)
-fkIsTrackSec[i]= kFALSE;
+  for(Int_t i = 0; i< fkNtrackMax; i++)
+    fkIsTrackSec[i]= kFALSE;
 
 
 
@@ -54,38 +54,38 @@ AliMultiplicitySelectionCP::~AliMultiplicitySelectionCP()
 void AliMultiplicitySelectionCP::InitDefaultTrackCuts(Int_t clusterCut)
 {
   /*
-Alexander Kalweit 
-Email to PWG conveners on 22 Apr 2014
-LHC10b&c (pass2):
-==================
+    Alexander Kalweit 
+    Email to PWG conveners on 22 Apr 2014
+    LHC10b&c (pass2):
+    ==================
 
-Default cut which is currently recommended: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE/kFALSE, 1)
-Important is the second argument (=1) which replaces the cut on 70 clusters with a crossed rows cuts.  
-!!! Please note, that a cut on 70 clusters is strongly discouraged in LHC10b&c pass2 data analysis!!! 
-Changing to number of clusters (=0) and variations of the cut to 60 or 80 should be included in the systematic studies
+    Default cut which is currently recommended: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE/kFALSE, 1)
+    Important is the second argument (=1) which replaces the cut on 70 clusters with a crossed rows cuts.  
+    !!! Please note, that a cut on 70 clusters is strongly discouraged in LHC10b&c pass2 data analysis!!! 
+    Changing to number of clusters (=0) and variations of the cut to 60 or 80 should be included in the systematic studies
 
-LHC10deh (pass2):
-==================
-Default cut which is currently recommended: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE/kFALSE, 0)
-In this period, a cut on 70 clusters should be okay, however, changing to a crossed rows cut and lowering the cut to 60 clusters should be included in the systematic error study.
-   */
+    LHC10deh (pass2):
+    ==================
+    Default cut which is currently recommended: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE/kFALSE, 0)
+    In this period, a cut on 70 clusters should be okay, however, changing to a crossed rows cut and lowering the cut to 60 clusters should be included in the systematic error study.
+  */
 
-   AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
-   fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-   fcutITSTPC_P->SetName("ITSTPC");
-   AddPrimaryTrackCut(fcutITSTPC_P);
-   AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
-   fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-   fcutITSSA_P->SetName("ITSSA");
-   AddPrimaryTrackCut(fcutITSSA_P);
+  AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
+  fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+  fcutITSTPC_P->SetName("ITSTPC");
+  AddPrimaryTrackCut(fcutITSTPC_P);
+  AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+  fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+  fcutITSSA_P->SetName("ITSSA");
+  AddPrimaryTrackCut(fcutITSSA_P);
 
-   return;
+  return;
 }
 
- void AliMultiplicitySelectionCP::AddPrimaryTrackCut(AliESDtrackCuts *cut)
- {
-   fTrackCutListPrim->Add(cut);
- }
+void AliMultiplicitySelectionCP::AddPrimaryTrackCut(AliESDtrackCuts *cut)
+{
+  fTrackCutListPrim->Add(cut);
+}
 
 Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd)
 {
@@ -99,30 +99,30 @@ Bool_t AliMultiplicitySelectionCP::InitV0Daughters(AliESDEvent *esd)
 
 
   if(fkNtrackMax < esd->GetNumberOfTracks() )
-     {
-     AliFatal(" fkNtrackMax < esd->GetNumberOfTracks() !!!\n");
-     }
+    {
+      AliFatal(" fkNtrackMax < esd->GetNumberOfTracks() !!!\n");
+    }
 
 
   for(Int_t i=0; i< esd->GetNumberOfTracks(); i++)
-     {
-     fkIsTrackSec[i] = kFALSE;
-     }
+    {
+      fkIsTrackSec[i] = kFALSE;
+    }
 
-//  if(!fkIgnoreV0s) return kTRUE;
+  //  if(!fkIgnoreV0s) return kTRUE;
 
   Int_t Nv0  = esd->GetNumberOfV0s();
 
   for(Int_t iv0 = 0; iv0<Nv0; iv0++)
     {
       AliESDv0 *v0 = esd->GetV0(iv0);
-	if(!v0) continue;
+      if(!v0) continue;
 
-        fkIsTrackSec[v0->GetPindex()] = kTRUE;
-        fkIsTrackSec[v0->GetNindex()] = kTRUE;
+      fkIsTrackSec[v0->GetPindex()] = kTRUE;
+      fkIsTrackSec[v0->GetNindex()] = kTRUE;
     }
 
-return kTRUE;
+  return kTRUE;
 }
 
 
@@ -199,13 +199,13 @@ Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArr
 
     }
 
-    indices.Set(NtracksSel);
+  indices.Set(NtracksSel);
 
-    printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
+  printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
 
 
-    fIndicesN.Set(NtracksSelN);
-    fIndicesP.Set(NtracksSelP);
+  fIndicesN.Set(NtracksSelN);
+  fIndicesP.Set(NtracksSelP);
 
 
   for(Int_t i = 0; i< NtracksSel; i++)
@@ -237,7 +237,7 @@ Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArr
 	return -6;
     }
 
-      return NtracksSel; 
+  return NtracksSel; 
 
 }
 
@@ -249,27 +249,27 @@ Bool_t AliMultiplicitySelectionCP::AcceptTrack(AliESDtrack *track, Bool_t asPrim
     {
       TIter next(fTrackCutListPrim);
       AliESDtrackCuts *cut;
-	while ((cut=(AliESDtrackCuts*)next()))
-	  {
-	    if(cut->AcceptTrack(track))
-	      return kTRUE;
-	  }
+      while ((cut=(AliESDtrackCuts*)next()))
+	{
+	  if(cut->AcceptTrack(track))
+	    return kTRUE;
+	}
       return kFALSE;
     }
 
   else{
-      Bool_t isITSrefit = ((track->GetStatus() & AliESDtrack::kITSrefit) != 0);
-      Bool_t isTPCrefit = ((track->GetStatus() & AliESDtrack::kTPCrefit) != 0);
+    Bool_t isITSrefit = ((track->GetStatus() & AliESDtrack::kITSrefit) != 0);
+    Bool_t isTPCrefit = ((track->GetStatus() & AliESDtrack::kTPCrefit) != 0);
 
-      if(isITSrefit || isTPCrefit) return kTRUE;
-      else return kFALSE;
+    if(isITSrefit || isTPCrefit) return kTRUE;
+    else return kFALSE;
   }
 
   return kFALSE;
 }
 
 
- Bool_t AliMultiplicitySelectionCP::IsTrackSelected(Int_t index)
+Bool_t AliMultiplicitySelectionCP::IsTrackSelected(Int_t index)
 {
 
   for(Int_t i = 0; i< fIndicesN.GetSize(); i++)
@@ -284,17 +284,15 @@ Bool_t AliMultiplicitySelectionCP::AcceptTrack(AliESDtrack *track, Bool_t asPrim
 	return kTRUE;
     }
 
-return  kFALSE;
+  return  kFALSE;
 }
 
 
 Bool_t AliMultiplicitySelectionCP::TestFiredChips(AliESDEvent *esd, TArrayI indices)
 {
-
   const AliMultiplicity *mult = esd->GetMultiplicity();
   Int_t Ntracks = indices.GetSize();
-  UInt_t Modules[2*Ntracks];
-
+  UInt_t *Modules = new UInt_t[2*Ntracks];
 
   for(Int_t iT = 0; iT< Ntracks; iT++)
     {
@@ -326,9 +324,11 @@ Bool_t AliMultiplicitySelectionCP::TestFiredChips(AliESDEvent *esd, TArrayI indi
 	}
       if(!ktmp) 
 	{
+	  delete[] Modules;
 	  return kFALSE;
 	}
     }
 
+  delete[] Modules;
   return kTRUE;
 }
