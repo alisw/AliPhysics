@@ -68,6 +68,7 @@ public:
   void SetDisableITSatHighPt (float pt) { fDisableITSatHighPt = pt; }
   void SetDisableTPCpidAtHighPt (float pt) { fDisableTPCpidAtHighPt = pt; }
   void SetFixForLHC14a6 (bool fix) { fFixForLHC14a6 = fix; }
+  void SetRequireTrackLength(float len) { fRequireTrackLength = len; }
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -77,6 +78,7 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
+  void SetPhiRegions (Int_t n, Float_t *regions) { fPhiRegions.Set(n,regions); }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -142,6 +144,7 @@ private:
   Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
+  Float_t               fRequireTrackLength;    ///<  Cut on the track length
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
@@ -150,6 +153,7 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
+  TArrayF               fPhiRegions;            ///<  Azimuthal angle region where the analysis is performed
 
   // Event related histograms
   TH1F                 *fCentrality;            //!<! Events centrality distribution
@@ -173,7 +177,7 @@ private:
 
   // Data histograms
   TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
-  TH3F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
+  TH2F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
   TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCeLoss;             //!<! *(Data only)* TPC dE/dx for anti-matter
@@ -182,7 +186,7 @@ private:
   TH3F                 *fMDCAxyTOF;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
-  TH3F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
+  TH2F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
   TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter
