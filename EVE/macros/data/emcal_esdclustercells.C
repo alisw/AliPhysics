@@ -58,6 +58,8 @@
 #include <AliEveEventManager.h>
 #include <AliEveMultiView.h>
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliEMCALGeometry.h"
 #include "AliPHOSGeometry.h"
 #endif
@@ -98,7 +100,7 @@ Bool_t IsBadCluster(Int_t absId, Float_t eMax);
 void SetUpEMCALGeometry(AliESDEvent * esd);
 void SetUpPHOSGeometry (AliESDEvent * esd);
 
-void SetEMCALMatrices(AliESDEvent * esd, Bool_t &ok);
+void SetEMCALMatrices(AliESDEvent * esd, Bool_t & ok);
 
 void SetUpEMCALQuads();
 void SetUpPHOSQuads();
@@ -161,13 +163,19 @@ void emcal_esdclustercells()
 {
     if ( debug > 0 ) printf("Execute emcal_esdclustercells\n");
     if ( debug > 9 ) AliLog::SetModuleDebugLevel("EMCAL",100);
-
+  
     //--------------------
     // Access to esd event
     //--------------------
   
     AliESDEvent* esd = AliEveEventManager::AssertESD();
           
+    if(esd->GetNumberOfCaloClusters() <= 0 )
+    {
+      if ( debug > 0 ) printf("emcal_esdclustercells(): No calorimeter info, nclusters 0, skip!\n");
+      return;
+    }
+  
     //-----------------------------------
     // Set geometry, volumes, alignment,
     // 2d histograms once for first event
@@ -204,11 +212,20 @@ void emcal_esdclustercells()
     // in case the first event did not have them in the ESD
     // Do it once.
     // Get first EMCal/DCal SM matrix in geometry if non null skip.  
-    Bool_t ok = kFALSE;
-    if ( !fGeomEM->GetMatrixForSuperModule(0) || !fGeomEM->GetMatrixForSuperModule(12) )
-        SetEMCALMatrices(esd,ok);
-    
-    if(!ok) return;
+    if ( !fGeomEM->GetMatrixForSuperModuleFromArray(0) || 
+         !fGeomEM->GetMatrixForSuperModuleFromArray(12) ) 
+    {
+      Bool_t ok = kFALSE;
+
+      SetEMCALMatrices(esd,ok);
+      
+      if(!ok) 
+      {
+        printf("emcal_esdclustercells: Alignment Matrices not available, skip!\n");
+        return;
+      }
+    }
+  
     // Matrix debugging
     if ( debug > 9 )
     {
@@ -348,8 +365,10 @@ void AnalyzeClusters(AliESDEvent * esd)
     fCellsEM = esd->GetEMCALCells();
     fCellsPH = esd->GetPHOSCells();
     
-    Int_t ncellEM = fCellsEM->GetNumberOfCells() ;
-    Int_t ncellPH = fCellsPH->GetNumberOfCells() ;
+    Int_t ncellEM = 0; 
+    if(fCellsEM) fCellsEM->GetNumberOfCells() ;
+    Int_t ncellPH = 0; 
+    if(fCellsPH) fCellsPH->GetNumberOfCells() ;
     
     if ( debug > 0 ) 
     {
@@ -395,12 +414,13 @@ void AnalyzeClusters(AliESDEvent * esd)
 ///
 void FillEMCALClusters(Int_t absIdEMaxCell)
 {  
+    if(!fCellsEM) return;
+  
     // If any of the matrices is missing, skip analysis 
     for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
     {
       if ( !fGeomEM->GetMatrixForSuperModule(mod) )  
         printf("emcal_esdclustercells.C::FillEMCALClusters() No geo matrix for SM %d, skip this event for EMCal!!!\n",mod);
-        return;
     }
   
     Double_t x=0., y=0., z=0.;
@@ -534,6 +554,8 @@ void FillEMCALClusters(Int_t absIdEMaxCell)
 ///
 void FillPHOSClusters(Int_t absIdEMaxCell)
 {
+    if(!fCellsPH) return;
+
     TVector3 xyz;
     Int_t relId[4], module;
     Float_t xCell, zCell;
@@ -856,11 +878,15 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
         printf("xxx Set EMCal default geo as Run2 xxx\n");
         fGeomEM  = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
     }
+    
     Bool_t ok = kFALSE;
     SetEMCALMatrices(esd,ok); // Do it outside also if we could not set them here.
-    if(!ok) return;
-    
-    //
+  
+    if(!ok) 
+    {
+      printf("emcal_esdclustercells::SetUpEMCALGeometry() - Alignment Matrices not available, skip!");
+      return;
+    }    //
     // EMCAL volumes
     //
     fNodeEM = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
@@ -915,26 +941,60 @@ void SetUpEMCALGeometry(AliESDEvent * esd)
 /// that the first event does not always contain them (???)
 ///
 void SetEMCALMatrices(AliESDEvent * esd, Bool_t & ok)
-{
-    // Set all the matrices
-    for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+{  
+  ok = kTRUE;
+  // Set all the matrices
+  for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+  {
+    if( debug > 1 ) printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
+    
+    if( esd->GetEMCALMatrix(mod) )
     {
-        if( debug > 1 ) printf("Load EMCAL ESD matrix %d, %p\n",mod,esd->GetEMCALMatrix(mod));
-        
-        if( esd->GetEMCALMatrix(mod) )
-        {
-            fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-            ok=kTRUE;
-        }
-        else // set default identity matrix
-        {
-            printf("Could not set EMCal geo matrix for SM %d",mod);
-            ok = kFALSE;
-            //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
-        }
-    } // loop over super modules
+      fGeomEM->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+    }
+    else // set default identity matrix
+    {
+      printf("Could not set EMCal geo matrix for SM %d",mod);
+      ok = kFALSE;
+      //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
+    }
+  } // loop over super modules
+  
+  if(ok) return;
+  
+  // Re-set the bool
+  ok = kTRUE;
+  // Try to get now the matrices from OCDB
+  printf("Get alignment matrices form OCDB\n");
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  //man->SetDefaultStorage("raw://");
+  man->SetRun(esd->GetRunNumber());
+  
+  AliCDBEntry *cdb = (AliCDBEntry*)  man->Get("EMCAL/Align/Data");
+  TClonesArray * matrixArr = (TClonesArray*) cdb->GetObject();
+  
+  for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++)
+  {
+    if( debug > 1 ) printf("Load EMCAL OCDB matrix %d, %p\n",mod,matrixArr->At(mod));
     
-    
+    if( matrixArr->At(mod) )
+    {
+      fGeomEM->SetMisalMatrix(((TGeoHMatrix *) matrixArr->At(mod)),mod) ;
+    }
+    else // set default identity matrix
+    {
+      printf("Could not set EMCal geo matrix for SM %d from OCDB",mod);
+      ok = kFALSE;
+      //fGeomEM->SetMisalMatrix((new TGeoHMatrix),mod) ;
+    }
+  } // loop over super modules
+  printf("ok? %d\n",ok);
+  
+  for(Int_t mod = 0; mod < fGeomEM->GetNumberOfSuperModules(); mod++) 
+    printf("Matrix in geometry: imod %d, %p\n",mod,fGeomEM->GetMatrixForSuperModuleFromArray(mod));
+
+  
 }
 
 //______________________________________________________________________________
