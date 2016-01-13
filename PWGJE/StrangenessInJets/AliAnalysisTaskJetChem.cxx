@@ -127,12 +127,10 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,jetConeALalist(0)
    ,jetConeK0Emblist(0)
    ,jetConeLaEmblist(0)
-   ,jetConeALaEmblist(0)
- 
+   ,jetConeALaEmblist(0) 
    ,jetConeK0EmbStlist(0)
    ,jetConeLaEmbStlist(0)
    ,jetConeALaEmbStlist(0)
-
    ,jetPerpConeK0list(0)
    ,jetPerpRecCutslist(0)
    ,jetPerpConeK0Emblist(0)
@@ -445,12 +443,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,jetConeK0Emblist(0)
   ,jetConeLaEmblist(0)
   ,jetConeALaEmblist(0)
-
   ,jetConeK0EmbStlist(0)
   ,jetConeLaEmbStlist(0)
   ,jetConeALaEmbStlist(0)
-
-
   ,jetPerpConeK0list(0)
   ,jetPerpRecCutslist(0)
   ,jetPerpConeK0Emblist(0)
@@ -766,11 +761,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,jetConeK0Emblist(copy.jetConeK0Emblist)
   ,jetConeLaEmblist(copy.jetConeLaEmblist)
   ,jetConeALaEmblist(copy.jetConeALaEmblist)
-
   ,jetConeK0EmbStlist(copy.jetConeK0EmbStlist)
   ,jetConeLaEmbStlist(copy.jetConeLaEmbStlist)
   ,jetConeALaEmbStlist(copy.jetConeALaEmbStlist)
-
   ,jetPerpConeK0list(copy.jetPerpConeK0list)
   ,jetPerpRecCutslist(copy.jetPerpRecCutslist)
   ,jetPerpConeK0Emblist(copy.jetPerpConeK0Emblist)
@@ -1088,11 +1081,9 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     jetConeK0Emblist                = o.jetConeK0Emblist;
     jetConeLaEmblist                = o.jetConeLaEmblist;
     jetConeALaEmblist               = o.jetConeALaEmblist;
-
     jetConeK0EmbStlist              = o.jetConeK0EmbStlist;
     jetConeLaEmbStlist              = o.jetConeLaEmbStlist;
     jetConeALaEmbStlist             = o.jetConeALaEmbStlist;
-
     jetPerpConeK0list               = o.jetPerpConeK0list;
     jetPerpRecCutslist              = o.jetPerpRecCutslist;
     jetPerpConeK0Emblist            = o.jetPerpConeK0Emblist;
@@ -1357,15 +1348,12 @@ AliAnalysisTaskJetChem::~AliAnalysisTaskJetChem()
   if(jetConeK0list) delete jetConeK0list;
   if(jetConeLalist) delete jetConeLalist;
   if(jetConeALalist) delete jetConeALalist;
-
   if(jetConeK0Emblist) delete jetConeK0Emblist;
   if(jetConeLaEmblist) delete jetConeLaEmblist;
   if(jetConeALaEmblist) delete jetConeALaEmblist;
-
   if(jetConeK0EmbStlist) delete jetConeK0EmbStlist;
   if(jetConeLaEmbStlist) delete jetConeLaEmbStlist;
   if(jetConeALaEmbStlist) delete jetConeALaEmbStlist;
-
   if(jetPerpConeK0list) delete jetPerpConeK0list;
   if(jetPerpRecCutslist) delete jetPerpRecCutslist;
   if(jetPerpConeK0Emblist) delete jetPerpConeK0Emblist;
@@ -1575,14 +1563,12 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   jetConeLaEmblist->SetOwner(kFALSE);
   jetConeALaEmblist = new TList();
   jetConeALaEmblist->SetOwner(kFALSE);
-
   jetConeK0EmbStlist = new TList();
   jetConeK0EmbStlist->SetOwner(kFALSE);
   jetConeLaEmbStlist = new TList();
   jetConeLaEmbStlist->SetOwner(kFALSE);
   jetConeALaEmbStlist = new TList();
   jetConeALaEmbStlist->SetOwner(kFALSE);
-
   jetPerpConeK0list = new TList();
   jetPerpConeK0list->SetOwner(kFALSE);
   jetPerpRecCutslist = new TList();
@@ -1709,26 +1695,28 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   if(fDebug>2)std::cout<<"fBranchGenJets.Length(): "<<fBranchGenJets.Length()<<std::endl;
 
 
-    //embedding
-    fh1nEmbeddedJets              = new TH1F("fh1nEmbeddedJets","Number of embedded jets",10,-0.5,9.5);
-    fh1nGenJets                   = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
-    fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
-    fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
-    fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
-    fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
-    
-    fh1PtEmbReject                = new TH1F("fh1PtEmbReject","Pt spectrum of jets rejected by JetMatching cuts",19,5.,100.);
-    fh2PtEtaEmbReject             = new TH2F("fh2PtEtaEmbReject","Pt #eta distribution of jets rejected by JetMatching cuts #eta; #it{p}_{T}",19,5.,100.,200,-1.,1.);
-    fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
-    fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
-    fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
-     
-    fh1FractionPtEmbeddedMC         = new TH1F("fh1FractionPtEmbeddedMC","",110,0,1.1);
-    fh2FractionPtVsEmbeddedJetPtMC  = new TH2F("fh2FractionPtVsEmbeddedJetPtMC","",250,0,250,110,0,1.1);
-    fh1DeltaREmbeddedMC             = new TH1F("fh1DeltaREmbeddedMC","",50,0,0.5);
-    fh1JetPtEmbGenAfterMatch        = new TH1F("fh1JetPtEmbGenAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
-
+  //embedding
+  fh1nEmbeddedJets              = new TH1F("fh1nEmbeddedJets","Number of embedded jets",10,-0.5,9.5);
+  fh1nGenJets                   = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
+  fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
+  fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
+  fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
+  fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
   
+  fh1PtEmbReject                = new TH1F("fh1PtEmbReject","Pt spectrum of jets rejected by JetMatching cuts",19,5.,100.);
+  fh2PtEtaEmbReject             = new TH2F("fh2PtEtaEmbReject","Pt #eta distribution of jets rejected by JetMatching cuts #eta; #it{p}_{T}",19,5.,100.,200,-1.,1.);
+  fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
+  fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
+  fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
+  
+  fh1FractionPtEmbeddedMC         = new TH1F("fh1FractionPtEmbeddedMC","",110,0,1.1);
+  fh2FractionPtVsEmbeddedJetPtMC  = new TH2F("fh2FractionPtVsEmbeddedJetPtMC","",250,0,250,110,0,1.1);
+  fh1DeltaREmbeddedMC             = new TH1F("fh1DeltaREmbeddedMC","",50,0,0.5);
+  fh1JetPtEmbGenAfterMatch        = new TH1F("fh1JetPtEmbGenAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
+  
+  //
+
+
   fh1PerpCone                   = new TH1F("fh1PerpCone","Number of perp. cones for charged tracks in event",2.,0.5,1.5);
   fh1V0PtCandidate              = new TH1F("fh1V0PtCandidate","p_{T} distribution of all v0s candidates of PYTHIA",200,0.,200.);
   fh1IMK0Cone                   = new TH1F("fh1IMK0Cone","p_{T} distribution of all jets containing K0s candidates",19,5.,100.);
@@ -2251,6 +2239,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fFFHistosRecCuts->DefineHistos();
   fFFHistosRecCutsK0Evt->DefineHistos();
   fFFHistosGen->DefineHistos();
+
   /* fFFHistosIMK0AllEvt->DefineHistos();
   fFFHistosIMK0Jet->DefineHistos();
   fFFHistosIMK0Cone->DefineHistos();
@@ -2287,24 +2276,24 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1JetPhi);               
     fCommonHistList->Add(fh2JetEtaPhi);
     
-    if(fBranchEmbeddedJets.Length()){
-      fCommonHistList->Add(fh1nEmbeddedJets);
-      fCommonHistList->Add(fh1IndexEmbedded);
-      //fCommonHistList->Add(fh1PtEmbExtraOnly);
-      fCommonHistList->Add(fh1PtEmbBeforeMatch);
-      fCommonHistList->Add(fh1PtEmbReject);
-      fCommonHistList->Add(fh2PtEtaEmbReject);
-      fCommonHistList->Add(fh1PtEmbAfterMatch);
-      fCommonHistList->Add(fh1FractionPtEmbedded);
-      fCommonHistList->Add(fh1DeltaREmbedded);
-
-      if(fBranchGenJets.Length()&&(fMatchMode == 2)){
-	fCommonHistList->Add(fh1FractionPtEmbeddedMC);
-	fCommonHistList->Add(fh2FractionPtVsEmbeddedJetPtMC); 
-	fCommonHistList->Add(fh1DeltaREmbeddedMC);
-	fCommonHistList->Add(fh1JetPtEmbGenAfterMatch);
-      }
-    }
+    // if(fBranchEmbeddedJets.Length()){
+    fCommonHistList->Add(fh1nEmbeddedJets);
+    fCommonHistList->Add(fh1IndexEmbedded);
+    //fCommonHistList->Add(fh1PtEmbExtraOnly);
+    fCommonHistList->Add(fh1PtEmbBeforeMatch);
+    fCommonHistList->Add(fh1PtEmbReject);
+    fCommonHistList->Add(fh2PtEtaEmbReject);
+    fCommonHistList->Add(fh1PtEmbAfterMatch);
+    fCommonHistList->Add(fh1FractionPtEmbedded);
+    fCommonHistList->Add(fh1DeltaREmbedded);
+    
+    // if(fBranchGenJets.Length()&&(fMatchMode == 2)){
+    fCommonHistList->Add(fh1FractionPtEmbeddedMC);
+    fCommonHistList->Add(fh2FractionPtVsEmbeddedJetPtMC); 
+    fCommonHistList->Add(fh1DeltaREmbeddedMC);
+    fCommonHistList->Add(fh1JetPtEmbGenAfterMatch);
+    // }
+    // }
     
     fCommonHistList->Add(fh2TracksPerpCone);
     fCommonHistList->Add(fh1PerpCone);
@@ -2400,21 +2389,21 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnK0sIncl);
     fCommonHistList->Add(fhnK0sCone);
     fCommonHistList->Add(fhnK0sEmbCone);
-    if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnK0sEmbConeRef);
-      fCommonHistList->Add(fhnK0sEmbConeStandard);
-	}
+    //if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnK0sEmbConeRef);
+    fCommonHistList->Add(fhnK0sEmbConeStandard);
+    //}
     fCommonHistList->Add(fhnLaIncl);
     fCommonHistList->Add(fhnLaCone);
     fCommonHistList->Add(fhnLaEmbCone);
-    if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnLaEmbConeRef);
-      fCommonHistList->Add(fhnLaEmbConeStandard);
-	}
+    //if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnLaEmbConeRef);
+    fCommonHistList->Add(fhnLaEmbConeStandard);
+    //	}
     fCommonHistList->Add(fhnALaIncl);
     fCommonHistList->Add(fhnALaCone);
     fCommonHistList->Add(fhnALaEmbCone);
-    if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnALaEmbConeRef);
-      fCommonHistList->Add(fhnLaEmbConeStandard);
-    }
+    // if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnALaEmbConeRef);
+    fCommonHistList->Add(fhnLaEmbConeStandard);
+    //}
     fCommonHistList->Add(fhnK0sPC);
     fCommonHistList->Add(fhnK0sEmbPC);
     fCommonHistList->Add(fhnLaPC);
@@ -2469,10 +2458,10 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
     fFFHistosRecCutsK0Evt->AddToOutput(fCommonHistList);
 
-    if(fBranchGenJets.Length() && (fMatchMode == 2)){
-      fFFHistosGen->AddToOutput(fCommonHistList);
-    }
-
+    //if(fBranchGenJets.Length() && (fMatchMode == 2)){
+    fFFHistosGen->AddToOutput(fCommonHistList);
+    //}
+    
     // fFFHistosIMK0AllEvt->AddToOutput(fCommonHistList);
     // fFFHistosIMK0Jet->AddToOutput(fCommonHistList);
     // fFFHistosIMK0Cone->AddToOutput(fCommonHistList);
