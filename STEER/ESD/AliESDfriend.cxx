@@ -66,7 +66,8 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     TObject::operator=(esd);
     fESDIndicesStored = esd.fESDIndicesStored;
     // Clean up the old TClonesArray
-    fTracks.Delete();
+    DeleteTracksSafe();
+    //    fTracks.Delete();
     // Assign the new one
     fTracks = esd.fTracks;
 
@@ -101,7 +102,8 @@ AliESDfriend::~AliESDfriend() {
   //
   // Destructor
   //
-  fTracks.Delete();
+  DeleteTracksSafe();
+  //fTracks.Delete();
   if(fESDVZEROfriend)
     delete fESDVZEROfriend;
   fESDVZEROfriend=0;
@@ -111,6 +113,17 @@ AliESDfriend::~AliESDfriend() {
   if(fESDADfriend)
     delete fESDADfriend;
   fESDADfriend=0;
+}
+
+void AliESDfriend::DeleteTracksSafe()
+{
+  // delete tracks taking care of eventual shared objects in the tracks (e.g. TPCclusters)
+  int ntr=fTracks.GetEntriesFast();
+  for (int i=0;i<ntr;i++) {
+    AliESDfriendTrack* trc = (AliESDfriendTrack*)fTracks[i];
+    trc->TagSuppressSharedObjectsBeforeDeletion();
+  }
+  fTracks.Delete();
 }
 
 void AliESDfriend::ResetSoft()
@@ -134,7 +147,8 @@ void AliESDfriend::Reset()
   //
   // Reset friend information
   //
-  fTracks.Delete();
+  DeleteTracksSafe();
+  //  fTracks.Delete();
   for (Int_t i=0;i<72;i++)
   {
     fNclustersTPC[i]=0;

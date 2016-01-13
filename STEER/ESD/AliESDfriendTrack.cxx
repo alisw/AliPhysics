@@ -335,3 +335,18 @@ void AliESDfriendTrack::SetTRDIndices(Int_t* indices, Int_t n){
 	//for (Int_t i = 0; i < fnMaxTRDcluster; i++){fTRDindex[i] = indices[i];}
 }
 
+void AliESDfriendTrack::TagSuppressSharedObjectsBeforeDeletion()
+{
+  // before deletion of the track we need to suppress eventual shared objects (e.g. TPCclusters)
+  //
+  // at the moment take care of TPCseeds only
+  
+  TObject* calibObject = NULL;
+  AliVTPCseed* seedP = (AliVTPCseed*)GetTPCseed();
+  for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) {
+      seedP->TagSuppressSharedClusters();
+      break;
+    }
+  }  
+}

@@ -96,7 +96,7 @@ public:
   Int_t GetTPCseed( AliTPCseed &) const;
   const TObject* GetTPCseed() const;
   void ResetTPCseed( const AliTPCseed* s );
-
+  void TagSuppressSharedObjectsBeforeDeletion();
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
   Int_t fnMaxITScluster; // Max number of ITS clusters
