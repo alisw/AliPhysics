@@ -79,6 +79,7 @@ set(SRCS
   PIDFluctuation/task/AliEbyEPidRatioTaskOnFly.cxx
   PIDFluctuation/task/AliEbyEPidQATaskOnFlyKine.cxx
   PIDFluctuation/task/AliEbyEPidRatioTask.cxx
+  IdentityMethodEbyeFluctuations/tasks/AliAnalysisTaskEbyeIterPID.cxx
   NetParticle/AliAnalysisNetParticleBase.cxx
   NetParticle/AliAnalysisNetParticleDCA.cxx
   NetParticle/AliAnalysisNetParticleDistribution.cxx
