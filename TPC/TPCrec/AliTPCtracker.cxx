@@ -563,7 +563,7 @@ AliTPCtracker::~AliTPCtracker() {
   if (fCrossTalkSignalArray) delete fCrossTalkSignalArray;
   if (fDebugStreamer) delete fDebugStreamer;
   if (fSeedsPool) {
-    for (int isd=fSeedsPool->GetEntries();isd--;) {
+    for (int isd=fSeedsPool->GetEntriesFast();isd--;) {
       AliTPCseed* seed = (AliTPCseed*)fSeedsPool->At(isd);
       if (seed) {
 	seed->SetClusterOwner(kFALSE);
@@ -7790,11 +7790,12 @@ void AliTPCtracker::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
-  AliTPCseed * t = dynamic_cast<AliTPCseed*>(tk);
-  if(!t){
-    printf("%s:%d wrong type \n",(char*)__FILE__,__LINE__);
-    return;
-  }
+  //  AliTPCseed * t = dynamic_cast<AliTPCseed*>(tk);
+  //  if(!t){
+  //  printf("%s:%d wrong type \n",(char*)__FILE__,__LINE__);
+  //  return;
+  //  }
+  AliTPCseed * t = (AliTPCseed*)tk; // RS avoid slow dynamic cast
 
   Int_t noc=t->GetNumberOfClusters();
   if (noc<10){
@@ -8153,11 +8154,12 @@ Bool_t  AliTPCtracker::IsTPCHVDipEvent(AliESDEvent const *esdEvent)
 void AliTPCtracker::MarkSeedFree(TObject *sd) 
 {
   // account that this seed is "deleted" 
-  AliTPCseed* seed = dynamic_cast<AliTPCseed*>(sd);
-  if (!seed) {
-    AliError(Form("Freeing of non-AliTPCseed %p from the pool is requested",sd)); 
-    return;
-  }
+  //  AliTPCseed* seed = dynamic_cast<AliTPCseed*>(sd);
+  //  if (!seed) {
+  //    AliError(Form("Freeing of non-AliTPCseed %p from the pool is requested",sd)); 
+  //    return;
+  //  }
+  AliTPCseed* seed = (AliTPCseed*)sd;
   int id = seed->GetPoolID();
   if (id<0) {
     AliError(Form("Freeing of seed %p NOT from the pool is requested",sd)); 
