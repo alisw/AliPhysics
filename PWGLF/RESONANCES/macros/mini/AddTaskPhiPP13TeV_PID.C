@@ -21,6 +21,7 @@ enum eventMixConfig { kDisabled = -1,
 		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
 		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
 		      k5Cent,  //=2 //10 events, Dvz = 1cm, DC = 5
+		      k5Evts5Cent
                     };
 
 AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
@@ -75,6 +76,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(mixingConfigID==eventMixConfig::kMixDefault) nmix=10;
   if(mixingConfigID==eventMixConfig::k5Evts) nmix=5;
   if(mixingConfigID==eventMixConfig::k5Cent) maxDiffMultMix=5;
+  if(mixingConfigID==eventMixConfig::k5Evts5Cent){nmix=5; maxDiffMultMix=5;}
 
   // -- INITIALIZATION ----------------------------------------------------------------------------
   // retrieve analysis manager

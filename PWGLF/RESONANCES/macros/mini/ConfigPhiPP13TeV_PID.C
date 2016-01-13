@@ -106,7 +106,7 @@ Bool_t ConfigPhiPP13TeV_PID
 
     // axis Z: centrality-multiplicity
     if(!isPP) out->AddAxis(centID,100,0.,100.);
-    else out->AddAxis(centID,400,0.5,400.5);
+    else out->AddAxis(centID,161,-0.5,160.5);
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
@@ -124,7 +124,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
-    else outm->AddAxis(centID,400,0.5,400.5);
+    else outm->AddAxis(centID,161,-0.5,160.5);
 
     //get phase space of the decay from mothers
     AliRsnMiniOutput* outps=task->CreateOutput(Form("phi_phaseSpace%s", suffix),"HIST","TRUE");
