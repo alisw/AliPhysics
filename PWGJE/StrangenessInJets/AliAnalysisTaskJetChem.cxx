@@ -2389,19 +2389,22 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnK0sIncl);
     fCommonHistList->Add(fhnK0sCone);
     fCommonHistList->Add(fhnK0sEmbCone);
-    //if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnK0sEmbConeRef);
+    //if(fBranchEmbeddedJets.Length()){
+    fCommonHistList->Add(fhnK0sEmbConeRef);
     fCommonHistList->Add(fhnK0sEmbConeStandard);
     //}
     fCommonHistList->Add(fhnLaIncl);
     fCommonHistList->Add(fhnLaCone);
     fCommonHistList->Add(fhnLaEmbCone);
-    //if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnLaEmbConeRef);
+    //if(fBranchEmbeddedJets.Length()){
+    fCommonHistList->Add(fhnLaEmbConeRef);
     fCommonHistList->Add(fhnLaEmbConeStandard);
     //	}
     fCommonHistList->Add(fhnALaIncl);
     fCommonHistList->Add(fhnALaCone);
     fCommonHistList->Add(fhnALaEmbCone);
-    // if(fBranchEmbeddedJets.Length()){fCommonHistList->Add(fhnALaEmbConeRef);
+    // if(fBranchEmbeddedJets.Length()){
+    fCommonHistList->Add(fhnALaEmbConeRef);
     fCommonHistList->Add(fhnLaEmbConeStandard);
     //}
     fCommonHistList->Add(fhnK0sPC);
