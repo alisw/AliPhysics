@@ -1,18 +1,15 @@
+// -*- C++ -*-
 #ifndef __ALIMULTIPLICITYSELECTIONCP_H__
 #define __ALIMULTIPLICITYSELECTIONCP_H__
 
-#ifndef __CINT__
-#include "TObject.h"
-#include "TList.h"
-#endif
-
+#include <TObject.h>
+#include <TList.h>
+#include <TArrayI.h>
 
 class AliESDtrack;
 class AliESDtrackCuts;
-class TArrayI;
 
-class AliMultiplicitySelectionCP :public TObject {
-
+class AliMultiplicitySelectionCP : public TObject {
 
 private:
   Int_t fTPCnclsS;          // Number of shared clusters in TPC, used in first loop
@@ -32,41 +29,38 @@ private:
   Bool_t InitV0Daughters(AliESDEvent *esd);
 
 public:
- AliMultiplicitySelectionCP();
- ~AliMultiplicitySelectionCP();
+  AliMultiplicitySelectionCP();
+  ~AliMultiplicitySelectionCP();
 
+  void SetCheckReferenceMultiplicity() {fkCheckReferenceMultiplicity = kTRUE;} 
+  void SetTPCnclsS(Int_t n = 3) {fTPCnclsS = n;} 
+  void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 
+  void SetTrackEtaRange(Double_t min=-0.9, Double_t max = 0.9) {
+    fTrackEtaMin = min;
+    fTrackEtaMax = max;
+  }
 
+  Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd);
+  Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices);
 
- void SetCheckReferenceMultiplicity() {fkCheckReferenceMultiplicity = kTRUE;} 
- void SetTPCnclsS(Int_t n = 3) {fTPCnclsS = n;} 
- void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 
- void SetTrackEtaRange(Double_t min=-0.9, Double_t max = 0.9) 
- {
-   fTrackEtaMin = min;
-   fTrackEtaMax = max;
- }
+  TArrayI GetIndicesN() {return fIndicesN;}
+  TArrayI GetIndicesP() {return fIndicesP;}
 
- Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd);
- Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices);
+  Bool_t IsTrackSelected(Int_t index);
 
- TArrayI GetIndicesN() {return fIndicesN;}
- TArrayI GetIndicesP() {return fIndicesP;}
+  TList *GetPrimaryTrackCutList() { return fTrackCutListPrim;}
+  AliESDtrackCuts *GetPrimaryTrackCut(const char* name) {
+    return (AliESDtrackCuts *) fTrackCutListPrim->FindObject(name);
+  }
 
- Bool_t IsTrackSelected(Int_t index);
+  Bool_t AcceptTrack(AliESDtrack *track, Bool_t asPrimary = kFALSE);
+  Bool_t TestFiredChips(AliESDEvent *esd, TArrayI indices);
 
- TList *GetPrimaryTrackCutList() { return fTrackCutListPrim;}
- AliESDtrackCuts *GetPrimaryTrackCut(const char* name)
-    { return (AliESDtrackCuts *) fTrackCutListPrim->FindObject(name);}
+  void InitDefaultTrackCuts(Int_t clusterCut);
+  void AddPrimaryTrackCut(AliESDtrackCuts *cut);
 
- Bool_t AcceptTrack(AliESDtrack *track, Bool_t asPrimary = kFALSE);
- Bool_t TestFiredChips(AliESDEvent *esd, TArrayI indices);
+  void IgnoreV0s(Bool_t k=kFALSE) {fkIgnoreV0s = k;}
 
- void InitDefaultTrackCuts(Int_t clusterCut);
- void AddPrimaryTrackCut(AliESDtrackCuts *cut);
-
- void IgnoreV0s(Bool_t k=kFALSE) {fkIgnoreV0s = k;}
-
-ClassDef(AliMultiplicitySelectionCP,1)   // tbd
-
+  ClassDef(AliMultiplicitySelectionCP, 2)   // tbd
 };
 #endif
