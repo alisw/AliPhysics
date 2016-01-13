@@ -342,7 +342,7 @@ void AliESDfriendTrack::TagSuppressSharedObjectsBeforeDeletion()
   // at the moment take care of TPCseeds only
   
   TObject* calibObject = NULL;
-  AliVTPCseed* seedP = (AliVTPCseed*)GetTPCseed();
+  AliVTPCseed* seedP = 0;
   for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
     if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) {
       seedP->TagSuppressSharedClusters();
