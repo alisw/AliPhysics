@@ -57,6 +57,7 @@
 #pragma link C++ class AliEbyEPidRatioTaskOnFly+;
 #pragma link C++ class AliEbyEPidQATaskOnFlyKine+;
 #pragma link C++ class AliEbyEPidRatioTask+;
+#pragma link C++ class AliAnalysisTaskEbyeIterPID+;
 
 #pragma link C++ class AliAnalysisNetParticleBase+;
 #pragma link C++ class AliAnalysisNetParticleDCA+;
