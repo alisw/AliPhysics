@@ -9,7 +9,7 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: September 05, 2015.							      //
+//		version: January 14, 2015.		     					      //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -456,7 +456,7 @@ private:
     TH2F				**fCEtaPhi_LS_Weight_PH;
     TH2F				**fCEtaPhi_ULS_NoP_Weight_PH;
     TH2F				**fCEtaPhi_LS_NoP_Weight_PH;
-
+    
     //new Histograms 15-09
     TH2F                **fCetaPhi_MC_with_partner_greater;
     TH2F                **fCetaPhi_MC_with_partner_below;
@@ -466,7 +466,12 @@ private:
     TH1F                *fMCEffPID_beforePID;
     TH1F                *fMCEffPID_afterPID;
     TH1F                *fpTMCGeneratedBKG;
-
+    
+    TH1F                *fpT_MC_HFE_RECO_MC;
+    TH2F                **fCetaPhi_MC_HFE_RECO_MC_PhyPrimH;
+    TH2F                **fCetaPhi_Data_Data_RECO_MC_PhyPrimH;
+    TH1F                *fpT_Data_HFE_RECO_Data;
+    
     
     //end of new histograms
     TH1F				*fInvMass;
@@ -657,4 +662,3 @@ private:
 ///_________________________________________________________________________________________________
 
 #endif
-
