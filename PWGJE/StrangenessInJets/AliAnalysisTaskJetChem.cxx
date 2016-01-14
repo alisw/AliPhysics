@@ -179,10 +179,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,IsArmenterosSelected(0)
    ,fUseExtraTracks(0)
    ,fUseExtraJetPt(0)
+   ,fUseStandard(0)
   // ,fFFHistosIMALaAllEvt(0)        
   // ,fFFHistosIMALaJet(0)           
   // ,fFFHistosIMALaCone(0)
-   ,fFFIMNBinsJetPt(0)  
+  ,fFFIMNBinsJetPt(0)  
    ,fFFIMJetPtMin(0) 
    ,fFFIMJetPtMax(0)
    ,fFFIMNBinsInvM(0) 
@@ -494,6 +495,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,IsArmenterosSelected(0)
   ,fUseExtraTracks(0)
   ,fUseExtraJetPt(0)
+  ,fUseStandard(0) 
     //,fFFHistosIMALaAllEvt(0)        
     //,fFFHistosIMALaJet(0)           
     // ,fFFHistosIMALaCone(0)
@@ -812,6 +814,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,IsArmenterosSelected(copy.IsArmenterosSelected)
   ,fUseExtraTracks(copy.fUseExtraTracks)
   ,fUseExtraJetPt(copy.fUseExtraJetPt)
+  ,fUseStandard(copy.fUseStandard)
     //,fFFHistosIMALaAllEvt(copy.fFFHistosIMALaAllEvt)        
     //,fFFHistosIMALaJet(copy.fFFHistosIMALaJet)           
     //,fFFHistosIMALaCone(copy.fFFHistosIMALaCone)          
@@ -1132,6 +1135,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     IsArmenterosSelected            = o.IsArmenterosSelected;
     fUseExtraTracks                 = o.fUseExtraTracks;
     fUseExtraJetPt                  = o.fUseExtraJetPt;
+    fUseStandard                    = o.fUseStandard;
     // fFFHistosIMALaAllEvt            = o.fFFHistosIMALaAllEvt;        
     // fFFHistosIMALaJet               = o.fFFHistosIMALaJet;           
     // fFFHistosIMALaCone              = o.fFFHistosIMALaCone;          
@@ -1926,65 +1930,6 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 						      fFFNBinsZ , fFFZMin , fFFZMax);
  
 
-
-  /*
-  fFFHistosIMK0AllEvt        = new AliFragFuncHistosInvMass("K0AllEvt", fFFIMNBinsJetPt, fFFIMJetPtMin, fFFIMJetPtMax, 
-							    fFFIMNBinsInvM,fFFIMInvMMin,fFFIMInvMMax,
-							    fFFIMNBinsPt, fFFIMPtMin, fFFIMPtMax, 
-							    fFFIMNBinsXi, fFFIMXiMin, fFFIMXiMax,  
-							    fFFIMNBinsZ , fFFIMZMin , fFFIMZMax);
-  
-  fFFHistosIMK0Jet           = new AliFragFuncHistosInvMass("K0Jet", fFFIMNBinsJetPt, fFFIMJetPtMin, fFFIMJetPtMax, 
-							    fFFIMNBinsInvM,fFFIMInvMMin,fFFIMInvMMax,
-							    fFFIMNBinsPt, fFFIMPtMin, fFFIMPtMax, 
-							    fFFIMNBinsXi, fFFIMXiMin, fFFIMXiMax,  
-							    fFFIMNBinsZ , fFFIMZMin , fFFIMZMax);
-    
-  fFFHistosIMK0Cone          = new AliFragFuncHistosInvMass("K0Cone", fFFIMNBinsJetPt, fFFIMJetPtMin, fFFIMJetPtMax, 
-							    fFFIMNBinsInvM,fFFIMInvMMin,fFFIMInvMMax,
-							    fFFIMNBinsPt, fFFIMPtMin, fFFIMPtMax, 
-							    fFFIMNBinsXi, fFFIMXiMin, fFFIMXiMax,  
-							    fFFIMNBinsZ , fFFIMZMin , fFFIMZMax);
-  
-  fFFHistosIMLaAllEvt        = new AliFragFuncHistosInvMass("LaAllEvt", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
-  
-  fFFHistosIMLaJet           = new AliFragFuncHistosInvMass("LaJet", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
-  
-  
-  fFFHistosIMLaCone          = new AliFragFuncHistosInvMass("LaCone", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
- 
- 
-  fFFHistosIMALaAllEvt        = new AliFragFuncHistosInvMass("ALaAllEvt", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
-  
-  fFFHistosIMALaJet           = new AliFragFuncHistosInvMass("ALaJet", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
-  
-  fFFHistosIMALaCone          = new AliFragFuncHistosInvMass("ALaCone", fFFIMLaNBinsJetPt, fFFIMLaJetPtMin, fFFIMLaJetPtMax, 
-							    fFFIMLaNBinsInvM,fFFIMLaInvMMin,fFFIMLaInvMMax,
-							    fFFIMLaNBinsPt, fFFIMLaPtMin, fFFIMLaPtMax, 
-							    fFFIMLaNBinsXi, fFFIMLaXiMin, fFFIMLaXiMax,  
-							    fFFIMLaNBinsZ , fFFIMLaZMin , fFFIMLaZMax);
-  */
-
   //***************
   // MC histograms
   //***************
@@ -2276,7 +2221,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1JetPhi);               
     fCommonHistList->Add(fh2JetEtaPhi);
     
-    // if(fBranchEmbeddedJets.Length()){
+    if(fBranchEmbeddedJets.Length()){
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
     //fCommonHistList->Add(fh1PtEmbExtraOnly);
@@ -2287,13 +2232,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1FractionPtEmbedded);
     fCommonHistList->Add(fh1DeltaREmbedded);
     
-    // if(fBranchGenJets.Length()&&(fMatchMode == 2)){
+    if(fBranchGenJets.Length()&&(fMatchMode == 2)){
     fCommonHistList->Add(fh1FractionPtEmbeddedMC);
     fCommonHistList->Add(fh2FractionPtVsEmbeddedJetPtMC); 
     fCommonHistList->Add(fh1DeltaREmbeddedMC);
     fCommonHistList->Add(fh1JetPtEmbGenAfterMatch);
-    // }
-    // }
+    }
+    }
     
     fCommonHistList->Add(fh2TracksPerpCone);
     fCommonHistList->Add(fh1PerpCone);
@@ -2389,24 +2334,30 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnK0sIncl);
     fCommonHistList->Add(fhnK0sCone);
     fCommonHistList->Add(fhnK0sEmbCone);
-    //if(fBranchEmbeddedJets.Length()){
-    fCommonHistList->Add(fhnK0sEmbConeRef);
-    fCommonHistList->Add(fhnK0sEmbConeStandard);
-    //}
+
+    if(fBranchEmbeddedJets.Length()){
+    if(fUseExtraTracks)fCommonHistList->Add(fhnK0sEmbConeRef);
+    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
+    }
+
     fCommonHistList->Add(fhnLaIncl);
     fCommonHistList->Add(fhnLaCone);
     fCommonHistList->Add(fhnLaEmbCone);
-    //if(fBranchEmbeddedJets.Length()){
-    fCommonHistList->Add(fhnLaEmbConeRef);
-    fCommonHistList->Add(fhnLaEmbConeStandard);
-    //	}
+
+    if(fBranchEmbeddedJets.Length()){
+     if(fUseExtraTracks)fCommonHistList->Add(fhnLaEmbConeRef);
+    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+    }
+
     fCommonHistList->Add(fhnALaIncl);
     fCommonHistList->Add(fhnALaCone);
     fCommonHistList->Add(fhnALaEmbCone);
-    // if(fBranchEmbeddedJets.Length()){
-    fCommonHistList->Add(fhnALaEmbConeRef);
-    fCommonHistList->Add(fhnLaEmbConeStandard);
-    //}
+
+    if(fBranchEmbeddedJets.Length()){
+      if(fUseExtraTracks)fCommonHistList->Add(fhnALaEmbConeRef);
+      if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+    }
+
     fCommonHistList->Add(fhnK0sPC);
     fCommonHistList->Add(fhnK0sEmbPC);
     fCommonHistList->Add(fhnLaPC);
@@ -2461,9 +2412,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
     fFFHistosRecCutsK0Evt->AddToOutput(fCommonHistList);
 
-    //if(fBranchGenJets.Length() && (fMatchMode == 2)){
+    if(fBranchGenJets.Length() && (fMatchMode == 2)){
     fFFHistosGen->AddToOutput(fCommonHistList);
-    //}
+    }
     
     // fFFHistosIMK0AllEvt->AddToOutput(fCommonHistList);
     // fFFHistosIMK0Jet->AddToOutput(fCommonHistList);
@@ -2969,7 +2920,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 
   if(fUseExtraTracks == 1)    { nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption, all V0 cuts are applied int his function
-    nK0sStandard = GetListOfV0s(fListK0sStandard,fK0Type,kK0,kTrackAODCuts,myPrimaryVertex,fAOD);
+    if(fUseStandard){nK0sStandard = GetListOfV0s(fListK0sStandard,fK0Type,kK0,kTrackAODCuts,myPrimaryVertex,fAOD);}//fill standard tracks for UE V0 subtraction with PYTHIA Embedding
   }
 
   if(fUseExtraTracks == -1)     nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -2992,7 +2943,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   Int_t nLaStandard = 0;
   
   if(fUseExtraTracks ==  1)      { nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
-    nLaStandard = GetListOfV0s(fListLaStandard,fLaType,kLambda,kTrackAODCuts,myPrimaryVertex,fAOD);
+    if(fUseStandard == kTRUE){nLaStandard = GetListOfV0s(fListLaStandard,fLaType,kLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
   }
   
   if(fUseExtraTracks == -1)      nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -3006,7 +2957,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   Int_t nALaStandard = 0;
 
   if(fUseExtraTracks ==  1)    { nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
-    nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);
+    if(fUseStandard == kTRUE){nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
   }
   if(fUseExtraTracks == -1)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
@@ -7364,7 +7315,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	GetTracksInCone(fListK0s, jetConeK0Emblist, jet, GetFFRadius(), sumPtK0Emb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0Emb); //reconstructed K0s in cone around jet axis
 	
-	GetTracksInCone(fListK0sStandard, jetConeK0EmbStlist, jet, GetFFRadius(), sumPtK0EmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0EmbSt); //reconstructed K0s in cone around jet axis
+	
+	if(fListK0sStandard->GetEntries() > 0){GetTracksInCone(fListK0sStandard, jetConeK0EmbStlist, jet, GetFFRadius(), sumPtK0EmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0EmbSt);} //reconstructed K0s in cone around jet axis
 	
 	
 	//######
@@ -7580,7 +7532,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	Bool_t isBadJetLaEmbSt    = kFALSE; // dummy, do not use
 	
 	GetTracksInCone(fListLa, jetConeLaEmblist, jet, GetFFRadius(), sumPtLaEmb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmb); //reconstructed La in cone around jet axis
-	GetTracksInCone(fListLaStandard, jetConeLaEmbStlist, jet, GetFFRadius(), sumPtLaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmbSt); //reconstructed La in cone around jet axis of extra jet
+	if(fListLaStandard->GetEntries() > 0){GetTracksInCone(fListLaStandard, jetConeLaEmbStlist, jet, GetFFRadius(), sumPtLaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmbSt);} //reconstructed La in cone around jet axis of extra jet
 	
 	
 	//######
@@ -7796,8 +7748,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	Bool_t isBadJetALaEmbSt    = kFALSE; // dummy, do not use
 	
 	GetTracksInCone(fListALa, jetConeALaEmblist, jet, GetFFRadius(), sumPtALaEmb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmb); //reconstructed ALa in cone around jet axis
-	GetTracksInCone(fListALaStandard, jetConeALaEmbStlist, jet, GetFFRadius(), sumPtALaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmbSt); //reconstructed ALa in cone around jet axis
-	
+	if(fListALaStandard->GetEntries() > 0){GetTracksInCone(fListALaStandard, jetConeALaEmbStlist, jet, GetFFRadius(), sumPtALaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmbSt);}//reconstructed ALa in cone around jet axis
 	
 	//######
 	
