@@ -25,9 +25,8 @@ AliEventClassifierQ2::AliEventClassifierQ2(const char* name, const char* title,
 void AliEventClassifierQ2::CalculateClassifierValue(AliMCEvent *event, AliStack *stack) {
   fClassifierValue = 0.0;
   // If it is not a pythia header, this should fail
-  AliGenPythiaEventHeader* header = (AliGenPythiaEventHeader*)event->GenEventHeader();
+  AliGenPythiaEventHeader* header = dynamic_cast<AliGenPythiaEventHeader*>(event->GenEventHeader());
   if(!header) {
-    AliError("Cannot get MC Header.");
     return;
   }
   else fClassifierValue = header->GetPtHard();

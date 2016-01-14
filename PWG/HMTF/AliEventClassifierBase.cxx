@@ -42,7 +42,5 @@ Float_t AliEventClassifierBase::GetClassifierValue(AliMCEvent *event, AliStack *
     CalculateClassifierValue(event, stack);
     fClassifierValueIsCached = true;
   }
-  if (isnan(fClassifierValue) || isinf(fClassifierValue))
-    printf("Classifier %s yields NaN or Inf value", this->GetName());
   return fClassifierValue;
 }
