@@ -1124,6 +1124,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
             func->SetLineColor(icolor);
           }
         }
+        trendGraph->GetXaxis()->SetLabelSize(0.07);
 
         trendGraph->Draw(drawOpt.Data());
         for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
@@ -1543,19 +1544,27 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
       lastRun = GetRunNumber(lastRun);
     }
 
+    TString filename = "";
+
     TObjArray* mergedOut = 0x0;
     TIter next(fOutputs);
     TFileMerger fileMerger;
     while ( (effHistoList = static_cast<TList*>(next()) ) ) {
       UInt_t run = effHistoList->GetUniqueID();
       if ( run < firstRun || run > lastRun ) continue;
-      fileMerger.AddFile(effHistoList->GetName(),kFALSE);
+      filename = effHistoList->GetName();
+      if ( firstRun == lastRun ) continue;
+      fileMerger.AddFile(filename.Data(),kFALSE);
     }
 
     TString sRange = Form("%i_%i",firstRun,lastRun);
     TString mergedFilename = Form("mergedTrigEff_runs_%s.root",sRange.Data());
-    fileMerger.OutputFile(mergedFilename.Data());
-    fileMerger.Merge();
+
+    if ( firstRun == lastRun ) TFile::Cp(filename.Data(),mergedFilename.Data(),kFALSE);
+    else {
+      fileMerger.OutputFile(mergedFilename.Data());
+      fileMerger.Merge();
+    }
     AliTrigChEffOutput* trigOut = new AliTrigChEffOutput(mergedFilename);
     trigOut->SetName(sRange.Data());
     fMergedOutputs->Add(trigOut);
