@@ -1621,6 +1621,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
       
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
       
+      //additional L1 phase shift
+      if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn()){
+	GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof);
+      }
+
       clus->SetTOF(tof);
       
     }// Time recalibration
@@ -1856,6 +1861,11 @@ void AliCaloTrackReader::FillInputEMCAL()
           Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
           Double_t tof = clus->GetTOF();
           GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+	  //additional L1 phase shift
+	  if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn()){
+	    GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof);
+	  }
+
           tof*=1e9;
           
           //printf("Input event cluster : AbsIdMax %d, E %2.2f, time %2.2f \n", absIdMax,clus->E(),tof);
@@ -2318,8 +2328,13 @@ void  AliCaloTrackReader::MatchTriggerCluster(TArrayI patches)
     Int_t    idclus     = clus->GetID();
     
     Double_t tof        = clus->GetTOF();
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn() && fTriggerClusterTimeRecal)
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn() && fTriggerClusterTimeRecal){
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+      //additional L1 phase shift
+      if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn()){
+	GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), fInputEvent->GetBunchCrossNumber(), tof);
+      }
+    }
     tof *=1.e9;
     
     //printf("cluster %d, ID %d, E %2.2f, tof %2.2f, AbsId max %d, exotic %d, bad Cluster %d, bad Cell %d\n",

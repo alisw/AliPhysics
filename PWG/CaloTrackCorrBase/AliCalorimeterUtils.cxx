@@ -309,8 +309,61 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
       
       delete contTRF;
-    } // Recalibration on    
+    } // Time Recalibration on    
     
+    // Time L1 phase racalibration    
+    if(fEMCALRecoUtils->IsL1PhaseInTimeRecalibrationOn()) {
+      Bool_t useDefault=kFALSE;
+      AliOADBContainer *contTRF=new AliOADBContainer("");
+      contTRF->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeL1PhaseCalib");
+      TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRunNumber); 
+      if(!trecal) {
+	AliError(Form("Do NOT recalibrate time EMCAL. No params for run %d. Default used.",fRunNumber));  // run number array ok
+	trecal=(TObjArray*)contTRF->GetObject(0);
+	if(!trecal) {
+	  AliFatal(Form("No params for run %d. No default params.",fRunNumber));
+	  return;
+	}
+	useDefault=kTRUE;
+      }
+
+      TString passM = pass;
+      if(useDefault) passM = "pass1";
+      else if(pass=="muon_calo") passM = "pass0";
+
+      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
+      if(!trecalpass) {
+	if(useDefault){
+	  AliFatal("No defaults params pass1.");
+	  return;
+	}
+	AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
+	//use default
+	trecal->Delete();
+	trecal=(TObjArray*)contTRF->GetObject(0);
+	if(!trecal) {
+	  AliFatal(Form("No params for run %d. No default params.",fRunNumber));
+	  return;
+	}
+	useDefault=kTRUE;
+	trecalpass=(TObjArray*)trecal->FindObject("pass1");
+	if(!trecalpass) {
+	  AliFatal("No defaults params pass1.");
+	  return;
+	}
+	//end use default
+      }
+      AliInfo("Time L1 phase Recalibrate EMCAL");
+      TH1C *h =GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+      if (h) delete h;
+      h = (TH1C*)trecalpass->FindObject(Form("h%d",fRunNumber));
+      if (!h) AliError(Form("Could not load h%d",fRunNumber));
+      h->SetDirectory(0);
+      SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+
+      delete contTRF;
+    }//End of Time L1 phase racalibration 
+
   }// EMCAL
   
   // PHOS
@@ -1633,6 +1686,8 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
   printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);
   
+  printf("Recalibrate time? %d, With L1 phase run by run? %d\n",IsTimeRecalibrationOn(),IsL1PhaseInTimeRecalibrationOn());
+
   printf("Loc. Max. E > %2.2f\n",       fLocMaxCutE);
   printf("Loc. Max. E Diff > %2.2f\n",  fLocMaxCutEDiff);
   
@@ -1670,6 +1725,19 @@ void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, Int_t calo, Int_t
     GetEMCALRecoUtils()->RecalibrateCellTime(id,bc,time);
   }
 }
+
+
+//____________________________________________________________________________________________________
+/// Recalculate time L1 phase shift if time recalibration available for EMCAL.
+//____________________________________________________________________________________________________
+void AliCalorimeterUtils::RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber) const
+{  
+  if ( calo == kEMCAL && GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn() ) 
+  {
+    GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSM, bunchCrossNumber, time);
+  }
+}
+
 
 //__________________________________________________________________________
 /// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
