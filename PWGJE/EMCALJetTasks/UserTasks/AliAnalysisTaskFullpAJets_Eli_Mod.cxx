@@ -42,6 +42,9 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "Rtypes.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskFullpAJets_Eli_Mod)
 
 //________________________________________________________________________

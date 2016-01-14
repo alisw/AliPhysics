@@ -152,7 +152,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
    void  FillCleanElectrons();                // Fill Clean Electrons 
    void  FillCleanPions();                    // Fill Clean Pions
    Int_t CountEmptyEvents(Int_t counterBin);  // Just count if there is empty events
-   void  BinLogAxis(const TH1 *h);
+   void  BinLogAxis(TH1 *h);
   
   // ---------------------------------------------------------------------------------
   //                                   Members

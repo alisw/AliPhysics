@@ -1951,7 +1951,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanPions()
 
 }
 //________________________________________________________________________
-void AliAnalysisTaskEbyeIterPID::BinLogAxis(const TH1 *h) 
+void AliAnalysisTaskEbyeIterPID::BinLogAxis(TH1 *h) 
 {
   //
   // Method for the correct logarithmic binning of histograms
