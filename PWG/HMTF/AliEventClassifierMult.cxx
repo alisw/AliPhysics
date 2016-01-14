@@ -35,7 +35,7 @@ AliEventClassifierMult::AliEventClassifierMult(const char* name, const char* tit
 void AliEventClassifierMult::CalculateClassifierValue(AliMCEvent *event, AliStack *stack) {
   fClassifierValue = 0.0;
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
-    AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    AliMCParticle *track = static_cast<AliMCParticle*>(event->GetTrack(iTrack));
     // load track
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTrack);

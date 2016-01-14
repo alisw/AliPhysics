@@ -84,7 +84,7 @@ void AliObservableClassifierpTPID::Fill(AliMCEvent *event, AliStack *stack) {
   Double_t event_weight = event->GenEventHeader()->EventWeight();
 
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
-    AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    AliMCParticle *track = static_cast<AliMCParticle*>(event->GetTrack(iTrack));
     // load track
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTrack);

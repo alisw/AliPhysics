@@ -35,7 +35,7 @@ void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, A
 
   Int_t ntracks = event->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
-    AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    AliMCParticle *track = static_cast<AliMCParticle*>(event->GetTrack(iTrack));
     if (!track)
       continue;
     // Only calculate for primaries (Aliroot definition excluding Pi0)

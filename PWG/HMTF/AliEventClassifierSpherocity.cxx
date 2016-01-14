@@ -52,7 +52,7 @@ void AliEventClassifierSpherocity::CalculateClassifierValue(AliMCEvent *event, A
   Float_t sumapt = 0;
   Int_t ntracks = event->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
-    AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+    AliMCParticle *track = static_cast<AliMCParticle*>(event->GetTrack(iTrack));
     if (!TrackPassesSelection(track, stack, iTrack)) continue;
     sumapt += track->Pt();
   }
@@ -67,7 +67,7 @@ void AliEventClassifierSpherocity::CalculateClassifierValue(AliMCEvent *event, A
     nx = TMath::Cos(phiparam);            // x component of an unitary vector n
     ny = TMath::Sin(phiparam);            // y component of an unitary vector n
     for(Int_t iTrack = 0; iTrack < ntracks; ++iTrack){
-      AliMCParticle *track = (AliMCParticle*)event->GetTrack(iTrack);
+      AliMCParticle *track = static_cast<AliMCParticle*>(event->GetTrack(iTrack));
       if (!TrackPassesSelection(track, stack, iTrack)) continue;
       
       Float_t pxA = track->Pt() * TMath::Cos(track->Phi());
