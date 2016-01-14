@@ -1,4 +1,5 @@
 
+
 /*********************************************************************
  *                                                                   *
  * ConfigFemtoAnalysis.C - configuration macro for the femtoscopic   *
@@ -25,8 +26,8 @@
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
-#include "AliFemtoPairCutRadialDistanceKK.h"
 #include "AliFemtoPairCutRadialDistanceLM.h"
+#include "AliFemtoPairCutRadialDistanceKK.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -51,161 +52,249 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=1, int PhiBin=1) {
+AliFemtoManager* ConfigFemtoAnalysis() {
     
+    char *nametest="sysstudy";
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
     
-    if (CentL==0 && CentH==5) {
-        int runmults[10] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    }
-    if (CentL==5 && CentH==10) {
-        int runmults[10] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-    }
-    if (CentL==10 && CentH==20) {
-        int runmults[10] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
-    }
-    if (CentL==20 && CentH==30) {
-        int runmults[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
-    }
-    if (CentL==30 && CentH==40) {
-        int runmults[10] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
-    }
-    if (CentL==40 && CentH==50 ) {
-        int runmults[10] = {0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
-    }
+    int runmults[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+    //int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
     
-    int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 700, 800, 900, 990};
-    
-    const char *chrgs[2] = { "pip", "pim" };
+    int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 600, 800, 900, 990};
     
     int runch[2] = {1, 1};
+    const char *chrgs[2] = { "pip", "pim" };
     
-    int kTmax=1;
-    kTmax=kTRange;
+    //int rundetadphistar[4]={1,1,1,1};
+    //const char *detadphistar[4]={"nocuts","original","test3","test4"};
+    int rundetadphistar[5]={1,0,0,0,0};
+    //const char *detadphistar[5]={"nocuts","test1","test2","test3","test4"};
+    const char *detadphistar[5]={"test1a","test2a","test3a","nocuts","b"};
+    
+    
+    int runktdep = 1;
+    int runktdeprange[4]={1,0,0,0};
     double ktrng[5] = {0.2, 0.3, 0.4, 0.5, 0.7};
+    //int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
+    int phirange[10] = {-15, 5, 25,45,65,85,105,125,145,165};
+    int phirange2[11] = {-9, 9, 27, 45, 63, 81, 99, 117, 136, 153, 171};// Moe
     
-    int phimax=9;
     
-    if(PhiBin==1){
-        int phirange[10] = {-15, 5, 25, 45, 65, 85, 105, 125, 145, 165};
-        phimax=9;
-    }
-    if (PhiBin==2) {
-        int phirange[11] = {-9, 9, 27, 45, 63, 81, 99, 117, 136, 153, 171};
-        phimax=9;
-    }
+    int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
+    int isrealdata = 0;
     
     AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
-    Reader->SetCentralityPreSelection(0.001, 550);
+    Reader->SetEPVZERO(kFALSE); //keep this line it fills the whole histogram of event plane
+    //Reader->SetCentralityPreSelection(0.001, 110);//was 0.001
+    Reader->SetCentralityPreSelection(095, 310);//was 0.001
+    
     
     AliFemtoManager* Manager=new AliFemtoManager();
     Manager->SetEventReader(Reader);
     
-    AliFemtoAnalysisAzimuthalPbPb2Order    *ana[2][7];
-    AliFemtoBasicEventCut         *mecetaphitpc[2][7];
-    AliFemtoCutMonitorEventMult   *cutPassEvMetaphitpc[2][7];
-    AliFemtoCutMonitorEventMult   *cutFailEvMetaphitpc[2][7];
-    AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[2][7];
-    AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[2][7];
-    AliFemtoESDTrackCut           *dtc1etaphitpc[2][7];
+    /*AliFemtoAnalysisAzimuthalPbPb		*ana[2][10];				//[charge][mult]
+     AliFemtoBasicEventCut				*mecetaphitpc[2][10];	//[charge][mult]
+     AliFemtoCutMonitorEventMult			*cutPassEvMetaphitpc[2][10];//[charge][mult]
+     AliFemtoCutMonitorEventMult			*cutFailEvMetaphitpc[2][10];//[charge][mult]
+     AliFemtoCutMonitorEventVertex		*cutPassEvVetaphitpc[2][10];//[charge][mult]
+     AliFemtoCutMonitorEventVertex		*cutFailEvVetaphitpc[2][10];//[charge][mult]
+     AliFemtoESDTrackCut					*dtc1etaphitpc[2][10];//[charge][mult]
+     AliFemtoESDTrackCut					*dtc2etaphitpc[2][10];//[charge][mult]
+     AliFemtoPairCutRadialDistanceLM      *sqpcetaphitpc[2][10];//[charge][mult]
+     AliFemtoPairCutRadialDistanceLM      *sqpcetaphitpcRD[2][10];//[charge][mult]
+     AliFemtoKTPairCut             *ktpaircut[2][10][4][9];		//[charge][mult][ktrange][phibins]
+     AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][10][4][9];	//[charge][mult][ktrange][phibins]
+     */
     
-    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[2][7];
-    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpcRD[2][7];
+    //including delta eta delta phi star cuts
+    AliFemtoAnalysisAzimuthalPbPb2Order		*ana[2][10][5];				//[charge][mult][cuts]
+    AliFemtoBasicEventCut				*mecetaphitpc[2][10][5];	//[charge][mult][cuts]
+    AliFemtoCutMonitorEventMult			*cutPassEvMetaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventMult			*cutFailEvMetaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventVertex		*cutPassEvVetaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventVertex		*cutFailEvVetaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoESDTrackCut					*dtc1etaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoESDTrackCut					*dtc2etaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[2][10][5];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpcRD[2][10][5];//[charge][mult][cuts]
     
-    AliFemtoKTPairCut             *ktpaircut[2][7][4][11];
-    //  AliFemtoQinvCorrFctn            *cqqinv[2][11][3];
-    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][7][4][11];
     
-    for (int imult=0; imult<7; imult++) {
-        if (runmults[imult]) {
-            for (int ichg=0; ichg<2; ichg++) {
-                if (runch[ichg]) {
-                    
-                    ana[ichg][imult] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],phimax);
-                    ana[ichg][imult]->SetNumEventsToMix(3);
-                    ana[ichg][imult]->SetMinSizePartCollection(4);
-                    ana[ichg][imult]->SetEPhistname(Form("hist%i%i",ichg,imult));
-                    mecetaphitpc[ichg][imult] = new AliFemtoBasicEventCut();
-                    mecetaphitpc[ichg][imult]->SetEventMult(5,100000);//was 0.001
-                    mecetaphitpc[ichg][imult]->SetVertZPos(-8,8);
-                    
-                    cutPassEvMetaphitpc[ichg][imult] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-                    cutFailEvMetaphitpc[ichg][imult] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));
-                    mecetaphitpc[ichg][imult]->AddCutMonitor(cutPassEvMetaphitpc[ichg][imult], cutFailEvMetaphitpc[ichg][imult]);
-                    
-                    cutPassEvVetaphitpc[ichg][imult] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-                    cutFailEvVetaphitpc[ichg][imult] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
-                    mecetaphitpc[ichg][imult]->AddCutMonitor(cutPassEvVetaphitpc[ichg][imult], cutFailEvVetaphitpc[ichg][imult]);
-                    
-                    dtc1etaphitpc[ichg][imult] = new AliFemtoESDTrackCut();
-                    
-                    if (ichg == 0)
-                        dtc1etaphitpc[ichg][imult]->SetCharge(1.0);
-                    else if (ichg == 1)
-                        dtc1etaphitpc[ichg][imult]->SetCharge(-1.0);
-                    
-                    dtc1etaphitpc[ichg][imult]->SetPt(0.15,1.5);
-                    dtc1etaphitpc[ichg][imult]->SetEta(-0.8,0.8);
-                    dtc1etaphitpc[ichg][imult]->SetMass(PionMass);
-                    dtc1etaphitpc[ichg][imult]->SetMostProbablePion();
-                    
-                    dtc1etaphitpc[ichg][imult]->SetStatus(AliESDtrack::kTPCin);
-                    dtc1etaphitpc[ichg][imult]->SetminTPCncls(80);//was 0
-                    dtc1etaphitpc[ichg][imult]->SetRemoveKinks(kTRUE);
-                    dtc1etaphitpc[ichg][imult]->SetLabel(kFALSE);
-                    dtc1etaphitpc[ichg][imult]->SetMaxTPCChiNdof(4.0);
-                    dtc1etaphitpc[ichg][imult]->SetMaxImpactXY(2.4);//was 0.2
-                    dtc1etaphitpc[ichg][imult]->SetMaxImpactZ(3.0);//0.15
-                    
-                    
-                    
-                    sqpcetaphitpc[ichg][imult] = new AliFemtoPairCutRadialDistanceKK();
-                    sqpcetaphitpcRD[ichg][imult] = new AliFemtoPairCutRadialDistanceKK();
-                    
-                    sqpcetaphitpc[ichg][imult]->SetShareQualityMax(1.0);
-                    sqpcetaphitpc[ichg][imult]->SetShareFractionMax(1);
-                    sqpcetaphitpc[ichg][imult]->SetRemoveSameLabel(kFALSE);
-                    sqpcetaphitpc[ichg][imult]->SetMinimumRadius(1.6);
-                    sqpcetaphitpc[ichg][imult]->SetPhiStarDifferenceMinimum(0.0);
-                    sqpcetaphitpc[ichg][imult]->SetEtaDifferenceMinimum(0.0);
-                    
-                    sqpcetaphitpcRD[ichg][imult]->SetShareQualityMax(1.0);
-                    sqpcetaphitpcRD[ichg][imult]->SetShareFractionMax(0.05);
-                    sqpcetaphitpcRD[ichg][imult]->SetRemoveSameLabel(kFALSE);
-                    sqpcetaphitpcRD[ichg][imult]->SetMinimumRadius(1.6);
-                    sqpcetaphitpcRD[ichg][imult]->SetPhiStarDifferenceMinimum(0.017);
-                    sqpcetaphitpcRD[ichg][imult]->SetEtaDifferenceMinimum(0.015);
-                    
-                    ana[ichg][imult]->SetEventCut(mecetaphitpc[ichg][imult]);
-                    ana[ichg][imult]->SetFirstParticleCut(dtc1etaphitpc[ichg][imult]);
-                    ana[ichg][imult]->SetSecondParticleCut(dtc1etaphitpc[ichg][imult]);
-                    ana[ichg][imult]->SetPairCut(sqpcetaphitpc[ichg][imult]);
-                    ana[ichg][imult]->SetPairCutRD(sqpcetaphitpcRD[ichg][imult]);
-                    
-                    
-                    for (int ikt=0; ikt<kTmax; ikt++){   //  kt range
-                        
-                        //  cqqinv[ichg][imult][ikt] = new AliFemtoQinvCorrFctn(Form("cqqinv%imult%ikT", ichg, imult, ikt),30, 0,0.15);
-                        
-                        for (int iphi=0; iphi<phimax; iphi++){
-                            ktpaircut[ichg][imult][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
-                            ktpaircut[ichg][imult][ikt][iphi]->SetPhiRange(phirange[iphi],phirange[iphi+1]);
+    //AliFemtoKTPairCut             *ktpaircut[2][10][5][4][9];		//[charge][mult][cuts][ktrange][phibins]
+    //AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][10][5][4][9];	//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoKTPairCut             *ktpaircut[2][10][5][4][9];		//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][10][5][4][9];	//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoKTPairCut             *ktpaircut2[2][10][5][4][10];		//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc2[2][10][5][4][10];	//[charge][mult][cuts][ktrange][phibins]
+    
+    for (int icuts=0; icuts<5; icuts++) {
+        if (rundetadphistar[icuts]) {
+            for (int imult=0; imult<10; imult++) {
+                if (runmults[imult]) {
+                    for (int ichg=0; ichg<2; ichg++) {
+                        if (runch[ichg]) {
+                            
+                            ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],9);
+                            //ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],6);
+                            
+                            ana[ichg][imult][icuts]->SetNumEventsToMix(3);
+                            ana[ichg][imult][icuts]->SetMinSizePartCollection(4);
+                            ana[ichg][imult][icuts]->SetEPhistname(Form("hist%i%i_%s",ichg,imult,detadphistar[icuts]));
+                            
+                            mecetaphitpc[ichg][imult][icuts]= new AliFemtoBasicEventCut();
+                            //mecetaphitpc[ichg][imult][icuts]->SetEventMult(10,100000);  //was 0.001
+                            mecetaphitpc[ichg][imult][icuts]->SetEventMult(0.01,100000);  //was 0.001
+                            
+                            mecetaphitpc[ichg][imult][icuts]->SetVertZPos(-8,8);
+                            
+                            cutPassEvMetaphitpc[ichg][imult][icuts] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i_%s", chrgs[ichg], imult,detadphistar[icuts]));
+                            cutFailEvMetaphitpc[ichg][imult][icuts] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i_%s", chrgs[ichg], imult,detadphistar[icuts]));
+                            mecetaphitpc[ichg][imult][icuts]->AddCutMonitor(cutPassEvMetaphitpc[ichg][imult][icuts], cutFailEvMetaphitpc[ichg][imult][icuts]);
+                            
+                            cutPassEvVetaphitpc[ichg][imult][icuts] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i_%s", chrgs[ichg], imult,detadphistar[icuts]));
+                            cutFailEvVetaphitpc[ichg][imult][icuts] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i_%s", chrgs[ichg], imult,detadphistar[icuts]));
+                            mecetaphitpc[ichg][imult][icuts]->AddCutMonitor(cutPassEvVetaphitpc[ichg][imult][icuts], cutFailEvVetaphitpc[ichg][imult][icuts]);
+                            
+                            dtc1etaphitpc[ichg][imult][icuts] = new AliFemtoESDTrackCut();
+                            
+                            if (ichg == 0)
+                                dtc1etaphitpc[ichg][imult][icuts]->SetCharge(1.0);
+                            else if (ichg == 1)
+                                dtc1etaphitpc[ichg][imult][icuts]->SetCharge(-1.0);
+                            
+                            dtc1etaphitpc[ichg][imult][icuts]->SetPt(0.15,1.5);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetEta(-0.8,0.8);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetMass(PionMass);
+                            
+                            dtc1etaphitpc[ichg][imult][icuts]->SetMostProbablePion();
+                            
+                            dtc1etaphitpc[ichg][imult][icuts]->SetStatus(AliESDtrack::kTPCin);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetminTPCncls(80);//was 80
+                            dtc1etaphitpc[ichg][imult][icuts]->SetRemoveKinks(kTRUE);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetLabel(kFALSE);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetMaxTPCChiNdof(4.0);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetMaxImpactXY(2.4);//was 0.20
+                            dtc1etaphitpc[ichg][imult][icuts]->SetMaxImpactZ(3.0);//was 0.15
+                            
+                            sqpcetaphitpc[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceKK();
+                            sqpcetaphitpcRD[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceKK();
+                            
+                            sqpcetaphitpc[ichg][imult][icuts]->SetShareQualityMax(1.0);
+                            sqpcetaphitpc[ichg][imult][icuts]->SetShareFractionMax(1.0); //was 1
+                            sqpcetaphitpc[ichg][imult][icuts]->SetRemoveSameLabel(kFALSE);
+                            sqpcetaphitpc[ichg][imult][icuts]->SetMinimumRadius(1.6);
                             
                             
-                            cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%imult%ikT%iRP%i", ichg, imult, ikt, iphi),20,-0.2,0.2);
-                            cq3dlcmskttpc[ichg][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][ikt][iphi]);
-                            ana[ichg][imult]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][ikt][iphi]);
-                        }
-                        // ana[ichg][imult]->AddCorrFctn(cqqinv[ichg][imult][ikt]);
-                        
-                    }
-                    Manager->AddAnalysis(ana[ichg][imult]);
-                }
-            }
-        }
-    }
+                            sqpcetaphitpcRD[ichg][imult][icuts]->SetShareQualityMax(1.0);
+                            sqpcetaphitpcRD[ichg][imult][icuts]->SetShareFractionMax(0.05);
+                            sqpcetaphitpcRD[ichg][imult][icuts]->SetRemoveSameLabel(kFALSE);
+                            sqpcetaphitpcRD[ichg][imult][icuts]->SetMinimumRadius(1.6);
+                            if (icuts==0) // ( test1)
+                            {
+                                /*sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0); //0.012,0.018,0.024,0.048
+                                 sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0);     //0.017,0.0225,0.034,0.068
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //was 0
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);//was 0
+                                 */
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.017); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.015);     //0.017,0.0225,0.034,0.068
+                                sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //was 0
+                                sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);//was 0
+                                
+                                
+                            }
+                            if (icuts==1) // (test2)
+                            {
+                                /*sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.015); //0.012,0.018,0.024,0.048
+                                 sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.017);     //0.017,0.0225,0.034,0.068
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //0.012,0.018,0.024,0.048
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);     //0.017,0.0225,0.034,0.068
+                                 */
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.04); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.02);     //0.017,0.0225,0.034,0.068
+                                sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //was 0
+                                sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);//was 0
+                                
+                            }
+                            if (icuts==2) // (test3)
+                            {
+                                /*sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.02); //0.012,0.018,0.024,0.048
+                                 sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.04);     //0.017,0.0225,0.034,0.068
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //0.012,0.018,0.024,0.048
+                                 sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);     //0.017,0.0225,0.034,0.068
+                                 */
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.06); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.02);     //0.017,0.0225,0.034,0.068
+                                sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //was 0
+                                sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);//was 0
+                                
+                            }
+                            if (icuts==3) //test4 deta=0.01, dphistar=0.04
+                            {
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);     //0.017,0.0225,0.034,0.068
+                                sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);     //0.017,0.0225,0.034,0.068
+                                
+                            }
+                            if (icuts==4) //test4 deta=0.01, dphistar=0.04
+                            {
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.045); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpcRD[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.02);     //0.017,0.0225,0.034,0.068
+                                sqpcetaphitpc[ichg][imult][icuts]->SetPhiStarDifferenceMinimum(0.0); //0.012,0.018,0.024,0.048
+                                sqpcetaphitpc[ichg][imult][icuts]->SetEtaDifferenceMinimum(0.0);     //0.017,0.0225,0.034,0.068
+                                
+                            }
+                            
+                            ana[ichg][imult][icuts]->SetEventCut(mecetaphitpc[ichg][imult][icuts]);
+                            ana[ichg][imult][icuts]->SetFirstParticleCut(dtc1etaphitpc[ichg][imult][icuts]);
+                            ana[ichg][imult][icuts]->SetSecondParticleCut(dtc1etaphitpc[ichg][imult][icuts]);
+                            ana[ichg][imult][icuts]->SetPairCut(sqpcetaphitpc[ichg][imult][icuts]);
+                            ana[ichg][imult][icuts]->SetPairCutRD(sqpcetaphitpcRD[ichg][imult][icuts]);
+                            
+                            
+                            for (int ikt=0; ikt<4; ikt++){
+                                if (runktdeprange[ikt]) {
+                                    for (int iphi=0; iphi<10; iphi++){
+                                        
+                                        if (iphi!=9) {
+                                            
+                                            ktpaircut[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
+                                            ktpaircut[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange[iphi],phirange[iphi+1]);
+                                            
+                                            cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),20,-0.2,0.2);//was 30 bins
+                                            cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][icuts][ikt][iphi]);
+                                            ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]);
+                                        }
+                                        
+                                        ktpaircut2[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
+                                        ktpaircut2[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange2[iphi],phirange2[iphi+1]);
+                                        
+                                        
+                                        cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s2", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),20,-0.2,0.2);//was 30 bins
+                                        cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut2[ichg][imult][icuts][ikt][iphi]);
+                                        ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi]);
+                                        
+                                        // 		cylmkt[ich][imult][ikt][iphi] = new AliFemtoCorrFctnDirectYlm(Form("cylm%imult%ikT%iRP%i", ich, imult, ikt, iphi),2,90,0.0,0.3,1);
+                                        // 		cylmkt[ich][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ich][imult][ikt][iphi]);
+                                        // 		ana[ich][imult]->AddCorrFctn(cylmkt[ich][imult][ikt][iphi]);
+                                        
+                                        // 		cqinvkt[ich][imult][ikt][iphi] = new AliFemtoQinvCorrFctn(Form("cqinv%imult%ikT%iRP%i", ich, imult, ikt, iphi),20,0.0,0.2);
+                                        // 		cqinvkt[ich][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ich][imult][ikt][iphi]);
+                                        // 		ana[ich][imult]->AddCorrFctn(cqinvkt[ich][imult][ikt][iphi]);
+                                        
+                                        
+                                    } //end of phi
+                                }//end of kt case
+                            }//end of kt
+                            Manager->AddAnalysis(ana[ichg][imult][icuts]);	
+                        }//end runcharge
+                    }//end charge
+                }//end runmult
+            }  //end mult
+        } //end rundeltaetadeltaphistar
+    } //end deltaetap
     return Manager;
-}
+}                         
 
