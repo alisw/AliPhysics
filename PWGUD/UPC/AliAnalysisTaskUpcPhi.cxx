@@ -519,6 +519,7 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<1))) continue;
 
+      if(!(trk->GetStatus() & AliAODTrack::kITSpureSA) ) continue;
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
       if(trk->GetITSNcls() < 4)continue;
       if(trk->Chi2perNDF() > 2.5)continue;
@@ -765,6 +766,7 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
    //ITSsa track loop
+   cout<<"N tracks = "<<esd ->GetNumberOfTracks()<<endl;
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
     if( !trk ) continue;
