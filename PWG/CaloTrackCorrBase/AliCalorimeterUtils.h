@@ -238,6 +238,7 @@ class AliCalorimeterUtils : public TObject {
   void          SetPHOSChannelRecalibrationFactors (TObjArray *map)      { fPHOSRecalibrationFactors  = map;}
 
   void          RecalibrateCellTime     (Double_t & time, Int_t calo, Int_t absId, Int_t bunchCrossNumber) const ;
+  void          RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber) const;
   void          RecalibrateCellAmplitude(Float_t  & amp,  Int_t calo, Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
   Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
@@ -266,7 +267,21 @@ class AliCalorimeterUtils : public TObject {
   TH1F *       GetEMCALChannelTimeRecalibrationFactors(Int_t bc) const     { return fEMCALRecoUtils-> GetEMCALChannelTimeRecalibrationFactors(bc) ; }
   void         SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)     { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(map)        ; }
   void         SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h) { fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(bc , h)     ; }
+
+  //------------------------------
+  // Time Recalibration - L1 phase (EMCAL)
+  //------------------------------
+  Bool_t   IsL1PhaseInTimeRecalibrationOn()          const { return fEMCALRecoUtils->IsL1PhaseInTimeRecalibrationOn() ; }
+  void     SwitchOffL1PhaseInTimeRecalibration()           { fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration()   ; }
+  void     SwitchOnL1PhaseInTimeRecalibration()            { fEMCALRecoUtils->SwitchOnL1PhaseInTimeRecalibration()    ; }
+
+  Int_t    GetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM) const        { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForSM(iSM)   ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForSM(Int_t iSM, Int_t c = 0) { return fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForSM(iSM,c) ; }
   
+  TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const          { return fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM() ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map) { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(map)     ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h)        { fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h)       ; }
+
   //------------------------------
   // EMCAL specific utils for the moment
   //------------------------------
