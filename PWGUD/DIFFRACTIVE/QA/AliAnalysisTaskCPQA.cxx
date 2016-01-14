@@ -45,9 +45,9 @@ ClassImp(AliAnalysisTaskCPQA)
       fhVtxTrack[i]=0;
     }
 
-//  fEtaMaxM = 2;
-//  fEtaMaxD = 0.9;
-//fVtxZmax = 10;
+// fEtaMaxM = 2;
+// fEtaMaxD = 0.9;
+// fVtxZmax = 10;
 
   DefineOutput(1, TList::Class());
 }
@@ -67,9 +67,6 @@ AliAnalysisTaskCPQA::~AliAnalysisTaskCPQA()
 
    }
 }
-
-
-
 
 //________________________________________________________________________
 void AliAnalysisTaskCPQA::UserCreateOutputObjects()
