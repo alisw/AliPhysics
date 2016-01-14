@@ -78,8 +78,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fPID(0x0)
 ,fMagField(0.f)
 ,fPrimaryVertex(0x0)
-,fMmc()
-,fAmc()
 ,fDCAzLimit(10.)
 ,fDCAzNbins(400)
 ,fPtCorrectionA(3)
@@ -109,6 +107,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMaxDCAz(1.f)
 ,fRequireTPCpidSigmas(3.f)
 ,fRequireITSpidSigmas(-1.f)
+,fRequireTOFpidSigmas(-1.f)
 ,fRequireMinEnergyLoss(0.)
 ,fRequireMagneticField(0)
 ,fRequireVetoSPD(kFALSE)
@@ -121,7 +120,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fPtBins(0x0)
 ,fCustomTPCpid(0)
 ,fFlatteningProbs(0)
-,fPhiRegions(0)
+,fPhiRegions()
 ,fCentrality(0x0)
 ,fFlattenedCentrality(0x0)
 ,fCentralityClasses(0x0)
@@ -194,7 +193,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
                             36,0.2,2.);
   fMTPCphiCounts = new TH2F("fMTPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
                             36,0.2,2.);
-  if (fRequireMinEnergyLoss > 0. || fPhiRegions.GetSize() > 0) {
+  if (fRequireMinEnergyLoss > 0. || fPhiRegions[0].GetSize() > 0 || fPhiRegions[1].GetSize() > 0) {
     fList->Add(fATPCphiCounts);
     fList->Add(fMTPCphiCounts);
   }
@@ -413,8 +412,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     /// Making the list of the deuterons we want to measure
-    fMmc.SetOwner(kFALSE);
-    fAmc.SetOwner(kFALSE);
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
       const int pdg = part->GetPdgCode();
@@ -423,10 +420,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (pdg == fPDG) {
         if (part->IsPhysicalPrimary()) fMTotal->Fill(centrality,part->Pt());
-        fMmc.Add(part);
       } else if (pdg == -fPDG) {
         if (part->IsPhysicalPrimary()) fATotal->Fill(centrality,part->Pt());
-        fAmc.Add(part);
       }
     }
   }
@@ -496,9 +491,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   } // End AOD track loop
 
-  fAmc.Clear();
-  fMmc.Clear();
-
   //  Post output data.
   PostData(1,fList);
 }
@@ -530,11 +522,12 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return kFALSE;
 
   /// If phi regions are defined, take only the tracks inside the selected phi regions.
-  if (fPhiRegions.GetSize() > 0) {
+  const int iPhi = int((track->Charge() > 0) ^ (fMagField > 0.));
+  if (fPhiRegions[iPhi].GetSize() > 0) {
     bool phi_flag = false;
     const float phi = track->Phi();
-    for (int i = 0; i < fPhiRegions.GetSize(); i+=2) {
-      if (phi > fPhiRegions[i] && phi < fPhiRegions[i + 1]) {
+    for (int i = 0; i < fPhiRegions[iPhi].GetSize(); i+=2) {
+      if (phi > fPhiRegions[iPhi][i] && phi < fPhiRegions[iPhi][i + 1]) {
         phi_flag = true;
         break;
       }
@@ -661,10 +654,14 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
 /// \return Boolean value: true means that the track passes the PID selection
 ///
 Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
-  bool itsPID = kTRUE, tpcPID = kTRUE;
+  bool tofPID = true, itsPID = true, tpcPID = true;
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
     AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
     itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
+  }
+
+  if (fRequireTOFpidSigmas > 0) {
+    tofPID = TMath::Abs(fPID->NumberOfSigmasTOF(t, fParticle)) < fRequireTOFpidSigmas;
   }
 
   if (t->Pt() < fDisableTPCpidAtHighPt) {
@@ -680,7 +677,7 @@ Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
     }
   }
 
-  return itsPID && tpcPID;
+  return itsPID && tpcPID && tofPID;
 }
 
 /// This function sets the number of TOF bins and the boundaries of the histograms
