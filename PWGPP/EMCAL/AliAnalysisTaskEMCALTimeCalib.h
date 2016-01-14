@@ -44,6 +44,7 @@
 class TH1F;
 class TH1D;
 class TH2D;
+class TH1C;
 
 //class AliESDEvent;
 //class AliESDCaloCluster;
@@ -202,7 +203,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void LoadReferenceRunByRunHistos();
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
-  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root");
+  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
 
   private:
   
@@ -291,7 +292,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
 
   // histo with reference values run-by-run after the first iteration 
-  TH1C		*fhRefRuns; ///> 20 entries per run: nSM
+  TH1C		*fhRefRuns; //-> 20 entries per run: nSM  ///> not working
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM

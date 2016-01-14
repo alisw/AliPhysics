@@ -20,6 +20,7 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH2F.h>
+#include <TH1C.h>
 #include <TList.h>
 #include <TCanvas.h>
 #include <TGeoManager.h>
@@ -1072,7 +1073,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 /// Calculate calibration constants per SM (equivalent of L1 phase)
 /// input - root file with calibration constants from 1st pass
 /// output - root file with histograms for given run offset per SM 
-void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile,TString outputFile){
+void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile,TString outputFile, Bool_t offset100){
 
 const  Double_t lowerLimit[]={
     0,
@@ -1126,7 +1127,7 @@ const  Double_t upperLimit[]={
     ccBC[i]=(TH1F*) file->Get(Form("hAllTimeAvBC%d",i));
   }
   
-  TH1F *hRun=new TH1F(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
+  TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
   Int_t fitResult=0;
   Double_t minimumValue=10000;
   Int_t minimumIndex=-1;
@@ -1143,7 +1144,8 @@ const  Double_t upperLimit[]={
 	continue;
       }
       fitParameter = f1->GetParameter(0);
-      if(j==0 || j==1) {
+      if(offset100 && (j==0 || j==1)) {
+	//the 100 ns offset was removed in LHC15n muon_calo_pass1 and further reconstructions 
 	fitParameter+=100;
       }
       meanBC[j]=fitParameter;
