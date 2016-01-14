@@ -24,14 +24,15 @@
 #include <Rtypes.h>
 #include <TString.h>
 #include <TArrayF.h>
-#include <TList.h>
 #include <AliPIDResponse.h>
+
 class TH2F;
 class TH3F;
 class AliFlowTrackCuts;
 class AliAODTrack;
 class AliVVertex;
 class AliPIDResponse;
+class TList;
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
 public:
@@ -59,6 +60,7 @@ public:
   void SetRequireMaxDCAz (float maxDCA) { fRequireMaxDCAz = maxDCA; }
   void SetRequireTPCpidSigmas (float sig) { fRequireTPCpidSigmas = (sig > 0) ? sig : -sig; }
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
+  void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
@@ -78,7 +80,7 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
-  void SetPhiRegions (Int_t n, Float_t *regions) { fPhiRegions.Set(n,regions); }
+  void SetPhiRegions (bool pos,int n, float *regions) { fPhiRegions[int(pos)].Set(n,regions); }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -105,9 +107,6 @@ private:
   AliPIDResponse       *fPID;                   //!<! PID response class
   Float_t               fMagField;              ///<  Magnetic field value for the current event
   AliVVertex           *fPrimaryVertex;         //!<! Primary vertex of the current event
-
-  TList                 fMmc;                   ///<  *(MC only)* List of matter particles
-  TList                 fAmc;                   ///<  *(MC only)* List of anti-matter particles
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
@@ -140,6 +139,7 @@ private:
   Float_t               fRequireMaxDCAz;        ///<  Cut on tracks: maximum \f$DCA_{z}\f$ for the track
   Float_t               fRequireTPCpidSigmas;   ///<  Cut on TPC PID number of sigmas
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
+  Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
   Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
@@ -153,7 +153,7 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
-  TArrayF               fPhiRegions;            ///<  Azimuthal angle region where the analysis is performed
+  TArrayF               fPhiRegions[2];            ///<  Azimuthal angle region where the analysis is performed
 
   // Event related histograms
   TH1F                 *fCentrality;            //!<! Events centrality distribution
