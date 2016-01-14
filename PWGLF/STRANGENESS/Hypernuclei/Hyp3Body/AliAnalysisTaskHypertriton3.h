@@ -61,7 +61,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
-  void SetTOFpid(bool reqTOFpid = kTRUE) {fRequestTOFPid = reqTOFpid;}
+  void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
