@@ -1610,8 +1610,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTrigger(const char* triggerClassName,
       
       value = b->ValueCorrectedForDownscale()/b->Duration()/(11245.0*nbcx);
     }
-    
-    if ( swhat=="L0BEVAL")
+    else if ( swhat=="L0BEVAL")
     {
       AliAnalysisTriggerScalerItem* l0a = GetTriggerScaler(runNumber,"L0A",triggerClassName);
       
