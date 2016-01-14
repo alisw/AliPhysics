@@ -42,6 +42,12 @@ class AliNDLocalRegression : public TNamed {
   Bool_t AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *indexes, Double_t *relWeight, TTreeSRedirector* pcstream, Bool_t useCommon=kFALSE);
   void DumpToTree(Int_t div, TTreeStream & stream);
   //
+  const TObjArray *GetLocalFitParam()   const { return fLocalFitParam;   }
+  const TObjArray *GetLocalFitQuality() const { return fLocalFitQuality; }
+  const TObjArray *GetLocalFitCovar()   const { return fLocalFitCovar;   }
+  //
+  const TMatrixD  *GetLocalRobustStat() const { return fLocalRobustStat; }
+  //
   // function to access the Local Regression from the TFormula
   static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position=0);
   static AliNDLocalRegression*  GetVisualCorrection(Int_t position);
