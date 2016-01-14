@@ -148,8 +148,10 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetSelectArmenteros(Bool_t b) {IsArmenterosSelected = b;}
   virtual void UseExtraTracks()        { fUseExtraTracks =  1;}
   virtual void UseExtraonlyTracks()    { fUseExtraTracks = -1;}
-  virtual void SetUseExtraJetPt(Bool_t b = kTRUE) { fUseExtraJetPt = b; }
-  
+  virtual void SetUseExtraJetPt(Bool_t ut) { fUseExtraJetPt = ut;}
+  virtual void SetUseStandardV0s(Bool_t bo) { fUseStandard = bo;}
+    
+
   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
   Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, Int_t particletype); //don't use this method for MC Analysis
@@ -323,6 +325,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Bool_t IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
   Int_t   fUseExtraTracks;          // +/- 1: embedded extra/extra only tracks, default: 0 (is set in initialisation list of task, ignore extra tracks)
   Bool_t  fUseExtraJetPt;           // for MC use jet of matching extra jet (= data + MC tracks)  
+  Bool_t fUseStandard;              //use standard tracks V0s for UE V0 subtraction
 
   //AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
   //AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
