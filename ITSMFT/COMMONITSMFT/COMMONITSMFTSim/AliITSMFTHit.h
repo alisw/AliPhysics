@@ -16,6 +16,8 @@
 #include "AliHit.h" 
 #include "AliRun.h"
 
+class AliITSMFTGeomTGeo;
+
 class AliITSMFTHit : public AliHit {
 
  public:
@@ -24,8 +26,9 @@ class AliITSMFTHit : public AliHit {
   AliITSMFTHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   AliITSMFTHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
   AliITSMFTHit(const AliITSMFTHit &h);
-  AliITSMFTHit& operator=(const AliITSMFTHit &h);
   virtual ~AliITSMFTHit() {}
+
+  static void SetGeoManager(AliITSMFTGeomTGeo *gm) {fGeom=gm;}
 
   void SetModule(Int_t mod){fModule=mod;};
   void SetShunt(Int_t shunt);
@@ -71,7 +74,9 @@ class AliITSMFTHit : public AliHit {
   Float_t GetIonization() const {return fDestep;}//returns the Destep
 
  protected:
-//  Int_t GetModule(){return fModule;};
+   AliITSMFTHit& operator=(const AliITSMFTHit &h);
+
+   static AliITSMFTGeomTGeo *fGeom; //! Geometry manager;
 
    Int_t     fStatus; // Track Status
    Int_t     fModule; // Module number 
@@ -86,7 +91,7 @@ class AliITSMFTHit : public AliHit {
    Float_t   fz0;     // Starting point of this step
    Float_t   ft0;     // Starting point of this step
 
-  ClassDef(AliITSMFTHit,1)  //Hits object
+  ClassDef(AliITSMFTHit,2)  //Hits object
 	 
 }; 
 

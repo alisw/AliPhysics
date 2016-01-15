@@ -153,6 +153,7 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fSimInitDone(kFALSE)
 {
   //     The standard Constructor for the ITS class. 
+  AliITSMFTHit::SetGeoManager(fGeomTGeo);
   AliMC* mc = gAlice->GetMCApp();
   if( mc && mc->GetHitLists() ) {
     fHits = new TClonesArray("AliITSUHit",100); // from AliDetector
@@ -472,6 +473,7 @@ void AliITSU::Hits2SDigits()
   fLoader->LoadSDigits("recreate");
   AliRunLoader* rl = fLoader->GetRunLoader(); 
   //
+  AliITSMFTHit::SetGeoManager(fGeomTGeo);
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     rl->GetEvent(iEvent);
     if (!fLoader->TreeS()) fLoader->MakeTree("S");

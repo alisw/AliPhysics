@@ -190,10 +190,9 @@ void AliITSUHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
   // Returns the position and time of flight of this hit in the local
   // coordinates of this chip, and in the units of the Monte Carlo.
   //
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
   double g[3]={fX,fY,fZ},l[3];
-  gm->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
   x = l[0];
   y = l[1];
   z = l[2];
@@ -206,10 +205,9 @@ void AliITSUHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof
 {
   // Returns the initial position and time of flight of this hit 
   // in the local coordinates of this chip, and in the units of the 
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
   double g[3]={fx0,fy0,fz0},l[3];  
-  gm->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
   x = l[0];
   y = l[1];
   z = l[2];
@@ -221,54 +219,48 @@ void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,I
 {
   // Returns the layer stave and detector number lables for this
   // ITS chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return; }
-  gm->GetChipId(fModule,layer,stave,sstave,mod,det);
+  if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return; }
+  fGeom->GetChipId(fModule,layer,stave,sstave,mod,det);
 }  
 
 //______________________________________________________________________
 Int_t AliITSUHit::GetLayer() const
 {
   // Returns the layer. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetLayer(fModule);
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  return fGeom->GetLayer(fModule);
 }  
 
 //______________________________________________________________________
 Int_t AliITSUHit::GetStave() const
 {
   // Returns the stave of TS chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetStave(fModule);
+  if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return -1; }
+  return fGeom->GetStave(fModule);
 }  
 
 //______________________________________________________________________
 Int_t AliITSUHit::GetHalfStave() const
 {
   // Returns the substave of the chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetHalfStave(fModule);
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  return fGeom->GetHalfStave(fModule);
 }  
 
 //______________________________________________________________________
 Int_t AliITSUHit::GetModule() const
 {
   // Returns the module of the chip. Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetModule(fModule);
+  if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return -1; }
+  return fGeom->GetModule(fModule);
 }  
 
 //______________________________________________________________________
 Int_t AliITSUHit::GetChipInModule() const // former GetDetector
 {
   // Returns the detector within the module(or stave). Note: indices start from 0!
-  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
-  if (!gm) { AliFatal("NULL pointer to the geometry!"); return -1; }
-  return gm->GetChipIdInModule(fModule);
+  if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return -1; }
+  return fGeom->GetChipIdInModule(fModule);
 }  
 
 //______________________________________________________________________

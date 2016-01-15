@@ -19,11 +19,12 @@
 #include "AliMC.h"
 #include "AliStack.h"
 
-//#include "AliITSU.h"
-//#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTGeomTGeo.h"
 #include "AliITSMFTHit.h"
 
 ClassImp(AliITSMFTHit)
+
+AliITSMFTGeomTGeo *AliITSMFTHit::fGeom = 0;
 
 ////////////////////////////////////////////////////////////////////////
 //
