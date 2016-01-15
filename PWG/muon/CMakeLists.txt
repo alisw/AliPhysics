@@ -89,6 +89,9 @@ set(SRCS
   AliOADBMuonTrackCutsParam.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx 
+  AliAnalysisTaskLMREventFilter.cxx
+  AliLMREvent.cxx
+  AliLMRMuon.cxx
 )
 
 # Headers from sources
