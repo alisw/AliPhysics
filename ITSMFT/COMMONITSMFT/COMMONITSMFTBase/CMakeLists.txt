@@ -34,6 +34,7 @@ set(SRCS
 	AliITSMFTSDigit.cxx
 	AliITSMFTSegmentationPix.cxx
 	AliITSMFTSensMap.cxx
+	AliITSMFTGeomTGeo.cxx
     )
 
 # Headers from sources

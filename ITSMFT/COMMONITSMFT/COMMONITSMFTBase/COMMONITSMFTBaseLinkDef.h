@@ -10,6 +10,7 @@
 #pragma link C++ class  AliITSMFTSDigit+;
 #pragma link C++ class  AliITSMFTSegmentationPix+;
 #pragma link C++ class  AliITSMFTSensMap+;
+#pragma link C++ class  AliITSMFTGeomTGeo+;
 
 #endif
 
