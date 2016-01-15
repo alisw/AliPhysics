@@ -39,6 +39,7 @@
 #include "AliTrackerBase.h"
 #include "AliGeomManager.h"
 #include "TVectorF.h"
+#include "TVectorD.h"
 #include "TStopwatch.h"
 #include "TProfile.h"
 #include "TGraphErrors.h"
@@ -767,6 +768,8 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   if (selHis==2 ||selHis<0) fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
   //
   binsTrack[4]=TMath::Min(Int_t(20.+2.*dz/0.05),120); // buffer should be smaller than 1 GBy
+  xminTrack[4]=-dz;        xmaxTrack[4]=dz; 
+  xminTrackITS[4]=-dz;        xmaxTrackITS[4]=dz; 
   if (selHis==3 ||selHis<0) fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
   if (selHis==4 ||selHis<0) fHisITSTRDDZ = new THnF("deltaZTPCITSTRD","#Delta_{Z} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
   if (selHis==5 ||selHis<0) fHisITSTOFDZ = new THnF("deltaZTPCITSTOF","#Delta_{Z} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
@@ -835,6 +838,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   // 0.) Load current information file and bookd variables
   // 
   const Int_t nSec=81;         // 72 sector +5 sumarry info+ 4 medians +
+  const Double_t kMaxZ=250;
   TVectorF meanNcl(nSec);      // mean current estator ncl per sector
   TVectorF meanNclUsed(nSec);  // mean current estator ncl per sector
   Double_t meanTime=0, maxTime=startTime, minTime=stopTime;
@@ -854,6 +858,30 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       treeInfo->SetBranchAddress(TString::Format("grNclUsed%d.",iSec).Data(),&nclArrayUsed[iSec]);
     }
     treeInfo->GetEntry(0);
+  }
+  //
+  // 0.a) Load drift velocity calibration in case availbel
+  //
+  TVectorD     *vdriftParam=0;
+  TGraphErrors *vdriftGraph=0;  
+  TFile *fdrift = TFile::Open("fitDrift.root");
+  if (fdrift){
+    TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
+    if (tree==NULL){
+      ::Error("LoadDriftCalibration FAILED", "tree fitTimeStat not avaliable in file fitDrift.root");
+    }else{
+      tree->SetBranchAddress("grTRDReg.",&vdriftGraph);
+      tree->SetBranchAddress("paramRobust.",&vdriftParam);
+      tree->GetEntry(0);
+      if (vdriftGraph==NULL || vdriftGraph->GetN()<=0){
+	::Info("LoadDriftCalibration FAILED", "ITS/TRD drift calibration not availalble. Trying ITS/TOF");
+	tree->SetBranchAddress("grTOFReg.",&vdriftGraph);
+	tree->GetEntry(0);
+      }
+    }
+    
+  }else{
+    ::Error("LoadDriftCalibration FAILED", "fitDrift.root not present");
   }
   //
   // 1.) Fill histograms and mean informations
@@ -932,6 +960,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  hisTime->Fill(timeStamp);
 	}
 	tree->GetEntry(itrack);
+	Double_t corrTime = (vdriftGraph!=NULL) ? vdriftGraph->Eval(timeStamp):0;
 	const Float_t *vSec= vecSec->GetMatrixArray();
 	const Float_t *vPhi= vecPhi->GetMatrixArray();
 	const Float_t *vR  = vecR->GetMatrixArray();
@@ -958,7 +987,18 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   vZ[ipoint]/localX, vDelta[ipoint]};
 	  if (xxx[4]==0) continue;
 	  Double_t side=-1.+2.*((TMath::Nint(vSec[ipoint])%36)<18);
-	  if ((vZ[ipoint]*side)<-1) xxx[3]=side*0.001; // do not mix z on A side and C side 	  
+	  if ((vZ[ipoint]*side)<-1) xxx[3]=side*0.001; // do not mix z on A side and C side
+	  // apply drift velocity calibration if available
+	  if (ihis>2&& vdriftParam!=NULL){  // if z residuals and vdrift calibration existing
+	    Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
+	    Double_t gy    = TMath::Sin(vPhi[ipoint])*localX;
+	    Double_t pvecFit[3];
+	    pvecFit[0]= side;             // z shift (cm)
+	    pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+	    pvecFit[2]= drift;            // drift length
+	    Double_t expected = (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2];
+	    xxx[4]= side*(vDelta[ipoint]*side-(expected+corrTime*drift));
+	  }
 	  hisToFill[ihis]->Fill(xxx);	  
 	}
       }
