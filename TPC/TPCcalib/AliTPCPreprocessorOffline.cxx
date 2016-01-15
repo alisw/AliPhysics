@@ -624,18 +624,18 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   if (arrayTOF->GetEntries()>0) mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.7,1000,fMaxVdriftCorr);
   if (arrayTRD->GetEntries()>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.7,50,fMaxVdriftCorr);
   //
-  TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 0, 5.);
-  TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 1, 5.);
+  TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 0, 5.);
+  TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 1, 5.);
   TObjArray * arrayITSB= AliTPCcalibDButil::SmoothRelKalman(arrayITSP,arrayITSM);
-  TObjArray * arrayTOFP= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,*mstatTOF, 0, 5.);
-  TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,*mstatTOF, 1, 5.);
+  TObjArray * arrayTOFP= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 0, 5.);
+  TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 1, 5.);
   TObjArray * arrayTOFB= AliTPCcalibDButil::SmoothRelKalman(arrayTOFP,arrayTOFM);
 
   TObjArray * arrayTRDP= 0x0;
   TObjArray * arrayTRDM= 0x0;
   TObjArray * arrayTRDB= 0x0;
-  arrayTRDP= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 0, 5.);
-  arrayTRDM= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,*mstatTRD, 1, 5.);
+  arrayTRDP= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,mstatTRD, 0, 5.);
+  arrayTRDM= AliTPCcalibDButil::SmoothRelKalman(arrayTRD,mstatTRD, 1, 5.);
   arrayTRDB= AliTPCcalibDButil::SmoothRelKalman(arrayTRDP,arrayTRDM);
   //
   //

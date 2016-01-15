@@ -2979,7 +2979,7 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t 
 }
 
 
-TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMatrixD & stat, Bool_t direction, Float_t sigmaCut){
+TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMatrixD*  statP, Bool_t direction, Float_t sigmaCut){
   /// Smooth the array of AliRelKalmanAlign - detector alignment and drift calibration)
   /// Input:
   ///   array     - input array
@@ -2989,7 +2989,8 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMa
 
   if (!array) return 0;
   if (array->GetEntries()<=0) return 0;
-  if (!(&stat)) return 0;
+  if (!statP) return 0;
+  const TMatrixD& stat = *statP;
   // error increase in 1 hour
   const Double_t kerrsTime[9]={
     0.00001,  0.00001, 0.00001,
