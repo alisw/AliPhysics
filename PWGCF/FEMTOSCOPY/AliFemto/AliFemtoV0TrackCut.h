@@ -64,7 +64,7 @@ public:
   bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
   bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
 
- private:   // here are the quantities I want to cut on...
+ protected:   // here are the quantities I want to cut on...
 
   double fInvMassLambdaMin;        ///< invariant mass lambda min
   double fInvMassLambdaMax;        ///< invariant mass lambda max

@@ -89,3 +89,6 @@
 #pragma link C++ class AliFemtoCutMonitorPionPion::Event+;
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pion+;
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pair+;
+
+#pragma link C++ class AliFemtoNSigmaFilter+;
+#pragma link C++ class AliFemtoV0TrackCutNSigmaFilter+;

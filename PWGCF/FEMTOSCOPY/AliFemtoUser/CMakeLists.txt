@@ -99,6 +99,8 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
+  AliFemtoNSigmaFilter.cxx
+  AliFemtoV0TrackCutNSigmaFilter.cxx
 )
 
 # Headers from sources
