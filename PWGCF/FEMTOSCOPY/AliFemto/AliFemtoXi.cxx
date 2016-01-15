@@ -34,6 +34,129 @@ AliFemtoXi::AliFemtoXi():
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
 }
+
+// -----------------------------------------------------------------------
+AliFemtoXi::AliFemtoXi(const AliFemtoV0* aV0):
+  AliFemtoV0(*aV0),
+  fCharge(0), fDecayLengthXi(0),
+  fDecayVertexXi(0),
+  fDcaXiDaughters(0), fDcaXiToPrimVertex(0), fDcaBachelorToPrimVertex(0),
+  fMomBachelor(0), fKeyBachelor(0),
+  fTpcHitsBac(0), fChi2Xi(0), fClXi(0), fChi2Bachelor(0), fClBachelor(0),
+  fDedxBachelor(0), fNufDedxBachelor(0), fMomXi(0),
+  fAlphaXi(0), fPtArmXi(0),
+  fEXi(0), fEOmega(0), fEBacPion(0), fEBacKaon(0),
+  fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
+  fCTauXi(0), fCTauOmega(0),
+  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
+  fKeyBac(0), fCosPointingAngleXi(0), fPhiXi(0),
+  fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
+  fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
+  fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
+  fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
+  fTOFKaonTimeBac(0)
+{
+  fTopologyMapBachelor[0] = 0;
+  fTopologyMapBachelor[1] = 0;
+}
+
+// -----------------------------------------------------------------------
+AliFemtoXi::AliFemtoXi(const AliFemtoXi& aXi) :
+  AliFemtoV0(aXi),
+  fCharge(aXi.fCharge), fDecayLengthXi(aXi.fDecayLengthXi), fDecayVertexXi(aXi.fDecayVertexXi), 
+  fDcaXiDaughters(aXi.fDcaXiDaughters), fDcaXiToPrimVertex(aXi.fDcaXiToPrimVertex), fDcaBachelorToPrimVertex(aXi.fDcaBachelorToPrimVertex), 
+  fMomBachelor(aXi.fMomBachelor), fKeyBachelor(aXi.fKeyBachelor),
+  fTpcHitsBac(aXi.fTpcHitsBac), fChi2Xi(aXi.fChi2Xi), fClXi(aXi.fClXi), fChi2Bachelor(aXi.fChi2Bachelor), fClBachelor(aXi.fClBachelor),
+  fDedxBachelor(aXi.fDedxBachelor), fNufDedxBachelor(aXi.fNufDedxBachelor), 
+  fMomXi(0), fAlphaXi(0), fPtArmXi(0), fEXi(0), fEOmega(0), fEBacPion(0), 
+  fEBacKaon(0), fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0), 
+  fCTauXi(0), fCTauOmega(0), fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), 
+  fKeyBac(aXi.fKeyBac), fCosPointingAngleXi(aXi.fCosPointingAngleXi), fPhiXi(aXi.fPhiXi), fEtaXi(aXi.fEtaXi), 
+  fTPCNclsBac(aXi.fTPCNclsBac), fNdofBac(aXi.fNdofBac), fStatusBac(aXi.fStatusBac), fEtaBac(aXi.fEtaBac), fIdBac(aXi.fIdBac), 
+  fBacNSigmaTPCK(aXi.fBacNSigmaTPCK), fBacNSigmaTPCPi(aXi.fBacNSigmaTPCPi), fBacNSigmaTPCP(aXi.fBacNSigmaTPCP),
+  fBacNSigmaTOFK(aXi.fBacNSigmaTOFK), fBacNSigmaTOFPi(aXi.fBacNSigmaTOFPi), fBacNSigmaTOFP(aXi.fBacNSigmaTOFP), fTPCMomentumBac(aXi.fTPCMomentumBac),
+  fTOFProtonTimeBac(aXi.fTOFProtonTimeBac), fTOFPionTimeBac(aXi.fTOFPionTimeBac), fTOFKaonTimeBac(aXi.fTOFKaonTimeBac)
+  
+{
+  // copy constructor
+  fTopologyMapBachelor[0] = aXi.fTopologyMapBachelor[0];
+  fTopologyMapBachelor[1] = aXi.fTopologyMapBachelor[1];
+
+  UpdateXi();
+}
+
+
+// -----------------------------------------------------------------------
+AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
+{
+  //assignment operator
+  if (this == &aXi) return *this;
+
+  AliFemtoV0::operator=(aXi);
+
+
+  fCharge = aXi.fCharge;
+  fDecayLengthXi = aXi.fDecayLengthXi;
+  fDecayVertexXi = aXi.fDecayVertexXi; 
+  fDcaXiDaughters = aXi.fDcaXiDaughters;
+  fDcaXiToPrimVertex = aXi.fDcaXiToPrimVertex;
+  fDcaBachelorToPrimVertex = aXi.fDcaBachelorToPrimVertex; 
+  fMomBachelor = aXi.fMomBachelor;
+
+  fTopologyMapBachelor[0] = aXi.fTopologyMapBachelor[0];
+  fTopologyMapBachelor[1] = aXi.fTopologyMapBachelor[1];
+
+  fKeyBachelor = aXi.fKeyBachelor;
+  fTpcHitsBac = aXi.fTpcHitsBac;
+  fChi2Xi = aXi.fChi2Xi;
+  fClXi = aXi.fClXi;
+  fChi2Bachelor = aXi.fChi2Bachelor;
+  fClBachelor = aXi.fClBachelor;
+  fDedxBachelor = aXi.fDedxBachelor;
+  fNufDedxBachelor = aXi.fNufDedxBachelor; 
+  fMomXi = 0;
+  fAlphaXi = 0;
+  fPtArmXi = 0;
+  fEXi = 0;
+  fEOmega = 0;
+  fEBacPion = 0; 
+  fEBacKaon = 0;
+  fMassXi = 0;
+  fMassOmega = 0;
+  fRapXi = 0;
+  fRapOmega = 0; 
+  fCTauXi = 0;
+  fCTauOmega = 0;
+  fPtXi = 0;
+  fPtotXi = 0;
+  fPtBac = 0;
+  fPtotBac = 0; 
+  fKeyBac = aXi.fKeyBac;
+  fCosPointingAngleXi = aXi.fCosPointingAngleXi;
+  fPhiXi = aXi.fPhiXi;
+  fEtaXi = aXi.fEtaXi; 
+  fTPCNclsBac = aXi.fTPCNclsBac;
+  fNdofBac = aXi.fNdofBac;
+  fStatusBac = aXi.fStatusBac;
+  fEtaBac = aXi.fEtaBac;
+  fIdBac = aXi.fIdBac; 
+  fBacNSigmaTPCK = aXi.fBacNSigmaTPCK;
+  fBacNSigmaTPCPi = aXi.fBacNSigmaTPCPi;
+  fBacNSigmaTPCP = aXi.fBacNSigmaTPCP;
+  fBacNSigmaTOFK = aXi.fBacNSigmaTOFK;
+  fBacNSigmaTOFPi = aXi.fBacNSigmaTOFPi;
+  fBacNSigmaTOFP = aXi.fBacNSigmaTOFP;
+  fTPCMomentumBac = aXi.fTPCMomentumBac;
+  fTOFProtonTimeBac = aXi.fTOFProtonTimeBac;
+  fTOFPionTimeBac = aXi.fTOFPionTimeBac;
+  fTOFKaonTimeBac = aXi.fTOFKaonTimeBac;
+
+  UpdateXi();
+
+  return *this;
+}
+
+
 // -----------------------------------------------------------------------
 void AliFemtoXi::UpdateXi(){
   //Calc. derived members of the xi class

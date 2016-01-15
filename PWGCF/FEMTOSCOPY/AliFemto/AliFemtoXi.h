@@ -14,7 +14,11 @@
 class AliFemtoXi : public AliFemtoV0 {
 public:
   AliFemtoXi();
+  AliFemtoXi(const AliFemtoV0* aV0);
   virtual ~AliFemtoXi(){/* no-op */}
+
+  AliFemtoXi(const AliFemtoXi& aXi);
+  AliFemtoXi& operator=(const AliFemtoXi& aXi);
 
   void UpdateXi();
   float DecayLengthXi() const;            // 3-d decay distance
