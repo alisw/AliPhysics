@@ -34,6 +34,7 @@ class AliNDLocalRegression : public TNamed {
   Double_t Eval(Double_t *point);
   Double_t EvalError(Double_t *point);
   const THn *GetHistogram() {return fHistPoints;}
+  const TObjArray *   GetFitParam(){ return fLocalFitParam;}
   void SetCuts(Double_t nSigma=6, Double_t robustFraction=0.95, Int_t estimator=1);
   void SetHistogram(THn* histo );
   void SetTree(TTree * tree) {fInputTree = tree;}
