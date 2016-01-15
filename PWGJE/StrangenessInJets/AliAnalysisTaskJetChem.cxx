@@ -7,8 +7,8 @@
  *************************************************************************/
 
 /**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                  *
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -2337,7 +2337,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
     if(fUseExtraTracks)fCommonHistList->Add(fhnK0sEmbConeRef);
-    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
+    //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnLaIncl);
@@ -2346,7 +2346,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
      if(fUseExtraTracks)fCommonHistList->Add(fhnLaEmbConeRef);
-    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+     //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnALaIncl);
@@ -2355,7 +2355,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
       if(fUseExtraTracks)fCommonHistList->Add(fhnALaEmbConeRef);
-      if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+      //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnK0sPC);
@@ -2957,7 +2957,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   Int_t nALaStandard = 0;
 
   if(fUseExtraTracks ==  1)    { nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
-    if(fUseStandard == kTRUE){nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
+   if(fUseStandard == kTRUE){nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
   }
   if(fUseExtraTracks == -1)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
@@ -5820,9 +5820,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
     // std::cout<<"standard aod->GetNumberOfV0s(): "<<aod->GetNumberOfV0s()<<std::endl;
     
     for(int i=0; i<aod->GetNumberOfV0s(); i++){ // loop over V0s
-      
-
-          
+        
        AliAODv0* v0 = aod->GetV0(i);
        
        if(!v0)
@@ -7323,7 +7321,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	if(fDebug>2)Printf("%s:%d nK0s total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0list->GetEntries(),GetFFRadius());
 
-
 	if(fUseExtraTracks == 1){//only for extra particles used	
 	  //standard V0s for UE V0 subtraction
 	  
@@ -7345,11 +7342,22 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  	 
 	    Double_t vK0sEmbConeStandard[4] = {jetPt, invMK0s,trackPt,fEta};
 	    
-	    fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
+	    if(fDebug > 4)std::cout<<" v0 standard particle pt: "<<v0st->Pt()<< "eta: "<<fEta<<std::endl;
+
+	    //fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
+	    //######################################################################################################################
+	    //ATTENTION ONLY TESTING HERE: please switch to proper histograms afterwards for reference and standard tracks!!!!!!!!!!
+	    fhnK0sEmbConeRef->Fill(vK0sEmbConeStandard);
 	  }	  
-
+	  
 	}
-
+	
+	if(jetConeK0EmbStlist->GetSize() == 0){ 	
+	  
+	  Double_t vK0sEmbConeStandard[4] = {jetPt, 0., 0., -100.};
+	  fhnK0sEmbConeRef->Fill(vK0sEmbConeStandard);
+	}
+	
 	//######
 	//extra V0s	
 	for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in jet cone
@@ -7436,10 +7444,10 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    }
 
 	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
-	          
-	      Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
+	      //COMMENT IN AFTER TEST!!!    
+	      //Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
 	      
-	      fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
+	      //fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
 	    }	    
 	  }
 
@@ -7456,8 +7464,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
 	  }
 	  
-	  
-	  
 	}
 	
 	
@@ -7467,7 +7473,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  //fFFHistosIMK0Cone->FillFF(-1, -1, jetPt, incrementJetPt);
 	  Double_t vK0sEmbCone[4] = {jetPt, -1, -1, -1};
 	  fhnK0sEmbCone->Fill(vK0sEmbCone);
-	  fhnK0sEmbConeRef->Fill(vK0sEmbCone);
+	  //fhnK0sEmbConeRef->Fill(vK0sEmbCone);
 
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);}//normalisation by number of selected jets
@@ -7566,7 +7572,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  if(jetConeLaEmbStlist->GetSize() == 0){ // no La: increment jet pt entry of spectrum for normalisation
 	    
 	   
-	    Double_t vLaEmbStCone[4] = {jetPt, -1, -1, -1};
+	    Double_t vLaEmbStCone[4] = {jetPt, -1., -1., -100.};
 	    
 	    fhnLaEmbConeStandard->Fill(vLaEmbStCone);	  
    
@@ -7781,7 +7787,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  if(jetConeALaEmbStlist->GetSize() == 0){ // no ALa: increment jet pt entry of spectrum for normalisation
 	    
 	    
-	    Double_t vALaEmbStCone[4] = {jetPt, -1, -1, -1};
+	    Double_t vALaEmbStCone[4] = {jetPt, -1., -1., -100.};
 	    fhnALaEmbConeStandard->Fill(vALaEmbStCone);
 
 	  }    
