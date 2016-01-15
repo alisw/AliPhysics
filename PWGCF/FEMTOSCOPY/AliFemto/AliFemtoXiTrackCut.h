@@ -29,11 +29,11 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   virtual TList *ListSettings();
   virtual AliFemtoParticleType Type(){return hbtXi;}
 
-  bool IsPionNSigmaBac(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
+  bool IsPionNSigmaBac(float mom, float nsigmaTPCPi, float nsigmaTOFPi);  //!!!!! There is no need for this, as we can call AliFemtoV0TrackCut::IsPionNSigma
 
   void SetEtaXi(double x);
   void SetPtXi(double min, double max);
-  void SetChargeXi(int x);
+  void SetChargeXi(int x);  //!!!!!!!!!!!!!!!!!!!!!! To be deleted!!!  See comment at member fCharge
   void SetMaxDecayLengthXi(double x);
   void SetEtaBac(double x);
   void SetPtBac(double min, double max);
@@ -53,7 +53,10 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fMaxEtaXi;
   double fMinPtXi;
   double fMaxPtXi;
-  int fChargeXi;
+  int fChargeXi;  //!!!!!!!!!!!!!!!!!! To be deleted!!!  Currently, this member is not used anywhere in the code.
+		  // It seems redundant to set both fParticleTypeXi and fChargeXi.  Also, removing this member will
+		  // eliminate any error caused by a user, for instance, setting fParticleTypeXi=kXiMinus and fCharge=+1,
+		  // especially since fCharge is currently initiated in the constructor to 
 
   double fMaxEtaBac;
   double fMinPtBac;

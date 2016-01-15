@@ -13,7 +13,7 @@
 AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000)
 {
   // Default constructor
- }
+}
  //------------------------------
 AliFemtoXiTrackCut::~AliFemtoXiTrackCut(){
   /* noop */
@@ -37,13 +37,22 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(aXi->ChargeXi()==0)
     return false;
 
+
+  //ParticleType selection
+  //If fParticleTypeXi=kAll, any charged candidate will pass 
+  if(fParticleTypeXi == kXiPlus && aXi->ChargeXi() == -1) 
+    return false;
+
+  if(fParticleTypeXi == kXiMinus && aXi->ChargeXi() == 1) 
+    return false;
+
   //kinematic cuts
   if(TMath::Abs(eta) > fMaxEtaXi) return false;  //put in kinematic cuts by hand
   if(pt < fMinPtXi) return false;
   if(pt > fMaxPtXi) return false;
   if(TMath::Abs(aXi->EtaBac()) > fMaxEtaBac) return false;
-  if(aXi->PtPos()< fMinPtBac) return false;
-  if(aXi->PtPos()> fMaxPtBac) return false;
+  if(aXi->PtBac()< fMinPtBac) return false; 
+  if(aXi->PtBac()> fMaxPtBac) return false; 
 
   
 
