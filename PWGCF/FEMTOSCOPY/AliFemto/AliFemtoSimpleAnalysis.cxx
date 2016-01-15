@@ -7,6 +7,7 @@
 #include "AliFemtoV0Cut.h"
 #include "AliFemtoKinkCut.h"
 #include "AliFemtoXiCut.h"
+#include "AliFemtoXiTrackCut.h"
 #include "AliFemtoPicoEvent.h"
 
 #include <string>
@@ -120,7 +121,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtXi:
 
     DoFillParticleCollection(
-      (AliFemtoXiCut*)partCut,
+      (AliFemtoXiTrackCut*)partCut,
       hbtEvent->XiCollection(),
       partCollection
     );
