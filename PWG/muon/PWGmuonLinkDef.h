@@ -70,5 +70,8 @@
 
 #pragma link C++ class AliAnalysisTaskOnTheFlyAliAODDimuon+;
 
+#pragma link C++ class AliAnalysisTaskLMREventFilter+;
+#pragma link C++ class AliLMREvent+;
+#pragma link C++ class AliLMRMuon+;
 #endif
 
