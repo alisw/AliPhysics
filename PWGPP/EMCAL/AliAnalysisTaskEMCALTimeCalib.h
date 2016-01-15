@@ -244,7 +244,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t       fMinCellEnergy;        ///< minimum cell energy
 
   TString        fReferenceFileName ;   //!<! name of reference file (for one period)
-  TString        fReferenceRunByRunFileName ;   //!<! name of reference file (run-by-run)
+  TString        fReferenceRunByRunFileName ;   ///< name of reference file (run-by-run)
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
@@ -292,7 +292,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
 
   // histo with reference values run-by-run after the first iteration 
-  TH1C		*fhRefRuns; //-> 20 entries per run: nSM  ///> not working
+  TH1C		*fhRefRuns; ///< 20 entries per run: nSM
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
@@ -315,7 +315,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 2) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 3) ;
 /// \endcond
 };
 
