@@ -14,6 +14,11 @@
 # **************************************************************************/
 
 
+#except for true debug mode, disable AliDebug (and the AliCodeTimers)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DLOG_NO_DEBUG ")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DLOG_NO_DEBUG ")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ")
+
 #Module
 set (MODULE PWGmuon)
 
