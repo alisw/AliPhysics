@@ -686,17 +686,10 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 
    //Trigger
   TString trigger = esd->GetFiredTriggerClasses();
-  
-  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
-  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
-  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
-  fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
-  fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
-  fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
-  fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+
+  fTrigger[0]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
+  fTrigger[1]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
+  fTrigger[2]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
   
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
@@ -766,16 +759,15 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
    //ITSsa track loop
-   cout<<"N tracks = "<<esd ->GetNumberOfTracks()<<endl;
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
     if( !trk ) continue;
-    
+      
       if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue;
       if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 4)continue;
-      if(trk->GetTPCchi2()/trk->GetITSNcls() > 2.5)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
+      if(trk->GetITSNcls() < 3)continue;
+      if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
+      if((!trk->HasPointOnITSLayer(0))||(!trk->HasPointOnITSLayer(1)))continue;
  
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
