@@ -20,8 +20,7 @@ class AliITSMFTGeomTGeo;
 
 class AliITSMFTHit : public AliHit {
 
- public:
-  //
+public:
   AliITSMFTHit();
   AliITSMFTHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   AliITSMFTHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
@@ -30,7 +29,7 @@ class AliITSMFTHit : public AliHit {
 
   static void SetGeoManager(AliITSMFTGeomTGeo *gm) {fGeom=gm;}
 
-  void SetModule(Int_t mod){fModule=mod;};
+  void SetChip(Int_t mod){fModule=mod;};
   void SetShunt(Int_t shunt);
   void SetPosition(TLorentzVector &x){fX=x.X();fY=x.Y();fZ=x.Z();}
   void SetStartPosition(TLorentzVector &x){fx0=x.X();fy0=x.Y();fz0=x.Z();}
@@ -41,23 +40,20 @@ class AliITSMFTHit : public AliHit {
   void SetEdep(Float_t de){fDestep = de;}
   void SetMomentum(TLorentzVector &p){fPx=p.Px();fPy=p.Py();fPz=p.Pz();}
 
-  void SetChip(Int_t chip) {SetModule(chip);}
+  Int_t GetChip()  const {return fModule;}
   
-  virtual Int_t GetChip()          {return GetModule();}
-  virtual Int_t GetLayer() const;
-  virtual Int_t GetStave() const;
-  virtual Int_t GetHalfStave() const;
-  virtual Int_t GetModule() const;
-  virtual Int_t GetChipInModule() const;
-  virtual void  GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod, Int_t &det) const;
-  virtual void  GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
-  virtual void  GetPositionL(Float_t &x,Float_t &y,Float_t &z) {Float_t tf;GetPositionL(x,y,z,tf);}
-  virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;}
-  virtual void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;}
-  virtual void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
-  //
-  void Print(Option_t *option="") const;
-  
+  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
+  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z) {
+     Float_t tf;GetPositionL(x,y,z,tf);
+  }
+  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {
+     Float_t xf,yf,zf,tf; GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;
+  }
+  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {
+     Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;
+  }
+  void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
+
   void GetPositionG(Float_t &x,Float_t &y,Float_t &z)const {
         // returns the position in the Global frame
      x=fX;y=fY;z=fZ;return;}
@@ -73,13 +69,15 @@ class AliITSMFTHit : public AliHit {
         if((fStatus&0x0002)==0) return kFALSE;else return kTRUE;}
   Float_t GetIonization() const {return fDestep;}//returns the Destep
 
- protected:
+  void Print(Option_t *option="") const;
+  
+protected:
    AliITSMFTHit& operator=(const AliITSMFTHit &h);
 
    static AliITSMFTGeomTGeo *fGeom; //! Geometry manager;
 
    Int_t     fStatus; // Track Status
-   Int_t     fModule; // Module number 
+   Int_t     fModule; // Chip number 
    Float_t   fPx;     // PX of particle at the point of the hit
    Float_t   fPy;     // PY of particle at the point of the hit
    Float_t   fPz;     // PZ of particle at the point of the hit

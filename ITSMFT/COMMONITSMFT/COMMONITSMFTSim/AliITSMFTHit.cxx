@@ -15,6 +15,7 @@
 
 #include "TParticle.h"
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliStack.h"
@@ -175,73 +176,31 @@ void AliITSMFTHit::SetShunt(Int_t shunt){
 //______________________________________________________________________
 void AliITSMFTHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
 {
-    // Returns the position and time of flight of this hit in the local
-    // coordinates of this chip, and in the units of the Monte Carlo.
-    //
-    x = -999;
-    y = -999;
-    z = -999;
-    tof = -999;
-    
-    //
+  // Returns the position and time of flight of this hit in the local
+  // coordinates of this chip, and in the units of the Monte Carlo.
+  //
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  double g[3]={fX,fY,fZ},l[3];
+  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  x = l[0];
+  y = l[1];
+  z = l[2];
+  tof = fTof;
+  //
 }
 
 //______________________________________________________________________
 void AliITSMFTHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof)
 {
-    // Returns the initial position and time of flight of this hit
-    // in the local coordinates of this chip, and in the units of the
-    x = -999;
-    y = -999;
-    z = -999;
-    tof = -999;
-}
-
-//______________________________________________________________________
-void AliITSMFTHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det) const
-{
-    // Returns the layer stave and detector number lables for this
-    // ITS chip. Note: indices start from 0!
-    
-    layer = -999;
-    stave = -999;
-    sstave = -999;
-    mod = -999;
-    det = -999;
-}
-
-//______________________________________________________________________
-Int_t AliITSMFTHit::GetLayer() const
-{
-    // Returns the layer. Note: indices start from 0!
-    return -999;
-}
-
-//______________________________________________________________________
-Int_t AliITSMFTHit::GetStave() const
-{
-    // Returns the stave of TS chip. Note: indices start from 0!
-    return -999;
-}
-
-//______________________________________________________________________
-Int_t AliITSMFTHit::GetHalfStave() const
-{
-    // Returns the substave of the chip. Note: indices start from 0!
-    return -999;
-}
-
-//______________________________________________________________________
-Int_t AliITSMFTHit::GetModule() const
-{
-    return -999;
-}
-
-//______________________________________________________________________
-Int_t AliITSMFTHit::GetChipInModule() const // former GetDetector
-{
-    // Returns the detector within the module(or stave). Note: indices start from 0!
-    return -999;
+  // Returns the initial position and time of flight of this hit 
+  // in the local coordinates of this chip, and in the units of the 
+  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  double g[3]={fx0,fy0,fz0},l[3];  
+  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  x = l[0];
+  y = l[1];
+  z = l[2];
+  tof = ft0;
 }
 
 //______________________________________________________________________
