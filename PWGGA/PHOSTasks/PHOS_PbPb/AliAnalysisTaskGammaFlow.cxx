@@ -37,6 +37,7 @@
 #include "AliCentrality.h" 
 #include "AliEventplane.h"
 #include "AliOADBContainer.h"
+#include "AliEPFlattener.h"
 
 // Analysis task to fill histograms with PHOS ESD clusters and cells
 // Authors: Dmitri Peressounko
@@ -47,7 +48,6 @@ ClassImp(AliAnalysisTaskGammaFlow)
 //________________________________________________________________________
 AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name) 
 : AliAnalysisTaskSE(name),
-  fStack(0x0),
   fOutputContainer(0x0),
   fPHOSEvent(0x0),
   fQV0A(0.),
@@ -67,36 +67,16 @@ AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name)
   fTPCQres(1.),
   fHaveTPCRP(0),
   fPhiDist(0x0),
+  fV0AFlat(0x0),
+  fV0CFlat(0x0),
+  fTPCFlat(0x0),
   fHarmonics(3),
   fDistCut(0),
-  fMultV0(0x0),
-  fV0Cpol(0),
-  fV0Apol(0),
   fRunNumber(0),
   fCentrality(0.),
   fCenBin(0),
   fPHOSGeo(0x0),
   fEventCounter(0),
-  fTPCflatC2(0x0),   
-  fTPCflatS2(0x0),
-  fTPCflatC3(0x0),
-  fTPCflatS3(0x0),
-  fTPCflatC4(0x0),
-  fTPCflatS4(0x0),
-
-  fV0AflatC2(0x0),
-  fV0AflatS2(0x0),
-  fV0AflatC3(0x0),
-  fV0AflatS3(0x0),
-  fV0AflatC4(0x0),
-  fV0AflatS4(0x0),
-    
-  fV0CflatC2(0x0),
-  fV0CflatS2(0x0),
-  fV0CflatC3(0x0),
-  fV0CflatS3(0x0),
-  fV0CflatC4(0x0),
-  fV0CflatS4(0x0), 
 
   fTPCfinalC2(0x0),   //HIstos with flattening parameters
   fTPCfinalS2(0x0),
@@ -137,10 +117,6 @@ AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name)
   // Output slots #0 write into a TH1 container
   DefineOutput(1,TList::Class());
 
-  // Set bad channel map
-  for(Int_t i=0; i<6; i++){
-    fPHOSBadMap[i]=0x0 ;
-  }
   // Initialize the PHOS geometry
   fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
 
@@ -176,8 +152,13 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
   
   //Centrality
   fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
+  fOutputContainer->Add(new TH1F("hCentralityCorr","Event centrality", 100,0.,100.)) ;
+  fOutputContainer->Add(new TH1F("hBadCentrality","Bad PHOS event centrality", 100,0.,100.)) ;
   fOutputContainer->Add(new TH2F("hCenPHOS","Centrality vs PHOSclusters", 100,0.,100.,200,0.,200.)) ;
   fOutputContainer->Add(new TH2F("hCenPHOSCells","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.)) ;
+  fOutputContainer->Add(new TH3F("hCenPHOSCellsM12","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.,100,0.,1000.)) ;
+  fOutputContainer->Add(new TH3F("hCenPHOSCellsM23","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.,100,0.,1000.)) ;
+  fOutputContainer->Add(new TH3F("hCenPHOSCellsM13","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.,100,0.,1000.)) ;
   fOutputContainer->Add(new TH2F("hCenTrack","Centrality vs tracks", 100,0.,100.,100,0.,15000.)) ;  
   fOutputContainer->Add(new TH2F("hCluEvsClu","ClusterMult vs E",200,0.,20.,100,0.,100.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsCluM","ClusterMult vs E",200,0.,20.,100,0.,20.)) ;
@@ -404,14 +385,7 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
 {
   // Main loop, called for each event
   // Analyze ESD/AOD
-    
-    
-  fStack=0 ;
-  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
-    if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-      fStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-  }
-  
+      
   
   AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!event) {
@@ -436,185 +410,46 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
     }
     Int_t run = event->GetRunNumber() ;
-    TFile * fflatFine = TFile::Open("EP_final.root") ;
-    TFile * fflatFineQ = TFile::Open("EPq_final.root") ;
-    
-/*    
-    if(fHarmonics==3){
-      gROOT->cd() ;
-      TH1D * tmp = (TH1D*)fflatFine->Get("v3_TPC_cos2") ;
-      fTPCfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_TPC_sin2") ;
-      fTPCfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_TPC_cos4") ;
-      fTPCfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_TPC_sin4") ;
-      fTPCfinalS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0C_cos2") ;
-      fV0CfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0C_sin2") ;
-      fV0CfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0C_cos4") ;
-      fV0CfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0C_sin4") ;
-      fV0CfinalS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0A_cos2") ;
-      fV0AfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0A_sin2") ;
-      fV0AfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0A_cos4") ;
-      fV0AfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v3_V0A_sin4") ;
-      fV0AfinalS4 = new TH1D(*tmp) ;
-
-      //Q-flattening
-      tmp = (TH1D*)fflatFineQ->Get("v3q_TPC_cos2") ;
-      fTPCfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_TPC_sin2") ;
-      fTPCfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_TPC_cos4") ;
-      fTPCfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_TPC_sin4") ;
-      fTPCfinalQS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0C_cos2") ;
-      fV0CfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0C_sin2") ;
-      fV0CfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0C_cos4") ;
-      fV0CfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0C_sin4") ;
-      fV0CfinalQS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0A_cos2") ;
-      fV0AfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0A_sin2") ;
-      fV0AfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0A_cos4") ;
-      fV0AfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v3q_V0A_sin4") ;
-      fV0AfinalQS4 = new TH1D(*tmp) ;
-
-      
-      TFile * fflat = TFile::Open("EP_calibV3.root") ;
-      gROOT->cd() ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos3",run-100000)) ;
-      printf("Filling EP calibration for run %d \n",run-100000) ;    
-      fTPCflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin3",run-100000)) ;
-      fTPCflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos6",run-100000)) ;
-      fTPCflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin6",run-100000)) ;
-      fTPCflatS3 = new TH1D(*tmp) ;
-      printf("...CPV done \n") ;
-    
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos3",run)) ;
-      fV0AflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin3",run)) ;
-      fV0AflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos6",run)) ;
-      fV0AflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin6",run)) ;
-      fV0AflatS3 = new TH1D(*tmp) ;
-      printf("...V0A done \n") ;
-    
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos3",run)) ;
-      fV0CflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin3",run)) ;
-      fV0CflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos6",run)) ;
-      fV0CflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin6",run)) ;
-      fV0CflatS3 = new TH1D(*tmp) ;
-      fflat->Close() ;
-      printf("...V0C done \n") ;
+//    TFile * fflatFine = TFile::Open("EP_final.root") ;
+//    TFile * fflatFineQ = TFile::Open("EPq_final.root") ;
+    AliOADBContainer flatContainer("phosFlat");
+    flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
+    TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
+    if(!arr){
+      AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
+      arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
     }
+        
+    AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
     if(fHarmonics==2){
-      TH1D * tmp = (TH1D*)fflatFine->Get("v2_TPC_cos2") ;
-      fTPCfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_TPC_sin2") ;
-      fTPCfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_TPC_cos4") ;
-      fTPCfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_TPC_sin4") ;
-      fTPCfinalS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0C_cos2") ;
-      fV0CfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0C_sin2") ;
-      fV0CfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0C_cos4") ;
-      fV0CfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0C_sin4") ;
-      fV0CfinalS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0A_cos2") ;
-      fV0AfinalC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0A_sin2") ;
-      fV0AfinalS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0A_cos4") ;
-      fV0AfinalC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFine->Get("v2_V0A_sin4") ;
-      fV0AfinalS4 = new TH1D(*tmp) ;
-
-      tmp = (TH1D*)fflatFineQ->Get("v2q_TPC_cos2") ;
-      fTPCfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_TPC_sin2") ;
-      fTPCfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_TPC_cos4") ;
-      fTPCfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_TPC_sin4") ;
-      fTPCfinalQS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0C_cos2") ;
-      fV0CfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0C_sin2") ;
-      fV0CfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0C_cos4") ;
-      fV0CfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0C_sin4") ;
-      fV0CfinalQS4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0A_cos2") ;
-      fV0AfinalQC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0A_sin2") ;
-      fV0AfinalQS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0A_cos4") ;
-      fV0AfinalQC4 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflatFineQ->Get("v2q_V0A_sin4") ;
-      fV0AfinalQS4 = new TH1D(*tmp) ;
-      
-      
-      TFile * fflat = TFile::Open("EP_calib.root") ;
-      gROOT->cd() ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos2",run)) ;
-      printf("Filling EP calibration for run %d \n",run) ;    
-      fTPCflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin2",run)) ;
-      fTPCflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos4",run)) ;
-      fTPCflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin4",run)) ;
-      fTPCflatS3 = new TH1D(*tmp) ;
-      printf("...CPV done \n") ;
-    
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos2",run)) ;
-      fV0AflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin2",run)) ;
-      fV0AflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos4",run)) ;
-      fV0AflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin4",run)) ;
-      fV0AflatS3 = new TH1D(*tmp) ;
-      printf("...V0A done \n") ;
-    
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos2",run)) ;
-      fV0CflatC2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin2",run)) ;
-      fV0CflatS2 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos4",run)) ;
-      fV0CflatC3 = new TH1D(*tmp) ;
-      tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin4",run)) ;
-      fV0CflatS3 = new TH1D(*tmp) ;
-      fflat->Close() ;
-      printf("...V0C done \n") ;
+      AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
+      if(fTPCFlat) delete fTPCFlat ;
+      fTPCFlat = new AliEPFlattener() ;
+      fTPCFlat = h ;
+      h = (AliEPFlattener*)arr->At(1) ;  
+      if(fV0AFlat) delete fV0AFlat ;
+      fV0AFlat = new AliEPFlattener() ;
+      fV0AFlat = h ;
+      h = (AliEPFlattener*)arr->At(2) ;  
+      if(fV0CFlat) delete fV0CFlat ;
+      fV0CFlat = new AliEPFlattener() ;
+      fV0CFlat = h ;
+    }    
+    if(fHarmonics==3){
+      AliEPFlattener * h = (AliEPFlattener*)arr->At(3) ;  
+      if(fTPCFlat) delete fTPCFlat ;
+      fTPCFlat = new AliEPFlattener() ;
+      fTPCFlat = h ;
+      h = (AliEPFlattener*)arr->At(4) ;  
+      if(fV0AFlat) delete fV0AFlat ;
+      fV0AFlat = new AliEPFlattener() ;
+      fV0AFlat = h ;
+      h = (AliEPFlattener*)arr->At(5) ;  
+      if(fV0CFlat) delete fV0CFlat ;
+      fV0CFlat = new AliEPFlattener() ;
+      fV0CFlat = h ;
     }
-*/
+      
     // TPC Event Plane Weights
     AliOADBContainer *fEPContainer=NULL;
     TString oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
@@ -645,7 +480,9 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       else iter = 3;
    }
 
-    
+      
+      
+      
     fEventCounter++ ;
   }
 
@@ -715,7 +552,16 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   else 
     fCenBin=6 ;
 
+  if(TestPHOSEvent(event)){
+    //bad event
+    FillHistogram("hBadCentrality",fCentrality) ;   
+    PostData(1, fOutputContainer);
+    return;
+  }
   
+  
+  
+  Double_t cWeight=CentralityWeight(fCentrality) ;
 
   //Calculate EP resolutions from centrality
   EvalResolution() ;
@@ -806,6 +652,7 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   FillHistogram("hTotSelEvents",4.5) ;
   //All event selections done
   FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
+  FillHistogram("hCentralityCorr",fCentrality,cWeight) ;
   //Reaction plane is defined in the range (0;pi)
   //We have 10 bins
   Double_t averageRP = fRPV0A+fRPV0C+fRP ;
@@ -839,12 +686,12 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   Double_t avrgEm1=0,avrgEm2=0,avrgEm3=0; //average cluster energy
 
   AliAODCaloCells * cells = event->GetPHOSCells() ;
-  FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
   FillHistogram("hCenTrack",fCentrality,event->GetNumberOfTracks()) ;
   
   //QA PHOS cells
   Int_t nCellModule[3] = {0,0,0};
-  for (Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++) {
+  Int_t nCells=cells->GetNumberOfCells();
+  for (Int_t iCell=0; iCell<nCells; iCell++) {
     Int_t cellAbsId = cells->GetCellNumber(iCell);
     Int_t relId[4] ;
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
@@ -875,6 +722,10 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   FillHistogram("hCellMultEventM1",nCellModule[0]);
   FillHistogram("hCellMultEventM2",nCellModule[1]);
   FillHistogram("hCellMultEventM3",nCellModule[2]);
+  FillHistogram("hCenPHOSCells",fCentrality,nCells) ;
+  FillHistogram("hCenPHOSCellsM12",fCentrality,nCellModule[0],nCellModule[1]) ;
+  FillHistogram("hCenPHOSCellsM13",fCentrality,nCellModule[0],nCellModule[2]) ;
+  FillHistogram("hCenPHOSCellsM23",fCentrality,nCellModule[1],nCellModule[2]) ;
   
   
   
@@ -959,25 +810,25 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
 
     Double_t distBC=clu->GetDistanceToBadChannel();
     if(distBC>3.){
-      FillHistogram(Form("hPhotAll_DistBad2_cen%d",fCenBin),ph->Pt()) ;
-      FillHistogram(Form("hPhotAll_DistBad2core_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;
+      FillHistogram(Form("hPhotAll_DistBad2_cen%d",fCenBin),ph->Pt(),cWeight) ;
+      FillHistogram(Form("hPhotAll_DistBad2core_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;
       if(ph->IsDisp2OK()){
-        FillHistogram(Form("hPhotAll_DistBad2Disp_cen%d",fCenBin),ph->Pt()) ;
-        FillHistogram(Form("hPhotAll_DistBad2Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;	
+        FillHistogram(Form("hPhotAll_DistBad2Disp_cen%d",fCenBin),ph->Pt(),cWeight) ;
+        FillHistogram(Form("hPhotAll_DistBad2Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;	
       }
       if(distBC>4.){
-        FillHistogram(Form("hPhotAll_DistBad4_cen%d",fCenBin),ph->Pt()) ;
-        FillHistogram(Form("hPhotAll_DistBad4core_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;
+        FillHistogram(Form("hPhotAll_DistBad4_cen%d",fCenBin),ph->Pt(),cWeight) ;
+        FillHistogram(Form("hPhotAll_DistBad4core_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;
         if(ph->IsDisp2OK()){
-          FillHistogram(Form("hPhotAll_DistBad4Disp_cen%d",fCenBin),ph->Pt()) ;
-          FillHistogram(Form("hPhotAll_DistBad4Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;	
+          FillHistogram(Form("hPhotAll_DistBad4Disp_cen%d",fCenBin),ph->Pt(),cWeight) ;
+          FillHistogram(Form("hPhotAll_DistBad4Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;	
         }
         if(distBC>6.){
-          FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt()) ;
-          FillHistogram(Form("hPhotAll_DistBad6core_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;
+          FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt(),cWeight) ;
+          FillHistogram(Form("hPhotAll_DistBad6core_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;
           if(ph->IsDisp2OK()){
-            FillHistogram(Form("hPhotAll_DistBad6Disp_cen%d",fCenBin),ph->Pt()) ;
-            FillHistogram(Form("hPhotAll_DistBad6Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt()) ;	
+            FillHistogram(Form("hPhotAll_DistBad6Disp_cen%d",fCenBin),ph->Pt(),cWeight) ;
+            FillHistogram(Form("hPhotAll_DistBad6Dispcore_cen%d",fCenBin),ph->GetMomV2()->Pt(),cWeight) ;	
           }	  
 	}    
       }
@@ -1005,7 +856,7 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
     inPHOS++ ;
   }
   
-  FillHistogram("hCenPHOS",fCentrality,inPHOS) ;
+  FillHistogram("hCenPHOS",fCentrality,inPHOS,cWeight) ;
   if(inPHOS==0){
     PostData(1, fOutputContainer);
     fEventCounter++;
@@ -1024,17 +875,17 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   Double_t wQT=1./fTPCQres ;
   Double_t nCorr=1./PHOSMultiplicity() ; //multiplicity vs. centrality
   
-   FillHistogram("resV0A",fCentrality,fV0Ares) ;
-   FillHistogram("resV0C",fCentrality,fV0Cres) ;
-   FillHistogram("resTPC",fCentrality,fTPCres) ;
-   FillHistogram("qresV0A",fCentrality,fV0AQres) ;
-   FillHistogram("qresV0C",fCentrality,fV0CQres) ;
-   FillHistogram("qresTPC",fCentrality,fTPCQres) ;
+   FillHistogram("resV0A",fCentrality,fV0Ares,cWeight) ;
+   FillHistogram("resV0C",fCentrality,fV0Cres,cWeight) ;
+   FillHistogram("resTPC",fCentrality,fTPCres,cWeight) ;
+   FillHistogram("qresV0A",fCentrality,fV0AQres,cWeight) ;
+   FillHistogram("qresV0C",fCentrality,fV0CQres,cWeight) ;
+   FillHistogram("qresTPC",fCentrality,fTPCQres,cWeight) ;
    
    TVector2 vQmA(fQV0A*TMath::Cos(fHarmonics*fRPQV0A),fQV0A*TMath::Sin(fHarmonics*fRPQV0A)) ;
    TVector2 vQmB(fQV0C*TMath::Cos(fHarmonics*fRPQV0C),fQV0C*TMath::Sin(fHarmonics*fRPQV0C)) ;
    
-   FillHistogram("VaVbcen",fCentrality,vQmA*vQmB) ;
+   FillHistogram("VaVbcen",fCentrality,vQmA*vQmB,cWeight) ;
    
   for (Int_t i1=0; i1<inPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
@@ -1071,113 +922,113 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
     Double_t dUQB = vU*vQmB;
     
 
-    FillHistogram(Form("hPhotPhiSPV0AAll"),pt,fCentrality,dUQA) ;	
-    FillHistogram(Form("hPhotPhiSPV0CAll"),pt,fCentrality,dUQB) ;	
-    FillHistogram(Form("hPhotPhiSPV0AAllcore"),ptV,fCentrality,dUQA) ;	
-    FillHistogram(Form("hPhotPhiSPV0CAllcore"),ptV,fCentrality,dUQB) ;	
+    FillHistogram(Form("hPhotPhiSPV0AAll"),pt,fCentrality,dUQA,cWeight) ;	
+    FillHistogram(Form("hPhotPhiSPV0CAll"),pt,fCentrality,dUQB,cWeight) ;	
+    FillHistogram(Form("hPhotPhiSPV0AAllcore"),ptV,fCentrality,dUQA,cWeight) ;	
+    FillHistogram(Form("hPhotPhiSPV0CAllcore"),ptV,fCentrality,dUQB,cWeight) ;	
     
-    FillHistogram(Form("hPhotPhiR2V0AAll_cen%d",fCenBin),pt,qcosA*wQA*nCorr) ;
-    FillHistogram(Form("hPhotPhiRV0AAll_cen%d", fCenBin),pt,qcosA*wQA) ;
-    FillHistogram(Form("hPhotPhiR2V0CAll_cen%d",fCenBin),pt,qcosC*wQC*nCorr) ;
-    FillHistogram(Form("hPhotPhiRV0CAll_cen%d", fCenBin),pt,qcosC*wQC) ;
+    FillHistogram(Form("hPhotPhiR2V0AAll_cen%d",fCenBin),pt,qcosA*wQA,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotPhiRV0AAll_cen%d", fCenBin),pt,qcosA*wQA,cWeight) ;
+    FillHistogram(Form("hPhotPhiR2V0CAll_cen%d",fCenBin),pt,qcosC*wQC,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotPhiRV0CAll_cen%d", fCenBin),pt,qcosC*wQC,cWeight) ;
     if(fHaveTPCRP){
-      FillHistogram(Form("hPhotPhiR2TPCAll_cen%d",fCenBin),pt,qcosT*wQT*nCorr) ;
-      FillHistogram(Form("hPhotPhiRTPCAll_cen%d",fCenBin),pt,qcosT*wQT) ;
+      FillHistogram(Form("hPhotPhiR2TPCAll_cen%d",fCenBin),pt,qcosT*wQT,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRTPCAll_cen%d",fCenBin),pt,qcosT*wQT,cWeight) ;
     }
-    FillHistogram(Form("hPhotPhiR2V0AAllcore_cen%d",fCenBin),ptV,qcosA*wQA*nCorr) ;
-    FillHistogram(Form("hPhotPhiRV0AAllcore_cen%d", fCenBin),ptV,qcosA*wQA) ;
-    FillHistogram(Form("hPhotPhiR2V0CAllcore_cen%d",fCenBin),ptV,qcosC*wQC*nCorr) ;
-    FillHistogram(Form("hPhotPhiRV0CAllcore_cen%d", fCenBin),ptV,qcosC*wQC) ;
+    FillHistogram(Form("hPhotPhiR2V0AAllcore_cen%d",fCenBin),ptV,qcosA*wQA,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotPhiRV0AAllcore_cen%d", fCenBin),ptV,qcosA*wQA,cWeight) ;
+    FillHistogram(Form("hPhotPhiR2V0CAllcore_cen%d",fCenBin),ptV,qcosC*wQC,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotPhiRV0CAllcore_cen%d", fCenBin),ptV,qcosC*wQC,cWeight) ;
     if(fHaveTPCRP){
-      FillHistogram(Form("hPhotPhiR2TPCAllcore_cen%d",fCenBin),ptV,qcosT*wQT*nCorr) ;
-      FillHistogram(Form("hPhotPhiRTPCAllcore_cen%d",fCenBin),ptV,qcosT*wQT) ;
+      FillHistogram(Form("hPhotPhiR2TPCAllcore_cen%d",fCenBin),ptV,qcosT*wQT,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRTPCAllcore_cen%d",fCenBin),ptV,qcosT*wQT,cWeight) ;
     }
     
-    FillHistogram(Form("hPhotcosV0AAll_cen%d",fCenBin),pt,cosA*wA) ;
-    FillHistogram(Form("hPhotcosV0CAll_cen%d",fCenBin),pt,cosC*wC) ;
-    FillHistogram(Form("hPhotcosNV0AAll_cen%d",fCenBin),pt,cosA*wA*nCorr) ;
-    FillHistogram(Form("hPhotcosNV0CAll_cen%d",fCenBin),pt,cosC*wC*nCorr) ;
-    FillHistogram(Form("hPhotcosV0AAllcore_cen%d",fCenBin),ptV,cosA*wA) ;
-    FillHistogram(Form("hPhotcosV0CAllcore_cen%d",fCenBin),ptV,cosC*wC) ;
-    FillHistogram(Form("hPhotcosNV0AAllcore_cen%d",fCenBin),ptV,cosA*wA*nCorr) ;
-    FillHistogram(Form("hPhotcosNV0CAllcore_cen%d",fCenBin),ptV,cosC*wC*nCorr) ;
+    FillHistogram(Form("hPhotcosV0AAll_cen%d",fCenBin),pt,cosA*wA,cWeight) ;
+    FillHistogram(Form("hPhotcosV0CAll_cen%d",fCenBin),pt,cosC*wC,cWeight) ;
+    FillHistogram(Form("hPhotcosNV0AAll_cen%d",fCenBin),pt,cosA*wA,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotcosNV0CAll_cen%d",fCenBin),pt,cosC*wC,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotcosV0AAllcore_cen%d",fCenBin),ptV,cosA*wA,cWeight) ;
+    FillHistogram(Form("hPhotcosV0CAllcore_cen%d",fCenBin),ptV,cosC*wC,cWeight) ;
+    FillHistogram(Form("hPhotcosNV0AAllcore_cen%d",fCenBin),ptV,cosA*wA,cWeight*nCorr) ;
+    FillHistogram(Form("hPhotcosNV0CAllcore_cen%d",fCenBin),ptV,cosC*wC,cWeight*nCorr) ;
     if(fHaveTPCRP){
-      FillHistogram(Form("hPhotcosTPCAll_cen%d",fCenBin),pt,cosT*wT) ;
-      FillHistogram(Form("hPhotcosTPCAllcore_cen%d",fCenBin),ptV,cosT*wT) ;
-      FillHistogram(Form("hPhotcosNTPCAll_cen%d",fCenBin),pt,cosT*wT*nCorr) ;
-      FillHistogram(Form("hPhotcosNTPCAllcore_cen%d",fCenBin),ptV,cosT*wT*nCorr) ;
+      FillHistogram(Form("hPhotcosTPCAll_cen%d",fCenBin),pt,cosT*wT,cWeight) ;
+      FillHistogram(Form("hPhotcosTPCAllcore_cen%d",fCenBin),ptV,cosT*wT,cWeight) ;
+      FillHistogram(Form("hPhotcosNTPCAll_cen%d",fCenBin),pt,cosT*wT,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosNTPCAllcore_cen%d",fCenBin),ptV,cosT*wT,cWeight*nCorr) ;
     }
-    FillHistogram(Form("hPhotAll_cen%d",fCenBin),pt) ;
-    FillHistogram(Form("hPhotRaAll_cen%d",fCenBin),pt,wA) ;
-    FillHistogram(Form("hPhotRcAll_cen%d",fCenBin),pt,wC) ;
-    FillHistogram(Form("hPhotRNaAll_cen%d",fCenBin),pt,wA*nCorr) ;
-    FillHistogram(Form("hPhotRNcAll_cen%d",fCenBin),pt,wC*nCorr) ;
-    FillHistogram(Form("hPhotAll_m%d_cen%d",ph1->Module(),fCenBin),pt) ;
-    FillHistogram(Form("hPhotAllcore_m%d_cen%d",ph1->Module(),fCenBin),ptV) ;   
-    FillHistogram(Form("hPhotAllcore_cen%d",fCenBin),ptV) ;
-    FillHistogram(Form("hPhotRaAllcore_cen%d",fCenBin),ptV,wA) ;
-    FillHistogram(Form("hPhotRcAllcore_cen%d",fCenBin),ptV,wC) ;
+    FillHistogram(Form("hPhotAll_cen%d",fCenBin),pt,cWeight) ;
+    FillHistogram(Form("hPhotRaAll_cen%d",fCenBin),pt,cWeight*wA) ;
+    FillHistogram(Form("hPhotRcAll_cen%d",fCenBin),pt,cWeight*wC) ;
+    FillHistogram(Form("hPhotRNaAll_cen%d",fCenBin),pt,cWeight*wA*nCorr) ;
+    FillHistogram(Form("hPhotRNcAll_cen%d",fCenBin),pt,cWeight*wC*nCorr) ;
+    FillHistogram(Form("hPhotAll_m%d_cen%d",ph1->Module(),fCenBin),pt,cWeight) ;
+    FillHistogram(Form("hPhotAllcore_m%d_cen%d",ph1->Module(),fCenBin),ptV,cWeight) ;   
+    FillHistogram(Form("hPhotAllcore_cen%d",fCenBin),ptV,cWeight) ;
+    FillHistogram(Form("hPhotRaAllcore_cen%d",fCenBin),ptV,cWeight*wA) ;
+    FillHistogram(Form("hPhotRcAllcore_cen%d",fCenBin),ptV,cWeight*wC) ;
     if(fHaveTPCRP){
-      FillHistogram(Form("hPhotRtAll_cen%d",fCenBin),pt,wT) ;
-      FillHistogram(Form("hPhotRtAllcore_cen%d",fCenBin),ptV,wT) ;
-      FillHistogram(Form("hPhotRNtAll_cen%d",fCenBin),pt,wT*nCorr) ;
-      FillHistogram(Form("hPhotRNtAllcore_cen%d",fCenBin),ptV,wT*nCorr) ;
+      FillHistogram(Form("hPhotRtAll_cen%d",fCenBin),pt,cWeight*wT) ;
+      FillHistogram(Form("hPhotRtAllcore_cen%d",fCenBin),ptV,cWeight*wT) ;
+      FillHistogram(Form("hPhotRNtAll_cen%d",fCenBin),pt,cWeight*wT*nCorr) ;
+      FillHistogram(Form("hPhotRNtAllcore_cen%d",fCenBin),ptV,cWeight*wT*nCorr) ;
     }
     //CPV----
     if(ph1->IsCPVOK()){
       
-      FillHistogram(Form("hPhotPhiSPV0ACPV"),pt,fCentrality,dUQA) ;	
-      FillHistogram(Form("hPhotPhiSPV0CCPV"),pt,fCentrality,dUQB) ;	
-      FillHistogram(Form("hPhotPhiSPV0ACPVcore"),ptV,fCentrality,dUQA) ;	
-      FillHistogram(Form("hPhotPhiSPV0CCPVcore"),ptV,fCentrality,dUQB) ;	
+      FillHistogram(Form("hPhotPhiSPV0ACPV"),pt,fCentrality,dUQA,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0CCPV"),pt,fCentrality,dUQB,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0ACPVcore"),ptV,fCentrality,dUQA,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0CCPVcore"),ptV,fCentrality,dUQB,cWeight) ;	
       
-      FillHistogram(Form("hPhotPhiR2V0ACPV_cen%d",fCenBin),pt,qcosA*wQA*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0ACPV_cen%d", fCenBin),pt,qcosA*wQA) ;
-      FillHistogram(Form("hPhotPhiR2V0CCPV_cen%d",fCenBin),pt,qcosC*wQC*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0CCPV_cen%d", fCenBin),pt,qcosC*wQC) ;
+      FillHistogram(Form("hPhotPhiR2V0ACPV_cen%d",fCenBin),pt,qcosA*wQA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0ACPV_cen%d", fCenBin),pt,qcosA*wQA,cWeight) ;
+      FillHistogram(Form("hPhotPhiR2V0CCPV_cen%d",fCenBin),pt,qcosC*wQC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0CCPV_cen%d", fCenBin),pt,qcosC*wQC,cWeight) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotPhiR2TPCCPV_cen%d",fCenBin),pt,qcosT*wQT*nCorr) ;
-        FillHistogram(Form("hPhotPhiRTPCCPV_cen%d", fCenBin),pt,qcosT*wQT) ;
+        FillHistogram(Form("hPhotPhiR2TPCCPV_cen%d",fCenBin),pt,qcosT*wQT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotPhiRTPCCPV_cen%d", fCenBin),pt,qcosT*wQT,cWeight) ;
       }
-      FillHistogram(Form("hPhotPhiR2V0ACPVcore_cen%d",fCenBin),ptV,qcosA*wQA*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0ACPVcore_cen%d", fCenBin),ptV,qcosA*wQA) ;
-      FillHistogram(Form("hPhotPhiR2V0CCPVcore_cen%d",fCenBin),ptV,qcosC*wQC*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0CCPVcore_cen%d", fCenBin),ptV,qcosC*wQC) ;
+      FillHistogram(Form("hPhotPhiR2V0ACPVcore_cen%d",fCenBin),ptV,qcosA*wQA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0ACPVcore_cen%d", fCenBin),ptV,qcosA*wQA,cWeight) ;
+      FillHistogram(Form("hPhotPhiR2V0CCPVcore_cen%d",fCenBin),ptV,qcosC*wQC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0CCPVcore_cen%d", fCenBin),ptV,qcosC*wQC,cWeight) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotPhiR2TPCCPVcore_cen%d",fCenBin),ptV,qcosT*wQT*nCorr) ;
-        FillHistogram(Form("hPhotPhiRTPCCPVcore_cen%d",fCenBin),ptV,qcosT*wQT) ;
+        FillHistogram(Form("hPhotPhiR2TPCCPVcore_cen%d",fCenBin),ptV,qcosT*wQT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotPhiRTPCCPVcore_cen%d",fCenBin),ptV,qcosT*wQT,cWeight) ;
       }
-      FillHistogram(Form("hPhotcosV0ACPV_cen%d",fCenBin),pt,cosA*wA) ;
-      FillHistogram(Form("hPhotcosV0CCPV_cen%d",fCenBin),pt,cosC*wC) ;
-      FillHistogram(Form("hPhotcosNV0ACPV_cen%d",fCenBin),pt,cosA*wA*nCorr) ;
-      FillHistogram(Form("hPhotcosNV0CCPV_cen%d",fCenBin),pt,cosC*wC*nCorr) ;
-      FillHistogram(Form("hPhotcosV0ACPVcore_cen%d",fCenBin),ptV,cosA*wA) ;
-      FillHistogram(Form("hPhotcosV0CCPVcore_cen%d",fCenBin),ptV,cosC*wC) ;
-      FillHistogram(Form("hPhotcosNV0ACPVcore_cen%d",fCenBin),ptV,cosA*wA*nCorr) ;
-      FillHistogram(Form("hPhotcosNV0CCPVcore_cen%d",fCenBin),ptV,cosC*wC*nCorr) ;
+      FillHistogram(Form("hPhotcosV0ACPV_cen%d",fCenBin),pt,cosA*wA,cWeight) ;
+      FillHistogram(Form("hPhotcosV0CCPV_cen%d",fCenBin),pt,cosC*wC,cWeight) ;
+      FillHistogram(Form("hPhotcosNV0ACPV_cen%d",fCenBin),pt,cosA*wA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosNV0CCPV_cen%d",fCenBin),pt,cosC*wC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosV0ACPVcore_cen%d",fCenBin),ptV,cosA*wA,cWeight) ;
+      FillHistogram(Form("hPhotcosV0CCPVcore_cen%d",fCenBin),ptV,cosC*wC,cWeight) ;
+      FillHistogram(Form("hPhotcosNV0ACPVcore_cen%d",fCenBin),ptV,cosA*wA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosNV0CCPVcore_cen%d",fCenBin),ptV,cosC*wC,cWeight*nCorr) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotcosTPCCPV_cen%d",fCenBin),pt,cosT*wT) ;
-        FillHistogram(Form("hPhotcosTPCCPVcore_cen%d",fCenBin),ptV,cosT*wT) ;
-        FillHistogram(Form("hPhotcosNTPCCPV_cen%d",fCenBin),pt,cosT*wT*nCorr) ;
-        FillHistogram(Form("hPhotcosNTPCCPVcore_cen%d",fCenBin),ptV,cosT*wT*nCorr) ;
+        FillHistogram(Form("hPhotcosTPCCPV_cen%d",fCenBin),pt,cosT*wT,cWeight) ;
+        FillHistogram(Form("hPhotcosTPCCPVcore_cen%d",fCenBin),ptV,cosT*wT,cWeight) ;
+        FillHistogram(Form("hPhotcosNTPCCPV_cen%d",fCenBin),pt,cosT*wT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotcosNTPCCPVcore_cen%d",fCenBin),ptV,cosT*wT,cWeight*nCorr) ;
       }
       
-      FillHistogram(Form("hPhotCPV_cen%d",fCenBin),pt) ;
-      FillHistogram(Form("hPhotRaCPV_cen%d",fCenBin),pt,wA) ;
-      FillHistogram(Form("hPhotRcCPV_cen%d",fCenBin),pt,wC) ;
-      FillHistogram(Form("hPhotRtCPV_cen%d",fCenBin),pt,wT) ;
-      FillHistogram(Form("hPhotRNaCPV_cen%d",fCenBin),pt,wA*nCorr) ;
-      FillHistogram(Form("hPhotRNcCPV_cen%d",fCenBin),pt,wC*nCorr) ;
-      FillHistogram(Form("hPhotRNtCPV_cen%d",fCenBin),pt,wT*nCorr) ;
-      FillHistogram(Form("hPhotCPVcore_cen%d",fCenBin),ptV) ;
-      FillHistogram(Form("hPhotRaCPVcore_cen%d",fCenBin),ptV,wA) ;
-      FillHistogram(Form("hPhotRcCPVcore_cen%d",fCenBin),ptV,wC) ;
-      FillHistogram(Form("hPhotRtCPVcore_cen%d",fCenBin),ptV,wT) ;
-      FillHistogram(Form("hPhotRNaCPVcore_cen%d",fCenBin),ptV,wA*nCorr) ;
-      FillHistogram(Form("hPhotRNcCPVcore_cen%d",fCenBin),ptV,wC*nCorr) ;
-      FillHistogram(Form("hPhotRNtCPVcore_cen%d",fCenBin),ptV,wT*nCorr) ;
-      FillHistogram(Form("hPhotCPV_m%d_cen%d",ph1->Module(),fCenBin),pt) ;
-      FillHistogram(Form("hPhotCPVcore_m%d_cen%d",ph1->Module(),fCenBin),ptV) ;
+      FillHistogram(Form("hPhotCPV_cen%d",fCenBin),pt,cWeight) ;
+      FillHistogram(Form("hPhotRaCPV_cen%d",fCenBin),pt,cWeight*wA) ;
+      FillHistogram(Form("hPhotRcCPV_cen%d",fCenBin),pt,cWeight*wC) ;
+      FillHistogram(Form("hPhotRtCPV_cen%d",fCenBin),pt,cWeight*wT) ;
+      FillHistogram(Form("hPhotRNaCPV_cen%d",fCenBin),pt,cWeight*wA*nCorr) ;
+      FillHistogram(Form("hPhotRNcCPV_cen%d",fCenBin),pt,cWeight*wC*nCorr) ;
+      FillHistogram(Form("hPhotRNtCPV_cen%d",fCenBin),pt,cWeight*wT*nCorr) ;
+      FillHistogram(Form("hPhotCPVcore_cen%d",fCenBin),ptV,cWeight) ;
+      FillHistogram(Form("hPhotRaCPVcore_cen%d",fCenBin),ptV,cWeight*wA) ;
+      FillHistogram(Form("hPhotRcCPVcore_cen%d",fCenBin),ptV,cWeight*wC) ;
+      FillHistogram(Form("hPhotRtCPVcore_cen%d",fCenBin),ptV,cWeight*wT) ;
+      FillHistogram(Form("hPhotRNaCPVcore_cen%d",fCenBin),ptV,cWeight*wA*nCorr) ;
+      FillHistogram(Form("hPhotRNcCPVcore_cen%d",fCenBin),ptV,cWeight*wC*nCorr) ;
+      FillHistogram(Form("hPhotRNtCPVcore_cen%d",fCenBin),ptV,cWeight*wT*nCorr) ;
+      FillHistogram(Form("hPhotCPV_m%d_cen%d",ph1->Module(),fCenBin),pt,cWeight) ;
+      FillHistogram(Form("hPhotCPVcore_m%d_cen%d",ph1->Module(),fCenBin),ptV,cWeight) ;
     }
 //    if(ph1->IsCPV2OK()){
 //      FillHistogram(Form("hPhotCPV2_cen%d",fCenBin),pt) ;
@@ -1185,127 +1036,127 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
     //Disp2---
     if(ph1->IsDisp2OK()){
 
-      FillHistogram(Form("hPhotPhiSPV0ADisp2"),pt,fCentrality,dUQA) ;	
-      FillHistogram(Form("hPhotPhiSPV0CDisp2"),pt,fCentrality,dUQB) ;	
-      FillHistogram(Form("hPhotPhiSPV0ADisp2core"),ptV,fCentrality,dUQA) ;	
-      FillHistogram(Form("hPhotPhiSPV0CDisp2core"),ptV,fCentrality,dUQB) ;	
+      FillHistogram(Form("hPhotPhiSPV0ADisp2"),pt,fCentrality,dUQA,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0CDisp2"),pt,fCentrality,dUQB,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0ADisp2core"),ptV,fCentrality,dUQA,cWeight) ;	
+      FillHistogram(Form("hPhotPhiSPV0CDisp2core"),ptV,fCentrality,dUQB,cWeight) ;	
 
-      FillHistogram(Form("hPhotPhiR2V0ADisp2_cen%d",fCenBin),pt,qcosA*wQA*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0ADisp2_cen%d", fCenBin),pt,qcosA*wQA) ;
-      FillHistogram(Form("hPhotPhiR2V0CDisp2_cen%d",fCenBin),pt,qcosC*wQC*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0CDisp2_cen%d", fCenBin),pt,qcosC*wQC) ;
+      FillHistogram(Form("hPhotPhiR2V0ADisp2_cen%d",fCenBin),pt,qcosA*wQA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0ADisp2_cen%d", fCenBin),pt,qcosA*wQA,cWeight) ;
+      FillHistogram(Form("hPhotPhiR2V0CDisp2_cen%d",fCenBin),pt,qcosC*wQC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0CDisp2_cen%d", fCenBin),pt,qcosC*wQC,cWeight) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotPhiR2TPCDisp2_cen%d",fCenBin),pt,qcosT*wQT*nCorr) ;
-        FillHistogram(Form("hPhotPhiRTPCDisp2_cen%d",fCenBin),pt,qcosT*wQT) ;
+        FillHistogram(Form("hPhotPhiR2TPCDisp2_cen%d",fCenBin),pt,qcosT*wQT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotPhiRTPCDisp2_cen%d",fCenBin),pt,qcosT*wQT,cWeight) ;
       }
-      FillHistogram(Form("hPhotPhiR2V0ADisp2core_cen%d",fCenBin),ptV,qcosA*wQA*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0ADisp2core_cen%d", fCenBin),ptV,qcosA*wQA) ;
-      FillHistogram(Form("hPhotPhiR2V0CDisp2core_cen%d",fCenBin),ptV,qcosC*wQC*nCorr) ;
-      FillHistogram(Form("hPhotPhiRV0CDisp2core_cen%d", fCenBin),ptV,qcosC*wQC) ;
+      FillHistogram(Form("hPhotPhiR2V0ADisp2core_cen%d",fCenBin),ptV,qcosA*wQA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0ADisp2core_cen%d", fCenBin),ptV,qcosA*wQA,cWeight) ;
+      FillHistogram(Form("hPhotPhiR2V0CDisp2core_cen%d",fCenBin),ptV,qcosC*wQC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotPhiRV0CDisp2core_cen%d", fCenBin),ptV,qcosC*wQC,cWeight) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotPhiR2TPCDisp2core_cen%d",fCenBin),ptV,qcosT*wQT*nCorr) ;
-        FillHistogram(Form("hPhotPhiRTPCDisp2core_cen%d",fCenBin),ptV,qcosT*wQT) ;
+        FillHistogram(Form("hPhotPhiR2TPCDisp2core_cen%d",fCenBin),ptV,qcosT*wQT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotPhiRTPCDisp2core_cen%d",fCenBin),ptV,qcosT*wQT,cWeight) ;
       }
 
-      FillHistogram(Form("hPhotcosV0ADisp2_cen%d",fCenBin),pt,cosA*wA) ;
-      FillHistogram(Form("hPhotcosV0CDisp2_cen%d",fCenBin),pt,cosC*wC) ;
-      FillHistogram(Form("hPhotcosNV0ADisp2_cen%d",fCenBin),pt,cosA*wA*nCorr) ;
-      FillHistogram(Form("hPhotcosNV0CDisp2_cen%d",fCenBin),pt,cosC*wC*nCorr) ;
-      FillHistogram(Form("hPhotcosV0ADisp2core_cen%d",fCenBin),ptV,cosA*wA) ;
-      FillHistogram(Form("hPhotcosV0CDisp2core_cen%d",fCenBin),ptV,cosC*wC) ;
-      FillHistogram(Form("hPhotcosNV0ADisp2core_cen%d",fCenBin),ptV,cosA*wA*nCorr) ;
-      FillHistogram(Form("hPhotcosNV0CDisp2core_cen%d",fCenBin),ptV,cosC*wC*nCorr) ;
+      FillHistogram(Form("hPhotcosV0ADisp2_cen%d",fCenBin),pt,cosA*wA,cWeight) ;
+      FillHistogram(Form("hPhotcosV0CDisp2_cen%d",fCenBin),pt,cosC*wC,cWeight) ;
+      FillHistogram(Form("hPhotcosNV0ADisp2_cen%d",fCenBin),pt,cosA*wA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosNV0CDisp2_cen%d",fCenBin),pt,cosC*wC,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosV0ADisp2core_cen%d",fCenBin),ptV,cosA*wA,cWeight) ;
+      FillHistogram(Form("hPhotcosV0CDisp2core_cen%d",fCenBin),ptV,cosC*wC,cWeight) ;
+      FillHistogram(Form("hPhotcosNV0ADisp2core_cen%d",fCenBin),ptV,cosA*wA,cWeight*nCorr) ;
+      FillHistogram(Form("hPhotcosNV0CDisp2core_cen%d",fCenBin),ptV,cosC*wC,cWeight*nCorr) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotcosTPCDisp2_cen%d",fCenBin),pt,cosT*wT) ;
-        FillHistogram(Form("hPhotcosTPCDisp2core_cen%d",fCenBin),ptV,cosT*wT) ;
-        FillHistogram(Form("hPhotcosNTPCDisp2_cen%d",fCenBin),pt,cosT*wT*nCorr) ;
-        FillHistogram(Form("hPhotcosNTPCDisp2core_cen%d",fCenBin),ptV,cosT*wT*nCorr) ;
+        FillHistogram(Form("hPhotcosTPCDisp2_cen%d",fCenBin),pt,cosT*wT,cWeight) ;
+        FillHistogram(Form("hPhotcosTPCDisp2core_cen%d",fCenBin),ptV,cosT*wT,cWeight) ;
+        FillHistogram(Form("hPhotcosNTPCDisp2_cen%d",fCenBin),pt,cosT*wT,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotcosNTPCDisp2core_cen%d",fCenBin),ptV,cosT*wT,cWeight*nCorr) ;
       }
 
       
-      FillHistogram(Form("hPhotDisp2_cen%d",fCenBin),pt) ;
-      FillHistogram(Form("hPhotRaDisp2_cen%d",fCenBin),pt,wA) ;
-      FillHistogram(Form("hPhotRcDisp2_cen%d",fCenBin),pt,wC) ;
-      FillHistogram(Form("hPhotRNaDisp2_cen%d",fCenBin),pt,wA*nCorr) ;
-      FillHistogram(Form("hPhotRNcDisp2_cen%d",fCenBin),pt,wC*nCorr) ;      
-      FillHistogram(Form("hPhotDisp2core_cen%d",fCenBin),ptV) ;
-      FillHistogram(Form("hPhotRaDisp2core_cen%d",fCenBin),ptV,wA) ;
-      FillHistogram(Form("hPhotRcDisp2core_cen%d",fCenBin),ptV,wC) ;
-      FillHistogram(Form("hPhotRNaDisp2core_cen%d",fCenBin),ptV,wA*nCorr) ;
-      FillHistogram(Form("hPhotRNcDisp2core_cen%d",fCenBin),ptV,wC*nCorr) ;
+      FillHistogram(Form("hPhotDisp2_cen%d",fCenBin),pt,cWeight) ;
+      FillHistogram(Form("hPhotRaDisp2_cen%d",fCenBin),pt,wA*cWeight) ;
+      FillHistogram(Form("hPhotRcDisp2_cen%d",fCenBin),pt,wC*cWeight) ;
+      FillHistogram(Form("hPhotRNaDisp2_cen%d",fCenBin),pt,wA*cWeight*nCorr) ;
+      FillHistogram(Form("hPhotRNcDisp2_cen%d",fCenBin),pt,wC*cWeight*nCorr) ;      
+      FillHistogram(Form("hPhotDisp2core_cen%d",fCenBin),ptV,cWeight) ;
+      FillHistogram(Form("hPhotRaDisp2core_cen%d",fCenBin),ptV,wA*cWeight) ;
+      FillHistogram(Form("hPhotRcDisp2core_cen%d",fCenBin),ptV,wC*cWeight) ;
+      FillHistogram(Form("hPhotRNaDisp2core_cen%d",fCenBin),ptV,wA*cWeight*nCorr) ;
+      FillHistogram(Form("hPhotRNcDisp2core_cen%d",fCenBin),ptV,wC*cWeight*nCorr) ;
       if(fHaveTPCRP){
-        FillHistogram(Form("hPhotRtDisp2_cen%d",fCenBin),pt,wT) ;
-        FillHistogram(Form("hPhotRtDisp2core_cen%d",fCenBin),ptV,wT) ;
-        FillHistogram(Form("hPhotRNtDisp2_cen%d",fCenBin),pt,wT*nCorr) ;
-        FillHistogram(Form("hPhotRNtDisp2core_cen%d",fCenBin),ptV,wT*nCorr) ;
+        FillHistogram(Form("hPhotRtDisp2_cen%d",fCenBin),pt,cWeight*wT) ;
+        FillHistogram(Form("hPhotRtDisp2core_cen%d",fCenBin),ptV,cWeight*wT) ;
+        FillHistogram(Form("hPhotRNtDisp2_cen%d",fCenBin),pt,cWeight*wT*nCorr) ;
+        FillHistogram(Form("hPhotRNtDisp2core_cen%d",fCenBin),ptV,cWeight*wT*nCorr) ;
       }
-      FillHistogram(Form("hPhotDisp2_m%d_cen%d",ph1->Module(),fCenBin),pt) ;
-      FillHistogram(Form("hPhotDisp2core_m%d_cen%d",ph1->Module(),fCenBin),ptV) ;
+      FillHistogram(Form("hPhotDisp2_m%d_cen%d",ph1->Module(),fCenBin),pt,cWeight) ;
+      FillHistogram(Form("hPhotDisp2core_m%d_cen%d",ph1->Module(),fCenBin),ptV,cWeight) ;
       
       //Both2---
       if(ph1->IsCPVOK()){
 
 	//----------Official SP----------------
         //fill the profile histograms
-        FillHistogram(Form("hPhotPhiSPV0ABoth2"),pt,fCentrality,dUQA) ;	
-        FillHistogram(Form("hPhotPhiSPV0CBoth2"),pt,fCentrality,dUQB) ;	
-        FillHistogram(Form("hPhotPhiSPV0ABoth2core"),ptV,fCentrality,dUQA) ;	
-        FillHistogram(Form("hPhotPhiSPV0CBoth2core"),ptV,fCentrality,dUQB) ;	
+        FillHistogram(Form("hPhotPhiSPV0ABoth2"),pt,fCentrality,dUQA,cWeight) ;	
+        FillHistogram(Form("hPhotPhiSPV0CBoth2"),pt,fCentrality,dUQB,cWeight) ;	
+        FillHistogram(Form("hPhotPhiSPV0ABoth2core"),ptV,fCentrality,dUQA,cWeight) ;	
+        FillHistogram(Form("hPhotPhiSPV0CBoth2core"),ptV,fCentrality,dUQB,cWeight) ;	
 	//-------------------------------------
 	
 	
 	
 	
-	FillHistogram(Form("hPhotPhiR2V0ABoth2_cen%d",fCenBin),pt,qcosA*wQA*nCorr) ;
-	FillHistogram(Form("hPhotPhiRV0ABoth2_cen%d", fCenBin),pt,qcosA*wQA) ;
-	FillHistogram(Form("hPhotPhiR2V0CBoth2_cen%d",fCenBin),pt,qcosC*wQC*nCorr) ;
-	FillHistogram(Form("hPhotPhiRV0CBoth2_cen%d", fCenBin),pt,qcosC*wQC) ;
+	FillHistogram(Form("hPhotPhiR2V0ABoth2_cen%d",fCenBin),pt,qcosA*wQA,cWeight*nCorr) ;
+	FillHistogram(Form("hPhotPhiRV0ABoth2_cen%d", fCenBin),pt,qcosA*wQA,cWeight) ;
+	FillHistogram(Form("hPhotPhiR2V0CBoth2_cen%d",fCenBin),pt,qcosC*wQC,cWeight*nCorr) ;
+	FillHistogram(Form("hPhotPhiRV0CBoth2_cen%d", fCenBin),pt,qcosC*wQC,cWeight) ;
         if(fHaveTPCRP){
-  	  FillHistogram(Form("hPhotPhiR2TPCBoth2_cen%d",fCenBin),pt,qcosT*wQT) ;
-  	  FillHistogram(Form("hPhotPhiRTPCBoth2_cen%d",fCenBin),pt,qcosT*wQT) ;
+  	  FillHistogram(Form("hPhotPhiR2TPCBoth2_cen%d",fCenBin),pt,qcosT*wQT,cWeight) ;
+  	  FillHistogram(Form("hPhotPhiRTPCBoth2_cen%d",fCenBin),pt,qcosT*wQT,cWeight) ;
 	}
-	FillHistogram(Form("hPhotPhiR2V0ABoth2core_cen%d",fCenBin),ptV,qcosA*wQA*nCorr) ;
-	FillHistogram(Form("hPhotPhiRV0ABoth2core_cen%d", fCenBin),ptV,qcosA*wQA) ;
-	FillHistogram(Form("hPhotPhiR2V0CBoth2core_cen%d",fCenBin),ptV,qcosC*wQC*nCorr) ;
-	FillHistogram(Form("hPhotPhiRV0CBoth2core_cen%d", fCenBin),ptV,qcosC*wQC) ;
+	FillHistogram(Form("hPhotPhiR2V0ABoth2core_cen%d",fCenBin),ptV,qcosA*wQA,cWeight*nCorr) ;
+	FillHistogram(Form("hPhotPhiRV0ABoth2core_cen%d", fCenBin),ptV,qcosA*wQA,cWeight) ;
+	FillHistogram(Form("hPhotPhiR2V0CBoth2core_cen%d",fCenBin),ptV,qcosC*wQC,cWeight*nCorr) ;
+	FillHistogram(Form("hPhotPhiRV0CBoth2core_cen%d", fCenBin),ptV,qcosC*wQC,cWeight) ;
         if(fHaveTPCRP){
-	  FillHistogram(Form("hPhotPhiR2TPCBoth2core_cen%d",fCenBin),ptV,qcosT*wQT*nCorr) ;
-	  FillHistogram(Form("hPhotPhiRTPCBoth2core_cen%d",fCenBin),ptV,qcosT*wQT) ;
+	  FillHistogram(Form("hPhotPhiR2TPCBoth2core_cen%d",fCenBin),ptV,qcosT*wQT,cWeight*nCorr) ;
+	  FillHistogram(Form("hPhotPhiRTPCBoth2core_cen%d",fCenBin),ptV,qcosT*wQT,cWeight) ;
 	}
 
-        FillHistogram(Form("hPhotcosV0ABoth2_cen%d",fCenBin),pt,cosA*wA) ;
-        FillHistogram(Form("hPhotcosV0CBoth2_cen%d",fCenBin),pt,cosC*wC) ;
-        FillHistogram(Form("hPhotcosNV0ABoth2_cen%d",fCenBin),pt,cosA*wA*nCorr) ;
-        FillHistogram(Form("hPhotcosNV0CBoth2_cen%d",fCenBin),pt,cosC*wC*nCorr) ;
-        FillHistogram(Form("hPhotcosV0ABoth2core_cen%d",fCenBin),ptV,cosA*wA) ;
-        FillHistogram(Form("hPhotcosV0CBoth2core_cen%d",fCenBin),ptV,cosC*wC) ;
-        FillHistogram(Form("hPhotcosNV0ABoth2core_cen%d",fCenBin),ptV,cosA*wA*nCorr) ;
-        FillHistogram(Form("hPhotcosNV0CBoth2core_cen%d",fCenBin),ptV,cosC*wC*nCorr) ;
+        FillHistogram(Form("hPhotcosV0ABoth2_cen%d",fCenBin),pt,cosA*wA,cWeight) ;
+        FillHistogram(Form("hPhotcosV0CBoth2_cen%d",fCenBin),pt,cosC*wC,cWeight) ;
+        FillHistogram(Form("hPhotcosNV0ABoth2_cen%d",fCenBin),pt,cosA*wA,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotcosNV0CBoth2_cen%d",fCenBin),pt,cosC*wC,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotcosV0ABoth2core_cen%d",fCenBin),ptV,cosA*wA,cWeight) ;
+        FillHistogram(Form("hPhotcosV0CBoth2core_cen%d",fCenBin),ptV,cosC*wC,cWeight) ;
+        FillHistogram(Form("hPhotcosNV0ABoth2core_cen%d",fCenBin),ptV,cosA*wA,cWeight*nCorr) ;
+        FillHistogram(Form("hPhotcosNV0CBoth2core_cen%d",fCenBin),ptV,cosC*wC,cWeight*nCorr) ;
         if(fHaveTPCRP){
-          FillHistogram(Form("hPhotcosTPCBoth2_cen%d",fCenBin),pt,cosT*wT) ;
-          FillHistogram(Form("hPhotcosTPCBoth2core_cen%d",fCenBin),ptV,cosT*wT) ;
-          FillHistogram(Form("hPhotcosNTPCBoth2_cen%d",fCenBin),pt,cosT*wT*nCorr) ;
-          FillHistogram(Form("hPhotcosNTPCBoth2core_cen%d",fCenBin),ptV,cosT*wT*nCorr) ;
+          FillHistogram(Form("hPhotcosTPCBoth2_cen%d",fCenBin),pt,cosT*wT,cWeight) ;
+          FillHistogram(Form("hPhotcosTPCBoth2core_cen%d",fCenBin),ptV,cosT*wT,cWeight) ;
+          FillHistogram(Form("hPhotcosNTPCBoth2_cen%d",fCenBin),pt,cosT*wT,cWeight*nCorr) ;
+          FillHistogram(Form("hPhotcosNTPCBoth2core_cen%d",fCenBin),ptV,cosT*wT,cWeight*nCorr) ;
         }
 	
-	FillHistogram(Form("hPhotBoth2_cen%d",fCenBin),pt) ;
-	FillHistogram(Form("hPhotRaBoth2_cen%d",fCenBin),pt,wA) ;
-	FillHistogram(Form("hPhotRcBoth2_cen%d",fCenBin),pt,wC) ;
-	FillHistogram(Form("hPhotRNaBoth2_cen%d",fCenBin),pt,wA*nCorr) ;
-	FillHistogram(Form("hPhotRNcBoth2_cen%d",fCenBin),pt,wC*nCorr) ;
-	FillHistogram(Form("hPhotBoth2core_cen%d",fCenBin),ptV) ;
-	FillHistogram(Form("hPhotRaBoth2core_cen%d",fCenBin),ptV,wA) ;
-	FillHistogram(Form("hPhotRcBoth2core_cen%d",fCenBin),ptV,wC) ;
-	FillHistogram(Form("hPhotRNaBoth2core_cen%d",fCenBin),ptV,wA*nCorr) ;
-	FillHistogram(Form("hPhotRNcBoth2core_cen%d",fCenBin),ptV,wC*nCorr) ;
+	FillHistogram(Form("hPhotBoth2_cen%d",fCenBin),pt,cWeight) ;
+	FillHistogram(Form("hPhotRaBoth2_cen%d",fCenBin),pt,cWeight*wA) ;
+	FillHistogram(Form("hPhotRcBoth2_cen%d",fCenBin),pt,cWeight*wC) ;
+	FillHistogram(Form("hPhotRNaBoth2_cen%d",fCenBin),pt,cWeight*wA*nCorr) ;
+	FillHistogram(Form("hPhotRNcBoth2_cen%d",fCenBin),pt,cWeight*wC*nCorr) ;
+	FillHistogram(Form("hPhotBoth2core_cen%d",fCenBin),ptV,cWeight) ;
+	FillHistogram(Form("hPhotRaBoth2core_cen%d",fCenBin),ptV,cWeight*wA) ;
+	FillHistogram(Form("hPhotRcBoth2core_cen%d",fCenBin),ptV,cWeight*wC) ;
+	FillHistogram(Form("hPhotRNaBoth2core_cen%d",fCenBin),ptV,cWeight*wA*nCorr) ;
+	FillHistogram(Form("hPhotRNcBoth2core_cen%d",fCenBin),ptV,cWeight*wC*nCorr) ;
         if(fHaveTPCRP){
-	  FillHistogram(Form("hPhotRtBoth2_cen%d",fCenBin),pt,wT) ;
-	  FillHistogram(Form("hPhotRtBoth2core_cen%d",fCenBin),ptV,wT) ;
-	  FillHistogram(Form("hPhotRNtBoth2_cen%d",fCenBin),pt,wT*nCorr) ;
-	  FillHistogram(Form("hPhotRNtBoth2core_cen%d",fCenBin),ptV,wT*nCorr) ;
+	  FillHistogram(Form("hPhotRtBoth2_cen%d",fCenBin),pt,cWeight*wT) ;
+	  FillHistogram(Form("hPhotRtBoth2core_cen%d",fCenBin),ptV,cWeight*wT) ;
+	  FillHistogram(Form("hPhotRNtBoth2_cen%d",fCenBin),pt,cWeight*wT*nCorr) ;
+	  FillHistogram(Form("hPhotRNtBoth2core_cen%d",fCenBin),ptV,cWeight*wT*nCorr) ;
 	}
-        FillHistogram(Form("hPhotBoth2_m%d_cen%d",ph1->Module(),fCenBin),pt) ;
-        FillHistogram(Form("hPhotBoth2core_m%d_cen%d",ph1->Module(),fCenBin),ptV) ;
+        FillHistogram(Form("hPhotBoth2_m%d_cen%d",ph1->Module(),fCenBin),pt,cWeight) ;
+        FillHistogram(Form("hPhotBoth2core_m%d_cen%d",ph1->Module(),fCenBin),ptV,cWeight) ;
 
       }
     }  
@@ -1336,30 +1187,6 @@ void AliAnalysisTaskGammaFlow::Terminate(Option_t *)
   
 }
 
-//________________________________________________________________________
-Bool_t AliAnalysisTaskGammaFlow::IsGoodChannel(const char * det, Int_t mod, Int_t ix, Int_t iz)
-{
-  //Check if this channel belogs to the good ones
-
-  if(strcmp(det,"PHOS")==0){
-    if(mod>5 || mod<1){
-      AliError(Form("No bad map for PHOS module %d ",mod)) ;
-      return kTRUE ;
-    }
-    if(!fPHOSBadMap[mod]){
-      AliError(Form("No Bad map for PHOS module %d",mod)) ;
-      return kTRUE ;
-    }
-    if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
-      return kFALSE ;
-    else
-      return kTRUE ;
-  }
-  else{
-    AliError(Form("Can not find bad channels for detector %s ",det)) ;
-  }
-  return kTRUE ;
-}
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaFlow::FillHistogram(const char * key,Double_t x)const{
   //FillHistogram
@@ -1714,7 +1541,7 @@ Bool_t AliAnalysisTaskGammaFlow::TestTOF(Double_t t, Double_t e){
     
   return kFALSE ;  
 }
- 
+/* 
 //____________________________________________________________________________
 Double_t  AliAnalysisTaskGammaFlow::ApplyFlatteningV0A(Double_t phi, Double_t c){
   //LHC10h
@@ -1761,67 +1588,7 @@ Double_t  AliAnalysisTaskGammaFlow::ApplyFlattening(Double_t phi, Double_t c){
   v3c*TMath::Sin(2.*fHarmonics*phi)-v3s*TMath::Cos(2.*fHarmonics*phi) ;
    
 }  
-
-//_____________________________________________________________________________
-void AliAnalysisTaskGammaFlow::OpenInfoCalbration(Int_t run){
-    TString oadbfilename = "$ALICE_PHYSICS/OADB/PWGCF/VZERO/VZEROcalibEP.root";
-    TFile *foadb = TFile::Open(oadbfilename.Data());
-
-    if(!foadb){
-	printf("OADB file %s cannot be opened\n",oadbfilename.Data());
-	return;
-    }
-
-    AliOADBContainer *cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorr");
-    if(!cont){
-	printf("OADB object hMultV0BefCorr is not available in the file\n");
-	return;	
-    }
-
-    if(!(cont->GetObject(run))){
-	printf("OADB object hMultV0BefCorr is not available for run %i (used run 137366)\n",run);
-	run = 137366;
-    }
-    printf("Setting V0 calibration \n") ;
-    fMultV0 = ((TH2F *) cont->GetObject(run))->ProfileX();
-
-    TF1 *fpol0 = new TF1("fpol0","pol0"); 
-    fMultV0->Fit(fpol0,"","",0,31);
-    fV0Cpol = fpol0->GetParameter(0);
-    fMultV0->Fit(fpol0,"","",32,64);
-    fV0Apol = fpol0->GetParameter(0);
-
-    for(Int_t iside=0;iside<2;iside++){
-	for(Int_t icoord=0;icoord<2;icoord++){
-	    for(Int_t i=0;i  < nCentrBinV0;i++){
-		char namecont[100];
-  		if(iside==0 && icoord==0)
-		    sprintf(namecont,"hQxc%d_%i",fHarmonics,i);
-		else if(iside==1 && icoord==0)
-		    sprintf(namecont,"hQxa%d_%i",fHarmonics,i);
-		else if(iside==0 && icoord==1)
-		    sprintf(namecont,"hQyc%d_%i",fHarmonics,i);
-		else if(iside==1 && icoord==1)
-		    sprintf(namecont,"hQya%d_%i",fHarmonics,i);
-
-		cont = (AliOADBContainer*) foadb->Get(namecont);
-		if(!cont){
-		    printf("OADB object %s is not available in the file\n",namecont);
-		    return;	
-		}
-		
-		if(!(cont->GetObject(run))){
-		    printf("OADB object %s is not available for run %i (used run 137366)\n",namecont,run);
-		    run = 137366;
-		}
-		fMeanQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetMean();
-		fWidthQ[i][iside][icoord] = ((TH1F *) cont->GetObject(run))->GetRMS();
-
-     	    }
-	}
-    }
-}
-  
+*/  
 //____________________________________________________________________________
 void  AliAnalysisTaskGammaFlow::EvalV0ReactionPlane(AliAODEvent * event){
 
@@ -1831,81 +1598,12 @@ void  AliAnalysisTaskGammaFlow::EvalV0ReactionPlane(AliAODEvent * event){
   //V0A
   fRPV0A = eventPlane->CalculateVZEROEventPlane(event,8, fHarmonics, qx, qy);
   fQV0A=TMath::Sqrt(qx*qx+qy*qy) ;
+  fRPV0A = fV0AFlat->MakeFlat(fRPV0A,fCentrality) ;
   //V0C
   fRPV0C = eventPlane->CalculateVZEROEventPlane(event,9, fHarmonics, qx, qy);
   fQV0C=TMath::Sqrt(qx*qx+qy*qy) ;  
+  fRPV0C = fV0CFlat->MakeFlat(fRPV0C,fCentrality) ;
 
-/*
-      
-      //VZERO data
-  AliAODVZERO* esdV0 = event->GetVZEROData();
-
-  //reset Q vector info	
-  Double_t Qxa2 = 0, Qya2 = 0;
-  Double_t Qxc2 = 0, Qyc2 = 0;
-
-  Double_t weightA=0., weightC=0.;
-  for (Int_t iv0 = 0; iv0 < 64; iv0++) {
-    Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
-    Float_t multv0 = esdV0->GetMultiplicity(iv0);
-    if (iv0 < 32){ // V0C
-      Qxc2 += TMath::Cos(fHarmonics*phiV0) * multv0 ; //*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-      Qyc2 += TMath::Sin(fHarmonics*phiV0) * multv0 ; //*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-      weightC+=multv0 ; //*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-    } else {       // V0A
-      Qxa2 += TMath::Cos(fHarmonics*phiV0) * multv0 ; //*fV0Apol/fMultV0->GetBinContent(iv0+1);
-      Qya2 += TMath::Sin(fHarmonics*phiV0) * multv0 ; //*fV0Apol/fMultV0->GetBinContent(iv0+1);
-      weightA+= multv0 ; //*fV0Apol/fMultV0->GetBinContent(iv0+1);
-    }
-  }
-  fQV0A=TMath::Sqrt(Qxa2*Qxa2 + Qya2*Qya2) ;
-  if(weightA>0.)
-    fQV0A=fQV0A/weightA ;
-  else
-    fQV0A=0. ;
-  fQV0C=TMath::Sqrt(Qxc2*Qxc2 + Qyc2*Qyc2) ;
-  if(weightC>0)
-    fQV0C=fQV0C/weightC;
-  else
-    fQV0C=0 ;
-  
-  
-  Int_t iC = -1;    
-  // centrality bins
-  if(fCentrality < 5) iC = 0;
-  else if(fCentrality < 10) iC = 1;
-  else if(fCentrality < 20) iC = 2;
-  else if(fCentrality < 30) iC = 3;
-  else if(fCentrality < 40) iC = 4;
-  else if(fCentrality < 50) iC = 5;
-  else if(fCentrality < 60) iC = 6;
-  else if(fCentrality < 70) iC = 7;
-  else iC = 8;
-
-    //grab for each centrality the proper histo with the Qx and Qy to do the recentering
-  Double_t Qxamean2 = fMeanQ[iC][1][0];
-  Double_t Qxarms2  = fWidthQ[iC][1][0];
-  Double_t Qyamean2 = fMeanQ[iC][1][1];
-  Double_t Qyarms2  = fWidthQ[iC][1][1];
-    
-  Double_t Qxcmean2 = fMeanQ[iC][0][0];
-  Double_t Qxcrms2  = fWidthQ[iC][0][0];
-  Double_t Qycmean2 = fMeanQ[iC][0][1];
-  Double_t Qycrms2  = fWidthQ[iC][0][1];	
-    
-  Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
-  Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
-  Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
-  Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
-	
-  fRPV0A = TMath::ATan2(QyaCor2, QxaCor2)/fHarmonics;
-  fRPV0C = TMath::ATan2(QycCor2, QxcCor2)/fHarmonics;
-
-printf("AOD: V0A=%f, V0C=%f \n",fRPV0A,fRPV0C) ;
-  fRPV0A = TMath::ATan2(Qya2, Qxa2)/fHarmonics;
-  fRPV0C = TMath::ATan2(Qyc2, Qxc2)/fHarmonics;
-printf(" my: V0A=%f, V0C=%f \n",fRPV0A,fRPV0C) ;
-*/
 
   while(fRPV0A<0)fRPV0A+=TMath::TwoPi()/fHarmonics ;
   while(fRPV0A>TMath::TwoPi()/fHarmonics)fRPV0A-=TMath::TwoPi()/fHarmonics ;
@@ -2013,6 +1711,9 @@ Bool_t AliAnalysisTaskGammaFlow::GetTPCEventPlane(Double_t &epAngle, Double_t &q
     TVector2 *mQ=new TVector2();
     mQ->Set(mQx,mQy);
     epAngle=mQ->Phi()/Double_t(fHarmonics);
+    //Apply flattening
+    epAngle = fTPCFlat->MakeFlat(epAngle,fCentrality) ;
+    
     fQTPC = mQ->Mod() ;
    
     TVector2 *qsub1=new TVector2();
@@ -2214,3 +1915,52 @@ Double_t AliAnalysisTaskGammaFlow::PHOSMultiplicity(){
  Double_t x=fCentrality ;
  return TMath::Max(2.,3.65177e+01-x*1.56822+x*x*3.06817e-02-x*x*x*3.14334e-04+x*x*x*x*1.27239e-06) ;
 }
+//_________________________________________________________________________
+Double_t AliAnalysisTaskGammaFlow::CentralityWeight(Double_t c){
+  //Weight to make flat centrality distribution
+  Double_t weight=1. ;
+  //Central
+  if(c<10.)
+    weight = (5.60752e+05-1.58501e+04*c+2.65755e+04*c*c-9.61724e+03*c*c*c+1.32667e+03*c*c*c*c-6.36816e+01*c*c*c*c*c)/5.60752e+05 ;
+  
+  //SemiCentral
+  if(c>14. && c <50.) //flat region
+    weight = 1. ;
+  else if(c>10. && c<=14.)
+    weight = (1.17638e+05+2.21094e+03*TMath::Power(c-14.,2)+1.80622e+03*TMath::Power(c-14.,3))/1.17638e+05; 
+    else if(c>50. && c<=56.)
+       weight = (1.17638e+05-2.54916e+03*TMath::Power(c-50.,2)-2.28989e+02*TMath::Power(c-50.,3))/1.17638e+05; 
+    
+  if(weight>0.01)
+    return 1./weight ;
+  else
+    return 0. ;
+}
+//_________________________________________________________________________
+Bool_t AliAnalysisTaskGammaFlow::TestPHOSEvent(AliAODEvent * event){
+  //Check if event is complete
+  AliAODCaloCells * cells = event->GetPHOSCells() ;
+  Int_t a[5]={0} ; //left
+  Int_t b[5]={0} ; //right
+  Int_t nCells=cells->GetNumberOfCells();
+  for (Int_t iCell=0; iCell<nCells; iCell++) {
+    Int_t cellAbsId = cells->GetCellNumber(iCell);
+    Int_t relId[4] ;
+    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
+    Int_t mod  = relId[0];
+    Int_t cellX= relId[2];
+    if(cellX<29)
+      a[mod]++ ;
+    else
+      b[mod]++ ;
+  }
+  Bool_t bad=kFALSE ;
+  for(Int_t mod=1; mod<4; mod++){
+    if(a[mod]==0 || b[mod]==0)
+      bad=kTRUE;
+  }
+  
+  return bad ;
+}
+
+
