@@ -24,7 +24,7 @@ AliAnalysisTaskGammaFlow* AddTaskPHOSGammaFlow (const char* name = "PHOSGammaFlo
   
   AliAnalysisTaskGammaFlow* task = new AliAnalysisTaskGammaFlow(Form("%sTask", name));
   task->SetDistCut(kFALSE) ;
-  task->SetHarminics(harmonics) ;  
+  task->SetHarmonics(harmonics) ;  
   task->SelectCollisionCandidates(offlineTriggerMask);
 
   mgr->AddTask(task);
