@@ -29,14 +29,9 @@ class AliITSMFTSegmentationPix;
 class AliITSMFTGeomTGeo : public TObject {
 
 public:
-  enum {kITSVNA, kITSVUpg}; // ITS version
-//  enum {kChipTypePix=0, kNChipTypes, kMaxSegmPerChipType=10}; // defined detector chip types (each one can have different segmentations)
-  //
- 
-    
   AliITSMFTGeomTGeo(Bool_t build = kFALSE, Bool_t loadSegmentations = kTRUE);
-  virtual ~AliITSMFTGeomTGeo(); 
   AliITSMFTGeomTGeo(const AliITSMFTGeomTGeo &src);
+  virtual ~AliITSMFTGeomTGeo(); 
 
   //
   Int_t  GetNChips()                                                    const {return fNChips;}
@@ -55,7 +50,6 @@ public:
   Int_t  GetChipIndex(Int_t lay,Int_t sta,Int_t detInSta)               const;
   Int_t  GetChipIndex(Int_t lay,Int_t sta, Int_t subSta, Int_t detInSubSta) const;
   Int_t  GetChipIndex(Int_t lay,Int_t sta, Int_t subSta, Int_t md, Int_t detInMod) const;
-  Bool_t GetChipId(Int_t index,Int_t &lay,Int_t &sta,Int_t &ssta,Int_t &mod,Int_t &chip)        const;
   Int_t  GetLayer(Int_t index)                                          const;
   Int_t  GetStave(Int_t index)                                          const;
   Int_t  GetHalfStave(Int_t index)                                      const;
@@ -108,7 +102,6 @@ public:
   const AliITSMFTSegmentationPix* GetSegmentationByID(Int_t id)                    const;
   const AliITSMFTSegmentationPix* GetSegmentation(Int_t lr)                        const;
   TObjArray*          GetSegmentations()                                     const {return (TObjArray*)fSegm;}
-  virtual void Print(Option_t *opt="")  const;
   //
   static      UInt_t GetUIDShift()                                      {return fgUIDShift;}
   static      void   SetUIDShift(UInt_t s=16)                           {fgUIDShift = s<16 ? s:16;}
@@ -150,10 +143,12 @@ public:
 
 protected:
   AliITSMFTGeomTGeo& operator=(const AliITSMFTGeomTGeo &geom);
+
+  virtual TGeoHMatrix* ExtractMatrixSens(Int_t index) const = 0;
+
   void         FetchMatrices();
   void         CreateT2LMatrices();
   TGeoHMatrix* ExtractMatrixT2L(Int_t index)                      const;
-  TGeoHMatrix* ExtractMatrixSens(Int_t index)                     const;
   Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2)     const;
   TGeoPNEntry* GetPNEntry(Int_t index)                            const;
   Int_t        ExtractNChipsPerModule(Int_t lay, Int_t &nrow)     const;
@@ -162,13 +157,11 @@ protected:
   Int_t        ExtractNumberOfModules(Int_t lay)                  const;
   Int_t        ExtractLayerChipType(Int_t lay)                    const;
   Int_t        ExtractNumberOfLayers();
-  void         BuildITS(Bool_t loadSegm);
   //
   Int_t        ExtractVolumeCopy(const char* name, const char* prefix) const;
   
   //
   //
-  Int_t  fVersion;             // ITS Version 
   Int_t  fNLayers;             // number of layers
   Int_t  fNChips;              // The total number of chips
   Int_t *fNStaves;             //[fNLayers] Array of the number of staves/layer(layer)

@@ -50,11 +50,24 @@ class AliITSMFTSegmentationPix;
 
 class AliITSUGeomTGeo : public AliITSMFTGeomTGeo {
 public:
-  AliITSUGeomTGeo():AliITSMFTGeomTGeo() {}
-  AliITSUGeomTGeo(const Bool_t &g):AliITSMFTGeomTGeo(g) {}
-  AliITSUGeomTGeo(const Bool_t &g, const Bool_t &f):AliITSMFTGeomTGeo(g,f) {}
+  enum {kITSVNA, kITSVUpg}; // ITS version
+  AliITSUGeomTGeo(Bool_t build = kFALSE, Bool_t loadSegmentations = kTRUE);
+  AliITSUGeomTGeo(const AliITSUGeomTGeo &src);
+  //virtual ~AliITSUGeomTGeo(); 
+  
+  Bool_t
+  GetChipId(Int_t idx,Int_t &lay,Int_t &sta,Int_t &ssta,Int_t &mod,Int_t &chip)
+  const;
+
+  void Print(Option_t *opt="")  const;
+
+private:
+  void    BuildITS(Bool_t loadSegm);
+  virtual TGeoHMatrix* ExtractMatrixSens(Int_t index) const;
+
+  Int_t  fVersion;             // ITS Version 
+
   ClassDef(AliITSUGeomTGeo, 3) // ITS geometry based on TGeo
 };
 
 #endif
-

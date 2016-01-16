@@ -62,5 +62,5 @@ void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,I
   // Returns the layer stave and detector number lables for this
   // ITS chip. Note: indices start from 0!
   if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return; }
-  (AliITSUGeomTGeo*)fGeom->GetChipId(fModule,layer,stave,sstave,mod,det);
+  ((AliITSUGeomTGeo*)fGeom)->GetChipId(fModule,layer,stave,sstave,mod,det);
 }  
