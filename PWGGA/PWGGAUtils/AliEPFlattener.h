@@ -20,7 +20,7 @@ class AliEPFlattener : public TNamed {
  public:
   
   AliEPFlattener() ;
-  AliEPFlattener(const char * name) ; //To separate different runs use names
+  AliEPFlattener(const char * name, Int_t v=2) ; //To separate different EP detectors use names
   AliEPFlattener(const AliEPFlattener & fl) ; 
   virtual ~AliEPFlattener() ;
   AliEPFlattener & operator = (const AliEPFlattener & flat);
@@ -34,9 +34,10 @@ private:
   Int_t fNCentrBins ; // Number of centrality bins
   Int_t fNHarmonics ; // Number of harmonics used in parameterization
   Int_t fNparam ;     // Total number of parameters (fNCentrBins*fNHarmonics)
+  Int_t fV3 ;         //Use v2 or V3 flattening
   Double32_t *fParam ;  //[fNparam][-1.,1.,16] array of flattening parameters
 
-  ClassDef(AliEPFlattener,1) 
+  ClassDef(AliEPFlattener,2) 
 
 } ;
 

@@ -42,6 +42,7 @@ AliEPFlattener::AliEPFlattener() :
   fNCentrBins(0), 
   fNHarmonics(0),
   fNparam(0),
+  fV3(0),
   fParam(0x0)
 {
   // default ctor
@@ -49,14 +50,17 @@ AliEPFlattener::AliEPFlattener() :
 }
 
 //____________________________________________________________________________
-AliEPFlattener::AliEPFlattener(const char * name) :
+AliEPFlattener::AliEPFlattener(const char * name,Int_t v3) :
   TNamed(name,"EPFlattener"),
   fNCentrBins(0), 
   fNHarmonics(0),
   fNparam(0),
+  fV3(0),
   fParam(0x0)
 {
-//  Nothing to initialize
+//  
+  if(v3==3)
+    fV3=1;
 }
 //____________________________________________________________________________
 AliEPFlattener::AliEPFlattener(const AliEPFlattener & fl):
@@ -71,6 +75,7 @@ AliEPFlattener::AliEPFlattener(const AliEPFlattener & fl):
   fNCentrBins = fl.fNCentrBins ;
   fNHarmonics = fl.fNHarmonics ;
   fNparam     = fl.fNparam ;
+  fV3         = fl.fV3 ;
   fParam = new Double32_t[fNparam] ;
   for(Int_t i=0; i<fNparam; i++)
     fParam[i]=fl.fParam[i] ;  
@@ -85,6 +90,7 @@ AliEPFlattener & AliEPFlattener::operator = (const AliEPFlattener & fl)
   fNCentrBins = fl.fNCentrBins ;
   fNHarmonics = fl.fNHarmonics ;
   fNparam     = fl.fNparam ;
+  fV3         = fl.fV3 ;
   if(fParam) delete [] fParam ;
   fParam = new Double32_t[fNparam] ;
   for(Int_t i=0; i<fNparam; i++)
@@ -119,9 +125,10 @@ Double_t AliEPFlattener::MakeFlat(Double_t oldPhi,Double_t centrality)const
   icen=icen*fNHarmonics ;
 
   for(Int_t i = 1; i<=fNHarmonics/2; i++){
-    Double_t c = 2./i*fParam[icen+2*i-2] ;  //fParam==Mean cos(n*phi) for a given centrality
-    Double_t s = 2./i*fParam[icen+2*i-1];   //fParam==Mean sin(n*phi) for a given centrality
-    result += c*TMath::Sin(i*oldPhi)-s*TMath::Cos(i*oldPhi) ;      
+    Int_t n=(fV3+2)*i;
+    Double_t c = 2./n*fParam[icen+2*i-2] ;  //fParam==Mean cos(n*phi) for a given centrality
+    Double_t s = 2./n*fParam[icen+2*i-1];   //fParam==Mean sin(n*phi) for a given centrality
+    result += c*TMath::Sin(n*oldPhi)-s*TMath::Cos(n*oldPhi) ;      
   }
   return result ;
 }
