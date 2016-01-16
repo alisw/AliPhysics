@@ -183,7 +183,7 @@ void AliITSUSimulationPix::WriteSDigits()
     
     for (int i=0;i<nsd;i++) {
         AliITSMFTSDigit* sd = (AliITSMFTSDigit*)fSensMap->At(i); // ordered in index
-        if (!sd->GetSumSignal()>0 || fSensMap->IsDisabled(sd)) continue;
+        if (!(sd->GetSumSignal()>0) || fSensMap->IsDisabled(sd)) continue;
         aliITS->AddSumDigit(*sd);
     }
     return;
