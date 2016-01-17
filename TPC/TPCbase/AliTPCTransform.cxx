@@ -104,6 +104,7 @@ AliTPCTransform::AliTPCTransform():
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
+  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
 }
 AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   AliTransform(transform),
@@ -124,6 +125,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
+  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
 }
 
 AliTPCTransform::~AliTPCTransform() {

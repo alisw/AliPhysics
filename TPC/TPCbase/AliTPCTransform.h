@@ -52,6 +52,7 @@ public:
   void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3]);
   Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut);
   void    EvalDistortionMap(int roc, const double xyzSector[3], float res[3]);
+  const   Float_t* GetLastMapCorrection() const {return fLastCorr;}
   //
   static void RotateToSectorUp(float *x, int& idROC);
   static void RotateToSectorDown(float *x, int& idROC);
@@ -63,6 +64,7 @@ public:
   //
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
+  Float_t  fLastCorr[3]; ///!<! last correction from the map
   Double_t fCoss[18];  ///< cache the transformation
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
@@ -77,7 +79,7 @@ private:
   static const Double_t fgkCos20;       // sin(20)
   static const Double_t fgkMaxY2X;      // tg(10)
   //
-  ClassDef(AliTPCTransform,2)
+  ClassDef(AliTPCTransform,3)
   /// \endcond
 };
 
@@ -85,9 +87,8 @@ private:
 inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
 {
   // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
-  float res[3];
-  EvalCorrectionMap(roc, row, xyzSect, res);
-  for (int i=3;i--;) xyzSect[i] += res[i];
+  EvalCorrectionMap(roc, row, xyzSect, fLastCorr);
+  for (int i=3;i--;) xyzSect[i] += fLastCorr[i];
   //
 }
 

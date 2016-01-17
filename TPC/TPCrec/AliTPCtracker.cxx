@@ -1973,8 +1973,9 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
-  transform->Transform(x,&idROC,0,1);  
-
+  transform->Transform(x,&idROC,0,1);
+  const float* clCorr = transform->GetLastMapCorrection();
+  cluster->SetDistortions(clCorr[0],clCorr[1],clCorr[2]); // memorize distortions
   //
   // in debug mode  check the transformation
   //
