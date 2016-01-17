@@ -14,16 +14,17 @@
 # **************************************************************************
 
 # Module
-set(MODULE ITSUpgradeBase)
+set(MODULE COMMONITSMFTRec)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
+		    ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
@@ -31,9 +32,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources in alphabetical order
 set(SRCS
-    AliITSRecPointU.cxx
-    AliITSUGeomTGeo.cxx
-    AliITSULoader.cxx
+     AliITSMFTClusterPix.cxx
    )
 
 # Headers from sources
@@ -46,7 +45,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS COMMONITSMFTBase STEERBase STEER ESD)
+set(LIBDEPS STEERBase STEER CDB ESD RAWDatabase RAWDatarec COMMONITSMFTBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
@@ -69,3 +68,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+
+
+

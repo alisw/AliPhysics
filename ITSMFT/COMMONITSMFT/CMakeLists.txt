@@ -22,6 +22,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Libraries
 add_subdirectory(COMMONITSMFTBase)
 add_subdirectory(COMMONITSMFTSim)
+add_subdirectory(COMMONITSMFTRec)
 
 install(DIRECTORY misc DESTINATION ITSMFT/COMMONITSMFT)
 

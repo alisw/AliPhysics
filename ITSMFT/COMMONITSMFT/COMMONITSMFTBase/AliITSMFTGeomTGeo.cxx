@@ -30,7 +30,6 @@
 #include <TDatime.h>
 #include <TMath.h>
 #include <TSystem.h>
-#include <TObjArray.h>
 
 #include "AliITSMFTGeomTGeo.h"
 #include "AliLog.h"

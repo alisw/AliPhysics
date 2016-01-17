@@ -18,8 +18,8 @@
 #include <TString.h>
 #include "AliITSMFTAux.h"
 #include <TGeoMatrix.h>
+#include <TObjArray.h>
 
-class TObjArray;
 class TGeoPNEntry;
 class TDatime;
 class AliITSMFTSegmentationPix;

@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
 include_directories(${ROOT_INCLUDE_DIR}
   	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
   	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTRec
                     ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeBase
                     ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeSim
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -67,7 +68,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD RAWDatabase RAWDatarec ITSUpgradeBase ITSUpgradeSim)
+set(LIBDEPS STEERBase STEER ESD RAWDatabase RAWDatarec COMMONITSMFTBase COMMONITSMFTRec ITSUpgradeBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
