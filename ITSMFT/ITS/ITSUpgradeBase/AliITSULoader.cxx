@@ -24,7 +24,6 @@
 #include "AliRunLoader.h"
 #include "AliObjectLoader.h"
 #include "AliLog.h"
-#include "AliITSDigitUpgrade.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Loader for ITS Upgrade
@@ -236,10 +235,6 @@ void AliITSULoader::SetupDigits(TObjArray *digPerDet,Int_t n,
             Error("SetUpDigits","TObject Array digPerDet-At(%d)=%p must be "
                   "zeroed or filled with TClonesArrays",i,digPerDet);
             return;
-        } // end if
-        if(!(cl->GetClass()->GetBaseClass(AliITSDigitUpgrade::Class()))){
-            Error("SetUPDigits","TClones array at digPerDet[%d}=%p must be"
-                  "derived from AliITSDigitUpgrade",i,digPerDet->At(i));
         } // end if
         cl->Clear();
         if(n==3) snprintf(branch,13,"ITSDigits%s",det[i]);

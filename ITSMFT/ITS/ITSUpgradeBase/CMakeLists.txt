@@ -31,9 +31,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources in alphabetical order
 set(SRCS
-    AliITSDigitUpgrade.cxx
     AliITSRecPointU.cxx
-    AliITSsegmentationUpgrade.cxx
     AliITSUGeomTGeo.cxx
     AliITSULoader.cxx
    )

@@ -10,8 +10,6 @@
 
 // ITS upgrade classes 
 // v0 part >>>
-#pragma link C++ class  AliITSDigitUpgrade+;
-#pragma link C++ class  AliITSsegmentationUpgrade+;
 #pragma link C++ class  AliITSRecPointU+;
 // v0 part <<<
 //
