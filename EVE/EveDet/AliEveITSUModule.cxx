@@ -175,7 +175,7 @@ void AliEveITSUModule::SetTrans()
 {
   // Set transformation matrix 
    
-  const TGeoHMatrix *mat = fGM->AliITSMFTGeomTGeo::GetMatrixSens(fID);
+  const TGeoHMatrix *mat = fGM->GetMatrixSens(fID);
   fMainTrans->SetFrom(*mat);
 
 }

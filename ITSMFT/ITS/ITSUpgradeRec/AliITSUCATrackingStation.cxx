@@ -143,7 +143,7 @@ void AliITSUCATrackingStation::Init(AliITSURecoLayer *lr, AliITSUGeomTGeo *geo)
     //
     fIndex[detID - fVIDOffset] = fDetectors.size();
     AliITSURecoSens* sens = lr->GetSensorFromID(detID);
-    const TGeoHMatrix *tm = geo->AliITSMFTGeomTGeo::GetMatrixT2L(detID);
+    const TGeoHMatrix *tm = geo->GetMatrixT2L(detID);
     m.Multiply(tm);
     double txyz[3] = {0.,0.,0.}, xyz[3] = {0.,0.,0.};
     m.LocalToMaster(txyz,xyz);
@@ -154,7 +154,7 @@ void AliITSUCATrackingStation::Init(AliITSURecoLayer *lr, AliITSUGeomTGeo *geo)
     det.cosTF = TMath::Cos(det.phiTF);
     //
     // compute the real radius (with misalignment)
-    TGeoHMatrix mmisal(*(geo->AliITSMFTGeomTGeo::GetMatrix(detID)));
+    TGeoHMatrix mmisal(*(geo->GetMatrix(detID)));
     mmisal.Multiply(tm);
     xyz[0] = 0.;
     xyz[1] = 0.;

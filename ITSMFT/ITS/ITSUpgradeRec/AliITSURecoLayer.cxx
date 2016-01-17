@@ -151,7 +151,7 @@ void AliITSURecoLayer::Build()
   int firstSensID = fITSGeom->GetFirstChipIndex(fActiveID);
   for (int sensI=0;sensI<fNSensors;sensI++) {
     AliITSURecoSens* sens = GetSensor(sensI);
-    mmod = *fITSGeom->AliITSMFTGeomTGeo::GetMatrixSens(sens->GetID());
+    mmod = *fITSGeom->GetMatrixSens(sens->GetID());
     fSensVIDtoMatrixID[sens->GetID() - firstSensID] = sensI;
     double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
     for (int ix=0;ix<2;ix++) {
@@ -176,7 +176,7 @@ void AliITSURecoLayer::Build()
 	}
       }
     }
-    mt2l = fITSGeom->AliITSMFTGeomTGeo::GetMatrixT2L( sens->GetID() );
+    mt2l = fITSGeom->GetMatrixT2L( sens->GetID() );
     mmod.Multiply(mt2l);	
     loc[0]=loc[1]=loc[2]=0;
     mmod.LocalToMaster(loc,glo);

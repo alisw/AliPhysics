@@ -93,7 +93,18 @@ public:
   //
   Int_t        ExtractVolumeCopy(const char* name, const char* prefix) const;
   
+  // 
+  const TGeoHMatrix* GetMatrix(Int_t index) {
+    return AliITSMFTGeomTGeo::GetMatrix(index);
+  }
+  const TGeoHMatrix* GetMatrixT2L(Int_t index) {
+    return AliITSMFTGeomTGeo::GetMatrixT2L(index);
+  }
+  const TGeoHMatrix* GetMatrixSens(Int_t index) {
+    return AliITSMFTGeomTGeo::GetMatrixSens(index);
+  }
   //
+  
   TGeoHMatrix* GetMatrix(Int_t lay,Int_t sta,Int_t det)                   const;
   Bool_t GetTranslation(Int_t lay,Int_t sta,Int_t det, Double_t t[3])     const;
   Bool_t GetRotation(Int_t lay,Int_t sta,Int_t det, Double_t r[9])        const;
