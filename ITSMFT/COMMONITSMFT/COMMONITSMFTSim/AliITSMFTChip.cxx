@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSMFTChip.cxx 53509 2011-12-10 18:55:52Z masera $ */
+/* $Id: AliITSMFTChip.cxx $ */
 
 #include <TArrayI.h>
 
@@ -21,11 +21,13 @@
 
 #include "AliRun.h"
 #include "AliITSMFTChip.h"
-//#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTGeomTGeo.h"
 
 using namespace TMath;
 
 ClassImp(AliITSMFTChip)
+
+AliITSMFTGeomTGeo *AliITSMFTChip::fGeomTG = 0;
 
 //_______________________________________________________________________
 //
@@ -38,24 +40,15 @@ ClassImp(AliITSMFTChip)
 //________________________________________________________________________
 //
 AliITSMFTChip::AliITSMFTChip()
-
-/*
-:
- , fHitsM(0)
-, fGeomTG(0)
-*/
+ :fHitsM(0)
 {
   // constructor
 }
 
 //_________________________________________________________________________
-AliITSMFTChip::AliITSMFTChip(Int_t index)//, AliITSUGeomTGeo* tg)
-/*
-  :
- , fHitsM(new TObjArray())
-  , fGeomTG(tg)
-*/
- {
+AliITSMFTChip::AliITSMFTChip(Int_t index, AliITSMFTGeomTGeo* tg)
+  :fHitsM(new TObjArray())
+{
   // constructor
   SetIndex(index);
 }
@@ -65,17 +58,14 @@ AliITSMFTChip::~AliITSMFTChip()
 {
   // The destructor for AliITSMFTChip. Before destoring AliITSMFTChip
   // we must first destroy all of it's members.
-//  if (fHitsM) fHitsM->Clear();
-//  delete fHitsM;
+  if (fHitsM) fHitsM->Clear();
+  delete fHitsM;
 }
 
 //____________________________________________________________________________
 AliITSMFTChip::AliITSMFTChip(const AliITSMFTChip &source)
  :TObject(source)
-/*
  ,fHitsM(source.fHitsM)
- ,fGeomTG(source.fGeomTG)
-*/
 {
 //     Copy Constructor 
 }
@@ -90,9 +80,9 @@ AliITSMFTChip& AliITSMFTChip::operator=(const AliITSMFTChip &source)
   }
   return *this;
 }
-/*
+
 //___________________________________________________________________________
-Double_t AliITSMFTChip::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *itsHit2) 
+Double_t AliITSMFTChip::PathLength(const AliITSMFTHit *itsHit1,const AliITSMFTHit *itsHit2) 
 {
   // path lenght
   Float_t  x1g,y1g,z1g;   
@@ -107,7 +97,7 @@ Double_t AliITSMFTChip::PathLength(const AliITSUHit *itsHit1,const AliITSUHit *i
 	    ((Double_t)(z2g-z1g)*(Double_t)(z2g-z1g)) );
    return s;
 }
-*/
+
 //___________________________________________________________________________
 void AliITSMFTChip::PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,
 			      Float_t &dx1,Float_t &dy1,Float_t &dz1,Int_t &flag) const
@@ -137,18 +127,18 @@ void AliITSMFTChip::PathLength(Float_t x,Float_t y,Float_t z,Int_t status,Int_t 
     z0 = z;
   } // end if
 }
-/*
+
 //___________________________________________________________________________
 Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,
 				  Double_t &e,Double_t &f,Double_t &de)
 {
   // line segment
-  AliITSUHit *h1;
+  AliITSMFTHit *h1;
   Double_t t;
   //  
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
   //
-  h1 = (AliITSUHit *) (fHitsM->At(hitindex));
+  h1 = (AliITSMFTHit *) (fHitsM->At(hitindex));
   if(h1->StatusEntering()) return kFALSE; // if track entering volume, get index for next step
   de = h1->GetIonization();
   h1->GetPositionL0(a,c,e,t);
@@ -164,11 +154,11 @@ Bool_t AliITSMFTChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double
 				  Double_t &e,Double_t &f,Double_t &de)
 {
   // line segment
-  AliITSUHit *h1;
+  AliITSMFTHit *h1;
   Double_t t;
   //
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
-  h1 = (AliITSUHit *) (fHitsM->At(hitindex));
+  h1 = (AliITSMFTHit *) (fHitsM->At(hitindex));
   if(h1->StatusEntering()) return kFALSE; // if track entering volume, get index for next step
   de = h1->GetIonization();
   h1->GetPositionG0(a,c,e,t);
@@ -184,10 +174,10 @@ Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double
 				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segmente
-  AliITSUHit *h1;
+  AliITSMFTHit *h1;
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
   //
-  h1 = (AliITSUHit *) (fHitsM->At(hitindex));
+  h1 = (AliITSMFTHit *) (fHitsM->At(hitindex));
   if(h1->StatusEntering()){ // if track entering volume, get index for next
     // step
     track = h1->GetTrack();
@@ -209,10 +199,10 @@ Bool_t AliITSMFTChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double
 				   Double_t &e,Double_t &f,Double_t &de,Double_t &tof, Int_t &track)
 {
   // line segment
-  AliITSUHit *h1;
+  AliITSMFTHit *h1;
   if(hitindex>= fHitsM->GetEntriesFast()) return kFALSE;
   //
-  h1 = (AliITSUHit *) (fHitsM->At(hitindex));
+  h1 = (AliITSMFTHit *) (fHitsM->At(hitindex));
   if(h1->StatusEntering()){ // if track entering volume, get index for next
     // step
     track = h1->GetTrack();
@@ -229,7 +219,7 @@ Bool_t AliITSMFTChip::LineSegmentG(Int_t hitindex,Double_t &a,Double_t &b,Double
 }
 
 //______________________________________________________________________
-Bool_t AliITSMFTChip::MedianHitG(AliITSUHit *h1,AliITSUHit *h2,Float_t &x,Float_t &y,Float_t &z)
+Bool_t AliITSMFTChip::MedianHitG(AliITSMFTHit *h1,AliITSMFTHit *h2,Float_t &x,Float_t &y,Float_t &z)
 {
   // Computes the mean hit location for a set of hits that make up a track
   // passing through a volume. Returns kFALSE untill the the track leaves
@@ -305,7 +295,7 @@ void AliITSMFTChip::MedianHitG(Int_t index,Float_t hitx1,Float_t hity1,Float_t h
 }
 
 //___________________________________________________________________________
-Bool_t AliITSMFTChip::MedianHitL( AliITSUHit *itsHit1,AliITSUHit *itsHit2, Float_t &xMl, Float_t &yMl, Float_t &zMl) const
+Bool_t AliITSMFTChip::MedianHitL( AliITSMFTHit *itsHit1,AliITSMFTHit *itsHit2, Float_t &xMl, Float_t &yMl, Float_t &zMl) const
 {
   // median hit
   Float_t x1l,y1l,z1l;
@@ -344,4 +334,3 @@ void AliITSMFTChip::MedianHit(Int_t index,Float_t xg,Float_t yg,Float_t zg,Int_t
   else  flag = 1;
 }
 
-*/

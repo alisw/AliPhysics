@@ -83,14 +83,14 @@ AliITSUClusterPix& AliITSUClusterPix::operator=(const AliITSUClusterPix& cluster
 const TGeoHMatrix*  AliITSUClusterPix::GetTracking2LocalMatrix() const
 {
   // get tracking to local matrix (sensor!!!)
-  return (TGeoHMatrix*)fgGeom->GetMatrixT2L(GetVolumeId());
+  return (TGeoHMatrix*)fgGeom->AliITSMFTGeomTGeo::GetMatrixT2L(GetVolumeId());
 }
 
 //______________________________________________________________________________
 TGeoHMatrix* AliITSUClusterPix::GetMatrix(Bool_t ) const
 {
   // get chip matrix (sensor!)
-  return (TGeoHMatrix*)fgGeom->GetMatrixSens(GetVolumeId());
+  return (TGeoHMatrix*)fgGeom->AliITSMFTGeomTGeo::GetMatrixSens(GetVolumeId());
 }
 
 //______________________________________________________________________________
