@@ -129,7 +129,9 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   fSystematicErrorCluster[0]=0;   // sy cluster error
   fSystematicErrorCluster[1]=0;   // sz cluster error
-
+  //
+  fDistortionFractionAsErrorYZ[0] = 0.1; // fraction of used distortion correction is used as an error
+  fDistortionFractionAsErrorYZ[1] = 0.1; // fraction of used distortion correction is used as an error
   //
   fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
   fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track

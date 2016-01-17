@@ -782,6 +782,12 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   erry2+=addErr*addErr;
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
   erry2+=errCluster[0]*errCluster[0];
+  //
+  double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorY();
+  if (useDist>0) {
+    useDist *= cl->GetDistortionY();
+    erry2 += useDist*useDist;
+  }
   seed->SetErrorY2(erry2);
   //
   return erry2;
@@ -942,8 +948,13 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   if (errInnerDeepZ[0]>0) addErr += errInnerDeepZ[0]*TMath::Exp(-dr/errInnerDeepZ[1]);
   errz2+=addErr*addErr;
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
-
   errz2+=errCluster[1]*errCluster[1];
+  //
+  double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorZ();
+  if (useDist>0) {
+    useDist *= cl->GetDistortionZ();
+    errz2 += useDist*useDist;
+  }
   seed->SetErrorZ2(errz2);
   //
   return errz2;
