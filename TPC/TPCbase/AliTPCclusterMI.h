@@ -55,8 +55,12 @@ public:
   Float_t GetTimeBin() const { return fTimeBin;}
   Float_t GetPad() const { return fPad;}
   //
-  void    GetDistortions(float& dx,float& dy, float& dz)  const;
   void    SetDistortions(float dx, float dy, float dz);
+  void    GetDistortions(float& dx,float& dy, float& dz)  const;
+  Float_t GetDistortionX() const;
+  Float_t GetDistortionY() const;
+  Float_t GetDistortionZ() const;
+
   Bool_t  GetGlobalCov(Float_t cov[6]) const;
   //  AliTPCclusterInfo * GetInfo() const { return fInfo;}
   //  void SetInfo(AliTPCclusterInfo * info);

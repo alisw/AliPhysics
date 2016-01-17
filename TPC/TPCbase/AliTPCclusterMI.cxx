@@ -239,7 +239,6 @@ void AliTPCclusterMI::SetDistortions(float dx, float dy, float dz)
 void AliTPCclusterMI::GetDistortions(float &dx, float &dy, float &dz) const
 {
   // Extract rounded distortions
-  dx = dy = dz = 0.f;
   float v = GetSigmaYZ();
   int pack = *(int*)&v;
   int dxi = pack&kMaskDX;
@@ -253,6 +252,46 @@ void AliTPCclusterMI::GetDistortions(float &dx, float &dy, float &dz) const
   int dzi = (pack>>(kNBitsDX+kNBitsDY))&kMaskDZ;
   dz = dzi>kMaxDZ ? -(dzi&kMaxDZ) : dzi;
   dz *= 1.0f/kScaleDZ; //1./100.0f;
+  //
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionX() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  int dxi = pack&kMaskDX;
+  float dx = dxi>kMaxDX ? -(dxi&kMaxDX) : dxi;
+  dx *= 1.0f/kScaleDX; //1./50.0f;
+  return dx;
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionY() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  //
+  int dyi = (pack>>kNBitsDX)&kMaskDY;
+  float dy = dyi>kMaxDY ? -(dyi&kMaxDY) : dyi;
+  dy *= 1.0f/kScaleDY; //1./100.0f;
+  return dy;
+  //
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionZ() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  //
+  int dzi = (pack>>(kNBitsDX+kNBitsDY))&kMaskDZ;
+  float dz = dzi>kMaxDZ ? -(dzi&kMaxDZ) : dzi;
+  dz *= 1.0f/kScaleDZ; //1./100.0f;
+  return dz;
   //
 }
 
