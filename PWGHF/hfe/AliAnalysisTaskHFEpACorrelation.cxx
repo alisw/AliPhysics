@@ -5363,6 +5363,9 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     
     ///_________________________________________________________________
     ///MC analysis
+    
+    fIsHFE1 = kFALSE;
+    
     if(fIsMC)
     {
         if(track->GetLabel() < 0)
@@ -5891,10 +5894,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 
                 if (fIsMC)
                 {
-                    if (fIsHFE1)
-                    {
-                        fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]->Fill(fDphi,fDeta);
-                    }
+                        if (fIsHFE1)
+                        {
+                            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]->Fill(fDphi,fDeta);
+                        }
+                    
                 }
                 
                 
