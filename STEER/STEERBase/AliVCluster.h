@@ -2,7 +2,6 @@
 #define ALIVCLUSTER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-/* $Id$ */
 
 //-------------------------------------------------------------------------
 //
@@ -123,6 +122,16 @@ class AliVCluster : public TObject
   virtual UInt_t      GetNLabels() const            {return 0 ; }
   virtual void        SetLabel(Int_t *, UInt_t )    { ; }
 
+  virtual void        SetCellsMCEdepFractionMap(UInt_t * /*array*/) {;}  
+  virtual UInt_t     *GetCellsMCEdepFractionMap()  const   {return 0 ; }
+  virtual void        GetCellMCEdepFractionArray(Int_t, Float_t * /*eDepFraction[4]*/) const {;} 
+  virtual UInt_t      PackMCEdepFraction(Float_t * /*eDepFraction[4]*/) const {return 0 ; } 
+  
+  virtual void        SetClusterMCEdepFractionFromEdepArray(Float_t  */*array*/) {;} 
+  virtual void        SetClusterMCEdepFraction             (UShort_t */*array*/) {;}   
+  virtual UShort_t   *GetClusterMCEdepFraction() const      {return 0 ; }
+  virtual Float_t     GetClusterMCEdepFraction(Int_t) const {return 0 ; }
+  
   virtual Int_t       GetNTracksMatched() const     {return 0 ; }
   virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }//AODCaloCluster
   virtual Int_t       GetTrackMatchedIndex(Int_t=0) const  {return -1; }//ESDCaloCluster

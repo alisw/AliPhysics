@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-/* $Log $ */
-
-//-----------------------------------------------------------------
-//           Implementation of the ESD Calorimeter cluster class
-//   ESD = Event Summary Data
-//   This is the class to deal with during the phisics analysis of data
-//
-//   J.L. Klay (LLNL)
-//-----------------------------------------------------------------
-
 #include <TLorentzVector.h>
 #include "AliLog.h"
 #include "AliESDCaloCluster.h"
@@ -52,7 +41,10 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fTOF(0.),
   fCoreEnergy(0.),
   fMCEnergyFraction(0.),
-  fIsExotic(kFALSE)
+  fIsExotic(kFALSE),
+  fNLabel(0),
+  fClusterMCEdepFraction(0x0),
+  fCellsMCEdepFractionMap(0x0)
 {
   //
   // The default ESD constructor 
@@ -88,7 +80,10 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fTOF(clus.fTOF),
   fCoreEnergy(clus.fCoreEnergy),
   fMCEnergyFraction(clus.fMCEnergyFraction),
-  fIsExotic(clus.fIsExotic)
+  fIsExotic(clus.fIsExotic),
+  fNLabel(clus.fNLabel),
+  fClusterMCEdepFraction(),
+  fCellsMCEdepFractionMap()
 {
   //
   // The copy constructor 
@@ -99,25 +94,35 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 
   for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = clus.fPID[i];
 
-  if (clus.fNCells > 0) {
-
-    if(clus.fCellsAbsId){
+  if (clus.fNCells > 0) 
+  {
+    if(clus.fCellsAbsId)
+    {
       fCellsAbsId = new UShort_t[clus.fNCells];
-      for (Int_t i=0; i<clus.fNCells; i++)
-	fCellsAbsId[i]=clus.fCellsAbsId[i];
+      for (Int_t i=0; i<clus.fNCells; i++) fCellsAbsId[i]=clus.fCellsAbsId[i];
     }
     
-    if(clus.fCellsAmpFraction){
+    if(clus.fCellsAmpFraction)
+    {
       fCellsAmpFraction = new Double32_t[clus.fNCells];
-      for (Int_t i=0; i<clus.fNCells; i++)
-	fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
+      for (Int_t i=0; i<clus.fNCells; i++) fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
     }
-    
+
+    if(clus.fCellsMCEdepFractionMap)
+    {
+      fCellsMCEdepFractionMap = new UInt_t[clus.fNCells];
+      for (Int_t i=0; i<clus.fNCells; i++) fCellsMCEdepFractionMap[i]=clus.fCellsMCEdepFractionMap[i];
+    }
+  }
+  
+  if(clus.fClusterMCEdepFraction && clus.fNLabel > 0)
+  {
+    fClusterMCEdepFraction = new UShort_t[clus.fNLabel];
+    for (Int_t i=0; i<clus.fNLabel; i++) fClusterMCEdepFraction[i]=clus.fClusterMCEdepFraction[i];
   }
 
-  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
+  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) 
     fUserDefEnergy[i] = clus.fUserDefEnergy[i];
-  }
 
 }
 
@@ -143,30 +148,62 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fDistToBadChannel = source.fDistToBadChannel ;
   for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = source.fPID[i];
   fID = source.fID;
+  
+  fNLabel = source.fNLabel;
+  fNCells = source.fNCells;
 
-  fNCells= source.fNCells;
-
-  if (source.fNCells > 0) {
-    if(source.fCellsAbsId){
-      if(fNCells != source.fNCells||!fCellsAbsId){
-	if(fCellsAbsId)delete [] fCellsAbsId;
-	fCellsAbsId = new UShort_t[source.fNCells];
+  if (source.fNCells > 0) 
+  {
+    if(source.fCellsAbsId)
+    {
+      if(!fCellsAbsId)
+      {
+        if(fCellsAbsId)delete [] fCellsAbsId;
+        fCellsAbsId = new UShort_t[source.fNCells];
       }
-      for (Int_t i=0; i<source.fNCells; i++){
-	fCellsAbsId[i]=source.fCellsAbsId[i];
-      }
+      
+      for (Int_t i=0; i<source.fNCells; i++)
+        fCellsAbsId[i]=source.fCellsAbsId[i];
     }
     
-    if(source.fCellsAmpFraction){
-      if(fNCells != source.fNCells||!fCellsAmpFraction){
-	if(fCellsAmpFraction) delete [] fCellsAmpFraction;
-	fCellsAmpFraction = new Double32_t[source.fNCells];
+    if(source.fCellsAmpFraction)
+    {
+      if(!fCellsAmpFraction)
+      {
+        if(fCellsAmpFraction) delete [] fCellsAmpFraction;
+        fCellsAmpFraction = new Double32_t[source.fNCells];
       }
+      
       for (Int_t i=0; i<source.fNCells; i++)
-	fCellsAmpFraction[i]=source.fCellsAmpFraction[i];
+        fCellsAmpFraction[i]=source.fCellsAmpFraction[i];
     }  
+    
+    if(source.fCellsMCEdepFractionMap)
+    {
+      if (!fCellsMCEdepFractionMap)
+      {
+        if(fCellsMCEdepFractionMap) delete [] fCellsMCEdepFractionMap;
+        fCellsMCEdepFractionMap = new UInt_t[source.fNCells];
+      }
+      
+      for (Int_t i=0; i<source.fNCells; i++) 
+        fCellsMCEdepFractionMap[i]=source.fCellsMCEdepFractionMap[i];
+    }
+  } // fNCells > 0
+  
+  if(source.fClusterMCEdepFraction && source.fNLabel > 0)
+  {
+    if (!fClusterMCEdepFraction)
+    {
+      if(fClusterMCEdepFraction) delete [] fClusterMCEdepFraction;
+      fClusterMCEdepFraction = new UShort_t[source.fNLabel];
+    }
+    
+    for (Int_t i=0; i<source.fNLabel; i++) 
+      fClusterMCEdepFraction[i]=source.fClusterMCEdepFraction[i];
   }
 
+  
   fNExMax = source.fNExMax;
   fClusterType = source.fClusterType;
   fTOF = source.fTOF;
@@ -228,10 +265,13 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   // This is destructor according Coding Conventions 
   //
-  if(fTracksMatched)delete fTracksMatched;fTracksMatched = 0;
-  if(fLabels) delete fLabels; fLabels = 0;
-  if(fCellsAmpFraction){ delete[] fCellsAmpFraction; fCellsAmpFraction=0;}
-  if(fCellsAbsId){ delete[] fCellsAbsId;  fCellsAbsId = 0;}
+  if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
+  if(fLabels)        delete fLabels;        fLabels        = 0;
+  
+  if(fCellsAmpFraction)       { delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ; }
+  if(fCellsAbsId)             { delete[] fCellsAbsId;             fCellsAbsId             = 0 ; }
+  if(fClusterMCEdepFraction)  { delete[] fClusterMCEdepFraction;  fClusterMCEdepFraction  = 0 ; }
+  if(fCellsMCEdepFractionMap) { delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ; }
 }
 
 //_______________________________________________________________________
@@ -239,10 +279,13 @@ void AliESDCaloCluster::Clear(const Option_t*){
   //
   // This is destructor according Coding Conventions 
   //
-  if(fTracksMatched)delete fTracksMatched;fTracksMatched = 0;
-  if(fLabels) delete fLabels; fLabels = 0;
-  if(fCellsAmpFraction){ delete[] fCellsAmpFraction; fCellsAmpFraction=0;}
-  if(fCellsAbsId){ delete[] fCellsAbsId;  fCellsAbsId = 0;}
+  if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
+  if(fLabels)        delete fLabels;        fLabels        = 0;
+  
+  if(fCellsAmpFraction)       { delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ; }
+  if(fCellsAbsId)             { delete[] fCellsAbsId;             fCellsAbsId             = 0 ; }
+  if(fClusterMCEdepFraction)  { delete[] fClusterMCEdepFraction;  fClusterMCEdepFraction  = 0 ; }
+  if(fCellsMCEdepFractionMap) { delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ; }
 }
 
 
@@ -373,4 +416,115 @@ Int_t AliESDCaloCluster::GetTrackMatchedIndex(Int_t i) const
   else {
     return -1;
   }
+}
+
+///
+/// \param cellIndex: position of cell in array fCellsAbsId
+/// \param eDep: Filled float array with 4 entries, each is the fraction of deposited 
+///              energy by 4 most significant MC particles (GetLabels()) in a cell of the cluster.
+/// In this method, the 4 fractions  stored in % values (0 to 100) 
+/// in each bit of the integer fCellsMCEdepFractionMap[cellIndex] are unpacked. 
+//______________________________________________________________________________
+void  AliESDCaloCluster::GetCellMCEdepFractionArray(Int_t cellIndex, Float_t * eDep) const
+{ 
+  if ( cellIndex >= fNCells || fNCells < 0 || !fCellsMCEdepFractionMap)
+  {
+    eDep[0] = eDep[1] = eDep[2] = eDep[3] = 0. ;
+    return;
+  }
+  
+  eDep[0] =  (fCellsMCEdepFractionMap[cellIndex]&0x000000ff)        / 100.;
+  eDep[1] = ((fCellsMCEdepFractionMap[cellIndex]&0x0000ff00) >>  8) / 100.;
+  eDep[2] = ((fCellsMCEdepFractionMap[cellIndex]&0x00ff0000) >> 16) / 100.;
+  eDep[3] = ((fCellsMCEdepFractionMap[cellIndex]&0xff000000) >> 24) / 100.;  
+}
+
+///
+/// \param eDep: Float array with 4 entries, each is the fraction of deposited 
+///              energy by an MC particle in a cell of the cluster.
+/// 
+/// The MC particle must correspond one of the 4 first labels in GetLabels(). This method
+/// packs the 4 floats into an integer, assigning each bit a value between 0 and 100
+//______________________________________________________________________________
+UInt_t  AliESDCaloCluster::PackMCEdepFraction(Float_t * eDep) const
+{ 
+  UInt_t intEDep[4];
+  
+  for(Int_t i = 0; i < 4; i++)
+    intEDep[i] = TMath::Nint(eDep[i]*100) ;
+  
+  UInt_t map = intEDep[0]|(intEDep[1]<<8)|(intEDep[2]<<16)|(intEDep[3]<<24);
+
+  return map;
+}
+
+///
+/// \return Fraction of deposited energy by one of the particles in array fLable
+/// 
+/// \param mcIndex: position of MC particle in array fLabel
+///
+/// The parameter is stored as %, return the corresponding float.
+//______________________________________________________________________________
+Float_t  AliESDCaloCluster::GetClusterMCEdepFraction(Int_t mcIndex) const
+{ 
+  if ( mcIndex < 0 ||  mcIndex >= GetNLabels() || !fClusterMCEdepFraction) return 0. ;
+
+  return  fClusterMCEdepFraction[mcIndex]/100. ; 
+}
+
+///
+/// Set the array with the fraction of deposited energy in a cell belonging to 
+/// the cluster by a given primary  particle. Each entry of the array corresponds 
+/// to the same entry in fCellsAbsId. Each entry is an integer where a maximum 
+/// of 4 energy deposition fractions are encoded, each corresponding to the 
+/// first 4 entries in fLabels
+//______________________________________________________________________________
+void  AliESDCaloCluster::SetCellsMCEdepFractionMap(UInt_t *array)
+{
+  if ( fNCells <= 0 || !array) return; 
+  
+  fCellsMCEdepFractionMap = new  UInt_t[fNCells];
+  
+  for (Int_t i = 0; i < fNCells; i++) 
+    fCellsMCEdepFractionMap[i] = array[i];
+}
+
+///
+/// Set the array with the fraction of deposited energy in cluster by a given primary 
+/// particle. Each entry of the array corresponds to the same entry in GetLabels().
+/// Set the fraction in % with respect the cluster energy, store a value between 0 and 100
+///
+/// \param array: energy deposition array
+//______________________________________________________________________________
+void  AliESDCaloCluster::SetClusterMCEdepFractionFromEdepArray(Float_t *array)
+{
+  if ( fLabels->GetSize() <= 0 || !array) return ; 
+
+  fClusterMCEdepFraction = new  UShort_t[fLabels->GetSize()];
+  
+  // Get total deposited energy (can be different from reconstructed energy)
+  Float_t totalE = 0;
+  for (Int_t i = 0; i < fLabels->GetSize(); i++) totalE+=array[i];
+
+  // Set the fraction of energy per MC contributor in %
+  for (Int_t i = 0; i < fLabels->GetSize(); i++)     
+    fClusterMCEdepFraction[i] = TMath::Nint(array[i]/totalE*100.);
+}
+
+
+///
+/// Set the array with the fraction of deposited energy in cluster by a given primary 
+/// particle. Each entry of the array corresponds to the same entry in GetLabels().
+///
+/// The fraction must already be in % with respect the cluster energy, store a value between 0 and 100
+/// \param array: array of fraction of energy deposition / cluster energy 
+//______________________________________________________________________________
+void  AliESDCaloCluster::SetClusterMCEdepFraction(UShort_t *array)
+{
+  if ( fLabels->GetSize() <= 0 || !array ) return ; 
+  
+  fClusterMCEdepFraction = new  UShort_t[fLabels->GetSize()];
+  
+  for (Int_t i = 0; i < fLabels->GetSize(); i++) 
+    fClusterMCEdepFraction[i] = array[i];
 }

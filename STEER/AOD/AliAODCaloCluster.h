@@ -130,6 +130,12 @@ class AliAODCaloCluster : public AliAODCluster {
   void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
   void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
   
+  void        SetCellsMCEdepFractionMap(UInt_t *array) ;
+  UInt_t    * GetCellsMCEdepFractionMap() const    { return fCellsMCEdepFractionMap ; }
+  
+  void        GetCellMCEdepFractionArray(Int_t cellIndex, Float_t * eDep) const ;
+  UInt_t      PackMCEdepFraction(Float_t * eDep) const ; 
+  
  private :
 
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
@@ -145,15 +151,18 @@ class AliAODCaloCluster : public AliAODCluster {
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
 
-  Int_t       fNCells ;
-  UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
-  Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+  Int_t        fNCells ;
+  UShort_t   * fCellsAbsId;        //[fNCells] array of cell absId numbers
+  Double32_t * fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
   
   Double_t     fMCEnergyFraction;                    //!MC energy (embedding)
   Bool_t       fIsExotic;                            //!cluster marked as "exotic" (high energy deposition concentrated in a single cell)
   Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...)
 
-  ClassDef(AliAODCaloCluster,8);
+  UInt_t     * fCellsMCEdepFractionMap; //[fNCells] Array of maps (4 bits, each bit a different information) with fraction of deposited energy 
+                                        //          per MC particle contributing to the cluster (4 particles maximum) per cell in the cluster
+  
+  ClassDef(AliAODCaloCluster,9);
 };
 
 #endif

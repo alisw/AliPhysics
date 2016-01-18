@@ -2,8 +2,6 @@
 #define ALIESDCALOCLUSTER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-/* $Id$ */
-/* $Log $ */
 
 //-------------------------------------------------------------------------
 //                          Class AliESDCaloCluster
@@ -91,15 +89,17 @@ class AliESDCaloCluster : public AliVCluster
     if(!fTracksMatched)fTracksMatched   = new TArrayI(array);
     else *fTracksMatched = array;
   }
+  
   void AddLabels(TArrayI & array)         { 
     if(!fLabels)fLabels = new TArrayI(array) ;
     else *fLabels = array;
+    fNLabel = fLabels->GetSize();
   }
   
-  void SetLabel(Int_t *array, UInt_t size)
-  {
+  void SetLabel(Int_t *array, UInt_t size){
     if(fLabels) delete fLabels ;
     fLabels = new TArrayI(size,array);
+    fNLabel = size;
   }
 
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
@@ -155,10 +155,21 @@ class AliESDCaloCluster : public AliVCluster
   void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
   void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
   
+  void        SetCellsMCEdepFractionMap(UInt_t *array) ;
+  UInt_t    * GetCellsMCEdepFractionMap() const    { return fCellsMCEdepFractionMap ; }
+
+  void        GetCellMCEdepFractionArray(Int_t cellIndex, Float_t * eDep) const ;
+  UInt_t      PackMCEdepFraction(Float_t * eDep) const ; 
+  
+  void        SetClusterMCEdepFractionFromEdepArray(Float_t  *array) ;
+  void        SetClusterMCEdepFraction             (UShort_t *array) ;
+  UShort_t  * GetClusterMCEdepFraction() const     { return fClusterMCEdepFraction     ; }
+  Float_t     GetClusterMCEdepFraction(Int_t mcIndex) const ;
+
  protected:
   
-  TArrayI * fTracksMatched; //Index of tracks close to cluster. First entry is the most likely match.
-  TArrayI * fLabels;        //list of primaries that generated the cluster, ordered in deposited energy.
+  TArrayI    * fTracksMatched;    // Index of tracks close to cluster. First entry is the most likely match.
+  TArrayI    * fLabels;           // List of MC particles that generated the cluster, ordered in deposited energy.
   
   Int_t        fNCells ;
   UShort_t   * fCellsAbsId;       //[fNCells] array of cell absId numbers
@@ -186,8 +197,13 @@ class AliESDCaloCluster : public AliVCluster
   Double_t     fMCEnergyFraction;  //!MC energy (embedding)
   Bool_t       fIsExotic;          //!cluster marked as "exotic" (high energy deposition concentrated in a single cell)
   Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...)
-  
-  ClassDef(AliESDCaloCluster,12)  //ESDCaloCluster 
+
+  UInt_t       fNLabel;                 // Number of MC particles associated to the cluster
+  UShort_t   * fClusterMCEdepFraction;  //[fNLabel] Array with fraction of deposited energy per MC particle contributing to the cluster
+  UInt_t     * fCellsMCEdepFractionMap; //[fNCells] Array of maps (4 bits, each bit a different information) with fraction of deposited energy 
+                                        //          per MC particle contributing to the cluster (4 particles maximum) per cell in the cluster
+
+  ClassDef(AliESDCaloCluster,13)  //ESDCaloCluster 
 
     };
 

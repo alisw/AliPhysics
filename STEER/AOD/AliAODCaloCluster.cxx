@@ -13,11 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//     AOD calorimeter cluster class (for PHOS and EMCAL)
-//     Author: Markus Oldenburg, CERN
-//-------------------------------------------------------------------------
-
 #include <TLorentzVector.h>
 #include "AliLog.h"
 #include "AliAODCaloCluster.h"
@@ -42,7 +37,8 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0),
   fMCEnergyFraction(0.),
-  fIsExotic(kFALSE)
+  fIsExotic(kFALSE),
+  fCellsMCEdepFractionMap(0x0)
 {
   // default constructor
 
@@ -76,7 +72,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0),
   fMCEnergyFraction(0.),
-  fIsExotic(kFALSE)
+  fIsExotic(kFALSE),
+  fCellsMCEdepFractionMap(0x0)
 {
   // constructor
 
@@ -110,7 +107,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0),
   fMCEnergyFraction(0.),
-  fIsExotic(kFALSE)
+  fIsExotic(kFALSE),
+  fCellsMCEdepFractionMap(0x0)
 {
   // constructor
 
@@ -124,8 +122,9 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
 AliAODCaloCluster::~AliAODCaloCluster() 
 {
   // destructor
-  if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
-  if(fCellsAbsId)       delete[] fCellsAbsId;       fCellsAbsId = 0;
+  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
+  if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
+  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
 }
 
 //______________________________________________________________________________
@@ -133,8 +132,9 @@ void AliAODCaloCluster::Clear(const Option_t*)
 {
   // clear
   RemoveLabel();
-  if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
-  if(fCellsAbsId)       delete[] fCellsAbsId;       fCellsAbsId = 0;
+  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
+  if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
+  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
 }
 
 //______________________________________________________________________________
@@ -155,29 +155,36 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0),
   fMCEnergyFraction(clus.fMCEnergyFraction),
-  fIsExotic(clus.fIsExotic)
+  fIsExotic(clus.fIsExotic),
+  fCellsMCEdepFractionMap(0x0)
 {
   // Copy constructor
 
-  if (clus.fNCells > 0) {
-    
-    if(clus.fCellsAbsId){
+  if (clus.fNCells > 0) 
+  {
+    if(clus.fCellsAbsId)
+    {
       fCellsAbsId = new UShort_t[clus.fNCells];
       for (Int_t i=0; i<clus.fNCells; i++)
         fCellsAbsId[i]=clus.fCellsAbsId[i];
     }
     
-    if(clus.fCellsAmpFraction){
+    if(clus.fCellsAmpFraction)
+    {
       fCellsAmpFraction = new Double32_t[clus.fNCells];
       for (Int_t i=0; i<clus.fNCells; i++)
         fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
     }
     
+    if(clus.fCellsMCEdepFractionMap)
+    {
+      fCellsMCEdepFractionMap = new UInt_t[clus.fNCells];
+      for (Int_t i=0; i<clus.fNCells; i++) fCellsMCEdepFractionMap[i]=clus.fCellsMCEdepFractionMap[i];
+    }
   }
-
-  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
+  
+  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) 
     fUserDefEnergy[i] = clus.fUserDefEnergy[i];
-  }
   
 }
 
@@ -185,10 +192,10 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
 AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
 {
   // Assignment operator
-  if(this!=&clus) {
-
+  if(this!=&clus) 
+  {
     AliAODCluster::operator=(clus);
-
+    
     fDistToBadChannel = clus.fDistToBadChannel;
     fDispersion = clus.fDispersion;
     fM20 = clus.fM20;
@@ -200,37 +207,45 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fTOF = clus.fTOF;
     fCoreEnergy = clus.fCoreEnergy;
     fTracksMatched = clus.fTracksMatched;
-
+    
     fNCells= clus. fNCells;
+    
     // delete anyway 
-    if(fCellsAbsId)delete [] fCellsAbsId;
-    if(fCellsAmpFraction)delete [] fCellsAmpFraction;
-
-    if (clus.fNCells > 0) {
-      
-      if(clus.fCellsAbsId){
-	fCellsAbsId = new UShort_t[clus.fNCells];
-	for (Int_t i=0; i<clus.fNCells; i++)
-	  fCellsAbsId[i]=clus.fCellsAbsId[i];
+    if(fCellsAbsId)             delete [] fCellsAbsId;
+    if(fCellsAmpFraction)       delete [] fCellsAmpFraction;
+    if(fCellsMCEdepFractionMap) delete [] fCellsMCEdepFractionMap;
+    
+    if (clus.fNCells > 0) 
+    {
+      if(clus.fCellsAbsId)
+      {
+        fCellsAbsId = new UShort_t[clus.fNCells];
+        for (Int_t i=0; i<clus.fNCells; i++)
+          fCellsAbsId[i]=clus.fCellsAbsId[i];
       }
       
-      if(clus.fCellsAmpFraction){
-	fCellsAmpFraction = new Double32_t[clus.fNCells];
-	for (Int_t i=0; i<clus.fNCells; i++)
-	  fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
+      if(clus.fCellsAmpFraction)
+      {
+        fCellsAmpFraction = new Double32_t[clus.fNCells];
+        for (Int_t i=0; i<clus.fNCells; i++)
+          fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
       }
       
-    }
-
+      if(clus.fCellsMCEdepFractionMap)
+      {
+        fCellsMCEdepFractionMap = new UInt_t[clus.fNCells];
+        for (Int_t i=0; i<clus.fNCells; i++) 
+          fCellsMCEdepFractionMap[i]=clus.fCellsMCEdepFractionMap[i];
+      }
+    } // fNCells > 0
+    
+    fMCEnergyFraction = clus.fMCEnergyFraction;
+    fIsExotic = clus.fIsExotic;
+    
+    for (Int_t i = 0; i <= kLastUserDefEnergy; i++) 
+      fUserDefEnergy[i] = clus.fUserDefEnergy[i];
   }
-
-  fMCEnergyFraction = clus.fMCEnergyFraction;
-  fIsExotic = clus.fIsExotic;
-
-  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
-    fUserDefEnergy[i] = clus.fUserDefEnergy[i];
-  }
-
+  
   return *this;
 }
 
@@ -300,6 +315,7 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUse
 }
 
 
+//______________________________________________________________________________
 void  AliAODCaloCluster::SetCellsAbsId(UShort_t *array)
 {
     //  Set the array of cell absId numbers 
@@ -309,6 +325,7 @@ void  AliAODCaloCluster::SetCellsAbsId(UShort_t *array)
     }
 }
 
+//______________________________________________________________________________
 void  AliAODCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
 {
     //  Set the array of cell amplitude fraction
@@ -317,3 +334,63 @@ void  AliAODCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
       for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
     }
 }
+
+///
+/// \param cellIndex: position of cell in array fCellsAbsId
+/// \param eDep: Filled float array with 4 entries, each is the fraction of deposited 
+///              energy by 4 most significant MC particles (GetLabels()) in a cell of the cluster.
+/// In this method, the 4 fractions  stored in % values (0 to 100) 
+/// in each bit of the integer fCellsMCEdepFractionMap[cellIndex] are unpacked. 
+//______________________________________________________________________________
+void  AliAODCaloCluster::GetCellMCEdepFractionArray(Int_t cellIndex, Float_t * eDep) const
+{ 
+  if ( cellIndex >= fNCells || fNCells < 0 || !fCellsMCEdepFractionMap )
+  {
+    eDep[0] = eDep[1] = eDep[2] = eDep[3] = 0. ;
+    return;
+  }
+  
+  eDep[0] =  (fCellsMCEdepFractionMap[cellIndex]&0x000000ff)        / 100.;
+  eDep[1] = ((fCellsMCEdepFractionMap[cellIndex]&0x0000ff00) >>  8) / 100.;
+  eDep[2] = ((fCellsMCEdepFractionMap[cellIndex]&0x00ff0000) >> 16) / 100.;
+  eDep[3] = ((fCellsMCEdepFractionMap[cellIndex]&0xff000000) >> 24) / 100.;  
+}
+
+///
+/// \param eDep: Float array with 4 entries, each is the fraction of deposited 
+///              energy by an MC particle in a cell of the cluster.
+/// 
+/// The MC particle must correspond one of the 4 first labels in GetLabels(). This method
+/// packs the 4 floats into an integer, assigning each bit a value between 0 and 100
+//______________________________________________________________________________
+UInt_t  AliAODCaloCluster::PackMCEdepFraction(Float_t * eDep) const
+{ 
+  UInt_t intEDep[4];
+  
+  for(Int_t i = 0; i < 4; i++)
+    intEDep[i] = TMath::Nint(eDep[i]*100) ;
+  
+  UInt_t map = intEDep[0]|(intEDep[1]<<8)|(intEDep[2]<<16)|(intEDep[3]<<24);
+  
+  return map;
+}
+
+///
+/// Set the array with the fraction of deposited energy in a cell belonging to 
+/// the cluster by a given primary  particle. Each entry of the array corresponds 
+/// to the same entry in fCellsAbsId. Each entry is an integer where a maximum 
+/// of 4 energy deposition fractions are encoded, each corresponding to the 
+/// first 4 entries in GetLabels()
+//______________________________________________________________________________
+void  AliAODCaloCluster::SetCellsMCEdepFractionMap(UInt_t *array)
+{
+  if ( fNCells <= 0 || !array ) return; 
+  
+  fCellsMCEdepFractionMap = new  UInt_t[fNCells];
+  
+  for (Int_t i = 0; i < fNCells; i++) 
+    fCellsMCEdepFractionMap[i] = array[i];
+}
+
+
+

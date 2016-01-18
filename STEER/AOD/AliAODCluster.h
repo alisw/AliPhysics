@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //-------------------------------------------------------------------------
 //     AOD cluster base class
 //     Author: Markus Oldenburg, CERN
@@ -94,6 +92,11 @@ class AliAODCluster : public AliVCluster {
   Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
   void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
   
+  void        SetClusterMCEdepFractionFromEdepArray(Float_t *array) ;
+  void        SetClusterMCEdepFraction(UShort_t *array) ;
+  UShort_t  * GetClusterMCEdepFraction() const      { return fClusterMCEdepFraction ; }
+  Float_t     GetClusterMCEdepFraction(Int_t mcIndex) const ;  
+  
  private :
   
   // Energy & position
@@ -101,18 +104,21 @@ class AliAODCluster : public AliVCluster {
   Double32_t    fPosition[3];    // position of the cluster
   
   Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
-  Double32_t    fPID[13];         // [0.,1.,8] pointer to PID object
+  Double32_t    fPID[13];        // [0.,1.,8] pointer to PID object
   
   Int_t         fID;             // unique cluster ID, points back to the ESD cluster
-  Int_t         fNLabel;         // number of original track for this cluster      
-  Int_t        *fLabel;          // [fNLabel] particle label, points back to MC tracks
+  Int_t         fNLabel;         // number of original MC particles generating this cluster      
+  Int_t        *fLabel;          // [fNLabel] particle label, points back to MC particles
   UInt_t        fFilterMap;      // filter information, one bit per set of cuts
   
   Char_t        fType;           // cluster type
 
   Double_t      fMCEnergyFraction;     //!MC energy (embedding)
   
-  ClassDef(AliAODCluster,6);
+  UShort_t     *fClusterMCEdepFraction;//[fNLabel] Array with fraction of deposited energy per MC particle contributing to the cluster
+
+  
+  ClassDef(AliAODCluster,7);
 };
 
 #endif
