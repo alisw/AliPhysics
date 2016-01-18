@@ -43,7 +43,6 @@ TTree * treeDist =0;   // global tree used to check the content of the fit
 void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax);
 void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
 void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1);
-void MakeEventStatInfo(const char * inputList="cat residual.list", Int_t timeInterval=300, Int_t id=0, Int_t skip=1);
 
 
 void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param1=0){
@@ -51,7 +50,7 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
   if (action==1)    {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
     Int_t stopTime =TString(gSystem->Getenv("mapStopTime" )).Atoi();
-    AliTPCcalibAlignInterpolation::FillHistogramsFromChain("residual.list", 6,10,startTime, stopTime, param1,param0);
+    AliTPCcalibAlignInterpolation::FillHistogramsFromChain("residual.list", 6,4,startTime, stopTime, param1,param0);
   }
   if (action==4)    AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
 
@@ -300,10 +299,12 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     ::Error("MakeNDFit","Intput tree %s not accessible\n",inputTree);
     return;    
   }
+  const Double_t pxmin=8.48499984741210938e+01; //param.GetPadRowRadii(0,0)-param.GetPadPitchLength(0,0)/2
+  const Double_t pxmax=2.46600006103515625e+02; //2.46600006103515625e+02param.GetPadRowRadii(36,param.GetNRow(36)-1)+param.GetPadPitchLength(36,param.GetNRow(36)-1)/2.
   Int_t     ndim=4;
-  Int_t     nbins[4]= {10,  (sector1-sector0)*10,        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
-  Double_t  xmin[4] = {84,  sector0,   theta0,                            -2.0};
-  Double_t  xmax[4] = {245, sector1,   theta1,               2.0};
+  Int_t     nbins[4]= {10,  (sector1-sector0-0.1)*15,        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
+  Double_t  xmin[4] = {pxmin,  sector0+0.05,   theta0,                            -2.0};
+  Double_t  xmax[4] = {pxmax, sector1-0.05,   theta1,               2.0};
   //
 
   THnF* hN= new THnF("exampleFit","exampleFit", ndim, nbins, xmin,xmax);
@@ -320,8 +321,8 @@ void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0, 
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
     fitCorrs[0]->SetStreamer(pcstream);
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.1:0.1:3","2:2:2:2",0.001);
-    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.15:0.15:3","2:2:2:2",0.001);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.05:0.1:3","2:2:2:2",0.0001);
+    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.075:0.15:3","2:2:2:2",0.0001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("meanG_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
@@ -440,187 +441,12 @@ void loadDistortionTree(){
   }
 }
 
-void MakeEventStatInfo(const char * inputList, Int_t timeInterval, Int_t id, Int_t skip){
-  //
-  /// Code to query statistical event information from the ResidualTrees.root file 
-  /// output written to file residualInfo.root
-  ///   \param const char * inputList - ascii file with input list
-  ///   \param Int_t timeInterval     - length of time interval (beginning of time intervals rounded)
-  ///   \param id                     - additional ID added to the tree
-  ///   \param skip                   - parameter skip file
-  /// Algorithm:
-  ///   1.) Cache information per files - beginTime and endTime for file
-  ///   2.) Cache information per time interval
-
-  /*
-    run=240204;
-    GetResidualStatInfo("cat residual.list",300,run,1);
-  */
-  TObjArray *array = TString(gSystem->GetFromPipe(TString::Format("%s",inputList).Data())).Tokenize("\n");
-  Int_t nFiles=array->GetEntries();
-  if (nFiles<=0) {
-    ::Error("GetResidualStatInfo", "Wrong input list %s", inputList);
-    return;
-  }
-  TStopwatch timer;
-  //
-  // 1.) Cache information per files - beginTime and endTime for file
-  //
-  TStopwatch timer1;
-  TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
-  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
-    timer.Start();
-    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());
-    TFile * f = TFile::Open(array->At(iFile)->GetName());
-    if (f==NULL) continue;
-    TTree * treeInfo = (TTree*)f->Get("eventInfo");
-    if (treeInfo==NULL) continue;
-    Int_t entriesInfo=treeInfo->GetEntries();
-    Int_t entries=treeInfo->Draw("B1","1","goff");
-    Double_t maxTime=TMath::MaxElement(entries,treeInfo->GetV1());
-    Double_t minTime=TMath::MinElement(entries,treeInfo->GetV1());
-    Double_t meanTime=TMath::Mean(entries,treeInfo->GetV1());
-    TObjString fname(array->At(iFile)->GetName());
-    (*pcstream)<<"summary1"<<
-      "iFile="<<iFile<<
-      "fname.="<<&fname<<
-      "events="<<entriesInfo<<
-      "minTime="<<minTime<<
-      "maxTime="<<maxTime<<
-      "meanTime="<<meanTime<<
-      "\n";
-    timer.Print();
-  }
-  delete pcstream;
-  ::Info("GetResidualStatInfo","Total time");
-  timer1.Print();
-  //
-  // 2.) Cache information per time interval
-  //
-  TStopwatch timer2;
-  pcstream = new TTreeSRedirector("residualInfo.root", "update");
-  TTree * treeSummary1=(TTree*)(pcstream->GetFile()->Get("summary1"));
-  Int_t entries = treeSummary1->Draw("minTime","1","goff");
-  Long64_t minTime = TMath::MinElement(entries, treeSummary1->GetV1());
-  entries = treeSummary1->Draw("maxTime","1","goff");
-  Long64_t maxTime = TMath::MaxElement(entries, treeSummary1->GetV1());
-  minTime=timeInterval*(minTime/timeInterval);
-  maxTime=timeInterval*(1+(maxTime/timeInterval));
-  Int_t nIntervals=(maxTime-minTime)/timeInterval;
-  Int_t nIntervalsQA=(maxTime-minTime)/15;
-  //
-  TH1F  * hisEvent= new TH1F("hisEvent","hisEvent",nIntervalsQA,minTime,maxTime);
-  const Int_t nSec=81; // 72 sector +5 sumarry info+ 4 medians
-  TProfile * profArrayNcl[nSec]={0};
-  TProfile * profArrayNclUsed[nSec]={0};
-  TGraphErrors * grArrayNcl[nSec]={0};
-  TGraphErrors * grArrayNclUsed[nSec]={0};
-  TProfile * profArrayITSNcl[3]={0};
-  TGraphErrors * grArrayITSNcl[3]={0};
-  
-  for (Int_t isec=0; isec<nSec; isec++){
-    profArrayNcl[isec]=new TProfile(TString::Format("TPCnclSec%d",isec).Data(), TString::Format("TPCnclSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
-    profArrayNclUsed[isec]=new TProfile(TString::Format("TPCnclUsedSec%d",isec).Data(), TString::Format("TPCnclUsedSec%d",isec).Data(), nIntervalsQA,minTime,maxTime);
-  }
-   for (Int_t iits=0; iits<3; iits++){
-    profArrayITSNcl[iits]=new TProfile(TString::Format("ITSnclSec%d",iits).Data(), TString::Format("ITSnclSec%d",iits).Data(), nIntervalsQA,minTime,maxTime);    
-  }
-
-  TVectorF *vecNClTPC=0;
-  TVectorF *vecNClTPCused=0;
-  Int_t nITS[3]={0};
-  Int_t timeStamp=0;
-  for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
-    timer.Start();
-    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());    
-    TFile * f = TFile::Open(array->At(iFile)->GetName());
-    if (f==NULL) continue;
-    TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
-    if (treeInfo==NULL) continue;
-    treeInfo->SetBranchAddress("vecNClTPC.",&vecNClTPC);
-    treeInfo->SetBranchAddress("vecNClTPCused.",&vecNClTPCused);
-    treeInfo->SetBranchAddress("nSPD",&nITS[0]);
-    treeInfo->SetBranchAddress("nSDD",&nITS[1]);
-    treeInfo->SetBranchAddress("nSSD",&nITS[2]);
-    Bool_t hasTimeStamp=(treeInfo->GetBranch("timeStamp")!=NULL);
-    if (hasTimeStamp) treeInfo->SetBranchAddress("timeStamp",&timeStamp);
-    if (!hasTimeStamp) ((TBranch*)(treeInfo->GetListOfBranches()->At(1)))->SetAddress(&timeStamp);
-    Int_t treeEntries=treeInfo->GetEntries();
-    for (Int_t iEntry=0; iEntry<treeEntries; iEntry++){
-      treeInfo->GetEntry(iEntry);
-      hisEvent->Fill(timeStamp);
-      for (Int_t isec=0; isec<72; isec++){
-	profArrayNcl[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	profArrayNclUsed[isec]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	if (isec<36){
-	  if (isec<18) 	profArrayNcl[72]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	  if (isec>=18) profArrayNcl[73]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	  if (isec<18) 	profArrayNclUsed[72]->Fill(timeStamp, (*vecNClTPCused)[isec]);
-	  if (isec>=18) profArrayNclUsed[73]->Fill(timeStamp, (*vecNClTPCused)[isec]);
-	}else{
-	  if ((isec%36)<18)  profArrayNcl[74]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	  if ((isec%36)>=18) profArrayNcl[75]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	  if ((isec%36)<18)  profArrayNclUsed[74]->Fill(timeStamp, (*vecNClTPCused)[isec]);
-	  if ((isec%36)>=18) profArrayNclUsed[75]->Fill(timeStamp, (*vecNClTPCused)[isec]);
-	}
-	profArrayNcl[76]->Fill(timeStamp, (*vecNClTPC)[isec]);
-	profArrayNclUsed[76]->Fill(timeStamp, (*vecNClTPCused)[isec]);
-      }
-      profArrayNcl[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[0])));
-      profArrayNcl[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[18])));
-      profArrayNcl[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[36])));
-      profArrayNcl[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPC->GetMatrixArray())[54])));
-      //
-      profArrayNclUsed[77]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[0])));
-      profArrayNclUsed[78]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[18])));
-      profArrayNclUsed[79]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[36])));
-      profArrayNclUsed[80]->Fill(timeStamp, TMath::Median(18, &((vecNClTPCused->GetMatrixArray())[54])));
-      for (Int_t iits=0; iits<3; iits++){
-	profArrayITSNcl[iits]->Fill(timeStamp,nITS[iits]);
-      }
-    }
-    timer.Print();
-  }
-  timer2.Print();
-  TGraphErrors grEvent(hisEvent);
-  (*pcstream)<<"summaryTime"<<
-    "id="<<id<<
-    "grEvent.="<<&grEvent;
-  for (Int_t isec=0; isec<nSec; isec++){
-    grArrayNcl[isec] = new TGraphErrors((profArrayNcl[isec]));
-    grArrayNclUsed[isec] = new TGraphErrors((profArrayNclUsed[isec]));
-    (*pcstream)<<"summaryTime"<<
-      TString::Format("grNcl%d.=",isec).Data()<<grArrayNcl[isec]<<
-      TString::Format("grNclUsed%d.=",isec).Data()<<grArrayNclUsed[isec];
-  }
-  for (Int_t iits=0; iits<3; iits++){
-    grArrayITSNcl[iits] = new TGraphErrors((profArrayITSNcl[iits]));
-    (*pcstream)<<"summaryTime"<<
-      TString::Format("grITSNcl%d.=",iits).Data()<<grArrayITSNcl[iits];
-  }
-  
-  
-  (*pcstream)<<"summaryTime"<<"\n";
-  for (Int_t isec=0; isec<nSec; isec++){
-    delete 	profArrayNcl[isec];
-    delete 	profArrayNclUsed[isec];
-    delete 	grArrayNcl[isec];
-    delete 	grArrayNclUsed[isec];
-  }
-  delete hisEvent;
-  delete pcstream;
-
-  printf("StatInfo.minTime\t%lld\n",minTime);
-  printf("StatInfo.maxTime\t%lld\n",maxTime);
-  delete array;
-}
-
 void makeCurrentTrend(){
   //
   //
   //
   TCut cutFit = "refCurrent!=0&&id<=240220";
-  TChain * chain=  AliXRDPROOFtoolkit::MakeChainRandom("timeInfo.list","summaryTime",0,1000);
+  TChain * chain=  AliXRDPROOFtoolkit::MakeChainRandom("timeInfo.list","sumaryTime",0,1000);
   TStopwatch timer;
   TTree *tree = chain->CopyTree("1");
   timer.Print();
@@ -648,7 +474,101 @@ void makeCurrentTrend(){
     }
     
   }
+}
 
 
+Bool_t  FitDrift(TTree * treeIn, Int_t timeStampMin, Int_t timeStampMax, Int_t npointMax, const char delta){
+  //
+  // Make drift velocity+radial distortion rough linear fit 
+  // see  fitDriftString string - radial components idnependent on A side and C side
+  //
+  //   1.) Make fit 
+  //   2.) Make QA plots
+  //   3.) Store fit value in the tree user info
+  //
+  /*
+    const char * chInput="/hera/alice/alien/calib/alice/data/2015/LHC15o/000245231/cpass0_pass1/ResidualMerge/001/ResidualTrees.root";    
+    TFile * finput = TFile::Open(chInput);
+    TTree * treeIn = (TTree*)finput->Get("delta");
+    npointMax=10000;
+    delta="tof1.fElements";
+
+  */
+  const Int_t kMinPoints=100;
+  treeIn->SetAlias("drift","(1-abs(vecZ.fElements)/250.)");
+  treeIn->SetAlias("normR","(vecR.fElements/250.)");
+  treeIn->SetAlias("normGY","(sin(vecPhi.fElements)*vecR.fElements/250.)");
+  treeIn->SetAlias("sideA","(int(vecSec.fElements)%36)<18");
+  treeIn->SetAlias("sideC","(int(vecSec.fElements)%36)>=18");
+  treeIn->SetAlias("delta","tof1.fElements");
+  //
+  // 1.) Make fit
+  //
+  Int_t  npointsMax=2000;
+  TStatToolkit toolkit;
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD param;
+  TMatrixD covar;
+  TString fitDriftString="";
+  fitDriftString+="drift*(2*sideA-1)++";
+  fitDriftString+="drift*normGY*(2*sideA-1)++";
+  fitDriftString+="sideA*normR++";         // elements to correct for the radial distortions
+  fitDriftString+="sideA*normR*drift++";   // 
+  fitDriftString+="sideC*normR++";
+  fitDriftString+="sideC*normR*drift++";
+  // 
+  TCut cutFit="Iteration$<npValid&&vecZ.fElements!=0&&abs(delta)<20";  
+  TString *strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax/5);
+  if (npoints==kMinPoints) return kFALSE;
+  
+  //
+  treeIn->SetAlias("fitDrift",strDrift->Data());
+  strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit+"abs(fitDrift-delta)<5", chi2,npoints,param,covar,-1,0, npointsMax/2);
+  treeIn->SetAlias("fitDrift",strDrift->Data());
+  strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit+"abs(fitDrift-delta)<5", chi2,npoints,param,covar,-1,0, npointsMax);
+  treeIn->SetAlias("fitDrift",strDrift->Data());
+  TObjArray* tokArr = strDrift->Tokenize("++");
+  tokArr->Print();
+  //
+  // 2.) drift QA plots
+  //
+  TH1 * hisQA[4]={0};
+  TObjArray fitArray(3);
+  treeIn->Draw("delta-fitDrift:vecR.fElements:vecPhi.fElements>>hisSecA(90,-3.14,3.14,20,85,245)",cutFit+"sideA&&abs(fitDrift-delta)<2.5","profcolzgoff",4*npointsMax);
+  hisQA[0]=(TH1*)treeIn->GetHistogram()->Clone();
+  treeIn->Draw("delta-fitDrift:vecR.fElements:vecPhi.fElements>>hisSecC(90,-3.14,3.14,20,85,245)",cutFit+"sideC&&abs(fitDrift-delta)<2.5","profcolzgoff",4*npointsMax);
+  hisQA[1]=(TH1*)treeIn->GetHistogram()->Clone();
+  //
+  treeIn->Draw("delta-fitDrift:vecZ.fElements>>hisZ(44,-220,220,100,-3,3)",cutFit+"","colzgoff",4*npointsMax);
+  hisQA[2]=(TH1*)treeIn->GetHistogram()->Clone();
+  ((TH2*)hisQA[2])->FitSlicesY(0,0,-1,0,"QNR",&fitArray);
+  //
+  //
+  //
+  TCanvas *canvasZFit = new TCanvas("canvasZFit","canvasZFit",1000,800);
+  canvasZFit->Divide(1,3);
+  canvasZFit->cd(1);
+  hisQA[0]->Draw("colz");
+  canvasZFit->cd(2);
+  hisQA[1]->Draw("colz");
+  canvasZFit->cd(3);
+  hisQA[2]->Draw("colz");
+  fitArray.At(1)->Draw("same");
+  canvasZFit->SaveAs("ATO-108_canvasZFit.png");
+  //
+  //gStyle->SetOptStat();
+  TCanvas *canvasZFitModel = new TCanvas("canvasZFitModel","canvasZFitModel",1000,800);
+  canvasZFitModel->Divide(3,1);
+  canvasZFitModel->cd(1);
+  treeIn->Draw("delta:vecZ.fElements",cutFit+"","",npointsMax);
+  canvasZFitModel->cd(2);
+  treeIn->Draw("delta:fitDrift",cutFit+"","",npointsMax);
+  canvasZFitModel->cd(3);
+  treeIn->Draw("fitDrift*(2*sideA-1):vecZ.fElements:vecR.fElements",cutFit+"","profcolz",4*npointsMax);
+  canvasZFitModel->SaveAs("ATO-108_canvasZFitModel.png");
+  //
+  // 
+  //
 
 }
