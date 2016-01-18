@@ -73,10 +73,16 @@ class AliEMCALRecPoint : public AliCluster {
                                                              return fTracksList  ; }
   virtual Int_t * GetParents  (Int_t & number)       const { number = fMulParent ; 
                                                              return fParentsList ; }
+  virtual Float_t * GetParentsDE()                   const { return fDEParentsList ; }
+
   virtual void    SetParents  (Int_t nParents, Int_t* parents) { // Needed in particular case in tender
     fMulParent = nParents;
     if(fParentsList) delete [] fParentsList ;
     fParentsList = parents ;                                   }
+
+  virtual void    SetParentsDE (Float_t* parentsde) { // Needed in particular case in tender
+    if(fDEParentsList) delete [] fDEParentsList ;
+    fDEParentsList = parentsde ;                               }
   
   virtual Int_t   GetDigitsMultiplicity(void)  const { return fMulDigit    ; }
   Int_t           GetIndexInList()             const { return fIndexInList ; }
