@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHF *AddTaskVertexingHF(const char* fname="AliAOD.VertexingHF.root") {
+AliAnalysisTaskSEVertexingHF *AddTaskVertexingHF(Int_t collisionSystem,TString localdir="",TString configfilename="",Int_t runnumber=-1, TString strPeriod="",const char* fname="AliAOD.VertexingHF.root") {
   //
   // Creates a task for heavy flavour vertexing and adds it to the analysis manager.
   // andrea.dainese@lnl.infn.it
@@ -26,7 +26,21 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHF(const char* fname="AliAOD.Verte
     ::Error("AddTaskVertexingHF", "HF vertexing task needs the manager to have an AOD output handler.");
     return NULL;
   }   
-  
+  // Copy the needed Config file in the current directory 
+  if(configfilename.IsNull()){
+    TString     configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C";// default value: file for pp collisions
+    if(collisionSystem==1){
+      configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C";
+    }
+    else if(collisionSystem!=0){
+      ::Error("AddTaskVertexingHF","Value of collision system not valid");
+    }
+    TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
+  }
+  else{
+    TFile::Cp(gSystem->ExpandPathName(configfilename.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
+  }
+
   // Create the task, add it to the manager and configure it.
   //===========================================================================
   AliAnalysisTaskSEVertexingHF *hfTask = new AliAnalysisTaskSEVertexingHF("vertexing HF");
