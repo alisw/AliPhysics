@@ -352,10 +352,14 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
 
     // test var range. In case min==max do not cut
     if ( fVarCuts[icut] ) {
-      if ( !fVarCuts[icut]->IsSelected(part) ) continue;
+      if ( !fVarCuts[icut]->IsSelected(part) ) {
+	selected=kTRUE;
+	continue;
+      }
     }
     else if ( ( (TMath::Abs(min-max)>1e-20) && (val<min || val>=max) ) ) {
-	continue;
+      selected=kTRUE;
+      continue;
     }
 
     // check if fFunSigma is set, then check if 'part' is in sigma range of the function
@@ -408,7 +412,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     AliAODPid *pid=const_cast<AliAODPid*>(aodTrack->GetDetPid());
     if (pid) pid->SetTPCsignal(origdEdx);
   }
-  return selected;
+  return (fNcuts==0 ? kTRUE :selected);
 }
 
 //______________________________________________
