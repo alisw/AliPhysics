@@ -2337,7 +2337,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
     if(fUseExtraTracks)fCommonHistList->Add(fhnK0sEmbConeRef);
-    //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
+    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnLaIncl);
@@ -2346,7 +2346,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
      if(fUseExtraTracks)fCommonHistList->Add(fhnLaEmbConeRef);
-     //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+     if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnALaIncl);
@@ -2355,7 +2355,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
       if(fUseExtraTracks)fCommonHistList->Add(fhnALaEmbConeRef);
-      //if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+      if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnALaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnK0sPC);
@@ -7342,12 +7342,10 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  	 
 	    Double_t vK0sEmbConeStandard[4] = {jetPt, invMK0s,trackPt,fEta};
 	    
-	    if(fDebug > 4)std::cout<<" v0 standard particle pt: "<<v0st->Pt()<< "eta: "<<fEta<<std::endl;
+	    if(fDebug > 7)std::cout<<" v0 standard particle pt: "<<v0st->Pt()<< "eta: "<<fEta<<std::endl;
 
-	    //fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
-	    //######################################################################################################################
-	    //ATTENTION ONLY TESTING HERE: please switch to proper histograms afterwards for reference and standard tracks!!!!!!!!!!
-	    fhnK0sEmbConeRef->Fill(vK0sEmbConeStandard);
+	    fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
+	   
 	  }	  
 	  
 	}
@@ -7355,7 +7353,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	if(jetConeK0EmbStlist->GetSize() == 0){ 	
 	  
 	  Double_t vK0sEmbConeStandard[4] = {jetPt, 0., 0., -100.};
-	  fhnK0sEmbConeRef->Fill(vK0sEmbConeStandard);
+	  fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
 	}
 	
 	//######
@@ -7444,10 +7442,10 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    }
 
 	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
-	      //COMMENT IN AFTER TEST!!!    
-	      //Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
+	       
+	      Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
 	      
-	      //fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
+	      fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
 	    }	    
 	  }
 
@@ -7473,7 +7471,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  //fFFHistosIMK0Cone->FillFF(-1, -1, jetPt, incrementJetPt);
 	  Double_t vK0sEmbCone[4] = {jetPt, -1, -1, -1};
 	  fhnK0sEmbCone->Fill(vK0sEmbCone);
-	  //fhnK0sEmbConeRef->Fill(vK0sEmbCone);
+	  fhnK0sEmbConeRef->Fill(vK0sEmbCone);
 
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);}//normalisation by number of selected jets
@@ -7565,8 +7563,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
 	    	    
-	    //fhnLaEmbConeStandard->Fill(vLaEmbCone);
-	    fhnLaEmbConeRef->Fill(vLaEmbCone);
+	    fhnLaEmbConeStandard->Fill(vLaEmbCone);
+	    
 	  }
 	  
 	  
@@ -7575,8 +7573,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	   
 	    Double_t vLaEmbStCone[4] = {jetPt, -1., -1., -100.};
 	    
-	    //fhnLaEmbConeStandard->Fill(vLaEmbStCone);	  
-	    fhnLaEmbConeRef->Fill(vLaEmbStCone);	
+	    fhnLaEmbConeStandard->Fill(vLaEmbStCone);	  
+	    	
 	  }    
 
 	}
@@ -7669,9 +7667,9 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
 	          
-	      //Double_t vLaEmbConeRef[4] = {jetPt,invMLa,trackPt,fEta};
+	      Double_t vLaEmbConeRef[4] = {jetPt,invMLa,trackPt,fEta};
 	      
-	      //fhnLaEmbConeRef->Fill(vLaEmbConeRef);
+	      fhnLaEmbConeRef->Fill(vLaEmbConeRef);
 	    }	    
 	  }
 
@@ -7694,7 +7692,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  //fFFHistosIMLaCone->FillFF(-1, -1, jetPt, incrementJetPt);
 	  Double_t vLaEmbCone[4] = {jetPt, -1, -1, -1};
 	  fhnLaEmbCone->Fill(vLaEmbCone);
-	  //fhnLaEmbConeRef->Fill(vLaEmbCone);
+	  fhnLaEmbConeRef->Fill(vLaEmbCone);
 
 	  if(incrementJetPt==kTRUE){
 	    fh1IMLaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
@@ -7781,8 +7779,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    Double_t vALaEmbStCone[4] = {jetPt, invMALa,trackPt,fEta};
 	    	    
-	    // fhnALaEmbConeStandard->Fill(vALaEmbStCone);
-	    fhnALaEmbConeRef->Fill(vALaEmbStCone);
+	    fhnALaEmbConeStandard->Fill(vALaEmbStCone);
+	    
 	  }
 	  
 
@@ -7791,8 +7789,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    Double_t vALaEmbStCone[4] = {jetPt, -1., -1., -100.};
 
-	    // fhnALaEmbConeStandard->Fill(vALaEmbStCone);
-	    fhnALaEmbConeRef->Fill(vALaEmbStCone);
+	    fhnALaEmbConeStandard->Fill(vALaEmbStCone);
+	   
 
 	  }    
 	  	  
@@ -7887,9 +7885,9 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
 	      
 	    
-	      //Double_t vALaEmbConeRef[4] = {jetPt,invMALa,trackPt,fEta};
+	      Double_t vALaEmbConeRef[4] = {jetPt,invMALa,trackPt,fEta};
 	      
-	      //fhnALaEmbConeRef->Fill(vALaEmbConeRef);
+	      fhnALaEmbConeRef->Fill(vALaEmbConeRef);
 	    }	    
 	  }
 
@@ -7913,7 +7911,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  //fFFHistosIMALaCone->FillFF(-1, -1, jetPt, incrementJetPt);
 	  Double_t vALaEmbCone[4] = {jetPt, -1, -1, -1};
 	  fhnALaEmbCone->Fill(vALaEmbCone);
-	  //fhnALaEmbConeRef->Fill(vALaEmbCone);	  
+	  fhnALaEmbConeRef->Fill(vALaEmbCone);	  
 
 	  if(incrementJetPt==kTRUE){
 	    fh1IMALaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
