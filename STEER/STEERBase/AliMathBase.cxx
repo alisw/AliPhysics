@@ -59,8 +59,8 @@ AliMathBase::~AliMathBase()
 
 
 //_____________________________________________________________________________
-void AliMathBase::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
-                           , Double_t &sigma, Int_t hh)
+void AliMathBase::EvaluateUni(const Int_t nvectors, const Double_t *data, Double_t &mean
+                           , Double_t &sigma, const Int_t hSub)
 {
   //
   // Robust estimator in 1D case MI version - (faster than ROOT version)
@@ -68,10 +68,11 @@ void AliMathBase::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
   // For the univariate case
   // estimates of location and scatter are returned in mean and sigma parameters
   // the algorithm works on the same principle as in multivariate case -
-  // it finds a subset of size hh with smallest sigma, and then returns mean and
+  // it finds a subset of size hSub with smallest sigma, and then returns mean and
   // sigma of this subset
   //
 
+  Int_t hh=hSub;
   if (nvectors<2) {
     AliErrorClass(Form("nvectors = %d, should be > 1",nvectors));
     return;
