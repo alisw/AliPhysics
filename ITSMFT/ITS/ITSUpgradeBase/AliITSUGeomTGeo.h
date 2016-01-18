@@ -181,6 +181,7 @@ public:
   void Print(Option_t *opt="")  const;
 
 private:
+  AliITSUGeomTGeo& operator=(const AliITSUGeomTGeo &geom);
   void    BuildITS(Bool_t loadSegm);
   virtual TGeoHMatrix* ExtractMatrixSens(Int_t index) const;
 
