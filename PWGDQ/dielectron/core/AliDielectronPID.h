@@ -107,8 +107,8 @@ private:
   AliPID::EParticleType fPartType[kNmaxPID]; //particle type
   Float_t  fNsigmaLow[kNmaxPID];  //lower nsigma bound
   Float_t  fNsigmaUp[kNmaxPID];   //upper nsigma bound
-  Double_t fmin[kNmaxPID];        //lower cut limit
-  Double_t fmax[kNmaxPID];        //upper cut limit
+  Double_t fmin[kNmaxPID];        //lower cut limit for range
+  Double_t fmax[kNmaxPID];        //upper cut limit for range
   Bool_t   fExclude[kNmaxPID];    //use as exclusion band
   TF1     *fFunUpperCut[kNmaxPID];//use function as upper cut
   TF1     *fFunLowerCut[kNmaxPID];//use function as lower cut
