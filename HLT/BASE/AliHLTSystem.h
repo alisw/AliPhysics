@@ -584,6 +584,13 @@ class AliHLTSystem : public AliHLTLogging {
 		     const char* originClass, const char* originFunc,
 		     const char* file, int line, ... ) const;
 
+  /**
+   * Access to configuration string
+   */
+  TString GetConfigurationString() const {
+    return fConfigurationString;
+  }
+
  protected:
  
  private:
@@ -665,6 +672,9 @@ class AliHLTSystem : public AliHLTLogging {
 
   /** name of this system instance */
   TString fName;                                                   //!transient
+
+  /// configuration string
+  TString fConfigurationString;                                    //!transient
 
   /// ECS parameter string
   TString fECSParams;                                              //!transient
