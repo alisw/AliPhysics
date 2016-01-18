@@ -1,5 +1,13 @@
+///
+/// \file AliFemtoV0TrackCutNSigmaFilter.cxx
+///
+
+
 #include "AliFemtoV0TrackCutNSigmaFilter.h"
 #include "AliESDtrack.h"
+
+#include <TH1D.h>
+
 #include <cstdio>
 
 #ifdef __ROOT__
@@ -9,35 +17,38 @@
 #endif
 
 
-AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter() :
-  AliFemtoV0TrackCut(),
-  fUseCustomPionNSigmaFilter(false),
-  fUseCustomKaonNSigmaFilter(false),
-  fUseCustomProtonNSigmaFilter(false),
+AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter():
+  AliFemtoV0TrackCut()
+  , fUseCustomPionNSigmaFilter(false)
+  , fUseCustomKaonNSigmaFilter(false)
+  , fUseCustomProtonNSigmaFilter(false)
 
-  fPionNSigmaFilter(0),
-  fKaonNSigmaFilter(0),
-  fProtonNSigmaFilter(0),
+  , fPionNSigmaFilter(NULL)
+  , fKaonNSigmaFilter(NULL)
+  , fProtonNSigmaFilter(NULL)
 
-  fBuildMinvHisto(false),
-  fMinvHisto(0)
+  , fBuildMinvHisto(false)
+  , fMinvHisto(NULL)
 {
-  // Default constructor
+  /* no-op */
 }
-//------------------------------
+
 AliFemtoV0TrackCutNSigmaFilter::~AliFemtoV0TrackCutNSigmaFilter()
 {
-  /* noop */
+  delete fPionNSigmaFilter;
+  delete fKaonNSigmaFilter;
+  delete fProtonNSigmaFilter;
+  delete fMinvHisto;
 }
-//------------------------------
+
 bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
 {
   // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
 
-  Float_t pt = aV0->PtV0();
-  Float_t eta = aV0->EtaV0();
+  const Float_t pt = aV0->PtV0(),
+               eta = aV0->EtaV0();
 
   //kinematic cuts
   if (TMath::Abs(eta) > fEta) return false;  //put in kinematic cuts by hand
@@ -45,30 +56,36 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
   if (TMath::Abs(aV0->EtaPos()) > fMaxEtaDaughters) return false;
   if (TMath::Abs(aV0->EtaNeg()) > fMaxEtaDaughters) return false;
 
-  if (aV0->PtPos() < fPtMinPosDaughter) return false;
-  if (aV0->PtNeg() < fPtMinNegDaughter) return false;
-  if (aV0->PtPos() > fPtMaxPosDaughter) return false;
-  if (aV0->PtNeg() > fPtMaxNegDaughter) return false;
+  const Float_t pt_pos = aV0->PtPos(),
+                pt_neg = aV0->PtNeg();
+
+  if (pt_pos < fPtMinPosDaughter || fPtMaxPosDaughter < pt_pos) return false;
+  if (pt_neg < fPtMaxNegDaughter || fPtMaxNegDaughter < pt_neg) return false;
+
+  const Float_t mass_lambda = aV0->MassLambda();
 
   //V0 from kinematics information
-  if (fParticleType == kLambdaMC ) {
-    if (!(aV0->MassLambda() > fInvMassLambdaMin && aV0->MassLambda() < fInvMassLambdaMax) || !(aV0->PosNSigmaTPCP() == 0)) {
+  switch (fParticleType) {
+  case kLambdaMC:
+    if (!(mass_lambda > fInvMassLambdaMin && mass_lambda < fInvMassLambdaMax) || !(aV0->PosNSigmaTPCP() == 0)) {
       return false;
     } else {
       return true;
     }
-  } else if (fParticleType == kAntiLambdaMC) {
-    if (!(aV0->MassLambda() > fInvMassLambdaMin && aV0->MassLambda() < fInvMassLambdaMax) || !(aV0->NegNSigmaTPCP() == 0)) {
+  case kAntiLambdaMC:
+    if (!(mass_lambda > fInvMassLambdaMin && mass_lambda < fInvMassLambdaMax) || !(aV0->NegNSigmaTPCP() == 0)) {
       return false;
     } else {
       return true;
     }
-  } else if (fParticleType == kAll) {
-    if (!(aV0->MassK0Short() > fInvMassK0sMin && aV0->MassK0Short() < fInvMassK0sMax) || !(aV0->NegNSigmaTPCP() == 0))
+  case kAll:
+    if (!(aV0->MassK0Short() > fInvMassK0sMin && aV0->MassK0Short() < fInvMassK0sMax) || !(aV0->NegNSigmaTPCP() == 0)) {
       return false;
-    else {
+    } else {
       return true;
     }
+  default:
+    break;
   }
 
   //quality cuts
@@ -94,12 +111,6 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
   if (TMath::Abs(aV0->DcaV0ToPrimVertex()) > fMaxDcaV0 || TMath::Abs(aV0->DcaV0ToPrimVertex()) < fMinDcaV0)
     return false;
 
-  //becomes obsolete - wrong name of the data memeber and the corresnponding methods (by default is set to fMaxCosPointingAngle = 0.0)
-  //cos pointing angle
-  if (aV0->CosPointingAngle() < fMaxCosPointingAngle)
-    return false;
-
-  //this is the correct name of the data member and the corresponding methods (we are accepting cos(pointing angle bigger than certain minimum)
   //cos pointing angle
   if (aV0->CosPointingAngle() < fMinCosPointingAngle)
     return false;
@@ -107,11 +118,6 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
   //decay length
   if (aV0->DecayLengthV0() > fMaxDecayLength)
     return false;
-
-
-  if (fParticleType == kAll)
-    return true;
-
 
   bool pid_check = false;
   // Looking for lambdas = proton + pim
@@ -147,85 +153,88 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
       }
   }
 
-  if (!pid_check) return false;
+  if (!pid_check) {
+    return false;
+  }
 
   return true;
 }
-//------------------------------
+
+
 AliFemtoString AliFemtoV0TrackCutNSigmaFilter::Report()
 {
   // Prepare report from the execution
-  AliFemtoString returnThis = AliFemtoV0TrackCut::Report();
-
-  string tStemp;
-  char tCtemp[100];
-  snprintf(tCtemp, 100, "Usings custom Pion NSigma Filter:\t%i\n", fUseCustomPionNSigmaFilter);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Usings custom Kaon NSigma Filter:\t%i\n", fUseCustomKaonNSigmaFilter);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Usings custom Proton NSigma Filter:\t%i\n", fUseCustomProtonNSigmaFilter);
-  tStemp += tCtemp;
-
-  returnThis += tStemp;
-
-  return returnThis;
+  TString report;
+  report += TString::Format("Usings custom Pion NSigma Filter:\t%i\n", fUseCustomPionNSigmaFilter)
+          + TString::Format("Usings custom Kaon NSigma Filter:\t%i\n", fUseCustomKaonNSigmaFilter)
+          + TString::Format("Usings custom Proton NSigma Filter:\t%i\n", fUseCustomProtonNSigmaFilter)
+          + AliFemtoV0TrackCut::Report();
+  return AliFemtoString(report);
 }
-TList *AliFemtoV0TrackCutNSigmaFilter::ListSettings()
+
+
+TList* AliFemtoV0TrackCutNSigmaFilter::AppendSettings(TList *settings, const TString &prefix) const
 {
-  TList *tListSettings = AliFemtoV0TrackCut::ListSettings();
+  settings->AddVector(
+    new TObjString(prefix + TString::Format("AliFemtoV0TrackCutNSigmaFilter.InvMassLambdaMin=%lf", fInvMassLambdaMin)),
 
-  //Add any additional information to tLIstSettings
+  NULL);
 
-  return tListSettings;
+  return settings;
 }
-
 
 bool AliFemtoV0TrackCutNSigmaFilter::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
-  if(fUseCustomKaonNSigmaFilter) {return fKaonNSigmaFilter->Pass(mom,nsigmaTPCK,nsigmaTOFK);}
-  else {return AliFemtoV0TrackCut::IsKaonNSigma(mom,nsigmaTPCK,nsigmaTOFK);}  
+  if (fUseCustomKaonNSigmaFilter) {
+    return fKaonNSigmaFilter->Pass(mom, nsigmaTPCK, nsigmaTOFK);
+  } else {
+    return AliFemtoV0TrackCut::IsKaonNSigma(mom, nsigmaTPCK, nsigmaTOFK);
+  }
 }
+
 
 bool AliFemtoV0TrackCutNSigmaFilter::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
-  if(fUseCustomPionNSigmaFilter) {return fPionNSigmaFilter->Pass(mom,nsigmaTPCPi,nsigmaTOFPi);}
-  else {return AliFemtoV0TrackCut::IsPionNSigma(mom,nsigmaTPCPi,nsigmaTOFPi);}
+  if (fUseCustomPionNSigmaFilter) {
+    return fPionNSigmaFilter->Pass(mom, nsigmaTPCPi, nsigmaTOFPi);
+  } else {
+    return AliFemtoV0TrackCut::IsPionNSigma(mom, nsigmaTPCPi, nsigmaTOFPi);
+  }
 }
 
 bool AliFemtoV0TrackCutNSigmaFilter::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  if(fUseCustomProtonNSigmaFilter) {return fProtonNSigmaFilter->Pass(mom,nsigmaTPCP,nsigmaTOFP);}
-  else {return AliFemtoV0TrackCut::IsProtonNSigma(mom,nsigmaTPCP,nsigmaTOFP);}
+  if (fUseCustomProtonNSigmaFilter) {
+    return fProtonNSigmaFilter->Pass(mom, nsigmaTPCP, nsigmaTOFP);
+  } else {
+    return AliFemtoV0TrackCut::IsProtonNSigma(mom,nsigmaTPCP,nsigmaTOFP);
+  }
 }
 
 
-
-
-//!!!!!----- 14/12/2015 ---------------------------------------------------------------------------
 void AliFemtoV0TrackCutNSigmaFilter::CreateCustomNSigmaFilter(DaughterParticleType aDaughterType)
 {
-  if(aDaughterType == kPion)
-  {
+  switch (aDaughterType) {
+  case kPion:
     fUseCustomPionNSigmaFilter = true;
     fPionNSigmaFilter = new AliFemtoNSigmaFilter();
-  }
-  else if(aDaughterType == kKaon)
-  {
+    break;
+
+  case kKaon:
     fUseCustomKaonNSigmaFilter = true;
     fKaonNSigmaFilter = new AliFemtoNSigmaFilter();
-  }
-  else if(aDaughterType == kProton)
-  {
+    break;
+
+  case kProton:
     fUseCustomProtonNSigmaFilter = true;
     fProtonNSigmaFilter = new AliFemtoNSigmaFilter();
+    break;
+
+  default:
+    cerr << "E-AliFemtoV0TrackCutNSigmaFilter::CreateCustomNSigmaFilter: Invalid DaughterParticleType"
+            "selection '" << aDaughterType << "'.  No custom filter will be initialized!!!!!" << endl;
   }
-  else {/*cerr << "Invalid DaughterParticleType selection in CreateCustomNSigmaFilter.  No custom filter will be initialized!!!!!" << endl;*/}
-
-} 
-void AliFemtoV0TrackCutNSigmaFilter::CreateCustomPionNSigmaFilter() {CreateCustomNSigmaFilter(kPion);}
-void AliFemtoV0TrackCutNSigmaFilter::CreateCustomKaonNSigmaFilter() {CreateCustomNSigmaFilter(kKaon);}
-void AliFemtoV0TrackCutNSigmaFilter::CreateCustomProtonNSigmaFilter() {CreateCustomNSigmaFilter(kProton);}
-
+}
 
 void AliFemtoV0TrackCutNSigmaFilter::AddTPCAndTOFNSigmaCut(DaughterParticleType aDaughterType, double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
 {
@@ -234,13 +243,6 @@ void AliFemtoV0TrackCutNSigmaFilter::AddTPCAndTOFNSigmaCut(DaughterParticleType 
   else if(aDaughterType == kProton) {fProtonNSigmaFilter->AddTPCAndTOFCut(aMomMin,aMomMax,aNSigmaValueTPC,aNSigmaValueTOF);}
   else {/*cerr << "Invalid DaughterParticleType selection in AddTPCAndTOFNSigmaCut.  No cut will be added to the filter!!!!!" << endl;*/}
 }
-void AliFemtoV0TrackCutNSigmaFilter::AddPionTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
-  {AddTPCAndTOFNSigmaCut(kPion,aMomMin,aMomMax,aNSigmaValueTPC,aNSigmaValueTOF);}
-void AliFemtoV0TrackCutNSigmaFilter::AddKaonTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
-  {AddTPCAndTOFNSigmaCut(kKaon,aMomMin,aMomMax,aNSigmaValueTPC,aNSigmaValueTOF);}
-void AliFemtoV0TrackCutNSigmaFilter::AddProtonTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
-  {AddTPCAndTOFNSigmaCut(kProton,aMomMin,aMomMax,aNSigmaValueTPC,aNSigmaValueTOF);}
-
 
 
 void AliFemtoV0TrackCutNSigmaFilter::AddTPCNSigmaCut(DaughterParticleType aDaughterType, double aMomMin, double aMomMax, double aNSigmaValueTPC)
@@ -250,13 +252,6 @@ void AliFemtoV0TrackCutNSigmaFilter::AddTPCNSigmaCut(DaughterParticleType aDaugh
   else if(aDaughterType == kProton) {fProtonNSigmaFilter->AddTPCCut(aMomMin,aMomMax,aNSigmaValueTPC);}
   else {/*cerr << "Invalid DaughterParticleType selection in AddTPCNSigmaCut.  No cut will be added to the filter!!!!!" << endl;*/}
 }
-void AliFemtoV0TrackCutNSigmaFilter::AddPionTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
-  {AddTPCNSigmaCut(kPion,aMomMin,aMomMax,aNSigmaValueTPC);}
-void AliFemtoV0TrackCutNSigmaFilter::AddKaonTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
-  {AddTPCNSigmaCut(kKaon,aMomMin,aMomMax,aNSigmaValueTPC);}
-void AliFemtoV0TrackCutNSigmaFilter::AddProtonTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
-  {AddTPCNSigmaCut(kProton,aMomMin,aMomMax,aNSigmaValueTPC);}
-
 
 
 void AliFemtoV0TrackCutNSigmaFilter::AddTOFNSigmaCut(DaughterParticleType aDaughterType, double aMomMin, double aMomMax, double aNSigmaValueTOF)
@@ -266,21 +261,10 @@ void AliFemtoV0TrackCutNSigmaFilter::AddTOFNSigmaCut(DaughterParticleType aDaugh
   else if(aDaughterType == kProton) {fProtonNSigmaFilter->AddTOFCut(aMomMin,aMomMax,aNSigmaValueTOF);}
   else {/*cerr << "Invalid DaughterParticleType selection in AddTOFNSigmaCut.  No cut will be added to the filter!!!!!" << endl;*/}
 }
-void AliFemtoV0TrackCutNSigmaFilter::AddPionTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
-  {AddTOFNSigmaCut(kPion,aMomMin,aMomMax,aNSigmaValueTOF);}
-void AliFemtoV0TrackCutNSigmaFilter::AddKaonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
-  {AddTOFNSigmaCut(kKaon,aMomMin,aMomMax,aNSigmaValueTOF);}
-void AliFemtoV0TrackCutNSigmaFilter::AddProtonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
-  {AddTOFNSigmaCut(kProton,aMomMin,aMomMax,aNSigmaValueTOF);}
 
-
-void AliFemtoV0TrackCutNSigmaFilter::SetMinvHisto(const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+void AliFemtoV0TrackCutNSigmaFilter::SetMinvHisto(const char* title, int nbins, float aInvMassMin, float aInvMassMax)
 {
   fBuildMinvHisto = true;
-  fMinvHisto = new TH1D(title,"MinvHistogram",nbins,aInvMassMin,aInvMassMax);
+  fMinvHisto = new TH1D(title, "MinvHistogram", nbins, aInvMassMin, aInvMassMax);
   fMinvHisto->Sumw2();
 }
-
-TH1D* AliFemtoV0TrackCutNSigmaFilter::GetMinvHisto() {return fMinvHisto;}
-
-
