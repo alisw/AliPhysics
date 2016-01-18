@@ -269,8 +269,8 @@ void AliAODCaloCells::Sort()
   Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   
-  Double32_t *newTime      = 0; 
-  Int_t     *newMCLabel   = 0 ;
+  Double32_t *newTime      = 0 ; 
+  Int_t      *newMCLabel   = 0 ;
   Double32_t *newEFraction = 0 ; 
   if(fTime)      newTime      = new Double32_t[fNCells];
   if(fMCLabel)   newMCLabel   = new Int_t[fNCells];
@@ -284,10 +284,12 @@ void AliAODCaloCells::Sort()
     if(fMCLabel)   newMCLabel[i]   = fMCLabel  [idxArray[i]];
     if(fEFraction) newEFraction[i] = fEFraction[idxArray[i]];  
   }
-  if(fHGLG){
+
+  if(fHGLG)
+  {
     for (Int_t i=0; i < fNCells; i++) 
     {
-      newHGLG[i]      = fHGLG[idxArray[i]];
+      newHGLG[i] = fHGLG[idxArray[i]];
     }
     delete [] fHGLG;
   }
@@ -298,12 +300,12 @@ void AliAODCaloCells::Sort()
   delete [] fMCLabel;
   delete [] fEFraction;
 
-  fHGLG = newHGLG;
+  fHGLG       = newHGLG;
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
-  if(fTime)      fTime       = newTime;
-  if(fMCLabel)   fMCLabel    = newMCLabel;
-  if(fEFraction) fEFraction  = newEFraction;
+  fTime       = newTime;
+  fMCLabel    = newMCLabel;
+  fEFraction  = newEFraction;
 
   delete [] idxArray;
   

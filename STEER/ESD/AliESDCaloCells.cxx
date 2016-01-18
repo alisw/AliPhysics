@@ -268,7 +268,7 @@ void AliESDCaloCells::Sort()
   Double32_t *newAmplitude = new Double32_t[fNCells];
   Double32_t *newTime      = new Double32_t[fNCells];
   
-  Int_t    *newMCLabel   = 0 ;
+  Int_t      *newMCLabel   = 0 ;
   Double32_t *newEFraction = 0 ; 
   if(fMCLabel)   newMCLabel   = new Int_t[fNCells];
   if(fEFraction) newEFraction = new Double32_t[fNCells];
@@ -299,8 +299,8 @@ void AliESDCaloCells::Sort()
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   fTime       = newTime;
-  if(fMCLabel)   fMCLabel    = newMCLabel;
-  if(fEFraction) fEFraction  = newEFraction;
+  fMCLabel    = newMCLabel;
+  fEFraction  = newEFraction;
 
   delete [] idxArray;
   
