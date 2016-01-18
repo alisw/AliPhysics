@@ -296,7 +296,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   
   // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
   // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-  if(fSharedCluster)
+  if ( fSharedCluster && nSupMod1 != nSupMod )
   {
     if(nSupMod1%2) relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
     else           relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
@@ -304,7 +304,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
 	
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
-
+  
   // With this condition, cells touching one corner are considered neighbours
   // which was considered as the behavior expected initially, but changed later.
   //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
