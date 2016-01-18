@@ -1515,6 +1515,9 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     caloCluster->SetTrackDistance(cluster->GetTrackDx(), cluster->GetTrackDz());
     
+    caloCluster->SetCellsMCEdepFractionMap(cluster->GetCellsMCEdepFractionMap());
+    caloCluster->SetClusterMCEdepFraction (cluster->GetClusterMCEdepFraction ());
+    
     Int_t nMatchCount = 0;
     TArrayI* matchedT = cluster->GetTracksMatched();
     if (fNumberOfTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
