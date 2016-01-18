@@ -19,6 +19,7 @@
 #pragma link C++ class AliAnalysisTaskEffContBF+;
 #pragma link C++ class AliAnalysisTaskToyModel+;
 #pragma link C++ class AliAnalysisTaskAODFilterBitQA+;
+#pragma link C++ class AliAnalysisTaskPIDBF+;
 
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;

@@ -45,6 +45,7 @@ set(SRCS
   BalanceFunctions/AliBalanceEventMixing.cxx
   BalanceFunctions/AliBalanceTriggered.cxx
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
+  BalanceFunctions/AliAnalysisTaskPIDBF.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
