@@ -4,10 +4,13 @@
  * See cxx source for full Copyright notice                               */
 
 //-------------------------------------------------------------------------
-//
-//   Virtual class to access calorimeter 
-//   (EMCAL, PHOS, PMD, FMD) cluster data
-//   Author: Gustavo Conesa Balbastre LPSC-Grenoble
+/// \class AliVCluster
+/// \brief Virtual class for calorimeter cluster data handling
+///
+///   Virtual class to access calorimeter 
+///   (EMCAL, PHOS, PMD, FMD) cluster data
+///
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
 //
 //-------------------------------------------------------------------------
 
@@ -25,13 +28,16 @@ class AliVCluster : public TObject
   AliVCluster & operator=(const AliVCluster& source);
   void Clear(const Option_t*) {;}
   
-  enum VClu_t {kUndef = -2, 
-	       kPHOSNeutral, 
-               kPHOSCharged,
-	       kEMCALClusterv1,		 
-	       kPMDNeutral, 
-	       kPMDCharged};
+  /// Define the type of clusters for the different calorimeters
+  enum VClu_t {
+    kUndef = -2, 
+    kPHOSNeutral, 
+    kPHOSCharged,
+    kEMCALClusterv1,		 
+    kPMDNeutral, 
+    kPMDCharged};
   
+  /// Define the PID types
   enum VCluPID_t {
     kElectron = 0,
     kMuon     = 1,
@@ -48,6 +54,7 @@ class AliVCluster : public TObject
     kNeutral  = 12 //For PMD? 
   };
 
+  /// Define the correction types
   enum VCluUserDefEnergy_t {
     kNonLinCorr          = 0,
     kHadCorr             = 1,
@@ -56,7 +63,7 @@ class AliVCluster : public TObject
     kLastUserDefEnergy   = 4
   };
   
-  //Common EMCAL/PHOS/FMD/PMD
+  // Common EMCAL/PHOS/FMD/PMD
   
   virtual void        SetID(Int_t )                 { ; }
   virtual Int_t       GetID() const                 {return 0 ; }
@@ -78,7 +85,7 @@ class AliVCluster : public TObject
   virtual void        SetPID(const Float_t *)       { ; }
   virtual const Double_t *GetPID() const            { return 0 ; }
   
-  //CaloClusters, PHOS/EMCAL
+  // CaloClusters, PHOS/EMCAL
   
   virtual Bool_t      IsEMCAL() const               {return kFALSE ; }
   virtual Bool_t      IsPHOS()  const               {return kFALSE ; }
@@ -133,17 +140,21 @@ class AliVCluster : public TObject
   virtual Float_t     GetClusterMCEdepFraction(Int_t) const {return 0 ; }
   
   virtual Int_t       GetNTracksMatched() const     {return 0 ; }
-  virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }//AODCaloCluster
-  virtual Int_t       GetTrackMatchedIndex(Int_t=0) const  {return -1; }//ESDCaloCluster
+  
+  /// Only for AODs
+  virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }
+  
+  /// Only for ESDs
+  virtual Int_t       GetTrackMatchedIndex(Int_t=0) const  {return -1; }
   
   virtual Double_t    GetCoreEnergy() const         {return 0 ; }
   virtual void        SetCoreEnergy(Double_t)       { ; }
 
   virtual Double_t    GetMCEnergyFraction() const   { return 0 ; }
-  virtual void        SetMCEnergyFraction(Double_t) {  ; }
+  virtual void        SetMCEnergyFraction(Double_t) { ; }
 
   virtual Bool_t      GetIsExotic() const           { return kFALSE; }
-  virtual void        SetIsExotic(Bool_t /*b*/)         {  ; }
+  virtual void        SetIsExotic(Bool_t /*b*/)     { ; }
   
   virtual Double_t    GetUserDefEnergy(VCluUserDefEnergy_t) const         { return 0.  ; }
   virtual void        SetUserDefEnergy(VCluUserDefEnergy_t, Double_t)     {  ; }
@@ -160,8 +171,11 @@ class AliVCluster : public TObject
   virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/) const { ; }
   virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/, VCluUserDefEnergy_t /*t*/) const { ; }
   
-  ClassDef(AliVCluster,0)  //VCluster 
-    };
+  /// \cond CLASSIMP
+  ClassDef(AliVCluster,0) ; //VCluster 
+  /// \endcond
+
+};
 
 #endif //ALIVCLUSTER_H
 

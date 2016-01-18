@@ -13,22 +13,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//
-//     Virtual class to access calorimeter cell data
-//     Author: Gustavo Conesa Balbastre INFN-LNF
-//
-//-------------------------------------------------------------------------
-
 #include "AliVCaloCells.h"
 
-ClassImp(AliVCaloCells)
+/// \cond CLASSIMP
+ClassImp(AliVCaloCells) ;
+/// \endcond
 
+///
+/// Assignment operator.
+///
 AliVCaloCells& AliVCaloCells::operator=(const AliVCaloCells& vcells)
 { 
-  //Assignment operator
 
   if (this!=&vcells) 
   { 

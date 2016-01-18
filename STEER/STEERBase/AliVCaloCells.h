@@ -4,12 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 //-------------------------------------------------------------------------
-//
-//     Virtual class to access calorimeter cell data
-//     Author: Gustavo Conesa Balbastre INFN-LNF
+/// \class AliVCaloCells
+/// \brief Virtual class for calorimeter cell data handling
+///
+///  Virtual class to access calorimeter (PHOS,EMCal) cell data
+///
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
 //
 //-------------------------------------------------------------------------
-
 
 #include <TNamed.h>
 #include <TMath.h>
@@ -58,8 +60,8 @@ class AliVCaloCells : public TNamed
   virtual AliVCaloCells* CopyCaloCells(Bool_t all) const = 0;
 
   // MC & embedding
-  virtual Int_t  GetCellMCLabel(Short_t cellNumber)    = 0;
-  virtual Int_t  GetMCLabel(Short_t pos) const         = 0;
+  virtual Int_t    GetCellMCLabel(Short_t cellNumber)    = 0;
+  virtual Int_t    GetMCLabel(Short_t pos) const         = 0;
 
   virtual Double_t GetCellEFraction(Short_t cellNumber)  = 0;
   virtual Double_t GetEFraction(Short_t pos) const       = 0;
@@ -67,7 +69,10 @@ class AliVCaloCells : public TNamed
   virtual void     SetCellEFraction(Short_t cellNumber, Double_t efrac) = 0;
   virtual void     SetEFraction    (Short_t pos,        Double_t efrac) = 0;
   
-  ClassDef(AliVCaloCells, 0);
+  /// \cond CLASSIMP
+  ClassDef(AliVCaloCells, 0) ;
+  /// \endcond
+
 };
 
 #endif

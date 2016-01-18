@@ -13,29 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-----------------------------------------------------------------
-//
-//   Virtual class to access calorimeter 
-//   (EMCAL, PHOS, PMD, FMD) cluster data
-//   Author: Gustavo Conesa Balbastre LPSC-Grenoble
-//
-//-----------------------------------------------------------------
 
 #include "AliVCluster.h"
 
-ClassImp(AliVCluster)
+/// \cond CLASSIMP
+ClassImp(AliVCluster) ;
+/// \endcond
   
-  AliVCluster::AliVCluster(const AliVCluster& vclus) :
-    TObject(vclus) { ; } // Copy constructor
+///
+/// Copy constructor.
+///
+AliVCluster::AliVCluster(const AliVCluster& vclus) :
+    TObject(vclus) { ; } 
 
+///
+/// Assignment operator.
+///
 AliVCluster& AliVCluster::operator=(const AliVCluster& vclus)
 { 
-  //Assignment operator
-  if (this!=&vclus) { 
+  if (this!=&vclus)  
     TObject::operator=(vclus); 
-  }
   
   return *this; 
 }

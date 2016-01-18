@@ -17,8 +17,13 @@
 #include "AliLog.h"
 #include "AliAODCaloCluster.h"
 
-ClassImp(AliAODCaloCluster)
+/// \cond CLASSIMP
+ClassImp(AliAODCaloCluster) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
 //______________________________________________________________________________
 AliAODCaloCluster::AliAODCaloCluster() : 
   AliAODCluster(),
@@ -40,13 +45,14 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fIsExotic(kFALSE),
   fCellsMCEdepFractionMap(0x0)
 {
-  // default constructor
-
   for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
     fUserDefEnergy[i] = 1.;
   }
 }
 
+///
+/// Constructor.
+///
 //______________________________________________________________________________
 AliAODCaloCluster::AliAODCaloCluster(Int_t id,
 				     UInt_t nLabel,
@@ -75,13 +81,14 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fIsExotic(kFALSE),
   fCellsMCEdepFractionMap(0x0)
 {
-  // constructor
-
   for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
     fUserDefEnergy[i] = 1.;
   }
 }
 
+///
+/// Constructor.
+///
 //______________________________________________________________________________
 AliAODCaloCluster::AliAODCaloCluster(Int_t id,
 				     UInt_t nLabel,
@@ -110,33 +117,37 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fIsExotic(kFALSE),
   fCellsMCEdepFractionMap(0x0)
 {
-  // constructor
-
   for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
     fUserDefEnergy[i] = 1.;
   }
 }
 
-
+///
+/// Destructor.
+///
 //______________________________________________________________________________
 AliAODCaloCluster::~AliAODCaloCluster() 
 {
-  // destructor
   if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
   if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
   if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
 }
 
+///
+/// Clear array pointers.
+///
 //______________________________________________________________________________
 void AliAODCaloCluster::Clear(const Option_t*) 
 {
-  // clear
   RemoveLabel();
   if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
   if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
   if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
 }
 
+///
+/// Copy constructor.
+///
 //______________________________________________________________________________
 AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   AliAODCluster(clus),
@@ -158,8 +169,6 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fIsExotic(clus.fIsExotic),
   fCellsMCEdepFractionMap(0x0)
 {
-  // Copy constructor
-
   if (clus.fNCells > 0) 
   {
     if(clus.fCellsAbsId)
@@ -188,10 +197,12 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   
 }
 
+///
+/// Assignment operator.
+///
 //______________________________________________________________________________
 AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
 {
-  // Assignment operator
   if(this!=&clus) 
   {
     AliAODCluster::operator=(clus);
@@ -249,11 +260,12 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
   return *this;
 }
 
+///
+/// Checks if the given track contributed to this cluster.
+///
 //_______________________________________________________________________
 Bool_t AliAODCaloCluster::HasTrackMatched(TObject *trk) const
 {
-  // Checks if the given track contributed to this cluster.
-
   TRefArrayIter iter(&fTracksMatched);
   while (TObject *track = iter.Next()) {
     if (trk == track) return kTRUE;
@@ -261,13 +273,15 @@ Bool_t AliAODCaloCluster::HasTrackMatched(TObject *trk) const
   return kFALSE;
 }
 
+///
+/// Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+/// identified as photons or pi0 (overlapped gamma) produced on the vertex
+/// Vertex can be recovered with esd pointer doing:  
+///  " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+///
 //_______________________________________________________________________
-void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const {
-  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
-  // identified as photons or pi0 (overlapped gamma) produced on the vertex
-  //Vertex can be recovered with esd pointer doing:  
-  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
-
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
+{
   Double32_t energy = E();
   Float_t    pos[3];
   GetPosition(pos);
@@ -288,14 +302,16 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
     AliInfo("Null cluster radius, momentum calculation not possible");
 }
 
+///
+/// Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+/// identified as photons or pi0 (overlapped gamma) produced on the vertex
+/// Uses the user defined energy t
+/// Vertex can be recovered with esd pointer doing:  
+///  " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+///
 //_______________________________________________________________________
-void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const {
-  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
-  // identified as photons or pi0 (overlapped gamma) produced on the vertex
-  // Uses the user defined energy t
-  //Vertex can be recovered with esd pointer doing:  
-  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
-
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const 
+{
   Double32_t energy = GetUserDefEnergy(t);
   Float_t    pos[3];
   GetPosition(pos);
@@ -311,24 +327,28 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUse
 			   pos[2]*pos[2]   ) ; 
   
   p.SetPxPyPzE( energy*pos[0]/r,  energy*pos[1]/r,  energy*pos[2]/r,  energy) ; 
-  
 }
 
-
+///
+///  Set the array of cell absolute Id. numbers. 
+///
 //______________________________________________________________________________
 void  AliAODCaloCluster::SetCellsAbsId(UShort_t *array)
 {
-    //  Set the array of cell absId numbers 
     if (fNCells) {
       if(!fCellsAbsId)fCellsAbsId = new  UShort_t[fNCells];
       for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
     }
 }
 
+///
+///  Set the array of cell amplitude fractions. 
+///  Cell can be shared between 2 clusters, here the fraction of energy
+///  assigned to each cluster is stored. Only in unfolded clusters.
+///
 //______________________________________________________________________________
 void  AliAODCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
 {
-    //  Set the array of cell amplitude fraction
     if (fNCells) {
       if(!fCellsAmpFraction)fCellsAmpFraction = new  Double32_t[fNCells];
       for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];

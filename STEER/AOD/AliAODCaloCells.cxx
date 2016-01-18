@@ -13,42 +13,43 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//     AOD class to store calorimeter cell data
-//     Author: Markus Oldenburg, CERN
-//-------------------------------------------------------------------------
-
 #include "AliAODCaloCells.h"
 
-ClassImp(AliAODCaloCells)
+/// \cond CLASSIMP
+ClassImp(AliAODCaloCells) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
 //_______________________________________________________
 AliAODCaloCells::AliAODCaloCells() : 
     AliVCaloCells(), fNCells(0), fHGLG(0), fCellNumber(0), 
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(kTRUE), fType(kUndef)
 {
-  // default constructor
 }
 
+///
+/// Constructor.
+///
 //_____________________________________________________________________________________
 AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, VCells_t ttype) :
     AliVCaloCells(name, title), fNCells(0), fHGLG(0), fCellNumber(0), 
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(kTRUE), fType(ttype)
 {
-  //constructor
 }
 
+///
+/// Copy constructor.
+///
 //________________________________________________________________
 AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
     AliVCaloCells(cells), fNCells(cells.fNCells), fHGLG(0), fCellNumber(0),
     fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
     fIsSorted(cells.fIsSorted), fType(cells.fType)
 {
-// Copy constructor
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells]; 
   fTime       = new Double32_t[fNCells]; 
@@ -70,10 +71,12 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
   }
 }
 
+///
+/// Assignment operator.
+///
 //________________________________________________________________________
 AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
 {
-  // Assignment operator
   if(this != &source) 
   {
     AliVCaloCells::operator=(source);
@@ -123,34 +126,36 @@ AliAODCaloCells::~AliAODCaloCells()
   DeleteContainer();
 }
 
+///
+/// Clear arrays.
+///
+//__________________________________________
 void AliAODCaloCells::Clear(const Option_t*)
-{
-  // clear
-  
+{  
   DeleteContainer();
 }
 
+///
+/// This overwrites the virtual TObject::Copy()
+/// to allow run time copying without casting
+/// in AliAODEvent.
+///
+//____________________________________________
 void AliAODCaloCells::Copy(TObject &obj) const 
 {
-  
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
-  
   if(this==&obj)return;
   AliAODCaloCells *robj = dynamic_cast<AliAODCaloCells*>(&obj);
   if(!robj)return; // not an AliAODCaloCells
   *robj = *this;
-  
 }
 
-//______________________________________________________________________
+///
+/// Copy the calo cells into a new object. If option all=FALSE, just the object type, 
+/// for mixing.
+///
+//_____________________________________________________________________
 AliVCaloCells *AliAODCaloCells::CopyCaloCells(Bool_t all = kTRUE) const 
-{
-  
-  // copy the calo cells into a new object. If option all=FALSE, just the object type, 
-  // for mixing
-  
+{  
   AliVCaloCells *obj =  new AliAODCaloCells();
   
   if(all){
@@ -178,11 +183,12 @@ AliVCaloCells *AliAODCaloCells::CopyCaloCells(Bool_t all = kTRUE) const
   
 }
 
+///
+/// Function that creates container to store calorimeter cell data.
+///
 //___________________________________________________
 void AliAODCaloCells::CreateContainer(Short_t nCells)
 {
-  // function that creates container to store calorimeter cell data
-
   DeleteContainer();
   
   if (nCells <= 0) 
@@ -212,10 +218,12 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
   }
 }
 
+///
+/// Deletes allocated memory.
+///
 //_____________________________________
 void AliAODCaloCells::DeleteContainer()
 {
-  // deletes allocated memory
   if(fHGLG){
     delete[] fHGLG;
     fHGLG = 0 ;
@@ -256,11 +264,12 @@ void AliAODCaloCells::DeleteContainer()
   fIsSorted = kFALSE;
 }
 
+///
+/// Sort the cell array by cell number.
+///
 //__________________________
 void AliAODCaloCells::Sort() 
-{
-  // sort the cell array by cell number
-  
+{  
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
@@ -312,12 +321,20 @@ void AliAODCaloCells::Sort()
   fIsSorted = kTRUE;
 } 
 
+///
+/// Sets a cell at the given position.
+/// \param pos: cell position in array.
+/// \param cellNumber: Cell absolute Id. number.
+/// \param amplitude: Cell signal (GeV).
+/// \param time: Cell time (s).
+/// \param mclabel: MC particle index in kine array.
+/// \param efrac: Fraction of energy from embedding.
+/// \param isHG: bool true if cell is from high gain.
+///
 //________________________________________________________________________________________
 Bool_t AliAODCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t amplitude, 
                                 Double32_t time, Int_t mclabel,    Double32_t efrac, Bool_t isHG)
 {
-  // Sets a cell at the given position
-
   if (pos>=0 && pos < fNCells) 
   {
     if(fHGLG)

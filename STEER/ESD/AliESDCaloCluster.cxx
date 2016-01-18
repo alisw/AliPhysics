@@ -17,8 +17,13 @@
 #include "AliLog.h"
 #include "AliESDCaloCluster.h"
 
-ClassImp(AliESDCaloCluster)
+/// \cond CLASSIMP
+ClassImp(AliESDCaloCluster) ;
+/// \endcond
 
+///
+/// The default ESD constructor 
+///
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster() : 
   AliVCluster(),
@@ -46,9 +51,6 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fClusterMCEdepFraction(0x0),
   fCellsMCEdepFractionMap(0x0)
 {
-  //
-  // The default ESD constructor 
-  //
   fGlobalPos[0] = fGlobalPos[1] = fGlobalPos[2] = 0.;
   for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = 0.;
 
@@ -57,6 +59,9 @@ AliESDCaloCluster::AliESDCaloCluster() :
   }
 }
 
+///
+/// The copy constructor 
+///
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) : 
   AliVCluster(clus),
@@ -85,9 +90,6 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fClusterMCEdepFraction(),
   fCellsMCEdepFractionMap()
 {
-  //
-  // The copy constructor 
-  //
   fGlobalPos[0] = clus.fGlobalPos[0];
   fGlobalPos[1] = clus.fGlobalPos[1];
   fGlobalPos[2] = clus.fGlobalPos[2];
@@ -126,11 +128,12 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 
 }
 
+///
+/// The assignment operator.
+///
 //_______________________________________________________________________
 AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 {
-  // assignment operator
-
   if(&source == this) return *this;
   AliVCluster::operator=(source);
   fGlobalPos[0] = source.fGlobalPos[0];
@@ -246,25 +249,28 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
 }
 
+///
+/// This method overwrites the virtual TObject::Copy()
+/// to allow run time copying without casting
+/// in AliESDEvent
 //_______________________________________________________________________
-void AliESDCaloCluster::Copy(TObject &obj) const {
-  
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
-
+void AliESDCaloCluster::Copy(TObject &obj) const 
+{
   if(this==&obj)return;
+ 
   AliESDCaloCluster *robj = dynamic_cast<AliESDCaloCluster*>(&obj);
+  
   if(!robj)return; // not an AliESDCluster
+  
   *robj = *this;
-
 }
 
+///
+/// This is destructor according Coding Conventions. 
+///
 //_______________________________________________________________________
-AliESDCaloCluster::~AliESDCaloCluster(){ 
-  //
-  // This is destructor according Coding Conventions 
-  //
+AliESDCaloCluster::~AliESDCaloCluster()
+{ 
   if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
   if(fLabels)        delete fLabels;        fLabels        = 0;
   
@@ -274,11 +280,12 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   if(fCellsMCEdepFractionMap) { delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ; }
 }
 
+//
+// Delete pointers 
+//
 //_______________________________________________________________________
-void AliESDCaloCluster::Clear(const Option_t*){ 
-  //
-  // This is destructor according Coding Conventions 
-  //
+void AliESDCaloCluster::Clear(const Option_t*)
+{ 
   if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
   if(fLabels)        delete fLabels;        fLabels        = 0;
   
@@ -288,18 +295,18 @@ void AliESDCaloCluster::Clear(const Option_t*){
   if(fCellsMCEdepFractionMap) { delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ; }
 }
 
-
+///
+/// Sets the probability of each particle type
+/// Copied from AliESDtrack SetPIDValues
+/// This function copies "n" PID weights from "scr" to "dest"
+/// and normalizes their sum to 1 thus producing conditional
+/// probabilities.
+/// The negative weights are set to 0.
+/// In case all the weights are non-positive they are replaced by
+/// uniform probabilities
 //_______________________________________________________________________
-void AliESDCaloCluster::SetPID(const Float_t *p) {
-  // Sets the probability of each particle type
-  // Copied from AliESDtrack SetPIDValues
-  // This function copies "n" PID weights from "scr" to "dest"
-  // and normalizes their sum to 1 thus producing conditional
-  // probabilities.
-  // The negative weights are set to 0.
-  // In case all the weights are non-positive they are replaced by
-  // uniform probabilities
-
+void AliESDCaloCluster::SetPID(const Float_t *p) 
+{
   Int_t n = AliPID::kSPECIESCN;
 
   Float_t uniform = 1./(Float_t)n;
@@ -321,13 +328,15 @@ void AliESDCaloCluster::SetPID(const Float_t *p) {
 
 }
 
+///
+/// Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+/// identified as photons or pi0 (overlapped gamma) produced on the vertex
+/// Vertex can be recovered with esd pointer doing:  
+///    " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+///
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const {
-  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
-  // identified as photons or pi0 (overlapped gamma) produced on the vertex
-  //Vertex can be recovered with esd pointer doing:  
-  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
-
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
+{
   Double32_t pos[3]={ fGlobalPos[0], fGlobalPos[1], fGlobalPos[2]};
   if(vertex){//calculate direction from vertex
     pos[0]-=vertex[0];
@@ -343,14 +352,16 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
     AliInfo("Null cluster radius, momentum calculation not possible");
 }
 
+///
+/// Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+/// identified as photons or pi0 (overlapped gamma) produced on the vertex
+/// Uses the user defined energy t
+/// Vertex can be recovered with esd pointer doing:  
+///   " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+///
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const {
-  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
-  // identified as photons or pi0 (overlapped gamma) produced on the vertex
-  // Uses the user defined energy t
-  //Vertex can be recovered with esd pointer doing:  
-  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
-
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const 
+{
   Double32_t energy = GetUserDefEnergy(t);
   Float_t    pos[3];
   GetPosition(pos);
@@ -369,32 +380,38 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUse
   
 }
 
-
+///
+///  Set the array of cell absId numbers. 
+///
 //_______________________________________________________________________
 void  AliESDCaloCluster::SetCellsAbsId(UShort_t *array)
 {
-    //  Set the array of cell absId numbers 
   if (fNCells) {
     fCellsAbsId = new  UShort_t[fNCells];
     for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
   }
 }
 
+///
+///  Set the array of cell amplitude fractions. 
+///  Cell can be shared between 2 clusters, here the fraction of energy
+///  assigned to each cluster is stored. Only in unfolded clusters.
+///
 //_______________________________________________________________________
 void  AliESDCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
 {
-  //  Set the array of cell amplitude fraction
   if (fNCells) {
     fCellsAmpFraction = new  Double32_t[fNCells];
     for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
   }
 }
 
+///
+/// Set the cluster global position.
+///
 //______________________________________________________________________________
 void AliESDCaloCluster::SetPosition(Float_t *x) 
-{
-  // set the position
-  
+{  
   if (x) {
     fGlobalPos[0] = x[0];
     fGlobalPos[1] = x[1];
@@ -407,6 +424,11 @@ void AliESDCaloCluster::SetPosition(Float_t *x)
   }
 }
 
+///
+/// \return Index of track matched to cluster. Several matches are possible.
+///
+/// \param i: matched track index in array of matches
+///
 //______________________________________________________________________________
 Int_t AliESDCaloCluster::GetTrackMatchedIndex(Int_t i) const
 {

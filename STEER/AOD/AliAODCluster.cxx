@@ -15,8 +15,13 @@
 
 #include "AliAODCluster.h"
 
-ClassImp(AliAODCluster)
+/// \cond CLASSIMP
+ClassImp(AliAODCluster) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster() :
   AliVCluster(),
@@ -30,12 +35,14 @@ AliAODCluster::AliAODCluster() :
   fMCEnergyFraction(0.),  
   fClusterMCEdepFraction(0x0)
 {
-  // default constructor
 
   SetPosition(NULL);
   SetPID(NULL);
 }
 
+///
+/// Constructor.
+///
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(Int_t id,
 			     UInt_t nLabel,
@@ -56,7 +63,6 @@ AliAODCluster::AliAODCluster(Int_t id,
   fMCEnergyFraction(0.),  
   fClusterMCEdepFraction(0x0)
 {
-  // constructor
   for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
   for (Int_t i = 0; i < 13; i++) fPID[i]      = 0;
  
@@ -65,6 +71,9 @@ AliAODCluster::AliAODCluster(Int_t id,
   SetLabel(label, nLabel);
 }
 
+///
+/// Constructor.
+///
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(Int_t id,
 			     UInt_t nLabel,
@@ -85,7 +94,6 @@ AliAODCluster::AliAODCluster(Int_t id,
   fMCEnergyFraction(0.),  
   fClusterMCEdepFraction(0x0)
 {
-  // constructor
   for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
   for (Int_t i = 0; i < 13; i++) fPID[i]      = 0;
 
@@ -94,24 +102,27 @@ AliAODCluster::AliAODCluster(Int_t id,
   SetLabel(label, nLabel);
 }
 
-
+///
+/// Destructor
+///
 //______________________________________________________________________________
 AliAODCluster::~AliAODCluster() 
 {
-  // destructor
-
   RemoveLabel();
 }
 
+///
+/// Clear
+///
 //______________________________________________________________________________
 void AliAODCluster::Clear(const Option_t*) 
-{
-  // Clear
-  
+{  
   RemoveLabel();
 }
 
-
+///
+/// Copy constructor.
+///
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   AliVCluster(clus),
@@ -125,8 +136,6 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   fMCEnergyFraction(clus.fMCEnergyFraction),  
   fClusterMCEdepFraction(0x0)
 {
-  // Copy constructor
-
   for(Int_t i = 0; i < 3  ; i++) fPosition[i]  = clus.fPosition[i];
   for(Int_t i = 0; i < 13 ; i++) fPID[i]       = clus.fPID[i];
 
@@ -134,10 +143,12 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   SetClusterMCEdepFraction(clus.fClusterMCEdepFraction);
 }
 
+///
+/// Assignment operator.
+///
 //______________________________________________________________________________
 AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
 {
-  // Assignment operator
   if(this!=&clus) {
     
 	for(Int_t i = 0; i < 3 ;  i++) fPosition[i] = clus.fPosition[i];
@@ -161,11 +172,12 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
   return *this;
 }
 
+///
+/// Set cluster global position.
+///
 //______________________________________________________________________________
 void AliAODCluster::SetPosition(Float_t *x) 
-{
-  // set the position
-  
+{  
   if (x) {
     fPosition[0] = x[0];
     fPosition[1] = x[1];
@@ -177,11 +189,12 @@ void AliAODCluster::SetPosition(Float_t *x)
   }
 }
 
+///
+/// \return The most probable PID array element.
+///
 //______________________________________________________________________________
 UShort_t AliAODCluster::GetMostProbablePID() const 
-{
-  // Returns the most probable PID array element.
-  
+{  
   Int_t nPID = 13;
   UShort_t unknown = AliVCluster::kUnknown;
   
@@ -203,6 +216,9 @@ UShort_t AliAODCluster::GetMostProbablePID() const
   return allTheSame ? unknown : loc;
 }
 
+///
+/// Set the array with MC particle labels and number of labels.
+///
 //______________________________________________________________________________
 void AliAODCluster::SetLabel(Int_t *label, UInt_t size) 
 {
@@ -223,6 +239,9 @@ void AliAODCluster::SetLabel(Int_t *label, UInt_t size)
   return;
 }
 
+///
+/// Get the label i of the possible fNLabel in the array fLabel
+///
 //______________________________________________________________________________
 Int_t AliAODCluster::GetLabelAt(UInt_t i) const
 {
@@ -233,13 +252,15 @@ Int_t AliAODCluster::GetLabelAt(UInt_t i) const
   }
 }
 
+///
+/// Delete MC arrays, used in destructor and Clear() and SetLabel() methods
+///
 //______________________________________________________________________________
 void AliAODCluster::RemoveLabel()
 {
   delete[] fLabel;
   fLabel = 0x0;
   fNLabel = 0;
-
 
   if(fClusterMCEdepFraction)  
     delete[] fClusterMCEdepFraction;  
@@ -248,11 +269,12 @@ void AliAODCluster::RemoveLabel()
   return;
 }
 
+///
+/// Prints information about AliAODCluster.
+///
 //______________________________________________________________________________
 void AliAODCluster::Print(Option_t* /* option */) const
 {
-  // prints information about AliAODCluster
-
   printf("Cluster type: %d\n", GetType()); 
   printf("     energy = %f\n", E());
   printf("       chi2 = %f\n", Chi2());
