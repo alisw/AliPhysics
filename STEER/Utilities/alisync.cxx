@@ -108,6 +108,25 @@ static void recursiveLocalMkdir(const char *dir) {
   mkdir(tmp, S_IRWXU);
 }
 
+// Helpers to trim whitespace from strings. trim from start.
+static inline std::string &ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+  return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+  return ltrim(rtrim(s));
+}
+
+
+
 struct JobInfo {
   std::string filename;
   time_t startTime;
@@ -511,13 +530,14 @@ int main( int argc, char **argv )
     const char *cf = argv[optind + i];
     if (*cf != '@')
     {
-      gFilenames.push_back(cf);
+      std::string tcf(cf);
+      gFilenames.push_back(trim(tcf));
       continue;
     }
     std::ifstream infile(cf+1);
     std::string line;
     while (std::getline(infile, line))
-      gFilenames.push_back(line);
+      gFilenames.push_back(trim(line));
   }
 
   log(2, "Verbosity level: %i\n", gVerbosity);
