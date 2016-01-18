@@ -1,40 +1,50 @@
-/// \class AliFemtoV0TrackCutNSigmaFilter
+///
+/// \file AliFemtoV0TrackCutNSigmaFilter.h
+///
 
 #ifndef ALIFEMTOV0TRACKCUTNSIGMAFILTER_H
 #define ALIFEMTOV0TRACKCUTNSIGMAFILTER_H
 
+#pragma once
+
 #include "AliFemtoTrackCut.h"
 #include "AliFemtoV0TrackCut.h"
-
 #include "AliFemtoNSigmaFilter.h"
-class AliFemtoNSigmaFilter;
 
-#include "TH1D.h"
+class TH1D;
 
-/**
- * \class AliFemtoV0TrackCutNSigmaFilter
 
- */
+/// \class AliFemtoV0TrackCutNSigmaFilter
+/// \brief A class designed to help track cuts test particle calculate NSigma values
+///
+/// \author Jesse Buxton <jesse.thomas.buxton@cern.ch>
+///
 class AliFemtoV0TrackCutNSigmaFilter : public AliFemtoV0TrackCut {
 public:
 
+  /// Default Constructor - wide ranges and
   AliFemtoV0TrackCutNSigmaFilter();
+
+  /// Destructor - deletes filters and histograms
   virtual ~AliFemtoV0TrackCutNSigmaFilter();
 
+  /// Main method of the filter. Returns true if V0 passes NSigma
   virtual bool Pass(const AliFemtoV0* aV0);
 
   virtual AliFemtoString Report();
-  virtual TList *ListSettings();
-  virtual AliFemtoParticleType Type(){return hbtV0;}
+  virtual TList* ListSettings();
+  virtual TList* AppendSettings(TList *settings, const TString &prefix = "") const;
 
   //----n sigma----
-  bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK);  //tweaked 14/12/2015
-  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);  //tweaked 14/12/2015
-  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);  //tweaked 14/12/2015
+  bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK);
+  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
+  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
 
-
-// !!!!!----- 14/12/2015 ----------------------------------------------------------
-  enum DaughterParticleType {kPion=0, kKaon=1, kProton=2};
+  enum DaughterParticleType {
+    kPion = 0,
+    kKaon = 1,
+    kProton = 2
+  };
 
   void CreateCustomNSigmaFilter(DaughterParticleType aDaughterType);
   void CreateCustomPionNSigmaFilter();
@@ -60,8 +70,8 @@ public:
   // However, the use MUST manually add this histogram to the output list of the analysis.
   //   i.e. add something similar to:  tOutputList->Add(p1cut->GetMinvHisto());
   //   where p1cut is a AliFemtoV0TrackCut object
-  void SetMinvHisto(const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);   //set the Minv histogram attributes and
-														//set flag fBuildMinvHisto=true
+  void SetMinvHisto(const char* title, int nbins, float aInvMassMin, float aInvMassMax);   // set the Minv histogram attributes and
+                                                                                                                // sets the fBuildMinvHisto flag to true
   TH1D* GetMinvHisto();
 
   //DO NOT set these to true unless you completely understand the consequences.  See AliFemtoNSigmaFilter.h for more information
@@ -69,9 +79,8 @@ public:
   void SetOverrideImproperKaonNSigmaFilter(bool aOverride);
   void SetOverrideImproperProtonNSigmaFilter(bool aOverride);
 
- private:
+protected:
 
-// !!!!!----- 14/12/2015 ----------------------------------------------------------
   bool fUseCustomPionNSigmaFilter;
   bool fUseCustomKaonNSigmaFilter;
   bool fUseCustomProtonNSigmaFilter;
@@ -92,8 +101,96 @@ public:
 
 };
 
-inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperPionNSigmaFilter(bool aOverride) {fPionNSigmaFilter->SetOverrideImproperConfig(aOverride);}
-inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperKaonNSigmaFilter(bool aOverride) {fKaonNSigmaFilter->SetOverrideImproperConfig(aOverride);}
-inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperProtonNSigmaFilter(bool aOverride) {fProtonNSigmaFilter->SetOverrideImproperConfig(aOverride);}
+
+
+inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperPionNSigmaFilter(bool aOverride)
+{
+  fPionNSigmaFilter->SetOverrideImproperConfig(aOverride);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperKaonNSigmaFilter(bool aOverride)
+{
+  fKaonNSigmaFilter->SetOverrideImproperConfig(aOverride);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::SetOverrideImproperProtonNSigmaFilter(bool aOverride)
+{
+  fProtonNSigmaFilter->SetOverrideImproperConfig(aOverride);
+}
+
+inline TList* AliFemtoV0TrackCutNSigmaFilter::ListSettings()
+{
+  return AppendSettings(new TList());
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::CreateCustomPionNSigmaFilter() {
+  CreateCustomNSigmaFilter(kPion);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::CreateCustomKaonNSigmaFilter()
+{
+  CreateCustomNSigmaFilter(kKaon);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::CreateCustomProtonNSigmaFilter()
+{
+  CreateCustomNSigmaFilter(kProton);
+}
+
+inline TH1D* AliFemtoV0TrackCutNSigmaFilter::GetMinvHisto()
+{
+  return fMinvHisto;
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddPionTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
+{
+  AddTPCAndTOFNSigmaCut(kPion, aMomMin, aMomMax, aNSigmaValueTPC, aNSigmaValueTOF);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddKaonTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
+{
+  AddTPCAndTOFNSigmaCut(kKaon, aMomMin, aMomMax, aNSigmaValueTPC, aNSigmaValueTOF);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)
+{
+  AddTPCAndTOFNSigmaCut(kProton, aMomMin, aMomMax, aNSigmaValueTPC, aNSigmaValueTOF);
+}
+
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddPionTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
+{
+  AddTPCNSigmaCut(kPion, aMomMin, aMomMax, aNSigmaValueTPC);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddKaonTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
+{
+  AddTPCNSigmaCut(kKaon, aMomMin, aMomMax, aNSigmaValueTPC);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTPCNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC)
+{
+  AddTPCNSigmaCut(kProton, aMomMin, aMomMax, aNSigmaValueTPC);
+}
+
+
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddPionTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
+{
+  AddTOFNSigmaCut(kPion, aMomMin, aMomMax, aNSigmaValueTOF);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddKaonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
+{
+  AddTOFNSigmaCut(kKaon, aMomMin, aMomMax, aNSigmaValueTOF);
+}
+
+inline void AliFemtoV0TrackCutNSigmaFilter::AddProtonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF)
+{
+  AddTOFNSigmaCut(kProton, aMomMin, aMomMax, aNSigmaValueTOF);
+}
+
+
+
 
 #endif
