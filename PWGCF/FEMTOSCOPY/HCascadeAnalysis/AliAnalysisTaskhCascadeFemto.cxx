@@ -2220,18 +2220,28 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
           if ( (isP1&&isP2) || (isaP1&&isaP2)) {
             if (fSecondpart == kProton) {
               if (fkCutOnTtcProp) {
-                if (dphisprop!=0. && detasprop!=0. && TMath::Abs(dphisprop)<fDphisMin && TMath::Abs(detasprop)<fDetasMin) 
+                if (dphisprop!=0. && detasprop!=0. && TMath::Abs(dphisprop)<fDphisMin && TMath::Abs(detasprop)<fDetasMin) { 
+                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
                   continue; 
+                }
               } else {
-                if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue;  
+                if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) {
+                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  continue;  
+                }
               } 
             } else if (fSecondpart == kPion) {
               //if (dphisprop==0. || detasprop==0.) cout<<"Dphiprop or detasprop are 0!!!!! Dphis "<<dphisprop<<" Detas "<<detasprop<<endl;
               if (fkCutOnTtcProp) {
-                if (dphisprop!=0. && detasprop!=0. && TMath::Abs((dphisprop))<fDphisMin && TMath::Abs(detasprop)<fDetasMin) continue; 
-
+                if (dphisprop!=0. && detasprop!=0. && TMath::Abs((dphisprop))<fDphisMin && TMath::Abs(detasprop)<fDetasMin) {
+                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  continue; 
+                }
               } else {
-                if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue; 
+                if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) {
+                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  continue; 
+                }
               }
             }
           } 
