@@ -11,7 +11,7 @@ AliAnalysisTaskEmcalHFeJetCorrel* AddTaskEmcalHFCJ(
   Int_t       leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskEmcalHFeJetCorrel",
   TString cutfile				 ="HFCJCuts.root",
-  UInt_t triggerMask			 =-1,//AliVEvent::kEMC1 | AliVEvent::kEMC7 | AliVEvent::kEMC8,/*kMB kEMC7 (kEMC8) kEMCEJE kEMCEGA*/
+  UInt_t triggerMask			 =-1,/*AliVEvent::kEMC1 | AliVEvent::kEMC7 | AliVEvent::kEMC8, kMB kEMC7 (kEMC8) kEMCEJE kEMCEGA*/
   Bool_t isMC					 = kFALSE,
   bool TestContainer			 = kFALSE,
   bool EGA1                      = kFALSE,
