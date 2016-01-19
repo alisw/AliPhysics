@@ -345,11 +345,14 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
                                                       const char* centrality)
 {
   /// Actually create the histograms for phyics/triggerClassName
-    
-  if (HistogramCollection()->Histo(Form("/%s/%s/%s/Zvertex",eventSelection,triggerClassName,centrality)))
+  
+  
+  if ( ExistSemaphoreHistogram(eventSelection,triggerClassName,centrality) )
   {
     return;
   }
+  
+  CreateSemaphoreHistogram(eventSelection,triggerClassName,centrality);
   
   Double_t xmin = -40;
   Double_t xmax = +40;
@@ -474,8 +477,18 @@ void AliAnalysisMuMuGlobal::DefineHistogramCollection(const char* eventSelection
     
     for ( it = estimators.begin(); it != estimators.end(); ++it )
     {
-      TH1* h = new TH1F("Centrality","Centrality",350,-50,300);
-      HistogramCollection()->Adopt(Form("/%s/%s/%s",eventSelection,triggerClassName,it->c_str()),h);
+      TString name;
+      
+      name.Form("/%s/%s/%s/Centrality",eventSelection,triggerClassName,it->c_str());
+      
+      TH1* h = HistogramCollection()->Histo(name.Data());
+      
+      if (!h)
+      {
+        h = new TH1F("Centrality","Centrality",350,-50,300);
+        AliInfo(Form("Creating centrality histogram for estimator %s %s %s",it->c_str(),eventSelection,triggerClassName));
+        HistogramCollection()->Adopt(Form("/%s/%s/%s",eventSelection,triggerClassName,it->c_str()),h);
+      }
     }
     
     delete centralities;
