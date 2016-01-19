@@ -176,9 +176,9 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       Double_t fraction = jetCont->GetFractionSharedPt(jet);
       //fill the TLorentsVectors with the jet 4-vectors
       //Printf("MC jet %p, Fraction %.4f, pT %f, eta %f, phi %f, m  %f",jetP, fraction, jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
-      fhFractionSharedpT->Fill(jet->Pt(), fraction, fXsec/fNtrials);
+      fhFractionSharedpT->Fill(jet->Pt(), fraction, weight);
       if(fMinFractionShared<0. || fraction>fMinFractionShared) {
-      	 fNumberOfJets->Fill(2., fXsec/fNtrials);
+      	 fNumberOfJets->Fill(2., weight);
       	 fJetDet ->SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
       	 fJetPart->SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
       	
