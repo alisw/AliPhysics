@@ -94,7 +94,7 @@ class TStatToolkit : public TObject
   //
   //
   static void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t dumpHisto=100,Int_t verbose=kFALSE);
-  static void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0);
+  static void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0, Double_t fractionCut=0.1);
 
   //
   // norm (distance) functions
