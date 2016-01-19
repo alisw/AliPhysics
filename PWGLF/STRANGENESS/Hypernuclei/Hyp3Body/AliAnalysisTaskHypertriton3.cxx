@@ -1332,9 +1332,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
 	
 	Hypertriton=posD+posP+negPi;
-    
-    fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
-    if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 
 	
 	pTotHyper = Hypertriton.P();
@@ -1353,7 +1350,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
 	pointingAngleH = Hypertriton.Angle(h1);
-
+    fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
+    if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 	
 	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
 	p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
