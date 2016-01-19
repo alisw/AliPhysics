@@ -408,6 +408,7 @@ validateLog()
             ': command not found'
             ': comando non trovato'
             'core dumped'
+            'core file'
   )
 
   warningConditions=(
