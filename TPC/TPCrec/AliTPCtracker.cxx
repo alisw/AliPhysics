@@ -8716,8 +8716,9 @@ void AliTPCtracker::CleanESDTracksObjects(TObjArray* trcList)
   //
   int ntr = trcList->GetEntriesFast();
   for (int itr=0;itr<ntr;itr++) {
-    AliESDtrack* trc = (AliESDtrack*)trcList->At(itr);
-    AliESDfriendTrack* trcF = (AliESDfriendTrack*)trc->GetFriendTrack();
+    TObject *obj = trcList->At(itr);
+    AliESDfriendTrack* trcF =  (obj->IsA()==AliESDtrack::Class()) ? 
+      (AliESDfriendTrack*)((AliESDtrack*)obj)->GetFriendTrack() : (AliESDfriendTrack*)obj;
     if (!trcF) continue;
     AliTPCseed* seed = (AliTPCseed*)trcF->GetTPCseed();
     if (seed) {
