@@ -87,9 +87,13 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    //check
    const Int_t nBinsPt          = 40;
    const Int_t nBinsFraction    = 101;
+   const Int_t nBinsfineM       = 200;
+   const Int_t nBinsfinePt      = 200;
    
-   const Double_t minPt       = -50.;
-   const Double_t maxPt       = 150.;
+   const Double_t minPt       = 0.;
+   const Double_t maxPt       = 200.;
+   const Double_t minM        = 0.;
+   const Double_t maxM        = 50.;
    const Double_t minFraction =  -0.005;
    const Double_t maxFraction =  1.005;
    
@@ -101,6 +105,14 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    
    fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
    fOutput->Add(fNAccJets);
+   
+   const Int_t dim = 5;
+   Int_t bBins[dim] = {nBinsfineM, nBinsfineM, nBinsfinePt, nBinsfinePt, 40};
+   Int_t xmin[dim]  = {minM, minM, minPt, minPt, 0.};
+   Int_t xmax[dim]  = {maxM, maxM, maxPt, maxPt, 2.};
+   TString hsptitle = "Mass-pT response; #it{M}_{det}; #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}; #it{N}_{const}^{det}/#it{N}_{const}^{part}";
+   hResponse = new THnSparseF("hResponse", hsptitle.Data(), dim, nBins, xmin, xmax);
+   fOutput->Add(hResponse);
    
 }
 
@@ -174,6 +186,8 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       	 }
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
       	 
+      	 Double_t response[5] = {jetP->M(), jet->M(), jetP->Pt(), jet->Pt(), (Double_t)jet->GetNumberOfConstituents()/(Double_t)jetP->GetNumberOfConstituents()};
+      	 hResponse->Fill(response);
       }
       
    }
