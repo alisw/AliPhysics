@@ -151,7 +151,7 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       AliError(Form("Container position %d (area based) not found", fContainer));
       return kFALSE;
    }
-   
+   Double_t weight = fXsec/fNtrials;
    //TVector for leading jet
    fJetDetL ->SetPtEtaPhiM(0,0,0,0);
    fJetPartL->SetPtEtaPhiM(0,0,0,0);
@@ -168,17 +168,17 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       fJetPart ->SetPtEtaPhiM(0,0,0,0);
       
       count++;
-      fNumberOfJets->Fill(0);
+      fNumberOfJets->Fill(0., weight);
       
       AliEmcalJet *jetP = jet->ClosestJet();
       if(!jetP) continue;
-      fNumberOfJets->Fill(1);
+      fNumberOfJets->Fill(1., weight);
       Double_t fraction = jetCont->GetFractionSharedPt(jet);
       //fill the TLorentsVectors with the jet 4-vectors
       //Printf("MC jet %p, Fraction %.4f, pT %f, eta %f, phi %f, m  %f",jetP, fraction, jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
-      fhFractionSharedpT->Fill(jet->Pt(), fraction);
+      fhFractionSharedpT->Fill(jet->Pt(), fraction, fXsec/fNtrials);
       if(fMinFractionShared<0. || fraction>fMinFractionShared) {
-      	 fNumberOfJets->Fill(2);
+      	 fNumberOfJets->Fill(2., fXsec/fNtrials);
       	 fJetDet ->SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
       	 fJetPart->SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
       	
@@ -190,11 +190,11 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
       	 
       	 Double_t response[5] = {jetP->M(), jet->M(), jetP->Pt(), jet->Pt(), (Double_t)jet->GetNumberOfConstituents()/(Double_t)jetP->GetNumberOfConstituents()};
-      	 fhResponse->Fill(response);
+      	 fhResponse->Fill(response, weight);
       }
       
    }
-   fNAccJets->Fill(count);
+   fNAccJets->Fill(count, weight);
    
    if(fLeadingJetOnly) {
       if(fJetPartL->Pt() > 0){ // fill only when there is a leading jet
