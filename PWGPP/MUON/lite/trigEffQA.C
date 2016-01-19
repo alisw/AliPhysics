@@ -407,6 +407,7 @@ TH2* GetOutliers ( TH2* histo, Double_t nSigmas = 3. )
   outHisto->Reset();
   for ( Int_t ybin=1; ybin<=histo->GetYaxis()->GetNbins(); ybin++ ) {
     TH1* auxHisto = histo->ProjectionX("projectionOutlier",ybin,ybin);
+    if ( auxHisto->Integral() == 0. ) continue;
     auxHisto->Fit("pol0","Q0");
     Double_t mean = auxHisto->GetFunction("pol0")->GetParameter(0);
     for ( Int_t xbin=1; xbin<=auxHisto->GetXaxis()->GetNbins(); xbin++ ) {
