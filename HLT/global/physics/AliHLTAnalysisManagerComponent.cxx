@@ -525,7 +525,6 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 	if (pBlock)
 	{
 	    AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-	    AliFlatESDEvent* tmpCopy;
 	    if (tmpFlatEvent)
 	    {
 		AliFlatESDEvent* tmpCopy;
@@ -534,7 +533,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 			if (pBlock->fSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD");
-				tmpFlatEvent = NULL;
+				tmpCopy = NULL;
 			}
 			else
 			{
@@ -581,7 +580,6 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 	if (pBlock)
 	{
 	    AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-	    AliFlatESDFriend* tmpCopy;
 	    if (tmpFlatFriend)
 	    {
 		AliFlatESDFriend* tmpCopy;
@@ -590,7 +588,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 			if (pBlock->fSize + flatEsdSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD Friend");
-				tmpFlatFriend = NULL;
+				tmpCopy = NULL;
 			}
 			else
 			{
