@@ -163,7 +163,6 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   AliESDEvent      * fESD;                    //! ESD object
   TList            * fListHist;               //! list for histograms
   AliESDtrackCuts  * fESDtrackCuts;           // basic cut variables
-  AliESDpid        * fESDpid;                 // basic TPC object for n-sigma cuts
   AliESDv0Cuts     * fESDtrackCutsV0;         // basic cut variables for V0
   AliESDtrackCuts  * fESDtrackCutsCleanSamp;  // basic cut variables for clean pion and electron form V0s
   AliPIDCombined   * fPIDCombined;            //! combined PID object
