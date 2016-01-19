@@ -116,7 +116,7 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   
   if (minvAnalysis)
   {
-    minvAnalysis->DefineMinvRange(2,8,0.05);
+    minvAnalysis->DefineMinvRange(2,8,0.025);
     // Integrated
     binning->AddBin("psi","integrated");
     // pt binning for low pt exces
@@ -196,13 +196,13 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
   AliAnalysisDataContainer *coutputHC =
-  mgr->CreateContainer("OC",AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+  mgr->CreateContainer(Form("OC_%s",foldername),AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
   
   AliAnalysisDataContainer *coutputCC =
-  mgr->CreateContainer("CC",AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+  mgr->CreateContainer(Form("CC_%s",foldername),AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
   
   AliAnalysisDataContainer* cparam =
-  mgr->CreateContainer("BIN", AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,output.Data());
+  mgr->CreateContainer(Form("BIN_%s",foldername), AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,output.Data());
   
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
