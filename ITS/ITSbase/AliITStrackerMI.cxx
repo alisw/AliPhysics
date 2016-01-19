@@ -4074,7 +4074,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
       if (lbID[ilb] == tpcLabel) tpcLabID = ilb;
     }
     // if there is an equal choice, prefer ITS label consistent with TPC label
-    if (tpcLabel>0 && (tpcLabID!=maxLab) && lbStat[maxLab]==lbStat[tpcLabID]) maxLab=tpcLabID;
+    if (tpcLabID>=0 && (tpcLabID!=maxLab) && lbStat[maxLab]==lbStat[tpcLabID]) maxLab=tpcLabID;
 									       
     track->SetFakeRatio(1.-float(lbStat[maxLab])/nCl);
     track->SetLabel( lbStat[maxLab]>=nCl-wrong ? lbID[maxLab] : -lbID[maxLab]);
