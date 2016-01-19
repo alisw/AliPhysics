@@ -659,13 +659,16 @@ copyFileToLocal()
     rm -f "$dst"
 
     if [[ "$proto" == "$src" ]]; then
+      echo "==> cp $src $dst"
       cp "$src" "$dst"
     else
       case "$proto" in
         root)
+          echo "==> xrdcp -f $src $dst"
           xrdcp -f "$src" "$dst"
         ;;
         http)
+          echo "==> curl -L $src -O $dst"
           curl -L "$src" -O "$dst"
         ;;
         *)
