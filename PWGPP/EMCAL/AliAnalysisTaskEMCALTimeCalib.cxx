@@ -25,6 +25,7 @@
 #include <TCanvas.h>
 #include <TGeoManager.h>
 #include <TRefArray.h>
+#include <TKey.h>
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
@@ -93,7 +94,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fFineNbins(0),
   fFineTmin(0),
   fFineTmax(0),
-  fReferenceFile(0),
+  fL1PhaseList(0),
+//  fReferenceFile(0),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -166,6 +168,14 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   
 } // End ctor
 
+//________________________________________________________________________
+/// Destructor
+AliAnalysisTaskEMCALTimeCalib::~AliAnalysisTaskEMCALTimeCalib() {
+  fL1PhaseList->SetOwner();
+  fL1PhaseList->Delete();
+}
+
+
 //_____________________________________________________________________
 /// HKD Move from constructor
 /// Use aliTOFT0maker to get proper T0
@@ -210,42 +220,65 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
   }
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 
-/// Load reference Histograms (run-by-run in one period) from file
-/// This method should be called per run
+/// Load reference Histograms (run-by-run in one period) from file into memory
+/// This method should be called at the beginning of processing only once
 //_____________________________________________________________________
 void AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
 {
   // connect ref run here
-
   if(fReferenceRunByRunFileName.Length()!=0){
-    TFile *fReferenceFile = TFile::Open(fReferenceRunByRunFileName.Data());
-    AliInfo(Form("Reference R-b-R file: %s, pointer %p",fReferenceRunByRunFileName.Data(),fReferenceFile));
-    if(fReferenceFile==0x0) {
+    TFile *referenceFile = TFile::Open(fReferenceRunByRunFileName.Data());
+    if(referenceFile==0x0) {
       AliFatal("*** NO REFERENCE R-B-R FILE");
+      return;
     } else {
-      AliDebug(1,"*** OK TFILE");
-      
-      //AliInfo(Form("runnumber in LoadReferenceRunByRunHistos() %d, %d, InputEvent %p",fRunNumber,InputEvent()->GetRunNumber(),InputEvent()));
-      AliInfo(Form("fReferenceFile in LoadReferenceRunByRunHistos() %p",fReferenceFile));
-      //fReferenceFile->ls();
-      fhRefRuns=(TH1C*) fReferenceFile->Get(Form("h%d",fRunNumber));
-      //AliInfo(Form("Pointer to reference histogram %p",fhRefRuns));
-      if(fhRefRuns==0x0) {
-	fhRefRuns=(TH1C*) fReferenceFile->Get("h0");//Default values
-	AliError(Form("Reference histogram for run %d does not exist. Use Default",fRunNumber));
-	//AliFatal(Form("Reference histogram for run %d does not exist",fRunNumber));
+      AliInfo(Form("Reference R-b-R file: %s, pointer %p",fReferenceRunByRunFileName.Data(),referenceFile));
+
+      //load L1 phases to memory
+      fL1PhaseList=new TObjArray(referenceFile->GetNkeys());
+      TIter next(referenceFile->GetListOfKeys());
+      TKey *key;
+      while ((key=(TKey*)next())) {
+	fL1PhaseList->AddLast((TH1F*)referenceFile->Get(key->GetName()) );
+	//printf("key: %s points to an object of class: %s at %dn",key->GetName(),key->GetClassName(),key->GetSeekKey());
       }
-      if(fhRefRuns==0x0) AliFatal(Form("Default reference histogram does not exist. Run %d.",fRunNumber));
-      if(fhRefRuns->GetEntries()==0)AliWarning("fhRefRuns->GetEntries() = 0");
-      AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() ));
     }
-  } else { //end of reference file is provided                                                                    
+  } else { //reference file is not provided
     AliFatal("You require to load reference run-by-run histos from file but FILENAME is not provided");
+    return;
   }
-    
-
-
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
+
+/// Load reference histogram with L1 phases for given run
+/// This method should be called per run
+////_____________________________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::SetL1PhaseReferenceForGivenRun()
+{
+
+  fhRefRuns=NULL;
+  if(!fL1PhaseList) {
+    AliFatal("Array with reference L1 phase histograms do not exist in memory");
+    return;
+  }
+  if(fRunNumber<0) {
+    AliFatal("Negative run number");
+    return;
+  }
+
+  fhRefRuns=(TH1C*)fL1PhaseList->FindObject(Form("h%d",fRunNumber));
+  if(fhRefRuns==0x0){
+    AliError(Form("Reference histogram for run %d does not exist. Use Default",fRunNumber));
+    fhRefRuns=(TH1C*)fL1PhaseList->FindObject("h0");
+  }
+  if(fhRefRuns==0x0) {
+    AliFatal(Form("No default histogram with L1 phases! Add default histogram to file %s!!!",fReferenceRunByRunFileName.Data()));
+    return;
+  }
+
+  AliDebug(1,Form("Reference R-b-R histo %p, list %p, run number %d",fhRefRuns,fL1PhaseList,fRunNumber));
+  if(fhRefRuns->GetEntries()==0)AliWarning("fhRefRuns->GetEntries() = 0");
+  AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() )); 
+}
 
 //_____________________________________________________________________
 /// Connect ESD or AOD here
@@ -270,8 +303,9 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
 
+  //set L1 phases for current run
   if(fReferenceRunByRunFileName.Length()!=0)
-    LoadReferenceRunByRunHistos();
+    SetL1PhaseReferenceForGivenRun();
 
   return;
 }

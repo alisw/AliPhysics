@@ -62,14 +62,10 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
   gSystem->AddIncludePath("-I$ALICE_PHYSICS");
   gSystem->AddIncludePath("-I./");     
 
-
   //ANALYSIS PART
-  //  const char *collectionfile = "wn_1run.xml";
-  //  const char *collectionfile = "wn.xml";
   const char *collectionfile;
   if(isESD==kTRUE) collectionfile = "esd_156889.xml";
   else collectionfile= "aod_156889.xml";
-  //const char *collectionfile = "esd_156889.xml";
   TChain* chain = NULL;
   if(type==0){//local files
     if(isESD==kTRUE) {
@@ -136,6 +132,7 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
 
   // to load reference histograms run-by-run in pass2
   //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_v3.root");
+  //taskmbemcal->LoadReferenceRunByRunHistos();
   //taskmbemcal->SetMinTime(300);
   //taskmbemcal->SetMaxTime(900);
   //taskmbemcal->SetPassTimeHisto(1200,300.,900.);
