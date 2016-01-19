@@ -76,7 +76,7 @@ ClassImp(AliAnalysisTaskEbyeIterPID)
 // -----------------------------------------------------------------------
 //________________________________________________________________________
 AliAnalysisTaskEbyeIterPID::AliAnalysisTaskEbyeIterPID() 
-  : AliAnalysisTaskSE("TaskEbyeRatios"), fPIDResponse(0),fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
+  : AliAnalysisTaskSE("TaskEbyeRatios"), fPIDResponse(0),fESD(0), fListHist(0), fESDtrackCuts(0),
 fESDtrackCutsV0(0),
 fESDtrackCutsCleanSamp(0),
 fPIDCombined(0x0),
@@ -235,7 +235,7 @@ fHistArmPod(0)
 
 //________________________________________________________________________
 AliAnalysisTaskEbyeIterPID::AliAnalysisTaskEbyeIterPID(const char *name) 
-  : AliAnalysisTaskSE(name), fPIDResponse(0), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
+  : AliAnalysisTaskSE(name), fPIDResponse(0), fESD(0), fListHist(0), fESDtrackCuts(0),
 fESDtrackCutsV0(0),
 fESDtrackCutsCleanSamp(0),
 fPIDCombined(0x0),
@@ -530,12 +530,6 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   fESDtrackCutsV0   ->SetMaxDcaV0Daughters(1.0);
   // ------------------------------------------------
   //
-  // ------------  setup PIDCombined  ---------------  
-  fPIDCombined=new AliPIDCombined;
-  fPIDCombined->SetDefaultTPCPriors();
-  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-  // ------------------------------------------------
-  //
   cout << " ===================================================== " << endl;
   cout << " =============== Summary of Track Cuts =============== " << endl;
   cout << " ===================================================== " << endl;
@@ -550,6 +544,11 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   // Create output histograms, trees of the analysis (called once)
   //
   cout << " ===== In the UserCreateOutputObjects ===== " << endl;
+  // ------------  setup PIDCombined  ---------------  
+  fPIDCombined=new AliPIDCombined;
+  fPIDCombined->SetDefaultTPCPriors();
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+ 
   // **********************   Input handler to get the PID object *********************
   if (!fRunFastSimulation) {
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
@@ -558,7 +557,6 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
       AliFatal("Input handler needed");
     else {
       fPIDResponse = inputHandler->GetPIDResponse();       // PID response object
-      //     if (!fPIDResponse) AliFatal("PIDResponse object was not created");
       if (!fPIDResponse) cout << " ======= PIDResponse object was not created ====== " << endl;
     }
   }
@@ -785,18 +783,19 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   // corresponding centrality:  0     5    10    20    30     40     50    60      70    80
   AliMCEvent *mcEvent = 0x0;
   if (eventHandler) mcEvent = eventHandler->MCEvent();
-  if(fRunFastSimulation){
-    //
-    // ========================== MC =========================
-    //
-    // Get impact parameter for the centrality information
-    //
+  // Get impact parameter for the centrality information
+  if (mcEvent){
     AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
     if(!genHeader){ 
       printf("  Event generator header not available!!!\n"); 
       return; 
     }
     fMCImpactParameter = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
+  }
+  
+  if(fRunFastSimulation){
+    //
+    // ========================== MC =========================
     //
     // impact parameters to use: 0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.5
     // corresponding centrality:  0     5    10    20    30     40     50    60      70    80
@@ -920,7 +919,6 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     
   // -------------------------------------------------------------- 
   // Get the event
-  if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
   AliVEvent *event=InputEvent();
   // -------------------------------------------------------------- 
   //
@@ -1054,31 +1052,32 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     //
     // -------------------------------------------------------------- 
     // Get the bayesian probabilities from combined PID
-    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-    UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
-    Double_t wel = probTPC[AliPID::kElectron];
-    Double_t wpi = probTPC[AliPID::kPion];
-    Double_t wka = probTPC[AliPID::kKaon];
-    Double_t wpr = probTPC[AliPID::kProton];
-    if (detUsed != 0 && fFillBayes) {  // TPC is available --> Fill the tree with bayesian probabilities
-      if(!fTreeSRedirector) return;
-      (*fTreeSRedirector)<<"bayes"<<
-      "dEdx="    << fTPCSignal  <<         //  dEdx of the track
-      "phi="     << fPhi        <<         //  phi
-      "Y="       << fY          <<         //  rapidity
-      "eta="     << fEta        <<         //  eta
-      "cent="    << fCentrality <<         //  eta
-      "sign="    << fSign       <<         //  charge
-      "p="       << fptot       <<         //  x momentum
-      "px="      << fPx         <<         //  x momentum
-      "py="      << fPy         <<         //  y momentum
-      "pz="      << fPz         <<         //  z momentum
-      "wel="     << wel <<    
-      "wpi="     << wpi <<    
-      "wka="     << wka <<    
-      "wpr="     << wpr <<    
-      "\n";
-    }  
+    if (fFillBayes){
+      UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+      Double_t wel = probTPC[AliPID::kElectron];
+      Double_t wpi = probTPC[AliPID::kPion];
+      Double_t wka = probTPC[AliPID::kKaon];
+      Double_t wpr = probTPC[AliPID::kProton];
+      if (detUsed != 0) {  // TPC is available --> Fill the tree with bayesian probabilities
+	if(!fTreeSRedirector) return;
+	(*fTreeSRedirector)<<"bayes"<<
+	"dEdx="    << fTPCSignal  <<         //  dEdx of the track
+	"phi="     << fPhi        <<         //  phi
+	"Y="       << fY          <<         //  rapidity
+	"eta="     << fEta        <<         //  eta
+	"cent="    << fCentrality <<         //  eta
+	"sign="    << fSign       <<         //  charge
+	"p="       << fptot       <<         //  x momentum
+	"px="      << fPx         <<         //  x momentum
+	"py="      << fPy         <<         //  y momentum
+	"pz="      << fPz         <<         //  z momentum
+	"wel="     << wel <<    
+	"wpi="     << wpi <<    
+	"wka="     << wka <<    
+	"wpr="     << wpr <<    
+	"\n";
+      } 
+    }
     // -------------------------------------------------------------- 
     //
     // --------------------------------------------------------------
@@ -1089,14 +1088,14 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     //
     // -------------------------------------------------------------- 
     // Get the PID splines
-    fNSigmasElTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron);
-    fNSigmasPiTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kPion);
-    fNSigmasKaTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon);
-    fNSigmasPrTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kProton);
-    fNSigmasDeTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-    Float_t nSigmasKaTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon,     fPIDResponse->GetTOFResponse().GetTimeZero());
-    Float_t nSigmasDeTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron, fPIDResponse->GetTOFResponse().GetTimeZero());
-    Float_t nSigmasPiTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion,     fPIDResponse->GetTOFResponse().GetTimeZero());
+    fNSigmasElTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+    fNSigmasPiTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+    fNSigmasKaTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+    fNSigmasPrTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    fNSigmasDeTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+    Float_t nSigmasKaTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+    Float_t nSigmasDeTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron);
+    Float_t nSigmasPiTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
      
     // Electron Expected mean and sigma within 3nsigmaTPC
     if (TMath::Abs(fNSigmasElTPC)<2) {
@@ -1157,7 +1156,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
       Double_t TOFSignalDz  = track->GetTOFsignalDz();
       if (TOFSignalDz<1.2 && TOFSignalDx<1.2 && nclsTRD>80) {
         Double_t weightCleanKa[5] = {Double_t(fSign),fCentrality,fEta,fptot, fTPCSignal};
-        fhnCleanKa->Fill(weightCleanKa); 
+        if (!fMCtrue) fhnCleanKa->Fill(weightCleanKa); 
       } 
     } 
     // -------------------------------------------------------------- 
@@ -1165,7 +1164,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     // Fill clean Deuterons
     if ((TMath::Abs(nSigmasDeTOF)<=3) && TMath::Abs(fNSigmasDeTPC)<3 && (!fMCtrue)) {
       Double_t weightCleanDe[5] = {Double_t(fSign),fCentrality,fEta,fptot, fTPCSignal};
-      fhnCleanDe->Fill(weightCleanDe); 
+      if (!fMCtrue) fhnCleanDe->Fill(weightCleanDe); 
     } 
     // -------------------------------------------------------------- 
     //
@@ -1179,7 +1178,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxCheck()
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
   cout << " ===== In the FillTPCdEdxCheck ===== " << endl;
-  if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
+  if (!fPIDResponse) fPIDResponse = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
   AliVEvent *event=InputEvent();
   //    
   // Main track loop
@@ -1719,9 +1718,8 @@ void AliAnalysisTaskEbyeIterPID::FillCleanElectrons()
 
 // Fill Clean Electrons from conversion
   cout << " ===== In the FillCleanElectrons ===== " << endl;
-  if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
-  if (!fESDpid) {
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
+  if (fPIDResponse) {
+    fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
 
   TObjArray* listCrossV0 = fESDtrackCutsV0->GetAcceptedV0s(fESD);  
@@ -1824,7 +1822,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanElectrons()
       
        // Fill the THnSparseF for the inclusive dEdx spectrum
       Double_t weightCleanEl[5]    = {elSign,fCentrality,elEta,elptot, elTPCSignal};
-      fhnCleanEl->Fill(weightCleanEl); 
+      if (!fMCtrue) fhnCleanEl->Fill(weightCleanEl); 
     } 
   } // end of V0 loop
 }
@@ -1834,9 +1832,8 @@ void AliAnalysisTaskEbyeIterPID::FillCleanPions()
 
   // Fill Clean Pions from K0s
   cout << " ===== In the FillCleanPions ===== " << endl;
-  if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
-  if (!fESDpid) {
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
+  if (fPIDResponse) {
+    fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
 
   TObjArray* listCrossV0   = fESDtrackCutsV0->GetAcceptedV0s(fESD);  
