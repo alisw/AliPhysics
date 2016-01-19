@@ -18,7 +18,7 @@
 #include <TPaveStats.h>
 #endif
 
-enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi};
+enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
 enum EFidY{kFixedY,kPtDepY};
 enum EPtShape{kFlat,kFONLL7TeV,kPythia7TeV,kFONLL5TeV};
 
@@ -92,6 +92,12 @@ void ComputeAcceptance(){
     nKaonDau=1;
     nProtonDau=1;
     outFileName.Append("LcpKpi_");
+  }else if(fDDecay==kLcK0Sp){
+    pdgCode=4122;
+    nPionDau=2;
+    nKaonDau=0;
+    nProtonDau=1;
+    outFileName.Append("LcK0Sp_");
   }else{
     printf("ERROR: Wrong decay selected\n");
     return;
@@ -152,6 +158,7 @@ void ComputeAcceptance(){
     TParticle* dmes=(TParticle*)array->At(0);
     Int_t nDaughters=dmes->GetNDaughters();
     if(fDDecay==kD0Kpi && nDaughters!=2) return;
+    if(fDDecay==kLcK0Sp && nentries>6) continue;
     Int_t nPionsInAcc=0;
     Int_t nProtonsInAcc=0;
     Int_t nKaonsInAcc=0;
@@ -260,6 +267,10 @@ Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaon
     TParticle * o = (TParticle*)array->At(j);
     Int_t pdgdau=TMath::Abs(o->GetPdgCode());
     if(fDebugLevel>0) printf("%d ",pdgdau);
+    if(pdgdau==130) {
+      if(fDebugLevel>0) printf("K0 dacaying into K0L\n");
+      return kFALSE;
+    }
     Float_t ptdau=TMath::Sqrt(o->Px()*o->Px()+o->Py()*o->Py());      
     Float_t etadau=o->Eta();
     if(pdgdau==211){ 
@@ -303,6 +314,10 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
     TParticle * o = (TParticle*)array->At(j);
     Int_t pdgdau=TMath::Abs(o->GetPdgCode());
     if(fDebugLevel>0) printf("%d ",pdgdau);
+    if(pdgdau==130) {
+      if(fDebugLevel>0) printf("K0 dacaying into K0L\n");
+      return kFALSE;
+    }
     Float_t ptdau=TMath::Sqrt(o->Px()*o->Px()+o->Py()*o->Py());      
     Float_t etadau=o->Eta();
     if(pdgdau==211){ 
