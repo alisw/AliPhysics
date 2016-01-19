@@ -95,6 +95,7 @@ fhEventCounter(0),
 fhTriggerCounter(0),
 fhTriggerMaskCounter(0),
 fhTriggerBitCounter(0),
+fClustersEnergydistribution(0),
 fEventsThreshold(0),
 fSparseRecoJets(0),
 fhSparseFilterMask(0),
@@ -154,6 +155,7 @@ fhEventCounter(0),
 fhTriggerCounter(0),
 fhTriggerMaskCounter(0),
 fhTriggerBitCounter(0),
+fClustersEnergydistribution(0),
 fEventsThreshold(0),
 fSparseRecoJets(0),
 fhSparseFilterMask(0),
@@ -196,6 +198,7 @@ AliAnalysisTaskEmcalHFCJQA::~AliAnalysisTaskEmcalHFCJQA()
   if(fhTriggerMaskCounter)			delete fhTriggerMaskCounter;
   if(fhTriggerBitCounter)			delete fhTriggerBitCounter;
   if(fhTriggerCounter)				delete fhTriggerCounter;
+  if(fClustersEnergydistribution)   delete fClustersEnergydistribution;
   if(fEventsThreshold)				delete fEventsThreshold;
   if(fSparseRecoJets)				delete fSparseRecoJets;
   if(fhSparseFilterMask)			delete fhSparseFilterMask;
@@ -215,6 +218,7 @@ AliAnalysisTaskEmcalHFCJQA::~AliAnalysisTaskEmcalHFCJQA()
   if(fhTrackEMCal)					delete fhTrackEMCal;
   if(fhptSpectrum)					delete fhptSpectrum;
   if(fhptSpectrumPico)              delete fhptSpectrumPico;
+
 }
 
 //________________________________________________________________________
@@ -299,7 +303,24 @@ fOutput->Add(fhEventCounter);
     fhTriggerBitCounter->GetXaxis()->SetBinLabel(12,"EGA2EJE2");
     
     fOutput->Add(fhTriggerBitCounter);
+
+    //  ########### DEFINE THE TRIGGER MASK ENERGY DISTRIBUTION ############    
+    fClustersEnergydistribution = new TH2F("fClustersEnergydistribution","Counter of Trigger Masks Energy Distributions; Bit; Energy",10,-0.5,9.5,300,0,150);
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(1,"ALL");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(2,"L0");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(3,"EGA1");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(4,"EGA2");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(5,"EJE1");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(6,"EJE2");
     
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(7,"EGA12");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(8,"EJE12");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(9,"EGA1EJE1");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(10,"EGA1EJE2");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(11,"EGA2EJE1");
+    fClustersEnergydistribution->GetXaxis()->SetBinLabel(12,"EGA2EJE2");
+
+    fOutput->Add(fClustersEnergydistribution);
 //======================================================================
 
 
@@ -317,9 +338,9 @@ fOutput->Add(fEventsThreshold);
 //======================================================================
 
 
-Int_t nbinsRecoJets[8]			= { 50, 20,     20,   20,   5,   5,10, 60};
-Double_t binlowRecoJets[8]		= { 5.,-1.,-1.0*pi, 0.99,  0.,-0.5, 0, 0.};
-Double_t binupRecoJets[8]		= {55., 1., 1.0*pi,20.99,4.99, 4.5,2.,60.};
+Int_t nbinsRecoJets[8]			= { 50, 20,20,   20,   5,   5,10, 60};
+Double_t binlowRecoJets[8]		= { 5.,-1.,pi, 0.99,  0.,-0.5, 0, 0.};
+Double_t binupRecoJets[8]		= {55., 1.,pi,20.99,4.99, 4.5,2.,60.};
 fSparseRecoJets = new THnSparseF("fSparseRecoJets","fSparseRecoJets;jetpt;eta;phi;ntrks;nEle;parton;partContr;ptPart;",8,nbinsRecoJets,binlowRecoJets,binupRecoJets);
 fOutput->Add(fSparseRecoJets);
 
@@ -686,10 +707,10 @@ PrintDebug(9,"Tracks Container");
    int NTracks = fTracksCont->GetNAcceptedParticles();
    for(int itr = 0; itr < NTracks; itr++)
      {
-       AliPicoTrack *picoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetAcceptParticle(itr));
-       if(!picoTrack) continue;
+       AliPicoTrack *PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetAcceptParticle(itr));
+       if(!PicoTrack) continue;
        
-       AliVTrack* track = picoTrack->GetTrack();      
+       AliVTrack* track = PicoTrack->GetTrack();      
        if(!track)
 	 {
 	   printf("ERROR: Could not receive track %d\n", itr);
@@ -1119,7 +1140,7 @@ void AliAnalysisTaskEmcalHFCJQA::TriggersMaskHistogram(int kMask)
 //======================================================================
 
 //======================================================================
-void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool readMC)
+void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool ReadMC)
 {
     fhTriggerBitCounter->Fill(0);
     AliVCaloTrigger& trg = *(aod->GetCaloTrigger("EMCAL"));
@@ -1144,7 +1165,7 @@ void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool rea
             Int_t bit = 0;
             
             trg.GetTriggerBits(bit);
-            if(readMC)
+            if(ReadMC)
             {
                 if ((bit >> 1) & 0x1) EGA1 = kTRUE;
                 if ((bit >> 2) & 0x1) EGA2 = kTRUE;
@@ -1178,6 +1199,10 @@ void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool rea
     if(EGA2 && EJE1) fhTriggerBitCounter->Fill(10);
     if(EGA2 && EJE2) fhTriggerBitCounter->Fill(11);
     
+    //Fill the Energy Distribution
+    ClustersEnergyDistribution(isL0,EGA1,EGA2,EJE1,EJE2);
+    
+    
 }
 //======================================================================
 
@@ -1186,7 +1211,7 @@ void AliAnalysisTaskEmcalHFCJQA::TriggersBitHistogram(AliAODEvent* aod, bool rea
 void AliAnalysisTaskEmcalHFCJQA::EnergyTriggers()
 {
     //Energy thresholds to be tested
-    double threshold[6] = {2,4,5,6,8,10};//2, 4,5,6,8,10
+    double Threshold[6] = {2,4,5,6,8,10};//2, 4,5,6,8,10
     bool kOne = kFALSE;
     bool kTwo = kFALSE;
     bool kThree = kFALSE;
@@ -1199,13 +1224,13 @@ for(int itr = 0; itr < fCaloClustersCont->GetNAcceptedClusters(); itr++)
     AliVCluster *cluster = fCaloClustersCont->GetAcceptCluster(itr);
     if(! cluster) continue;
     if(! cluster->IsEMCAL()) continue;
-    double energy = cluster->E();
-    if(energy > threshold[0]) kOne = kTRUE;
-    if(energy > threshold[1]) kTwo = kTRUE;
-    if(energy > threshold[2]) kThree = kTRUE;
-    if(energy > threshold[3]) kFour = kTRUE;
-    if(energy > threshold[4]) kFive = kTRUE;
-    if(energy > threshold[5]) kSix = kTRUE;
+    double E = cluster->E();
+    if(E > Threshold[0]) kOne = kTRUE;
+    if(E > Threshold[1]) kTwo = kTRUE;
+    if(E > Threshold[2]) kThree = kTRUE;
+    if(E > Threshold[3]) kFour = kTRUE;
+    if(E > Threshold[4]) kFive = kTRUE;
+    if(E > Threshold[5]) kSix = kTRUE;
 }
 fEventsThreshold->Fill(0);
 if(kOne)fEventsThreshold->Fill(1);
@@ -1214,5 +1239,36 @@ if(kThree)fEventsThreshold->Fill(3);
 if(kFour)fEventsThreshold->Fill(4);
 if(kFive)fEventsThreshold->Fill(5);
 if(kSix)fEventsThreshold->Fill(6);
+}
+//======================================================================
+//======================================================================
+//Testing the Clusters Energy Trigger per Event
+void AliAnalysisTaskEmcalHFCJQA::ClustersEnergyDistribution(bool isL0, bool EGA1,bool EGA2,bool EJE1,bool EJE2)
+{
+    for(int itr = 0; itr < fCaloClustersCont->GetNAcceptedClusters(); itr++)
+    {
+        AliVCluster *cluster = fCaloClustersCont->GetAcceptCluster(itr);
+        if(! cluster) continue;
+        if(! cluster->IsEMCAL()) continue;
+        double E = cluster->E();
+
+        fClustersEnergydistribution->Fill(0.0,E);
+        
+        if(isL0) fClustersEnergydistribution->Fill(1.,E);
+        
+        if(EGA1) fClustersEnergydistribution->Fill(2.,E);
+        if(EGA2) fClustersEnergydistribution->Fill(3.,E);
+        if(EJE1) fClustersEnergydistribution->Fill(4.,E);
+        if(EJE2) fClustersEnergydistribution->Fill(5.,E);
+        
+        if(EGA1 && EGA2) fClustersEnergydistribution->Fill(6.,E);
+        if(EJE1 && EJE2) fClustersEnergydistribution->Fill(7.,E);
+        
+        if(EGA1 && EJE1) fClustersEnergydistribution->Fill(8.,E);
+        if(EGA1 && EJE2) fClustersEnergydistribution->Fill(9.,E);
+        if(EGA2 && EJE1) fClustersEnergydistribution->Fill(10.,E);
+        if(EGA2 && EJE2) fClustersEnergydistribution->Fill(11.,E);
+    }
+
 }
 //======================================================================

@@ -57,6 +57,7 @@ void TriggersHistogram(TString TriggerClass);
 void TriggersMaskHistogram(int kMask);
 void TriggersBitHistogram(AliAODEvent* aod, bool ReadMC);
 void EnergyTriggers();
+void ClustersEnergyDistribution(bool isL0, bool EGA1,bool EGA2,bool EJE1,bool EJE2);
 //============================================================================================================ 
 //Containers
 //TList						 *fOutput; 			         //! output list
@@ -69,6 +70,7 @@ AliClusterContainer        *fCaloClustersCont;        //!Clusters
 //Flags
 Int_t 			fReadMC;                     // 0=no read mc, 1=is MC but analysis is data-like, 2=MC based analysis 
 int				fDebug;
+
 //============================================================================================================ 
 
 //============================================================================================================ 
@@ -86,6 +88,7 @@ TH1F* 			fhEventCounter;
 TH1F* 			fhTriggerCounter;
 TH1F* 			fhTriggerMaskCounter;
 TH1F* 			fhTriggerBitCounter;
+TH2F*           fClustersEnergydistribution;
 TH1F* 			fEventsThreshold;
 THnSparseF*		fSparseRecoJets;
 THnSparseF *fhSparseFilterMask;          			//! sparse histo with track information
@@ -112,6 +115,6 @@ THnSparseF *fhTrackEMCal;              //! sparse with EMCal cluster properties 
 AliAnalysisTaskEmcalHFCJQA(const AliAnalysisTaskEmcalHFCJQA&);				// copy constructo not implemented yet
 AliAnalysisTaskEmcalHFCJQA& operator=(const AliAnalysisTaskEmcalHFCJQA&); 	// assignment operator not implemented yet
 
-ClassDef(AliAnalysisTaskEmcalHFCJQA, 2) // jet sample analysis task
+ClassDef(AliAnalysisTaskEmcalHFCJQA, 3) // jet sample analysis task
 };
 #endif
