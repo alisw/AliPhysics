@@ -1247,7 +1247,7 @@ goGenerateMakeflow()
       arr_cpass0_outputs[${jobindex}]="cpass0.job${jobindex}.run${runNumber}.done"
       echo "### CPass0 ###"
       echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ${configFile} ${copyFiles[@]}"
-      echo "    ${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
+      echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
 
       #CPass1
@@ -1255,7 +1255,7 @@ goGenerateMakeflow()
       arr_cpass1_outputs[${jobindex}]="cpass1.job${jobindex}.run${runNumber}.done"
       echo "### CPass1 ###"
       echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${configFile} cpass0.localOCDB.${runNumber}.tgz.done ${copyFiles[@]}"
-      echo "    ${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
+      echo -e "\t${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
       ((jobindex++))
 
@@ -1266,7 +1266,7 @@ goGenerateMakeflow()
     arr_cpass0_calib_list[${runNumber}]="cpass0.calib.run${runNumber}.list"
     echo "### Produces the list of CPass0 files to merge (executes locally) ###"
     echo "${arr_cpass0_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass0_outputs[*]}"
-    echo "    LOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass0_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass0_calib_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass0_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass0_calib_list[${runNumber}]}"
     echo ; echo
 
     #CPass0 merging
@@ -1274,7 +1274,7 @@ goGenerateMakeflow()
     #arr_cpass0_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
     arr_cpass0_merged[${runNumber}]="merge.cpass0.run${runNumber}.done"
     echo "cpass0.localOCDB.${runNumber}.tgz.done ${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${copyFiles[@]}"
-    echo "    ${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
     #CPass1 list of Calib/QA/ESD/filtered files
@@ -1285,28 +1285,28 @@ goGenerateMakeflow()
     arr_cpass1_QA_list[${runNumber}]="cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     echo "### Lists CPass1 QA ###"
     echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo "    LOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_QA_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_QA_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_QA_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_QA_list[${runNumber}]}"
     echo ; echo
 
     #arr_cpass1_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list"
     arr_cpass1_calib_list[${runNumber}]="cpass1.calib.run${runNumber}.list"
     echo "### Lists CPass1 Calib ###"
     echo "${arr_cpass1_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo "    LOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_calib_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_calib_list[${runNumber}]}"
     echo ; echo
 
     #arr_cpass1_ESD_list[${runNumber}]="${commonOutputPath}/meta/cpass1.ESD.run${runNumber}.list"
     arr_cpass1_ESD_list[${runNumber}]="cpass1.ESD.run${runNumber}.list"
     echo "### Lists CPass1 ESDs ###"
     echo "${arr_cpass1_ESD_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo "    LOCAL ./benchmark.sh PrintValues esd ${arr_cpass1_ESD_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_ESD_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_ESD_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues esd ${arr_cpass1_ESD_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_ESD_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_ESD_list[${runNumber}]}"
     echo ; echo
 
     #arr_cpass1_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list"
     arr_cpass1_filtered_list[${runNumber}]="cpass1.filtered.run${runNumber}.list"
     echo "### Lists CPass1 filtered ###"
     echo "${arr_cpass1_filtered_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo "    LOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_filtered_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_filtered_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_filtered_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_filtered_list[${runNumber}]}"
     echo ; echo
   
     #CPass1 merging
@@ -1314,7 +1314,7 @@ goGenerateMakeflow()
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
     echo "cpass1.localOCDB.${runNumber}.tgz.done ${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${copyFiles[@]}"
-    echo "    ${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"" "
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
     #CPass0 wrapped in a profiling tool (valgrind,....)
@@ -1329,7 +1329,7 @@ goGenerateMakeflow()
       echo "### CPass0 in a profiler ###"
       echo "${arr_cpass0_profiled_outputs[${runNumber}]}: benchmark.sh ${configFile} ${copyFiles[@]}"
       profilingCommand=$(encSpaces "${profilingCommand}")
-      echo "    ${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/${jobindex} ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]} useProfilingCommand=${profilingCommand}"
+      echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/${jobindex} ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]} useProfilingCommand=${profilingCommand}"
       echo ; echo
     fi
 
@@ -1338,7 +1338,7 @@ goGenerateMakeflow()
   #Summary
   echo "### Summary ###"
   echo "summary.log: benchmark.sh ${configFile} ${arr_cpass1_merged[*]}"
-  echo "     ${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
+  echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo ; echo
 
   return 0
