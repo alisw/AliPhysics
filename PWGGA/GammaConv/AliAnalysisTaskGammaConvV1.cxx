@@ -691,7 +691,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     if(fDoCentralityFlat > 0) 
       hNEvents[iCut]            = new TH1F("NEventsUnweighted","NEventsUnweighted",12,-0.5,11.5);
     else 
-      hNEvents[iCut]            = new TH1F("NEvents","NEvents",11,-0.5,10.5);
+      hNEvents[iCut]            = new TH1F("NEvents","NEvents",12,-0.5,11.5);
     hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
