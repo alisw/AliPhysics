@@ -196,13 +196,13 @@ AliAnalysisTask* AddTaskMuMuMinvBA(const char* outputname,
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
   AliAnalysisDataContainer *coutputHC =
-  mgr->CreateContainer(Form("OC_%s",foldername),AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+  mgr->CreateContainer(Form("OC_%s",outputname),AliMergeableCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
   
   AliAnalysisDataContainer *coutputCC =
-  mgr->CreateContainer(Form("CC_%s",foldername),AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
+  mgr->CreateContainer(Form("CC_%s",outputname),AliCounterCollection::Class(),AliAnalysisManager::kOutputContainer,output.Data());
   
   AliAnalysisDataContainer* cparam =
-  mgr->CreateContainer(Form("BIN_%s",foldername), AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,output.Data());
+  mgr->CreateContainer(Form("BIN_%s",outputname), AliAnalysisMuMuBinning::Class(),AliAnalysisManager::kParamContainer,output.Data());
   
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
