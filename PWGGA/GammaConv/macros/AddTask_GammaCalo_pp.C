@@ -1,19 +1,19 @@
-void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,                  // change different set of cuts
-                            Int_t     isMC                          = 0,                // run MC
-                            Int_t     enableQAMesonTask             = 0,                 // enable QA in AliAnalysisTaskGammaCalo
-                            Int_t     enableQAClusterTask           = 0,                 // enable additional QA task
-                            TString   fileNameInputForPartWeighting = "MCSpectraInput.root",       // path to file for weigting input
+void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,                            // change different set of cuts
+                            Int_t     isMC                          = 0,                            // run MC
+                            Int_t     enableQAMesonTask             = 0,                            // enable QA in AliAnalysisTaskGammaCalo
+                            Int_t     enableQAClusterTask           = 0,                            // enable additional QA task
+                            TString   fileNameInputForPartWeighting = "MCSpectraInput.root",        // path to file for weigting input
                             TString   cutnumberAODBranch            = "000000006008400001001500000",
-                            TString   periodname                    = "LHC12f1x",             // period name
-                            Bool_t    doParticleWeighting           = kFALSE,              // enables weighting
-                            Bool_t    isUsingTHnSparse              = kTRUE,              // enable or disable usage of THnSparses for background estimation
-                            Int_t     enableExtMatchAndQA           = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                            Bool_t    enableTriggerMimicking        = kFALSE,              // enable trigger mimicking
-                            Bool_t    enableTriggerOverlapRej       = kFALSE,              // enable trigger overlap rejection
-                            Float_t   maxFacPtHard                  = 3.,                // maximum factor between hardest jet and ptHard generated
+                            TString   periodname                    = "LHC12f1x",                   // period name
+                            Bool_t    doParticleWeighting           = kFALSE,                       // enables weighting
+                            Bool_t    isUsingTHnSparse              = kTRUE,                        // enable or disable usage of THnSparses for background estimation
+                            Int_t     enableExtMatchAndQA           = 0,                            // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                            Bool_t    enableTriggerMimicking        = kFALSE,                       // enable trigger mimicking
+                            Bool_t    enableTriggerOverlapRej       = kFALSE,                       // enable trigger overlap rejection
+                            Float_t   maxFacPtHard                  = 3.,                           // maximum factor between hardest jet and ptHard generated
                             TString   periodNameV0Reader            = "",
-                            Bool_t    doMultiplicityWeighting       = kFALSE,                  //
-                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",    //
+                            Bool_t    doMultiplicityWeighting       = kFALSE,                       //
+                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",          //  
                             TString   periodNameAnchor              = ""
                             
 ) {
@@ -109,7 +109,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
       trainConfig == 122  || trainConfig == 123 || trainConfig == 124 || trainConfig == 109)
       numberOfCuts = 3;
   if (trainConfig == 31   || trainConfig == 4   || trainConfig == 5   || trainConfig == 6   || trainConfig == 7   ||
-      trainConfig == 10   || trainConfig == 15  || trainConfig == 16  || trainConfig == 17  || trainConfig == 18  || trainConfig == 19  || trainConfig == 20  
+      trainConfig == 10   || trainConfig == 15  || trainConfig == 16  || trainConfig == 17  || trainConfig == 18  || trainConfig == 19  || trainConfig == 20  ||
       trainConfig == 42   || trainConfig == 43  ||
       trainConfig == 51   || trainConfig == 52  || trainConfig == 53  || trainConfig == 54  ||
       trainConfig == 55   || trainConfig == 56  || trainConfig == 57  || trainConfig == 58  || 
