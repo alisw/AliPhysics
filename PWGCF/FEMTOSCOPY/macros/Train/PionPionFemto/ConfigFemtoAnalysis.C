@@ -32,6 +32,7 @@ struct MacroParams {
   std::vector<unsigned char> pair_codes;
   bool do_qinv_cf;
   bool do_q3d_cf;
+  bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
   bool do_kt_q3d;
   bool do_kt_qinv;
@@ -61,6 +62,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   // default
   macro_config.do_qinv_cf = true;
   macro_config.do_q3d_cf = true;
+  macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
 
@@ -152,6 +154,18 @@ ConfigFemtoAnalysis(const TString& param_str = "")
         AliFemtoAvgSepCorrFctn *avgsep_cf = new AliFemtoAvgSepCorrFctn("avg_sep", 100, 0.0, 40.0);
         avgsep_cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
         analysis->AddCorrFctn(avgsep_cf);
+      }
+
+      if (macro_config.do_deltaeta_deltaphi_cf) {
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
+              // 100, 0.0, 1.6,
+              // 100, 0.0, 2.0
+              200, 0.0, 0.5,
+              200, 0.0, 0.5
+        );
+        deta_dphi_cf->SetMagneticFieldSign(1);
+
+        analysis->AddCorrFctn(deta_dphi_cf);
       }
 
       if (macro_config.do_qinv_cf) {

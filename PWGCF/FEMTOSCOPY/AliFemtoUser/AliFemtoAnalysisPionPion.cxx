@@ -14,7 +14,7 @@
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoEventCutCentrality.h"
 #include "AliFemtoPairCutAntiGamma.h"
-
+#include "AliFemtoPairCutDetaDphi.h"
 
 #include <TROOT.h>
 #include <TInterpreter.h>
@@ -87,6 +87,9 @@ const Bool_t  default_pair_TPCOnly = kTRUE
 const Float_t default_pair_TPCExitSepMin = -1.0
             , default_pair_MinAvgSeparationPos = 0.0
             , default_pair_MinAvgSeparationNeg = 0.0
+
+            , default_pair_delta_eta_min = 0.0
+            , default_pair_delta_phi_min = 0.0
 
             , default_pair_max_share_quality = 1.0
             , default_pair_max_share_fraction = 0.05
@@ -161,10 +164,9 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name):
 }
 
 
-AliFemtoAnalysisPionPion
-  ::AliFemtoAnalysisPionPion(const char *name,
-                             const PionType pion_1,
-                             const PionType pion_2):
+AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
+                                                   const PionType pion_1,
+                                                   const PionType pion_2):
   AliFemtoVertexMultAnalysis(VertexBinning.bin_count,
                              VertexBinning.min,
                              VertexBinning.max,
@@ -311,9 +313,13 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 
     // pair
   , default_pair_TPCOnly
-  , default_pair_TPCExitSepMin
-  , default_pair_MinAvgSeparationPos
-  , default_pair_MinAvgSeparationNeg
+
+  // , default_pair_TPCExitSepMin
+  // , default_pair_MinAvgSeparationPos
+  // , default_pair_MinAvgSeparationNeg
+
+  , default_pair_delta_eta_min
+  , default_pair_delta_phi_min
 
   , default_pair_max_share_quality
   , default_pair_max_share_fraction
@@ -325,7 +331,8 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   assert(params.pion_1_PtMin == default_pion_PtMin);
   assert(params.pion_2_PtMin == default_pion_PtMin);
   assert(params.pair_TPCOnly == default_pair_TPCOnly);
-  assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
+  // assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
+  assert(params.pair_delta_eta_min == default_pair_delta_eta_min);
   assert(params.pair_max_share_fraction == default_pair_max_share_fraction);
   assert(params.pair_remove_same_label == default_pair_remove_same_label);
 
@@ -447,19 +454,25 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
 }
 
 
-AliFemtoPairCutAntiGamma*
+
+AliFemtoPairCut*
 AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
 {
+  /*
   AliFemtoPairCutAntiGamma *cut = new AliFemtoPairCutAntiGamma();
-
-  cut->SetShareQualityMax(p.pair_max_share_quality);
-  cut->SetShareFractionMax(p.pair_max_share_fraction);
-  cut->SetRemoveSameLabel(p.pair_remove_same_label);
 
   // cut->SetTPCOnly(p.pair_TPCOnly);
   // cut->SetTPCExitSepMinimum(p.pair_TPCExitSepMin);
   // cut->SetMinAvgSeparation(0, p.pair_MinAvgSeparationPos);
   // cut->SetMinAvgSeparation(1, p.pair_MinAvgSeparationNeg);
+  */
+
+
+  AliFemtoPairCutDetaDphi *cut = new AliFemtoPairCutDetaDphi(p.pair_delta_eta_min, p.pair_delta_phi_min);
+
+  cut->SetShareQualityMax(p.pair_max_share_quality);
+  cut->SetShareFractionMax(p.pair_max_share_fraction);
+  cut->SetRemoveSameLabel(p.pair_remove_same_label);
 
   return cut;
 }

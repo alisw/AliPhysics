@@ -7,6 +7,8 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoAvgSepCalculator.h"
 
+#include "AliFemtoPairCutDetaDphi.h"
+
 #include "AliFemtoEvent.h"
 
 static const double PionMass = 0.13956995;
@@ -63,8 +65,10 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   _vertex_xy = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
-    48, 0.0f, 0.12f,
-    48, 0.22f, 0.32f
+    48, 0.05f, 0.08f,
+    48, 0.31f, 0.345f
+    // 48, 0.0f, 0.12f,
+    // 48, 0.22f, 0.32f
   );
   _vertex_xy->Sumw2();
 
@@ -177,6 +181,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fYPt(NULL)
   , fPtPhi(NULL)
   , fEtaPhi(NULL)
+  , fChiTpcIts(NULL)
   , fdEdX(NULL)
   , fMinv(NULL)
 {
@@ -217,6 +222,15 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     144, -TMath::Pi(), TMath::Pi(),
     144, -1.4, 1.4);
   fEtaPhi->Sumw2();
+
+  fChiTpcIts = new TH2F(
+    "ChiTpcIts" + pf,
+    TString::Format(title_format,
+                    "#chi^{2} / N_{cls} TPC vs ITS",
+                    "TPC; ITS;"),
+    144, 0.0, 0.1,
+    144, 0.0, 0.1);
+  fChiTpcIts->Sumw2();
 
   fdEdX = new TH2F(
     "dEdX" + pf,
@@ -261,6 +275,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fYPt);
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
+  output->Add(fChiTpcIts);
   output->Add(fdEdX);
   output->Add(fImpact);
   if (fMinv) {
@@ -281,6 +296,10 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
                   eta = 0.5 * ::log((energy + pz) / (energy - pz));
 
 
+  const Int_t ITS_ncls = track->ITSncls(),
+              TPC_ncls = track->TPCncls();
+
+
   if (fMinv) {
     fMinv->Fill(track->GetMass());
   }
@@ -289,6 +308,11 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fPtPhi->Fill(phi, pt);
   fEtaPhi->Fill(phi, eta);
   fdEdX->Fill(p, track->TPCsignal());
+
+  fChiTpcIts->Fill( (TPC_ncls > 0) ? track->TPCchi2() / TPC_ncls : 0.0,
+                    (ITS_ncls > 0) ? track->ITSchi2() / ITS_ncls : 0.0);
+
+
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }
 
@@ -299,6 +323,7 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
   AliFemtoCutMonitor()
   , fMinv(NULL)
   , fKt(NULL)
+  , fDetaDphi(NULL)
   , fMCTrue_minv(NULL)
   , fMCTrue_kstar(NULL)
 {
@@ -320,6 +345,16 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                     "k_{T} (GeV); N_{pairs}"),
     144, 0.0, 4.0);
   fKt->Sumw2();
+
+  fDetaDphi = new TH2F(
+    "DetaDphi" + pf,
+    TString::Format(title_format,
+                    "#Delta #eta* vs #Delta #phi*",
+                    "#Delta #eta*; #Delta #phi*"),
+    144, -0.002, 1.25,
+    144, -0.002, 1.25
+  );
+  fDetaDphi->Sumw2();
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(
@@ -352,6 +387,14 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
 
   fMinv->Fill(minv);
   fKt->Fill(pair->KT());
+
+  const AliFemtoThreeVector p1 = pair->Track1()->Track()->P(),
+                            p2 = pair->Track2()->Track()->P();
+
+  fDetaDphi->Fill(
+    fabs(AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2)),
+    fabs(AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, p2, 0.8))
+  );
 
   if (fMCTrue_minv) {
     const AliFemtoModelHiddenInfo *mc_1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
@@ -404,6 +447,7 @@ TList* AliFemtoCutMonitorPionPion::Pair::GetOutputList()
 
   output->Add(fMinv);
   output->Add(fKt);
+  output->Add(fDetaDphi);
 
   if (fMCTrue_kstar) {
     output->Add(fMCTrue_kstar);

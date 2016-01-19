@@ -9,6 +9,7 @@
 class AliFemtoBasicTrackCut;
 class AliFemtoPairCutAntiGamma;
 class AliFemtoBasicEventCut;
+class AliFemtoPairCutDetaDphi;
 
 class TList;
 
@@ -17,12 +18,12 @@ class TList;
 
 
 /// \class AliFemtoAnalysisPionPion
-/// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
-///
 /// \brief A simple analysis for studying femtoscopic systems of charged pions
 ///
 /// This class reduces boilerplate code required to cut on specific variations
 /// of pion-pion femtoscopy.
+///
+/// \author Andrew Kubera, Ohio State University <andrew.kubera@cern.ch>
 ///
 class AliFemtoAnalysisPionPion : public AliFemtoVertexMultAnalysis {
 public:
@@ -96,7 +97,7 @@ public:
   AliFemtoTrackCut* BuildPionCut1(const CutParams&) const;
   AliFemtoTrackCut* BuildPionCut2(const CutParams&) const;
   AliFemtoEventCut* BuildEventCut(const CutParams&) const;
-  AliFemtoPairCutAntiGamma* BuildPairCut(const CutParams&) const;
+  AliFemtoPairCut* BuildPairCut(const CutParams&) const;
 
   /**
    * For each cut already set (i.e. pointer is not NULL) this function
@@ -109,12 +110,12 @@ public:
   /**
    * Returns a TList of all objects
    */
-  virtual TList *GetOutputList();
+  virtual TList* GetOutputList();
 
   /**
    * Returns a TList of TObjStrings containing the settings of the analysis.
    */
-  virtual TList *ListSettings();
+  virtual TList* ListSettings();
 
 protected:
 
@@ -249,9 +250,13 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   // PAIR
   Bool_t pair_TPCOnly;
-  Float_t pair_TPCExitSepMin;
-  Float_t pair_MinAvgSeparationPos;
-  Float_t pair_MinAvgSeparationNeg;
+  // Float_t pair_TPCExitSepMin;
+  // Float_t pair_MinAvgSeparationPos;
+  // Float_t pair_MinAvgSeparationNeg;
+
+  Float_t pair_delta_eta_min,
+          pair_delta_phi_min;
+
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;

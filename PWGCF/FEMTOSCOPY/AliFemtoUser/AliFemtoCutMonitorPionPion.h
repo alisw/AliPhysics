@@ -112,6 +112,7 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
+    TH2F *fChiTpcIts;
     TH2F *fdEdX;
     TH2F *fImpact;
     TH1F *fMinv;
@@ -134,6 +135,7 @@ namespace AliFemtoCutMonitorPionPion {
 
     TH1F *fMinv;
     TH1F *fKt;
+    TH2F *fDetaDphi;
 
     TH2F *fMCTrue_minv;
     TH2F *fMCTrue_kstar;
