@@ -92,6 +92,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fRequestTPCSigmas(3),
   fRequestTOFPid(kFALSE),
   fRequestTOFSigmas(3),
+  fMinvSignal(kTRUE),
+  fMinvLikeSign(kFALSE),
   fSideBand(kFALSE),
   fDCAPiPVmin(0.1),
   fDCAzPPVmax(999.),
@@ -179,6 +181,10 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistMassAntiHypertriton_Cent(0x0),
   fHistMassHypertriton_SemiCent(0x0),
   fHistMassAntiHypertriton_SemiCent(0x0),
+  fHistMassHypertriton_LS_Cent(0x0),
+  fHistMassAntiHypertriton_LS_Cent(0x0),
+  fHistMassHypertriton_LS_SemiCent(0x0),
+  fHistMassAntiHypertriton_LS_SemiCent(0x0),
   fHistParticle(0x0),
   fHistpionTPCclsMCt(0x0),
   fHistpTpionMCt(0x0),
@@ -556,12 +562,20 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistPtDeuteron = new TH1F("fHistPtDeuteron","d p_{T}; p_{T} (GeV/c); entries",100.,0.,10.);
   fHistPtProton = new TH1F("fHistPtProton","p p_{T}; p_{T} (GeV/c); entries",100.,0.,10.);
   fHistPtHypertriton = new TH1F("fHistPtHypertriton","candidate Hypertriton - p_{T} distribution; p_{T} (GeV/c); entries",100.,0.,10.);
-  fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassHypertriton_Cent = new TH1F("fHistMassHypertriton_Cent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassAntiHypertriton_Cent = new TH1F("fHistMassAntiHypertriton_Cent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassHypertriton_SemiCent = new TH1F("fHistMassHypertriton_SemiCent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassAntiHypertriton_SemiCent = new TH1F("fHistMassAntiHypertriton_SemiCent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  if(fMinvSignal){
+      fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+      fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+      fHistMassHypertriton_Cent = new TH1F("fHistMassHypertriton_Cent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+      fHistMassAntiHypertriton_Cent = new TH1F("fHistMassAntiHypertriton_Cent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+      fHistMassHypertriton_SemiCent = new TH1F("fHistMassHypertriton_SemiCent","Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+      fHistMassAntiHypertriton_SemiCent = new TH1F("fHistMassAntiHypertriton_SemiCent", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 500, 2.9, 3.4);
+  }
+  if(fMinvLikeSign){
+      fHistMassHypertriton_LS_Cent = new TH1F("fHistMassHypertriton_LS_Cent","Invarian mass spectrum - Like Sign; inv mass d+p+#pi^{+} (GeV/c^{2});entries",500,2.9,3.4);
+      fHistMassAntiHypertriton_LS_Cent = new TH1F("fHistMassAntiHypertriton_LS_Cent","Invarian mass spectrum - Like Sign; inv mass #bar{d}+#bar{p}+#pi^{-} (GeV/c^{2});entries",500,2.9,3.4);
+      fHistMassHypertriton_LS_SemiCent = new TH1F("fHistMassHypertriton_LS_SemiCent","Invarian mass spectrum - Like Sign; inv mass d+p+#pi^{+} (GeV/c^{2});entries",500,2.9,3.4);
+      fHistMassAntiHypertriton_LS_SemiCent = new TH1F("fHistMassAntiHypertriton_LS_SemiCent","Invarian mass spectrum - Like Sign; inv mass #bar{d}+#bar{p}+#pi^{-} (GeV/c^{2});entries",500,2.9,3.4);
+  }
 
   if(fMC){
     fHistParticle = new TH1F("fHistParticle","Check particle candidate",23,-0.5,22.5);
@@ -689,13 +703,21 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistPtDeuteron);
   fOutput->Add(fHistPtProton);
   fOutput->Add(fHistPtHypertriton);
-  fOutput->Add(fHistMassHypertriton);
-  fOutput->Add(fHistMassAntiHypertriton);
-  fOutput->Add(fHistMassHypertriton_Cent);
-  fOutput->Add(fHistMassAntiHypertriton_Cent);
-  fOutput->Add(fHistMassHypertriton_SemiCent);
-  fOutput->Add(fHistMassAntiHypertriton_SemiCent);
-
+  if(fMinvSignal){
+      fOutput->Add(fHistMassHypertriton);
+      fOutput->Add(fHistMassAntiHypertriton);
+      fOutput->Add(fHistMassHypertriton_Cent);
+      fOutput->Add(fHistMassAntiHypertriton_Cent);
+      fOutput->Add(fHistMassHypertriton_SemiCent);
+      fOutput->Add(fHistMassAntiHypertriton_SemiCent);
+  }
+  if(fMinvLikeSign){
+      fOutput->Add(fHistMassHypertriton_LS_Cent);
+      fOutput->Add(fHistMassAntiHypertriton_LS_Cent);
+      fOutput->Add(fHistMassHypertriton_LS_SemiCent);
+      fOutput->Add(fHistMassAntiHypertriton_LS_SemiCent);
+  }
+    
   if(fMC){
     fOutput->Add(fHistParticle);
     fOutput->Add(fHistpionTPCclsMCt);
@@ -987,6 +1009,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     return; //0 bis 80 %
   }
 
+  Bool_t isCent = kFALSE;
+  Bool_t isSemiCent = kFALSE;
+  
+  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) isCent = kTRUE;
+  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) isSemiCent = kTRUE;
+    
   fHistCount->Fill(2); // number of reco events passing Centrality Selection
   
   //==========Multiplicity==========
@@ -1219,7 +1247,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	
 	charge_pi = trackNPi->GetSign();
 
-	if((charge_p*charge_pi)>0) continue;
+    if(fMinvSignal && (charge_p*charge_pi)>0) continue;
+    if(fMinvLikeSign && (charge_p*charge_pi)<0) continue;
 	
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
 
@@ -1303,6 +1332,10 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
 	
 	Hypertriton=posD+posP+negPi;
+    
+    fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
+    if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
+
 	
 	pTotHyper = Hypertriton.P();
 	if(Hypertriton.Pt() < fMinPtMother || Hypertriton.Pt() > fMaxPtMother) continue;
@@ -1320,9 +1353,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
 	pointingAngleH = Hypertriton.Angle(h1);
-
-	fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
-	if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 
 	
 	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
@@ -1349,18 +1379,30 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     fHistPtDeuteron->Fill(trackD->Pt());
     fHistPtPion->Fill(trackNPi->Pt());
 	
-	if(charge_d>0 && charge_p>0 && charge_pi<0)	{
-	  fHistMassHypertriton->Fill(Hypertriton.M());
-	  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) fHistMassHypertriton_Cent->Fill(Hypertriton.M());
-	  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) fHistMassHypertriton_SemiCent->Fill(Hypertriton.M());
-	}
-	if(charge_d<0 && charge_p<0 && charge_pi>0)	{
-	  fHistMassAntiHypertriton->Fill(Hypertriton.M());
-	  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) fHistMassAntiHypertriton_Cent->Fill(Hypertriton.M());
-	  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) fHistMassAntiHypertriton_SemiCent->Fill(Hypertriton.M());
-	}
+    if(fMinvSignal){
+        if(charge_d>0 && charge_p>0 && charge_pi<0)	{ //
+            fHistMassHypertriton->Fill(Hypertriton.M());
+            if(isCent) fHistMassHypertriton_Cent->Fill(Hypertriton.M());
+            if(isSemiCent) fHistMassHypertriton_SemiCent->Fill(Hypertriton.M());
+        }
+        if(charge_d<0 && charge_p<0 && charge_pi>0)	{ //
+            fHistMassAntiHypertriton->Fill(Hypertriton.M());
+            if(isCent) fHistMassAntiHypertriton_Cent->Fill(Hypertriton.M());
+            if(isSemiCent) fHistMassAntiHypertriton_SemiCent->Fill(Hypertriton.M());
+        }
+    }
+    if(fMinvLikeSign){
+        if(charge_d>0 && charge_p>0 && charge_pi>0)	{ //
+            if(isCent) fHistMassHypertriton_LS_Cent->Fill(Hypertriton.M());
+            if(isSemiCent) fHistMassHypertriton_LS_SemiCent->Fill(Hypertriton.M());
+        }
+        if(charge_d<0 && charge_p<0 && charge_pi<0)	{ //
+            if(isCent) fHistMassAntiHypertriton_LS_Cent->Fill(Hypertriton.M());
+            if(isSemiCent) fHistMassAntiHypertriton_LS_SemiCent->Fill(Hypertriton.M());
+        }
+    }
 	
-	if(fMC){
+    if(fMC){
 	  lD = trackD->GetLabel();
 	  lP = trackP->GetLabel();
 	  lPi = trackNPi->GetLabel();
