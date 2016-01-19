@@ -362,7 +362,7 @@ public:
   Bool_t Clean(Float_t *cleanPars, TObjArray* track2destroy);
   Bool_t RemoveKink(Int_t i)   const;
   Bool_t RemoveV0(Int_t i)     const;
-  AliESDtrack* RemoveTrack(Int_t i)  const;
+  AliESDfriendTrack* RemoveTrack(Int_t i)  const;
 
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
     return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->At(i):0x0);

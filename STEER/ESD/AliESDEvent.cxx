@@ -787,7 +787,7 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
 }
 
 //______________________________________________________________________________
-AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const 
+AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const 
 {
 // ---------------------------------------------------------
 // Remove a track and references to it from ESD,
@@ -851,6 +851,7 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
   }
 
   Int_t nkn=GetNumberOfKinks();
+  /*RS
   for (Int_t n=0; n<nkn; n++) {
     AliESDkink *kn=GetKink(n);
 
@@ -862,9 +863,10 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
     if (rm==idx) return 0;
     if (idx==last) used++;
   }
-
+  */
   // Check if this track is associated with a CaloCluster
   Int_t ncl=GetNumberOfCaloClusters();
+  /* RS
   for (Int_t n=0; n<ncl; n++) {
     AliESDCaloCluster *cluster=GetCaloCluster(n);
     TArrayI *arr=cluster->GetTracksMatched();
@@ -875,6 +877,7 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
       if (idx==last) used++;     
     }
   }
+  */
 
   // from here on we remove the track
   //
@@ -882,9 +885,11 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
   TClonesArray &a=*fTracks;
   AliESDtrack* trm = GetTrack(rm);
   trm->SuppressTOFMatches(); // remove reference to this track from stored TOF clusters
-  //  delete a.RemoveAt(rm); //RS DON'T delete track here, delegate it to AliReconstruction
+  AliESDfriendTrack* trfKeep = (AliESDfriendTrack*)trm->GetFriendTrack(); // friend should be cleaned in the reco
+  trm->ReleaseESDfriendTrack();
+  a.RemoveAt(rm);
   //
-  if (rm==last) return trm;
+  if (rm==last) return trfKeep;
 
   AliESDtrack *t=GetTrack(last);
   if (!t) {AliFatal(Form("NULL pointer for ESD track %d",last));}
@@ -900,7 +905,7 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
   tfr->SetESDtrackID(rm);
   delete a.RemoveAt(last);
 
-  if (!used) return trm;
+  if (!used) return trfKeep;
   
 
   // Remap the indices of the tracks used for the primary vertex reconstruction
@@ -912,7 +917,7 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
        if (idx==last) {
           primIdx[n]=Short_t(rm); 
           used--;
-          if (!used) return trm;
+          if (!used) return trfKeep;
        }
      }
   }  
@@ -924,7 +929,7 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
        if (idx==last) {
           primIdx[n]=Short_t(rm); 
           used--;
-          if (!used) return trm;
+          if (!used) return trfKeep;
        }
      }
   }  
@@ -935,12 +940,12 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
     if (v0->GetIndex(0)==last) {
        v0->SetIndex(0,rm);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
     if (v0->GetIndex(1)==last) {
        v0->SetIndex(1,rm);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
   }
 
@@ -949,18 +954,18 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
     if (cs->GetIndex()==last) {
        cs->SetIndex(rm);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
     AliESDv0 *v0=cs;
     if (v0->GetIndex(0)==last) {
        v0->SetIndex(0,rm);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
     if (v0->GetIndex(1)==last) {
        v0->SetIndex(1,rm);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
   }
 
@@ -969,12 +974,12 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
     if (kn->GetIndex(0)==last) {
        kn->SetIndex(rm,0);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
     if (kn->GetIndex(1)==last) {
        kn->SetIndex(rm,1);
        used--;
-       if (!used) return trm;
+       if (!used) return trfKeep;
     }
   }
 
@@ -988,12 +993,12 @@ AliESDtrack*  AliESDEvent::RemoveTrack(Int_t rm) const
       if (idx==last) {
          arr->AddAt(rm,s);
          used--; 
-         if (!used) return trm;
+         if (!used) return trfKeep;
       }
     }
   }
 
-  return trm;
+  return trfKeep;
 }
 
 //______________________________________________________________________________
@@ -1057,7 +1062,7 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars, TObjArray* tracks2destroy)
     if (!track) {AliFatal(Form("NULL pointer for ESD track %d",i));}
     Float_t xy,z; track->GetImpactParameters(xy,z);
     if ((TMath::Abs(xy) > dmax) || (vtxOK && (TMath::Abs(z) > zmax))) {
-      AliESDtrack *remTr = RemoveTrack(i);
+      AliESDfriendTrack *remTr = RemoveTrack(i);
       if (remTr) {
 	rc=kTRUE;
 	tracks2destroy->Add(remTr);
