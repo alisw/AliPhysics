@@ -35,6 +35,8 @@ set(SRCS
     example/AliCDMesonUtilsStripped.cxx
     legotrain/AliAnalysisTaskCDTree.cxx
     legotrain/AliMultiplicitySelectionCP.cxx
+    legotrain/AliAnalysisTaskCDPWA.cxx
+    legotrain/AliMultiplicitySelectionCPPWA.cxx
     QA/AliAnalysisTaskCPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
     xsAndTwoProng/AliAnalysisTaskCDskimESD.cxx
