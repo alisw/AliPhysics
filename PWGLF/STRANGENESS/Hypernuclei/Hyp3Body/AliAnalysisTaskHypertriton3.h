@@ -64,6 +64,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
+  void SetChargeTriplet(bool sign_c = kFALSE, bool ls_c = kFALSE) {fMinvLikeSign = sign_c; fMinvLikeSign = ls_c;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
@@ -126,6 +127,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
   Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
+  Bool_t             fMinvSignal;                  ///< flag for correct charge triplet - signal
+  Bool_t             fMinvLikeSign;                ///< flag for like-sign charge triplet
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
 
   //Cut variables
@@ -228,6 +231,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistMassAntiHypertriton_Cent;        //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassHypertriton_SemiCent;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
   TH1F               *fHistMassAntiHypertriton_SemiCent;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
+  
+  TH1F               *fHistMassHypertriton_LS_Cent;         //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 0-10%
+  TH1F               *fHistMassAntiHypertriton_LS_Cent;     //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
+  TH1F               *fHistMassHypertriton_LS_SemiCent;     //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
+  TH1F               *fHistMassAntiHypertriton_LS_SemiCent; //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
+
   // MC only histograms
   TH1F               *fHistParticle;               //!<! *(MC only)* Reconstructed particles distribution per species through PDGCode cross-check
   TH1F               *fHistpionTPCclsMCt;          //!<! *(MC only)* TPC clusters distribution of candidate \f$\pi\f$ through PDGCode cross-check
@@ -358,7 +367,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3&); // not implemented
   AliAnalysisTaskHypertriton3& operator=(const AliAnalysisTaskHypertriton3&); // not implemented
   
-  ClassDef(AliAnalysisTaskHypertriton3, 1); // analysisclass
+  ClassDef(AliAnalysisTaskHypertriton3, 2); // analysisclass
   
 };
 
