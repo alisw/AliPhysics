@@ -5,6 +5,7 @@
 #include <AliEmcalJet.h>
 #include <AliAnalysisManager.h>
 #include <TFile.h>
+#include <THnSparse.h>
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskPrepareInputForEmbedding.h"
 
@@ -25,7 +26,8 @@ fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0),
 fXsec(0),
-fNtrials(0)
+fNtrials(0),
+fhResponse(0)
 {
    /// default constructor
    
@@ -48,7 +50,8 @@ fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0),
 fXsec(0),
-fNtrials(0)
+fNtrials(0),
+fhResponse(0)
 
 {
    /// standard constructor
@@ -107,12 +110,12 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    fOutput->Add(fNAccJets);
    
    const Int_t dim = 5;
-   Int_t bBins[dim] = {nBinsfineM, nBinsfineM, nBinsfinePt, nBinsfinePt, 40};
-   Int_t xmin[dim]  = {minM, minM, minPt, minPt, 0.};
-   Int_t xmax[dim]  = {maxM, maxM, maxPt, maxPt, 2.};
+   Int_t nBins[dim] = {nBinsfineM, nBinsfineM, nBinsfinePt, nBinsfinePt, 40};
+   Double_t xmin[dim]  = {minM, minM, minPt, minPt, 0.};
+   Double_t xmax[dim]  = {maxM, maxM, maxPt, maxPt, 2.};
    TString hsptitle = "Mass-pT response; #it{M}_{det}; #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}; #it{N}_{const}^{det}/#it{N}_{const}^{part}";
-   hResponse = new THnSparseF("hResponse", hsptitle.Data(), dim, nBins, xmin, xmax);
-   fOutput->Add(hResponse);
+   fhResponse = new THnSparseF("hResponse", hsptitle.Data(), dim, nBins, xmin, xmax);
+   fOutput->Add(fhResponse);
    
 }
 
@@ -187,7 +190,7 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
       	 
       	 Double_t response[5] = {jetP->M(), jet->M(), jetP->Pt(), jet->Pt(), (Double_t)jet->GetNumberOfConstituents()/(Double_t)jetP->GetNumberOfConstituents()};
-      	 hResponse->Fill(response);
+      	 fhResponse->Fill(response);
       }
       
    }
