@@ -34,6 +34,7 @@
 ///            for cell with absId=0 is kept in 'underflow bin' 
 /// 2015.11.11 Modification to calibrate run by run by additional L1 phase
 /// 2015.11.19 Added histogram settings
+/// 2016.01.18 L1 phases read once at the beginning of lego train
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -95,7 +96,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fFineNbins(0),
     fFineTmin(0),
     fFineTmax(0),
-    fReferenceFile(0),
+    fL1PhaseList(0),
+    //    fReferenceFile(0),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -129,7 +131,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     { ; }
   
   AliAnalysisTaskEMCALTimeCalib(const char *name);
-  virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
+  //virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
+  ~AliAnalysisTaskEMCALTimeCalib();
   
   //  virtual void   LocalInit();
   //virtual Bool_t Notify();
@@ -139,6 +142,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   virtual void   Terminate(Option_t *);
   
   // Getters and setters
+  Int_t    GetRunNumber()         { return fRunNumber         ; }
   Double_t GetMinClusterEnergy()  { return fMinClusterEnergy  ; }
   Double_t GetMaxClusterEnergy()  { return fMaxClusterEnergy  ; }
   Int_t    GetMinNcells()         { return fMinNcells         ; }
@@ -155,6 +159,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMinTime()           { return fMinTime           ; }
   Double_t GetMaxTime()           { return fMaxTime           ; }
 
+  void SetRunNumber        (Int_t    v) { fRunNumber        = v ; }
   void SetMinClusterEnergy (Double_t v) { fMinClusterEnergy = v ; }
   void SetMaxClusterEnergy (Double_t v) { fMaxClusterEnergy = v ; }
   void SetMinNcells        (Int_t    v) { fMinNcells        = v ; }  
@@ -201,6 +206,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetDefaultCuts();
   void LoadReferenceHistos();
   void LoadReferenceRunByRunHistos();
+  void SetL1PhaseReferenceForGivenRun();
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
@@ -244,7 +250,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t       fMinCellEnergy;        ///< minimum cell energy
 
   TString        fReferenceFileName ;   //!<! name of reference file (for one period)
-  TString        fReferenceRunByRunFileName ;   ///< name of reference file (run-by-run)
+  TString        fReferenceRunByRunFileName ;   ///< name of reference file (run-by-run) ///!<!
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
@@ -265,7 +271,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t       fFineTmin     ;        ///< lower range of histo with T0 time
   Double_t       fFineTmax     ;        ///< upper range of histo with T0 time
 
-  TFile         *fReferenceFile;        ///< file with reference for SM 
+  TObjArray     *fL1PhaseList;          ///< array with phases for set of runs 
+  //  TFile         *fReferenceFile;        ///< file with reference for SM 
+
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
   TH1F          *fhEvtTimeHeader;       //!<! spectrum time from header
