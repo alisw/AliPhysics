@@ -3348,13 +3348,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       }
       break;
 
-    // NonLinearity LHC12 ConvCalo - kTestBeamv3 + shifting MC
+    // NonLinearity ConvCalo - kTestBeamv3 + shifting MC
     case 13:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_11;// goto previous case for shifting MC
       break;
 
-    // NonLinearity LHC12 Calo - kTestBeamv3 + shifting MC
+    // NonLinearity Calo - kTestBeamv3 + shifting MC
     case 14:
       energy *= FunctionNL_kTestBeamv3(energy);
       goto label_case_12;// goto previous case for shifting MC
@@ -3395,9 +3395,99 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
+    // NonLinearity pp ConvCalo - only shifting MC - no timing cut
+    case 21:
+      label_case_21:
+      if(isMC>0){
+        // 2.76TeV LHC11a/LHC13g
+        if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 )
+          energy /= FunctionNL_DPOW(energy, 1.0443938253, -0.0691830812, -0.1247555443, 1.1673716264, -0.1853095466, -0.0848801702);
+        else if(fCurrentMC==k15g2)
+          energy /= FunctionNL_DPOW(energy, 1.1716155406, -0.1962930603, -0.0193959829, 1.0336659741, -0.0467778485, -0.4407662248);
+        else if(fCurrentMC==k12f1b)
+          energy /= FunctionNL_DPOW(energy, 1.0166321784, -0.0440799552, -0.2611899222, 1.0636538464, -0.0816662488, -0.2173961316);
+        else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b )
+          energy /= FunctionNL_DPOW(energy, 1.1100193881, -0.1389194936, -0.0800000242, 1.1673716264, -0.1853095466, -0.0848801702);          
+        else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
+          energy /= FunctionNL_DPOW(energy, 1.0520183153, -0.0806102847, -0.1450415920, 1.0336724056, -0.0467844121, -0.4406992764);          
+    }    
       
+    // NonLinearity pp Calo - only shifting MC - no timing cut
+    case 22:
+      label_case_22:
+      if(isMC>0){
+        // 2.76TeV LHC11a/LHC13g
+        if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 )
+          energy /= FunctionNL_DPOW(energy, 0.9980625418, -0.0564782662, -0.5, 1.0383412435, -0.0851830429, -0.4999999996);
+        else if( fCurrentMC==k15g2 )
+          energy /= FunctionNL_DPOW(energy, 1.0795372569, -0.1347324732, -0.1630736190, 1.1614181498, -0.199995361, -0.1711378093);
+        else if( fCurrentMC==k12f1b )
+          energy /= FunctionNL_DPOW(energy, 1.0232969083, -0.090409434, -0.3592406513, 1.0383412435, -0.0851830429, -0.4999999996);
+        else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b )
+          energy /= FunctionNL_DPOW(energy, 1.0106037132, -0.0748250591, -0.4999999996, 1.0383412435, -0.0851830429, -0.4999999996);    
+        else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ) 
+          energy /= FunctionNL_DPOW(energy, 1.0119417393, -0.0755250741, -0.4999999996, 1.1614181498, -0.1999995361, -0.1711378093);    
+      }    
+      
+    // NonLinearity ConvCalo - kTestBeamv3 + shifting MC  
+    case 23:
+      energy *= FunctionNL_kTestBeamv3(energy);
+      goto label_case_21;// goto previous case for shifting MC
+      break;
+
+    // NonLinearity Calo - kTestBeamv3 + shifting MC
+    case 24:
+      energy *= FunctionNL_kTestBeamv3(energy);
+      goto label_case_22;// goto previous case for shifting MC
+      break;
+
       
 // *************** 30 + x **** modified tender Settings 2 - pp
+    case 31:
+      label_case_31:
+      if(isMC>0){
+        // 2.76TeV LHC11a/LHC13g
+        if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 )
+          energy /= FunctionNL_kSDM(energy, 0.983176, -3.91107, -0.697613);
+        else if(fCurrentMC==k15g2)
+          energy /= FunctionNL_kSDM(energy, 0.972574, -3.19191, -0.946239);
+        else if(fCurrentMC==k12f1b)
+          energy /= FunctionNL_kSDM(energy, 0.981893, -4.05476, -0.710661);
+        else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b )
+          energy /= FunctionNL_kSDM(energy, 0.983176, -1.85546, -3.37696);          
+        else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
+          energy /= FunctionNL_kSDM(energy, 0.977035, -3.82187, -1.04332);          
+            
+      }    
+      
+    // NonLinearity pp Calo - only shifting MC - no timing cut
+    case 32:
+      label_case_32:
+      if(isMC>0){
+        // 2.76TeV LHC11a/LHC13g
+        if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 )
+          energy /= FunctionNL_kSDM(energy, 0.974358, -2.18037, -1.91622);
+        else if( fCurrentMC==k15g2 )
+          energy /= FunctionNL_kSDM(energy, 0.963307, -3.27998, -0.589806);
+        else if( fCurrentMC==k12f1b )
+          energy /= FunctionNL_kSDM(energy, 0.97499, -0.180148, -4.78066);
+        else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b )
+          energy /= FunctionNL_kSDM(energy, 0.974424, -0.533785, -4.06374);    
+        else if ( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ) 
+          energy /= FunctionNL_kSDM(energy, 0.963307, -4.01949, -0.38667);    
+      }    
+      
+    // NonLinearity ConvCalo - kTestBeamv3 + shifting MC  
+    case 33:
+      energy *= FunctionNL_kTestBeamv3(energy);
+      goto label_case_31;// goto previous case for shifting MC
+      break;
+
+    // NonLinearity Calo - kTestBeamv3 + shifting MC
+    case 34:
+      energy *= FunctionNL_kTestBeamv3(energy);
+      goto label_case_32;// goto previous case for shifting MC
+      break;
 
       
 // *************** 40 + x **** default tender Settings - pPb
@@ -3494,6 +3584,11 @@ Float_t AliCaloPhotonCuts::FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2){
   return ( p0 + exp( p1 + ( p2 * e ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5){
+  return ( (p0 +  p1 * TMath::Power(e,p2 ) )/(p3 +  p4 * TMath::Power(e,p5 ) ) );
 }
 
 //************************************************************************
