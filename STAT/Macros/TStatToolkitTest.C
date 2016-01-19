@@ -143,6 +143,7 @@ void TestLTM(Int_t nevents=10000){
 	fitter.Eval();
 	// f(x)=[0]+[1]*x+[2]*x*x;
 	// f(x)=s*(x0-x0)^2+s
+	if (TMath::Abs(fitter.GetParameter(2))<1e-12) continue;
 	Double_t parSigma=TMath::Sqrt(2*TMath::Abs(fitter.GetParameter(2)));
 	Double_t parMean=-fitter.GetParameter(1)/(2.*fitter.GetParameter(2));  
 	histo.Fit(&fg,"QN","QN", paramLTM[1]-5*paramLTM[2], paramLTM[1]+5*paramLTM[2]);

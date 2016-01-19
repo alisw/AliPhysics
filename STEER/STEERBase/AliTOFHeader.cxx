@@ -137,6 +137,9 @@ AliTOFHeader &AliTOFHeader::operator=(const AliTOFHeader &source){
     fNumberOfTOFtrgPads=source.fNumberOfTOFtrgPads;
     
     if (fNbins>0) {
+      delete fEventTimeValues;
+      delete fEventTimeRes;
+      delete fNvalues;
       fEventTimeValues = new TArrayF(fNbins);
       fEventTimeRes = new TArrayF(fNbins);
       fNvalues = new TArrayI(fNbins);
