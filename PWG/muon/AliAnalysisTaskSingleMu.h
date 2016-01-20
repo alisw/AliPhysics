@@ -30,6 +30,9 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
   
   /// Apply cut on dimuon invariant mass (to reject Z contribution)
   void SetCutDimu ( Bool_t cutOnDimu = kTRUE ) { fCutOnDimu = cutOnDimu; }
+
+  /// Use associated MC kinematics for reconstructed tracks
+  void SetUseMCKineForRecoTracks ( Bool_t useMCKineForRecoTracks = kTRUE ) { fUseMCKineForRecoTracks = useMCKineForRecoTracks; }
   
   enum {
     kIPVz,           ///< Interaction point vertex distribution
@@ -67,8 +70,9 @@ class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {
 
   TObjArray* fThetaAbsKeys;    ///< Name of theta at absorber end
   Bool_t fCutOnDimu;           ///< Cut on dimuons
+  Bool_t fUseMCKineForRecoTracks; ///< Use MC kinematics for reconstructed tracks
 
-  ClassDef(AliAnalysisTaskSingleMu, 4); // Single muon analysis
+  ClassDef(AliAnalysisTaskSingleMu, 5); // Single muon analysis
 };
 
 #endif
