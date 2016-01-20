@@ -54,12 +54,12 @@ class AliITSUSimulation : public TObject
   virtual void InitSimulationChip(AliITSUChip* mod, Int_t ev, AliITSMFTSegmentationPix* seg, AliITSMFTParamList* resp);
   //
   // Hits -> SDigits
-  virtual void SDigitiseChip() = 0;
-  virtual void FinishSDigitiseChip() = 0;
+  virtual void SDigitiseChip(TClonesArray *) = 0;
+  virtual void FinishSDigitiseChip(TObjArray *) = 0;
   virtual Bool_t AddSDigitsToChip( TSeqCollection *pItemArray, Int_t mask );
   //
   // Hits -> Digits
-  virtual void DigitiseChip() = 0;
+  virtual void DigitiseChip(TObjArray *) = 0;
   virtual void CreateFastRecPoints(AliITSUChip *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
   //
   // readout phase (strobe, timing etc) generation

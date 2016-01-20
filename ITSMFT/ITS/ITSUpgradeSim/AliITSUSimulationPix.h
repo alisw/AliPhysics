@@ -53,24 +53,22 @@ public:
     
     void Init();
     //
-    void FinishSDigitiseChip();
-    void DigitiseChip();
+    void FinishSDigitiseChip(TObjArray *);
+    void DigitiseChip(TObjArray *);
     //
-    void SDigitiseChip();
-    void WriteSDigits();
+    void SDigitiseChip(TClonesArray *);
     void Hits2SDigits();
     void Hits2SDigitsFast();
     void Hits2SDigitsFastDigital();
     void AddNoisyPixels();
     void RemoveDeadPixels();
-    void FrompListToDigits();
     //
     Int_t AddRandomNoisePixels(Double_t tof=0);
     Bool_t SetTanLorAngle(Double_t WeightHole=1.0);
     Double_t GetTanLorAngle() const {return fTanLorAng;};
     //
     // For backwards compatibility
-    void SDigitsToDigits(){ FinishSDigitiseChip();}
+    //void SDigitsToDigits(){ FinishSDigitiseChip();}
     //
     Double_t SpreadFunDoubleGauss2D(const Double_t *dtIn);
     Double_t SpreadFunGauss2D(const Double_t *dtIn);
@@ -84,6 +82,9 @@ public:
     void CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z);
     //
 private:
+    void WriteSDigits(TClonesArray *);
+    void FrompListToDigits(TObjArray *);
+
     void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
                         Double_t el, Double_t tof, Int_t tID, Int_t hID);
     void PlaceDigitalPixels(Double_t x0,Double_t z0, Double_t el, Double_t tof, Int_t tID, Int_t hID);

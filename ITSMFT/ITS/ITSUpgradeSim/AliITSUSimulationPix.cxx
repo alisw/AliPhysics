@@ -18,7 +18,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TString.h>
-#include "AliITSU.h"
+//#include "AliITSU.h"
 #include "AliITSMFTDigitPix.h"
 #include "AliITSUHit.h"
 #include "AliITSUChip.h"
@@ -158,7 +158,7 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 }
 
 //_____________________________________________________________________
-void AliITSUSimulationPix::SDigitiseChip()
+void AliITSUSimulationPix::SDigitiseChip(TClonesArray *sdarray)
 {
     //  This function begins the work of creating S-Digits.
     
@@ -168,38 +168,37 @@ void AliITSUSimulationPix::SDigitiseChip()
         else Hits2SDigitsFastDigital();                                         // digital chip response
     }
     if (!fSensMap->GetEntries()) return;
-    WriteSDigits();
+    WriteSDigits(sdarray);
     ClearMap();
     //
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::WriteSDigits()
+void AliITSUSimulationPix::WriteSDigits(TClonesArray *sdarray)
 {
     //  This function adds each S-Digit to pList
-    static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
     int nsd = fSensMap->GetEntries();
     
     
     for (int i=0;i<nsd;i++) {
         AliITSMFTSDigit* sd = (AliITSMFTSDigit*)fSensMap->At(i); // ordered in index
         if (!(sd->GetSumSignal()>0) || fSensMap->IsDisabled(sd)) continue;
-        aliITS->AddSumDigit(*sd);
+        new( (*sdarray)[sdarray->GetEntriesFast()]) AliITSMFTSDigit(*sd);
     }
     return;
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::FinishSDigitiseChip()
+void AliITSUSimulationPix::FinishSDigitiseChip(TObjArray *detDigits)
 {
     //  This function calls SDigitsToDigits which creates Digits from SDigits
-    FrompListToDigits();
+    FrompListToDigits(detDigits);
     ClearMap();
     return;
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::DigitiseChip()
+void AliITSUSimulationPix::DigitiseChip(TObjArray *detDigits)
 {
     //  This function creates Digits straight from the hits and then adds
     //  electronic noise to the digits before adding them to pList
@@ -207,7 +206,7 @@ void AliITSUSimulationPix::DigitiseChip()
     //
     if(fResponseParam->GetParameter(AliITSMFTSimuParam::kDigitalSim) == 0 ) Hits2SDigitsFast(); // analogue chip response simulation
     else Hits2SDigitsFastDigital();                                         // digital chip response
-    FinishSDigitiseChip();
+    FinishSDigitiseChip(detDigits);
 }
 
 //______________________________________________________________________
@@ -550,7 +549,7 @@ void AliITSUSimulationPix::AddNoisyPixels()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::FrompListToDigits()
+void AliITSUSimulationPix::FrompListToDigits(TObjArray *detDigits)
 {
     // add noise and electronics, perform the zero suppression and add the digits to the list
     //
@@ -578,7 +577,6 @@ void AliITSUSimulationPix::FrompListToDigits()
     Int_t iCycle,modId = fChip->GetIndex();
     Double_t sig;
     const Int_t    knmaxtrk=AliITSMFTDigitPix::GetNTracks();
-    static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
     static AliITSMFTDigitPix dig;
     //
     for (int i=0;i<nsd;i++) {
@@ -609,7 +607,18 @@ void AliITSUSimulationPix::FrompListToDigits()
             dig.SetTrack(j,-3);
             dig.SetHit(j,-1);
         }
-        aliITS->AddSimDigit(AliITSMFTAux::kChipTypePix, &dig);
+
+        Int_t branch=AliITSMFTAux::kChipTypePix;
+        TClonesArray &ldigits = *((TClonesArray*)detDigits->At(branch));
+        int nd = ldigits.GetEntriesFast();
+        switch(branch){
+        case AliITSMFTAux::kChipTypePix:
+           new(ldigits[nd]) AliITSMFTDigitPix(dig);
+           break;
+        default:
+           AliFatal(Form("Unknown digits branch %d",branch));
+        }
+	
     }
     //
 }

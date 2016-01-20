@@ -522,7 +522,7 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
     if (randomyzeChips) sim->GenerateReadOutCycleOffset();
     else                  sim->SetReadOutCycleOffset(roPhase);
     //
-    sim->SDigitiseChip();
+    sim->SDigitiseChip(fSDigits);
     fLoader->TreeS()->Fill();      // fills all branches - wasted disk space
     ResetSDigits();
     prevLr = lr;
@@ -592,7 +592,7 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
     }
     if (randomyzeChips) sim->GenerateReadOutCycleOffset();
     else                  sim->SetReadOutCycleOffset(roPhase);
-    sim->DigitiseChip();
+    sim->DigitiseChip(fDetDigits);
     // fills all branches - wasted disk space
     fLoader->TreeD()->Fill(); 
     ResetDigits();
@@ -851,7 +851,7 @@ void AliITSU::SDigits2Digits()
     fSDigits->Clear();
     brchSDigits->GetEvent(chip);
     sim->AddSDigitsToChip(fSDigits,0);
-    sim->FinishSDigitiseChip();
+    sim->FinishSDigitiseChip(fDetDigits);
     fLoader->TreeD()->Fill();
     ResetDigits();
     prevLr = lr;

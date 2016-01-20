@@ -187,7 +187,7 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
       //
     } 
     // Digitize current chip sum(SDigits)->Digits
-    sim->FinishSDigitiseChip();
+    sim->FinishSDigitiseChip(fITS->GetDigits());
     //
     outgime->TreeD()->Fill();       // fills all branches - wasted disk space
     fITS->ResetDigits();
