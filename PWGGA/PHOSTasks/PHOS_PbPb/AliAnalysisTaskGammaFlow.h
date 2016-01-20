@@ -17,6 +17,9 @@ class AliPHOSCalibData;
 class AliAODtrack ;
 class AliAODCaloCluster ;
 class AliEPFlattener ;
+class AliFlowTrackCuts ;
+class AliFlowEvent ;
+class AliFlowVector ;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -92,6 +95,9 @@ private:
   AliEPFlattener * fV0AFlat ; //!
   AliEPFlattener * fV0CFlat ; //!
   AliEPFlattener * fTPCFlat ; //!
+  AliEPFlattener * fV0AQFlat ; //!
+  AliEPFlattener * fV0CQFlat ; //!
+  AliEPFlattener * fTPCQFlat ; //!
   
   Int_t fHarmonics ; //Harminic in use
   Bool_t fDistCut ;
@@ -133,6 +139,9 @@ private:
   TH1D*  fV0CfinalQS2 ;   //!
   TH1D*  fV0CfinalQC4 ;   //!
   TH1D*  fV0CfinalQS4 ;    //!
+  AliFlowTrackCuts * fCutsV0 ; //! 
+  AliFlowTrackCuts * fCutsTPC ; //!
+  AliFlowEvent     * fFlowEvent ; //!
   
   ClassDef(AliAnalysisTaskGammaFlow, 2); // PHOS analysis task
 };

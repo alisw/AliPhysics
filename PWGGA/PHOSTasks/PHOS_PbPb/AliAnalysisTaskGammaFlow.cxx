@@ -38,6 +38,9 @@
 #include "AliEventplane.h"
 #include "AliOADBContainer.h"
 #include "AliEPFlattener.h"
+#include "AliFlowTrackCuts.h"
+#include "AliFlowEvent.h"
+#include "AliFlowVector.h"
 
 // Analysis task to fill histograms with PHOS ESD clusters and cells
 // Authors: Dmitri Peressounko
@@ -70,6 +73,9 @@ AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name)
   fV0AFlat(0x0),
   fV0CFlat(0x0),
   fTPCFlat(0x0),
+  fV0AQFlat(0x0),
+  fV0CQFlat(0x0),
+  fTPCQFlat(0x0),
   fHarmonics(3),
   fDistCut(0),
   fRunNumber(0),
@@ -105,7 +111,11 @@ AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name)
   fV0CfinalQC2(0x0),
   fV0CfinalQS2(0x0),
   fV0CfinalQC4(0x0),
-  fV0CfinalQS4(0x0) 
+  fV0CfinalQS4(0x0),
+  fCutsV0(0x0),
+  fCutsTPC(0x0),
+  fFlowEvent(0x0)
+
 {
   // Constructor
   for(Int_t i=0;i<1;i++){
@@ -122,9 +132,19 @@ AliAnalysisTaskGammaFlow::AliAnalysisTaskGammaFlow(const char *name)
 
   //We have to apply re-calibration for pass1 LCH10h
   // Initialize decalibration factors in the form of the OCDB object
+  fCutsV0 = new AliFlowTrackCuts(Form("V0%d",fHarmonics));
+  fCutsV0 = fCutsV0->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
+  fCutsV0->SetVZEROgainEqualizationPerRing(kFALSE);
+  fCutsV0->SetApplyRecentering(kTRUE);
+//  fCutsV0A->SetEtaRange(2.,10.) ; 
+  fFlowEvent = new AliFlowEvent(10000);
 
+  fCutsTPC= new AliFlowTrackCuts(Form("TPC%d",fHarmonics));
+  fCutsTPC=fCutsTPC->GetStandardTPCStandaloneTrackCuts() ;
+  fCutsTPC->SetEtaMin(-0.9);
+  fCutsTPC->SetEtaMax(0.9);
 
-}
+ }
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
@@ -182,6 +202,11 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
    fOutputContainer->Add(new TProfile("qcos2V0AC","RP correlation between VO A and C sides",100,0.,100.)) ;
    fOutputContainer->Add(new TProfile("qcos2V0ATPC","RP correlation between TPC and V0A",100,0.,100.)) ;
    fOutputContainer->Add(new TProfile("qcos2V0CTPC","RP correlation between TPC and V0C",100,0.,100.)) ;
+   
+   fOutputContainer->Add(new TH2F("QV0A","Q_{V0A}",100,0.,100.,200,0.,200.)) ;
+   fOutputContainer->Add(new TH2F("QV0C","Q_{V0C}",100,0.,100.,200,0.,300.)) ;
+   fOutputContainer->Add(new TH2F("QTPC","Q_{TPC}",100,0.,100.,200,0.,100.)) ;
+   
 
    fOutputContainer->Add(new TProfile("resV0A","Estimated resolution of V0A",100,0.,100.)) ;
    fOutputContainer->Add(new TProfile("resV0C","Estimated resolution of V0C",100,0.,100.)) ;
@@ -198,6 +223,8 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
    fOutputContainer->Add(new TH2F("phiRPV0C","RP distribution with V0C", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
    fOutputContainer->Add(new TH2F("phiRPV0Aflat","RP distribution with V0 flat", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
    fOutputContainer->Add(new TH2F("phiRPV0Cflat","RP distribution with V0 flat", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
+   fOutputContainer->Add(new TH2F("phiRPV0AFlow","RP V0A, Flow Package", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
+   fOutputContainer->Add(new TH2F("phiRPV0CFlow","RP V0C, Flow Package", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
                                    
    fOutputContainer->Add(new TProfile2D("phiRPQ","RP distribution with TPC flat", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
    fOutputContainer->Add(new TProfile2D("phiRPV0AQ","RP distribution with V0 flat", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
@@ -209,6 +236,9 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
    fOutputContainer->Add(new TH3F("phiRPV0ATPC","RP distribution with V0A + TPC", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
    fOutputContainer->Add(new TH3F("phiRPV0CTPC","RP distribution with V0C + TPC", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
 
+   fOutputContainer->Add(new TH3F("phiV0ACorrel","V0A my vs Flow", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;
+   fOutputContainer->Add(new TH3F("phiV0CCorrel","V0C my vs Flow", 100,0.,TMath::TwoPi()/fHarmonics,100,0.,TMath::TwoPi()/fHarmonics,100,0.,100.)) ;    
+   
    fOutputContainer->Add(new TProfile2D("cos2TPCRP","cos(2Psi_{EP}^{TPC}", 200,-1.,1.,100,0.,100.)) ;
    fOutputContainer->Add(new TProfile2D("cos2V0ARP","cos(2Psi_{EP}^{V0A}", 200,-1.,1.,100,0.,100.)) ;
    fOutputContainer->Add(new TProfile2D("cos2V0CRP","cos(2Psi_{EP}^{V0C}", 200,-1.,1.,100,0.,100.)) ;
@@ -217,6 +247,7 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
    fOutputContainer->Add(new TProfile2D("sin2V0CRP","sin(2Psi_{EP}^{V0C}", 200,-1.,1.,100,0.,100.)) ;  
   
   //PHOS QA
+  fOutputContainer->Add(new TH1F("hBadMod","PHOS module without cells",6,2.,8.));
   fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
   fOutputContainer->Add(new TH1I("hCellMultEventM1","PHOS cell multiplicity per event, M1",2000,0,2000));
   fOutputContainer->Add(new TH1I("hCellMultEventM2","PHOS cell multiplicity per event, M2",2000,0,2000));
@@ -234,7 +265,7 @@ void AliAnalysisTaskGammaFlow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
  			
-  fOutputContainer->Add(new TH3F("hCPVr","CPV radius",100,0.,20.,100,0.,20.,10,0.,100.));
+//  fOutputContainer->Add(new TH3F("hCPVr","CPV radius",100,0.,20.,100,0.,20.,10,0.,100.));
 //  fOutputContainer->Add(new TH3F("hLambdaCent","Lambdas for all clusters",50,0.,10.,50,0.,10.,5,0.,100.));
   
   //Bad Map
@@ -419,6 +450,12 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
       arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
     }
+    AliOADBContainer flatContainerQ("phosQFlat");
+    flatContainerQ.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosQFlat");
+    TObjArray *arrQ = (TObjArray*)flatContainerQ.GetObject(run,"phosQFlat");
+    if(!arrQ){
+      AliError(Form("Can not read QFlattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
+    }
         
     AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
     if(fHarmonics==2){
@@ -434,6 +471,19 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       if(fV0CFlat) delete fV0CFlat ;
       fV0CFlat = new AliEPFlattener() ;
       fV0CFlat = h ;
+      
+      h = (AliEPFlattener*)arrQ->At(0) ;  
+      if(fTPCQFlat) delete fTPCQFlat ;
+      fTPCQFlat = new AliEPFlattener() ;
+      fTPCQFlat = h ;
+      h = (AliEPFlattener*)arrQ->At(1) ;  
+      if(fV0AQFlat) delete fV0AQFlat ;
+      fV0AQFlat = new AliEPFlattener() ;
+      fV0AQFlat = h ;
+      h = (AliEPFlattener*)arrQ->At(2) ;  
+      if(fV0CQFlat) delete fV0CQFlat ;
+      fV0CQFlat = new AliEPFlattener() ;
+      fV0CQFlat = h ;
     }    
     if(fHarmonics==3){
       AliEPFlattener * h = (AliEPFlattener*)arr->At(3) ;  
@@ -448,6 +498,19 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
       if(fV0CFlat) delete fV0CFlat ;
       fV0CFlat = new AliEPFlattener() ;
       fV0CFlat = h ;
+      
+      h = (AliEPFlattener*)arrQ->At(3) ;  
+      if(fTPCQFlat) delete fTPCQFlat ;
+      fTPCQFlat = new AliEPFlattener() ;
+      fTPCQFlat = h ;
+      h = (AliEPFlattener*)arrQ->At(4) ;  
+      if(fV0AQFlat) delete fV0AQFlat ;
+      fV0AQFlat = new AliEPFlattener() ;
+      fV0AQFlat = h ;
+      h = (AliEPFlattener*)arrQ->At(5) ;  
+      if(fV0CQFlat) delete fV0CQFlat ;
+      fV0CQFlat = new AliEPFlattener() ;
+      fV0CQFlat = h ;
     }
       
     // TPC Event Plane Weights
@@ -582,18 +645,38 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
     while(rpFull<0)rpFull+=TMath::TwoPi()/fHarmonics ;
     while(rpFull>TMath::TwoPi()/fHarmonics)rpFull-=(TMath::TwoPi()/fHarmonics) ;
     FillHistogram("phiRP",rpFull,fCentrality) ;    
-    fRP=0. ;
-    
-    fRP = rpFull; //ApplyFlattening(rpFull,fCentrality) ;
+    //Apply flattening
+    fRP = fTPCFlat->MakeFlat(rpFull,fCentrality) ;
     while(fRP<0)fRP+=TMath::TwoPi()/fHarmonics ;
     while(fRP>TMath::TwoPi()/fHarmonics)fRP-=(TMath::TwoPi()/fHarmonics) ;
+    FillHistogram("phiRPQ",fRP,fCentrality,fQTPC) ; //Yes, there is no difference between RP and RPQ so far 
+    FillHistogram("phiRPflat",fRP,fCentrality) ;      
   }
 
-//  ApplyFinalFlattening() ;
   ApplyFinalQFlattening() ;
   
-  FillHistogram("phiRPV0Aflat",fRPQV0A,fCentrality) ;
-  FillHistogram("phiRPV0Cflat",fRPQV0C,fCentrality) ;
+  fCutsV0->SetEvent(event,0x0);
+  fFlowEvent->ClearFast();
+  fFlowEvent->Fill(fCutsV0, fCutsTPC);
+  fFlowEvent->SetReferenceMultiplicity(event->GetNumberOfTracks());
+  fFlowEvent->DefineDeadZone(0., 0, 0, 0);
+  AliFlowVector qArray[2] ;
+  fFlowEvent->Get2Qsub(qArray,fHarmonics) ;
+  
+  Double_t x= qArray[1].Phi()/Double_t(fHarmonics) ;
+  while(x<0)x+=TMath::TwoPi()/fHarmonics ;
+  while(x>TMath::TwoPi()/fHarmonics)x-=TMath::TwoPi()/fHarmonics ;
+  Double_t y= qArray[0].Phi()/Double_t(fHarmonics) ;
+  while(y<0)y+=TMath::TwoPi()/fHarmonics ;
+  while(y>TMath::TwoPi()/fHarmonics)y-=TMath::TwoPi()/fHarmonics ;
+  FillHistogram("phiRPV0AFlow",x,fCentrality) ;
+  FillHistogram("phiRPV0CFlow",y,fCentrality) ;
+  
+  FillHistogram("phiV0ACorrel",x,fRPV0A,fCentrality) ;
+  FillHistogram("phiV0CCorrel",y,fRPV0C,fCentrality) ;
+    
+  FillHistogram("phiRPV0Aflat",fRPV0A,fCentrality) ;
+  FillHistogram("phiRPV0Cflat",fRPV0C,fCentrality) ;
   
   FillHistogram("phiRPV0AQflat",fRPQV0A,fCentrality,fQV0A) ;
   FillHistogram("phiRPV0CQflat",fRPQV0C,fCentrality,fQV0C) ;
@@ -604,31 +687,34 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   FillHistogram("sin2V0ARP",TMath::Sin(fHarmonics*fRPQV0A),fCentrality,fQV0A) ;
   FillHistogram("cos2V0CRP",TMath::Cos(fHarmonics*fRPQV0C),fCentrality,fQV0C) ;
   FillHistogram("sin2V0CRP",TMath::Sin(fHarmonics*fRPQV0C),fCentrality,fQV0C) ;
-  
+  FillHistogram("QV0A",fCentrality,fQV0A) ;
+  FillHistogram("QV0C",fCentrality,fQV0C) ;
+  FillHistogram("QTPC",fCentrality,fQTPC) ;
   
   if(fHaveTPCRP){
-
-    FillHistogram("phiRPQ",fRP,fCentrality,fQTPC) ; //Yes, there is no difference between RP and RPQ so far 
-    FillHistogram("phiRPflat",fRPQ,fCentrality) ;  
     FillHistogram("phiRPQflat",fRPQ,fCentrality,fQTPC) ;  
-    FillHistogram("cos2TPCAC",TMath::Cos(fHarmonics*dPsi),fCentrality,fQTPC) ;
+    FillHistogram("cos2TPCAC",TMath::Cos(fHarmonics*dPsi),fCentrality) ;
+    FillHistogram("qcos2TPCAC",TMath::Cos(fHarmonics*dPsi),fCentrality,fQTPC) ;
     FillHistogram("cos2TPCRP",TMath::Cos(fHarmonics*fRP),fCentrality,fQTPC) ;
     FillHistogram("sin2TPCRP",TMath::Sin(fHarmonics*fRP),fCentrality,fQTPC) ;    
 
-    Double_t cosAC = TMath::Cos(fHarmonics*(fRPQV0A-fRPQV0C)) ;
-    Double_t cosAT = TMath::Cos(fHarmonics*(fRPQ-fRPQV0A)) ;
-    Double_t cosCT = TMath::Cos(fHarmonics*(fRPQ-fRPQV0C)) ;
+    Double_t cosAC = TMath::Cos(fHarmonics*(fRPV0A-fRPV0C)) ;
+    Double_t cosAT = TMath::Cos(fHarmonics*(fRP-fRPV0A)) ;
+    Double_t cosCT = TMath::Cos(fHarmonics*(fRP-fRPV0C)) ;
+    Double_t qcosAC = TMath::Cos(fHarmonics*(fRPQV0A-fRPQV0C)) ;
+    Double_t qcosAT = TMath::Cos(fHarmonics*(fRPQ-fRPQV0A)) ;
+    Double_t qcosCT = TMath::Cos(fHarmonics*(fRPQ-fRPQV0C)) ;
 
-    FillHistogram("phiRPV0ATPC",fRPQ,fRPQV0A,fCentrality,fQV0A*fQTPC) ;
+    FillHistogram("phiRPV0ATPC",fRP,fRPV0A,fCentrality,fQV0A*fQTPC) ;
 
     FillHistogram("cos2V0AC",fCentrality,cosAC) ;
-    FillHistogram("qcos2V0AC",fCentrality,cosAC*fQV0A*fQV0C) ;
+    FillHistogram("qcos2V0AC",fCentrality,qcosAC,fQV0A*fQV0C) ;
     
     FillHistogram("cos2V0ATPC",fCentrality,cosAT) ;
-    FillHistogram("qcos2V0ATPC",fCentrality,cosAT*fQV0A*fQTPC) ;
+    FillHistogram("qcos2V0ATPC",fCentrality,qcosAT,fQV0A*fQTPC) ;
 
     FillHistogram("cos2V0CTPC",fCentrality,cosCT) ;
-    FillHistogram("qcos2V0CTPC",fCentrality,cosCT*fQV0C*fQTPC) ;
+    FillHistogram("qcos2V0CTPC",fCentrality,qcosCT,fQV0C*fQTPC) ;
 
     FillHistogram("phiRPV0CTPC",fRP,fRPV0C,fCentrality,fQV0C*fQTPC) ;
     
@@ -1248,6 +1334,10 @@ void AliAnalysisTaskGammaFlow::FillHistogram(const char * key,Double_t x,Double_
     ((TH2F*)tmp)->Fill(x,y,z) ;
     return ;
   }
+  if(tmp->IsA() == TClass::GetClass("TProfile")){
+    ((TProfile*)tmp)->Fill(x,y,z) ;
+    return ;
+  }
   if(tmp->IsA() == TClass::GetClass("TProfile2D")){
     ((TProfile2D*)tmp)->Fill(x,y,z) ;
     return ;
@@ -1256,6 +1346,7 @@ void AliAnalysisTaskGammaFlow::FillHistogram(const char * key,Double_t x,Double_
     ((TH3F*)tmp)->Fill(x,y,z) ;
     return ;
   }
+  AliInfo(Form("can not find 2D/3D histogram <%s> ",key)) ;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaFlow::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const{
@@ -1269,6 +1360,11 @@ void AliAnalysisTaskGammaFlow::FillHistogram(const char * key,Double_t x,Double_
     ((TH3F*)tmp)->Fill(x,y,z,w) ;
     return ;
   }
+  if(tmp->IsA() == TClass::GetClass("TProfile2D")){
+    ((TProfile2D*)tmp)->Fill(x,y,z,w) ;
+    return ;
+  }
+  AliInfo(Form("can not find 3D histogram <%s> ",key)) ;
 }
 
 //___________________________________________________________________________
@@ -1598,20 +1694,18 @@ void  AliAnalysisTaskGammaFlow::EvalV0ReactionPlane(AliAODEvent * event){
   //V0A
   fRPV0A = eventPlane->CalculateVZEROEventPlane(event,8, fHarmonics, qx, qy);
   fQV0A=TMath::Sqrt(qx*qx+qy*qy) ;
-  fRPV0A = fV0AFlat->MakeFlat(fRPV0A,fCentrality) ;
   //V0C
   fRPV0C = eventPlane->CalculateVZEROEventPlane(event,9, fHarmonics, qx, qy);
   fQV0C=TMath::Sqrt(qx*qx+qy*qy) ;  
-  fRPV0C = fV0CFlat->MakeFlat(fRPV0C,fCentrality) ;
 
-
+  
   while(fRPV0A<0)fRPV0A+=TMath::TwoPi()/fHarmonics ;
   while(fRPV0A>TMath::TwoPi()/fHarmonics)fRPV0A-=TMath::TwoPi()/fHarmonics ;
 //  fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentrality) ;
   while(fRPV0A<0)fRPV0A+=TMath::TwoPi()/fHarmonics ;
   while(fRPV0A>TMath::TwoPi()/fHarmonics)fRPV0A-=TMath::TwoPi()/fHarmonics ;
   FillHistogram("phiRPV0A",fRPV0A,fCentrality) ;
-  
+  fRPV0A = fV0AFlat->MakeFlat(fRPV0A,fCentrality) ;
   
   while(fRPV0C<0)fRPV0C+=TMath::TwoPi()/fHarmonics ;
   while(fRPV0C>TMath::TwoPi()/fHarmonics)fRPV0C-=TMath::TwoPi()/fHarmonics ;
@@ -1619,6 +1713,7 @@ void  AliAnalysisTaskGammaFlow::EvalV0ReactionPlane(AliAODEvent * event){
   while(fRPV0C<0)fRPV0C+=TMath::TwoPi()/fHarmonics ;
   while(fRPV0C>TMath::TwoPi()/fHarmonics)fRPV0C-=TMath::TwoPi()/fHarmonics ;
   FillHistogram("phiRPV0C",fRPV0C,fCentrality) ;
+  fRPV0C = fV0CFlat->MakeFlat(fRPV0C,fCentrality) ;
  
   //So far no difference between fRPV0A and fRPV0AQ
   FillHistogram("phiRPV0AQ",fRPV0A,fCentrality,fQV0A) ;
@@ -1711,8 +1806,6 @@ Bool_t AliAnalysisTaskGammaFlow::GetTPCEventPlane(Double_t &epAngle, Double_t &q
     TVector2 *mQ=new TVector2();
     mQ->Set(mQx,mQy);
     epAngle=mQ->Phi()/Double_t(fHarmonics);
-    //Apply flattening
-    epAngle = fTPCFlat->MakeFlat(epAngle,fCentrality) ;
     
     fQTPC = mQ->Mod() ;
    
@@ -1797,15 +1890,25 @@ void AliAnalysisTaskGammaFlow::EvalResolution(){
   
   Double_t x= fCentrality;
   if(x<0.5)x=0.5 ;
-  if(fHarmonics==2){
-    fV0Cres=3.325009e-01*(1+x*1.939315e-01-x*x*9.652051e-04+x*x*x*1.720295e-05-x*x*x*x*3.731234e-07 )/(1+x*2.802502e-02+x*x*1.874919e-03-x*x*x*3.980602e-05+x*x*x*x*4.447131e-07);
-    fV0Ares=2.403080e-01*(1+x*2.078031e-01+x*x*3.030761e-04+x*x*x*6.242597e-05+x*x*x*x*-1.072181e-06)/(1+x*9.135497e-03+x*x*3.208661e-03-x*x*x*5.901547e-05+x*x*x*x*8.083149e-07);
-    fTPCres=3.907111e-01*(1+x*2.036863e-01+x*x*7.435000e-04+x*x*x*6.967697e-05+x*x*x*x*-1.132069e-06)/(1+x*2.751258e-02+x*x*4.000528e-03-x*x*x*6.829516e-05+x*x*x*x*7.677720e-07);
+  if(fHarmonics==2){  
+    fV0Cres=3.294365e-01*(1.+x*1.507363e-01+x*x*1.272448e-03+x*x*x*4.229882e-05-x*x*x*x*6.939672e-07)/(1.-x*8.165966e-04+x*x*3.989182e-03-x*x*x*7.727254e-05+x*x*x*x*9.914099e-07);
+    fV0Ares=2.905439e-01*(1.+x*1.372979e+00+x*x*6.166033e-01-x*x*x*7.905871e-03+x*x*x*x*1.507491e-06)/(1.+x*1.902084e+00+x*x*1.735136e-01-x*x*x*1.689358e-03+x*x*x*x*1.364915e-05);
+    fTPCres=3.808781e-01*(1.+x*2.386826e-01+x*x*5.192646e-02+x*x*x*4.098382e-04-x*x*x*x*1.453986e-05)/(1.+x*1.259547e-01+x*x*2.285279e-02+x*x*x*1.030309e-04-x*x*x*x*2.666835e-06);
+    
+    //LHC01h    
+//    fV0Cres=3.325009e-01*(1+x*1.939315e-01-x*x*9.652051e-04+x*x*x*1.720295e-05-x*x*x*x*3.731234e-07 )/(1+x*2.802502e-02+x*x*1.874919e-03-x*x*x*3.980602e-05+x*x*x*x*4.447131e-07);
+//    fV0Ares=2.403080e-01*(1+x*2.078031e-01+x*x*3.030761e-04+x*x*x*6.242597e-05+x*x*x*x*-1.072181e-06)/(1+x*9.135497e-03+x*x*3.208661e-03-x*x*x*5.901547e-05+x*x*x*x*8.083149e-07);
+//    fTPCres=3.907111e-01*(1+x*2.036863e-01+x*x*7.435000e-04+x*x*x*6.967697e-05+x*x*x*x*-1.132069e-06)/(1+x*2.751258e-02+x*x*4.000528e-03-x*x*x*6.829516e-05+x*x*x*x*7.677720e-07);
   }
   if(fHarmonics==3){
-    fV0Cres=TMath::Max(0.02,2.687135e-01*(1.+x*8.117353e-01+x*x*2.271778e-03-x*x*x*1.798932e-04)/(1.+x*6.721703e-01+x*x*3.829202e-03+x*x*x*1.202772e-05)) ;
-    fV0Ares=TMath::Max(0.02,2.030253e-01*(1.+x*2.118380e-01+x*x*2.894326e-02-x*x*x*4.375165e-04)/(1.+x*1.908986e-01+x*x*2.324712e-02-x*x*x*7.957708e-05));
-    fTPCres=TMath::Max(0.02,4.829372e-01*(1.+x*1.300387e-01+x*x*1.579848e-04+x*x*x*3.856068e-05-x*x*x*x*8.861878e-07)/(1.+x*1.013947e-01+x*x*1.112352e-03+x*x*x*1.766346e-05+x*x*x*x*2.207416e-07));
+    fV0Cres=2.836819e-01*(1+x*3.017023e-01-x*x*1.083738e-02+x*x*x*9.760039e-05)/(1.+x*2.490451e-01-x*x*7.528651e-03+x*x*x*6.073070e-05);
+    fV0Ares=2.002936e-01*(1+x*2.258327e-01+x*x*3.836017e-04-x*x*x*6.525109e-05)/(1.+x*1.739020e-01+x*x*1.889962e-03-x*x*x*2.786371e-05);
+    fTPCres=4.357285e-01*(1+x*1.959005e-01+x*x*2.670202e-03-x*x*x*7.921636e-05)/(1.+x*1.582993e-01+x*x*2.707513e-03-x*x*x*2.773870e-05);
+
+    //LHC10h
+//    fV0Cres=TMath::Max(0.02,2.687135e-01*(1.+x*8.117353e-01+x*x*2.271778e-03-x*x*x*1.798932e-04)/(1.+x*6.721703e-01+x*x*3.829202e-03+x*x*x*1.202772e-05)) ;
+//    fV0Ares=TMath::Max(0.02,2.030253e-01*(1.+x*2.118380e-01+x*x*2.894326e-02-x*x*x*4.375165e-04)/(1.+x*1.908986e-01+x*x*2.324712e-02-x*x*x*7.957708e-05));
+//    fTPCres=TMath::Max(0.02,4.829372e-01*(1.+x*1.300387e-01+x*x*1.579848e-04+x*x*x*3.856068e-05-x*x*x*x*8.861878e-07)/(1.+x*1.013947e-01+x*x*1.112352e-03+x*x*x*1.766346e-05+x*x*x*x*2.207416e-07));
   }
 }
 //_________________________________________________________________________
@@ -1815,14 +1918,22 @@ void AliAnalysisTaskGammaFlow::EvalQResolution(){
   Double_t x= fCentrality;
   if(x<0.5)x=0.5 ;
   if(fHarmonics==2){
+    //LHC11h
+    fTPCQres=4.163312e-01*(1.+x*1.043385e+12+x*x*2.153523e+11-x*x*x*7.611083e+09+x*x*x*x*6.276471e+07)/(1.+x*3.925593e+10+x*x*1.775034e+08+x*x*x*2.824151e+07-x*x*x*x*6.714683e+05);
+  
+    //LHC10h
     fV0CQres=TMath::Max(1.e-3,7.230292e-03*(1+x*2.671781e-01+x*x*1.411288e-03-x*x*x*4.300557e-05)/(1+x*1.757692e-02+x*x*2.754502e-04-x*x*x*4.745331e-06+x*x*x*x*3.665055e-08));
     fV0AQres=TMath::Max(1.e-3,7.000136e-03*(1+x*7.121832e-01+x*x*2.374374e-01-x*x*x*2.556374e-03)/(1+x*7.515240e-01+x*x*1.825883e-02-x*x*x*3.200369e-04+x*x*x*x*2.503614e-06));
-    fTPCQres=TMath::Max(1.e-3,1.415754e+01*(1+x*1.918894e-01-x*x*4.286376e-03+x*x*x*2.299338e-05)/(1-x*1.286185e-03+x*x*2.264905e-03-x*x*x*5.115092e-05+x*x*x*x*6.681453e-07));
+//    fTPCQres=TMath::Max(1.e-3,1.415754e+01*(1+x*1.918894e-01-x*x*4.286376e-03+x*x*x*2.299338e-05)/(1-x*1.286185e-03+x*x*2.264905e-03-x*x*x*5.115092e-05+x*x*x*x*6.681453e-07));
   }
   if(fHarmonics==3){
-    fV0CQres=TMath::Max(1.e-3,5.029474e-03*(1+x*5.707185e-01-x*x*4.066224e-03-x*x*x*3.489881e-05)/(1+x*3.961095e-01-x*x*7.443697e-03+x*x*x*5.587215e-05));
-    fV0AQres=TMath::Max(1.e-3,4.528592e-03*(1+x*1.746747e-01-x*x*5.681926e-03+x*x*x*5.366525e-05)/(1+x*9.432721e-02-x*x*3.709922e-03+x*x*x*4.062858e-05));
-    fTPCQres=TMath::Max(1.e-3,1.764630e+01*(1+x*6.013300e-02-x*x*2.019909e-03+x*x*x*1.397540e-05)/(1+x*5.422807e-02+x*x*1.721534e-04+x*x*x*2.311255e-06));
+    fV0CQres=2.021368e+03*(1.+x*4.875652e+06+x*x*4.539997e+05-x*x*x*8.133617e+03)/(1.+x*1.472069e+08+x*x*1.223060e+07+x*x*x*2.177704e+05);
+    fV0AQres=3.661564e+01*(1.+x*1.078803e-01-x*x*4.268523e-03+x*x*x*3.666018e-05)/(1.+x*9.092748e-02-x*x*2.259800e-04-x*x*x*2.475584e-05);
+    fTPCQres=1.350710e+01*(1.+x*2.478133e-01-x*x*1.994573e-03-x*x*x*2.568868e-05)/(1.+x*2.251109e-01+x*x*1.065556e-03+x*x*x*1.059591e-04);
+    //LHC10h
+//    fV0CQres=TMath::Max(1.e-3,5.029474e-03*(1+x*5.707185e-01-x*x*4.066224e-03-x*x*x*3.489881e-05)/(1+x*3.961095e-01-x*x*7.443697e-03+x*x*x*5.587215e-05));
+//    fV0AQres=TMath::Max(1.e-3,4.528592e-03*(1+x*1.746747e-01-x*x*5.681926e-03+x*x*x*5.366525e-05)/(1+x*9.432721e-02-x*x*3.709922e-03+x*x*x*4.062858e-05));
+//    fTPCQres=TMath::Max(1.e-3,1.764630e+01*(1+x*6.013300e-02-x*x*2.019909e-03+x*x*x*1.397540e-05)/(1+x*5.422807e-02+x*x*1.721534e-04+x*x*x*2.311255e-06));
   }
 }
 //_________________________________________________________________________
@@ -1868,44 +1979,17 @@ void AliAnalysisTaskGammaFlow::ApplyFinalFlattening(){//apply final fine flatten
 }  
 //_________________________________________________________________________
 void AliAnalysisTaskGammaFlow::ApplyFinalQFlattening(){//apply final fine flattening
-fRPQ = fRP ;
- fRPQV0A = fRPV0A;
-   fRPQV0C = fRPV0C;
-return ;   
-  Int_t ibin = fTPCfinalC2->FindBin(fCentrality) ;
-  
-  //TPC
-  Double_t v2c =2.*fTPCfinalQC2->GetBinContent(ibin)/fHarmonics;
-  Double_t v2s =2.*fTPCfinalQS2->GetBinContent(ibin)/fHarmonics; 
-  Double_t v3c =2.*fTPCfinalQC4->GetBinContent(ibin)/fHarmonics/2.;
-  Double_t v3s =2.*fTPCfinalQS4->GetBinContent(ibin)/fHarmonics/2.; 
-  fRPQ = fRP +
-  v2c*TMath::Sin(fHarmonics*fRP)-v2s*TMath::Cos(fHarmonics*fRP)+
-  v3c*TMath::Sin(2.*fHarmonics*fRP)-v3s*TMath::Cos(2.*fHarmonics*fRP) ;
-  
+
+  //Apply Q-flattening
+  fRPQ    = fTPCQFlat->MakeFlat(fRP,fCentrality) ;
+  fRPQV0A = fV0AQFlat->MakeFlat(fRPV0A,fCentrality) ;
+  fRPQV0C = fV0CQFlat->MakeFlat(fRPV0C,fCentrality) ;
+    
   while(fRPQ<0)fRPQ+=TMath::TwoPi()/fHarmonics ;
   while(fRPQ>TMath::TwoPi()/fHarmonics)fRPQ-=(TMath::TwoPi()/fHarmonics) ;
-
-  //V0A
-  v2c =2.*fV0AfinalQC2->GetBinContent(ibin)/fHarmonics;
-  v2s =2.*fV0AfinalQS2->GetBinContent(ibin)/fHarmonics; 
-  v3c =2.*fV0AfinalQC4->GetBinContent(ibin)/fHarmonics/2.;
-  v3s =2.*fV0AfinalQS4->GetBinContent(ibin)/fHarmonics/2.; 
-  fRPQV0A = fRPV0A+
-  v2c*TMath::Sin(fHarmonics*fRPV0A)-v2s*TMath::Cos(fHarmonics*fRPV0A)+
-  v3c*TMath::Sin(2.*fHarmonics*fRPV0A)-v3s*TMath::Cos(2.*fHarmonics*fRPV0A) ;
- 
+  
   while(fRPQV0A<0)fRPQV0A+=TMath::TwoPi()/fHarmonics ;
   while(fRPQV0A>TMath::TwoPi()/fHarmonics)fRPQV0A-=(TMath::TwoPi()/fHarmonics) ;
-  
-  //V0C
-  v2c =2.*fV0CfinalQC2->GetBinContent(ibin)/fHarmonics;
-  v2s =2.*fV0CfinalQS2->GetBinContent(ibin)/fHarmonics; 
-  v3c =2.*fV0CfinalQC4->GetBinContent(ibin)/fHarmonics/2.;
-  v3s =2.*fV0CfinalQS4->GetBinContent(ibin)/fHarmonics/2.; 
-  fRPQV0C = fRPV0C +
-  v2c*TMath::Sin(fHarmonics*fRPV0C)-v2s*TMath::Cos(fHarmonics*fRPV0C)+
-  v3c*TMath::Sin(2.*fHarmonics*fRPV0C)-v3s*TMath::Cos(2.*fHarmonics*fRPV0C) ;
   
   while(fRPQV0C<0)fRPQV0C+=TMath::TwoPi()/fHarmonics ;
   while(fRPQV0C>TMath::TwoPi()/fHarmonics)fRPQV0C-=(TMath::TwoPi()/fHarmonics) ;
@@ -1921,16 +2005,16 @@ Double_t AliAnalysisTaskGammaFlow::CentralityWeight(Double_t c){
   Double_t weight=1. ;
   //Central
   if(c<10.)
-    weight = (5.60752e+05-1.58501e+04*c+2.65755e+04*c*c-9.61724e+03*c*c*c+1.32667e+03*c*c*c*c-6.36816e+01*c*c*c*c*c)/5.60752e+05 ;
-  
+    weight = (4.81061e+05-1.18325e+04*c+2.33302e+04*c*c-8.46768e+03*c*c*c+1.16784e+03*c*c*c*c-5.60438e+01*c*c*c*c*c)/500552. ;
+
   //SemiCentral
   if(c>14. && c <50.) //flat region
     weight = 1. ;
   else if(c>10. && c<=14.)
-    weight = (1.17638e+05+2.21094e+03*TMath::Power(c-14.,2)+1.80622e+03*TMath::Power(c-14.,3))/1.17638e+05; 
+    weight = 1.+7.56198e-03*TMath::Power(c-14.,2)+1.25110e-02*TMath::Power(c-14.,3); 
     else if(c>50. && c<=56.)
-       weight = (1.17638e+05-2.54916e+03*TMath::Power(c-50.,2)-2.28989e+02*TMath::Power(c-50.,3))/1.17638e+05; 
-    
+       weight = 1.-2.50575e-02*TMath::Power(c-50.,2)-1.29059e-03*TMath::Power(c-50.,3); 
+     
   if(weight>0.01)
     return 1./weight ;
   else
@@ -1940,8 +2024,7 @@ Double_t AliAnalysisTaskGammaFlow::CentralityWeight(Double_t c){
 Bool_t AliAnalysisTaskGammaFlow::TestPHOSEvent(AliAODEvent * event){
   //Check if event is complete
   AliAODCaloCells * cells = event->GetPHOSCells() ;
-  Int_t a[5]={0} ; //left
-  Int_t b[5]={0} ; //right
+  Int_t a[10]={0} ; //left
   Int_t nCells=cells->GetNumberOfCells();
   for (Int_t iCell=0; iCell<nCells; iCell++) {
     Int_t cellAbsId = cells->GetCellNumber(iCell);
@@ -1950,17 +2033,18 @@ Bool_t AliAnalysisTaskGammaFlow::TestPHOSEvent(AliAODEvent * event){
     Int_t mod  = relId[0];
     Int_t cellX= relId[2];
     if(cellX<29)
-      a[mod]++ ;
+      a[2*mod]++ ;
     else
-      b[mod]++ ;
+      a[2*mod+1]++ ;
   }
   Bool_t bad=kFALSE ;
-  for(Int_t mod=1; mod<4; mod++){
-    if(a[mod]==0 || b[mod]==0)
+  for(Int_t mod=2; mod<8; mod++){
+    if(a[mod]==0){
       bad=kTRUE;
+      FillHistogram("hBadMod",float(mod)) ;
+    }
   }
   
   return bad ;
 }
-
 
