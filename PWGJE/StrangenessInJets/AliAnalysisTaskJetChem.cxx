@@ -227,6 +227,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1nEmbeddedJets(0)
    ,fh1nGenJets(0)
    ,fh1IndexEmbedded(0)
+   ,fh1IndexEmbeddedMC(0)
    ,fh1PtEmbBeforeMatch(0)
    ,fh1PtEmbExtraOnly(0)
    ,fh1PtEmbReject(0)
@@ -543,6 +544,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1nEmbeddedJets(0)
   ,fh1nGenJets(0)
   ,fh1IndexEmbedded(0)
+  ,fh1IndexEmbeddedMC(0)
   ,fh1PtEmbBeforeMatch(0)
   ,fh1PtEmbExtraOnly(0)
   ,fh1PtEmbReject(0)
@@ -862,6 +864,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1nEmbeddedJets(copy.fh1nEmbeddedJets)
   ,fh1nGenJets(copy.fh1nGenJets)
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
+  ,fh1IndexEmbeddedMC(copy.fh1IndexEmbeddedMC)
   ,fh1PtEmbBeforeMatch(copy.fh1PtEmbBeforeMatch)
   ,fh1PtEmbExtraOnly(copy.fh1PtEmbExtraOnly)
   ,fh1PtEmbReject(copy.fh1PtEmbReject)
@@ -1175,8 +1178,9 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1JetPhi                       = o.fh1JetPhi;                 
     fh2JetEtaPhi                    = o.fh2JetEtaPhi;
     fh1nEmbeddedJets                = o.fh1nEmbeddedJets;
-    fh1nGenJets                    = o.fh1nGenJets; 
+    fh1nGenJets                     = o.fh1nGenJets; 
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
+    fh1IndexEmbeddedMC              = o.fh1IndexEmbeddedMC;
     fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
     fh1PtEmbExtraOnly               = o.fh1PtEmbExtraOnly;
     fh1PtEmbReject                  = o.fh1PtEmbReject;
@@ -1704,15 +1708,18 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1nGenJets                   = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
   fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
   fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
+
   fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
   fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
   
   fh1PtEmbReject                = new TH1F("fh1PtEmbReject","Pt spectrum of jets rejected by JetMatching cuts",19,5.,100.);
   fh2PtEtaEmbReject             = new TH2F("fh2PtEtaEmbReject","Pt #eta distribution of jets rejected by JetMatching cuts #eta; #it{p}_{T}",19,5.,100.,200,-1.,1.);
   fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
+ 
   fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
   fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
   
+  fh1IndexEmbeddedMC            = new TH1F("fh1IndexEmbeddedMC","",11,-1.,10.);
   fh1FractionPtEmbeddedMC         = new TH1F("fh1FractionPtEmbeddedMC","",110,0,1.1);
   fh2FractionPtVsEmbeddedJetPtMC  = new TH2F("fh2FractionPtVsEmbeddedJetPtMC","",250,0,250,110,0,1.1);
   fh1DeltaREmbeddedMC             = new TH1F("fh1DeltaREmbeddedMC","",50,0,0.5);
@@ -2233,6 +2240,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1DeltaREmbedded);
     
     if(fBranchGenJets.Length()&&(fMatchMode == 2)){
+    fCommonHistList->Add(fh1IndexEmbeddedMC);
     fCommonHistList->Add(fh1FractionPtEmbeddedMC);
     fCommonHistList->Add(fh2FractionPtVsEmbeddedJetPtMC); 
     fCommonHistList->Add(fh1DeltaREmbeddedMC);
@@ -5443,9 +5451,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  fh1FractionPtEmbeddedMC->Fill(ptFractionEmbeddedMC);
 	  
-	  //cout<<" ij "<<ij<<" indexEmbeddedMC "<<indexEmbeddedMC<<endl;
+	  if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexEmbeddedMC: "<<indexEmbeddedMC<<std::endl;
 	  
-	  if(indexEmbeddedMC>-1){ 
+	  fh1IndexEmbeddedMC->Fill(indexEmbeddedMC);
+
+	  if(indexEmbeddedMC > -1){ 
 	    
 	    embeddedJet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(indexEmbeddedMC));
 	    if(!embeddedJet) continue;
@@ -5454,7 +5464,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Int_t indexExtra = iEmbeddedMatchIndex[indexEmbeddedMC]; 
 	    
-	    //cout<<" ij "<<ij<<" deltaREmbeddedMC "<<deltaREmbeddedMC<<" indexExtra "<<indexExtra<<endl;
+	    if(fDebug > 2)std::cout<<" ij "<<ij<<" deltaREmbeddedMC "<<deltaREmbeddedMC<<" indexExtra "<<indexExtra<<std::endl;
 	    
 	    if(indexExtra > -1){
 	      
@@ -5463,6 +5473,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      ptFractionEmbedded = fRecMatchPtFraction[indexExtra]; 
 	      deltaREmbedded     = embeddedJet->DeltaR((AliVParticle*) (extraJet)); 
 	      
+	      if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexExtra: "<<indexExtra<<" ptFractionEmbedded: "<<ptFractionEmbedded<<" deltaREmbedded: "<<deltaREmbedded<<std::endl;
+	
+
 	    }	
 	  }
 	}
@@ -5485,9 +5498,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	// embedding QA after leading pt cut
 	
-	// if(embeddedJet && extraJet) cout<<" gen jet "<<ij<<" pt "<<jet->Pt()<<" embedded jet pt "<<embeddedJet->Pt()<<" extra jet pt "<<extraJet->Pt()
-	// 				      <<" ptFractionEmbeddedMC "<<ptFractionEmbeddedMC<<" dRMC "<<deltaREmbeddedMC
-	// 				      <<" ptFractionEmbedded "<<ptFractionEmbedded<<" dR "<<deltaREmbedded<<endl;
+        if((fDebug > 2) && embeddedJet && extraJet) cout<<" After leading pt cut: gen jet "<<ij<<" pt "<<jet->Pt()<<" embedded jet pt "<<embeddedJet->Pt()<<" extra jet pt "<<extraJet->Pt()
+				      <<" ptFractionEmbeddedMC "<<ptFractionEmbeddedMC<<" dRMC "<<deltaREmbeddedMC
+				      <<" ptFractionEmbedded "<<ptFractionEmbedded<<" dR "<<deltaREmbedded<<endl;
 	
 	
 	if(embeddedJet){ 
@@ -5510,6 +5523,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);
 	  
+	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - genJetPt: "<<genJetPt<<std::endl; 
+
 	  //charged tracks as crosscheck to Olivers results	
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	  
@@ -5523,6 +5538,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      else jetPt = 0;
 	    }
 	    
+	    if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - jetPt: "<<jetPt<<std::endl; 
+
 	    Float_t trackPt = trackV->Pt();
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
