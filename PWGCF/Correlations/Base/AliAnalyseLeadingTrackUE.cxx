@@ -747,9 +747,11 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   }else if (obj->InheritsFrom("AliAODEvent")){ // RECO AOD TRACKS
   	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
         part = aodEvent->GetTrack(ipart);
+        
+        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (part);
 	
 	// track selection cuts
-	if (fFilterBit != 0 && !(((AliAODTrack*)part)->TestFilterBit(fFilterBit))) return 0; 
+	if (fFilterBit != 0 && !(aodTrack->TestFilterBit(fFilterBit))) return 0; 
 	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
 	
 	// DCA XY
@@ -761,7 +763,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  
 	  Double_t pos[2];
 	  Double_t covar[3];
-	  AliAODTrack* clone = (AliAODTrack*) part->Clone();
+	  AliAODTrack* clone = dynamic_cast<AliAODTrack*> (part->Clone());
 	  Bool_t success = clone->PropagateToDCA(vertex, ((AliVAODHeader*)aodEvent->GetHeader())->GetMagneticField(), 3, pos, covar);
 	  delete clone;
 	  if (!success)
@@ -775,31 +777,31 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	
 	if (fSharedClusterCut >= 0)
 	{
-	  Double_t frac = Double_t(((AliAODTrack*)part)->GetTPCnclsS()) / Double_t(((AliAODTrack*)part)->GetTPCncls());
+	  Double_t frac = Double_t(aodTrack->GetTPCnclsS()) / Double_t(aodTrack->GetTPCncls());
 	  if (frac > fSharedClusterCut)
 	    return 0;
 	}
 	
 	if (fCrossedRowsCut >= 0)
 	{
-	  if (((AliAODTrack*) part)->GetTPCNCrossedRows() < fCrossedRowsCut)
+	  if (aodTrack->GetTPCNCrossedRows() < fCrossedRowsCut)
 	    return 0;
 	}
 	
 	if (fFoundFractionCut >= 0)
 	{
-	  UInt_t findableClusters = ((AliAODTrack*) part)->GetTPCNclsF();
+	  UInt_t findableClusters = aodTrack->GetTPCNclsF();
 	  if (findableClusters == 0)
 	    return 0;
-	  if (((Double_t) ((AliAODTrack*) part)->GetTPCNCrossedRows() / findableClusters) < fFoundFractionCut)
+	  if (((Double_t) aodTrack->GetTPCNCrossedRows() / findableClusters) < fFoundFractionCut)
 	    return 0;
 	}
 
 	// eventually only hadrons
 	if (fOnlyHadrons){
-		Bool_t isHadron = ((AliAODTrack*)part)->GetMostProbablePID()==AliAODTrack::kPion ||
-	                          ((AliAODTrack*)part)->GetMostProbablePID()==AliAODTrack::kKaon ||
-		                  ((AliAODTrack*)part)->GetMostProbablePID()==AliAODTrack::kProton;
+		Bool_t isHadron = aodTrack->GetMostProbablePID()==AliAODTrack::kPion ||
+	                          aodTrack->GetMostProbablePID()==AliAODTrack::kKaon ||
+		                  aodTrack->GetMostProbablePID()==AliAODTrack::kProton;
         	if (!isHadron) return 0;				  
 		}
 		

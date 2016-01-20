@@ -28,6 +28,7 @@ fhFractionSharedpT(0),
 fNAccJets(0),
 fXsec(0),
 fNtrials(0),
+fPthardB(0),
 fhResponse(0)
 {
    /// default constructor
@@ -53,6 +54,7 @@ fhFractionSharedpT(0),
 fNAccJets(0),
 fXsec(0),
 fNtrials(0),
+fPthardB(0),
 fhResponse(0)
 
 {
@@ -80,11 +82,13 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
       fTreeJets->Branch("fJetPartL.",fJetPartL);
       fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
       fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
+      fTreeJets->Branch("fPthardB",  &fPthardB, "fPthardB/I");
    } else {
       fTreeJets->Branch("fJetDet.", fJetDet);
       fTreeJets->Branch("fJetPart.",fJetPart);
       fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
       fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
+      fTreeJets->Branch("fPthardB",  &fPthardB, "fPthardB/I");
    }
    //fOutput->Add(fTreeJets);
    PostData(2, fTreeJets);
@@ -137,7 +141,7 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::Run(){
       AliError(Form("%s : No current file!",GetName()));
       return kFALSE;
    }
-   PythiaInfoFromFile(curfile->GetName(), fXsec, fNtrials, pthardbin);
+   PythiaInfoFromFile(curfile->GetName(), fXsec, fNtrials, fPthardB);
    
    return kTRUE;
 }
