@@ -9,10 +9,15 @@
 
 #include "AliFemtoEventCut.h"
 
+#include <utility> // std::pair
+
+
 /// \class AliFemtoEventCutCentrality
 /// \brief Event cut based on the determined event centrality
 ///
 /// Cuts cuts on event multiplicity and z-vertex position
+///
+/// \author Andrew Kubera, The Ohio State University <andrew.kubera@cern.ch>
 ///
 class AliFemtoEventCutCentrality : public AliFemtoEventCut {
 public:
@@ -90,7 +95,7 @@ protected:
 
   float fEventCentrality[2];      ///< range of centrality
   CentralityType fCentralityType; ///< Selects which centrality calculation algorithm to use
-  float fVertZPos[2];             ///< range of z-position of vertex
+  std::pair<float, float> fVertZPos;  ///< range of z-position of vertex
   float fPsiEP[2];                ///< range of event plane angle
   int fSelectTrigger;             ///< If set, only given triggers will be selected
 
@@ -154,8 +159,7 @@ inline void AliFemtoEventCutCentrality::SetCentralityType(TString typestr)
 
 inline void AliFemtoEventCutCentrality::SetZPosRange(const float lo, const float hi)
 {
-  fVertZPos[0] = lo;
-  fVertZPos[1] = hi;
+  fVertZPos = std::make_pair(lo, hi);
 }
 
 inline void AliFemtoEventCutCentrality::SetEPVZERO(const float lo, const float hi)
@@ -187,14 +191,15 @@ inline AliFemtoEventCutCentrality* AliFemtoEventCutCentrality::Clone() const
 inline AliFemtoEventCutCentrality::AliFemtoEventCutCentrality(const AliFemtoEventCutCentrality& c):
   AliFemtoEventCut(c)
   , fCentralityType(c.fCentralityType)
+  , fVertZPos(c.fVertZPos)
   , fSelectTrigger(c.fSelectTrigger)
   , fNEventsPassed(0)
   , fNEventsFailed(0)
 {
   fEventCentrality[0] = c.fEventCentrality[0];
   fEventCentrality[1] = c.fEventCentrality[1];
-  fVertZPos[0] = c.fVertZPos[0];
-  fVertZPos[1] = c.fVertZPos[1];
+  // fVertZPos[0] = c.fVertZPos[0];
+  // fVertZPos[1] = c.fVertZPos[1];
   fPsiEP[0] = c.fPsiEP[0];
   fPsiEP[1] = c.fPsiEP[1];
 }
@@ -210,8 +215,9 @@ inline AliFemtoEventCutCentrality& AliFemtoEventCutCentrality::operator=(const A
   fEventCentrality[0] = c.fEventCentrality[0];
   fEventCentrality[1] = c.fEventCentrality[1];
   fCentralityType = c.fCentralityType;
-  fVertZPos[0] = c.fVertZPos[0];
-  fVertZPos[1] = c.fVertZPos[1];
+  fVertZPos = c.fVertZPos;
+  // fVertZPos[0] = c.fVertZPos[0];
+  // fVertZPos[1] = c.fVertZPos[1];
   fPsiEP[0] = c.fPsiEP[0];
   fPsiEP[1] = c.fPsiEP[1];
 
@@ -251,7 +257,7 @@ inline
 bool AliFemtoEventCutCentrality::PassVertex(const AliFemtoEvent* event) const
 {
   const float vertex_z = event->PrimVertPos().z();
-  return (fVertZPos[0] < vertex_z) && (vertex_z < fVertZPos[1]);
+  return (fVertZPos.first <= vertex_z) && (vertex_z < fVertZPos.second);
 }
 
 inline

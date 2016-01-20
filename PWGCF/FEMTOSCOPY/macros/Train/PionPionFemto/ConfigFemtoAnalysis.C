@@ -160,8 +160,10 @@ ConfigFemtoAnalysis(const TString& param_str = "")
         AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
-              200, 0.0, 0.5,
-              200, 0.0, 0.5
+              // 200, 0.0, 0.5,
+              // 200, 0.0, 0.5
+              50, -0.1, 0.1,
+              50, -0.1, 0.1
         );
         deta_dphi_cf->SetMagneticFieldSign(1);
 

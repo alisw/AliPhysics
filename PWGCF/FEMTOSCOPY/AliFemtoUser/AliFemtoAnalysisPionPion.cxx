@@ -350,20 +350,17 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   }
 
 //   AliFemtoBasicTrackCut *cut = new AliFemtoBasicTrackCut();
-//   cut->SetCharge(charge);
-//   cut->SetMass(PionMass);
 //   cut->SetNSigmaPion(p.pion_1_NSigmaMin, p.pion_1_NSigmaMax);
-//   cut->SetPt(p.pion_1_PtMin, p.pion_1_PtMax);
-//   cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
 //   cut->SetDCA(p.pion_1_DCAMin, p.pion_1_DCAMax);
 
   AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
   cut->SetCharge(charge);
   cut->SetMass(PionMass);
+  cut->SetPt(p.pion_1_PtMin, p.pion_1_PtMax);
   cut->SetEta(p.pion_1_EtaMin, p.pion_1_EtaMax);
+  cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetMostProbablePion();
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
-
 
   /// Settings for TPC-Inner Runmode
   cut->SetStatus(AliESDtrack::kTPCin);
@@ -511,7 +508,7 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
   }
   // Identical Pion Pairs
   else if (fPairCut) {
-    const TString pair_type_str = "(Identical) " + p1_type_str + "/" + p1_type_str;
+    const TString pair_type_str = "(Identical) " + p1_type_str;
     fPairCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pair(true, pair_type_str, fMCAnalysis),
                             new AliFemtoCutMonitorPionPion::Pair(false, pair_type_str, fMCAnalysis));
   }
@@ -613,22 +610,27 @@ TList* AliFemtoAnalysisPionPion::ListSettings()
 {
   TList *setting_list = new TList();
 
-
   setting_list->AddVector(
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.piontype=%d", fPionType_1)
-    ),
-
-    new TObjString(
-      TString::Format("AliFemtoAnalysisPionPion.lambdatype=%d", fPionType_2)
-    ),
 
     new TObjString(
       TString::Format("AliFemtoAnalysisPionPion.mc_analysis=%d", fMCAnalysis)
     ),
 
+    new TObjString(
+      TString::Format("AliFemtoAnalysisPionPion.identical_analysis=%d", AnalyzeIdenticalParticles())
+    ),
+
+    new TObjString(
+      TString::Format("AliFemtoAnalysisPionPion.pion_1_type=%d", fPionType_1)
+    ),
+
   NULL);
+
+  if (!AnalyzeIdenticalParticles()) {
+    setting_list->Add(
+      new TObjString(TString::Format("AliFemtoAnalysisPionPion.pion_2_type=%d", fPionType_2))
+    );
+  }
 
   TList *parent_list = AliFemtoVertexMultAnalysis::ListSettings();
 
