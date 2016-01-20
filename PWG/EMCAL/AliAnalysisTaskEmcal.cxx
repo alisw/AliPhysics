@@ -1127,6 +1127,10 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
     }
   }
+  else {
+    fCent = 99;
+    fCentBin = 0;
+  }
 
   if (fIsPythia) {
 
