@@ -770,6 +770,7 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
 
   Int_t used=0;
 
+  /* // RS if it is, so what? Cascade has complete information
   // Check if this V0 comes from a reconstructed decay
   Int_t ncs=GetNumberOfCascades();
   for (Int_t n=0; n<ncs; n++) {
@@ -784,6 +785,7 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
     if (csIdxP==lastIdxP)
        if (csIdxN==lastIdxN) used++;
   }
+  */ 
 
   //Replace the removed V0 with the last V0 
   TClonesArray &a=*fV0s;
@@ -794,6 +796,9 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
   //v0 is pointing to the last V0 candidate... 
   new (a[rm]) AliESDv0(*v0);
   delete a.RemoveAt(last);
+
+  /* 
+     // RS: why do we need to remap indices of the tracks when just the V0 is removed?
 
   if (!used) return kTRUE;
   
@@ -814,7 +819,7 @@ Bool_t  AliESDEvent::RemoveV0(Int_t rm) const
          if (!used) return kTRUE;
       }
   }
-
+  */
   return kTRUE;
 }
 
