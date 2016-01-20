@@ -903,7 +903,7 @@ AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const
   */
   // Check if this track is associated with a CaloCluster
   Int_t ncl=GetNumberOfCaloClusters();
-  /* RS
+
   for (Int_t n=0; n<ncl; n++) {
     AliESDCaloCluster *cluster=GetCaloCluster(n);
     TArrayI *arr=cluster->GetTracksMatched();
@@ -914,7 +914,7 @@ AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm) const
       if (idx==last) used++;     
     }
   }
-  */
+
 
   // from here on we remove the track
   //
