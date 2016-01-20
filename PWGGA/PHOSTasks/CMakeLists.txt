@@ -35,7 +35,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
-                   )
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                  )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
