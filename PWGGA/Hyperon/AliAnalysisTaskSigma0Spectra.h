@@ -1,6 +1,13 @@
 #ifndef ALIANALYSISTASKHYPERONSPECTRA_H
 #define ALIANALYSISTASKHYPERONSPECTRA_H
 
+
+
+
+
+//#ifndef SIGMA0TESTSPECTRA_H
+//#define SIGMA0TESTSPECTRA_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -73,15 +80,6 @@ class AliAnalysisTaskSigma0Spectra : public AliAnalysisTaskSigma0
   //  TClonesArray * fTPCRhominusEvent ;   //tracks in the current event
   //  TClonesArray * fTPCPhi0Event ;   //tracks in the current event
    		
-   Int_t fLeadingPi0PHOS ;      //Leading pi0 
-   Double_t fELeadingPi0PHOS ;  //Energy of the leading pi0 
-   Int_t fLeadingPi0EMCAL ;      //Leading pi0 
-   Double_t fELeadingPi0EMCAL ;  //Energy of the leading pi0 
-   Int_t fLeadingPi0Conv ;      //Leading pi0 
-   Double_t fELeadingPi0Conv ;  //Energy of the leading pi0 
-   Int_t fLeadingPi0EMConv ;      //Leading pi0 
-   Double_t fELeadingPi0EMConv ;  //Energy of the leading pi0 
-
   //  Int_t fLeadingRho0TPC ;      //Leading rho0
   //  Double_t fELeadingRho0TPC ;  //Energy of the leading rho0
   //  Int_t fLeadingRhoplusTPC ;      //Leading pi0
@@ -91,15 +89,11 @@ class AliAnalysisTaskSigma0Spectra : public AliAnalysisTaskSigma0
   // Int_t fLeadingPhi0TPC ;      //Leading phi0
   //  Double_t fELeadingPhi0TPC ;  //Energy of the leading phi0
 
-  Int_t fLeadingCl1PHOS;
-  Int_t fLeadingCl2PHOS;
-  Int_t fLeadingCl1EMCAL;
-  Int_t fLeadingCl2EMCAL;
-  Int_t fLeadingCl1Conv;
-  Int_t fLeadingCl2Conv;
 
    		
   ClassDef(AliAnalysisTaskSigma0Spectra, 1); // Analysis task for conversion + calorimeters
 };
 
-#endif //ALIANALYSISTASKHYPERON_H
+#endif //ALIANALYSISTASHYPERON_H
+
+// #endif //SIGMA0TESTSPECTRA_H
