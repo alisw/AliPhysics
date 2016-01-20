@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////
 #include <TRandom3.h>
 #include <TObjArray.h>
-#include "AliITSUSimulation.h"
+#include "AliITSMFTSimulation.h"
 #include "AliITSMFTSegmentationPix.h"
 #include "AliITSMFTSegmentationPix.h"
 
@@ -22,7 +22,7 @@ class TH2;
 
 //-------------------------------------------------------------------
 
-class AliITSUSimulationPix : public AliITSUSimulation {
+class AliITSUSimulationPix : public AliITSMFTSimulation {
 public:
      //
     AliITSUSimulationPix();

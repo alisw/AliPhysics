@@ -37,7 +37,7 @@
 #include "AliDigitizationInput.h"
 #include "AliITSUDigitizer.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSUSimulation.h"
+#include "AliITSMFTSimulation.h"
 #include "AliITSMFTSDigit.h"
 
 ClassImp(AliITSUDigitizer)
@@ -155,11 +155,11 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
     //
     if (!fRoif && !fModActive[chip]) continue;
     int lr = geom->GetLayer(chip);
-    AliITSUSimulation *sim = fITS->GetSimulationModel(lr);
+    AliITSMFTSimulation *sim = fITS->GetSimulationModel(lr);
     if (!sim) AliFatal(Form("The simulation model for layer %d is not available",lr));
     //
     // Fill the chip with the sum of SDigits
-    sim->InitSimulationChip(fITS->GetChip(chip), event, fITS->GetSegmentation(lr), fITS->GetResponseParam(lr));
+    sim->InitSimulationChip((AliITSMFTChip*)(fITS->GetChip(chip)), event, fITS->GetSegmentation(lr), fITS->GetResponseParam(lr));
     //
     for (int ifiles=0; ifiles<nfiles; ifiles++ ) {
       //

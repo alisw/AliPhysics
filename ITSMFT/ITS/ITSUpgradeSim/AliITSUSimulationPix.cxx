@@ -76,7 +76,7 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 
 //______________________________________________________________________
 AliITSUSimulationPix::AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
-:AliITSUSimulation(sim,map)
+:AliITSMFTSimulation(sim,map)
 ,fTanLorAng(0)
 ,fGlobalChargeScale(1.0)
 ,fSpread2DHisto(0)
@@ -90,7 +90,7 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSens
 
 //______________________________________________________________________
 AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s)
-:AliITSUSimulation(s)
+:AliITSMFTSimulation(s)
 ,fTanLorAng(s.fTanLorAng)
 ,fGlobalChargeScale(s.fGlobalChargeScale)
 ,fSpread2DHisto(s.fSpread2DHisto)
@@ -113,7 +113,7 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
 {
     //    Assignment operator
     if (&s == this) return *this;
-    AliITSUSimulation::operator=(s);
+    AliITSMFTSimulation::operator=(s);
     fSpread2DHisto = s.fSpread2DHisto;
     //
     fGlobalChargeScale = s.fGlobalChargeScale;

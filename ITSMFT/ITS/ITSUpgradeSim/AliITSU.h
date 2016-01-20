@@ -17,7 +17,7 @@
 class TString;
 class TTree;
 class AliITSMFTSDigit;
-class AliITSUSimulation;
+class AliITSMFTSimulation;
 class AliITSMFTSegmentationPix;
 class AliITSUChip;
 class AliITSCalibration;
@@ -67,9 +67,9 @@ class AliITSU : public AliDetector {
   virtual void MakeBranchD(const char* file);
   virtual void MakeBranchInTreeD(TTree* treeD, const char* file=0);
   virtual void SetTreeAddress();
-  virtual AliITSUSimulation*   GetSimulationModel(Int_t lr)   {return (AliITSUSimulation*)fSimModelLr[lr];}
-  virtual AliITSMFTSegmentationPix*  GetSegmentation(Int_t lr)      {return (AliITSMFTSegmentationPix*)fSegModelLr[lr];}
-  virtual AliITSMFTParamList*    GetResponseParam(Int_t lr)     {return (AliITSMFTParamList*)fResponseLr[lr];}
+  virtual AliITSMFTSimulation*   GetSimulationModel(Int_t lr)   {return fSimModelLr[lr];}
+  virtual AliITSMFTSegmentationPix*  GetSegmentation(Int_t lr)  {return fSegModelLr[lr];}
+  virtual AliITSMFTParamList*    GetResponseParam(Int_t lr)     {return fResponseLr[lr];}
   //=================== Hits =========================================
   virtual void StepManager() {} // See Step Manager for specific geometry.
   //------------ sort hits by chip for Digitisation ----------------
@@ -138,7 +138,7 @@ class AliITSU : public AliDetector {
   TObjArray*            fDetDigits;      //! AliDetector has TClonesArray fDigits, avoid same name
   AliITSMFTSensMap*       fSensMap;        //! sensor map for digitization
   //
-  AliITSUSimulation    **fSimModelLr;     //! simulation objects per layer
+  AliITSMFTSimulation    **fSimModelLr;     //! simulation objects per layer
   AliITSMFTSegmentationPix   **fSegModelLr;     //! segmentation objects per layar
   AliITSMFTParamList     **fResponseLr;     //! response parameters for each layer
   TObjArray            *fCalibration;    //! calibration objects

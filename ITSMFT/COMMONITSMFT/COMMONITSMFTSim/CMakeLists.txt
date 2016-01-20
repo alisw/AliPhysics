@@ -36,6 +36,7 @@ set(SRCS
      AliITSMFTDigitPix.cxx
      AliITSMFTHit.cxx
      AliITSMFTSimuParam.cxx
+     AliITSMFTSimulation.cxx
    )
 
 # Headers from sources

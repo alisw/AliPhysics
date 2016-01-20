@@ -81,7 +81,7 @@ the AliITS class.
 #include "AliITSULoader.h"
 #include "AliITSUHit.h"
 #include "AliITSMFTSDigit.h"
-#include "AliITSUSimulation.h"
+#include "AliITSMFTSimulation.h"
 #include "AliITSUSimulationPix.h"
 #include "AliMC.h"
 #include "AliITSUDigitizer.h"
@@ -511,7 +511,7 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
   //
   for(int chip=0;chip<nchips;chip++) {
     int lr = fGeomTGeo->GetLayer(chip);
-    AliITSUSimulation* sim = GetSimulationModel(lr);
+    AliITSMFTSimulation* sim = GetSimulationModel(lr);
     sim->InitSimulationChip(GetChip(chip),evNumber/*,gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
     //
     if (prevLr!=lr) { // new layer started)
@@ -582,7 +582,7 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   //
   for (Int_t chip=0;chip<nchips;chip++) {
     int lr = fGeomTGeo->GetLayer(chip);
-    AliITSUSimulation* sim = GetSimulationModel(lr);
+    AliITSMFTSimulation* sim = GetSimulationModel(lr);
     //
     sim->InitSimulationChip(GetChip(chip),evNumber/*gAlice->GetEvNumber()*/,GetSegmentation(lr),GetResponseParam(lr));
     if (prevLr!=lr) { // new layer started)
@@ -638,7 +638,7 @@ void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
   branch->SetAddress(&ptarray);
   for (int chip=0;chip<nchips;chip++){
     int id = fGeomTGeo->GetChipChipTypeID(chip);
-    AliITSUSimulation* sim = GetSimulationModel(id);
+    AliITSMFTSimulation* sim = GetSimulationModel(id);
     if (!sim) AliFatal(Form("The sim.class for chip %d of ChipTypeID %d is missing",chip,id));
     sim->CreateFastRecPoints( GetChip(chip) ,chip,gRandom,ptarray);
     lTR->Fill();
@@ -837,7 +837,7 @@ void AliITSU::SDigits2Digits()
   //
   for (int chip=0;chip<nchips;chip++) {
     int lr = fGeomTGeo->GetLayer(chip);
-    AliITSUSimulation* sim = GetSimulationModel(lr);
+    AliITSMFTSimulation* sim = GetSimulationModel(lr);
     sim->InitSimulationChip(GetChip(chip),gAlice->GetEvNumber(),GetSegmentation(lr),GetResponseParam(lr));
     //
     if (prevLr!=lr) { // new layer started)
@@ -875,7 +875,7 @@ void AliITSU::InitSimulation()
   fSimuParam    = (AliITSMFTSimuParam*)cdbEnt->GetObject();
   //
   fSensMap      = new AliITSMFTSensMap("AliITSMFTSDigit",0,0);
-  fSimModelLr   = new AliITSUSimulation*[fNLayers];
+  fSimModelLr   = new AliITSMFTSimulation*[fNLayers];
   fSegModelLr   = new AliITSMFTSegmentationPix*[fNLayers];
   fResponseLr   = new AliITSMFTParamList*[fNLayers];
   //
@@ -891,7 +891,7 @@ void AliITSU::InitSimulation()
     int sType = dType/AliITSMFTAux::kMaxSegmPerChipType; // detector simulation class
     //
     // check if the simulation of this sType was already created for preceeding layers
-    AliITSUSimulation* simUpg = 0;
+    AliITSMFTSimulation* simUpg = 0;
     for (int j=fNLayers-1;j>i;j--) {
       simUpg = GetSimulationModel(j);
       if (simUpg && int(simUpg->GetUniqueID())==sType) break;

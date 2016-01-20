@@ -13,23 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 ///////////////////////////////////////////////////////////////////////////////
-// This is the base class for ITSU detector signal simulations. Data members //
+// This is the base class for ITSMFT detector signal simulations. Data members //
 ///////////////////////////////////////////////////////////////////////////////
 #include <TRandom.h>
 #include <TArrayI.h>
 #include "TSeqCollection.h"
 #include "AliLog.h"
-#include "AliITSUSimulation.h"
+#include "AliITSMFTSimulation.h"
 #include "AliITSMFTSegmentationPix.h"
 #include "AliITSMFTSDigit.h"
-#include "AliITSUChip.h"
+#include "AliITSMFTChip.h"
 #include "AliITSMFTParamList.h"
 using namespace TMath;
 
-ClassImp(AliITSUSimulation)
+ClassImp(AliITSMFTSimulation)
 
 //______________________________________________________________________
-AliITSUSimulation::AliITSUSimulation()
+AliITSMFTSimulation::AliITSMFTSimulation()
 :  fSeg(0)
   ,fCalibDead(0)
   ,fCalibNoisy(0)
@@ -45,7 +45,7 @@ AliITSUSimulation::AliITSUSimulation()
     // Default constructor
 }
 //______________________________________________________________________
-AliITSUSimulation::AliITSUSimulation(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
+AliITSMFTSimulation::AliITSMFTSimulation(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
   :fSeg(0)
   ,fCalibDead(0)
   ,fCalibNoisy(0)
@@ -62,7 +62,7 @@ AliITSUSimulation::AliITSUSimulation(AliITSMFTSimuParam* sim,AliITSMFTSensMap* m
 }
 
 //__________________________________________________________________________
-AliITSUSimulation::AliITSUSimulation(const AliITSUSimulation &s) 
+AliITSMFTSimulation::AliITSMFTSimulation(const AliITSMFTSimulation &s) 
   :TObject(s)
   ,fSeg(s.fSeg)
   ,fCalibDead(s.fCalibDead)
@@ -80,7 +80,7 @@ AliITSUSimulation::AliITSUSimulation(const AliITSUSimulation &s)
 }
 
 //_________________________________________________________________________
-AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
+AliITSMFTSimulation&  AliITSMFTSimulation::operator=(const AliITSMFTSimulation &s)
 {
   //    Assignment operator
   if(&s == this) return *this;
@@ -98,7 +98,7 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::InitSimulationChip(AliITSUChip* mod, Int_t event, AliITSMFTSegmentationPix* seg, AliITSMFTParamList* resp)
+void AliITSMFTSimulation::InitSimulationChip(AliITSMFTChip* mod, Int_t event, AliITSMFTSegmentationPix* seg, AliITSMFTParamList* resp)
 {
   //  This function creates maps to build the list of tracks for each
   //  summable digit. Inputs defined by base class.
@@ -114,7 +114,7 @@ void AliITSUSimulation::InitSimulationChip(AliITSUChip* mod, Int_t event, AliITS
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulation::AddSDigitsToChip(TSeqCollection *pItemArr,Int_t mask )
+Bool_t AliITSMFTSimulation::AddSDigitsToChip(TSeqCollection *pItemArr,Int_t mask )
 {
   // Add Summable digits to chip maps.
   // Inputs:
@@ -139,7 +139,7 @@ Bool_t AliITSUSimulation::AddSDigitsToChip(TSeqCollection *pItemArr,Int_t mask )
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht,Double_t signal, Int_t roCycle) 
+void AliITSMFTSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht,Double_t signal, Int_t roCycle) 
 {
   // update map with new hit
   // Note: roCycle can be anything between -kMaxROCycleAccept : kMaxROCycleAccept
@@ -158,7 +158,7 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int_t roCycle) 
+void AliITSMFTSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int_t roCycle) 
 {
   // update map with new hit
   if (Abs(roCycle)>kMaxROCycleAccept) {
@@ -175,7 +175,7 @@ void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int
 }
 
 //______________________________________________________________________
-Int_t AliITSUSimulation::GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,TArrayI &indx)
+Int_t AliITSMFTSimulation::GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,TArrayI &indx)
 {
   // generate random sample [0:nmax] of ngen variables, and fill orreder indices 
   // return actual number of generated values 
@@ -201,7 +201,7 @@ Int_t AliITSUSimulation::GenOrderedSample(UInt_t nmax,UInt_t ngen,TArrayI &vals,
 }
 
 //______________________________________________________________________
-Double_t AliITSUSimulation::GenerateReadOutCycleOffset()
+Double_t AliITSMFTSimulation::GenerateReadOutCycleOffset()
 {
   // Generate randomly the strobe
   // phase w.r.t to the LHC clock
