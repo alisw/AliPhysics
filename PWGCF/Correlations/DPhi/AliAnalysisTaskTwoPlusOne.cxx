@@ -34,6 +34,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
 : AliAnalysisTaskSE(name),
   fMixingTracks(10000),
   fMode(0),
+  fIsNano(0),
   fAnalyseUE(0x0),
 // pointers to UE classes
   fHistos(0x0),
@@ -236,6 +237,10 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	centrality = 85;
       else 
 	centrality = 95;
+  }
+
+  if(fIsNano){
+    centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
   }
 
   if(centrality>=0)

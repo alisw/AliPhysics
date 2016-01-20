@@ -46,6 +46,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
   void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
   void   SetfMode( Int_t val ){ fMode = val; }
+  void   SetfIsNano( Int_t val ){ fIsNano = val; }
   void   SetZVertex( Double_t val )    { fZVertex = val; }
   
   // track cuts
@@ -88,6 +89,9 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   Int_t  		fMixingTracks;		// size of track buffer for event mixing
   Int_t                 fMode; // fMode = 0; data mode
                                // fMode = 1; mc mode
+
+  Int_t                 fIsNano; //fIsNano = 0; normal mode
+                                 //fIsNano = 1; use nano AODs as input
 
   // Pointers to external UE classes
   AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
