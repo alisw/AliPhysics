@@ -81,7 +81,9 @@ public:
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
+  virtual UChar_t  GetITSSharedClusterMap() const {return 0;}
   virtual Bool_t   HasPointOnITSLayer(Int_t /*i*/) const { return kFALSE; }
+  virtual Bool_t   HasSharedPointOnITSLayer(Int_t /*i*/) const { return kFALSE; }
   virtual void     GetITSdEdxSamples(Double_t s[4]) const {for (int i=4;i--;) s[i]=0;};
   virtual const TBits* GetTPCClusterMapPtr() const {return NULL;}
   virtual const TBits* GetTPCFitMapPtr()     const {return NULL;}
@@ -99,7 +101,7 @@ public:
   virtual const    AliDetectorPID* GetDetectorPID() const { return 0x0; }
   virtual Double_t GetTRDchi2()          const { return -1;}
   virtual Int_t    GetNumberOfClusters() const {return 0;}
-
+  virtual Double_t GetITSchi2()          const {return 0;}
   virtual Float_t GetTPCCrossedRows() const {return 0;}
 
   virtual Bool_t RelateToVVertex(const AliVVertex* /*vtx*/,

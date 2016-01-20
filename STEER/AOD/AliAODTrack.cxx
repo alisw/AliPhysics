@@ -41,6 +41,7 @@ AliAODTrack::AliAODTrack() :
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fITSchi2(0),
   fFlags(0),
   fLabel(-999),
   fTOFLabel(),
@@ -103,6 +104,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fITSchi2(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -169,6 +171,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fITSchi2(0),
   fFlags(0),
   fLabel(label),
   fTOFLabel(),
@@ -232,6 +235,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
   fPID(0),
+  fITSchi2(trk.fITSchi2),
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
   fTOFLabel(),
@@ -295,6 +299,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fChi2perNDF        = trk.fChi2perNDF;
     fChi2MatchTrigger  = trk.fChi2MatchTrigger;
     SetPID( trk.fPID );
+    fITSchi2           = trk.fITSchi2;
     fFlags             = trk.fFlags;
     fLabel             = trk.fLabel;    
     fTrackLength       = trk.fTrackLength;
