@@ -597,10 +597,10 @@ Bool_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber, Int_t cathode) const
   
   if (MuonChamber < 14) {
     
-    if (cathode < 0) return TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber) &&
-                            TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber+4);
+    if (cathode < 0) return TESTBIT(GetMUONTrigHitsMapTrg(), 13-MuonChamber) &&
+                            TESTBIT(GetMUONTrigHitsMapTrg(), 13-MuonChamber+4);
     
-    if (cathode < 2) return TESTBIT(GetHitsPatternInTrigCh(), 13-MuonChamber+(1-cathode)*4);
+    if (cathode < 2) return TESTBIT(GetMUONTrigHitsMapTrg(), 13-MuonChamber+(1-cathode)*4);
     
   }
   
