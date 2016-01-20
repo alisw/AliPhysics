@@ -1,14 +1,11 @@
 ///
 /// \file AliFemtoParticleCut.h
-/// \class AliFemtoParticleCut
-/// \brief The pure virtual base class for the particle cut.
 ///
-/// All particle cuts must inherit from this one
-///
-
 
 #ifndef ALIFEMTOPARTICLECUT_H
 #define ALIFEMTOPARTICLECUT_H
+
+#pragma once
 
 #include "AliFemtoTypes.h"
 #include "AliFemtoCutMonitorHandler.h"
@@ -17,6 +14,12 @@
 
 class AliFemtoAnalysis;
 
+
+/// \class AliFemtoParticleCut
+/// \brief The pure virtual base class for the particle cut.
+///
+/// All particle cuts must inherit from this one.
+///
 class AliFemtoParticleCut : public AliFemtoCutMonitorHandler {
 
   friend class AliFemtoAnalysis;
@@ -35,14 +38,14 @@ public:
 
   virtual AliFemtoParticleCut* Clone() { return NULL; }
 
-  virtual AliFemtoParticleType Type() = 0;  ///< Pure virtual function which returns the particle type
+  virtual AliFemtoParticleType Type() = 0;    ///< Pure virtual function which returns the particle type
 
-  ///< The following allows "back-pointing" from the CorrFctn to the "parent" Analysis
+  /// The following allows "back-pointing" from the CorrFctn to the "parent" Analysis
   AliFemtoAnalysis* HbtAnalysis() { return fyAnalysis; };
   void SetAnalysis(AliFemtoAnalysis *anAnalysis) { fyAnalysis = anAnalysis; };
 
 protected:
-  AliFemtoAnalysis *fyAnalysis; ///< Link to the base analysis class
+  AliFemtoAnalysis *fyAnalysis; ///!<! Link to the base analysis class
   double fMass;
 
 #ifdef __ROOT__
@@ -52,12 +55,13 @@ protected:
 #endif
 };
 
+
 inline AliFemtoParticleCut::AliFemtoParticleCut():
   AliFemtoCutMonitorHandler(),
   fyAnalysis(NULL),
   fMass(0.0)
 {
-    /* no-op */
+  /* no-op */
 }
 
 inline AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut &c):
@@ -65,14 +69,15 @@ inline AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut &c):
   fyAnalysis(c.fyAnalysis),
   fMass(c.fMass)
 {
-#ifdef STHBTDEBUG
-  cout << " AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut& c) - fMass: " << fMass << endl;
-#endif
+  /* no-op */
 }
 
 inline AliFemtoParticleCut &AliFemtoParticleCut::operator=(const AliFemtoParticleCut &aCut)
 {
-  if (this == &aCut) return *this;
+  if (this == &aCut) {
+    return *this;
+  }
+  AliFemtoCutMonitorHandler::operator=(aCut);
   fyAnalysis = aCut.fyAnalysis;
   fMass = aCut.fMass;
   return *this;
@@ -81,10 +86,9 @@ inline AliFemtoParticleCut &AliFemtoParticleCut::operator=(const AliFemtoParticl
 inline TList *AliFemtoParticleCut::ListSettings()
 {
   TList *tListSetttings = new TList();
-  char buf[100];
-  snprintf(buf, 100, "AliFemtoParticleCut.mass=%f", fMass);
-  TObjString *str = new TObjString(buf);
-  tListSetttings->Add(str);
+  tListSetttings->Add(
+    new TObjString(TString::Format("AliFemtoParticleCut.mass=%f", fMass))
+  );
   return tListSetttings;
 }
 

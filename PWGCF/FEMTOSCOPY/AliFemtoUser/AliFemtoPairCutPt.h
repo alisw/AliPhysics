@@ -11,8 +11,8 @@
 /// \brief A pair cut which checks if the sum of the transverse momenta of two
 ///        particles fit within given range
 ///
-/// \authors Malgorzata Janik, Warsaw University of Technology, <majanik@cern.ch>
-///          Lukasz Graczykowski, Warsaw University of Technology, <lgraczyk@cern.ch>
+/// \author Malgorzata Janik, Warsaw University of Technology, <majanik@cern.ch>
+/// \author Lukasz Graczykowski, Warsaw University of Technology, <lgraczyk@cern.ch>
 ///
 class AliFemtoPairCutPt : public AliFemtoPairCut {
 public:
