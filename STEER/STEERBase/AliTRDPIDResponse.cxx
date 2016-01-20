@@ -539,7 +539,7 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
 Bool_t AliTRDPIDResponse::SetPIDResponseObject(const AliTRDPIDResponseObject * obj){
 
     fkPIDResponseObject = obj;
-    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0)fkPIDResponseObject->Print("");
+    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0 && obj) fkPIDResponseObject->Print("");
     return kTRUE;
 }
 
