@@ -1,5 +1,11 @@
+
 #ifndef ALIANALYSISTASKHYPERON_H
 #define ALIANALYSISTASKHYPERON_H
+
+
+
+//#ifndef SIGMA0TEST_H
+//#define SIGMA0TEST_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -12,11 +18,10 @@
 ////////////////////////////////////////////////
 
 #include "AliAnalysisTaskSE.h"
+#include "AliV0ReaderV1.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
-
-
-
+#include "AliKFConversionPhoton.h"
 
 class AliESDInputHandler;
 class AliESDEvent;
@@ -38,11 +43,8 @@ class AliCaloParticle ;
 class AliPHOSGeometry;
 class AliTriggerAnalysis;
 class AliMultiplicity;
-class AliV0ReaderV1;
-//class AliKFConversionPhoton;
 class TH2I ;
 class TTree;
-
 
 
 #include "TH2I.h"
@@ -92,6 +94,8 @@ protected:
     void SelectConvPhotons() ; //collects V0s in event
     void SelectPhotonsFB() ;
     void SelectLambda() ;
+    void SelectV0() ;
+  void SelectGammaV0() ;
     void SelectMCLambda() ;
     void SelectPHOSPhotons(); //collects PHOS photons in event
     void SelectEMCALPhotons(); //collects EMCAL photons in event
@@ -100,7 +104,8 @@ protected:
     void REvalIsolation( TLorentzVector *p, const Int_t itype = 100 )  ;
     
     void FillCorr(TLorentzVector * trig, const Int_t itype = 100) ;
-    
+     
+    AliMCEvent   *fMCEvent;
     
     Int_t EvalIsolation(TLorentzVector *p) ; //checks if this particle isolated
     Int_t EvalMCIsolation( TParticle *p) ; //checks if this particle generated to be isolated
@@ -140,6 +145,7 @@ private:
         kConvPlan = BIT(22)
     };
     
+
     
 protected:
   		
@@ -148,18 +154,22 @@ protected:
     
     AliESDEvent* fESDEvent;    //!pointer to the ESDEvent
     AliESDpid * fESDpid ;      //class for Track PID calculation
+     AliPIDResponse  *   fPIDResponse;
+
     AliESDtrackCuts * fESDtrackCuts; //class for charged multiplicity estimation
     AliStack * fStack;         //! pointer to the MC particle stack
     TList * fOutputContainer;  //final histogram container
     TClonesArray *fReaderGammas;
     
     TList * fTreeList;
-    TTree * fSigma0;
-    TTree * fTreeEvent;
+    TTree *fTreeV0;
+
+    //    TTree *tSigma0;
+    TTree *tTreeEvent;
     
     Double_t fCentr ;
     
-    
+   
     Int_t fRunPeriod ;
     
     Double_t fMinOpeningAngleGhostCut; // minimum angle cut
@@ -189,21 +199,6 @@ protected:
     TClonesArray * fPHOSEvent ;    //PHOS photons in current event
     TClonesArray * fEMCALEvent ;   //EMCAL  photons in current event
     TClonesArray * fGenpi0Event ;   //EMCAL  photons in current event
-    
-    
-    Int_t fLeadingTrack ; //Index of the leading track
-    Int_t fLeadingPHOS  ; //Index of the leading PHOS cluster
-    Int_t fLeadingEMCAL ; //Index of the leading EMCAL
-    Int_t fLeadingConv ;  //Index of the leading converion
-    Int_t fAbsLeading ;   //Who is maximal leader Track, PHOS, EMCAL
-    Int_t fLeadingGenpi0 ;  //Index of the leading generated pi0
-    
-    
-    Double_t fELeadingTrack ; //Index of the leading track
-    Double_t fELeadingPHOS  ; //Index of the leading PHOS cluster
-    Double_t fELeadingEMCAL ; //Index of the leading EMCAL
-    Double_t fELeadingConv ;  //Index of the leading conversion photon
-    Double_t fELeadingGenpi0 ;  //Index of the leading generated pi0
     
     
     Double_t fnSigmaAboveElectronLine; //fnSigmaAboveElectronLine
@@ -236,7 +231,15 @@ protected:
     Double_t  fV0multC;
     Double_t  fSPDmultClust;
     Double_t  fSPDmultTracl;
-        
+    Double_t fInputEvent;
+    //  Double_t fMCEvent;
+    Double_t fMCStack;
+    Bool_t fIsMC;  
+   
+    
+    
+    //    AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
+    
     Int_t fnCINT1B;           // Number of CINT1B triggers
     Int_t fnCINT1A;           // Number of CINT1A triggers
     Int_t fnCINT1C;           // Number of CINT1C triggers
@@ -254,45 +257,84 @@ protected:
     
     //================= Variables for Tree ==================//
     
-    Double_t fLambdaMod;
-    Double_t fLambdaMass;
-    Double_t fLambdaPx;
-    Double_t fLambdaPy;
-    Double_t fLambdaPz;
-    Double_t fLambdaArmPt;
-    Double_t fLambdaArmAlpha;
-    Double_t fLambdaEta;
-    Double_t fLambdaCosPointingAngle;
-    Double_t fLambdaDCAtoPVPos;
-    Double_t fLambdaDCAtoPVNeg;
-    Double_t fLambdaDCADaughters;
-    Double_t fLambdaRadius;
+
+    Float_t fLambdaMod;
+     Float_t fLambdaMass;
+     Float_t fLambdaPx;
+     Float_t fLambdaPy;
+     Float_t fLambdaPz;
+     Float_t fLambdaArmPt;
+     Float_t fLambdaArmAlpha;
+     Float_t fLambdaEta;
+     Float_t fLambdaCosPointingAngle;
+     Float_t fLambdaDCAtoPVPos;
+    Float_t fLambdaDCAtoPVNeg;
+     Float_t fLambdaDCADaughters;
+     Float_t fLambdaRadius;
     
     
-    Double_t fGammaMass;
-    Double_t fGammaPx;
-    Double_t fGammaPy;
-    Double_t fGammaPz;
-    Double_t fGammaCosPointingAngle;
-    Double_t fGammaEta;
-    Double_t fGammaArmPt;
-    Double_t fGammaArmAlpha;
-    Double_t fGammaZConv;
-    Double_t fGammaChi2;
-    Double_t fGammaRadius;
+     Float_t fGammaMass;
+     Float_t fGammaPx;
+     Float_t fGammaPy;
+     Float_t fGammaPz;
+    Float_t fGammaCosPointingAngle;
+    Float_t fGammaDCADaughters;
+    Float_t fGammaDCAtoPVNeg;
+    Float_t fGammaDCAtoPVPos;
+    Float_t fGammaDCAzToPrimVtx;
+     Float_t fGammaEta;
+     Float_t fGammaArmPt;
+     Float_t fGammaArmAlpha;
+     Float_t fGammaZConv;
+     Float_t fGammaChi2;
+     Float_t fGammaRadius;
     
-    Double_t fSigmaMass;
-    Double_t fSigmaPt;
-    Double_t fSigmaArmPt;
-    Double_t fSigmaArmAlpha;
+     Float_t fSigmaMass;
+     Float_t fSigmaPt;
+     Float_t fSigmaArmPt;
+     Float_t fSigmaArmAlpha;
     Float_t  fCentralityV0M;
+
+    Float_t   fLambdaTPx;
+    Float_t   fLambdaTPy;
+    Float_t   fLambdaTPz;
+    Float_t   fGammaTPx;
+    Float_t    fGammaTPy;
+    Float_t    fGammaTPz;
+    Float_t   fSigmaTPx;
+    Float_t  fSigmaTPy;
+    Float_t  fSigmaTPz;
+ 
     
-    
-    
-    
-    
-    
-    
+    Float_t  fkSaveV0Tree;
+
+ Float_t  fTreeVariableChi2V0;
+    Float_t    fTreeVariableDcaV0Daughters;
+    Float_t    fTreeVariableDcaV0ToPrimVertex;
+    Float_t    fTreeVariableDcaPosToPrimVertex;
+    Float_t    fTreeVariableDcaNegToPrimVertex;
+    Float_t    fTreeVariableV0CosineOfPointingAngle;
+    Float_t    fTreeVariableV0Radius;
+    Float_t    fTreeVariablePt;
+    Float_t     fTreeVariableRapK0Short;
+    Float_t     fTreeVariableRapLambda;
+     Float_t     fTreeVariableInvMassK0s;
+     Float_t     fTreeVariableInvMassLambda;
+     Float_t     fTreeVariableInvMassAntiLambda;
+     Float_t     fTreeVariableAlphaV0;
+     Float_t     fTreeVariablePtArmV0;
+     Float_t     fTreeVariableNegEta;
+     Float_t     fTreeVariablePosEta;
+     Float_t     fTreeVariableNSigmasPosProton;
+     Float_t     fTreeVariableNSigmasPosPion;
+     Float_t      fTreeVariableNSigmasNegProton;
+     Float_t       fTreeVariableNSigmasNegPion;
+     Float_t      fTreeVariableDistOverTotMom;
+     Float_t      fTreeVariableLeastNbrCrossedRows;
+     Float_t     fTreeVariableLeastRatioCrossedRowsOverFindable;
+
+
+  
 private:
     
     //  TH2I * fPHOSBadMap[6] ;   //Container for PHOS bad channels map
@@ -303,4 +345,7 @@ private:
     ClassDef(AliAnalysisTaskSigma0, 3); // Analysis task for conversion + calorimeters
 };
 
+
 #endif //ALIANALYSISTASKHYPERON_H
+
+// #endif //SIGMA0TEST_H
