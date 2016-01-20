@@ -52,6 +52,7 @@ private:
    TH1F         *fNAccJets;                  //!<! number of jets per event
    Float_t       fXsec;                      //!<! cross section for event in current pt-hard bin
    Float_t       fNtrials;                   //!<! number of trials for event in current pt-hard bin
+   Int_t         fPthardB;                   //!<! pt hard number
    THnSparse    *fhResponse;                 //!<! response matrix
    
    AliAnalysisTaskPrepareInputForEmbedding(const AliAnalysisTaskPrepareInputForEmbedding&);
