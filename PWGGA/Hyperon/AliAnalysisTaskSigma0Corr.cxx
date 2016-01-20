@@ -194,7 +194,7 @@ void AliAnalysisTaskSigma0Corr::UserCreateOutputObjects()
 //   }
 //  }
   // }
-    //  PostData(1, fOutputContainer); 
+  PostData(1, fOutputContainer); 
 }
 
 //_____________________________________________________
@@ -210,22 +210,21 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
 
    //    if ( 1>0 ) return;
 
-    //   if( 1>0 ){
- 
-     //     return;   }
+
+
+   if( 1>0 ){
+     PostData(1, fOutputContainer);
+     return;
+   }
 
   //Fill dphi correlations
   //First - single PHOS cluster vs tracks
-  //  SKIP   if(fPHOSEvent->GetEntriesFast()>0 && fLeadingPHOS>=0){ //it exist 
-   //    AliCaloParticle * trig = static_cast<AliCaloParticle*>(fPHOSEvent->At(fLeadingPHOS)) ;
+  /*  SKIP   if(fPHOSEvent->GetEntriesFast()>0 && fLeadingPHOS>=0){ //it exist 
+    AliCaloParticle * trig = static_cast<AliCaloParticle*>(fPHOSEvent->At(fLeadingPHOS)) ;
     // printf("PHOS trig2 (%d)=%p \n",fLeadingPHOS,trig) ;
+    FillCorrelation(trig,"PHOS_single_track_all") ; 
 
-   Int_t   trig = 1;
-}
-
-   //   FillCorrelation(trig,"PHOS_single_track_all") ; 
-
-   /*    Int_t isolation = trig->IsIsolated();
+    Int_t isolation = trig->IsIsolated();
     Int_t kind = 2 ; //Cone=0.4, epsilon=0.1, tracks only
 
     //    printf("PP isolation2= %d, kind=%d, res=%d \n",isolation,kind,(isolation&kind)) ;
@@ -236,9 +235,8 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
        FillCorrelation(trig,"PHOS_single_track_Direct") ; 
     if(!trig->IsTagged() && (isolation&kind) )
     FillCorrelation(trig,"PHOS_single_track_DirectIsolated") ; 
-    } 
-    PostData(1, fOutputContainer);
-   */
+    } */
+
 
   // printf(".. .. .. .\n");
 
@@ -251,8 +249,7 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
 
 
   //----------   pi^0 --------PHOS-------------------------------------
-
-   /*  if(fPHOSPi0Event->GetEntriesFast()>0 && fLeadingPi0PHOS>=0   &&  fELeadingPi0PHOS  > fELeadingTrack ){ 
+  if(fPHOSPi0Event->GetEntriesFast()>0 && fLeadingPi0PHOS>=0   &&  fELeadingPi0PHOS  > fELeadingTrack ){ 
 
     //    AliCaloParticle * trig = static_cast<AliCaloParticle*>(fPHOSEvent->At(fLeadingPHOS)) ;
 
@@ -263,7 +260,7 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
 
       FillDeltaPhi(pi0, 1 ) ;
     }
-    } */
+  }
 
 
   //  if ( 1>0 ) return;
@@ -298,8 +295,8 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
   //3d - pi0 from EMCAL cluster vs tracks -----------------------------------------
   // abb - jan12
 
-   /*
   if( fEMCALPi0Event->GetEntriesFast() <=0 ) return;
+
   if(fEMCALPi0Event->GetEntriesFast()>0 && fLeadingPi0EMCAL>=0   &&  fELeadingPi0EMCAL  > fELeadingTrack ){
 
     //    printf("Lead pi^0 EMCAL %d Pt %f   \n",  fLeadingPi0EMCAL, fELeadingPi0EMCAL ); 
@@ -312,9 +309,7 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
       // Int_t isolation = pi0->IsIsolated();
       // Int_t kind = 2048 ;
     }
-   */
-
-   //  }
+  }
 
     //   printf("EE-CORR isolation1= %d, kind=%d, res=%d \n",isolation,kind,(isolation&kind)) ;
   
@@ -467,8 +462,8 @@ void AliAnalysisTaskSigma0Corr::UserExec(Option_t *option)
   // }
     
 //  ProcessMC();
-//  PostData(1, fOutputContainer);
-// }
+  PostData(1, fOutputContainer);
+}
 //_____________________________________________________
 void AliAnalysisTaskSigma0Corr::FillCorrelation(AliCaloParticle * trig, const char * kind)
 {

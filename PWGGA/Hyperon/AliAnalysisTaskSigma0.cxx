@@ -38,14 +38,6 @@
 #include "TObjString.h"
 #include "TList.h"
 
-
-/* ABB-open-keep it or ? whjy not include???
-class AliESDVertex;
-class AliAODVertex;
-class AliESDv0;
-class AliAODv0;
-*/
-
 // analysis
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
@@ -61,32 +53,24 @@ class AliAODv0;
 #include "AliEMCALGeometry.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliMCParticle.h"
 #include "AliESDv0.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliCaloParticle.h"
-#include "AliTriggerAnalysis.h"
+//#include "AliTriggerAnalysis.h"
 #include "AliMultiplicity.h"
 #include "AliESDcascade.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "AliV0ReaderV1.h"
-// #include "AliAnalysisTaskGammaConvV1.h"
 #include "AliVEvent.h"
 #include "AliKFConversionPhoton.h"
-#include "AliConversionPhotonBase.h"
-#include "AliAODConversionMother.h"
 #include "AliConversionCuts.h"
 #include "TParticle.h"
 #include "AliCentrality.h"
-#include "AliAnalysisTaskSigma0.h"
 
 class Riostream;
 class TFile;
-
-using std::cout;
-using std::endl;
 
 ClassImp(AliAnalysisTaskSigma0)
 
@@ -94,89 +78,16 @@ ClassImp(AliAnalysisTaskSigma0)
 //______________________________________________________________________________
 AliAnalysisTaskSigma0::AliAnalysisTaskSigma0():
 AliAnalysisTaskSE(),
-    fTreeList(NULL),
-     fTreeV0(NULL), 
-// fTreeGammaV0(NULL),  
-  fPIDResponse(0), fESDtrackCuts(0), 
-// fPPVsMultUtils(0), fUtils(0),
-     fkSaveV0Tree      ( kFALSE ),
-//---> Variables for fTreeV0
-      fTreeVariableChi2V0(0),
-      fTreeVariableDcaV0Daughters(0),
-      fTreeVariableDcaV0ToPrimVertex(0),
-      fTreeVariableDcaPosToPrimVertex(0),
-      fTreeVariableDcaNegToPrimVertex(0),
-      fTreeVariableV0CosineOfPointingAngle(0),
-      fTreeVariableV0Radius(0),
-      fTreeVariablePt(0),
-      fTreeVariableRapK0Short(0),
-      fTreeVariableRapLambda(0),
-      fTreeVariableInvMassK0s(0),
-      fTreeVariableInvMassLambda(0),
-      fTreeVariableInvMassAntiLambda(0),
-      fTreeVariableAlphaV0(0),
-      fTreeVariablePtArmV0(0),
-      fTreeVariableNegEta(0),
-      fTreeVariablePosEta(0),
-      fTreeVariableNSigmasPosProton(0),
-      fTreeVariableNSigmasPosPion(0),
-      fTreeVariableNSigmasNegProton(0),
-      fTreeVariableNSigmasNegPion(0),
-      fTreeVariableDistOverTotMom(0),
-      fTreeVariableLeastNbrCrossedRows(0),
-      fTreeVariableLeastRatioCrossedRowsOverFindable(0),
-
-/*      fTreeGammaVarChi2V0(0),
-      fTreeGammaVarDcaV0Daughters(0),
-      fTreeGammaVarDcaV0ToPrimVertex(0),
-      fTreeGammaVarDcaPosToPrimVertex(0),
-      fTreeGammaVarDcaNegToPrimVertex(0),
-      fTreeGammaVarV0CosineOfPointingAngle(0),
-      fTreeGammaVarV0Radius(0),
-      fTreeGammaVarPt(0),
-      fTreeGammaVarRapK0Short(0),
-      fTreeGammaVarRapLambda(0),
-      fTreeGammaVarInvMassK0s(0),
-      fTreeGammaVarInvMassLambda(0),
-      fTreeGammaVarInvMassAntiLambda(0),
-      fTreeGammaVarAlphaV0(0),
-      fTreeGammaVarPtArmV0(0),
-      fTreeGammaVarNegEta(0),
-      fTreeGammaVarPosEta(0),
-      fTreeGammaVarNSigmasPosProton(0),
-      fTreeGammaVarNSigmasPosPion(0),
-      fTreeGammaVarNSigmasNegProton(0),
-      fTreeGammaVarNSigmasNegPion(0),
-      fTreeGammaVarDistOverTotMom(0),
-      fTreeGammaVarLeastNbrCrossedRows(0),
-      fTreeGammaVarLeastRatioCrossedRowsOverFindable(0),
-*/
-
-
-
-/*      fTreeVariableCentV0M(0),
-      fTreeVariableCentV0A(0),
-      fTreeVariableCentV0C(0),
-      fTreeVariableCentV0MEq(0),
-      fTreeVariableCentV0AEq(0),
-      fTreeVariableCentV0CEq(0),
-      fTreeVariableCentV0B(0),
-      fTreeVariableCentV0Apartial(0),
-      fTreeVariableCentV0Cpartial(0),
-      fTreeVariableCentV0S(0),
-      fTreeVariableCentV0SB(0),
-      fTreeVariableRefMultEta8(0),
-      fTreeVariableRefMultEta5(0),
-      fTreeVariableRunNumber(0), */
-
     fV0Reader(NULL),
     fESDEvent(NULL),
     fESDpid(NULL),
-//  fESDtrackCuts(NULL),
+    fESDtrackCuts(NULL),
     fStack(NULL),
     fOutputContainer(NULL),
     fReaderGammas(NULL),
-    tTreeEvent(NULL),
+    fTreeList(NULL),
+    fSigma0(NULL),
+    fTreeEvent(NULL),
     fCentr(0.),
     fRunPeriod(-1),
     fMinOpeningAngleGhostCut(0.),
@@ -189,6 +100,17 @@ AliAnalysisTaskSE(),
     fPHOSEvent(NULL),
     fEMCALEvent(NULL),
     fGenpi0Event(NULL),
+    fLeadingTrack(-1),
+    fLeadingPHOS(-1),
+    fLeadingEMCAL(-1),
+    fLeadingConv(-1),
+    fAbsLeading(-1),
+    fLeadingGenpi0(-1),
+    fELeadingTrack(0.),
+    fELeadingPHOS(0.),
+    fELeadingEMCAL(0.),
+    fELeadingConv(0.),
+    fELeadingGenpi0(0.),
     fnSigmaAboveElectronLine(5.),
     fnSigmaBelowElectronLine(-3.),
     fnSigmaAbovePionLine(0.),
@@ -221,7 +143,6 @@ AliAnalysisTaskSE(),
     fV0multC(0),
     fSPDmultClust(0),
     fSPDmultTracl(0),
-//    fTriggerAnalysis(new AliTriggerAnalysis),
     fnCINT1B(0),
     fnCINT1A(0),
     fnCINT1C(0),
@@ -249,42 +170,18 @@ AliAnalysisTaskSE(),
     fGammaPy(0),
     fGammaPz(0),
     fGammaCosPointingAngle(0),
-    fGammaDCADaughters(0),
-    fGammaDCAtoPVNeg(0),
-    fGammaDCAtoPVPos(0), 
- 
     fGammaEta(0),
     fGammaArmPt(0),
     fGammaArmAlpha(0),
     fGammaZConv(0),
     fGammaChi2(0),
     fGammaRadius(0),
-    fGammaDCAzToPrimVtx(0),
+
     fSigmaMass(0),
     fSigmaPt(0),
     fSigmaArmPt(0),
     fSigmaArmAlpha(0),
-
-    fLambdaTPx(0),
-    fLambdaTPy(0),
-    fLambdaTPz(0),
-    fGammaTPx(0),
-    fGammaTPy(0),
-    fGammaTPz(0),
-    fSigmaTPx(0),
-    fSigmaTPy(0),
-    fSigmaTPz(0),
-  
-
-
-    fCentralityV0M(0),
-	fInputEvent(0x0),
-	fMCEvent(0x0),
-        fMCStack(0x0),
-        fIsMC(kFALSE)  
-
-
-
+    fCentralityV0M(0)
 //-------------------------------------------
 
 {
@@ -302,93 +199,19 @@ AliAnalysisTaskSE(),
         fPHOSBadMap[i]= 0x0 ;
     }
 }
-
-
 //______________________________________________________________________________
 AliAnalysisTaskSigma0::AliAnalysisTaskSigma0(const char* name):
 AliAnalysisTaskSE(name),
-    fTreeList(NULL),
-fTreeV0(NULL), 
-// fTreeGammaV0(NULL),  
-fPIDResponse(0), fESDtrackCuts(0), 
-// fPPVsMultUtils(0), fUtils(0),
-     fkSaveV0Tree      ( kFALSE ),
-//---> Variables for fTreeV0
-      fTreeVariableChi2V0(0),
-      fTreeVariableDcaV0Daughters(0),
-      fTreeVariableDcaV0ToPrimVertex(0),
-      fTreeVariableDcaPosToPrimVertex(0),
-      fTreeVariableDcaNegToPrimVertex(0),
-      fTreeVariableV0CosineOfPointingAngle(0),
-      fTreeVariableV0Radius(0),
-      fTreeVariablePt(0),
-      fTreeVariableRapK0Short(0),
-      fTreeVariableRapLambda(0),
-      fTreeVariableInvMassK0s(0),
-      fTreeVariableInvMassLambda(0),
-      fTreeVariableInvMassAntiLambda(0),
-      fTreeVariableAlphaV0(0),
-      fTreeVariablePtArmV0(0),
-      fTreeVariableNegEta(0),
-      fTreeVariablePosEta(0),
-      fTreeVariableNSigmasPosProton(0),
-      fTreeVariableNSigmasPosPion(0),
-      fTreeVariableNSigmasNegProton(0),
-      fTreeVariableNSigmasNegPion(0),
-      fTreeVariableDistOverTotMom(0),
-      fTreeVariableLeastNbrCrossedRows(0),
-      fTreeVariableLeastRatioCrossedRowsOverFindable(0),
-
-/* /---> Variables for fTreeGammaV0
-      fTreeGammaVarChi2V0(0),
-      fTreeGammaVarDcaV0Daughters(0),
-      fTreeGammaVarDcaV0ToPrimVertex(0),
-      fTreeGammaVarDcaPosToPrimVertex(0),
-      fTreeGammaVarDcaNegToPrimVertex(0),
-      fTreeGammaVarV0CosineOfPointingAngle(0),
-      fTreeGammaVarV0Radius(0),
-      fTreeGammaVarPt(0),
-      fTreeGammaVarRapK0Short(0),
-      fTreeGammaVarRapLambda(0),
-      fTreeGammaVarInvMassK0s(0),
-      fTreeGammaVarInvMassLambda(0),
-      fTreeGammaVarInvMassAntiLambda(0),
-      fTreeGammaVarAlphaV0(0),
-      fTreeGammaVarPtArmV0(0),
-      fTreeGammaVarNegEta(0),
-      fTreeGammaVarPosEta(0),
-      fTreeGammaVarNSigmasPosProton(0),
-      fTreeGammaVarNSigmasPosPion(0),
-      fTreeGammaVarNSigmasNegProton(0),
-      fTreeGammaVarNSigmasNegPion(0),
-      fTreeGammaVarDistOverTotMom(0),
-      fTreeGammaVarLeastNbrCrossedRows(0),
-      fTreeGammaVarLeastRatioCrossedRowsOverFindable(0),
-*/
-
-/*      fTreeVariableCentV0M(0),
-      fTreeVariableCentV0A(0),
-      fTreeVariableCentV0C(0),
-      fTreeVariableCentV0MEq(0),
-      fTreeVariableCentV0AEq(0),
-      fTreeVariableCentV0CEq(0),
-      fTreeVariableCentV0B(0),
-      fTreeVariableCentV0Apartial(0),
-      fTreeVariableCentV0Cpartial(0),
-      fTreeVariableCentV0S(0),
-      fTreeVariableCentV0SB(0),
-      fTreeVariableRefMultEta8(0),
-      fTreeVariableRefMultEta5(0),
-      fTreeVariableRunNumber(0), */
-
     fV0Reader(NULL),
     fESDEvent(NULL),
     fESDpid(NULL),
-//  fESDtrackCuts(NULL),
+    fESDtrackCuts(NULL),
     fStack(NULL),
     fOutputContainer(NULL),
     fReaderGammas(NULL),
-    tTreeEvent(NULL),
+    fTreeList(NULL),
+    fSigma0(NULL),
+    fTreeEvent(NULL),
     fCentr(0.),
     fRunPeriod(-1),
     fMinOpeningAngleGhostCut(0.),
@@ -401,7 +224,17 @@ fPIDResponse(0), fESDtrackCuts(0),
     fPHOSEvent(NULL),
     fEMCALEvent(NULL),
     fGenpi0Event(NULL),
-
+    fLeadingTrack(-1),
+    fLeadingPHOS(-1),
+    fLeadingEMCAL(-1),
+    fLeadingConv(-1),
+    fAbsLeading(-1),
+    fLeadingGenpi0(-1),
+    fELeadingTrack(0.),
+    fELeadingPHOS(0.),
+    fELeadingEMCAL(0.),
+    fELeadingConv(0.),
+    fELeadingGenpi0(0.),
     fnSigmaAboveElectronLine(5.),
     fnSigmaBelowElectronLine(-3.),
     fnSigmaAbovePionLine(0.),
@@ -413,8 +246,8 @@ fPIDResponse(0), fESDtrackCuts(0),
     fmaxR(180.),
     fmaxZ(240.),
     fetaCut(1.4),
-    fptCut(0.010),       // was 0.070
-    fptMaxCut(1.00),     // was 1.50
+    fptCut(0.070),
+    fptMaxCut(1.500),
     fchi2CutConversion(30.),
 //-------------------------------------------
     fZvtx(0.),
@@ -434,7 +267,6 @@ fPIDResponse(0), fESDtrackCuts(0),
     fV0multC(0),
     fSPDmultClust(0),
     fSPDmultTracl(0),
- //   fTriggerAnalysis(new AliTriggerAnalysis),
     fnCINT1B(0),
     fnCINT1A(0),
     fnCINT1C(0),
@@ -463,38 +295,18 @@ fPIDResponse(0), fESDtrackCuts(0),
     fGammaPy(0),
     fGammaPz(0),
     fGammaCosPointingAngle(0),
-    fGammaDCADaughters(0),
-    fGammaDCAtoPVNeg(0),
-    fGammaDCAtoPVPos(0), 
     fGammaEta(0),
     fGammaArmPt(0),
     fGammaArmAlpha(0),
     fGammaZConv(0),
     fGammaChi2(0),
     fGammaRadius(0),
-    fGammaDCAzToPrimVtx(0),
+
     fSigmaMass(0),
     fSigmaPt(0),
     fSigmaArmPt(0),
     fSigmaArmAlpha(0),
-
-    fLambdaTPx(0),
-    fLambdaTPy(0),
-    fLambdaTPz(0),
-    fGammaTPx(0),
-    fGammaTPy(0),
-    fGammaTPz(0),
-    fSigmaTPx(0),
-    fSigmaTPy(0),
-    fSigmaTPz(0),
- 
-
-    fCentralityV0M(0),
-    fInputEvent(0x0),
-    fMCEvent(0x0),
-    fMCStack(0x0),
-    fIsMC(0)
-
+    fCentralityV0M(0)
 {
     // Common I/O in slot 0
     DefineInput (0, TChain::Class());
@@ -507,16 +319,12 @@ fPIDResponse(0), fESDtrackCuts(0),
     
     // Initialize the PHOS geometry
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-    fEtaCuts[0] = 1.0;
-    fEtaCuts[1] = 0.8;
-    fEtaCuts[2] = 0.7;
-    fEtaCuts[3] = 0.6;
-    fEtaCuts[4] = 0.5;
+    fEtaCuts[0] = 1.4;
+    fEtaCuts[1] = 1.2;
+    fEtaCuts[2] = 1.0;
+    fEtaCuts[3] = 0.8;
+    fEtaCuts[4] = 0.6;
     fEtaCuts[5] = 0.4;
-
-
-
-    //fEtaCuts[0] = 1.4; fEtaCuts[1] = 1.2;fEtaCuts[2] = 1.0;fEtaCuts[3] = 0.8;fEtaCuts[4] = 0.6;fEtaCuts[5] = 0.4;
     
     
     Int_t nBin=9 ;
@@ -535,11 +343,7 @@ fPIDResponse(0), fESDtrackCuts(0),
         fConvEvents[izvtx] =new TList() ;
         fGenpi0Events[izvtx] =new TList() ;
     }
-
-    DefineOutput(2, TTree::Class()); // V0 Tree ???
-
 }
-
 
 
 //_____________________________________________________
@@ -556,40 +360,26 @@ AliAnalysisTaskSigma0::~AliAnalysisTaskSigma0()
             delete fOutputContainer ;
         }
         
-	/*       	if (fTreeGammaV0) {
-	  delete fTreeGammaV0;
-	  fTreeGammaV0 = 0x0;
-	  } */
- 
-
-
-	if(fTreeList){
-	  fTreeList->Clear();
-	  delete fTreeList;
-	} 
+        if(fTreeList){
+            fTreeList->Clear();
+            delete fTreeList;
+        }
      
-        if(tTreeEvent){
-            tTreeEvent->Clear();
-            delete tTreeEvent;
+        if(fTreeEvent){
+            fTreeEvent->Clear();
+            delete fTreeEvent;
         }
         
-	if (fTreeV0) {
-	  fTreeV0->Clear();
-	  delete fTreeV0;
-	}
- 
-
-
         
         if(fPHOSgeom){
             delete fPHOSgeom ;
             fPHOSgeom=0x0 ;
         }
         
-	if(fV0Reader){
-	  delete fV0Reader;
-	  fV0Reader = 0x0;
-	}
+        if(fV0Reader){
+            delete fV0Reader;
+            fV0Reader = 0x0;
+        }
         
         if(fReaderGammas){
             delete fReaderGammas;
@@ -622,35 +412,6 @@ void AliAnalysisTaskSigma0::Init()
 {
     printf(" Initialization... \n");
 }
-
-
-/*  /________________________________________________________________________
-void AliAnalysisTaskSigma0::ConnectInputData(Option_t *)
-{
-    
-    TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-    if (!tree) {
-        Printf("ERROR: Could not read chain from input slot 0");
-    } else {
-        
-        AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-        
-        if (esdH) {
-            fESD = esdH->GetEvent();
-            if(fESD) {
-                fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
-                if (!fESDfriend){
-                    AliError("No friend found");
-                }
-            }
-        } else {
-            Printf("ERROR: Could not get ESDInputHandler");
-        }
-        
-    }
-}
-*/
-
 //____________________________________________________________
 void AliAnalysisTaskSigma0::UserCreateOutputObjects()
 {
@@ -669,16 +430,16 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(fTreeList);
     
     //Adding the histograms to the output container
-    fOutputContainer->Add(new TH1F("hQAEvents","Events processed",10,-0.5,9.5)) ;
-    fOutputContainer->Add(new TH1F("hQAEventsTrig","Events processed",21,-0.5,20.5)) ;
+    fOutputContainer->Add(new TH1F("hQAEvents","Events processed",1,0.,1.)) ;
+    fOutputContainer->Add(new TH1F("hQAEventsTrig","Events processed",21,-0.25,20.25)) ;
 
 //  TH1I *hEventTrigger = new TH1I("hEventTrigger","Events processed",11,0.5,10.5);
 //   hEventTrigger->GetXaxis()->SetBinLabel(1,"total");
 //   fOutputContainer->Add(hEventTrigger);
     
-//    fOutputContainer->Add(new TH1F("R2Conv","R2 of V0",400,0.,200)) ;
-//    fOutputContainer->Add(new TH1F("R3Conv","R3 of V0",400,0.,200)) ;
-//    fOutputContainer->Add(new TH1F("v0sum","v0sum",200,0,20000));
+    fOutputContainer->Add(new TH1F("R2Conv","R2 of V0",400,0.,200)) ;
+    fOutputContainer->Add(new TH1F("R3Conv","R3 of V0",400,0.,200)) ;
+    fOutputContainer->Add(new TH1F("v0sum","v0sum",200,0,20000));
     
     
  
@@ -692,14 +453,6 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     Double_t ptmin=0.;
     Double_t ptmax=15. ;   // was 50.
     Double_t ptmax2=15. ;
-
-    Double_t mSigmax=1.4; Double_t mSigmin=1.1;
-    Double_t mLammax=1.20; Double_t mLammin=1.05;
-    Int_t nLambins = 150;
-
-
-
-
     
     Int_t nBinMass = 70; // Number of mass bins
     Int_t nR=50 ; // Number of radius bin
@@ -712,7 +465,7 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     
     //------------------------------------------------
 
-    /* 18jan16   for(Int_t isol=0;   isol<1 ; isol++){       //  isol<12; isol++){   -offi
+    for(Int_t isol=0;   isol<1 ; isol++){       //  isol<12; isol++){   -offi
         
         sprintf(key,"hMCsig0MassPt%dAll",isol) ;
         fOutputContainer->Add(new TH2F(key,"Mass vs pt Sigma0",nBinMass,1.,1.7,npt,0.,ptmax)) ;
@@ -732,55 +485,21 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
         sprintf(key,"hMCrec3Sig0PtLamdaVSGamma%d",isol) ;
         fOutputContainer->Add(new TH2F(key,"pT L  vs g from Sigma0rec2",nR,0., 5, nR,0., 5. )) ;
         
-        // sprintf(key,"hMClam0MassPt%dAll",isol) ;
-        // fOutputContainer->Add(new TH2F(key,"Mass vs pt Lambda0",nBinMass,1.,1.7,npt,0.,ptmax)) ;
+        sprintf(key,"hMClam0MassPt%dAll",isol) ;
+        fOutputContainer->Add(new TH2F(key,"Mass vs pt Lambda0",nBinMass,1.,1.7,npt,0.,ptmax)) ;
         
-	//        sprintf(key,"hMClam0RPt%dAll",isol) ;
-        // fOutputContainer->Add(new TH2F(key,"Radius vs pt Lambda0",npt,0.,Rmax,  nR,0.,ptmax)) ;
-	} */
-
-   
-    printf(" INIT V0Reader ------------------------------- \n");
-    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-    if(!fV0Reader){printf("START Error: No V0 Reader");return;} // GetV0Reader
-    
-    //    fV0Reader = 0;
-    if(fV0Reader){
-      cout << "found V0Reader ---------------" << endl;
-	if((AliConvEventCuts*)fV0Reader->GetEventCuts()){
-	   cout << "found" << endl;
-	   if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms()){
-	      cout << "found event histos -----------" << endl;
-	      fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
-	   }  
-        }    
-    }  
-    if(fV0Reader) {
-      if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts()) {
-	if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms()) {
-	  cout << "found Conversion histos -------------"  << endl;
-	  fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
-	}
-      }
+        sprintf(key,"hMClam0RPt%dAll",isol) ;
+        fOutputContainer->Add(new TH2F(key,"Radius vs pt Lambda0",npt,0.,Rmax,  nR,0.,ptmax)) ;
     }
-    printf("INIT V0Reader FINISHED ------------------------------- \n");
-
-	//	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
-	//		if (fV0Reader->GetV0FindingEfficiencyHistograms())
-	//		fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-
     
     fOutputContainer->Add(new TH1F("hQAMult","Multiplicity",400,-10.,40000.)) ;
-    /*    fOutputContainer->Add(new TH1F("hQACentr1","Centr1",400,-10.,400.)) ;
+    fOutputContainer->Add(new TH1F("hQACentr1","Centr1",400,-10.,400.)) ;
     fOutputContainer->Add(new TH1F("hQACentr2","Centr2",400,-10.,400.)) ;
-    fOutputContainer->Add(new TH1F("hQACentr3","Centr3",400,-10.,400.)) ; */
+    fOutputContainer->Add(new TH1F("hQACentr3","Centr3",400,-10.,400.)) ;
 
 
     fOutputContainer->Add(new TH1F("hConvMult","Conv Multiplicity",51,-0.5,50.5)) ;
-    fOutputContainer->Add(new TH1F("hRecGammas","V0 reconstr. gammas V0 reader",51,-0.5,50.5)) ;
-
     fOutputContainer->Add(new TH1F("hLamMult","Lam Multiplicity",51,-0.5,50.5)) ;
-    fOutputContainer->Add(new TH1F("hPHOSMult","Lam Multiplicity",51,-0.5,50.5)) ;
     
     fOutputContainer->Add(new TH1F("hNlamEv","N Lam in ev",21,-0.5,20.5)) ;
     fOutputContainer->Add(new TH1F("hNalamEv","N aLam in ev",21,-0.5,50.5)) ;
@@ -793,24 +512,16 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F("h2T0AmC","2nd T0 A-C", 400, -2000, 2000 )) ;
     fOutputContainer->Add(new TH1F("h2T0ApC","2nd T0 A+C", 400, -2000, 2000 )) ;
  */
-
-
-  fOutputContainer->Add(new TH2F("hQA_PHOS_mod1_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
-  fOutputContainer->Add(new TH2F("hQA_PHOS_mod2_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
-  fOutputContainer->Add(new TH2F("hQA_PHOS_mod3_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
-
     
     fOutputContainer->Add(new TH1F("hZvertex","Z vertex",200,-50.,+50.));
     fOutputContainer->Add(new TH1F("hNvertexTracks","N of primary tracks from the primary vertex",150,0.,150.));
     fOutputContainer->Add(new TH1F("hTrackMult","Charged track multiplicity",150,0.,150.));
     
-    //    fOutputContainer->Add(new TH2F("hdEdxTrack","6dEdx Sig of accepted tracks",100,0.,10.,150,0.,150.)) ;
+    fOutputContainer->Add(new TH2F("hdEdxTrack","6dEdx Sig of accepted tracks",100,0.,10.,150,0.,150.)) ;
     fOutputContainer->Add(new TH2F("hLamdEdxTrack","7dEdx of accepted tracks",100,0.,10.,150,0.,150.)) ;
     fOutputContainer->Add(new TH2F("hAntiLamdEdxTrack","8dEdx of accepted tracks",100,0.,10.,150,0.,150.)) ;
-    fOutputContainer->Add(new TH2F("hTotProtdEdxTrack","9dEdx of accepted Prot tracks",100,0.,10.,150,0.,150.)) ;
-    fOutputContainer->Add(new TH2F("hTotPiondEdxTrack","9dEdx of accepted Pion tracks",100,0.,10.,150,0.,150.)) ;
+    fOutputContainer->Add(new TH2F("hTotLamdEdxTrack","9dEdx of accepted tracks",100,0.,10.,150,0.,150.)) ;
     
-
 //------------------------------------------------
 // Histograms for MC
 //------------------------------------------------
@@ -826,15 +537,13 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F("hMCgenrecSig0Eta1","Primary Sig0 gen eta1",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hMCgenSig0Rap","Primary Sig0 gen Rapidity",100, -10., 10 )) ;
     fOutputContainer->Add(new TH1F("hMCgenrecSig0Rap","Primary Sig0 gen Rapidity",100, -10., 10 )) ;
-    //    fOutputContainer->Add(new TH2F("hMCgenSig0RapEta","Primary Sig0 gen Rapidity Eta",30,-1.5, 1.5, 30,-1.5,1.5 )) ;
-    // fOutputContainer->Add(new TH2F("hMCgenSig0RapPt","Primary Sig0 gen Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
-    //   fOutputContainer->Add(new TH2F("hMCgenrecSig0RapPt","Primary Sig0 genrec Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
-    //  fOutputContainer->Add(new TH2F("hMCgenrec2Sig0RapPt","Primary Sig0 genrec2 Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
+    fOutputContainer->Add(new TH2F("hMCgenSig0RapEta","Primary Sig0 gen Rapidity Eta",30,-1.5, 1.5, 30,-1.5,1.5 )) ;
+    fOutputContainer->Add(new TH2F("hMCgenSig0RapPt","Primary Sig0 gen Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
+    fOutputContainer->Add(new TH2F("hMCgenrecSig0RapPt","Primary Sig0 genrec Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
+    fOutputContainer->Add(new TH2F("hMCgenrec2Sig0RapPt","Primary Sig0 genrec2 Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
     fOutputContainer->Add(new TH2F("hMCgenrec3Sig0RapPt","Primary Sig0 genrec3 Rapidity Pt",30,-1.5,1.5, 50,0.,15. )) ;
     fOutputContainer->Add(new TH2F("hMCgenrec3Sig0mvsPt_uncorr","PP Mass vs pt Mix",nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
     fOutputContainer->Add(new TH2F("hMCgenrec3Sig0mvsPt_corr","PP Mass vs pt Mix",nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
-
-
     fOutputContainer->Add(new TH2F("hMCgenrec3MvsPtLamgenGamgen","CC Mass vs ptnArPod",nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
     fOutputContainer->Add(new TH2F("hMCgenrec3MvsPtLamgenGamrec","CC Mass vs ptnArPod",nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
     fOutputContainer->Add(new TH2F("hMCgenrec3MvsPtLamrecGamgen","CC Mass vs ptnArPod",nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
@@ -856,8 +565,8 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F("hMCgenrec3PSig0dMvsdPt","GenRec PSig0 dm vs dpt",40, -0.04, 0.04, 40,-0.4,0.4)) ;
     fOutputContainer->Add(new TH2F("hMCgenrec3ASig0dMvsdPt","GenRec ASig0 dm vs dpt",40, -0.04, 0.04, 40,-0.4,0.4)) ;
     
-    //    fOutputContainer->Add(new TH2F("hMCgenrec2LamdMvsdPt","GenRec Lam dm vs dpt",40, -0.04, 0.04,     40,-1.,1.)) ;
-    // fOutputContainer->Add(new TH2F("hMCgenrec2ALamdMvsdPt","GenRec ALam dm vs dpt",40, -0.04, 0.04,   40,-1.,1.)) ;
+    fOutputContainer->Add(new TH2F("hMCgenrec2LamdMvsdPt","GenRec Lam dm vs dpt",40, -0.04, 0.04,     40,-1.,1.)) ;
+    fOutputContainer->Add(new TH2F("hMCgenrec2ALamdMvsdPt","GenRec ALam dm vs dpt",40, -0.04, 0.04,   40,-1.,1.)) ;
     fOutputContainer->Add(new TH1F("hMCgenLam","Primary Lambda gen",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hMCgenPLam","Primary PLambda gen",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hMCgenALam","Primary ALambda gen",npt,0.,ptmax)) ;
@@ -870,13 +579,8 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F("hMCgenPLamRap","Primary3 PLam gen Rapidity",200, -10., 10 )) ;
     fOutputContainer->Add(new TH1F("hMCgenALamRap","Primary3 Alam gen Rapidity",200, -10., 10 )) ;
     fOutputContainer->Add(new TH1F("hMCgenLamSig0Rap","Primary3 Sig0 gen Rapidity",200, -10., 10 )) ;
-    fOutputContainer->Add(new TH1F("hMCgenGamSig0","Primary Gamma Sig0 gen",npt,0.,ptmax/5.)) ;
-    fOutputContainer->Add(new TH1F("hMCgenGamSig0Eta1","Primary Gamma Sig0 gen eta1",npt,0.,ptmax/5.)) ;
-    fOutputContainer->Add(new TH1F("hMCgenGamSig0PHOS","Primary Gamma Sig0 gen in PHOS",npt,0.,ptmax/5.)) ;
-    fOutputContainer->Add(new TH1F("hMCgenGamSig0PHOSEta1","Primary Gamma Sig0 gen in PHOS eta1",npt,0.,ptmax/5.)) ;
-    fOutputContainer->Add(new TH1F("EGamPHOS","E Gamma in PHOS",npt,0.,ptmax/5.)) ;
-
-
+    fOutputContainer->Add(new TH1F("hMCgenGamSig0","Primary Lambda Sig0 gen",npt,0.,ptmax)) ;
+    fOutputContainer->Add(new TH1F("hMCgenGamSig0Eta1","Primary Lambda Sig0 gen eta1",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hRecPLam","Primary Lambda gen",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hRecPLamEta1","Primary Lambda gen eta1",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hRecALam","Primary Lambda gen",npt,0.,ptmax)) ;
@@ -903,56 +607,43 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F("hMCSigma0GammaConv","Converted photons",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH1F("hMCSigma0GammaV0","Converted photons with V0",npt,0.,ptmax)) ;
     
+    Double_t mSigmax=1.4; Double_t mSigmin=1.1;
+    Double_t mLammax=1.20; Double_t mLammin=1.05;
     
-    fOutputContainer->Add(new TH2F("hLamMvsPt10","10DT m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
-    fOutputContainer->Add(new TH2F("hALamMvsPt10","10DT m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
-    fOutputContainer->Add(new TH2F("hLamMvsPt11","10DT m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
-    fOutputContainer->Add(new TH2F("hALamMvsPt11","10DT m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
     
-    fOutputContainer->Add(new TH2F("hPhi1LamMvsPt11","10DTphi1 m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
-    fOutputContainer->Add(new TH2F("hPhi1ALamMvsPt11","10DTphi1 m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hLamMvsPt10","10DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hALamMvsPt10","10DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hLamMvsPt11","10DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hALamMvsPt11","10DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
     
-    fOutputContainer->Add(new TH2F("hPhi2LamMvsPt11","10DTphi1 m vs pt", 100, mLammin, mLammax, 100,0.,ptmax)) ;
-    fOutputContainer->Add(new TH2F("hPhi2ALamMvsPt11","10DTphi1 m vs pt",100, mLammin, mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hPhi1LamMvsPt11","10DTphi1 m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hPhi1ALamMvsPt11","10DTphi1 m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    
+    fOutputContainer->Add(new TH2F("hPhi2LamMvsPt11","10DTphi1 m vs pt",100, 1.11,1.13, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hPhi2ALamMvsPt11","10DTphi1 m vs pt",100, 1.11,1.13, 100,0.,ptmax)) ;
     
     fOutputContainer->Add(new TH1F("hRLam2","R Lam", 400, 0,100. )) ;
     fOutputContainer->Add(new TH1F("hRALam2","R ALam",400,0,100. )) ;
     
-
-    //    fOutputContainer->Add(new TH2F("hLamPtPvsM11","Lam ptPvsM",   50, 0, 5, 50,0.,5. )) ;
-    // fOutputContainer->Add(new TH2F("hALamPtPvsM11","ALam ptPvsM",50, 0, 5, 50,0.,5. )) ;
+    fOutputContainer->Add(new TH2F("hLamPtPvsM11","Lam ptPvsM",   50, 0, 5, 50,0.,5. )) ;
+    fOutputContainer->Add(new TH2F("hALamPtPvsM11","ALam ptPvsM",50, 0, 5, 50,0.,5. )) ;
     
-    // fOutputContainer->Add(new TH2F("hLamMvsPt12","12DT m vs pt", nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
-    // fOutputContainer->Add(new TH2F("hALamMvsPt12","12DT m vs pt",nLambins, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hLamMvsPt12","12DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
+    fOutputContainer->Add(new TH2F("hALamMvsPt12","12DT m vs pt",200, mLammin,mLammax, 100,0.,ptmax)) ;
         
-    //   fOutputContainer->Add(new TH2F("hLamALam_MvsPt","Lam-ALam M vs Pt",nLambins, mLammin*2, mLammax*2.5, 100,0., ptmax); 
-    //  fOutputContainer->Add(new TH2F("hLamA_MvsPt","Lam-ALam M vs Pt",nLambins, mLammin, mLammax, 100,0., ptmax)) ; 
-    // fOutputContainer->Add(new TH2F("hALamA_MvsPt","Lam-ALam M vs Pt",nLambins, mLammin, mLammax, 100,0., ptmax)) ; 
-
-
     fOutputContainer->Add(new TH2F("hArPodLam","MC Armenteros-Podolanski Lam ;#alpha;p_{t}",100,-1.0,1.0, 70,0,0.7) );
     fOutputContainer->Add(new TH2F("hArPodALam","MC Armenteros-Podolanski ALam ;#alpha;p_{t}",100,-1.0,1.0, 70,0,0.7) );
-    //    fOutputContainer->Add(new TH2F("hArPodGConv","MC Armenteros-Podolanski Gamma Conv ;#alpha;p_{t}",100,-1.0,1.0, 70,0,0.7) );
-    // fOutputContainer->Add(new TH1F("hCGamPtConv","Conv gamma Pt2",  npt*2, ptmin, 15. )) ;
+    fOutputContainer->Add(new TH2F("hArPodGConv","MC Armenteros-Podolanski Gamma Conv ;#alpha;p_{t}",100,-1.0,1.0, 70,0,0.7) );
+    fOutputContainer->Add(new TH1F("hCGamPtConv","Conv gamma Pt2",  npt*2, ptmin, 15. )) ;
     
     fOutputContainer->Add(new TH2F("hMCArPodSig0","Armenteros-Podolanski Sig0 ;#alpha;p_{t}",100,-1.0,1.0, 80,0,0.8) );
     fOutputContainer->Add(new TH2F("hMCArPodSig02","Armenteros-Podolanski Sig02  ;#alpha;p_{t}",100,-1.0,1.0, 80,0,0.8) );
-    // fOutputContainer->Add(new TH2F("hMCArPodSig03","Armenteros-Podolanski NoSim Sig03  ;#alpha;p_{t}",100,-1.0,1.0, 80,0,0.8) );
+    fOutputContainer->Add(new TH2F("hMCArPodSig03","Armenteros-Podolanski NoSim Sig03  ;#alpha;p_{t}",100,-1.0,1.0, 80,0,0.8) );
         
-    //    fOutputContainer->Add(new TH2F("hMCccMvsArpodPt","CC Mass vs ptnArPod",nBinMass, mSigmin,mSigmax ,npt,0.,ptmax));
+    fOutputContainer->Add(new TH2F("hMCccMvsArpodPt","CC Mass vs ptnArPod",nBinMass, mSigmin,mSigmax ,npt,0.,ptmax));
     
-    /*    fOutputContainer->Add(new TH2F("hMCV0MvsWidth","MC w vs m 0",   100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth1","MC w vs m 1",   100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth2","MC w vs m 2",100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth3","MC w vs m 3",100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth4","MC w vs m 4",100,0.,2., 1,-0.1,0.1 )) ;
+    fOutputContainer->Add(new TH2F("hMCV0MvsWidth","MC w vs m",300,0.,TMath::Pi(),400,0.,1.)) ;
  
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth5","MC w vs m 2",100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth6","MC w vs m 3",100,0.,2., 1,-0.1,0.1 )) ;
-    fOutputContainer->Add(new TH2F("hMCV0MvsWidth7","MC w vs m 4",100,0.,2., 1,-0.1,0.1 )) ;
-    */
-
-
     //Single photon spectrum  //Conversion
     fOutputContainer->Add(new TH1F("hSingleConvOnFly","Single photon spectrum",npt,0.,ptmax)) ;
     fOutputContainer->Add(new TH2F("hAllMvsWidth","DT w vs m",300,0.,TMath::Pi(),400,0.,1.)) ;
@@ -967,50 +658,49 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
         sprintf(key,"hMCPSig0PtRec%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
-	//        sprintf(key,"hMCPSig0PrimPtGen%d",is) ;
-	//        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
-	//  sprintf(key,"hMCPSig0PrimPtRec%d",is) ;
-	// fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCPSig0PrimPtGen%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCPSig0PrimPtRec%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
         sprintf(key,"hMCASig0PtGen%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         sprintf(key,"hMCASig0PtRec%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
-	// sprintf(key,"hMCASig0PrimPtGen%d",is) ;
-	// fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
-	// sprintf(key,"hMCASig0PrimPtRec%d",is) ;
-	// fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCASig0PrimPtGen%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCASig0PrimPtRec%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
         sprintf(key,"hMCPLamPtGen%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         sprintf(key,"hMCPLamPtRec%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
-	//        sprintf(key,"hMCPLamPrimPtGen%d",is) ;
-	//        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
-	// sprintf(key,"hMCPLamPrimPtRec%d",is) ;
-	// fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCPLamPrimPtGen%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCPLamPrimPtRec%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
         sprintf(key,"hMCALamPtGen%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         sprintf(key,"hMCALamPtRec%d",is) ;
         fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
-	//        sprintf(key,"hMCALamPrimPtGen%d",is) ;
-	//        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
-	// sprintf(key,"hMCALamPrimPtRec%d",is) ;
-	// fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCALamPrimPtGen%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        sprintf(key,"hMCALamPrimPtRec%d",is) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         
         
-	/*        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
+        fOutputContainer->Add(new TH1F(key,key, npt,0.,ptmax)) ;
         sprintf(key,"hMCgenrec3MvsPtLamgenGamRec%d",is) ;
         fOutputContainer->Add(new TH2F(key,key, nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
         sprintf(key,"hMCgenrec3MvsPtLamrecGamGen%d",is);
         fOutputContainer->Add(new TH2F(key,key, nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
         sprintf(key,"hMCgenrec3MvsPtLamrecGamRec%d",is);
         fOutputContainer->Add(new TH2F(key,key, nBinMass2, mSigmin2,mSigmax2 ,npt2,0.,ptmax2));
-	*/
         
     }
         
@@ -1021,183 +711,51 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
 // fTree Branch definitions
 //------------------------------------------------
   
-
 //-----------BASIC-INFO---------------------------
-    tTreeEvent = new TTree("tTreeEvent","Events");
-/* 0*/    tTreeEvent->Branch("fLambdaMod",&fLambdaMod,"fLambdaMod/F");
-/* 4*/    tTreeEvent->Branch("fLambdaMass",&fLambdaMass, "fLambdaMass/F");
-/* 1*/    tTreeEvent->Branch("fLambdaPx",&fLambdaPx, "fLambdaPx/F");
-/* 2*/    tTreeEvent->Branch("fLambdaPy",&fLambdaPy, "fLambdaPy/F");
-/* 3*/    tTreeEvent->Branch("fLambdaPz",&fLambdaPz, "fLambdaPz/F");
-/*10*/    tTreeEvent->Branch("fLambdaArmPt",&fLambdaArmPt,"fLambdaArmPt/F");
-/*11*/    tTreeEvent->Branch("fLambdaArmAlpha",&fLambdaArmAlpha,"fLambdaArmAlpha/F");
-/*12*/    tTreeEvent->Branch("fLambdaEta",&fLambdaEta,"fLambdaEta/F");
-/* 5*/    tTreeEvent->Branch("fLambdaCosPointingAngle",&fLambdaCosPointingAngle,"fLambdaCosPointingAngle/F");
-/* 8*/    tTreeEvent->Branch("fLambdaDCAtoPVPos",&fLambdaDCAtoPVPos,"fLambdaDCAtoPVPos/F");
-/* 7*/    tTreeEvent->Branch("fLambdaDCAtoPVNeg",&fLambdaDCAtoPVNeg,"fLambdaDCAtoPVNeg/F");
-/* 6*/    tTreeEvent->Branch("fLambdaDCADaughters",&fLambdaDCADaughters,"fLambdaDCADaughters/F");
-/* 9*/    tTreeEvent->Branch("fLambdaRadius",&fLambdaRadius,"fLambdaRadius/F");
-
-/*16*/    tTreeEvent->Branch("fGammaMass",&fGammaMass, "fGammaMass/F");    
-/*13*/    tTreeEvent->Branch("fGammaPx",&fGammaPx, "fGammaPx/F");
-/*14*/    tTreeEvent->Branch("fGammaPy",&fGammaPy, "fGammaPy/F");
-/*15*/    tTreeEvent->Branch("fGammaPz",&fGammaPz, "fGammaPz/F");
-/*17*/    tTreeEvent->Branch("fGammaCosPointingAngle",&fGammaCosPointingAngle,"fGammaCosPointingAngle/F");
-
-/* 6*/    tTreeEvent->Branch("fGammaDCADaughters",&fGammaDCADaughters,"fGammaDCADaughters/F");
-/* 7*/    tTreeEvent->Branch("fGammaDCAtoPVNeg",&fGammaDCAtoPVNeg,"fGammaDCAtoPVNeg/F");
-          tTreeEvent->Branch("fGammaDCAtoPVPos",&fGammaDCAtoPVPos,"fGammaDCAtoPVPos/F");
-/*21*/    tTreeEvent->Branch("fGammaEta",&fGammaEta,"fGammaEta/F");
-
-/*19*/    tTreeEvent->Branch("fGammaArmPt",&fGammaArmPt,"fGammaArmPt/F");
-/*20*/    tTreeEvent->Branch("fGammaArmAlpha",&fGammaArmAlpha,"fGammaArmAlpha/F");
-/*23*/    tTreeEvent->Branch("fGammaZConv",&fGammaZConv,"fGammaZConv/F");
-/*22*/    tTreeEvent->Branch("fGammaChi2",&fGammaChi2,"fGammaChi2/F");
-/*18*/    tTreeEvent->Branch("fGammaRadius",&fGammaRadius,"fGammaRadius/F");
-          tTreeEvent->Branch("fGammaDCAzToPrimVtx",&fGammaDCAzToPrimVtx,"fGammaDCAzToPrimVtx/F");
-
-    
-/*24*/    tTreeEvent->Branch("fSigmaMass",&fSigmaMass,"fSigmaMass/F");
-/*25*/    tTreeEvent->Branch("fSigmaPt",&fSigmaPt, "fSigmaPt/F");
-/*26*/    tTreeEvent->Branch("fSigmaArmPt",&fSigmaArmPt,"fSigmaArmPt/F");
-/*27*/    tTreeEvent->Branch("fSigmaArmAlpha",&fSigmaArmAlpha,"fSigmaArmAlpha/F");
-
-/**/    tTreeEvent->Branch("fLambdaTPx",&fLambdaTPx, "fLambdaTPx/F");
-/**/    tTreeEvent->Branch("fLambdaTPy",&fLambdaTPy, "fLambdaTPy/F");
-/**/    tTreeEvent->Branch("fLambdaTPz",&fLambdaTPz, "fLambdaTPz/F");
-/**/    tTreeEvent->Branch("fGammaTPx",&fGammaTPx, "fGammaTPx/F");
-/**/    tTreeEvent->Branch("fGammaTPy",&fGammaTPy, "fGammaTPy/F");
-/**/    tTreeEvent->Branch("fGammaTPz",&fGammaTPz, "fGammaTPz/F");
-/**/    tTreeEvent->Branch("fSigmaTPx",&fSigmaTPx, "fSigmaTPx/F");
-/**/    tTreeEvent->Branch("fSigmaTPy",&fSigmaTPy, "fSigmaTPy/F");
-/**/    tTreeEvent->Branch("fSigmaTPz",&fSigmaTPz, "fSigmaTPz/F");
-/*28*/    tTreeEvent->Branch("fCentr",&fCentr,"fCentr/F");
-    
-    fTreeList->Add(tTreeEvent);
     
 
-
-    //>>>>>>>>>  Create Basic V0 Output Tree
-    fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
-    //------------------------------------------------
-    // fTreeV0 Branch definitions
-    //------------------------------------------------
-
-    //-----------BASIC-INFO---------------------------
-    fTreeV0->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
-    fTreeV0->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
-    fTreeV0->Branch("fTreeVariableDcaV0ToPrimVertex",&fTreeVariableDcaV0ToPrimVertex,"fTreeVariableDcaV0ToPrimVertex/F");
-    fTreeV0->Branch("fTreeVariableDcaPosToPrimVertex",&fTreeVariableDcaPosToPrimVertex,"fTreeVariableDcaPosToPrimVertex/F");
-    fTreeV0->Branch("fTreeVariableDcaNegToPrimVertex",&fTreeVariableDcaNegToPrimVertex,"fTreeVariableDcaNegToPrimVertex/F");
-    fTreeV0->Branch("fTreeVariableV0Radius",&fTreeVariableV0Radius,"fTreeVariableV0Radius/F");
-    fTreeV0->Branch("fTreeVariablePt",&fTreeVariablePt,"fTreeVariablePt/F");
-    fTreeV0->Branch("fTreeVariableRapK0Short",&fTreeVariableRapK0Short,"fTreeVariableRapK0Short/F");
-    fTreeV0->Branch("fTreeVariableRapLambda",&fTreeVariableRapLambda,"fTreeVariableRapLambda/F");
-    fTreeV0->Branch("fTreeVariableInvMassK0s",&fTreeVariableInvMassK0s,"fTreeVariableInvMassK0s/F");
-    fTreeV0->Branch("fTreeVariableInvMassLambda",&fTreeVariableInvMassLambda,"fTreeVariableInvMassLambda/F");
-    fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
-    fTreeV0->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
-    fTreeV0->Branch("fTreeVariableAlphaV0",&fTreeVariableAlphaV0,"fTreeVariableAlphaV0/F");
-    fTreeV0->Branch("fTreeVariablePtArmV0",&fTreeVariablePtArmV0,"fTreeVariablePtArmV0/F");
-    fTreeV0->Branch("fTreeVariableLeastNbrCrossedRows",&fTreeVariableLeastNbrCrossedRows,"fTreeVariableLeastNbrCrossedRows/I");
-    fTreeV0->Branch("fTreeVariableLeastRatioCrossedRowsOverFindable",&fTreeVariableLeastRatioCrossedRowsOverFindable,"fTreeVariableLeastRatioCrossedRowsOverFindable/F");
-    fTreeV0->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
-    fTreeV0->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
-    fTreeV0->Branch("fTreeVariableNSigmasPosPion",&fTreeVariableNSigmasPosPion,"fTreeVariableNSigmasPosPion/F");
-    fTreeV0->Branch("fTreeVariableNSigmasNegProton",&fTreeVariableNSigmasNegProton,"fTreeVariableNSigmasNegProton/F");
-    fTreeV0->Branch("fTreeVariableNSigmasNegPion",&fTreeVariableNSigmasNegPion,"fTreeVariableNSigmasNegPion/F");
-    fTreeV0->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
-    fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
-    /* skip abb-27nov15 -----------MULTIPLICITY-INFO--------------------
-    fTreeV0->Branch("fTreeVariableCentV0M",&fTreeVariableCentV0M,"fTreeVariableCentV0M/F");
-    fTreeV0->Branch("fTreeVariableCentV0A",&fTreeVariableCentV0A,"fTreeVariableCentV0A/F");
-    fTreeV0->Branch("fTreeVariableCentV0C",&fTreeVariableCentV0C,"fTreeVariableCentV0C/F");
-    fTreeV0->Branch("fTreeVariableCentV0MEq",&fTreeVariableCentV0MEq,"fTreeVariableCentV0MEq/F");
-    fTreeV0->Branch("fTreeVariableCentV0AEq",&fTreeVariableCentV0AEq,"fTreeVariableCentV0AEq/F");
-    fTreeV0->Branch("fTreeVariableCentV0CEq",&fTreeVariableCentV0CEq,"fTreeVariableCentV0CEq/F");
-    fTreeV0->Branch("fTreeVariableCentV0B",&fTreeVariableCentV0B,"fTreeVariableCentV0B/F");
-    fTreeV0->Branch("fTreeVariableCentV0Apartial",&fTreeVariableCentV0Apartial,"fTreeVariableCentV0Apartial/F");
-    fTreeV0->Branch("fTreeVariableCentV0Cpartial",&fTreeVariableCentV0Cpartial,"fTreeVariableCentV0Cpartial/F");
-    fTreeV0->Branch("fTreeVariableCentV0S",&fTreeVariableCentV0S,"fTreeVariableCentV0S/F");
-    fTreeV0->Branch("fTreeVariableCentV0SB",&fTreeVariableCentV0SB,"fTreeVariableCentV0SB/F");
-    fTreeV0->Branch("fTreeVariableRefMultEta8",&fTreeVariableRefMultEta8,"fTreeVariableRefMultEta8/I");
-    fTreeV0->Branch("fTreeVariableRefMultEta5",&fTreeVariableRefMultEta5,"fTreeVariableRefMultEta5/I");
-    //Don't do this if not explicitly requested, takes up too much space
-    if ( fkSaveExtendedRefMultInfo )
-        fTreeV0->Branch("fTreeVariableRefMultDiffEta",fTreeVariableRefMultDiffEta,"fTreeVariableRefMultDiffEta[20]/I");
-    fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
-    */
-    fTreeList->Add(fTreeV0);
- 
-
-   //>>>>>>>>>  Create Basic V0 Output Tree
-   /*  fTreeGammaV0 = new TTree( "fTreeGammaV0", "V0 Candidates for Gamma");
-
-    //-----------BASIC-INFO---------------------------
-    fTreeGammaV0->Branch("fTreeGammaVarChi2V0",&fTreeGammaVarChi2V0,"fTreeGammaVarChi2V0/F");
-    fTreeGammaV0->Branch("fTreeGammaVarDcaV0Daughters",&fTreeGammaVarDcaV0Daughters,"fTreeGammaVarDcaV0Daughters/F");
-    fTreeGammaV0->Branch("fTreeGammaVarDcaV0ToPrimVertex",&fTreeGammaVarDcaV0ToPrimVertex,"fTreeGammaVarDcaV0ToPrimVertex/F");
-    fTreeGammaV0->Branch("fTreeGammaVarDcaPosToPrimVertex",&fTreeGammaVarDcaPosToPrimVertex,"fTreeGammaVarDcaPosToPrimVertex/F");
-    fTreeGammaV0->Branch("fTreeGammaVarDcaNegToPrimVertex",&fTreeGammaVarDcaNegToPrimVertex,"fTreeGammaVarDcaNegToPrimVertex/F");
-    fTreeGammaV0->Branch("fTreeGammaVarV0Radius",&fTreeGammaVarV0Radius,"fTreeGammaVarV0Radius/F");
-    fTreeGammaV0->Branch("fTreeGammaVarPt",&fTreeGammaVarPt,"fTreeGammaVarPt/F");
-    fTreeGammaV0->Branch("fTreeGammaVarRapK0Short",&fTreeGammaVarRapK0Short,"fTreeGammaVarRapK0Short/F");
-    fTreeGammaV0->Branch("fTreeGammaVarRapLambda",&fTreeGammaVarRapLambda,"fTreeGammaVarRapLambda/F");
-    fTreeGammaV0->Branch("fTreeGammaVarInvMassK0s",&fTreeGammaVarInvMassK0s,"fTreeGammaVarInvMassK0s/F");
-    fTreeGammaV0->Branch("fTreeGammaVarInvMassLambda",&fTreeGammaVarInvMassLambda,"fTreeGammaVarInvMassLambda/F");
-    fTreeGammaV0->Branch("fTreeGammaVarInvMassAntiLambda",&fTreeGammaVarInvMassAntiLambda,"fTreeGammaVarInvMassAntiLambda/F");
-    fTreeGammaV0->Branch("fTreeGammaVarV0CosineOfPointingAngle",&fTreeGammaVarV0CosineOfPointingAngle,"fTreeGammaVarV0CosineOfPointingAngle/F");
-    fTreeGammaV0->Branch("fTreeGammaVarAlphaV0",&fTreeGammaVarAlphaV0,"fTreeGammaVarAlphaV0/F");
-    fTreeGammaV0->Branch("fTreeGammaVarPtArmV0",&fTreeGammaVarPtArmV0,"fTreeGammaVarPtArmV0/F");
-    fTreeGammaV0->Branch("fTreeGammaVarLeastNbrCrossedRows",&fTreeGammaVarLeastNbrCrossedRows,"fTreeGammaVarLeastNbrCrossedRows/I");
-    fTreeGammaV0->Branch("fTreeGammaVarLeastRatioCrossedRowsOverFindable",&fTreeGammaVarLeastRatioCrossedRowsOverFindable,"fTreeGammaVarLeastRatioCrossedRowsOverFindable/F");
-    fTreeGammaV0->Branch("fTreeGammaVarDistOverTotMom",&fTreeGammaVarDistOverTotMom,"fTreeGammaVarDistOverTotMom/F");
-    fTreeGammaV0->Branch("fTreeGammaVarNSigmasPosProton",&fTreeGammaVarNSigmasPosProton,"fTreeGammaVarNSigmasPosProton/F");
-    fTreeGammaV0->Branch("fTreeGammaVarNSigmasPosPion",&fTreeGammaVarNSigmasPosPion,"fTreeGammaVarNSigmasPosPion/F");
-    fTreeGammaV0->Branch("fTreeGammaVarNSigmasNegProton",&fTreeGammaVarNSigmasNegProton,"fTreeGammaVarNSigmasNegProton/F");
-    fTreeGammaV0->Branch("fTreeGammaVarNSigmasNegPion",&fTreeGammaVarNSigmasNegPion,"fTreeGammaVarNSigmasNegPion/F");
-    fTreeGammaV0->Branch("fTreeGammaVarNegEta",&fTreeGammaVarNegEta,"fTreeGammaVarNegEta/F");
-    fTreeGammaV0->Branch("fTreeGammaVarPosEta",&fTreeGammaVarPosEta,"fTreeGammaVarPosEta/F"); 
-    fTreeList->Add(fTreeGammaV0);
-   */
-
-   //<<<<<------------------------------------
-
-    //------------------------------------------------
-    // Particle Identification Setup
-    //------------------------------------------------
-
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-    fPIDResponse = inputHandler->GetPIDResponse();
-    inputHandler->SetNeedField();
-
-    // Multiplicity
-    if(! fESDtrackCuts ) {
-        fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,kFALSE);
-        fESDtrackCuts->SetPtRange(0.15);  // adding pt cut
-        fESDtrackCuts->SetEtaRange(-1.0, 1.0);
-    }
-    /* Helper
-    if(! fPPVsMultUtils ) {
-        fPPVsMultUtils = new AliPPVsMultUtils();
-    } 
-    //Analysis Utils
-    if(! fUtils ) {
-        fUtils = new AliAnalysisUtils();
-    }
-    */
-
-
+    fTreeEvent = new TTree("fTreeEvent","Events");
+/* 0*/    fTreeEvent->Branch("fLambdaMod",&fLambdaMod,"fLambdaMod/D");
+/* 1*/    fTreeEvent->Branch("fLambdaPx",&fLambdaPx, "fLambdaPx/D");
+/* 2*/    fTreeEvent->Branch("fLambdaPy",&fLambdaPy, "fLambdaPy/D");
+/* 3*/    fTreeEvent->Branch("fLambdaPz",&fLambdaPz, "fLambdaPz/D");
+/* 4*/    fTreeEvent->Branch("fLambdaMass",&fLambdaMass, "fLambdaMass/D");
+/* 5*/    fTreeEvent->Branch("fLambdaCosPointingAngle",&fLambdaCosPointingAngle,"fLambdaCosPointingAngle/D");
+/* 6*/    fTreeEvent->Branch("fLambdaDCADaughters",&fLambdaDCADaughters,"fLambdaDCADaughters/D");
+/* 7*/    fTreeEvent->Branch("fLambdaDCAtoPVNeg",&fLambdaDCAtoPVNeg,"fLambdaDCAtoPVNeg/D");
+/* 8*/    fTreeEvent->Branch("fLambdaDCAtoPVPos",&fLambdaDCAtoPVPos,"fLambdaDCAtoPVPos/D");
+/* 9*/    fTreeEvent->Branch("fLambdaRadius",&fLambdaRadius,"fLambdaRadius/D");
+/*10*/    fTreeEvent->Branch("fLambdaArmPt",&fLambdaArmPt,"fLambdaArmPt/D");
+/*11*/    fTreeEvent->Branch("fLambdaArmAlpha",&fLambdaArmAlpha,"fLambdaArmAlpha/D");
+/*12*/    fTreeEvent->Branch("fLambdaEta",&fLambdaEta,"fLambdaEta/D");
+    
+/*13*/    fTreeEvent->Branch("fGammaPx",&fGammaPx, "fGammaPx/D");
+/*14*/    fTreeEvent->Branch("fGammaPy",&fGammaPy, "fGammaPy/D");
+/*15*/    fTreeEvent->Branch("fGammaPz",&fGammaPz, "fGammaPz/D");
+/*16*/    fTreeEvent->Branch("fGammaMass",&fGammaMass, "fGammaMass/D");
+/*17*/    fTreeEvent->Branch("fGammaCosPointingAngle",&fGammaCosPointingAngle,"fGammaCosPointingAngle/D");
+/*18*/    fTreeEvent->Branch("fGammaRadius",&fGammaRadius,"fGammaRadius/D");
+/*19*/    fTreeEvent->Branch("fGammaArmPt",&fGammaArmPt,"fGammaArmPt/D");
+/*20*/    fTreeEvent->Branch("fGammaArmAlpha",&fGammaArmAlpha,"fGammaArmAlpha/D");
+/*21*/    fTreeEvent->Branch("fGammaEta",&fGammaEta,"fGammaEta/D");
+/*22*/    fTreeEvent->Branch("fGammaChi2",&fGammaChi2,"fGammaChi2/D");
+/*23*/    fTreeEvent->Branch("fGammaZConv",&fGammaZConv,"fGammaZConv/D");
+    
+/*24*/    fTreeEvent->Branch("fSigmaMass",&fSigmaMass,"fSigmaMass/D");
+/*25*/    fTreeEvent->Branch("fSigmaPt",&fSigmaPt, "fSigmaPt/D");
+/*26*/    fTreeEvent->Branch("fSigmaArmPt",&fSigmaArmPt,"fSigmaArmPt/D");
+/*27*/    fTreeEvent->Branch("fSigmaArmAlpha",&fSigmaArmAlpha,"fSigmaArmAlpha/D");
+/*28*/    fTreeEvent->Branch("fCentr",&fCentr,"fCentr/D");
+    
+    fTreeList->Add(fTreeEvent);
+    
     PostData(1, fOutputContainer);
-    //    PostData(2, fTreeV0);
-
     //  PostData(2, fOutputContainer);
     //  PostData(3, fOutputContainer);
     
     
-    //   PostData(2, tSigma0);
-    //   PostData(3, tTreeEvent);
+    //   PostData(2, fSigma0);
+    //   PostData(3, fTreeEvent);
   
 }
 
@@ -1207,7 +765,7 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
 {
     // Called for each event
     
-  //  printf("111 Execute analysis for current event... -1 \n");
+      printf(" Execute analysis for current event... -1 \n");
     // Select conversion and calorimeter photons
     
     //Make sure that old events are added to the list of "previous" and new are cleaned
@@ -1288,6 +846,15 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
     else
     fGenpi0Event = new TClonesArray("AliCaloParticle",10) ;
     
+    fLeadingTrack=-1;
+    fLeadingPHOS=-1;
+    fLeadingEMCAL=-1;
+    fLeadingConv=-1;
+    fAbsLeading=-1;
+    fELeadingTrack=0.;
+    fELeadingPHOS=0.;
+    fELeadingEMCAL=0.;
+    fELeadingConv=0.;
     
     //First try to find Stack information.
     if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
@@ -1298,9 +865,8 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
     // Connect to the InputEvent
     // Appropriate for ESD analysis !
     
-   // AliESDInputHandler *esdHandler=dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-   AliESDInputHandler *esdHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
+    AliESDInputHandler *esdHandler=dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
   
     
     if(!fESDpid){
@@ -1351,9 +917,7 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
         
      }
     
-
     fESDEvent=(AliESDEvent*)InputEvent();
-    //    fEventCounter = 0;
      
     // Get PHOS rotation matrices from ESD and set them to the PHOS geometry
     if(fEventCounter == 0) {
@@ -1366,10 +930,7 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
     
     FillHistogram("hQAEvents",0.) ; // total number of event
     FillHistogram("hQAEventsTrig",0.) ;
-
-    //    PostData(1, fOutputContainer);    
-    //    fEventCounter++;
-    //    if( 1>0 ) return;
+    
     
     TString trgClasses = fESDEvent->GetFiredTriggerClasses();
     if (trgClasses.Contains("FAST") && !trgClasses.Contains("ALL")) {
@@ -1417,14 +978,16 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
     
 
     
-         
+    
+    //Fill MC histograms if MC is present
+    fAbsLeading = -100;
+    ProcessMC();
+    
     FillHistogram("hQAEventsTrig",13.) ;
  //   FillHistogram("hQAEventsTrig",14) ;
     
     // Get Centrality information
     // fGetCent = fESDEvent->GetCentrality();
-
-    /*
     AliCentrality *cent = fESDEvent->GetCentrality();
     if(cent)  fCentralityV0M = cent->GetCentralityPercentile("V0M");
     fCentr= fCentralityV0M ;
@@ -1445,10 +1008,8 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
     FillHistogram("hQACentr1",centralityV0M);
     FillHistogram("hQACentr2",centralityV0A);
     FillHistogram("hQACentr3",lCentrality);
-    */
 
-
-    //printf(" cent %f %f %f \n", centralityV0M, centralityV0A, lCentrality);
+    printf(" cent %f %f %f \n", centralityV0M, centralityV0A, lCentrality);
 
     //Calculate charged multiplicity
     Int_t trackCounter = 0;
@@ -1460,49 +1021,42 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
         delete track;
     }
 
+
     fMultiplicity = trackCounter;       
     FillHistogram("hTrackMult", fMultiplicity) ;
-    FillHistogram("hQAEventsTrig",14.) ;
- 
+    FillHistogram("hQAEventsTrig",8.) ;
+    
+    
+  
+//------------------------------------------------
+// Select tracks
+//------------------------------------------------
 
-    //Fill MC histograms if MC is present
-    ProcessMC();
+    //   SelectTracks() ;
 
-    //    SelectV0 ();
-
+    SelectConvPhotons() ;
+    Int_t nConv=fConvEvent->GetEntriesFast() ;
+    if( nConv < 1 ) return;
+  
     SelectLambda ();
+    Int_t nLam=fGenpi0Event->GetEntriesFast() ;
+    if( nLam < 1 ) return;
+
+    //    printf("CONV nConv %d nLam %d \n", nConv, nLam );
+
+   //  SelectPHOSPhotons() ;
+    //  SelectPhotonsFB();
+//------------------------------------------------
+    
     
 
-    Int_t nLam=fGenpi0Event->GetEntriesFast() ;
-    if( nLam < 1 ) return;    
-    FillHistogram("hQAEventsTrig",15.) ;
+ 
+    FillHistogram("hConvMult", nConv) ;
     FillHistogram("hLamMult", nLam) ;
-
-    //        SelectConvPhotons() ;
-    SelectPhotonsFB();
-    // SelectGammaV0();
-
-    Int_t nConv=fConvEvent->GetEntriesFast() ;
-    if( nConv>0) { 
-      FillHistogram("hQAEventsTrig",16.) ;
-      FillHistogram("hConvMult", nConv) ;
-    }      
-
-    SelectPHOSPhotons();
-    Int_t nPHOS=fPHOSEvent->GetEntriesFast() ;
-    if( nPHOS>0) {
-      FillHistogram("hQAEventsTrig",17.) ;
-      FillHistogram("hPHOSMult", nPHOS) ;
-    }
-
-
-
-    if( nConv < 1 && nPHOS<1  ) return;
-
-    //   printf("========+++Event %d !!!  CONV-1 nConv %d nLam %d \n \n \n", fEventCounter, nConv, nLam );
-    FillHistogram("hQAEventsTrig",18) ;
-
-        
+    FillHistogram("hQAEventsTrig",15) ;
+    
+    
+    
     
     PostData(1, fOutputContainer);
     
@@ -1542,7 +1096,7 @@ void AliAnalysisTaskSigma0::SelectPHOSPhotons(){
     const Double_t keMin= fptCut ;  //  0.070 ; // 0.2;    // 0.075 ;  0.1 ???
     const Double_t keMax= fptMaxCut; // 1.500 ; // 0.2;    // 0.075 ;  0.1 ???
     const Int_t knMin=1;   const Int_t knMax=4;
-
+    fELeadingPHOS=0.;  fLeadingPHOS = -1 ;
     //vertex
     Double_t vtx[3];
     vtx[0] = fESDEvent->GetPrimaryVertex()->GetX();
@@ -1600,6 +1154,10 @@ void AliAnalysisTaskSigma0::SelectPHOSPhotons(){
         //------ YK 04.03.2013
         if(inPHOS>=fPHOSEvent->GetSize())fPHOSEvent->Expand(2*inPHOS) ;
         AliCaloParticle * ph = new((*fPHOSEvent)[inPHOS]) AliCaloParticle(p) ;
+        if(fELeadingPHOS<p.Pt()){
+            fLeadingPHOS = inPHOS ;
+            fELeadingPHOS=p.Pt();
+        }
         inPHOS++ ;
         Double_t dist = clu->GetEmcCpvDistance() ;
         //    FillHistogram("PHOSdist",dist,clu->E() ) ;
@@ -1614,1512 +1172,496 @@ void AliAnalysisTaskSigma0::SelectPHOSPhotons(){
         //    Bool_t closeToBad=(clu->GetDistanceToBadChannel()>fBadDistCutPHOS) ;
         ph->SetModule(iMod) ;
         //Fill QA
-	if(clu->E()> keMin  && iMod <= 3  ){
+        if(clu->E()> keMin  && iMod <= 3  ){
             sprintf(key,"hQA_PHOS_mod%d_soft",iMod) ;
             FillHistogram(key,iX-0.5, iZ-0.5,1.) ;
-	}
-	FillHistogram("EGamPHOS", clu->E() ) ;
-
+        }
     }
     //QA: number of clusters/event in run //QA: average cluster energy
 } // END of SelectPHOSPhotons(){
+
 //______________________________________________
 //______________________________________________________
 //_____________________________________________________________
 //______________________________________________________________________
-void AliAnalysisTaskSigma0::SelectV0(){
-  //------------------------------------------------
-  // Fill V0 Tree as needed
-  //------------------------------------------------
-
-  //Variable definition
-  Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-  Double_t lChi2V0 = 0;
-  Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-  Double_t lV0CosineOfPointingAngle = 0;
-  Double_t lV0Radius = 0, lPt = 0;
-  Double_t lRapK0Short = 0, lRapLambda = 0;
-  Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
-  
-  Double_t fMinV0Pt = 0;
-  Double_t fMaxV0Pt = 100;
-
-  Int_t nv0s = 0;
-  nv0s =  fESDEvent->GetNumberOfV0s();
-
-  for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
-    {   // This is the begining of the V0 loop
-      AliESDv0 *v0 = ((AliESDEvent*) fESDEvent)->GetV0(iV0);
-      if (!v0) continue;
-
-      Double_t tDecayVertexV0[3];
-      v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
-      
-      Double_t tV0mom[3];
-      v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-      Double_t lV0TotalMomentum = TMath::Sqrt( tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-
-      lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
-
-      lPt = v0->Pt();
-      lRapK0Short = v0->RapK0Short();
-      lRapLambda  = v0->RapLambda();
-      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
-
-      UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-      UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-
-      Double_t lMomPos[3];
-      v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
-      Double_t lMomNeg[3];
-      v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
-
-      AliESDtrack *pTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyPos);
-      AliESDtrack *nTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyNeg);
-      if (!pTrack || !nTrack) {
-	Printf("ERROR: Could not retreive one of the daughter track");
-	continue;
-      }
-
-      //Daughter Eta for Eta selection, afterwards
-      fTreeVariableNegEta = nTrack->Eta();
-      fTreeVariablePosEta = pTrack->Eta();
-
-      // Filter like-sign V0 (next: add counter and distribution)
-      if ( pTrack->GetSign() == nTrack->GetSign()) {
-	continue;
-      }
-
-      //________________________________________________________________________
-      // Track quality cuts
-      Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
-      Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
-      fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
-      if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
-	fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
-      
-      // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-      if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-      if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-
-
-      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
-
-      //GetKinkIndex condition
-      if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
-
-      //Findable clusters > 0 condition
-      if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
-
-      //Compute ratio Crossed Rows / Findable clusters
-      //Note: above test avoids division by zero!
-      Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF() +1.e-10  ));
-      Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF() +1.e-10  ));
-
-      fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
-      if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
-	fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
-
-      //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-      if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-      
-      //End track Quality Cuts
-      //________________________________________________________________________
-
-    //classical Proton-proton like selection
-    const AliESDVertex *lPrimaryBestESDVtx     = fESDEvent->GetPrimaryVertex();
-    // const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    //    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-
-    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-    lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
+void AliAnalysisTaskSigma0::SelectLambda(){
+    //Fill list of Lambdas
+    
+    fELeadingConv=0.;
+    fLeadingConv = -1 ;
+    
+    
+    Double_t minPnSigmaAbovePionLine = 1. ;
+    Double_t maxPnSigmaAbovePionLine = 3. ;
+    Double_t nSigmaAbovePionLine = 0 ;
+ 
+    const Bool_t useImprovedVertex=kTRUE ;
+    
+    //No primary vertex in event => scip
+    if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) {    return;  }
+    
     Double_t  lMagneticField = fESDEvent->GetMagneticField();
-
-      lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-
-      lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-
-      lOnFlyStatus = v0->GetOnFlyStatus();
-      lChi2V0 = v0->GetChi2V0();
-      //      printf(" lChi2V0 %f GetChi2V0 %f  \n",lChi2V0,  v0->GetChi2V0() );
-
-      lDcaV0Daughters = v0->GetDcaV0Daughters();
-      lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-      lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-      fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
-
-      // Getting invariant mass infos directly from ESD
-      v0->ChangeMassHypothesis(310);
-      lInvMassK0s = v0->GetEffMass();
-      v0->ChangeMassHypothesis(3122);
-      lInvMassLambda = v0->GetEffMass();
-      v0->ChangeMassHypothesis(-3122);
-      lInvMassAntiLambda = v0->GetEffMass();
-      lAlphaV0 = v0->AlphaV0();
-      lPtArmV0 = v0->PtArmV0();
-
-      fTreeVariablePt = v0->Pt();
-      fTreeVariableChi2V0 = lChi2V0;
-      fTreeVariableDcaV0ToPrimVertex = lDcaV0ToPrimVertex;
-      fTreeVariableDcaV0Daughters = lDcaV0Daughters;
-      fTreeVariableV0CosineOfPointingAngle = lV0CosineOfPointingAngle;
-      fTreeVariableV0Radius = lV0Radius;
-      fTreeVariableDcaPosToPrimVertex = lDcaPosToPrimVertex;
-      fTreeVariableDcaNegToPrimVertex = lDcaNegToPrimVertex;
-      fTreeVariableInvMassK0s = lInvMassK0s;
-      fTreeVariableInvMassLambda = lInvMassLambda;
-      fTreeVariableInvMassAntiLambda = lInvMassAntiLambda;
-      fTreeVariableRapK0Short = lRapK0Short;
-      fTreeVariableRapLambda = lRapLambda;
-      fTreeVariableAlphaV0 = lAlphaV0;
-      fTreeVariablePtArmV0 = lPtArmV0;
-
-      //Official means of acquiring N-sigmas
-      fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
-      fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
-      fTreeVariableNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
-      fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
-      
-      //This requires an Invariant Mass Hypothesis afterwards
-      fTreeVariableDistOverTotMom = TMath::Sqrt(
-						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
-						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
-						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
-						);
-      fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
-
-      //      printf(" fTreeVariableDistOverTotMom %f \n", fTreeVariableDistOverTotMom );
-
-      //      fTreeV0->Fill();
-
-      /* ABB SKIP Copy Multiplicity information
-      fTreeVariableCentV0M = fCentrality_V0M;
-      fTreeVariableCentV0A = fCentrality_V0A;
-      fTreeVariableCentV0C = fCentrality_V0C;
-      fTreeVariableCentV0MEq = fCentrality_V0MEq;
-      fTreeVariableCentV0AEq = fCentrality_V0AEq;
-      fTreeVariableCentV0CEq = fCentrality_V0CEq;
-      fTreeVariableCentV0B = fCentrality_V0B;
-      fTreeVariableCentV0Apartial = fCentrality_V0Apartial;
-      fTreeVariableCentV0Cpartial = fCentrality_V0Cpartial;
-      fTreeVariableCentV0S = fCentrality_V0S;
-      fTreeVariableCentV0SB = fCentrality_V0SB;
-      fTreeVariableRefMultEta8 = fRefMultEta8;
-      fTreeVariableRefMultEta5 = fRefMultEta5;
-      fTreeVariableRunNumber = fRunNumber;
-      for(Int_t i=0; i<20; i++) fTreeVariableRefMultDiffEta[i] = fRefMultDiffEta[i];   */
-
-      //------------------------------------------------
-      // Fill Tree!
-      //------------------------------------------------
-      
-      // The conditionals are meant to decrease excessive
-      // memory usage!
-
-      //First Selection: Reject OnFly
-      if( lOnFlyStatus == 0 ) {
-	//Second Selection: rough 20-sigma band, parametric.
-	//K0Short: Enough to parametrize peak broadening with linear function.
-	Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt;
-	Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeVariablePt;
-	//Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
-	//[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-	Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + 
-	  (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
-	Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - 
-	  (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
-	//Do Selection
-	if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda > lLowerLimitLambda     ) ||
-	    (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) ||
-	    (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ) {
-	  //Pre-selection in case this is AA...
-	  if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree ) fTreeV0->Fill();
-	}
-      }
-    }// This is the end of the V0 loop
+    
+    const AliESDVertex *esdVertex5 = fESDEvent->GetPrimaryVertex();
+    Double_t vtx5[3];
+    vtx5[0] = esdVertex5->GetX();
+    vtx5[1] = esdVertex5->GetY();
+    vtx5[2] = esdVertex5->GetZ();
+    Double_t  lPrimaryVtxPosition[3];
+    lPrimaryVtxPosition[0] = vtx5[0]; lPrimaryVtxPosition[1] = vtx5[1]; lPrimaryVtxPosition[2] = vtx5[2];
+    
+    Int_t nV0=fESDEvent->GetNumberOfV0s() ;
+    Int_t inLam=0 ;   Double_t ModLam = 0;
+    
+    Int_t NlamEv = 0;  Int_t NalamEv = 0;
+    Double_t lampospxprev = -100 ;
+    Double_t lamnegpxprev = -100 ;
+    Double_t alampospxprev = -100 ;
+    Double_t alamnegpxprev = -100 ;
+    Double_t MassLam = 1.115683 ;
+    Double_t MassLamLim = 0.050 ;
+    Double_t MassPi = 0.13957018 ;
+    Double_t MassPr = 0.938272046 ;
+    Double_t mlamprev = 0;  Double_t malamprev = 0;
+    
+    Double_t ptminLam =  0.25;
+    //    Double_t MminLam = 1.080;       Double_t MmaxLam = 1.150;
+    Double_t MminLam = 1.110;       Double_t MmaxLam = 1.122;
   
-  //------------------------------------------------
-  // Fill V0 tree over.
-  //------------------------------------------------
-} // END of SelectV0
-
-//______________________________________________________
-//_____________________________________________________________
-//______________________________________________________________________
-void AliAnalysisTaskSigma0::SelectGammaV0(){
-  //------------------------------------------------
-  // Fill V0 Tree as needed
-  //------------------------------------------------
-
-  //Variable definition
-  Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-  Double_t lChi2V0 = 0;
-  Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-  Double_t lV0CosineOfPointingAngle = 0;
-  Double_t lV0Radius = 0, lPt = 0;
-  Double_t lRapK0Short = 0, lRapLambda = 0;
-  Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
-  
-  Double_t fMinV0Pt = 0;
-  Double_t fMaxV0Pt = 100;
-
-  Int_t nv0s = 0;
-
-  if(1>0 ) return;
-
-}
-
-
-  /* abb 11jan16
-  nv0s =  fESDEvent->GetNumberOfV0s();
-
-  for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
-    {   // This is the begining of the V0 loop
-      AliESDv0 *v0 = ((AliESDEvent*) fESDEvent)->GetV0(iV0);
-      if (!v0) continue;
-
-      Double_t tDecayVertexV0[3];
-      v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
-      
-      Double_t tV0mom[3];
-      v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-      Double_t lV0TotalMomentum = TMath::Sqrt( tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-
-      lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
-
-      lPt = v0->Pt();
-      lRapK0Short = v0->RapK0Short();
-      lRapLambda  = v0->RapLambda();
-      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
-
-      UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-      UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-
-      Double_t lMomPos[3];
-      v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
-      Double_t lMomNeg[3];
-      v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
-
-      AliESDtrack *pTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyPos);
-      AliESDtrack *nTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyNeg);
-      if (!pTrack || !nTrack) {
-	Printf("ERROR: Could not retreive one of the daughter track");
-	continue;
-      }
-
-      //Daughter Eta for Eta selection, afterwards
-      fTreeGammaVarNegEta = nTrack->Eta();
-      fTreeGammaVarPosEta = pTrack->Eta();
-
-      // Filter like-sign V0 (next: add counter and distribution)
-      if ( pTrack->GetSign() == nTrack->GetSign()) {
-	continue;
-      }
-
-      //________________________________________________________________________
-      // Track quality cuts
-      Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
-      Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
-      fTreeGammaVarLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
-      if( lNegTrackCrossedRows < fTreeGammaVarLeastNbrCrossedRows )
-	fTreeGammaVarLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
-      
-      // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-      if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-      if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-
-
-      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
-
-      //GetKinkIndex condition
-      if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
-
-      //Findable clusters > 0 condition
-      if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
-
-      //Compute ratio Crossed Rows / Findable clusters
-      //Note: above test avoids division by zero!
-      Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF()));
-      Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF()));
-
-      fTreeGammaVarLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
-      if( lNegTrackCrossedRowsOverFindable < fTreeGammaVarLeastRatioCrossedRowsOverFindable )
-	fTreeGammaVarLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
-
-      //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-      if ( fTreeGammaVarLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-      
-      //End track Quality Cuts
-      //________________________________________________________________________
-
-    //classical Proton-proton like selection
-    const AliESDVertex *lPrimaryBestESDVtx     = fESDEvent->GetPrimaryVertex();
-    // const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    //    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-
-    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-    lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
-    Double_t  lMagneticField = fESDEvent->GetMagneticField();
-
-      lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-
-      lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-
-      v0->ChangeMassHypothesis(0);
-      lInvMassK0s = v0->GetEffMass();
-      if( lInvMassK0s > 2 ) continue;
-
-      lOnFlyStatus = v0->GetOnFlyStatus();
-      lChi2V0 = v0->GetChi2V0();
-      //      printf(" lChi2V0 %f GetChi2V0 %f  \n",lChi2V0,  v0->GetChi2V0() );
-
-      lDcaV0Daughters = v0->GetDcaV0Daughters();
-      lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-      lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-      fTreeGammaVarV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
-
-      // Getting invariant mass infos directly from ESD
-      v0->ChangeMassHypothesis(0);
-      lInvMassK0s = v0->GetEffMass();
-      v0->ChangeMassHypothesis(3122);
-      lInvMassLambda = v0->GetEffMass();
-      v0->ChangeMassHypothesis(-3122);
-      lInvMassAntiLambda = v0->GetEffMass();
-      lAlphaV0 = v0->AlphaV0();
-      lPtArmV0 = v0->PtArmV0();
-
-      fTreeGammaVarPt = v0->Pt();
-      fTreeGammaVarChi2V0 = lChi2V0;
-      fTreeGammaVarDcaV0ToPrimVertex = lDcaV0ToPrimVertex;
-      fTreeGammaVarDcaV0Daughters = lDcaV0Daughters;
-      fTreeGammaVarV0CosineOfPointingAngle = lV0CosineOfPointingAngle;
-      fTreeGammaVarV0Radius = lV0Radius;
-      fTreeGammaVarDcaPosToPrimVertex = lDcaPosToPrimVertex;
-      fTreeGammaVarDcaNegToPrimVertex = lDcaNegToPrimVertex;
-      fTreeGammaVarInvMassK0s = lInvMassK0s;
-      fTreeGammaVarInvMassLambda = lInvMassLambda;
-      fTreeGammaVarInvMassAntiLambda = lInvMassAntiLambda;
-      fTreeGammaVarRapK0Short = lRapK0Short;
-      fTreeGammaVarRapLambda = lRapLambda;
-      fTreeGammaVarAlphaV0 = lAlphaV0;
-      fTreeGammaVarPtArmV0 = lPtArmV0;
-
-      //Official means of acquiring N-sigmas
-      fTreeGammaVarNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
-      fTreeGammaVarNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
-      fTreeGammaVarNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
-      fTreeGammaVarNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
-      
-      //This requires an Invariant Mass Hypothesis afterwards
-      fTreeGammaVarDistOverTotMom = TMath::Sqrt(
-						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
-						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
-						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
-						);
-      fTreeGammaVarDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
-
-      // Fill Tree!
-      //------------------------------------------------
-      
-      // The conditionals are meant to decrease excessive
-      // memory usage!
-
-      //First Selection: Reject OnFly
-      if( lOnFlyStatus == 0 ) {
-	//Second Selection: rough 20-sigma band, parametric.
-	//K0Short: Enough to parametrize peak broadening with linear function.
-	Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeGammaVarPt;
-	Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeGammaVarPt;
-	//Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
-	//[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-	Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeGammaVarPt + 
-	  (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeGammaVarPt);
-	Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeGammaVarPt - 
-	  (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeGammaVarPt);
-	//Do Selection
-	if( (fTreeGammaVarInvMassLambda     < lUpperLimitLambda  && fTreeGammaVarInvMassLambda > lLowerLimitLambda     ) ||
-	    (fTreeGammaVarInvMassAntiLambda < lUpperLimitLambda  && fTreeGammaVarInvMassAntiLambda > lLowerLimitLambda     ) ||
-	    (fTreeGammaVarInvMassK0s        < lUpperLimitK0Short && fTreeGammaVarInvMassK0s        > lLowerLimitK0Short    ) ) {
-	  //Pre-selection in case this is AA...
-	  if ( TMath::Abs(fTreeGammaVarNegEta)<0.8 && TMath::Abs(fTreeGammaVarPosEta)<0.8 && fkSaveV0Tree ) fTreeV0->Fill();
-	}
-      }
-    }// This is the end of the V0 loop
-  
-  //------------------------------------------------
-  // Fill V0 tree over.
-  //------------------------------------------------
-  } // END of Select  GAMMA V0
-  */
-//______________________________________________
-//______________________________________________________
-//_____________________________________________________________
-//______________________________________________________________________
-void AliAnalysisTaskSigma0::SelectLambda(){     //Fill list of Lambdas
+    for(Int_t iv0=0; iv0<nV0;iv0++){
+        AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
         
-  Double_t minPnSigmaAbovePionLine = 1. ;
-  Double_t maxPnSigmaAbovePionLine = 3. ;
-  Double_t nSigmaAbovePionLine = 0 ;
-  const Bool_t useImprovedVertex=kTRUE ;
-    
-  //No primary vertex in event => scip
-  if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) {    return;  }
-    
-  Double_t  lMagneticField = fESDEvent->GetMagneticField();
-    
-  const AliESDVertex *esdVertex5 = fESDEvent->GetPrimaryVertex();
-  Double_t vtx5[3];
-  vtx5[0] = esdVertex5->GetX();
-  vtx5[1] = esdVertex5->GetY();
-  vtx5[2] = esdVertex5->GetZ();
-  Double_t  lPrimaryVtxPosition[3];
-  lPrimaryVtxPosition[0] = vtx5[0]; lPrimaryVtxPosition[1] = vtx5[1]; lPrimaryVtxPosition[2] = vtx5[2];
-    
-  Int_t nV0=fESDEvent->GetNumberOfV0s() ;
-  Int_t inLam=0 ;   Double_t ModLam = 0;
-    
-  Int_t NlamEv = 0;  Int_t NalamEv = 0; Int_t NlamminalamEv = 0;
-  Double_t lampospxprev = -100 ;
-  Double_t lamnegpxprev = -100 ;
-  Double_t alampospxprev = -100 ;
-  Double_t alamnegpxprev = -100 ;
-  Double_t MassLam = 1.115683 ;
-  Double_t MassLamLim = 0.050 ;
-  Double_t MassPi = 0.13957018 ;
-  Double_t MassPr = 0.938272046 ;
-  Double_t mlamprev = 0;  Double_t malamprev = 0;
-    
-  //-old-upto-25nov15    Double_t ptminLam =  0.25;
-  Double_t ptminLam =  0.0;  // as in Lam analysis
-  Double_t MminLam = 1.080;       Double_t MmaxLam = 1.160;
-  //    Double_t MminLam = 1.110;       Double_t MmaxLam = 1.122;
-  
-  for(Int_t iv0=0; iv0<nV0;iv0++){    // Main Loop over V0s
-    AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
+        AliESDtrack * pos = fESDEvent->GetTrack(v0->GetPindex()) ;
+        AliESDtrack * neg = fESDEvent->GetTrack(v0->GetNindex()) ;
+        const AliExternalTrackParam * paramPos = v0->GetParamP() ;
+        const AliExternalTrackParam * paramNeg = v0->GetParamN() ;
+        if(pos->GetSign() <0){//change tracks
+            pos=neg ;
+            neg=fESDEvent->GetTrack(v0->GetPindex()) ;
+            paramPos=paramNeg ;
+            paramNeg=v0->GetParamP() ;
+        }
         
-    AliESDtrack * pos = fESDEvent->GetTrack(v0->GetPindex()) ;
-    AliESDtrack * neg = fESDEvent->GetTrack(v0->GetNindex()) ;
-    const AliExternalTrackParam * paramPos = v0->GetParamP() ;
-    const AliExternalTrackParam * paramNeg = v0->GetParamN() ;
-    if(pos->GetSign() <0){//change tracks
-      pos=neg ;
-      neg=fESDEvent->GetTrack(v0->GetPindex()) ;
-      paramPos=paramNeg ;
-      paramNeg=v0->GetParamP() ;
-    }
+        //cuts ------------    //remove like sign pairs
+        if(pos->GetSign() == neg->GetSign())     continue ;
         
-    //cuts ------------    //remove like sign pairs
-    if(pos->GetSign() == neg->GetSign())     continue ;                
-    if( neg->GetKinkIndex(0) > 0 || pos->GetKinkIndex(0) > 0) continue ;        
-    if( !(pos->GetStatus() & AliESDtrack::kTPCrefit) || !(neg->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-             
-    Int_t    lOnFlyStatus        = 0;
-    Bool_t    isOnFly        = 0;
-    // VO's main characteristics to check the reconstruction cuts
-    lOnFlyStatus       = v0->GetOnFlyStatus();
-    isOnFly = v0->GetOnFlyStatus();
-
-    // if( lOnFlyStatus == 0 ) continue;  // Used up to 14jan16
-
-    if( !(lOnFlyStatus == 0) ) continue;  // reverse cut, check 14jan16
-
-    //      lChi2V0            = v0->GetChi2V0();
-    //   Double_t  lDcaV0Daughters    = v0->GetDcaV0Daughters();
-    //      lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
-    Double_t  lV0cosPointAngle   = v0->GetV0CosineOfPointingAngle(vtx5[0],vtx5[1], vtx5[2]);
         
-    Double_t  lV0Position[3];
-    v0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
+        if( neg->GetKinkIndex(0) > 0 || pos->GetKinkIndex(0) > 0) continue ;
         
-    Double_t  lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
+        if( !(pos->GetStatus() & AliESDtrack::kTPCrefit) || !(neg->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+     
+        
+        Int_t    lOnFlyStatus        = 0;
+        Bool_t    isOnFly        = 0;
+        // VO's main characteristics to check the reconstruction cuts
+        lOnFlyStatus       = v0->GetOnFlyStatus();
+        isOnFly = v0->GetOnFlyStatus();
+        if( lOnFlyStatus == 0 ) continue;
+        
+        //      lChi2V0            = v0->GetChi2V0();
+        //   Double_t  lDcaV0Daughters    = v0->GetDcaV0Daughters();
+        //      lDcaV0ToPrimVertex = v0->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+        Double_t  lV0cosPointAngle   = v0->GetV0CosineOfPointingAngle(vtx5[0],vtx5[1], vtx5[2]);
+        
+        Double_t  lV0Position[3];
+        v0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
+        
+        Double_t  lV0Radius      = TMath::Sqrt(lV0Position[0]*lV0Position[0]+lV0Position[1]*lV0Position[1]);
       
         
-    // DCA between daughter and Primary Vertex:
-    Double_t  lDcaPosToPrimVertex=TMath::Abs(pos->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField));
-    Double_t lDcaNegToPrimVertex=TMath::Abs(pos->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField));
-    Double_t lDcaV0Daughters = v0->GetDcaV0Daughters();
-    ///////////////values for cuts//////////////////////////////////
-    if ((lDcaPosToPrimVertex < 0.1) || (lDcaNegToPrimVertex < 0.1) ||(lV0cosPointAngle < 0.998) 
-     || (lV0Radius < 0.0) || (lV0Radius > 100. ) ) continue;
+        // DCA between daughter and Primary Vertex:
+        Double_t  lDcaPosToPrimVertex=TMath::Abs(pos->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField));
+        Double_t lDcaNegToPrimVertex=TMath::Abs(pos->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField));
+        Double_t lDcaV0Daughters = v0->GetDcaV0Daughters();
+        ///////////////values for cuts//////////////////////////////////
+        if ((lDcaPosToPrimVertex < 0.1) || (lDcaNegToPrimVertex < 0.1) ||(lV0cosPointAngle < 0.998) || (lV0Radius < 0.0) || (lV0Radius > 1000) ) continue;
         
-    //select V0 finder 
+        //select V0 finder  OPEN
         
-    Double_t v0x=0.,v0y=0.,v0z=0.;
-    v0->GetXYZ(v0x,v0y,v0z) ;
-    Double_t r=TMath::Sqrt(v0x*v0x + v0y*v0y) ;
-    // printf ("Lambda r %f V0R %f \n", r, lV0Radius);
+        Double_t v0x=0.,v0y=0.,v0z=0.;
+        v0->GetXYZ(v0x,v0y,v0z) ;
+        Double_t r=TMath::Sqrt(v0x*v0x + v0y*v0y) ;
+	// printf ("Lambda r %f V0R %f \n", r, lV0Radius);
         
-    Int_t LamRecFl = 0;
-    // Lambda -> P+ pi-  ---------------
-    AliKFParticle negKFKpim(*paramNeg,211);
-    AliKFParticle posKFKprot(*paramPos,2212);
-    AliKFParticle lamKF(negKFKpim,posKFKprot) ;
-    lamKF.SetMassConstraint(MassLam, 0.2 );
+        Int_t LamRecFl = 0;
+        // Lambda -> P+ pi-  ---------------
+        AliKFParticle negKFKpim(*paramNeg,211);
+        AliKFParticle posKFKprot(*paramPos,2212);
+        AliKFParticle lamKF(negKFKpim,posKFKprot) ;
+        lamKF.SetMassConstraint(MassLam, 0.2 );
         
-    if(useImprovedVertex){
-      AliKFVertex primaryVertexImproved(*(fESDEvent->GetPrimaryVertex()));
-      //if Vtx do created
-      if(primaryVertexImproved.GetNContributors()>1){
-	primaryVertexImproved+= lamKF;
-	lamKF.SetProductionVertex(primaryVertexImproved);
-      }
-    }
-    Double_t mlam=0., widthlam=0., ptlam=0., etalam=0., philam=0 ;
-    lamKF.GetMass(mlam, widthlam );
-    TLorentzVector lamLV;
-    lamLV.SetXYZM( lamKF.GetPx(), lamKF.GetPy(), lamKF.GetPz(),mlam ) ;  //Produces slightly better pi0 width
-    ptlam= lamLV.Pt();
-    etalam = abs( lamLV.Eta() ) ;
-    philam = lamLV.Phi();
+        if(useImprovedVertex){
+            AliKFVertex primaryVertexImproved(*(fESDEvent->GetPrimaryVertex()));
+            //if Vtx do created
+            if(primaryVertexImproved.GetNContributors()>1){
+                primaryVertexImproved+= lamKF;
+                lamKF.SetProductionVertex(primaryVertexImproved);
+            }
+        }
+        Double_t mlam=0., widthlam=0., ptlam=0., etalam=0., philam=0 ;
+        lamKF.GetMass(mlam, widthlam );
+        TLorentzVector lamLV;
+        lamLV.SetXYZM( lamKF.GetPx(), lamKF.GetPy(), lamKF.GetPz(),mlam ) ;  //Produces slightly better pi0 width
+        ptlam= lamLV.Pt();
+        etalam = abs( lamLV.Eta() ) ;
+        philam = lamLV.Phi();
         
-    // Anti-Lambda -> P- pi+  ---------------
-    AliKFParticle negKFKapim(*paramNeg,2212);
-    AliKFParticle posKFKaprot(*paramPos,211);
-    AliKFParticle alamKF(negKFKapim,posKFKaprot) ;
-    alamKF.SetMassConstraint(MassLam, 0.2 );
-    //    alamKF.SetModule(-1);
-    if(useImprovedVertex){
-      AliKFVertex primaryVertexImproved(*(fESDEvent->GetPrimaryVertex()));
-      //if Vtx do created
-      if(primaryVertexImproved.GetNContributors()>1){
-	primaryVertexImproved+= alamKF;
-	alamKF.SetProductionVertex(primaryVertexImproved);
-      }
-    }
-    Double_t malam=0., widthalam=0., ptalam=0., etaalam=0., phialam=0 ;
-    alamKF.GetMass(malam, widthalam );
-    TLorentzVector alamLV;
-    alamLV.SetXYZM( alamKF.GetPx(), alamKF.GetPy(), alamKF.GetPz(), malam ) ;
-    ptalam= alamLV.Pt();
-    etaalam = abs( alamLV.Eta() );
-    phialam = alamLV.Phi();
+        // Anti-Lambda -> P- pi+  ---------------
+        AliKFParticle negKFKapim(*paramNeg,2212);
+        AliKFParticle posKFKaprot(*paramPos,211);
+        AliKFParticle alamKF(negKFKapim,posKFKaprot) ;
+        alamKF.SetMassConstraint(MassLam, 0.2 );
+        //    alamKF.SetModule(-1);
+        if(useImprovedVertex){
+            AliKFVertex primaryVertexImproved(*(fESDEvent->GetPrimaryVertex()));
+            //if Vtx do created
+            if(primaryVertexImproved.GetNContributors()>1){
+                primaryVertexImproved+= alamKF;
+                alamKF.SetProductionVertex(primaryVertexImproved);
+            }
+        }
+        Double_t malam=0., widthalam=0., ptalam=0., etaalam=0., phialam=0 ;
+        alamKF.GetMass(malam, widthalam );
+        TLorentzVector alamLV;
+        alamLV.SetXYZM( alamKF.GetPx(), alamKF.GetPy(), alamKF.GetPz(), malam ) ;
+        ptalam= alamLV.Pt();
+        etaalam = abs( alamLV.Eta() );
+        phialam = alamLV.Phi();
         
-    //    FillHistogram("R2Conv", r ) ;
+         FillHistogram("R2Conv", r ) ;
     
-    Bool_t sigmaPionPos=kTRUE;    Bool_t sigmaPionNeg=kTRUE;
         
-    if(pos->P()>minPnSigmaAbovePionLine && pos->P()<maxPnSigmaAbovePionLine ){
-      if(fESDpid->NumberOfSigmasTPC(pos,AliPID::kPion)<nSigmaAbovePionLine){
-	sigmaPionPos=kFALSE;
-	//  //          continue ;
-      }
-    }
-    if(neg->P()>minPnSigmaAbovePionLine && neg->P()<maxPnSigmaAbovePionLine){
-      if(fESDpid->NumberOfSigmasTPC(neg,AliPID::kPion)<nSigmaAbovePionLine){
-	sigmaPionNeg=kFALSE;
-	// 	//          continue ;
-      }
-    }
+        Bool_t sigmaPionPos=kTRUE;    Bool_t sigmaPionNeg=kTRUE;
         
-    if( (mlam > MminLam &&  mlam < MmaxLam && ptlam > ptminLam )  ) {
+        if(pos->P()>minPnSigmaAbovePionLine && pos->P()<maxPnSigmaAbovePionLine ){
+            if(fESDpid->NumberOfSigmasTPC(pos,AliPID::kPion)<nSigmaAbovePionLine){
+                sigmaPionPos=kFALSE;
+                //  //          continue ;
+            }
+        }
+        if(neg->P()>minPnSigmaAbovePionLine && neg->P()<maxPnSigmaAbovePionLine){
+            if(fESDpid->NumberOfSigmasTPC(neg,AliPID::kPion)<nSigmaAbovePionLine){
+                sigmaPionNeg=kFALSE;
+                // 	//          continue ;
+            }
+        }
+        
+	if( (mlam > MminLam && mlam < MmaxLam && ptlam > ptminLam )  ) {
                 
-      FillHistogram("hLamdEdxTrack", pos->GetP(), pos->GetTPCsignal()) ;
-      FillHistogram("hPhi2LamMvsPt11",mlam, ptlam );
-      FillHistogram("hRLam2", lV0Radius );
-      // FillHistogram("hLamPtPvsM11",pos->Pt(), neg->Pt() );
-      // printf("Lam-v0 m %f pt %f \n", mlam, ptlam );
+	  FillHistogram("hLamdEdxTrack", pos->GetP(), pos->GetTPCsignal()) ;
+	  FillHistogram("hPhi2LamMvsPt11",mlam, ptlam );
+	  FillHistogram("hRLam2", lV0Radius );
+	  FillHistogram("hLamPtPvsM11",pos->Pt(), neg->Pt() );
+	  // printf("Lam-v0 m %f pt %f \n", mlam, ptlam );
 	  
-      FillHistogram("hRecPLam",ptlam );
-      if (  etalam < fetaCut ) 	 FillHistogram("hRecPLamEta1",ptlam );
-      //	 Int_t ilam = lamKF.GetLabel();
-      //	 if (  etalam < fEtaCuts[1] )   printf("ptlam %f \n", ptlam );
-    }
+	  FillHistogram("hRecPLam",ptlam );
+	  if (  etalam < fetaCut ) 	 FillHistogram("hRecPLamEta1",ptlam );
+	  //	 Int_t ilam = lamKF.GetLabel();
+	  //	 if (  etalam < fEtaCuts[1] )   printf("ptlam %f \n", ptlam );
+	}
             
-    if ( (malam > MminLam && malam < MmaxLam && ptalam> ptminLam )  ) {
-      FillHistogram("hAntiLamdEdxTrack", neg->GetP(), neg->GetTPCsignal()) ;
-      FillHistogram("hPhi2ALamMvsPt11",malam, ptalam );
-      FillHistogram("hRALam2", lV0Radius );
-      // FillHistogram("hALamPtPvsM11",pos->Pt(), neg->Pt() );
-      //	 printf("ALam-v0 m %f pt %f \n", malam, ptalam );
-      FillHistogram("hRecALam",ptalam );
-      if ( etaalam  < fetaCut ) 	FillHistogram("hRecALamEta1",ptalam );
-      // Int_t ialam = alamKF.GetLabel() ;
-      //	 printf("ilam %d \n", ialam );
-    }
+	if ( (malam > MminLam && malam < MmaxLam && ptalam> ptminLam )  ) {
+	  FillHistogram("hAntiLamdEdxTrack", neg->GetP(), neg->GetTPCsignal()) ;
+	  FillHistogram("hPhi2ALamMvsPt11",malam, ptalam );
+	  FillHistogram("hRALam2", lV0Radius );
+	  FillHistogram("hALamPtPvsM11",pos->Pt(), neg->Pt() );
+	  //	 printf("ALam-v0 m %f pt %f \n", malam, ptalam );
+	  FillHistogram("hRecALam",ptalam );
+	  if ( etaalam  < fetaCut ) 	FillHistogram("hRecALamEta1",ptalam );
+	  // Int_t ialam = alamKF.GetLabel() ;
+	  //	 printf("ilam %d \n", ialam );
+	}
             
-    FillHistogram("hLamMvsPt10",mlam, ptlam );
-    FillHistogram("hALamMvsPt10",malam, ptalam );
-    // FillHistogram("R3Conv", r ) ;
-    
-    Double_t Rlam0 =   sqrt( v0->Xv()*v0->Xv() +  v0->Yv()*v0->Yv() + v0->Zv()*v0->Zv() );
-    //    FillHistogram("hMClam0MassPt0All", v0->GetEffMass(),  v0->Pt() );
-    // FillHistogram("hMClam0RPt0All", Rlam0,  v0->Pt() );
+	FillHistogram("hLamMvsPt10",mlam, ptlam );
+	FillHistogram("hALamMvsPt10",malam, ptalam );
+	FillHistogram("R3Conv", r ) ;
             
-    
-    ModLam = 0;
-    if  ( (mlam > MminLam && mlam < MmaxLam && ptlam > ptminLam ) ||
-	  (malam > MminLam && malam < MmaxLam && ptalam> ptminLam )
-	  ) {                     // PLam and ALam fill into AliCaloParticle
-      FillHistogram("hPhi1LamMvsPt11",mlam, ptlam );
-      FillHistogram("hPhi1ALamMvsPt11",malam, ptalam );
+	Double_t Rlam0 =   sqrt( v0->Xv()*v0->Xv() +  v0->Yv()*v0->Yv() + v0->Zv()*v0->Zv() );
+	FillHistogram("hMClam0MassPt0All", v0->GetEffMass(),  v0->Pt() );
+	FillHistogram("hMClam0RPt0All", Rlam0,  v0->Pt() );
+            
+            
+	ModLam = 0;
+	if  ( (mlam > MminLam && mlam < MmaxLam && ptlam > ptminLam ) ||
+	      (malam > MminLam && malam < MmaxLam && ptalam> ptminLam )
+	      ) {
+	  FillHistogram("hPhi1LamMvsPt11",mlam, ptlam );
+	  FillHistogram("hPhi1ALamMvsPt11",malam, ptalam );
 	  
-      Double_t posp[3]= { pos->Px(),  pos->Py(),  pos->Pz() };
-      Double_t negp[3]= { neg->Px(),  neg->Py(),  neg->Pz() };
-      Double_t moth[3]= { lamKF.GetPx(), lamKF.GetPy(), lamKF.GetPz() };
-      Double_t arpod[2]= {0,0};
-      GetArPod( posp, negp, moth, arpod );
-      //	  printf("Arpod %f %f mlam %f malam %f \n", arpod[1],arpod[2],mlam, malam);
+	  Double_t posp[3]= { pos->Px(),  pos->Py(),  pos->Pz() };
+	  Double_t negp[3]= { neg->Px(),  neg->Py(),  neg->Pz() };
+	  Double_t moth[3]= { lamKF.GetPx(), lamKF.GetPy(), lamKF.GetPz() };
+	  Double_t arpod[2]= {0,0};
+	  GetArPod( posp, negp, moth, arpod );
+	  //	  printf("Arpod %f %f mlam %f malam %f \n", arpod[1],arpod[2],mlam, malam);
                 
-      if(inLam>=fGenpi0Event->GetSize())fGenpi0Event->Expand(inLam*2) ;
-      
-      if( (mlam > MminLam  && mlam < MmaxLam && ptlam > ptminLam )   &&
-	  ( (arpod[1] > 0.2 && arpod[1] < 0.9) && (arpod[0] > 0.01 && arpod[0] < 0.17)) ) {
-	
-	AliCaloParticle * ph = new((*fGenpi0Event)[inLam]  ) AliCaloParticle(lamLV) ;
+	  if(inLam>=fGenpi0Event->GetSize())fGenpi0Event->Expand(inLam*2) ;
+                
+	  if( (mlam > MminLam  && mlam < MmaxLam && ptlam > ptminLam )   &&
+	      ( (arpod[1] > 0.2 && arpod[1] < 0.9) && (arpod[0] > 0.01 && arpod[0] < 0.17)) ) {
 	    
-	ModLam = 100.;
-	ph->SetXt(ModLam);   // Xt will be renamed
-	ph->SetIsolation(iv0);
-
-	ph->SetPprx(pos->Px());
-	ph->SetPpry(pos->Py());
-	ph->SetPprz(pos->Pz());
+	    AliCaloParticle * ph = new((*fGenpi0Event)[inLam]  ) AliCaloParticle(lamLV) ;
 	    
-	ph->SetPpix(neg->Px());
-	ph->SetPpiy(neg->Py());
-	ph->SetPpiz(neg->Pz());
+	    ModLam = 100.;
+	    ph->SetXt(ModLam);   // Xt will be renamed
 	    
-	ph->SetV0CosPointingAngle(lV0cosPointAngle);
-	ph->SetV0DCADaughters(lDcaV0Daughters);
-	ph->SetV0IPNeg(lDcaNegToPrimVertex);
-	ph->SetV0IPPos(lDcaPosToPrimVertex);
-	ph->SetV0Radius(lV0Radius);
+	    ph->SetPprx(pos->Px());
+	    ph->SetPpry(pos->Py());
+	    ph->SetPprz(pos->Pz());
+	    
+	    ph->SetPpix(neg->Px());
+	    ph->SetPpiy(neg->Py());
+	    ph->SetPpiz(neg->Pz());
+	    
+	    ph->SetV0CosPointingAngle(lV0cosPointAngle);
+	    ph->SetV0DCADaughters(lDcaV0Daughters);
+	    ph->SetV0IPNeg(lDcaNegToPrimVertex);
+	    ph->SetV0IPPos(lDcaPosToPrimVertex);
+	    ph->SetV0Radius(lV0Radius);
                     
-	ph->SetArmPt(arpod[0] ) ;
-	ph->SetArmAlpha(arpod[1]);
+	    ph->SetArmPt(arpod[0] ) ;
+	    ph->SetArmAlpha(arpod[1]);
                     
                     
-	NlamEv++;
-	FillHistogram("hArPodLam",  arpod[1], arpod[0] ) ;
-	lampospxprev = pos->Px(); lamnegpxprev = neg->Px() ; mlamprev = mlam;
-	inLam++ ;
+	    NlamEv++;
+	    FillHistogram("hArPodLam",  arpod[1], arpod[0] ) ;
+	    lampospxprev = pos->Px(); lamnegpxprev = neg->Px() ; mlamprev = mlam;
+	    inLam++ ;
 	    
-      }
-      if( (malam > MminLam && malam < MmaxLam && ptalam > ptminLam ) &&
-	  ( (arpod[1] < -0.2 && arpod[1] > -0.9) && (arpod[0] > 0.01 && arpod[0] < 0.17) )  ) {
+	  }
+	  if( (malam > MminLam && malam < MmaxLam && ptalam > ptminLam ) &&
+	      ( (arpod[1] < -0.2 && arpod[1] > -0.9) && (arpod[0] > 0.01 && arpod[0] < 0.17) )  ) {
 		  
-	AliCaloParticle * ph = new((*fGenpi0Event)[inLam]  ) AliCaloParticle(alamLV) ;
-	ModLam = -100.;
-	ph->SetXt(ModLam);
+	    AliCaloParticle * ph = new((*fGenpi0Event)[inLam]  ) AliCaloParticle(alamLV) ;
+	    ModLam = -100.;
+	    ph->SetXt(ModLam);
 	    
-	ph->SetIsolation(iv0);
-	
-	ph->SetPpix(pos->Px());
-	ph->SetPpiy(pos->Py());
-	ph->SetPpiz(pos->Pz());
+	    ph->SetPpix(pos->Px());
+	    ph->SetPpiy(pos->Py());
+	    ph->SetPpiz(pos->Pz());
 	    
-	ph->SetPprx(neg->Px());
-	ph->SetPpry(neg->Py());
-	ph->SetPprz(neg->Pz());
-	    
-	ph->SetV0CosPointingAngle(lV0cosPointAngle);
-	ph->SetV0DCADaughters(lDcaV0Daughters);
-	ph->SetV0IPNeg(lDcaNegToPrimVertex);
-	ph->SetV0IPPos(lDcaPosToPrimVertex);
-	ph->SetV0Radius(lV0Radius);
-	ph->SetV0Chi2(v0->GetChi2V0());
+	    ph->SetPprx(neg->Px());
+	    ph->SetPpry(neg->Py());
+	    ph->SetPprz(neg->Pz());
                     
-	alampospxprev = pos->Px() ; alamnegpxprev = neg->Px() ; malamprev = malam;
+	    ph->SetV0CosPointingAngle(lV0cosPointAngle);
+	    ph->SetV0DCADaughters(lDcaV0Daughters);
+	    ph->SetV0IPNeg(lDcaNegToPrimVertex);
+	    ph->SetV0IPPos(lDcaPosToPrimVertex);
+	    ph->SetV0Radius(lV0Radius);
+	    ph->SetV0Chi2(v0->GetChi2V0());
+                    
+	    alampospxprev = pos->Px() ; alamnegpxprev = neg->Px() ; malamprev = malam;
 		    
-	inLam++ ;
-	NalamEv++;
-	FillHistogram("hArPodALam",  arpod[1], arpod[0] ) ;
-	
-      }
-
-      if( ModLam == 100 ) {
-	FillHistogram("hLamMvsPt11",mlam, ptlam );
-	FillHistogram("hTotProtdEdxTrack", pos->GetP(), pos->GetTPCsignal()) ;
-	FillHistogram("hTotPiondEdxTrack", neg->GetP(), neg->GetTPCsignal()) ;
-      }
-      else if ( ModLam == -100 ) {
-	FillHistogram("hALamMvsPt11",malam, ptalam );
-	FillHistogram("hTotPiondEdxTrack", pos->GetP(), pos->GetTPCsignal()) ;
-	FillHistogram("hTotProtdEdxTrack", neg->GetP(), neg->GetTPCsignal()) ;
-      }
-
-      //>>>>>>>>>>>>>>>>>      
-      if (ModLam != 0 ) {  // fill TreeV0 a la DDCh
-	Double_t tDecayVertexV0[3];
-	v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]);
-      
-	Double_t tV0mom[3];
-	v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-	Double_t lV0TotalMomentum = TMath::Sqrt( tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-
-	lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
-
-	Double_t lPt = v0->Pt();
-	Double_t lRapK0Short = v0->RapK0Short();
-	Double_t lRapLambda  = v0->RapLambda();
-	//      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
-
-	UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
-	UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
-
-	Double_t lMomPos[3];
-	v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
-	Double_t lMomNeg[3];
-	v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
-
-	AliESDtrack *pTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyPos);
-	AliESDtrack *nTrack=((AliESDEvent*) fESDEvent)->GetTrack(lKeyNeg);
-	if (!pTrack || !nTrack) {
-	  Printf("ERROR: Could not retreive one of the daughter track");
-	  continue;
-	}
-
-	//Daughter Eta for Eta selection, afterwards
-	fTreeVariableNegEta = nTrack->Eta();
-	fTreeVariablePosEta = pTrack->Eta();
-
-	// Filter like-sign V0 (next: add counter and distribution)
-	//  if ( pTrack->GetSign() == nTrack->GetSign())	continue;
-
-	//________________________________________________________________________
-	// Track quality cuts
-	Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
-	Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
-	fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
-	if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
-	  fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
-      
-	//CHECK !!! TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-	// if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-	// if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-	
-	//      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
-
-	//GetKinkIndex condition
-	//      if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
-
-	//Findable clusters > 0 condition
-	//      if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
-
-	//Compute ratio Crossed Rows / Findable clusters
-	//Note: above test avoids division by zero!
-	Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF()));
-	Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF()));
-
-	fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
-	if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
-	  fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
-
-	//Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
-	//      if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-	
-	//End track Quality Cuts
-
-	//classical Proton-proton like selection
-	const AliESDVertex *lPrimaryBestESDVtx     = fESDEvent->GetPrimaryVertex();
-	// const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-	//    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-
-	Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-	lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-	
-	Double_t  lMagneticField = fESDEvent->GetMagneticField();
-	
-	lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-	
-	lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-
-	//	lOnFlyStatus = v0->GetOnFlyStatus();
-	Double_t lChi2V0 = v0->GetChi2V0();
-	//      printf(" lChi2V0 %f GetChi2V0 %f  \n",lChi2V0,  v0->GetChi2V0() );
-
-	//	lDcaV0Daughters = v0->GetDcaV0Daughters();
-	Double_t lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-	Double_t lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
-	fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
-
-	// Getting invariant mass infos directly from ESD
-	v0->ChangeMassHypothesis(310);
-	Double_t lInvMassK0s = v0->GetEffMass();
-	v0->ChangeMassHypothesis(3122);
-	Double_t lInvMassLambda = v0->GetEffMass();
-	v0->ChangeMassHypothesis(-3122);
-      	Double_t lInvMassAntiLambda = v0->GetEffMass();
-     	Double_t lAlphaV0 = v0->AlphaV0();
-     	Double_t lPtArmV0 = v0->PtArmV0();
-
-	fTreeVariablePt = v0->Pt();
-	fTreeVariableChi2V0 = lChi2V0;
-	fTreeVariableDcaV0ToPrimVertex = lDcaV0ToPrimVertex;
-	fTreeVariableDcaV0Daughters = lDcaV0Daughters;
-	fTreeVariableV0CosineOfPointingAngle = lV0CosineOfPointingAngle;
-	fTreeVariableV0Radius = lV0Radius;
-	fTreeVariableDcaPosToPrimVertex = lDcaPosToPrimVertex;
-	fTreeVariableDcaNegToPrimVertex = lDcaNegToPrimVertex;
-	fTreeVariableInvMassK0s = lInvMassK0s;
-	fTreeVariableInvMassLambda = lInvMassLambda;
-	fTreeVariableInvMassAntiLambda = lInvMassAntiLambda;
-	fTreeVariableRapK0Short = lRapK0Short;
-	fTreeVariableRapLambda = lRapLambda;
-	fTreeVariableAlphaV0 = lAlphaV0;
-	fTreeVariablePtArmV0 = lPtArmV0;
-
-	//Official means of acquiring N-sigmas
-	fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
-	fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
-	fTreeVariableNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
-	fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
-      
-	//This requires an Invariant Mass Hypothesis afterwards
-	fTreeVariableDistOverTotMom = TMath::Sqrt(
-						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
-						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
-						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
-						);
-	fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
-
-	//      printf(" fTreeVariableDistOverTotMom %f \n", fTreeVariableDistOverTotMom );
-	//      fTreeV0->Fill();
-
-	// Fill Tree!
-	// The conditionals are meant to decrease excessive memory usage!
-
-	//First Selection: Reject OnFly
-	if( lOnFlyStatus == 0 ) {
-	  //Second Selection: rough 20-sigma band, parametric.
-	  //K0Short: Enough to parametrize peak broadening with linear function.
-	  Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt;
-	  Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeVariablePt;
-	  //Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
-	  //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-	  Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + 
-	    (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
-	  Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - 
-	    (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
-	  //Do Selection
-	  if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda > lLowerLimitLambda     ) ||
-	      (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) ||
-	      (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ) {
-	    //Pre-selection in case this is AA...
-	    if ( 1<0 && TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8  ) fTreeV0->Fill(); // fill a lot!
+	    inLam++ ;
+	    NalamEv++;
+	    FillHistogram("hArPodALam",  arpod[1], arpod[0] ) ;
+	    
 	  }
-	}
-      }  // END fill TreeV0 a la DDCh
-      
-    } // end fill PLam or ALam into AliCaloParticle 
-
-    FillHistogram("hNlamEv",  NlamEv );
-    FillHistogram("hNalamEv",  NalamEv );
-    NlamminalamEv = NlamEv - NalamEv;
-    FillHistogram("hNlamminalamEv", NlamminalamEv  );
-    //	printf("\n ModLam %f \n", ModLam );            
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	} // end include  Lambda and  anti-ALambda
+	//	printf("\n ModLam %f \n", ModLam );
+            
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
-    //Fill/check MC information for Lambda
-    if( fStack && abs(ModLam)>0  ){                // trace back works for PHYTHIA-10f6a, not yet for PHOJET - 10f6 !!!
-      //abb    if ( 1>0 ) {
-      TParticle * negMC = fStack->Particle(TMath::Abs(neg->GetLabel()));
-      TParticle * posMC = fStack->Particle(TMath::Abs(pos->GetLabel()));
+	//Fill MC information for Lambda
+	if( fStack && abs(ModLam)>0  ){                // trace back works for PHYTHIA-10f6a, not yet for PHOJET - 10f6 !!!
+	  //abb    if ( 1>0 ) {
+	  TParticle * negMC = fStack->Particle(TMath::Abs(neg->GetLabel()));
+	  TParticle * posMC = fStack->Particle(TMath::Abs(pos->GetLabel()));
 	  
-      //	    printf("MC Lambda mneg %f mpos %f ModLam %f ev %d evcount %d \n",
-      // negMC->GetMass(),posMC->GetMass(),ModLam,fESDEvent->GetEventNumberInFile(),fEventCounter);
+	  //	    printf("MC Lambda mneg %f mpos %f ModLam %f ev %d evcount %d \n",
+	  // negMC->GetMass(),posMC->GetMass(),ModLam,fESDEvent->GetEventNumberInFile(),fEventCounter);
 	  
-      if(negMC && posMC){
+	  if(negMC && posMC){
 	    
-	Int_t lblMotherPosV0Dghter = negMC->GetFirstMother() ;
-	Int_t lblMotherNegV0Dghter = posMC->GetFirstMother();
+	    Int_t lblMotherPosV0Dghter = negMC->GetFirstMother() ;
+	    Int_t lblMotherNegV0Dghter = posMC->GetFirstMother();
 	    
-	if( ! (lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1) ) continue;
+	    if( ! (lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1) ) continue;
 	    
-	//printf("\n MC Lambda Mother neg %d pos %d \n", lblMotherPosV0Dghter , lblMotherNegV0Dghter );
+	    //printf("\n MC Lambda Mother neg %d pos %d \n", lblMotherPosV0Dghter , lblMotherNegV0Dghter );
 	    
-	//	      if(negMC->GetMother(0) != posMC->GetMother(0)) continue ;
-	if( (( abs( negMC->GetMass() - 0.938272)< 0.01 && abs( posMC->GetMass() - 0.139570)<0.01   ) ||
-	     ( abs( posMC->GetMass() - 0.938272)< 0.01 && abs( negMC->GetMass() - 0.139570)<0.01) ) ) {
+	    //	      if(negMC->GetMother(0) != posMC->GetMother(0)) continue ;
+	    if( (( abs( negMC->GetMass() - 0.938272)< 0.01 && abs( posMC->GetMass() - 0.139570)<0.01   ) ||
+		 ( abs( posMC->GetMass() - 0.938272)< 0.01 && abs( negMC->GetMass() - 0.139570)<0.01) ) ) {
                         
-	  TParticle * v0Lam = fStack->Particle(negMC->GetMother(0) ) ;
                         
-	  if( !v0Lam ) continue;
-	  Double_t rapLam = Rapidity(  v0Lam->Pt(),  v0Lam->Pz(),  v0Lam->GetMass() );
+	      //	     printf("Pdg1 %d 2 %d \n", negMC->GetPdgCode(), posMC->GetPdgCode() );
+	      //	if(  !fStack->Particle(negMC->GetMother(0)) || !fStack->Particle(posMC->GetMother(0)) ) continue;
                         
-	  TLorentzVector Pigen;
-	  TLorentzVector Prgen;
+	      TParticle * v0Lam = fStack->Particle(negMC->GetMother(0) ) ;
                         
-	  TLorentzVector Pirec;
-	  TLorentzVector Prrec;
-	  if( ModLam > 0 ) {
-	    Prrec.SetXYZM(pos->Px(),pos->Py(),pos->Pz(), MassPr ) ;
-	    Pirec.SetXYZM(neg->Px(),neg->Py(),neg->Pz(), MassPi ) ;
-                
-	    Prgen.SetXYZM(posMC->Px(),posMC->Py(),posMC->Pz(), MassPr ) ;
-	    Pigen.SetXYZM(negMC->Px(),negMC->Py(),negMC->Pz(), MassPi ) ;
-	  }
-	  else if(  ModLam < 0 ) {
-	    Pirec.SetXYZM(pos->Px(),pos->Py(),pos->Pz(), MassPi ) ;
-	    Prrec.SetXYZM(neg->Px(),neg->Py(),neg->Pz(), MassPr ) ;
-			    
-	    Pigen.SetXYZM(posMC->Px(),posMC->Py(),posMC->Pz(), MassPi ) ;
-	    Prgen.SetXYZM(negMC->Px(),negMC->Py(),negMC->Pz(), MassPr ) ;
-	  }
+	      if( !v0Lam ) continue;
+	      Double_t rapLam = Rapidity(  v0Lam->Pt(),  v0Lam->Pz(),  v0Lam->GetMass() );
+                        
+	      //???-23jul14
+	      if( v0Lam->IsPrimary() ) {              //have NO plots in  10f6a-PYTHiA, but have ones in 10f6 - PHOJET, 23jul14
+		if( ModLam > 0 ) FillHistogram("hLamMvsPt12", v0Lam->GetMass(), v0Lam->Pt() );
+		else if ( ModLam < 0 ) FillHistogram("hALamMvsPt12",  v0Lam->GetMass(), v0Lam->Pt() );
+		continue; //???-23jul14  // Goes through in mc10f6a, but breaks in mc10f6, WHY? - open
+	      } // /???-23jul14 }
 	      
-	  //printf("recv0-lam pt %f Lamsim pt %f Alam pt %f evcount %d \n \n",v0Lam->Pt(),ptlam,ptalam,fEventCounter);
-	      
-	  if(  (v0Lam && abs( v0Lam->GetMass() - MassLam )< MassLamLim )
-	       // && ( (abs( v0Lam->Pt() - ptlam) < 0.050  ) || (abs( v0Lam->Pt() - ptalam)< 0.050) )
-	       ) {
-	    if( ModLam > 0 ) {
-	      FillHistogram("hMCgenrec2LamdMvsdPt", v0Lam->GetMass()-lamLV.M(),  v0Lam->Pt()- lamLV.Pt() );
-	      FillHistogram("hRec2PLam", v0Lam->Pt() );
-	      if( rapLam < fetaCut )   FillHistogram("hRec2PLamEta1", v0Lam->Pt() );
-	    }
-                            
-	    else if ( ModLam<0 ) {
-	      FillHistogram("hMCgenrec2ALamdMvsdPt",v0Lam->GetMass()-alamLV.M(),v0Lam->Pt()-alamLV.Pt());
-	      FillHistogram("hRec2ALam", v0Lam->Pt() );
-	      if( rapLam < fetaCut )   FillHistogram("hRec2ALamEta1", v0Lam->Pt() );
-	    }
-                                                        
-	    TParticle * v0Sig = fStack->Particle(v0Lam->GetMother(0) );
-	    //		  printf("mSig %f \n",  v0Sig->GetMass() );
-                            
-	    Int_t NDt =v0Sig->GetNDaughters();
-	    if ( NDt != 2  ||  v0Lam->IsPrimary() ) continue;
-	    
-	    if( abs( v0Sig->GetPdgCode() ) == 3212  && NDt == 2)  {    // Sigma0
-		  
-	      if(  v0Sig && abs( v0Sig->GetMass() - 1.192642)< 0.01 ) {
-		    
-		Int_t Daughter1  = v0Sig->GetFirstDaughter();
-		Int_t Daughter2  = v0Sig->GetLastDaughter();
-                                    
-		Double_t m=0. , mcalc=0. ;
-		m =      v0Sig->GetMass();
-		mcalc = v0Sig->GetCalcMass();
-		// printf("S0 m %f mc %f \n", m, mcalc  );
-		//	    printf(" m %f w %f cm %f PDG %d \n", m, width, mcalc, particle->GetPdgCode()  );
-		    
-		FillHistogram("hMCgenrecSig0",  v0Sig->Pt() );
-		Double_t rap = Rapidity(  v0Sig->Pt(),  v0Sig->Pz(),  v0Sig->GetMass() );
-		FillHistogram("hMCgenrecSig0Rap", rap );
-		//		FillHistogram("hMCgenrecSig0RapPt", rap, v0Sig->Pt()  );
-                                    
-		//	   Float_t rapLam = Rapidity( v0Lam->Pt(), v0Lam->Pz(), v0Lam->GetMass() );  // 25nov doubled defined
-		FillHistogram("hRecLamSig0Rap", rapLam );
-		if( abs(rapLam) < fetaCut ) {
-		  FillHistogram("hMCgenrecSig0Eta1",  v0Sig->Pt() );
-		  FillHistogram("hRecLamSig0Eta1",  v0Lam->Pt() );
-		  if(  ModLam > 0 ) FillHistogram("hRecLamSig0",  lamLV.Pt() );
-		  else if ( ModLam < 0 )  FillHistogram("hRecLamSig0",  alamLV.Pt() );
-		  
-		  LamRecFl = 1;
-		}
-		// printf(" MC Lam 2 mSig %f \n",  v0Sig->GetMass() );
-		TParticle* daught1 = (TParticle *)fStack->Particle( Daughter1 );
-		TParticle* daught2 = (TParticle *)fStack->Particle( Daughter2 );
-		//printf(" MC Lam 3 mSig %f d1-pdg %d d2-pdg %d \n",v0Sig->GetMass(),daught1->GetPdgCode(),daught2->GetPdgCode());
-		    
-		if ( abs( daught1->GetPdgCode() ) == 3122 && abs( daught2->GetPdgCode())  == 22 ) {
-		  // FillHistogram("hMCrecSig0PtLamdaVSGamma0",daught1->Pt(), daught2->Pt()  );
-		  FillHistogram("hRec4LamSig0",  daught1->Pt() );
-		  // if(  abs( v0Sig->Eta() ) < 1 )  FillHistogram("hRec4LamSig0Eta1", daught1->Pt() );
-		  if(  abs(rap) < fetaCut ) FillHistogram("hRec4LamSig0Eta1",  daught1->Pt() );
-		  // abb-19may15- see histos up to here
-		}
+                        
+	      TLorentzVector Pigen;
+	      TLorentzVector Prgen;
+                        
+	      TLorentzVector Pirec;
+	      TLorentzVector Prrec;
+	      if( ModLam > 0 ) {
+		Prrec.SetXYZM(pos->Px(),pos->Py(),pos->Pz(), MassPr ) ;
+		Pirec.SetXYZM(neg->Px(),neg->Py(),neg->Pz(), MassPi ) ;
+                
+		Prgen.SetXYZM(posMC->Px(),posMC->Py(),posMC->Pz(), MassPr ) ;
+		Pigen.SetXYZM(negMC->Px(),negMC->Py(),negMC->Pz(), MassPi ) ;
 	      }
-	    }   // generated Sig0 from recostructed Lam
-	  }  // 1 more if to enshure that v0Lam as mother exists!!!
-	}
-      }
-    }   // end fstack - excustion into MC
+	      else if(  ModLam < 0 ) {
+		Pirec.SetXYZM(pos->Px(),pos->Py(),pos->Pz(), MassPi ) ;
+		Prrec.SetXYZM(neg->Px(),neg->Py(),neg->Pz(), MassPr ) ;
+			    
+		Pigen.SetXYZM(posMC->Px(),posMC->Py(),posMC->Pz(), MassPi ) ;
+		Prgen.SetXYZM(negMC->Px(),negMC->Py(),negMC->Pz(), MassPr ) ;
+	      }
+	      
+	      //printf("recv0-lam pt %f Lamsim pt %f Alam pt %f evcount %d \n \n",v0Lam->Pt(),ptlam,ptalam,fEventCounter);
+	      
+	      if(  (v0Lam && abs( v0Lam->GetMass() - MassLam )< MassLamLim )
+		   // && ( (abs( v0Lam->Pt() - ptlam) < 0.050  ) || (abs( v0Lam->Pt() - ptalam)< 0.050) )
+		   ) {
+		if( ModLam > 0 ) {
+		  FillHistogram("hMCgenrec2LamdMvsdPt", v0Lam->GetMass()-lamLV.M(),  v0Lam->Pt()- lamLV.Pt() );
+		  FillHistogram("hRec2PLam", v0Lam->Pt() );
+		  if( rapLam < fetaCut )   FillHistogram("hRec2PLamEta1", v0Lam->Pt() );
+		}
+                            
+		else if ( ModLam<0 ) {
+		  FillHistogram("hMCgenrec2ALamdMvsdPt",v0Lam->GetMass()-alamLV.M(),v0Lam->Pt()-alamLV.Pt());
+		  FillHistogram("hRec2ALam", v0Lam->Pt() );
+		  if( rapLam < fetaCut )   FillHistogram("hRec2ALamEta1", v0Lam->Pt() );
+		}
+                                                        
+		TParticle * v0Sig = fStack->Particle(v0Lam->GetMother(0) );
+		//		  printf("mSig %f \n",  v0Sig->GetMass() );
+                            
+		Int_t NDt =v0Sig->GetNDaughters();
+		if ( NDt != 2  ||  v0Lam->IsPrimary() ) continue;
+                
+		if( abs( v0Sig->GetPdgCode() ) == 3212  && NDt == 2)  {    // Sigma0
+		  
+		  if(  v0Sig && abs( v0Sig->GetMass() - 1.192642)< 0.01 ) {
+		    
+		    Int_t Daughter1  = v0Sig->GetFirstDaughter();
+		    Int_t Daughter2  = v0Sig->GetLastDaughter();
+                                    
+		    Double_t m=0. , mcalc=0. ;
+		    m =      v0Sig->GetMass();
+		    mcalc = v0Sig->GetCalcMass();
+		    // printf("S0 m %f mc %f \n", m, mcalc  );
+		    //	    printf(" m %f w %f cm %f PDG %d \n", m, width, mcalc, particle->GetPdgCode()  );
+		    
+		    FillHistogram("hMCgenrecSig0",  v0Sig->Pt() );
+		    Double_t rap = Rapidity(  v0Sig->Pt(),  v0Sig->Pz(),  v0Sig->GetMass() );
+		    FillHistogram("hMCgenrecSig0Rap", rap );
+		    FillHistogram("hMCgenrecSig0RapPt", rap, v0Sig->Pt()  );
+                                    
+                                    //	   Float_t rapLam = Rapidity( v0Lam->Pt(), v0Lam->Pz(), v0Lam->GetMass() );  // 25nov doubled defined
+		    FillHistogram("hRecLamSig0Rap", rapLam );
+		    if( abs(rapLam) < fetaCut ) {
+		      FillHistogram("hMCgenrecSig0Eta1",  v0Sig->Pt() );
+		      FillHistogram("hRecLamSig0Eta1",  v0Lam->Pt() );
+		      if(  ModLam > 0 ) FillHistogram("hRecLamSig0",  lamLV.Pt() );
+		      else if ( ModLam < 0 )  FillHistogram("hRecLamSig0",  alamLV.Pt() );
+		      
+		      LamRecFl = 1;
+		    }
+		    // printf(" MC Lam 2 mSig %f \n",  v0Sig->GetMass() );
+		    TParticle* daught1 = (TParticle *)fStack->Particle( Daughter1 );
+		    TParticle* daught2 = (TParticle *)fStack->Particle( Daughter2 );
+		    //printf(" MC Lam 3 mSig %f d1-pdg %d d2-pdg %d \n",v0Sig->GetMass(),daught1->GetPdgCode(),daught2->GetPdgCode());
+		    
+		    if ( abs( daught1->GetPdgCode() ) == 3122 && abs( daught2->GetPdgCode())  == 22 ) {
+		      FillHistogram("hMCrecSig0PtLamdaVSGamma0",daught1->Pt(), daught2->Pt()  );
+		      FillHistogram("hRec4LamSig0",  daught1->Pt() );
+		      // if(  abs( v0Sig->Eta() ) < 1 )  FillHistogram("hRec4LamSig0Eta1", daught1->Pt() );
+		      if(  abs(rap) < fetaCut ) FillHistogram("hRec4LamSig0Eta1",  daught1->Pt() );
+		    }
+		  }
+		}   // generated Sig0 from recostructed Lam
+	      }  // 1 more if to enshure that v0Lam as mother exists!!!
+	    }
+	  }
+	}   // end fstack - excustion into MC
             
-
-  }  // end of look over V0s
-
-  // Look on Lam+ALam inv mass
-  /* if ( NlamEv > 0 && NalamEv>0 ) {
-    for(Int_t ilam1 = 0; ilam1 < inLam ; ilam1++){
-      AliCaloParticle * Lam1 = static_cast<AliCaloParticle*>(fGenpi0Event->At(ilam1)) ;
-      Double_t LambdaMod1 = Lam1->GetXt();
-      for(Int_t ilam2 = ilam2+1; ilam2 <= inLam ; ilam2++){
-	AliCaloParticle * Lam2 = static_cast<AliCaloParticle*>(fGenpi0Event->At(ilam2)) ;
-	Double_t LambdaMod2 = Lam2->GetXt();
-	if (LambdaMod1 == LambdaMod2 ) continue;  
-
-	TLorentzVector LamALam= *Lam1 + *Lam2 ;
-	Double_t  m=LamALam.M() ;
-	Double_t pt=LamALam.Pt() ;
-	FillHistogram("hLamALam_MvsPt",m,pt ) ;
-
-       	if( LambdaMod1> 0 ) {
-	  FillHistogram("hLamA_MvsPt", Lam1->M(), Lam1->Pt()  ) ;
- 	  FillHistogram("hALamA_MvsPt", Lam2->M(),Lam2->Pt()  ) ;
+	if ( r < 10 ) {
+	  
+	  FillHistogram("hLamMvsPt11",mlam, ptlam );
+	  FillHistogram("hALamMvsPt11",malam, ptalam );
+	  
+	  if (  pos->GetP() > 0.5 &&  neg->GetP() > 0.5 ) {
+	    FillHistogram("hTotLamdEdxTrack", pos->GetP(), pos->GetTPCsignal()) ;
+	    FillHistogram("hTotLamdEdxTrack", neg->GetP(), neg->GetTPCsignal()) ;
+	  }
 	}
-	else {
-	  FillHistogram("hALamA_MvsPt", Lam1->M(),Lam1->Pt()  ) ;
- 	  FillHistogram("hLamA_MvsPt", Lam2->M(),Lam2->Pt()  ) ;
-	}  
-      }
+        // FULL end including MC for Lambdas  ----------------------
     }
-  }  // end lool over LAM-ALAM 
-  */
-
-} // <<<<<<<<<<<<<<<<< End of SelectLambda, checked 8jan16
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSigma0::SelectPhotonsFB()
-{       
-  Double_t MassPi = 0.13957018 ;
-  Double_t MassPr = 0.938272046 ;
-  Double_t MassSig0 = 1.192642 ;
-
-  Double_t SigmaMassWindow = 0.050 ;
-
-  Int_t inConv=0 ;    
-  FillHistogram("hCheckFB",0.5);
-
-  fV0Reader=0;
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-
-  //   printf("\n \n  PhotonsFB NEW EVENT VOREADER %d \n", fEventCounter );
-
-  if(fStack) fMCEvent = MCEvent();
-  if(fMCEvent == NULL) fIsMC = kFALSE;
-  if(fStack)  fIsMC = kTRUE;
-
-  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader // origianl - can not get it!!!
-
-  //    if(( AliConversionCuts*) fV0Reader->GetConversionCuts() ) ;  //ABB NEW place 15may15
-        
-  fReaderGammas = fV0Reader->GetReconstructedGammas();    
-  Int_t nRecGammas = fReaderGammas->GetEntriesFast();
-  FillHistogram("hRecGammas",nRecGammas);
-
-
-  if(fV0Reader)  if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
+{
+    
    
-  //    if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms()) 
-  //  fOutputContainer->Add(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
- 
-  FillHistogram("hCheckFB",1.5);
+    Int_t inConv=0 ;
     
-  //     printf("PhotonsFB2  VOREADER %d \n", fReaderGammas->GetEntriesFast() );    
-  //    for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
-     
-  for(Int_t i = 0; i <= nRecGammas ; i++){
-    //      printf("--PhotonsFB VOREADER after RecGammas\n");
-    FillHistogram("hCheckFB",2.5);
+    FillHistogram("hCheckFB",0.5);
+    
+    
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader // origianl
+    
+    
+    fReaderGammas = fV0Reader->GetReconstructedGammas();
+    
+    if(fV0Reader)
+    if((AliConversionCuts*)fV0Reader->GetConversionCuts())
+    //		if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
+    //	 	fOutputContainer->Add(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
+    //   printf("FB 2 \n");
+    FillHistogram("hCheckFB",1.5);
+    
+    //    if(1>0 ) return;
+    //    printf("VOREADER %d \n", fReaderGammas->GetEntriesFast() );
+    
+    for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
         
-    // AliKFConversionPhoton* PhotonCandidate = (AliKFConversionPhoton*) fReaderGammas->At(i);
-    
-    AliAODConversionPhoton* PhotonCandidate =dynamic_cast<AliAODConversionPhoton*>(fReaderGammas->At(i));
-
-    if(!PhotonCandidate) continue;
-    //      printf("--PhotonsFB VOREADER after PhotonCandidate \n");
-    //      Double_t PAngle  =    GetCosineOfPointingAngle(PhotonCandidate, fESDEvent) ;
-    //      printf("Pangle %f  \n", PAngle);
-
-    TLorentzVector photFB;
-    photFB.SetXYZM(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(), PhotonCandidate->GetPz(),0.) ;
-    
-    // fGammaMass = 
-    fGammaPx = PhotonCandidate->GetPx() ;
-    fGammaPy = PhotonCandidate->GetPy() ;
-    fGammaPz = PhotonCandidate->GetPz() ;
-    // fGammaCosPointingAngle = 
-    fGammaEta = PhotonCandidate->GetPhotonEta() ; //fEtaPhoton
-    //  fGammaArmPt(0) = 
-    //  fGammaArmAlpha(0),
-    // fGammaZConv(0) = 
-
-    //      fGammaChi2 =  PhotonCandidate->GetPhotonQuality(); // iCatPhoton
-    fGammaRadius =  PhotonCandidate->GetConversionRadius();  // fRConvPhoton  
-    fGammaDCAzToPrimVtx = PhotonCandidate->GetDCAzToPrimVtx();
-    fGammaChi2 = PhotonCandidate->GetChi2perNDF();
-    Double_t gammaPt =  PhotonCandidate->Pt();
-    fGammaArmPt = gammaPt;
-
-    // printf("pt %f Qual %d R %f DCAz %f \n",  PhotonCandidate->Pt(),  PhotonCandidate->GetPhotonQuality(),  PhotonCandidate->GetConversionRadius(), PhotonCandidate->GetDCAzToPrimVtx() ); 
-    // printf("pt %f chi2 %d R %f DCAz %f \n",  gammaPt,  fGammaChi2, fGammaRadius,  fGammaDCAzToPrimVtx);
-
-    //classical Proton-proton like selection
-    const AliESDVertex *lPrimaryBestESDVtx     = fESDEvent->GetPrimaryVertex();
-
-    // const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    //    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-
-    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-    lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
-    Float_t dca = 1000;
-    //     PhotonCandidate->GetDistanceOfClossetApproachToPrimVtx(lBestPrimaryVtxPos,dca);
-
-    /*    Double_t  lMagneticField = fESDEvent->GetMagneticField();
-	  lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) );
-						    lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
-						    lBestPrimaryVtxPos[1],
-						    lMagneticField) ); */
-
-    //    printf(" lBestPrimaryVtxPos[1] %f dca %f \n", lBestPrimaryVtxPos[1], dca );
-
-    FillHistogram("hCheckFB",3.5);        
-    FillHistogram("hAMbeforeFB",PhotonCandidate->GetArmenterosAlpha(), PhotonCandidate->GetArmenterosQt());
-
-    
-    //ABB?	ProcessMCParticles();
-    //	if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(PhotonCandidate , fStack,kTRUE )) ;
+        FillHistogram("hCheckFB",2.5);
         
-    if(inConv>=fConvEvent->GetSize())fConvEvent->Expand(inConv*2) ;
-    new((*fConvEvent)[inConv]) AliCaloParticle(photFB) ;
-
-    //      phg->SetV0CosPointingAngle(lV0cosPointAngle);
-    /*      photFB->SetV0Radius( PhotonCandidate.GetConversionRadius();  
-	    photFB->SetArmPt(  PhotonCandidate.GetArmenterosQt()  );
-	    photFB->SetArmAlpha( PhotonCandidate.GetArmenterosAlpha()  );
-	    photFB->SetV0Chi2(  PhotonCandidate.GetPhotonQuality()  );
-    */
-    //      phg->SetZConv(v0z);      
-
-    inConv++ ;
-    //	printf("---VOREADER in conv %d \n", inConv );      
-    FillHistogram("hCheckFB",4.5);
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //Fill MC information for GammaConverted
-    if(fStack){
-
-      AliStack *fMCStack= fMCEvent->Stack();
-	
-      if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
-	
-      //Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
-      //Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
-	
-      Int_t labelp = PhotonCandidate->GetMCLabelPositive() ;
-      Int_t labeln = PhotonCandidate->GetMCLabelNegative() ;
-      
-      if( abs( labelp - labeln) != 1 ) continue;
-	
-      FillHistogram("hCheckFB",5.5);
-
-      //	printf("PhotonsFB:  fStack done label pos  %d neg %d \n",  labelp , labeln);	
-     
-      TParticle *negativeMC = fMCStack->Particle(labeln);
-      TParticle *positiveMC = fMCStack->Particle(labelp);
-
-      //		if(fPositiveMCParticle&&fNegativeMCParticle){
-      //			fCurrentMotherKF->SetMCLabelPositive(labelp);
-      //	fCurrentMotherKF->SetMCLabelNegative(labeln);		}
-      
-      /*  		Int_t MClabelPos = PhotonCandidate->GetMCLabelPositive() ;
-			Int_t MClabelNeg = PhotonCandidate->GetMCLabelNegative() ;
-			//abb wrong way, 18may15
-			TParticle * negativeMC = fStack->Particle( MClabelNeg  );
-			TParticle * positiveMC = fStack->Particle( MClabelPos );
-      */
-
-      //	    printf("M-neg %f  M-pos %f \n",  negativeMC->GetMass(), positiveMC->GetMass()  );
-
-      if(negativeMC && positiveMC){
-	if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
-	  continue ;
-      }
-	    
-      if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
-	continue;
-      }
-      if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
-	continue;
-      }
-               
-      //           AliKFParticle gamKF( PhotonCandidate, 5);
-      TParticle * GamGen = fStack->Particle( negativeMC->GetMother(0)  );  // Generatred Gamma
-      
-      FillHistogram("hCheckFB",6.5);
-      //      FillHistogram("hMCV0MvsWidth", GamGen->GetMass(), 0. ) ;
-                
-      if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5) continue ; // id 5 is conversion
-      // FillHistogram("hMCV0MvsWidth1",  GamGen->GetMass(), 0. ) ;
-
-      //	    printf(" PDG gen %d  MClabelPos  %d  \n", GamGen->GetPdgCode(), MClabelPos );
-
-      if(GamGen->GetPdgCode() == 22){    // indeed this Gamma reconstracted from Gamma
-	      
-	// FillHistogram("hMCV0MvsWidth2",  GamGen->GetMass(), 0. ) ;  
-	//!!! add histo	      
-	/* Yura 12.3.14 primary Gamma has no Mother ! */
-	if( GamGen->IsPrimary() ) continue;
-
-	FillHistogram("hCheckFB",7.5);
-	
-	// FillHistogram("hMCV0MvsWidth3",  GamGen->GetMass(), 0. ) ;  
-
-	TParticle * v0Sig2 = fStack->Particle(GamGen->GetMother(0));
-	      
-	// FillHistogram("hMCV0MvsWidth5",  v0Sig2->GetMass(), 0. );
-
-	//	      printf("=========================mSig %f \n",  v0Sig2->GetMass() );
-	// abb-19may15 see a few histos above, but not below => take wrong pos-neg e+e- from MC  
-	// if( abs(v0Sig2->GetMass() - 1.192642) < 0.05 ) {
-
-	if(  abs(v0Sig2->GetPdgCode() ) == 3212) {
-	  
-	  // FillHistogram("hMCV0MvsWidth4",   GamGen->GetMass(), 0. ) ;  		
-	  // FillHistogram("hMCV0MvsWidth6",  v0Sig2->GetMass(), 0. );
-		
-	  Int_t NDt1 =v0Sig2->GetNDaughters();
-                
-	  if( abs( v0Sig2->GetPdgCode() ) == 3212  && NDt1 == 2)  {    // Sigma0
-	    // if ( 1>0 ) {
-
-	    FillHistogram("hCheckFB",8.5);
-	    
-	    // FillHistogram("hMCV0MvsWidth7",  v0Sig2->GetMass(), 0. );
-
-	    Int_t Daughter21  = v0Sig2->GetFirstDaughter();
-	    Int_t Daughter22  = v0Sig2->GetLastDaughter();
-	    Double_t mrec=0.,  mcalc=0. ;
-	    mrec =     v0Sig2->GetMass();
-	    mcalc = v0Sig2->GetCalcMass();
-	    //	      	    printf("---- m %f w %f cm %f  \n", m, width, mcalc  );
-	    FillHistogram("hMCgenrec2Sig0",  v0Sig2->Pt() );
-	    Double_t rap = Rapidity(  v0Sig2->Pt(),  v0Sig2->Pz(),  v0Sig2->GetMass() );
-	    FillHistogram("hMCgenrec2Sig0Rap", rap );
-	    FillHistogram("hRecGamSig0",  GamGen->Pt() );
-	    
-	    FillHistogram("hMCgenrec2Sig0RapPt", rap,  v0Sig2->Pt() );
-	    if( abs(rap) < fetaCut ) {
-	      FillHistogram("hMCgenrec2Sig0Eta1",  v0Sig2->Pt() );
-	      FillHistogram("hRecGamSig0Eta1",  GamGen->Pt() );
-	    }
-		  
-	    TParticle* LamGen21 = (TParticle *)fStack->Particle( Daughter21 );
-	    //	  Int_t labelLp21 = LamGen21->GetMCLabelPositive() ;
-	    //		  Int_t labelLn21 = LamGen21->GetMCLabelNegative() ;	
-
-	    TLorentzVector LGen21;
-	    LGen21.SetXYZM(LamGen21->Px(),LamGen21->Py(),LamGen21->Pz(),LamGen21->GetCalcMass()) ;  //Produces slightly better pi0 width
-	    TLorentzVector LGen21m;
-	    LGen21m.SetXYZM(LamGen21->Px(),LamGen21->Py(),LamGen21->Pz(),LamGen21->GetMass()) ;  //Produces slightly better pi0 width
-		  
-                            
-	    TParticle* GamGen22 = (TParticle *)fStack->Particle( Daughter22 );
-	    TLorentzVector GGen22;
-	    GGen22.SetXYZM(GamGen22->Px(),GamGen22->Py(),GamGen22->Pz(),GamGen22->GetCalcMass()) ;  //Produces slightly better pi0 width
-	    TLorentzVector GGen22m;
-	    GGen22m.SetXYZM(GamGen22->Px(),GamGen22->Py(),GamGen22->Pz(),GamGen22->GetMass()) ;  //Produces slightly better pi0 width
-                            
-	    //	  if ( (abs( LamGen21->GetPdgCode() ) == 3122 && abs( GamGen22->GetPdgCode())  == 22)
-	    //old-skip		 &&  (inLam >0 && LamRecFl > 0)
-	    //     ) {
-
-	    FillHistogram("hCheckFB",9.5);		    
-	    if ( 1>0 ) {
-	      // Search here Sig0 - Loop over all Lambda reconstr in the event
-	      Int_t nLam=fGenpi0Event->GetEntriesFast() ;
-	      for(Int_t icon2=0; icon2<nLam; icon2++){ 
-		
-		FillHistogram("hCheckFB",10.5);	
-		AliCaloParticle * LamRec= static_cast<AliCaloParticle*>(fGenpi0Event->At(icon2)) ;
-
-		// ABB add 7jan16 >>>>>>>> To file recondtructed Lambda from Sigma0 decay through rec. V0
-		Int_t iV0 = LamRec->GetIsolation();
-		AliESDv0 * v0 = fESDEvent->GetV0(iV0) ;
-		AliESDtrack * pos = fESDEvent->GetTrack(v0->GetPindex()) ;
-		AliESDtrack * neg = fESDEvent->GetTrack(v0->GetNindex()) ;
-		TParticle * negMC = fStack->Particle(TMath::Abs(neg->GetLabel()));
-		TParticle * posMC = fStack->Particle(TMath::Abs(pos->GetLabel()));
-		if( !( negMC && posMC) ) continue;
-		//  Int_t lblMotherPosV0Dghter = negMC->GetFirstMother() ;
-		//  Int_t lblMotherNegV0Dghter = posMC->GetFirstMother();
-	    
-		if(! (( abs( negMC->GetMass() - 0.938272)< 0.01 && abs( posMC->GetMass() - 0.139570)<0.01   ) ||
-		      ( abs( posMC->GetMass() - 0.938272)< 0.01 && abs( negMC->GetMass() - 0.139570)<0.01) ) ) continue;
-
-		// ABB 8jan16 - may be use better selection, but not through the masses?
-
-		TParticle * v0Lam = fStack->Particle(negMC->GetMother(0) ) ;
-		//		      Int_t labelLp = v0Lam->GetMCLabelPositive() ;
-		// Int_t labelLn = v0Lam->GetMCLabelNegative() ;	
-		//  if( abs( labelLp - labelLn) != 1 ) continue;	
-		FillHistogram("hCheckFB",11.5);
-
-		// check that LamGen21 which get from Sigma0 is identical to v0Lam, may be improved, was 0.010 8jan15 
-		if(! (  (fabs(LamGen21->Px()-v0Lam->Px())< 0.0010) &&  (fabs(LamGen21->Px()-v0Lam->Px())<0.0010) 
-			&&   (fabs(LamGen21->Px()-v0Lam->Px())<0.0010) ) ) continue ;
-		
-		// if( !( labelLp21 ==  labelLp && labelLn21 == labelLn ) ) continue; 
-		// final chack that Lambda came from the same Sigma0 as gamma
-		// end ABB add 7jan16 <<<<<<<<<<
-		      
-		FillHistogram("hCheckFB",12.5);
-
-		TLorentzVector sig0rec=photFB  + *LamRec;
-		      
-		//  Double_t Mlamrec = LamRec->M(); //unused variable
-		Double_t corr_factor = 1. ;   // MassLam / Mlamrec;
-		TLorentzVector ph2corr;
-		ph2corr	= corr_factor * *LamRec;
-		TLorentzVector sig0= photFB + ph2corr ;   // with corrected M_Lam
-		if( ! (abs( sig0.M() - MassSig0 ) < SigmaMassWindow ) ) continue;
-		      
-
-		TLorentzVector sig0LrecGgen =  GGen22 + *LamRec ;
-		TLorentzVector sig0LgenGrec = photFB  + LGen21  ;
-		TLorentzVector sig0LgenGgen =  GGen22 + LGen21  ;
-		TLorentzVector sig0LgenGgenM =  GGen22m + LGen21m  ;
-
-		fLambdaTPx = LGen21.Px();
-		fLambdaTPy = LGen21.Py();
-		fLambdaTPz = LGen21.Pz();
-		fGammaTPx = GGen22.Px();
-		fGammaTPy = GGen22.Py();
-		fGammaTPz = GGen22.Pz();
-		fSigmaTPx = sig0LgenGgenM.Px();
-		fSigmaTPy = sig0LgenGgenM.Py();
-		fSigmaTPz = sig0LgenGgenM.Pz();
-
-
-		FillHistogram("hMCgenrec3MvsPtLamgenGamgenM",sig0LgenGgenM.M(),sig0LgenGgenM.Pt() );
-		FillHistogram("hMCgenrec3MvsPtLamgelimnGamgen",sig0LgenGgen.M(),sig0LgenGgen.Pt() );
-		FillHistogram("hMCgenrec3MvsPtLamgenGamrec",sig0LgenGrec.M(),sig0LgenGrec.Pt() );
-		FillHistogram("hMCgenrec3MvsPtLamrecGamgen",sig0LrecGgen.M(), sig0LrecGgen.Pt() );
-		FillHistogram("hMCgenrec3MvsPtLamrecGamrec",sig0rec.M(), sig0rec.Pt() );
-                                    
-		FillHistogram("hMCgenrec3Sig0dMrecvsdPt",v0Sig2->GetMass()-sig0rec.M(),v0Sig2->Pt()-sig0rec.Pt());
-		FillHistogram("hMCgenrec3Sig0mvsPt_uncorr",sig0rec.M(),sig0rec.Pt());
-		      
-		//!!! one more if needed - that Mass Sig0 is correct - +- 30 MeV around 3jul14
-		printf("MC---DATA---Sig0-CC  M %f PT %f  E %f nLam %d \n", sig0.M(), sig0.Pt(), sig0.E(), nLam );
-		      
-		//		FillHistogram("hMCrec2Sig0PtLamdaVSGamma0",LamGen21->Pt(), GamGen22->Pt()  );
-		//FillHistogram("hMCgenrec3Sig0RapPt", rap,  v0Sig2->Pt() );
-		// FillHistogram("hMCgenrec3Sig0mvsPt_corr",sig0.M(),sig0.Pt());
-		      
-                                    
-		//	  Double_t ModLam =  LamRec->GetXt(); unused variable
-		TLorentzVector Pirec;
-		Pirec.SetXYZM(LamRec->GetPpix(),LamRec->GetPpiy(),LamRec->GetPpiz(), MassPi) ;
-		TLorentzVector Prrec;
-		Prrec.SetXYZM(LamRec->GetPprx(),LamRec->GetPpry(),LamRec->GetPprz(), MassPr) ;
-                                    
-		//		  printf("Pirec %f %f %f Prrec %f %f %f \n",LamRec->GetPpix(),LamRec->GetPpiy(),LamRec->GetPpiz(),
-		//	 LamRec->GetPprx(),LamRec->GetPpry(),LamRec->GetPprz() );
-                                    
-		Int_t NDt2 = LamGen21->GetNDaughters();
-		if(  NDt2 != 2 ) continue;
-		      
-		Int_t DLam21  = LamGen21->GetFirstDaughter();
-		Int_t DLam22  = LamGen21->GetLastDaughter();
-		//		    printf("Pdg1 %d 2 %d \n", DLam21, DLam22 );
-		      
-                                    
-		TParticle* PPrgen = (TParticle *)fStack->Particle( DLam21 );
-		TParticle* PPigen = (TParticle *)fStack->Particle( DLam22 );
-		
-		//		  TParticle* LamGen21 = (TParticle *)fStack->Particle( Daughter21 );
-		      
-		TLorentzVector Pigen;		  TLorentzVector Prgen;
-		Prgen.SetXYZM(PPrgen->Px(),PPrgen->Py(),PPrgen->Pz(), MassPr ) ;
-		Pigen.SetXYZM(PPigen->Px(),PPigen->Py(),PPigen->Pz(), MassPi ) ;
-		      
-		TLorentzVector LamPrrecPigen =  Prrec + Pigen  ;
-		TLorentzVector LamPrgenPirec =  Prgen + Pirec ;
-		TLorentzVector LamPrrecPirec =  Prrec + Pirec ;
-		TLorentzVector LamPrgenPigen =  Prgen + Pigen  ;
-		      
-                                    
-		if( abs(rap) < fetaCut ) {
-			
-		  FillHistogram("hMCgenrec3Sig0Eta1",  v0Sig2->Pt() );
-		  if(     LamGen21->GetPdgCode() == 3122 ) {
-		    FillHistogram("hMCgenrec3PSig0Eta1",  v0Sig2->Pt() );
-		    FillHistogram("hMCgenrec3PSig0Eta1Rap",  rap );
-		  }
-		  else if(LamGen21->GetPdgCode() == -3122) {
-		    FillHistogram("hMCgenrec3ASig0Eta1",  v0Sig2->Pt() );
-		    FillHistogram("hMCgenrec3ASig0Eta1Rap",  rap );
-		  }
-                                        
-		  char key[55] ;
-		  for (Int_t irap = 0; irap < 6; irap++) {
-		    if( abs(rap) < fEtaCuts[irap] ) {
-		      
-		      if(   LamGen21->GetPdgCode() == 3122 ) {
-			sprintf(key,"hMCPSig0PtRec%d",irap) ;
-			FillHistogram(key,  v0Sig2->Pt() );
-			//		      if (v0Sig2->IsPrimary() ) {
-			//		sprintf(key,"hMCPSig0PrimPtRec%d",irap) ;
-			//	FillHistogram(key,  v0Sig2->Pt() );
-			//}
-		      }
-		      else  if(   LamGen21->GetPdgCode() == -3122 ) {
-			sprintf(key,"hMCASig0PtRec%d",irap) ;
-			FillHistogram(key,  v0Sig2->Pt() );
-			//if (v0Sig2->IsPrimary() ) {
-			//	sprintf(key,"hMCASig0PrimPtRec%d",irap) ;
-			//	FillHistogram(key,  v0Sig2->Pt() );
-			//}
-		      }
-		    }
-		  }
-                        
-		  FillHistogram("hRec3GamSig0Eta1",  GamGen->Pt() );
-		  FillHistogram("hRec4GamSig0Eta1",   GamGen22->Pt() );
-		  FillHistogram("hRec3LamSig0Eta1",  LamGen21->Pt() );
-                        
-		  FillHistogram("hMCgenrec3Sig0dMvsdPt",v0Sig2->GetMass()- sig0.M(),v0Sig2->Pt()-sig0.Pt());
-		  if(LamGen21->GetPdgCode()==3122) FillHistogram("hMCgenrec3PSig0dMvsdPt",
-								 v0Sig2->GetMass()- sig0.M(),v0Sig2->Pt()-sig0.Pt());
-			else if(LamGen21->GetPdgCode()==-3122) FillHistogram("hMCgenrec3ASig0dMvsdPt",
-									     v0Sig2->GetMass()-sig0.M(),v0Sig2->Pt()-sig0.Pt());
-			
-		  //printf("MC-RUN %d Ev %d pdf D1 %d D2 %d \n",
-		  //fESDEvent->GetRunNumber(),fESDEvent->GetEventNumberInFile(),LamGen21->GetPdgCode(),GamGen22->GetPdgCode() );
-		  //		  nLam = nLam/LamRecFl ;
-                        
-		  if(  abs(  LamGen21->Pt() -   LamRec->Pt() ) < 0.01   ) {
-		    // or LamRecFl // Have to check that PROPER Lambda is reconstructed!!!
-		    FillHistogram("hMCgenrec3Sig0",  v0Sig2->Pt() );
-		    
-		    //   Double_t rap = Rapidity(  v0Sig2->Pt(),  v0Sig2->Pz(),  v0Sig2->GetMass() );
-		    FillHistogram("hMCgenrec3Sig0Rap", rap );
-		    // FillHistogram("hMCrec3Sig0PtLamdaVSGamma0",LamGen21->Pt(), LamRec->Pt()  );
-		    FillHistogram("hRec3GamSig0",  GamGen->Pt() );
-		    FillHistogram("hRec4GamSig0",   GamGen22->Pt() );
-		    FillHistogram("hRec3LamSig0",  LamGen21->Pt() );
-		  }
-		}
-	      }
-	    } // if abs(LamGen21==Lambda && GamGen22=gamma)
-	  }
-	} // end of mass == Sig0
-      }
-    }   // end of fStack - MC check
-    
-  }   // end of the loop of all conversion photons        
+        AliKFConversionPhoton* PhotonCandidate = (AliKFConversionPhoton*) fReaderGammas->At(i);
+        
+        if(!PhotonCandidate) continue;
+        
+        TLorentzVector photFB;
+        photFB.SetXYZM(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(), PhotonCandidate->GetPz(),0.) ;
+        
+        FillHistogram("hCheckFB",3.5);
+        
+        FillHistogram("hAMbeforeFB",PhotonCandidate->GetArmenterosAlpha(), PhotonCandidate->GetArmenterosQt());
+        
+        if(inConv>=fConvEvent->GetSize())fConvEvent->Expand(inConv*2) ;
+        new((*fConvEvent)[inConv]) AliCaloParticle(photFB) ;
+        inConv++ ;
+        
+        FillHistogram("hCheckFB",4.5);
+   }        
 }
 //_______________________________________________________________________________
 void AliAnalysisTaskSigma0::SelectConvPhotons(){
     //Fill list of conversion photons, that is scan v0s and select photon-like
+    fELeadingConv=0.;
+    fLeadingConv = -1 ;
     
     Double_t MassPi = 0.13957018 ;
     Double_t MassPr = 0.938272046 ;
-    Double_t MassSig0 = 1.192642 ;
-   
+    
     //set some constants
     const Double_t kCutSigmaMass=0.0001;  //Constraint on photon mass
     const Bool_t useImprovedVertex=kTRUE ; //Use verted with converted photon?
@@ -3130,7 +1672,7 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
     //upto v25  const Double_t kminR = 5.;
     const Double_t kminR = 0.01;
     // Double_t MassLam = 1.115683 ; //unused variable
-   
+    Double_t MassSig0 = 1.192642 ;
     //  Bool_t fToUseCF(kFALSE);
     //  Bool_t fConvCFCont(kFALSE);
     
@@ -3207,7 +1749,7 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
         
         if ((lDcaPosToPrimVertex < 0.1) || (lDcaNegToPrimVertex < 0.1) ||
             // (lDcaV0Daughters > 1.00) ||
-            (lV0cosPointAngle < 0.998) || (lV0Radius < 0.0) || (lV0Radius > 100. ) ) continue;  // (lV0Radius < 0.5) was before 1.10.13
+            (lV0cosPointAngle < 0.998) || (lV0Radius < 0.0) || (lV0Radius > 1000) ) continue;  // (lV0Radius < 0.5) was before 1.10.13
         
         Double_t v0x=0.,v0y=0.,v0z=0.;
         v0->GetXYZ(v0x,v0y,v0z) ;
@@ -3371,8 +1913,8 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
             
 	  if( !( abs(  arpod[1] ) < 0.8 && arpod[0] < 0.06 ) ) continue;
 	  
-	  //	  FillHistogram("hArPodGConv",  arpod[1], arpod[0] ) ;
-	  // FillHistogram("hCGamPtConv", GamRec.Pt() ) ;
+	  FillHistogram("hArPodGConv",  arpod[1], arpod[0] ) ;
+	  FillHistogram("hCGamPtConv", GamRec.Pt() ) ;
             
 	  // printf(" CONVERTED PHOTON RUN %d Ev %d \n",  fESDEvent->GetRunNumber(),  fESDEvent->GetEventNumberInFile() );
 	  // Fill TLIST for Sigma0
@@ -3386,7 +1928,7 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
 	  phg->SetZConv(v0z);
             
 	  inConv++ ;
-
+                        
 	  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	  //Fill MC information for GammaConverted
 	  if(fStack){
@@ -3408,34 +1950,25 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
                 
 	    TParticle * GamGen = fStack->Particle(negativeMC->GetMother(0));  // Generatred Gamma
                 
-	    //	    FillHistogram("hMCV0MvsWidth",width,m) ;
+                
                 
 	    if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){ // id 5 is conversion
 	      continue; }
-	   
-
- 
-	    //	    FillHistogram("hMCV0MvsWidth1",width,m) ;
-
+	    
 	    if(GamGen->GetPdgCode() == 22){    // indeed this Gamma reconstracted from Gamma
-	      //     FillHistogram("hMCV0MvsWidth2",width,m) ;
-	      //!!! add histo	      
+	      FillHistogram("hMCV0MvsWidth",w,m) ;
+	      //!!! add histo
+	      
 	      /* Yura 12.3.14 primary Gamma has no Mother ! */
-	     
 	      if( GamGen->IsPrimary() ) continue;
 	      TParticle * v0Sig2 = fStack->Particle(GamGen->GetMother(0));
 	      
-	      // 	      FillHistogram("hMCV0MvsWidth3",width,m) ;
-
 	      //       	printf("=========================mSig %f \n",  v0Sig2->GetMass() );
-	      if( abs(v0Sig2->GetMass() - 1.192642)<0.05 ) {
-
-		// FillHistogram("hMCV0MvsWidth4",width,m) ;		
-
-		Int_t NDt1 =v0Sig2->GetNDaughters();                
-	       	if( abs( v0Sig2->GetPdgCode() ) == 3212  && NDt1 == 2)  {    // Sigma0
-		//		if ( 1>0 ) {
-
+	      if( abs(v0Sig2->GetMass() - 1.192642)<0.01 ) {
+		
+		Int_t NDt1 =v0Sig2->GetNDaughters();
+                
+		if( abs( v0Sig2->GetPdgCode() ) == 3212  && NDt1 == 2)  {    // Sigma0
 		  Int_t Daughter21  = v0Sig2->GetFirstDaughter();
 		  Int_t Daughter22  = v0Sig2->GetLastDaughter();
 		  Double_t mrec=0.,  mcalc=0. ;
@@ -3466,11 +1999,10 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
 		  TLorentzVector GGen22m;
 		  GGen22m.SetXYZM(GamGen22->Px(),GamGen22->Py(),GamGen22->Pz(),GamGen22->GetMass()) ;  //Produces slightly better pi0 width
                             
-		  //	  if ( (abs( LamGen21->GetPdgCode() ) == 3122 && abs( GamGen22->GetPdgCode())  == 22)
-		       //old-skip		 &&  (inLam >0 && LamRecFl > 0)
-		  //     ) {
+		  if ( (abs( LamGen21->GetPdgCode() ) == 3122 && abs( GamGen22->GetPdgCode())  == 22)
+		       //		 &&  (inLam >0 && LamRecFl > 0)
+		       ) {
 		    
-		  if ( 1>0 ) {
 		    // Search here Sig0 - Loop over all Lambda reconstr in the event
 		    Int_t nLam=fGenpi0Event->GetEntriesFast() ;
 		    for(Int_t icon2=0; icon2<nLam; icon2++){
@@ -3488,8 +2020,8 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
 		      TLorentzVector sig0LrecGgen =  GGen22 + *LamRec ;
 		      TLorentzVector sig0LgenGrec =  GamRec + LGen21  ;
 		      TLorentzVector sig0LgenGgen =  GGen22 + LGen21  ;
-		      TLorentzVector sig0LgenGgenM =  GGen22m + LGen21m  ;
-		      FillHistogram("hMCgenrec3MvsPtLamgenGamgenM",sig0LgenGgenM.M(),sig0LgenGgenM.Pt() );
+		      //		  TLorentzVector sig0LgenGgenM =  GGen22m + LGen21m  ;
+		      //		  FillHistogram("hMCgenrec3MvsPtLamgenGamgenM",sig0LgenGgenM.M(),sig0LgenGgenM.Pt() );
 		      FillHistogram("hMCgenrec3MvsPtLamgenGamgen",sig0LgenGgen.M(),sig0LgenGgen.Pt() );
 		      FillHistogram("hMCgenrec3MvsPtLamgenGamrec",sig0LgenGrec.M(),sig0LgenGrec.Pt() );
 		      FillHistogram("hMCgenrec3MvsPtLamrecGamgen",sig0LrecGgen.M(), sig0LrecGgen.Pt() );
@@ -3560,18 +2092,18 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
 			    if(   LamGen21->GetPdgCode() == 3122 ) {
 			      sprintf(key,"hMCPSig0PtRec%d",irap) ;
 			      FillHistogram(key,  v0Sig2->Pt() );
-			      //		      if (v0Sig2->IsPrimary() ) {
-			      //		sprintf(key,"hMCPSig0PrimPtRec%d",irap) ;
-			      //	FillHistogram(key,  v0Sig2->Pt() );
-			      //}
+			      if (v0Sig2->IsPrimary() ) {
+				sprintf(key,"hMCPSig0PrimPtRec%d",irap) ;
+				FillHistogram(key,  v0Sig2->Pt() );
+			      }
 			    }
 			    else  if(   LamGen21->GetPdgCode() == -3122 ) {
 			      sprintf(key,"hMCASig0PtRec%d",irap) ;
 			      FillHistogram(key,  v0Sig2->Pt() );
-			      //if (v0Sig2->IsPrimary() ) {
-			      //	sprintf(key,"hMCASig0PrimPtRec%d",irap) ;
-			      //	FillHistogram(key,  v0Sig2->Pt() );
-			      //}
+			      if (v0Sig2->IsPrimary() ) {
+				sprintf(key,"hMCASig0PrimPtRec%d",irap) ;
+				FillHistogram(key,  v0Sig2->Pt() );
+			      }
 			    }
 			  }
 			}
@@ -3611,13 +2143,18 @@ void AliAnalysisTaskSigma0::SelectConvPhotons(){
         }    // end of if
     }// end of V0 loop
     
+    FillHistogram("hNlamEv",  NlamEv );
+    FillHistogram("hNalamEv",  NalamEv );
+    NlamminalamEv = NlamEv - NalamEv;
+    FillHistogram("hNlamminalamEv", NlamminalamEv  );
 } // END of SelectConvPhoton
 
 //_____________________________________________________
 //___________________________________________________________________________
 void AliAnalysisTaskSigma0::SelectTracks(){
     //Select pi+- tracks for search of Sigma+- 1385, PID have to be applied later
-
+    fELeadingTrack=0.;
+    fLeadingTrack = -1 ;
     // Int_t inTracks=0;
     Int_t inPHOS=0;
     Double_t mpi = 0.13957018;
@@ -3657,7 +2194,7 @@ void AliAnalysisTaskSigma0::SelectTracks(){
         TLorentzVector pi0rec;
         pi0rec.SetXYZM( track->Px(), track->Py(), track->Pz(), mpi ) ;  //Produces slightly better pi0 width
         
-	//        FillHistogram("hdEdxTrack", track->GetP(), track->GetTPCsignal()) ;
+        FillHistogram("hdEdxTrack", track->GetP(), track->GetTPCsignal()) ;
         
         //    if(inTracks >= fTrackEvent->GetSize()) fTrackEvent->Expand(inTracks*2) ;
         //We assume here that track is massless
@@ -3680,7 +2217,7 @@ void AliAnalysisTaskSigma0::ProcessMC(){
     //fill histograms for efficiensy etc. calculation
     
     if(!fStack) return ;
-    //    printf("ProcessMC \n");
+    //   printf("ProcessMC \n");
     
     const Double_t kRcut = 1. ; //cut for primary particles
     Double_t vtx[3];
@@ -3690,7 +2227,7 @@ void AliAnalysisTaskSigma0::ProcessMC(){
     
     Int_t Daughter1  = 0;  Int_t Daughter2  = 0;
     
-    //    if(  fStack->GetNtrack() < 2 ) return;
+    if(  fStack->GetNtrack() < 2 ) return;
     
     //---------First Lambda -----------------------------
     for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
@@ -3711,13 +2248,11 @@ void AliAnalysisTaskSigma0::ProcessMC(){
         //  Double_t mE      = particle->Energy();    //     Double_t mM      = particle->GetMass();  // Double_t mP = particle->P();
         
         // if(  abs( particle->GetPdgCode()) == 3324 && NDt == 2)  {
-	//        printf("MC----itr %d status %d PID=%d Parent %d Daut1=%d Daut2=%d ", iTracks,mStatus,mPdgSign,iParent,Daughter1,Daughter2);
+        // printf("MC----itr %d status %d PID=%d Parent %d Daut1=%d Daut2=%d ", iTracks,mStatus,mPdgSign,iParent,Daughter1,Daughter2);
         // printf("MC E %f Pt=%f M=%f  Pdg %d \n", mE,  mPt, mM, mPdg );
-	//     printf("MC  itr %d \n", iTracks );     //    }
+        // printf("MC   Pdg %d  itr %d \n", mPdgSign, iTracks );     //    }
         
-	if(  abs( particle->GetPdgCode() ) == 3122  && NDt == 2)  { 
-
-	  //	  printf("   all Lambda generated \n" );
+        if(  abs( particle->GetPdgCode() ) == 3122  && NDt == 2)  { // all Lambda generated
             
             Float_t ptLam =  particle->Pt();
             Float_t pdgLam =  particle->GetPdgCode();
@@ -3737,37 +2272,32 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                     if( pdgLam>0 ) {
                         sprintf(key,"hMCPLamPtGen%d",irap) ;
                         FillHistogram(key,  ptLam );
-			//                       if( particle->IsPrimary() ) {
-			//   sprintf(key,"hMCPLamPrimPtGen%d",irap) ;
-                        //    FillHistogram(key,  ptLam );
-                        // }
+                        if( particle->IsPrimary() ) {
+                            sprintf(key,"hMCPLamPrimPtGen%d",irap) ;
+                            FillHistogram(key,  ptLam );
+                        }
                     }
                     else  if( pdgLam<0 ) {
                         sprintf(key,"hMCALamPtGen%d",irap) ;
                         FillHistogram(key,  ptLam );
-			//  if( particle->IsPrimary() ) {
-                        //    sprintf(key,"hMCALamPrimPtGen%d",irap) ;
-                        //    FillHistogram(key,  ptLam );
-			// }
+                        if( particle->IsPrimary() ) {
+                            sprintf(key,"hMCALamPrimPtGen%d",irap) ;
+                            FillHistogram(key,  ptLam );
+                        }
                     }
                 }
             }
             
-            if( abs( rapLam < fetaCut ) ) {
+            if( TMath::Abs(rapLam) < fetaCut ) {
                 FillHistogram("hMCgenLamEta1",  particle->Pt() );
                 if(  particle->GetPdgCode() == 3122 )    FillHistogram("hMCgenPLamEta1",  particle->Pt() );
                 else if( particle->GetPdgCode() == -3122 )    FillHistogram("hMCgenALamEta1",  particle->Pt() );
             }
         }
-	
         
         // Sigma0 generated
-        if( abs( particle->GetPdgCode() ) == 3212  && NDt == 2)  {    
-
-	  //	  printf(" Sigma0 generated \n");
-     
-
-	  Double_t m=0., mcalc=0. ;
+        if( abs( particle->GetPdgCode() ) == 3212  && NDt == 2)  {    // Sigma0
+            Double_t m=0., mcalc=0. ;
             m =      particle->GetMass();
             mcalc = particle->GetCalcMass();
             Float_t rap = Rapidity(particle->Pt(), particle->Pz(), particle->GetMass());
@@ -3777,11 +2307,11 @@ void AliAnalysisTaskSigma0::ProcessMC(){
             
             Float_t pdgSig0 = particle->GetPdgCode();
             
-	    //	               printf(" m %f m-calc %f PDG %d \n", m,  mcalc, particle->GetPdgCode() == 3212 );
+            //    printf(" m %f w %f cm %f PDG %d \n", m, width, mcalc, particle->GetPdgCode() == 3212 );
             FillHistogram("hMCgenSig0",  particle->Pt() );
             FillHistogram("hMCgenSig0Rap",  rap );
-	    //            FillHistogram("hMCgenSig0RapEta",  rap,  particle->Eta() );
-            // FillHistogram("hMCgenSig0RapPt", rap,  particle->Pt() );
+            FillHistogram("hMCgenSig0RapEta",  rap,  particle->Eta() );
+            FillHistogram("hMCgenSig0RapPt", rap,  particle->Pt() );
             
             char key[55] ;
             for (Int_t irap = 0; irap < 6; irap++) {
@@ -3790,18 +2320,18 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                         sprintf(key,"hMCPSig0PtGen%d",irap) ;
                         FillHistogram(key,  ptSig0 );
                         
-			//                        if( particle->IsPrimary() ) {
-                        //    sprintf(key,"hMCPSig0PrimPtGen%d",irap) ;
-                        //    FillHistogram(key,  ptSig0 );
-			// }
+                        if( particle->IsPrimary() ) {
+                            sprintf(key,"hMCPSig0PrimPtGen%d",irap) ;
+                            FillHistogram(key,  ptSig0 );
+                        }
                     }
                     else  if( pdgSig0<0 ) {
                         sprintf(key,"hMCASig0PtGen%d",irap) ;
                         FillHistogram(key,  ptSig0 );
-			// if( particle->IsPrimary() ) {
-                        //    sprintf(key,"hMCASig0PrimPtGen%d",irap) ;
-                        //    FillHistogram(key,  ptSig0 );
-                        // }
+                        if( particle->IsPrimary() ) {
+                            sprintf(key,"hMCASig0PrimPtGen%d",irap) ;
+                            FillHistogram(key,  ptSig0 );
+                        }
                     }
                 }
             }
@@ -3841,13 +2371,13 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 }
             }
             
-	    //            FillHistogram("hMCsig0MassPt0All", m,  particle->Pt() );
-            // FillHistogram("hMCsig0RPt0All", particle->R(), particle->Pt()  );
+            FillHistogram("hMCsig0MassPt0All", m,  particle->Pt() );
+            FillHistogram("hMCsig0RPt0All", particle->R(), particle->Pt()  );
             
             TParticle* daught1 = (TParticle *)fStack->Particle( Daughter1 );
             TParticle* daught2 = (TParticle *)fStack->Particle( Daughter2 );
             
-	    //            printf("Sig0 E %f P=%f Pt=%f M=%f \n", mE, mP ,mPt, mM );
+            //      printf("Sig0 E %f P=%f Pt=%f M=%f \n", mE, mP ,mPt, mM );
             if ( !(abs( daught1->GetPdgCode() ) == 3122 && abs( daught2->GetPdgCode())  == 22) ) { //23apr14-open
                 Double_t pos2[3]= { daught1->Px(),  daught1->Py(),  daught1->Pz() };
                 Double_t neg2[3]= { daught2->Px(),  daught2->Py(),  daught2->Pz() };
@@ -3855,10 +2385,10 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 Double_t arpod[2]= {0,0};
                 
                 GetArPod( pos2, neg2, moth2, arpod );
-		/*               if( (abs(arpod[1]) > 0.6 && arpod[0]< 0.12) ) {
+                if( (abs(arpod[1]) > 0.6 && arpod[0]< 0.12) ) {
                     FillHistogram("hMCccMvsArpodPt",m,  particle->Pt() ) ;
                     FillHistogram("hMCArPodSig03",  arpod[1], arpod[0] ) ;
-		    } */
+                }
             }
             
             if ( abs( daught1->GetPdgCode() ) == 3122 && abs( daught2->GetPdgCode())  == 22 ) {
@@ -3877,32 +2407,22 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 if( abs(rap) < fetaCut ) FillHistogram("hMCgenLamSig0Eta1",  daught1->Pt() );
                 
                 FillHistogram("hMCgenGamSig0", daught2->Pt() );
-
-
-               	if( abs(  daught2->Eta() < 0.12 ) ) {
-		  FillHistogram("hMCgenGamSig0PHOS",  daught2->Pt() );
-		  if( (daught2->Phi() > 220.*3.1415492/360. && daught2->Phi() < 320.*3.1415492/360.) ) { 
-		  FillHistogram("hMCgenGamSig0PHOSEta1",  daught2->Pt() );
-		  }
-		}
-
+                //	if( abs( particle->Eta() < 1 ) ) FillHistogram("hMCgenGamSig0Eta1",  daught2->Pt() );
                 if( abs(rap) < fetaCut ) FillHistogram("hMCgenGamSig0Eta1",  daught2->Pt() );
                 
                 GetArPod( pos2, neg2, moth2, arpod );
                 FillHistogram("hMCArPodSig0",  arpod[1], arpod[0] ) ;
                 if( daught2->Energy() > 0.1 )  FillHistogram("hMCArPodSig02",  arpod[1], arpod[0] ) ;
                 
-		//                printf("Sig0->Gamma E %f Pt=%f E/pt=%f \n",daught2->Energy(), daught2->Pt(), daught2->Energy()/daught2->Pt() );
+                //	printf("Sig0->Gamma E %f Pt=%f E/pt=%f \n",daught2->Energy(), daught2->Pt(), daught2->Energy()/daught2->Pt() );
                 
+                fAbsLeading = 100;
                 
             }
         }        
     }
     
     //------------- now photons ----------------
-
-    if( 1 ) return;
-
     for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
         TParticle* particle = (TParticle *)fStack->Particle(iTracks);
         if(particle->GetPdgCode() != 22)
@@ -3920,8 +2440,8 @@ void AliAnalysisTaskSigma0::ProcessMC(){
         
         //     Int_t mod ;
         //     Double_t x,z ;
-	// Bool_t hitPHOS = 0; //  fPHOSgeom->ImpactOnEmc(particle, mod, z,x) ;
-	//   Bool_t hitEMCAL= 0; //  fEMCALgeom->Impact(particle) ;
+        Bool_t hitPHOS = 0; //  fPHOSgeom->ImpactOnEmc(particle, mod, z,x) ;
+        Bool_t hitEMCAL= 0; //  fEMCALgeom->Impact(particle) ;
         
         //Photons in PHOS/EMCAL acceptance
         //      if(hitPHOS)
@@ -3942,7 +2462,7 @@ void AliAnalysisTaskSigma0::ProcessMC(){
         if(converted)
         FillHistogram("hMCSigma0GammaConv",pt) ;
         
-        printf(" Converted photons with V0 \n");
+        //Converted photons with V0
         TLorentzVector pConv ;
         Bool_t foundV0=kFALSE ;
         for(Int_t iv0=0; iv0<fESDEvent->GetNumberOfV0s();iv0++){
@@ -3980,15 +2500,14 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 break ;
             }
         }
-	/*        if(foundV0){
+        if(foundV0){
             FillHistogram("hMCSigma0GammaV0",pt) ;
             //       FillHistogram("hMCSigma0GammaV0_devsE",
             //     (particle->Energy()-pConv.E())/particle->Energy(),particle->Energy()) ;
         }
-	*/
         
         //Registered in PHOS/EMCAL
-	/*        Bool_t cluInPHOS = kFALSE, cluInEMCAL=kFALSE ;
+        Bool_t cluInPHOS = kFALSE, cluInEMCAL=kFALSE ;
         TLorentzVector pCalo ;
         for (Int_t i=0; i<fESDEvent->GetNumberOfCaloClusters(); i++) {
             AliESDCaloCluster * clu = fESDEvent->GetCaloCluster(i);
@@ -4016,7 +2535,6 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 break ;
             }
         }
-	*/
         
         //      if(cluInPHOS){
         //        FillHistogram("hMCSigma0Gamma_PHOSclu",pt) ;
@@ -4179,32 +2697,574 @@ Bool_t AliAnalysisTaskSigma0::TestLambda(Double_t pt,Double_t l1,Double_t l2){
     Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
     0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
     0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
-    return (R2<2.5*2.5) ;    
+    return (R2<2.5*2.5) ;
+    
 }
 
 //_________________________________________________________________________________
 void AliAnalysisTaskSigma0::REvalIsolation(TLorentzVector * ph,const Int_t isolation ){
-    //OLD  printf("  Check if this particle is isolated ITYPE %d  \n",isolation);
+    // Int_t AliAnalysisTaskSigma0::EvalIsolation( AliCaloParticle * ph){
+    
+    //  printf("  Check if this particle is isolated ITYPE %d  \n",isolation);
+    //We use several cone radii and epsilons looking on charged particles and EMCAL ones
+    //   const Double_t kConeR1=0.2 ;   const Double_t kConeR2=0.3 ;   const Double_t kConeR3=0.4 ;
+    //   const Double_t ptthresh=0.5 ;
+    
+    Double_t  phiTrig = ph->Phi();
+    Double_t  etaTrig = ph->Eta();
+    Double_t  MggTrig = ph->M();
+    Double_t  PtTrig = ph->Pt();
+    char key[55] ;
+    
+    
     Int_t nbin=9 ;
+    Double_t Rcone[]={0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.55 } ;
+    
+    
+    //  Int_t nbin=8 ;
+    //  Double_t Rcone[]={0.05, 0.1, 0.2, 0.4, 0.6 , 0.8, 1.0 , 1.2, 1.4, 1.6, 1.25 } ;
+    //  Double_t Rcone[]={0.05, 0.1, 0.2, 0.4, 0.6 , 0.8, 1.0 , 1.52 } ;
+    
+    Double_t FSumPtcone[nbin];    Double_t BSumPtcone[nbin];   Double_t BxEcone[nbin];  Double_t SSumPtcone[nbin]; 
+    Double_t TSumPtcone = 0;    Double_t TVECSumPtcone = 0;  
+    
+    Int_t FNcone[nbin];    Int_t BNcone[nbin];    Int_t SNcone[nbin]; 
+    //  Double_t xecone[nbin];  Double_t multall[nbin];
+    
+    for(Int_t i=0 ; i< nbin; i++){
+        FSumPtcone[i] = 0;  BSumPtcone[i] = 0;  BxEcone[i] = 0; SSumPtcone[i] = 0;  
+        FNcone[i] =0;  BNcone[i]=0 ;   SNcone[i]=0; 
+    }
+    
+    Int_t nstart = 0;
+    Int_t nfin = nbin;
+    
+    //  Int_t ConeSum =0;   Int_t ConeProp = 0;   Int_t SumPt = 0;
+    Int_t ntracks=fTrackEvent->GetEntriesFast() ;
+    
+    for(Int_t itr=0; itr<ntracks; itr++){
+        AliCaloParticle * track = (AliCaloParticle*)fTrackEvent->At(itr) ;
+        if(track==ph) //this particle
+        continue ;     
+        
+        nstart = 0;
+        nfin = nbin;
+        
+        if ( isolation == -555 ){
+            nstart = 9;
+            nfin = 10;
+        } 
+        
+        Double_t deleta = etaTrig - track->Eta() ;
+        Double_t deletaneg = -etaTrig - track->Eta() ;
+        
+        Double_t delphi = phiTrig - track->Phi() ;      
+        if(delphi <= -TMath::PiOver2()) delphi+=TMath::TwoPi();
+        if(delphi > 3*TMath::PiOver2()) delphi-=TMath::TwoPi();
+        
+        for(Int_t icone= nstart; icone<nfin; icone++){
+            Double_t i2 = icone ; 
+            Double_t a2 = 2 ;  
+            Double_t kind2 = pow( a2, i2) ;
+            Int_t kind3 = float( kind2 );
+            
+            if(  ( isolation>=0 && (isolation&kind3) == kind3 ) || isolation== -555  ){
+                
+                //	if( MggTrig > 0.075 &&  MggTrig < 0.255 )  FillCorr( ph, 20+icone ) ;
+                //	if( MggTrig > 0.11 &&  MggTrig < 0.16 ) {   // 12jul13
+                
+                if( MggTrig > 0.115 &&  MggTrig < 0.155 ) {
+                    sprintf(key,"PP_PhiCor_peak_%d",icone) ;
+                    FillHistogram(key, delphi ,PtTrig) ;
+                    
+                    sprintf(key,"PP_r_BxE_peak_%d",icone) ; 
+                    if( PtTrig >= 6 && delphi> 0.66*TMath::Pi() && delphi<1.33*TMath::Pi() ) FillHistogram(key,track->Pt()*TMath::Cos(delphi)/PtTrig, PtTrig);
+                    
+                    //	  FillCorr(ph, icone ) ;
+                    //	  if (isolation == -555 ) printf("peak icone %d m %d \n", icone, m);
+                    
+                }
+                //12jul13	else if( (MggTrig > 0.08 &&  MggTrig < 0.11) ||  (MggTrig > 0.16 &&  MggTrig < 0.21) ) { 
+                else if( (MggTrig > 0.075 &&  MggTrig < 0.115) ||  (MggTrig > 0.155 &&  MggTrig < 0.255) ) {
+                    sprintf(key,"PP_PhiCor_side_%d",icone) ;
+                    FillHistogram(key, delphi ,PtTrig) ;
+                    
+                    sprintf(key,"PP_r_BxE_side_%d",icone) ; 
+                    if( PtTrig >= 6 && delphi> 0.66*TMath::Pi() && delphi<1.33*TMath::Pi() ) FillHistogram(key,track->Pt()*TMath::Cos(delphi)/PtTrig,PtTrig);
+                    
+                    //	  FillCorr(ph, icone+10 ) ;	  
+                    //  if (isolation == -555 ) printf("side icone %d m2 %d \n", icone, m2 );
+                    
+                }
+            }
+        }
+        
+        Double_t delphineg = delphi + TMath::Pi() ;
+        if(delphineg <= -TMath::PiOver2()) delphineg+=TMath::TwoPi();
+        if(delphineg > 3*TMath::PiOver2()) delphineg-=TMath::TwoPi();
+        
+        Double_t delphiside = delphi + TMath::PiOver2() ;
+        if(delphiside <= -TMath::PiOver2()) delphiside+=TMath::TwoPi();
+        if(delphiside > 3*TMath::PiOver2()) delphiside-=TMath::TwoPi();
+        
+        
+        Double_t dr    = TMath::Sqrt(deleta * deleta + delphi * delphi);
+        Double_t drneg = TMath::Sqrt(deletaneg * deletaneg + delphineg * delphineg );
+        //    Double_t drbg1 = TMath::Sqrt(deleta * deleta + delphineg * delphineg);
+        // Double_t drbg2 = TMath::Sqrt(deletaneg * deletaneg + delphi * delphi);
+        
+        TSumPtcone += track->Pt(); 
+        TVECSumPtcone += track->Pt()*TMath::Cos(delphi) ; 
+        
+        
+        if ( isolation == -555 ){
+            nstart = 9;
+            nfin = 10;
+            Int_t iicone = 10;
+            if(  fabs(delphi) < TMath::TwoPi()/6 ) {
+                FSumPtcone[iicone] +=  track->Pt(); 	 
+                FNcone[iicone] += 1;
+            }	
+            else if(  fabs(delphi) > TMath::TwoPi()/6 &&  fabs(delphi) < TMath::TwoPi()/3 ) {  
+                SSumPtcone[iicone] +=  track->Pt(); 	
+                SNcone[iicone] += 1;
+            }
+            else if(  fabs(delphi) > TMath::TwoPi()/3 ) {
+                BSumPtcone[iicone] +=   track->Pt(); 	
+                // BxEcone[iicone] +=   fabs( track->Pt() *TMath::Cos(delphi) )/PtTrig ;
+                BNcone[iicone] += 1; 
+            }
+        } 
+        
+        for(Int_t icone= nstart; icone< nfin; icone++){
+            if( dr < Rcone[icone] ) {
+                FSumPtcone[icone] +=  track->Pt(); 	 
+                FNcone[icone] += 1;
+            }
+            if( drneg < 0.4 ) {
+                BSumPtcone[icone] +=   track->Pt(); 	
+                //	BxEcone[icone] +=   fabs( track->Pt()*TMath::Cos(delphi) )/PtTrig ;
+                BNcone[icone] += 1; 
+            } //opposide BG
+            
+            if( fabs(delphi) > TMath::TwoPi()/6 && fabs(delphi) < TMath::TwoPi()/3 ) { //was ( fabs(delphiside) < 0.4 ) {
+                SSumPtcone[icone] +=  track->Pt(); 	
+                SNcone[icone] += 1;
+            } // side BG
+            
+            //            if (isolation == -555 ){
+            //	      printf("  COnes Mtr %f ITYPE %d nst %d nfin %d \n", MggTrig, isolation, nstart, nfin);
+            //	      printf("  co   FSumPtcone %f  BSumPtcone %f SSumPtcone %f  TSumPtcone %f icone %d Rcone %f \n",
+            //		     FSumPtcone[icone], BSumPtcone[icone], SSumPtcone[icone], TSumPtcone, icone,  Rcone[icone] );  }
+            
+        }	
+    }    // end of track loop 
+    
+    nstart = 0;
+    nfin = nbin;
+    
+    if( isolation == -555) { 
+        nstart = 9;
+        nfin = 10;
+    }
+    
+    
+    for(Int_t icone= nstart; icone<nfin; icone++){
+        Double_t i2 = icone ; 
+        Double_t a2 = 2 ;  
+        Double_t kind2 = pow( a2, i2) ;
+        Int_t kind3 = float( kind2 );
+        
+        if(  ( isolation>=0 && (isolation&kind3) == kind3 ) || isolation== -555  ){
+            
+            //	printf("  Check2 Mtr %f ITYPE %d nst %d nfin %d \n", MggTrig, isolation, nstart, nfin);
+            //	printf("  chk2   FSumPtcone %f  BSumPtcone %f SSumPtcone %f  TSumPtcone %f icone %d Rcone %f \n",
+            //     FSumPtcone[icone], BSumPtcone[icone], SSumPtcone[icone], TSumPtcone, icone,  Rcone[icone] );
+            
+            
+            if( MggTrig > 0.115 &&  MggTrig < 0.155 ) {
+                //	if( MggTrig > 0.11 &&  MggTrig < 0.17 ) {
+                // sprintf(key,"PP_R_FsumPt_peak_%d",icone) ;
+                // FillHistogram(key, FSumPtcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_BsumPt_peak_%d",icone) ;
+                // FillHistogram(key, BSumPtcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_SsumPt_peak_%d",icone) ;
+                // FillHistogram(key, SSumPtcone[icone] ,PtTrig) ;
+                
+                sprintf(key,"PP_R_TsumPt_peak_%d",icone) ;
+                FillHistogram(key, TSumPtcone, PtTrig) ;
+                
+                sprintf(key,"PP_R_TVECsumPt_peak_%d",icone) ;
+                FillHistogram(key, TVECSumPtcone, PtTrig) ;
+                
+                //  sprintf(key,"PP_R_FMult_peak_%d",icone) ;
+                // FillHistogram(key, FNcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_BMult_peak_%d",icone) ;
+                // FillHistogram(key, BNcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_SMult_peak_%d",icone) ;
+                // FillHistogram(key, SNcone[icone] ,PtTrig) ;
+                
+                sprintf(key,"PP_R_TMult_peak_%d",icone) ;
+                FillHistogram(key, fMultiplicity ,PtTrig) ;	       
+                
+                sprintf(key,"PP_r_pi0_BPt_peak_%d",icone) ;
+                if(  BSumPtcone[icone] > 0 && PtTrig > 0 )	FillHistogram(key, BSumPtcone[icone]/PtTrig, PtTrig  ) ;
+                
+                
+                sprintf(key,"PP_r_pi0_SPt_peak_%d",icone) ;
+                if(  SSumPtcone[icone] > 0 && PtTrig > 0 )	FillHistogram(key, SSumPtcone[icone]/PtTrig, PtTrig )  ;
+                
+                sprintf(key,"PP_r_pi0_TPt_peak_%d",icone) ;
+                if(  TSumPtcone > 0  && PtTrig > 0 )	FillHistogram(key, TSumPtcone/PtTrig, PtTrig  ) ;
+                
+                //	  sprintf(key,"PP_pi0_T0multAC_peak_%d",icone) ;
+                //	  FillHistogram(key, fT0multA, fT0multC   ) ;
+                
+                //	  sprintf(key,"PP_pi0_V0multAC_peak_%d",icone) ;
+                //	  FillHistogram(key, fV0multA, fV0multC   ) ;
+                
+                
+                //	  sprintf(key,"hT0AmC_peak_%d",icone) ;
+                //	  FillHistogram(key, fT0multA-fT0multC );
+                
+                //	  sprintf(key,"hT0ApC_peak_%d",icone) ;
+                //	  FillHistogram(key, fT0multA+fT0multC );
+                
+                //	  sprintf(key,"PP_pi0_SPDclustracl_peak_%d",icone) ;
+                //	  FillHistogram(key, fSPDmultClust,  fSPDmultTracl  ) ;
+                
+                //	  sprintf(key,"PP_pi0_T0multAC_peak_%d",icone) ;
+                //	  FillHistogram(key, fT0multA+ fT0multC,  fT0multA-fT0multC   ) ;
+                
+                
+            } 
+            
+            
+            
+            else if( (MggTrig > 0.075 &&  MggTrig < 0.115) ||  (MggTrig > 0.155 &&  MggTrig < 0.255) ) {
+                
+                //	else if( (MggTrig > 0.08 &&  MggTrig < 0.11) ||  (MggTrig > 0.18 &&  MggTrig < 0.25 ) )  {
+                // sprintf(key,"PP_R_FsumPt_side_%d",icone) ;
+                //  FillHistogram(key, FSumPtcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_BsumPt_side_%d",icone) ;
+                //  FillHistogram(key, BSumPtcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_SsumPt_side_%d",icone) ;
+                //  FillHistogram(key, SSumPtcone[icone] ,PtTrig) ;
+                
+                sprintf(key,"PP_R_TsumPt_side_%d",icone) ;
+                FillHistogram(key, TSumPtcone, PtTrig) ;
+                
+                sprintf(key,"PP_R_TVECsumPt_side_%d",icone) ;
+                FillHistogram(key, TVECSumPtcone, PtTrig) ;
+                
+                // sprintf(key,"PP_R_FMult_side_%d",icone) ;
+                // FillHistogram(key, FNcone[icone] ,PtTrig) ;
+                
+                //	  sprintf(key,"PP_R_BMult_side_%d",icone) ;
+                // FillHistogram(key, BNcone[icone] ,PtTrig) ;
+                
+                // sprintf(key,"PP_R_SMult_side_%d",icone) ;
+                // FillHistogram(key, SNcone[icone] ,PtTrig) ;
+                
+                sprintf(key,"PP_R_TMult_side_%d",icone) ;
+                FillHistogram(key, fMultiplicity ,PtTrig) ;
+                
+                sprintf(key,"PP_r_pi0_BPt_side_%d",icone) ;
+                if(  BSumPtcone[icone] > 0 && PtTrig > 0 )	FillHistogram(key, BSumPtcone[icone]/PtTrig, PtTrig  ) ;
+                
+                sprintf(key,"PP_r_pi0_SPt_side_%d",icone) ;
+                if(  SSumPtcone[icone] > 0 && PtTrig > 0 )	FillHistogram(key, SSumPtcone[icone]/PtTrig, PtTrig  ) ;
+                
+                sprintf(key,"PP_r_pi0_TPt_side_%d",icone) ;
+                if(  TSumPtcone > 0 && PtTrig > 0 )	FillHistogram(key, TSumPtcone/PtTrig, PtTrig  ) ;
+                
+                //	  sprintf(key,"PP_pi0_T0multAC_side_%d",icone) ;
+                //	  FillHistogram(key, fT0multA+fT0multC,  fT0multA-fT0multC  ) ;
+                
+                //	  sprintf(key,"hT0AmC_side_%d",icone) ;
+                //	  FillHistogram(key, fT0multA-fT0multC );
+                
+                //	  sprintf(key,"hT0ApC_side_%d",icone) ;
+                //	  FillHistogram(key, fT0multA+fT0multC );
+                
+                //	  sprintf(key,"PP_pi0_V0multAC_side_%d",icone) ;
+                //	  FillHistogram(key, fV0multA, fV0multC   ) ;
+                
+                //	  sprintf(key,"PP_pi0_SPDclustracl_side_%d",icone) ;
+                //	  FillHistogram(key, fSPDmultClust,  fSPDmultTracl  ) ;
+                
+            }
+        }
+    }  // 2nd loop over the cones  
 }
 
 //_________________________________________________________________________________
 Int_t AliAnalysisTaskSigma0::EvalIsolation(TLorentzVector * ph ){
-    //OLD We use several cone radii and epsilons looking on charged particles and EMCAL ones    
+    
+    //  printf("                                          Check if this particle is isolated \n");
+    //We use several cone radii and epsilons looking on charged particles and EMCAL ones
+    
     Int_t nbin=9 ;
+    Double_t Rcone[]={0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6 , 0.8, 1.55 } ;
+    Double_t SumPtcone[nbin];  Int_t IsolFlag[nbin]; 
+    //  Double_t xecone[nbin];  Double_t multall[nbin];
+    const Double_t kEpsilon=0.1 ;   // was 0.05 0.1
+    //const Double_t kEpsilon2=0.05 ;
+    //   const Double_t ptthresh=0.5 ;
+    
+    for(Int_t i=0; i<nbin; i++){  SumPtcone[i] = 0;  }
+    
+    Int_t isolation = 0;
+    
+    if(!ph) return 0 ;
+    
+    //Sum of energies in cones, tracks and clusters in EMCAL
+    //   Double_t eCone1 = 0;   Double_t eCone2 = 0;   Double_t eCone3 = 0;   
+    // Int_t iCone1 = 1;   Int_t iCone2 = 1;   Int_t iCone3 = 1;
+    
+    Double_t  phiTrig = ph->Phi();
+    Double_t  etaTrig = ph->Eta();
+    
+    //   Double_t  MggTrig = ph->M();
+    
+    //   printf(" MggTrig %d \n",MggTrig );
+    // Int_t ConeSum =0;   Int_t ConeProp = 0;   Int_t SumPt = 0;
+    
+    Int_t n=fTrackEvent->GetEntriesFast() ;
+    
+    for(Int_t itr=0; itr<n; itr++){
+        AliCaloParticle * track = (AliCaloParticle*)fTrackEvent->At(itr) ;
+        if(track==ph) //this particle
+        continue ;     
+        
+        Double_t deleta = etaTrig - track->Eta() ;
+        Double_t delphi = phiTrig - track->Phi() ;      
+        //      while(delphi<-TMath::Pi()) delphi+=TMath::TwoPi() ; // while(delphi>TMath::Pi()) delphi-=TMath::TwoPi() ;
+        if(delphi <= -TMath::PiOver2()) delphi+=TMath::TwoPi();
+        if(delphi > 3*TMath::PiOver2()) delphi-=TMath::TwoPi();
+        
+        Double_t dr    = TMath::Sqrt(deleta * deleta + delphi * delphi);
+        
+        for(Int_t icone=0; icone<nbin; icone++){
+            if( dr < Rcone[icone] ) {
+                SumPtcone[icone] += track->Pt() ;
+                //	 VSumPtcone[icone] += track->Pt() *TMath::Cos(delphi) ;	// Ncone[icone] += 1;
+            }   // 
+        }	// cones loop    
+    }   // track loop
+    isolation = 0; 
+    for(Int_t icone=0; icone<nbin; icone++){
+        IsolFlag[icone] = 0; 
+        
+        if( SumPtcone[icone] < kEpsilon* ph->Pt() )  IsolFlag[icone] = 1;
+        
+        //    if( SumPtcone[icone] <= 0.5 )  IsolFlag[icone] = 1;
+        
+        //    printf(" sumtr %f eps*pt %f isolfl %d \n", SumPtcone[icone] , kEpsilon* ph->Pt(), IsolFlag[icone] );    
+        Double_t i2 = icone ; 
+        Double_t a2 = 2 ;  
+        Double_t kind2 = pow( a2, i2) ;
+        Int_t kind3 = float( kind2 );
+        isolation = isolation + int(  kind3*IsolFlag[icone] );
+        //    printf("isolation %d  icone %d  \n", isolation,  icone );
+        
+    }
+    return isolation ;		    
 }
 
 //_________________________________________________________________________________
 Int_t AliAnalysisTaskSigma0::EvalMCIsolation(TParticle * ph){
-  //OLD Check if this particle is isolated. 
-  Int_t isolation = 15;
+    
+    // Check if this particle is isolated. 
+    //We use several cone radii and epsilons.
+    //As well we look at charged particles and EMCAL ones
+    
+    const Double_t kConeR1=0.2 ;
+    const Double_t kConeR2=0.3 ;
+    const Double_t kConeR3=0.4 ;
+    
+    const Double_t kEpsilon1=0.1 ;
+    const Double_t kEpsilon2=0.05 ;
+    
+    if(!ph) return 0 ;
+    
+    //   Int_t isolation = 15;
+    
+    //Sum of energies in cones, tracks and clusters in EMCAL
+    Double_t eCone1 = 0;
+    Double_t eCone2 = 0;
+    Double_t eCone3 = 0;
+    Double_t eCone1EMCAL = 0;
+    Double_t eCone2EMCAL = 0;
+    Double_t eCone3EMCAL = 0;
+    
+    Double_t  phiTrig = ph->Phi();
+    Double_t  etaTrig = ph->Eta();
+    
+    //   Int_t n=fTrackEvent->GetEntriesFast() ;
+    
+    //   for(Int_t itr=0; itr<n; itr++){
+    //     AliCaloParticle * track = (AliCaloParticle*)fTrackEvent->At(itr) ;
+    
+    //   printf(".MCisol pt-trig %f Y %f R %f PdG %d \n", ph->Pt(),ph->Y(), ph->R(), ph->GetPdgCode() );
+    
+    for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
+        TParticle* particle = (TParticle *)fStack->Particle(iTracks) ;
+        
+        //    Int_t itr=iTracks; 
+        //printf("...MCisol pt-trig %f Y %f R %f PdG %d itr %d \n"
+        //    ,particle->Pt(),particle->Y(),particle->R(),particle->GetPdgCode(),iTracks);    
+        
+        if( particle  ==ph) //this particle
+        continue ;     
+        
+        Int_t pdg = fabs(particle->GetPdgCode() ) ;
+        
+        // whi pi0 included - no reason -> skip it!
+        // if( !(pdg==11 || pdg == 13 || pdg == 211 || pdg == 111 || pdg == 321 || pdg == 2212 ||  pdg == 22)) continue;     
+        if( ! (pdg==11 || pdg == 13 || pdg == 211 ||  pdg == 321 || pdg == 2212 ||  pdg == 22  ) ) continue;    
+        //     e+-       mu            pi+-           K+-         p                gamma
+        
+        //     Bool_t hitEMCAL = fEMCALgeom->Impact( particle ) ;             
+        //     if( !hitEMCAL  ) continue ;
+        //   printf(" hit %d pt-part %f pdg %d \n", hitEMCAL, particle->Pt(), pdg );
+        
+        if( TMath::Abs( particle->Eta() ) > 0.9 ) continue;
+        
+        Double_t deleta = etaTrig - particle->Eta() ;
+        Double_t delphi = phiTrig - particle->Phi() ;      
+        //      while(delphi<-TMath::Pi()) delphi+=TMath::TwoPi() ;
+        //      while(delphi>TMath::Pi()) delphi-=TMath::TwoPi() ;
+        if(delphi <= -TMath::PiOver2()) delphi+=TMath::TwoPi();
+        if(delphi > 3*TMath::PiOver2()) delphi-=TMath::TwoPi();
+        
+        Double_t dr    = TMath::Sqrt(deleta * deleta + delphi * delphi);
+        
+        if ( pdg != 22  ) {
+            if(dr<kConeR3){
+                eCone3+= particle->Pt() ;
+                if(dr<kConeR2){
+                    eCone2+= particle->Pt() ;
+                    if(dr<kConeR1){
+                        eCone1+= particle->Pt() ;
+                    }
+                }
+            }	
+        }
+        
+        else if ( pdg == 22 ) {
+            if(dr<kConeR3){
+                eCone3EMCAL += particle->Pt() ;
+                if(dr<kConeR2){
+                    eCone2EMCAL += particle->Pt() ;
+                    if(dr<kConeR1){
+                        eCone1EMCAL += particle->Pt() ;
+                    }
+                }
+            }	
+        }
+    }        
+    
+    //Fill QA histgams
+    Double_t ptTrig=ph->Pt() ;
+    
+    Int_t iEMCone1E1 = 0;    Int_t iEMCone2E1 = 0;    Int_t iEMCone3E1 = 0;    
+    Int_t iEMCone1E2 = 0;    Int_t iEMCone2E2 = 0;    Int_t iEMCone3E2 = 0;
+    
+    
+    //Fill Bits
+    Int_t iCone1E1 = (kEpsilon1*ptTrig > eCone1) ;
+    Int_t iCone2E1 = (kEpsilon1*ptTrig > eCone2) ;
+    Int_t iCone3E1 = (kEpsilon1*ptTrig > eCone3) ;
+    
+    Int_t iCone1E2 = (kEpsilon2*ptTrig > eCone1) ;
+    Int_t iCone2E2 = (kEpsilon2*ptTrig > eCone2) ;
+    Int_t iCone3E2 = (kEpsilon2*ptTrig > eCone3) ;
+    
+    Int_t mcisolation=   iCone1E1+  2*iCone2E1   +4*iCone3E1+
+    8*iEMCone1E1+16*iEMCone2E1+32*iEMCone3E1+
+    64*iCone1E2 +128*iCone2E2 +256*iCone3E2+
+    512*iEMCone1E2+1024*iEMCone2E2+2048*iEMCone3E2;
+    
+    return mcisolation ;		    
 }
+
 
 //_____________________________________________________
 void AliAnalysisTaskSigma0::FillCorr(TLorentzVector * trig, const Int_t itype  )
 {
-  //OLD     
-  Int_t hnum = -1;
+    //  Double_t xesum = 0; //  Double_t xesumpos = 0;   Double_t xesumneg = 0; 
+    //  Double_t yesum = 0;
+    
+    Int_t n=fTrackEvent->GetEntriesFast() ;
+    Int_t itype2 = itype*10;
+    Double_t ptTrig = trig->Pt();
+    
+    if(  ptTrig <= 1 ) return;
+    char key0[155];   char key2[155]; char key3[155];   char key5[55]; 
+    char key1[155];  char key4[155]; 
+    
+    Int_t hnum = -1;
+    
+    if( (ptTrig > 5 && ptTrig <= 8  )   )  hnum  = itype2 ;
+    else if( (ptTrig > 8 && ptTrig <= 10  )  )  hnum  = itype2 + 1 ;
+    else if( (ptTrig >10 && ptTrig <= 16  )  )  hnum  = itype2 + 2 ;
+    else if( (ptTrig >16 && ptTrig <= 50  )  )  hnum  = itype2 + 3 ;
+    
+    
+    if( hnum == -1 ) return;
+    
+    
+    sprintf(key5,"Multiplicity-%d",hnum);
+    FillHistogram(key5,fMultiplicity);
+    
+    sprintf(key3,"hmgg-%d",hnum);
+    FillHistogram(key3, trig->M() );      
+    
+    for(Int_t i=0; i<n;i++){
+        
+        AliCaloParticle * partn = static_cast<AliCaloParticle*>(fTrackEvent->At(i)) ;
+        if(trig==partn) //for the case of track trigger
+        continue ;
+        
+        Double_t dphi=trig->Phi()-partn->Phi() ;
+        // while(dphi<-TMath::PiOver2())dphi+=TMath::TwoPi(); //while(dphi>3*TMath::PiOver2())dphi-=TMath::TwoPi() ;
+        
+        if(dphi <= -TMath::PiOver2()) dphi+=TMath::TwoPi();
+        if(dphi > 3*TMath::PiOver2()) dphi-=TMath::TwoPi();
+        
+        // if( dphi > 2/3*TMath::Pi() &&  dphi < 5/3*TMath::Pi() ) {
+        
+        Double_t xe=-partn->Pt()*TMath::Cos(dphi)/trig->Pt() ;     
+        Double_t pttr = partn->Pt();
+        
+        Double_t cosdelphi = TMath::Cos(dphi) ;
+        if( cosdelphi == 0 ) cosdelphi = 1.e-6;
+        //    Double_t rat= -pttr/ptTrig * cosdelphi / fabs( cosdelphi )  ;
+        
+        sprintf(key0,"hdelphi-%d",hnum); 
+        FillHistogram(key0,dphi); 
+        
+        if ( dphi > 0.66*TMath::Pi() &&  dphi < 1.33*TMath::Pi() && pttr > 0.2   ){
+            sprintf(key2,"hxe-%d",hnum); 
+            FillHistogram(key2,xe); 
+            
+            sprintf(key1,"pTtrig-%d",hnum) ;
+            FillHistogram(key1, ptTrig ) ;
+            
+            sprintf(key4,"phi-trk-%d",hnum) ;
+            FillHistogram(key4,  pttr ) ;
+            
+        } // if of backward cone
+        
+    }  // loop over tracks
+    
 }
 
 //______________________________________________________________________________
@@ -4228,6 +3288,7 @@ void AliAnalysisTaskSigma0::GetArPod( Double_t pos[3], Double_t neg[3], Double_t
     arpod[1]=alfa;
     
 }
+
 
 //____________________________________________________________________
 Double_t  AliAnalysisTaskSigma0::Rapidity(Double_t pt, Double_t pz, Double_t m)
