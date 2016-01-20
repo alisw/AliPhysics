@@ -280,8 +280,8 @@ void AliAnalysisTaskCEPQA::UserExec(Option_t *)
   if (fSPDmul>0)    fHistStatus->Fill( 6.5);
   if (fFMDAnumHC>0) fHistStatus->Fill( 7.5);
   if (fFMDCnumHC>0) fHistStatus->Fill( 8.5);
-  // ADA            fHistStatus->Fill( 9.5);
-  // ADC            fHistStatus->Fill(10.5);
+  if (fADAmul>0)    fHistStatus->Fill( 9.5);
+  if (fADCmul>0)    fHistStatus->Fill(10.5);
   // ZDNA           fHistStatus->Fill(11.5);
   // ZDNC           fHistStatus->Fill(12.5);
   if (fisNG)        fHistStatus->Fill(13.5);
