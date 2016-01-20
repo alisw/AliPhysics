@@ -716,7 +716,39 @@ Bool_t  AliESDEvent::RemoveKink(Int_t rm) const
 // ---------------------------------------------------------
   Int_t last=GetNumberOfKinks()-1;
   if ((rm<0)||(rm>last)) return kFALSE;
-
+  TClonesArray &a=*fKinks;
+  AliESDkink* kink = GetKink(rm);
+  // release kink indices from ESDtracks
+  for (int i=2;i--;) {
+    AliESDtrack* trc = GetTrack(kink->GetIndex(i));
+    int indK[3]={0,0,0},restK=0;
+    for (int j=0;j<3;j++) {
+      int ind = trc->GetKinkIndex(j);
+      if (!ind) break;
+      if (TMath::Abs(ind)!=rm+1) indK[restK++] = ind;
+    }
+    trc->SetKinkIndexes(indK);
+  }
+  //
+  a.RemoveAt(rm);
+  if (rm==last) return kTRUE;
+  kink = GetKink(last);
+  new (a[rm]) AliESDkink(*kink);
+  // 
+  // update references on the moved kink
+  for (int i=2;i--;) {
+    AliESDtrack* trc = GetTrack(kink->GetIndex(i));
+    int indK[3]={0,0,0},restK=0;
+    for (int j=0;j<3;j++) {
+      int ind = trc->GetKinkIndex(j);
+      if (!ind) break;
+      int lastI = last+1;
+      if (ind==lastI) indK[j] = lastI;
+      else if (ind==-lastI) indK[j] = -lastI;
+    }
+    trc->SetKinkIndexes(indK);
+  }
+  //
   return kTRUE;
 }
 
