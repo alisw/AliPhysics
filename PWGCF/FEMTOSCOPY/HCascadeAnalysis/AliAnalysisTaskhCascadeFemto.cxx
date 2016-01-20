@@ -111,9 +111,9 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fReadMCTruth(kFALSE),
   fUseContainer(kFALSE),
   fUseStandardCuts(0),
-  fkApplyTtc(0),
-  fDphisMin(0),
-  fDetasMin(0),
+  fkApplyTtc(kFALSE),
+  fDphisMin(0.),
+  fDetasMin(0.),
   fMomemtumLimitForTOFPID(0.8),
   fkApplyRatioCrRnFindCut(kFALSE),
   fkCutOnTPCIP(kFALSE),  
@@ -282,9 +282,9 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fReadMCTruth(kFALSE),
   fUseContainer(kFALSE),
   fUseStandardCuts(0),
-  fkApplyTtc(0),
-  fDphisMin(0),
-  fDetasMin(0),
+  fkApplyTtc(kFALSE),
+  fDphisMin(0.),
+  fDetasMin(0.),
   fMomemtumLimitForTOFPID(0.8),
   fkApplyRatioCrRnFindCut(kFALSE),
   fkCutOnTPCIP(kFALSE),
@@ -2221,12 +2221,12 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
             if (fSecondpart == kProton) {
               if (fkCutOnTtcProp) {
                 if (dphisprop!=0. && detasprop!=0. && TMath::Abs(dphisprop)<fDphisMin && TMath::Abs(detasprop)<fDetasMin) { 
-                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
                   continue; 
                 }
               } else {
                 if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) {
-                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
                   continue;  
                 }
               } 
@@ -2234,12 +2234,12 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
               //if (dphisprop==0. || detasprop==0.) cout<<"Dphiprop or detasprop are 0!!!!! Dphis "<<dphisprop<<" Detas "<<detasprop<<endl;
               if (fkCutOnTtcProp) {
                 if (dphisprop!=0. && detasprop!=0. && TMath::Abs((dphisprop))<fDphisMin && TMath::Abs(detasprop)<fDetasMin) {
-                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
                   continue; 
                 }
               } else {
                 if (TMath::Abs(dphis)<fDphisMin && TMath::Abs(deta)<fDetasMin) {
-                  if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+                  if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
                   continue; 
                 }
               }
@@ -2249,7 +2249,7 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
         if (eventNumber==0) {//Same event pair histogramming
            // simplest pair cut // FIXME not needed maybe
           if ((fEvt+eventNumber)->fReconstructedProton[j].index == fEvt->fReconstructedProton[i].index) { if (eventNumber==0) cout<<"In the same event the two particles have the same index!"<<endl; 
-
+            if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
             continue;
           }
 
@@ -2299,7 +2299,7 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
 
         }
         // Put back particle loop indeces
-        if (eventNumber==0&&kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
+        if (eventNumber==0 && kswap) { i=iunsw; j=junsw; kswap=kFALSE;}
       } // second part
 
     }//end event loop
