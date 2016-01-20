@@ -88,7 +88,8 @@ ClassImp(AliAnalysisTaskSingleMu) // Class implementation in ROOT context
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
   AliVAnalysisMuon(),
   fThetaAbsKeys(0x0),
-  fCutOnDimu(kFALSE)
+  fCutOnDimu(kFALSE),
+  fUseMCKineForRecoTracks(kFALSE)
 {
   /// Default ctor.
 }
@@ -97,7 +98,8 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu() :
 AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, const AliMuonTrackCuts& cuts) :
   AliVAnalysisMuon(name, cuts),
   fThetaAbsKeys(0x0),
-  fCutOnDimu(kFALSE)
+  fCutOnDimu(kFALSE),
+  fUseMCKineForRecoTracks(kFALSE)
 {
   //
   /// Constructor.
@@ -339,10 +341,12 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       }
       Int_t thetaAbsBin = ( thetaAbsEndDeg < 3. ) ? kThetaAbs23 : kThetaAbs310;
 
+      if ( fUseMCKineForRecoTracks && istep == kStepReconstructed && track->GetLabel() >= 0 ) track = MCEvent()->GetTrack(track->GetLabel());
+
       containerInput[kHvarPt]         = track->Pt();
       containerInput[kHvarEta]        = track->Eta();
       containerInput[kHvarPhi]        = track->Phi();
-      containerInput[kHvarVz]         = ( istep == kStepReconstructed ) ? ipVz : ipVzMC;
+      containerInput[kHvarVz]         = ( istep == kStepReconstructed && !fUseMCKineForRecoTracks ) ? ipVz : ipVzMC;
       containerInput[kHvarCharge]     = track->Charge()/3.;
       containerInput[kHvarThetaAbs]   = (Double_t)thetaAbsBin;
       containerInput[kHvarMotherType] = (Double_t)trackSources[itrack];
