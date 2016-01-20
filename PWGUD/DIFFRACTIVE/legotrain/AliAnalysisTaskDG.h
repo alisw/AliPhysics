@@ -23,6 +23,9 @@ class AliESDtrackCuts;
 #include "AliAnalysisTaskSE.h"
 #include "AliTOFHeader.h"
 #include "AliTriggerAnalysis.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
 
 class AliAnalysisTaskDG : public AliAnalysisTaskSE {
 public:
@@ -110,34 +113,45 @@ public:
       , fEventInfo()
       , fV0Info()
       , fADInfo()
-      , fIsIncompleteDAQ(kFALSE) {
-      
-    }
+      , fIsIncompleteDAQ(kFALSE)
+      , fIsSPDClusterVsTrackletBG(kFALSE)
+      , fIskMB(kFALSE) {}
+
     EventInfo fEventInfo;
     ADV0      fV0Info;
     ADV0      fADInfo;
     Bool_t    fIsIncompleteDAQ;
+    Bool_t    fIsSPDClusterVsTrackletBG;
+    Bool_t    fIskMB;
     ClassDef(TreeData, 1);
   } ;
 
   struct TrackData : public TObject {
-    TrackData(AliESDtrack *tr=NULL)
+    TrackData(AliESDtrack *tr=NULL, AliPIDResponse *pidResponse=NULL)
       : TObject()
-      , sign(0)
-      , px(0)
-      , py(0)
-      , pz(0)
-      , itsSignal(0)
-      , tpcSignal(0) {
-      if (NULL != tr)
-	Fill(tr);
+      , fSign(0)
+      , fPx(0)
+      , fPy(0)
+      , fPz(0)
+      , fITSsignal(0)
+      , fTPCsignal(0)
+      , fTOFsignal(0) {
+      fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
+      for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
+	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -999.0f;
+      }
+      Fill(tr, pidResponse);
     }
 
-    void Fill(AliESDtrack *tr);
+    void Fill(AliESDtrack *, AliPIDResponse*);
 
-    Int_t   sign;
-    Float_t px,py,pz;
-    Float_t itsSignal, tpcSignal;
+    Int_t   fSign;
+    Float_t fPx,fPy,fPz;
+    Float_t fITSsignal, fTPCsignal, fTOFsignal;
+    Float_t fNumSigmaITS[AliPID::kSPECIES];
+    Float_t fNumSigmaTPC[AliPID::kSPECIES];
+    Float_t fNumSigmaTOF[AliPID::kSPECIES];
+    Char_t  fPIDStatus[3]; // ITS,TPC,TOF
     ClassDef(TrackData, 1);
   } ;
 
@@ -158,8 +172,10 @@ private:
   TString          fTrackCutType;        //
   TString          fTriggerSelection;    //
   TString          fCDBStorage;          //
+  Int_t            fMaxTrackSave;        //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
+  AliAnalysisUtils   fAnalysisUtils;     //!
 
   TList           *fList;                //!
   TH1             *fHist[kNHist];        //!

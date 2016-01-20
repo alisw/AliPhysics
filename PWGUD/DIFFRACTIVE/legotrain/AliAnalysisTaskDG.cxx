@@ -93,22 +93,41 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnal
 }
 
 
-void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr) {
-  if (NULL == tr)
+void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse=NULL) {
+  if (NULL == tr || NULL == pidResponse) {
+    AliError(Form("tr=%p pidResponse=%p", tr, pidResponse));
     return;
-  sign = Int_t(tr->GetSign());
-  px   = tr->Px();
-  py   = tr->Py();  
-  pz   = tr->Pz();  
-  itsSignal = tr->GetITSsignal();
-  tpcSignal = tr->GetTPCsignal();
+  }
+  fSign = Int_t(tr->GetSign());
+  fPx   = tr->Px();
+  fPy   = tr->Py();  
+  fPz   = tr->Pz();  
+  fITSsignal = tr->GetITSsignal();
+  fTPCsignal = tr->GetTPCsignal();
+  fTOFsignal = tr->GetTOFsignal();
+
+  fPIDStatus[0] = pidResponse->CheckPIDStatus(AliPIDResponse::kITS, tr);
+  fPIDStatus[1] = pidResponse->CheckPIDStatus(AliPIDResponse::kTPC, tr);
+  fPIDStatus[2] = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, tr);
+
+  for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
+    const AliPID::EParticleType particleType(static_cast<const AliPID::EParticleType>(i));
+    fNumSigmaITS[i] = pidResponse->NumberOfSigmasITS(tr, particleType);
+    fNumSigmaTPC[i] = pidResponse->NumberOfSigmasTPC(tr, particleType);
+    fNumSigmaTOF[i] = pidResponse->NumberOfSigmasTOF(tr, particleType);
+    AliInfo(Form("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]));
+  }
 }
 
 AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   : AliAnalysisTaskSE(name)
+  , fTreeBranchNames("")
   , fTrackCutType("TPCOnly")
   , fTriggerSelection("")
+  , fCDBStorage("raw://")
+  , fMaxTrackSave(4)
   , fTriggerAnalysis()
+  , fAnalysisUtils()
   , fList(NULL)
   , fTE(NULL)
   , fIR1InteractionMap()
@@ -120,7 +139,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexTracks()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 10)
-  , fTrackData("AliAnalysisTaskDG::TrackData", 4)
+  , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTrackSave)
   , fTrackCuts(NULL)
   , fUseTriggerMask(kFALSE)
   , fClassMask(0ULL)
@@ -173,9 +192,9 @@ void AliAnalysisTaskDG::SetBranches(TTree* t) {
   if (fTreeBranchNames.Contains("VertexTracks")) {
     t->Branch("VertexTracks",      &fVertexTracks, 32000, 0);
   }
-//   if (fTreeBranchNames.Contains("TOFHeader")) {
-//     t->Branch("TOFHeader",         &fTOFHeader, 32000, 0);
-//   }
+  if (fTreeBranchNames.Contains("TOFHeader")) {
+    t->Branch("TOFHeader",         &fTOFHeader, 32000, 0);
+  }
   if (fTreeBranchNames.Contains("TriggerIR")) {
     t->Branch("TriggerIRs",        &fTriggerIRs, 32000, 0);
   }
@@ -282,6 +301,12 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     return;
   }
 
+  AliPIDResponse* pidResponse = inputHandler->GetPIDResponse();
+  if (NULL == pidResponse) {
+    AliFatal("AliPIDResponse is not available");
+    return;
+  }
+
   const AliESDHeader *esdHeader = esdEvent->GetHeader();
   if (NULL == esdHeader)
     return;
@@ -319,8 +344,10 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   fTreeData.fEventInfo.Fill(esdHeader);
 
-  fTreeData.fIsIncompleteDAQ = esdEvent->IsIncompleteDAQ();
-
+  fTreeData.fIsIncompleteDAQ          = esdEvent->IsIncompleteDAQ();
+  fTreeData.fIsSPDClusterVsTrackletBG = fAnalysisUtils.IsSPDClusterVsTrackletBG(esdEvent);
+  fTreeData.fIskMB                    = (inputHandler->IsEventSelected() & AliVEvent::kMB);
+  AliInfo(Form("inputHandler->IsEventSelected() = %d", inputHandler->IsEventSelected()));
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
@@ -328,7 +355,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fVertexTPC    = *(esdEvent->GetPrimaryVertexTPC());
   fVertexTracks = *(esdEvent->GetPrimaryVertexTracks());
 
-//   fTOFHeader    = *(esdEvent->GetTOFHeader());
+  fTOFHeader    = *(esdEvent->GetTOFHeader());
 
   fTriggerIRs.Delete();
   for (Int_t i=0; i<esdHeader->GetTriggerIREntries(); ++i) {
@@ -350,10 +377,9 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliESDtrack*>(oa->At(i))->GetSign());
 
   fTrackData.Delete();
-  if (oa->GetEntries() <= 4)  {
-    Printf("TRK %d", oa->GetEntries());
-    for (Int_t i=0, n=TMath::Min(oa->GetEntries(), 10); i<n; ++i)
-      new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)));
+  if (oa->GetEntries() <= fMaxTrackSave)  {
+    for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTrackSave); i<n; ++i)
+      new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
   delete oa;
 
