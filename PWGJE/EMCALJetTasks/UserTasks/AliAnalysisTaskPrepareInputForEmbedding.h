@@ -31,6 +31,7 @@ public:
    void        SetContainerNumber(Int_t number)        {fContainer = number;}
    void        SetMinFracShared(Double_t minfrac)      {fMinFractionShared = minfrac;}
    void        SetLeadingJetOnly(Bool_t b = kTRUE)     {fLeadingJetOnly = b;}
+   void        SetDetHardCoreTagging(Bool_t b = kTRUE) {fHardCoreTag = b;}
    
 protected:
    Bool_t      Run();
@@ -40,6 +41,7 @@ private:
    Int_t        fContainer;                   ///< reco jet container number
    Double_t     fMinFractionShared;           ///< minimum pT fraction shared between reco and part level jets
    Bool_t       fLeadingJetOnly;              ///< fill TTrees with leading jet only
+   Bool_t       fHardCoreTag;                 ///< Request also hard-core tagging of the det level jet (requires tagging task to be run). Default is off
    TTree        *fTreeJets;                   //!<! tree with the TLorentzVector of the jet detector and particle level
    TLorentzVector *fJetDet;                   //!<! reconstucted jets
    TLorentzVector *fJetPart;                  //!<! particle level jet
@@ -55,7 +57,7 @@ private:
    AliAnalysisTaskPrepareInputForEmbedding(const AliAnalysisTaskPrepareInputForEmbedding&);
    AliAnalysisTaskPrepareInputForEmbedding &operator=(const AliAnalysisTaskPrepareInputForEmbedding&);
    
-   ClassDef(AliAnalysisTaskPrepareInputForEmbedding, 3)
+   ClassDef(AliAnalysisTaskPrepareInputForEmbedding, 4)
 };
 #endif
 

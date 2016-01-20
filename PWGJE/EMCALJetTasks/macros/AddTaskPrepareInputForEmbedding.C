@@ -6,7 +6,8 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
    Double_t jetareacut = 0.6,
    TString ntrack = "PicoTracks", 
    TString accType = "TPC", 
-   Bool_t  useLeadingJet = kFALSE){
+   Bool_t  useLeadingJet = kFALSE,
+   Bool_t  usedHCtagging = kFALSE){
    
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr){
@@ -18,10 +19,11 @@ AliAnalysisTaskPrepareInputForEmbedding *AddTaskPrepareInputForEmbedding(
       ::Error("AddTaskPrepareInputForEmbedding", "This task requires an input event handler");
       return NULL;
     }
-    TString wagonName = Form("PrepareInputForEmbedding%s", useLeadingJet ? "L" : "");
+    TString wagonName = Form("PrepareInputForEmbedding%s%s", useLeadingJet ? "L" : "", usedHCtagging ? "HC" : "");
     AliAnalysisTaskPrepareInputForEmbedding *task = new AliAnalysisTaskPrepareInputForEmbedding(wagonName);
     
     task->SetLeadingJetOnly(useLeadingJet);
+    task->SetDetHardCoreTagging(usedHCtagging);
     
     AliParticleContainer *partCont  = task->AddParticleContainer(ntrack);
        

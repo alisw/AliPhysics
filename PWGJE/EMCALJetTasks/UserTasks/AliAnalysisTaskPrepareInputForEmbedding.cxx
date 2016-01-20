@@ -17,6 +17,7 @@ AliAnalysisTaskPrepareInputForEmbedding::AliAnalysisTaskPrepareInputForEmbedding
 fContainer(0),
 fMinFractionShared(-1),
 fLeadingJetOnly(0),
+fHardCoreTag(0),
 fTreeJets(0),
 fJetDet(0),
 fJetPart(0),
@@ -41,6 +42,7 @@ AliAnalysisTaskPrepareInputForEmbedding::AliAnalysisTaskPrepareInputForEmbedding
 fContainer(0),
 fMinFractionShared(-1),
 fLeadingJetOnly(0),
+fHardCoreTag(0),
 fTreeJets(0),
 fJetDet(0),
 fJetPart(0),
@@ -164,6 +166,9 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       if(!acc) {
       	 continue;
       }
+      //jet hard core tagging (if requested)
+      if(fHardCoreTag && jet->GetTagStatus()<1 && !jet->GetTaggedJet()) continue;
+
       fJetDet  ->SetPtEtaPhiM(0,0,0,0);
       fJetPart ->SetPtEtaPhiM(0,0,0,0);
       
