@@ -175,7 +175,6 @@ void AliAnalysisTaskPi0Hadron::UserCreateOutputObjects()
 	fHistNoClus_ptH_tr = new TH1F(Form("fHistNoClus_ptH_tr_%0d",1),Form("fHistNoClus_ptH_tr_%0d",1), nbins[0], min[0], max[0]);
 	fHistNoClus_ptH_tr->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClus_ptH_tr->GetYaxis()->SetTitle(Form("No. of Clus. with h [counts/%0.1f GeV/c]",fHistNoClus_ptH_tr->GetBinWidth(0)));
-	fOutput->Add(fHistNoClus_ptH_tr);
 
 	fOutputList1->Add(fHistNoClus_pt);
 	fOutputList1->Add(fHistNoClus_pt_tr);
