@@ -1,5 +1,5 @@
-/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations3 task.
-   Author: Prabhat Pujahari & Claude Pruneau, Wayne State
+/* Macro designed for use with the AlianalysisTaskDptPID task.
+   Author: Prabhat Pujahari
    system:           0, 1, 2 for centrality sets
    singlesOnly:      0 -- full correlations    1 -- singles only
    useWeights:       0 -- no                   1 -- yes
@@ -22,11 +22,11 @@ AlianalysisTaskDptPID *AddTaskDptpid
  double eta1Max                 = 0.8,
  double eta2Min                 = -0.8,
  double eta2Max                 = 0.8,
- double dcaZMin                 = -3.2, //Tight DCA
+ double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  2,
+ int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
  const char* taskname           = "WgtPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Calib/EtaAssym.root")
@@ -46,8 +46,8 @@ AlianalysisTaskDptPID *AddTaskDptpid
     {
       if (centralityMethod == 4 )
 	{
-	  minCentrality[0] = 70.0;  maxCentrality[0]  = 80.0; 
-	  minCentrality[1] = 80.0;  maxCentrality[1]  = 90.0; //checking Dec7, 2015
+	  minCentrality[0] = 0.0;  maxCentrality[0]  = 5.0; 
+	  minCentrality[1] = 5.0;  maxCentrality[1]  = 10.0; 
 	  minCentrality[2] = 10.0; maxCentrality[2]  = 20.0;
 	  
 	}
@@ -67,9 +67,9 @@ AlianalysisTaskDptPID *AddTaskDptpid
     {
       if (centralityMethod == 4)
 	{
-	  minCentrality[0] = 20.0; maxCentrality[0]  = 30.0;
-	  minCentrality[1] = 30.0; maxCentrality[1]  = 40.0;
-	  minCentrality[2] = 40.0; maxCentrality[2]  = 50.0;
+	  minCentrality[0] = 50.0; maxCentrality[0]  = 60.0;
+	  minCentrality[1] = 60.0; maxCentrality[1]  = 70.0;
+	  minCentrality[2] = 70.0; maxCentrality[2]  = 80.0;
 	}
     }
   
