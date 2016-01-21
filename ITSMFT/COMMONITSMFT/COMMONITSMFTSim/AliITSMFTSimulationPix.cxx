@@ -18,10 +18,9 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TString.h>
-//#include "AliITSU.h"
 #include "AliITSMFTDigitPix.h"
-#include "AliITSUHit.h"
-#include "AliITSUChip.h"
+#include "AliITSMFTHit.h"
+#include "AliITSMFTChip.h"
 #include "AliITSMFTSensMap.h"
 #include "AliITSMFTCalibrationPix.h"
 #include "AliITSMFTSegmentationPix.h"
@@ -34,7 +33,7 @@
 #include "AliITSMFTParamList.h"
 #include "AliITSMFTAux.h"
 
-#include "AliITSUSimulationPix.h"
+#include "AliITSMFTSimulationPix.h"
 
 using std::cout;
 using std::endl;
@@ -42,7 +41,7 @@ using namespace TMath;
 
 
 
-ClassImp(AliITSUSimulationPix)
+ClassImp(AliITSMFTSimulationPix)
 ////////////////////////////////////////////////////////////////////////
 //  Version: 1
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
@@ -56,14 +55,14 @@ ClassImp(AliITSUSimulationPix)
 //
 //  Adapted for pixels of ITS upgrade July 2012, ruben.shahoyan@cern.ch
 //
-//  AliITSUSimulationPix is to do the simulation of pixels
+//  AliITSMFTSimulationPix is to do the simulation of pixels
 //
 //  2013 Feb: Added MonoPix response and nois calculation al la MIMOSA32 (levente.molnar@cern.ch)
 //
 ////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
-AliITSUSimulationPix::AliITSUSimulationPix()
+AliITSMFTSimulationPix::AliITSMFTSimulationPix()
 :  fTanLorAng(0)
 ,fGlobalChargeScale(1.0)
 ,fSpread2DHisto(0)
@@ -75,7 +74,7 @@ AliITSUSimulationPix::AliITSUSimulationPix()
 }
 
 //______________________________________________________________________
-AliITSUSimulationPix::AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
+AliITSMFTSimulationPix::AliITSMFTSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map)
 :AliITSMFTSimulation(sim,map)
 ,fTanLorAng(0)
 ,fGlobalChargeScale(1.0)
@@ -89,7 +88,7 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSens
 }
 
 //______________________________________________________________________
-AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s)
+AliITSMFTSimulationPix::AliITSMFTSimulationPix(const AliITSMFTSimulationPix &s)
 :AliITSMFTSimulation(s)
 ,fTanLorAng(s.fTanLorAng)
 ,fGlobalChargeScale(s.fGlobalChargeScale)
@@ -102,14 +101,14 @@ AliITSUSimulationPix::AliITSUSimulationPix(const AliITSUSimulationPix &s)
 
 
 //______________________________________________________________________
-AliITSUSimulationPix::~AliITSUSimulationPix()
+AliITSMFTSimulationPix::~AliITSMFTSimulationPix()
 {
     // destructor
-    // only the sens map is owned and it is deleted by ~AliITSUSimulation
+    // only the sens map is owned and it is deleted by ~AliITSMFTSimulation
 }
 
 //______________________________________________________________________
-AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix &s)
+AliITSMFTSimulationPix& AliITSMFTSimulationPix::operator=(const AliITSMFTSimulationPix &s)
 {
     //    Assignment operator
     if (&s == this) return *this;
@@ -124,14 +123,14 @@ AliITSUSimulationPix& AliITSUSimulationPix::operator=(const AliITSUSimulationPix
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Init()
+void AliITSMFTSimulationPix::Init()
 {
     // Initilization
     if (fSimuParam->GetPixLorentzDrift()) SetTanLorAngle(fSimuParam->GetPixLorentzHoleWeight());
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
+Bool_t AliITSMFTSimulationPix::SetTanLorAngle(Double_t weightHole)
 {
     // This function set the Tangent of the Lorentz angle.
     // A weighted average is used for electrons and holes
@@ -158,7 +157,7 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 }
 
 //_____________________________________________________________________
-void AliITSUSimulationPix::SDigitiseChip(TClonesArray *sdarray)
+void AliITSMFTSimulationPix::SDigitiseChip(TClonesArray *sdarray)
 {
     //  This function begins the work of creating S-Digits.
     
@@ -174,7 +173,7 @@ void AliITSUSimulationPix::SDigitiseChip(TClonesArray *sdarray)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::WriteSDigits(TClonesArray *sdarray)
+void AliITSMFTSimulationPix::WriteSDigits(TClonesArray *sdarray)
 {
     //  This function adds each S-Digit to pList
     int nsd = fSensMap->GetEntries();
@@ -189,7 +188,7 @@ void AliITSUSimulationPix::WriteSDigits(TClonesArray *sdarray)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::FinishSDigitiseChip(TObjArray *detDigits)
+void AliITSMFTSimulationPix::FinishSDigitiseChip(TObjArray *detDigits)
 {
     //  This function calls SDigitsToDigits which creates Digits from SDigits
     FrompListToDigits(detDigits);
@@ -198,7 +197,7 @@ void AliITSUSimulationPix::FinishSDigitiseChip(TObjArray *detDigits)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::DigitiseChip(TObjArray *detDigits)
+void AliITSMFTSimulationPix::DigitiseChip(TObjArray *detDigits)
 {
     //  This function creates Digits straight from the hits and then adds
     //  electronic noise to the digits before adding them to pList
@@ -210,7 +209,7 @@ void AliITSUSimulationPix::DigitiseChip(TObjArray *detDigits)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Hits2SDigits()
+void AliITSMFTSimulationPix::Hits2SDigits()
 {
     // Does the charge distributions using Gaussian diffusion charge charing.
     Int_t nhits = fChip->GetNHits();
@@ -284,10 +283,10 @@ void AliITSUSimulationPix::Hits2SDigits()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Hits2SDigitsFast()
+void AliITSMFTSimulationPix::Hits2SDigitsFast()
 {
     // Does the charge distributions using Gaussian diffusion charge charing.    // Inputs:
-    //    AliITSUChip *mod  Pointer to this chip
+    //    AliITSMFTChip *mod  Pointer to this chip
     //
     TObjArray *hits = fChip->GetHits();
     Int_t nhits = hits->GetEntriesFast();
@@ -364,7 +363,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
+void AliITSMFTSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
                                           Double_t el, Double_t tof, Int_t tID, Int_t hID)
 {
     // Spreads the charge over neighboring cells. Assume charge is distributed
@@ -407,7 +406,7 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
         for (iz=izs;iz<=ize;iz++) {
             //
             // Check if the hit is inside readout window
-            int cycleRO = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof);
+            int cycleRO = (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fROTimeFun)(ix,iz,tof);
             if (Abs(cycleRO)>kMaxROCycleAccept) continue;
             //
             fSeg->DetToLocal(ix,iz,x,z); // pixel center
@@ -426,14 +425,14 @@ void AliITSUSimulationPix::SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, 
             x1 -= dxi;      // Lower
             z2  = z1 + dzi; // Upper
             z1 -= dzi;      // Lower
-            s   = el* (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fSpreadFun)(dtIn);
+            s   = el* (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fSpreadFun)(dtIn);
             if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,tID,hID,s,cycleRO);
         } // end for ix, iz
     //
 }
 
 //______________________________________________________________________
-Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
+Double_t AliITSMFTSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
 {
     // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2]
     // and Z=dtIn[kCellZ1]:dtIn[kCellZ2]
@@ -461,7 +460,7 @@ Double_t AliITSUSimulationPix::SpreadFunDoubleGauss2D(const Double_t *dtIn)
 
 
 //______________________________________________________________________
-Double_t AliITSUSimulationPix::SpreadFrom2DHisto(const Double_t *dtIn)
+Double_t AliITSMFTSimulationPix::SpreadFrom2DHisto(const Double_t *dtIn)
 {
     // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2]
     // and Z=dtIn[kCellZ1]:dtIn[kCellZ2]
@@ -480,7 +479,7 @@ Double_t AliITSUSimulationPix::SpreadFrom2DHisto(const Double_t *dtIn)
 }
 
 //______________________________________________________________________
-Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
+Double_t AliITSMFTSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
 {
     // calculate integral of charge in the cell with boundaries at X=dtIn[kCellX1]:dtIn[kCellX2]
     // and Z=dtIn[kCellZ1]:dtIn[kCellZ2]
@@ -496,7 +495,7 @@ Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::RemoveDeadPixels()
+void AliITSMFTSimulationPix::RemoveDeadPixels()
 {
     // Removes dead pixels on each chip (ladder)
     // This should be called before going from sdigits to digits (i.e. from FrompListToDigits)
@@ -532,7 +531,7 @@ void AliITSUSimulationPix::RemoveDeadPixels()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::AddNoisyPixels()
+void AliITSMFTSimulationPix::AddNoisyPixels()
 {
     // Adds noisy pixels on each chip (ladder)
     // This should be called before going from sdigits to digits (i.e. FrompListToDigits)
@@ -549,7 +548,7 @@ void AliITSUSimulationPix::AddNoisyPixels()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::FrompListToDigits(TObjArray *detDigits)
+void AliITSMFTSimulationPix::FrompListToDigits(TObjArray *detDigits)
 {
     // add noise and electronics, perform the zero suppression and add the digits to the list
     //
@@ -624,7 +623,7 @@ void AliITSUSimulationPix::FrompListToDigits(TObjArray *detDigits)
 }
 
 //______________________________________________________________________
-Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
+Int_t AliITSMFTSimulationPix::AddRandomNoisePixels(Double_t tof)
 {
   // create random noisy sdigits above threshold
   //
@@ -649,14 +648,14 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
     //
     for (int j=0;j<ncand;j++) {
       fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      iCycle = (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fROTimeFun)(row,col,tof);
       UpdateMapNoise(col,row,AliITSMFTSimuParam::GenerateNoiseQFunction(probNoisy,noiseMean,noiseSig),  iCycle);
     }
   }
   else {
     for (int j=0;j<ncand;j++) {
       fSensMap->GetMapIndex((UInt_t)ordV[ordI[j]],col,row,iCycle);   // create noisy digit
-      iCycle = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(row,col,tof);
+      iCycle = (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fROTimeFun)(row,col,tof);
       UpdateMapNoise(col,row,kNoisyPixRnd, iCycle);
     }
   }
@@ -665,7 +664,7 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
 
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetCoupling(AliITSMFTSDigit* old)
+void AliITSMFTSimulationPix::SetCoupling(AliITSMFTSDigit* old)
 {
     //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the probability of the
@@ -702,7 +701,7 @@ void AliITSUSimulationPix::SetCoupling(AliITSMFTSDigit* old)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetCouplingOld(AliITSMFTSDigit* old)
+void AliITSMFTSimulationPix::SetCouplingOld(AliITSMFTSDigit* old)
 {
     //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the fractions of the
@@ -742,7 +741,7 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSMFTSDigit* old)
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
+void AliITSMFTSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
 {
     // attach response parameterisation data
     fResponseParam = resp;
@@ -754,18 +753,18 @@ void AliITSUSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
     switch (spreadID) {
             //
         case kSpreadFunHisto:
-            fSpreadFun = &AliITSUSimulationPix::SpreadFrom2DHisto;
+            fSpreadFun = &AliITSMFTSimulationPix::SpreadFrom2DHisto;
             hname = fResponseParam->GetParName(AliITSMFTSimuParam::kChargeSpreadType);
             if (!(fSpread2DHisto=(TH2*)fResponseParam->GetParamObject(hname)))
                 AliFatal(Form("Did not find 2D histo %s for charge spread parameterization",hname));
             break;
             //
         case kSpreadFunDoubleGauss2D:
-            fSpreadFun = &AliITSUSimulationPix::SpreadFunDoubleGauss2D;
+            fSpreadFun = &AliITSMFTSimulationPix::SpreadFunDoubleGauss2D;
             break;
             //
         case kSpreadFunGauss2D:
-            fSpreadFun = &AliITSUSimulationPix::SpreadFunGauss2D;
+            fSpreadFun = &AliITSMFTSimulationPix::SpreadFunGauss2D;
             break;
             //
         default: AliFatal(Form("Did not find requested spread function id=%d",spreadID));
@@ -774,10 +773,10 @@ void AliITSUSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
     int readoutType = Nint(fResponseParam->GetParameter(AliITSMFTSimuParam::kReadOutSchemeType));
     switch (readoutType) {
         case AliITSMFTSimuParam::kReadOutStrobe:
-            fROTimeFun = &AliITSUSimulationPix::GetReadOutCycle;
+            fROTimeFun = &AliITSMFTSimulationPix::GetReadOutCycle;
             break;
         case AliITSMFTSimuParam::kReadOutRollingShutter:
-            fROTimeFun = &AliITSUSimulationPix::GetReadOutCycleRollingShutter;
+            fROTimeFun = &AliITSMFTSimulationPix::GetReadOutCycleRollingShutter;
             break;
         default: AliFatal(Form("Did not find requested readout time type id=%d",readoutType));
     }
@@ -817,7 +816,7 @@ void AliITSUSimulationPix::SetResponseParam(AliITSMFTParamList* resp)
 }
 
 //______________________________________________________________________
-Int_t AliITSUSimulationPix::GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime)
+Int_t AliITSMFTSimulationPix::GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime)
 {
     //
     // Get the read-out cycle of the hit in the given column/row of the sensor.
@@ -834,7 +833,7 @@ Int_t AliITSUSimulationPix::GetReadOutCycleRollingShutter(Int_t row, Int_t col, 
 }
 
 //______________________________________________________________________
-Int_t AliITSUSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime)
+Int_t AliITSMFTSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTime)
 {
     //
     // Check whether the hit is in the read out window of the given column/row of the sensor
@@ -847,7 +846,7 @@ Int_t AliITSUSimulationPix::GetReadOutCycle(Int_t row, Int_t col, Double_t hitTi
 }
 
 //_______________________________________________________________________
-void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z)
+void AliITSMFTSimulationPix::CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z)
 {
     //
     // Calculates the shift of the diode wrt the geometric center of the pixel.
@@ -860,10 +859,10 @@ void AliITSUSimulationPix::CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::Hits2SDigitsFastDigital()
+void AliITSMFTSimulationPix::Hits2SDigitsFastDigital()
 {
     // Does the digital chip response simulation
-    //    AliITSUChip *mod  Pointer to this chip
+    //    AliITSMFTChip *mod  Pointer to this chip
     //
     
     
@@ -892,7 +891,7 @@ void AliITSUSimulationPix::Hits2SDigitsFastDigital()
         if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
         //
         // Check if the hit is inside readout window
-        int cycleRO = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof);
+        int cycleRO = (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fROTimeFun)(ix,iz,tof);
         if (Abs(cycleRO)>kMaxROCycleAccept) continue;
         //
         //
@@ -904,7 +903,7 @@ void AliITSUSimulationPix::Hits2SDigitsFastDigital()
     
 }
 //______________________________________________________________________
-void AliITSUSimulationPix::PlaceDigitalPixels(Double_t x0hit,Double_t z0hit, Double_t el, Double_t tof, Int_t tID, Int_t hID)
+void AliITSMFTSimulationPix::PlaceDigitalPixels(Double_t x0hit,Double_t z0hit, Double_t el, Double_t tof, Int_t tID, Int_t hID)
 {
     // Place the digital pixel positions on the sensor
     // Inputs:
@@ -952,7 +951,7 @@ void AliITSUSimulationPix::PlaceDigitalPixels(Double_t x0hit,Double_t z0hit, Dou
     {
         nx = ix + aPixListX[ipix];
         nz = iz + aPixListZ[ipix];
-        cycleRO = (((AliITSUSimulationPix*)this)->*AliITSUSimulationPix::fROTimeFun)(ix,iz,tof);
+        cycleRO = (((AliITSMFTSimulationPix*)this)->*AliITSMFTSimulationPix::fROTimeFun)(ix,iz,tof);
         if ( nx >= 0 && nx <= fSeg -> Npx() && nz >= 0 && nz <= fSeg -> Npz() ) UpdateMapSignal(nz,nx,tID,hID,s,cycleRO); //if the pixel is in the detector
     }
    

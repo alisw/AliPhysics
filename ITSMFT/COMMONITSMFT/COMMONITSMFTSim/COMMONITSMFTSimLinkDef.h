@@ -13,6 +13,7 @@
 #pragma link C++ class  AliITSMFTHit+;
 #pragma link C++ class  AliITSMFTSimuParam+;
 #pragma link C++ class  AliITSMFTSimulation+;
+#pragma link C++ class  AliITSMFTSimulationPix+;
 
 #endif
 

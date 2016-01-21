@@ -38,7 +38,6 @@ set(SRCS
     AliITSU.cxx
     AliITSUDigitizer.cxx
     AliITSUHit.cxx
-    AliITSUSimulationPix.cxx
     AliITSUSuze02.cxx
     AliITSUv0.cxx
     AliITSUv0Layer.cxx

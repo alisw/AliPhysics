@@ -1,5 +1,5 @@
-#ifndef ALIITSUSIMULATIONPIX_H
-#define ALIITSUSIMULATIONPIX_H
+#ifndef ALIITSMFTSIMULATIONPIX_H
+#define ALIITSMFTSIMULATIONPIX_H
 
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -15,21 +15,22 @@
 
 
 class TH1F;
-class AliITSUChip;
+class AliITSMFTChip;
+class AliITSMFTSDigit;
 class AliITSMFTSimuParam;
 class AliITSMFTParamList;
 class TH2;
 
 //-------------------------------------------------------------------
 
-class AliITSUSimulationPix : public AliITSMFTSimulation {
+class AliITSMFTSimulationPix : public AliITSMFTSimulation {
 public:
      //
-    AliITSUSimulationPix();
-    AliITSUSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map);
-    virtual ~AliITSUSimulationPix();
-    AliITSUSimulationPix(const AliITSUSimulationPix &source);
-    AliITSUSimulationPix& operator=(const AliITSUSimulationPix &s);
+    AliITSMFTSimulationPix();
+    AliITSMFTSimulationPix(AliITSMFTSimuParam* sim,AliITSMFTSensMap* map);
+    virtual ~AliITSMFTSimulationPix();
+    AliITSMFTSimulationPix(const AliITSMFTSimulationPix &source);
+    AliITSMFTSimulationPix& operator=(const AliITSMFTSimulationPix &s);
     
     //
     enum {kCellX1,kCellX2,kCellZ1,kCellZ2,kCellYDepth,kNDtSpread}; // data used for ch. spread integral calc.
@@ -98,9 +99,9 @@ protected:
     Double_t      fGlobalChargeScale;       // Charge scaling to match Geant and Test beam
     //
     TH2*          fSpread2DHisto;           //! optional 2D histo for charge spread parameterization
-    Double_t (AliITSUSimulationPix::*fSpreadFun)(const Double_t *dtIn); //! pointer on current spread function
-    Int_t    (AliITSUSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
+    Double_t (AliITSMFTSimulationPix::*fSpreadFun)(const Double_t *dtIn); //! pointer on current spread function
+    Int_t    (AliITSMFTSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
     
-    ClassDef(AliITSUSimulationPix,1)  // Simulation of pixel clusters
+    ClassDef(AliITSMFTSimulationPix,1)  // Simulation of pixel clusters
 };
 #endif 

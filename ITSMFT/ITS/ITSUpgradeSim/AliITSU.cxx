@@ -81,8 +81,8 @@ the AliITS class.
 #include "AliITSULoader.h"
 #include "AliITSUHit.h"
 #include "AliITSMFTSDigit.h"
-#include "AliITSMFTSimulation.h"
-#include "AliITSUSimulationPix.h"
+//#include "AliITSMFTSimulation.h"
+#include "AliITSMFTSimulationPix.h"
 #include "AliMC.h"
 #include "AliITSUDigitizer.h"
 #include "AliRawReader.h"
@@ -902,7 +902,7 @@ void AliITSU::InitSimulation()
       switch (sType) 
 	{
 	case AliITSMFTAux::kChipTypePix :
-	  simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap);
+	  simUpg = new AliITSMFTSimulationPix(fSimuParam,fSensMap);
 	  break;
 	default: AliFatal(Form("No %d detector type is defined",sType));
 	}
