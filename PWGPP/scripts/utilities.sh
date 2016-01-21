@@ -728,7 +728,11 @@ copyFileToRemote() (
         case "$proto" in
           local) echo "==> cp $src $dst"
                  mkdir -p "$(dirname "$dst")"
-                 cp "$src" "$dst" ;;
+                 cp "$src" "$dst"
+                 if [[ $? != 0 ]]; then
+                   rm -f "$dst"
+                   false
+                 fi ;;
           root)  echo "==> xrdcp -f $src $dst"
                  xrdcp -f "$src" "$dst" ;;
           *)     echo "protocol not supported: $proto"
