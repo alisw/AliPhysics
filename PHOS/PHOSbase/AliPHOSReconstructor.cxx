@@ -381,23 +381,29 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->AddLabels(arrayPrim);
     
     //Matched ESD track
-    TArrayI arrayTrackMatched(1);
-    arrayTrackMatched[0]= ts->GetTrackIndex();
-    ec->AddTracksMatched(arrayTrackMatched);
+    if(ts->GetTrackIndex()>=0){ //there is a match
+      TArrayI arrayTrackMatched(1);
+      arrayTrackMatched[0]= ts->GetTrackIndex();
+      ec->AddTracksMatched(arrayTrackMatched);
     
-    Int_t index = esd->AddCaloCluster(ec);
+      Int_t index = esd->AddCaloCluster(ec);
 
-    //Set pointer to this cluster in ESD track
-    Int_t nt=esd->GetNumberOfTracks();
-    for (Int_t itr=0; itr<nt; itr++) {
-      AliESDtrack *esdTrack=esd->GetTrack(itr);
-      if(!esdTrack->IsPHOS())
-        continue ;
-      if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
-        esdTrack->SetPHOScluster(index) ;
+      //Set pointer to this cluster in ESD track
+      Int_t nt=esd->GetNumberOfTracks();
+      for (Int_t itr=0; itr<nt; itr++) {
+        AliESDtrack *esdTrack=esd->GetTrack(itr);
+        if(!esdTrack->IsPHOS())
+          continue ;
+        if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
+          esdTrack->SetPHOScluster(index) ;
 //no garatie that only one track matched this cluster
 //      break ;
+        }
       }
+    }
+    else{ //Story empty list
+      TArrayI arrayTrackMatched(0);
+      ec->AddTracksMatched(arrayTrackMatched);       
     }
  
     delete ec;   
@@ -467,10 +473,17 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(fTSM->GetTrackSegments()
 								    ->At(recpoint+nOfRecParticles));  
       if(ts){
-        TArrayI arrayTrackMatched(1);
-        arrayTrackMatched[0]= ts->GetEmcIndex();
-        ec->AddTracksMatched(arrayTrackMatched);
-        ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
+	if(ts->GetEmcIndex()>=0){
+          TArrayI arrayTrackMatched(1);
+          arrayTrackMatched[0]= ts->GetEmcIndex();
+          ec->AddTracksMatched(arrayTrackMatched);
+          ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
+	}
+	else{//No match
+          TArrayI arrayTrackMatched(0);
+          ec->AddTracksMatched(arrayTrackMatched);
+          ec->SetTrackDistance(999.,999.); 
+	}
       }
     }
     Int_t index = esd->AddCaloCluster(ec);
