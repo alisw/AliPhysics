@@ -1344,7 +1344,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     AliInfo("---> Inspect Event Selection Criteria:");
     AliMultSelectionCuts* selcuts = fOadbMultSelection->GetEventCuts();
     if (selcuts) {
-        sel->Print();
+        selcuts->Print();
     }
     else {
         AliWarning("Weird! No AliMultSelectionCuts found...");
