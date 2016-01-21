@@ -29,7 +29,10 @@ class AliEmcalTrackSelectionESD: public AliEmcalTrackSelection {
 public:
 	AliEmcalTrackSelectionESD();
 	AliEmcalTrackSelectionESD(AliVCuts *cuts);
+	AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period = "");
 	virtual ~AliEmcalTrackSelectionESD() {}
+
+	virtual void GenerateTrackCuts(ETrackFilterType_t type, const char* period = "");
 
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
 

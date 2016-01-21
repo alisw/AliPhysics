@@ -24,6 +24,7 @@
 #include "AliLog.h"
 #include "AliPicoTrack.h"
 #include "AliVCuts.h"
+#include "AliEmcalESDTrackCutsGenerator.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTrackSelectionESD)
@@ -46,8 +47,45 @@ AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(AliVCuts* cuts):
   this->AddTrackCuts(cuts);
 }
 
+/**
+ * Constructor, initalising track cuts depending on the requested type of filtering
+ *
+ * \param type Track filtering type
+ * \param period  Period string (e.g. LHC11h)
+ */
+AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(ETrackFilterType_t type, const char* period):
+  AliEmcalTrackSelection()
+{
+  GenerateTrackCuts(type, period);
+}
 
 /**
+ * Automatically generates track cuts depending on the requested type of filtering
+ *
+ * \param type    Track filtering type
+ * \param period  Period string (e.g. LHC11h)
+ */
+void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const char* period)
+{
+  if (fListOfCuts) fListOfCuts->Clear();
+  fSelectionModeAny = kTRUE;
+
+  switch (type) {
+  case kHybridTracks:
+    AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(this, period);
+    break;
+
+  case kTPCOnlyTracks:
+    AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
+    break;
+
+  default:
+    break;
+  }
+}
+
+/**
+ * Check whether track is accepted. Iterates over all cuts assigned to the track selection.
  *
  * \param trk: Track to check
  * \return: true if selected, false otherwise
