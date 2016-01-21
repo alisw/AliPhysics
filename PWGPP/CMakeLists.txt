@@ -214,6 +214,7 @@ set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
   AD/AliAnalysisTaskADVVQA.cxx
   AD/AliAnalysisTaskADPilot.cxx
+  AD/AliAnalysisTaskADCalib.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
